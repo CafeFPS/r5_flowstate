@@ -2,90 +2,162 @@ untyped
 
 globalize_all_functions
 
-//Precache props
+//  ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
+//  ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
+//  █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
+//  ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
+//  ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+
+//Init Movement Gym
 void
-function PrecacheMovementMapProps() {
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx") {
-    PrecacheModel($"mdl/ola/sewer_railing_01_64.rmdl")
-    PrecacheModel($"mdl/ola/sewer_railing_01_128.rmdl")
-    PrecacheModel($"mdl/ola/sewer_railing_01_corner_in.rmdl")
-    PrecacheModel($"mdl/foliage/icelandic_moss_grass_02.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl")
-    PrecacheModel($"mdl/lamps/light_parking_post.rmdl")
-    PrecacheModel($"mdl/foliage/icelandic_moss_grass_01.rmdl")
-    PrecacheModel($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl")
-    PrecacheModel($"mdl/desertlands/highrise_square_top_01.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl")
-    PrecacheModel($"mdl/desertlands/city_pipe_grate_medium_128.rmdl")
-    PrecacheModel($"mdl/barriers/concrete/concrete_barrier_fence.rmdl")
-    PrecacheModel($"mdl/industrial/underbelly_support_beam_256_01.rmdl")
-    PrecacheModel($"mdl/pipes/pipe_modular_painted_grey_256.rmdl")
-    PrecacheModel($"mdl/signs/street_sign_arrow.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_01.rmdl")
-    PrecacheModel($"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl")
-    PrecacheModel($"mdl/domestic/bar_sink.rmdl")
-    PrecacheModel($"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl")
-    PrecacheModel($"mdl/domestic/tv_LED_med_panel.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_apartments_planter_02.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_building_ice_02.rmdl")
-    PrecacheModel($"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_02.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl")
-    PrecacheModel($"mdl/foliage/plant_desert_yucca_01.rmdl")
-    PrecacheModel($"mdl/domestic/floor_rug_red.rmdl")
-    PrecacheModel($"mdl/desertlands/desrtlands_icicles_06.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_02.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_cargo_container_large_01.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_03.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_cargo_container_320_01.rmdl")
-    PrecacheModel($"mdl/colony/ventilation_unit_01_black.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl")
-    PrecacheModel($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl")
-    PrecacheModel($"mdl/desertlands/lightpole_desertlands_city_01.rmdl")
-    PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl")
-    PrecacheModel($"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl")
-    PrecacheModel($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl")
-    PrecacheModel($"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl")
-    PrecacheModel($"mdl/signs/desertlands_city_newdawn_sign_01.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_train_station_sign_04.rmdl")
-    PrecacheModel($"mdl/colony/antenna_03_colony.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl")
-    PrecacheModel($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_train_track_sign_01.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_lobby_sign_01.rmdl")
-    PrecacheModel($"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_column_01.rmdl")
-    PrecacheModel($"mdl/mendoko/mendoko_rubber_floor_01.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_wood_board_01.rmdl")
-    PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_fold_sign_01.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_column_stack_01.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_platform_03.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_platform_02.rmdl")
-    PrecacheModel($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl")
-    PrecacheModel($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl")
-    PrecacheModel($"mdl/signs/Sign_no_tresspasing.rmdl")
-    PrecacheModel($"mdl/props/kunai/kunai.rmdl")
-    PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot.rmdl")
-    PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl")
-    PrecacheModel($"mdl/signs/numbers/sign_number_lit_3.rmdl")
-    PrecacheModel($"mdl/signs/numbers/sign_number_lit_2.rmdl")
-    PrecacheModel($"mdl/signs/numbers/sign_number_lit_1.rmdl")
-    PrecacheModel($"mdl/industrial/screwdriver_octane.rmdl")
-    PrecacheModel($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl")
-    PrecacheModel($"mdl/props/lifeline_needle/lifeline_needle.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl")
-    PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl")
+
+function MovementGym() {
+  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
+
+    // Commands
+    AddClientCommandCallback("hub", ClientCommand_Hub)
+    AddClientCommandCallback("invis", ClientCommand_invis)
+
+    //Map init
+    PrecacheMovementGymProps()
+    WaitFrame()
+    
+    MovementGym_Hub()
+    WaitFrame()
+
+    MovementGym_Map1()
+    WaitFrame()
+
+    MovementGym_Map2()
+    WaitFrame()
+
+    MovementGym_Octane()
+    WaitFrame()
+
+    MovementGym_Tapstrafe()
+    WaitFrame()
+
+    MovementGym_Superglide()
+    WaitFrame()
+
+    MovementGym_MantleJumps()
+    WaitFrame()
+
+    MovementGym_Grapple1()
+    WaitFrame()
+
+    MovementGym_Grapple2()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl1()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl2()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl3()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl4()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl5()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl6()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl7()
+    WaitFrame()
+
+    MovementGym_Hub_Buttons()
 
   }
+}
+
+//Precache props
+void
+
+function PrecacheMovementGymProps() {
+  PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl")
+  PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_cargo_container_large_01.rmdl")
+  PrecacheModel($"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl")
+  PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
+  PrecacheModel($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl")
+  PrecacheModel($"mdl/signs/Sign_no_tresspasing.rmdl")
+  PrecacheModel($"mdl/props/kunai/kunai.rmdl")
+  PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot.rmdl")
+  PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl")
+  PrecacheModel($"mdl/signs/numbers/sign_number_lit_3.rmdl")
+  PrecacheModel($"mdl/signs/numbers/sign_number_lit_2.rmdl")
+  PrecacheModel($"mdl/signs/numbers/sign_number_lit_1.rmdl")
+  PrecacheModel($"mdl/industrial/screwdriver_octane.rmdl")
+  PrecacheModel($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl")
+  PrecacheModel($"mdl/props/lifeline_needle/lifeline_needle.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_02.rmdl")
+  PrecacheModel($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl")
+  PrecacheModel($"mdl/desertlands/desrtlands_icicles_06.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl")
+  PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_03.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl")
+  PrecacheModel($"mdl/desertlands/city_pipe_grate_medium_128.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_cargo_container_320_01.rmdl")
+  PrecacheModel($"mdl/colony/ventilation_unit_01_black.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl")
+  PrecacheModel($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl")
+  PrecacheModel($"mdl/desertlands/lightpole_desertlands_city_01.rmdl")
+  PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl")
+  PrecacheModel($"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl")
+  PrecacheModel($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl")
+  PrecacheModel($"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl")
+  PrecacheModel($"mdl/signs/desertlands_city_newdawn_sign_01.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_train_station_sign_04.rmdl")
+  PrecacheModel($"mdl/colony/antenna_03_colony.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl")
+  PrecacheModel($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_train_track_sign_01.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_lobby_sign_01.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl")
+  PrecacheModel($"mdl/mendoko/mendoko_rubber_floor_01.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_wood_board_01.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_fold_sign_01.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_column_01.rmdl")
+  PrecacheModel($"mdl/desertlands/highrise_square_top_01.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_column_stack_01.rmdl")
+  PrecacheModel($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl")
+  PrecacheModel($"mdl/foliage/icelandic_moss_grass_01.rmdl")
+  PrecacheModel($"mdl/lamps/light_parking_post.rmdl")
+  PrecacheModel($"mdl/barriers/concrete/concrete_barrier_fence.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_platform_03.rmdl")
+  PrecacheModel($"mdl/ola/sewer_railing_01_128.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_platform_02.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl")
+  PrecacheModel($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl")
+  PrecacheModel($"mdl/signs/street_sign_arrow.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_01.rmdl")
+  PrecacheModel($"mdl/industrial/underbelly_support_beam_256_01.rmdl")
+  PrecacheModel($"mdl/pipes/pipe_modular_painted_grey_256.rmdl")
+  PrecacheModel($"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl")
+  PrecacheModel($"mdl/domestic/bar_sink.rmdl")
+  PrecacheModel($"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl")
+  PrecacheModel($"mdl/domestic/tv_LED_med_panel.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_apartments_planter_02.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_building_ice_02.rmdl")
+  PrecacheModel($"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_02.rmdl")
+  PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl")
+  PrecacheModel($"mdl/foliage/plant_desert_yucca_01.rmdl")
+  PrecacheModel($"mdl/domestic/floor_rug_red.rmdl")
+  PrecacheModel($"mdl/ola/sewer_railing_01_64.rmdl")
+  PrecacheModel($"mdl/ola/sewer_railing_01_corner_in.rmdl")
+  PrecacheModel($"mdl/foliage/icelandic_moss_grass_02.rmdl")
+  PrecacheModel($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl")
 }
 
 struct {
@@ -95,6 +167,7 @@ file
 
 //Save times to file
 void
+
 function MovementGymSaveTimesToFile() {
   DevTextBufferClear()
   DevTextBufferWrite("=== Movement Gym Times === \n\n")
@@ -114,6 +187,7 @@ function MovementGymSaveTimesToFile() {
 
 //hub command
 bool
+
 function ClientCommand_Hub(entity user, array < string > args) {
   EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
   TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
@@ -124,260 +198,229 @@ function ClientCommand_Hub(entity user, array < string > args) {
   user.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
   user.PhaseShiftCancel()
   Message(user, "Hub")
-  int reset = 0
-  user.SetPersistentVar("gen", reset)
-  user.SetPersistentVar("netWorth", reset)
+  //Start Checkpoint
+  user.p.allowCheckpoint = false
+  user.p.currentCheckpoint = 0
+  //Reset Timer
+  user.p.isTimerActive = false
+  user.p.startTime = 0
+
+  //Re-enable invis after surf
+  user.p.isPlayerInvisAllowed = true
+  if (user.IsInRealm(3) == true || user.IsInRealm(4) == true || user.IsInRealm(5) == true || user.IsInRealm(6) == true || user.IsInRealm(7) == true || user.IsInRealm(8) == true) {
+    user.RemoveFromAllRealms()
+    user.AddToRealm(1)
+    user.MakeVisible()
+    Message(user, "You are now Visible")
+  }
+
+  //Force Default Player Settings
+  SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
 
   return true
 }
 
 //invis toggle command
 bool
+
 function ClientCommand_invis(entity user, array < string > args) {
-  if (user.IsInRealm(1)) {
-    user.RemoveFromAllRealms()
-    user.AddToRealm(RandomIntRange(2, 63))
-    user.MakeInvisible()
-    Message(user, "You are now Invisible")
+  if (user.p.isPlayerInvisAllowed == true) {
+    if (user.IsInRealm(1)) {
+      user.RemoveFromAllRealms()
+      user.AddToRealm(2)
+      user.MakeInvisible()
+      Message(user, "You are now Invisible")
+    } else {
+      user.RemoveFromAllRealms()
+      user.AddToRealm(1)
+      user.MakeVisible()
+      Message(user, "You are now Visible")
+    }
   } else {
-    user.RemoveFromAllRealms()
-    user.AddToRealm(1)
-    user.MakeVisible()
-    Message(user, "You are now Visible")
+    Message(user, "This action is not allowed right now")
   }
   return true
 }
 
+//whacky glowy button
+entity
+
+function CreateSurfButton(vector pos, vector ang, string prompt) {
+  entity button = CreateEntity("prop_dynamic")
+  button.kv.solid = 0
+  button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
+  button.SetOrigin(pos)
+  button.SetAngles(ang)
+  DispatchSpawn(button)
+  button.SetUsable()
+  button.SetUsableByGroup("pilot")
+  button.SetUsePrompts(prompt, prompt)
+  button.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+  button.Highlight_SetParam(0, 0, < 1.0, 1.0, 0 > )
+  return button
+}
+
+//  ███    ███  █████  ██████      ███████ ███████  ██████  ███    ███ ███████ ███    ██ ████████ ███████ 
+//  ████  ████ ██   ██ ██   ██     ██      ██      ██       ████  ████ ██      ████   ██    ██    ██      
+//  ██ ████ ██ ███████ ██████      ███████ █████   ██   ███ ██ ████ ██ █████   ██ ██  ██    ██    ███████ 
+//  ██  ██  ██ ██   ██ ██               ██ ██      ██    ██ ██  ██  ██ ██      ██  ██ ██    ██         ██ 
+//  ██      ██ ██   ██ ██          ███████ ███████  ██████  ██      ██ ███████ ██   ████    ██    ███████ 
+
 //Offset for Teleporters after changing segment heights
 vector tpoffset = < 0, 0, -20000 >
 
-//Init Movement Gym
-void
-function MovementGym() {
-  //call map functions
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx") {
-    //PrecacheMovementMapProps()
-    //WaitFrame()
-    
-    MovementGym_Hub()
-    WaitFrame()
-    
-    MovementGym_Map1()
-    WaitFrame()
-    
-    MovementGym_Map2()
-    WaitFrame()
-    
-    MovementGym_Octane()
-    WaitFrame()
-    
-    MovementGym_Tapstrafe()
-    WaitFrame()
-    
-    MovementGym_Superglide()
-    WaitFrame()
-    
-    MovementGym_MantleJumps()
-    WaitFrame()
-    
-    MovementGym_Grapple1()
-    WaitFrame()
-    
-    MovementGym_Grapple2()
-    WaitFrame()
-    
-    MovementGym_Hub_Melee()
-    WaitFrame()
-    
-    MovementGym_Hub_Buttons()
+  //Init Hub
+  void
 
-  }
-}
-
-//Init Hub
-void
 function MovementGym_Hub() {
-  // Hub command
-  AddClientCommandCallback("hub", ClientCommand_Hub)
-  // invis command
-  AddClientCommandCallback("invis", ClientCommand_invis)
+  // Props Array
+  array < entity > NoClimbArray;
+  array < entity > NoCollisionArray;
 
-  //TextInfoPanels 
-  //MapEditor_CreateTextInfoPanel("Octane Stim      Superglides", "Practice your Stim Superglides", < 10515.9000, 9921.3990, -4206.5000 >,<0, 179.9997, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Do a 90 Jump Pad Tapstrafe", "To the right and grab the ledge", < -6533.4000, 8874.5000, 21965>,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Treerees Movement Map", "Test your skills", < 10515.9000, 10168.6000, -4206.5000 >,<0, 179.9997, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Backwards Superglide", "For Practicing", < 10569.1600, 9489, -4206.5000 >,<0, -90.0005, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a Tapstrafe after a Stim Superglide", "", < 15803.9000, -826.8000, 22497.9000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Do a double 90 Jump Pad Tapstrafe", "To the right and grab the ledge", < -8943, 8874.5000, 21965>,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Sideways Superglide", "For Practicing",<10649, 9489, -4206.5000 >,<0, -90.0005, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Mantle Jump Playground", "Practice your Mantle Jumps", < 10515.9000, 10085.7000, -4206.5000 >,<0, 179.9997, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Advanced Tap Strafe into Wall Jump ", "", < 10814.4100, 9489, -4206.5000 >,<0, -90.0005, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a Stim Superglide", "",<9654, -826.8000, 22497.9000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a Sideways Stim Superglide", "", < 13319.3000, -826.8000, 22497.9000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Basic Superglide Practice", "", < -17283.4000, 7778, 21992>,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Slightly more difficult Superglide practice", "", < -17283.4000, 9185, 21992>,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Do a 180 Jump Pad Tapstrafe", "", < -2338.4000, 8864, 21987.3000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a Sideways Superglide", "Practice", < -21748, 7768.5000, 22014.6000 >,<0, 89.9998, 0>, true, 1)
-  //CreatePanelText("Pathfinder  Grapples", "", < 10515.9000, 9834.4000, -4206.5000 >,<0, 179.9997, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Basic Tap Strafe Practice ", "", < 10896.9000, 9489, -4206.5000 >,<0, -90.0005, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Do a 180 Tapstrafe around the corner", "", < -17283.4000, 636.3000, 21992>,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Tapstrafe 180      and bounce off the wall", "", < 3391.9900, 2991.5000, 22517.2000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Regular Superglide", "For Practicing",<10730, 9489, -4206.5000 >,<0, -90.0005, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Jump Pad            Tap Strafes", "Practice your Jump Pad", < 10515.9000, 10005, -4206.5000 >,<0, 179.9997, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a Backwards Superglide", "Practice", < -23657.9000, 7835.8000, 22014.6000 >,<0, 89.9998, 0>, true, 1)
-  //MapEditor_CreateTextInfoPanel("Perform a double Tapstrafe", "", < -17283.4000, 2589.6000, 21992>,<0, 89.9998, 0>, true, 1)
+  // Props
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl", < 10755.26, 9901.212, -3915.242 > , < 0, 0, 0 > , true, 50000, -1, 0.75))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10840.27, 9829.147, -3915.742 > , < 0, 0, 0 > , true, 50000, -1, 0.38))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -3922.002 > , < 0, 90.0005, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -3922.002 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -3922.002 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -3922.002 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -3922.002 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -3922.002 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 > , < 0, 90.0005, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4178 > , < 0, 90.0005, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4178 > , < 0, -89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4178 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4178 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4178 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4178 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 > , < 0, -89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 > , < 0, 90.0005, 0 > , true, 5000, -1, 1)
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10234, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999999))
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10108, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999998)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9982, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999996)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9856, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999995)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9730, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999994)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9603.999, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999993)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10628.36, 10021.37, -3915.142 > , < 0, 0, 0 > , true, 50000, -1, 0.53))
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9479.971, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999993)
 
-    // Props Array
-    array < entity > NoClimbArray; array < entity > NoCollisionArray; 
+  foreach(entity ent in NoClimbArray) ent.kv.solid = 3
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
 
-    // Props
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl", < 10755.26, 9901.212, -3915.242 >, < 0, 0, 0 >, true, 5000, -1, 0.75 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10840.27, 9829.147, -3915.742 >, < 0, 0, 0 >, true, 5000, -1, 0.38 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -3922.002 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -3922.002 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -3922.002 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -3922.002 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -3922.002 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -3922.002 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4178 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4178 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4178 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4178 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4178 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4178 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10234, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999999 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10108, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999998 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9982, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999996 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9856, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999995 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9730, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999994 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9603.999, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999993 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9479.971, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999993 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10628.36, 10021.37, -3915.142 >, < 0, 0, 0 >, true, 5000, -1, 0.53 ) )
-
-    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
-    foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
-
-    // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< 9872, 5659.619, -3696.651 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 1582.609, 4863.507, -3208.651 >, < 0, 179.9997, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -11124.57, 24979.92, -3354.998 >, < 0, 0.5659, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-
-    // Triggers
-    entity trigger_0 = MapEditor_CreateTrigger( < 10730.36, 9677.57, -4168 >, < 0, 0, 0 >, 565.51, 149.5838, false )
-    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)) // ensure the entity is valid
-    {
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < 10730.36, 9677.57, -4168 > , < 0, 0, 0 > , 565.51, 149.5838, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	array<ItemFlavor> characters = GetAllCharacters()
-	CharacterSelect_AssignCharacter( ToEHI( ent ), characters[4] )
-	if (ent.GetPersistentVarAsInt( "previousXP" ) == 1){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
-	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 2){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 3){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	} else {
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	}
-	ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-	ent.SetPlayerNetBool( "pingEnabled", false )
-	//Reset Timer
-	int reset = 0
-	ent.SetPersistentVar("gen", reset)
-	//Reset Checkpoints
-	ent.SetPersistentVar("netWorth", reset)
+          array < ItemFlavor > characters = GetAllCharacters()
+          CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
+
+          switch (ent.p.currentMelee) {
+
+          case 1:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+            break
+          case 2:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+            break
+          case 0:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+            break
+          }
+
+          ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+          ent.SetPlayerNetBool("pingEnabled", false)
+          SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+
+          //Start Checkpoint
+          ent.p.allowCheckpoint = false
+          ent.p.currentCheckpoint = 0
+
+          //Reset Timer
+          ent.p.isTimerActive = false
+          ent.p.startTime = 0
+
         }
-}
+      }
     })
-    DispatchSpawn( trigger_0 )
-    entity trigger_1 = MapEditor_CreateTrigger( < 10730.36, 10173.57, -4168 >, < 0, 0, 0 >, 373.9595, 149.5838, false )
-    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_0)
+  entity trigger_1 = MapEditor_CreateTrigger( < 10730.36, 10173.57, -4168 > , < 0, 0, 0 > , 373.9595, 149.5838, false)
+  trigger_1.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	array<ItemFlavor> characters = GetAllCharacters()
-	CharacterSelect_AssignCharacter( ToEHI( ent ), characters[4] )
-	if (ent.GetPersistentVarAsInt( "previousXP" ) == 1){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
-	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 2){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 3){
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	} else {
-		TakeAllWeapons( ent )
-		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	}
-	ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-	ent.SetPlayerNetBool( "pingEnabled", false )
-	//Reset Timer
-	int reset = 0
-	ent.SetPersistentVar("gen", reset)
-	//Reset Checkpoints
-	ent.SetPersistentVar("netWorth", reset)
-        }
-}
-    })
-    DispatchSpawn( trigger_1 )
+          array < ItemFlavor > characters = GetAllCharacters()
+          CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
 
+          switch (ent.p.currentMelee) {
+
+          case 1:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+            break
+          case 2:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+            break
+          case 0:
+            TakeAllWeapons(ent)
+            ent.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+            ent.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+            break
+          }
+
+          ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+          ent.SetPlayerNetBool("pingEnabled", false)
+          SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+
+          //Start Checkpoint
+          ent.p.allowCheckpoint = false
+          ent.p.currentCheckpoint = 0
+
+          //Reset Timer
+          ent.p.isTimerActive = false
+          ent.p.startTime = 0
+
+        }
+      }
+    })
+  DispatchSpawn(trigger_1)
 
 }
 
 void
+
 function MovementGym_Hub_Buttons() {
+  // Props Array
+  array < entity > NoCollisionArray;
+
   // Props
-  MapEditor_CreateProp($"mdl/barriers/shooting_range_target_02.rmdl", < 10954, 9688.609, -4222 > , < 0, -179.9993, 0 > , true, 5000, -1, 0.62878)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl", < 10948.88, 9832.81, -4218.2 > , < 90, -179.9991, 0 > , true, 50000, -1, 7.19))
+  MapEditor_CreateProp($"mdl/barriers/shooting_range_target_02.rmdl", < 10953.97, 9923.115, -4222 > , < 0, -179.9993, 0 > , true, 50000, -1, 0.62878)
   MapEditor_CreateProp($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl", < 10522.7, 9907.18, -4293 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/signs/Sign_no_tresspasing.rmdl", < 10949.46, 9776.098, -4223.4 > , < 0, 90.0005, 0 > , true, 5000, -1, 1.9275)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10948.77, 10176.9, -4227.201 > , < -0.0003, -89.9998, 90.0001 > , true, 5000, -1, 3.4856)
+  MapEditor_CreateProp($"mdl/signs/Sign_no_tresspasing.rmdl", < 10949.43, 10010.6, -4223.4 > , < 0, 90.0005, 0 > , true, 5000, -1, 1.9275)
   MapEditor_CreateProp($"mdl/robots/drone_frag/drone_frag_loot.rmdl", < 10896.92, 9462.7, -4274.8 > , < -9.8903, -28.4672, -17.5772 > , true, 5000, -1, 1.2036)
   MapEditor_CreateProp($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl", < 10815, 9462.7, -4274.8 > , < -9.8903, -28.4672, -17.5772 > , true, 5000, -1, 1.2036)
   MapEditor_CreateProp($"mdl/signs/numbers/sign_number_lit_3.rmdl", < 10570.1, 9489, -4221 > , < 0, 90, 0 > , true, 5000, -1, 4.915405)
@@ -386,14 +429,11 @@ function MovementGym_Hub_Buttons() {
   MapEditor_CreateProp($"mdl/industrial/screwdriver_octane.rmdl", < 10517, 10181.96, -4230.4 > , < 0, -180, -90 > , true, 5000, -1, 4.98262)
   MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 10509, 10076.96, -4217.5 > , < 90, 0, 0 > , true, 5000, -1, 1.367478)
   MapEditor_CreateProp($"mdl/props/lifeline_needle/lifeline_needle.rmdl", < 10517.2, 9993.263, -4230.4 > , < 0, -90, -90 > , true, 5000, -1, 6.85924)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10948.77, 10077.51, -4234.939 > , < -44.9999, 89.9997, -89.9997 > , true, 5000, -1, 3.4856)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10948.02, 10093, -4234.939 > , < -44.9999, -90, -89.9997 > , true, 5000, -1, 3.4856)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10948.77, 9997.1, -4234.939 > , < -44.9999, 89.9997, -89.9997 > , true, 5000, -1, 3.4856)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10948.02, 10012.59, -4234.939 > , < -44.9999, -90, -89.9997 > , true, 5000, -1, 3.4856)
-  MapEditor_CreateProp($"mdl/props/kunai/kunai.rmdl", < 10947.38, 10004.85, -4238.148 > , < -90, -179.9995, 0 > , true, 5000, -1, 3.4856)
+
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
 
   // Buttons
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.45, 9688.609, -4296.652 > , < 0, -89.9994, 0 > , "%use% Map 2 by DEAFPS"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 9923.115, -4296.652 > , < 0, -89.9994, 0 > , "%use% Map 2 by DEAFPS"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 19500.3000, -25867.7000, 21940 > , < 0, 90, 0 > )
@@ -401,73 +441,52 @@ function MovementGym_Hub_Buttons() {
       CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
 
       //apply melee
-      if (user.GetPersistentVarAsInt("previousXP") == 1) {
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-      } else if (user.GetPersistentVarAsInt("previousXP") == 2) {
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-      } else if (user.GetPersistentVarAsInt("previousXP") == 3) {
+      switch (user.p.currentMelee) {
+
+      case 1:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-      } else {
+        break
+      case 2:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+        break
+      case 0:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+        break
       }
-
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 2 by DEAFPS")
+      //Start Checkpoint
+      user.p.allowCheckpoint = true
+      user.p.currentCheckpoint = 1
       //Reset Timer
-      int reset = 0
-      user.SetPersistentVar("gen", reset)
-      //Activate Checkpoints
-      int checkpointActive = 1
-      user.SetPersistentVar("netWorth", checkpointActive)
+      user.p.isTimerActive = false
+      user.p.startTime = 0
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.45, 9776.609, -4296.651 > , < 0, -89.9994, 0 > , "%use% Map 1 by Treeree"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 10011.12, -4296.651 > , < 0, -89.9994, 0 > , "%use% Treerees Movement Map 1"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
       Message(user, "Map 1 by TREEREE")
+      //Start Checkpoint
+      user.p.allowCheckpoint = true
+      user.p.currentCheckpoint = 1
       //Reset Timer
-      int reset = 0
-      user.SetPersistentVar("gen", reset)
-      //Activate Checkpoints
-      int checkpointActive = 1
-      user.SetPersistentVar("netWorth", checkpointActive)
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.46, 10085.11, -4296.651 > , < 0, -90.0001, 0 > , "%use% TTV Building 2"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 1744.3380, 4889.6790, -3204 > , < 0, 0, 0 > )
-      Message(user, "TTV Building 2")
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.46, 10168.11, -4296.651 > , < 0, -90.0001, 0 > , "%use% TTV Building 1"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 9501, 5609, -3692 > , < 0, -180, 0 > )
-      Message(user, "TTV Building 1")
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.45, 10005.11, -4296.651 > , < 0, -90.0001, 0 > , "%use% Skyhook TTV"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < -11067, 24486, -3344 > , < 0, 0, 0 > )
-      Message(user, "Skyhook TTV")
+      user.p.isTimerActive = false
+      user.p.startTime = 0
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10158.35, -4296.651 > , < 0, 90.0002, 0 > , "%use% Mantle Jump Practice "), void
     function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-      TeleportFRPlayer(user,< -2789.5070, 2607.6090, 41922.3500 > + tpoffset,< 0, -89.9998, 0 >)
-      Message(user, "Mantle Jump Practice")
+      //EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+      //TeleportFRPlayer(user,< -2789.5070, 2607.6090, 41922.3500 > + tpoffset,< 0, -89.9998, 0 >)
+      Message(user, "Mantle Jump Practice Currently Disabled")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10814.41, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Advanced Tap Strafe into Wall Jump"), void
@@ -520,7 +539,7 @@ function MovementGym_Hub_Buttons() {
       Message(user, "Octane Stim Superglides", "\n  You now recieved Stim Tactical")
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 9907.363, -4296.651 > , < 0, 90.0002, 0 > , "%use% Pathfinder Grapples WIP"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 9907.363, -4296.651 > , < 0, 90.0002, 0 > , "%use% Pathfinder Grapples"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -13561.7000, 26485.9000, -83.2000 > , < 0, 0, 0 > )
@@ -528,3505 +547,3453 @@ function MovementGym_Hub_Buttons() {
       CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
 
       //apply melee
-      if (user.GetPersistentVarAsInt("previousXP") == 1) {
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-      } else if (user.GetPersistentVarAsInt("previousXP") == 2) {
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-      } else if (user.GetPersistentVarAsInt("previousXP") == 3) {
+      switch (user.p.currentMelee) {
+
+      case 1:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-      } else {
+        break
+      case 2:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+        break
+      case 0:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+        break
       }
 
       user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "Pathfinder Grapples", "\n  You now recieved Grapple Tactical")
+      Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10487.06, 9703.41, -4265.34 > , < 0.0003, -89.9997, -90.0002 > , "%use% Change Melee"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 10487.06, 9703.41, -4265.34 > , < 0.0003, -89.9997, -90.0002 > , "%use% Cycle Melee \n"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 10619.83, 9920.367, -3776 > , < 0, 0, 0 > )
-      Message(user, "Dressing Room")
+
+      switch (user.p.currentMelee) {
+      case 0:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        user.p.currentMelee = 1
+        break
+      case 1:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+        user.p.currentMelee = 2
+        break
+      case 2:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+        user.p.currentMelee = 0
+        break
+      }
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 9832.81, -4296.652 > , < 0, -89.9994, 0 > , "%use% Surf Kitsune by DEAFPS"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -38602.13, -10078.1, 21493.38 > , < 0, 0, 0 > )
+
+      Message(user, "Surf Kitsune by DEAFPS")
+
+      switch (user.p.currentMelee) {
+      case 1:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        break
+      case 2:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+        break
+      case 0:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+        break
+      }
+
+      //Start Checkpoint
+      int checkpointInThisTrigger = 3
+      user.p.allowCheckpoint = true
+      //set checkpoint
+      user.p.currentCheckpoint = checkpointInThisTrigger
+
+      //Reset Timer
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+
+      //change realm and lock invis
+      user.RemoveFromAllRealms()
+      user.AddToRealm(checkpointInThisTrigger)
+      user.p.isPlayerInvisAllowed = false
+
+      array < ItemFlavor > characters = GetAllCharacters()
+      CharacterSelect_AssignCharacter(ToEHI(user), characters[8])
+      SetPlayerSettings(user, SURF_SETTINGS)
     })
 
 }
 
-//Init Melee Change Room
+//Init Map1 Treeree
 void
-function MovementGym_Hub_Melee() {
-  // Props Array
-  array < entity > NoClimbArray;
 
+function MovementGym_Map1() {
   // Props
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3415.002 > , < 0, -90.0005, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3671 > , < 0, -90.0005, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3543.001 > , < 0, -90.0005, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3799 > , < 0, -90.0005, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3415.002 > , < 0, 89.9998, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3671 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3543.001 > , < 0, 89.9998, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3799 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3415.002 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3671 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3543.001 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3799 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3415.002 > , < 0, 0.0007, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3671 > , < 0, 0.0007, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3543.001 > , < 0, 0.0007, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3799 > , < 0, 0.0007, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10663.94, 9789.906, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10799.94, 9789.906, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10935.94, 9789.904, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10663.94, 10053.21, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10799.94, 10053.21, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10935.94, 10053.21, -3281 > , < 90, 179.9996, 0 > , true, 5000, -1, 1)
-
-  foreach(entity ent in NoClimbArray) ent.kv.solid = 3
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6602.5, 1156.57, -1344.42 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 1263.954, -1033.681 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 3394.6, 1152.7, -722 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4735.015, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1142.8, -840.8 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3400, 2128, -1032 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 6852.8, 1141.3, -1059.4 > , < 0, -179.9999, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3007.04, 7104.03, -1152.28 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3263.9, 6528.61, -1216.79 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.4, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6396.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.001, 1583.499, -1350.6 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 4100.996, 1220, -1072.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 1944.954, -1138.681 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3394.499, 2599, -569.7487 > , < -90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3394.499, 2086.3, -705.9991 > , < -90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3792.875, 8255.9, -1145.547 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3520, 6656, -1216 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.47, 9087.21, -704.314 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3391.99, 3133, -692.065 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4160, 8448, -960 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -832.3495 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3521.599, 2599, -569.7486 > , < -90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6143.492, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1273.999, -713.4 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1273.999, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3263.11, 7232, -1152.45 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3391.03, 7808.16, -959.811 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4351.04, 8768.27, -639.893 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -968.5999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3136.46, 6528.86, -1216.21 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3793.105, 8384.14, -634.2771 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3520.03, 6528.86, -704.507 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 2560, -640 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7125.999, 1265.3, -802.2 > , < 0, -180, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1281.35 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3584.03, 6913, -1152.04 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3250.5, 6614, -1320.001 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.1, 1164.998, -802.2 > , < 0, 0.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2229.044, -1153.746 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4992.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6797.798, 1021.001, -1299 > , < 0, -179.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1027.75 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274, -840.7999 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 6852.8, 1013.8, -1059.4 > , < 0, -179.9999, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6268.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7125.999, 1265.3, -1242 > , < 0, -180, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.72, 7935.51, -959.176 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274, -713.4 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3136, 7040, -1152 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.401, 1274.001, -713.3999 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6015.492, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.47, 7935.17, -1216.14 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3391.78, 7679.28, -704.654 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3507.8, 1498.599, -713.8999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -899.3495 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7118.001, 1046.5, -1242 > , < 0, 0, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5376.478, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.61, 7679.4, -959.303 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3520.06, 6527.05, -960.295 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4736.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3507.8, 1498.6, -841.3 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3199.89, 7168.82, -1152.57 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3264.81, 2239.84, -1024.56 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3328, 5312, -896 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 1945.024, -1138.638 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3712.12, 6912.99, -1152.04 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -968.5999 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3263.9, 6528.86, -704.499 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4607.015, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3775.99, 1023.02, -704.184 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -644.6495 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391.92, 6528.87, -704.493 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 4352.65, 9024.76, -639.979 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.399, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -1214.35 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.599, 1142.8, -968.0999 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3501.956, 1215.021, -1033.746 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5036.046, 1086.981, -1292.681 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4085.976, 1161.05, -1101.638 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2463.024, -1008.638 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1148.349 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -700 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1530.35 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3264.06, 6527.02, -960.188 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1273.999, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3584.07, 7168.92, -1152.39 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2669.954, -1008.681 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.399, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4544.97, 8895.77, -640.076 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3712, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4223.97, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl", < 5056.67, 9088.02, -703.255 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -968.5999 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3584, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5825.4, 1156.4, -1088 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 1152, -1024 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1223.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3071.56, 7168.77, -1152.46 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6652.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1275.75 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3791.585, 8127.19, -634.4521 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6797.799, 1149.002, -1299 > , < 0, -179.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5140, 9152, -704 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.39, 6528.33, -959.283 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 7041.4, 1156.4, -1216 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3501.976, 1151.05, -1033.638 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.95, 7104.01, -1407.68 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -645.6495 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -572.5999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6863.3, 1269.301, -1242 > , < 0, 90.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl", < 5055.76, 9215.03, -832.087 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3792.765, 8384.66, -634.563 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3386.05, 2558.551, -879.4496 > , < 90, 89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3840, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1096 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5119.93, 959.139, -1344.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.24, 6528.31, -1087.43 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3417.89, -651.2494 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.1, 1274.399, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1273.999, -713.4 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.46, 5248.42, -906.8265 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274, -713.3998 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6735.3, 1269.3, -1242 > , < 0, 90.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.06, 2687.03, -832.231 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3071.95, -759.5032 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl", < 3455.22, 6528.52, -1216.33 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.6, 1142.8, -1223 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 3648.58, -653.9962 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6721.4, 1156.4, -1088 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3392.66, 7936.75, -704.055 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/signs/desertlands_city_newdawn_sign_01.rmdl", < 3392.83, 7168.56, -1151.96 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.12, 4416.42, -788.2274 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.46, 9151.18, -704.194 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3386.8, 2244, -959.212 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.53, 7679.12, -1087.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3519.92, 6528.49, -1216.87 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_train_station_sign_04.rmdl", < 3391.16, 6528.55, -1216.01 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3263.11, 7360, -1152.45 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.4, -968.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391, 7679.99, -704.095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 2943.73, -767.887 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7253.999, 1265.3, -802.2 > , < 0, -180, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.67, 7679.38, -1216.71 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 6848.68, 1284.93, -1472.44 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3793.105, 8255.89, -634.287 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4416, 1152, -1280 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7118.001, 1046.5, -802.2 > , < 0, 0, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4927.7, 1152.4, -1280 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -577.6495 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4095.97, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3386.049, 2431.45, -879.4496 > , < 90, 89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3791.125, 8256.11, -890.1671 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3521.599, 2086.3, -705.999 > , < -90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -1087.25 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2463.044, -1008.746 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/colony/antenna_03_colony.rmdl", < 3392.85, 6527.65, -704.392 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 2943.73, -759.8892 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4160.01, 1280.66, -704.753 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6879.298, 1042.5, -802.2 > , < 0, -89.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.399, -968.1001 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6863.3, 1269.3, -802.2 > , < 0, 90.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5183.98, 9215, -959.98 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6524.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3904, 1280.65, -704.758 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6657.28, 1027.5, -1088.42 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4990.984, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 3519.67, 1152.7, -722 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4862.984, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1273.999, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -832.3495 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3712, 7744, -1024 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1282.35 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6879.298, 1042.5, -1242 > , < 0, -89.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085, 1274.4, -968.0999 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -772.0496 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3264.97, 2239.78, -895.903 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -1087.25 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3264, 6656, -1216 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4672, 1152, -1280 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4351.015, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3377.6, 6614, -1320.001 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl", < 5055.13, 9151.86, -704.463 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1154.25 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -773.0496 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -705.0496 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -959.7496 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.401, 1583.5, -841.3 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4351, 8896.07, -639.973 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.399, -968.1001 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3071.94, 6911.05, -1152.31 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5248.478, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5183.85, 9088.65, -960.748 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.6, 1142.799, -1350.1 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6990.001, 1046.5, -802.2 > , < 0, 0, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391.01, 7808.06, -704.096 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2228.954, -1153.681 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 1945.044, -1138.746 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl", < 3135, 6655.96, -1216.06 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.15, 6481.15, -1461.742 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3135.8, 6528.85, -704.486 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3647.16, 6528.18, -1216.51 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3776.04, 1280.65, -704.763 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.6, -1096 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3520.79, 7360.04, -1152.61 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3712.22, 7168.9, -1152.38 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 7040, -1152 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1021.05 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3776.85, 7104.19, -1152.49 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1223.5 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6721.4, 1156.4, -1344 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3199.91, 6913, -1151.99 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.62, 7935.36, -1087.33 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.599, 1142.8, -1095.5 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5035.976, 1151.05, -1292.638 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3502.046, 1086.981, -1033.681 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3417.89, -643.2516 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.399, -968.1001 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1273.999, -713.4 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3903.96, 1023.02, -704.196 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7253.999, 1265.301, -1242 > , < 0, -180, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -577.6495 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5759.522, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3546.11, -642.8655 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1155.25 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3520.79, 7232.1, -1152.6 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2229.024, -1153.638 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -968.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4351.01, 8896.15, -896.07 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_train_track_sign_01.rmdl", < 4352.05, 8769, -640.075 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.72, 6528.15, -831.05 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3071.95, -768.273 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.52, 9215.23, -704.42 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6657.5, 1283.43, -1344.21 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -841.3 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1096 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.6, -968.5999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -893.6495 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1292.998, -1242 > , < 0, 0.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5120.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3648.46, 6783.39, -1216.64 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -827.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3776.82, 6975.75, -1152.51 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.76, 7679.54, -831.143 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1403.25 > , < 0, 180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 3648.49, -653.9312 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5395, 9152, -704 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2670.044, -1008.746 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 4101.005, 1091.77, -1071.99 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.999, 1142.801, -713.3999 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6913.4, 1156.4, -1472 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1273.999, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_sign_01.rmdl", < 3400.17, 6520.91, -1212.38 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4287.95, 1023.04, -704.286 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.08, 6528.39, -1216.08 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3007.05, 6976.11, -1152.31 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1095 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.2, 4416.58, -788.2633 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_train_station_sign_04.rmdl", < 5056.64, 9152.76, -703.901 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.599, -1223.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.16, 6481.13, -1461.642 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 7296, -1152 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7007.298, 1042.5, -1242 > , < 0, -89.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1292.998, -802.2 > , < 0, 0.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl", < 5399.947, 9156.598, -704.057 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4672, 9152, -832 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4195.9, 1152, -1089.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274, -713.4 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6780.478, 1152.98, -704.193 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.84, 7935.71, -831.056 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -954.6 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3648.02, 1023.3, -704.71 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl", < 5312.19, 9088.95, -832.242 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3546.11, -651.6354 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.22, 6528.43, -1216.44 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3250.5, 2086.3, -1015.7 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -713.8999 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1350.6 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.35, 5248.58, -907.0615 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3520.97, 2560.06, -896.235 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4544.94, 8896.05, -896.35 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.401, 1274.001, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4032, 1280.65, -704.756 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6337.4, 1156.4, -1088 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 1264.044, -1033.746 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5503.522, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 1264.024, -1033.638 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.4, 1583.501, -713.8999 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -1096 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -900.3495 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.32, 6528.34, -959.35 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5035.956, 1215.021, -1292.746 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3968, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3136.92, 6784.01, -1216.39 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.08, 6481, -1461.712 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.92, 7808.22, -1216.31 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -841.3 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5887.522, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1273.999, -840.8 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -713.8999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2670.024, -1008.638 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl", < 3648.97, 6656.02, -1216.23 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7007.298, 1042.5, -802.2 > , < 0, -89.9998, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.4, -1095.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.4, -968.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -967.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.55, 6528.22, -831.134 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3263.18, 5248.41, -907.1565 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4086.046, 1096.981, -1101.681 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3377.6, 2086.3, -1015.7 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1164.998, -1242 > , < 0, 0.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -445.3 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6735.299, 1269.3, -802.2 > , < 0, 90.0002, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -1214.35 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6990.001, 1046.5, -1242 > , < 0, 0, 90 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4864.507, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5631.522, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -1223.5 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4159.94, 1023.02, -704.21 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.18, 4416.54, -788.2493 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4351.07, 8895.99, -1152.36 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4085.956, 1225.021, -1101.746 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4479.015, 1152.98, -704.201 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 4480, -768 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.199, 1498.6, -1350.6 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4031.94, 1023.02, -704.21 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3520.92, 2239.66, -1024.2 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4287, 1151.95, -1343.99 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3519.85, 1280.64, -704.754 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038.4, -712.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.13, 6528.47, -1087.87 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4746.999, 1274.399, -1350.1 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1026.75 > , < 0, 179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5888.02, 960.986, -1344.17 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1223 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1349.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2462.954, -1008.681 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1222.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3648, 7040, -1152 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -705.0496 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038.4, -840.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1350.6 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -317.8999 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3648, 1280.64, -704.77 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -959.7496 > , < 0, -179.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 6849.98, 1027.849, -1472.6 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392.58, 3712.07, -643.0634 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 3648.56, -653.8882 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -1098 > , < 0, 0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4452, 1368, -1089.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4452, 944.0005, -1089.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -953.9996 > , < 0.0003, 179.9998, 180 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -973.9999 > , < 0, 0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -829.9999 > , < 0.0003, 179.9998, 180 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -704 > , < 0.0003, 179.9998, 180 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -847.9999 > , < 0, 0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3122.5, 6614, -1320.001 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3505.1, 6614, -1320.001 > , < 90, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -767.7 > , < 0, 180, 0 > , true, 5000, -1, 1)
 
   // Buttons
-  AddCallback_OnUseEntity(CreateFRButton( < 10886.39, 9949.203, -3758.34 > , < 0.0003, 90, -90.0002 > , "%use% Get Shadow Hands"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 5500.9, 9208.609, -688.353 > , < 0, -89.9998, 0 > , "%use% Back to start"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "You have now Shadow Hands")
-      int hasShadowhands = 1
-      user.SetPersistentVar("previousXP", hasShadowhands)
+      TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+      user.p.currentCheckpoint = 1
 
-      //give meele after pressing
-      TakeAllWeapons(user)
-      user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-      user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10886.4, 10097.2, -3758.34 > , < 0.0003, 90, -90.0002 > , "%use% Get Empty Hands"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 5500.9, 9096.609, -688.353 > , < 0, -89.9998, 0 > , "%use% Back to Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "You have now Empty Hands")
-      int hasEmptyhands = 2
-      user.SetPersistentVar("previousXP", hasEmptyhands)
-
-      //give meele after pressing
-      TakeAllWeapons(user)
-      user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-      user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+      user.p.allowCheckpoint = false
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10886.39, 10022.7, -3758.34 > , < 0.0003, 90, -90.0002 > , "%use% Get Bolo Sword"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 4663.407, 1258.493, -1263.651 > , < 0, 0, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 4199.391, 1258.493, -1074.651 > , < 0, 0, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 1146.391, -1008.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 2094.391, -1016.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 3761.391, -688.6514 > , < 0, 89.9998, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      int reset = 0
+      if (user.GetPersistentVarAsInt("gen") == reset) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 3231.9000, 6983.4000, -1132.3000 > , < 0, 60, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 3149.507, 7037.391, -1136.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 4658.391, 9266.492, -816.6514 > , < 0, 0, 0 > , "%use% Skip"), void
+    function (entity panel, entity user, int input) {
+      if (user.p.isTimerActive == false) {
+        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
+      } else {
+        Message(user, "Cant Skip with Timer Running")
+      }
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 6900.8, 1258.493, -1457 > , < 0, 0, 0 > , "%use% Back to Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "You have now Bolo Sword")
-      int hasWattsonhands = 3
-      user.SetPersistentVar("previousXP", hasWattsonhands)
-
-      //give meele after pressing
-      TakeAllWeapons(user)
-      user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-      user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+      int reset = 0
+      user.SetPersistentVar("gen", reset)
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10506.83, 9923.104, -3758.34 > , < 0.0003, -89.9997, -90.0002 > , "%use% Back to Hub"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 6902.018, 1045, -1457 > , < 0, 179.9997, 0 > , "%use% Start Timer"), void
+    function (entity panel, entity user, int input) {
+      //Start Timer Button
+      user.p.isTimerActive = true
+      user.p.startTime = floor(Time()).tointeger()
+      Message(user, "Timer Started!")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 5330, 9154.7, -688.353 > , < 0, -89.9998, 0 > , "%use% Stop Timer"), void
+    function (entity panel, entity user, int input) {
+      //Stop timer Button
+      if (user.p.isTimerActive == true) {
+        user.p.finalTime = floor(Time()).tointeger() - user.p.startTime
+
+        int seconds = user.p.finalTime
+        if (seconds > 59) {
+
+          //Whacky conversion
+          int minutes = seconds / 60
+          int realseconds = seconds - (minutes * 60)
+
+          //Display player Time
+          Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map1"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+
+        } else {
+
+          //Display player Time
+          Message(user, "Your Final Time: " + seconds + " seconds")
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map1"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+        }
+      }
+    })
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < 4773, 4876, -1777 > , < 0, 0, 0 > , 12633, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //Big ahh trigger
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          if (ent.p.allowCheckpoint == true) {
+            switch (ent.p.currentCheckpoint) {
+              // Checkpoint 1
+            case "1":
+              ent.SetOrigin( < 6767.9240, 1149.2000, -1025.2000 > )
+              ent.SetAngles( < 0, 180, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 2
+            case "2":
+              ent.SetOrigin( < 4217.1000, 1149.1000, -1074.6510 > )
+              ent.SetAngles( < 0, 180, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 3
+            case "3":
+              ent.SetOrigin( < 3380, 1139.7720, -1008 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 4
+            case "4":
+              ent.SetOrigin( < 3380, 1966, -1008 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 5
+            case "5":
+              ent.SetOrigin( < 3380.2, 3714, -598.1504 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 6
+            case "6":
+              ent.SetOrigin( < 3380, 4406, -753.9995 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 7
+            case "7":
+              ent.SetOrigin( < 3348, 5222, -882.9995 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 8
+            case "8":
+              ent.SetOrigin( < 3250.5000, 6614, -1218.0010 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 9
+            case "9":
+              ent.SetOrigin( < 3381, 7335, -1137 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 10
+            case "10":
+              ent.SetOrigin( < 3723, 7739, -1006 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 11
+            case "11":
+              ent.SetOrigin( < 4162, 8476, -942.9995 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 12
+            case "12":
+              ent.SetOrigin( < 4658, 9149, -811.9995 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+            }
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+  entity trigger_1 = MapEditor_CreateTrigger( < 4156.423, 1163.8, -1062.494 > , < 0, 0, 0 > , 129.9, 29.41697, false)
+  trigger_1.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 2
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_1)
+  entity trigger_2 = MapEditor_CreateTrigger( < 3380.2, 1163.8, -993.7 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_2.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 3
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_2)
+  entity trigger_3 = MapEditor_CreateTrigger( < 3380.2, 2079.9, -993.7 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_3.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 4
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_3)
+  entity trigger_4 = MapEditor_CreateTrigger( < 6351.3, 1163.8, -1056 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_4.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 1
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_4)
+  entity trigger_5 = MapEditor_CreateTrigger( < 3380.2, 3714, -609.0504 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_5.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 5
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_5)
+  entity trigger_6 = MapEditor_CreateTrigger( < 3380.2, 6620.1, -1295.6 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_6.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 8
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_6)
+  entity trigger_7 = MapEditor_CreateTrigger( < 4163, 8445.127, -927.2 > , < 0, 0, 0 > , 122.9, 29.41697, false)
+  trigger_7.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 11
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_7)
+  entity trigger_8 = MapEditor_CreateTrigger( < 4686.523, 9145.026, -801 > , < 0, 0, 0 > , 114.6, 29.41697, false)
+  trigger_8.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 12
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_8)
+  entity trigger_9 = MapEditor_CreateTrigger( < 3396.223, 4484.626, -732.194 > , < 0, 0, 0 > , 107, 29.41697, false)
+  trigger_9.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 6
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_9)
+  entity trigger_10 = MapEditor_CreateTrigger( < 3327.823, 5313.026, -861.194 > , < 0, 0, 0 > , 107, 29.41697, false)
+  trigger_10.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 7
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_10)
+  entity trigger_11 = MapEditor_CreateTrigger( < 3380.2, 7269.026, -1109.894 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_11.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 9
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_11)
+  entity trigger_12 = MapEditor_CreateTrigger( < 3712.023, 7743.626, -980.194 > , < 0, 0, 0 > , 108.3, 29.41697, false)
+  trigger_12.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 10
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_12)
+
+}
+
+//Init Map2 DEAFPS
+void
+
+function MovementGym_Map2() {
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleNoClimbArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  ClipArray.append(MapEditor_CreateProp($"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20315.99, 23133.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22992.17, -26731.81, 22705.27 > , < 0, 0, -44.9999 > , true, 5000, -1, 1)
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/barriers/shooting_range_target_02.rmdl", < 29469.7, -20272.5, 23084.2 > , < 0, 179.9997, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_fold_sign_01.rmdl", < 25123.22, -20726.25, 23003.15 > , < 0, 30.4986, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.7, -20024.7, 24097.4 > , < 0, 0, 89.9998 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 25360.22, -22557.35, 22771.05 > , < -0.0001, -89.9999, 59.9999 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 22577.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 22577.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 21971.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 21971.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 22577.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 21971.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 22577.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.53, 21971.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 23183.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 23183.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 23183.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 23183.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 21971.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 22577.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 23183.15 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 23183.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 23183.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 23183.15 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 23183.15 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24662.32, -26441.81, 22978.1 > , < -90, -89.9996, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24662.32, -26441.81, 22372.1 > , < -90, -89.9996, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 23183.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 22577.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 23183.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 22577.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 22577.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 23183.15 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29300.97, -20487.21, 23183.15 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -20241.41, 23183.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -19684.41, 23183.15 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -19684.41, 23781.77 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -20241.41, 23781.77 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29300.97, -20487.21, 23642.85 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19581.75, 23183.15 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 28969.77, -19829.41, 23781.77 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23183.15 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23781.77 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 22405.82 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 22405.82 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 22405.82 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 22405.82 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 23960.48 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 23960.48 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 23960.48 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 23960.48 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 23960.48 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 23960.48 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 23960.48 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 23960.48 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 23960.48 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 23960.48 > , < -90, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 23960.48 > , < -90, 179.9999, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 23960.48 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23183.15 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 23183.15 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 23183.15 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 23183.15 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 23183.15 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19581.75, 23183.15 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 23960.48 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 23960.48 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 23960.48 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 23960.48 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 23960.48 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 23960.48 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 24737.81 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 24737.81 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 24737.81 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 24737.81 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 24737.81 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 24737.81 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 25515.13 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 25515.13 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 25515.13 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 25515.13 > , < -90, -179.9994, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 25515.13 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 25515.13 > , < -90, 0.0002, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 24408.87 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20510.76, 24408.87 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20510.76, 24408.87 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 24408.87 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 24408.87 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 24408.87 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 25186.2 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 25186.2 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 25186.2 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 25186.2 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 25186.2 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 25186.2 > , < -90, 0.0009, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 25963.53 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 25963.53 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 25963.53 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 25963.53 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 25963.53 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 25963.53 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 26740.85 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 26740.85 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 26740.85 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 26740.85 > , < -90, 0.0009, 0 > , false, 5000, -1, 1.000001))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 26740.85 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 26740.85 > , < -90, -179.9994, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29189.12, -19434.85, 25263.85 > , < -90, -89.9996, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 29189.12, -19434.85, 26000.85 > , < -90, -89.9996, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 22405.82 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 23110.52 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 23887.85 > , < -90, -90.0003, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 22405.82 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 23183.15 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 23960.48 > , < -90, 90.0001, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_fold_sign_01.rmdl", < 22519.62, -26464.25, 22725.45 > , < -0.3992, 146.9825, -9.3797 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29001.97, -20490.35, 23058.24 > , < -0.0001, -179.9997, 46.6977 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl", < 24797.22, -26778.81, 22722.07 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 23786, -26468, 22718.2 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21671.25, 22811.38 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22145.41, 22694.77 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21670.96, 22803.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -21171.81, 22990.79 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21361.08, 22922.96 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -21609.91, 22879.31 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -22084.36, 22770.97 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21232.86, 22914.58 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21799.47, 22802.99 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22273.63, 22703.15 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21799.47, 22810.99 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21361.08, 22914.96 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22145.41, 22703.54 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21232.86, 22923.35 > , < 0, -90, 179.9997 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22273.63, 22695.15 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25241.94, -22454.31, 22586.77 > , < 0, -90, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25154.77, -25036.41, 22710.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25199.26, -22411.61, 22586.77 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25155.17, -22417.61, 22704.31 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25173.74, -25089.66, 22713.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25174.14, -22470.86, 22707.31 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25247.66, -22503.29, 22704.31 > , < 0, 0.0002, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25166.94, -25078.46, 22586.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25228.7, -22450.05, 22707.31 > , < 0, 0.0002, 0 > , true, 5000, -1, 1.82))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25203.54, -22437.01, 22700.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25166.64, -22454.35, 22586.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25152.27, -25123.71, 22708.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25152.67, -22504.91, 22702.31 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25250.17, -22415.99, 22702.31 > , < 0, 0.0002, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/lamps/light_parking_post.rmdl", < 25163.54, -25091.31, 22669.76 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25199.26, -22509.31, 22586.77 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25203.54, -22476.61, 22700.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25162.54, -25756.26, 22588.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25169.34, -25767.46, 22715.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25161.77, -25817.41, 22712.77 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25150.37, -25714.21, 22712.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25147.87, -25801.51, 22710.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25237.84, -25977.51, 22588.77 > , < 0, -90, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25243.17, -25800.11, 22712.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25161.77, -26038.71, 22712.77 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25169.34, -25988.76, 22715.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25811.21, 22588.77 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25934.82, 22588.77 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25231.04, -25966.31, 22715.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25713.51, 22588.77 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.77, -25938.31, 22710.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.67, -25813.11, 22710.77 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25237.84, -25756.21, 22588.77 > , < 0, -90, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25150.37, -25935.51, 22712.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25190.17, -25923.91, 22715.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25231.04, -25745.01, 22715.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25147.87, -26022.81, 22710.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -26032.51, 22588.77 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25190.17, -25702.61, 22715.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25243.17, -26021.41, 22712.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.77, -25717.01, 22710.77 > , < 0, 0, 0 > , true, 5000, -1, 1.82))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25199.44, -25744.62, 22702.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.67, -26034.41, 22710.77 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25162.54, -25977.56, 22588.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25199.44, -25995.02, 22702.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/barriers/concrete/concrete_barrier_fence.rmdl", < 24977.97, -26451.41, 22714.27 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20378.1, -26497.46, 22737.07 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20399.57, -26463.41, 22742.07 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 20392.77, -26452.21, 22615.07 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20380.6, -26410.16, 22739.07 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 25044.16, -26439.8, 22716.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 23085.7, -26713.11, 22720.57 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/lamps/light_parking_post.rmdl", < 20386.87, -26450.81, 22673.37 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25751.3, 22091.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 19678.7, -25848, 21876.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22364.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 19496.5, -24950.7, 22514.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 19496.5, -24950.7, 21877.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 19496.5, -24950.7, 22298.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22364.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22364.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22364.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22215.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22215.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22215.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22215.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22066.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22066.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22066.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22066.5 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 21916.8 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 21916.8 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 21916.8 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 21916.8 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 21767.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 21767.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 21767.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 21767.9 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 19496.5, -24950.7, 22091.8 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25623, 22091.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25581.3, 22091.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25751.3, 22305.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25623, 22305.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25501.8, 22428.7 > , < -90, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25501.8, 22515.4 > , < -90, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25633.2, 22515.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25761.5, 22515.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19326.7, -25762.2, 22515.4 > , < -90, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19326.7, -25762.2, 22400 > , < -90, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25761.5, 22721.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25634.1, 22721.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25585.1, 22721.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22514 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22514 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22514 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22514 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22666.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22666.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22666.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22666.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -25380.58, 22288.46 > , < 0, 0, 14.417 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -25380.58, 22288.46 > , < 0, 0, 14.417 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -25138.7, 22320.87 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -25138.7, 22320.87 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -24905, 22320.87 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -24905, 22320.87 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 23085.7, -26440.63, 22722.8 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 24234.7, -26440.63, 22722.8 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 24233.77, -26713.61, 22721.27 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.93, -26531.76, 22691.17 > , < 0, -37.2341, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.93, -26531.75, 22563.77 > , < 0, -37.2341, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.61, -26531.51, 22818.47 > , < 0, -37.2341, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25875.71, 22722.77 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -26002.31, 22722.96 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 19330.77, -26066.81, 22807.67 > , < 0.0004, -179.9997, -89.9998 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < 19822.7, -26790, 22722.8 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 24916.77, -26439.81, 22716.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/barriers/concrete/concrete_barrier_fence.rmdl", < 24850.87, -26451.51, 22714.27 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25837.39, -20355.2, 22881.77 > , < 0, -90, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25708.49, -20315.26, 23005.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25739.69, -20355.2, 22881.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25734.67, -20285.38, 23003.77 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25251.59, -20741, 23005.77 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25281.47, -20767.18, 23003.77 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25168.97, -20827.2, 22881.77 > , < 0, 90, 0 > , true, 5000, -1, 0.7657143)
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 22980.56 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25834.59, -20291.38, 23005.77 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25778.75, -20355.48, 22994.56 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 25258.47, -20689.18, 23001.36 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25805.9, -20391.08, 23008.77 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25754.75, -20429.08, 23005.77 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25275.47, -20867.1, 23005.77 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25783.44, -20329.38, 23008.77 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25207.67, -20816.08, 22994.56 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25702.49, -20415.18, 23003.77 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25794.69, -20397.88, 22881.77 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25211.65, -20772.21, 22881.77 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25151.67, -20735, 23003.77 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25237.47, -20815.96, 23008.77 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25137.77, -20787.26, 23005.77 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25131.77, -20887.18, 23003.77 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 22980.56 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23122.96 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23122.96 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 22980.56 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 22980.56 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < 25223.67, -20303.38, 23103.96 > , < 0, 0, 180 > , true, 5000, -1, 2.8878)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25854.67, -20435.08, 23003.77 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25211.65, -20869.9, 22881.77 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25794.65, -20322.58, 22881.77 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25244.27, -20827.16, 22881.77 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25175.77, -20838.41, 23008.77 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23122.96 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23122.96 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25207.67, -20938.81, 22881.27 > , < 0, 0, 89.9998 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23265.77 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23265.77 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23265.77 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23265.77 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23408.77 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23408.77 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23408.77 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23408.77 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26365.17, -20329.88, 23001.53 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 26376.38, -20323.09, 22874.53 > , < 0, 0.0002, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29071.03, -20322.78, 22874.53 > , < 0, 0.0002, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29071.07, -20398.08, 22874.53 > , < 0, -179.9998, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26418.42, -20310.91, 22998.53 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29113.77, -20355.4, 22874.53 > , < 0, -89.9998, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29054.52, -20330.28, 22995.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29022.09, -20403.8, 22992.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29107.77, -20311.31, 22992.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26331.12, -20308.41, 22996.53 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29020.47, -20308.81, 22990.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29109.39, -20406.31, 22990.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29075.33, -20384.84, 22995.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29088.37, -20359.68, 22988.23 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/lamps/light_parking_post.rmdl", < 26363.52, -20319.68, 22957.53 > , < 0, -89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29016.07, -20355.4, 22874.53 > , < 0, 90.0002, 0 > , true, 5000, -1, 0.7657141)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29048.77, -20359.68, 22988.23 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29348.32, -20322.78, 22874.53 > , < 0, 0.0002, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29348.37, -20398.08, 22874.53 > , < 0, -179.9998, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29331.82, -20330.28, 22995.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29391.06, -20355.4, 22874.53 > , < 0, -89.9998, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29299.38, -20403.8, 22992.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29385.07, -20311.31, 22992.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29386.68, -20406.31, 22990.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29297.77, -20308.81, 22990.08 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29352.63, -20384.84, 22995.08 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29365.66, -20359.68, 22988.23 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29293.37, -20355.4, 22874.53 > , < 0, 90.0002, 0 > , true, 5000, -1, 0.7657141)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29326.06, -20359.68, 22988.23 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29213.77, -20403.8, 22987.67 > , < 0, -89.9996, 0 > , true, 5000, -1, 1.82))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29219.67, -20330.28, 22990.07 > , < 0, 90.0003, 0 > , true, 5000, -1, 1.82))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 28935.07, -20359.68, 22873.07 > , < -0.0002, -90, 89.9998 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29286.87, -20090.59, 23073.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29415.77, -20130.53, 23197.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29384.56, -20090.59, 23073.77 > , < 0, -90.0003, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29289.67, -20154.41, 23197.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29389.59, -20160.41, 23195.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29318.36, -20054.71, 23200.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29369.52, -20016.71, 23197.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29421.77, -20030.61, 23195.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29340.82, -20116.41, 23200.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29345.51, -20090.31, 23186.56 > , < 0, 89.9997, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29269.59, -20010.71, 23195.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.57, -20047.91, 23073.77 > , < 0, -0.0003, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.61, -20116.61, 23073.77 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29345.51, -20202.91, 23072.46 > , < -90, 89.9997, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29286.87, -20085.09, 22977.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 0.7657143)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29384.56, -20085.09, 22977.77 > , < 0, -90.0003, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.57, -20042.41, 22977.77 > , < 0, -0.0003, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.61, -20117.71, 22977.77 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22691.17 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22563.77 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.43, -26189.41, 22818.47 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 23069.46 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22942.06 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.43, -26189.41, 23196.77 > , < 0, -179.9992, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29134.04, -20090.59, 23073.77 > , < 0, -90.0003, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29039.15, -20154.41, 23197.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29036.35, -20085.09, 22977.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 0.7657143)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29134.04, -20085.09, 22977.77 > , < 0, -90.0003, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29079.05, -20042.41, 22977.77 > , < 0, -0.0003, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29036.35, -20090.59, 23073.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 0.7657143)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29165.25, -20130.53, 23197.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29090.3, -20116.41, 23200.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29094.99, -20090.31, 23186.56 > , < 0, 89.9997, 0 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29019.07, -20010.71, 23195.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29079.05, -20047.91, 23073.77 > , < 0, -0.0003, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29139.07, -20160.41, 23195.77 > , < 0, -90.0002, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29067.84, -20054.71, 23200.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29119, -20016.71, 23197.77 > , < 0, 89.9997, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29171.25, -20030.61, 23195.77 > , < 0, -0.0002, 0 > , true, 5000, -1, 1.3183))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29094.99, -20202.91, 23072.46 > , < -90, 89.9997, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23684.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23684.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23236.87 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19776.71, 24041.47 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23535.77 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23535.77 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 29221.67, -19142.31, 23834.77 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23386.57 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23236.87 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23087.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23087.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23087.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29051.87, -19953.81, 23835.47 > , < -90, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23386.57 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23986.47 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19772.91, 23411.27 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19825.71, 24041.27 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23986.47 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23986.47 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19814.61, 23411.57 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24134.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19572.51, 23605.17 > , < 0, 0, 12.1251 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19330.31, 23631.96 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23236.87 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23834.07 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24134.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19942.91, 23411.57 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23684.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23535.77 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29403.87, -20039.61, 23196.97 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23386.57 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 29221.67, -19142.31, 23411.87 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19814.61, 23625.17 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23684.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 29221.67, -19142.31, 23618.27 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19693.41, 23748.77 > , < -90, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19953.11, 23835.77 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29051.87, -19953.81, 23720.07 > , < -90, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19953.11, 24041.27 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23834.07 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23236.87 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23834.07 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24134.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24134.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19942.91, 23625.17 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19572.51, 23605.17 > , < 0, 0, 12.1251 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23087.97 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23535.77 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23386.57 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23834.07 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19096.61, 23631.96 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19693.41, 23835.47 > , < -90, -90, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19096.61, 23631.96 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19824.81, 23835.77 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23986.47 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19330.31, 23631.96 > , < 0, 0, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -20067.32, 24042.83 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -20193.92, 24043.03 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -20877.31, 24482.43 > , < 0, -179.9997, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20140.3, 24888.19 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20013.7, 24888.39 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24442.11 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24442.11 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 23994.01 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20430.91, 24886.83 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24292.91 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24292.91 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 23994.01 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29398.87, -20253.81, 24680.83 > , < -90, -89.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29082.56, -20294.21, 24741.17 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24741.17 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24888.96 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -20877.31, 24482.43 > , < 0, -179.9997, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 23994.01 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24591.21 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24888.96 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20264.71, 24256.93 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24442.11 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24292.91 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29052.07, -20168.01, 24042.96 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24143.71 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20434.71, 24256.63 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20381.91, 24886.63 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24143.71 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24741.17 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 29229.17, -21065.31, 24257.23 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20393.01, 24470.53 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29330.56, -20294.21, 24442.11 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 29229.17, -21065.31, 24463.63 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20514.21, 24594.13 > , < -90, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20254.51, 24681.13 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29398.87, -20253.81, 24565.43 > , < -90, -89.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24591.21 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 23994.01 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24591.21 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24888.96 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24888.96 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20393.01, 24256.93 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -20638.51, 24453.87 > , < -0.0001, -179.9997, 12.9107 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20254.51, 24886.63 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 29229.17, -21065.31, 24680.13 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24143.71 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20514.21, 24680.83 > , < -90, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20382.81, 24681.13 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24741.17 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20264.71, 24470.53 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -20638.51, 24453.87 > , < -0.0001, -179.9997, 12.9107 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -21111.01, 24482.43 > , < 0, -179.9997, 0 > , false, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -21111.01, 24482.43 > , < 0, -179.9997, 0 > , false, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24292.91 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24143.71 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24591.21 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29052.07, -19421.63, 24888.37 > , < 0, 90.0003, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24284.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24284.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24284.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24284.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24434.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24434.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24434.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24434.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24584.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24584.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24584.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24584.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24734.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24734.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24734.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24734.27 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < 29480.4, -20345.19, 23208.07 > , < -59.9999, 89.9996, 0.0003 > , true, 5000, -1, 2.39)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.61, -26531.51, 22946.17 > , < 0, -37.2341, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25399.97, -22454.31, 22710.17 > , < 0, 90.0003, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25390.87, -22399.31, 22691.77 > , < 0, 90.0003, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25384.37, -22518.61, 22674.96 > , < 0, 90.0003, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25390.87, -22460.11, 22588.46 > , < 0, 90.0003, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25399.97, -22454.31, 22664.17 > , < 0, 90.0003, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 19683.67, -26210.81, 22807.67 > , < 0.0004, 0.0006, -89.9998 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 24967.9, -26762.3, 22718.2 > , < 0, 89.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.7, -20021.1, 24097.4 > , < 0, 0, 89.9998 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29340.92, -20532.81, 23004.37 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29276.62, -20517.21, 22969.17 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29335.12, -20523.71, 22882.67 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29395.92, -20523.71, 22985.97 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29340.92, -20532.81, 22958.37 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29154.67, -20116.61, 23073.77 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29052.37, -20116.61, 23073.77 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29052.37, -20116.61, 23008.17 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29154.67, -20116.61, 22997.77 > , < 0, 179.9997, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29148.97, -20532.81, 22958.37 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29148.97, -20532.81, 23004.37 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29084.67, -20517.21, 22969.17 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29143.17, -20523.71, 22882.67 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29203.97, -20523.71, 22985.97 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20246.26, 23004.37 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29509.56, -20310.56, 22969.17 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20252.06, 22882.67 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20191.26, 22985.97 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20246.26, 22958.37 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20438.2, 22958.37 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29537.47, -20438.2, 23004.37 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29509.56, -20502.5, 22969.17 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29527.67, -20383.21, 22985.97 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20444.01, 22882.67 > , < 0, 90.0004, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29442.47, -20469.31, 22974.27 > , < 51.1379, -131.4282, 4.6225 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 23005.87, -26791.71, 22720.57 > , < 0, -90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22881.87, -26791.71, 22720.57 > , < 0, -90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22757.87, -26791.71, 22720.57 > , < 0, -90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22633.87, -26791.71, 22720.57 > , < 0, -90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22800.17, -26731.81, 22705.27 > , < 0, 0, -44.9999 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22633.87, -26442, 22720.57 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22647.57, -26501.91, 22705.27 > , < 0, 180, -44.9999 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22757.87, -26442, 22720.57 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 22881.86, -26442.01, 22720.57 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 23005.87, -26442, 22720.57 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22839.57, -26501.91, 22705.27 > , < 0, 180, -44.9999 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 28923.27, -20490.33, 23058.24 > , < -0.0001, -179.9997, 46.6977 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29005.97, -20517.21, 22969.17 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29070.27, -20532.81, 23004.37 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.35)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29064.47, -20523.71, 22882.67 > , < 0, 0.0005, 0 > , true, 5000, -1, 0.58)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24988.87, -21913.11, 22854.39 > , < 90, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22854.39 > , < 90, -179.9998, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24988.87, -21913.11, 22727.77 > , < 90, -0.0002, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22727.77 > , < 90, -179.9998, 0 > , true, 5000, -1, 1)
+  ClipArray.append(MapEditor_CreateProp($"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20291.01, 23133.46 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoGrappleNoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29442.27, -20467.31, 22972.77 > , < 51.1379, -131.4282, 4.6225 > , true, 5000, -1, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+  foreach(entity ent in NoClimbArray) ent.kv.solid = 3
+  foreach(entity ent in NoGrappleNoClimbArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 3
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
+  }
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+  // VerticalZipLines
+  MapEditor_CreateZiplineFromUnity( < 19501.2, -25873.8, 22714.8 > , < 0, 90.0001, 0 > , < 19501.2, -25873.8, 22164.7 > , < 0, 90.0001, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+  MapEditor_CreateZiplineFromUnity( < 29226.37, -20065.41, 24034.86 > , < 0, 90.0001, 0 > , < 29226.37, -20065.41, 23484.76 > , < 0, 90.0001, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+  MapEditor_CreateZiplineFromUnity( < 29229.57, -20142.21, 24880.22 > , < 0, -89.9996, 0 > , < 29229.57, -20142.21, 24330.13 > , < 0, -89.9996, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+
+  // Buttons
+  AddCallback_OnUseEntity(CreateFRButton( < 19402.37, -25749.81, 21876.2 > , < 0, 90.0005, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 19589.47, -25748.59, 21876.2 > , < 0, -89.9992, 0 > , "%use% Start Timer"), void
+    function (entity panel, entity user, int input) {
+      //Start Timer Button
+      user.p.isTimerActive = true
+      user.p.startTime = floor(Time()).tointeger()
+      Message(user, "Timer Started!")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 29284.57, -19512.01, 24886.57 > , < 0, 0, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+      user.p.allowCheckpoint = false
+
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 29172.57, -19512.01, 24886.57 > , < 0, 0, 0 > , "%use% Back to start"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 19500.3000, -25867.7000, 21940 > , < 0, -89.9998, 0 > )
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+      user.p.currentCheckpoint = 1
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 29226.47, -19618.21, 24886.57 > , < 0, 0, 0 > , "%use% Stop Timer"), void
+    function (entity panel, entity user, int input) {
+      //Stop timer Button
+      if (user.p.isTimerActive == true) {
+        user.p.finalTime = floor(Time()).tointeger() - user.p.startTime
+
+        int seconds = user.p.finalTime
+        if (seconds > 59) {
+
+          //Whacky conversion
+          int minutes = seconds / 60
+          int realseconds = seconds - (minutes * 60)
+
+          //Display player Time
+          Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+
+        } else {
+
+          //Display player Time
+          Message(user, "Your Final Time: " + seconds + " seconds")
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+        }
+      }
+    })
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < 25219, -22393, 21739 > , < 0, 0, 0 > , 20000, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //Big ahh trigger
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          if (ent.p.allowCheckpoint == true) {
+            switch (ent.p.currentCheckpoint) {
+              // Checkpoint 1
+            case 1:
+              ent.SetOrigin( < 19500.3000, -25867.7000, 21940 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 2
+            case 2:
+              ent.SetOrigin( < 19494, -25636, 22726 > )
+              ent.SetAngles( < 0, -90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 3
+            case 3:
+              ent.SetOrigin( < 22921.5, -26594.16, 22741.9 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 4
+            case 4:
+              ent.SetOrigin( < 24881.3, -26610.8, 22735.8 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 5
+            case 5:
+              ent.SetOrigin( < 25192.57, -25999.21, 22724.57 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 6
+            case 6:
+              ent.SetOrigin( < 25182.77, -22528.81, 22717.96 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 7
+            case 7:
+              ent.SetOrigin( < 25192.57, -20847.21, 23020.77 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 8
+            case 8:
+              ent.SetOrigin( < 25753.97, -20349.61, 23025.57 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 9
+            case 9:
+              ent.SetOrigin( < 29049.1, -20359.7, 23043.9 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 10
+            case 10:
+              ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > )
+              ent.SetAngles( < 0, -180, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // Checkpoint 11
+            case 11:
+              ent.SetOrigin( < 29228.4, -20369.9, 24916.2 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+
+              // is actually checkpoint 3.5
+              // Checkpoint 12
+            case 12:
+              ent.SetOrigin( < 23807.4, -26669.4, 22740 > )
+              ent.SetAngles( < 0, 90, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+            }
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+  entity trigger_1 = MapEditor_CreateTrigger( < 19490.77, -25616.31, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_1.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 2
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_1)
+  entity trigger_2 = MapEditor_CreateTrigger( < 25197.57, -25872.41, 22746.21 > , < 0, 0, 0 > , 192.96, 26.5964, false)
+  trigger_2.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_2)
+  entity trigger_3 = MapEditor_CreateTrigger( < 19542.47, -25859.01, 21899.15 > , < 0, 0, 0 > , 110.2, 50, false)
+  trigger_3.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_3)
+  entity trigger_4 = MapEditor_CreateTrigger( < 19500.83, -25826.5, 22282.15 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_4.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_4)
+  entity trigger_5 = MapEditor_CreateTrigger( < 19510.13, -25375.3, 22444.15 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_5.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 19500.3000, -25867.7000, 21940 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_5)
+  entity trigger_6 = MapEditor_CreateTrigger( < 19510.13, -25040.8, 22444.15 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_6.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 19500.3000, -25867.7000, 21940 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_6)
+  entity trigger_7 = MapEditor_CreateTrigger( < 19510.13, -24830.13, 22444.15 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_7.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 19500.3000, -25867.7000, 21940 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_7)
+  entity trigger_8 = MapEditor_CreateTrigger( < 19500.83, -25826.5, 22748 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_8.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_8)
+  entity trigger_9 = MapEditor_CreateTrigger( < 22962.67, -26643.71, 22744 > , < 0, 0, 0 > , 198.8, 79.2, false)
+  trigger_9.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_9)
+  entity trigger_10 = MapEditor_CreateTrigger( < 24102, -26656.21, 22744 > , < 0, 0, 0 > , 218, 95.1, false)
+  trigger_10.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_10)
+  entity trigger_11 = MapEditor_CreateTrigger( < 24922, -26700.81, 22744 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_11.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_11)
+  entity trigger_12 = MapEditor_CreateTrigger( < 24922, -26508.11, 22744 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_12.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_12)
+  entity trigger_13 = MapEditor_CreateTrigger( < 24922, -26599.71, 22744 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_13.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_13)
+  entity trigger_14 = MapEditor_CreateTrigger( < 25209.97, -20819.28, 23014.56 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_14.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_14)
+  entity trigger_15 = MapEditor_CreateTrigger( < 19863.07, -25738.61, 22652.9 > , < 0, 0, 0 > , 115.3, 10, false)
+  trigger_15.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 19494, -25636, 22726 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_15)
+  entity trigger_16 = MapEditor_CreateTrigger( < 25255.27, -22481.61, 22744 > , < 0, 89.9998, 0 > , 132.982, 26.5964, false)
+  trigger_16.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_16)
+  entity trigger_17 = MapEditor_CreateTrigger( < 25154.17, -22481.61, 22744 > , < 0, 89.9998, 0 > , 132.982, 26.5964, false)
+  trigger_17.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_17)
+  entity trigger_18 = MapEditor_CreateTrigger( < 25154.17, -22321.01, 22744 > , < 0, 89.9998, 0 > , 132.982, 26.5964, false)
+  trigger_18.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_18)
+  entity trigger_19 = MapEditor_CreateTrigger( < 25255.27, -22321.01, 22744 > , < 0, 89.9998, 0 > , 132.982, 26.5964, false)
+  trigger_19.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_19)
+  entity trigger_20 = MapEditor_CreateTrigger( < 29065.07, -20366.81, 23031.77 > , < 0, 0, 0 > , 167.6, 26.5964, false)
+  trigger_20.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_20)
+  entity trigger_21 = MapEditor_CreateTrigger( < 25784.27, -20354.41, 23014.77 > , < 0, 0, 0 > , 262, 115, false)
+  trigger_21.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_21)
+  entity trigger_22 = MapEditor_CreateTrigger( < 29206.77, -20366.81, 23031.77 > , < 0, 0, 0 > , 167.6, 26.5964, false)
+  trigger_22.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_22)
+  entity trigger_23 = MapEditor_CreateTrigger( < 29272.07, -20366.81, 23031.77 > , < 0, 0, 0 > , 167.6, 26.5964, false)
+  trigger_23.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+      }
+    })
+  DispatchSpawn(trigger_23)
+  entity trigger_24 = MapEditor_CreateTrigger( < 22647.77, -26623.41, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_24.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 3
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_24)
+  entity trigger_25 = MapEditor_CreateTrigger( < 24923.77, -26623.41, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_25.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 4
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_25)
+  entity trigger_26 = MapEditor_CreateTrigger( < 25199.87, -22422.61, 22763.46 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_26.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 6
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_26)
+  entity trigger_27 = MapEditor_CreateTrigger( < 25207.17, -20823.51, 23062.67 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_27.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 7
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_27)
+  entity trigger_28 = MapEditor_CreateTrigger( < 29095.37, -20354.41, 23062.67 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_28.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 9
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_28)
+  entity trigger_29 = MapEditor_CreateTrigger( < 29235.3, -19566.9, 23764.22 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_29.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_29)
+  entity trigger_30 = MapEditor_CreateTrigger( < 29226, -19846.31, 23219.22 > , < 0, 0, 0 > , 200, 50, false)
+  trigger_30.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_30)
+  entity trigger_31 = MapEditor_CreateTrigger( < 29215.94, -19807.92, 24083.83 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_31.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 10
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_31)
+  entity trigger_32 = MapEditor_CreateTrigger( < 29241.77, -19354.41, 22419.22 > , < 0, 0, 0 > , 277.1, 606.4005, false)
+  trigger_32.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_32)
+  entity trigger_33 = MapEditor_CreateTrigger( < 29226, -20018.1, 23602.22 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_33.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_33)
+  entity trigger_34 = MapEditor_CreateTrigger( < 29235.3, -19232.4, 23764.22 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_34.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_34)
+  entity trigger_35 = MapEditor_CreateTrigger( < 29226, -20018.1, 24068.07 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_35.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_35)
+  entity trigger_36 = MapEditor_CreateTrigger( < 29174.3, -17972.24, 22419.22 > , < 0, 0, 0 > , 1000, 606.4005, false)
+  trigger_36.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_36)
+  entity trigger_37 = MapEditor_CreateTrigger( < 29235.3, -19021.74, 23764.22 > , < 0, 0, 0 > , 240.7167, 10, false)
+  trigger_37.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_37)
+  entity trigger_38 = MapEditor_CreateTrigger( < 29174.3, -17208.24, 22419.22 > , < 0, 0, 0 > , 1000, 606.4005, false)
+  trigger_38.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_38)
+  entity trigger_39 = MapEditor_CreateTrigger( < 29220.64, -20640.71, 24609.58 > , < 0, -179.9997, 0 > , 240.7167, 10, false)
+  trigger_39.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_39)
+  entity trigger_40 = MapEditor_CreateTrigger( < 29240, -20399.7, 24929.19 > , < 0, -179.9997, 0 > , 147.0848, 29.41697, false)
+  trigger_40.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 11
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_40)
+  entity trigger_41 = MapEditor_CreateTrigger( < 29281.64, -21339.37, 23989.77 > , < 0, -179.9997, 0 > , 1000, 17.6, false)
+  trigger_41.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_41)
+  entity trigger_42 = MapEditor_CreateTrigger( < 29229.94, -20189.51, 24447.58 > , < 0, -179.9997, 0 > , 132.982, 26.5964, false)
+  trigger_42.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_42)
+  entity trigger_43 = MapEditor_CreateTrigger( < 29229.94, -20189.51, 24064.58 > , < 0, -179.9997, 0 > , 200, 50, false)
+  trigger_43.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_43)
+  entity trigger_44 = MapEditor_CreateTrigger( < 29220.64, -20975.21, 24609.58 > , < 0, -179.9997, 0 > , 240.7167, 10, false)
+  trigger_44.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_44)
+  entity trigger_45 = MapEditor_CreateTrigger( < 29220.64, -21185.88, 24609.58 > , < 0, -179.9997, 0 > , 240.7167, 10, false)
+  trigger_45.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_45)
+  entity trigger_46 = MapEditor_CreateTrigger( < 29281.65, -22999.38, 23989.77 > , < 0, -179.9997, 0 > , 1000, 17.6, false)
+  trigger_46.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_46)
+  entity trigger_47 = MapEditor_CreateTrigger( < 29281.65, -22235.38, 23989.77 > , < 0, -179.9997, 0 > , 1000, 17.6, false)
+  trigger_47.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29230.03, -19820.17, 24060.37 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_47)
+  entity trigger_48 = MapEditor_CreateTrigger( < 29241.77, -19058.41, 22419.22 > , < 0, 0, 0 > , 277.1, 606.4005, false)
+  trigger_48.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 29243.9, -20067.04, 23203.72 > ) // change tp location
+        }
+      }
+    })
+  DispatchSpawn(trigger_48)
+  entity trigger_49 = MapEditor_CreateTrigger( < 19449.57, -25859.01, 21899.15 > , < 0, 0, 0 > , 110.2, 50, false)
+  trigger_49.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_49)
+  entity trigger_50 = MapEditor_CreateTrigger( < 19493.67, -25648.31, 21899.15 > , < 0, 0, 0 > , 110.2, 50, false)
+  trigger_50.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_50)
+  entity trigger_51 = MapEditor_CreateTrigger( < 19500.83, -26276.91, 22748 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_51.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+          ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+          ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+          ent.SetSuitGrapplePower(100)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_51)
+  entity trigger_52 = MapEditor_CreateTrigger( < 25200.77, -25921.41, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_52.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 5
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_52)
+  entity trigger_53 = MapEditor_CreateTrigger( < 25789.07, -20363.41, 23062.67 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_53.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 8
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_53)
+  entity trigger_54 = MapEditor_CreateTrigger( < 23836.77, -26623.41, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_54.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 12
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_54)
+  entity trigger_55 = MapEditor_CreateTrigger( < 19490.77, -25976.81, 22763.77 > , < 0, 0, 0 > , 147.0848, 29.41697, false)
+  trigger_55.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //set Checkpoint and shot timer
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          int checkpointInThisTrigger = 2
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+        }
+      }
+    })
+  DispatchSpawn(trigger_55)
+
+  // Func Window Hints
+  MapEditor_CreateFuncWindowHint( < 29450.57, -20272.81, 23085.87 > , 33.5, 45.4, < 0, -1, 0 > )
+
+}
+
+//Init Octane Segments
+void
+
+function MovementGym_Octane() {
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < 15820, -390.2969, 22534.3 > , < 0, 0, 180 > , true, 5000, -1, 2.8878)
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -1048.102, 22410.9 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 9697.8, -776.1016, 22431.7 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9647, -903, 22424.9 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9647, -55, 22424.9 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 9593.604, -182.1016, 22431.7 > , < 0, -90.0005, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 13450.19, -107.9063, 22431.7 > , < 0, -0.0005, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 13193.68, -824.2969, 22431.7 > , < 0, 179.9998, 0 > , true, 5000, -1, 1)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 13323.09, -54.5078, 22424.9 > , < 0, 90, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 13320.58, -870.3984, 22424.9 > , < 0, 90, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 13192.28, -830.6016, 22431.1 > , < 0, 179.9998, 0 > , false, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 13451.2, -102.8984, 22430.8 > , < 0, -0.0005, 0 > , false, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13282.6, -902.9297, 22439.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13244.6, -851.7813, 22436.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13266.7, -878, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13238.6, -951.7031, 22434.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13388.3, -831.7031, 22434.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13351.1, -891.6797, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13382.3, -931.625, 22436.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13344.3, -880.4766, 22439.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13307.27, -843.5234, 22439.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13358.42, -805.5234, 22436.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13318.48, -836.7266, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13258.5, -799.5234, 22434.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13318.48, -934.4219, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13259.92, 28.7031, 22434.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13319.9, -8.5, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13359.84, 22.7031, 22436.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13308.69, -15.2969, 22439.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13331.15, -77, 22439.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13280, -115, 22436.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13319.94, -83.7969, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13379.92, -121, 22434.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13412.1, 8.7969, 22434.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13374.9, -51.1797, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13406.1, -91.1172, 22436.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13368.1, -39.9688, 22439.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13277.2, -51.1797, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10453.02, 2218.898, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10413.08, 2090, 22436.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10453.02, 2121.203, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10513, 2084, 22434.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10383.2, 2116.18, 22434.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10420.4, 2176.156, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10389.2, 2216.102, 22436.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10427.2, 2164.953, 22439.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10488.9, 2187.406, 22439.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10526.9, 2136.258, 22436.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10495.7, 2176.203, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10532.9, 2236.18, 22434.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9726.603, 20.9219, 22434.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9689.399, -39.0625, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9720.602, -79, 22436.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9682.601, -27.8516, 22439.1 > , < 0, 0, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9620.9, -50.3125, 22439.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9582.9, 0.8359, 22436.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9614.1, -39.1016, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9576.898, -99.0781, 22434.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9706.7, -131.2578, 22434.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9646.721, -94.0547, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9606.781, -125.2578, 22436.1 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9646.721, 3.6406, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9571.096, -974.1016, 22434.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9608.299, -914.1172, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9577.096, -874.1797, 22436.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9615.098, -925.3281, 22439.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9676.798, -902.875, 22439.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9714.798, -954.0234, 22436.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9683.598, -914.0781, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9720.8, -854.1016, 22434.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9590.997, -821.9219, 22434.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9650.978, -859.125, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9690.917, -827.9219, 22436.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9650.977, -956.8203, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 16247.98, -389, 22431.7 > , < 0, 179.9995, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/ola/sewer_railing_01_128.rmdl", < 15854.8, -776.1016, 22431.7 > , < 0, 89.9999, 0 > , true, 5000, -1, 1)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 16375.08, -442.3984, 22424.9 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 15804, -903, 22424.9 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16433.72, -442.1172, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16304.82, -402.1797, 22436.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16336.02, -442.1172, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16298.82, -502.1016, 22434.1 > , < 0, -179.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16331, -372.2969, 22434.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16390.98, -409.5, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16430.92, -378.2969, 22436.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16379.77, -416.2969, 22439.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16402.23, -478, 22439.1 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16351.08, -516, 22436.1 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16391.02, -484.7969, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16451, -522, 22434.1 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15807.98, -956.8203, 22312.1 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15847.92, -827.9219, 22436.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15807.98, -859.125, 22312.1 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15748, -821.9219, 22434.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15877.8, -854.1016, 22434.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15840.6, -914.0781, 22312.1 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15871.8, -954.0234, 22436.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15833.8, -902.875, 22439.1 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15772.1, -925.3281, 22439.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15734.1, -874.1797, 22436.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15765.3, -914.1172, 22312.1 > , < 0, 90, 0 > , true, 5000, -1, 0.7657142)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15728.1, -974.1016, 22434.1 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -776.7031, 22410.9 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -1048.102, 22553.3 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -776.7031, 22553.3 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16201.2, -640.2969, 22410.9 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16472.6, -640.2969, 22410.9 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16472.6, -640.2969, 22553.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16201.2, -640.2969, 22553.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -8327.6, 8918.297, 22030.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22283.7 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22157.1 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -2338.4, 9119.297, 21946.8 > , < -90, 180, 0 > , true, 5000, -1, 4.715525)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -5769.898, 8792.203, 22408.21 > , < 0, -179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2337.1, 8790, 21901 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2337.1, 8790, 22389.3 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2338, 8665, 22068 > , < 0, 0, 90.0001 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2338, 8665, 22684 > , < 0, 0, 90.0001 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6539.1, 8790, 21901 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6422.1, 8790, 22031.5 > , < 90, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6670, 8790, 22031.5 > , < 90, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6537, 8677.703, 22031.5 > , < 90, -90, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6539.1, 8790, 22151.3 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -5635, 8840, 22068 > , < -0.0001, 90.0001, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -5635, 8840, 22684 > , < -0.0001, 90.0001, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -5909, 8669, 22068 > , < 0, 0.0001, 90.0001 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -5909, 8669, 22684 > , < 0, 0.0001, 90.0001 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -2338.4, 9119.297, 22164.8 > , < -30, -90.0001, -90 > , true, 5000, -1, 4.715525)
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -6559.898, 9119, 21946.8 > , < -45, -0.0001, 180 > , true, 5000, -1, 4.715525)
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -5810, 9087.703, 22470.6 > , < -28.7601, -58.7473, 175.6741 > , true, 5000, -1, 4.715526)
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8940.6, 8790, 21901 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8823.6, 8790, 22031.5 > , < 90, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -9071.5, 8790, 22031.5 > , < 90, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8938.5, 8677.703, 22031.5 > , < 90, -90, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8940.6, 8790, 22151.3 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8168.1, 8567.102, 22408.21 > , < 0, -179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -8310.5, 8440.594, 22684 > , < 0, 0.0001, 90.0001 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -8310.5, 8440.602, 22068 > , < 0, 0.0001, 90.0001 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -8961.398, 9119, 21946.8 > , < -45, -0.0001, 180 > , true, 5000, -1, 4.715525)
+  MapEditor_CreateProp($"mdl/signs/street_sign_arrow.rmdl", < -8053, 9087.688, 22505.9 > , < -0.0001, -90, 180 > , true, 5000, -1, 4.715525)
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -8036.5, 8770, 22068 > , < -0.0001, 90.0001, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -8036.5, 8770, 22684 > , < -0.0001, 90.0001, 90 > , true, 5000, -1, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_apartments_rug_01.rmdl", < -2336.033, 8788.969, 22405.3 > , < 0, 7.2791, 0 > , true, 5000, -1, 1.6393))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22283.7 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22410.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22535.4 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22662 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22788.6 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22157.1 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22410.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22535.4 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22662 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22788.6 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22410.3 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22157.1 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22283.7 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22535.4 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22662 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22788.6 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8582.6, 8918.297, 22030.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8582.6, 8918.297, 21903.8 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -8327.6, 8918.297, 21903.8 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22157.1 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22283.7 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22410.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22788.6 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22662 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22535.4 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22283.7 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22157.1 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22410.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22535.4 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22662 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22788.6 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22410.3 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22157.1 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22283.7 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22535.4 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22662 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22788.6 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6184, 8918.297, 22030.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6184, 8918.297, 21903.8 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -5929, 8918.297, 22030.3 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -5929, 8918.297, 21903.8 > , < 0, -90, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22030.3 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 21903.8 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 21903.8 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22030.3 > , < 0, -180, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2281.798, 8783.539, 21785.9 > , < 0, -90.0001, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2410.7, 8823.477, 21909.9 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2379.498, 8783.539, 21785.9 > , < 0, 89.9999, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2416.702, 8723.563, 21907.9 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2384.521, 8853.359, 21907.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2324.539, 8816.156, 21785.9 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2284.601, 8847.359, 21909.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2335.749, 8809.359, 21912.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2313.291, 8747.656, 21912.9 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2364.439, 8709.656, 21909.9 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2324.501, 8740.859, 21785.9 > , < 0, 179.9999, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2264.519, 8703.656, 21907.9 > , < 0, -90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5718.521, 8711.797, 22417.7 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5821.242, 8781.617, 22295.7 > , < 0, 90, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5686.342, 8841.594, 22417.7 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5778.541, 8824.297, 22295.7 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5789.75, 8817.5, 22422.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5818.441, 8717.797, 22419.7 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5692.34, 8741.68, 22419.7 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5767.293, 8755.797, 22422.7 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5723.543, 8781.617, 22295.7 > , < 0, -90, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5838.523, 8861.5, 22417.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5738.6, 8855.5, 22419.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5778.5, 8749, 22295.7 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5856.9, 8786.602, 22419.7 > , < 0, -89.9999, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6468.598, 8846.219, 21907.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6538.42, 8743.5, 21785.2 > , < 0, -180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6598.398, 8878.398, 21907.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6581.1, 8786.203, 21785.2 > , < 0, 90, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6574.301, 8774.992, 21912.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6474.6, 8746.297, 21909.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6498.48, 8872.398, 21909.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6512.602, 8797.445, 21912.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6538.422, 8841.203, 21785.2 > , < 0, 0, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6618.305, 8726.219, 21907.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6612.301, 8826.141, 21909.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6505.801, 8786.242, 21785.2 > , < 0, -90, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8866.699, 8831.32, 21908.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8936.521, 8728.602, 21786.2 > , < 0, 180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8996.5, 8863.5, 21908.2 > , < 0, 90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8979.199, 8771.297, 21786.2 > , < 0, 89.9999, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8972.398, 8760.094, 21913.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8872.703, 8731.398, 21910.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8896.58, 8857.5, 21910.2 > , < 0, 90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8910.701, 8782.547, 21913.2 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8936.521, 8826.297, 21786.2 > , < 0, -0.0001, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -9016.402, 8711.32, 21908.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -9010.402, 8811.242, 21910.2 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8903.9, 8771.336, 21786.2 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8134.5, 8545.797, 22294.8 > , < 0, -90, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8241, 8585.703, 22418.8 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8247, 8485.773, 22416.8 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8167.121, 8600.758, 22294.8 > , < 0, -0.0001, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8141.301, 8557.008, 22421.8 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8127.18, 8631.961, 22418.8 > , < 0, 90, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8103.301, 8505.859, 22418.8 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8202.998, 8534.547, 22421.8 > , < 0, -180, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8209.799, 8545.758, 22294.8 > , < 0, 89.9999, 0 > , true, 5000, -1, 0.7657145)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8227.1, 8637.961, 22416.8 > , < 0, 90, 0 > , true, 5000, -1, 1.3183))
+  MapEditor_CreateProp($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8167.121, 8503.055, 22294.8 > , < 0, 180, 0 > , true, 5000, -1, 0.7657141)
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8097.299, 8605.781, 22416.8 > , < 0, 0.0001, 0 > , true, 5000, -1, 1.3183))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.869, 9145.203, 22068.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.871, 9145.195, 22684.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.869, 9745.203, 22068.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.871, 9745.195, 22684.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.867, 9145.211, 22068.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.869, 9145.203, 22684.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.867, 9745.211, 22068.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.869, 9745.203, 22684.15 > , < 0.0001, -90, 90 > , true, 5000, -1, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+  foreach(entity ent in NoClimbArray) ent.kv.solid = 3
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+  // Buttons
+  AddCallback_OnUseEntity(CreateFRButton( < 9645.9, 64.3984, 22440.6 > , < 0, 0.0002, 0 > , "%use% Next Exercise"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 13320.5800, -915.8755, 42443.1000 > +tpoffset, < 0, 89.9998, 0 > )
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 9524.8, -903.7969, 22440.6 > , < 0, 90.0007, 0 > , "%use% Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 13203.69, -55.6094, 22440.6 > , < 0, 90.0002, 0 > , "%use% Next Exercise "), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 15795.4000, -987.9000, 42440.6000 > +tpoffset, < 0, 89.9998, 0 > )
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 13321.38, -983.8984, 22440.6 > , < 0, -179.9993, 0 > , "%use% Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 16494.48, -441.2969, 22440.6 > , < 0, -89.9998, 0 > , "%use% Repeat"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 15795.4000, -987.9000, 42440.6000 > +tpoffset, < 0, 89.9998, 0 > )
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < 15681.8, -903.7969, 22440.6 > , < 0, 90.0007, 0 > , "%use% Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -2221.9, 8789.602, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
       Message(user, "Hub")
     })
 
+  AddCallback_OnUseEntity(CreateFRButton( < -2221.9, 8789.602, 22404.8 > , < 0, -90.0002, 0 > , "%use% Next Exercise"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -6531.1010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -2451.5, 8783, 22404.9 > , < 0, 90.0002, 0 > , "%use% Repeat"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -2329.1000, 8714.7000, 41919.5000 > +tpoffset, < 0, 89.9998, 0 > )
+      Message(user, "Jump Pad Tap Strafes")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -6423.869, 8855.203, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -5880.801, 8790.703, 22423.6 > , < 0, 89.9999, 0 > , "%use% Next Exercise"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -8932.6010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -5660.701, 8797.297, 22423.7 > , < 0, -89.9997, 0 > , "%use% Repeat"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -6531.1010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
+      Message(user, "Jump Pad Tap Strafes")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -8058.902, 8572.203, 22417.89 > , < 0, -89.9997, 0 > , "%use% Repeat"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < -8932.6010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
+      Message(user, "Jump Pad Tap Strafes")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -8825.4, 8849.203, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+    })
+
+  AddCallback_OnUseEntity(CreateFRButton( < -8279, 8565.602, 22420.46 > , < 0, 89.9999, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
+    })
+
+  // Jumppads
+  MapEditor_CreateJumpPad(MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -2337.1, 8867.703, 21907 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateJumpPad(MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -6539.1, 8867.703, 21907 > , < 0, 0, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateJumpPad(MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -8940.6, 8867.703, 21907 > , < 0, 0, 0 > , true, 5000, -1, 1))
+
   // Triggers
-  entity trigger_0 = MapEditor_CreateTrigger( < 10697.36, 9897.267, -3661 > , < 0, 0, 0 > , 565.51, 149.5838, false)
+  entity trigger_0 = MapEditor_CreateTrigger( < 9705, -508, 22607 > , < 0, 0, 0 > , 1109.034, 221.8068, false)
   trigger_0.SetEnterCallback(void
     function (entity trigger, entity ent) {
       if (IsValid(ent)) // ensure the entity is valid
       {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-          array < ItemFlavor > characters = GetAllCharacters()
-          CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
-          if (ent.GetPersistentVarAsInt("previousXP") == 1) {
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-          } else if (ent.GetPersistentVarAsInt("previousXP") == 2) {
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-          } else if (ent.GetPersistentVarAsInt("previousXP") == 3) {
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-          } else {
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-          }
-          ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-          ent.SetPlayerNetBool("pingEnabled", false)
-          //Reset Timer
-          int reset = 0
-          ent.SetPersistentVar("gen", reset)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+        }
+      }
+
+    })
+  DispatchSpawn(trigger_0)
+  entity trigger_1 = MapEditor_CreateTrigger( < 9705, -508, 22156 > , < 0, 0, 0 > , 1109.034, 221.8068, false)
+  trigger_1.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < 9647, -963, 42441.2000 > +tpoffset) // change tp location
         }
       }
     })
-  DispatchSpawn(trigger_0)
-
-}
-
-//Init Map1 Treeree
-void
-function MovementGym_Map1() {
-    // Props
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6602.5, 1156.57, -1344.42 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 1263.954, -1033.681 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 3394.6, 1152.7, -722 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4735.015, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1142.8, -840.8 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3400, 2128, -1032 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 6852.8, 1141.3, -1059.4 >, < 0, -179.9999, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3007.04, 7104.03, -1152.28 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3263.9, 6528.61, -1216.79 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.4, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6396.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.001, 1583.499, -1350.6 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 4100.996, 1220, -1072.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 1944.954, -1138.681 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3394.499, 2599, -569.7487 >, < -90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3394.499, 2086.3, -705.9991 >, < -90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3792.875, 8255.9, -1145.547 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3520, 6656, -1216 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.47, 9087.21, -704.314 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3391.99, 3133, -692.065 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4160, 8448, -960 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -832.3495 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3521.599, 2599, -569.7486 >, < -90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6143.492, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1273.999, -713.4 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1273.999, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3263.11, 7232, -1152.45 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3391.03, 7808.16, -959.811 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4351.04, 8768.27, -639.893 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -968.5999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3136.46, 6528.86, -1216.21 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3793.105, 8384.14, -634.2771 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3520.03, 6528.86, -704.507 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 2560, -640 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7125.999, 1265.3, -802.2 >, < 0, -180, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1281.35 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3584.03, 6913, -1152.04 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3250.5, 6614, -1320.001 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.1, 1164.998, -802.2 >, < 0, 0.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2229.044, -1153.746 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4992.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6797.798, 1021.001, -1299 >, < 0, -179.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1027.75 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274, -840.7999 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 6852.8, 1013.8, -1059.4 >, < 0, -179.9999, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6268.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7125.999, 1265.3, -1242 >, < 0, -180, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.72, 7935.51, -959.176 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274, -713.4 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3136, 7040, -1152 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.401, 1274.001, -713.3999 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6015.492, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.47, 7935.17, -1216.14 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3391.78, 7679.28, -704.654 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3507.8, 1498.599, -713.8999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -899.3495 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7118.001, 1046.5, -1242 >, < 0, 0, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5376.478, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.61, 7679.4, -959.303 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3520.06, 6527.05, -960.295 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4736.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3507.8, 1498.6, -841.3 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3199.89, 7168.82, -1152.57 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3264.81, 2239.84, -1024.56 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3328, 5312, -896 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 1945.024, -1138.638 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3712.12, 6912.99, -1152.04 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -968.5999 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3263.9, 6528.86, -704.499 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4607.015, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3775.99, 1023.02, -704.184 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -644.6495 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391.92, 6528.87, -704.493 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 4352.65, 9024.76, -639.979 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.399, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -1214.35 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.599, 1142.8, -968.0999 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3501.956, 1215.021, -1033.746 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5036.046, 1086.981, -1292.681 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4085.976, 1161.05, -1101.638 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2463.024, -1008.638 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1148.349 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -700 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1530.35 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3264.06, 6527.02, -960.188 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1273.999, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3584.07, 7168.92, -1152.39 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2669.954, -1008.681 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.399, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4544.97, 8895.77, -640.076 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3712, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4223.97, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl", < 5056.67, 9088.02, -703.255 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -968.5999 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3584, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5825.4, 1156.4, -1088 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 1152, -1024 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1223.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3071.56, 7168.77, -1152.46 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6652.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1275.75 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3791.585, 8127.19, -634.4521 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6797.799, 1149.002, -1299 >, < 0, -179.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5140, 9152, -704 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.39, 6528.33, -959.283 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 7041.4, 1156.4, -1216 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3501.976, 1151.05, -1033.638 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.95, 7104.01, -1407.68 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -645.6495 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -572.5999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6863.3, 1269.301, -1242 >, < 0, 90.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl", < 5055.76, 9215.03, -832.087 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3792.765, 8384.66, -634.563 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3386.05, 2558.551, -879.4496 >, < 90, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3840, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1096 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5119.93, 959.139, -1344.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.24, 6528.31, -1087.43 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3417.89, -651.2494 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.1, 1274.399, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1273.999, -713.4 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.46, 5248.42, -906.8265 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274, -713.3998 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6735.3, 1269.3, -1242 >, < 0, 90.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.06, 2687.03, -832.231 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3071.95, -759.5032 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl", < 3455.22, 6528.52, -1216.33 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.6, 1142.8, -1223 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 3648.58, -653.9962 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6721.4, 1156.4, -1088 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl", < 3392.66, 7936.75, -704.055 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/signs/desertlands_city_newdawn_sign_01.rmdl", < 3392.83, 7168.56, -1151.96 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.12, 4416.42, -788.2274 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.46, 9151.18, -704.194 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3386.8, 2244, -959.212 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.53, 7679.12, -1087.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3519.92, 6528.49, -1216.87 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl", < 3391.16, 6528.55, -1216.01 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3263.11, 7360, -1152.45 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274.4, -968.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391, 7679.99, -704.095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 2943.73, -767.887 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7253.999, 1265.3, -802.2 >, < 0, -180, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.67, 7679.38, -1216.71 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 6848.68, 1284.93, -1472.44 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3793.105, 8255.89, -634.287 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4416, 1152, -1280 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7118.001, 1046.5, -802.2 >, < 0, 0, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4927.7, 1152.4, -1280 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -577.6495 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4095.97, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3386.049, 2431.45, -879.4496 >, < 90, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3791.125, 8256.11, -890.1671 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3521.599, 2086.3, -705.999 >, < -90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -1087.25 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2463.044, -1008.746 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/colony/antenna_03_colony.rmdl", < 3392.85, 6527.65, -704.392 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 2943.73, -759.8892 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4160.01, 1280.66, -704.753 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6879.298, 1042.5, -802.2 >, < 0, -89.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.399, -968.1001 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6863.3, 1269.3, -802.2 >, < 0, 90.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5183.98, 9215, -959.98 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6524.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3904, 1280.65, -704.758 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6657.28, 1027.5, -1088.42 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4990.984, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 3519.67, 1152.7, -722 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4862.984, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1273.999, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -832.3495 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3712, 7744, -1024 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1282.35 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6879.298, 1042.5, -1242 >, < 0, -89.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085, 1274.4, -968.0999 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -772.0496 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3264.97, 2239.78, -895.903 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -1087.25 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3264, 6656, -1216 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4672, 1152, -1280 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4351.015, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3377.6, 6614, -1320.001 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl", < 5055.13, 9151.86, -704.463 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1154.25 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -773.0496 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -705.0496 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -959.7496 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.401, 1583.5, -841.3 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4351, 8896.07, -639.973 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.399, -968.1001 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3071.94, 6911.05, -1152.31 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5248.478, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5183.85, 9088.65, -960.748 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.6, 1142.799, -1350.1 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6990.001, 1046.5, -802.2 >, < 0, 0, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3391.01, 7808.06, -704.096 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2228.954, -1153.681 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 1945.044, -1138.746 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl", < 3135, 6655.96, -1216.06 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.15, 6481.15, -1461.742 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3135.8, 6528.85, -704.486 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3647.16, 6528.18, -1216.51 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3776.04, 1280.65, -704.763 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.6, -1096 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3520.79, 7360.04, -1152.61 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3712.22, 7168.9, -1152.38 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 7040, -1152 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1021.05 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3776.85, 7104.19, -1152.49 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1223.5 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6721.4, 1156.4, -1344 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3199.91, 6913, -1151.99 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.62, 7935.36, -1087.33 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.599, 1142.8, -1095.5 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5035.976, 1151.05, -1292.638 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3502.046, 1086.981, -1033.681 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3417.89, -643.2516 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.399, -968.1001 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1273.999, -713.4 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3903.96, 1023.02, -704.196 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7253.999, 1265.301, -1242 >, < 0, -180, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -577.6495 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5759.522, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.039, 3546.11, -642.8655 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -1155.25 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3520.79, 7232.1, -1152.6 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2229.024, -1153.638 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -968.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4351.01, 8896.15, -896.07 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_train_track_sign_01.rmdl", < 4352.05, 8769, -640.075 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.72, 6528.15, -831.05 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3071.95, -768.273 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/colony/ventilation_unit_01_black.rmdl", < 5503.52, 9215.23, -704.42 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 6657.5, 1283.43, -1344.21 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -841.3 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1096 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.6, -968.5999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -893.6495 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4291.899, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1292.998, -1242 >, < 0, 0.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5120.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3648.46, 6783.39, -1216.64 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5627.4, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -827.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3776.82, 6975.75, -1152.51 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1274.398, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5194.101, 1274.398, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.76, 7679.54, -831.143 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -1403.25 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 3648.49, -653.9312 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 5395, 9152, -704 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 2670.044, -1008.746 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 4101.005, 1091.77, -1071.99 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3273.999, 1142.801, -713.3999 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6913.4, 1156.4, -1472 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4301, 1273.999, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl", < 3400.17, 6520.91, -1212.38 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4287.95, 1023.04, -704.286 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3135.08, 6528.39, -1216.08 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl", < 3007.05, 6976.11, -1152.31 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038, -1095 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.2, 4416.58, -788.2633 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl", < 5056.64, 9152.76, -703.901 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.2, 1498.599, -1223.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.16, 6481.13, -1461.642 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 7296, -1152 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7007.298, 1042.5, -1242 >, < 0, -89.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1292.998, -802.2 >, < 0, 0.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl", < 5399.947, 9156.598, -704.057 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4672, 9152, -832 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4195.9, 1152, -1089.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5640.101, 1274, -713.4 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 6780.478, 1152.98, -704.193 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3391.84, 7935.71, -831.056 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -954.6 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3648.02, 1023.3, -704.71 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl", < 5312.19, 9088.95, -832.242 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 3391.04, 3546.11, -651.6354 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.22, 6528.43, -1216.44 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3250.5, 2086.3, -1015.7 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -713.8999 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -1350.6 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.35, 5248.58, -907.0615 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3520.97, 2560.06, -896.235 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4544.94, 8896.05, -896.35 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.401, 1274.001, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4032, 1280.65, -704.756 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 6337.4, 1156.4, -1088 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3455.22, 1264.044, -1033.746 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5503.522, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 1264.024, -1033.638 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274.4, 1583.501, -713.8999 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -1096 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3640.001, 5827, -900.3495 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.32, 6528.34, -959.35 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 5035.956, 1215.021, -1292.746 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 3968, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl", < 3136.92, 6784.01, -1216.39 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.08, 6481, -1461.712 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3392.92, 7808.22, -1216.31 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -841.3 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5887.522, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1274.398, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3860.9, 1273.999, -840.8 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2086.3, -713.8999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6085.001, 1274.399, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 2670.024, -1008.638 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl", < 3648.97, 6656.02, -1216.23 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 7007.298, 1042.5, -802.2 >, < 0, -89.9998, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.4, -1095.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4747, 1274.4, -968.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6072.3, 1038, -967.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.55, 6528.22, -831.134 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3263.18, 5248.41, -907.1565 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4086.046, 1096.981, -1101.681 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3377.6, 2086.3, -1015.7 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6992.101, 1164.998, -1242 >, < 0, 0.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -445.3 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6735.299, 1269.3, -802.2 >, < 0, 90.0002, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -1214.35 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6990.001, 1046.5, -1242 >, < 0, 0, 90 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4864.507, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 5631.522, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3274, 1583.5, -1223.5 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4159.94, 1023.02, -704.21 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.18, 4416.54, -788.2493 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4351.07, 8895.99, -1152.36 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 4085.956, 1225.021, -1101.746 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl", < 4479.015, 1152.98, -704.201 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392, 4480, -768 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3508.199, 1498.6, -1350.6 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 4031.94, 1023.02, -704.21 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 3520.92, 2239.66, -1024.2 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4287, 1151.95, -1343.99 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3401, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3519.85, 1280.64, -704.754 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 3843.4, 1038.4, -712.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl", < 3647.13, 6528.47, -1087.87 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4746.999, 1274.399, -1350.1 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3018.999, 4922, -1026.75 >, < 0, 179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 5888.02, 960.986, -1344.17 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6527.4, 1274.4, -1223 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4734.299, 1038, -1349.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3327.18, 2462.954, -1008.681 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 6518.3, 1038, -1222.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3648, 7040, -1152 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3507.8, 2599, -705.0496 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 5185, 1038.4, -840.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2086.3, -1350.6 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3701.001, 4159, -317.8999 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl", < 3648, 1280.64, -704.77 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3267, 2599, -959.7496 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl", < 6849.98, 1027.849, -1472.6 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 3392.58, 3712.07, -643.0634 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/desrtlands_icicles_06.rmdl", < 3391.25, 3648.56, -653.8882 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -1098 >, < 0, 0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4452, 1368, -1089.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 4452, 944.0005, -1089.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -953.9996 >, < 0.0003, 179.9998, 180 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -973.9999 >, < 0, 0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -829.9999 >, < 0.0003, 179.9998, 180 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4807.999, 1160, -704 >, < 0.0003, 179.9998, 180 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 4568.001, 1160, -847.9999 >, < 0, 0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3122.5, 6614, -1320.001 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3505.1, 6614, -1320.001 >, < 90, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < 3356.2, 6063, -767.7 >, < 0, 180, 0 >, true, 5000, -1, 1 )
-
-    // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< 5500.9, 9208.609, -688.353 >, < 0, -89.9998, 0 >, "%use% Back to start"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 6961, 1147.7710, -1453 >,< 0, -89.9998, 0 >)
-int reset = 0
-user.SetPersistentVar("gen", reset)
-int checkpointActive = 1
-user.SetPersistentVar("netWorth", checkpointActive)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 5500.9, 9096.609, -688.353 >, < 0, -89.9998, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-int reset = 0
-user.SetPersistentVar("gen", reset)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 4663.407, 1258.493, -1263.651 >, < 0, 0, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 4242.7190, 1151.9690, -1075.7000 >,< 0, 180, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 4199.391, 1258.493, -1074.651 >, < 0, 0, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 3389.2000, 1152, -1007.1000 >,< 0, 180, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 3281.507, 1146.391, -1008.651 >, < 0, 89.9998, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 3389, 2069.1000, -1013.8000 >,< 0, 180, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-
-
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 3281.507, 2094.391, -1016.651 >, < 0, 89.9998, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 3320.5000, 3635.8000, -685 >,< 0, 60, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-
-
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 3281.507, 3761.391, -688.6514 >, < 0, 89.9998, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 3231.9000, 6983.4000, -1132.3000 >,< 0, 60, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-
-
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 3149.507, 7037.391, -1136.651 >, < 0, 89.9998, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 4593, 9070, -813.4000 >,< 0, 60, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-
-
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 4658.391, 9266.492, -816.6514 >, < 0, 0, 0 >, "%use% Skip"), void function(entity panel, entity user, int input)
-    {
-int reset = 0
-if (user.GetPersistentVarAsInt("gen") == reset) {
-	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-	TeleportFRPlayer(user,< 5266.2000, 9155.5000, -687 >,< 0, 60, 0 >)
-} else {
-	Message(user, "Cant Skip with Timer Running")
-}
-
-
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 6900.8, 1258.493, -1457 >, < 0, 0, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-int reset = 0
-user.SetPersistentVar("gen", reset)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 6902.018, 1045, -1457 >, < 0, 179.9997, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
-    {
-user.SetPersistentVar( "gen", Time() )
-Message(user, "Timer Started!" )
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 5330, 9154.7, -688.353 >, < 0, -89.9998, 0 >, "%use% Stop Timer"), void function(entity panel, entity user, int input)
-    {
-      int reset = 0
-      if (user.GetPersistentVarAsInt("gen") != reset) {
-        user.SetPersistentVar("xp", Time() - user.GetPersistentVarAsInt("gen"))
-        int seconds = user.GetPersistentVarAsInt("xp")
-        if (seconds > 59) {
-          
-	  //Whacky conversion
-	  int minutes = seconds / 60
-          int realseconds = seconds - (minutes * 60)
-          
-	  //Display player Time
-	  Message(user, "Your Final Time: " + minutes + ":" + realseconds)
-	  
-	  //Add to results file
-	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map1"
-	  file.allTimes.append(finalTime)
-	  
-	  //Reset Timer
-          user.SetPersistentVar("gen", reset)
-	  
-        } else { 
-	  
-	  //Display player Time
-          Message(user, "Your Final Time: " + seconds + " seconds")
-	  
-	  //Add to results file
-	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map1"
-	  file.allTimes.append(finalTime)
-	  
-	  //Reset Timer
-          user.SetPersistentVar("gen", reset)
-	   }
-}
-    })
-
-
-    // Triggers
-    entity trigger_0 = MapEditor_CreateTrigger( < 4773, 4876, -1777 >, < 0, 0, 0 >, 12633, 50, false )
-    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)
-        {
-		if(ent.GetPersistentVarAsInt("netWorth") > 0){
-			if(ent.GetPersistentVarAsInt("netWorth") == 1){
-				ent.SetOrigin(< 6767.9240, 1149.2000, -1025.2000 >)
-				ent.SetAngles( < 0, 180, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 2){
-				ent.SetOrigin(< 4217.1000, 1149.1000, -1074.6510 >)
-				ent.SetAngles( < 0, 180, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 3){
-				ent.SetOrigin(< 3380, 1139.7720, -1008 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 4){
-				ent.SetOrigin(< 3380, 1966, -1008 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 5){
-				ent.SetOrigin(< 3380.2, 3714, -598.1504 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 6){
-				ent.SetOrigin(< 3380, 4406, -753.9995 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 7){
-				ent.SetOrigin(< 3348, 5222, -882.9995 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 8){
-				ent.SetOrigin(< 3250.5000, 6614, -1218.0010 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 9){
-				ent.SetOrigin(< 3381, 7335, -1137 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 10){
-				ent.SetOrigin(< 3723, 7739, -1006 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 11){
-				ent.SetOrigin(< 4162, 8476, -942.9995 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 12){
-				ent.SetOrigin(< 4658, 9149, -811.9995 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-		}
-        }
-}
-    })
-    DispatchSpawn( trigger_0 )
-    entity trigger_1 = MapEditor_CreateTrigger( < 4156.423, 1163.8, -1062.494 >, < 0, 0, 0 >, 129.9, 29.41697, false )
-    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 2
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_1 )
-    entity trigger_2 = MapEditor_CreateTrigger( < 3380.2, 1163.8, -993.7 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_2.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 3
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_2 )
-    entity trigger_3 = MapEditor_CreateTrigger( < 3380.2, 2079.9, -993.7 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_3.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 4
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_3 )
-    entity trigger_4 = MapEditor_CreateTrigger( < 6351.3, 1163.8, -1056 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_4.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 1
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_4 )
-    entity trigger_5 = MapEditor_CreateTrigger( < 3380.2, 3714, -609.0504 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_5.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 5
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_5 )
-    entity trigger_6 = MapEditor_CreateTrigger( < 3380.2, 6620.1, -1295.6 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_6.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 8
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_6 )
-    entity trigger_7 = MapEditor_CreateTrigger( < 4163, 8445.127, -927.2 >, < 0, 0, 0 >, 122.9, 29.41697, false )
-    trigger_7.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 11
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_7 )
-    entity trigger_8 = MapEditor_CreateTrigger( < 4686.523, 9145.026, -801 >, < 0, 0, 0 >, 114.6, 29.41697, false )
-    trigger_8.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 12
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_8 )
-    entity trigger_9 = MapEditor_CreateTrigger( < 3396.223, 4484.626, -732.194 >, < 0, 0, 0 >, 107, 29.41697, false )
-    trigger_9.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 6
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_9 )
-    entity trigger_10 = MapEditor_CreateTrigger( < 3327.823, 5313.026, -861.194 >, < 0, 0, 0 >, 107, 29.41697, false )
-    trigger_10.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 7
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_10 )
-    entity trigger_11 = MapEditor_CreateTrigger( < 3380.2, 7269.026, -1109.894 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_11.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 9
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_11 )
-    entity trigger_12 = MapEditor_CreateTrigger( < 3712.023, 7743.626, -980.194 >, < 0, 0, 0 >, 108.3, 29.41697, false )
-    trigger_12.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 10
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_12 )
-
-
-}
-
-//Init Map2 DEAFPS
-void
-function MovementGym_Map2() {
-    // Props Array
-    array < entity > ClipArray; array < entity > NoClimbArray; array < entity > NoGrappleNoClimbArray; array < entity > NoCollisionArray; 
-
-    // Props
-    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20315.99, 23133.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22992.17, -26731.81, 22705.27 >, < 0, 0, -44.9999 >, true, 5000, -1, 1 )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/barriers/shooting_range_target_02.rmdl", < 29469.7, -20272.5, 23084.2 >, < 0, 179.9997, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_fold_sign_01.rmdl", < 25123.22, -20726.25, 23003.15 >, < 0, 30.4986, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.7, -20024.7, 24097.4 >, < 0, 0, 89.9998 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 25360.22, -22557.35, 22771.05 >, < -0.0001, -89.9999, 59.9999 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 22577.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 22577.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 21971.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 21971.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 22577.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 21971.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 22577.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.53, 21971.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 23183.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 23183.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 23183.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 23183.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 21971.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 22577.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 23183.15 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 23183.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 23183.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 23183.15 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 23183.15 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24662.32, -26441.81, 22978.1 >, < -90, -89.9996, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24662.32, -26441.81, 22372.1 >, < -90, -89.9996, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 23183.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 22577.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 23183.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 22577.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 22577.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 23183.15 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29300.97, -20487.21, 23183.15 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -20241.41, 23183.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -19684.41, 23183.15 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -19684.41, 23781.77 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29488.97, -20241.41, 23781.77 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29300.97, -20487.21, 23642.85 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19581.75, 23183.15 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 28969.77, -19829.41, 23781.77 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23183.15 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23781.77 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 22405.82 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 22405.82 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 22405.82 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 22405.82 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26446, 23960.48 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23497, -26788, 23960.48 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26446, 23960.48 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 24107, -26787.99, 23960.48 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -24862.52, 23960.48 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -24862.53, 23960.48 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20066.77, -25860.41, 23960.48 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25963.75, 23960.48 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 20676.77, -25860.41, 23960.48 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19328.78, -25472.53, 23960.48 >, < -90, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 19677.38, -25472.53, 23960.48 >, < -90, 179.9999, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 21286.77, -25860.41, 23960.48 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 28901.77, -19829.41, 23183.15 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 23183.15 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 23183.15 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 23183.15 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 23183.15 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19581.75, 23183.15 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 23960.48 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 23960.48 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 23960.48 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 23960.48 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 23960.48 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 23960.48 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 24737.81 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 24737.81 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 24737.81 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 24737.81 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 24737.81 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 24737.81 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -18615.76, 25515.13 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -18615.75, 25515.13 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19829.41, 25515.13 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -19226.21, 25515.13 >, < -90, -179.9994, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19218.95, 25515.13 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -19829.41, 25515.13 >, < -90, 0.0002, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 24408.87 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20510.76, 24408.87 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20510.76, 24408.87 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 24408.87 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 24408.87 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 24408.87 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 25186.2 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 25186.2 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 25186.2 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 25186.2 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 25186.2 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 25186.2 >, < -90, 0.0009, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 25963.53 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 25963.53 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 25963.53 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 25963.53 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 25963.53 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 25963.53 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.33, -21476.76, 26740.85 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -21476.75, 26740.85 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20263.1, 26740.85 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29054.32, -20866.3, 26740.85 >, < -90, 0.0009, 0 >, false, 5000, -1, 1.000001 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20873.55, 26740.85 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29401.72, -20263.1, 26740.85 >, < -90, -179.9994, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29189.12, -19434.85, 25263.85 >, < -90, -89.9996, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 29189.12, -19434.85, 26000.85 >, < -90, -89.9996, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 22405.82 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 23110.52 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23326.82, -26446, 23887.85 >, < -90, -90.0003, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 22405.82 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 23183.15 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 23342.32, -26788, 23960.48 >, < -90, 90.0001, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_fold_sign_01.rmdl", < 22519.62, -26464.25, 22725.45 >, < -0.3992, 146.9825, -9.3797 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29001.97, -20490.35, 23058.24 >, < -0.0001, -179.9997, 46.6977 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl", < 24797.22, -26778.81, 22722.07 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 23786, -26468, 22718.2 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21671.25, 22811.38 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22145.41, 22694.77 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21670.96, 22803.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -21171.81, 22990.79 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21361.08, 22922.96 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -21609.91, 22879.31 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 25201.72, -22084.36, 22770.97 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21232.86, 22914.58 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21799.47, 22802.99 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22273.63, 22703.15 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21799.47, 22810.99 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21361.08, 22914.96 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22145.41, 22703.54 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -21232.86, 22923.35 >, < 0, -90, 179.9997 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 25200.77, -22273.63, 22695.15 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25241.94, -22454.31, 22586.77 >, < 0, -90, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25154.77, -25036.41, 22710.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25199.26, -22411.61, 22586.77 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25155.17, -22417.61, 22704.31 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25173.74, -25089.66, 22713.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25174.14, -22470.86, 22707.31 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25247.66, -22503.29, 22704.31 >, < 0, 0.0002, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25166.94, -25078.46, 22586.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25228.7, -22450.05, 22707.31 >, < 0, 0.0002, 0 >, true, 5000, -1, 1.82 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25203.54, -22437.01, 22700.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25166.64, -22454.35, 22586.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25152.27, -25123.71, 22708.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25152.67, -22504.91, 22702.31 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25250.17, -22415.99, 22702.31 >, < 0, 0.0002, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/lamps/light_parking_post.rmdl", < 25163.54, -25091.31, 22669.76 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25199.26, -22509.31, 22586.77 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25203.54, -22476.61, 22700.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25162.54, -25756.26, 22588.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25169.34, -25767.46, 22715.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25161.77, -25817.41, 22712.77 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25150.37, -25714.21, 22712.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25147.87, -25801.51, 22710.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25237.84, -25977.51, 22588.77 >, < 0, -90, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25243.17, -25800.11, 22712.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25161.77, -26038.71, 22712.77 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25169.34, -25988.76, 22715.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25811.21, 22588.77 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25934.82, 22588.77 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25231.04, -25966.31, 22715.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -25713.51, 22588.77 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.77, -25938.31, 22710.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.67, -25813.11, 22710.77 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25237.84, -25756.21, 22588.77 >, < 0, -90, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25150.37, -25935.51, 22712.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25190.17, -25923.91, 22715.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25231.04, -25745.01, 22715.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25147.87, -26022.81, 22710.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25195.16, -26032.51, 22588.77 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25190.17, -25702.61, 22715.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25243.17, -26021.41, 22712.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.77, -25717.01, 22710.77 >, < 0, 0, 0 >, true, 5000, -1, 1.82 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25199.44, -25744.62, 22702.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25249.67, -26034.41, 22710.77 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25162.54, -25977.56, 22588.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25199.44, -25995.02, 22702.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl", < 24977.97, -26451.41, 22714.27 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20378.1, -26497.46, 22737.07 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20399.57, -26463.41, 22742.07 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 20392.77, -26452.21, 22615.07 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 20380.6, -26410.16, 22739.07 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 25044.16, -26439.8, 22716.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 23085.7, -26713.11, 22720.57 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/lamps/light_parking_post.rmdl", < 20386.87, -26450.81, 22673.37 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25751.3, 22091.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 19678.7, -25848, 21876.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22364.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 19496.5, -24950.7, 22514.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 19496.5, -24950.7, 21877.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 19496.5, -24950.7, 22298.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22364.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22364.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22364.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22215.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22215.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22215.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22215.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22066.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22066.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22066.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22066.5 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 21916.8 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 21916.8 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 21916.8 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 21916.8 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 21767.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 21767.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 21767.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 21767.9 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 19496.5, -24950.7, 22091.8 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25623, 22091.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25581.3, 22091.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25751.3, 22305.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25623, 22305.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25501.8, 22428.7 >, < -90, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25501.8, 22515.4 >, < -90, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25633.2, 22515.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25761.5, 22515.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19326.7, -25762.2, 22515.4 >, < -90, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19326.7, -25762.2, 22400 >, < -90, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25761.5, 22721.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25634.1, 22721.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25585.1, 22721.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22514 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22514 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22514 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22514 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19703.8, -25721.8, 22666.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19648.2, -25721.8, 22666.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19344.6, -25721.8, 22666.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 19400.2, -25721.8, 22666.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -25380.58, 22288.46 >, < 0, 0, 14.417 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -25380.58, 22288.46 >, < 0, 0, 14.417 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -25138.7, 22320.87 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -25138.7, 22320.87 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19589, -24905, 22320.87 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 19415, -24905, 22320.87 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 23085.7, -26440.63, 22722.8 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 24234.7, -26440.63, 22722.8 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 24233.77, -26713.61, 22721.27 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.93, -26531.76, 22691.17 >, < 0, -37.2341, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.93, -26531.75, 22563.77 >, < 0, -37.2341, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.61, -26531.51, 22818.47 >, < 0, -37.2341, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -25875.71, 22722.77 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 19678.7, -26002.31, 22722.96 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 19330.77, -26066.81, 22807.67 >, < 0.0004, -179.9997, -89.9998 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < 19822.7, -26790, 22722.8 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 24916.77, -26439.81, 22716.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl", < 24850.87, -26451.51, 22714.27 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25837.39, -20355.2, 22881.77 >, < 0, -90, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25708.49, -20315.26, 23005.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25739.69, -20355.2, 22881.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25734.67, -20285.38, 23003.77 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25251.59, -20741, 23005.77 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25281.47, -20767.18, 23003.77 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25168.97, -20827.2, 22881.77 >, < 0, 90, 0 >, true, 5000, -1, 0.7657143 )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 22980.56 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25834.59, -20291.38, 23005.77 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25778.75, -20355.48, 22994.56 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 25258.47, -20689.18, 23001.36 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25805.9, -20391.08, 23008.77 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25754.75, -20429.08, 23005.77 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25275.47, -20867.1, 23005.77 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25783.44, -20329.38, 23008.77 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25207.67, -20816.08, 22994.56 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25702.49, -20415.18, 23003.77 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25794.69, -20397.88, 22881.77 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25211.65, -20772.21, 22881.77 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25151.67, -20735, 23003.77 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25237.47, -20815.96, 23008.77 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25137.77, -20787.26, 23005.77 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25131.77, -20887.18, 23003.77 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 22980.56 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23122.96 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23122.96 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 22980.56 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 22980.56 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < 25223.67, -20303.38, 23103.96 >, < 0, 0, 180 >, true, 5000, -1, 2.8878 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25854.67, -20435.08, 23003.77 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25211.65, -20869.9, 22881.77 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25794.65, -20322.58, 22881.77 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25244.27, -20827.16, 22881.77 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 25175.77, -20838.41, 23008.77 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23122.96 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23122.96 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 25207.67, -20938.81, 22881.27 >, < 0, 0, 89.9998 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23265.77 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23265.77 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23265.77 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23265.77 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20961.18, 23408.77 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25332.97, -20689.78, 23408.77 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25876.27, -20553.38, 23408.77 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 25604.87, -20553.38, 23408.77 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26365.17, -20329.88, 23001.53 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 26376.38, -20323.09, 22874.53 >, < 0, 0.0002, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29071.03, -20322.78, 22874.53 >, < 0, 0.0002, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29071.07, -20398.08, 22874.53 >, < 0, -179.9998, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26418.42, -20310.91, 22998.53 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29113.77, -20355.4, 22874.53 >, < 0, -89.9998, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29054.52, -20330.28, 22995.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29022.09, -20403.8, 22992.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29107.77, -20311.31, 22992.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 26331.12, -20308.41, 22996.53 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29020.47, -20308.81, 22990.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29109.39, -20406.31, 22990.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29075.33, -20384.84, 22995.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29088.37, -20359.68, 22988.23 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/lamps/light_parking_post.rmdl", < 26363.52, -20319.68, 22957.53 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29016.07, -20355.4, 22874.53 >, < 0, 90.0002, 0 >, true, 5000, -1, 0.7657141 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29048.77, -20359.68, 22988.23 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29348.32, -20322.78, 22874.53 >, < 0, 0.0002, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29348.37, -20398.08, 22874.53 >, < 0, -179.9998, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29331.82, -20330.28, 22995.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29391.06, -20355.4, 22874.53 >, < 0, -89.9998, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29299.38, -20403.8, 22992.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29385.07, -20311.31, 22992.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29386.68, -20406.31, 22990.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29297.77, -20308.81, 22990.08 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29352.63, -20384.84, 22995.08 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29365.66, -20359.68, 22988.23 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29293.37, -20355.4, 22874.53 >, < 0, 90.0002, 0 >, true, 5000, -1, 0.7657141 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29326.06, -20359.68, 22988.23 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29213.77, -20403.8, 22987.67 >, < 0, -89.9996, 0 >, true, 5000, -1, 1.82 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29219.67, -20330.28, 22990.07 >, < 0, 90.0003, 0 >, true, 5000, -1, 1.82 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 28935.07, -20359.68, 22873.07 >, < -0.0002, -90, 89.9998 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29286.87, -20090.59, 23073.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29415.77, -20130.53, 23197.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29384.56, -20090.59, 23073.77 >, < 0, -90.0003, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29289.67, -20154.41, 23197.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29389.59, -20160.41, 23195.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29318.36, -20054.71, 23200.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29369.52, -20016.71, 23197.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29421.77, -20030.61, 23195.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29340.82, -20116.41, 23200.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29345.51, -20090.31, 23186.56 >, < 0, 89.9997, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29269.59, -20010.71, 23195.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.57, -20047.91, 23073.77 >, < 0, -0.0003, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.61, -20116.61, 23073.77 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29345.51, -20202.91, 23072.46 >, < -90, 89.9997, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29286.87, -20085.09, 22977.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 0.7657143 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29384.56, -20085.09, 22977.77 >, < 0, -90.0003, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.57, -20042.41, 22977.77 >, < 0, -0.0003, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29329.61, -20117.71, 22977.77 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22691.17 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22563.77 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.43, -26189.41, 22818.47 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 23069.46 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.03, -26189.41, 22942.06 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25052.43, -26189.41, 23196.77 >, < 0, -179.9992, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29134.04, -20090.59, 23073.77 >, < 0, -90.0003, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29039.15, -20154.41, 23197.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29036.35, -20085.09, 22977.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 0.7657143 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29134.04, -20085.09, 22977.77 >, < 0, -90.0003, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29079.05, -20042.41, 22977.77 >, < 0, -0.0003, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29036.35, -20090.59, 23073.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 0.7657143 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29165.25, -20130.53, 23197.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29090.3, -20116.41, 23200.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29094.99, -20090.31, 23186.56 >, < 0, 89.9997, 0 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29019.07, -20010.71, 23195.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29079.05, -20047.91, 23073.77 >, < 0, -0.0003, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29139.07, -20160.41, 23195.77 >, < 0, -90.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29067.84, -20054.71, 23200.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29119, -20016.71, 23197.77 >, < 0, 89.9997, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 29171.25, -20030.61, 23195.77 >, < 0, -0.0002, 0 >, true, 5000, -1, 1.3183 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29094.99, -20202.91, 23072.46 >, < -90, 89.9997, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23684.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23684.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23236.87 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19776.71, 24041.47 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23535.77 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23535.77 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 29221.67, -19142.31, 23834.77 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23386.57 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23236.87 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23087.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23087.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23087.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29051.87, -19953.81, 23835.47 >, < -90, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23386.57 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23986.47 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19772.91, 23411.27 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19825.71, 24041.27 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23986.47 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23986.47 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19814.61, 23411.57 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24134.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19572.51, 23605.17 >, < 0, 0, 12.1251 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19330.31, 23631.96 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23236.87 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23834.07 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24134.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19942.91, 23411.57 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23684.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23535.77 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29403.87, -20039.61, 23196.97 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23386.57 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 29221.67, -19142.31, 23411.87 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19814.61, 23625.17 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23684.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 29221.67, -19142.31, 23618.27 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19693.41, 23748.77 >, < -90, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19953.11, 23835.77 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29051.87, -19953.81, 23720.07 >, < -90, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19953.11, 24041.27 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 23834.07 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23236.87 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23834.07 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24134.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24134.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19942.91, 23625.17 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19572.51, 23605.17 >, < 0, 0, 12.1251 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 23087.97 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23535.77 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23386.57 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 23834.07 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19096.61, 23631.96 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19693.41, 23835.47 >, < -90, -90, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29140.17, -19096.61, 23631.96 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -19824.81, 23835.77 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 23986.47 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29314.17, -19330.31, 23631.96 >, < 0, 0, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -20067.32, 24042.83 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29403.87, -20193.92, 24043.03 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -20877.31, 24482.43 >, < 0, -179.9997, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20140.3, 24888.19 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20013.7, 24888.39 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24442.11 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24442.11 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 23994.01 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20430.91, 24886.83 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24292.91 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24292.91 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 23994.01 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29398.87, -20253.81, 24680.83 >, < -90, -89.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29082.56, -20294.21, 24741.17 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24741.17 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24888.96 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -20877.31, 24482.43 >, < 0, -179.9997, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 23994.01 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24591.21 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24888.96 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20264.71, 24256.93 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24442.11 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24292.91 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29052.07, -20168.01, 24042.96 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24143.71 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20434.71, 24256.63 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20381.91, 24886.63 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24143.71 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24741.17 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < 29229.17, -21065.31, 24257.23 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20393.01, 24470.53 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29330.56, -20294.21, 24442.11 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < 29229.17, -21065.31, 24463.63 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20514.21, 24594.13 >, < -90, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20254.51, 24681.13 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29398.87, -20253.81, 24565.43 >, < -90, -89.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24591.21 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 23994.01 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24591.21 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24888.96 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29021.77, -20294.21, 24888.96 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20393.01, 24256.93 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -20638.51, 24453.87 >, < -0.0001, -179.9997, 12.9107 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.06, -20254.51, 24886.63 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 29229.17, -21065.31, 24680.13 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29380.97, -20294.21, 24143.71 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20514.21, 24680.83 >, < -90, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20382.81, 24681.13 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24741.17 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 29052.07, -20264.71, 24470.53 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -20638.51, 24453.87 >, < -0.0001, -179.9997, 12.9107 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29141.77, -21111.01, 24482.43 >, < 0, -179.9997, 0 >, false, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 29315.77, -21111.01, 24482.43 >, < 0, -179.9997, 0 >, false, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24292.91 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29325.37, -20294.21, 24143.71 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29077.37, -20294.21, 24591.21 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_02.rmdl", < 29052.07, -19421.63, 24888.37 >, < 0, 90.0003, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24284.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24284.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24284.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24284.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24434.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24434.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24434.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24434.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24584.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24584.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24584.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24584.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.37, -19913.41, 24734.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29428.97, -19913.41, 24734.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29069.77, -19913.41, 24734.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.37, -19913.41, 24734.27 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < 29480.4, -20345.19, 23208.07 >, < -59.9999, 89.9996, 0.0003 >, true, 5000, -1, 2.39 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 25296.61, -26531.51, 22946.17 >, < 0, -37.2341, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25399.97, -22454.31, 22710.17 >, < 0, 90.0003, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25390.87, -22399.31, 22691.77 >, < 0, 90.0003, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25384.37, -22518.61, 22674.96 >, < 0, 90.0003, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25390.87, -22460.11, 22588.46 >, < 0, 90.0003, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 25399.97, -22454.31, 22664.17 >, < 0, 90.0003, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 19683.67, -26210.81, 22807.67 >, < 0.0004, 0.0006, -89.9998 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 24967.9, -26762.3, 22718.2 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29373.7, -20021.1, 24097.4 >, < 0, 0, 89.9998 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29340.92, -20532.81, 23004.37 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29276.62, -20517.21, 22969.17 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29335.12, -20523.71, 22882.67 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29395.92, -20523.71, 22985.97 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29340.92, -20532.81, 22958.37 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29154.67, -20116.61, 23073.77 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29052.37, -20116.61, 23073.77 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29052.37, -20116.61, 23008.17 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29154.67, -20116.61, 22997.77 >, < 0, 179.9997, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29148.97, -20532.81, 22958.37 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29148.97, -20532.81, 23004.37 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29084.67, -20517.21, 22969.17 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29143.17, -20523.71, 22882.67 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29203.97, -20523.71, 22985.97 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20246.26, 23004.37 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29509.56, -20310.56, 22969.17 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20252.06, 22882.67 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20191.26, 22985.97 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20246.26, 22958.37 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29525.16, -20438.2, 22958.37 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29537.47, -20438.2, 23004.37 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29509.56, -20502.5, 22969.17 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29527.67, -20383.21, 22985.97 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29516.07, -20444.01, 22882.67 >, < 0, 90.0004, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29442.47, -20469.31, 22974.27 >, < 51.1379, -131.4282, 4.6225 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 23005.87, -26791.71, 22720.57 >, < 0, -90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22881.87, -26791.71, 22720.57 >, < 0, -90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22757.87, -26791.71, 22720.57 >, < 0, -90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22633.87, -26791.71, 22720.57 >, < 0, -90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22800.17, -26731.81, 22705.27 >, < 0, 0, -44.9999 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22633.87, -26442, 22720.57 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22647.57, -26501.91, 22705.27 >, < 0, 180, -44.9999 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22757.87, -26442, 22720.57 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 22881.86, -26442.01, 22720.57 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 23005.87, -26442, 22720.57 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22839.57, -26501.91, 22705.27 >, < 0, 180, -44.9999 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 28923.27, -20490.33, 23058.24 >, < -0.0001, -179.9997, 46.6977 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29005.97, -20517.21, 22969.17 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29070.27, -20532.81, 23004.37 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.35 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 29064.47, -20523.71, 22882.67 >, < 0, 0.0005, 0 >, true, 5000, -1, 0.58 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24988.87, -21913.11, 22854.39 >, < 90, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22854.39 >, < 90, -179.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24988.87, -21913.11, 22727.77 >, < 90, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22727.77 >, < 90, -179.9998, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20291.01, 23133.46 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29442.27, -20467.31, 22972.77 >, < 51.1379, -131.4282, 4.6225 >, true, 5000, -1, 1 ) )
-
-    foreach ( entity ent in ClipArray )
-    {
-        ent.MakeInvisible()
-        ent.kv.solid = 6
-        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-        ent.kv.contents = CONTENTS_PLAYERCLIP
-    }
-    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
-    foreach ( entity ent in NoGrappleNoClimbArray )
-    {
-        ent.MakeInvisible()
-        ent.kv.solid = 3
-        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-        ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
-    }
-    foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
-
-    // VerticalZipLines
-    MapEditor_CreateZiplineFromUnity( < 19501.2, -25873.8, 22714.8 >, < 0, 90.0001, 0 >, < 19501.2, -25873.8, 22164.7 >, < 0, 90.0001, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < 29226.37, -20065.41, 24034.86 >, < 0, 90.0001, 0 >, < 29226.37, -20065.41, 23484.76 >, < 0, 90.0001, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < 29229.57, -20142.21, 24880.22 >, < 0, -89.9996, 0 >, < 29229.57, -20142.21, 24330.13 >, < 0, -89.9996, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-
-    // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< 19402.37, -25749.81, 21876.2 >, < 0, 90.0005, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 19589.47, -25748.59, 21876.2 >, < 0, -89.9992, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
-    {
-user.SetPersistentVar( "gen", Time() )
-Message(user, "Timer Started!" )
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 29284.57, -19512.01, 24886.57 >, < 0, 0, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-int reset = 0
-user.SetPersistentVar("gen", reset)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 29172.57, -19512.01, 24886.57 >, < 0, 0, 0 >, "%use% Back to start"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 19500.3000, -25867.7000, 21940 > , < 0, -89.9998, 0 >)
-int reset = 0
-user.SetPersistentVar("gen", reset)
-int checkpointActive = 1
-user.SetPersistentVar("netWorth", checkpointActive)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 29226.47, -19618.21, 24886.57 >, < 0, 0, 0 >, "%use% Stop Timer"), void function(entity panel, entity user, int input)
-    {
-      int reset = 0
-      if (user.GetPersistentVarAsInt("gen") != reset) {
-        user.SetPersistentVar("xp", Time() - user.GetPersistentVarAsInt("gen"))
-        int seconds = user.GetPersistentVarAsInt("xp")
-        if (seconds > 59) {
-          
-	  //Whacky conversion
-	  int minutes = seconds / 60
-          int realseconds = seconds - (minutes * 60)
-          
-	  //Display player Time
-	  Message(user, "Your Final Time: " + minutes + ":" + realseconds)
-	  
-	  //Add to results file
-	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2"
-	  file.allTimes.append(finalTime)
-	  
-	  //Reset Timer
-          user.SetPersistentVar("gen", reset)
-	  
-        } else { 
-	  
-	  //Display player Time
-          Message(user, "Your Final Time: " + seconds + " seconds")
-	  
-	  //Add to results file
-	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2"
-	  file.allTimes.append(finalTime)
-	  
-	  //Reset Timer
-          user.SetPersistentVar("gen", reset)
-	  }
-}
-    })
-
-
-    // Triggers
-    entity trigger_0 = MapEditor_CreateTrigger( < 25219, -22393, 21739 >, < 0, 0, 0 >, 20000, 50, false )
-    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)
-        {
-		if(ent.GetPersistentVarAsInt("netWorth") > 0){
-			if(ent.GetPersistentVarAsInt("netWorth") == 1){
-				ent.SetOrigin(< 19500.3000, -25867.7000, 21940 >)
-				ent.SetAngles( < 0, 0, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 2){
-				ent.SetOrigin(< 19494, -25636, 22726 >)
-				ent.SetAngles( < 0, -90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 3){
-				ent.SetOrigin(< 22921.5, -26594.16, 22741.9 >)
-				ent.SetAngles( < 0, 0, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 4){
-				ent.SetOrigin(< 24881.3, -26610.8, 22735.8 >)
-				ent.SetAngles( < 0, 0, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 5){
-				ent.SetOrigin(< 25192.57, -25999.21, 22724.57 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 6){
-				ent.SetOrigin(< 25182.77, -22528.81, 22717.96 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 7){
-				ent.SetOrigin(< 25192.57, -20847.21, 23020.77 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 8){
-				ent.SetOrigin(< 25753.97, -20349.61, 23025.57 >)
-				ent.SetAngles( < 0, 0, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 9){
-				ent.SetOrigin(< 29049.1, -20359.7, 23043.9 >)
-				ent.SetAngles( < 0, 0, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 10){
-				ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >)
-				ent.SetAngles( < 0, -180, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			if(ent.GetPersistentVarAsInt("netWorth") == 11){
-				ent.SetOrigin(< 29228.4, -20369.9, 24916.2 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-			
-			// is actually checkpoint 3.5
-			if(ent.GetPersistentVarAsInt("netWorth") == 12){
-				ent.SetOrigin(< 23807.4, -26669.4, 22740 >)
-				ent.SetAngles( < 0, 90, 0 >)
-				ent.SetVelocity( < 0, 0, 0 >)
-			}
-		}
-        }
-}
-    })
-    DispatchSpawn( trigger_0 )
-    entity trigger_1 = MapEditor_CreateTrigger( < 19490.77, -25616.31, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 2
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_1 )
-    entity trigger_2 = MapEditor_CreateTrigger( < 25197.57, -25872.41, 22746.21 >, < 0, 0, 0 >, 192.96, 26.5964, false )
-    trigger_2.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_2 )
-    entity trigger_3 = MapEditor_CreateTrigger( < 19542.47, -25859.01, 21899.15 >, < 0, 0, 0 >, 110.2, 50, false )
-    trigger_3.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_3 )
-    entity trigger_4 = MapEditor_CreateTrigger( < 19500.83, -25826.5, 22282.15 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_4.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_4 )
-    entity trigger_5 = MapEditor_CreateTrigger( < 19510.13, -25375.3, 22444.15 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_5.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 19500.3000, -25867.7000, 21940 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_5 )
-    entity trigger_6 = MapEditor_CreateTrigger( < 19510.13, -25040.8, 22444.15 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_6.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 19500.3000, -25867.7000, 21940 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_6 )
-    entity trigger_7 = MapEditor_CreateTrigger( < 19510.13, -24830.13, 22444.15 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_7.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 19500.3000, -25867.7000, 21940 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_7 )
-    entity trigger_8 = MapEditor_CreateTrigger( < 19500.83, -25826.5, 22748 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_8.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_8 )
-    entity trigger_9 = MapEditor_CreateTrigger( < 22962.67, -26643.71, 22744 >, < 0, 0, 0 >, 198.8, 79.2, false )
-    trigger_9.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_9 )
-    entity trigger_10 = MapEditor_CreateTrigger( < 24102, -26656.21, 22744 >, < 0, 0, 0 >, 218, 95.1, false )
-    trigger_10.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_10 )
-    entity trigger_11 = MapEditor_CreateTrigger( < 24922, -26700.81, 22744 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_11.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_11 )
-    entity trigger_12 = MapEditor_CreateTrigger( < 24922, -26508.11, 22744 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_12.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_12 )
-    entity trigger_13 = MapEditor_CreateTrigger( < 24922, -26599.71, 22744 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_13.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_13 )
-    entity trigger_14 = MapEditor_CreateTrigger( < 25209.97, -20819.28, 23014.56 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_14.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_14 )
-    entity trigger_15 = MapEditor_CreateTrigger( < 19863.07, -25738.61, 22652.9 >, < 0, 0, 0 >, 115.3, 10, false )
-    trigger_15.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 19494, -25636, 22726 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_15 )
-    entity trigger_16 = MapEditor_CreateTrigger( < 25255.27, -22481.61, 22744 >, < 0, 89.9998, 0 >, 132.982, 26.5964, false )
-    trigger_16.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_16 )
-    entity trigger_17 = MapEditor_CreateTrigger( < 25154.17, -22481.61, 22744 >, < 0, 89.9998, 0 >, 132.982, 26.5964, false )
-    trigger_17.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_17 )
-    entity trigger_18 = MapEditor_CreateTrigger( < 25154.17, -22321.01, 22744 >, < 0, 89.9998, 0 >, 132.982, 26.5964, false )
-    trigger_18.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_18 )
-    entity trigger_19 = MapEditor_CreateTrigger( < 25255.27, -22321.01, 22744 >, < 0, 89.9998, 0 >, 132.982, 26.5964, false )
-    trigger_19.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_19 )
-    entity trigger_20 = MapEditor_CreateTrigger( < 29065.07, -20366.81, 23031.77 >, < 0, 0, 0 >, 167.6, 26.5964, false )
-    trigger_20.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_20 )
-    entity trigger_21 = MapEditor_CreateTrigger( < 25784.27, -20354.41, 23014.77 >, < 0, 0, 0 >, 262, 115, false )
-    trigger_21.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_21 )
-    entity trigger_22 = MapEditor_CreateTrigger( < 29206.77, -20366.81, 23031.77 >, < 0, 0, 0 >, 167.6, 26.5964, false )
-    trigger_22.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_22 )
-    entity trigger_23 = MapEditor_CreateTrigger( < 29272.07, -20366.81, 23031.77 >, < 0, 0, 0 >, 167.6, 26.5964, false )
-    trigger_23.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        }
-    }
-    })
-    DispatchSpawn( trigger_23 )
-    entity trigger_24 = MapEditor_CreateTrigger( < 22647.77, -26623.41, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_24.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 3
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_24 )
-    entity trigger_25 = MapEditor_CreateTrigger( < 24923.77, -26623.41, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_25.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 4
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_25 )
-    entity trigger_26 = MapEditor_CreateTrigger( < 25199.87, -22422.61, 22763.46 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_26.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 6
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_26 )
-    entity trigger_27 = MapEditor_CreateTrigger( < 25207.17, -20823.51, 23062.67 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_27.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 7
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_27 )
-    entity trigger_28 = MapEditor_CreateTrigger( < 29095.37, -20354.41, 23062.67 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_28.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 9
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_28 )
-    entity trigger_29 = MapEditor_CreateTrigger( < 29235.3, -19566.9, 23764.22 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_29.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_29 )
-    entity trigger_30 = MapEditor_CreateTrigger( < 29226, -19846.31, 23219.22 >, < 0, 0, 0 >, 200, 50, false )
-    trigger_30.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_30 )
-    entity trigger_31 = MapEditor_CreateTrigger( < 29215.94, -19807.92, 24083.83 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_31.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 10
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_31 )
-    entity trigger_32 = MapEditor_CreateTrigger( < 29241.77, -19354.41, 22419.22 >, < 0, 0, 0 >, 277.1, 606.4005, false )
-    trigger_32.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_32 )
-    entity trigger_33 = MapEditor_CreateTrigger( < 29226, -20018.1, 23602.22 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_33.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_33 )
-    entity trigger_34 = MapEditor_CreateTrigger( < 29235.3, -19232.4, 23764.22 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_34.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_34 )
-    entity trigger_35 = MapEditor_CreateTrigger( < 29226, -20018.1, 24068.07 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_35.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_35 )
-    entity trigger_36 = MapEditor_CreateTrigger( < 29174.3, -17972.24, 22419.22 >, < 0, 0, 0 >, 1000, 606.4005, false )
-    trigger_36.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_36 )
-    entity trigger_37 = MapEditor_CreateTrigger( < 29235.3, -19021.74, 23764.22 >, < 0, 0, 0 >, 240.7167, 10, false )
-    trigger_37.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_37 )
-    entity trigger_38 = MapEditor_CreateTrigger( < 29174.3, -17208.24, 22419.22 >, < 0, 0, 0 >, 1000, 606.4005, false )
-    trigger_38.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_38 )
-    entity trigger_39 = MapEditor_CreateTrigger( < 29220.64, -20640.71, 24609.58 >, < 0, -179.9997, 0 >, 240.7167, 10, false )
-    trigger_39.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_39 )
-    entity trigger_40 = MapEditor_CreateTrigger( < 29240, -20399.7, 24929.19 >, < 0, -179.9997, 0 >, 147.0848, 29.41697, false )
-    trigger_40.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 11
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_40 )
-    entity trigger_41 = MapEditor_CreateTrigger( < 29281.64, -21339.37, 23989.77 >, < 0, -179.9997, 0 >, 1000, 17.6, false )
-    trigger_41.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_41 )
-    entity trigger_42 = MapEditor_CreateTrigger( < 29229.94, -20189.51, 24447.58 >, < 0, -179.9997, 0 >, 132.982, 26.5964, false )
-    trigger_42.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_42 )
-    entity trigger_43 = MapEditor_CreateTrigger( < 29229.94, -20189.51, 24064.58 >, < 0, -179.9997, 0 >, 200, 50, false )
-    trigger_43.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_43 )
-    entity trigger_44 = MapEditor_CreateTrigger( < 29220.64, -20975.21, 24609.58 >, < 0, -179.9997, 0 >, 240.7167, 10, false )
-    trigger_44.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_44 )
-    entity trigger_45 = MapEditor_CreateTrigger( < 29220.64, -21185.88, 24609.58 >, < 0, -179.9997, 0 >, 240.7167, 10, false )
-    trigger_45.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_45 )
-    entity trigger_46 = MapEditor_CreateTrigger( < 29281.65, -22999.38, 23989.77 >, < 0, -179.9997, 0 >, 1000, 17.6, false )
-    trigger_46.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_46 )
-    entity trigger_47 = MapEditor_CreateTrigger( < 29281.65, -22235.38, 23989.77 >, < 0, -179.9997, 0 >, 1000, 17.6, false )
-    trigger_47.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29230.03, -19820.17, 24060.37 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_47 )
-    entity trigger_48 = MapEditor_CreateTrigger( < 29241.77, -19058.41, 22419.22 >, < 0, 0, 0 >, 277.1, 606.4005, false )
-    trigger_48.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 29243.9, -20067.04, 23203.72 >) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_48 )
-    entity trigger_49 = MapEditor_CreateTrigger( < 19449.57, -25859.01, 21899.15 >, < 0, 0, 0 >, 110.2, 50, false )
-    trigger_49.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_49 )
-    entity trigger_50 = MapEditor_CreateTrigger( < 19493.67, -25648.31, 21899.15 >, < 0, 0, 0 >, 110.2, 50, false )
-    trigger_50.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_50 )
-    entity trigger_51 = MapEditor_CreateTrigger( < 19500.83, -26276.91, 22748 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_51.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-         	  ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        	  ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-         	  ent.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-         	  ent.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	  ent.SetSuitGrapplePower(100)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_51 )
-    entity trigger_52 = MapEditor_CreateTrigger( < 25200.77, -25921.41, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_52.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 5
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_52 )
-    entity trigger_53 = MapEditor_CreateTrigger( < 25789.07, -20363.41, 23062.67 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_53.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 8
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_53 )
-    entity trigger_54 = MapEditor_CreateTrigger( < 23836.77, -26623.41, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_54.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 12
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_54 )
-    entity trigger_55 = MapEditor_CreateTrigger( < 19490.77, -25976.81, 22763.77 >, < 0, 0, 0 >, 147.0848, 29.41697, false )
-    trigger_55.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-    if (IsValid(ent)){
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
-		int reset = 0
-		int checkpointActive = 2
-		//show current time
-		if(ent.GetPersistentVarAsInt("gen") != reset){
-			ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
-			int seconds = ent.GetPersistentVarAsInt( "xp" )
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				int minutes = seconds
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
-		
-		//set checkpoint
-		ent.SetPersistentVar("netWorth", checkpointActive)
-        }
-}
-    })
-    DispatchSpawn( trigger_55 )
-
-    // Func Window Hints
-    MapEditor_CreateFuncWindowHint( < 29450.57, -20272.81, 23085.87 >, 33.5, 45.4, < 0, -1, 0 > )
-
-
-}
-
-//Init Octane Segments
-void
-function MovementGym_Octane() {
-    // Props Array
-    array < entity > ClipArray; array < entity > NoClimbArray; array < entity > NoCollisionArray; 
-
-    // Props
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < 15820, -390.2969, 22534.3 >, < 0, 0, 180 >, true, 5000, -1, 2.8878 )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -1048.102, 22410.9 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 9697.8, -776.1016, 22431.7 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9647, -903, 22424.9 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9647, -55, 22424.9 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 9593.604, -182.1016, 22431.7 >, < 0, -90.0005, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 13450.19, -107.9063, 22431.7 >, < 0, -0.0005, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 13193.68, -824.2969, 22431.7 >, < 0, 179.9998, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 13323.09, -54.5078, 22424.9 >, < 0, 90, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 13320.58, -870.3984, 22424.9 >, < 0, 90, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 13192.28, -830.6016, 22431.1 >, < 0, 179.9998, 0 >, false, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 13451.2, -102.8984, 22430.8 >, < 0, -0.0005, 0 >, false, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13282.6, -902.9297, 22439.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13244.6, -851.7813, 22436.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13266.7, -878, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13238.6, -951.7031, 22434.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13388.3, -831.7031, 22434.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13351.1, -891.6797, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13382.3, -931.625, 22436.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13344.3, -880.4766, 22439.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13307.27, -843.5234, 22439.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13358.42, -805.5234, 22436.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13318.48, -836.7266, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13258.5, -799.5234, 22434.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13318.48, -934.4219, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13259.92, 28.7031, 22434.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13319.9, -8.5, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13359.84, 22.7031, 22436.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13308.69, -15.2969, 22439.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13331.15, -77, 22439.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13280, -115, 22436.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13319.94, -83.7969, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13379.92, -121, 22434.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13412.1, 8.7969, 22434.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13374.9, -51.1797, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13406.1, -91.1172, 22436.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 13368.1, -39.9688, 22439.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 13277.2, -51.1797, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10453.02, 2218.898, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10413.08, 2090, 22436.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10453.02, 2121.203, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10513, 2084, 22434.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10383.2, 2116.18, 22434.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10420.4, 2176.156, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10389.2, 2216.102, 22436.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10427.2, 2164.953, 22439.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10488.9, 2187.406, 22439.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10526.9, 2136.258, 22436.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 10495.7, 2176.203, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 10532.9, 2236.18, 22434.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9726.603, 20.9219, 22434.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9689.399, -39.0625, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9720.602, -79, 22436.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9682.601, -27.8516, 22439.1 >, < 0, 0, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9620.9, -50.3125, 22439.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9582.9, 0.8359, 22436.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9614.1, -39.1016, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9576.898, -99.0781, 22434.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9706.7, -131.2578, 22434.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9646.721, -94.0547, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9606.781, -125.2578, 22436.1 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9646.721, 3.6406, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9571.096, -974.1016, 22434.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9608.299, -914.1172, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9577.096, -874.1797, 22436.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9615.098, -925.3281, 22439.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9676.798, -902.875, 22439.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9714.798, -954.0234, 22436.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9683.598, -914.0781, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9720.8, -854.1016, 22434.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9590.997, -821.9219, 22434.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9650.978, -859.125, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 9690.917, -827.9219, 22436.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 9650.977, -956.8203, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 16247.98, -389, 22431.7 >, < 0, 179.9995, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_128.rmdl", < 15854.8, -776.1016, 22431.7 >, < 0, 89.9999, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 16375.08, -442.3984, 22424.9 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 15804, -903, 22424.9 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16433.72, -442.1172, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16304.82, -402.1797, 22436.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16336.02, -442.1172, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16298.82, -502.1016, 22434.1 >, < 0, -179.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16331, -372.2969, 22434.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16390.98, -409.5, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16430.92, -378.2969, 22436.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16379.77, -416.2969, 22439.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16402.23, -478, 22439.1 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16351.08, -516, 22436.1 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 16391.02, -484.7969, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 16451, -522, 22434.1 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15807.98, -956.8203, 22312.1 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15847.92, -827.9219, 22436.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15807.98, -859.125, 22312.1 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15748, -821.9219, 22434.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15877.8, -854.1016, 22434.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15840.6, -914.0781, 22312.1 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15871.8, -954.0234, 22436.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15833.8, -902.875, 22439.1 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15772.1, -925.3281, 22439.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15734.1, -874.1797, 22436.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < 15765.3, -914.1172, 22312.1 >, < 0, 90, 0 >, true, 5000, -1, 0.7657142 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < 15728.1, -974.1016, 22434.1 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -776.7031, 22410.9 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -1048.102, 22553.3 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 15929.3, -776.7031, 22553.3 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16201.2, -640.2969, 22410.9 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16472.6, -640.2969, 22410.9 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16472.6, -640.2969, 22553.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 16201.2, -640.2969, 22553.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -8327.6, 8918.297, 22030.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22283.7 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22157.1 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -2338.4, 9119.297, 21946.8 >, < -90, 180, 0 >, true, 5000, -1, 4.715525 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -5769.898, 8792.203, 22408.21 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2337.1, 8790, 21901 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2337.1, 8790, 22389.3 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2338, 8665, 22068 >, < 0, 0, 90.0001 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2338, 8665, 22684 >, < 0, 0, 90.0001 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6539.1, 8790, 21901 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6422.1, 8790, 22031.5 >, < 90, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6670, 8790, 22031.5 >, < 90, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6537, 8677.703, 22031.5 >, < 90, -90, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -6539.1, 8790, 22151.3 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -5635, 8840, 22068 >, < -0.0001, 90.0001, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -5635, 8840, 22684 >, < -0.0001, 90.0001, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -5909, 8669, 22068 >, < 0, 0.0001, 90.0001 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -5909, 8669, 22684 >, < 0, 0.0001, 90.0001 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -2338.4, 9119.297, 22164.8 >, < -30, -90.0001, -90 >, true, 5000, -1, 4.715525 )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -6559.898, 9119, 21946.8 >, < -45, -0.0001, 180 >, true, 5000, -1, 4.715525 )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -5810, 9087.703, 22470.6 >, < -28.7601, -58.7473, 175.6741 >, true, 5000, -1, 4.715526 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8940.6, 8790, 21901 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8823.6, 8790, 22031.5 >, < 90, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -9071.5, 8790, 22031.5 >, < 90, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8938.5, 8677.703, 22031.5 >, < 90, -90, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8940.6, 8790, 22151.3 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -8168.1, 8567.102, 22408.21 >, < 0, -179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -8310.5, 8440.594, 22684 >, < 0, 0.0001, 90.0001 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -8310.5, 8440.602, 22068 >, < 0, 0.0001, 90.0001 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -8961.398, 9119, 21946.8 >, < -45, -0.0001, 180 >, true, 5000, -1, 4.715525 )
-    MapEditor_CreateProp( $"mdl/signs/street_sign_arrow.rmdl", < -8053, 9087.688, 22505.9 >, < -0.0001, -90, 180 >, true, 5000, -1, 4.715525 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -8036.5, 8770, 22068 >, < -0.0001, 90.0001, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -8036.5, 8770, 22684 >, < -0.0001, 90.0001, 90 >, true, 5000, -1, 1 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl", < -2336.033, 8788.969, 22405.3 >, < 0, 7.2791, 0 >, true, 5000, -1, 1.6393 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22283.7 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22410.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22535.4 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22662 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8847.301, 8918.297, 22788.6 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22157.1 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22410.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22535.4 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22662 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -8463.4, 8918.297, 22788.6 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22410.3 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22157.1 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22283.7 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22535.4 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22662 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22788.6 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8582.6, 8918.297, 22030.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8582.6, 8918.297, 21903.8 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -8327.6, 8918.297, 21903.8 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22157.1 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22283.7 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22410.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22788.6 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22662 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6448.699, 8918.297, 22535.4 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22283.7 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22157.1 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22410.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22535.4 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22662 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl", < -6064.801, 8918.297, 22788.6 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22410.3 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22157.1 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22283.7 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22535.4 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22662 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22788.6 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6184, 8918.297, 22030.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -6184, 8918.297, 21903.8 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -5929, 8918.297, 22030.3 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < -5929, 8918.297, 21903.8 >, < 0, -90, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 22030.3 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -5896.9, 8568.602, 21903.8 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 21903.8 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < -8295.5, 8568.602, 22030.3 >, < 0, -180, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2281.798, 8783.539, 21785.9 >, < 0, -90.0001, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2410.7, 8823.477, 21909.9 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2379.498, 8783.539, 21785.9 >, < 0, 89.9999, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2416.702, 8723.563, 21907.9 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2384.521, 8853.359, 21907.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2324.539, 8816.156, 21785.9 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2284.601, 8847.359, 21909.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2335.749, 8809.359, 21912.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2313.291, 8747.656, 21912.9 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2364.439, 8709.656, 21909.9 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -2324.501, 8740.859, 21785.9 >, < 0, 179.9999, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -2264.519, 8703.656, 21907.9 >, < 0, -90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5718.521, 8711.797, 22417.7 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5821.242, 8781.617, 22295.7 >, < 0, 90, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5686.342, 8841.594, 22417.7 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5778.541, 8824.297, 22295.7 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5789.75, 8817.5, 22422.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5818.441, 8717.797, 22419.7 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5692.34, 8741.68, 22419.7 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5767.293, 8755.797, 22422.7 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5723.543, 8781.617, 22295.7 >, < 0, -90, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5838.523, 8861.5, 22417.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5738.6, 8855.5, 22419.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -5778.5, 8749, 22295.7 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -5856.9, 8786.602, 22419.7 >, < 0, -89.9999, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6468.598, 8846.219, 21907.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6538.42, 8743.5, 21785.2 >, < 0, -180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6598.398, 8878.398, 21907.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6581.1, 8786.203, 21785.2 >, < 0, 90, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6574.301, 8774.992, 21912.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6474.6, 8746.297, 21909.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6498.48, 8872.398, 21909.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6512.602, 8797.445, 21912.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6538.422, 8841.203, 21785.2 >, < 0, 0, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6618.305, 8726.219, 21907.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -6612.301, 8826.141, 21909.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -6505.801, 8786.242, 21785.2 >, < 0, -90, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8866.699, 8831.32, 21908.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8936.521, 8728.602, 21786.2 >, < 0, 180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8996.5, 8863.5, 21908.2 >, < 0, 90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8979.199, 8771.297, 21786.2 >, < 0, 89.9999, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8972.398, 8760.094, 21913.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8872.703, 8731.398, 21910.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8896.58, 8857.5, 21910.2 >, < 0, 90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8910.701, 8782.547, 21913.2 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8936.521, 8826.297, 21786.2 >, < 0, -0.0001, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -9016.402, 8711.32, 21908.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -9010.402, 8811.242, 21910.2 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8903.9, 8771.336, 21786.2 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8134.5, 8545.797, 22294.8 >, < 0, -90, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8241, 8585.703, 22418.8 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8247, 8485.773, 22416.8 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8167.121, 8600.758, 22294.8 >, < 0, -0.0001, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8141.301, 8557.008, 22421.8 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8127.18, 8631.961, 22418.8 >, < 0, 90, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8103.301, 8505.859, 22418.8 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8202.998, 8534.547, 22421.8 >, < 0, -180, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8209.799, 8545.758, 22294.8 >, < 0, 89.9999, 0 >, true, 5000, -1, 0.7657145 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8227.1, 8637.961, 22416.8 >, < 0, 90, 0 >, true, 5000, -1, 1.3183 ) )
-    MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -8167.121, 8503.055, 22294.8 >, < 0, 180, 0 >, true, 5000, -1, 0.7657141 )
-    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -8097.299, 8605.781, 22416.8 >, < 0, 0.0001, 0 >, true, 5000, -1, 1.3183 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.869, 9145.203, 22068.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.871, 9145.195, 22684.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.869, 9745.203, 22068.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -6674.871, 9745.195, 22684.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.867, 9145.211, 22068.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.869, 9145.203, 22684.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.867, 9745.211, 22068.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -9067.869, 9745.203, 22684.15 >, < 0.0001, -90, 90 >, true, 5000, -1, 1 ) )
-
-    foreach ( entity ent in ClipArray )
-    {
-        ent.MakeInvisible()
-        ent.kv.solid = 6
-        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-        ent.kv.contents = CONTENTS_PLAYERCLIP
-    }
-    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
-    foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
-
-    // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< 9645.9, 64.3984, 22440.6 >, < 0, 0.0002, 0 >, "%use% Next Exercise"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 13320.5800, -915.8755, 42443.1000 > + tpoffset,< 0, 89.9998, 0 >)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 9524.8, -903.7969, 22440.6 >, < 0, 90.0007, 0 >, "%use% Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "HUB", "\n  You now recieved Phase Walk Tactical" )
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 13203.69, -55.6094, 22440.6 >, < 0, 90.0002, 0 >, "%use% Next Exercise "), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 15795.4000, -987.9000, 42440.6000 > + tpoffset,< 0, 89.9998, 0 >)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 13321.38, -983.8984, 22440.6 >, < 0, -179.9993, 0 >, "%use% Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "HUB", "\n  You now recieved Phase Walk Tactical" )
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 16494.48, -441.2969, 22440.6 >, < 0, -89.9998, 0 >, "%use% Repeat"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 15795.4000, -987.9000, 42440.6000 > + tpoffset,< 0, 89.9998, 0 >)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< 15681.8, -903.7969, 22440.6 >, < 0, 90.0007, 0 >, "%use% Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "HUB", "\n  You now recieved Phase Walk Tactical" )
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -2221.9, 8789.602, 21916.1 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -2221.9, 8789.602, 22404.8 >, < 0, -90.0002, 0 >, "%use% Next Exercise"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< -6531.1010, 8698.3000, 41914.3000 > + tpoffset,< 0, 89.9998, 0 >)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -2451.5, 8783, 22404.9 >, < 0, 90.0002, 0 >, "%use% Repeat"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< -2329.1000, 8714.7000, 41919.5000 > + tpoffset,< 0, 89.9998, 0 >)
-Message(user, "Jump Pad Tap Strafes")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -6423.869, 8855.203, 21916.1 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -5880.801, 8790.703, 22423.6 >, < 0, 89.9999, 0 >, "%use% Next Exercise"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< -8932.6010, 8698.3000, 41914.3000 > + tpoffset,< 0, 89.9998, 0 >)
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -5660.701, 8797.297, 22423.7 >, < 0, -89.9997, 0 >, "%use% Repeat"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< -6531.1010, 8698.3000, 41914.3000 > + tpoffset,< 0, 89.9998, 0 >)
-Message(user, "Jump Pad Tap Strafes")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -8058.902, 8572.203, 22417.89 >, < 0, -89.9997, 0 >, "%use% Repeat"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< -8932.6010, 8698.3000, 41914.3000 > + tpoffset,< 0, 89.9998, 0 >)
-Message(user, "Jump Pad Tap Strafes")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -8825.4, 8849.203, 21916.1 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-    AddCallback_OnUseEntity( CreateFRButton(< -8279, 8565.602, 22420.46 >, < 0, 89.9999, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-    })
-
-
-    // Jumppads
-    MapEditor_CreateJumpPad( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -2337.1, 8867.703, 21907 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateJumpPad( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -6539.1, 8867.703, 21907 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateJumpPad( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < -8940.6, 8867.703, 21907 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
-
-    // Triggers
-    entity trigger_0 = MapEditor_CreateTrigger( < 9705, -508, 22607 >, < 0, 0, 0 >, 1109.034, 221.8068, false )
-    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-        }
-    }
-
-    })
-    DispatchSpawn( trigger_0 )
-    entity trigger_1 = MapEditor_CreateTrigger( < 9705, -508, 22156 >, < 0, 0, 0 >, 1109.034, 221.8068, false )
-    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-        {
-            ent.SetOrigin(< 9647, -963, 42441.2000 > + tpoffset) // change tp location
-        }
-    }
-    })
-    DispatchSpawn( trigger_1 )
-    entity trigger_2 = MapEditor_CreateTrigger( < 9649.3, -48.7031, 22444.9 >, < 0, 0, 0 >, 132.982, 27, false )
-    trigger_2.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_1)
+  entity trigger_2 = MapEditor_CreateTrigger( < 9649.3, -48.7031, 22444.9 > , < 0, 0, 0 > , 132.982, 27, false)
+  trigger_2.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
 
     })
-    DispatchSpawn( trigger_2 )
-    entity trigger_3 = MapEditor_CreateTrigger( < 9649.3, -906.2031, 22444.9 >, < 0, 0, 0 >, 132.982, 27, false )
-    trigger_3.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_2)
+  entity trigger_3 = MapEditor_CreateTrigger( < 9649.3, -906.2031, 22444.9 > , < 0, 0, 0 > , 132.982, 27, false)
+  trigger_3.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_3 )
-    entity trigger_4 = MapEditor_CreateTrigger( < 13375.7, -508.2969, 22607 >, < 0, 0, 0 >, 1109.034, 221.8068, false )
-    trigger_4.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_3)
+  entity trigger_4 = MapEditor_CreateTrigger( < 13375.7, -508.2969, 22607 > , < 0, 0, 0 > , 1109.034, 221.8068, false)
+  trigger_4.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
 
     })
-    DispatchSpawn( trigger_4 )
-    entity trigger_5 = MapEditor_CreateTrigger( < 13375.7, -508.2969, 22156 >, < 0, 0, 0 >, 1109.034, 221.8068, false )
-    trigger_5.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_4)
+  entity trigger_5 = MapEditor_CreateTrigger( < 13375.7, -508.2969, 22156 > , < 0, 0, 0 > , 1109.034, 221.8068, false)
+  trigger_5.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< 13320.5800, -915.8755, 42443.1000 > + tpoffset) // change tp location
+          ent.SetOrigin( < 13320.5800, -915.8755, 42443.1000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_5 )
-    entity trigger_6 = MapEditor_CreateTrigger( < 13320, -868.3203, 22444.9 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_6.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_5)
+  entity trigger_6 = MapEditor_CreateTrigger( < 13320, -868.3203, 22444.9 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_6.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_6 )
-    entity trigger_7 = MapEditor_CreateTrigger( < 13316.79, -52.2109, 22444.9 >, < 0, 90, 0 >, 132.982, 26.5964, false )
-    trigger_7.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_6)
+  entity trigger_7 = MapEditor_CreateTrigger( < 13316.79, -52.2109, 22444.9 > , < 0, 90, 0 > , 132.982, 26.5964, false)
+  trigger_7.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_7 )
-    entity trigger_8 = MapEditor_CreateTrigger( < 15862, -508, 22637 >, < 0, 0, 0 >, 1256.646, 251.3293, false )
-    trigger_8.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_7)
+  entity trigger_8 = MapEditor_CreateTrigger( < 15862, -508, 22637 > , < 0, 0, 0 > , 1256.646, 251.3293, false)
+  trigger_8.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
 
     })
-    DispatchSpawn( trigger_8 )
-    entity trigger_9 = MapEditor_CreateTrigger( < 15862, -508, 22126 >, < 0, 0, 0 >, 1256.646, 251.3293, false )
-    trigger_9.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_8)
+  entity trigger_9 = MapEditor_CreateTrigger( < 15862, -508, 22126 > , < 0, 0, 0 > , 1256.646, 251.3293, false)
+  trigger_9.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< 15795.4000, -987.9000, 42440.6000 > + tpoffset) // change tp location
+          ent.SetOrigin( < 15795.4000, -987.9000, 42440.6000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_9 )
-    entity trigger_10 = MapEditor_CreateTrigger( < 15806.3, -906.2031, 22444.9 >, < 0, 0, 0 >, 132.982, 26.5964, false )
-    trigger_10.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_9)
+  entity trigger_10 = MapEditor_CreateTrigger( < 15806.3, -906.2031, 22444.9 > , < 0, 0, 0 > , 132.982, 26.5964, false)
+  trigger_10.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_10 )
-    entity trigger_11 = MapEditor_CreateTrigger( < 16381.38, -444.6953, 22444.9 >, < 0, -90, 0 >, 132.982, 26.5964, false )
-    trigger_11.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_10)
+  entity trigger_11 = MapEditor_CreateTrigger( < 16381.38, -444.6953, 22444.9 > , < 0, -90, 0 > , 132.982, 26.5964, false)
+  trigger_11.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-	StatusEffect_StopAllOfType( ent, eStatusEffect.speed_boost )
-	StatusEffect_StopAllOfType( ent, eStatusEffect.stim_visual_effect )
-	ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+          StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+          ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+          ent.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
         }
-    }
+      }
 
     })
-    DispatchSpawn( trigger_11 )
-    entity trigger_12 = MapEditor_CreateTrigger( < -2309, 8932, 21602 >, < 0, 0, 0 >, 1373.995, 274.799, false )
-    trigger_12.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_11)
+  entity trigger_12 = MapEditor_CreateTrigger( < -2309, 8932, 21602 > , < 0, 0, 0 > , 1373.995, 274.799, false)
+  trigger_12.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -2329.1000, 8714.7000, 41919.5000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -2329.1000, 8714.7000, 41919.5000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_12 )
-    entity trigger_13 = MapEditor_CreateTrigger( < -6226, 8932, 21625 >, < 0, 0, 0 >, 1192.691, 238.5382, false )
-    trigger_13.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_12)
+  entity trigger_13 = MapEditor_CreateTrigger( < -6226, 8932, 21625 > , < 0, 0, 0 > , 1192.691, 238.5382, false)
+  trigger_13.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -6531.1010, 8698.3000, 41914.3000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -6531.1010, 8698.3000, 41914.3000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_13 )
-    entity trigger_14 = MapEditor_CreateTrigger( < -8627.5, 8932, 21628 >, < 0, 0, 0 >, 1192.691, 238.5382, false )
-    trigger_14.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_13)
+  entity trigger_14 = MapEditor_CreateTrigger( < -8627.5, 8932, 21628 > , < 0, 0, 0 > , 1192.691, 238.5382, false)
+  trigger_14.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -8932.6010, 8698.3000, 41914.3000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -8932.6010, 8698.3000, 41914.3000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_14 )
-    entity trigger_15 = MapEditor_CreateTrigger( < -2309, 10518.2, 21602 >, < 0, 0, 0 >, 1373.995, 274.799, false )
-    trigger_15.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_14)
+  entity trigger_15 = MapEditor_CreateTrigger( < -2309, 10518.2, 21602 > , < 0, 0, 0 > , 1373.995, 274.799, false)
+  trigger_15.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -2329.1000, 8714.7000, 41919.5000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -2329.1000, 8714.7000, 41919.5000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_15 )
-    entity trigger_16 = MapEditor_CreateTrigger( < -3676.869, 9202.203, 21602 >, < 0, 0, 0 >, 1373.995, 274.799, false )
-    trigger_16.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_15)
+  entity trigger_16 = MapEditor_CreateTrigger( < -3676.869, 9202.203, 21602 > , < 0, 0, 0 > , 1373.995, 274.799, false)
+  trigger_16.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -2329.1000, 8714.7000, 41919.5000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -2329.1000, 8714.7000, 41919.5000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_16 )
-    entity trigger_17 = MapEditor_CreateTrigger( < -597.8691, 9202.203, 21602 >, < 0, 0, 0 >, 1373.995, 274.799, false )
-    trigger_17.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_16)
+  entity trigger_17 = MapEditor_CreateTrigger( < -597.8691, 9202.203, 21602 > , < 0, 0, 0 > , 1373.995, 274.799, false)
+  trigger_17.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -2329.1000, 8714.7000, 41919.5000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -2329.1000, 8714.7000, 41919.5000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_17 )
-    entity trigger_18 = MapEditor_CreateTrigger( < -6226, 10238.2, 21625 >, < 0, 0, 0 >, 1192.691, 238.5382, false )
-    trigger_18.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_17)
+  entity trigger_18 = MapEditor_CreateTrigger( < -6226, 10238.2, 21625 > , < 0, 0, 0 > , 1192.691, 238.5382, false)
+  trigger_18.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -6531.1010, 8698.3000, 41914.3000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -6531.1010, 8698.3000, 41914.3000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_18 )
-    entity trigger_19 = MapEditor_CreateTrigger( < -8627.5, 10315.2, 21628 >, < 0, 0, 0 >, 1192.691, 238.5382, false )
-    trigger_19.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_18)
+  entity trigger_19 = MapEditor_CreateTrigger( < -8627.5, 10315.2, 21628 > , < 0, 0, 0 > , 1192.691, 238.5382, false)
+  trigger_19.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -8932.6010, 8698.3000, 41914.3000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -8932.6010, 8698.3000, 41914.3000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_19 )
-    entity trigger_20 = MapEditor_CreateTrigger( < -2309, 7282.203, 21602 >, < 0, 0, 0 >, 1373.995, 274.799, false )
-    trigger_20.SetEnterCallback( void function(entity trigger , entity ent)
-    {
-        if (IsValid(ent)) // ensure the entity is valid
-    {
+  DispatchSpawn(trigger_19)
+  entity trigger_20 = MapEditor_CreateTrigger( < -2309, 7282.203, 21602 > , < 0, 0, 0 > , 1373.995, 274.799, false)
+  trigger_20.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
-            ent.SetOrigin(< -2329.1000, 8714.7000, 41919.5000 > + tpoffset) // change tp location
+          ent.SetOrigin( < -2329.1000, 8714.7000, 41919.5000 > +tpoffset) // change tp location
         }
-    }
+      }
     })
-    DispatchSpawn( trigger_20 )
-
+  DispatchSpawn(trigger_20)
 
 }
 
 //Init Tapstrafe Segments
 void
+
 function MovementGym_Tapstrafe() {
   // Props Array
   array < entity > ClipArray;
@@ -4376,6 +4343,7 @@ function MovementGym_Tapstrafe() {
 
 //Init Superglide Segments
 void
+
 function MovementGym_Superglide() {
   // Props Array
   array < entity > NoClimbArray;
@@ -4745,255 +4713,254 @@ function MovementGym_Superglide() {
 
 //Init Mantlejump Segments
 void
+
 function MovementGym_MantleJumps() {
-    // Props Array
-    array < entity > ClipArray; 
+  // Props Array
+  array < entity > ClipArray;
 
-    // Props
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22338 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2792.025, 3047, 21924 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2792.025, 3047, 22137.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 3047, 22353.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2791.875, 2161.797, 21924 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22137.7 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22344.7 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 2161.797, 22560.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22130.2 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22545.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22337.6 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849.797, 22128.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3125, 2887, 21923 >, < 0, 0, -179.9999 >, true, 5000, -1, 3.451169 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 3136, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 2524, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 1909, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 3740, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 3136, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 2524, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 1909, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 3740, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 3740, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 1909, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 2524, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 3136, 21923.5 >, < 0, 0, -179.9999 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 22228 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 22228 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 22228 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 22228 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 22228 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 22228 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 22228 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 22228 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 22228 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 22228 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 22228 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 22228 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 22228 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 22228 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 22985 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 22985 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 22985 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 22985 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 22985 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 22985 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 22985 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 22985 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 22985 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 22985 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 22985 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 22985 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 22985 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 22985 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 23758 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 23758 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 23758 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 23758 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 23758 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 23758 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 23758 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 23758 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 23758 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 23758 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 23758 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 23758 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 23758 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 23758 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 24519 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 24519 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 24519 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 24519 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 24519 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 24519 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 24519 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 24519 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 24519 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 24519 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 24519 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 24519 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 24519 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 24519 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 25280 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 25280 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 25280 >, < 90, -89.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 25280 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 25280 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 25280 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 25280 >, < 90, 0.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 25280 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 25280 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 25280 >, < 90, 90.0001, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 25280 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 25280 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 25280 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 25280 >, < 90, 179.9999, 0 >, true, 5000, -1, 1 ) )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22344.7 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 2161.797, 22560.5 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 3047, 22353.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2792.025, 3047, 22137.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2791.875, 2161.797, 21924 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22137.7 >, < 0, 90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2792.025, 3047, 21924 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22054.2 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22411.1 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 21904.9 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22112.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21963.4 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22545.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21815.3 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22337.6 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849.797, 22128.7 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22338 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22203.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22261.6 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22130.2 >, < 0, 0, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 21963.4 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 22203.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -3472.917, 3047.001, 22560.5 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22261.6 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 22054.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 21904.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -3473.067, 3047, 21924 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3473.067, 3047, 22137.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22112.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22112.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22261.6 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -3472.918, 2161.798, 21924 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2359.001, 22128.7 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -3472.918, 2161.798, 22353.5 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22112.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 21963.4 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 21815.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 21963.4 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.243, 2359.798, 22545.4 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 21815.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22411.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 21904.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 21963.4 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 21815.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 22054.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22411.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 22054.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3473.067, 3047, 22344.7 >, < 0, -90, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22261.6 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22411.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 22054.2 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 21904.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 22203.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22411.1 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 22203.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3472.918, 2161.798, 22137.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 21904.9 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 21815.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22112.3 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2849.399, 22338 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 22203.7 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22261.6 >, < 0, 90.0001, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2849.399, 22130.2 >, < 0, -180, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.243, 2359.798, 22337.6 >, < 0, -180, 0 >, true, 5000, -1, 1 )
+  // Props
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22338 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2792.025, 3047, 21924 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2792.025, 3047, 22137.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 3047, 22353.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2791.875, 2161.797, 21924 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22137.7 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22344.7 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 2161.797, 22560.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22130.2 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22545.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22337.6 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849.797, 22128.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3125, 2887, 21923 > , < 0, 0, -179.9999 > , true, 5000, -1, 3.451169)
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 3136, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 2524, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 1909, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2516, 3740, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 3136, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 2524, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 1909, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3118, 3740, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 3740, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 1909, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 2524, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3738, 3136, 21923.5 > , < 0, 0, -179.9999 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 22228 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 22228 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 22228 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 22228 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 22228 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 22228 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 22228 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 22228 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 22228 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 22228 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 22228 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 22228 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 22228 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 22228 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 22985 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 22985 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 22985 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 22985 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 22985 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 22985 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 22985 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 22985 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 22985 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 22985 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 22985 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 22985 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 22985 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 22985 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 23758 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 23758 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 23758 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 23758 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 23758 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 23758 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 23758 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 23758 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 23758 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 23758 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 23758 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 23758 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 23758 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 23758 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 24519 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 24519 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 24519 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 24519 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 24519 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 24519 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 24519 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 24519 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 24519 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 24519 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 24519 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 24519 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 24519 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 24519 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 1598, 25280 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3129, 1598, 25280 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 1598, 25280 > , < 90, -89.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 1904, 25280 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 2518, 25280 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3128, 25280 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2220, 3740, 25280 > , < 90, 0.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -2517, 4043, 25280 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3123, 4043, 25280 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -3735, 4043, 25280 > , < 90, 90.0001, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3741, 25280 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 3125.102, 25280 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 2510, 25280 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -4041, 1897, 25280 > , < 90, 179.9999, 0 > , true, 5000, -1, 1))
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22344.7 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 2161.797, 22560.5 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -2792.025, 3047, 22353.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2792.025, 3047, 22137.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2791.875, 2161.797, 21924 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -2791.875, 2161.797, 22137.7 > , < 0, 90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -2792.025, 3047, 21924 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2230.797, 22054.2 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22411.1 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2230.797, 21904.9 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2887.9, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2922, 22112.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 21963.4 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22545.4 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2943.9, 2922, 21815.3 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849, 22337.6 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2849.797, 22128.7 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22338 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2640.2, 2230.797, 22203.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -2584.2, 2922, 22261.6 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -2796.7, 2359.398, 22130.2 > , < 0, 0, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 21963.4 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 22203.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -3472.917, 3047.001, 22560.5 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22261.6 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 22054.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 21904.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -3473.067, 3047, 21924 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3473.067, 3047, 22137.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22112.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22112.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22261.6 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl", < -3472.918, 2161.798, 21924 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2359.001, 22128.7 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < -3472.918, 2161.798, 22353.5 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22112.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 21963.4 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 21815.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 21963.4 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.243, 2359.798, 22545.4 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 21815.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22411.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 21904.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 21963.4 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 21815.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 22054.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2286.798, 22411.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2978, 22054.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3473.067, 3047, 22344.7 > , < 0, -90, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22261.6 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3377.042, 2286.798, 22411.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 22054.2 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 21904.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3321.042, 2978.001, 22203.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22411.1 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 22203.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl", < -3472.918, 2161.798, 22137.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.742, 2978.001, 21904.9 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 21815.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.742, 2286.798, 22112.3 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2849.399, 22338 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3624.743, 2978.001, 22203.7 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/desertlands/construction_bldg_column_01.rmdl", < -3680.743, 2286.798, 22261.6 > , < 0, 90.0001, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.242, 2849.399, 22130.2 > , < 0, -180, 0 > , true, 5000, -1, 1)
+  MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3468.243, 2359.798, 22337.6 > , < 0, -180, 0 > , true, 5000, -1, 1)
 
-    foreach ( entity ent in ClipArray )
-    {
-        ent.MakeInvisible()
-        ent.kv.solid = 6
-        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-        ent.kv.contents = CONTENTS_PLAYERCLIP
-    }
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
 
-    // VerticalZipLines
-    MapEditor_CreateZiplineFromUnity( < -2790.5, 2171.602, 22557.7 >, < 0, 0, 0 >, < -2790.5, 2171.602, 22015.5 >, < 0, 0, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < -2790.5, 3040.898, 22745.8 >, < 0, 0, 0 >, < -2790.5, 3040.898, 22019 >, < 0, 0, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < -3475.742, 3040.919, 22557.7 >, < 0, -180, 0 >, < -3475.742, 3040.919, 22015.5 >, < 0, -180, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < -3475.743, 2171.622, 22745.8 >, < 0, -180, 0 >, < -3475.743, 2171.622, 22019 >, < 0, -180, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
+  // VerticalZipLines
+  MapEditor_CreateZiplineFromUnity( < -2790.5, 2171.602, 22557.7 > , < 0, 0, 0 > , < -2790.5, 2171.602, 22015.5 > , < 0, 0, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+  MapEditor_CreateZiplineFromUnity( < -2790.5, 3040.898, 22745.8 > , < 0, 0, 0 > , < -2790.5, 3040.898, 22019 > , < 0, 0, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+  MapEditor_CreateZiplineFromUnity( < -3475.742, 3040.919, 22557.7 > , < 0, -180, 0 > , < -3475.742, 3040.919, 22015.5 > , < 0, -180, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
+  MapEditor_CreateZiplineFromUnity( < -3475.743, 2171.622, 22745.8 > , < 0, -180, 0 > , < -3475.743, 2171.622, 22019 > , < 0, -180, 0 > , true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [], [], [], 32, 60, 0)
 
-    // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< -2621.507, 2607.609, 21922.35 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
-    {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
+  // Buttons
+  AddCallback_OnUseEntity(CreateFRButton( < -2621.507, 2607.609, 21922.35 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      Message(user, "Hub")
     })
-
-
 
 }
 
 //Init Grapple Legacy Segments
 void
+
 function MovementGym_Grapple1() {
   //Buttons 
   AddCallback_OnUseEntity(CreateFRButton( < -11183.8700, 26531.6000, 37.7500 > , < 0, -89.9999, 0 > , "%use% Repeat"), void
@@ -5725,6 +5692,7 @@ function MovementGym_Grapple1() {
 
 //Init Grapple Segments with cooldown fix
 void
+
 function MovementGym_Grapple2() {
   // Props Array
   array < entity > ClipArray;
@@ -6223,5 +6191,1828 @@ function MovementGym_Grapple2() {
       }
     })
   DispatchSpawn(trigger_10)
+
+}
+
+//Init for Kitsune only without movement gym
+void
+
+function MovementGym_Surf_Kitsune() {
+
+  MovementGym_Surf_Kitsune_lvl1()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl2()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl3()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl4()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl5()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl6()
+  WaitFrame()
+
+  MovementGym_Surf_Kitsune_lvl7()
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl1() {
+  vector startingorg = < 0, 0, 0 >
+
+    // Level Color
+    float rampr = 1.0
+  float rampg = 0.0
+  float rampb = 0.0
+  float carkrampr = 1.0
+  float darkrampg = 0.0
+  float darkrampb = 0.0
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38028, -10138.74, 21199.91 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37772.99, -10138.74, 21177.4 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37517.97, -10138.74, 21154.89 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37262.95, -10138.74, 21132.38 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37280.09, -10304.63, 20938.17 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37535.11, -10304.63, 20960.68 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37790.13, -10304.63, 20983.19 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38045.14, -10304.63, 21005.7 > , < 5.0444, 0, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37262.95, -9993.639, 21132.38 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37517.97, -9993.634, 21154.89 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37772.98, -9993.636, 21177.4 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38028, -9993.637, 21199.91 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38045.14, -9827.741, 21005.7 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37790.13, -9827.737, 20983.19 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37535.11, -9827.742, 20960.68 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37280.09, -9827.734, 20938.17 > , < -5.0444, -179.9997, 49.6068 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38398.08, -10359.58, 21307.29 > , < 0, -89.9999, 0 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38894.07, -9272.236, 21307.29 > , < 0, 90.0004, 0 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38398.08, -10359.04, 21307.29 > , < 0, 0.0006, 0 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -36614.98, -9767.678, 21049.93 > , < 0, 90.0005, 0 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -36118.98, -10855.02, 21049.93 > , < 0, -89.9992, 0 > , false, 5000, 3, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -36614.98, -9768.223, 21049.93 > , < 0, -179.9991, 0 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.13, -9354.638, 22064.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.1, -10559.64, 22064.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.1, -10559.64, 20802 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.13, -9354.638, 21441.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.13, -9354.638, 20802 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.11, -9983.648, 22064.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.11, -9983.648, 20802 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.11, -9983.648, 21441.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36257.1, -10559.64, 21441.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 3, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -36259, -10059.8, 21052.4 > , < 0, 89.9998, 0 > , false, 5000, 3, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Buttons
+  AddCallback_OnUseEntity(CreateSurfButton( < -38594.93, -9874.137, 21306.73 > , < 0, 0, 0 > , "%use% Start Timer"), void
+    function (entity panel, entity user, int input) {
+      //Start Timer Button
+      user.p.isTimerActive = true
+      user.p.startTime = floor(Time()).tointeger()
+      Message(user, "Timer Started!")
+    })
+
+  AddCallback_OnUseEntity(CreateSurfButton( < -38593.7, -10285.93, 21306.73 > , < 0, 179.9999, 0 > , "%use% Back to Hub"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      StatusEffect_StopAllOfType(user, eStatusEffect.stim_visual_effect)
+      StatusEffect_StopAllOfType(user, eStatusEffect.speed_boost)
+      user.TakeOffhandWeapon(OFFHAND_TACTICAL)
+      user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+      user.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+      user.PhaseShiftCancel()
+      //Start Checkpoint
+      user.p.allowCheckpoint = false
+      user.p.currentCheckpoint = 0
+      //Reset Timer
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+
+      //Re-enable invis after surf
+      user.p.isPlayerInvisAllowed = true
+      if (user.IsInRealm(1) != true || user.IsInRealm(2) != true) {
+        user.RemoveFromAllRealms()
+        user.AddToRealm(1)
+        user.MakeVisible()
+        Message(user, "Hub", "You are now Visible")
+      }
+
+      //Force Default Player Settings
+      SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
+    })
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -32013.13, -16650.64, 17928.93 > , < 0, 0, 0 > , 25380, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      //Big ahh trigger
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+          if (ent.p.allowCheckpoint == true) {
+
+            switch (ent.p.currentCheckpoint) {
+              // Checkpoint 1
+            case 3:
+              ent.SetOrigin( < -38602.13, -10078.1, 21493.38 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 2
+            case 4:
+              ent.SetOrigin( < -38684.22, -12091.82, 21220.8 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 3
+            case 5:
+              ent.SetOrigin( < -38673.36, -14140.26, 21257.53 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 4
+            case 6:
+              ent.SetOrigin( < -38652.55, -17213.46, 21298.53 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 5
+            case 7:
+              ent.SetOrigin( < -38601.55, -20285.46, 21255.23 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 6
+            case 8:
+              ent.SetOrigin( < -38357.36, -24034.64, 21182.13 > )
+              ent.SetAngles( < 0, 0, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+              // Checkpoint 7
+            case 9:
+              ent.SetOrigin( < -22640.3, -8429.232, 27015.53 > )
+              ent.SetAngles( < 0, 180, 0 > )
+              ent.SetVelocity( < 0, 0, 0 > )
+              break
+            }
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+  entity trigger_1 = MapEditor_CreateTrigger( < -36038.82, -10061.82, 21101 > , < 0, 0, 0 > , 237.05, 50, false)
+  trigger_1.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -38684.22, -12091.82, 21220.8 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 3
+          int checkpointInThisTrigger = 4
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_1)
+  entity trigger_2 = MapEditor_CreateTrigger( < -38602.13, -10078.1, 21363.29 > , < 0, 0, 0 > , 200, 50, false)
+  trigger_2.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) // ensure the entity is valid
+      {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          int checkpointInThisTrigger = 3
+
+          //set checkpoint
+          ent.p.currentCheckpoint = checkpointInThisTrigger
+
+          //change realm and lock invis
+          ent.RemoveFromAllRealms()
+          ent.AddToRealm(checkpointInThisTrigger)
+          ent.p.isPlayerInvisAllowed = false
+        }
+      }
+    })
+  DispatchSpawn(trigger_2)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl2() {
+  // Level Color
+  float rampr = 1.0
+  float rampg = 0.5
+  float rampb = 0.0
+  float darkrampr = 1.0
+  float darkrampg = 0.0
+  float darkrampb = 0.0
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38398.08, -12385.58, 21158.93 > , < 0, -89.9999, 0 > , false, 5000, 4, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38894.07, -11298.24, 21158.93 > , < 0, 90.0004, 0 > , false, 5000, 4, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38398.08, -12385.04, 21158.93 > , < 0, 0.0006, 0 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36900.43, -12145.51, 20683.48 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36644.42, -12145.51, 20683.48 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36388.41, -12145.51, 20683.48 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36132.4, -12145.51, 20683.48 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36132.4, -12311.4, 20488.51 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36388.41, -12311.4, 20488.51 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36644.42, -12311.4, 20488.51 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36900.43, -12311.4, 20488.51 > , < 0, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36132.4, -12000.41, 20683.48 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36388.41, -12000.41, 20683.48 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36644.41, -12000.41, 20683.48 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36900.42, -12000.41, 20683.48 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36900.43, -11834.51, 20488.51 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36644.42, -11834.51, 20488.51 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36388.41, -11834.51, 20488.51 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36132.4, -11834.51, 20488.51 > , < 0, -179.9997, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38033, -12145.51, 20972.21 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37785.71, -12145.51, 20905.95 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37538.43, -12145.51, 20839.69 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37291.14, -12145.51, 20773.43 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37341.6, -12311.4, 20585.1 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37588.89, -12311.4, 20651.36 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37836.18, -12311.4, 20717.62 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38083.46, -12311.4, 20783.88 > , < 15, 0, 49.6068 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37291.14, -12000.41, 20773.43 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37538.43, -12000.41, 20839.69 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37785.71, -12000.41, 20905.95 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38032.99, -12000.41, 20972.21 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38083.46, -11834.51, 20783.88 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37836.18, -11834.51, 20717.62 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37588.89, -11834.51, 20651.36 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37341.6, -11834.51, 20585.1 > , < -15, -179.9996, 49.6067 > , false, 5000, 4, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -35638.29, -11793.68, 20727.03 > , < 0, 90.0005, 0 > , false, 5000, 4, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -35142.29, -12881.02, 20727.03 > , < 0, -89.9992, 0 > , false, 5000, 4, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -35638.29, -11794.22, 20727.03 > , < 0, -179.9991, 0 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.9, -12584.64, 20887 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.93, -11379.64, 21526.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.93, -11379.64, 20887 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.92, -12008.65, 20887 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.92, -12008.65, 21526.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.9, -12584.64, 21526.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.9, -12584.64, 20264.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.93, -11379.64, 20264.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35283.92, -12008.65, 20264.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 4, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -35282.93, -12076.64, 20732.93 > , < 0, 89.9998, 0 > , false, 5000, 4, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -35062.76, -12078.66, 20781.53 > , < 0, 0, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -38673.36, -14140.26, 21257.53 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 4
+          int checkpointInThisTrigger = 5
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl3() {
+  // Level Color
+  float rampr = 1.0
+  float rampg = 1.0
+  float rampb = 0.0
+  float darkrampr = 0.25
+  float darkrampg = 0.25
+  float darkrampb = 0.0
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38403.97, -14437.58, 21208.13 > , < 0, -89.9999, 0 > , false, 5000, 5, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38899.97, -13350.24, 21208.13 > , < 0, 90.0004, 0 > , false, 5000, 5, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38403.97, -14437.04, 21208.13 > , < 0, 0.0006, 0 > , false, 5000, 5, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -34630.58, -13845.69, 20840.93 > , < 0, 90.0005, 0 > , false, 5000, 5, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -34134.58, -14933.03, 20840.93 > , < 0, -89.9992, 0 > , false, 5000, 5, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -34630.58, -13846.24, 20840.93 > , < 0, -179.9991, 0 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38106.02, -14214.74, 21031.27 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37853.82, -14214.74, 20987.3 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37601.61, -14214.74, 20943.33 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37349.41, -14214.74, 20899.36 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37382.89, -14380.63, 20707.28 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37635.1, -14380.63, 20751.25 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37887.3, -14380.63, 20795.22 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38139.5, -14380.63, 20839.2 > , < 9.8898, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37349.4, -14069.64, 20899.36 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37601.61, -14069.63, 20943.33 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37853.81, -14069.64, 20987.3 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38106.01, -14069.64, 21031.27 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38139.5, -13903.74, 20839.19 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37887.3, -13903.74, 20795.22 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37635.1, -13903.74, 20751.25 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37382.89, -13903.73, 20707.28 > , < -9.8898, -179.9997, 49.6067 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36906.94, -13455.47, 20722.38 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36650.95, -13456.37, 20722.67 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36394.94, -13457.27, 20722.95 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36138.95, -13458.18, 20723.23 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36139.33, -13624.18, 20528.23 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36395.32, -13623.28, 20527.95 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36651.31, -13622.38, 20527.67 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36907.32, -13621.48, 20527.4 > , < -0.0629, -0.202, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35557.4, -14214.74, 20661.04 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35301.39, -14214.74, 20661.11 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35045.38, -14214.74, 20661.18 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34789.38, -14214.74, 20661.24 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34789.32, -14380.63, 20466.27 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35045.33, -14380.63, 20466.21 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35301.34, -14380.63, 20466.14 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35557.35, -14380.63, 20466.07 > , < -0.0148, 0, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34789.37, -14069.64, 20661.24 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35045.38, -14069.63, 20661.18 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35301.39, -14069.64, 20661.11 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35557.39, -14069.64, 20661.04 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35557.35, -13903.74, 20466.07 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35301.34, -13903.74, 20466.14 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35045.33, -13903.74, 20466.21 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34789.32, -13903.73, 20466.27 > , < 0.0148, -179.9997, 49.6068 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36139.37, -14832.54, 20722.39 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36395.36, -14831.64, 20722.67 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36651.37, -14830.74, 20722.95 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36907.35, -14829.84, 20723.23 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36906.98, -14663.83, 20528.24 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36650.98, -14664.73, 20527.96 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36395, -14665.63, 20527.68 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36138.98, -14666.53, 20527.4 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36413.83, -14177.94, 21248.93 > , < 0.0002, -179.9995, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36413.83, -14177.34, 20630.93 > , < 0.0002, -179.9995, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36656.83, -14177.64, 21248.93 > , < 0.0002, -179.9995, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36656.83, -14177.84, 20630.93 > , < 0.0002, -179.9995, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36656.13, -14104.44, 21248.93 > , < -0.0002, 0.0006, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36413.13, -14104.04, 20630.93 > , < -0.0002, 0.0006, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36656.13, -14104.54, 20630.93 > , < -0.0002, 0.0006, 90 > , false, 5000, 5, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36413.13, -14104.64, 21248.93 > , < -0.0002, 0.0006, 90 > , false, 5000, 5, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -34281.13, -14141.64, 20844.93 > , < 0, 89.9998, 0 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.1, -14635.64, 20682 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.13, -13430.64, 21321.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.13, -13430.64, 20682 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.11, -14059.65, 20682 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.11, -14059.65, 21321.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.1, -14635.64, 21321.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.11, -14059.65, 20051.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.1, -14635.64, 20051.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34278.13, -13430.64, 20051.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 5, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Secondary Glow
+  foreach(entity ent in NoClimbArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < darkrampr, darkrampg, darkrampb > )
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -34060.95, -14143.66, 20893.53 > , < 0, 0, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -38652.55, -17213.46, 21298.53 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 5
+          int checkpointInThisTrigger = 6
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl4() {
+  // Level Color
+  float rampr = 0.0
+  float rampg = 1.0
+  float rampb = 0.0
+  float darkrampr = 0.0
+  float darkrampg = 0.25
+  float darkrampb = 0.0
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38403.97, -17501.58, 21221.73 > , < 0, -89.9999, 0 > , false, 5000, 6, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38899.97, -16414.24, 21221.73 > , < 0, 90.0004, 0 > , false, 5000, 6, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38403.97, -17501.04, 21221.73 > , < 0, 0.0006, 0 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33572.2, -18141.58, 19698.87 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33828.15, -18140.68, 19699.15 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33827.85, -17974.67, 19504.11 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33571.8, -17975.57, 19503.85 > , < -0.0629, 179.7984, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38245.46, -17287.74, 21005.93 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38013.23, -17287.74, 20898.18 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37781, -17287.74, 20790.43 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37548.77, -17287.74, 20682.68 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37630.83, -17453.63, 20505.82 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37863.06, -17453.63, 20613.57 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38095.29, -17453.63, 20721.31 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38327.52, -17453.63, 20829.06 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37548.77, -17142.64, 20682.68 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37781, -17142.63, 20790.43 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38013.22, -17142.64, 20898.18 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38245.46, -17142.64, 21005.92 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38327.52, -16976.74, 20829.06 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38095.29, -16976.74, 20721.31 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37863.06, -16976.74, 20613.57 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37630.82, -16976.73, 20505.82 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37318.16, -17287.74, 20576.03 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37085.93, -17287.74, 20468.28 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36853.7, -17287.74, 20360.53 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36621.47, -17287.74, 20252.78 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36703.53, -17453.63, 20075.92 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36935.76, -17453.63, 20183.67 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37167.99, -17453.63, 20291.41 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37400.22, -17453.63, 20399.16 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36621.46, -17142.64, 20252.78 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36853.7, -17142.63, 20360.53 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37085.93, -17142.64, 20468.28 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37318.16, -17142.64, 20576.02 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37400.22, -16976.74, 20399.16 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37167.99, -16976.74, 20291.41 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36935.76, -16976.74, 20183.67 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36703.52, -16976.73, 20075.92 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36389.26, -17287.74, 20143.93 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36157.03, -17287.74, 20036.18 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35924.8, -17287.74, 19928.43 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35692.57, -17287.74, 19820.68 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35774.63, -17453.63, 19643.82 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36006.86, -17453.63, 19751.57 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36239.09, -17453.63, 19859.31 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36471.32, -17453.63, 19967.06 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35692.57, -17142.64, 19820.68 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35924.8, -17142.63, 19928.43 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36157.03, -17142.64, 20036.18 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36389.26, -17142.64, 20143.92 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36471.32, -16976.74, 19967.06 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36239.09, -16976.74, 19859.31 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36006.86, -16976.74, 19751.57 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35774.63, -16976.73, 19643.82 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35461.87, -17142.64, 19713.76 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35543.95, -16976.64, 19536.87 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35311.72, -16976.64, 19429.12 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35311.72, -17453.64, 19429.12 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35229.65, -17142.64, 19606.01 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35461.87, -17287.64, 19713.76 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35229.65, -17287.64, 19606.01 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35543.95, -17453.64, 19536.87 > , < 24.8898, 0, 49.6068 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33827.68, -16287.07, 19698.87 > , < -0.0629, -0.2013, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33571.73, -16287.97, 19699.15 > , < -0.0629, -0.2013, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33572.03, -16453.97, 19504.12 > , < -0.0629, -0.2013, 49.6047 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33828.07, -16453.07, 19503.85 > , < -0.0629, -0.2013, 49.6047 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33785.13, -17603.14, 18877.93 > , < 0, -179.9997, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33785.13, -17603.64, 19500.25 > , < 0, -179.9997, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33785.13, -17603.14, 20107.57 > , < 0, -179.9997, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33785.13, -17603.64, 20715.93 > , < 0, -179.9997, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33785.13, -17603.14, 21326.93 > , < 0, -179.9997, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34176.63, -17210.64, 18877.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34176.63, -17210.64, 21326.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34176.13, -17210.64, 19500.25 > , < 0, 90.0005, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34176.63, -17210.64, 20107.57 > , < 0, 90.0005, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33782.13, -16818.64, 19500.25 > , < 0, 0.0007, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33782.13, -16818.14, 18877.93 > , < 0, 0.0007, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33782.13, -16818.14, 21326.93 > , < 0, 0.0007, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33782.13, -16818.63, 20715.93 > , < 0, 0.0007, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33782.13, -16818.14, 20107.57 > , < 0, 0.0007, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33388.13, -17210.64, 19500.25 > , < 0, -89.9992, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33388.63, -17210.64, 21326.93 > , < 0, -89.9992, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33388.63, -17210.63, 18877.93 > , < 0, -89.9992, 89.9998 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33388.13, -17210.64, 20715.93 > , < 0, -89.9992, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33388.63, -17210.64, 20107.57 > , < 0, -89.9992, 89.9999 > , false, 5000, 6, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34176.13, -17210.64, 20709.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 6, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -32677.38, -16909.7, 19845.93 > , < 0, 90.0005, 0 > , false, 5000, 6, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -32181.38, -17997.04, 19845.93 > , < 0, -89.9992, 0 > , false, 5000, 6, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -32677.38, -16910.24, 19845.93 > , < 0, -179.9991, 0 > , false, 5000, 6, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -32327.13, -17213.64, 19847.93 > , < 0, 89.9998, 0 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.1, -17985.63, 20743 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -16497.64, 20743 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.11, -17219.64, 20743 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.11, -17219.64, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.11, -17219.64, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -16497.64, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.11, -17219.64, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -16497.64, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.1, -17985.63, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.1, -17985.63, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -16497.64, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.1, -17985.63, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 6, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Secondary Glow
+  foreach(entity ent in NoClimbArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < darkrampr, darkrampg, darkrampb > )
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -32106.95, -17215.66, 19896.53 > , < 0, 0, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -38601.55, -20285.46, 21255.23 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 6
+          int checkpointInThisTrigger = 7
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl5() {
+  // Level Color
+  float rampr = 0.5
+  float rampg = 0.5
+  float rampb = 1.0
+  float darkrampr = 0.13
+  float darkrampg = 0.13
+  float darkrampb = 0.25
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.11, -20273.64, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.11, -20273.64, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.13, -19551.64, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.11, -20273.64, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.13, -19551.64, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.1, -21039.63, 20186.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.1, -21039.63, 18923.93 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.13, -19551.64, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32175.1, -21039.63, 19563.87 > , < 0, 90.0005, 89.9998 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38214.46, -20358.74, 20952.93 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37982.23, -20358.74, 20845.18 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37750, -20358.74, 20737.43 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37517.77, -20358.74, 20629.68 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37599.83, -20524.63, 20452.82 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37832.06, -20524.63, 20560.57 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38064.29, -20524.63, 20668.31 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38296.52, -20524.63, 20776.06 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37517.77, -20213.64, 20629.68 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37750, -20213.63, 20737.43 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37982.22, -20213.64, 20845.18 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38214.46, -20213.64, 20952.92 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38296.52, -20047.74, 20776.06 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -38064.29, -20047.74, 20668.31 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37832.06, -20047.74, 20560.57 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37599.82, -20047.73, 20452.82 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38403.97, -20572.58, 21124.73 > , < 0, -89.9999, 0 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38899.97, -19485.24, 21124.73 > , < 0, 90.0004, 0 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38403.97, -20572.04, 21124.73 > , < 0, 0.0006, 0 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -32519.98, -19980.68, 19399.93 > , < 0, 90.0005, 0 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -32023.98, -21068.02, 19399.93 > , < 0, -89.9992, 0 > , false, 5000, 7, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -32519.98, -19981.23, 19399.93 > , < 0, -179.9991, 0 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -32169.73, -20284.62, 19401.93 > , < 0, 89.9998, 0 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37216.8, -20358.74, 20486.96 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36969.72, -20358.74, 20419.92 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36722.65, -20358.74, 20352.88 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36475.57, -20358.74, 20285.84 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36526.63, -20524.63, 20097.67 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36773.7, -20524.63, 20164.71 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37020.78, -20524.63, 20231.75 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37267.86, -20524.63, 20298.79 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36475.57, -20213.64, 20285.84 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36722.65, -20213.63, 20352.88 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36969.72, -20213.64, 20419.92 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37216.79, -20213.64, 20486.96 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37267.85, -20047.74, 20298.79 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37020.78, -20047.74, 20231.75 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36773.7, -20047.74, 20164.71 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36526.63, -20047.73, 20097.67 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35079.46, -20358.74, 20184.93 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34847.23, -20358.74, 20077.18 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34615, -20358.74, 19969.43 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34382.77, -20358.74, 19861.68 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34464.83, -20524.63, 19684.82 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34697.06, -20524.63, 19792.57 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34929.29, -20524.63, 19900.31 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35161.52, -20524.63, 20008.06 > , < 24.8898, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34382.77, -20213.64, 19861.68 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34615, -20213.63, 19969.43 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34847.23, -20213.64, 20077.18 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35079.46, -20213.64, 20184.92 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35161.52, -20047.74, 20008.06 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34929.29, -20047.74, 19900.31 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34697.06, -20047.74, 19792.57 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34464.82, -20047.73, 19684.82 > , < -24.8898, -179.9996, 49.6066 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34081.8, -20358.74, 19718.96 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33834.72, -20358.74, 19651.92 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33587.65, -20358.74, 19584.88 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33340.57, -20358.74, 19517.84 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33391.63, -20524.63, 19329.67 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33638.7, -20524.63, 19396.71 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33885.78, -20524.63, 19463.75 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34132.86, -20524.63, 19530.79 > , < 15.1809, 0, 49.6068 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33340.57, -20213.64, 19517.84 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33587.65, -20213.63, 19584.88 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33834.72, -20213.64, 19651.92 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34081.79, -20213.64, 19718.96 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34132.85, -20047.74, 19530.79 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33885.78, -20047.74, 19463.75 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33638.7, -20047.74, 19396.71 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33391.63, -20047.73, 19329.67 > , < -15.1809, -179.9996, 49.6067 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35766.12, -21183.64, 20078.65 > , < 0, -89.9999, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35766.12, -21183.64, 20334.93 > , < 0, -89.9999, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35782.12, -19398.04, 20078.65 > , < -0.0001, 90, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35782.12, -19398.04, 20334.93 > , < -0.0001, 90, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35790.13, -19595.64, 20787.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35790.13, -20984.14, 20787.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35789.83, -19595.64, 19613.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35789.83, -20984.14, 19613.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35788.13, -20290.64, 20219.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35786.23, -20290.64, 20787.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35786.13, -20290.64, 19613.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33144.12, -21183.64, 19512.65 > , < 0, -89.9999, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33144.12, -21183.64, 19768.93 > , < 0, -89.9999, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33160.12, -19398.04, 19512.65 > , < -0.0001, 90, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33160.12, -19398.04, 19768.93 > , < -0.0001, 90, 90 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33168.13, -19595.64, 20221.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33168.13, -20984.14, 20221.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33167.83, -19595.64, 19047.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33167.83, -20984.14, 19047.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33166.13, -20290.64, 19653.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33164.23, -20290.64, 20221.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33164.13, -20290.64, 19047.93 > , < 0, 90.0005, 89.9999 > , false, 5000, 7, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Secondary Glow
+  foreach(entity ent in NoClimbArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < darkrampr, darkrampg, darkrampb > )
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -31949.55, -20286.64, 19450.53 > , < 0, 0, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -38357.36, -24034.64, 21182.13 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 7
+          int checkpointInThisTrigger = 8
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl6() {
+  // Level Color
+  float rampr = 0.0
+  float rampg = 0.0
+  float rampb = 1.0
+  float darkrampr = 0.0
+  float darkrampg = 0.0
+  float darkrampb = 0.1
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -25048.64, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -25048.64, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -25048.94, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -25048.94, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -25050.64, 19804.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33018.13, -25052.54, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33018.13, -25052.64, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -25050.64, 19804.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37927.64, -24105.34, 20811.01 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37680.64, -24105.34, 20743.69 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37433.64, -24105.34, 20676.37 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37186.64, -24105.34, 20609.04 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37237.93, -24271.23, 20420.93 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37484.92, -24271.23, 20488.26 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37731.92, -24271.23, 20555.58 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37978.92, -24271.23, 20622.9 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37186.64, -23960.24, 20609.04 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37433.64, -23960.23, 20676.37 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37680.64, -23960.23, 20743.69 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37927.64, -23960.24, 20811.01 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37978.91, -23794.34, 20622.9 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37731.92, -23794.34, 20555.58 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37484.92, -23794.34, 20488.26 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37237.92, -23794.33, 20420.93 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36941.3, -23960.24, 20542.27 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36992.58, -23794.24, 20354.14 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36745.59, -23794.24, 20286.82 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36745.59, -24271.24, 20286.82 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36694.31, -23960.24, 20474.95 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36694.31, -24105.24, 20474.95 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36992.6, -24271.24, 20354.14 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36941.32, -24105.24, 20542.28 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36447.31, -24105.24, 20407.63 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36498.59, -24271.24, 20219.49 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36200.31, -24105.24, 20340.3 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36251.59, -24271.24, 20152.17 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35953.31, -24105.24, 20272.98 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36004.59, -24271.24, 20084.85 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36447.31, -23960.23, 20407.63 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36498.59, -23794.23, 20219.49 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36200.31, -23960.23, 20340.31 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36251.59, -23794.23, 20152.17 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35953.31, -23960.23, 20272.98 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36004.59, -23794.23, 20084.84 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33732, -23960.22, 19667.54 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33783.27, -23794.22, 19479.4 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33979, -23960.22, 19734.86 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34030.27, -23794.22, 19546.72 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34226, -23960.22, 19802.18 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34277.28, -23794.22, 19614.04 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34473, -23960.22, 19869.51 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34524.28, -23794.22, 19681.37 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34719.99, -23960.22, 19936.83 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34771.27, -23794.22, 19748.69 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34965.34, -23960.22, 20003.6 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35016.61, -23794.32, 19815.48 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35212.34, -23960.22, 20070.92 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35263.61, -23794.33, 19882.81 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35459.34, -23960.22, 20138.24 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35510.61, -23794.32, 19950.13 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35757.6, -23794.33, 20017.45 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35706.33, -23960.22, 20205.56 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35706.34, -24105.34, 20205.57 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35459.34, -24105.34, 20138.24 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35212.34, -24105.34, 20070.92 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34965.34, -24105.34, 20003.6 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34720.01, -24105.24, 19936.83 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34473, -24105.24, 19869.51 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34226, -24105.24, 19802.18 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33979, -24105.24, 19734.86 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33732, -24105.24, 19667.54 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33783.28, -24271.24, 19479.4 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34030.27, -24271.24, 19546.72 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34277.28, -24271.24, 19614.04 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34524.28, -24271.24, 19681.37 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34771.29, -24271.24, 19748.7 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35016.62, -24271.23, 19815.49 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35263.61, -24271.23, 19882.81 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35510.61, -24271.23, 19950.13 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35757.61, -24271.23, 20017.46 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33484.99, -23960.21, 19600.21 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33536.27, -23794.21, 19412.07 > , < -15.2464, -179.9996, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33485, -24105.24, 19600.21 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33536.27, -24271.24, 19412.07 > , < 15.2464, 0, 49.6068 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -38120.97, -24335.58, 21124.73 > , < 0, -89.9999, 0 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38616.97, -23248.24, 21124.73 > , < 0, 90.0004, 0 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -38120.97, -24335.04, 21124.73 > , < 0, 0.0006, 0 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -39312.28, -28886.59, 19174.93 > , < 0, -89.9995, 0 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -39808.28, -27799.25, 19174.93 > , < 0, 90.0008, 0 > , false, 5000, 8, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -39312.28, -28886.05, 19174.93 > , < 0, 0.0009, 0 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -39662.53, -28582.65, 19176.93 > , < 0, -90.0002, 0 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33087.45, -25842.32, 19519.34 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33087.45, -26098.34, 19519.34 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33087.45, -26354.34, 19519.34 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33087.45, -26610.35, 19519.34 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33254.18, -26610.35, 19325.08 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33254.18, -26354.34, 19325.08 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33254.18, -26098.34, 19325.08 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33254.18, -25842.32, 19325.08 > , < 0, -90, 49.3604 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32942.35, -26610.36, 19518.71 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32942.35, -26354.34, 19518.71 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32942.35, -26098.34, 19518.71 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32942.35, -25842.33, 19518.71 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32777.29, -25842.33, 19323.03 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32777.29, -26098.34, 19323.03 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32777.29, -26354.34, 19323.03 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32777.29, -26610.36, 19323.03 > , < 0, 90.0004, 49.8531 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33022.55, -28501.23, 19700.02 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33269.55, -28501.23, 19632.69 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33516.55, -28501.23, 19565.37 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33763.54, -28501.23, 19498.05 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33712.28, -28335.34, 19309.94 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33465.29, -28335.34, 19377.26 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33218.29, -28335.33, 19444.58 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32971.28, -28335.33, 19511.91 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33763.55, -28646.33, 19498.05 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33516.55, -28646.33, 19565.37 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33269.55, -28646.33, 19632.69 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33022.55, -28646.33, 19700.02 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32971.29, -28812.22, 19511.9 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33218.29, -28812.23, 19444.58 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33465.29, -28812.23, 19377.26 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33712.28, -28812.23, 19309.94 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34008.9, -28646.33, 19431.28 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33957.62, -28812.33, 19243.14 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34204.61, -28812.33, 19175.82 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34204.61, -28335.33, 19175.82 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34255.89, -28646.33, 19363.96 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34255.89, -28501.33, 19363.96 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33957.6, -28335.33, 19243.15 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34008.89, -28501.33, 19431.28 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34502.89, -28501.34, 19296.63 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34451.61, -28335.34, 19108.5 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34749.89, -28501.34, 19229.31 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34698.61, -28335.34, 19041.17 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34996.89, -28501.34, 19161.99 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34945.61, -28335.34, 18973.85 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34502.89, -28646.34, 19296.63 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34451.61, -28812.34, 19108.5 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34749.89, -28646.34, 19229.31 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34698.61, -28812.34, 19041.17 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34996.89, -28646.34, 19161.99 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34945.61, -28812.34, 18973.85 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37218.2, -28646.37, 18556.54 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37166.93, -28812.37, 18368.4 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36971.2, -28646.37, 18623.86 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36919.92, -28812.37, 18435.72 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36724.2, -28646.36, 18691.19 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36672.92, -28812.36, 18503.05 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36477.2, -28646.36, 18758.51 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36425.92, -28812.36, 18570.37 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36230.21, -28646.36, 18825.83 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36178.93, -28812.36, 18637.69 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35984.86, -28646.36, 18892.6 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35933.59, -28812.26, 18704.49 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35737.86, -28646.36, 18959.92 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35686.59, -28812.25, 18771.81 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35490.86, -28646.36, 19027.25 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35439.59, -28812.25, 18839.13 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35192.6, -28812.25, 18906.46 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35243.87, -28646.35, 19094.57 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35243.86, -28501.24, 19094.57 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35490.86, -28501.24, 19027.25 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35737.86, -28501.24, 18959.92 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35984.87, -28501.24, 18892.6 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36230.2, -28501.34, 18825.84 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36477.2, -28501.34, 18758.51 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36724.2, -28501.35, 18691.18 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36971.2, -28501.35, 18623.86 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37218.2, -28501.35, 18556.54 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37166.92, -28335.35, 18368.4 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36919.92, -28335.35, 18435.72 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36672.92, -28335.35, 18503.05 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36425.92, -28335.34, 18570.37 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -36178.91, -28335.34, 18637.7 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35933.59, -28335.35, 18704.49 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35686.59, -28335.35, 18771.81 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35439.59, -28335.35, 18839.13 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -35192.59, -28335.34, 18906.46 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37465.21, -28646.37, 18489.21 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37413.94, -28812.37, 18301.07 > , < -15.2464, 0.0006, 49.6067 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37465.21, -28501.35, 18489.21 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -37413.93, -28335.35, 18301.08 > , < 15.2464, -179.9997, 49.6068 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -27313.64, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -27313.64, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -27313.94, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -27313.94, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -32323.13, -27315.64, 19804.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33018.13, -27317.54, 20372.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33018.13, -27317.64, 19198.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33711.63, -27315.64, 19804.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35226.13, -27307.65, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35226.13, -27307.65, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34504.13, -27307.64, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35226.13, -27307.65, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34504.13, -27307.64, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35992.12, -27307.67, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35992.12, -27307.67, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34504.13, -27307.64, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35992.12, -27307.67, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -37520.13, -27307.65, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -37520.13, -27307.65, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36798.13, -27307.64, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -37520.13, -27307.65, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36798.13, -27307.64, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -38286.12, -27307.67, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -38286.12, -27307.67, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -36798.13, -27307.64, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -38286.12, -27307.67, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35213.13, -25047.65, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35213.13, -25047.65, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34491.13, -25047.64, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35213.13, -25047.65, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34491.13, -25047.64, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35979.12, -25047.67, 20913.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35979.12, -25047.67, 19650.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34491.13, -25047.64, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -35979.12, -25047.67, 20290.87 > , < 0, 0.0005, 89.9998 > , false, 5000, 8, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Secondary Glow
+  foreach(entity ent in NoClimbArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < darkrampr, darkrampg, darkrampb > )
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -39882.7, -28580.63, 19225.53 > , < 0, -180, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      if (IsValid(ent)) {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+          ent.SetOrigin( < -22640.3, -8429.232, 27015.53 > ) // change tp location
+          ent.SetAngles( < 0, 0, 0 > )
+
+          //
+          // Checkpoint and timer
+          //
+
+          int previousCheckpoint = 8
+          int checkpointInThisTrigger = 9
+          //show current time
+          if (ent.p.isTimerActive == true) {
+            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
+            int seconds = ent.p.currentTime
+            if (seconds > 59) {
+              int minutes = seconds / 60
+              int realseconds = seconds - (minutes * 60)
+              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
+            } else {
+              Message(ent, "Current Time: " + seconds + " seconds")
+            }
+          }
+
+          if (ent.p.currentCheckpoint == previousCheckpoint) {
+            //set checkpoint
+            ent.p.currentCheckpoint = checkpointInThisTrigger
+
+            //change realm and lock invis
+            ent.RemoveFromAllRealms()
+            ent.AddToRealm(checkpointInThisTrigger)
+            ent.p.isPlayerInvisAllowed = false
+          }
+        }
+      }
+    })
+  DispatchSpawn(trigger_0)
+
+}
+
+void
+
+function MovementGym_Surf_Kitsune_lvl7() {
+  // Level Color
+  float rampr = 1.0
+  float rampg = 1.0
+  float rampb = 1.0
+  float darkrampr = 0.25
+  float darkrampg = 0.25
+  float darkrampb = 0.25
+
+  // Props Array
+  array < entity > ClipArray;
+  array < entity > NoClimbArray;
+  array < entity > NoGrappleArray;
+  array < entity > NoCollisionArray;
+
+  // Props
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.06, -9375.646, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.56, -9375.648, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.06, -9375.947, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.56, -9375.949, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.06, -9377.646, 22293.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33803.06, -9379.546, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33803.06, -9379.647, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.56, -9377.648, 22293.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29395.05, -8416.65, 26191.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29391.05, -8416.65, 25573.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29314.05, -8417.65, 26191.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29318.05, -8417.65, 25573.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29318.05, -8417.65, 26817.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29391.05, -8416.65, 26817.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29937.05, -9037.65, 26191.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29933.05, -9037.65, 25573.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29856.05, -9038.65, 26191.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29860.05, -9038.65, 25573.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29860.05, -9038.65, 26817.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29933.05, -9037.65, 26817.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29860.05, -7788.846, 26817.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29937.05, -7787.65, 26191.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29933.05, -7787.846, 25573.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29856.05, -7788.65, 26191.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29860.05, -7788.846, 25573.93 > , < -0.0002, -89.9994, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -29933.05, -7787.846, 26817.93 > , < 0.0002, 90.0005, 90 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30334.05, -8404.647, 25180.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30334.05, -7786.647, 25176.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30334.05, -9030.647, 25176.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31349.05, -8404.648, 24368.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31349.05, -7786.648, 24364.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31349.05, -9030.648, 24364.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30403.05, -8404.647, 23331.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30403.05, -7786.647, 23327.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30403.05, -9030.647, 23327.93 > , < 0, 0.0006, 179.9998 > , false, 5000, 9, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -22888.98, -8100.689, 26919.93 > , < 0, 90.0002, 0 > , false, 5000, 9, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -22392.99, -9188.034, 26919.93 > , < 0, -89.9995, 0 > , false, 5000, 9, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -22888.98, -8101.234, 26919.93 > , < 0, -179.9993, 0 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23098.36, -8340.535, 26763 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23348.83, -8340.535, 26710.05 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23599.3, -8340.536, 26657.09 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23849.77, -8340.536, 26604.13 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23809.44, -8174.641, 26413.38 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23558.97, -8174.641, 26466.33 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23308.5, -8174.64, 26519.29 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23058.02, -8174.64, 26572.25 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23849.77, -8485.634, 26604.13 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23599.3, -8485.639, 26657.09 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23348.83, -8485.637, 26710.04 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23098.36, -8485.635, 26763 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23058.03, -8651.53, 26572.25 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23308.5, -8651.534, 26519.29 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23558.97, -8651.53, 26466.33 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -23809.44, -8651.538, 26413.38 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24100.25, -8485.642, 26551.17 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24059.92, -8651.537, 26360.42 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24350.72, -8485.644, 26498.21 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24310.39, -8651.541, 26307.46 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24601.19, -8485.646, 26445.26 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24560.86, -8651.537, 26254.5 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24851.66, -8485.641, 26392.3 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24811.33, -8651.545, 26201.55 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25102.14, -8485.648, 26339.34 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25061.81, -8651.543, 26148.59 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25352.62, -8485.65, 26286.38 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25312.28, -8651.548, 26095.63 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25603.08, -8485.652, 26233.43 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25562.75, -8651.544, 26042.68 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25853.55, -8485.647, 26180.47 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25813.22, -8651.552, 25989.71 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26104.03, -8485.655, 26127.51 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26063.7, -8651.55, 25936.76 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26354.51, -8485.657, 26074.55 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26314.17, -8651.555, 25883.8 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26604.97, -8485.659, 26021.6 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26564.64, -8651.551, 25830.85 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26855.45, -8485.654, 25968.64 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26815.12, -8651.559, 25777.89 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27105.92, -8485.662, 25915.68 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27065.59, -8651.557, 25724.93 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27356.4, -8485.664, 25862.73 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27316.07, -8651.562, 25671.97 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27606.87, -8485.666, 25809.77 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27566.53, -8651.559, 25619.02 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27857.34, -8485.661, 25756.81 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27817.01, -8651.565, 25566.06 > , < -11.9382, 0.0004, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28107.82, -8485.669, 25703.85 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28067.49, -8651.563, 25513.1 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28358.3, -8485.671, 25650.89 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28317.96, -8651.568, 25460.14 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28608.77, -8485.673, 25597.94 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28568.43, -8651.565, 25407.19 > , < -11.9382, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24100.24, -8340.536, 26551.18 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24059.91, -8174.641, 26360.42 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24350.72, -8340.536, 26498.21 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24310.39, -8174.641, 26307.46 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24601.19, -8340.537, 26445.26 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24560.86, -8174.642, 26254.5 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24851.66, -8340.537, 26392.3 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -24811.33, -8174.642, 26201.55 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25102.14, -8340.537, 26339.34 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25061.81, -8174.642, 26148.59 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25352.63, -8340.537, 26286.38 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25312.29, -8174.642, 26095.63 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25603.09, -8340.538, 26233.43 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25562.75, -8174.643, 26042.68 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25853.56, -8340.538, 26180.47 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -25813.23, -8174.643, 25989.72 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26104.05, -8340.538, 26127.51 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26063.71, -8174.643, 25936.75 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26354.52, -8340.538, 26074.55 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26314.19, -8174.643, 25883.8 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26604.99, -8340.539, 26021.6 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26564.65, -8174.644, 25830.84 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26855.46, -8340.539, 25968.64 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -26815.13, -8174.644, 25777.89 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27105.94, -8340.539, 25915.68 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27065.61, -8174.644, 25724.93 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27356.42, -8340.539, 25862.72 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27316.09, -8174.644, 25671.96 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27606.89, -8340.54, 25809.76 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27566.55, -8174.645, 25619.01 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27857.36, -8340.54, 25756.81 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27817.03, -8174.645, 25566.05 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28107.84, -8340.54, 25703.85 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28067.51, -8174.645, 25513.1 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28358.31, -8340.54, 25650.89 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28317.99, -8174.645, 25460.14 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28608.79, -8340.541, 25597.93 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28568.45, -8174.646, 25407.18 > , < 11.9382, -179.9999, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31035.91, -8485.645, 22608.31 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30985.79, -8651.645, 22419.6 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31283.68, -8485.645, 22542.64 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31232.38, -8651.645, 22353.15 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31531.25, -8485.645, 22475.98 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31480.15, -8651.645, 22287.48 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31777.84, -8485.645, 22409.54 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31727.72, -8651.645, 22220.82 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31035.91, -8340.645, 22608.31 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30985.79, -8174.645, 22419.6 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31283.68, -8340.645, 22542.64 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31232.38, -8174.645, 22353.15 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31531.25, -8340.645, 22475.98 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31480.15, -8174.645, 22287.48 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31777.84, -8340.646, 22409.54 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31727.72, -8174.645, 22220.82 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33745.14, -9949.647, 22171.44 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33579.23, -9949.647, 21976.54 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33890.27, -9949.647, 22171.42 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34056.61, -9949.647, 21976.8 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33843.24, -12190.65, 22103.68 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33843.24, -12335.65, 22103.68 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -14509.64, 20968.7 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -14509.64, 20968.67 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32025.49, -8340.646, 22343.3 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31975.36, -8174.645, 22154.59 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32273.14, -8340.646, 22277.07 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32223.01, -8174.645, 22088.35 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32520.79, -8340.646, 22210.83 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32470.66, -8174.645, 22022.11 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32768.43, -8340.646, 22144.6 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32718.31, -8174.645, 21955.88 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32025.49, -8485.646, 22343.3 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31975.37, -8651.646, 22154.59 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32273.14, -8485.648, 22277.06 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32223.03, -8651.648, 22088.35 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32520.8, -8485.65, 22210.83 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32470.68, -8651.65, 22022.11 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32768.46, -8485.652, 22144.59 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32718.34, -8651.652, 21955.87 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33016.11, -8485.654, 22078.35 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32965.99, -8651.654, 21889.63 > , < -14.9739, 0.0004, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33016.08, -8340.646, 22078.36 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32965.96, -8174.645, 21889.64 > , < 14.9739, -180, 49.6068 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33745.14, -10205.74, 22171.56 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33579.23, -10205.74, 21976.66 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33745.14, -10461.84, 22171.68 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33579.23, -10461.84, 21976.78 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33745.14, -10717.94, 22171.79 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33579.23, -10717.94, 21976.89 > , < 0.0262, 90.0001, 49.6067 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33890.27, -10205.75, 22171.54 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34056.61, -10205.75, 21976.92 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33890.27, -10461.84, 22171.65 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34056.61, -10461.84, 21977.04 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33890.27, -10717.94, 22171.77 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -34056.61, -10717.94, 21977.15 > , < -0.026, -90.0001, 49.6069 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33893.06, -12024.75, 21915.18 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33645.55, -12024.75, 21849.76 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33595.72, -12190.64, 22038.26 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33398.03, -12024.74, 21784.34 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33348.21, -12190.64, 21972.84 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33150.52, -12024.74, 21718.91 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33100.69, -12190.64, 21907.41 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32903, -12024.74, 21653.49 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32853.18, -12190.63, 21841.99 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32655.48, -12024.74, 21588.07 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32605.66, -12190.63, 21776.57 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32407.97, -12024.73, 21522.65 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32358.15, -12190.63, 21711.15 > , < -14.8057, -179.9993, 49.6067 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32160.46, -12024.73, 21457.23 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32110.63, -12190.63, 21645.73 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31912.94, -12024.73, 21391.8 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31863.12, -12190.62, 21580.3 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31665.43, -12024.72, 21326.38 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31615.6, -12190.62, 21514.88 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31417.91, -12024.72, 21260.96 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31368.09, -12190.62, 21449.46 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31170.39, -12024.72, 21195.54 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31120.57, -12190.61, 21384.04 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30922.88, -12024.72, 21130.12 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30873.05, -12190.61, 21318.62 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30675.36, -12024.71, 21064.7 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30625.54, -12190.61, 21253.2 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999998))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30427.85, -12024.71, 20999.27 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30378.02, -12190.61, 21187.77 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30180.33, -12024.71, 20933.85 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30130.51, -12190.6, 21122.35 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29932.82, -12024.7, 20868.43 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29882.99, -12190.6, 21056.93 > , < -14.8057, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29685.3, -12024.7, 20803 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29635.48, -12190.59, 20991.5 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29437.79, -12024.7, 20737.58 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999994))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29387.96, -12190.59, 20926.07 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999994))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29190.27, -12024.7, 20672.15 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29140.45, -12190.59, 20860.65 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28942.75, -12024.69, 20606.73 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28892.93, -12190.59, 20795.22 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28695.24, -12024.69, 20541.3 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28645.41, -12190.58, 20729.8 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28447.72, -12024.69, 20475.88 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999994))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28397.9, -12190.58, 20664.38 > , < -14.8058, -179.9993, 49.6066 > , false, 5000, 9, 0.9999994))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33893.06, -12501.54, 21915.18 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33645.55, -12501.54, 21849.75 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33595.72, -12335.64, 22038.26 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33398.03, -12501.54, 21784.33 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33348.21, -12335.64, 21972.83 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33150.52, -12501.54, 21718.91 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -33100.69, -12335.64, 21907.41 > , < 14.8058, 0.0004, 49.6069 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32903, -12501.54, 21653.48 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32853.18, -12335.64, 21841.99 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32655.48, -12501.53, 21588.06 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32605.66, -12335.64, 21776.56 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32407.98, -12501.53, 21522.64 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32358.15, -12335.63, 21711.14 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32160.46, -12501.53, 21457.22 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -32110.64, -12335.63, 21645.72 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31912.95, -12501.53, 21391.79 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31863.12, -12335.63, 21580.29 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31665.43, -12501.53, 21326.37 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31615.61, -12335.63, 21514.87 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 0.9999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31417.91, -12501.52, 21260.95 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31368.09, -12335.63, 21449.45 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31170.4, -12501.52, 21195.52 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -31120.57, -12335.63, 21384.02 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30922.88, -12501.52, 21130.1 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30873.06, -12335.62, 21318.6 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30675.37, -12501.52, 21064.67 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30625.54, -12335.62, 21253.18 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30427.85, -12501.52, 20999.25 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30378.03, -12335.62, 21187.75 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30180.34, -12501.51, 20933.82 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -30130.51, -12335.62, 21122.33 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29932.82, -12501.51, 20868.4 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29883, -12335.62, 21056.9 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29685.3, -12501.51, 20802.98 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29635.48, -12335.61, 20991.48 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29437.79, -12501.51, 20737.55 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29387.96, -12335.61, 20926.06 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29190.27, -12501.51, 20672.13 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -29140.45, -12335.61, 20860.63 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28942.76, -12501.5, 20606.71 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28892.93, -12335.61, 20795.21 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28695.24, -12501.5, 20541.28 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28645.42, -12335.61, 20729.79 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28447.73, -12501.5, 20475.86 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -28397.9, -12335.6, 20664.36 > , < 14.8058, 0.0004, 49.607 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -14459.15, 20780.35 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -14706.43, 20714.05 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -14756.92, 20902.37 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -14953.71, 20647.74 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -15004.2, 20836.06 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -15200.99, 20581.44 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -15251.48, 20769.76 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -15448.27, 20515.14 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -15498.77, 20703.46 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -15695.55, 20448.84 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -15746.05, 20637.15 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -15942.83, 20382.53 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -15993.33, 20570.85 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -16190.12, 20316.23 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -16240.61, 20504.55 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -16437.4, 20249.93 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -16487.89, 20438.25 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -16684.68, 20183.62 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -16735.17, 20371.94 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -16931.96, 20117.32 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -16982.45, 20305.64 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -17179.24, 20051.02 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -17229.73, 20239.34 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -17426.52, 19984.71 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -17477.02, 20173.04 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -17673.8, 19918.41 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -17724.3, 20106.73 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -17921.08, 19852.11 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -17971.58, 20040.43 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -18168.37, 19785.81 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -18218.86, 19974.12 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -18415.65, 19719.5 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -18466.14, 19907.82 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -18662.93, 19653.2 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -18713.42, 19841.52 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -18910.21, 19586.9 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -18960.7, 19775.21 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -19157.49, 19520.6 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -19207.98, 19708.91 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -19404.77, 19454.29 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -19455.27, 19642.61 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -19652.05, 19387.99 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -19702.55, 19576.31 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27625.27, -19899.33, 19321.69 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27459.38, -19949.83, 19510 > , < 15.0095, -90.0001, 49.6068 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -14459.14, 20780.37 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999996))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -14706.43, 20714.07 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999995))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -14756.92, 20902.39 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -14953.7, 20647.77 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999993))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -15004.2, 20836.09 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -15200.98, 20581.47 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999992))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -15251.47, 20769.79 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -15448.25, 20515.17 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.999999))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -15498.75, 20703.49 > , < -15.0094, 90.0003, 49.6066 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -15695.53, 20448.87 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999989))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -15746.02, 20637.19 > , < -15.0094, 90.0003, 49.6066 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -15942.8, 20382.57 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999988))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -15993.3, 20570.89 > , < -15.0094, 90.0003, 49.6066 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -16190.08, 20316.27 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999987))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -16240.57, 20504.59 > , < -15.0094, 90.0003, 49.6066 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -16437.36, 20249.96 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999987))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -16487.85, 20438.29 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -16684.63, 20183.66 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999986))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -16735.13, 20371.98 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -16931.91, 20117.36 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999985))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -16982.41, 20305.68 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -17179.19, 20051.06 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999985))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -17229.68, 20239.38 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -17426.46, 19984.76 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999983))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -17476.96, 20173.08 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -17673.74, 19918.46 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999982))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -17724.24, 20106.78 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -17921.02, 19852.16 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999981))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -17971.52, 20040.48 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -18168.3, 19785.86 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999979))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -18218.79, 19974.18 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -18415.57, 19719.56 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999979))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -18466.07, 19907.88 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -18662.85, 19653.26 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -18713.35, 19841.57 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -18910.13, 19586.96 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -18960.63, 19775.27 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000001))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -19157.41, 19520.66 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -19207.9, 19708.97 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -19404.68, 19454.36 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -19455.18, 19642.67 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -19651.96, 19388.05 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -19702.46, 19576.37 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000002))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27148.35, -19899.24, 19321.75 > , < -15.0095, 90.0003, 49.6067 > , false, 5000, 9, 0.9999977))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -27314.24, -19949.73, 19510.07 > , < -15.0094, 90.0002, 49.6066 > , false, 5000, 9, 1.000003))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_02.rmdl", < -27105.16, -23408.79, 19595.93 > , < 0, 0.0004, 0 > , false, 5000, 9, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -28192.5, -23904.79, 19595.93 > , < 0, -179.9993, 0 > , false, 5000, 9, 1))
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -27105.7, -23408.79, 19595.93 > , < 0, 90.0009, 0 > , false, 5000, 9, 1))
+  NoGrappleArray.append(MapEditor_CreateProp($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl", < -27388.12, -23764.14, 19601.83 > , < 0, -0.0002, 0 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27896.02, -23762.68, 19756 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26691.02, -23762.65, 20395.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26691.02, -23762.65, 19756 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27320.03, -23762.66, 19756 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27320.03, -23762.66, 20395.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27896.02, -23762.68, 20395.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27896.02, -23762.68, 19133.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26691.02, -23762.65, 19133.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27320.03, -23762.66, 19133.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.05, -11253.65, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.55, -11253.65, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.05, -11253.95, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.55, -11253.95, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.05, -11255.65, 22293.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33803.05, -11257.55, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33803.05, -11257.65, 21687.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.55, -11255.65, 22293.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26692.05, -13205.64, 21701.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -28080.55, -13205.64, 21701.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26692.05, -13205.94, 20527.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -28080.55, -13205.94, 20527.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -26692.05, -13207.64, 21133.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27387.05, -13209.54, 21701.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -27387.05, -13209.64, 20527.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -28080.55, -13207.64, 21133.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 24605 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 25344.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 24605 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 24605 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 25344.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 25344.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 23902.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 23902.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 23902.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 26797.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 26095.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 26095.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 26797.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 26797.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 26095.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 22474.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 23214.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 21772.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.651, 21772.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 22474.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 23214.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 22474.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.651, 21772.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.648, 23214.93 > , < 0, 0.0005, 89.9998 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8348.648, 25375.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8348.648, 26115.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -7772.648, 24673.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -7772.648, 26115.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -7772.648, 25375.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8977.648, 25375.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8977.648, 24673.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8348.648, 24673.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8977.648, 26115.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -7772.648, 26799.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8977.648, 26799.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31672.04, -8348.648, 26799.93 > , < -0.0002, -89.9995, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8400.65, 23961.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8400.65, 24701.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8976.65, 23259.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8976.65, 24701.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8976.65, 23961.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -7771.65, 23961.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -7771.65, 23259.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -8400.65, 23259.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30079.04, -7771.65, 24701.93 > , < 0.0001, 90.0005, 90 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 24605 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 25344.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 24605 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 25344.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 25344.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 22474.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 23214.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 21772.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 21772.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 23214.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 23902.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 23902.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 23902.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 24605 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 26797.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 26095.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30804.04, -7428.651, 26095.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 26095.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 26797.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 26797.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -30228.04, -7428.651, 22474.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 22474.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 21772.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+  ClipArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -31433.04, -7428.648, 23214.93 > , < 0, -179.9995, 90.0001 > , false, 5000, 9, 1))
+
+  foreach(entity ent in ClipArray) {
+    ent.MakeInvisible()
+    ent.kv.solid = 6
+    ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    ent.kv.contents = CONTENTS_PLAYERCLIP
+  }
+
+  //Secondary Glow
+  foreach(entity ent in NoClimbArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < darkrampr, darkrampg, darkrampb > )
+  }
+
+  //Main Glow
+  foreach(entity ent in NoGrappleArray) {
+    ent.Highlight_SetFunctions(0, 136, false, 136, 3.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  //Outline Glow
+  foreach(entity ent in NoCollisionArray) {
+    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
+  }
+
+  // Buttons
+  AddCallback_OnUseEntity(CreateSurfButton( < -27393.6, -23570.1, 19595.2 > , < 0, 180, 0 > , "%use% Stop Timer"), void
+    function (entity panel, entity user, int input) {
+      //Stop timer Button
+      if (user.p.isTimerActive == true) {
+        user.p.finalTime = floor(Time()).tointeger() - user.p.startTime
+
+        int seconds = user.p.finalTime
+        if (seconds > 59) {
+
+          //Whacky conversion
+          int minutes = seconds / 60
+          int realseconds = seconds - (minutes * 60)
+
+          //Display player Time
+          Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map3"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+
+        } else {
+
+          //Display player Time
+          Message(user, "Your Final Time: " + seconds + " seconds")
+
+          //Add to results file
+          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map3"
+          file.allTimes.append(finalTime)
+
+          //Reset Timer
+          user.p.isTimerActive = false
+          user.p.startTime = 0
+        }
+      }
+    })
+
+  // Triggers
+  entity trigger_0 = MapEditor_CreateTrigger( < -27390.14, -23984.31, 19650.43 > , < 0, -90, 0 > , 237.05, 50, false)
+  trigger_0.SetEnterCallback(void
+    function (entity trigger, entity ent) {
+      EmitSoundOnEntityOnlyToPlayer(ent, ent, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(ent, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
+      StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+      StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
+      ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+      ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+      ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+      ent.PhaseShiftCancel()
+      //Start Checkpoint
+      ent.p.allowCheckpoint = false
+      ent.p.currentCheckpoint = 0
+      //Reset Timer
+      ent.p.isTimerActive = false
+      ent.p.startTime = 0
+
+      //Re-enable invis after surf
+      ent.p.isPlayerInvisAllowed = true
+      if (ent.IsInRealm(1) != true || ent.IsInRealm(2) != true) {
+        ent.RemoveFromAllRealms()
+        ent.AddToRealm(1)
+        ent.MakeVisible()
+        Message(ent, "Hub", "You are now Visible")
+      }
+
+      //Force Default Player Settings
+      SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+    })
+  DispatchSpawn(trigger_0)
 
 }
