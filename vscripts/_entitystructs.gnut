@@ -704,6 +704,8 @@ global struct ServerPlayerStruct
 	
 	bool isPlayerInvisAllowed = true
 	
+	int currentMelee = 0
+	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null
