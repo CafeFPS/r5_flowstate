@@ -78,6 +78,7 @@ bool function ClientCommand_runrestart(entity player, array<string> args)
     player.SetPersistentVar("gen", 0)
     player.SetOrigin(file.first_cp)
     ResetDoors()
+    destroy_lootbins()
 
     return true
 }
