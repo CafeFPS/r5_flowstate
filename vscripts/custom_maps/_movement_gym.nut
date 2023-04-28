@@ -25,8 +25,8 @@ function MovementGym() {
     MovementGym_Hub()
     WaitFrame()
 
-    MovementGym_Map1()
-    WaitFrame()
+    //MovementGym_Map1()
+    //WaitFrame()
 
     MovementGym_Map2()
     WaitFrame()
@@ -471,22 +471,23 @@ function MovementGym_Hub_Buttons() {
 
   AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 10011.12, -4296.651 > , < 0, -89.9994, 0 > , "%use% Treerees Movement Map 1"), void
     function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
-      Message(user, "Map 1 by TREEREE")
-      //Start Checkpoint
-      user.p.allowCheckpoint = true
-      user.p.currentCheckpoint = 1
-      //Reset Timer
-      user.p.isTimerActive = false
-      user.p.startTime = 0
+      //EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      //TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
+      //Message(user, "Map 1 by TREEREE")
+      ////Start Checkpoint
+      //user.p.allowCheckpoint = true
+      //user.p.currentCheckpoint = 1
+      ////Reset Timer
+      //user.p.isTimerActive = false
+      //user.p.startTime = 0
+      Message(user, "Disabled until 1.0")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10158.35, -4296.651 > , < 0, 90.0002, 0 > , "%use% Mantle Jump Practice "), void
     function (entity panel, entity user, int input) {
-      //EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-      //TeleportFRPlayer(user,< -2789.5070, 2607.6090, 41922.3500 > + tpoffset,< 0, -89.9998, 0 >)
-      Message(user, "Mantle Jump Practice Currently Disabled")
+      EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+      TeleportFRPlayer(user,< -2789.5070, 2607.6090, 41922.3500 > + tpoffset,< 0, -89.9998, 0 >)
+      Message(user, "Mantle Jump Practice")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10814.41, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Advanced Tap Strafe into Wall Jump"), void
@@ -1085,81 +1086,6 @@ function MovementGym_Map1() {
       user.p.allowCheckpoint = false
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 4663.407, 1258.493, -1263.651 > , < 0, 0, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 4199.391, 1258.493, -1074.651 > , < 0, 0, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 1146.391, -1008.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 2094.391, -1016.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 3281.507, 3761.391, -688.6514 > , < 0, 89.9998, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      int reset = 0
-      if (user.GetPersistentVarAsInt("gen") == reset) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 3231.9000, 6983.4000, -1132.3000 > , < 0, 60, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 3149.507, 7037.391, -1136.651 > , < 0, 89.9998, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 4658.391, 9266.492, -816.6514 > , < 0, 0, 0 > , "%use% Skip"), void
-    function (entity panel, entity user, int input) {
-      if (user.p.isTimerActive == false) {
-        EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-        TeleportFRPlayer(user, < 4242.7190, 1151.9690, -1075.7000 > , < 0, 180, 0 > )
-      } else {
-        Message(user, "Cant Skip with Timer Running")
-      }
-    })
-
   AddCallback_OnUseEntity(CreateFRButton( < 6900.8, 1258.493, -1457 > , < 0, 0, 0 > , "%use% Back to Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
@@ -1172,9 +1098,10 @@ function MovementGym_Map1() {
   AddCallback_OnUseEntity(CreateFRButton( < 6902.018, 1045, -1457 > , < 0, 179.9997, 0 > , "%use% Start Timer"), void
     function (entity panel, entity user, int input) {
       //Start Timer Button
-      user.p.isTimerActive = true
-      user.p.startTime = floor(Time()).tointeger()
-      Message(user, "Timer Started!")
+      //user.p.isTimerActive = true
+      //user.p.startTime = floor(Time()).tointeger()
+      //Message(user, "Timer Started!")
+      Message(user, "Timer not ready yet!")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 5330, 9154.7, -688.353 > , < 0, -89.9998, 0 > , "%use% Stop Timer"), void
@@ -1227,84 +1154,84 @@ function MovementGym_Map1() {
           if (ent.p.allowCheckpoint == true) {
             switch (ent.p.currentCheckpoint) {
               // Checkpoint 1
-            case "1":
+            case 1:
               ent.SetOrigin( < 6767.9240, 1149.2000, -1025.2000 > )
               ent.SetAngles( < 0, 180, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 2
-            case "2":
+            case 2:
               ent.SetOrigin( < 4217.1000, 1149.1000, -1074.6510 > )
               ent.SetAngles( < 0, 180, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 3
-            case "3":
+            case 3:
               ent.SetOrigin( < 3380, 1139.7720, -1008 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 4
-            case "4":
+            case 4:
               ent.SetOrigin( < 3380, 1966, -1008 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 5
-            case "5":
+            case 5:
               ent.SetOrigin( < 3380.2, 3714, -598.1504 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 6
-            case "6":
+            case 6:
               ent.SetOrigin( < 3380, 4406, -753.9995 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 7
-            case "7":
+            case 7:
               ent.SetOrigin( < 3348, 5222, -882.9995 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 8
-            case "8":
+            case 8:
               ent.SetOrigin( < 3250.5000, 6614, -1218.0010 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 9
-            case "9":
+            case 9:
               ent.SetOrigin( < 3381, 7335, -1137 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 10
-            case "10":
+            case 10:
               ent.SetOrigin( < 3723, 7739, -1006 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 11
-            case "11":
+            case 11:
               ent.SetOrigin( < 4162, 8476, -942.9995 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
               break
 
               // Checkpoint 12
-            case "12":
+            case 12:
               ent.SetOrigin( < 4658, 9149, -811.9995 > )
               ent.SetAngles( < 0, 90, 0 > )
               ent.SetVelocity( < 0, 0, 0 > )
@@ -6295,9 +6222,10 @@ function MovementGym_Surf_Kitsune_lvl1() {
   AddCallback_OnUseEntity(CreateSurfButton( < -38594.93, -9874.137, 21306.73 > , < 0, 0, 0 > , "%use% Start Timer"), void
     function (entity panel, entity user, int input) {
       //Start Timer Button
-      user.p.isTimerActive = true
-      user.p.startTime = floor(Time()).tointeger()
-      Message(user, "Timer Started!")
+      //user.p.isTimerActive = true
+      //user.p.startTime = floor(Time()).tointeger()
+      //Message(user, "Timer Started!")
+	  Message(user, "Timer Disabled for now")
     })
 
   AddCallback_OnUseEntity(CreateSurfButton( < -38593.7, -10285.93, 21306.73 > , < 0, 179.9999, 0 > , "%use% Back to Hub"), void
