@@ -1,6 +1,6 @@
 # Welcome to Flowstate
 
-Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes additional content made by @CafeFPS. (Gamemodes, weapons, abilities, bug fixes, and more!)
+Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes additional content made by @CafeFPS and other contributors. (Gamemodes, weapons, abilities, bug fixes, and more!)
 
 Gamemodes: 
 1. Flowstate Aim Trainer
