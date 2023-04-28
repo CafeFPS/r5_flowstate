@@ -49,6 +49,10 @@ file
 
 void
 function door_map_init() {
+    #if SERVER
+    AddClientCommandCallback("runrestart", ClientCommand_runrestart)
+    #endif
+
     thread door_map_precache()
     wait 2
     thread door_map()
@@ -67,6 +71,17 @@ void function TeleportPlayers()
         player.SetOrigin(file.first_cp)
     }
 }
+
+bool function ClientCommand_runrestart(entity player, array<string> args)
+{
+    Message(player, "run restarted!")
+    player.SetPersistentVar("gen", 0)
+    player.SetOrigin(file.first_cp)
+    ResetDoors()
+
+    return true
+}
+
 
 void
 function SpawnInfoText() {
