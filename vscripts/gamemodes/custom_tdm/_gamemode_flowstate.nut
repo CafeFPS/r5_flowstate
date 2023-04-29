@@ -169,7 +169,11 @@ function _CustomTDM_Init() {
     AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
   } else {
     AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
-    AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+    
+    if( GetCurrentPlaylistName() != "movement_gym" ){
+	AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+    }
+    
     AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
     AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
     AddClientCommandCallback("god", ClientCommand_God)
