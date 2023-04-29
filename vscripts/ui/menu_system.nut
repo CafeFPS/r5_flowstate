@@ -229,14 +229,13 @@ void function UpdateSystemPanel( var panel )
 		}
 		if( GetCurrentPlaylistName() == "custom_tdm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{
-			if( GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", true) )
-			{
-				SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
-				SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
-			} else {
-				SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
-				SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
-			}
+			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
+		}
+		if( GetCurrentPlaylistName() == "movement_gym" )
+		{
+			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
 	}
 	else
