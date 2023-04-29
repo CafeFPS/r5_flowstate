@@ -1076,27 +1076,7 @@ void function Sh_CustomTDM_Init()
 		
 		Shared_RegisterLocation(
 		NewLocationSettings(
-			"Movement Gym Map 1",
-			[
-						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
-			],
-			<0, 0, 3000>
-				)
-			)
-			
-		Shared_RegisterLocation(
-		NewLocationSettings(
-			"Movement Gym Map 2",
-			[
-						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
-			],
-			<0, 0, 3000>
-				)
-			)
-		
-		Shared_RegisterLocation(
-		NewLocationSettings(
-			"Movement Gym Map 3",
+			"Movement Gym",
 			[
 						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
 			],
