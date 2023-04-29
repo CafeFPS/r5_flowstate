@@ -8,7 +8,7 @@ globalize_all_functions
 //  ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
 //  ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
 
-//Init Movement Gym
+//Init Movement Gym With Map 1
 void
 function MovementGym() {
   if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
@@ -27,7 +27,91 @@ function MovementGym() {
     MovementGym_Map1()
     WaitFrame()
 
+    MovementGym_Octane()
+    WaitFrame()
+
+    MovementGym_Tapstrafe()
+    WaitFrame()
+
+    MovementGym_Superglide()
+    WaitFrame()
+
+    MovementGym_MantleJumps()
+    WaitFrame()
+
+    MovementGym_Grapple1()
+    WaitFrame()
+
+    MovementGym_Grapple2()
+    WaitFrame()
+
+    MovementGym_Hub_Buttons()
+    WaitFrame()
+    
+    MovementGym_Map1_Button()
+
+  }
+}
+
+//Init Movement Gym With Map 2
+void
+function MovementGym2() {
+  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
+
+    // Commands
+    AddClientCommandCallback("hub", ClientCommand_Hub)
+    AddClientCommandCallback("invis", ClientCommand_invis)
+
+    //Map init
+    PrecacheMovementGymProps()
+    WaitFrame()
+    
+    MovementGym_Hub()
+    WaitFrame()
+
     MovementGym_Map2()
+    WaitFrame()
+
+    MovementGym_Octane()
+    WaitFrame()
+
+    MovementGym_Tapstrafe()
+    WaitFrame()
+
+    MovementGym_Superglide()
+    WaitFrame()
+
+    MovementGym_MantleJumps()
+    WaitFrame()
+
+    MovementGym_Grapple1()
+    WaitFrame()
+
+    MovementGym_Grapple2()
+    WaitFrame()
+
+    MovementGym_Hub_Buttons()
+    WaitFrame()
+    
+    MovementGym_Map2_Button()
+
+  }
+}
+
+//Init Movement Gym With Map 3
+void
+function MovementGym3() {
+  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
+
+    // Commands
+    AddClientCommandCallback("hub", ClientCommand_Hub)
+    AddClientCommandCallback("invis", ClientCommand_invis)
+
+    //Map init
+    PrecacheMovementGymProps()
+    WaitFrame()
+    
+    MovementGym_Hub()
     WaitFrame()
 
     MovementGym_Octane()
@@ -70,6 +154,9 @@ function MovementGym() {
     WaitFrame()
 
     MovementGym_Hub_Buttons()
+    WaitFrame()
+    
+    MovementGym_Map3_Button()
 
   }
 }
@@ -77,85 +164,88 @@ function MovementGym() {
 //Precache props
 void
 function PrecacheMovementGymProps() {
-  PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl")
-  PrecacheModel($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_cargo_container_large_01.rmdl")
-  PrecacheModel($"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl")
-  PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
-  PrecacheModel($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl")
-  PrecacheModel($"mdl/signs/Sign_no_tresspasing.rmdl")
-  PrecacheModel($"mdl/props/kunai/kunai.rmdl")
-  PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot.rmdl")
-  PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl")
-  PrecacheModel($"mdl/signs/numbers/sign_number_lit_3.rmdl")
-  PrecacheModel($"mdl/signs/numbers/sign_number_lit_2.rmdl")
-  PrecacheModel($"mdl/signs/numbers/sign_number_lit_1.rmdl")
-  PrecacheModel($"mdl/industrial/screwdriver_octane.rmdl")
-  PrecacheModel($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl")
-  PrecacheModel($"mdl/props/lifeline_needle/lifeline_needle.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_02.rmdl")
-  PrecacheModel($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl")
-  PrecacheModel($"mdl/desertlands/desrtlands_icicles_06.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl")
-  PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_03.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl")
-  PrecacheModel($"mdl/desertlands/city_pipe_grate_medium_128.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_cargo_container_320_01.rmdl")
-  PrecacheModel($"mdl/colony/ventilation_unit_01_black.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl")
-  PrecacheModel($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl")
-  PrecacheModel($"mdl/desertlands/lightpole_desertlands_city_01.rmdl")
-  PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl")
-  PrecacheModel($"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl")
-  PrecacheModel($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl")
-  PrecacheModel($"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl")
-  PrecacheModel($"mdl/signs/desertlands_city_newdawn_sign_01.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_train_station_sign_04.rmdl")
-  PrecacheModel($"mdl/colony/antenna_03_colony.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl")
-  PrecacheModel($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_train_track_sign_01.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_lobby_sign_01.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl")
-  PrecacheModel($"mdl/mendoko/mendoko_rubber_floor_01.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_wood_board_01.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_fold_sign_01.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_column_01.rmdl")
-  PrecacheModel($"mdl/desertlands/highrise_square_top_01.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_column_stack_01.rmdl")
-  PrecacheModel($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl")
-  PrecacheModel($"mdl/foliage/icelandic_moss_grass_01.rmdl")
-  PrecacheModel($"mdl/lamps/light_parking_post.rmdl")
-  PrecacheModel($"mdl/barriers/concrete/concrete_barrier_fence.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_platform_03.rmdl")
-  PrecacheModel($"mdl/ola/sewer_railing_01_128.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_platform_02.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl")
-  PrecacheModel($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl")
-  PrecacheModel($"mdl/signs/street_sign_arrow.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_01.rmdl")
-  PrecacheModel($"mdl/industrial/underbelly_support_beam_256_01.rmdl")
-  PrecacheModel($"mdl/pipes/pipe_modular_painted_grey_256.rmdl")
-  PrecacheModel($"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl")
-  PrecacheModel($"mdl/domestic/bar_sink.rmdl")
-  PrecacheModel($"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl")
-  PrecacheModel($"mdl/domestic/tv_LED_med_panel.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_apartments_planter_02.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_building_ice_02.rmdl")
-  PrecacheModel($"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_02.rmdl")
-  PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl")
-  PrecacheModel($"mdl/foliage/plant_desert_yucca_01.rmdl")
-  PrecacheModel($"mdl/domestic/floor_rug_red.rmdl")
-  PrecacheModel($"mdl/ola/sewer_railing_01_64.rmdl")
-  PrecacheModel($"mdl/ola/sewer_railing_01_corner_in.rmdl")
-  PrecacheModel($"mdl/foliage/icelandic_moss_grass_02.rmdl")
-  PrecacheModel($"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl")
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
+    PrecacheModel( $"mdl/desertlands/highrise_square_top_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_railing_01_64.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_railing_01_128.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_railing_01_corner_in.rmdl" )
+    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_02.rmdl" )
+    PrecacheModel( $"mdl/lamps/light_parking_post.rmdl" )
+    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_01.rmdl" )
+    PrecacheModel( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl" )
+    PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
+    PrecacheModel( $"mdl/industrial/underbelly_support_beam_256_01.rmdl" )
+    PrecacheModel( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl" )
+    PrecacheModel( $"mdl/signs/street_sign_arrow.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl" )
+    PrecacheModel( $"mdl/domestic/bar_sink.rmdl" )
+    PrecacheModel( $"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/tv_LED_med_panel.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_planter_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_building_ice_02.rmdl" )
+    PrecacheModel( $"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_02.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl" )
+    PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/floor_rug_red.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desrtlands_icicles_06.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl" )
+    PrecacheModel( $"mdl/colony/ventilation_unit_01_black.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl" )
+    PrecacheModel( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl" )
+    PrecacheModel( $"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl" )
+    PrecacheModel( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl" )
+    PrecacheModel( $"mdl/signs/desertlands_city_newdawn_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl" )
+    PrecacheModel( $"mdl/colony/antenna_03_colony.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_track_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_column_01.rmdl" )
+    PrecacheModel( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl" )
+    PrecacheModel( $"mdl/barriers/shooting_range_target_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_fold_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_03.rmdl" )
+    PrecacheModel( $"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl" )
+    PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
+    PrecacheModel( $"mdl/signs/Sign_no_tresspasing.rmdl" )
+    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot.rmdl" )
+    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_3.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_2.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_1.rmdl" )
+    PrecacheModel( $"mdl/industrial/screwdriver_octane.rmdl" )
+    PrecacheModel( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
+    PrecacheModel( $"mdl/props/lifeline_needle/lifeline_needle.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl" )
+    PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl" )
+    PrecacheModel( $"mdl/industrial/landing_mat_metal_03_large.rmdl" )
+
 }
 
 struct {
@@ -266,54 +356,60 @@ vector tpoffset = < 0, 0, -20000 >
 //Init Hub
 void
 function MovementGym_Hub() {
-  // Props Array
-  array < entity > NoClimbArray;
-  array < entity > NoCollisionArray;
+    // Props Array
+    array < entity > NoClimbArray; array < entity > NoCollisionArray; 
 
-  // Props
-  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl", < 10755.26, 9901.212, -3915.242 > , < 0, 0, 0 > , true, 5000, -1, 0.75))
-  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10840.27, 9829.147, -3915.742 > , < 0, 0, 0 > , true, 5000, -1, 0.38))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -3922.002 > , < 0, 90.0005, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -3922.002 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -3922.002 > , < 0, 0, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -3922.002 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -3922.002 > , < 0, 0, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -3922.002 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 > , < 0, -89.9998, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 > , < 0, 90.0005, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 > , < 0, 0, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 > , < 0, -179.9997, 0 > , true, 5000, -1, 1))
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 > , < 0, 0, 0 > , true, 5000, -1, 1))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4178 > , < 0, 90.0005, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4178 > , < 0, -89.9998, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4178 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4178 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4178 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4178 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 > , < 0, -89.9998, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 > , < 0, -179.9997, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 > , < 0, 90.0005, 0 > , true, 5000, -1, 1)
-  NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10234, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999999))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10108, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999998)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9982, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999996)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9856, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999995)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9730, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999994)
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9603.999, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999993)
-  NoCollisionArray.append(MapEditor_CreateProp($"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10628.36, 10021.37, -3915.142 > , < 0, 0, 0 > , true, 5000, -1, 0.53))
-  MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9479.971, -3788.742 > , < 90, 90, 0 > , true, 5000, -1, 0.9999993)
+    // Props
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10731.84, 9480.57, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10606.8, 9480.57, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10856.8, 9480.57, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl", < 10755.26, 9901.212, -3915.242 >, < 0, 0, 0 >, true, 50000, -1, 0.75 ) )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10840.27, 9829.147, -3915.742 >, < 0, 0, 0 >, true, 50000, -1, 0.38 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10860.7, 10317.9, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10628.36, 10021.37, -3915.142 >, < 0, 0, 0 >, true, 50000, -1, 0.53 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10731.84, 10366.87, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10856.8, 10366.87, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10606.8, 10366.87, -4169.342 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10956.26, 10142.33, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10956.26, 10267.37, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10956.26, 10017.37, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10956.26, 9705.232, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10956.26, 9830.271, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10956.26, 9580.271, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10507.46, 9830.271, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10507.46, 10142.33, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10507.46, 10267.37, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10507.46, 10017.37, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl", < 10507.46, 9580.271, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl", < 10507.46, 9705.232, -4169.342 >, < 0, -89.9998, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10604.3, 10317.9, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10860.7, 10056.4, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10604.3, 10056.4, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10860.7, 9795.101, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10604.3, 9795.101, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10860.7, 9533, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
+    MapEditor_CreateProp( $"mdl/industrial/landing_mat_metal_03_large.rmdl", < 10604.3, 9533, -3920.1 >, < 0, 0, 0 >, true, 50000, -1, 2 )
 
-  foreach(entity ent in NoClimbArray) ent.kv.solid = 3
-  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
+    foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
 
-  // Triggers
-  entity trigger_0 = MapEditor_CreateTrigger( < 10730.36, 9677.57, -4168 > , < 0, 0, 0 > , 565.51, 149.5838, false)
-  trigger_0.SetEnterCallback(void
-    function (entity trigger, entity ent) {
-      if (IsValid(ent)) // ensure the entity is valid
+    // Triggers
+    entity trigger_0 = MapEditor_CreateTrigger( < 10730.36, 9677.57, -4168 >, < 0, 0, 0 >, 565.51, 149.5838, false )
+    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+          if (IsValid(ent)) // ensure the entity is valid
       {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
@@ -354,11 +450,11 @@ function MovementGym_Hub() {
         }
       }
     })
-  DispatchSpawn(trigger_0)
-  entity trigger_1 = MapEditor_CreateTrigger( < 10730.36, 10173.57, -4168 > , < 0, 0, 0 > , 373.9595, 149.5838, false)
-  trigger_1.SetEnterCallback(void
-    function (entity trigger, entity ent) {
-      if (IsValid(ent)) // ensure the entity is valid
+    DispatchSpawn( trigger_0 )
+    entity trigger_1 = MapEditor_CreateTrigger( < 10730.36, 10173.57, -4168 >, < 0, 0, 0 >, 373.9595, 149.5838, false )
+    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+          if (IsValid(ent)) // ensure the entity is valid
       {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
@@ -399,20 +495,17 @@ function MovementGym_Hub() {
         }
       }
     })
-  DispatchSpawn(trigger_1)
-
+    DispatchSpawn( trigger_1 )
 }
 
+//Hub Buttons
 void
 function MovementGym_Hub_Buttons() {
   // Props Array
   array < entity > NoCollisionArray;
 
   // Props
-  NoCollisionArray.append(MapEditor_CreateProp($"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl", < 10948.88, 9832.81, -4218.2 > , < 90, -179.9991, 0 > , true, 5000, -1, 7.19))
-  MapEditor_CreateProp($"mdl/barriers/shooting_range_target_02.rmdl", < 10953.97, 9923.115, -4222 > , < 0, -179.9993, 0 > , true, 5000, -1, 0.62878)
   MapEditor_CreateProp($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl", < 10522.7, 9907.18, -4293 > , < 0, 0, 0 > , true, 5000, -1, 1)
-  MapEditor_CreateProp($"mdl/signs/Sign_no_tresspasing.rmdl", < 10949.43, 10010.6, -4223.4 > , < 0, 90.0005, 0 > , true, 5000, -1, 1.9275)
   MapEditor_CreateProp($"mdl/robots/drone_frag/drone_frag_loot.rmdl", < 10896.92, 9462.7, -4274.8 > , < -9.8903, -28.4672, -17.5772 > , true, 5000, -1, 1.2036)
   MapEditor_CreateProp($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl", < 10815, 9462.7, -4274.8 > , < -9.8903, -28.4672, -17.5772 > , true, 5000, -1, 1.2036)
   MapEditor_CreateProp($"mdl/signs/numbers/sign_number_lit_3.rmdl", < 10570.1, 9489, -4221 > , < 0, 90, 0 > , true, 5000, -1, 4.915405)
@@ -425,56 +518,6 @@ function MovementGym_Hub_Buttons() {
   foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
 
   // Buttons
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 9923.115, -4296.652 > , < 0, -89.9994, 0 > , "%use% Map 2 by DEAFPS"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 19500.3000, -25867.7000, 21940 > , < 0, 90, 0 > )
-      array < ItemFlavor > characters = GetAllCharacters()
-      CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
-
-      //apply melee
-      switch (user.p.currentMelee) {
-
-      case 1:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-        break
-      case 2:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-        break
-      case 0:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-        break
-      }
-      user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "Map 2 by DEAFPS")
-      //Start Checkpoint
-      user.p.allowCheckpoint = true
-      user.p.currentCheckpoint = 1
-      //Reset Timer
-      user.p.isTimerActive = false
-      user.p.startTime = 0
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 10011.12, -4296.651 > , < 0, -89.9994, 0 > , "%use% Treerees Movement Map 1"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-      TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
-      Message(user, "Map 1 by TREEREE")
-      //Start Checkpoint
-      user.p.allowCheckpoint = true
-      user.p.currentCheckpoint = 1
-      //Reset Timer
-      user.p.isTimerActive = false
-      user.p.startTime = 0
-      //Message(user, "Disabled until 1.0")
-    })
-
   AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10158.35, -4296.651 > , < 0, 90.0002, 0 > , "%use% Mantle Jump Practice "), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
@@ -592,6 +635,89 @@ function MovementGym_Hub_Buttons() {
       }
     })
 
+}
+
+void
+function MovementGym_Map1_Button(){
+//Sign
+  array < entity > NoCollisionArray;
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/signs/Sign_no_tresspasing.rmdl", < 10949.43, 10010.6, -4223.4 > , < 0, 90.0005, 0 > , true, 5000, -1, 1.9275))
+
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+//Button	
+  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 10011.12, -4296.651 > , < 0, -89.9994, 0 > , "%use% Treerees Movement Map 1"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 6961, 1147.7710, -1453 > , < 0, -89.9998, 0 > )
+      Message(user, "Map 1 by TREEREE")
+      //Start Checkpoint
+      user.p.allowCheckpoint = true
+      user.p.currentCheckpoint = 1
+      //Reset Timer
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+    })	
+	
+}
+
+void
+function MovementGym_Map2_Button(){
+//Sign
+  array < entity > NoCollisionArray;
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/barriers/shooting_range_target_02.rmdl", < 10953.97, 9923.115, -4222 > , < 0, -179.9993, 0 > , true, 5000, -1, 0.62878))
+
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+//Button	
+  AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 9923.115, -4296.652 > , < 0, -89.9994, 0 > , "%use% Map 2 by DEAFPS"), void
+    function (entity panel, entity user, int input) {
+      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+      TeleportFRPlayer(user, < 19500.3000, -25867.7000, 21940 > , < 0, 90, 0 > )
+      array < ItemFlavor > characters = GetAllCharacters()
+      CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
+
+      //apply melee
+      switch (user.p.currentMelee) {
+
+      case 1:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        break
+      case 2:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+        break
+      case 0:
+        TakeAllWeapons(user)
+        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
+        break
+      }
+      user.SetPlayerNetBool("pingEnabled", false)
+      Message(user, "Map 2 by DEAFPS")
+      //Start Checkpoint
+      user.p.allowCheckpoint = true
+      user.p.currentCheckpoint = 1
+      //Reset Timer
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+    })
+	
+}
+
+void
+function MovementGym_Map3_Button(){
+
+//Sign
+  array < entity > NoCollisionArray;
+  NoCollisionArray.append(MapEditor_CreateProp($"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl", < 10948.88, 9832.81, -4218.2 > , < 90, -179.9991, 0 > , true, 5000, -1, 7.19))
+
+  foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+//Button	
   AddCallback_OnUseEntity(CreateFRButton( < 10942.42, 9832.81, -4296.652 > , < 0, -89.9994, 0 > , "%use% Surf Kitsune by DEAFPS"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
@@ -637,7 +763,7 @@ function MovementGym_Hub_Buttons() {
       TakeAllWeapons(user)
       SetPlayerSettings(user, SURF_SETTINGS)
     })
-
+	
 }
 
 //Init Map1 Treeree
