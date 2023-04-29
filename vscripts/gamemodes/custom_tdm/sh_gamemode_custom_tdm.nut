@@ -1073,9 +1073,30 @@ void function Sh_CustomTDM_Init()
         case "mp_rr_desertlands_64k_x_64k_nx":
 		    
 		if(FlowState_EnableMovementGym()){
+		
 		Shared_RegisterLocation(
 		NewLocationSettings(
-			"Movement Gym",
+			"Movement Gym Map 1",
+			[
+						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
+			],
+			<0, 0, 3000>
+				)
+			)
+			
+		Shared_RegisterLocation(
+		NewLocationSettings(
+			"Movement Gym Map 2",
+			[
+						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
+			],
+			<0, 0, 3000>
+				)
+			)
+		
+		Shared_RegisterLocation(
+		NewLocationSettings(
+			"Movement Gym Map 3",
 			[
 						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
 			],
