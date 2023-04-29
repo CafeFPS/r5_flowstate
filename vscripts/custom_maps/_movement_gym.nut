@@ -45,10 +45,34 @@ function MovementGym() {
     MovementGym_Grapple2()
     WaitFrame()
 
+    MovementGym_Surf_Kitsune_lvl1()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl2()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl3()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl4()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl5()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl6()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl7()
+    WaitFrame()
+
     MovementGym_Hub_Buttons()
     WaitFrame()
-    
+
     MovementGym_Map1_Button()
+    WaitFrame()
+    
+    MovementGym_Map3_Button()
 
   }
 }
@@ -89,16 +113,40 @@ function MovementGym2() {
 
     MovementGym_Grapple2()
     WaitFrame()
+    
+    MovementGym_Surf_Kitsune_lvl1()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl2()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl3()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl4()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl5()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl6()
+    WaitFrame()
+
+    MovementGym_Surf_Kitsune_lvl7()
+    WaitFrame()
 
     MovementGym_Hub_Buttons()
     WaitFrame()
-    
+
     MovementGym_Map2_Button()
+    WaitFrame()
+    
+    MovementGym_Map3_Button()
 
   }
 }
 
-//Init Movement Gym With Map 3
+//Init Movement Gym Without Run Maps
 void
 function MovementGym3() {
   if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
@@ -131,32 +179,6 @@ function MovementGym3() {
 
     MovementGym_Grapple2()
     WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl1()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl2()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl3()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl4()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl5()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl6()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl7()
-    WaitFrame()
-
-    MovementGym_Hub_Buttons()
-    WaitFrame()
-    
-    MovementGym_Map3_Button()
 
   }
 }
