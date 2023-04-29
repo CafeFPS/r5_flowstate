@@ -18,13 +18,16 @@ function MovementGym() {
     AddClientCommandCallback("invis", ClientCommand_invis)
 
     //Map init
-    PrecacheMovementGymProps()
-    WaitFrame()
+    //PrecacheMovementGymProps()
+    //WaitFrame()
     
     MovementGym_Hub()
     WaitFrame()
 
     MovementGym_Map1()
+    WaitFrame()
+    
+    MovementGym_Map2()
     WaitFrame()
 
     MovementGym_Octane()
@@ -72,116 +75,11 @@ function MovementGym() {
     MovementGym_Map1_Button()
     WaitFrame()
     
-    MovementGym_Map3_Button()
-
-  }
-}
-
-//Init Movement Gym With Map 2
-void
-function MovementGym2() {
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
-
-    // Commands
-    AddClientCommandCallback("hub", ClientCommand_Hub)
-    AddClientCommandCallback("invis", ClientCommand_invis)
-
-    //Map init
-    PrecacheMovementGymProps()
-    WaitFrame()
-    
-    MovementGym_Hub()
-    WaitFrame()
-
-    MovementGym_Map2()
-    WaitFrame()
-
-    MovementGym_Octane()
-    WaitFrame()
-
-    MovementGym_Tapstrafe()
-    WaitFrame()
-
-    MovementGym_Superglide()
-    WaitFrame()
-
-    MovementGym_MantleJumps()
-    WaitFrame()
-
-    MovementGym_Grapple1()
-    WaitFrame()
-
-    MovementGym_Grapple2()
-    WaitFrame()
-    
-    MovementGym_Surf_Kitsune_lvl1()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl2()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl3()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl4()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl5()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl6()
-    WaitFrame()
-
-    MovementGym_Surf_Kitsune_lvl7()
-    WaitFrame()
-
-    MovementGym_Hub_Buttons()
-    WaitFrame()
-
     MovementGym_Map2_Button()
     WaitFrame()
     
-    MovementGym_Map3_Button()
+    MovementGym_Surf_Button()
 
-  }
-}
-
-//Init Movement Gym Without Run Maps
-void
-function MovementGym3() {
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
-
-    // Commands
-    AddClientCommandCallback("hub", ClientCommand_Hub)
-    AddClientCommandCallback("invis", ClientCommand_invis)
-
-    //Map init
-    PrecacheMovementGymProps()
-    WaitFrame()
-    
-    MovementGym_Hub()
-    WaitFrame()
-
-    MovementGym_Octane()
-    WaitFrame()
-
-    MovementGym_Tapstrafe()
-    WaitFrame()
-
-    MovementGym_Superglide()
-    WaitFrame()
-
-    MovementGym_MantleJumps()
-    WaitFrame()
-
-    MovementGym_Grapple1()
-    WaitFrame()
-
-    MovementGym_Grapple2()
-    WaitFrame()
-
-    MovementGym_Hub_Buttons()
-    WaitFrame()
   }
 }
 
@@ -336,7 +234,7 @@ function ClientCommand_invis(entity user, array < string > args) {
   if (user.p.isPlayerInvisAllowed == true) {
     if (user.IsInRealm(1)) {
       user.RemoveFromAllRealms()
-      user.AddToRealm(RandomIntRange(9,63))
+      user.AddToRealm(2)
       user.MakeInvisible()
       Message(user, "You are now Invisible")
     } else {
@@ -440,24 +338,11 @@ function MovementGym_Hub() {
           array < ItemFlavor > characters = GetAllCharacters()
           CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
 
-          switch (ent.p.currentMelee) {
+      //apply melee
 
-          case 1:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-            break
-          case 2:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-            break
-          case 0:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-            break
-          }
+        TakeAllWeapons(ent)
+        ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -485,24 +370,11 @@ function MovementGym_Hub() {
           array < ItemFlavor > characters = GetAllCharacters()
           CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
 
-          switch (ent.p.currentMelee) {
+      //apply melee
 
-          case 1:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-            break
-          case 2:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-            break
-          case 0:
-            TakeAllWeapons(ent)
-            ent.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-            ent.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-            break
-          }
+        TakeAllWeapons(ent)
+        ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -540,6 +412,20 @@ function MovementGym_Hub_Buttons() {
   MapEditor_CreateProp($"mdl/props/lifeline_needle/lifeline_needle.rmdl", < 10517.2, 9993.263, -4230.4 > , < 0, -90, -90 > , true, 5000, -1, 6.85924)
 
   foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
+
+    // Buttons
+    AddCallback_OnUseEntity( CreateFRButton(< 10942.42, 9648.403, -4296.651 >, < 0, -89.9994, 0 >, "%use% Free Roam"), void function(entity panel, entity user, int input)
+    {
+	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+	TeleportFRPlayer(user,< 9492, 5553.3, -3657 >,< 0, -89.9998, 0 >)
+	Message(user, "Free Roam")
+	//Start Checkpoint
+	user.p.allowCheckpoint = false
+	user.p.currentCheckpoint = 0
+	//Reset Timer
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+    })
 
   // Buttons
   AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10158.35, -4296.651 > , < 0, 90.0002, 0 > , "%use% Mantle Jump Practice "), void
@@ -607,56 +493,13 @@ function MovementGym_Hub_Buttons() {
       CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
 
       //apply melee
-      switch (user.p.currentMelee) {
 
-      case 1:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-        break
-      case 2:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-        break
-      case 0:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-        break
-      }
 
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
-    })
-
-  AddCallback_OnUseEntity(CreateFRButton( < 10487.06, 9703.41, -4265.34 > , < 0.0003, -89.9997, -90.0002 > , "%use% Cycle Melee \n"), void
-    function (entity panel, entity user, int input) {
-      EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-
-      switch (user.p.currentMelee) {
-      case 0:
-	Message(user, "Melee Changed", "Bolo Sword")
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-        user.p.currentMelee = 1
-        break
-      case 1:
-        Message(user, "Melee Changed", "Empty Hands")
-	TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-        user.p.currentMelee = 2
-        break
-      case 2:
-        Message(user, "Melee Changed", "Shadow Hands")
-	TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-        user.p.currentMelee = 0
-        break
-      }
     })
 
 }
@@ -701,25 +544,12 @@ function MovementGym_Map2_Button(){
       array < ItemFlavor > characters = GetAllCharacters()
       CharacterSelect_AssignCharacter(ToEHI(user), characters[7])
 
-      //apply melee
-      switch (user.p.currentMelee) {
+            //apply melee
 
-      case 1:
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-        break
-      case 2:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-        break
-      case 0:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-        break
-      }
+	
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 2 by DEAFPS")
       //Start Checkpoint
@@ -733,7 +563,7 @@ function MovementGym_Map2_Button(){
 }
 
 void
-function MovementGym_Map3_Button(){
+function MovementGym_Surf_Button(){
 
 //Sign
   array < entity > NoCollisionArray;
@@ -748,24 +578,6 @@ function MovementGym_Map3_Button(){
       TeleportFRPlayer(user, < -38602.13, -10078.1, 21493.38 > , < 0, 0, 0 > )
 
       Message(user, "Surf Kitsune by DEAFPS")
-
-      switch (user.p.currentMelee) {
-      case 1:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-        break
-      case 2:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-        break
-      case 0:
-        TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_shadowsquad_hands", OFFHAND_MELEE, [])
-        break
-      }
 
       //Start Checkpoint
       int checkpointInThisTrigger = 3
@@ -7450,12 +7262,12 @@ function MovementGym_Surf_Kitsune_lvl6() {
 void
 function MovementGym_Surf_Kitsune_lvl7() {
   // Level Color
-  float rampr = RandomFloatRange(0.1, 1.0)
-  float rampg = RandomFloatRange(0.1, 1.0)
-  float rampb = RandomFloatRange(0.1, 1.0)
-  float darkrampr = RandomFloatRange(0.1, 0.25)
-  float darkrampg = RandomFloatRange(0.1, 0.25)
-  float darkrampb = RandomFloatRange(0.1, 0.25)
+  float rampr = 0.5
+  float rampg = 0.0
+  float rampb = 1.0
+  float darkrampr = 1.0
+  float darkrampg = 1.0
+  float darkrampb = 1.0
 
   // Props Array
   array < entity > ClipArray;
