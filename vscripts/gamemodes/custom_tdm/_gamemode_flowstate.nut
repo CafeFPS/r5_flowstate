@@ -2114,18 +2114,10 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Movement Gym Map 1") {
+	} else if (file.selectedLocation.name == "Movement Gym") {
 		DestroyPlayerProps()
 		wait 1
 		thread MovementGym()
-	} else if (file.selectedLocation.name == "Movement Gym Map 2") {
-		DestroyPlayerProps()
-		wait 1
-		thread MovementGym2()
-	} else if (file.selectedLocation.name == "Movement Gym Map 3") {
-		DestroyPlayerProps()
-		wait 1
-		thread MovementGym3()
 	}
 
     foreach( player in GetPlayerArray() )
@@ -2470,7 +2462,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if( GetCurrentPlaylistName() == "movement_gym" )
+    if ( file.selectedLocation.name == "Movement Gym" )
         ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
