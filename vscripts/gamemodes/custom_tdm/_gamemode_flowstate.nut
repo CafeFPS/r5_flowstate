@@ -152,9 +152,7 @@ function _CustomTDM_Init() {
 
   AddSpawnCallback("prop_survival", DissolveItem)
 
-  AddCallback_OnPlayerKilled(void
-    function (entity victim, entity attacker,
-      var damageInfo) {
+AddCallback_OnPlayerKilled(void function (entity victim, entity attacker, var damageInfo) {
       if (FlowState_PROPHUNT())
         thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
       else if (FlowState_SURF())
