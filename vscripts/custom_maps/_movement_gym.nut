@@ -7313,6 +7313,73 @@ function MovementGym_Surf_Kitsune_lvl7() {
   array < entity > NoGrappleArray;
   array < entity > NoCollisionArray;
 
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28387.05, -9302.629, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29016.04, -9302.634, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29016.04, -9302.634, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28387.05, -9302.629, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29592.04, -9302.635, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29016.04, -9302.634, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29592.04, -9302.635, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29592.04, -9302.635, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28387.05, -9302.629, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27198.04, -9302.64, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -26569.04, -9302.635, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27774.04, -9302.633, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27198.04, -9302.64, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27774.04, -9302.633, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -26569.04, -9302.635, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -26569.04, -9302.635, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27198.04, -9302.64, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27774.04, -9302.633, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25360.04, -9302.634, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24731.04, -9302.637, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25360.04, -9302.634, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24731.04, -9302.637, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25936.04, -9302.635, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25360.04, -9302.634, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25936.04, -9302.635, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24731.04, -9302.637, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25936.04, -9302.635, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -23457.04, -9302.636, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24033.04, -9302.636, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -22828.04, -9302.635, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -23457.04, -9302.636, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -22828.04, -9302.635, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24033.04, -9302.636, 25344.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -23457.04, -9302.636, 26797.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24033.04, -9302.636, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -22828.04, -9302.635, 26095.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28387.05, -9302.629, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29016.04, -9302.634, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29592.04, -9302.635, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -31434.04, -9302.633, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -30229.04, -9302.636, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -26569.04, -9302.635, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27198.04, -9302.64, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -27774.04, -9302.633, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25936.04, -9302.635, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24731.04, -9302.637, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -25360.04, -9302.634, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -24033.04, -9302.636, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -22828.04, -9302.635, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -23457.04, -9302.636, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -30858.04, -9302.636, 27547.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28875.04, -13202.65, 22033.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28875.04, -13202.65, 21212.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -28875.04, -13202.65, 20418.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29658.04, -13202.65, 22033.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29658.04, -13202.65, 20418.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -29658.04, -13202.65, 21212.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -30443.04, -13202.65, 21212.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -30443.04, -13202.65, 22033.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -30443.04, -13202.65, 20418.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -31257.04, -13202.64, 22033.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -31257.04, -13202.64, 20418.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -31257.04, -13202.65, 21212.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -32049.04, -13202.65, 21212.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -32049.04, -13202.65, 22033.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < -32049.04, -13202.65, 20418.93 >, < 0, 0.0005, 89.9998 >, true, 50000, 9, 1 ) )
+
   // Props
   NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -33108.06, -9375.646, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
   NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/highrise_square_top_01.rmdl", < -34496.56, -9375.648, 22861.93 > , < 0, 0.0005, 89.9999 > , false, 5000, 9, 1))
@@ -7879,32 +7946,3 @@ function MovementGym_Surf_Kitsune_lvl7() {
   DispatchSpawn(trigger_0)
 
 }
-
-//    foreach ( entity ent in ClipArray )
-//    {
-//        ent.MakeInvisible()
-//        ent.kv.solid = 6
-//        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-//        ent.kv.contents = CONTENTS_PLAYERCLIP
-//    }
-//    
-//    //Secondary Glow
-//    foreach ( entity ent in NoClimbArray )
-//    {
-//	ent.Highlight_SetFunctions( 0, 136, false, 136, 3.0, 2, false )
-//	ent.Highlight_SetParam( 0, 0, <darkrampr, darkrampg, darkrampb> )
-//    }
-//
-//    //Main Glow
-//    foreach ( entity ent in NoGrappleArray )
-//    {
-//	ent.Highlight_SetFunctions( 0, 136, false, 136, 3.0, 2, false )
-//	ent.Highlight_SetParam( 0, 0, <rampr, rampg, rampb> )
-//    }
-//
-//    //Outline Glow
-//    foreach ( entity ent in NoCollisionArray )
-//    {
-//	ent.Highlight_SetFunctions( 0, 0, false, 136, 1.0, 2, false )
-//	ent.Highlight_SetParam( 0, 0, <rampr, rampg, rampb> )
-//    }
