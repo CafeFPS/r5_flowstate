@@ -180,6 +180,8 @@ function MovementGym3() {
     MovementGym_Grapple2()
     WaitFrame()
 
+    MovementGym_Hub_Buttons()
+    WaitFrame()
   }
 }
 
