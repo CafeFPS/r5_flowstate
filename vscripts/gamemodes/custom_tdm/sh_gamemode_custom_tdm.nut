@@ -1,1871 +1,3716 @@
-#if SERVER
-globalize_all_functions
-#endif
-globalize_all_functions
+///////////////////////////////////////////////////////
+// ███████ ██       ██████  ██     ██     ███████ ████████  █████  ████████ ███████
+// ██      ██      ██    ██ ██     ██     ██         ██    ██   ██    ██    ██
+// █████   ██      ██    ██ ██  █  ██     ███████    ██    ███████    ██    █████
+// ██      ██      ██    ██ ██ ███ ██          ██    ██    ██   ██    ██    ██
+// ██      ███████  ██████   ███ ███      ███████    ██    ██   ██    ██    ███████
+///////////////////////////////////////////////////////
+// Credits:
+// CaféDeColombiaFPS (Retículo Endoplasmático#5955) -- owner/main dev
+// michae\l/#1125 -- initial help
+// AyeZee#6969 -- tdm/ffa dropships and droppods
+// Zer0Bytes#4428 -- rewrite
+// everyone else -- advice
+// Makimaki -- TDM Saved Weapon List, 1v1 gamemode
 
-global const NO_CHOICES = 2
-global const SCORE_GOAL_TO_WIN = 100
+global function _CustomTDM_Init
+global function _RegisterLocation
+global function CharSelect
+global function CreateAnimatedLegend
+global function Message
+global function shuffleArray
+global function WpnAutoReloadOnKill
+global function GetTDMState
+global function SetTdmStateToNextRound
+global function SetTdmStateToInProgress
+global function SetFallTriggersStatus
+global function CreateShipRoomFallTriggers
+global function GiveFlowstateOvershield
+global function IsAdmin
+global function Flowstate_ServerSaveChat
+global function GetWhiteListedWeapons
+global function GetWhiteListedAbilities
+global function GiveRandomPrimaryWeaponMetagame
+global function GiveRandomSecondaryWeaponMetagame
+global function LoadCustomWeapon
+global function getkd
 
-global enum eTDMAnnounce
+global function	ClientCommand_RebalanceTeams
+global function	ClientCommand_FlowstateKick
+global function	ClientCommand_ShowLatency
+global function WpnPulloutOnRespawn
+global function WpnAutoReload
+global function ReCheckGodMode
+
+const string WHITE_SHIELD = "armor_pickup_lv1"
+const string BLUE_SHIELD = "armor_pickup_lv2"
+const string PURPLE_SHIELD = "armor_pickup_lv3"
+
+//TDM Saved Weapon List
+global table<string,string> weaponlist
+global table<string,string> skilllist //stored players skills
+global array<int> characterslist = [0,4,5,6,7,8,9,10] //allowed character for normal players
+
+global bool isBrightWaterByZer0 = false
+global const float KILLLEADER_STREAK_ANNOUNCE_TIME = 5
+table playersInfo
+
+//solo mode
+global function CheckForObservedTarget
+enum eTDMState
 {
-	NONE = 0
-	WAITING_FOR_PLAYERS = 1
-	ROUND_START = 2
-	VOTING_PHASE = 3
-	MAP_FLYOVER = 4
-	IN_PROGRESS = 5
-}
-
-global struct LocPair
-{
-    vector origin = <0, 0, 0>
-    vector angles = <0, 0, 0>
-}
-
-global struct LocationSettings
-{
-    string name
-    array<LocPair> spawns
-    vector cinematicCameraOffset
+	IN_PROGRESS = 0
+	NEXT_ROUND_NOW = 1
 }
 
 struct {
-    LocationSettings &selectedLocation
-    array choices
-    array<LocationSettings> locationSettings
-    var scoreRui
-} file;
+	string scriptversion = "v3.5"
+    int tdmState = eTDMState.IN_PROGRESS
+    int nextMapIndex = 0
+	bool mapIndexChanged = true
+	array<entity> playerSpawnedProps
+	array<ItemFlavor> characters
+	int SameKillerStoredKills=0
+	array<string> blacklistedWeapons
+	array<string> blacklistedAbilities
+	array<LocationSettings> locationSettings
+    LocationSettings& selectedLocation
+	array<vector> thisroundDroppodSpawns
+    entity ringBoundary
+	entity previousChampion
+	entity previousChallenger
+	int maxPlayers
+	int maxTeams
+	int currentRound = 1
 
-void function Sh_CustomTDM_Init()
+	array<string> mAdmins
+	int randomprimary
+    int randomsecondary
+    int randomult
+    int randomtac
+
+    entity supercooldropship
+	bool isshipalive = false
+	array<LocationSettings> droplocationSettings
+    LocationSettings& dropselectedLocation
+
+	bool FallTriggersEnabled = false
+	bool mapSkyToggle = false
+	array<string> allChatLines
+	array<string> battlelog
+	string authkey = ""
+} file
+
+struct PlayerInfo
 {
+	string name
+	int team
+	int score
+	int deaths
+	float kd
+	int damage
+	int lastLatency
+}
 
+// ██████   █████  ███████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
+// ██   ██ ██   ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
+// ██████  ███████ ███████ █████       █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████
+// ██   ██ ██   ██      ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
+// ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
-    // Map locations
+void function _CustomTDM_Init()
+{
+	RegisterSignal("NewKillOnPlayerStreak")
+	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
+		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
+	else
+		SetConVarBool("sv_forceChatToTeamOnly", true)
+	
+	if (GetCurrentPlaylistName() != "movement_gym")
+		SurvivalFreefall_Init() //Enables freefall/skydive
+	
+	PrecacheCustomMapsProps()
+	PrecacheZeesMapProps()
+	
+	if (GetCurrentPlaylistName() == "movement_gym")
+		PrecacheMovementGymProps()
+	
+	PrecacheDEAFPSMapProps()
 
+    __InitAdmins()
+
+    AddCallback_EntitiesDidLoad( __OnEntitiesDidLoad )
+
+    AddCallback_OnClientConnected( void function(entity player) {
+        if(FlowState_PROPHUNT())
+            _OnPlayerConnectedPROPHUNT(player)
+        else if (FlowState_SURF())
+            _OnPlayerConnectedSURF(player)
+        else
+			thread _OnPlayerConnected(player)
+
+        UpdatePlayerCounts()
+    })
+
+    AddSpawnCallback( "prop_survival", DissolveItem )
+
+    AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
+        if(FlowState_PROPHUNT())
+            thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
+        else if (FlowState_SURF())
+            thread _OnPlayerDiedSURF(victim, attacker, damageInfo)
+        else thread _OnPlayerDied(victim, attacker, damageInfo)
+    })
+
+	if(FlowState_PROPHUNT()){
+		AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
+		AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
+	} else if (FlowState_SURF()){
+		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
+	} else{
+		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
+		
+		if( GetCurrentPlaylistName() != "movement_gym" ){
+			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+		}
+		
+		AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
+		AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
+		AddClientCommandCallback("god", ClientCommand_God)
+		AddClientCommandCallback("ungod", ClientCommand_UnGod)
+		AddClientCommandCallback("next_round", ClientCommand_NextRound)
+		AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
+	}
+
+	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	
+	//AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)	
+	// AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
+	// AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot)
+	// AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector)
+
+	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
+	AddClientCommandCallback("commands", ClientCommand_Help)
+	AddClientCommandCallback("say", ClientCommand_Say)
+	AddClientCommandCallback("adminlogin", ClientCommand_adminlogin)
+
+	if(!FlowState_AdminTgive())
+	{
+		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
+		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
+		AddClientCommandCallback("saveskills", ClientCommand_Maki_SaveCurSkill)
+		AddClientCommandCallback("resetskills", ClientCommand_Maki_ResetSkills)
+	}
+	
+	AddClientCommandCallback("controllerstate", ClientCommand_ControllerReport)
+	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest)
+		_soloModeInit(GetMapName())
+	}
+		
+	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+	{
+		file.blacklistedWeapons.append(GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~"))
+	}
+
+	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_ability_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+	{
+		file.blacklistedAbilities.append(GetCurrentPlaylistVarString("blacklisted_ability_" + i.tostring(), "~~none~~"))
+	}
+
+	if(FlowState_PROPHUNT()){
+		thread RunPROPHUNT()
+	} else if(FlowState_SURF()){
+		thread RunSURF()
+	}else {
+		thread RunTDM()}
+}
+
+void function __OnEntitiesDidLoad()
+{
+	switch(GetMapName())
+    {
+    	case "mp_rr_canyonlands_staging": SpawnMapPropsFR(); break
+    	case "mp_rr_arena_composite":
+		{
+			array<entity> badMovers = GetEntArrayByClass_Expensive( "script_mover" )
+			foreach(mover in badMovers)
+				if( IsValid(mover) ) mover.Destroy()
+			break
+		}
+    }
+}
+
+void function _RegisterLocation(LocationSettings locationSettings)
+{
+    file.locationSettings.append(locationSettings)
+    file.droplocationSettings.append(locationSettings)
+}
+
+LocPair function _GetVotingLocation()
+{
     switch(GetMapName())
     {
-   case "mp_rr_aqueduct":
-   case "mp_rr_aqueduct_night":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-               "Overflow",
-                [
-                    NewLocPair(<3863.79321, -3262.95703, 282.03125>, <0, -135.066055, 0>),
-                    NewLocPair(<4169.18262, -5555.22119, 410.03125>, <0, 146.240646, 0>),
-                    NewLocPair(<-620.375977, -6611.72803, 410.03125>, <0, 29.9391613, 0>),
-                    NewLocPair(<-1859.04651, -3355.55103, 282.03125>, <0, -51.3485374, 0>),
-                    NewLocPair(<817.221375, -3503.38354, 482.03125>, <0, 44.7887459, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-        break
-   case "mp_rr_canyonlands_staging":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-               "Deathbox by Ayezee",
-                [
-                    //Top Floor
-                    NewLocPair(<29351, -8106, -15794>, <4, 45, 0>),
-                    NewLocPair(<32678, -8106, -15794>, <4, 135, 0>),
-                    NewLocPair(<29351, -4780, -15794>, <4, -45, 0>),
-                    NewLocPair(<32678, -4780, -15794>, <4, -135, 0>),
-
-                    //Bottom Floor
-                    NewLocPair(<29351, -8106, -16073>, <4, 45, 0>),
-                    NewLocPair(<32678, -8106, -16073>, <4, 135, 0>),
-                    NewLocPair(<29351, -4780, -16073>, <4, -45, 0>),
-                    NewLocPair(<32678, -4780, -16073>, <4, -135, 0>),
-
-                    //Other
-                    NewLocPair(<32682, -6574, -15794>, <0, 180, 0>),
-                    NewLocPair(<29340, -6318, -15794>, <0, 0, 0>),
-                    NewLocPair(<31138, -4778, -15794>, <0, -90, 0>),
-                    NewLocPair(<30882, -8116, -15794>, <0, 90, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-        break
-    case "mp_rr_ashs_redemption":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Ash's Redemption",
-                [
-                    NewLocPair(<-22104, 6009, -26529>, <0, 0, 0>),
-					NewLocPair(<-21372, 3709, -26555>, <-5, 55, 0>),
-                    NewLocPair(<-19356, 6397, -26461>, <-4, -166, 0>),
-					NewLocPair(<-20713, 7409, -26442>, <-4, -114, 0>)
-                ],
-                <0, 0, 1000>
-            )
-        )
-
-        break
-    case "mp_rr_arena_composite":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Drop-Off",
-                [
-                    NewLocPair(<-3592, 1081, 258>, <0, 37, 0>),
-                    NewLocPair(<3592, 1081, 258>, <0, 142, 0>),
-                    NewLocPair(<-1315, 4113, 71>, <0, -43, 0>),
-                    NewLocPair(<1315, 4113, 71>, <0, -136, 0>),
-                    NewLocPair(<-1374, 1, 259>, <0, 35, 0>),
-                    NewLocPair(<1374, 1, 259>, <0, 140, 0>),
-                    NewLocPair(<-12.9539881, 3344.23584, -34>,<0, -92.351532, 0>),
-                    NewLocPair(<1705.29504, 3284.08252, 210>,<0, -142.564148, 0>),
-                    NewLocPair(<692.371887, 1771.11829, -50>,<0, 51.6300087, 0>),
-                    NewLocPair(<-358.171814, 1723.92322, -50>,<0, 45.0872917, 0>),
-                    NewLocPair(<-912.219482, 2789.4751, 10>,<0, -53.7381134, 0>),
-                    NewLocPair(<3556, 916, 258>, <8, 76, 0>),
-                    NewLocPair(<3765, 1115, 258>, <8, 171, 0>),
-                    NewLocPair(<-2388, 2758, 259>,<0, -102.007385, 0>),
-                    NewLocPair(<-1282, 1750, 259>,<16, 50, 0>)
-                ],
-                <0, 0, 1000>
-            )
-        )
-        break
-		
-	case "mp_rr_party_crasher":
-	Shared_RegisterLocation(
-		NewLocationSettings(
-				"Party Crasher",
-				[
-					NewLocPair(<1729.17407, -3585.65137, 601.736206>, <0, 103.168709, 0>),
-					NewLocPair(<345.111481, -3769.65674, 583.285156>, <0, 78.5349045, 0>),
-					NewLocPair(<-1315.06567, -2856.39771, 999.132568>,<0, 39.8982162, 0>),
-					NewLocPair(<-2242.99829, -1911.60974, 1231.47437>, <0, 35.2527733, 0>),
-					NewLocPair(<-2805.87012, -650.600647, 1272.09473>, <0, 32.1970596, 0>),
-					NewLocPair(<262.267334, 2781.46118, 710.572449>, <0, -139.138306, 0>),
-					NewLocPair(<-3970.97266, 2639.4585, 583.285156>, <0, -35.2144508, 0>),
-					NewLocPair(<-2711.53491, 4067.46069, 601.736206>, <0, -46.8964882, 0>),
-					NewLocPair(<-934.579468, 4998.19189, 583.281555>, <0, -90.8201675, 0>),
-					NewLocPair(<1259.38, 3572.83008, 633.238098>, <0, -112.696632, 0>),
-					NewLocPair(<2623.1499, 2661.17822, 940.03125>, <0, -99.6138458, 0>),
-					NewLocPair(<1981.64294, 2721.13745, 723.03125>, <0, -146.273544, 0>),
-					NewLocPair(<3116.81201, 1577.45361, 940.03125>, <0, 169.12117, 0>),
-					NewLocPair(<3843.68774, -595.504456, 583.002197>, <0, 172.503952, 0>),
-					NewLocPair(<1670.724, -768.35498, 720.573608>, <0, 107.206459, 0>)
-				],
-				<0, 0, 1000>
-			)
-		)
-		break
-		
-	case "mp_rr_arena_skygarden":
-	if(FlowState_EnableEncore()){
-	Shared_RegisterLocation(
-		NewLocationSettings(
-				"Encore",
-				[
-					NewLocPair(<4284.88037, -102.993355, 2680.03125>, <0, -179.447098, 0>),
-					NewLocPair(<-4282.63086, -94.0586777, 2680.03125>, <0, -1.49068689, 0>),
-					NewLocPair(<-4016.35449, -2984.96777, 2723.82983>, <0, 97.363739, 0>),
-					NewLocPair(<-3202.32129, -3163.42432, 2863.03125>, <0, 91.0571976, 0>),
-					NewLocPair(<11.4232283, -3441.22241, 2836.03125>, <0, 92.0147095, 0>),					
-					NewLocPair(<2008.17126, -3265.22412, 2863.03125>, <0, 114.795891, 0>),					
-					NewLocPair(<4112.67383, -2757.43213, 2717.97461>, <0, 108.537872, 0>),					
-					NewLocPair(<2756.42676, 2774.64746, 2664.18604>, <0, -106.51664, 0>),					
-					NewLocPair(<1610.47034, 3414.86646, 2786.24658>, <0, -85.7662277, 0>),					
-					NewLocPair(<-799.999512, 3280.4292, 2930.03125>, <0, -77.9509888, 0>),
-					NewLocPair(<-1641.51526, 3283.95166, 2785.31738>, <0, -90.7040482, 0>),					
-					NewLocPair(<2215.3208, -131.611176, 2599.72876>, <0, 175.527969, 0>),					
-					NewLocPair(<-2034.16443, -41.9182587, 2599.34814>, <0, -0.69002372, 0>),					
-					NewLocPair(<3.56009603, 2732.36084, 2930.03125>, <0, -86.8429184, 0>),
-					NewLocPair(<3.75123262, -2400.2561, 2829.96875>, <0, 92.3833466, 0>)
-				],
-				<0, 0, 1000>
-			)
-		)
-	}
-	
-	///////////////////////////////////////
-	//////////////DEAFPS Maps//////////////
-	///////////////////////////////////////
-
-	if(FlowState_EnableRustByDEAFPS()){
-            vector ruststartingorg = <0,0,0>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Rust By DEAFPS",
-				[
-					NewLocPair(< 312.3676, -17810.7000, 2924 > + ruststartingorg, < 0, 132.3256, 0 >),
-					NewLocPair(< 817.0059, -17817.7700, 2888 > + ruststartingorg, < 0, -2.6741, 0 >),
-					NewLocPair(< 211.9941, -18011.2300, 2923 > + ruststartingorg, < 0, 177.3262, 0 >),
-					NewLocPair(< 353.9973, -18534.2300, 2900 > + ruststartingorg, < 0, 177.3262, 0 >),
-					NewLocPair(< 632.0059, -18551.7700, 2878 > + ruststartingorg, < 0, -2.6741, 0 >),
-					NewLocPair(< 806.7667, -19414.9900, 2889 > + ruststartingorg, < 0, 87.3257, 0 >),
-					NewLocPair(< 180.0672, -19385.8800, 2914 > + ruststartingorg, < 0, 102.3257, 0 >),
-					NewLocPair(< -521.8843, -19393.0700, 2958 > + ruststartingorg, < 0, 12.3258, 0 >),
-					NewLocPair(< -547.8843, -18296.0700, 2931 > + ruststartingorg, < 0, 12.3258, 0 >),
-					NewLocPair(< -499.7668, -17120.0100, 2924 > + ruststartingorg, < 0, -92.6740, 0 >),
-					NewLocPair(< 103.2332, -17120.0100, 2914 > + ruststartingorg, < 0, -92.6740, 0 >),
-					NewLocPair(< 669.2332, -17164.0100, 2919 > + ruststartingorg, < 0, -92.6740, 0 >),
-					NewLocPair(< 1118.2330, -17189.0100, 2901 > + ruststartingorg, < 0, -92.6740, 0 >),
-					NewLocPair(< 1719.9930, -17217.2600, 2853 > + ruststartingorg, < 0, 176.9944, 0 >),
-					NewLocPair(< 1689.9930, -17868.2600, 2816 > + ruststartingorg, < 0, 176.9944, 0 >),
-					NewLocPair(< 1658.2490, -18422.3600, 2841 > + ruststartingorg, < 0, -148.4781, 0 >),
-					NewLocPair(< 1659.9820, -18918.3800, 2823 > + ruststartingorg, < 0, 175.4201, 0 >),
-					NewLocPair(< 1560.3300, -19434.5000, 2832 > + ruststartingorg, < 0, 149.9997, 0 >),
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
-	
-	if(FlowState_EnableShoothouseByDEAFPS()){
-	vector shoothousestartingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, -1400 >
-	Shared_RegisterLocation(
-			NewLocationSettings(
-				"Shoothouse by DEAFPS",
-			[
-				NewLocPair(< 6506.3960, -3044.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
-				NewLocPair(< 6428.3960, -3610.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
-				NewLocPair(< 6840.6740, -3927.4940, 149 > + shoothousestartingorg, < 0, -30.0804, 0 >)
-				NewLocPair(< 6846.3960, -4554.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
-				NewLocPair(< 7635.5880, -3918.6480, 149 > + shoothousestartingorg, < 0, -28.0562, 0 >)
-				NewLocPair(< 8147.9290, -4257.8400, 149 > + shoothousestartingorg, < 0, 170.3281, 0 >)
-				NewLocPair(< 8433.9280, -3560.8390, 149 > + shoothousestartingorg, < 0, 170.3281, 0 >)
-				NewLocPair(< 8419.8910, -3160.9640, 149 > + shoothousestartingorg, < 0, -168.0417, 0 >)
-				NewLocPair(< 7866.7090, -2320.1700, 149 > + shoothousestartingorg, < 0, -75.0357, 0 >)
-				NewLocPair(< 8296.8910, -2400.9660, 149 > + shoothousestartingorg, < 0, -168.0417, 0 >)
-				NewLocPair(< 6897.2020, -3054.6000, 149 > + shoothousestartingorg, < 0, -16.2518, 0 >)
-				NewLocPair(< 7442.1790, -2338.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
-				NewLocPair(< 6868.1790, -2334.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
-				NewLocPair(< 6203.1790, -2342.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
-				NewLocPair(< 5454.1790, -2387.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
-				NewLocPair(< 5252.0010, -3192.1150, 149 > + shoothousestartingorg, < 0, 1.3270, 0 >)
-				NewLocPair(< 5260.0310, -3489.4500, 149 > + shoothousestartingorg, < 0, -6.3157, 0 >)
-				NewLocPair(< 5610.0310, -3828.4500, 149 > + shoothousestartingorg, < 0, -6.3157, 0 >)
-				NewLocPair(< 5850.4520, -4296.0760, 149 > + shoothousestartingorg, < 0, 24.5247, 0 >)
-			],
-				<0, 0, 3000>
-			)
-		)
-	}
-	
-	if(FlowState_EnableNCanalsByDEAFPS()){
-		vector ncanalsstartingorg = <0, 0, 0 >
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Noshahr Canals by DEAFPS",
-					[
-						NewLocPair(< 12312.5600, 25185.9200, 6160.8440 > + ncanalsstartingorg, < 0, 95.4418, 0 >)
-						NewLocPair(< 11320.5600, 25635.9200, 6160.8440 > + ncanalsstartingorg, < 0, 95.4418, 0 >)
-						NewLocPair(< 10571.5600, 25095.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
-						NewLocPair(< 11764.6000, 23894.6400, 6160.8440 > + ncanalsstartingorg, < 0, 155.4418, 0 >)
-						NewLocPair(< 11110.5600, 24478.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
-						NewLocPair(< 10671.5600, 23793.9200, 6160.8440 > + ncanalsstartingorg, < 0, -174.5582, 0 >)
-						NewLocPair(< 9996.5630, 24275.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
-						NewLocPair(< 8859.5630, 23079.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
-						NewLocPair(< 9535.5630, 23275.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
-						NewLocPair(< 10200.5600, 23106.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
-						NewLocPair(< 10385.3700, 21808.5900, 6085.4440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
-						NewLocPair(< 11289.5600, 23004.9200, 6085.4440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
-						NewLocPair(< 12278.5600, 24302.9200, 6085.4440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
-						NewLocPair(< 12849.5600, 25428.9200, 6160.8440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
-						NewLocPair(< 11969.8200, 26110, 6160.8440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
-						NewLocPair(< 11011.5600, 26778.9200, 6160.8440 > + ncanalsstartingorg, < 0, -39.5583, 0 >)
-						NewLocPair(< 10593.5600, 25927.9200, 6160.8440 > + ncanalsstartingorg, < 0, 170.4417, 0 >)
-						NewLocPair(< 9943.2340, 24646.4200, 6160.8440 > + ncanalsstartingorg, < 0, 170.4417, 0 >)
-						NewLocPair(< 8946.5630, 24294.9200, 6160.8440 > + ncanalsstartingorg, < 0, 13.2422, 0 >)
-						NewLocPair(< 8983.5630, 25049.8500, 6160.8440 > + ncanalsstartingorg, < 0, -60, 0 >)
-						NewLocPair(< 8095.5630, 23940.9200, 6160.8440 > + ncanalsstartingorg, < 0, 0, 0 >)
-					],
-					<0, 0, 3000>
-				)
-			)
-		}
-	
-	
-	if(FlowState_EnableDustmentByDEAFPS()){
-		vector dustmentstartingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, 0 >
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Dustment by DEAFPS",
-					[
-						NewLocPair(< 6541, -4748, 131 > + dustmentstartingorg, < 0, 140.8409, 0 >)
-						NewLocPair(< 5124, -3752, 83.6000 > + dustmentstartingorg, < 0, 0, 0 >)
-						NewLocPair(< 5846.4580, -4562.9770, 99.9000 > + dustmentstartingorg, < 0, 84.7281, 0 >)
-						NewLocPair(< 5859.0870, -4095.1910, 99.9000 > + dustmentstartingorg, < 0, -90.9838, 0 >)
-						NewLocPair(< 5563.0020, -4311.8350, 99.9000 > + dustmentstartingorg, < 0, -2.1733, 0 >)
-						NewLocPair(< 6127.7570, -4319.4450, 99.9000 > + dustmentstartingorg, < 0, -179.7940, 0 >)
-						NewLocPair(< 6569.8020, -3862.2190, 99.9000 > + dustmentstartingorg, < 0, -116.5770, 0 >)
-						NewLocPair(< 4750.1250, -4088.1680, 129 > + dustmentstartingorg, < 0, 40.1670, 0 >)
-						NewLocPair(< 4763, -4508, 99.9000 > + dustmentstartingorg, < 0, -38.7503, 0 >)
-						NewLocPair(< 5621, -5041, 119 > + dustmentstartingorg, < 0, 178.2353, 0 >)
-						NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + dustmentstartingorg, < 0, 178.2353, 0 >)
-						NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + dustmentstartingorg, < 0, 152.5185, 0 >)
-						NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + dustmentstartingorg, < 0, -167.7632, 0 >)
-						NewLocPair(< 6886.6280, -5163.9330, 131 > + dustmentstartingorg, < 0, 140.8409, 0 >)
-						NewLocPair(< 4765.2000, -3380.5000, 146 > + dustmentstartingorg, < 0, -47.3245, 0 >)
-						NewLocPair(< 4750.8930, -5191.4390, 166.2000 > + dustmentstartingorg, < 0, 51.7723, 0 >)
-						NewLocPair(< 6848.7000, -3415.7000, 152 > + dustmentstartingorg, < 0, -135.0003, 0 >)
-						NewLocPair(< 5069.0800, -4692.0670, 83.6000 > + dustmentstartingorg, < 0, 0, 0 >)
-					],
-					<0, 0, 3000>
-				)
-			)
-		}
-
-	if(FlowState_EnableKillyardByDEAFPS()){
-            vector killhouselongstartingorg = <-2961,-13240,43000>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Killyard",
-				[
-					NewLocPair( < -1069, -822, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
-					NewLocPair( < -1128, -343, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
-					NewLocPair( < -218, -1414, 9.4000 > + killhouselongstartingorg, < 0, 73.6881, 0 >),
-					NewLocPair( < -507.5095, -1407.2130, 9.4000 > + killhouselongstartingorg, < 0, 73.6881, 0 >),
-					NewLocPair( < -1160.2740, -1138.5530, 9.4000 > + killhouselongstartingorg, < 0, -29.9629, 0 >),
-					NewLocPair( < 442, -909, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
-					NewLocPair( < 457, -271, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
-					NewLocPair( < 450, -569, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
-					NewLocPair( < -316.3000, 920.9000, 9.4000 > + killhouselongstartingorg, < 0, -147.1917, 0 >),
-					NewLocPair( < -1446.8000, 616.2000, 9.4000 > + killhouselongstartingorg, < 0, 2.9566, 0 >),
-					NewLocPair( < -1443.5000, 1.9000, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
-					NewLocPair( < -1171.6520, 7.8723, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
-					NewLocPair( < 208.7000, 707.6936, 9.4000 > + killhouselongstartingorg, < 0, -147.0432, 0 >),
-					NewLocPair( < -1164.7130, 702.9291, 9.4000 > + killhouselongstartingorg, < 0, 2.9566, 0 >),
-					NewLocPair( < -1162.3790, 980.8486, 9.4000 > + killhouselongstartingorg, < 0, -45.0161, 0 >),
-					NewLocPair( < 200.7263, 979.5248, 9.4000 > + killhouselongstartingorg, < 0, -147.1917, 0 >),
-					NewLocPair( < 217.9963, -563, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
-					NewLocPair( < 217.9963, -1035.2670, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
-					NewLocPair( < -1170.2510, -996.2968, 9.4000 > + killhouselongstartingorg, < 0, -0.5495, 0 >),
-					NewLocPair( < -1167.9380, -1466.3340, 9.4000 > + killhouselongstartingorg, < 0, 44.6976, 0 >),
-					NewLocPair( < 156.6777, -1466.7410, 9.4000 > + killhouselongstartingorg, < 0, 131.0375, 0 >),
-				],
-				<0, 0, 3000>
-			)
-		)
-        }	
-
-	///////////////////////////////////////
-	//////////////AyeZee Maps//////////////
-	///////////////////////////////////////
-
-        if(FlowState_EnableEncoreNuketownByAyeZee()){
-            vector nuketownstartingorg = <28524,23022,43000>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Nuketown By AyeZee",
-				[
-					NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
-					NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
-					NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
-					NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
-					NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
-					NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-					NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-					NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-					NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-					NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
-				],
-				<0, 0, 3000>
-			)
-		)
-        }		
-	
-	break
-		
-	case "mp_rr_canyonlands_mu1_night":		
-	case "mp_rr_canyonlands_mu1":
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Hillside Outspot",
-                [
-                    NewLocPair(<-19300, 4678, 3230>, <0, -100, 0>),
-                    NewLocPair(<-16763, 4465, 3020>, <1, 18, 0>),
-                    NewLocPair(<-20153, 1127, 3060>, <11, 170, 0>),
-					NewLocPair(<-16787, 3540, 3075>, <0, 86, 0>),
-					NewLocPair(<-19026, 3749, 4460>, <0, 2, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Skull Town",
-                [
-                    NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-                    NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-                    NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-                    NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Containment",
-                [
-                    NewLocPair(<-7291, 19547, 2978>, <0, -65, 0>),
-                    NewLocPair(<-3906, 19557, 2733>, <0, -123, 0>),
-                    NewLocPair(<-3084, 16315, 2566>, <0, 144, 0>),
-                    NewLocPair(<-6517, 15833, 2911>, <0, 51, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Gaunlet",
-                [
-                    NewLocPair(<-21271, -15275, 2781>, <0, 90, 0>),
-                    NewLocPair(<-22952, -13304, 2718>, <0, 5, 0>),
-                    NewLocPair(<-22467, -9567, 2949>, <0, -85, 0>),
-                    NewLocPair(<-18494, -10427, 2825>, <0, -155, 0>),
-					NewLocPair(<-22590, -7534, 3103>, <0, 0, 0>)
-                ],
-                <0, 0, 4000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Market",
-                [
-                    NewLocPair(<-110, -9977, 2987>, <0, 0, 0>),
-                    NewLocPair(<-1605, -10300, 3053>, <0, -100, 0>),
-                    NewLocPair(<4600, -11450, 2950>, <0, 180, 0>),
-                    NewLocPair(<3150, -11153, 3053>, <0, 100, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Labs",
-                [
-                    NewLocPair(<27576, 8062, 2910>, <0, -115, 0>),
-					NewLocPair(<24545, 2387, 4100>, <0, -7, 0>),
-                    NewLocPair(<25924, 2161, 3848>, <0, -9, 0>),
-                    NewLocPair(<28818, 2590, 3798>, <0, 117, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Repulsor",
-                [
-                    NewLocPair(<28095, -16983, 4786>, <0, 140, 0>),
-                    NewLocPair(<29475, -12237, 5769>, <0, -157, 0>),
-                    NewLocPair(<20567, -13551, 4821>, <0, -39, 0>),
-                    NewLocPair(<22026, -17661, 5789>, <0, 21, 0>),
-					NewLocPair(<26036, -17590, 5694>, <0, 90, 0>),
-                    NewLocPair(<26670, -16729, 4926>, <0, -180, 0>),
-                    NewLocPair(<27784, -16166, 5046>, <0, -180, 0>),
-                    NewLocPair(<27133, -16074, 5414>, <0, -90, 0>),
-                    NewLocPair(<27051, -14200, 5582>, <0, -90, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-
-		Shared_RegisterLocation(
-			NewLocationSettings(
-                "Cage",
-                [
-                    NewLocPair(<15604, -1068, 5833>, <0, -126, 0>),
-                    NewLocPair(<18826, -4314, 5032>, <0, 173, 0>),
-                    NewLocPair(<19946, 32, 4960>, <0, -168, 0>),
-                    NewLocPair(<12335, -1446, 3984>, <0, 2, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Swamps",
-                [
-                    NewLocPair(<37886, -4012, 3300>, <0, 167, 0>),
-                    NewLocPair(<34392, -5974, 3017>, <0, 51, 0>),
-                    NewLocPair(<29457, -2989, 2895>, <0, -17, 0>),
-                    NewLocPair(<34582, 2300, 2998>, <0, -92, 0>),
-					NewLocPair(<35757, 3256, 3290>, <0, -90, 0>),
-                    NewLocPair(<36422, 3109, 3500>, <0, -165, 0>),
-                    NewLocPair(<34965, 1718, 3529>, <0, 45, 0>),
-                    NewLocPair(<32654, -1552, 3228>, <0, -90, 0>)
-
-                ],
-                <0, 0, 3000>
-            )
-        )
-
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Interstellar Relay",
-                [
-                    NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
-                    NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
-                    NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
-                    NewLocPair(<24445, 28970, 4340>, <0, -90, 0>),
-                    NewLocPair(<27735, 27880, 4370>, <0, 180, 0>),
-                    NewLocPair(<25325, 25725, 4270>, <0, 0, 0>),
-                    NewLocPair(<27675, 25745, 4370>, <0, 0, 0>),
-                    NewLocPair(<24375, 27050, 4325>, <0, 180, 0>),
-                    NewLocPair(<24000, 23650, 4050>, <0, 135, 0>),
-                    NewLocPair(<23935, 22080, 4200>, <0, 15, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Slum Lakes",
-                [
-                    NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
-                    NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
-                    NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
-                    NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>),
-                    NewLocPair(<-25030, 24670, 2410>, <0, -75, 0>),
-                    NewLocPair(<-23125, 25320, 2410>, <0, -20, 0>),
-                    NewLocPair(<-21925, 21120, 2390>, <0, 180, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Little Town",
-                [
-                    NewLocPair(<-30190, 12473, 3186>, <0, -90, 0>),
-                    NewLocPair(<-28773, 11228, 3210>, <0, 180, 0>),
-                    NewLocPair(<-29802, 9886, 3217>, <0, 90, 0>),
-                    NewLocPair(<-30895, 10733, 3202>, <0, 0, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Runoff",
-                [
-                    NewLocPair(<-23380, 9634, 3371>, <0, 90, 0>),
-                    NewLocPair(<-24917, 11273, 3085>, <0, 0, 0>),
-                    NewLocPair(<-23614, 13605, 3347>, <0, -90, 0>),
-                    NewLocPair(<-24697, 12631, 3085>, <0, 0, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Big fights happened here",
-                [
-                    NewLocPair(<11242, 8591, 4630>, <0, 0, 0>),
-                    NewLocPair(<6657, 12189, 5066>, <0, -90, 0>),
-                    NewLocPair(<7540, 8620, 5374>, <0, 89, 0>),
-                    NewLocPair(<13599, 7838, 4944>, <0, 150, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Thunderdome",
-                [
-                    NewLocPair(<-20216, -21612, 3191>, <0, -67, 0>),
-                    NewLocPair(<-16035, -20591, 3232>, <0, -133, 0>),
-                    NewLocPair(<-16584, -24859, 2642>, <0, 165, 0>),
-                    NewLocPair(<-19019, -26209, 2640>, <0, 65, 0>)
-                ],
-                <0, 0, 2000>
-            )
-        )
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Water Treatment",
-                [
-                    NewLocPair(<5583, -30000, 3070>, <0, 0, 0>),
-                    NewLocPair(<7544, -29035, 3061>, <0, 130, 0>),
-                    NewLocPair(<10091, -30000, 3070>, <0, 180, 0>),
-                    NewLocPair(<8487, -28838, 3061>, <0, -45, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "The Pit",
-                [
-                    NewLocPair(<-18558, 13823, 3605>, <0, 20, 0>),
-                    NewLocPair(<-16514, 16184, 3772>, <0, -77, 0>),
-                    NewLocPair(<-13826, 15325, 3749>, <0, 160, 0>),
-                    NewLocPair(<-16160, 14273, 3770>, <0, 101, 0>)
-                ],
-                <0, 0, 7000>
-            )
-        )
-		
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Airbase",
-                [
-                    NewLocPair(<-24140, -4510, 2583>, <0, 90, 0>),
-                    NewLocPair(<-28675, 612, 2600>, <0, 18, 0>),
-                    NewLocPair(<-24688, 1316, 2583>, <0, 180, 0>),
-                    NewLocPair(<-26492, -5197, 2574>, <0, 50, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )		
-		///////////////////////////////////
-		//PROPHUNT LOCATIONS///////////////
-		RegisterLocationPROPHUNT(
-            NewLocationSettings(
-                "Hillside Outspot",
-                [
-                    NewLocPair(<-19300, 4678, 3230>, <0, -100, 0>),
-                    NewLocPair(<-16763, 4465, 3020>, <1, 18, 0>),
-                    NewLocPair(<-20153, 1127, 3060>, <11, 170, 0>),
-					NewLocPair(<-16787, 3540, 3075>, <0, 86, 0>),
-					NewLocPair(<-19026, 3749, 4460>, <0, 2, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-		RegisterLocationPROPHUNT(
-            NewLocationSettings(
-                "Skull Town",
-                [
-                    NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-                    NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-                    NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-                    NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-		RegisterLocationPROPHUNT(
-            NewLocationSettings(
-                "Containment",
-                [
-                    NewLocPair(<-7291, 19547, 2978>, <0, -65, 0>),
-                    NewLocPair(<-3906, 19557, 2733>, <0, -123, 0>),
-                    NewLocPair(<-3084, 16315, 2566>, <0, 144, 0>),
-                    NewLocPair(<-6517, 15833, 2911>, <0, 51, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-		
-		RegisterLocationPROPHUNT(
-            NewLocationSettings(
-                "Gaunlet",
-                [
-                    NewLocPair(<-21271, -15275, 2781>, <0, 90, 0>),
-                    NewLocPair(<-22952, -13304, 2718>, <0, 5, 0>),
-                    NewLocPair(<-22467, -9567, 2949>, <0, -85, 0>),
-                    NewLocPair(<-18494, -10427, 2825>, <0, -155, 0>)
-				],
-                <0, 0, 4000>
-            )
-        )
-		
-		RegisterLocationPROPHUNT(
-            NewLocationSettings(
-                "Market",
-                [
-                    NewLocPair(<-110, -9977, 2987>, <0, 0, 0>),
-                    NewLocPair(<-1605, -10300, 3053>, <0, -100, 0>),
-                    NewLocPair(<4600, -11450, 2950>, <0, 180, 0>),
-                    NewLocPair(<3150, -11153, 3053>, <0, 100, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-
-	break
-	case "mp_rr_canyonlands_64k_x_64k":
-		
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Interstellar Relay",
-					[
-						NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
-						NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
-						NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
-						NewLocPair(<24445, 28970, 4340>, <0, -90, 0>),
-						NewLocPair(<27735, 27880, 4370>, <0, 180, 0>),
-						NewLocPair(<25325, 25725, 4270>, <0, 0, 0>),
-						NewLocPair(<27675, 25745, 4370>, <0, 0, 0>),
-						NewLocPair(<24375, 27050, 4325>, <0, 180, 0>),
-						NewLocPair(<24000, 23650, 4050>, <0, 135, 0>),
-						NewLocPair(<23935, 22080, 4200>, <0, 15, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Slum Lakes",
-					[
-						NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
-						NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
-						NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
-						NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>),
-						NewLocPair(<-25030, 24670, 2410>, <0, -75, 0>),
-						NewLocPair(<-23125, 25320, 2410>, <0, -20, 0>),
-						NewLocPair(<-21925, 21120, 2390>, <0, 180, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Little Town",
-					[
-						NewLocPair(<-30190, 12473, 3186>, <0, -90, 0>),
-						NewLocPair(<-28773, 11228, 3210>, <0, 180, 0>),
-						NewLocPair(<-29802, 9886, 3217>, <0, 90, 0>),
-						NewLocPair(<-30895, 10733, 3202>, <0, 0, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Runoff",
-					[
-						NewLocPair(<-23380, 9634, 3371>, <0, 90, 0>),
-						NewLocPair(<-24917, 11273, 3085>, <0, 0, 0>),
-						NewLocPair(<-23614, 13605, 3347>, <0, -90, 0>),
-						NewLocPair(<-24697, 12631, 3085>, <0, 0, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Thunderdome",
-					[
-						NewLocPair(<-20216, -21612, 3191>, <0, -67, 0>),
-						NewLocPair(<-16035, -20591, 3232>, <0, -133, 0>),
-						NewLocPair(<-16584, -24859, 2642>, <0, 165, 0>),
-						NewLocPair(<-19019, -26209, 2640>, <0, 65, 0>)
-					],
-					<0, 0, 2000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Water Treatment",
-					[
-						NewLocPair(<5583, -30000, 3070>, <0, 0, 0>),
-						NewLocPair(<7544, -29035, 3061>, <0, 130, 0>),
-						NewLocPair(<10091, -30000, 3070>, <0, 180, 0>),
-						NewLocPair(<8487, -28838, 3061>, <0, -45, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"The Pit",
-					[
-						NewLocPair(<-18558, 13823, 3605>, <0, 20, 0>),
-						NewLocPair(<-16514, 16184, 3772>, <0, -77, 0>),
-						NewLocPair(<-13826, 15325, 3749>, <0, 160, 0>),
-						NewLocPair(<-16160, 14273, 3770>, <0, 101, 0>)
-					],
-					<0, 0, 7000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Airbase",
-					[
-						NewLocPair(<-24140, -4510, 2583>, <0, 90, 0>),
-						NewLocPair(<-28675, 612, 2600>, <0, 18, 0>),
-						NewLocPair(<-24688, 1316, 2583>, <0, 180, 0>),
-						NewLocPair(<-26492, -5197, 2574>, <0, 50, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Repulsor",
-					[
-						NewLocPair(<28095, -16983, 4786>, <0, 140, 0>),
-						NewLocPair(<29475, -12237, 5769>, <0, -157, 0>),
-						NewLocPair(<20567, -13551, 4821>, <0, -39, 0>),
-						NewLocPair(<22026, -17661, 5789>, <0, 21, 0>),
-						NewLocPair(<26036, -17590, 5694>, <0, 90, 0>),
-						  NewLocPair(<26670, -16729, 4926>, <0, -180, 0>),
-						  NewLocPair(<27784, -16166, 5046>, <0, -180, 0>),
-						  NewLocPair(<27133, -16074, 5414>, <0, -90, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Swamps",
-					[
-						NewLocPair(<37886, -4012, 3300>, <0, 167, 0>),
-						NewLocPair(<34392, -5974, 3017>, <0, 51, 0>),
-						NewLocPair(<29457, -2989, 2895>, <0, -17, 0>),
-						NewLocPair(<34582, 2300, 2998>, <0, -92, 0>),
-						NewLocPair(<35757, 3256, 3290>, <0, -90, 0>),
-						NewLocPair(<36422, 3109, 3500>, <0, -165, 0>),
-						NewLocPair(<34965, 1718, 3529>, <0, 45, 0>),
-						NewLocPair(<32654, -1552, 3228>, <0, -90, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Skull Town",
-					[
-						NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-						NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-						NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-						NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Market",
-					[
-						NewLocPair(<-110, -9977, 2987>, <0, 0, 0>),
-						NewLocPair(<-1605, -10300, 3053>, <0, -100, 0>),
-						NewLocPair(<4600, -11450, 2950>, <0, 180, 0>),
-						NewLocPair(<3150, -11153, 3053>, <0, 100, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		if(FlowState_EnableCustomMapByBiscutz()){
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Custom map by Biscutz",
-					[
-						NewLocPair(<-2768,15163,6469>, <0, -180, 0>),
-						NewLocPair(<-5800,16008,6706>, <0, -48, 0>),
-						NewLocPair(<-5297,13404,6040>, <0, 0, 0>),
-						NewLocPair(<-2348,11823,6194>, <0, 0, 0>),
-						NewLocPair(<-5256,14392,5800>, <0, 0, 0>),
-						NewLocPair(<-3659,13700,6600>, <0, 0, 0>),
-						NewLocPair(<-1514,11165,7730>, <0, 0, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		}	
-			
-		if(FlowState_EnableWhiteForestByZero()){
-		Shared_RegisterLocation(
-			NewLocationSettings(
-				"White Forest By Zer0Bytes",
-				[
-					//Side A
-					NewLocPair( <-33024,17408,3328>, <0,90,0>),
-					NewLocPair( <-33024,16960,3328>, <0,90,0>),
-					NewLocPair( <-33280,16128,3264>, <0,90,0>),
-					NewLocPair( <-32448,16256,3328>, <0,90,0>),
-					NewLocPair( <-32192,16960,3328>, <0,90,0>),
-					NewLocPair( <-32256,16256,3328>, <0,90,0>),
-					NewLocPair( <-32128,17536,3328>, <0,90,0>),
-					NewLocPair( <-32512,17536,3328>, <0,90,0>),
-					NewLocPair( <-32960,17600,3328>, <0,90,0>),
-					NewLocPair( <-33536,17600,3328>, <0,90,0>),
-					NewLocPair( <-33728,17088,3328>, <0,90,0>),
-					NewLocPair( <-33856,16896,3200>, <0,90,0>),
-					NewLocPair( <-33920,17600,3200>, <0,90,0>),
-					NewLocPair( <-34368,18048,3072>, <0,0,0>),
-					NewLocPair( <-34352,18038,3151>, <0,0,0>),
-					NewLocPair( <-36696,19010,3021>, <0,0,0>),
-					NewLocPair( <-37079,19432,3120>, <0,90,0>),
-					NewLocPair( <-37335,19812,3053>, <0,0,0>),
-					NewLocPair( <-37371,19308,3033>, <0,0,0>),
-					NewLocPair( <-37106,19616,3152>, <0,0,0>),
-
-
-					// side B
-					NewLocPair( <-35442,24433,4112>, <0,-90,0>),
-					NewLocPair( <-35467,24668,4112>, <0,-90,0>),
-					NewLocPair( <-35454,24954,4135>, <0,-90,0>),
-					NewLocPair( <-34738,24934,4145>, <0,-90,0>),
-					NewLocPair( <-33453,24955,4152>, <0,-90,0>),
-					NewLocPair( <-33380,24704,4173>, <0,-90,0>),
-					NewLocPair( <-33498,24455,4148>, <0,-90,0>),
-					NewLocPair( <-34195,24456,4128>, <0,-90,0>),
-					NewLocPair( <-33745,24188,4093>, <0,-90,0>),
-					NewLocPair( <-33319,24002,3955>, <0,-90,0>),
-					NewLocPair( <-32764,23897,3382>, <0,-90,0>),
-					NewLocPair( <-32317,23278,2779>, <0,-90,0>),
-					NewLocPair( <-32100,22750,2647>, <0,180,0>),
-					NewLocPair( <-35148,24427,4147>, <0,-90,0>),
-
-					//forest
-					NewLocPair( <-33511,22657,2239>, <0,-90,0>),
-					NewLocPair( <-33813,21797,2178>, <0,-90,0>),
-					NewLocPair( <-34937,22312,2195>, <0,-90,0>),
-					NewLocPair( <-35843,23339,2172>, <0,0,0> ),
-					NewLocPair( <-36700,23252,2237>, <0,0,0> ),
-					NewLocPair( <-36374,21910,2204>, <0,0,0> ),
-					NewLocPair( <-35239,22024,2154>, <0,180,0>),
-					NewLocPair( <-34463,20783,2182>, <0,90,0>),
-					NewLocPair( <-32753,20853,2085>, <0,90,0>),
-					NewLocPair( <-31809,21230,2015>, <0,-90,0>),
-					NewLocPair( <-33549,18878,2129>, <0,90,0>),
-					NewLocPair( <-34726,19371,2106>, <0,90,0>),
-					NewLocPair( <-34295,20018,2134>, <0,90,0>),
-					NewLocPair( <-31263,21107,2019>, <0,180,0>),
-					NewLocPair( <-36806,22295,2261>, <0,0,0> ),
-					NewLocPair( <-36226,20102,2105>, <0,0,0>),
-					NewLocPair( <-32764,19415,2048>, <0,180,0>),
-					NewLocPair( <-32402,22605,2328>, <0,-90,0>),
-					NewLocPair( <-33082,23773,2363>, <0,-90,0>)
-
-				],
-				<0, 0, 3000>
-			)
-		)  
-		}	
-		///////////////////////////////////
-		//PROPHUNT LOCATIONS///////////////
-		
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Interstellar Relay",
-					[
-						NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
-						NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
-						NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
-						NewLocPair(<24445, 28970, 4340>, <0, -90, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Slum Lakes",
-					[
-						NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
-						NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
-						NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
-						NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Little Town",
-					[
-						NewLocPair(<-30190, 12473, 3186>, <0, -90, 0>),
-						NewLocPair(<-28773, 11228, 3210>, <0, 180, 0>),
-						NewLocPair(<-29802, 9886, 3217>, <0, 90, 0>),
-						NewLocPair(<-30895, 10733, 3202>, <0, 0, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Water Treatment",
-					[
-						NewLocPair(<5583, -30000, 3070>, <0, 0, 0>),
-						NewLocPair(<7544, -29035, 3061>, <0, 130, 0>),
-						NewLocPair(<10091, -30000, 3070>, <0, 180, 0>),
-						NewLocPair(<8487, -28838, 3061>, <0, -45, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Airbase",
-					[
-						NewLocPair(<-24140, -4510, 2583>, <0, 90, 0>),
-						NewLocPair(<-28675, 612, 2600>, <0, 18, 0>),
-						NewLocPair(<-24688, 1316, 2583>, <0, 180, 0>),
-						NewLocPair(<-26492, -5197, 2574>, <0, 50, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Swamps",
-					[
-						NewLocPair(<32704,-8576,3520>, <0, 167, 0>),
-						NewLocPair(<34496,-5888,3008>, <0, 51, 0>),
-						NewLocPair(<33280,-4544,3072>, <0, -17, 0>),
-						NewLocPair(<30720,-6080,2944>, <0, -92, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Skull Town",
-					[
-						NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-						NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-						NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-						NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		RegisterLocationPROPHUNT(
-				NewLocationSettings(
-					"Market",
-					[
-						NewLocPair(<-110, -9977, 2987>, <0, 0, 0>),
-						NewLocPair(<-1605, -10300, 3053>, <0, -100, 0>),
-						NewLocPair(<4600, -11450, 2950>, <0, 180, 0>),
-						NewLocPair(<3150, -11153, 3053>, <0, 100, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
-		break
-	///////////////////////////////////
-	//END PROPHUNT LOCATIONS///////////////		
-	
-	
-		case "mp_rr_desertlands_64k_x_64k_tt":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Mirage Voyage",
-                [
-					NewLocPair(<-25930, -3790, -2442>, <0, -37, 0>),
-                    NewLocPair(<-22928, -5785, -2396>, <0, 147, 0>),
-                    NewLocPair(<-27364, -4969, -2681>, <0, -32, 0>),
-                    NewLocPair(<-23150, -6776, -2879>, <0, 122, 0>),
-					NewLocPair(<-26373, -3504, -2560>, <0, -36, 0>),
-					NewLocPair(<-24183, -3713, -3445>, <0, -126, 0>),
-					NewLocPair(<-28862, -3875, -2918>, <0, -19.91, 0>),
-					NewLocPair(<-28047, -5494, -2806>, <0, 19.97, 0>),
-					NewLocPair(<-26716, -8446, -2733>, <0, 87, 0>),
-					NewLocPair(<-22701, -7660, -2898>, <0, 105, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-        //break
+		case "mp_rr_aqueduct_night":
+        case "mp_rr_aqueduct":
+             return NewLocPair(<4885, -4076, 400>, <0, -157, 0>)
+        case "mp_rr_canyonlands_staging":
+             return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
+        case "mp_rr_canyonlands_64k_x_64k":
+			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
+		case "mp_rr_ashs_redemption":
+            return NewLocPair(<-20917, 5852, -26741>, <0, -90, 0>)
+        case "mp_rr_canyonlands_mu1":
+        case "mp_rr_canyonlands_mu1_night":
+		    return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
-		    
-		if(FlowState_EnableMovementGym()){
-		
-		Shared_RegisterLocation(
-		NewLocationSettings(
-			"Movement Gym",
-			[
-						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
-			],
-			<0, 0, 3000>
-				)
-			)
-		}
-		    
-		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
-		{
-		Shared_RegisterLocation(
-			NewLocationSettings(
-				"TTV Building",
-				[
-					      NewLocPair(<11360, 6151, -4079>, <0, 102, 0>),
-					      NewLocPair(<11407, 6778, -4295>, <0, 88, 0>),
-					      NewLocPair(<11973, 4158, -4220>, <0, 82, 0>),
-					      NewLocPair(<9956, 3435, -4239>, <0, 0, 0>),
-					      NewLocPair(<9038, 3800, -4120>, <0, -88, 0>),
-					      NewLocPair(<7933, 6692, -4250>, <0, 76, 0>),
-					      NewLocPair(<8990, 5380, -4250>, <0, 145, 0>),
-					      NewLocPair(<8200, 5463, -3815>, <0, 0, 0>),
-					      NewLocPair(<9789, 5363, -3480>, <0, 174, 0>),
-					      NewLocPair(<9448, 5804, -4000>, <0, 0, 0>),
-					      NewLocPair(<8135, 4087, -4233>, <0, 90, 0>),
-					      NewLocPair(<9761, 5980, -4250>, <0, 135, 0>)
-					NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
-					NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
-					NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
-					NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
-					NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
-					NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
-					NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
-					NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
-					NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
-					NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
-					NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
-					NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
-					NewLocPair(<9012, 5386, -4242>, <0, 90, 0>)
-				],
-				<0, 0, 3000>
-			)
-		)
-		}
-		else{
-		Shared_RegisterLocation(
-			NewLocationSettings(
-				"Capitol City",
-				[
-					NewLocPair(<1142, 5067, -3351>, <16, 18, 0>),
-					NewLocPair(<1155, 5460, -3552>, <5, -62, 0>),
-					NewLocPair(<1552, 5547, -3151>, <20, -166, 0>),
-					NewLocPair(<1168, 4657, -4167>, <9, 58, 0>),
-					NewLocPair(<1233, 5027, -3152>, <13, 55, 0>),
-					NewLocPair(<2196, 3038, -4083>, <1, 1, 0>),
-					NewLocPair(<2262, 4710, -3552>, <12, 60, 0>),
-					NewLocPair(<2364, 5634, -3967>, <20, 171, 0>),
-					NewLocPair(<2911, 9488, -3863>, <11, 50, 0>),
-					NewLocPair(<5258, 12129, -4024>, <8, 16, 0>),
-					NewLocPair(<5316, 3324, -3848>, <10, 125, 0>),
-					NewLocPair(<5897, 10028, -4015>, <10, 60, 0>),
-					NewLocPair(<6756, 4952, -3448>, <8, 7, 0>),
-					NewLocPair(<7299, 7471, -4222>, <0, -90, 0>),
-					NewLocPair(<7307, 6964, -4503>, <2, 88, 0>),
-					NewLocPair(<7372, 3885, -4219>, <0, 55, 0>)
-					NewLocPair(<7825, 3225, -4239>, <0, 6, 0>),
-					NewLocPair(<7965, 5976, -4266>, <0, -135, 0>),
-					NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
-					NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
-					NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
-					NewLocPair(<9012, 5386, -4242>, <0, 90, 0>),
-					NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
-					NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
-					NewLocPair(<9800, 5347, -3507>, <0, 134, 0>),
-					NewLocPair(<9862, 5561, -3832>, <0, 180, 0>),
-					NewLocPair(<9976, 8539, -4207>, <0, -90, 0>),
-					NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
-					NewLocPair(<10107, 3843, -4000>, <0, 90, 0>),
-					NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
-					NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
-					NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
-					NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>)
-				],
-				<0, 0, 3000>
-			)
-		)
-		}
-		
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Lava Fissure",
-                    [
-                        NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
-                        NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
-                        NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
-                        NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>),
-                        NewLocPair(<-27585, 9191, -3080>, <0, 89, 0>),
-                        NewLocPair(<-26469, 9825, -2810>, <0, 87, 0>),
-                        NewLocPair(<-27623, 10210, -3290>, <0, 87, 0>),
-                        NewLocPair(<-25717, 13034, -3047>, <0, -176, 0>),
-                        NewLocPair(<-26433, 13360, -3000>, <0, 68, 0>),
-                        NewLocPair(<-26463, 13766, -3080>, <0, -95, 0>),
-                        NewLocPair(<-28781, 13266, -3080>, <0, 80, 0>),
-                        NewLocPair(<-27535, 10922, -3280>, <0, -94, 0>),
-                        NewLocPair(<-29879, 9151, -2860>, <0, 0, 0>)
-                    ],
-                    <0, 0, 2500>
-                )
-            )
-			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Space Elevator",
-                    [
-                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
-                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
-                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
-                        NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>),
-						NewLocPair(<-13348, 27630, -3535>, <3.01, 57.17, 0>),
-						NewLocPair(<-13772, 26473, -4000>, <0, 169, 0>),
-                        NewLocPair(<-12366, 26209, -4000>, <0, -90, 0>),
-                        NewLocPair(<-12063, 27640, -4000>, <0, -3, 0>),
-                        NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
-                        NewLocPair(<-13732, 27577, -3500>, <0, -83, 0>),
-                        NewLocPair(<-12350, 26227, -3500>, <0, 148, 0>),
-                        NewLocPair(<-13765, 27654, -2850>, <0, -65, 0>),
-                        NewLocPair(<-12121, 26517, -2850>, <0, 124, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Little Town",
-                    [
-                        NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
-                        NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
-                        NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "TTV Building 2",
-                    [
-                        NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
-                        NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
-						NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
-                        NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Little Town 2",
-                    [
-                        NewLocPair(<-27219, -24393, -4497>, <0, 87, 0>),
-                        NewLocPair(<-26483, -28042, -4209>, <0, 122, 0>),
-                        NewLocPair(<-25174, -26091, -4550>, <0, 177, 0>),
-						NewLocPair(<-29512, -25863, -4462>, <0, 3, 0>),
-						NewLocPair(<-28380, -28984, -4102>, <0, 54, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-	    Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Dome",
-                    [
-                        NewLocPair(<19351, -41456, -2192>, <0, 96, 0>),
-                        NewLocPair(<22925, -37060, -2169>, <0, -156, 0>),
-                        NewLocPair(<19772, -34549, -2232>, <0, -137, 0>),
-						NewLocPair(<17010, -37125, -2129>, <0, 81, 0>),
-						NewLocPair(<15223, -40222, -1998>, <0, 86, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Overlook",
-                    [
-                        NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
-                        NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
-                        NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
-						NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Refinery",
-                    [
-                        NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
-                        NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
-                        NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
-                        NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
-                        NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
-                        NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
-                        NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
-                        NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
-                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
-                        NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
-                        NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
-                        NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
-                        NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
-                        NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
-                        NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
-                        NewLocPair(<16382, 28296, -4588>, <0, -45, 0>),
-                        NewLocPair(<16618, 28848, -4451>, <0, 40, 0>)
-                    ],
-                    <0, 0, 6500>
-                )
-            )
-			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Factory",
-                    [
-                        NewLocPair(<495.42, -26649.92, -3038.36>, <10.60, 44.95, -0>),
-                        NewLocPair(<648.07, -26450.72, -3547.97>, <10.20, 57.48, -0>),
-                        NewLocPair(<1653.03, -22939.29, -3571.97>, <12.00, -1.80, -0>),
-                        NewLocPair(<1722.22, -20823.69, -3719.31>, <7.45, -0.78, -0>),
-                        NewLocPair(<2193.69, -25349.72, -3443.97>, <3.69, 15.20, -0>),
-                        NewLocPair(<2557.95, -25035.46, -2971.97>, <2.00, 31.20, -0>),
-                        NewLocPair(<2608.53, -21670.90, -3707.97>, <11.75, 89.78, -0>),
-                        NewLocPair(<2240.71, -23184.89, -3187.97>, <-5.40, -87.58, -0>),
-                        NewLocPair(<3507.99, -24980.33, -3571.97>, <-6.62, -36.62, -0>),
-                        NewLocPair(<3954.13, -18102.04, -3582.36>, <-8.11, -29.47, 0>),
-                        NewLocPair(<4450.69, -20891.45, -3507.85>, <11.16, -44.58, -0.00>),
-                        NewLocPair(<6090.35, -25075.12, -3563.97>, <2.47, -0.46, -0>),
-                        NewLocPair(<7415.33, -20497.42, -3631.94>, <8.72, 84.13, -0>),
-                        NewLocPair(<7422.97, -17985.25, -3507.97>, <8.41, -45.65, -0>),
-                        NewLocPair(<8240.16, -24245.68, -3547.97>, <8.23, 50.62, -0>),
-                        NewLocPair(<9259.17, -22461.68, -3283.97>, <9.92, -28.07, -0>),
-                        NewLocPair(<9534.27, -19869.87, -3331.97>, <3.73, -91.33, -0>),
-                        NewLocPair(<10111.38, -20003.82, -2752.97>, <18.04, 84.92, -0>),
-                        NewLocPair(<11252.87, -16981.14, -2752.97>, <17.64, -104.16, 0>),
-                        NewLocPair(<11720.60, -19655.80, -3331.97>, <1.44, -116.68, -0>),
-                        NewLocPair(<12233.26, -18075.12, -2581.72>, <4.60, -134.70, 0>),
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-
-        Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Lava City",
-                    [
-                        NewLocPair(<22663, -28134, -2706>, <0, 40, 0>),
-                        NewLocPair(<22844, -28222, -3030>, <0, 90, 0>),
-                        NewLocPair(<22687, -27605, -3434>, <0, -90, 0>),
-                        NewLocPair(<22610, -26999, -2949>, <0, 90, 0>),
-                        NewLocPair(<22607, -26018, -2749>, <0, -90, 0>),
-                        NewLocPair(<22925, -25792, -3500>, <0, -120, 0>),
-                        NewLocPair(<24235, -27378, -3305>, <0, -100, 0>),
-                        NewLocPair(<24345, -28872, -3433>, <0, -144, 0>),
-                        NewLocPair(<24446, -28628, -3252>, <13, 0, 0>),
-                        NewLocPair(<23931, -28043, -3265>, <0, 0, 0>),
-                        NewLocPair(<27399, -28588, -3721>, <0, 130, 0>),
-                        NewLocPair(<26610, -25784, -3400>, <0, -90, 0>),
-                        NewLocPair(<26757, -26639, -3673>, <-10, 90, 0>),
-                        NewLocPair(<26750, -26202, -3929>, <-10, -90, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-			
-        Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Thermal Station",
-                    [
-                        NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
-						NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
-						NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
-                        NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>),
-                        NewLocPair(<-20938, -23039, -4252>, <0, 90, 0>),
-                        NewLocPair(<-19361, -23083, -4252>, <0, 100, 0>),
-                        NewLocPair(<-19264, -23395, -3850>, <0, 100, 0>),
-                        NewLocPair(<-16756, -20711, -3982>, <0, 180, 0>),
-                        NewLocPair(<-17066, -20746, -4233>, <0, 180, 0>),
-                        NewLocPair(<-17113, -19622, -4269>, <10, -170, 0>),
-                        NewLocPair(<-20092, -17684, -4252>, <0, -90, 0>),
-                        NewLocPair(<-23069, -20567, -4214>, <-11, 146, 0>),
-                        NewLocPair(<-20109, -20675, -4252>, <0, -90, 0>)
-                    ],
-                    <0, 0, 11000>
-                )
-            )
-			
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Epicenter",
-                    [
-                        NewLocPair(<8712, 23164, -3944>, <0, -49, 0>),
-                        NewLocPair(<14000, 21690, -3969>, <0, -130, 0>),
-                        NewLocPair(<10377, 17994, -4236>, <0, -120, 0>),
-						NewLocPair(<13100, 18138, -4856>, <0, 120, 0>)
-
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-					
-		if(FlowState_EnableSkillTrainerByColombia()){
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                   "Skill trainer By Colombia",
-                    [
-                       NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
-                       NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
-                       NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
-                       NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
-                    ],
-                   <0, 0, 3000>
-                )
-            )
-		}
-		
-		if(FlowState_EnableCaveByBlessedSeal() ){
-			Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Cave By BlessedSeal",
-                    [
-						NewLocPair(<-8742, -11843, -3185>, <0, 40, 0>),
-                        NewLocPair(<-1897, -9707, -3841>, <0, 40, 0>),
-                        NewLocPair(<-5005, -11170, -213>, <0, -40, 0>),
-                        NewLocPair(<-1086, -9685, -3790>, <5, -120, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-		}
-		
-		if(FlowState_EnableBrightWaterByZero()){
-		Shared_RegisterLocation(
-			NewLocationSettings(
-				"Brightwater By Zer0bytes",
-				[
-					// SIde A
-					NewLocPair(<-34368,35904,-3776>, <0,0,0>),
-					NewLocPair(<-34496,35648,-3776>, <0,0,0>),
-					NewLocPair(<-35392,35136,-3776>, <0,90,0>),
-					NewLocPair(<-35456,35776,-3712>, <0,0,0>),
-					NewLocPair(<-35456,36160,-3712>, <0,0,0>),
-					NewLocPair(<-33088,37888,-3776>, <0,0,0>),
-					NewLocPair(<-32960,37440,-3776>, <0,0,0>),
-					NewLocPair(<-32576,35136,-3648>, <0,0,0>),
-					NewLocPair(<-32576,34880,-3648>, <0,0,0>),
-					NewLocPair(<-31488,34432,-3648>, <0,90,0>),
-					NewLocPair(<-31296,34496,-3712>, <0,0,0>),
-					NewLocPair(<-31232,34496,-3648>, <0,0,0>),
-					NewLocPair(<-30976,34432,-3648>, <0,0,0>),
-					NewLocPair(<-31232,35200,-3648>, <0,0,0>),
-					NewLocPair(<-31424,35776,-3648>, <0,0,0>),
-					NewLocPair(<-32384,37056,-3776>, <0,0,0>),
-					NewLocPair(<-32000,36672,-3776>, <0,0,0>),
-					NewLocPair(<-31680,38016,-3776>, <0,0,0>),
-					NewLocPair(<-31104,37824,-3776>, <0,0,0>),
-					NewLocPair(<-31680,39296,-3648>, <0,0,0>),
-					NewLocPair(<-31680,39616,-3648>, <0,0,0>)
-
-				   //Side A
-				   NewLocPair(<-24640,40000,-3648>, <0,180,0>),
-				   NewLocPair(<-24640,39744,-3648>, <0,180,0>),
-				   NewLocPair(<-24941,39665,-3470>, <0,180,0>),
-				   NewLocPair(<-23936,37888,-3712>, <0,180,0>),
-				   NewLocPair(<-25088,37376,-3712>, <0,180,0>),
-				   NewLocPair(<-25600,40832,-3712>, <0,180,0>),
-				   NewLocPair(<-26752,39296,-3712>, <0,180,0>),
-				   NewLocPair(<-26880,37248,-3584>, <0,180,0>),
-				   NewLocPair(<-26880,37888,-3584>, <0,180,0>),
-				   NewLocPair(<-26880,38528,-3584>, <0,180,0>),
-				   NewLocPair(<-26368,35968,-3712>, <0,180,0>),
-				   NewLocPair(<-26496,35584,-3712>, <0,180,0>),
-				   NewLocPair(<-26368,36224,-3712>, <0,180,0>),
-				   NewLocPair(<-26752,35968,-3200>, <0,180,0>),
-				   NewLocPair(<-25728,40448,-3712>, <0,180,0>),
-				   NewLocPair(<-26496,40704,-3712>, <0,-90,0>),
-				   NewLocPair(<-27520,39808,-3840>, <0,180,0>),
-				   NewLocPair(<-24832,36480,-3712>, <0,180,0>),
-				   NewLocPair(<-23808,37504,-3712>, <0,180,0>),
-				   NewLocPair(<-23680,36992,-3584>, <0,180,0>),
-				   NewLocPair(<-25344,40704,-3584>, <0,180,0>),
-				   NewLocPair(<-25344,41344,-3584>, <0,180,0>),
-
-				   //others
-				   NewLocPair(<-27136,41920,1036>, <0,180,0>),
-				   NewLocPair(<-29364,42940,1040>, <0,180,0>),
-				   NewLocPair(<-31304,42044,1036>, <0,0,0>),
-				   NewLocPair(<-33520,42044,1204>, <0,0,0>),
-				   NewLocPair(<-33800,41756,1252>, <0,0,0>),
-				   NewLocPair(<-29268,41712,1084>, <0,0,0>),
-				   NewLocPair(<-25776,42168,1216>, <0,180,0>),
-				   NewLocPair(<-25724,41724,1204>, <0,180,0>),
-				   NewLocPair(<-28196,38564,-676>, <0,-90,0>),
-				   NewLocPair(<-26324,40476,-2756>, <0,180,0>),
-				   NewLocPair(<-31000,39452,-2752>, <0,0,0>), 
-				   NewLocPair(<-27192,35676,-3284>, <0,90,0>),
-				   NewLocPair(<-28108,35740,-3284>, <0,180,0>),
-				   NewLocPair(<-27376,35880,-2732>, <0,90,0>),
-				   NewLocPair(<-27204,35764,-3628>, <0,90,0>),
-				   NewLocPair(<-27908,36328,-3644>, <0,-90,0>),
-				   NewLocPair(<-28332,37500,-3676>, <0,0,0>), 
-				   NewLocPair(<-27828,37996,-3676>, <0,180,0>),
-				   NewLocPair(<-27960,37448,-3400>, <0,90,0>),
-				   NewLocPair(<-28396,38072,-3344>, <0,0,0>), 
-				   NewLocPair(<-27976,37960,2608>, <0,180,0>),
-				   NewLocPair(<-29348,39856,2668>, <0,-90,0>),
-				   NewLocPair(<-28936,39308,1916>, <0,0,0>),
-				   NewLocPair(<-27420,38688,2112>, <0,0,0>),
-				   NewLocPair(<-23648,35384,-3564>, <0,180,0>),
-				   NewLocPair(<-23972,35136,-3748>, <0,90,0>),
-				   NewLocPair(<-26220,35644,-3692>, <0,90,0>),
-				   NewLocPair(<-26320,36392,-3748>, <0,90,0>),
-				],
-				<0, 0, 7450>
-			)
-		)}
-
-        if(FlowState_EnableShipmentByAyeZee()){
-            vector shipmentstartingorg = <6779,9016,11687>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Shipment By AyeZee",
-				[
-					NewLocPair(< 6848.7000, -3415.7000, 99.9000 > + shipmentstartingorg, < 0, -135.0003, 0 >),
-                    NewLocPair(< 4750.8930, -5191.4390, 99.9000 > + shipmentstartingorg, < 0, 51.7723, 0 >),
-                    NewLocPair(< 4765.2000, -3380.5000, 99.9000 > + shipmentstartingorg, < 0, -47.3245, 0 >),
-                    NewLocPair(< 6886.6280, -5163.9330, 99.9000 > + shipmentstartingorg, < 0, 140.8409, 0 >),
-                    NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + shipmentstartingorg, < 0, -167.7632, 0 >),
-                    NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + shipmentstartingorg, < 0, 152.5185, 0 >),
-                    NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
-                    NewLocPair(< 5621, -5041, 99.9000 > + shipmentstartingorg, < 0, 178.2353, 0 >),
-                    NewLocPair(< 4763, -4508, 99.9000 > + shipmentstartingorg, < 0, -38.7503, 0 >),
-                    NewLocPair(< 4750.1250, -4088.1680, 99.9000 > + shipmentstartingorg, < 0, 40.1670, 0 >)
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
-
-        if(FlowState_EnableKillhouseByAyeZee()){
-            vector killhousestartingorg = <-2961,-13240,-2810>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Killhouse By AyeZee",
-				[
-					NewLocPair(< 156.6777, -1466.7410, 9.4000 > + killhousestartingorg,< 0, 131.0375, 0 >),
-                    NewLocPair(< -1167.9380, -1466.3340, 9.4000 > + killhousestartingorg,< 0, 44.6976, 0 >),
-                    NewLocPair(< -1170.2510, -996.2968, 9.4000 > + killhousestartingorg,< 0, -0.5495, 0 >),
-                    NewLocPair(< 217.9963, -1035.2670, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
-                    NewLocPair(< 217.9963, -563, 9.4000 > + killhousestartingorg,< 0, 178.6360, 0 >),
-                    NewLocPair(< 200.7263, 979.5248, 9.4000 > + killhousestartingorg,< 0, -147.1917, 0 >),
-                    NewLocPair(< -1162.3790, 980.8486, 9.4000 > + killhousestartingorg,< 0, -45.0161, 0 >),
-                    NewLocPair(< -1164.7130, 702.9291, 9.4000 > + killhousestartingorg,< 0, 2.9566, 0 >),
-                    NewLocPair(< 208.7000, 707.6936, 9.4000 > + killhousestartingorg,< 0, -147.0432, 0 >),
-                    NewLocPair(< -1171.6520, 7.8723, 9.4000 > + killhousestartingorg,< 0, 7.0074, 0 >),
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
-
-        if(FlowState_EnableNuketownByAyeZee()){
-            vector nuketownstartingorg = <28524,23022,-3375>
-            Shared_RegisterLocation(
-			NewLocationSettings(
-				"Nuketown By AyeZee",
-				[
-					NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
-                    NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
-                    NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
-                    NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
-                    NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
-                    NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-                    NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
-                    NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-                    NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
-                    NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
-				],
-				<0, 0, 3000>
-			)
-		)
-        }
-		///////////////////////////////////
-		//PROPHUNT LOCATIONS///////////////			
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "TTV Building",
-                    [
-                        NewLocPair(<8779, 5154, -4092>, <0, 90, 0>),
-                        NewLocPair(<9351,6319,-4095>, <0, -120, 0>),
-                        NewLocPair(<10462,6128,-4163>, <0, -45, 0>),
-                        NewLocPair(<9635,4868,-4073>, <0, -135, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Skill trainer By Colombia",
-                    [
-                        NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
-                        NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
-                        NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
-                        NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "TTV Building 2",
-                    [
-                        NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
-                        NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
-						NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
-                        NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Overlook",
-                    [
-                        NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
-                        NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
-                        NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
-						NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-			
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Train yard",
-                    [
-                        NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
-                        NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
-                        NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
-						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>),
-						NewLocPair(<-14930,2065,-3140>, <0, 3, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-	  // RegisterLocationPROPHUNT(
-			// NewLocationSettings(
-				// "Thermal Station",
-				// [
-					// NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
-					// NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
-					// NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
-					// NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>)
-				// ],
-				// <0, 0, 11000>
-			// )
-		// )
-
-	///////////////////////////////////
-	//END PROPHUNT LOCATIONS///////////////	
-	
-	///////////////////////////////////////////////////
-	//EXCLUSIVE SURF LOCATIONS FOR WORLD'S EDGE////////	
-	
-		RegisterLocationSURF(
-                NewLocationSettings(
-                    "surf_purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-
-         RegisterLocationSURF(
-                NewLocationSettings(
-                    "surf_noname",
-                    [
-                        NewLocPair(<7799, 11833, 24585>, <0, 180, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-         RegisterLocationSURF(
-                NewLocationSettings(
-                    "surf_kitsune",
-                    [
-                        NewLocPair(<14724, 25241, 17271>, <0, 180, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+			return NewLocPair(<-19459, 2127, 6404>, <0, 180, 0>)
+        case "mp_rr_arena_composite":
+            return NewLocPair(<0, 4780, 220>, <0, -90, 0>)
+		case "mp_rr_desertlands_64k_x_64k_tt":
+            return NewLocPair(<-25197, -4278, -2138>, <0, -34, 0>)
+		case "mp_rr_arena_skygarden":
+			return NewLocPair(<4284.88037, -102.993355, 2671.03125>, <0, -179.447098, 0>)
+		case "mp_rr_party_crasher":
+			return NewLocPair(<1729.17407, -3585.65137, 581.736206>, <0, 103.168709, 0>)
         default:
-            Assert(false, "No TDM locations found for map!")
+			Assert(false, "No voting location for the map!")
+    }
+    unreachable
+}
+
+void function _OnPropDynamicSpawned(entity prop)
+{
+    file.playerSpawnedProps.append(prop)
+}
+
+int function GetTDMState(){
+	return file.tdmState
+}
+
+void function Flowstate_ServerSaveChat()
+{
+	if(file.allChatLines.len() == 0) return
+	
+	DevTextBufferClear()
+	DevTextBufferWrite("=== Flowstate DM server - CHAT #" + GetUnixTimestamp() + " ===\n")
+	
+	int i = 0
+	foreach(line in file.allChatLines)
+	{
+		DevTextBufferWrite(line + "\n")
+		i++
+	}
+
+	DevP4Checkout( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "FlowstateDM_GlobalChat/FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
+	
+	file.allChatLines.clear()
+	Warning("[!] CHAT WAS SAVED in /r5reloaded/platform/, CHAT LINES: " + i)
+}
+
+void function SetTdmStateToNextRound(){
+	file.tdmState = eTDMState.NEXT_ROUND_NOW
+}
+
+void function SetTdmStateToInProgress(){
+	file.tdmState = eTDMState.IN_PROGRESS
+}
+
+void function SetFallTriggersStatus(bool status){
+	file.FallTriggersEnabled = status
+}
+
+LocPair function _GetAppropriateSpawnLocation(entity player)
+{
+	switch(GetGameState())
+    {
+        case eGameState.MapVoting:
+			return _GetVotingLocation()
+        case eGameState.Playing:
+
+			if(IsFFAGame())
+				return Flowstate_GetBestSpawnPointFFA()
+			else
+				return Flowstate_GetBestSpawnPointFFA() // !FIXME
+    }
+	return _GetVotingLocation() //this should be unreachable
+}
+
+LocPair function Flowstate_GetBestSpawnPointFFA()
+{
+	if(file.selectedLocation.spawns.len() == 0) return _GetVotingLocation()
+	table<LocPair, float> SpawnsAndNearestEnemy = {}
+
+	foreach(spawn in file.selectedLocation.spawns)
+    {
+		array<float> AllPlayersDistancesForThisSpawnPoint
+		foreach(player in GetPlayerArray_Alive())
+			AllPlayersDistancesForThisSpawnPoint.append(Distance(player.GetOrigin(), spawn.origin))
+		AllPlayersDistancesForThisSpawnPoint.sort()
+		SpawnsAndNearestEnemy[spawn] <- AllPlayersDistancesForThisSpawnPoint[0] //grab nearest player distance for each spawn point
+	}
+
+	LocPair finalLoc
+	float compareDis = -1
+	foreach(loc, dis in SpawnsAndNearestEnemy) //calculate the best spawn point which is the one with the furthest enemy of the nearest
+	{
+		if(dis > compareDis)
+		{
+			finalLoc = loc
+			compareDis = dis
+		}
+	}
+    return finalLoc
+}
+
+vector function GetClosestEnemyToOrigin(vector origin, int ourTeam)
+{
+    float minDist = -1
+    vector enemyOrigin = <0, 0, 0>
+
+    foreach(player in GetPlayerArray_Alive())
+    {
+        if(player.GetTeam() == ourTeam) continue
+
+        float dist = Distance(player.GetOrigin(), origin)
+        if(dist < minDist || minDist < 0)
+            minDist = dist ; enemyOrigin = player.GetOrigin()
     }
 
-    //Client Signals
-    RegisterSignal( "CloseScoreRUI" )
+    return enemyOrigin
 }
 
-LocPair function NewLocPair(vector origin, vector angles)
+void function DestroyPlayerProps()
 {
-    LocPair locPair
-    locPair.origin = origin
-    locPair.angles = angles
-
-    return locPair
+    foreach(prop in file.playerSpawnedProps)
+    {
+        if(IsValid(prop))
+            prop.Destroy()
+    }
+    file.playerSpawnedProps.clear()
 }
 
-LocationSettings function NewLocationSettings(string name, array<LocPair> spawns, vector cinematicCameraOffset)
+void function DissolveItem(entity prop)
 {
-    LocationSettings locationSettings
-    locationSettings.name = name
-    locationSettings.spawns = spawns
-    locationSettings.cinematicCameraOffset = cinematicCameraOffset
+	thread (void function( entity prop) {
+		wait 4
+	    if(prop == null || !IsValid(prop))
+	    	return
 
-    return locationSettings
+	    entity par = prop.GetParent()
+	    if(par && par.GetClassName() == "prop_physics" && IsValid(prop))
+	    	prop.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)
+	}) ( prop )
 }
 
-void function Shared_RegisterLocation(LocationSettings locationSettings)
+void function _OnPlayerConnected(entity player)
 {
-    #if SERVER
-    _RegisterLocation(locationSettings)
-    #endif
+	while(IsDisconnected( player )) WaitFrame()
 
+    if(!IsValid(player)) return
 
-    #if CLIENT
-    Cl_RegisterLocation(locationSettings)
-    #endif
+	if(FlowState_ForceCharacter()){
+		player.SetPlayerNetBool( "hasLockedInCharacter", true)
+		
+		if(GetCurrentPlaylistVarBool("flowstateRandomCharacterOnSpawn", false))
+			GivePlayerRandomCharacter(player)
+		
+		if(GetCurrentPlaylistVarBool("flowstateForceCharacter", false))
+			CharSelect(player)
+	}
+
+	if(GetMapName() == "mp_rr_aqueduct")
+	    if(IsValid(player)) {
+	    	CreatePanelText( player, "Flowstate", "", <3705.10547, -4487.96484, 470.03302>, <0, 190, 0>, false, 2 )
+	    	CreatePanelText( player, "Flowstate", "", <1111.36584, -5447.26221, 655.479858>, <0, -90, 0>, false, 2 )
+	    }
+
+    GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+
+	if(FlowState_RandomGunsEverydie())
+	    Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)
+	else if (FlowState_Gungame())
+	    Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
+	else if (FlowState_EnableMovementGym()){
+	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
+	    player.SetPlayerNetBool( "pingEnabled", false )
+	    player.AddToRealm(1)
+	} else
+	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
+
+	if(IsValid(player))
+	{
+		switch(GetGameState())
+		{
+			case eGameState.MapVoting:
+			    {
+			    	if(!IsAlive(player))
+			    	{
+			    		_HandleRespawn(player)
+			    		ClearInvincible(player)
+			    	}
+
+			    	player.SetThirdPersonShoulderModeOn()
+
+			    	if(FlowState_RandomGunsEverydie())
+			    		UpgradeShields(player, true)
+
+			    	// if(FlowState_Gungame())
+			    		// KillStreakAnnouncer(player, true)
+
+			    	player.UnforceStand()
+			    	player.FreezeControlsOnServer()
+			    }
+			break
+			case eGameState.WaitingForPlayers:
+				{
+					_HandleRespawn(player)
+					ClearInvincible(player)
+					player.UnfreezeControlsOnServer()
+				}
+			break
+			case eGameState.Playing:
+				{
+					player.UnfreezeControlsOnServer()
+
+					_HandleRespawn(player)
+
+                    array<string> InValidMaps = [
+						"mp_rr_canyonlands_staging",
+						"Skill trainer By Colombia",
+						"Custom map by Biscutz",
+						"White Forest By Zer0Bytes",
+						"Brightwater By Zer0bytes",
+						"Overflow",
+						"Drop-Off"
+					]
+
+					bool DropPodOnSpawn = GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false )
+					bool IsStaging = InValidMaps.find( GetMapName() ) != -1
+					bool IsMapValid = InValidMaps.find(file.selectedLocation.name) != -1
+					if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !DropPodOnSpawn || IsStaging || IsMapValid )
+						_HandleRespawn(player)
+					else
+					{
+						if(file.thisroundDroppodSpawns.len() > 0){
+							player.p.isPlayerSpawningInDroppod = true
+							thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+							_HandleRespawn(player, true)
+							player.SetAngles( <0,180,0> )
+						}
+						else
+							_HandleRespawn(player)
+					}
+
+					ClearInvincible(player)
+					if(FlowState_RandomGunsEverydie())
+						UpgradeShields(player, true)
+
+					// if(FlowState_Gungame())
+						// KillStreakAnnouncer(player, true)
+				}
+				break
+			default:
+				break
+		}
+	}
+
+	thread __HighPingCheck( player )
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		void functionref() soloModefixDelayStart1 = void function() : (player) {
+			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.1")
+			HolsterAndDisableWeapons(player)
+			wait 9
+			if(!IsValid(player)) return
+			
+			// EnableOffhandWeapons( player )
+			// DeployAndEnableWeapons(player)
+			if(!isPlayerInRestingList(player))
+				soloModePlayerToWaitingList(player)
+			try
+			{
+				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			}
+			catch (error)
+			{
+				
+			}
+		}	
+
+		thread soloModefixDelayStart1()
+	}
 }
 
-void function RegisterLocationPROPHUNT(LocationSettings locationSettings)
+bool function is1v1EnabledAndAllowed()
 {
-    #if SERVER
-    _RegisterLocationPROPHUNT(locationSettings)
-    #endif
-
+	if (!GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		return false
+	switch (GetMapName())
+	{
+		case "mp_rr_arena_composite":
+		case "mp_rr_aqueduct":
+		case "mp_rr_canyonlands_64k_x_64k":
+		thread isChineseServer()
+		return true
+		default:
+		return false
+	}
+	return false
 }
 
-void function RegisterLocationSURF(LocationSettings locationSettings)
+void function isChineseServer()
 {
-    #if SERVER
-    _RegisterLocationSURF(locationSettings)
-    #endif
-
+	if (GetCurrentPlaylistVarBool("flowstate_1v1mode_is_chinese_server", false) )
+	{
+		#if DEVELOPER
+		printt("is chinese server")
+		#endif
+		IS_CHINESE_SERVER = true
+	}
 }
-// Playlist GET
 
-float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
-float function Deathmatch_GetIntroCutsceneSpawnDuration()            { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_duration", 5)}
-float function Deathmatch_GetIntroSpawnSpeed()                       { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_speed", 40)}
-bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", true ) } 
-float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 5 ) } 
-float function Deathmatch_GetRespawnDelay()                          { return GetCurrentPlaylistVarFloat("respawn_delay", 3.5) }
-float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
-float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
-float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
-
-string function FlowState_Hoster() { return GetCurrentPlaylistVarString("flowstateHoster", "ColombiaFPS") }
-string function FlowState_Admin1() { return GetCurrentPlaylistVarString("flowstateAdmin1", "ColombiaFPS") }
-string function FlowState_Admin2() { return GetCurrentPlaylistVarString("flowstateAdmin2", "ColombiaFPS") }
-string function FlowState_Admin3() { return GetCurrentPlaylistVarString("flowstateAdmin3", "ColombiaFPS") }
-string function FlowState_Admin4() { return GetCurrentPlaylistVarString("flowstateAdmin4", "ColombiaFPS") }
-int function FlowState_RoundTime() { return GetCurrentPlaylistVarInt("flowstateRoundtime", 1800) }
-string function FlowState_RingColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
-string function FlowState_BubbleColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
-bool function FlowState_ResetKillsEachRound()                         { return GetCurrentPlaylistVarBool("flowstateResetKills", true ) } 
-bool function FlowState_Timer()                         { return GetCurrentPlaylistVarBool("flowstateTimer", true ) } 
-bool function FlowState_LockPOI()                         { return GetCurrentPlaylistVarBool("flowstateLockPOI", false ) } 
-int function FlowState_LockedPOI() { return GetCurrentPlaylistVarInt("flowstateLockeedPOI", 0) }
-bool function FlowState_AdminTgive()                         { return GetCurrentPlaylistVarBool("flowstateAdminTgive", true ) }
-bool function FlowState_ForceCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceCharacter", true ) } 
-int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenCharacter", 8) }
-bool function FlowState_ForceAdminCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceAdminCharacter", true ) } 
-int function FlowState_ChosenAdminCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenAdminCharacter", 8) }
-bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
-bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
-bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 
-bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", false ) } 
-bool function FlowState_RandomTactical()                         { return GetCurrentPlaylistVarBool("flowstateRandomTactical", false ) } 
-bool function FlowState_RandomUltimate()                         { return GetCurrentPlaylistVarBool("flowstateRandomUltimate", false ) }
-bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateFiesta", false ) }
-bool function FlowState_FIESTAShieldsStreak() { return GetCurrentPlaylistVarBool("flowstateFiestaShieldsUpgrade", true ) } 
-bool function FlowState_FIESTADeathboxes() { return GetCurrentPlaylistVarBool("flowstateFiestaDeathboxes", true ) } 
-bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) }
-bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
-bool function FlowState_Droppods()                         { return GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) }
-bool function FlowState_ExtrashieldsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateExtrashieldsEnabled", true ) }
-float function FlowState_ExtrashieldsSpawntime()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldsSpawntime", 240 ) }
-float function FlowState_ExtrashieldValue()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldValue", 150 ) }
-bool function FlowState_Gungame()                         { return GetCurrentPlaylistVarBool("flowstateGungame", false ) }
-bool function FlowState_GungameRandomAbilities()                         { return GetCurrentPlaylistVarBool("flowstateGUNGAMERandomAbilities", false ) }
-bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
-int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowstateSURFRoundtime", 800) }
-bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
-int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
-bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
-bool function Flowstate_EnableAutoChangeLevel() { return GetCurrentPlaylistVarBool("flowstateAutoChangeLevelEnable", false ) }
-int function Flowstate_AutoChangeLevelRounds() { return GetCurrentPlaylistVarInt("flowstateRoundsBeforeChangeLevel", 2 ) }
-bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }
-bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", false ) }
-bool function FlowState_EnableWhiteForestByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_WHITEFOREST_By_Zero", true ) }
-bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
-bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
-bool function FlowState_EnableShipmentByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Shipment_By_AyeZee", false ) }
-bool function FlowState_EnableKillhouseByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Killhouse_By_AyeZee", false ) }
-bool function FlowState_EnableNuketownByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Nuketown_By_AyeZee", false ) }
-bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
-int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 200) }
-bool function FlowState_KickHighPingPlayer()                         { return GetCurrentPlaylistVarBool("flowstateKickHighPingPlayer", true ) }
-
-bool function FlowState_EnableEncore()                         			{ return GetCurrentPlaylistVarBool("flowstate_Enable_Encore", true ) } //enable encore by default unless stated false in playlist
-
-bool function FlowState_EnableKillyardByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Killyard_By_DEAFPS", false ) }
-bool function FlowState_EnableDustmentByDEAFPS()                        	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Dustment_By_DEAFPS", false ) }
-bool function FlowState_EnableShoothouseByDEAFPS()                       	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Shoothouse_By_DEAFPS", false ) }
-bool function FlowState_EnableRustByDEAFPS()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_Rust_By_DEAFPS", false ) }
-bool function FlowState_EnableNCanalsByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_NCanals_By_DEAFPS", false ) }
-bool function FlowState_EnableEncoreNuketownByAyeZee()                          { return GetCurrentPlaylistVarBool("flowstate_Enable_Encore_Nuketown_By_AyeZee", false ) }
-bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
-bool function FlowState_EnableMovementGymLogs()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym_Logs", false ) }
-
-#if SERVER   
-
-
-bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
-
-StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
+void function __HighPingCheck(entity player)
 {
-    return Equipment_GetRespawnKit_Weapon(
-        GetCurrentPlaylistVarString("respawn_kit_primary_weapon", "~~none~~"),
-        eStoredWeaponType.main,
-        WEAPON_INVENTORY_SLOT_PRIMARY_0
-    )
+	wait 12
+    if(!IsValid(player) || IsValid(player) && IsAdmin(player) ) return
+
+	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
+	{
+		player.FreezeControlsOnServer()
+		player.ForceStand()
+		HolsterAndDisableWeapons( player )
+
+		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+
+		wait 3
+
+		if(!IsValid(player)) return
+		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping!]")
+		ClientCommand( player, "disconnect" )
+		UpdatePlayerCounts()
+	} else if(GameRules_GetGameMode() == "custom_tdm"){
+		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
+		, 5)
+	}
 }
-StoredWeapon function Equipment_GetRespawnKit_SecondaryWeapon()
+
+void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
+{	
+	if (!IsValid(killer) || !IsValid(victim)) return
+	if (!killer.IsPlayer() || !victim.IsPlayer()) return
+	string killer_name = killer.GetPlayerName()
+	string victim_name = victim.GetPlayerName()
+	
+	string attackerweapon1 = "null"
+	string attackerweapon2 = "null"
+	string victimweapon1 = "null"
+	string victimweapon2 = "null"
+	
+	float aim_assist_value = GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0)
+	
+	//string attacker_origin_id = killer.GetPlatformUID()
+	
+	string flowstate_gamemode = "fs_dm"
+	if( is1v1EnabledAndAllowed() )
+		flowstate_gamemode = "fs_1v1"
+	
+	if(IsValid(killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )))
+		attackerweapon1 = killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName()
+	
+	if(IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )) && attackerweapon1 == killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponClassName() && IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		attackerweapon2 = killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponClassName()
+	else if(IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )) && attackerweapon1 == killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponClassName() && IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		attackerweapon2 = killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponClassName()
+	
+	if(IsValid(victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		victimweapon1 = victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponClassName()
+	
+	if(IsValid(victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		victimweapon2 = victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponClassName()
+	
+	string is_controller_dog = killer.p.AmIController.tostring()
+	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(is_controller_dog.len()>0)) return
+
+	string log = killer_name +"&&"+
+	victim_name+"&&"+
+	attackerweapon1+"&&"+
+	attackerweapon2+"&&"+
+	victimweapon1+"&&"+
+	victimweapon2+"&&"+
+	GetUnixTimestamp().tostring()+"&&"+
+	is_controller_dog+"&&"+
+	aim_assist_value.tostring()+"&&"+
+	flowstate_gamemode
+	//+"&&"+
+	//attacker_origin_id
+
+	file.battlelog.append(log)
+}
+
+void function Flowstate_SaveBattleLogToFile()
 {
-    return Equipment_GetRespawnKit_Weapon(
-        GetCurrentPlaylistVarString("respawn_kit_secondary_weapon", "~~none~~"),
-        eStoredWeaponType.main,
-        WEAPON_INVENTORY_SLOT_PRIMARY_1
-    )
+	if(file.battlelog.len() == 0) return
+	
+	string to_save = ""
+	
+	foreach(log in file.battlelog)
+		to_save += log + "\n"
+
+	DevTextBufferClear()
+	DevTextBufferWrite(to_save)
+	DevP4Checkout( "Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "FlowstateDM_BattleLog/Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
+	
+	Warning("[Flowstate] -> Match log saved! Events: " + file.battlelog.len())
+	
+	file.battlelog.clear()
 }
-StoredWeapon function Equipment_GetRespawnKit_Tactical()
+
+void function Flowstate_SaveBattleLogToFile_Linux() //Use parser
 {
-    return Equipment_GetRespawnKit_Weapon(
-        GetCurrentPlaylistVarString("respawn_kit_tactical", "~~none~~"),
-        eStoredWeaponType.offhand,
-        OFFHAND_TACTICAL
-    )
+	if(file.battlelog.len() == 0) return
+
+	foreach(log in file.battlelog)
+		printt(" [BattleLog] " + log)
+		
+	printt("[Flowstate] -> Match log saved! Events: " + file.battlelog.len())
+	
+	file.battlelog.clear()
 }
-StoredWeapon function Equipment_GetRespawnKit_Ultimate()
+
+void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 {
-    return Equipment_GetRespawnKit_Weapon(
-        GetCurrentPlaylistVarString("respawn_kit_ultimate", "~~none~~"),
-        eStoredWeaponType.offhand,
-        OFFHAND_ULTIMATE
-    )
+	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
+		CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+
+	if( victim.p.isSpectating )
+		return
+
+	if(victim != attacker && GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
+		Flowstate_AppendBattleLogEvent(attacker, victim)
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		//maki script 
+		//solo mode		
+		if(isPlayerInWatingList(victim))
+			return//player who is wating for his opponent
+
+		if(IsValid(attacker) && IsValid(victim))
+			victim.p.lastKiller = attacker
+		soloGroupStruct group = returnSoloGroupOfPlayer(victim) 
+		
+		if(!group.IsKeep)
+			group.IsFinished = true //tell solo thread this round has finished
+		ClearInvincible(victim)
+		int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
+		invscore++
+		victim.SetPlayerGameStat( PGS_DEATHS, invscore)
+
+		int invscore2 = victim.GetPlayerNetInt( "assists" )
+		invscore2++
+		victim.SetPlayerNetInt( "assists", invscore2 )
+		return
+
+	}
+
+	switch(GetGameState())
+    {
+        case eGameState.Playing:
+            // Víctim
+            void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+
+				wait DEATHCAM_TIME_SHORT
+				
+				if(!IsValid(victim) || !IsValid(attacker)) return
+
+				if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
+					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
+				
+	    		if(victim == attacker)
+				{
+					_HandleRespawn( victim )
+					ClearInvincible(victim)
+					return
+				}
+
+	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer())
+				{
+					victim.FreezeControlsOnServer()
+	    			victim.SetObserverTarget( attacker )
+	    			victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT )
+	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
+	    			Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+					thread CheckForObservedTarget(victim)
+	    		}
+
+	    		int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
+	    		invscore++
+	    		victim.SetPlayerGameStat( PGS_DEATHS, invscore)
+
+	    		//Add a death to the victim
+	    		int invscore2 = victim.GetPlayerNetInt( "assists" )
+	    		invscore2++
+	    		victim.SetPlayerNetInt( "assists", invscore2 )
+
+	    		if(FlowState_RandomGunsEverydie())
+	    		    UpgradeShields(victim, true)
+
+	    		//if(FlowState_Gungame())
+	    		    //KillStreakAnnouncer(victim, true)
+
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
+	    		    wait Deathmatch_GetRespawnDelay()
+				
+				if( !IsValid( victim ) ) return
+				
+				if( !IsAlive( victim ) )
+					_HandleRespawn( victim )
+				
+				ClearInvincible( victim )
+	    	}
+
+            // Attacker
+            void functionref() attackerHandleFunc = void function() : (victim, attacker, damageInfo)
+	    	{
+	    		if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
+                {
+	    			//Heal
+	    			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+					{
+	    			    PlayerRestoreHPFIESTA(attacker, 100)
+	    			    UpgradeShields(attacker, false)
+	    			} else PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
+
+	    			if(FlowState_KillshotEnabled())
+					{
+	    			    DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+	    			    thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
+	    			}
+
+	    			if(FlowState_Gungame())
+	    			{
+	    			    GiveGungameWeapon(attacker)
+	    			    //KillStreakAnnouncer(attacker, false)
+	    			}
+
+	    			WpnAutoReloadOnKill(attacker)
+	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
+
+					if( attacker == GetChampion() )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
+					
+					if( attacker == GetKillLeader() )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_killLeaderDoubleKill_01", "diag_ap_aiNotify_killLeaderTripleKill_01" )
+
+					if( attacker == file.previousChallenger )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
+	    		}
+            }
+	    	thread victimHandleFunc()
+            thread attackerHandleFunc()
+        break
+        default:
+	    	_HandleRespawn(victim)
+	    break
+
+	}
+	UpdatePlayerCounts()
 }
 
-StoredWeapon function Equipment_GetRespawnKit_Weapon(string input, int type, int index)
+void function PlayerKillStreakAnnounce( entity attacker, string doubleKill, string tripleKill )
 {
-    StoredWeapon weapon
-    if(input == "~~none~~") return weapon
+	if( Time() == attacker.p.lastDownedEnemyTime )
+		return
 
-    array<string> args = split(input, " ")
+	if( Time() - attacker.p.lastDownedEnemyTime >= KILLLEADER_STREAK_ANNOUNCE_TIME )
+		attacker.p.downedEnemy = 0
 
-    if(args.len() == 0) return weapon
+	attacker.p.downedEnemy++
+	
+	if ( Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME )
+	{
+		Signal( attacker, "NewKillOnPlayerStreak" )
 
-    weapon.name = args[0]
-    weapon.weaponType = type
-    weapon.inventoryIndex = index
-    weapon.mods = args.slice(1, args.len())
+		string announce
+		switch( attacker.p.downedEnemy )
+		{
+			case 2:
+				announce = doubleKill
+				break
+			
+			case 3:
+				announce = tripleKill
+				break
+		}
 
-    return weapon
+		PlayAnnounce( announce )
+	}
+
+	attacker.p.lastDownedEnemyTime = Time()
 }
 
+void function CheckForObservedTarget(entity player)
+{
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if(IsValid(player.p.lastFrameObservedTarget))
+			{
+				player.p.lastFrameObservedTarget.SetPlayerNetInt( "playerObservedCount", max(0, player.p.lastFrameObservedTarget.GetPlayerNetInt( "playerObservedCount" ) - 1) )
+				player.p.lastFrameObservedTarget = null
+			}
+		}
+	)
+	
+	entity observerTarget
+	while(IsValid(player) && player.IsObserver() && player.GetObserverTarget() != null )
+	{		
+		observerTarget = player.GetObserverTarget()
+		if(observerTarget != player.p.lastFrameObservedTarget)
+		{
+			if(IsValid(player.p.lastFrameObservedTarget))
+				player.p.lastFrameObservedTarget.SetPlayerNetInt( "playerObservedCount", max(0, player.p.lastFrameObservedTarget.GetPlayerNetInt( "playerObservedCount" ) - 1) )
+			
+			if(IsValid(observerTarget))
+				observerTarget.SetPlayerNetInt( "playerObservedCount", observerTarget.GetPlayerNetInt( "playerObservedCount" ) + 1 )
+		}
+		player.p.lastFrameObservedTarget = player.GetObserverTarget()
+		WaitFrame()
+	}
+}
+
+void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
+{
+    if(!IsValid(player)) return
+	if( player.p.isSpectating )
+		return
+	if( player.IsObserver() )
+    {
+		player.SetSpecReplayDelay( 0 )
+		player.SetObserverTarget( null )
+		player.StopObserverMode()
+        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+    }
+
+	if( IsValid( player ) && player.IsPlayer() && !IsAlive(player) )
+    {
+		if( GetCurrentPlaylistVarBool("flowstateRandomCharacterOnSpawn", false) && !GetCurrentPlaylistVarBool("flowstateForceCharacter", false) )
+		{
+			player.SetPlayerNetBool( "hasLockedInCharacter", false)
+			GivePlayerRandomCharacter(player)
+			player.SetPlayerNetBool( "hasLockedInCharacter", true)			
+		}
+		
+        if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
+        {
+			DecideRespawnPlayer(player, true)
+            player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+            player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+            array<StoredWeapon> weapons = [
+                Equipment_GetRespawnKit_PrimaryWeapon(),
+                Equipment_GetRespawnKit_SecondaryWeapon(),
+                Equipment_GetRespawnKit_Tactical(),
+                Equipment_GetRespawnKit_Ultimate()
+            ]
+            foreach (storedWeapon in weapons)
+            {
+                if ( !storedWeapon.name.len() ) continue
+                if( storedWeapon.weaponType == eStoredWeaponType.main)
+					try{
+                    player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+					}catch(e420){}
+                else
+					try{
+                    player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+					}catch(e420){}
+            }
+		}
+        else
+        {
+            if(!player.p.storedWeapons.len())
+				DecideRespawnPlayer(player, true)
+            else
+            {
+				DecideRespawnPlayer(player, false)
+                GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
+            }
+        }
+    }
+
+	if( IsValid( player ) && IsAlive(player))
+	{
+		if(!isDroppodSpawn)
+		    TpPlayerToSpawnPoint(player)
+
+		player.UnfreezeControlsOnServer()
+
+		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+		{
+			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+			PlayerRestoreHPFIESTA(player, 100)
+		} else
+			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+		
+		try{
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		}catch(e420){
+		//AttachEdict rare crash
+		}
+		
+		if(GetCurrentPlaylistVarBool("flowstateGiveAllOpticsToPlayer", false )){
+			SetPlayerInventory( player, [] )
+			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
+			array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+			foreach(optic in optics)
+				SURVIVAL_AddToPlayerInventory(player, optic)
+		}
+	}
+
+	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
+    {
+		try{
+		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+            player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+
+		GiveRandomPrimaryWeapon(player)
+		GiveRandomSecondaryWeapon(player)
+
+            player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+            player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		} catch (e420) {}
+    } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
+	{
+		try{
+		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+            player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			GiveRandomPrimaryWeaponMetagame(player)
+			GiveRandomSecondaryWeaponMetagame(player)
+
+            player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+            player.GiveOffhandWeapon( "melee_bolo_sworde", OFFHAND_MELEE, [] )
+		} catch (e420) {}
+	}
+
+	if( IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
+	{
+		if(FlowState_RandomTactical())
+		{
+			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+			GiveRandomTac(player)
+		}
+
+		if(FlowState_RandomUltimate())
+		{
+			player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+			GiveRandomUlt(player)
+		}
+
+	}
+
+	if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
+    {
+		try{
+		TakeAllWeapons(player)
+        GiveRandomPrimaryWeapon(player)
+        GiveRandomSecondaryWeapon( player)
+        GiveRandomTac(player)
+        GiveRandomUlt(player)
+        player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		}catch(e420){}
+    }
+	if(FlowState_Gungame() && IsValid( player ))
+		GiveGungameWeapon(player)
+
+	
+
+	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
+	thread Flowstate_GrantSpawnImmunity(player, 2.5)
+	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
+	//maki script
+	thread LoadCustomSkill(player)	
+	//maki script
+}
+
+void function ReCheckGodMode(entity player)
+{
+	wait 0.1
+	if(!IsValid(player) || IsValid(player) && !IsAlive(player)) return
+	
+	player.MakeVisible()
+	player.ClearInvulnerable()
+	player.SetTakeDamageType( DAMAGE_YES )
+	Highlight_ClearEnemyHighlight( player )
+}
+
+void function TpPlayerToSpawnPoint(entity player)
+{
+	LocPair loc = _GetAppropriateSpawnLocation(player)
+
+	if(!IsValid(player)) return
+    player.SetOrigin(loc.origin)
+	player.SetAngles(loc.angles)
+}
+
+void function Flowstate_GrantSpawnImmunity(entity player, float duration)
+{
+	if(!IsValid(player) || !IsValid(player) && !player.IsPlayer()) return
+	
+	// thread WpnPulloutOnRespawn(player, duration)
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+
+	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.3, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.drone_healing, 1.0, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
+
+	player.SetTakeDamageType( DAMAGE_NO )
+	Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
+	player.SetInvulnerable()
+
+	float endTime = Time() + duration
+	
+	while(Time() <= endTime)
+		wait 0.1
+	
+	if(!IsValid(player)) return
+	
+	player.MakeVisible()
+	player.ClearInvulnerable()
+	player.SetTakeDamageType( DAMAGE_YES )
+	Highlight_ClearEnemyHighlight( player )
+	
+	StatusEffect_StopAllOfType( player, eStatusEffect.adrenaline_visuals )
+	StatusEffect_StopAllOfType( player, eStatusEffect.speed_boost )
+	StatusEffect_StopAllOfType( player, eStatusEffect.drone_healing )
+	StatusEffect_StopAllOfType( player, eStatusEffect.stim_visual_effect )
+	
+	thread ReCheckGodMode(player)
+	//maki script
+	wait 0.5
+	try
+	{
+		highlightKdMoreThan2(player)
+
+	}
+	catch(err){}
+	
+	//maki script
+}
+
+void function WpnPulloutOnRespawn(entity player, float duration)
+{
+	if(!IsValid( player ) || !IsAlive(player) ) return
+	//maki script
+	// OnThreadEnd(
+	// function() : ( player )
+	// 	{
+	// 		if( IsValid( player ) && file.tdmState != eTDMState.NEXT_ROUND_NOW )
+	// 			DeployAndEnableWeapons( player )
+	// 	}
+	// )
+
+	// if( IsValid( player ) && file.tdmState != eTDMState.NEXT_ROUND_NOW )
+	// 	DeployAndEnableWeapons( player )
+	player.ClearFirstDeployForAllWeapons()
+	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
+	{
+		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		//maki script
+		if(!IsValid(tactical)) return
+		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+	}
+	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
+	{
+		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		//maki script
+		if(!IsValid(ultimate)) return
+		ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+	}
+
+	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+	{
+		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+	}
+	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+	{
+		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	}
+
+	//maki script
+	// HolsterAndDisableWeapons(player)
+	// wait duration-0.2
+}
+
+void function WpnAutoReload( entity player )
+{	
+	if(!IsValid(player)) return
+	
+	try
+	{
+		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+		sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
+	}
+	catch (error)
+	{
+		
+	}
+}
+
+void function WpnAutoReloadOnKill( entity player )
+{
+
+	entity primary = player.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
+	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+	if (primary == sec) {
+		sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	}
+
+	if (FlowState_AutoreloadOnKillPrimary() && IsValid(primary) && primary.GetWeaponClassName() != "mp_weapon_melee_survival") {
+		if(primary.UsesClipsForAmmo())
+			primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+		else
+		{
+			int ammoType = primary.GetWeaponAmmoPoolType()
+			player.AmmoPool_SetCapacity( 999 )
+			player.AmmoPool_SetCount( ammoType, 999)
+		}
+	}
+
+	if (FlowState_AutoreloadOnKillSecondary() && IsValid(sec)) {
+		if(sec.UsesClipsForAmmo())
+			sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
+		else
+		{
+			int ammoType = sec.GetWeaponAmmoPoolType()
+			player.AmmoPool_SetCapacity( 999 )
+			player.AmmoPool_SetCount( ammoType, 999)
+		}
+	}
+}
+
+void function SummonPlayersInACircle(entity player0)
+{
+	vector pos = player0.GetOrigin()
+	pos.z += 5
+	Message(player0,"CIRCLE FIGHT NOW!", "", 5)
+    for(int i = 0 ; i < GetPlayerArray().len() ; i++)
+	{
+		entity p = GetPlayerArray()[i]
+		if(!IsValid( p ) || p == player0)
+		    continue
+
+		float r = float(i) / float( GetPlayerArray().len() ) * 2 * PI
+		TeleportFRPlayer(p, pos + 150.0 * <sin( r ), cos( r ), 0.0>, <0, 0, 0>)
+		Message(p,"CIRCLE FIGHT NOW!", "", 5)
+	}
+}
+
+void function __GiveWeapon( entity player, array<string> WeaponData, int slot, int select, bool isGungame = false)
+{
+	array<string> Data = split(WeaponData[select], " ")
+	string weaponclass = Data[0]
+	
+	if(weaponclass == "tgive") return
+	
+	array<string> Mods
+	foreach(string mod in Data)
+	{
+		if(strip(mod) != "" && strip(mod) != weaponclass)
+		    Mods.append( strip(mod) )
+	}
+	
+	try{
+		if(IsValid(player))
+			player.GiveWeapon( weaponclass , slot, Mods )
+		else if(IsValid(player) && isGungame)
+		{
+			player.ReplaceActiveWeapon(slot, weaponclass, Mods)
+			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		}
+	}catch(e420){
+		printt("Invalid weapon name for tgive command.")
+	}
+}
+
+void function GiveRandomPrimaryWeaponMetagame(entity player)
+{
+	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+
+    array<string> Weapons = [
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
+		"mp_weapon_mastiff",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.blacklistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+}
+
+void function GiveRandomSecondaryWeaponMetagame(entity player)
+{
+	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+
+    array<string> Weapons = [
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		// "mp_weapon_rspn101 optic_cq_hcog_bruiser barrel_stabilizer_l4_flash_hider stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l1 highcal_mag_l1",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		"mp_weapon_rspn101 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l1",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		"mp_weapon_rspn101 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l1 highcal_mag_l1",
+		//"mp_weapon_esaw optic_cq_hcog_bruiser energy_mag_l1 hopup_turbocharger",
+		"mp_weapon_energy_ar optic_cq_hcog_classic  energy_mag_l1 hopup_turbocharger",
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.blacklistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+}
+
+void function GiveRandomPrimaryWeapon(entity player)
+{
+	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+
+    array<string> Weapons = [
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2 barrel_stabilizer_l1",
+		"mp_weapon_pdw optic_cq_threat highcal_mag_l3 stock_tactical_l3",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3",
+		"mp_weapon_vinson stock_tactical_l2 highcal_mag_l3",
+		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2 barrel_stabilizer_l2",
+		"mp_weapon_lmg barrel_stabilizer_l1 stock_tactical_l3",
+        "mp_weapon_energy_ar energy_mag_l2 stock_tactical_l3",
+        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+        "mp_weapon_rspn101 stock_tactical_l2 bullets_mag_l2 barrel_stabilizer_l1"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.blacklistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+}
+
+void function GiveRandomSecondaryWeapon( entity player)
+{
+	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+
+    array<string> Weapons = [
+		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_energy_shotgun shotgun_bolt_l2",
+		"mp_weapon_pdw highcal_mag_l3 stock_tactical_l2",
+		"mp_weapon_mastiff shotgun_bolt_l3",
+		"mp_weapon_autopistol bullets_mag_l2",
+		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+		"mp_weapon_energy_ar energy_mag_l1 stock_tactical_l3 hopup_turbocharger",
+		"mp_weapon_doubletake optic_ranged_hcog energy_mag_l3 stock_sniper_l3",
+		"mp_weapon_vinson stock_tactical_l3 highcal_mag_l3",
+		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2"
+		"mp_weapon_car optic_cq_holosight stock_tactical_l1 bullets_mag_l3"
+		"mp_weapon_volt_smg energy_mag_l2 stock_tactical_l3"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.blacklistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+}
+
+void function GiveActualGungameWeapon(int index, entity player)
+{
+	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+
+    array<string> Weapons = [
+		"mp_weapon_r97 optic_cq_hcog_classic barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l1",
+		"mp_weapon_rspn101 optic_cq_hcog_bruiser barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
+		"mp_weapon_energy_shotgun shotgun_bolt_l1",
+		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3",
+		"mp_weapon_shotgun shotgun_bolt_l1",
+		"mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_mastiff",
+		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3",
+		"mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l1",
+		"mp_weapon_lmg optic_cq_hcog_bruiser highcal_mag_l3 barrel_stabilizer_l3 stock_tactical_l3",
+		"mp_weapon_shotgun_pistol shotgun_bolt_l3",
+		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_defender optic_ranged_hcog stock_sniper_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l3 stock_tactical_l3 hopup_turbocharger",
+		"mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3",
+		"mp_weapon_semipistol",
+		//"mp_weapon_esaw optic_cq_hcog_bruiser energy_mag_l1 barrel_stabilizer_l2",
+		"mp_weapon_doubletake energy_mag_l3",
+		"mp_weapon_rspn101 optic_cq_hcog_classic bullets_mag_l1 barrel_stabilizer_l1 stock_tactical_l1",
+		"mp_weapon_wingman highcal_mag_l1",
+		"mp_weapon_shotgun",
+		"mp_weapon_energy_shotgun",
+		"mp_weapon_vinson stock_tactical_l1 highcal_mag_l2",
+		"mp_weapon_r97 optic_cq_threat bullets_mag_l1 barrel_stabilizer_l3 stock_tactical_l1",
+		"mp_weapon_autopistol",
+		"mp_weapon_dmr optic_cq_hcog_bruiser highcal_mag_l2 barrel_stabilizer_l2 stock_sniper_l3",
+		"mp_weapon_pdw stock_tactical_l1 highcal_mag_l1",
+		//"mp_weapon_esaw optic_cq_hcog_classic energy_mag_l1 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_alternator_smg optic_cq_hcog_classic barrel_stabilizer_l2",
+		"mp_weapon_sniper",
+		"mp_weapon_defender optic_sniper stock_sniper_l2",
+		//"mp_weapon_esaw optic_cq_holosight_variable",
+		"mp_weapon_rspn101 optic_cq_holosight_variable",
+		"mp_weapon_semipistol bullets_mag_l2"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.blacklistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+
+	__GiveWeapon( player, Weapons, slot, index, true)
+}
+
+void function GiveRandomTac(entity player)
+{
+    array<string> Weapons = [
+		"mp_ability_grapple",
+		"mp_ability_phase_walk",
+		"mp_ability_heal",
+		"mp_weapon_bubble_bunker",
+		"mp_weapon_grenade_bangalore",
+		"mp_ability_area_sonar_scan",
+		"mp_weapon_grenade_sonar",
+		"mp_weapon_deployable_cover",
+		"mp_ability_holopilot",
+		"mp_ability_cloak",
+		"mp_ability_space_elevator_tac",
+		"mp_ability_phase_rewind"
+	]
+
+	foreach(ability in file.blacklistedAbilities)
+		Weapons.removebyvalue(ability)
+
+	if(IsValid(player))
+	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ], OFFHAND_TACTICAL)
+}
+
+void function GiveRandomUlt(entity player )
+{
+    array<string> Weapons = [
+		//"mp_weapon_grenade_gas",
+		"mp_weapon_jump_pad",
+		//"mp_weapon_phase_tunnel",
+		"mp_ability_3dash",
+		"mp_ability_hunt_mode",
+		//"mp_weapon_grenade_creeping_bombardment",
+		//"mp_weapon_grenade_defensive_bombardment"
+
+	]
+
+	foreach(ability in file.blacklistedAbilities)
+		Weapons.removebyvalue(ability)
+
+	if(IsValid(player))
+	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ],  OFFHAND_ULTIMATE)
+}
+
+void function OnShipButtonUsed( entity panel, entity player, int useInputFlags )
+{
+	player.MakeInvisible()
+	player.StartObserverMode( OBS_MODE_CHASE )
+	player.SetObserverTarget( file.supercooldropship )
+}
+
+vector function ShipSpot()
+{
+	switch(RandomIntRange(0,11))
+	{
+	    case 0: return <0,0,30>
+	    case 1: return <35,0,30>
+	    case 2: return <-35,0,30>
+	    case 3: return <0,35,30>
+	    case 4: return <35,35,30>
+	    case 5: return <-35,35,30>
+	    case 6: return <0,70,30>
+	    case 7: return <35,70,30>
+	    case 8: return <-35,70,30>
+	    case 9: return <0,105,30>
+	    case 10: return <35,105,30>
+	    case 11: return <-35,105,30>
+		default: return <0,0,30>
+	}
+	unreachable
+}
+
+
+void function CreateDropShipTriggerArea()
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 100 )
+	trigger.SetAboveHeight( 100 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( 100 )
+	trigger.SetOrigin( file.supercooldropship.GetOrigin() )
+	trigger.SetParent( file.supercooldropship )
+	DispatchSpawn( trigger )
+
+	trigger.SearchForNewTouchingEntity()
+
+	OnThreadEnd(
+	function() : ( trigger )
+		{
+			trigger.Destroy()
+		}
+	)
+
+	while ( file.isshipalive )
+	{
+		foreach( touchingEnt in trigger.GetTouchingEntities()  )
+		{
+			if(touchingEnt.IsPlayer() && touchingEnt.GetParent() != file.supercooldropship)
+			{
+				touchingEnt.SetThirdPersonShoulderModeOff()
+				vector shipspot = ShipSpot()
+				touchingEnt.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
+				touchingEnt.SetParent(file.supercooldropship)
+			}
+		}
+		wait 0.01
+	}
+}
+
+void function CreateShipRoomFallTriggers()
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 2000 )
+	trigger.SetAboveHeight( 25 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( 25 )
+
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+		trigger.SetOrigin( <-19459, 2127, 5404> )
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+		trigger.SetOrigin( <-19459, 2127, 17404> )
+
+	DispatchSpawn( trigger )
+
+	trigger.SearchForNewTouchingEntity()
+
+	OnThreadEnd(
+	function() : ( trigger )
+		{
+			trigger.Destroy()
+		}
+	)
+
+	while ( file.FallTriggersEnabled )
+	{
+		foreach( touchingEnt in trigger.GetTouchingEntities() )
+		{
+			if( touchingEnt.IsPlayer() )
+			{
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+					touchingEnt.SetOrigin( <-19459, 2127, 6404> )
+				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+					touchingEnt.SetOrigin( <-19459, 2127, 18404> )
+			}
+		}
+		wait 0.01
+	}
+}
+
+array<ConsumableInventoryItem> function FlowStateGetAllDroppableItems( entity player )
+{
+	array<ConsumableInventoryItem> final = []
+
+	// Consumable inventory
+	final.extend( SURVIVAL_GetPlayerInventory( player ) )
+
+	// Weapon related items
+	foreach ( weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+		if ( data.ref == "" )
+			continue
+
+		// Add the weapon
+		ConsumableInventoryItem item
+
+		item.type = data.index
+		item.count = weapon.GetWeaponPrimaryClipCount()
+
+		final.append( item )
+
+		foreach ( esRef, mod in GetAllWeaponAttachments( weapon ) )
+		{
+			if ( !SURVIVAL_Loot_IsRefValid( mod ) )
+				continue
+
+			if ( data.baseMods.contains( mod ) )
+				continue
+
+			LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( mod )
+
+			// Add the attachment
+			ConsumableInventoryItem attachmentItem
+
+			attachmentItem.type = attachmentData.index
+			attachmentItem.count = 1
+
+			final.append( attachmentItem )
+		}
+	}
+
+	// Non-weapon equipment slots
+	foreach ( string ref, EquipmentSlot es in EquipmentSlot_GetAllEquipmentSlots() )
+	{
+		if ( EquipmentSlot_IsMainWeaponSlot( ref ) || EquipmentSlot_IsAttachmentSlot( ref ) )
+			continue
+
+		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, ref )
+		if ( data.ref == "" )
+			continue
+
+		// Add the equipped loot
+		ConsumableInventoryItem equippedItem
+
+		equippedItem.type = data.index
+		equippedItem.count = 1
+
+		final.append( equippedItem )
+	}
+
+	return final
+}
+
+
+void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, var damageInfo )
+{
+	entity deathBox = FlowState_CreateDeathBox( victim, true )
+
+	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
+	{
+		//Message(victim,"DEBUG", invItem.type.tostring(), 10)
+		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 )
+		    continue
+		else{
+		    LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+		    entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
+		    AddToDeathBox( loot, deathBox )
+		}
+	}
+
+	UpdateDeathBoxHighlight( deathBox )
+
+	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )
+		func( deathBox, attacker, damageInfo != null ? DamageInfo_GetDamageSourceIdentifier( damageInfo ) : 0 )
+}
+
+
+entity function FlowState_CreateDeathBox( entity player, bool hasCard )
+{
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
+	box.kv.fadedist = 10000
+	if ( hasCard )
+		SetTargetName( box, DEATH_BOX_TARGETNAME )
+
+	DispatchSpawn( box )
+
+	box.RemoveFromAllRealms()
+	box.AddToOtherEntitysRealms( player )
+	box.Solid()
+	box.SetUsable()
+	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	box.SetOwner( player )
+	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+
+	if ( hasCard )
+	{
+		box.SetNetBool( "overrideRUI", false )
+		box.SetCustomOwnerName( player.GetPlayerName() )
+		box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( Loadout_CharacterClass() , LoadoutSlot_GetItemFlavor( ToEHI( player ) , Loadout_CharacterClass() ) ) )
+	}
+
+	if ( hasCard )
+	{
+		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+		Highlight_ClearNeutralHighlight( box )
+
+		vector restPos = box.GetOrigin()
+		vector fallPos = restPos + < 0, 0, 54 >
+
+		thread (void function( entity box , vector restPos , vector fallPos) {
+			entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+			if ( IsValid( box ) )
+				{
+				box.SetParent( mover, "", true )
+				mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+				}
+			wait 0.5
+			if ( IsValid( box ) )
+				mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+			wait 0.5
+			if ( IsValid( box ) )
+				box.ClearParent()
+			if ( IsValid( mover ) )
+				mover.Destroy()
+
+		}) ( box , restPos , fallPos)
+
+		thread (void function( entity box) {
+			wait 20
+			if(IsValid(box))
+				box.Destroy()
+		}) ( box )
+	}
+
+	return box
+}
+
+void function PlayerRestoreShieldsFIESTA(entity player, int shields) {
+    if(IsValidPlayer(player) && IsAlive( player ))
+        player.SetShieldHealth(shielddd(shields, 0, player.GetShieldHealthMax()))
+}
+
+void function PlayerRestoreHPFIESTA(entity player, int health) {
+    if(IsValidPlayer(player) && IsAlive( player ))
+        player.SetHealth( health )
+}
+
+int function shielddd(int value, int min, int max) {
+    if(value < min) return min
+    else if (value > max) return max
+    else return value
+
+    unreachable
+}
+
+void function UpgradeShields(entity player, bool died)
+{
+    if (!IsValid(player)) return
+
+    if (died && FlowState_FIESTAShieldsStreak()) {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+        Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+    } else if (FlowState_FIESTAShieldsStreak())
+	{
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
+
+        switch (player.GetPlayerGameStat( PGS_TITAN_KILLS ))
+		{
+	    	case 1:
+            case 2:
+            case 3:
+			case 4:
+			    Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+			break
+			case 5:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+            break
+            case 6:
+			case 7:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            break
+			case 8:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 8 kill streak and extra shield!", 5, "")
+			break
+			case 15:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak!", 5, "")
+			break
+			case 20:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 5, "")
+			break
+			case 25:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 5, "")
+			break
+			case 35:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 5, "")
+			break
+			case 50:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 5, "")
+            break
+			default:
+            break
+        }
+
+		GiveFlowstateOvershield(player)
+
+    } else if (!FlowState_FIESTAShieldsStreak())
+	    PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+	else if (FlowState_FIESTAShieldsStreak()){
+        PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+        PlayerRestoreHPFIESTA(player, 100)
+	}
+}
+
+void function KillStreakAnnouncer(entity player, bool died) {
+
+    if (!IsValid(player)) return
+
+    if (died)
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+    else {
+        switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
+			case 5:
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+			case 10:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
+            break
+			case 15:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak and extra shield!", 5, "")
+			case 20:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray())
+				    Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb and extra shield!", 5, "")
+            break
+			case 25:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray())
+				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 25 kill streak and extra shield!", 5, "")
+            break
+			default:
+                break
+        }
+    }
+}
+
+#if SERVER
+void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
+	player.SetShieldHealth( FlowState_ExtrashieldValue() )
+	if(isOvershieldFromGround){
+			foreach(sPlayer in GetPlayerArray()){
+			Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
+		}
+	}
+}
 #endif
+
+void function GiveGungameWeapon(entity player) {
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+	int WeaponIndex = player.GetPlayerNetInt( "kills" )
+	int realweaponIndex = WeaponIndex
+	int MaxWeapons = 41
+	if (WeaponIndex > MaxWeapons)
+	{
+        file.tdmState = eTDMState.NEXT_ROUND_NOW
+		foreach (sPlayer in GetPlayerArray())
+		{
+			sPlayer.SetPlayerNetInt("kills", 0) //Reset for kills
+	    	sPlayer.SetPlayerNetInt("assists", 0) //Reset for deaths
+			sPlayer.p.playerDamageDealt = 0.0
+		}
+	}
+
+	if(!FlowState_GungameRandomAbilities())
+	{
+		string tac = GetCurrentPlaylistVarString("flowstateGUNGAME_tactical", "~~none~~")
+		string ult = GetCurrentPlaylistVarString("flowstateGUNGAME_ultimate", "~~none~~")
+
+		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+        entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+
+		float oldTacticalChargePercent = 0.0
+                if( IsValid( tactical ) ) {
+                    player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+                    oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
+                }
+				if(tac != "~~none~~" && tac != "")
+					player.GiveOffhandWeapon(tac, OFFHAND_TACTICAL)
+
+				entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+				if(IsValid(newTactical))
+					newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
+
+				if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+
+				if(ult != "~~none~~" && ult != "")
+					player.GiveOffhandWeapon(ult, OFFHAND_ULTIMATE)
+	}
+	try{
+	//give gungame weapon
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	GiveActualGungameWeapon(realweaponIndex, player)
+	//give secondary
+	string sec = GetCurrentPlaylistVarString("flowstateGUNGAMESecondary", "~~none~~")
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+
+	if (sec != "") {
+			array<string> attachments = []
+
+			for(int i = 0; GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+			{
+				if(GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~") == ""){
+				continue
+				}
+				else{
+				attachments.append(GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~"))}
+			}
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			player.GiveWeapon(sec, WEAPON_INVENTORY_SLOT_PRIMARY_1, attachments)
+	}
+	//entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	//if( IsValid( primary ) && !primary.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, primary))
+		}catch(e113){}
+}
+
+ // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
+// ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
+// ██   ███ ███████ ██ ████ ██ █████       ██      ██    ██ ██    ██ ██████
+// ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
+ // ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
+
+void function RunTDM()
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+    WaitForGameState(eGameState.Playing)
+    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+
+	if(!Flowstate_DoorsEnabled()){
+		array<entity> doors = GetAllPropDoors()
+
+		foreach(entity door in doors)
+			if(IsValid(door))
+				door.Destroy()
+	}
+
+    while(true)
+	{
+		//VotingPhase()
+		SimpleChampionUI()
+		WaitFrame()
+	}
+    WaitForever()
+}
+
+void function SimpleChampionUI()
+/////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
+{
+	//printt("Flowstate DEBUG - Game is starting.")
+
+	foreach(player in GetPlayerArray())
+		if(IsValid(player)) ScreenFade( player, 0, 0, 0, 255, 1.5, 1.5, FFADE_IN | FFADE_PURGE ) //let's do this before destroy player props so it looks good in custom maps
+
+    DestroyPlayerProps()
+	isBrightWaterByZer0 = false
+
+	SetGameState( eGameState.Playing )
+	SetTdmStateToInProgress()
+	file.FallTriggersEnabled = true
+
+	foreach( player in GetPlayerArray() )
+	{
+		if( IsValid( player ) )
+		{
+			_HandleRespawn( player )
+			if(FlowState_Gungame())
+				GiveGungameWeapon( player )
+				
+			player.UnforceStand()
+			player.UnfreezeControlsOnServer()
+			HolsterAndDisableWeapons( player )
+		}
+	}
+
+	if (!file.mapIndexChanged)
+		{
+			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
+		}
+
+	if (FlowState_LockPOI()) {
+		file.nextMapIndex = FlowState_LockedPOI()
+	}
+
+	int choice = file.nextMapIndex
+	file.mapIndexChanged = false
+	file.selectedLocation = file.locationSettings[ choice ]
+	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
+	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
+
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		thread CreateShipRoomFallTriggers()
+	}
+	if (FlowState_RandomGuns() )
+    {
+        file.randomprimary = RandomIntRangeInclusive( 0, 15 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 6 )
+    } else if (FlowState_RandomGunsMetagame())
+	{
+		file.randomprimary = RandomIntRangeInclusive( 0, 2 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
+	} else if (FlowState_RandomGunsEverydie())
+	{
+		file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
+	}
+
+	if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled())
+	{
+		DestroyPlayerProps()
+		CreateFlowStateGroundMedKit( <10725, 5913,-4225>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
+	} else if( file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled() )
+	{
+		DestroyPlayerProps()
+		CreateFlowStateGroundMedKit( <17247,31823,-310>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
+		thread SkillTrainerLoad()
+	} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
+	{
+		//printt("Flowstate DEBUG - creating props for Skill Trainer.")
+		DestroyPlayerProps()
+		thread SkillTrainerLoad()
+	} else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
+	{
+		//printt("Flowstate DEBUG - creating props for Brightwater.")
+		isBrightWaterByZer0 = true
+		DestroyPlayerProps()
+		thread WorldEntities()
+		wait 1
+		thread BrightwaterLoad()
+		wait 1.5
+		thread BrightwaterLoad2()
+		wait 1.5
+		thread BrightwaterLoad3()
+	} else if(file.selectedLocation.name == "Cave By BlessedSeal" )
+	{
+		//printt("Flowstate DEBUG - creating props for Cave.")
+		DestroyPlayerProps()
+		thread SpawnEditorPropsSeal()
+	} else if( file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled() )
+	{
+		DestroyPlayerProps()
+		//printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
+		CreateFlowStateGroundMedKit( <-21289, -12030, 3060>, ZERO_VECTOR, 3 , FlowState_ExtrashieldsSpawntime() )
+	} else if ( file.selectedLocation.name == "White Forest By Zer0Bytes" )
+	{
+		DestroyPlayerProps()
+		//printt("Flowstate DEBUG - creating props for White Forest.")
+		thread SpawnWhiteForestProps()
+	} else if ( file.selectedLocation.name == "Custom map by Biscutz" )
+	{
+		DestroyPlayerProps()
+		//printt("Flowstate DEBUG - creating props for Map by Biscutz.")
+		thread LoadMapByBiscutz1()
+		thread LoadMapByBiscutz2()
+	} else if ( file.selectedLocation.name == "Shipment By AyeZee" )
+	{
+		DestroyPlayerProps()
+        wait 1
+		thread Shipment()
+	} else if ( file.selectedLocation.name == "Killhouse By AyeZee" )
+	{
+		DestroyPlayerProps()
+        wait 1
+		thread Killhouse()
+	} else if (file.selectedLocation.name == "Nuketown By AyeZee")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread nuketown()
+	} else if (file.selectedLocation.name == "Killyard")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Killyard()
+	} else if (file.selectedLocation.name == "Dustment by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Dustment()
+	} else if (file.selectedLocation.name == "Shoothouse by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Shoothouse()
+	} else if (file.selectedLocation.name == "Rust By DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Rust()
+	} else if (file.selectedLocation.name == "Noshahr Canals by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread NCanals()
+	} else if (file.selectedLocation.name == "Movement Gym") {
+		DestroyPlayerProps()
+		wait 1
+		thread MovementGym()
+	}
+
+    foreach( player in GetPlayerArray() )
+    {
+		if( !IsValid(player) ) return
+        try 
+		{
+			RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+			player.SetThirdPersonShoulderModeOff()
+			_HandleRespawn(player)
+			ClearInvincible(player)
+			DeployAndEnableWeapons(player)
+			EnableOffhandWeapons( player )
+
+			entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+			entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+			entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+
+			if(IsValid(primary) && primary.UsesClipsForAmmo())
+				primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+			if(IsValid(secondary) && secondary.UsesClipsForAmmo())
+				secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+			if(IsValid(tactical) && tactical.UsesClipsForAmmo())
+				tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+			if(IsValid(ultimate) && ultimate.UsesClipsForAmmo())
+				ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+		} catch(e3){}
+	}
+
+
+	try{
+	string subtext = ""
+	if( GetBestPlayer() == PlayerWithMostDamage() && GetBestPlayerName() != "-still nobody-" )
+		subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
+	else if( GetBestPlayerName() != "-still nobody-" )
+		subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
+
+	foreach( player in GetPlayerArray() )
+	{
+		Message( player, file.selectedLocation.name, subtext, 25, "" )
+		file.previousChampion = GetBestPlayer()
+		file.previousChallenger = PlayerWithMostDamage()
+		GameRules_SetTeamScore( player.GetTeam(), 0 )
+	}
+
+	if( GetBestPlayer() != null )
+		SetChampion( GetBestPlayer() )
+
+	SurvivalCommentary_ResetAllData()
+
+	} catch(e4){}
+	//printt("Flowstate DEBUG - Clearing last round stats.")
+	foreach( player in GetPlayerArray() )
+	{
+		if( IsValidPlayer(player) )
+		{
+			player.p.playerDamageDealt = 0.0
+			if ( FlowState_ResetKillsEachRound() && IsValidPlayer( player ) )
+			{
+				player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
+				player.SetPlayerNetInt( "assists", 0 ) //Reset for deaths
+			}
+
+			if( FlowState_Gungame() )
+			{
+				player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+				// KillStreakAnnouncer(player, true)
+			}
+
+			if( FlowState_RandomGunsEverydie() )
+			{
+				player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+				UpgradeShields(player, true)
+			}
+		}
+	}
+	ResetAllPlayerStats()
+	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
+	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
+
+	float endTime = Time() + FlowState_RoundTime()
+	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
+
+	foreach( player in GetPlayerArray() )
+	{
+		thread Flowstate_GrantSpawnImmunity(player, 2.5)
+	}
+
+	if( GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ) )
+	{
+		WaitForever()
+	}
+
+	if ( FlowState_Timer() )
+	{
+		int round = 0
+		bool isFinalRound = false
+		if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+		{
+			round = 7
+			isFinalRound = true
+		}
+		SetGlobalNetInt( "currentDeathFieldStage", round )
+		SetGlobalNetTime( "nextCircleStartTime", endTime )
+		SetGlobalNetTime( "circleCloseTime", endTime + 8 )
+
+		// if( isFinalRound )
+			// AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
+		// else
+			PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
+		
+		if(file.currentRound>1 && is1v1EnabledAndAllowed() )//only work after round 1 and 1v1 gamemode
+		{
+			foreach (eachPlayer in GetPlayerArray() )
+			{
+				thread soloModefixDelayStart(eachPlayer)
+			}
+		}
+		
+		while( Time() <= endTime )
+		{
+			if( Time() == endTime - 900 )
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( IsValid(player) )
+					{
+						Message(player,"15 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if( Time() == endTime - 600 )
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( IsValid(player) )
+					{
+						Message(player,"10 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime-300)
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( IsValid(player) )
+					{
+						Message(player,"5 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime - 120)
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( IsValid(player) )
+					{
+						Message(player,"2 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime - 60)
+			{
+				foreach( player in GetPlayerArray() )
+					if( IsValid(player) )
+						Message(player,"1 MINUTE REMAINING!","", 5, "")
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
+			}
+			if(Time() == endTime - 30)
+			{
+				foreach( player in GetPlayerArray() )
+					if( IsValid(player) )
+						Message(player,"30 SECONDS REMAINING!","", 5, "")
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
+			}
+			if(Time() == endTime - 10)
+			{
+				foreach( player in GetPlayerArray() )
+					if( IsValid(player) )
+						Message(player,"10 SECONDS REMAINING!","", 5, "")
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
+			}
+			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+			{
+				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+				break
+			}
+			WaitFrame()
+		}
+	}
+	else if ( !FlowState_Timer() ){
+		while( Time() <= endTime )
+		{
+			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+			{
+				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+				break
+			}
+
+			WaitFrame()
+		}
+	}
+
+	SetTdmStateToNextRound()
+		
+	wait 1
+
+	foreach(player in GetPlayerArray())
+		{
+			if(!IsValid(player)) continue
+
+			if(!IsAlive(player) && !player.p.isSpectating)
+			{
+				_HandleRespawn(player)
+				ClearInvincible(player)
+			}
+
+			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+			{
+				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+				PlayerRestoreHPFIESTA(player, 100)
+			} else
+				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+
+			player.SetThirdPersonShoulderModeOn()
+			HolsterAndDisableWeapons( player )
+		}
+
+	wait 1
+	
+	if(GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
+		if(GetCurrentPlaylistVarBool("flowstateBattleLog_Linux", false ))
+			thread Flowstate_SaveBattleLogToFile_Linux()
+		else
+			thread Flowstate_SaveBattleLogToFile()
+			
+	if(GetCurrentPlaylistVarBool("flowstateChatLogEnable", false ))
+		Flowstate_ServerSaveChat()
+	
+	if( GetBestPlayer() != null )
+		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
+
+	foreach( player in GetPlayerArray() )
+	{
+		if( !IsValid( player ) ) continue
+		
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		if( GetCurrentPlaylistName() == "movement_gym" ) {
+			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		} else {
+			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		}
+	}
+
+	wait 7
+
+	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+	{
+		// foreach( player in GetPlayerArray() )
+			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
+
+		foreach( player in GetPlayerArray() )
+			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
+
+		wait 6.0
+
+		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+			MovementGymSaveTimesToFile()
+		
+		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	
+	}
+
+	foreach( player in GetPlayerArray() )
+	{
+		if( !IsValid( player ) ) continue
+		
+		ClearInvincible( player )
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		player.SetThirdPersonShoulderModeOff()
+	}
+
+	file.ringBoundary.Destroy()
+
+	file.currentRound++
+}
+
+//       ██ ██████  ██ ███    ██  ██████  ██
+//      ██  ██   ██ ██ ████   ██ ██        ██
+//      ██  ██████  ██ ██ ██  ██ ██   ███  ██
+//      ██  ██   ██ ██ ██  ██ ██ ██    ██  ██
+//       ██ ██   ██ ██ ██   ████  ██████  ██
+// Purpose: Create The RingBoundary
+entity function CreateRingBoundary(LocationSettings location)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+    array<LocPair> spawns = location.spawns
+
+    vector ringCenter
+    foreach( spawn in spawns )
+    {
+        ringCenter += spawn.origin
+    }
+
+    ringCenter /= spawns.len()
+
+    float ringRadius = 0
+
+    foreach( LocPair spawn in spawns )
+    {
+        if( Distance( spawn.origin, ringCenter ) > ringRadius )
+            ringRadius = Distance(spawn.origin, ringCenter)
+    }
+
+    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+
+    if ( file.selectedLocation.name == "Shipment By AyeZee" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Killhouse By AyeZee" )
+        ringRadius += 20000
+
+    if ( file.selectedLocation.name == "Nuketown By AyeZee" )
+        ringRadius += 20000
+
+    if ( file.selectedLocation.name == "Killyard" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Dustment by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Shoothouse by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Rust By DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Movement Gym" )
+        ringRadius = 99999
+
+    if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
+    	ringRadius = 99999
+
+	//We watch the ring fx with this entity in the threads
+	entity circle = CreateEntity( "prop_script" )
+	circle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
+	circle.kv.fadedist = -1
+	circle.kv.modelscale = ringRadius
+	circle.kv.renderamt = 255
+	circle.kv.rendercolor = FlowState_RingColor()
+	circle.kv.solid = 0
+	circle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	circle.SetOrigin( ringCenter )
+	circle.SetAngles( <0, 0, 0> )
+	circle.NotSolid()
+	circle.DisableHibernation()
+    circle.Minimap_SetObjectScale( min(ringRadius / SURVIVAL_MINIMAP_RING_SCALE, 1) )
+    circle.Minimap_SetAlignUpright( true )
+    circle.Minimap_SetZOrder( 2 )
+    circle.Minimap_SetClampToEdge( true )
+    circle.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
+	SetTargetName( circle, "hotZone" )
+	DispatchSpawn(circle)
+
+    foreach ( player in GetPlayerArray() )
+    {
+        circle.Minimap_AlwaysShow( 0, player )
+    }
+
+	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
+
+	//Audio thread for ring
+	if( GetCurrentPlaylistName() != "movement_gym" ){
+		foreach(sPlayer in GetPlayerArray())
+		thread AudioThread(circle, sPlayer, ringRadius)
+	}
+
+	//Damage thread for ring
+	thread RingDamage(circle, ringRadius)
+
+    return circle
+}
+
+void function AudioThread(entity circle, entity player, float radius)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	EndSignal(player, "OnDestroy")
+	entity audio
+	string soundToPlay = "Survival_Circle_Edge_Small"
+	OnThreadEnd(
+		function() : ( soundToPlay, audio)
+		{
+
+			if(IsValid(audio)) audio.Destroy()
+		}
+	)
+	audio = CreateScriptMover()
+	audio.SetOrigin( circle.GetOrigin() )
+	audio.SetAngles( <0, 0, 0> )
+	EmitSoundOnEntity( audio, soundToPlay )
+
+	while(IsValid(circle)){
+		if(!IsValid(player)) continue
+		vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
+		vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
+		circleEdgePos.z = player.EyePosition().z
+		if ( fabs( circleEdgePos.x ) < 61000 && fabs( circleEdgePos.y ) < 61000 && fabs( circleEdgePos.z ) < 61000 )
+		{
+			audio.SetOrigin( circleEdgePos )
+		}
+		WaitFrame()
+	}
+
+	StopSoundOnEntity(audio, soundToPlay)
+}
+
+void function RingDamage( entity circle, float currentRadius)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	WaitFrame()
+	const float DAMAGE_CHECK_STEP_TIME = 1.5
+
+	while ( IsValid(circle) )
+	{
+		foreach ( dummy in GetNPCArray() )
+		{
+			if ( dummy.IsPhaseShifted() )
+				continue
+
+			float playerDist = Distance2D( dummy.GetOrigin(), circle.GetOrigin() )
+			if ( playerDist > currentRadius )
+			{
+				dummy.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( dummy.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+			}
+		}
+
+		foreach ( player in GetPlayerArray_Alive() )
+		{
+			if ( player.IsPhaseShifted() )
+				continue
+
+			float playerDist = Distance2D( player.GetOrigin(), circle.GetOrigin() )
+			if ( playerDist > currentRadius )
+			{
+				Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+				player.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+			}
+		}
+		wait DAMAGE_CHECK_STEP_TIME
+	}
+}
+
+void function PlayerRestoreHP(entity player, float health, float shields)
+{
+	if(!IsValid(player)) return
+	if(!IsAlive( player)) return
+
+	player.SetHealth( health )
+	Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
+	if(shields == 0) return
+	else if(shields <= 50)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+	else if(shields <= 75)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
+	else if(shields <= 100)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+	player.SetShieldHealth( shields )
+}
+
+ // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
+// ██      ██    ██ ██      ████  ████ ██         ██    ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
+// ██      ██    ██ ███████ ██ ████ ██ █████      ██    ██ ██      ███████     █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████
+// ██      ██    ██      ██ ██  ██  ██ ██         ██    ██ ██           ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
+ // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
+
+void function CharSelect( entity player)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	if(!FlowState_PROPHUNT())
+	{
+		//Char select.
+		file.characters = clone GetAllCharacters()
+		if(FlowState_ForceAdminCharacter() && IsAdmin(player))
+		{
+			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
+			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		} else
+		{
+			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
+			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		}
+	}
+
+	//Dummies
+	if (FlowState_DummyOverride()) {
+		player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+		player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+		player.SetSkin(player.GetTeam())
+	}
+
+	//Data knife
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeOffhandWeapon( OFFHAND_MELEE )
+	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	if(FlowState_PROPHUNT())
+	{
+		file.characters = clone GetAllCharacters()
+		ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
+		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		TakeAllWeapons(player)
+	}
+}
+
+// ███████  ██████  ██████  ██████  ███████ ██████   ██████   █████  ██████  ██████
+// ██      ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+// ███████ ██      ██    ██ ██████  █████   ██████  ██    ██ ███████ ██████  ██   ██
+     // ██ ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+// ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
+
+void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	string sendMessage
+	for ( int textType = 0 ; textType < 2 ; textType++ )
+	{
+		sendMessage = textType == 0 ? text : subText
+
+		for ( int i = 0; i < sendMessage.len(); i++ )
+		{
+			Remote_CallFunction_NonReplay( player, "Dev_BuildClientMessage", textType, sendMessage[i] )
+		}
+	}
+	Remote_CallFunction_NonReplay( player, "Dev_PrintClientMessage", duration )
+	if ( sound != "" )
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
+}
+
+entity function PlayerWithMostDamage()
+//The challenger
+{
+
+    int bestDamage = 0
+	entity bestPlayer
+
+    foreach(player in GetPlayerArray()) {
+        if(!IsValid(player)) continue
+        if (int(player.p.playerDamageDealt) > bestDamage) {
+            bestDamage = int(player.p.playerDamageDealt)
+            bestPlayer = player
+
+        }
+    }
+    return bestPlayer
+}
+
+int function GetDamageOfPlayerWithMostDamage()
+//Challenger's score
+{
+    int bestDamage = 0
+    foreach(player in GetPlayerArray()) {
+        if(!IsValid(player)) continue
+        if (int(player.p.playerDamageDealt) > bestDamage) bestDamage = int(player.p.playerDamageDealt)
+    }
+    return bestDamage
+}
+
+string function PlayerWithMostDamageName()
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+{
+entity player = PlayerWithMostDamage()
+if(!IsValid(player)) return "-still nobody-"
+string damagechampion = player.GetPlayerName()
+return damagechampion
+}
+
+entity function GetBestPlayer()
+//The champion
+{
+    int bestScore = 0
+	entity bestPlayer
+
+    foreach(player in GetPlayerArray()) {
+        if(!IsValid(player)) continue
+        if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) {
+            bestScore = player.GetPlayerGameStat( PGS_KILLS )
+            bestPlayer = player
+
+        }
+    }
+    return bestPlayer
+}
+
+int function GetBestPlayerScore()
+//Champion's score
+{
+    int bestScore = 0
+    foreach(player in GetPlayerArray()) {
+        if(!IsValid(player)) continue
+        if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) bestScore = player.GetPlayerGameStat( PGS_KILLS )
+    }
+    return bestScore
+}
+
+string function GetBestPlayerName()
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+entity player = GetBestPlayer()
+if(!IsValid(player)) return "-still nobody-"
+string champion = player.GetPlayerName()
+return champion
+}
+
+float function getkd(int kills, int deaths)
+//By michae\l/#1125 & Retículo Endoplasmático#5955
+{
+float kd
+int floorkd
+if(deaths == 0) return kills.tofloat();
+kd = kills.tofloat() / deaths.tofloat()
+kd = kd*100
+floorkd = int(floor(kd+0.5))
+kd = (float(floorkd))/100
+return kd
+}
+
+string function ScoreboardFinal(bool fromConsole = false)
+//Este muestra el scoreboard completo
+//Thanks marumaru（vesslanG）#3285
+{
+	array<PlayerInfo> playersInfo = []
+	array<PlayerInfo> spectators = []
+
+	foreach(player in GetPlayerArray())
+	{
+		PlayerInfo p
+		p.name = player.GetPlayerName()
+		// p.team = player.GetTeam()
+		p.score = player.GetPlayerGameStat( PGS_KILLS )
+		p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
+		p.kd = getkd(p.score,p.deaths)
+		p.damage = int(player.p.playerDamageDealt)
+		// p.lastLatency = int(player.GetLatency()* 1000)
+
+		if (fromConsole && player.p.isSpectating && IsAlive(player))
+			spectators.append(p)
+		else
+			playersInfo.append(p)
+	}
+	playersInfo.sort(ComparePlayerInfo)
+	string msg = ""
+	for(int i = 0; i < min(6, playersInfo.len()); i++)
+	{
+		PlayerInfo p = playersInfo[i]
+		switch(i)
+		{
+			case 0:
+				 msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			case 1:
+				msg = msg + "2. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			case 2:
+				msg = msg + "3. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			default:
+				msg = msg + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+		}
+	}
+
+	if (fromConsole && spectators.len() > 0) {
+		msg += "\n\nSpectating Players:\n"
+		for(int i = 0; i < spectators.len(); i++)
+		{
+			PlayerInfo p = spectators[i]
+				msg += p.name + "\n"
+		}
+	}
+	return msg
+}
+
+
+string function ScoreboardFinalPROPHUNT(bool fromConsole = false)
+//Este muestra el scoreboard completo
+//Thanks marumaru（vesslanG）#3285
+{
+array<PlayerInfo> playersInfo = []
+array<PlayerInfo> spectators = []
+        foreach(player in GetPlayerArray())
+        {
+          PlayerInfo p
+          p.name = player.GetPlayerName()
+          p.team = player.GetTeam()
+					p.score = player.GetPlayerGameStat( PGS_KILLS )
+					p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
+					p.kd = getkd(p.score,p.deaths)
+					p.damage = int(player.p.playerDamageDealt)
+					p.lastLatency = int(player.GetLatency()* 1000)
+
+					if (fromConsole && player.p.isSpectating && IsAlive(player)) {spectators.append(p)}
+					else {playersInfo.append(p)}
+
+        }
+        playersInfo.sort(ComparePlayerInfo)
+		string msg = ""
+		for(int i = 0; i < playersInfo.len(); i++)
+	    {
+		    PlayerInfo p = playersInfo[i]
+            switch(i)
+            {
+                case 0:
+                     msg = msg + "    1. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+					break
+                case 1:
+                    msg = msg + "     2. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                    break
+                case 2:
+                    msg = msg + "     3. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                    break
+                default:
+					msg = msg + "     " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                    break
+            }
+        }
+
+		if (fromConsole && spectators.len() > 0) {
+			msg += "\n\n Players waiting for respawn:\n"
+			for(int i = 0; i < spectators.len(); i++)
+		  {
+			    PlayerInfo p = spectators[i]
+					msg += p.name + "\n"
+			}
+		}
+	return msg
+}
+
+string function LatencyBoard()
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+array<PlayerInfo> playersInfo = []
+        foreach(player in GetPlayerArray())
+        {
+            PlayerInfo p
+            p.name = player.GetPlayerName()
+			p.score = player.GetPlayerGameStat( PGS_KILLS )
+			p.lastLatency = int(player.GetLatency()* 1000) - 40
+            playersInfo.append(p)
+        }
+        playersInfo.sort(ComparePlayerInfo)
+		string msg = ""
+		for(int i = 0; i < playersInfo.len(); i++)
+	    {
+		    PlayerInfo p = playersInfo[i]
+            switch(i)
+            {
+                case 0:
+                     msg = msg + "1. " + p.name + ":   " + p.lastLatency  + "ms \n"
+					break
+                case 1:
+                    msg = msg + "2. " + p.name + ":   " + p.lastLatency  + "ms \n"
+                    break
+                case 2:
+                    msg = msg + "3. " + p.name + ":   " + p.lastLatency  + "ms \n"
+                    break
+                default:
+					msg = msg + p.name + ":   " + p.lastLatency + "ms \n"
+                    break
+            }
+        }
+		return msg
+}
+
+int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
+{
+	if(a.score < b.score) return 1;
+	else if(a.score > b.score) return -1;
+	return 0;
+}
+
+void function ResetAllPlayerStats()
+{
+    foreach(player in GetPlayerArray()) {
+        if(!IsValid(player)) continue
+        ResetPlayerStats(player)
+    }
+}
+
+void function ResetPlayerStats(entity player)
+{
+    player.SetPlayerGameStat( PGS_SCORE, 0 )
+    player.SetPlayerGameStat( PGS_DEATHS, 0)
+    player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
+    player.SetPlayerGameStat( PGS_KILLS, 0)
+    player.SetPlayerGameStat( PGS_PILOT_KILLS, 0)
+    player.SetPlayerGameStat( PGS_ASSISTS, 0)
+    player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
+    player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 0)
+    player.SetPlayerGameStat( PGS_ELIMINATED, 0)
+}
+
+void function PlayAnnounce( string sound )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, player.GetOrigin() + < 500, 500, 500 >, player, sound )
+		EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, player.GetOrigin() + < 1000, 500, 1000 >, player, sound )
+	}
+}
+
+//  ██████ ██      ██ ███████ ███    ██ ████████      ██████  ██████  ███    ███ ███    ███ ███    ███  █████  ███    ██ ██████  ███████
+// ██      ██      ██ ██      ████   ██    ██        ██      ██    ██ ████  ████ ████  ████ ████  ████ ██   ██ ████   ██ ██   ██ ██
+// ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████
+// ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
+//  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
+
+void function __InitAdmins()
+{
+	array<string> Split = split( GetCurrentPlaylistVarString("Admins", "" ) , " ")
+
+	foreach(string data in Split)
+	{
+		string username = strip(data)
+		if(username != " " && file.mAdmins.find(username) == -1)
+		file.mAdmins.append(username)
+	}
+}
+
+bool function ClientCommand_adminlogin(entity player, array < string > args) 
+{
+	if(!IsValid(player) || file.authkey == "" || args.len() != 1 || file.mAdmins.find(player.GetPlayerName()) == -1 || args[0] != file.authkey) return false
+
+	player.p.isAdmin = true
+	Message(player, "Log in successful")
+	return true
+}
+
+string function GetOwnerName()
+{
+	if(file.mAdmins.len() != 0)
+		return file.mAdmins[0]
+	else
+		return ""
+
+	unreachable
+}
+
+bool function IsAdmin( entity player )
+{
+	if(file.authkey == "") return false
+	
+	return player.p.isAdmin
+}
+
+bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
+{
+	//green highlight?
+	
+	return true
+}
+
+bool function ClientCommand_MyFFAData(entity player, array < string > args) 
+{
+	// if( Time() - player.p.lastTimeDataRequestUsed < 5 )
+	// {
+		// printt("Cooldown request: " + player.GetPlayerName())
+		// return false
+	// }
+	
+	// thread ShowPlayerKD(player, args[0])
+	
+	return true
+}
+
+void function ShowPlayerKD(entity player, string name)
+{
+	// if(!IsValid(player)) 
+		// return
+	
+	// player.p.lastTimeDataRequestUsed = Time()
+	
+	// array<int> killsAndDeaths
+	// int timeOut = int(Time()) + 3
+	// string RequestIdString = GetUnixTimestamp().tostring()
+
+	// FS_DataPost( format("%s;%s",RequestIdString, name) )
+
+	// while ( killsAndDeaths.len() == 0 && timeOut > Time() && IsValid(player) )
+	// {
+		// //Requesting...
+		// killsAndDeaths = FS_DataGet(RequestIdString) //Sdk function
+		// WaitFrame()
+	// }
+	
+	// if(killsAndDeaths.len() == 0) 
+	// {
+		// printt("ERROR")
+		// return
+	// }
+
+	// float kd = getkd(killsAndDeaths[0],killsAndDeaths[1])
+	// float cRatio = getcontrollerratio(killsAndDeaths[2],killsAndDeaths[0])
+	
+	// printt("kills: " + killsAndDeaths[0] + " | deaths: " + killsAndDeaths[1] + " | kd: " + kd + " | controller kills: " + killsAndDeaths[2] + " | controller ratio: " + cRatio)
+	
+	// string tempStr = format("Your kd is %s",kd.tostring())
+	// Message(player,tempStr,"",5)	
+}
+
+float function getcontrollerratio(int count, int kills)
+//By michae\l/#1125 & Retículo Endoplasmático#5955
+{
+	float cCount
+	int floorcCount
+	if(count == 0) return 0
+	cCount = count.tofloat()/kills.tofloat() 
+	cCount = cCount*100
+	floorcCount = int(floor(cCount+0.5))
+	cCount = (float(floorcCount))/100
+	return cCount
+}
+
+bool function ClientCommand_FlowstateKick(entity player, array < string > args) {
+    if ( !IsValid(player) || !IsAdmin(player) || args.len() == 0 ) return false
+
+    foreach(sPlayer in GetPlayerArray()) {
+        if (sPlayer.GetPlayerName() == args[0]) {
+            Warning("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
+            ClientCommand( sPlayer, "disconnect" )
+            return true
+        }
+    }
+    return false
+}
+
+bool function ClientCommand_ControllerReport(entity player, array < string > args) 
+{
+    if ( !IsValid(player) || args.len() == 0 ) 
+		return false
+
+	switch(args[0])
+	{
+		case "false":
+			player.p.AmIController = false
+			break
+		case "true":
+			player.p.AmIController = true
+			break
+	}
+    return true
+}
+
+bool function ClientCommand_ControllerSummary(entity player, array < string > args) 
+{
+    if ( !IsValid(player) || args.len() == 0 ) 
+		return false
+	
+	int controllers = 0
+	string msg = ""
+	
+	foreach(sPlayer in GetPlayerArray())
+		if(sPlayer.p.AmIController)
+		{
+			controllers++
+			msg += sPlayer.GetPlayerName() + "\n"
+		}
+		
+	Message(player, "CONTROLLER SUMMARY", "There are " + controllers + " controller players connected. \n" + msg)
+	
+    return true
+}
+
+bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
+{
+	if( !IsValid(player) )
+		return false
+	
+	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		return false
+	
+    if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers || file.tdmState == eTDMState.NEXT_ROUND_NOW || !player.p.isSpectating && !IsAlive( player ) )
+        return false
+
+	if( Time() - player.p.lastTimeSpectateUsed < 3 )
+	{
+		Message( player, "An error has occured", "It is in cool down. Please try again later." )
+		return false
+	}
+	
+    array<entity> enemiesArray = GetPlayerArray_Alive()
+	enemiesArray.fastremovebyvalue( player )
+    if ( enemiesArray.len() > 0 )
+    {
+        entity specTarget = enemiesArray.getrandom()
+
+        if( !IsValid(specTarget) )
+        {
+            printf("error: try again")
+			Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
+            return false
+        }
+
+        if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 && player.p.isSpectating )
+        {
+			player.p.isSpectating = false
+			player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+	        player.SetSpecReplayDelay( 0 )
+			player.SetObserverTarget( null )
+            player.StopObserverMode()
+			player.p.lastTimeSpectateUsed = Time()
+			_HandleRespawn( player )
+        }
+        else if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) == 0 && IsValid(specTarget) )
+        {
+			try{
+				player.p.isSpectating = true
+				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray().len() )
+				player.SetObserverTarget( specTarget )
+				player.SetSpecReplayDelay( 5 )
+				player.StartObserverMode( OBS_MODE_IN_EYE )				
+				thread CheckForObservedTarget(player)
+				player.p.lastTimeSpectateUsed = Time()
+			} catch(e420){
+				Message( player, "An error has occured", "Unknown error occurred. Please try again later." )
+			}
+        }
+    }
+    else
+    {
+        printt("There is no one to spectate!")
+		Message( player, "An error has occured", "There are no players available to spectate. Please try again later." )
+    }
+    return true
+}
+
+string function helpMessage()
+{
+	return "\n\n           CONSOLE COMMANDS:\n\n " +
+	"1. 'kill_self': if you get stuck.\n" +
+	"2. 'scoreboard': displays scoreboard to user.\n" +
+	"3. 'latency': displays ping of all players to user.\n" +
+	"5. 'spectate': spectate enemies!\n" +
+	"6. 'controllersummary': see how many controller players are connected.\n" +
+	"7. 'commands': display this message again"
+}
+
+bool function ClientCommand_Help(entity player, array<string> args)
+{
+	if( !IsValid(player) )
+		return false
+	
+	if(FlowState_RandomGunsEverydie())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
+	else if (FlowState_Gungame())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
+
+	} else if (FlowState_PROPHUNT())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: PROPHUNT", helpMessagePROPHUNT(), 10)
+	} else if (FlowState_SURF())
+	{
+		Message(player, "Apex SURF", "", 5)
+	} else{
+		Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
+	}
+
+	return true
+}
+
+bool function ClientCommand_Say(entity player, array<string> args)
+{
+    if (!IsValid(player) || args.len() == 0) return false 
+	
+	string finalMsg = player.GetPlayerName() + " "
+	
+	foreach(arg in args)
+	{
+		if(arg == "say") continue
+		
+		finalMsg+=arg
+	}
+	
+	file.allChatLines.append(finalMsg)
+	
+	return true
+}
+
+bool function ClientCommand_ShowLatency(entity player, array<string> args)
+{
+	if( !IsValid(player) )
+		return false
+	
+    try{
+    	Message(player,"Latency board", LatencyBoard(), 8)
+    }catch(e) {}
+
+    return true
+}
+
+array<string> function GetWhiteListedWeapons()
+{
+	return file.blacklistedWeapons
+}
+
+array<string> function GetWhiteListedAbilities()
+{
+	return file.blacklistedAbilities
+}
+
+
+bool function ClientCommand_GiveWeapon(entity player, array<string> args)
+{
+	if( !IsValid(player) )
+		return false
+	
+    if ( FlowState_AdminTgive() && !IsAdmin(player) )
+	{
+		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
+		return false
+	}
+
+	if(args.len() < 2) return false
+
+    if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
+	{
+		Message(player, "WEAPON BLACKLISTED")
+		return false
+	}
+
+	if( file.blacklistedAbilities.len() && file.blacklistedAbilities.find(args[1]) != -1 )
+	{
+		Message(player, "ABILITY BLACKLISTED")
+		return false
+	}
+
+	entity weapon
+
+	try {
+		switch(args[0])
+		{
+			case "p":
+			case "primary":
+				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				if( IsValid( primary ) ){
+					player.TakeWeaponByEntNow( primary )
+					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
+				}
+			break
+			case "s":
+			case "secondary":
+				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+				if( IsValid( secondary ) ) {
+					player.TakeWeaponByEntNow( secondary )
+					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
+				}
+			break
+			case "t":
+			case "tactical":
+				entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+				if( IsValid( tactical ) ) {
+					float oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
+					player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+
+					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
+					entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+					newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
+				}
+			break
+			case "u":
+			case "ultimate":
+				entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+				if( IsValid( ultimate ) )
+				{
+					player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
+				}
+			break
+		}
+	} catch( e420 ) {
+            printt("Invalid weapon name for tgive command.")
+        }
+
+    if( args.len() > 2 )
+    {
+        try {
+            weapon.SetMods(args.slice(2, args.len()))
+        }
+        catch( e2 ) {
+            printt("Invalid mod.")
+        }
+    }
+    if( IsValid(weapon) && !weapon.IsWeaponOffhand() )
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+
+    return true
+}
+
+bool function ClientCommand_NextRound(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
+		return false
+	
+	if (args[0] == "now")
+	{
+	   file.tdmState = eTDMState.NEXT_ROUND_NOW ; file.mapIndexChanged = false
+	   return true
+	}
+
+	int mapIndex = int(args[0])
+	file.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < file.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, file.locationSettings.len() - 1))
+	file.mapIndexChanged = true
+
+	if(args.len() > 1){
+		if (args[1] == "now")
+		   file.tdmState = eTDMState.NEXT_ROUND_NOW
+	}
+
+	return true
+}
+bool function ClientCommand_adminnoclip( entity player, array<string> args )
+{
+	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) 
+		return false
+
+	if ( player.IsNoclipping() )
+		player.SetPhysics( MOVETYPE_WALK )
+	else
+		player.SetPhysics( MOVETYPE_NOCLIP )
+	return true
+}
+
+bool function ClientCommand_CircleNow(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAdmin( player)) 
+		return false
+
+	SummonPlayersInACircle(player)
+
+	return true
+}
+
+bool function ClientCommand_God(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAdmin(player) ) 
+		return false
+
+	player.MakeInvisible()
+	MakeInvincible(player)
+	HolsterAndDisableWeapons(player)
+
+	return true
+}
+
+
+bool function ClientCommand_UnGod(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAdmin(player) ) 
+		return false
+
+	player.MakeVisible()
+	ClearInvincible(player)
+	EnableOffhandWeapons( player )
+	DeployAndEnableWeapons(player)
+
+	return true
+}
+
+bool function ClientCommand_Scoreboard(entity player, array<string> args)
+{
+	if( !IsValid(player) ) 
+		return false
+
+	float ping = player.GetLatency() * 1000 - 40
+
+	Message(player,
+	"- CURRENT SCOREBOARD - ",
+	"\n               CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills.\n" +
+	"\n Name:    K  |   D   |   KD   |   Damage dealt\n" +
+	ScoreboardFinal(true) + "\n" +
+	"\nYour ping: " + ping.tointeger() + "ms.\n" +
+	"Hosted by: " + GetOwnerName()
+	, 4)
+
+	return true
+}
+
+bool function ClientCommand_ScoreboardPROPHUNT(entity player, array<string> args)
+{
+	if( !IsValid(player) ) 
+		return false
+	
+	float ping = player.GetLatency() * 1000 - 40
+
+	Message(player,
+	"- PROPHUNT SCOREBOARD - ",
+	"Name:    K  |   D   \n" +
+	ScoreboardFinalPROPHUNT(true) + "\n" +
+	"Your ping: " + ping.tointeger() + "ms. \n" +
+	"Hosted by: " + GetOwnerName()
+	, 5)
+
+	return true
+}
+
+array<entity> function shuffleArray(array<entity> arr)
+{
+    // O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+	int i; int j; entity tmp;
+
+	for (i = arr.len() - 1; i > 0; i--) {
+		j = RandomIntRangeInclusive(1, i)
+		tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp
+		}
+
+	return arr
+}
+
+bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
+		return false
+
+	int currentTeam = 2
+	int numTeams = int(args[0])
+	array<entity> allplayers = GetPlayerArray()
+	allplayers.randomize()
+	foreach (p in allplayers)
+	{
+		if (!IsValid(p)) continue
+		SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
+		currentTeam += 1
+		Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
+	}
+
+	return true
+}
+
+
+void function CreateAnimatedLegend(asset a, vector pos, vector ang , int solidtype = 0, float size = 1.0)
+{
+	entity Legend = CreatePropScript(a, pos, ang, solidtype)
+	Legend.kv.teamnumber = 99
+	Legend.kv.fadedist = 5000
+    Legend.kv.renderamt = 255
+	Legend.kv.rendermode = 3
+	Legend.kv.rendercolor = "255 255 255 255"
+	Legend.SetModelScale( size )
+
+	thread AnimationTiming(Legend, 8.0)
+}
+
+void function AnimationTiming( entity legend, float cycle )
+{
+	array<string> animationStrings = ["ACT_MP_MENU_LOBBY_CENTER_IDLE", "ACT_MP_MENU_READYUP_INTRO", "ACT_MP_MENU_LOBBY_SELECT_IDLE", "ACT_VICTORY_DANCE"]
+	while( IsValid(legend) )
+	{
+		legend.SetCycle( cycle )
+		legend.Anim_Play( animationStrings[RandomInt(animationStrings.len())] )
+		WaittillAnimDone(legend)
+	}
+}
+
+
+///Save TDM Current Weapons
+bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
+{	entity weapon1
+	entity weapon2
+	string optics1
+	string optics2
+	array<string> mods1 
+	array<string> mods2 
+	string weaponname1
+	string weaponname2
+	try
+	{
+		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		mods1 = GetWeaponMods( weapon1 )
+		mods2 = GetWeaponMods( weapon2 )
+		foreach (mod in mods1)
+			optics1 = mod + " " + optics1
+		foreach (mod in mods2)
+			optics2 = mod + " " + optics2
+
+		if(!IsValid(weapon1) || !IsValid(weapon2)) return false
+		weaponname1 = weapon1.GetWeaponClassName()+" " + optics1 + "; "
+		weaponname2 = weapon2.GetWeaponClassName()+" " + optics2
+	}
+	catch(error)
+	{}
+
+	if(weaponname1 == "" || weaponname2 == "") return false //dont save if player is dead
+	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
+	return true
+}
+
+//Limit mod for weapons in LoadCustomWeapon
+string function modChecker( string weaponMods )
+{
+	array<string> weaponMod = split(weaponMods , " ")
+	array<string> rifles = ["mp_weapon_energy_ar","mp_weapon_esaw","mp_weapon_rspn101","mp_weapon_vinson","mp_weapon_lmg","mp_weapon_g2","mp_weapon_hemlok"]
+	array<string> smgs = ["mp_weapon_r97","mp_weapon_volt_smg","mp_weapon_pdw","mp_weapon_car"]
+	if (weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("energy_mag_l3" == weaponMod[i] )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+		}
+	}
+
+	if ( rifles.contains(weaponMod[0]))//this weapon is rifle
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
+				weaponMod.remove(i)
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i] || "highcal_mag_l2" == weaponMod[i]  )//force player using highcal_mag_l1
+				weaponMod[i] = "highcal_mag_l1"
+			if ("energy_mag_l3" == weaponMod[i] || "energy_mag_l2" == weaponMod[i]  )//force player using energy_mag_l1
+				weaponMod[i] = "energy_mag_l1"
+		}
+	}
+
+	if ( smgs.contains(weaponMod[0]))//this weapon is smg
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
+				weaponMod.remove(i)
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i]   )//force player using highcal_mag_l2
+				weaponMod[i] = "highcal_mag_l2"
+			if ("energy_mag_l3" == weaponMod[i]   )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+		}
+	}
+
+	weaponMod.reverse()
+	string returnweapon
+	foreach (i in weaponMod) {
+		returnweapon = i+" "+returnweapon
+	}
+
+	return returnweapon
+}
+
+//Auto-load TDM Saved Weapons at Respawn
+void function LoadCustomWeapon(entity player)
+{
+	if(!IsValid(player)) return
+	if (player.GetPlayerName() in weaponlist)
+	{
+		// TakeAllWeapons(player)
+		array<string> weapons =  split(weaponlist[player.GetPlayerName()] , ";")
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		//check if weapon's mods is allowed by server
+		foreach(index,eachWeapons in weapons)
+		{
+            eachWeapons =modChecker(eachWeapons)
+			weapons[index]=eachWeapons
+		}
+
+		foreach (index,eachWeapon in weapons)
+		{
+			int slot
+			if(index == 0)
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+			}
+			else
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+			}
+
+			__GiveWeapon( player, weapons, slot, index )
+		}
+
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+
+		wait 0.3
+
+		if(!IsValid(player)) return
+
+		WpnAutoReload(player)
+		WpnPulloutOnRespawn(player, 0)
+	}
+}
+
+
+//Reset TDM Saved Weapons
+bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
+{	
+	if (!IsValid(player))
+		return false
+	
+	if (player.GetPlayerName() in weaponlist)
+	{
+		delete weaponlist[player.GetPlayerName()]
+	}
+	return true
+}
+
+void function LoadCustomSkill(entity player)
+{	
+	if (!IsValid(player)) 
+		return
+
+	if (player.GetPlayerName() in skilllist) //列表里存在该玩家数据
+	{	
+		array<string> splited = split(skilllist[player.GetPlayerName()] , ";")
+        	ClientCommand( player, "tgive t "+ splited[0] )
+        	ClientCommand( player, "tgive u "+ splited[1] )
+	}
+}
+
+bool function ClientCommand_Maki_SaveCurSkill(entity player, array<string> args)
+{
+	if( !IsValid(player) )
+		return false
+	
+	try
+	{
+		entity ultimate = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+		entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
+		string skillname = tactical.GetWeaponClassName() + ";"
+		string ultname = ultimate.GetWeaponClassName()
+		skilllist[player.GetPlayerName()] <- skillname + ultname
+	}
+	catch(error)
+	{}	
+	
+	return true
+} 
+bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
+{	
+	if ( !IsValid(player) ) 
+		return false
+	
+	if (player.GetPlayerName() in skilllist)
+	{
+		delete skilllist[player.GetPlayerName()]
+	}
+	return true
+}
+
+void function GivePlayerRandomCharacter(entity player)
+{
+	if(!IsValid(player)) 
+		return
+	
+	array<ItemFlavor> characters = GetAllCharacters()
+	int random_character_index = RandomIntRangeInclusive(0,characterslist.len()-1)
+	ItemFlavor random_character = characters[characterslist[random_character_index]]
+	CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
+	TakeAllWeapons(player)
+    GiveRandomPrimaryWeaponMetagame(player)
+	GiveRandomSecondaryWeaponMetagame(player)	
+	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+    GiveRandomTac(player)
+    GiveRandomUlt(player)
+}
+void function highlightKdMoreThan2(entity player)
+{	
+	return //disable for solo mode
+	if (getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) >= 2)
+	{
+		Highlight_SetEnemyHighlight(player, "crypto_camera_friendly")
+	}
+	else
+	{
+		Highlight_ClearEnemyHighlight( player )
+	}
+}
