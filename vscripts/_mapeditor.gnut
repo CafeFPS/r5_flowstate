@@ -223,7 +223,7 @@ array < entity > function MapEditor_SpawnDoor( vector org, vector ang, int type,
             door.SetOrigin( org + door.GetRightVector() * 60 )
             DispatchSpawn( door )
 
-            entity oppositeDoor = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang + < 0, 180, 0 >, gold )
+            entity oppositeDoor = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, < -ang.x, ang.y + 180, -ang.z >, gold )
             oppositeDoor.SetOrigin( org + oppositeDoor.GetRightVector() * 60 )
             oppositeDoor.LinkToEnt( door )
             DispatchSpawn( oppositeDoor )
