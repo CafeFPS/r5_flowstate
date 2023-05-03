@@ -99,7 +99,7 @@ global const FREELANCE                  = "freelance"
 global const CUSTOM_TDM                 = "flowstate_dm"
 global const CUSTOM_CTF                 = "custom_ctf"
 global const CUSTOM_AIMTRAINER			= "custom_aimtrainer"
-global const MAP_EDITOR					= "map_editor"
+global const MAP_EDITOR					= "map_editor_deprecated"
 
 global const FREELANCE_ENABLED          = false
 

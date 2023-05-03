@@ -273,7 +273,7 @@ void function SetupDefaultDevCommandsMP()
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
 	
-	if(GetCurrentPlaylistName() == "map_editor")
+	if(GetCurrentPlaylistName() == "map_editor_deprecated")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
 	
 	if(GetCurrentPlaylistName() == "flowstate_dm")

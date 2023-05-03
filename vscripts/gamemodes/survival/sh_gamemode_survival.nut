@@ -148,8 +148,13 @@ void function GamemodeSurvivalShared_Init()
 	RegisterSignal("GameStateChanged")
 	
 	#if SERVER || CLIENT
-		BleedoutShared_Init()
 		ShApexScreens_Init()
+		AddCallback_PlayerCanUseZipline( Sur_CanUseZipline )
+		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
+		
+		if( GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "flowstate_snd" ) return
+	
+		BleedoutShared_Init()
 		Sh_RespawnBeacon_Init()
 		Sh_Airdrops_Init()
 
@@ -157,15 +162,9 @@ void function GamemodeSurvivalShared_Init()
 		PrecacheModel( SURVIVAL_PLANE_MODEL )
 		PrecacheModel( SURVIVAL_SQUAD_SUMMARY_MODEL )
 
-		AddCallback_PlayerCanUseZipline( Sur_CanUseZipline )
 		MapZones_SharedInit()
 		ClientMusic_SharedInit()
-
-		
-
-		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 	#endif
-
 	#if SERVER
 	//printt("Setting Game State")
 	//SetGameState(eGameState.PickLoadout)

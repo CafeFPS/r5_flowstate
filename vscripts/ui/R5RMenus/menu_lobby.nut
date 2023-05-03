@@ -77,7 +77,7 @@ global table<string, string> playlisttoname = {
 	[ "custom_tdm_gungame" ] = "Flowstate Gungame (Beta)",
 	[ "custom_prophunt" ] = "Flowstate Prophunt (Beta)",
 	[ "custom_surf" ] = "Flowstate SURF",
-	[ "map_editor" ] = "Map Editor",
+	[ "map_editor_deprecated" ] = "Map Editor",
 	[ "dev_default" ] = "Dev Default"
 }
 

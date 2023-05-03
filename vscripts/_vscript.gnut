@@ -95,7 +95,7 @@ void function __DumpScope( int depth, var Table )
 	}
 }
 
-// mmmm i am going to dump several functions here because i do not know where they should go
+// grx stub functions
 
 GRXUserInfo function GRX_GetUserInfo( entity player )
 {

@@ -424,7 +424,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	// ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	// CharacterSkin_Apply( player, playerCharacterSkin )
 
-	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor")
+	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor_deprecated")
 		GiveLoadoutRelatedWeapons( player )
 
 	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
@@ -436,7 +436,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	UpdatePlayerCounts()
 	
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		thread (void function() : ( player )
 		{
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
@@ -627,7 +627,7 @@ void function OnClientConnected( entity player )
 
 			player.FreezeControlsOnServer()
 
-			if( GameRules_GetGameMode() == "map_editor")
+			if( GameRules_GetGameMode() == "map_editor_deprecated")
 				DecideRespawnPlayer( player )
 			
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled()

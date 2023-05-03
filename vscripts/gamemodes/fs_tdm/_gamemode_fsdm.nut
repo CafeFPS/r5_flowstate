@@ -1,17 +1,13 @@
-///////////////////////////////////////////////////////
-// ███████ ██       ██████  ██     ██     ███████ ████████  █████  ████████ ███████
-// ██      ██      ██    ██ ██     ██     ██         ██    ██   ██    ██    ██
-// █████   ██      ██    ██ ██  █  ██     ███████    ██    ███████    ██    █████
-// ██      ██      ██    ██ ██ ███ ██          ██    ██    ██   ██    ██    ██
-// ██      ███████  ██████   ███ ███      ███████    ██    ██   ██    ██    ███████
-///////////////////////////////////////////////////////
+// Flowstate DM
+// Fork of the custom_tdm gamemode made by sal#3261
+
 // Credits:
 // CaféDeColombiaFPS (Retículo Endoplasmático#5955) -- owner/main dev
-// michae\l/#1125 -- initial help
-// AyeZee#6969 -- tdm/ffa dropships and droppods
-// Zer0Bytes#4428 -- rewrite
+// AyeZee#6969 -- Ctf voting phase to work off & droppods
+// Zer0Bytes#4428 -- Weapons randomizer rewrite
+// makimakima#5561 -- TDM Saved Weapon List, 1v1 gamemode
+// michae\l/#1125 -- flowstate admin
 // everyone else -- advice
-// Makimaki -- TDM Saved Weapon List, 1v1 gamemode
 
 global function _CustomTDM_Init
 global function _RegisterLocation
@@ -38,9 +34,12 @@ global function getkd
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
 global function	ClientCommand_ShowLatency
+global function ClientCommand_Help
 global function WpnPulloutOnRespawn
 global function WpnAutoReload
 global function ReCheckGodMode
+global function GetBestPlayer
+global function SendScoreboardToClient
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -101,16 +100,16 @@ struct {
 	string authkey = ""
 } file
 
-struct PlayerInfo
+struct
 {
-	string name
-	int team
-	int score
-	int deaths
-	float kd
-	int damage
-	int lastLatency
-}
+    // Voting
+    array<entity> votedPlayers // array of players that have already voted (bad var name idc)
+    bool votingtime = false
+    bool votestied = false
+    array<int> mapVotes
+    array<int> mapIds
+    int mappicked = 0
+} FS_DM
 
 // ██████   █████  ███████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
 // ██   ██ ██   ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
@@ -142,9 +141,7 @@ void function _CustomTDM_Init()
     AddCallback_EntitiesDidLoad( __OnEntitiesDidLoad )
 
     AddCallback_OnClientConnected( void function(entity player) {
-        if(FlowState_PROPHUNT())
-            _OnPlayerConnectedPROPHUNT(player)
-        else if (FlowState_SURF())
+        if (FlowState_SURF())
             _OnPlayerConnectedSURF(player)
         else
 			thread _OnPlayerConnected(player)
@@ -155,17 +152,12 @@ void function _CustomTDM_Init()
     AddSpawnCallback( "prop_survival", DissolveItem )
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
-        if(FlowState_PROPHUNT())
-            thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
-        else if (FlowState_SURF())
+        if (FlowState_SURF())
             thread _OnPlayerDiedSURF(victim, attacker, damageInfo)
         else thread _OnPlayerDied(victim, attacker, damageInfo)
     })
 
-	if(FlowState_PROPHUNT()){
-		AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
-		AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
-	} else if (FlowState_SURF()){
+	if (FlowState_SURF()){
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
@@ -193,13 +185,21 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("say", ClientCommand_Say)
 	AddClientCommandCallback("adminlogin", ClientCommand_adminlogin)
-
+	// Used for sending votes from client to server
+    AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
+	
 	if(!FlowState_AdminTgive())
 	{
 		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
 		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
 		AddClientCommandCallback("saveskills", ClientCommand_Maki_SaveCurSkill)
 		AddClientCommandCallback("resetskills", ClientCommand_Maki_ResetSkills)
+	}
+	
+	if( GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) )
+	{
+		AddClientCommandCallback("startcameraman", ClientCommand_setspecplayer )
+		AddClientCommandCallback("becomepro", ClientCommand_BecomePro )
 	}
 	
 	AddClientCommandCallback("controllerstate", ClientCommand_ControllerReport)
@@ -221,9 +221,7 @@ void function _CustomTDM_Init()
 		file.blacklistedAbilities.append(GetCurrentPlaylistVarString("blacklisted_ability_" + i.tostring(), "~~none~~"))
 	}
 
-	if(FlowState_PROPHUNT()){
-		thread RunPROPHUNT()
-	} else if(FlowState_SURF()){
+	if(FlowState_SURF()){
 		thread RunSURF()
 	}else {
 		thread RunTDM()}
@@ -414,7 +412,7 @@ void function _OnPlayerConnected(entity player)
 
     if(!IsValid(player)) return
 
-	if(FlowState_ForceCharacter()){
+	if(FlowState_ForceCharacter() && !(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))){
 		player.SetPlayerNetBool( "hasLockedInCharacter", true)
 		
 		if(GetCurrentPlaylistVarBool("flowstateRandomCharacterOnSpawn", false))
@@ -423,7 +421,12 @@ void function _OnPlayerConnected(entity player)
 		if(GetCurrentPlaylistVarBool("flowstateForceCharacter", false))
 			CharSelect(player)
 	}
-
+	
+	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	{
+		AssignCharacter(player, characterslist.getrandom())
+	}
+	
 	if(GetMapName() == "mp_rr_aqueduct")
 	    if(IsValid(player)) {
 	    	CreatePanelText( player, "Flowstate", "", <3705.10547, -4487.96484, 470.03302>, <0, 190, 0>, false, 2 )
@@ -483,7 +486,7 @@ void function _OnPlayerConnected(entity player)
 
                     array<string> InValidMaps = [
 						"mp_rr_canyonlands_staging",
-						"Skill trainer By Colombia",
+						"Skill trainer By CafeFPS",
 						"Custom map by Biscutz",
 						"White Forest By Zer0Bytes",
 						"Brightwater By Zer0bytes",
@@ -514,14 +517,27 @@ void function _OnPlayerConnected(entity player)
 
 					// if(FlowState_Gungame())
 						// KillStreakAnnouncer(player, true)
+					if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+					{
+						SetTeam(player, TEAM_IMC)
+						BecomeHacker(player)
+						
+						thread function() : (player)
+						{
+							wait 12
+							if(!IsValid(player) || player.GetTeam() != TEAM_IMC) return
+							Message(player, "HACKERS VS PROS", "You're a Hacker")
+						}()
+					}
 				}
 				break
 			default:
 				break
 		}
 	}
-
-	thread __HighPingCheck( player )
+	
+	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+		thread __HighPingCheck( player )
 	
 	if( is1v1EnabledAndAllowed() )
 	{
@@ -1037,7 +1053,29 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	
+	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	{
+		TakeAllWeapons(player)
+		GiveRandomPrimaryWeaponMetagame(player)
+		GiveRandomSecondaryWeaponMetagame(player)	
+		// player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		// player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		
+		if( IsValid( tactical ) ) 
+			player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+		
+		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		
+		if( IsValid( ultimate ) ) 
+			player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+		
+		player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL, [])
+		
+	}
 
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
@@ -1055,7 +1093,8 @@ void function ReCheckGodMode(entity player)
 	player.MakeVisible()
 	player.ClearInvulnerable()
 	player.SetTakeDamageType( DAMAGE_YES )
-	Highlight_ClearEnemyHighlight( player )
+	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+		Highlight_ClearEnemyHighlight( player )
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -1082,7 +1121,8 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
 
 	player.SetTakeDamageType( DAMAGE_NO )
-	Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
+	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+		Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
 	player.SetInvulnerable()
 
 	float endTime = Time() + duration
@@ -1095,7 +1135,8 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	player.MakeVisible()
 	player.ClearInvulnerable()
 	player.SetTakeDamageType( DAMAGE_YES )
-	Highlight_ClearEnemyHighlight( player )
+	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+		Highlight_ClearEnemyHighlight( player )
 	
 	StatusEffect_StopAllOfType( player, eStatusEffect.adrenaline_visuals )
 	StatusEffect_StopAllOfType( player, eStatusEffect.speed_boost )
@@ -2005,7 +2046,7 @@ void function SimpleChampionUI()
 
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
-	file.selectedLocation = file.locationSettings[ choice ]
+	file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
 	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
@@ -2031,12 +2072,12 @@ void function SimpleChampionUI()
 	{
 		DestroyPlayerProps()
 		CreateFlowStateGroundMedKit( <10725, 5913,-4225>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
-	} else if( file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled() )
+	} else if( file.selectedLocation.name == "Skill trainer By CafeFPS" && FlowState_ExtrashieldsEnabled() )
 	{
 		DestroyPlayerProps()
 		CreateFlowStateGroundMedKit( <17247,31823,-310>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
 		thread SkillTrainerLoad()
-	} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
+	} else if(file.selectedLocation.name == "Skill trainer By CafeFPS" )
 	{
 		//printt("Flowstate DEBUG - creating props for Skill Trainer.")
 		DestroyPlayerProps()
@@ -2196,6 +2237,7 @@ void function SimpleChampionUI()
 		}
 	}
 	ResetAllPlayerStats()
+	ResetMapVotes()
 	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
@@ -2206,7 +2248,50 @@ void function SimpleChampionUI()
 	{
 		thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	}
-
+	
+	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	{
+		ResetAllPlayerStats()
+		int i
+		int maxHackers = 3
+		
+		array<entity> allplayers = GetPlayerArray()
+		allplayers.randomize()
+		
+		foreach (entity p in allplayers)
+		{
+			if (!IsValid(p)) continue
+			
+			Remote_CallFunction_NonReplay(p, "Minimap_EnableDraw_Internal")
+			
+			// if(i >= maxHackers)
+			// {
+				// SetTeam(p, TEAM_MILITIA)
+				// ClearHackerOrBecomePro(p)
+				
+				// thread function() : (p)
+				// {
+					// wait 12
+					// if(!IsValid(p)) return
+					// Message(p, "HACKERS VS PROS", "You're a Pro")
+				// }()			
+			// }
+			// else
+			// {
+				SetTeam(p, TEAM_IMC)
+				BecomeHacker(p)
+				
+				thread function() : (p)
+				{
+					wait 12
+					if(!IsValid(p)) return
+					Message(p, "HACKERS VS PROS", "You're a Hacker")
+				}()
+			// }
+			// i++
+		}
+	}
+	
 	if( GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ) )
 	{
 		WaitForever()
@@ -2240,6 +2325,21 @@ void function SimpleChampionUI()
 		
 		while( Time() <= endTime )
 		{
+			//printt("test")
+			if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(!IsValid(player)) continue
+					
+					if(player.GetPlayerGameStat( PGS_KILLS ) >= HACKERS_VS_PRO_MAX_KILLS )
+					{
+						SetTdmStateToNextRound()
+						break
+					}
+				}
+			}
+		
 			if( Time() == endTime - 900 )
 			{
 				foreach( player in GetPlayerArray() )
@@ -2345,11 +2445,14 @@ void function SimpleChampionUI()
 				PlayerRestoreHPFIESTA(player, 100)
 			} else
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-
+			
+			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
 		}
-
+		
+	thread SendScoreboardToClient()
+	
 	wait 1
 	
 	if(GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
@@ -2367,46 +2470,311 @@ void function SimpleChampionUI()
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) ) continue
-		
-		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		if( GetCurrentPlaylistName() == "movement_gym" ) {
-			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
-		} else {
-			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
-		}
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		player.SetThirdPersonShoulderModeOff()	
+		player.FreezeControlsOnServer()
 	}
-
-	wait 7
-
-	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
-	{
-		// foreach( player in GetPlayerArray() )
-			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
-
-		foreach( player in GetPlayerArray() )
-			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
-
-		wait 6.0
-
-		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
-			MovementGymSaveTimesToFile()
-		
-		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 	
-	}
+	int TeamWon = 69
+	
+	if(GetPlayerArray().len() == 1)
+		TeamWon = gp()[0].GetTeam() //DEBUG VALUE
+	
+	if(IsValid(GetBestPlayer()))
+		TeamWon = GetBestPlayer().GetTeam()
+	
+
+	// Only do voting for maps with multi locations
+	// if ( file.locationSettings.len() >= NUMBER_OF_MAP_SLOTS_FSDM )
+	// {
+
+		// for each player, open the vote menu and set it to the winning team screen
+		// foreach( player in GetPlayerArray() )
+		// {
+			// if( !IsValid( player ) )
+				// continue
+			
+			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
+			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_ChampionScreenHandle", true, TeamWon, skinIndexForChampion)
+			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.WinnerScreen, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+		// }
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
+			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
+		}		
+		
+		thread function() : ()
+		{
+			for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
+			{
+				while( true )
+				{
+					// Get a random location id from the available locations
+					int randomId = RandomIntRange(0, file.locationSettings.len())
+
+					// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
+					if( !FS_DM.mapIds.contains( randomId ) )
+					{
+						FS_DM.mapIds.append( randomId )
+						break
+					}
+				}
+			}
+		}()
+		
+		wait 7
+
+		// foreach( player in GetPlayerArray() )
+		// {
+			// if( !IsValid( player ) )
+				// continue
+			
+			// Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			// EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
+		// }
+		
+		wait 7
+	
+		// Set voting to be allowed
+		FS_DM.votingtime = true
+
+		// For each player, set voting screen and update maps that are picked for voting
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_DM.mapIds[0], FS_DM.mapIds[1], FS_DM.mapIds[2], FS_DM.mapIds[3])
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+		}
+
+		wait 16
+
+		FS_DM.votestied = false
+		bool anyVotes = false
+
+		// Make voting not allowed
+		FS_DM.votingtime = false
+
+		// See if there was any votes in the first place
+		foreach( int votes in FS_DM.mapVotes )
+		{
+			if( votes > 0 )
+			{
+				anyVotes = true
+				break
+			}
+		}
+
+		if ( anyVotes )
+		{
+			// store the highest vote count for any of the maps
+			int highestVoteCount = -1
+
+			// store the last map id of the map that has the highest vote count
+			int highestVoteId = -1
+
+			// store map ids of all the maps with the highest vote count
+			array<int> mapsWithHighestVoteCount
+
+
+			for(int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i)
+			{
+				int votes = FS_DM.mapVotes[i]
+				if( votes > highestVoteCount )
+				{
+					highestVoteCount = votes
+					highestVoteId = FS_DM.mapIds[i]
+
+					// we have a new highest, so clear the array
+					mapsWithHighestVoteCount.clear()
+					mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
+				}
+				else if( votes == highestVoteCount ) // if this map also has the highest vote count, add it to the array
+				{
+					mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
+				}
+			}
+
+			// if there are multiple maps with the highest vote count then it's a tie
+			if( mapsWithHighestVoteCount.len() > 1 )
+			{
+				FS_DM.votestied = true
+			}
+			else // else pick the map with the highest vote count
+			{
+				// Set the vote screen for each player to show the chosen location
+				foreach( player in GetPlayerArray() )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, highestVoteId, eFSDMScreen.NotUsed)
+				}
+
+				// Set the location to the location that won
+				FS_DM.mappicked = highestVoteId
+			}
+
+			if ( FS_DM.votestied )
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.TiedScreen, eFSDMScreen.NotUsed, 42069, eFSDMScreen.NotUsed)
+				}
+
+				mapsWithHighestVoteCount.randomize()
+				waitthread RandomizeTiedLocations(mapsWithHighestVoteCount)
+			}
+		}
+		else // No one voted so pick random map
+		{
+			// Pick a random location id from the aviable locations
+			FS_DM.mappicked = RandomIntRange(0, file.locationSettings.len() - 1)
+
+			// Set the vote screen for each player to show the chosen location
+			foreach( player in GetPlayerArray() )
+			{
+				if( !IsValid( player ) )
+					continue
+
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, FS_DM.mappicked, eFSDMScreen.NotUsed)
+			}
+		}
+
+		//wait for timing
+		wait 5
+
+		// Close the votemenu for each player
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			ScreenCoverTransition_Player(player, Time() + 1)
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+		}
+	wait 2
+	// }
+	
+    // Clear players the voted for next voting
+    FS_DM.votedPlayers.clear()
+
+    // Clear mapids for next voting
+    FS_DM.mapIds.clear()	
+	
+	// if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+	// {
+		// // foreach( player in GetPlayerArray() )
+			// // Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
+
+		// foreach( player in GetPlayerArray() )
+			// Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
+
+		// wait 6.0
+
+		// GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	// }
 
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) ) continue
 		
 		ClearInvincible( player )
-		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		player.SetThirdPersonShoulderModeOff()
+		player.UnfreezeControlsOnServer()
 	}
 
-	file.ringBoundary.Destroy()
-
 	file.currentRound++
+}
+
+// purpose: display the UI for randomization of tied maps at the end of voting
+void function RandomizeTiedLocations(array<int> maps)
+{
+    bool donerandomizing = false
+    int randomizeammount = RandomIntRange(50, 75)
+    int i = 0
+    int mapslength = maps.len()
+    int currentmapindex = 0
+    int selectedamp = 0
+
+    while (!donerandomizing)
+    {
+        // If currentmapindex is out of range set to 0
+        if (currentmapindex >= mapslength)
+            currentmapindex = 0
+
+        // Update Randomizer ui for each player
+        foreach( player in GetPlayerArray() )
+        {
+            if( !IsValid( player ) )
+                continue
+
+            Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.TiedScreen, 69, maps[currentmapindex], 0)
+        }
+
+        // stop randomizing once the randomize ammount is done
+        if (i >= randomizeammount)
+        {
+            donerandomizing = true
+            selectedamp = currentmapindex
+        }
+
+        i++
+        currentmapindex++
+
+        if (i >= randomizeammount - 15 && i < randomizeammount - 5) // slow down voting randomizer speed
+        {
+            wait 0.15
+        }
+        else if (i >= randomizeammount - 5) // slow down voting randomizer speed
+        {
+            wait 0.25
+        }
+        else // default voting randomizer speed
+        {
+            wait 0.05
+        }
+    }
+
+    // Show final selected map
+    foreach( player in GetPlayerArray() )
+    {
+        if( !IsValid( player ) )
+            continue
+
+        Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.TiedScreen, 69, maps[selectedamp], 1)
+    }
+
+    // Pause on selected map for a sec for visuals
+    wait 0.5
+
+    // Procede to final location picked screen
+    foreach( player in GetPlayerArray() )
+    {
+        if( !IsValid( player ) )
+            continue
+
+        Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, 69, maps[selectedamp], eFSDMScreen.NotUsed)
+    }
+
+    // Set selected location on server
+    FS_DM.mappicked = maps[selectedamp]
+}
+
+void function ResetMapVotes()
+{
+    FS_DM.mapVotes.clear()
+    FS_DM.mapVotes.resize( NUMBER_OF_MAP_SLOTS_FSDM )
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
@@ -2640,6 +3008,17 @@ void function CharSelect( entity player)
 	}
 }
 
+void function AssignCharacter( entity player, int index )
+{
+	ItemFlavor PersonajeEscogido = GetAllCharacters()[index]
+	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )		
+	
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+
+	TakeAllWeapons(player)
+}
 // ███████  ██████  ██████  ██████  ███████ ██████   ██████   █████  ██████  ██████
 // ██      ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
 // ███████ ██      ██    ██ ██████  █████   ██████  ██    ██ ███████ ██████  ██   ██
@@ -2750,6 +3129,35 @@ kd = kd*100
 floorkd = int(floor(kd+0.5))
 kd = (float(floorkd))/100
 return kd
+}
+
+void function SendScoreboardToClient()
+{
+	foreach(entity sPlayer in GetPlayerArray())
+	{
+		if(!IsValid(sPlayer)) continue
+		
+		Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_ClearScoreboardOnClient")
+		
+		thread function() : (sPlayer)
+		{
+			foreach(entity player in GetPlayerArray())
+			{
+				if(!IsValid(player)) continue
+				
+				PlayerInfo p
+				p.eHandle = player.GetEncodedEHandle()
+				p.score = player.GetPlayerGameStat( PGS_KILLS )
+				p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
+				p.kd = getkd(p.score,p.deaths)
+				p.damage = int(player.p.playerDamageDealt)
+				p.lastLatency = int(player.GetLatency()* 1000)
+				
+				Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_SendScoreboardToClient", p.eHandle, p.score, p.deaths, p.kd, p.damage, p.lastLatency)
+			}
+		}()
+	}
+	
 }
 
 string function ScoreboardFinal(bool fromConsole = false)
@@ -2899,13 +3307,6 @@ array<PlayerInfo> playersInfo = []
 		return msg
 }
 
-int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
-{
-	if(a.score < b.score) return 1;
-	else if(a.score > b.score) return -1;
-	return 0;
-}
-
 void function ResetAllPlayerStats()
 {
     foreach(player in GetPlayerArray()) {
@@ -2978,6 +3379,44 @@ bool function IsAdmin( entity player )
 	if(file.authkey == "") return false
 	
 	return player.p.isAdmin
+}
+
+bool function ClientCommand_VoteForMap(entity player, array<string> args)
+{
+	if(!IsValid(player))
+		return false
+		
+    // don't allow multiple votes
+    if ( FS_DM.votedPlayers.contains( player ) )
+        return false
+
+    // dont allow votes if its not voting time
+    if ( !FS_DM.votingtime )
+        return false
+
+    // get map id from args
+    int mapid = args[0].tointeger()
+
+    // reject map ids that are outside of the range
+    if ( mapid >= NUMBER_OF_MAP_SLOTS_FSDM || mapid < 0 )
+        return false
+
+    // add a vote for selected maps
+    FS_DM.mapVotes[mapid]++
+
+    // update current amount of votes for each map
+    foreach( p in GetPlayerArray() )
+    {
+        if( !IsValid( p ) )
+            continue
+
+        Remote_CallFunction_Replay(p, "ServerCallback_FSDM_UpdateMapVotesClient", FS_DM.mapVotes[0], FS_DM.mapVotes[1], FS_DM.mapVotes[2], FS_DM.mapVotes[3])
+    }
+
+    // append player to the list of players the voted so they cant vote again
+    FS_DM.votedPlayers.append(player)
+
+    return true
 }
 
 bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
@@ -3185,9 +3624,6 @@ bool function ClientCommand_Help(entity player, array<string> args)
 	{
 		Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
 
-	} else if (FlowState_PROPHUNT())
-	{
-		Message(player, "WELCOME TO FLOWSTATE: PROPHUNT", helpMessagePROPHUNT(), 10)
 	} else if (FlowState_SURF())
 	{
 		Message(player, "Apex SURF", "", 5)
@@ -3467,7 +3903,21 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 
 	return true
 }
-
+bool function ClientCommand_BecomePro(entity p, array<string> args)
+{
+	if(!IsValid(p)) return false
+	
+	SetTeam(p, TEAM_MILITIA)
+	ClearHackerOrBecomePro(p)
+	
+	thread function() : (p)
+	{
+		wait 1
+		if(!IsValid(p)) return
+		Message(p, "HACKERS VS PROS", "You're a Pro")
+	}()
+	return true
+}
 
 void function CreateAnimatedLegend(asset a, vector pos, vector ang , int solidtype = 0, float size = 1.0)
 {
@@ -3713,4 +4163,203 @@ void function highlightKdMoreThan2(entity player)
 	{
 		Highlight_ClearEnemyHighlight( player )
 	}
+}
+
+
+//Hackers vs pros
+
+void function BecomeHacker(entity player)
+{
+	if( player.GetTeam() != TEAM_IMC ) return
+	
+	// AddButtonPressedPlayerInputCallback( player, IN_USE, CheckForHoldInput_Thread )
+	
+	// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 0, 0)
+	
+	// entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+	
+	// if( IsValid( tactical ) ) 
+		// player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	
+	// entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+	
+	// if( IsValid( ultimate ) ) 
+		// player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+	
+	// player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL, [])
+	
+	Highlight_SetFriendlyHighlight( player, "infection_survivor_teammate" )
+	Highlight_ClearEnemyHighlight( player )
+	
+	player.ClearFirstDeployForAllWeapons()
+}
+
+void function ClearHackerOrBecomePro(entity player)
+{
+	// if( player.GetTeam() != TEAM_MILITIA ) return
+	
+	// RemoveButtonPressedPlayerInputCallback( player, IN_USE, CheckForHoldInput_Thread )
+	
+	// entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+	
+	// if( IsValid( tactical ) ) 
+		// player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	
+	// entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+	
+	// if( IsValid( ultimate ) ) 
+		// player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+	
+	// player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL, [])
+	
+	player.ClearFirstDeployForAllWeapons()
+	
+	thread function() : (player)
+	{
+		wait 1
+		if(!IsValid(player)) return
+		Highlight_SetFriendlyHighlight( player, "infection_survivor_teammate" )
+		Highlight_ClearFriendlyHighlight( player )
+		Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+	}()
+	
+	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+}
+
+void function CheckForHoldInput_Thread( entity player ) //, entity weapon )
+{
+	thread function () : (player)//, weapon)
+	{
+		player.EndSignal( "OnDeath" )
+		player.EndSignal( "OnDestroy" )
+
+		OnThreadEnd(
+			function() : ( player )//, weapon  )
+			{
+				player.p.enableAimbot = false
+
+				Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 0, 0)
+
+			}
+		)
+
+		while ( player.IsInputCommandHeld( IN_USE ) )
+		{
+			if(!player.p.enableAimbot)
+				Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 1, 0)
+			
+			player.p.enableAimbot = true
+			
+			WaitFrame()
+		}
+	}()
+}
+
+entity function GetNearestPlayer(entity player)
+{
+	entity returnEntity 
+	float dist = 2000
+	float tempdist 
+	
+	array<entity> enemies
+	
+	enemies.extend(GetPlayerArrayOfTeam_Alive(TEAM_MILITIA))
+	enemies.extend(GetNPCArray())
+	enemies.removebyvalue(player)
+	
+	foreach(target in enemies)
+	{
+		tempdist = Distance(target.GetOrigin(), player.GetOrigin())
+		if(tempdist < dist)
+		{
+			returnEntity = target
+			dist = tempdist
+		}	
+	}
+	
+	return returnEntity
+}
+
+void function AimBot(entity player)
+//Made by my Chinese friend Makimakima
+{
+	while(IsValid(player))
+	{
+		//printt("aimbot")
+		try
+		{
+			entity target = GetNearestPlayer(player)
+			if(!player.p.enableAimbot || !IsValid(target)) 
+			{
+				WaitFrame()
+				continue
+			}
+			vector targetOrigin = target.GetOrigin()
+			vector playerOrigin = player.GetOrigin()
+
+			float tempAngleY = atan((playerOrigin.y-targetOrigin.y)/(playerOrigin.x-targetOrigin.x))*180/PI // -90<x<90
+			float playerAnglesY = 0
+
+
+			//判断象限
+			//++1
+			if ((targetOrigin.x - playerOrigin.x) > 0 && (targetOrigin.y - playerOrigin.y) > 0 )
+			{
+				// print("0<x<90")
+				playerAnglesY = tempAngleY
+			}//第一象限
+				
+			//-+2
+			if ((targetOrigin.x - playerOrigin.x) < 0 && (targetOrigin.y - playerOrigin.y) > 0 )
+			{
+				// print("90<x<180")
+				playerAnglesY = 180 + tempAngleY 
+			}//第二象限
+				
+			//--3
+			if ((targetOrigin.x - playerOrigin.x) < 0 && (targetOrigin.y - playerOrigin.y) < 0 )
+			{
+				// print("-180<x<-90")
+				playerAnglesY = 180 + tempAngleY
+			}//第三象限
+				
+			//+-4
+			if ((targetOrigin.x - playerOrigin.x) > 0 && (targetOrigin.y - playerOrigin.y) < 0 )
+			{
+				// print("-90<x<0")
+				playerAnglesY = tempAngleY
+			}//第四象限
+			
+			float playerAnglesZ
+			float zAngle = fabs(targetOrigin.z - 10)  - fabs(playerOrigin.z)
+
+			float testv = sqrt(pow(targetOrigin.x - playerOrigin.x ,2)+pow(targetOrigin.y  - playerOrigin.y,2))
+			playerAnglesZ = atan(zAngle/testv)*180/PI //x轴角度
+			player.SetAbsAnglesSmooth(<playerAnglesZ,playerAnglesY,0>)
+		}
+		catch (error)
+		{}
+		WaitFrame()
+	}
+}
+
+bool function ClientCommand_setspecplayer( entity player, array<string> args )
+{
+    // array<string> allowedPlayers = split(GetCurrentPlaylistVarString("allowedCameraPlayers", ""), " ")
+
+    // if( !(allowedPlayers.contains(player.GetPlayerName())) )
+        // return false
+	
+	SetConVarFloat( "sv_noclipspeed", 3 )
+	SetConVarFloat( "sv_noclipspeed_fast", 20 )
+	SetConVarFloat( "sv_noclipspeed_slow", 1 )
+	
+	TakeAllWeapons( player )
+    player.MakeInvisible()
+    player.SetPhysics( MOVETYPE_NOCLIP )
+    SetTeam( player, TEAM_SPECTATOR )
+    
+	UpdatePlayerCounts()
+	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+    return true
 }

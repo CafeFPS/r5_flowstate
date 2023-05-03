@@ -23,6 +23,9 @@ global function Survival_SetCallback_Leviathan_ConsiderLookAtEnt
 global function Survival_Leviathan_ConsiderLookAtEnt
 global function CreateSurvivalDeathBoxForPlayer
 global function UpdateMatchSummaryPersistentVars
+global function EnemyDownedDialogue
+global function TakingFireDialogue
+global function GetAllDroppableItems
 
 int MAXBLOCKTIME = 2
 float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 70 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
@@ -40,7 +43,10 @@ void function GamemodeSurvival_Init()
 
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
-
+	
+	SetConVarFloat( "sv_usercmd_max_queued", 750 )
+	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 24 )
+	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)

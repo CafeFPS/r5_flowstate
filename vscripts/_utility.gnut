@@ -2375,14 +2375,14 @@ void function ScreenFadeToBlack( entity player, float fadeTime, float holdTime )
 {
 	Assert( IsValid( player ) )
 
-	ScreenFade( player, 0, 0, 1, 255, fadeTime, holdTime, FFADE_OUT | FFADE_PURGE )
+	ScreenFade( player, 0, 0, 0, 255, fadeTime, holdTime, FFADE_OUT | FFADE_PURGE )
 }
 
 void function ScreenFadeFromBlack( entity player, float fadeTime = 2.0, float holdTime = 2.0 )
 {
 	Assert( IsValid( player ) )
 
-	ScreenFade( player, 0, 1, 0, 255, fadeTime, holdTime, FFADE_IN | FFADE_PURGE )
+	ScreenFade( player, 0, 0, 0, 255, fadeTime, holdTime, FFADE_IN | FFADE_PURGE )
 }
 
 void function ScreenFadeToBlackForever( entity player, float fadeTime = 1.7 )
@@ -3768,7 +3768,11 @@ void function SetPlayerAnimViewEntity( entity player, entity model )
 
 void function RandomizeHead( entity model ) //Randomize head across all available heads
 {
-	var headIndex = model.FindBodyGroup( "head" )
+	var headIndex
+	if ( model.GetModelName() == "mdl/robots/spectre/imc_spectre.rmdl" )
+		return//headIndex = model.FindBodyGroup( "removableHead" )
+	else
+		headIndex = model.FindBodyGroup( "head" )
 	if ( headIndex == -1 )
 	{
 		//printt( "HeadIndex == -1, returning" )
@@ -4828,33 +4832,3 @@ array<entity> function ArrayEntSphere(vector origin, float radius) {
     }
     return entities
 }
-
-// array<entity> function GetAllEntitiesByClassDistance(string className, vector origin, float radius ) {
-// 	array<entity> entities
-//     entity ent
-// 	Entities_FindByClassnameWithin( null, className, origin, radius)
-// 	for ( ;; )
-//     {
-//         if ( ent == null )
-//             break
-// 		entities.append( ent )
-// 		printt(ent.GetTargetName())
-//         ent = Entities_FindByClassnameWithin( ent, className, origin, radius)
-//     }
-//     return entities
-// }
-
-// array<entity> function GetAllEntitiesByNameDistance(string name, vector origin, float radius ) {
-// 	array<entity> entities
-//     entity ent
-// 	Entities_FindByNameWithin( null, name, origin, radius)
-// 	for ( ;; )
-//     {
-//         if ( ent == null )
-//             break
-// 		entities.append( ent )
-// 		printt(ent.GetTargetName())
-//         ent = Entities_FindByNameWithin( ent, name, origin, radius)
-//     }
-//     return entities
-// }

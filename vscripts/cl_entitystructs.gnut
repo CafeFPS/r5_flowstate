@@ -165,6 +165,35 @@ global struct ClientPlayerStruct
 	
 	EditorMode& selectedEditorMode
 	EditorMode ornull lastEditorMode
+	int ziplineUsages = 0
+	float delayeddamage
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	
+	bool onetimetimer = false
+	float lasttime
+	//prophunt
+	asset PROPHUNT_LastModel
+	bool isAttackerProphunt = false
+	bool PROPHUNT_AreAnglesLocked = false
+	int PROPHUNT_ChangePropUsageLimit
+	int PROPHUNT_DecoysPropUsageLimit
+	int PROPHUNT_FlashbangPropUsageLimit
+	int lastWhistleTimer = 0
+	bool isAttackersAbilityEnabled = false
+	bool isRoundTimerEnabled = false
+	int savedAbilityTimer = 0
+	array<int> shadowFxHandles
+	int roundPlayerPoints
+	
+	//SND
+	bool playerIsPlantingBomb
+	int currentCoins
+	
+	//mokeys bubble
+	bool insideBubbleMokey = false
+	
+	string snd_knifecolor = "255, 255, 255"
 }
 
 
@@ -173,6 +202,8 @@ global struct ClientPlayerStruct
 global struct ClientAIStruct
 {
 	int gruntVoiceIndex = 0
+	int needles = 0
+	bool ongoingneedlesexplode = false
 	bool firsttime = true
 	int shieldTier
 }
@@ -198,6 +229,11 @@ global struct ClientWeaponStruct
 	vector PROTO_lastForwardAngle
 
 	bool useRapidHitbeep = false
+	
+	entity translocate_predictedInitialProjectile = null
+	entity translocate_predictedRedirectedProjectile = null
+	table ornull translocate_impactRumbleObj = null
+	bool   translocate_isADSForced = false
 }
 
 

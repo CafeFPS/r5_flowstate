@@ -193,7 +193,7 @@ void function GameModes_Init()
 	
 	gameMode = MAP_EDITOR
 	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "map_editor" )
+	GameMode_SetName( gameMode, "map_editor_deprecated" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )

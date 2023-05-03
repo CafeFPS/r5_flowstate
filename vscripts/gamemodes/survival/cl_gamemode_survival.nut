@@ -11,6 +11,7 @@ global function ServerCallback_SurvivalHint
 global function ServerCallback_PlayerBootsOnGround
 global function ServerCallback_ClearHints
 global function ServerCallback_MatchEndAnnouncement
+global function ServerCallback_DestroyEndAnnouncement
 global function ServerCallback_ShowWinningSquadSequence
 global function ServerCallback_AddWinningSquadData
 global function ServerCallback_PromptSayThanks
@@ -86,8 +87,12 @@ global function OverwriteWithCustomPlayerInfoTreatment
 global function SetCustomPlayerInfoCharacterIcon
 global function SetCustomPlayerInfoTreatment
 global function SetCustomPlayerInfoColor
-global function GetPlayerInfoColor
+
 global function ClearCustomPlayerInfoColor
+global function ClearCustomPlayerInfoTreatment
+global function ClearCustomPlayerInfoCharacterIcon
+
+global function GetPlayerInfoColor
 
 global function SetNextCircleDisplayCustomStarting
 global function SetNextCircleDisplayCustomClosing
@@ -102,6 +107,7 @@ global function Dev_AdjustVictorySequence
 
 global function GetCompassRui
 global function CircleAnnouncementsEnable
+global function SetDpadMenuHidden
 
 global struct NextCircleDisplayCustomData
 {
@@ -178,6 +184,7 @@ global struct SquadSummaryPlayerData
 	int survivalTime
 	int revivesGiven
 	int respawnsGiven
+	int prophuntModelIndex
 }
 
 global struct SquadSummaryData
@@ -662,7 +669,7 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	entity player = GetLocalViewPlayer()
+	entity player = GetLocalClientPlayer() //Changed to local client instead of local view to avoid bad player username? idk Colombia
 	
 	OnThreadEnd(
 		function() : ( player )
@@ -672,7 +679,7 @@ void function InitSurvivalHealthBar()
 		}
 	)
 	
-	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ))
+	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
 		WaitFrame()
 
 
@@ -709,9 +716,9 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if(GameRules_GetGameMode() == "custom_aimtrainer" )
+	if(GameRules_GetGameMode() != SURVIVAL )
 	{
-		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <53, 222, 47> / 255.0 ), 1.0 )
+		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )
 	}
 	
@@ -768,6 +775,17 @@ void function SetCustomPlayerInfoCharacterIcon( entity player, asset customIcon 
 		RuiSetImage( file.pilotRui, "playerIcon", file.customCharacterIcon[player] )
 }
 
+void function ClearCustomPlayerInfoCharacterIcon(entity player)
+{
+	if ( player in file.customCharacterIcon )
+	{
+		delete file.customCharacterIcon[player]
+		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset classIcon      = CharacterClass_GetGalleryPortrait( character )
+		RuiSetImage( file.pilotRui, "playerIcon", classIcon )	
+	}
+}
+
 void function SetCustomPlayerInfoTreatment( entity player, asset treatmentImage )
 {
 	if ( !(player in file.customPlayerInfoTreatment) )
@@ -775,6 +793,15 @@ void function SetCustomPlayerInfoTreatment( entity player, asset treatmentImage 
 	file.customPlayerInfoTreatment[player] = treatmentImage
 	if ( file.pilotRui != null )
 		RuiSetImage( file.pilotRui, "customTreatment", file.customPlayerInfoTreatment[player] )
+}
+
+void function ClearCustomPlayerInfoTreatment(entity player)
+{
+	if ( player in file.customPlayerInfoTreatment )
+	{
+		delete file.customPlayerInfoTreatment[player]
+		RuiSetImage( file.pilotRui, "customTreatment", $"" )
+	}
 }
 
 void function SetCustomPlayerInfoColor( entity player, vector characterColor )
@@ -1359,25 +1386,10 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 		}
 	}
 
-	#if(false)
-
-
-
-
-
-
-#endif
-
 	if ( player == GetLocalViewPlayer() )
 	{
 		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
 		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
-
-		#if(false)
-
-
-#endif
-
 		UpdateActiveLootPings()
 	}
 
@@ -3621,13 +3633,30 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 	DeathScreenCreateNonMenuBlackBars()
 	DeathScreenUpdate()
 	entity clientPlayer = GetLocalClientPlayer()
-	Assert( IsValid( clientPlayer ) )
 
-	//
-	if ( clientPlayer.GetTeam() == winningTeam )
-		ShowChampionVictoryScreen( winningTeam )
+	if(!IsValid(clientPlayer)) return
+	
+	ShowChampionVictoryScreen( winningTeam )
 }
 
+void function ServerCallback_DestroyEndAnnouncement()
+{
+	entity clientPlayer = GetLocalClientPlayer()
+	
+	if(!IsValid(clientPlayer)) return
+	
+	ForceDestroyBlackBarRui()
+	ForceDestroyChampionScreenRui()
+}
+
+void function ForceDestroyChampionScreenRui()
+{
+	if(file.victoryRui != null)
+	{
+		RuiDestroyIfAlive( file.victoryRui )
+		file.victoryRui = null
+	}
+}
 
 void function ShowChampionVictoryScreen( int winningTeam )
 {
@@ -3636,7 +3665,6 @@ void function ShowChampionVictoryScreen( int winningTeam )
 
 	entity clientPlayer = GetLocalClientPlayer()
 
-	//
 	HideGladiatorCardSidePane( true )
 	UpdateRespawnStatus( eRespawnStatus.NONE )
 
@@ -3649,7 +3677,6 @@ void function ShowChampionVictoryScreen( int winningTeam )
 	Chroma_VictoryScreen()
 }
 
-
 asset function GetChampionScreenRuiAsset()
 {
 	if ( file.customChampionScreenRuiAsset != $"" )
@@ -3658,20 +3685,16 @@ asset function GetChampionScreenRuiAsset()
 	return $"ui/champion_screen.rpak"
 }
 
-
 void function SetChampionScreenRuiAsset( asset ruiAsset )
 {
 	file.customChampionScreenRuiAsset = ruiAsset
 }
-
-
 
 void function ShowSquadSummary()
 {
 	entity player = GetLocalClientPlayer()
 	EndSignal( player, "OnDestroy" )
 }
-
 
 void function ServerCallback_AddWinningSquadData( int index, int eHandle, int kills, int damageDealt, int survivalTime, int revivesGiven, int respawnsGiven )
 {

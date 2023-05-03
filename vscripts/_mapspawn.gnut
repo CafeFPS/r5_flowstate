@@ -314,7 +314,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break
-		case "map_editor":
+		case "map_editor_deprecated":
 			PrecacheWeapon( $"mp_weapon_editor" )
 			if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
 				_CheckPoints_Init()
@@ -328,7 +328,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 			break
 	}
 	
-	if(GameRules_GetGameMode() == "map_editor" )
+	if(GameRules_GetGameMode() == "map_editor_deprecated" )
 		PutLoadedPropsIntoSaveArray() //needs to be called after the props were loaded
 	
 	PrecacheWeapon( $"mp_ability_cloak" )
