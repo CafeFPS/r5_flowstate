@@ -181,33 +181,33 @@ void function InitStatisticsUI( var newMenuArg )
 	var menu = GetMenu( "StatisticsUI" )
 	file.menu = menu
 	
-    AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, OnR5RSB_Show )
-	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnR5RSB_Open )
-	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnR5RSB_Close )	
-	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
+    // AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, OnR5RSB_Show )
+	// AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnR5RSB_Open )
+	// AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnR5RSB_Close )	
+	// AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
 	
-	AddEventHandlerToButton( menu, "Challenges", UIE_CLICK, ChallengesButtonFunct )
-	AddEventHandlerToButton( menu, "Settings", UIE_CLICK, SettingsButtonFunct )
+	// AddEventHandlerToButton( menu, "Challenges", UIE_CLICK, ChallengesButtonFunct )
+	// AddEventHandlerToButton( menu, "Settings", UIE_CLICK, SettingsButtonFunct )
 	
-	//Setup Page Nav Buttons
-	Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListRightArrow" ), UIE_CLICK, NextPage )
-	Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListLeftArrow" ), UIE_CLICK, PrevPage )
-	Hud_AddEventHandler( Hud_GetChild( file.menu, "PrintToConsole" ), UIE_CLICK, PrintToConsole )
+	// //Setup Page Nav Buttons
+	// Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListRightArrow" ), UIE_CLICK, NextPage )
+	// Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListLeftArrow" ), UIE_CLICK, PrevPage )
+	// Hud_AddEventHandler( Hud_GetChild( file.menu, "PrintToConsole" ), UIE_CLICK, PrintToConsole )
 	
-	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
-	ToolTipData gameMenuToolTip
-	gameMenuToolTip.descText = "Global Settings"
-	Hud_SetToolTipData( gameMenuButton, gameMenuToolTip )
-	HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
-	HudElem_SetRuiArg( gameMenuButton, "shortcutText", "Global Settings" )
-	Hud_AddEventHandler( gameMenuButton, UIE_CLICK, OpenGlobalSettings )
+	// var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
+	// ToolTipData gameMenuToolTip
+	// gameMenuToolTip.descText = "Global Settings"
+	// Hud_SetToolTipData( gameMenuButton, gameMenuToolTip )
+	// HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
+	// HudElem_SetRuiArg( gameMenuButton, "shortcutText", "Global Settings" )
+	// Hud_AddEventHandler( gameMenuButton, UIE_CLICK, OpenGlobalSettings )
 	
-	array<var> challengesRows = GetElementsByClassname( file.menu, "ChallengeBtn" )
-	foreach ( var elem in challengesRows ) 
-	{
-		RuiSetString( Hud_GetRui( elem ), "buttonText", "")
-		Hud_SetEnabled( elem, false )
-	}
+	// array<var> challengesRows = GetElementsByClassname( file.menu, "ChallengeBtn" )
+	// foreach ( var elem in challengesRows ) 
+	// {
+		// RuiSetString( Hud_GetRui( elem ), "buttonText", "")
+		// Hud_SetEnabled( elem, false )
+	// }
 }
 
 // void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon, float Accuracy, int dummiesKilled, int Damage, int totalshots, int criticalshots, int roundtime)

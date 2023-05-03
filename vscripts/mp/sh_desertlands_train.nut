@@ -229,15 +229,7 @@ void function DesertlandsTrain_Init()
 {
 	entity station = GetEntArrayByScriptName( "train_track_node_station" ).getrandom()
 
-	printl("        |////////|       |/////////|       |//////L")
-	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")
-	printl("------------------------------------------------------")
-	printl(" ")
-	printl("  - - - TRAIN SPAWNING AT: "+station.kv.script_noteworthy + " - - -")
-	printl(" ")
-	printl("        |////////|       |/////////|       |//////L")
-	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")
-	printl("------------------------------------------------------")
+	printl("TRAIN SPAWNING AT: " + station.kv.script_noteworthy + ".")
 
 	// Get all cars
 	array<entity> cars = [];

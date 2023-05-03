@@ -226,17 +226,17 @@ file.range_assets ["mdl/extras_1"] <- [$"mdl/error.rmdl",$"mdl/dev/empty_model.r
 file.range_assets ["mdl/extras_2"] <- [$"mdl/vehicles_r2/spacecraft/draconis/draconis_landed_hero.rmdl",$"mdl/metal_scraps/scrap_metal04.rmdl",$"mdl/robotics_r2/turret_plasma/plasma_turret_pc_1.rmdl",$"mdl/robotics_r2/turret_plasma/plasma_turret_pc_2.rmdl",$"mdl/robotics_r2/turret_plasma/plasma_turret_pc_3.rmdl",$"mdl/s2s/s2s_bridge_glass_shard.rmdl",$"mdl/robots/drone_air_attack/drone_attack_pc_4.rmdl",$"mdl/robots/drone_air_attack/drone_attack_pc_3.rmdl",$"mdl/robotics_r5/tick_loot/tick_loot_pcs_body_01.rmdl",$"mdl/robotics_r5/tick_loot/tick_loot_pcs_panel_01.rmdl",$"mdl/robotics_r5/tick_loot/tick_loot_pcs_leg_01.rmdl",$"mdl/rubble/concrete_chunk_med_01_body.rmdl",$"mdl/backwater/rock_set_backwater_02.rmdl"]
 
 foreach(string key, array<asset> assets in file.we_assets) {
-  printl("WE SECTION: " + key)
+  //printl("WE SECTION: " + key)
   file.we_sections.append(key)
 }
 
 foreach(string key, array<asset> assets in file.kc_assets) {
-  printl("KC SECTION: " + key)
+  //printl("KC SECTION: " + key)
   file.kc_sections.append(key)
 }
 
 foreach(string key, array<asset> assets in file.range_assets) {
-  printl("FIRING RANGE SECTION: " + key)
+  //printl("FIRING RANGE SECTION: " + key)
   file.range_sections.append(key)
 }
 

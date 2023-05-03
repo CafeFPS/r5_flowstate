@@ -1060,93 +1060,14 @@ enum eAttach
 
 void function LoadDiamond()
 {
-    printl( " " )
 	printl( "----------------------------" )
     printl( " " )
-
-    // Draw a diamond of a random size and phase (of the moon) so it is easy to separate sections of logs.
-    int random_spread = RandomIntRange( 4, 7 )
-    float random_fullness = RandomFloat( 2.0 )
-    bool functionref( int, int ) compare_func
-    string msg
-
-    if ( RandomFloat( 1.0 ) > 0.5 )
-    {
-	    compare_func = bool function( int a, int b )
-	    {
-		    return a <= b
-	    }
-    }
-    else
-    {
-	    compare_func = bool function( int a, int b )
-	    {
-		    return a >= b
-	    }
-    }
-
-    for ( int i = 0; i <= random_spread - 2; i++ )
-    {
-	    msg = ""
-
-	    for ( int p = 0; p <= random_spread - i; p++ )
-	    {
-		    msg = msg + " "
-	    }
-
-	    for ( int p = 0; p <= i * 2; p++ )
-	    {
-		    if ( p == i * 2 || p == 0 )
-		    {
-			    msg = msg + "*"
-		    }
-		    else
-		    {
-			    int an_int = int( i * random_fullness )
-
-			    if ( compare_func( p, an_int ) )
-				    msg = msg + "*"
-			    else
-				    msg = msg + " "
-		    }
-	    }
-
-	    printl( msg )
-    }
-
-    for ( int i = random_spread - 1; i >= 0; i-- )
-    {
-	    msg = ""
-
-	    for ( int p = 0; p <= random_spread - i; p++ )
-	    {
-		    msg = msg + " "
-	    }
-
-
-	    for ( int p = 0; p <= i * 2; p++ )
-	    {
-		    if ( p == i * 2 || p == 0 )
-		    {
-			    msg = msg + "*"
-		    }
-		    else
-		    {
-			    if ( compare_func( p, int( i * random_fullness ) ) )
-			    {
-				    msg = msg + "*"
-			    }
-			    else
-			    {
-				    msg = msg + " "
-			    }
-		    }
-	    }
-
-	    printl( msg )
-    }
-
-    printl( " " )
+    printl( "____ _    ____ _ _ _ ____ ___ ____ ___ ____")
+    printl( "|___ |    |  | | | | [__   |  |__|  |  |___")
+    printl( "|    |___ |__| |_|_| ___]  |  |  |  |  |___")
+	printl( " " )
+    printl( FLOWSTATE_VERSION + " - Mantained by @CafeFPS and collaborators" )
+	printl( " " )
 	printl( "----------------------------" )
     printl( " " )
 }

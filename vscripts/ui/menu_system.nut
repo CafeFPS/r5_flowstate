@@ -35,6 +35,8 @@ struct
 	table<var, ButtonData > endmatchButtonData
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
+	table<var, ButtonData > hubButtonData
+	table<var, ButtonData > invisButtonData
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
 	InputDef& qaFooter
@@ -134,6 +136,8 @@ void function InitSystemPanel( var panel )
 	file.ExitChallengeButtonData[ panel ] <- clone data
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
+	file.hubButtonData[ panel ] <- clone data
+	file.invisButtonData[ panel ] <- clone data
 	file.TDM_ChangeWeapons[ panel ] <- clone data
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
@@ -380,6 +384,16 @@ void function ShowScoreboard_System()
 void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
+}
+
+void function RunHub()
+{
+	ClientCommand( "hub" )
+}
+
+void function RunInvis()
+{
+	ClientCommand( "invis" )
 }
 
 #if CONSOLE_PROG

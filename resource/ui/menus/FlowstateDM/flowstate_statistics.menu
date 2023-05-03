@@ -1,0 +1,2676 @@
+scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/invisible.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+		}	
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%50//%70
+			xpos                    0//%15
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.9
+            }
+		}
+
+		Title
+		{
+			ControlName				Label
+			xpos                    -30
+			ypos					-30
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				60
+			labelText				"FLOWSTATE AIM TRAINER"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"191 13 13 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+		
+		Line
+		{
+			ControlName				ImagePanel
+			wide			660
+			tall            2
+			fillColor		"52 255 41 200"
+			drawColor		"52 255 41 200"
+			visible					0
+			ypos					0
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		Background
+		{
+			ControlName				RuiPanel
+			wide					%50
+			tall					85
+			xpos					0
+			visible					1
+			enabled					1
+			proportionalToParent    1
+			rui 					"ui/tabs_background.rpak"
+			
+			pin_to_sibling				Line
+		}
+
+		Challenges
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"%-1.5"
+			"ypos"						"0"
+			"scriptID"					"0"
+			"ypos" "-1"
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "CHALLENGES"
+			}
+
+			"pin_to_sibling"			"Line"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		History
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"205"
+			"scriptID"					"0"
+			"ypos" "0"
+			ruiArgs
+			{
+				isSelected 1
+				buttonText "HISTORY"
+			}
+
+			"pin_to_sibling"			"Challenges"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		Settings
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"205"
+			"scriptID"					"0"
+			"ypos" "0"
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "SETTINGS"
+			}
+
+			"pin_to_sibling"			"History"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		Logo
+        {
+            ControlName					RuiPanel
+			InheritProperties       	Logo
+			ypos -1
+			xpos -50
+			wide 110
+			tall 132
+            pin_to_sibling				Line
+            pin_corner_to_sibling		TOP_LEFT
+            pin_to_sibling_corner		TOP_LEFT
+        }	
+
+		MadeBy
+		{
+			ControlName				Label
+			xpos                    -40
+			ypos					-60
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"v1.25 | Made by @CafeFPS"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+				
+        GameMenuButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            zpos                    5
+			ypos					70
+            pin_to_sibling			MadeBy
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+        }
+		
+		MadeBy2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					20
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"Powered by R5Reloaded - ©Respawn Entertainment"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			MadeBy
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+
+		"ServerBrowserBG"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-60"
+			"ypos"					"120"
+			"tall"					"50"
+			"wide" 					"830"
+			"fillColor"				"34 34 34 200"
+			"drawColor"				"30 30 30 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"Background"
+			"pin_corner_to_sibling"	"BOTTOM_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"ServersBG"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"830"
+			"fillColor"				"30 30 30 120"
+			"drawColor"				"30 30 30 120"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"0"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"ServerBrowserBGBottom"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"750"
+			"tall"					"70"
+			"wide" 					"830"
+			"fillColor"				"30 30 30 200"
+			"drawColor"				"30 30 30 200"
+			"wrap"					"1"
+			"visible"				"0"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP"
+			"pin_to_sibling_corner"	"BOTTOM"
+		}
+		
+		"BtnServerListRightArrow"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"100"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText ">>>"
+			}
+
+			"pin_to_sibling"		"Pages"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"RIGHT"
+		}
+
+		"Pages"
+		{
+			"ControlName"			"Label"
+			"labelText"				"  Page: 1/1  "
+			"font"					"DefaultBold_41"
+			"allcaps"				"1"
+			"wide"					"120"
+			"zpos" 					"7"
+			"fontHeight"			"25"
+			"xpos"					"25"
+			"ypos"					"0"
+			"fgcolor_override"		"255 255 255 255"
+			"textalignment"			"center"
+			"auto_wide_tocontents"  "1"
+
+			"pin_to_sibling"		"ServerBrowserBGBottom"
+			"pin_corner_to_sibling"	"CENTER"
+			"pin_to_sibling_corner"	"CENTER"
+		}
+
+		"BtnServerListLeftArrow"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"100"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText "<<<"
+			}
+
+			"pin_to_sibling"		"Pages"
+			"pin_corner_to_sibling"	"RIGHT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"PrintToConsole"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"180"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText "Export to .txt"
+			}
+
+			"pin_to_sibling"		"ServerBrowserBGBottom"
+			"pin_corner_to_sibling"	"RIGHT"
+			"pin_to_sibling_corner"	"RIGHT"
+		}
+		
+		"NoChallengesLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"No Challenges Played"
+			"xpos"					"0"
+			"ypos"					"-15"
+			"auto_wide_tocontents"	"1"
+			"zpos" 					"10"
+			"fontHeight"			"40"
+
+			"pin_to_sibling"		"ServersBG"
+			"pin_corner_to_sibling"	"CENTER"
+			"pin_to_sibling_corner"	"CENTER"
+		}
+
+		"ChallengeNameLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Challenge Name"
+			"xpos"					"-50"
+			"ypos"					"0"
+			"auto_wide_tocontents"	"1"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"DummiesKilledLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Kills"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"ChallengeScoreLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Shots Hit"
+			"xpos"					"-400"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+
+		"ChallengeWeaponLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Weapon"
+			"xpos"					"-540"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+
+		"ChallengeAccuracyLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Accuracy"
+			"xpos"					"-685"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"NameLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"ScoreLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"ShotshitLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-395"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		"WeaponLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-540"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		"AccuracyLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-685"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"LeftLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"RightLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_RIGHT"
+			"pin_to_sibling_corner"	"BOTTOM_RIGHT"
+		}
+
+		"BottomLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"830"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServersBG"
+			"pin_corner_to_sibling"	"BOTTOM_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"TopLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"830"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServersBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"TOP_LEFT"
+		}
+
+		"ServerButton0"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"0"
+			
+
+			"pin_to_sibling"			"ServerBrowserBG"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton1"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"1"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton2"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"2"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton3"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"3"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton4"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"4"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton5"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"5"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton6"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"6"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton7"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"7"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton8"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"8"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton9"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"9"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton10"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"10"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton11"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"11"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton12"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"12"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton13"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"13"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton14"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"14"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton15"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"15"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton16"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"16"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton17"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"17"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ServerButton18"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ChallengeBtn"
+			"wide"						"700"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"18"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"ChallengeName0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeName18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-210"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+		
+		"Score0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Score18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeWeapon18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-560"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"27"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeAccuracy18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-700"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+	}
+}

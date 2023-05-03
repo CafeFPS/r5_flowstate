@@ -130,7 +130,7 @@ void function ClientCodeCallback_MapSpawn()
 	SV_CL_Shared_Init()
 	
 	//for custom ui/textures
-	//RequestPakFile( "aimtrainer" )
+	RequestPakFile( "ui_flowstate" )
 }
 
 
