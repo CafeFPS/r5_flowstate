@@ -2,7 +2,7 @@ global function InitSystemMenu
 global function InitSystemPanelMain
 global function InitSystemPanel
 global function UpdateSystemPanel
-
+global function ToggleSetHunter
 global function OpenSystemMenu
 
 global function ShouldDisplayOptInOptions
@@ -31,12 +31,14 @@ struct
 	table<var, ButtonData > friendlyFireButtonData
 	table<var, ButtonData > thirdPersonButtonData
 	table<var, ButtonData > ExitChallengeButtonData
+	table<var, ButtonData > TDM_ChangeWeapons
 	table<var, ButtonData > endmatchButtonData
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
-	table<var, ButtonData > hubButtonData
-	table<var, ButtonData > invisButtonData
+	table<var, ButtonData > SetHunterButtonData
+	table<var, ButtonData > ToggleScoreboardFocus
 	InputDef& qaFooter
+	bool SETHUNTERALLOWED
 } file
 
 void function InitSystemMenu( var newMenuArg ) //
@@ -92,6 +94,16 @@ void function SignalExitChallenge()
 	RunClientScript("ExitChallengeClient")
 }
 
+void function SetHunterFunct()
+{
+	ClientCommand( "sethunter" )
+}
+
+void function OpenWeaponSelector()
+{
+	RunClientScript("OpenTDMWeaponSelectorUI")
+}
+
 void function InitSystemPanel( var panel )
 {
 	var menu = Hud_GetParent( panel )
@@ -122,14 +134,21 @@ void function InitSystemPanel( var panel )
 	file.ExitChallengeButtonData[ panel ] <- clone data
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
-	file.hubButtonData[ panel ] <- clone data
-	file.invisButtonData[ panel ] <- clone data
+	file.TDM_ChangeWeapons[ panel ] <- clone data
+	file.SetHunterButtonData[ panel ] <- clone data
+	file.ToggleScoreboardFocus[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
+	
+	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
+	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
+		
+	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
+	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
 	file.leaveMatchButtonData[ panel ].activateFunc = LeaveDialog
@@ -170,6 +189,9 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
+	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
+	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -190,9 +212,9 @@ void function OnSystemMenu_Open()
 void function UpdateSystemPanel( var panel )
 {
 	//temp workaround, not the best place for this tbh
-	if(IsConnected() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	if( IsConnected() && GetCurrentPlaylistName() != "flowstate_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
-	else if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	else if( IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
@@ -206,7 +228,12 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		if( GetCurrentPlaylistName() == "flowstate_snd" && IsConnected() )
+		{
+			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
+		}
+		
+		if( GetCurrentPlaylistName() != "flowstate_aimtrainer" )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
@@ -237,6 +264,11 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
+
+		if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
+		{
+			SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
+		}
 	}
 	else
 	{
@@ -263,10 +295,15 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	if(IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+}
+
+void function ToggleSetHunter(bool enable)
+{
+	file.SETHUNTERALLOWED = enable
 }
 
 void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
@@ -285,7 +322,7 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer"){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -296,11 +333,12 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer"){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
 }
+
 
 void function OnButton_Activate( var button )
 {
@@ -334,21 +372,15 @@ void function RunSpectateCommand()
 	ClientCommand( "spectate" )
 }
 
+void function ShowScoreboard_System()
+{
+	ClientCommand( "scoreboard_toggle_focus" )
+}
+
 void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
 }
-void function RunHub()
-{
-	ClientCommand( "hub" )
-}
-
-
-void function RunInvis()
-{
-	ClientCommand( "invis" )
-}
-
 
 #if CONSOLE_PROG
 void function ReturnToMain_OnActivate( var button )

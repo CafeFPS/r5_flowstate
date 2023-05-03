@@ -2971,19 +2971,16 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 void function CharSelect( entity player)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
-	if(!FlowState_PROPHUNT())
+	//Char select.
+	file.characters = clone GetAllCharacters()
+	if(FlowState_ForceAdminCharacter() && IsAdmin(player))
 	{
-		//Char select.
-		file.characters = clone GetAllCharacters()
-		if(FlowState_ForceAdminCharacter() && IsAdmin(player))
-		{
-			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
-			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-		} else
-		{
-			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
-			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-		}
+		ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
+		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+	} else
+	{
+		ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
+		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
 	}
 
 	//Dummies
@@ -2999,13 +2996,6 @@ void function CharSelect( entity player)
 	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	if(FlowState_PROPHUNT())
-	{
-		file.characters = clone GetAllCharacters()
-		ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
-		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-		TakeAllWeapons(player)
-	}
 }
 
 void function AssignCharacter( entity player, int index )

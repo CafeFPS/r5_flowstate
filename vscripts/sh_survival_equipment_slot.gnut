@@ -357,6 +357,10 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_HIGHCAL
 				case "shotgun":
 					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SHOTGUN
+				case "sniper":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SNIPER
+				case "explosive":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_EXPLOSIVE
 				default:
 					Warning( format( "%s() - Unhandled ammo type: '%s'.", FUNC_NAME(), weaponData.ammoType ) )
 					return eCommsAction.BLANK
@@ -460,8 +464,10 @@ int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef )
 			return eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL
 		case "shotgun":
 			return eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN
-		case "boomjuice":
-			return eCommsAction.INVENTORY_NEED_AMMO_BOOMJUICE
+		case "sniper":
+			return eCommsAction.INVENTORY_NEED_AMMO_SNIPER
+		case "explosive":
+			return eCommsAction.INVENTORY_NEED_AMMO_EXPLOSIVE
 	}
 
 	Warning( "GetCommsActionForEquipmentSlot() - Unhandled ammo type '" + lootData.ammoType + "'" )
@@ -470,6 +476,34 @@ int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef )
 
 asset function GetEmptyEquipmentImage( string equipmentSlot )
 {
+	printt(equipmentSlot)
+	
+	if(GameRules_GetGameMode() == "flowstate_snd")
+	{
+		switch(equipmentSlot)
+		{
+			case "main_weapon0_barrel":
+			case "main_weapon1_barrel":
+				return $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
+
+			case "main_weapon0_grip":
+			case "main_weapon1_grip":
+				return $"rui/pilot_loadout/mods/empty_stock_tactical"
+
+			case "main_weapon0_mag":
+			case "main_weapon1_mag":
+				return $"rui/pilot_loadout/mods/empty_mag"
+
+			case "main_weapon0_sight":
+			case "main_weapon1_sight":
+				return $"rui/pilot_loadout/mods/empty_sight"
+
+			case "main_weapon0_hopup":
+			case "main_weapon1_hopup":
+				return $"rui/pilot_loadout/mods/empty_hopup_em_choke"
+		}
+	}
+
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
 	return es.emptyImage
 }

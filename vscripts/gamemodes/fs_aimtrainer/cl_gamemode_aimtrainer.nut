@@ -86,6 +86,9 @@ global function OpenFRChallengesSettingsWpnSelector
 global function CloseFRChallengesSettingsWpnSelector
 global function ExitChallengeClient
 global function WeaponSelectorClose
+global function ClientLocalizeAndShortenNumber_Float
+global function AimTrainer_QuickHint
+global function StartUpdatingArmorSwapLastTime
 
 global function SetWeaponSlot
 string DesiredSlot = "p"
@@ -97,6 +100,14 @@ struct{
 	int damagePossible
 	var dot
 	bool challengeActivatedLastValue = false
+	
+	//deathboxes
+	float lastTime
+	float bestTime
+	float averageTime
+	array<float> armorSwapTimes
+	
+	var activeQuickHint
 } ChallengesClientStruct
 
 global struct CameraLocationPair
@@ -123,11 +134,30 @@ void function Cl_ChallengesByColombia_Init()
 	
 	//main menu cameras thread end signal
 	RegisterSignal("ChallengeStartRemoveCameras")
-	
+	RegisterSignal("StopArmorSwapStopwatch")
 	//laser sight particle
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue") 
 
 	AddCallback_EntitiesDidLoad( AimTrainer_OnEntitiesDidLoad )
+}
+
+void function AimTrainer_QuickHint( string hintText, bool blueText = false, int duration = 99)
+{
+	if(ChallengesClientStruct.activeQuickHint != null)
+	{
+		RuiDestroyIfAlive( ChallengesClientStruct.activeQuickHint )
+		ChallengesClientStruct.activeQuickHint = null
+	}
+	ChallengesClientStruct.activeQuickHint = CreateFullscreenRui( $"ui/announcement_quick_right.rpak" )
+	
+	RuiSetGameTime( ChallengesClientStruct.activeQuickHint, "startTime", Time() )
+	RuiSetString( ChallengesClientStruct.activeQuickHint, "messageText", hintText )
+	RuiSetFloat( ChallengesClientStruct.activeQuickHint, "duration", duration.tofloat() )
+	
+	if(blueText)
+		RuiSetFloat3( ChallengesClientStruct.activeQuickHint, "eventColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
+	else
+		RuiSetFloat3( ChallengesClientStruct.activeQuickHint, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
 }
 
 void function SetWeaponSlot(int slot)
@@ -491,6 +521,109 @@ void function DisableLiveStatsUI()
 	Hud_SetVisible(HudElement( "ChallengesDamageValue" ), false)
 	Hud_SetVisible(HudElement( "ChallengesHeadshots" ), false)
 	Hud_SetVisible(HudElement( "ChallengesHeadshotsValue" ), false)	
+	
+	ToggleArmorSwapUI( false )
+}
+
+void function ToggleArmorSwapUI(bool toggle)
+{
+	Hud_SetVisible(HudElement( "ArmorSwapStatsFrame" ), toggle)
+	Hud_SetVisible(HudElement( "ArmorSwapStatsTitle" ), toggle)
+	Hud_SetVisible(HudElement( "LastTime" ), toggle)
+	Hud_SetVisible(HudElement( "LastTimeValue" ), toggle)
+	Hud_SetVisible(HudElement( "BestTime" ), toggle)
+	Hud_SetVisible(HudElement( "BestTimeValue" ), toggle)
+	Hud_SetVisible(HudElement( "AverageTime" ), toggle)
+	Hud_SetVisible(HudElement( "AverageTimeValue" ), toggle)
+}
+
+void function StartUpdatingArmorSwapLastTime() //create a new struct and function to calculate the elapsed times
+{
+	entity player = GetLocalClientPlayer()
+	
+	float startTime = Time()
+	
+	EndSignal(player, "ForceResultsEnd_SkipButton")
+	EndSignal(player, "ChallengeTimeOver")
+	EndSignal(player, "StopArmorSwapStopwatch")
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			ChallengesClientStruct.armorSwapTimes.append( ChallengesClientStruct.lastTime )
+			
+			ChallengesClientStruct.armorSwapTimes.sort()
+			
+			float bestTime = ChallengesClientStruct.armorSwapTimes[0]
+			
+			// extract hours
+			int hourSeconds = int(bestTime) % SECONDS_PER_DAY
+			int hours = int( floor( hourSeconds / SECONDS_PER_HOUR ) )
+
+			// extract minutes
+			int elapsedMinutes = hourSeconds % SECONDS_PER_HOUR
+			int minutes = int( floor( elapsedMinutes / SECONDS_PER_MINUTE ) )
+
+			// extract seconds
+			int elapsedSeconds = elapsedMinutes % SECONDS_PER_MINUTE
+			int seconds = int( ceil( elapsedSeconds ) )
+
+			// extract milliseconds
+			int milliseconds = int( ceil ( (bestTime - int(bestTime)) * 100 ) )
+
+			Hud_SetText( HudElement( "BestTimeValue" ), format( "%.2d:%.2d:%.2d", minutes, seconds, milliseconds ) )
+			
+			float averageTime
+			float sum
+			
+			foreach(value in ChallengesClientStruct.armorSwapTimes)
+				sum+=value
+				
+			averageTime = sum/ChallengesClientStruct.armorSwapTimes.len()
+			
+			// extract hours
+			hourSeconds = int( averageTime ) % SECONDS_PER_DAY
+			hours = int( floor( hourSeconds / SECONDS_PER_HOUR ) )
+
+			// extract minutes
+			elapsedMinutes = hourSeconds % SECONDS_PER_HOUR
+			minutes = int( floor( elapsedMinutes / SECONDS_PER_MINUTE ) )
+
+			// extract seconds
+			elapsedSeconds = elapsedMinutes % SECONDS_PER_MINUTE
+			seconds = int( ceil( elapsedSeconds ) )
+
+			// extract milliseconds
+			milliseconds = int( ceil ( (averageTime - int(averageTime)) * 100 ) )
+
+			Hud_SetText( HudElement( "AverageTimeValue" ), format( "%.2d:%.2d:%.2d", minutes, seconds, milliseconds ) )
+
+		}
+	)
+	
+	while(true)
+    {
+		ChallengesClientStruct.lastTime = Time() - startTime
+
+		// extract hours
+		int hourSeconds = int(ChallengesClientStruct.lastTime) % SECONDS_PER_DAY
+		int hours = int( floor( hourSeconds / SECONDS_PER_HOUR ) )
+
+		// extract minutes
+		int elapsedMinutes = hourSeconds % SECONDS_PER_HOUR
+		int minutes = int( floor( elapsedMinutes / SECONDS_PER_MINUTE ) )
+
+		// extract seconds
+		int elapsedSeconds = elapsedMinutes % SECONDS_PER_MINUTE
+		int seconds = int( ceil( elapsedSeconds ) )
+
+		// extract milliseconds
+		int milliseconds = int( ceil ( (ChallengesClientStruct.lastTime - int(ChallengesClientStruct.lastTime)) * 100 ) )
+
+		Hud_SetText( HudElement( "LastTimeValue" ), format( "%.2d:%.2d:%.2d", minutes, seconds, milliseconds ) )
+
+		WaitFrame()
+    }
 }
 
 void function ServerCallback_ResetLiveStatsUI()
@@ -503,6 +636,15 @@ void function ServerCallback_ResetLiveStatsUI()
 	ChallengesClientStruct.ShotsHits = 0
 	ChallengesClientStruct.damageDone = 0
 	ChallengesClientStruct.damagePossible = 0
+	
+	ChallengesClientStruct.lastTime = 0
+	ChallengesClientStruct.bestTime = 0
+	ChallengesClientStruct.averageTime = 0
+	ChallengesClientStruct.armorSwapTimes.clear()
+	
+	Hud_SetText( HudElement( "BestTimeValue" ), "00:00:00" )
+	Hud_SetText( HudElement( "AverageTimeValue" ), "00:00:00" )
+	Hud_SetText( HudElement( "LastTimeValue" ), "00:00:00" )
 }
 
 void function UpdateUIRespawnTimer()
@@ -814,9 +956,14 @@ void function StartChallenge8NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("NOT IMPLEMENTED, RESTART THE LEVEL")
-	thread CreateTimerRUIandSTATS()
+	thread CreateDescriptionRUI("Swap armor as fast as you can")
+	
+	//thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge8NewC")
+	
+	DisableLiveStatsUI()
+	
+	ToggleArmorSwapUI(true)
 }
 
 void function SkipButtonResultsClient()

@@ -130,7 +130,7 @@ void function ClientCodeCallback_MapSpawn()
 	SV_CL_Shared_Init()
 	
 	//for custom ui/textures
-	RequestPakFile( "aimtrainer" )
+	//RequestPakFile( "aimtrainer" )
 }
 
 
@@ -329,13 +329,9 @@ void function Init_ClientScripts( entity player )
 	if ( !IsLobby() )
 	{
 		Player_AddClient( player )
-
-		KillReplayHud_AddClient()
-
 		clGlobal.initScoreboardFunc()
 		MainHud_AddClient( player )
 		InitCrosshair()
-		//player.ClientCommand( "ClientStatus " + (IsPartyMember( player ) ? "1" : "0") )
 	}
 
 	// Added via AddCallback_OnClientScriptInit

@@ -466,11 +466,13 @@ function __PlayAnim( guy, animation_name, reference = null, optionalTag = null, 
 
     local origin = reference.GetOrigin()
     local angles = reference.GetAngles()
-
+	try{
     if ( guy.IsNPC() )
 	    guy.Anim_ScriptedPlayWithRefPoint( animation, origin, angles, blendTime )
     else
 	    guy.Anim_PlayWithRefPoint( animation, origin, angles, blendTime )
+	}
+	catch(e420){}
 
 }
 

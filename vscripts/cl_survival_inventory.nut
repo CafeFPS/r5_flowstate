@@ -384,6 +384,19 @@ void function GroundAction( int lootAction, string guid, bool isAltAction, bool 
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return
 
+	if( GameRules_GetGameMode() == "flowstate_aimtrainer" ) //&& 
+	{
+		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootEnt.GetSurvivalInt() )
+		
+		if(lootData.ref != "armor_pickup_lv4_all_fast" && lootData.ref != "armor_pickup_lv3" && lootData.ref != "armor_pickup_lv2" ) return
+		
+		RunUIScript( "SurvivalMenu_AckAction" )
+		GetLocalClientPlayer().ClientCommand( "PickupSurvivalItem " + guid + " " + extraFlags + " " + boxString )
+		RunUIScript( "TryCloseSurvivalInventory", null )
+		
+		return
+	}
+
 	switch ( lootAction )
 	{
 		case eLootAction.PICKUP:
@@ -603,6 +616,9 @@ void function SurvivalMenu_Internal( entity player, string uiScript, entity deat
 
 	if ( IsValid( deathBox ) )
 	{
+		if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+			thread StartUpdatingArmorSwapLastTime()
+		
 		thread TrackDistanceFromDeathBox( player, deathBox )
 	}
 }
@@ -632,8 +648,11 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 	deathBox.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
-		function() : ()
+		function() : (player)
 		{
+			if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+				Signal(player, "StopArmorSwapStopwatch")
+			
 			if ( Survival_IsGroundlistOpen() )
 			{
 				RunUIScript( "TryCloseSurvivalInventory", null )
@@ -641,7 +660,7 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 		}
 	)
 
-	wait 0.5
+	WaitFrame()
 
 	while ( Survival_IsGroundlistOpen() )
 	{
@@ -1864,6 +1883,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	array<GroundLootData> upgradeItems
 	array<GroundLootData> unusableItems
 	array<GroundLootData> relevantItems
+	array<GroundLootData> swapItem
 	table<string, GroundLootData> allItems
 
 	for ( int groundIndex = 0; groundIndex < loot.len(); groundIndex++ )
@@ -1890,9 +1910,26 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	bool sortByType    = GetCurrentPlaylistVarBool( "deathbox_sort_by_type", true )
 	bool showUpgrades  = !sortByType && GetCurrentPlaylistVarBool( "deathbox_show_upgrades", true )
 	bool splitUnusable = !sortByType && GetCurrentPlaylistVarBool( "deathbox_split_unusable", true )
-
+	
+	if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+	{
+		sortByType    = false
+		showUpgrades  = false
+		splitUnusable = false
+	}
+	
 	foreach ( gd in allItems )
 	{
+		if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+			{
+				if ( gd.lootData.ref == "armor_pickup_lv4_all_fast" || gd.lootData.ref == "armor_pickup_lv3" || gd.lootData.ref == "armor_pickup_lv2" || gd.lootData.ref == "armor_pickup_lv1")
+				{
+					gd.isRelevant = true
+					gd.isUpgrade = false
+					swapItem.append(gd)
+					continue
+				}
+			}
 		entity ent = GetEntFromGroundLootData( gd )
 
 		if ( showUpgrades && SURVIVAL_IsLootAnUpgrade( player, ent, gd.lootData, eLootContext.GROUND ) )
@@ -1942,7 +1979,13 @@ void function GroundItemsInit( entity player, array<entity> loot )
 		file.filteredGroundItems.append( CreateHeaderData( "#HEADER_USEABLE", $"" ) )
 	}
 	file.filteredGroundItems.extend( relevantItems )
-
+	
+	if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+	{
+		file.filteredGroundItems.append( CreateHeaderData( "SWAP HERE", $"rui/customemotes/amogusred" ) )
+		file.filteredGroundItems.extend( swapItem )
+	}
+	
 	if ( splitUnusable && unusableItems.len() > 0 )
 	{
 		file.filteredGroundItems.append( CreateHeaderData( "#HEADER_UNUSEABLE", $"rui/menu/common/button_unbuyable" ) )
@@ -2511,7 +2554,7 @@ void function UICallback_UpdatePlayerInfo( var elem )
 	entity player = GetLocalClientPlayer()
 
 	if ( GetBugReproNum() == 54268 )
-		SURVIVAL_PopulatePlayerInfoRui( player, rui )
+		thread SURVIVAL_PopulatePlayerInfoRui( player, rui )
 	else
 		thread TEMP_UpdatePlayerRui( rui, player )
 }

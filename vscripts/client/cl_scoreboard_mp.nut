@@ -86,7 +86,7 @@ void function ClScoreboardMp_Init()
 	clGlobal.hideScoreboardFunc = HideScoreboardMP
 	clGlobal.scoreboardInputFunc = ScoreboardInputMP
 
-	RegisterConCommandTriggeredCallback( "+scriptCommand4", ScoreboardToggleFocus )
+	// RegisterConCommandTriggeredCallback( "+scriptCommand4", ScoreboardToggleFocus )
 	RegisterConCommandTriggeredCallback( "scoreboard_toggle_focus", ScoreboardToggleFocus )
 }
 

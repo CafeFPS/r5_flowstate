@@ -1,4 +1,5 @@
 global function OnProjectileCollision_weapon_grenade_gravity
+global function OnProjectileCollision_grav_star_gun
 global function MpWeaponGrenadeGravity_Init
 
 const float MAX_WAIT_TIME = 6.0
@@ -12,9 +13,10 @@ const float PULL_VERT_VEL = 220
 const float PUSH_STRENGTH_MAX = 125.0
 const float EXPLOSION_DELAY = 0.1
 const float FX_END_CAP_TIME = 1.5
-//const float PULL_VERTICAL_KNOCKUP_MAX = 75.0
-//const float PULL_VERTICAL_KNOCKUP_MIN = 55.0
-//const float PUSH_STRENGTH_MIN = 100.0
+const float PULL_VERTICAL_KNOCKUP_MAX = 75.0
+const float PULL_VERTICAL_KNOCKUP_MIN = 55.0
+const float PUSH_STRENGTH_MIN = 100.0
+
 struct
 {
 	int cockpitFxHandle = -1
@@ -50,6 +52,21 @@ void function OnProjectileCollision_weapon_grenade_gravity( entity projectile, v
 		thread GravityGrenadeThink( projectile, hitEnt, normal, pos )
 	#endif
 }
+
+void function OnProjectileCollision_grav_star_gun( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	#if SERVER
+		// if ( projectile.IsMarkedForDeletion() )
+			// return
+	printt("test")
+	entity mover = CreateOwnedScriptMover( projectile )
+	mover.SetOwner(gp()[0])
+	
+	
+		thread GravityGrenadeThink( mover, hitEnt, normal, pos )
+	#endif
+}
+
 
 #if SERVER
 void function TriggerWait( entity trig, float maxtime )
@@ -92,7 +109,7 @@ bool function GravityGrenadeTriggerThink( entity gravityMine )
 
 void function GravityGrenadeThink( entity projectile, entity hitEnt, vector normal, vector pos )
 {
-	projectile.EndSignal( "OnDestroy" )
+	// projectile.EndSignal( "OnDestroy" )
 
 	WaitFrame()
 
@@ -112,13 +129,15 @@ void function GravityGrenadeThink( entity projectile, entity hitEnt, vector norm
 	projectile.SetParent( gravTrig )
 	gravTrig.RoundOriginAndAnglesToNearestNetworkValue()
 
+	wait POP_DELAY
+
 	entity trig = CreateEntity( "trigger_cylinder" )
 	trig.SetRadius( PULL_RANGE )
 	trig.SetAboveHeight( PULL_RANGE )
 	trig.SetBelowHeight( PULL_RANGE )
 	trig.SetOrigin( projectile.GetOrigin() )
-	SetGravityGrenadeTriggerFilters( projectile, trig )
-	trig.kv.triggerFilterPlayer = "none" // player effects
+	// SetGravityGrenadeTriggerFilters( projectile, trig )
+	// trig.kv.triggerFilterPlayer = "none" // player effects
 	trig.SetEnterCallback( OnGravGrenadeTrigEnter )
 	trig.SetLeaveCallback( OnGravGrenadeTrigLeave )
 
@@ -126,6 +145,7 @@ void function GravityGrenadeThink( entity projectile, entity hitEnt, vector norm
 	SetTeam( trig, projectile.GetTeam() )
 	DispatchSpawn( gravTrig )
 	DispatchSpawn( trig )
+	
 	gravTrig.SearchForNewTouchingEntity()
 	trig.SearchForNewTouchingEntity()
 
@@ -148,8 +168,6 @@ void function GravityGrenadeThink( entity projectile, entity hitEnt, vector norm
 		}
 	)
 
-	wait POP_DELAY
-
 	entity mover = CreateOwnedScriptMover( projectile )
 	projectile.SetParent( mover, "ref", true )
 	EmitSoundOnEntity( projectile, "weapon_gravitystar_preexplo" )
@@ -168,7 +186,7 @@ void function GravityGrenadeThink( entity projectile, entity hitEnt, vector norm
 
 	wait PULL_DELAY
 
-	projectile.SetGrenadeTimer( EXPLOSION_DELAY )
+	// projectile.SetGrenadeTimer( EXPLOSION_DELAY )
 	wait EXPLOSION_DELAY - 0.1 // ensure gravTrig is destroyed before detonation
 	thread DestroyAfterDelay( mover, 0.25 )
 }
@@ -177,37 +195,17 @@ void function OnGravGrenadeTrigEnter( entity trigger, entity ent )
 {
 	if ( ent.GetTeam() == trigger.GetTeam() ) // trigger filters handle this except in FFA
 		return
+	
 
-	if ( ent.IsNPC() && ( IsGrunt( ent ) || IsSpectre( ent ) || IsStalker( ent ) ) && IsAlive( ent ) && !ent.ContextAction_IsActive() && ent.IsInterruptable() )
+	if ( IsValid(ent) && ent.IsNPC() && IsAlive( ent ))
 	{
-		ent.ContextAction_SetBusy()
-		ent.Anim_ScriptedPlayActivityByName( "ACT_FALL", true, 0.2 )
-
-		if ( IsGrunt( ent ) )
-			EmitSoundOnEntity( ent, "diag_efforts_gravStruggle_gl_grunt_3p" )
-
-		thread EndNPCGravGrenadeAnim( ent )
+		thread PROTO_GravGrenadePull( ent, trigger )
 	}
 }
 
 void function OnGravGrenadeTrigLeave( entity trigger, entity ent )
 {
-	if ( IsValid( ent ) )
-	{
-		ent.Signal( "LeftGravityMine" )
-	}
-}
-
-void function EndNPCGravGrenadeAnim( entity ent )
-{
-	ent.EndSignal( "OnDestroy" )
-	ent.EndSignal( "OnAnimationInterrupted" )
-	ent.EndSignal( "OnAnimationDone" )
-
-	ent.WaitSignal( "LeftGravityMine", "OnDeath" )
-
-	ent.ContextAction_ClearBusy()
-	ent.Anim_Stop()
+	//
 }
 
 void function Proto_SetEnemyVelocity_Pull( entity enemy, vector projOrigin )
@@ -274,62 +272,52 @@ array<entity> function GetNearbyProjectilesForGravGrenade( entity gravGrenade )
 	return affectedProjectiles
 }
 
-//point_push version - hard to control motion with this.
-/*
-void function CreateGravitationalForce( float mag, vector org )
+void function PROTO_GravGrenadePull( entity enemy, entity trigger )
 {
-	entity point_push = CreateEntity( "point_push" )
-	point_push.kv.spawnflags = 31
-	point_push.kv.enabled = 1
-	point_push.kv.magnitude = mag
-	point_push.kv.radius = PULL_RANGE
-	point_push.SetOrigin( org )
-	DispatchSpawn( point_push )
-	point_push.Fire( "Enable" )
-	point_push.Fire( "Kill", "", 0.2 )
-}
-*/
-//Script mover version
-/*
-array<entity> nearbyEnemies = GetNearbyEnemiesForGravGrenade( projectile )
-foreach ( enemy in nearbyEnemies )
-{
-	if ( enemy.IsPlayer() )
-		EmitSoundOnEntityOnlyToPlayer( enemy, enemy, "explo_softball_impact_3p" )
-
-	if ( !enemy.IsTitan() )
-		thread PROTO_GravGrenadePull( enemy, projectile )
-}
-void function PROTO_GravGrenadePull( entity enemy, entity projectile )
-{
-	enemy.EndSignal( "OnDestroy" )
-
+	if(!enemy.IsNPC()) return
+	
+	enemy.EndSignal( "OnDeath" )
+	
+	if(!enemy.ContextAction_IsBusy())
+		enemy.ContextAction_SetBusy()
+	
 	entity mover = CreateOwnedScriptMover( enemy )
 	enemy.SetParent( mover, "ref", true )
+	
+	enemy.Anim_Stop()
+	enemy.Anim_ScriptedPlayActivityByName( "ACT_FALL", false, 0.2 )
+	
+	vector mins = enemy.GetBoundingMins()
+	vector maxs = enemy.GetBoundingMaxs()
+	vector org1 = enemy.GetOrigin()
+	vector org2 = trigger.GetOrigin()
+	vector additonalHeight = < 0, 0, GraphCapped( Distance( org1, org2 ), 0, PULL_RANGE, PULL_VERTICAL_KNOCKUP_MIN, PULL_VERTICAL_KNOCKUP_MAX ) >
+	vector newPosition = org1 + ( org2 - org1 ) / 2.0 + additonalHeight
+	TraceResults result = TraceHull( org1, newPosition, mins, maxs, [enemy,mover], TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
 
 	OnThreadEnd(
-	function() : ( enemy, mover )
+	function() : ( mins, maxs, org2, additonalHeight, enemy, mover )
 		{
+
 			if ( IsValid( enemy ) )
+			{
 				enemy.ClearParent()
+				if(enemy.ContextAction_IsBusy())
+					enemy.ContextAction_ClearBusy()
+				enemy.Anim_Stop()
+				try{enemy.Anim_PlayOnly("bloodhound_idle_rifle_firingrangedummy")}catch(e420){}
+			}
 
 			if ( IsValid( mover ) )
 				mover.Destroy()
 		}
 	)
-
-	if ( enemy.IsPlayer() )
-		enemy.StunMovementBegin( POP_DELAY )
-
-	vector mins = enemy.GetBoundingMins()
-	vector maxs = enemy.GetBoundingMaxs()
-	vector org1 = enemy.GetOrigin()
-	vector org2 = projectile.GetOrigin()
-	vector additonalHeight = < 0, 0, GraphCapped( Distance( org1, org2 ), 0, PULL_RANGE, PULL_VERTICAL_KNOCKUP_MIN, PULL_VERTICAL_KNOCKUP_MAX ) >
-	vector newPosition = org1 + ( org2 - org1 ) / 2.0 + additonalHeight
-	TraceResults result = TraceHull( org1, newPosition, mins, maxs, [enemy,mover], TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
+	
 	mover.NonPhysicsMoveTo( ( newPosition - org1 ) * result.fraction + org1 + result.surfaceNormal, PULL_DELAY, 0, 0 )
-
+	
+	WaitFrame()
+	enemy.Anim_ScriptedPlayActivityByName( "ACT_FALL", false, 0.2 )
+	
 	wait PULL_DELAY
 
 	org1 = mover.GetOrigin()
@@ -337,10 +325,10 @@ void function PROTO_GravGrenadePull( entity enemy, entity projectile )
 	newPosition = org1 + dir * RandomFloatRange( PUSH_STRENGTH_MIN, PUSH_STRENGTH_MAX )
 	result = TraceHull( org1, newPosition, mins, maxs, [enemy,mover], TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
 	mover.NonPhysicsMoveTo( ( newPosition - org1 ) * result.fraction + org1 + result.surfaceNormal, PUSH_DELAY, 0, 0 )
-
+	
 	wait PUSH_DELAY
 }
-*/
+
 #endif
 
 #if CLIENT

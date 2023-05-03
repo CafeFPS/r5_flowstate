@@ -1650,7 +1650,6 @@ bool function FlowState_SURF()                         { return GetCurrentPlayli
 int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowstateSURFRoundtime", 800) }
 bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
 int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
-bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
 bool function Flowstate_EnableAutoChangeLevel() { return GetCurrentPlaylistVarBool("flowstateAutoChangeLevelEnable", false ) }
 int function Flowstate_AutoChangeLevelRounds() { return GetCurrentPlaylistVarInt("flowstateRoundsBeforeChangeLevel", 2 ) }
 bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }

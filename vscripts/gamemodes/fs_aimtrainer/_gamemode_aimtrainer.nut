@@ -2086,6 +2086,228 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 	}
 }
 
+//CHALLENGE ArmorSwap
+void function StartArmorSwapChallenge(entity player)
+{
+	if(!IsValid(player)) return
+	player.SetOrigin(onGroundLocationPos)
+	player.SetAngles(onGroundLocationAngs)
+	EndSignal(player, "ChallengeTimeOver")
+
+	OnThreadEnd(
+		function() : ( player)
+		{
+			OnChallengeEnd(player)
+		}
+	)
+	wait AimTrainer_PRE_START_TIME
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
+	player.UnfreezeControlsOnServer()
+	
+	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
+	thread ChallengeWatcherThread(endtime, player)
+
+	WaitFrame()
+	while(true){
+		array<vector> NewcircleLocations = NavMesh_RandomPositions( AimTrainerOriginToGround( <player.GetOrigin().x, player.GetOrigin().y, 10000> ), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
+		if(NewcircleLocations.len() > 0 ) 
+		{
+			circleLocations.clear()
+			circleLocations = NewcircleLocations
+		}
+		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
+		
+		foreach(deathbox in ChallengesEntities.dummies)
+			if(!IsValid(deathbox)) 
+				ChallengesEntities.dummies.removebyvalue(deathbox)
+		
+		while(ChallengesEntities.dummies.len()<5){
+			vector org1 = player.GetOrigin()
+			
+			int locationindex = RandomInt(circleLocations.len())
+			vector org2 = circleLocations[locationindex]
+			vector vec2 = org1 - org2
+			
+			int random = 1
+			if(CoinFlip()) random = -1
+			vector angles2 = AnglesToRight(VectorToAngles(vec2))*90*random
+			
+			vector circleoriginfordeathbox = circleLocations[locationindex]
+			
+			entity deathbox = CreateAimtrainerDeathbox( player, circleoriginfordeathbox)
+			ChallengesEntities.dummies.append(deathbox)
+			
+			thread CheckDistanceFromDeathboxes(player, deathbox)
+			thread EnableDeathboxMantleAfterSomeTime(deathbox)
+			
+			wait 0.2
+		}
+		WaitFrame()
+	}
+}
+
+void function CheckDistanceFromDeathboxes(entity player, entity deathbox)
+{
+	while( IsValid(deathbox) )
+	{
+		if( Distance( player.GetOrigin(), deathbox.GetOrigin() ) > 500)
+		{
+			deathbox.Destroy()
+			break
+		}
+	
+		WaitFrame()
+	}
+}
+
+void function EnableDeathboxMantleAfterSomeTime(entity deathbox)
+{
+	wait 1
+	if( IsValid(deathbox) )
+		deathbox.AllowMantle()
+}
+
+entity function CreateAimtrainerDeathbox( entity player, vector origin)
+{
+	entity deathBox = FlowState_CreateDeathBox( player, origin)
+
+	foreach ( invItem in AimTrainer_FillDeathbox( player ) )
+	{
+		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+
+		entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
+		AddToDeathBox( loot, deathBox )
+	}
+
+	UpdateDeathBoxHighlight( deathBox )
+
+	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )
+		func( deathBox, null, 0 )
+		
+	return deathBox
+}
+
+entity function FlowState_CreateDeathBox( entity player, vector origin)
+{
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, origin, <0, 45, 0>, 6 )
+	
+	box.kv.fadedist = 10000
+	SetTargetName( box, DEATH_BOX_TARGETNAME )
+	DispatchSpawn( box )
+
+	box.Solid()
+	box.SetUsable()
+	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	box.SetOwner( player )
+	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+	//box.AllowMantle()
+	
+	box.SetNetBool( "overrideRUI", false )
+	
+	array<string> coolDevs = [
+		"R5R_CafeFPS",
+		"R5R_AyeZee",
+		"R5R_Makimakima",
+		"R5R_Endergreen12",
+		"R5R_Zer0Bytes", //not cool
+		"R5R_Julefox",
+		"R5R_Amos",
+		"R5R_Rexx",
+		"R5R_IcePixelx", 
+		"R5R_KralRindo",
+		"R5R_sal"
+	]
+
+	box.SetCustomOwnerName( coolDevs.getrandom() )
+	box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( Loadout_CharacterClass() , LoadoutSlot_GetItemFlavor( ToEHI( player ) , Loadout_CharacterClass() ) ) )
+
+	Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+	Highlight_ClearNeutralHighlight( box )
+
+	vector restPos = box.GetOrigin()
+	vector fallPos = restPos + < 0, 0, 54 >
+
+	thread (void function( entity box , vector restPos , vector fallPos) {
+		entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+		if ( IsValid( box ) )
+			{
+			box.SetParent( mover, "", true )
+			mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+			}
+		wait 0.5
+		if ( IsValid( box ) )
+			mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+		wait 0.5
+		if ( IsValid( box ) )
+			box.ClearParent()
+		if ( IsValid( mover ) )
+			mover.Destroy()
+
+	}) ( box , restPos , fallPos)
+		
+	return box
+}
+
+array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
+{
+	array<ConsumableInventoryItem> final = []
+	array<string> newRefs
+	
+	bool shouldcontinue = false
+	for(int i = 0; i < 5; i++)
+	{
+		shouldcontinue = false
+		string newPossibleItem = SURVIVAL_GetWeightedItemFromGroup( "data_knife_vault" )
+		
+		if( newPossibleItem == "armor_pickup_lv4_all_fast" || newPossibleItem == "armor_pickup_lv3" )
+		{
+			i--
+			continue
+		}
+		
+		foreach(ref in newRefs)
+		{
+			if(ref == newPossibleItem)
+			{
+				i--
+				shouldcontinue = true
+				continue
+			}
+		}
+		if(shouldcontinue)
+			continue
+		
+		newRefs.append(newPossibleItem)
+	}
+	array<string> swaps =
+	[
+		"armor_pickup_lv4_all_fast",
+		"armor_pickup_lv3", 
+		"armor_pickup_lv2"
+	]
+	
+	newRefs.append("mp_weapon_wingman")
+	newRefs.append("mp_weapon_r97")
+	newRefs.append( swaps.getrandom() )
+	
+	foreach(ref in newRefs)
+	{
+		LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+		ConsumableInventoryItem fsItem
+
+		fsItem.type = attachmentData.index
+		fsItem.count = 1
+
+		final.append( fsItem )
+	}
+	
+	return final
+}
+
 //Challenges related end functions
 void function OnChallengeEnd(entity player)
 {
@@ -2652,7 +2874,7 @@ bool function CC_StartChallenge7NewC( entity player, array<string> args )
 bool function CC_StartChallenge8NewC( entity player, array<string> args )
 {
 	PreChallengeStart(player, 17)
-	// thread StartTapyDuckStrafesChallenge(player)
+	thread StartArmorSwapChallenge(player)
 	return false
 }
 

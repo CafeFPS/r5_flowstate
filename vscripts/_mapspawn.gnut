@@ -308,6 +308,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	switch(GameRules_GetGameMode())
 	{
+		case "fs_prophunt":
+			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
+			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
+			break
 		case "fs_dm":
 			break
 		case fs_aimtrainer:

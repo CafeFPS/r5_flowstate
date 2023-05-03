@@ -144,7 +144,7 @@ void function Sequence_WaitingForPlayers()
 
 	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
 		
-	if(GameRules_GetGameMode() == "fs_dm")
+	if(GameRules_GetGameMode() != SURVIVAL) 
 	{	
 		SetGameState( eGameState.Playing )
 		return	
@@ -586,6 +586,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	victim.FreezeControlsOnServer()
 	
+	if(GameRules_GetGameMode() == "flowstate_snd") 
+		return
+	
 	victim.SetPredictionEnabled( false )
 
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
@@ -618,18 +621,38 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			if(GameRules_GetGameMode() == "fs_dm") break
-		
-			entity startEnt = GetEnt( "info_player_start" )
-
-			player.SetOrigin( startEnt.GetOrigin() )
-			player.SetAngles( startEnt.GetAngles() )
-
-			player.FreezeControlsOnServer()
-
+			
 			if( GameRules_GetGameMode() == "map_editor_deprecated")
 				DecideRespawnPlayer( player )
 			
+			if( GameRules_GetGameMode() != SURVIVAL ) break
+
+			switch(GetMapName())
+			{
+				case "mp_rr_canyonlands_64k_x_64k":
+				case "mp_rr_canyonlands_mu1":
+				case "mp_rr_canyonlands_mu1_night":				
+					player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
+					player.SetAngles( <0, 65.3776093, 0> )
+				break
+				
+				case "mp_rr_desertlands_64k_x_64k":
+				case "mp_rr_desertlands_64k_x_64k_nx":
+				case "mp_rr_desertlands_64k_x_64k_tt":
+				case "mp_rr_desertlands_mu1":
+					player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
+					player.SetAngles( <0, -136.298843, 0> )
+				break
+				
+				default:
+					entity startEnt = GetEnt( "info_player_start" )
+					player.SetOrigin( startEnt.GetOrigin() )
+					player.SetAngles( startEnt.GetAngles() )
+				break
+			}
+
+			player.FreezeControlsOnServer()
+
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled()
 				&& GetGameState() == eGameState.WaitingForPlayers )
 				DecideRespawnPlayer( player, false )
@@ -677,21 +700,50 @@ void function UpdatePlayerCounts()
 {
 
 	string currGameMode = GameRules_GetGameMode()
-	if(currGameMode == "fs_dm"){
-		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
-		
-		if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){
-		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )}
-		else {
-		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray().len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetPlayerArray().len() )
-		}
 	
-	} else {
+	switch(currGameMode)
+	{
+		case "flowstate_infection":
+		SetGlobalNetInt( "livingPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() )
+		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )
+		SetGlobalNetInt( "squadsRemainingCount", 2 )
+		break
+		
+		case "fs_dm":
+		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
+		break
+		
+		case "fs_prophunt":
+		array<entity> propsAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
+		SetGlobalNetInt( "livingPlayerCount", propsAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", propsAlive.len() )		
+		break
+
+		case "flowstate_pkknockback":
+		array<entity> playersAlive = GetPlayerArray_Alive()
+		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
+		break
+		
+		case "fs_duckhunt":
+		array<entity> ducksAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
+		SetGlobalNetInt( "livingPlayerCount", ducksAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", ducksAlive.len() )		
+		break
+		
+		case "flowstate_snd":
+		foreach(player in GetPlayerArray())
+			Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
+		break
+		
+		default:
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )		
+		break
 	}
+
 }
 #endif
 

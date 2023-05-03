@@ -124,19 +124,19 @@ void function Sequence_Playing()
 
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
-		vector pos = GetEnt( "info_player_start" ).GetOrigin()
-		pos.z += 5
+		// vector pos = GetEnt( "info_player_start" ).GetOrigin()
+		// pos.z += 5
 
-		int i = 0
+		// int i = 0
 		foreach ( player in GetPlayerArray() )
 		{
-			// circle
-			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+			// // circle
+			// float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+			// player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 
 			DecideRespawnPlayer( player )
 
-			i++
+			// i++
 		}
 
 		// Show the squad and player counter
@@ -491,6 +491,7 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	bool inTime
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 	{
+		if(!IsValid(player)) continue
 		if( player.p.attackedTeam.len() < attackerTeam )
 			player.p.attackedTeam.resize( attackerTeam + 2, -returnTime )
 
@@ -498,7 +499,7 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 			inTime = true
 	}
 
-	if( weapon != null )
+	if( IsValid(weapon) )
 	{
 		if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 4000 && Time() - victim.p.attackedTeam[ attackerTeam ] >= farTime )
 			PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
