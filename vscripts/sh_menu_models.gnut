@@ -206,7 +206,10 @@ struct
 
 	array<void functionref()> mouseWheelDownCallbacks
 	array<void functionref()> mouseWheelUpCallbacks
-
+	
+	// a table of capturePanels and menus, each of which contains an array of callbacks
+    table< var, array< void functionref( int deltaX, int deltaY ) > > mouseMovementCaptureCallbacks = {}
+    
     table<string, vector> scriptEntitiesOrigins = {
         default_camera_target = <9216, 0, 56>
         customize_weapon_camera_target = <7168, 0, 56>
@@ -295,6 +298,7 @@ global function RunMenuClientFunction
 global function UI_SetPresentationType
 
 global function UICodeCallback_MouseMovementCapture
+global function AddMouseMovementCaptureHandler
 global function OnMouseWheelDown
 global function OnMouseWheelUp
 
@@ -2700,8 +2704,40 @@ void function UI_SetPresentationType( int newPresentationType )
 		RunClientScript( "UpdateMenuWithPartyMembers" )
 }
 
+// this function registers a callback (or "handler") function for a MouseMovementCapture menu panel
+// use this for scrollbars, sliders, etc.
+void function AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )
+{
+    // if the capturePanel or menu already has an array in the table, we append to the array
+    // if not, we should create the array, [func] just turns func into an array
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu].append( func )
+    else
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu] <- [func]
+}
+
+void function RunMouseMovementCallbacks( var capturePanelOrMenu, int deltaX, int deltaY )
+{
+    // check that the capturePanelOrMenu is in the table before trying anything stupid
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+    {
+        // iterate through the different callback functions
+        foreach ( void functionref( int deltaX, int deltaY ) callback in file.mouseMovementCaptureCallbacks[capturePanelOrMenu] )
+        {
+            // run the callback function
+            callback( deltaX, deltaY )
+        }
+    }
+}
+
 void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )
 {
+	// run callbacks for the capturePanel
+    RunMouseMovementCallbacks( capturePanel, deltaX, deltaY )
+
+	// get the current menu and run callbacks, this preserves backwards compatibility
+    RunMouseMovementCallbacks( GetActiveMenu(), deltaX, deltaY )
+
 	float screenScaleXModifier = 1920.0 / GetScreenSize().width // 1920 is base screen width
 	float mouseXRotateDelta    = deltaX * screenScaleXModifier * MOUSE_ROTATE_MULTIPLIER
 	//printt( "deltaX:", deltaX, "screenScaleXModifier:", screenScaleXModifier, "mouseXRotateDelta:", mouseXRotateDelta )

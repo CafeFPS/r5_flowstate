@@ -628,8 +628,8 @@ void function GridPanel_InitStatic( var panel, int tileWidth, int tileHeight )
 	int paddingHorz = ((panelWidth - (tileWidth * gridData.columns)) / columnPaddingCount)
 	int paddingVert = ((panelHeight - (tileHeight * gridData.rows)) / rowPaddingCount)
 
-	gridData.paddingHorz = int( paddingHorz / GetContentScaleFactor( GetMenu( "MainMenu" ) ).x )
-	gridData.paddingVert = int( paddingVert / GetContentScaleFactor( GetMenu( "MainMenu" ) ).y )
+	gridData.paddingHorz = int( paddingHorz / GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).x )
+	gridData.paddingVert = int( paddingVert / GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).y )
 
 	InitPanelLayout( gridData )
 	UpdateTileElements( gridData )

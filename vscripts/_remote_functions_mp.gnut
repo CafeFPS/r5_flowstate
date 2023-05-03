@@ -593,13 +593,7 @@ void function RemoteFunctions_Init_Begin()
 
 	if ( IsLobby())
 	{
-		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_UpdateUI" )
-		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_StartingMatch" )
-		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_SelectionUpdated", "int", 0, 255 )
-		Remote_RegisterClientFunction( "ServerCallback_ServerBrowser_JoinServer", "int", 0, 999 )
-		Remote_RegisterClientFunction( "ServerCallback_ServerBrowser_RefreshServers" )
-
-		Remote_RegisterUntypedFunction_deprecated( "ServerCallback_LobbyVM_BuildClientString" )
+		//Register networked variables for the lobby
 	}
 
 	if ( !IsLobby() )

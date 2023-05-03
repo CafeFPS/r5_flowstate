@@ -818,20 +818,30 @@ Scripts:
 	//KillReplay
 	ui/KillReplay/menu_killreplay.nut
 	
-	//R5RUI
-	ui/R5RMenus/menu_main.nut
-	ui/R5RMenus/menu_lobby.nut
-	ui/R5RMenus/menu_private_match.nut
-	ui/R5RMenus/panel_home.nut
-	ui/R5RMenus/panel_serverbrowser.nut
-	ui/R5RMenus/panel_mainmenu.nut
-	ui/R5RMenus/panel_playlist.nut
-	ui/R5RMenus/panel_map.nut
-	ui/R5RMenus/panel_visibility.nut
+	//R5R Main Menu
+	ui/CustomLobby/menu_main.nut
+	ui/CustomLobby/panel_mainmenu.nut
+
+	//R5R Lobby
+	ui/CustomLobby/menu_lobby.nut
+	ui/CustomLobby/panel_home.nut
+	ui/CustomLobby/panel_create.nut
+	ui/CustomLobby/panel_serverbrowser.nut
+	ui/CustomLobby/panel_legends.nut
+	ui/CustomLobby/panel_loadout.nut
+
+	//R5R Extra
+	ui/CustomLobby/menu_news.nut
+	ui/CustomLobby/menu_gamemodeselect.nut
+	ui/CustomLobby/panel_map.nut
+	ui/CustomLobby/panel_playlist.nut
+	ui/CustomLobby/panel_visibility.nut
 	ui/CTFMenus/menu_ctf_vote.nut
 	//Statistics
 	ui/FlowstateDM/flowstate_statistics.nut
 	ui/FlowstateDM/flowstate_menu_vote.nut
+	
+	ui/menu_weaponmods.nut
 ]
 
 When: "SERVER || UI "

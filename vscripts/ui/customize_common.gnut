@@ -205,25 +205,27 @@ void function CustomizeButton_UpdateAndMarkForUpdating( var button,
 	UpdateCustomizeItemButton( cbc, true )
 }
 
-
 void function CustomizeButton_UnmarkForUpdating( var button )
 {
 	Assert( button in fileLevel.activeCustomizeButtons )
-	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
 
-	delete fileLevel.activeCustomizeButtons[button]
-
-	if ( fileLevel.activeCustomizeButtons.len() == 0 )
+	if(button in fileLevel.activeCustomizeButtons)
 	{
-		foreach ( loadoutEntry in cbc.loadoutEntries )
-			RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), loadoutEntry, OnLoadoutSlotContentsChanged )
+		CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
+
+		delete fileLevel.activeCustomizeButtons[button]
+
+		if ( fileLevel.activeCustomizeButtons.len() == 0 )
+		{
+			foreach ( loadoutEntry in cbc.loadoutEntries )
+				RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), loadoutEntry, OnLoadoutSlotContentsChanged )
+		}
+
+		Hud_RemoveEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
+		Hud_RemoveEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightClick )
+		Hud_RemoveEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
 	}
-
-	Hud_RemoveEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
-	Hud_RemoveEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightClick )
-	Hud_RemoveEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
 }
-
 
 ItemFlavor function CustomizeButton_GetItemFlavor( var button )
 {

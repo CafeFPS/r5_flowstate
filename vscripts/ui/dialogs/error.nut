@@ -1,5 +1,6 @@
 global function InitErrorDialog
 global function OpenErrorDialogThread
+global function OpenErrorDialog
 
 struct
 {
@@ -49,6 +50,11 @@ void function ErrorDialog_OnNavigateBack()
 	CloseActiveMenu()
 }
 
+void function OpenErrorDialog( string errorMessage )
+{
+	thread OpenErrorDialogThread( errorMessage )
+}
+
 void function OpenErrorDialogThread( string errorMessage )
 {
 	bool isIdleDisconnect = errorMessage.find( Localize( "#DISCONNECT_IDLE" ) ) == 0
@@ -57,7 +63,7 @@ void function OpenErrorDialogThread( string errorMessage )
 	file.headerText = ( isIdleDisconnect ? Localize( "#DISCONNECTED_HEADER" ) : Localize( "#ERROR" ) ).toupper()
 	file.messageText = errorMessage
 
-	while ( GetActiveMenu() != GetMenu( "MainMenu" ) )
+	while ( GetActiveMenu() != GetMenu( "R5RMainMenu" ) )
 		WaitSignal( uiGlobal.signalDummy, "OpenErrorDialog", "ActiveMenuChanged" )
 
 	AdvanceMenu( file.menu )
