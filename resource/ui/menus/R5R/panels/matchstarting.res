@@ -54,7 +54,7 @@
 	MapAndGamemode
 	{
 		ControlName				Label
-		labelText				"CUSTOM_TDM - MP_RR_BOX"
+		labelText				"FLOWSTATE BY @CAFEFPS"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

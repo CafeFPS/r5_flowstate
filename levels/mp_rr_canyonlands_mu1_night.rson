@@ -14,7 +14,7 @@ Scripts:
 [
 	sh_evac_ship_precache.nut
 	sh_loot_creeps.gnut
-	gamemodes/sh_gamemode_shadow_squad_precache.nut
+	//gamemodes/sh_gamemode_shadow_squad_precache.nut
 	mp/levels/mp_rr_canyonlands_mu1_night.nut
 	mp/levels/mp_rr_canyonlands_common.nut
 ]

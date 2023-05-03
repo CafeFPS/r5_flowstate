@@ -106,7 +106,7 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() != "custom_tdm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
+	if(GameRules_GetGameMode() != "flowstate_dm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
 	{
 		//InitLootDrones()
 		//InitLootRollers()
@@ -552,7 +552,7 @@ void function SetButtonSettings( entity panel )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_Streamer" )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
 	
-	if ( GameRules_GetGameMode() == "custom_tdm" )
+	if ( GameRules_GetGameMode() == "flowstate_dm" )
 		WaitForever()
 	else
 		wait 2

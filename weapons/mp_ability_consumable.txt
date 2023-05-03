@@ -182,7 +182,31 @@ WeaponData
 			"fx_muzzle_flash_world"					"P_shield_battery_flash"
 			"fx_muzzle_flash_attach"				"muzzle_flash"
 		}
+		
+		snd_bomb
+		{
+            "viewmodel" 							"mdl/Weapons/bomb/ptpov_bomb.rmdl"
+            "playermodel" 							"mdl/Weapons/bomb/w_bomb.rmdl"
+            "printname"                             "Planting Bomb"
+            "charge_time"                           "4.0"
+			"raise_time"							"1.8"
+            "hud_icon"                              "rui/hud/loot/loot_stim_shield_large"
+			"activitymodifier"						"snd_bomb"
+			"viewmodel_offset_hip" 					"0 3 2"
+			
+			// "charge_effect_1p"						"P_shield_battery_LRG_FP"
+			// "charge_effect_3p"						""
+			// "charge_effect_attachment"				"FX_CENTER"
 
+			// "charge_effect2_1p"						"P_shield_battery_glow_FP"
+			// "charge_effect2_3p"						"P_shield_battery_glow"
+			// "charge_effect2_attachment"				"muzzle_flash"
+
+			// "fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
+			// "fx_muzzle_flash_world"					"P_shield_battery_flash"
+			// "fx_muzzle_flash_attach"				"muzzle_flash"
+		}
+		
         phoenix_kit
         {
             "viewmodel" 							"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"

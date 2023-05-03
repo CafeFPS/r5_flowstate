@@ -81,7 +81,7 @@ entity function GetChampion()
 int function GetMinKillsForKillLeader()
 {
 	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
-	if( GameRules_GetGameMode() == "custom_tdm" )
+	if( GameRules_GetGameMode() == "flowstate_dm" )
 		minKill = 2
 	else if( minKill < 1 )
 		minKill = KILL_LEADER_MIN_KILL_REQUIREMENT // From sh_survival_commentary.gnut

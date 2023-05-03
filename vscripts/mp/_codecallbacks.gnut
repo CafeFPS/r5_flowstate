@@ -61,7 +61,7 @@ void function OnClientConnected( entity player )
 	thread RecordPositions(player)
 	
 	//Afk autokick thread. Colombia
-	if(GameRules_GetGameMode() == "custom_tdm" || GameRules_GetGameMode() == "custom_ctf")
+	if(GameRules_GetGameMode() == "flowstate_dm" || GameRules_GetGameMode() == "custom_ctf")
 		thread Flowstate_CheckPlayerIsAFK(player)
 	
 	// AccumulatedDamageData damageData

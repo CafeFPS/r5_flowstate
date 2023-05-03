@@ -227,7 +227,7 @@ void function UpdateSystemPanel( var panel )
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "custom_tdm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		if( GetCurrentPlaylistName() == "flowstate_dm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )

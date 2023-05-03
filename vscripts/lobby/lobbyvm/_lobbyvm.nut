@@ -2,7 +2,7 @@ global function _LobbyVM_Init
 
 array<entity> playerarray
 
-array<string> PrivateMatchSettings = ["A R5Reloaded Server", "mp_rr_canyonlands_mu1", "custom_tdm", "2"]
+array<string> PrivateMatchSettings = ["A R5Reloaded Server", "mp_rr_canyonlands_mu1", "flowstate_dm", "2"]
 
 void function _LobbyVM_Init()
 {

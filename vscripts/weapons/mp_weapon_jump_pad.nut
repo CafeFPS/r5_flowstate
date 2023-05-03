@@ -100,7 +100,7 @@ void function OnJumpPadPlanted( entity projectile )
 
 	newProjectile.kv.solid = 6
 
-	if(gameMode != "custom_tdm")
+	if(gameMode != "flowstate_dm")
 	{
 		newProjectile.SetTakeDamageType( DAMAGE_YES )
 		newProjectile.SetMaxHealth( 100 )
@@ -118,7 +118,7 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.EndSignal( "OnDestroy" )
 	newProjectile.SetScriptName("jump_pad")
 
-	if(gameMode != "custom_tdm")
+	if(gameMode != "flowstate_dm")
 		thread TrapDestroyOnRoundEnd( owner, newProjectile )
 
 	if ( IsValid( traceResult.hitEnt ) )
@@ -151,7 +151,7 @@ void function OnJumpPadPlanted( entity projectile )
 	JumpPad_CreatedCallback( newProjectile )
 	
 
-	if(gameMode == "custom_tdm"){
+	if(gameMode == "flowstate_dm"){
 	thread JumpPadWatcher(newProjectile)
 	}
 	

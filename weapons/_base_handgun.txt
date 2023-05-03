@@ -311,5 +311,20 @@ WeaponData
             "viewdrift_hipfire_air_scale_pitch"	            "0.0"
             "viewdrift_hipfire_air_scale_yaw"               "0.0"
         }
+		
+		prophunt
+		{
+			"red_crosshair_range" 							"1"
+		}
+		
+		infectionPerkQuickReload
+		{
+			"reload_time" 									"1.0"
+			"reload_time_late1" 							"0.50"
+			"reload_time_late2" 							"0.50"
+			"reloadempty_time"								"1.0"
+			"reloadempty_time_late1"						"0.50"
+			"reloadempty_time_late2"						"0.50"			
+		}
     }
 }

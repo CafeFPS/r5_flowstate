@@ -72,7 +72,7 @@ void function InitR5RCreateServerPanel( var panel )
 	ServerSettings.svServerName = "My custom server"
 	ServerSettings.svServerDesc = "A R5Reloaded server"
 	ServerSettings.svMapName = "mp_rr_aqueduct"
-	ServerSettings.svPlaylist = "custom_tdm"
+	ServerSettings.svPlaylist = "flowstate_dm"
 	ServerSettings.svVisibility = eServerVisibility.OFFLINE
 
 	file.tempservername = ServerSettings.svServerName

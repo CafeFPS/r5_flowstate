@@ -139,7 +139,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 	PlaylistInfoEdit
 	{
 		ControlName				Label
-		labelText				"custom_tdm"
+		labelText				"flowstate"
 		font					Default_27_Outline
 		"allcaps"				"1"
 		wide					225
@@ -213,7 +213,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 	VisInfoEdit
 	{
 		ControlName				Label
-		labelText				"custom_tdm"
+		labelText				"flowstate"
 		font					Default_27_Outline
 		"allcaps"				"1"
 		wide					125

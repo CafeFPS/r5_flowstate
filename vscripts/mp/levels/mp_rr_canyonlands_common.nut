@@ -87,7 +87,7 @@ void function Canyonlands_MapInit_Common()
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif
 
-	if(GameRules_GetGameMode() == "custom_tdm" )
+	if(GameRules_GetGameMode() == "flowstate_dm" )
 		return
 
 	//printt( "Canyonlands_MapInit_Common" )
@@ -216,7 +216,7 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "custom_tdm" && GameRules_GetGameMode() != "custom_aimtrainer")
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "flowstate_dm" && GameRules_GetGameMode() != "custom_aimtrainer")
 	{
 		InitLootDrones() //flyers
 		InitLootRollers() //flyers
@@ -231,7 +231,7 @@ void function __EntitiesDidLoad()
 	SpawnEditorProps()
 	}
 
-	if( GameRules_GetGameMode() != FREELANCE || GameRules_GetGameMode() != "custom_tdm")
+	if( GameRules_GetGameMode() != FREELANCE || GameRules_GetGameMode() != "flowstate_dm")
 	{
 		waitthread FindHoverTankEndNodes()
 		SpawnHoverTanks()
