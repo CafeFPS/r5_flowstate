@@ -158,8 +158,8 @@ void function SetCommonScoreRUIVars( var rui )
 	if ( IsSoloMode() )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", GameRules_GetGameMode() == "flowstate_dm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
-		RuiSetString( rui, "squadsRemainingTextPlural", GameRules_GetGameMode() == "flowstate_dm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
+		RuiSetString( rui, "squadsRemainingTextSingular", GameRules_GetGameMode() == "fs_dm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
+		RuiSetString( rui, "squadsRemainingTextPlural", GameRules_GetGameMode() == "fs_dm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
 	}
 	else if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false )){
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )

@@ -308,9 +308,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	switch(GameRules_GetGameMode())
 	{
-		case "flowstate_dm":
+		case "fs_dm":
 			break
-		case "custom_aimtrainer":
+		case fs_aimtrainer:
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break

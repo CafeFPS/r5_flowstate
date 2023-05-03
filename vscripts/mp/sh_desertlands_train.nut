@@ -259,7 +259,7 @@ void function DesertlandsTrain_Init()
     int j = 0
 	foreach(entity car in cars)
 	{
-		printl(">>>> " + car)
+		//printl(">>>> " + car)
 		foreach(entity bin in lootBins)
 		{
 			if(bin.GetModelName().find("loot_bin_0") <= 0)
@@ -269,7 +269,7 @@ void function DesertlandsTrain_Init()
 			if(distance > 300)
 				continue
 
-			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
+			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && GameRules_GetGameMode() == SURVIVAL)
 			{
 				ClearLootBinContents( bin )
 					AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 ) )

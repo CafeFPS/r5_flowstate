@@ -276,16 +276,16 @@ void function SetupDefaultDevCommandsMP()
 	if(GetCurrentPlaylistName() == "map_editor_deprecated")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
 	
-	if(GetCurrentPlaylistName() == "flowstate_dm")
+	if(GetCurrentPlaylistName() == "fs_dm")
 		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
 	
-	if(GetCurrentPlaylistName() == "flowstate_dm")
+	if(GetCurrentPlaylistName() == "fs_dm")
 		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
 	
-	if(GetCurrentPlaylistName() == "flowstate_dm")
+	if(GetCurrentPlaylistName() == "fs_dm")
 		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
 
-	if(GetCurrentPlaylistName() == "flowstate_dm")
+	if(GetCurrentPlaylistName() == "fs_dm")
 		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
 
 	if(GetCheatsState()){

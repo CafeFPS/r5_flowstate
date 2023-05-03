@@ -2805,13 +2805,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	string weapon = args[0]
 	
-	if(GameRules_GetGameMode() != "custom_aimtrainer" && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
+	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
 		Message(player, "WEAPON WHITELISTED")
 		return false
 	}
 
-	if(GameRules_GetGameMode() != "custom_aimtrainer" && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
+	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
 		Message(player, "ABILITY WHITELISTED")
 		return false
@@ -2968,7 +2968,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
 	}
 	
-	if(GameRules_GetGameMode() == "custom_aimtrainer")
+	if(GameRules_GetGameMode() == fs_aimtrainer)
 		thread PlayAnimsOnGiveWeapon(weaponent, player)
 
 	int weaponSkin = -1

@@ -310,7 +310,7 @@ void function ScoreboardFadeOut()
 
 void function ShowScoreboardMP()
 {
-	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == "custom_aimtrainer" ) return
+	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
 		
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	

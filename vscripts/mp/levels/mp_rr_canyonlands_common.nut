@@ -212,7 +212,7 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "flowstate_dm" && GameRules_GetGameMode() != "flowstate_aimtrainer")
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "fs_dm" && GameRules_GetGameMode() != "fs_aimtrainer")
 	{
 		//InitLootDrones() //flyers
 		//InitLootRollers() //flyers

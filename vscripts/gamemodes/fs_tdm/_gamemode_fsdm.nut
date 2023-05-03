@@ -612,7 +612,7 @@ void function __HighPingCheck(entity player)
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping!]")
 		ClientCommand( player, "disconnect" )
 		UpdatePlayerCounts()
-	} else if(GameRules_GetGameMode() == "flowstate_dm"){
+	} else if(GameRules_GetGameMode() == "fs_dm"){
 		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
 		, 5)
 	}

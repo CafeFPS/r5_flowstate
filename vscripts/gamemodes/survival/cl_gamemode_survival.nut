@@ -725,7 +725,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	if(RGB_HUD)
 		thread RGBRui(rui)
 	
-	if( GameRules_GetGameMode() != "flowstate_dm" ) return
+	if( GameRules_GetGameMode() != "fs_dm" ) return
 	
 	if ( IsControllerModeActive() )
 		player.ClientCommand( "controllerstate true")

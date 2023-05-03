@@ -144,7 +144,7 @@ void function Sequence_WaitingForPlayers()
 
 	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
 		
-	if(GameRules_GetGameMode() == "flowstate_dm")
+	if(GameRules_GetGameMode() == "fs_dm")
 	{	
 		SetGameState( eGameState.Playing )
 		return	
@@ -618,7 +618,7 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			if(GameRules_GetGameMode() == "flowstate_dm") break
+			if(GameRules_GetGameMode() == "fs_dm") break
 		
 			entity startEnt = GetEnt( "info_player_start" )
 
@@ -677,7 +677,7 @@ void function UpdatePlayerCounts()
 {
 
 	string currGameMode = GameRules_GetGameMode()
-	if(currGameMode == "flowstate_dm"){
+	if(currGameMode == "fs_dm"){
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		
 		if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){

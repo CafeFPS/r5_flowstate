@@ -96,10 +96,15 @@ global const MENUFALL                   = "menufall"
 global const TEAM_DEATHMATCH            = "tdm"
 global const SURVIVAL                   = "survival"
 global const FREELANCE                  = "freelance"
-global const CUSTOM_TDM                 = "flowstate_dm"
 global const CUSTOM_CTF                 = "custom_ctf"
-global const CUSTOM_AIMTRAINER			= "custom_aimtrainer"
-global const MAP_EDITOR					= "map_editor_deprecated"
+
+global const map_editor_deprecated		= "map_editor_deprecated"
+
+//gamemodes by @CafeFPS
+global const fs_dm               = "fs_dm"
+global const fs_aimtrainer		= "fs_aimtrainer"
+global const fs_prophunt				= "fs_prophunt"
+global const fs_duckhunt				= "fs_duckhunt"
 
 global const FREELANCE_ENABLED          = false
 
@@ -316,12 +321,16 @@ global const int BURN_R = 246
 global const int BURN_G = 134
 global const int BURN_B = 40
 
+global const int AIRDROP_R = 10
+global const int AIRDROP_G = 224
+global const int AIRDROP_B = 233
+
 global const vector TEAM_COLOR_ENEMY = 		<ENEMY_R, ENEMY_G, ENEMY_B>
 global const vector TEAM_COLOR_FRIENDLY = 	<FRIENDLY_R, FRIENDLY_G, FRIENDLY_B>
 global const vector TEAM_COLOR_PARTY = 		<PARTY_R, PARTY_G, PARTY_B>
 global const vector TEAM_COLOR_YOU = 		<LOCAL_R, LOCAL_G, LOCAL_B>
 global const vector BURN_COLOR = 			<BURN_R, BURN_G, BURN_B>
-global const vector COLOR_AIRDROP = 		<10,224,233>
+global const vector COLOR_AIRDROP = 		<AIRDROP_R, AIRDROP_G, AIRDROP_B>
 // END OFFICIAL
 
 global const TIME_ZOFFSET = 11520
@@ -571,7 +580,7 @@ global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
 global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
 global const KILL_REPLAY_AFTER_KILL_TIME 				= 2.0
 
-global const DEATHCAM_TIME_SHORT 						= 1.5
+global const DEATHCAM_TIME_SHORT 						= 3.0
 global const KILL_REPLAY_BEFORE_KILL_TIME_SHORT 		= 3.5
 global const KILL_REPLAY_AFTER_KILL_TIME_SHORT 			= 1.0
 global const RESPAWN_BUTTON_BUFFER 						= 0.0 // the amount of time before you're allowed to respawn, after DEATHCAM_TIME
@@ -1193,6 +1202,8 @@ NPCMF_WALK_NONCOMBAT
 */
 
 global const ZIPLINE_IDLE_ANIM = "pt_zipline_slide_idle"
+
+global const float ZIPLINES_COOLDOWN = 1.5
 
 global const DEFAULT_CONVERSATION_DEBOUNCE_TIME 	= 10.0
 global const AI_CONVERSATION_RANGE_SQR 				= 20250000
@@ -2255,6 +2266,8 @@ global const vector AMMO_SHOTGUN_COLOR 		= <155, 51, 15> / 255.0
 global const vector AMMO_ENERGY_COLOR 		= <132, 160, 61> / 255.0
 global const vector AMMO_SMALL_COLOR 		= <180, 123, 68> / 255.0
 global const vector AMMO_LARGE_COLOR 		= <84, 155, 131> / 255.0
+global const vector AMMO_SNIPER_COLOR 		= <74.0, 73.0, 147.0> / 255.0
+global const vector AMMO_EXPLOSIVE_COLOR 	= <163.0, 93.0, 72.0> / 255.0
 
 global const vector AMMO_LEGENDARY_COLOR 	= <255, 215, 30> / 255.0
 
@@ -2263,6 +2276,8 @@ global const table<string, vector> ammoColors = {
 	special = AMMO_ENERGY_COLOR
 	shotgun = AMMO_SHOTGUN_COLOR
 	highcal = AMMO_LARGE_COLOR
+	sniper = AMMO_SNIPER_COLOR
+	explosive = AMMO_EXPLOSIVE_COLOR
 }
 
 global struct BurnDamageSettings

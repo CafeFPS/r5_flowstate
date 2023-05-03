@@ -2,6 +2,7 @@
 
 global function JumpPad_Init
 global function JumpPad_CreatedCallback
+global function JumpPadsWeaponJumppad_CreatedCallback
 
 // copied from r5-90 mp_rr_desertlands_common
 const float JUMP_PAD_PUSH_RADIUS = 45.0
@@ -124,6 +125,30 @@ entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
   AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
 }
 
+void function JumpPadsWeaponJumppad_CreatedCallback( entity jumpPad )
+{
+	vector origin = jumpPad.GetOrigin() // should this allow weapon_jump_pad to be OriginToGround
+	vector angles = jumpPad.GetAngles()
+
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
+	trigger.SetOwner( jumpPad )
+	trigger.SetRadius( JUMP_PAD_PUSH_RADIUS )
+	trigger.SetAboveHeight( 32 )
+	trigger.SetBelowHeight( 16 ) //need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
+	trigger.SetOrigin( origin )
+	trigger.SetAngles( angles )
+	trigger.SetTriggerType( TT_JUMP_PAD )
+	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.25 )
+	trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
+	trigger.UsePointCollision()
+	trigger.kv.triggerFilterNonCharacter = "0"
+	DispatchSpawn( trigger )
+	trigger.SetEnterCallback( OnJumpPadAreaEnter )
+    
+	//Need to set parent so the jump trigger is destroyed with the pad entity
+	trigger.SetParent( jumpPad )
+}
+
 void function JumpPad_OnDeath( entity ent, var damageInfo )
 {
   //todo: Explosion and sound 
@@ -209,7 +234,7 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 			entity jumpPad = trigger.GetOwner()
 			if ( IsValid( jumpPad ) )
 			{
-				if ( !Bleedout_IsBleedingOut( ent ) )
+				if ( !Bleedout_IsBleedingOut( ent ) && GameRules_GetGameMode() != "fs_duckhunt")
 				{
 					thread JumpPad_GiveDoubleJump( ent )
 				}
