@@ -737,6 +737,9 @@ global struct ServerPlayerStruct
 	
 	int currentMelee = 0
 	
+	bool speedometerVisible = true
+	bool movementOverlayVisible = true
+	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null

@@ -16,6 +16,10 @@ function MovementGym() {
     // Commands
     AddClientCommandCallback("hub", ClientCommand_Hub)
     AddClientCommandCallback("invis", ClientCommand_invis)
+    AddClientCommandCallback("meter", ClientCommand_meter)
+    AddClientCommandCallback("keys", ClientCommand_keys)
+    
+    AddClientCommandCallback("spectate", ClientCommand_Spec)
 
     //Map init
     //PrecacheMovementGymProps()
@@ -167,6 +171,9 @@ function PrecacheMovementGymProps() {
     PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl" )
     PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl" )
     PrecacheModel( $"mdl/industrial/landing_mat_metal_03_large.rmdl" )
+    
+    PrecacheModel( $"mdl/fx/core_energy.rmdl" )
+
 
 }
 
@@ -210,6 +217,7 @@ function ClientCommand_Hub(entity user, array < string > args) {
   user.p.allowCheckpoint = false
   user.p.currentCheckpoint = 0
   //Reset Timer
+  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
   user.p.isTimerActive = false
   user.p.startTime = 0
 
@@ -249,6 +257,72 @@ function ClientCommand_invis(entity user, array < string > args) {
   return true
 }
 
+
+//speedometer on/off
+bool
+function ClientCommand_meter(entity user, array < string > args) {
+  if( !IsValid(user) || args.len() == 0 )
+	return false
+  
+  if(args[0] == "off"){
+	if(user.p.speedometerVisible == true){
+		Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", false)
+		user.p.speedometerVisible = false
+	}
+  }
+  
+  if(args[0] == "on"){
+	if(user.p.speedometerVisible == false){
+		Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", true)
+		user.p.speedometerVisible = true
+	}
+  }
+  
+  return true
+}
+
+
+//Movement Overlay on/off
+bool
+function ClientCommand_keys(entity user, array < string > args) {
+    if( !IsValid(user) || args.len() == 0 )
+	return false
+  
+  if(args[0] == "off"){
+	if(user.p.movementOverlayVisible == true){
+		Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", false)
+		user.p.movementOverlayVisible = false
+	}
+  }
+  
+  if(args[0] == "on"){
+	if(user.p.movementOverlayVisible == false){
+		Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", true)
+		user.p.movementOverlayVisible = true
+	}
+  }
+  return true
+}
+
+bool
+function ClientCommand_Spec(entity user, array < string > args) {
+    if( !IsValid(user) || args.len() == 0 )
+	return false
+  
+  if(args[0] == "off"){
+	user.RemoveFromAllRealms()
+	user.AddToRealm(1)
+	ClientCommand_SpectateEnemies(user, args)
+  }
+  
+  if(args[0] == "on"){
+	user.AddToAllRealms()
+	ClientCommand_SpectateEnemies(user, args)
+	
+  }
+  return true
+}
+
 //whacky glowy button
 entity
 function CreateSurfButton(vector pos, vector ang, string prompt) {
@@ -265,6 +339,8 @@ function CreateSurfButton(vector pos, vector ang, string prompt) {
   button.Highlight_SetParam(0, 0, < 1.0, 1.0, 0 > )
   return button
 }
+
+
 
 //  ███    ███  █████  ██████      ███████ ███████  ██████  ███    ███ ███████ ███    ██ ████████ ███████ 
 //  ████  ████ ██   ██ ██   ██     ██      ██      ██       ████  ████ ██      ████   ██    ██    ██      
@@ -410,6 +486,9 @@ function MovementGym_Hub_Buttons() {
   MapEditor_CreateProp($"mdl/industrial/screwdriver_octane.rmdl", < 10517, 10181.96, -4230.4 > , < 0, -180, -90 > , true, 5000, -1, 4.98262)
   MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 10509, 10076.96, -4217.5 > , < 90, 0, 0 > , true, 5000, -1, 1.367478)
   MapEditor_CreateProp($"mdl/props/lifeline_needle/lifeline_needle.rmdl", < 10517.2, 9993.263, -4230.4 > , < 0, -90, -90 > , true, 5000, -1, 6.85924)
+  
+  MapEditor_CreateProp( $"mdl/fx/core_energy.rmdl", < -21600, 400, -26500 >, < 0, 0, 0 >, true, 50000, -1, 5.1 )
+
 
   foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
 
@@ -927,44 +1006,50 @@ function MovementGym_Map1() {
     // Buttons
     AddCallback_OnUseEntity( CreateFRButton(< 5500.9, 9208.609, -688.353 >, < 0, -89.9998, 0 >, "%use% Back to start"), void function(entity panel, entity user, int input)
     {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 6961, 1147.7710, -1453 >,< 0, -89.9998, 0 >)
-user.p.isTimerActive = false
-user.p.startTime = 0
-user.p.currentCheckpoint = 1
+	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+	TeleportFRPlayer(user,< 6961, 1147.7710, -1453 >,< 0, -89.9998, 0 >)
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+	user.p.currentCheckpoint = 1
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 5500.9, 9096.609, -688.353 >, < 0, -89.9998, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
     {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-user.p.isTimerActive = false
-user.p.startTime = 0
-user.p.allowCheckpoint = false
+	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+	TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+	Message(user, "Hub")
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+	user.p.allowCheckpoint = false
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 6900.8, 1258.493, -1457 >, < 0, 0, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
     {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
-Message(user, "Hub")
-int reset = 0
-user.SetPersistentVar("gen", reset)
+	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+	TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+	Message(user, "Hub")
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+	user.p.allowCheckpoint = false
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 6902.018, 1045, -1457 >, < 0, 179.9997, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
     {
-//Start Timer Button
+	//Start Timer Button
 	user.p.isTimerActive = true
 	user.p.startTime = floor( Time() ).tointeger()
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
 	Message(user, "Timer Started!" )
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 5330, 9154.7, -688.353 >, < 0, -89.9998, 0 >, "%use% Stop Timer"), void function(entity panel, entity user, int input)
     {
-//Stop timer Button
+     //Stop timer Button
       if (user.p.isTimerActive == true) {
         user.p.finalTime = floor( Time() ).tointeger() - user.p.startTime
         
@@ -986,6 +1071,12 @@ user.SetPersistentVar("gen", reset)
           user.p.isTimerActive = false
 	  user.p.startTime = 0
 	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+	  
         } else { 
 	  
 	  //Display player Time
@@ -998,7 +1089,13 @@ user.SetPersistentVar("gen", reset)
 	  //Reset Timer
           user.p.isTimerActive = false
 	  user.p.startTime = 0
-	}
+	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+	  }
 }
     })
 
@@ -1108,18 +1205,10 @@ user.SetPersistentVar("gen", reset)
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 2
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1134,18 +1223,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 3
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1160,18 +1240,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 4
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1186,18 +1257,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 1
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1212,18 +1274,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 5
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1238,18 +1291,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 8
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1264,18 +1308,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 11
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1290,18 +1325,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 12
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1316,18 +1342,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 6
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1342,18 +1359,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 7
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1368,18 +1376,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 9
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -1394,18 +1393,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 10
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2011,6 +2001,10 @@ function MovementGym_Map2() {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
       Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      user.p.isTimerActive = false
+      user.p.startTime = 0
+      user.p.allowCheckpoint = false
+      Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 19589.47, -25748.59, 21876.2 >, < 0, -89.9992, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
@@ -2019,6 +2013,8 @@ function MovementGym_Map2() {
 	user.p.isTimerActive = true
 	user.p.startTime = floor( Time() ).tointeger()
 	Message(user, "Timer Started!" )
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 29284.57, -19512.01, 24886.57 >, < 0, 0, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
@@ -2029,16 +2025,18 @@ Message(user, "Hub")
 user.p.isTimerActive = false
 user.p.startTime = 0
 user.p.allowCheckpoint = false
+Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 29172.57, -19512.01, 24886.57 >, < 0, 0, 0 >, "%use% Back to start"), void function(entity panel, entity user, int input)
     {
-EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-TeleportFRPlayer(user,< 19500.3000, -25867.7000, 21940 > , < 0, -89.9998, 0 >)
-user.p.isTimerActive = false
-user.p.startTime = 0
-user.p.currentCheckpoint = 1
+      EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+      TeleportFRPlayer(user,< 19500.3000, -25867.7000, 21940 > , < 0, -89.9998, 0 >)
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+	user.p.currentCheckpoint = 1
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 29226.47, -19618.21, 24886.57 >, < 0, 0, 0 >, "%use% Stop Timer"), void function(entity panel, entity user, int input)
@@ -2065,6 +2063,12 @@ user.p.currentCheckpoint = 1
           user.p.isTimerActive = false
 	  user.p.startTime = 0
 	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+	  
         } else { 
 	  
 	  //Display player Time
@@ -2077,8 +2081,14 @@ user.p.currentCheckpoint = 1
 	  //Reset Timer
           user.p.isTimerActive = false
 	  user.p.startTime = 0
+	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 	}
-}
+      }
     })
 
 
@@ -2188,18 +2198,9 @@ user.p.currentCheckpoint = 1
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 2
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2533,18 +2534,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 3
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2559,18 +2551,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 4
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2585,18 +2568,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 6
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2611,18 +2585,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 7
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2637,18 +2602,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 9
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2692,18 +2648,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 10
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2800,18 +2747,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 11
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2959,18 +2897,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 5
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -2985,18 +2914,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 8
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -3011,18 +2931,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 12
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -3037,18 +2948,9 @@ if (IsValid(ent)){
 if (IsValid(ent)){
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP){
 		int checkpointInThisTrigger = 2
-		//show current time
-		if(ent.p.isTimerActive == true){
-			ent.p.currentTime = floor( Time() ).tointeger() - ent.p.startTime
-			int seconds = ent.p.currentTime
-			if (seconds > 59){
-				int minutes = seconds / 60
-				int realseconds = seconds - (minutes * 60)		
-				Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
-			} else {
-				Message(ent, "Current Time: " + seconds + " seconds" )
-			}
-		}
+		//show checkpoint msg
+		if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+			Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 		
 		//set checkpoint
 		ent.p.currentCheckpoint = checkpointInThisTrigger
@@ -6129,6 +6031,8 @@ function MovementGym_Surf_Kitsune_lvl1() {
       user.p.isTimerActive = true
       user.p.startTime = floor(Time()).tointeger()
       Message(user, "Timer Started!")
+      Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+      Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
     })
 
   AddCallback_OnUseEntity(CreateSurfButton( < -38593.7, -10285.93, 21306.73 > , < 0, 179.9999, 0 > , "%use% Back to Hub"), void
@@ -6147,6 +6051,8 @@ function MovementGym_Surf_Kitsune_lvl1() {
       //Reset Timer
       user.p.isTimerActive = false
       user.p.startTime = 0
+      
+      Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 
       //Re-enable invis after surf
       user.p.isPlayerInvisAllowed = true
@@ -6234,18 +6140,9 @@ function MovementGym_Surf_Kitsune_lvl1() {
 
           int previousCheckpoint = 3
           int checkpointInThisTrigger = 4
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -6383,18 +6280,9 @@ function MovementGym_Surf_Kitsune_lvl2() {
 
           int previousCheckpoint = 4
           int checkpointInThisTrigger = 5
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -6543,18 +6431,9 @@ function MovementGym_Surf_Kitsune_lvl3() {
 
           int previousCheckpoint = 5
           int checkpointInThisTrigger = 6
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -6734,18 +6613,9 @@ function MovementGym_Surf_Kitsune_lvl4() {
 
           int previousCheckpoint = 6
           int checkpointInThisTrigger = 7
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -6924,18 +6794,9 @@ function MovementGym_Surf_Kitsune_lvl5() {
 
           int previousCheckpoint = 7
           int checkpointInThisTrigger = 8
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -7230,18 +7091,9 @@ function MovementGym_Surf_Kitsune_lvl6() {
 
           int previousCheckpoint = 8
           int checkpointInThisTrigger = 9
-          //show current time
-          if (ent.p.isTimerActive == true) {
-            ent.p.currentTime = floor(Time()).tointeger() - ent.p.startTime
-            int seconds = ent.p.currentTime
-            if (seconds > 59) {
-              int minutes = seconds / 60
-              int realseconds = seconds - (minutes * 60)
-              Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds ")
-            } else {
-              Message(ent, "Current Time: " + seconds + " seconds")
-            }
-          }
+          //show checkpoint msg
+          if(ent.p.currentCheckpoint != checkpointInThisTrigger)
+          	Remote_CallFunction_NonReplay( ent, "MG_Checkpoint_Msg")
 
           if (ent.p.currentCheckpoint == previousCheckpoint) {
             //set checkpoint
@@ -7265,9 +7117,9 @@ function MovementGym_Surf_Kitsune_lvl7() {
   float rampr = 0.5
   float rampg = 0.0
   float rampb = 1.0
-  float darkrampr = 1.0
-  float darkrampg = 1.0
-  float darkrampb = 1.0
+  float darkrampr = 0.13
+  float darkrampg = 0.0
+  float darkrampb = 0.25
 
   // Props Array
   array < entity > ClipArray;
@@ -7857,6 +7709,12 @@ function MovementGym_Surf_Kitsune_lvl7() {
           //Reset Timer
           user.p.isTimerActive = false
           user.p.startTime = 0
+	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 
         } else {
 
@@ -7870,6 +7728,12 @@ function MovementGym_Surf_Kitsune_lvl7() {
           //Reset Timer
           user.p.isTimerActive = false
           user.p.startTime = 0
+	  
+	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	  
+	  //Send time to killfeed
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
         }
       }
     })
@@ -7892,6 +7756,8 @@ function MovementGym_Surf_Kitsune_lvl7() {
       //Reset Timer
       ent.p.isTimerActive = false
       ent.p.startTime = 0
+      
+      Remote_CallFunction_NonReplay( ent, "MG_StopWatch_toggle", false)
 
       //Re-enable invis after surf
       ent.p.isPlayerInvisAllowed = true
@@ -7908,3 +7774,4 @@ function MovementGym_Surf_Kitsune_lvl7() {
   DispatchSpawn(trigger_0)
 
 }
+

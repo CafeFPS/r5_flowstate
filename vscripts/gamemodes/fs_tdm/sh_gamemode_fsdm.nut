@@ -934,52 +934,54 @@ void function Sh_CustomTDM_Init()
 		    
 		if(FlowState_EnableMovementGym()){
 		
-		Shared_RegisterLocation(
-		NewLocationSettings(
-			"Movement Gym",
-			[
-						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
-			],
-			<0, 0, 3000>
+			Shared_RegisterLocation(
+			NewLocationSettings(
+				"Movement Gym",
+				[
+					NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
+				],
+				<0, 0, 3000>
+					)
 				)
-			)
+			
+			return
 		}
 		    
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
 		{
-		Shared_RegisterLocation(
-			NewLocationSettings(
-				"TTV Building",
-				[
-					      NewLocPair(<11360, 6151, -4079>, <0, 102, 0>),
-					      NewLocPair(<11407, 6778, -4295>, <0, 88, 0>),
-					      NewLocPair(<11973, 4158, -4220>, <0, 82, 0>),
-					      NewLocPair(<9956, 3435, -4239>, <0, 0, 0>),
-					      NewLocPair(<9038, 3800, -4120>, <0, -88, 0>),
-					      NewLocPair(<7933, 6692, -4250>, <0, 76, 0>),
-					      NewLocPair(<8990, 5380, -4250>, <0, 145, 0>),
-					      NewLocPair(<8200, 5463, -3815>, <0, 0, 0>),
-					      NewLocPair(<9789, 5363, -3480>, <0, 174, 0>),
-					      NewLocPair(<9448, 5804, -4000>, <0, 0, 0>),
-					      NewLocPair(<8135, 4087, -4233>, <0, 90, 0>),
-					      NewLocPair(<9761, 5980, -4250>, <0, 135, 0>)
-					NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
-					NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
-					NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
-					NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
-					NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
-					NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
-					NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
-					NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
-					NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
-					NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
-					NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
-					NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
-					NewLocPair(<9012, 5386, -4242>, <0, 90, 0>)
-				],
-				<0, 0, 3000>
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"TTV Building",
+					[
+							NewLocPair(<11360, 6151, -4079>, <0, 102, 0>),
+							NewLocPair(<11407, 6778, -4295>, <0, 88, 0>),
+							NewLocPair(<11973, 4158, -4220>, <0, 82, 0>),
+							NewLocPair(<9956, 3435, -4239>, <0, 0, 0>),
+							NewLocPair(<9038, 3800, -4120>, <0, -88, 0>),
+							NewLocPair(<7933, 6692, -4250>, <0, 76, 0>),
+							NewLocPair(<8990, 5380, -4250>, <0, 145, 0>),
+							NewLocPair(<8200, 5463, -3815>, <0, 0, 0>),
+							NewLocPair(<9789, 5363, -3480>, <0, 174, 0>),
+							NewLocPair(<9448, 5804, -4000>, <0, 0, 0>),
+							NewLocPair(<8135, 4087, -4233>, <0, 90, 0>),
+							NewLocPair(<9761, 5980, -4250>, <0, 135, 0>)
+							NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
+							NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
+							NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
+							NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
+							NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
+							NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
+							NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
+							NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
+							NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
+							NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
+							NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
+							NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
+							NewLocPair(<9012, 5386, -4242>, <0, 90, 0>)
+					],
+					<0, 0, 3000>,$"rui/flowstatelocations/ttvbuilding"
+				)
 			)
-		)
 		}
 		else{
 		Shared_RegisterLocation(
@@ -1440,87 +1442,7 @@ void function Sh_CustomTDM_Init()
 			)
 		)
         }
-		///////////////////////////////////
-		//PROPHUNT LOCATIONS///////////////			
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "TTV Building",
-                    [
-                        NewLocPair(<8779, 5154, -4092>, <0, 90, 0>),
-                        NewLocPair(<9351,6319,-4095>, <0, -120, 0>),
-                        NewLocPair(<10462,6128,-4163>, <0, -45, 0>),
-                        NewLocPair(<9635,4868,-4073>, <0, -135, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Skill trainer By CafeFPS",
-                    [
-                        NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
-                        NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
-                        NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
-                        NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "TTV Building 2",
-                    [
-                        NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
-                        NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
-						NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
-                        NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Overlook",
-                    [
-                        NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
-                        NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
-                        NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
-						NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-			
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Train yard",
-                    [
-                        NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
-                        NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
-                        NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
-						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>),
-						NewLocPair(<-14930,2065,-3140>, <0, 3, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
 
-	  // RegisterLocationPROPHUNT(
-			// NewLocationSettings(
-				// "Thermal Station",
-				// [
-					// NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
-					// NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
-					// NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
-					// NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>)
-				// ],
-				// <0, 0, 11000>
-			// )
-		// )
-
-	///////////////////////////////////
-	//END PROPHUNT LOCATIONS///////////////	
-	
 	///////////////////////////////////////////////////
 	//EXCLUSIVE SURF LOCATIONS FOR WORLD'S EDGE////////	
 	

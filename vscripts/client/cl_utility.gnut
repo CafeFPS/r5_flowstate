@@ -661,7 +661,7 @@ void function Dev_PrintClientMessage( float duration )
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "movement_gym" )
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

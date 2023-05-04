@@ -334,9 +334,9 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/duckhunt"
 		break
 		
-		// case "fs_dm":
-		// emblemImage = $"rui/flowstatecustom/dm"
-		// break
+		case "fs_dm":
+		emblemImage = $"rui/flowstatecustom/dm"
+		break
 
 		case "flowstate_pkknockback":
 		emblemImage = $"rui/flowstatecustom/pkpushback2"
@@ -349,6 +349,16 @@ asset function GetModeEmblemImage( string playlistName )
 		// case "flowstate_infection":
 		// emblemImage = $"rui/flowstatecustom/infection"
 		// break
+	}
+	
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	{
+		emblemImage = $"rui/flowstatecustom/movementgym"
+	}
+	
+	if( GetCurrentPlaylistName() == "fs_1v1" )
+	{
+		emblemImage = $"rui/flowstatecustom/1v1"
 	}
 	#endif
 		

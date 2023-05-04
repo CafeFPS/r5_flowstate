@@ -148,7 +148,7 @@ void function SetCommonScoreRUIVars( var rui )
 	switch( GameRules_GetGameMode() )
 	{
 		case "flowstate_infection":
-			RuiSetString( rui, "gameModeString", "APEX INFECTION" )
+			RuiSetString( rui, "gameModeString", "FS INFECTED" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
@@ -157,7 +157,7 @@ void function SetCommonScoreRUIVars( var rui )
 			return
 		
 		case "fs_prophunt":
-			RuiSetString( rui, "gameModeString", "APEX PROPHUNT" )
+			RuiSetString( rui, "gameModeString", "FS PROPHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PROP ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PROPS ALIVE" )
@@ -165,7 +165,7 @@ void function SetCommonScoreRUIVars( var rui )
 			return
 			
 		case "fs_duckhunt":
-			RuiSetString( rui, "gameModeString", "APEX DUCK HUNT" )
+			RuiSetString( rui, "gameModeString", "FS DUCKHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "DUCK ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "DUCKS ALIVE" )
@@ -173,7 +173,7 @@ void function SetCommonScoreRUIVars( var rui )
 			return
 			
 		case "flowstate_snd":
-			RuiSetString( rui, "gameModeString", "SEARCH AND DESTROY" )
+			RuiSetString( rui, "gameModeString", "FS SEARCH AND DESTROY" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
@@ -203,11 +203,15 @@ void function SetCommonScoreRUIVars( var rui )
 		// if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 			// RuiSetString( rui, "gameModeString", "APEX 1v1" )
 
-		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
-			RuiSetString( rui, "gameModeString", "APEX DM" )
-		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
+			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
+		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
 			RuiSetString( rui, "gameModeString", "HACKERS VS PROS" )
-	
+		else if(GetCurrentPlaylistName() == "fs_movementgym")
+			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
+		else if(GetCurrentPlaylistName() == "fs_1v1")
+			RuiSetString( rui, "gameModeString", "FS 1v1" )
+		
 		if(GameRules_GetGameMode() == "flowstate_pkknockback")
 		{
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )

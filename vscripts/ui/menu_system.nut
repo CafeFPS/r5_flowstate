@@ -263,7 +263,7 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "movement_gym" )
+		if( GetCurrentPlaylistName() == "fs_movementgym" )
 		{
 			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )

@@ -31,6 +31,7 @@ global function GiveRandomSecondaryWeaponMetagame
 global function LoadCustomWeapon
 global function getkd
 
+global function ClientCommand_SpectateEnemies
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
 global function	ClientCommand_ShowLatency
@@ -44,6 +45,7 @@ global function SendScoreboardToClient
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
+global bool VOTING_PHASE_ENABLE = true
 
 //TDM Saved Weapon List
 global table<string,string> weaponlist
@@ -97,7 +99,7 @@ struct {
 	bool mapSkyToggle = false
 	array<string> allChatLines
 	array<string> battlelog
-	string authkey = ""
+	string authkey = "123"
 } file
 
 struct
@@ -125,14 +127,22 @@ void function _CustomTDM_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
-	if (GetCurrentPlaylistName() != "movement_gym")
+	if (GetCurrentPlaylistName() != "fs_movementgym")
 		SurvivalFreefall_Init() //Enables freefall/skydive
 	
 	PrecacheCustomMapsProps()
 	PrecacheZeesMapProps()
 	
-	if (GetCurrentPlaylistName() == "movement_gym")
+	if (GetCurrentPlaylistName() == "fs_movementgym")
+	{
+		VOTING_PHASE_ENABLE = false
 		PrecacheMovementGymProps()
+	}
+	
+	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+	{
+		VOTING_PHASE_ENABLE = false
+	}
 	
 	PrecacheDEAFPSMapProps()
 
@@ -162,7 +172,7 @@ void function _CustomTDM_Init()
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
 		
-		if( GetCurrentPlaylistName() != "movement_gym" ){
+		if( GetCurrentPlaylistName() != "fs_movementgym" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
 		
@@ -444,6 +454,7 @@ void function _OnPlayerConnected(entity player)
 	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
 	    player.SetPlayerNetBool( "pingEnabled", false )
 	    player.AddToRealm(1)
+	    Remote_CallFunction_NonReplay( player, "Cl_MovementGym_Init")
 	} else
 	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
@@ -884,11 +895,22 @@ void function CheckForObservedTarget(entity player)
 				player.p.lastFrameObservedTarget.SetPlayerNetInt( "playerObservedCount", max(0, player.p.lastFrameObservedTarget.GetPlayerNetInt( "playerObservedCount" ) - 1) )
 				player.p.lastFrameObservedTarget = null
 			}
+			
+			if(!IsValid( player.GetObserverTarget() ) && GetGameState() == eGameState.Playing )
+			{
+				player.p.isSpectating = false
+				player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+				player.SetSpecReplayDelay( 0 )
+				player.SetObserverTarget( null )
+				player.StopObserverMode()
+				player.p.lastTimeSpectateUsed = Time()
+				_HandleRespawn( player )
+			}
 		}
 	)
 	
 	entity observerTarget
-	while(IsValid(player) && player.IsObserver() && player.GetObserverTarget() != null )
+	while(IsValid(player) && player.IsObserver() && IsValid( player.GetObserverTarget() ) )
 	{		
 		observerTarget = player.GetObserverTarget()
 		if(observerTarget != player.p.lastFrameObservedTarget)
@@ -2011,8 +2033,8 @@ void function SimpleChampionUI()
 {
 	//printt("Flowstate DEBUG - Game is starting.")
 
-	foreach(player in GetPlayerArray())
-		if(IsValid(player)) ScreenFade( player, 0, 0, 0, 255, 1.5, 1.5, FFADE_IN | FFADE_PURGE ) //let's do this before destroy player props so it looks good in custom maps
+	// foreach(player in GetPlayerArray())
+		// if(IsValid(player)) ScreenFade( player, 0, 0, 0, 255, 1.5, 1.5, FFADE_IN | FFADE_PURGE ) //let's do this before destroy player props so it looks good in custom maps
 
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
@@ -2046,7 +2068,14 @@ void function SimpleChampionUI()
 
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
+
 	file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
+	
+	if( FlowState_EnableMovementGym() )
+	{
+		file.selectedLocation = file.locationSettings[ choice ]
+	}
+
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
 	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
@@ -2450,8 +2479,9 @@ void function SimpleChampionUI()
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
 		}
-		
-	thread SendScoreboardToClient()
+	
+	if( VOTING_PHASE_ENABLE )
+		thread SendScoreboardToClient()
 	
 	wait 1
 	
@@ -2471,229 +2501,247 @@ void function SimpleChampionUI()
 	{
 		if( !IsValid( player ) ) continue
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		if( GetCurrentPlaylistName() == "movement_gym" ) {
+					Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n        With help from AyeZee#6969, Julefox#0050 & @CafeFPS", 7, "UI_Menu_RoundSummary_Results" )
+				}
 		player.SetThirdPersonShoulderModeOff()	
 		player.FreezeControlsOnServer()
 	}
 	
-	int TeamWon = 69
-	
-	if(GetPlayerArray().len() == 1)
-		TeamWon = gp()[0].GetTeam() //DEBUG VALUE
-	
-	if(IsValid(GetBestPlayer()))
-		TeamWon = GetBestPlayer().GetTeam()
-	
-
-	// Only do voting for maps with multi locations
-	// if ( file.locationSettings.len() >= NUMBER_OF_MAP_SLOTS_FSDM )
-	// {
-
-		// for each player, open the vote menu and set it to the winning team screen
-		// foreach( player in GetPlayerArray() )
-		// {
-			// if( !IsValid( player ) )
-				// continue
-			
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_ChampionScreenHandle", true, TeamWon, skinIndexForChampion)
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.WinnerScreen, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-		// }
-		foreach( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) )
-				continue
-			
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
-		}		
+	if( !VOTING_PHASE_ENABLE )
+		wait 7
 		
-		thread function() : ()
-		{
-			for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
-			{
-				while( true )
-				{
-					// Get a random location id from the available locations
-					int randomId = RandomIntRange(0, file.locationSettings.len())
+	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+	{
+		// foreach( player in GetPlayerArray() )
+			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
 
-					// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
-					if( !FS_DM.mapIds.contains( randomId ) )
+		foreach( player in GetPlayerArray() )
+			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
+		
+		wait 6.0
+		
+		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+			MovementGymSaveTimesToFile()
+
+		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	}
+	
+	if( VOTING_PHASE_ENABLE )
+	{
+		int TeamWon = 69
+		
+		if(GetPlayerArray().len() == 1)
+			TeamWon = gp()[0].GetTeam() //DEBUG VALUE
+		
+		if(IsValid(GetBestPlayer()))
+			TeamWon = GetBestPlayer().GetTeam()
+		
+
+		// Only do voting for maps with multi locations
+		// if ( file.locationSettings.len() >= NUMBER_OF_MAP_SLOTS_FSDM )
+		// {
+
+			// for each player, open the vote menu and set it to the winning team screen
+			// foreach( player in GetPlayerArray() )
+			// {
+				// if( !IsValid( player ) )
+					// continue
+				
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_ChampionScreenHandle", true, TeamWon, skinIndexForChampion)
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.WinnerScreen, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			// }
+			foreach( player in GetPlayerArray() )
+			{
+				if( !IsValid( player ) )
+					continue
+				
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
+				Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+				EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
+			}		
+			
+			thread function() : ()
+			{
+				for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
+				{
+					while( true )
 					{
-						FS_DM.mapIds.append( randomId )
-						break
+						// Get a random location id from the available locations
+						int randomId = RandomIntRange(0, file.locationSettings.len())
+
+						// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
+						if( !FS_DM.mapIds.contains( randomId ) )
+						{
+							FS_DM.mapIds.append( randomId )
+							break
+						}
 					}
 				}
-			}
-		}()
-		
-		wait 7
-
-		// foreach( player in GetPlayerArray() )
-		// {
-			// if( !IsValid( player ) )
-				// continue
+			}()
 			
-			// Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-			// EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
-		// }
-		
-		wait 7
-	
-		// Set voting to be allowed
-		FS_DM.votingtime = true
+			wait 7
 
-		// For each player, set voting screen and update maps that are picked for voting
-		foreach( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) )
-				continue
+			// foreach( player in GetPlayerArray() )
+			// {
+				// if( !IsValid( player ) )
+					// continue
+				
+				// Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+				// EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
+			// }
 			
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_DM.mapIds[0], FS_DM.mapIds[1], FS_DM.mapIds[2], FS_DM.mapIds[3])
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-		}
+			//wait 7
+		
+			// Set voting to be allowed
+			FS_DM.votingtime = true
 
-		wait 16
-
-		FS_DM.votestied = false
-		bool anyVotes = false
-
-		// Make voting not allowed
-		FS_DM.votingtime = false
-
-		// See if there was any votes in the first place
-		foreach( int votes in FS_DM.mapVotes )
-		{
-			if( votes > 0 )
+			// For each player, set voting screen and update maps that are picked for voting
+			foreach( player in GetPlayerArray() )
 			{
-				anyVotes = true
-				break
+				if( !IsValid( player ) )
+					continue
+				
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_DM.mapIds[0], FS_DM.mapIds[1], FS_DM.mapIds[2], FS_DM.mapIds[3])
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 			}
-		}
 
-		if ( anyVotes )
-		{
-			// store the highest vote count for any of the maps
-			int highestVoteCount = -1
+			wait 16
 
-			// store the last map id of the map that has the highest vote count
-			int highestVoteId = -1
+			FS_DM.votestied = false
+			bool anyVotes = false
 
-			// store map ids of all the maps with the highest vote count
-			array<int> mapsWithHighestVoteCount
+			// Make voting not allowed
+			FS_DM.votingtime = false
 
-
-			for(int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i)
+			// See if there was any votes in the first place
+			foreach( int votes in FS_DM.mapVotes )
 			{
-				int votes = FS_DM.mapVotes[i]
-				if( votes > highestVoteCount )
+				if( votes > 0 )
 				{
-					highestVoteCount = votes
-					highestVoteId = FS_DM.mapIds[i]
-
-					// we have a new highest, so clear the array
-					mapsWithHighestVoteCount.clear()
-					mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
-				}
-				else if( votes == highestVoteCount ) // if this map also has the highest vote count, add it to the array
-				{
-					mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
+					anyVotes = true
+					break
 				}
 			}
 
-			// if there are multiple maps with the highest vote count then it's a tie
-			if( mapsWithHighestVoteCount.len() > 1 )
+			if ( anyVotes )
 			{
-				FS_DM.votestied = true
+				// store the highest vote count for any of the maps
+				int highestVoteCount = -1
+
+				// store the last map id of the map that has the highest vote count
+				int highestVoteId = -1
+
+				// store map ids of all the maps with the highest vote count
+				array<int> mapsWithHighestVoteCount
+
+
+				for(int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i)
+				{
+					int votes = FS_DM.mapVotes[i]
+					if( votes > highestVoteCount )
+					{
+						highestVoteCount = votes
+						highestVoteId = FS_DM.mapIds[i]
+
+						// we have a new highest, so clear the array
+						mapsWithHighestVoteCount.clear()
+						mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
+					}
+					else if( votes == highestVoteCount ) // if this map also has the highest vote count, add it to the array
+					{
+						mapsWithHighestVoteCount.append(FS_DM.mapIds[i])
+					}
+				}
+
+				// if there are multiple maps with the highest vote count then it's a tie
+				if( mapsWithHighestVoteCount.len() > 1 )
+				{
+					FS_DM.votestied = true
+				}
+				else // else pick the map with the highest vote count
+				{
+					// Set the vote screen for each player to show the chosen location
+					foreach( player in GetPlayerArray() )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, highestVoteId, eFSDMScreen.NotUsed)
+					}
+
+					// Set the location to the location that won
+					FS_DM.mappicked = highestVoteId
+				}
+
+				if ( FS_DM.votestied )
+				{
+					foreach( player in GetPlayerArray() )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.TiedScreen, eFSDMScreen.NotUsed, 42069, eFSDMScreen.NotUsed)
+					}
+
+					mapsWithHighestVoteCount.randomize()
+					waitthread RandomizeTiedLocations(mapsWithHighestVoteCount)
+				}
 			}
-			else // else pick the map with the highest vote count
+			else // No one voted so pick random map
 			{
+				// Pick a random location id from the aviable locations
+				FS_DM.mappicked = RandomIntRange(0, file.locationSettings.len() - 1)
+
 				// Set the vote screen for each player to show the chosen location
 				foreach( player in GetPlayerArray() )
 				{
 					if( !IsValid( player ) )
 						continue
 
-					Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, highestVoteId, eFSDMScreen.NotUsed)
+					Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, FS_DM.mappicked, eFSDMScreen.NotUsed)
 				}
-
-				// Set the location to the location that won
-				FS_DM.mappicked = highestVoteId
 			}
 
-			if ( FS_DM.votestied )
-			{
-				foreach( player in GetPlayerArray() )
-				{
-					if( !IsValid( player ) )
-						continue
+			//wait for timing
+			wait 5
 
-					Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.TiedScreen, eFSDMScreen.NotUsed, 42069, eFSDMScreen.NotUsed)
-				}
-
-				mapsWithHighestVoteCount.randomize()
-				waitthread RandomizeTiedLocations(mapsWithHighestVoteCount)
-			}
-		}
-		else // No one voted so pick random map
-		{
-			// Pick a random location id from the aviable locations
-			FS_DM.mappicked = RandomIntRange(0, file.locationSettings.len() - 1)
-
-			// Set the vote screen for each player to show the chosen location
+			// Close the votemenu for each player
 			foreach( player in GetPlayerArray() )
 			{
 				if( !IsValid( player ) )
 					continue
-
-				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.SelectedScreen, eFSDMScreen.NotUsed, FS_DM.mappicked, eFSDMScreen.NotUsed)
+				
+				ScreenCoverTransition_Player(player, Time() + 1)
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
 			}
-		}
+		wait 2
+		// }
+		
+		// Clear players the voted for next voting
+		FS_DM.votedPlayers.clear()
 
-		//wait for timing
-		wait 5
-
-		// Close the votemenu for each player
-		foreach( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) )
-				continue
-			
-			ScreenCoverTransition_Player(player, Time() + 1)
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
-		}
-	wait 2
-	// }
+		// Clear mapids for next voting
+		FS_DM.mapIds.clear()	
+	}
 	
-    // Clear players the voted for next voting
-    FS_DM.votedPlayers.clear()
-
-    // Clear mapids for next voting
-    FS_DM.mapIds.clear()	
-	
-	// if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
-	// {
-		// // foreach( player in GetPlayerArray() )
-			// // Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
-
-		// foreach( player in GetPlayerArray() )
-			// Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
-
-		// wait 6.0
-
-		// GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-	// }
-
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) ) continue
 		
 		ClearInvincible( player )
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		player.SetThirdPersonShoulderModeOff()
 		player.UnfreezeControlsOnServer()
 	}
-
+	
+	if( IsValid( file.ringBoundary ) )
+		file.ringBoundary.Destroy()
+	
+	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 	file.currentRound++
 }
 
@@ -2865,7 +2913,7 @@ entity function CreateRingBoundary(LocationSettings location)
 	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
 
 	//Audio thread for ring
-	if( GetCurrentPlaylistName() != "movement_gym" ){
+	if( GetCurrentPlaylistName() != "fs_movementgym" ){
 		foreach(sPlayer in GetPlayerArray())
 		thread AudioThread(circle, sPlayer, ringRadius)
 	}
