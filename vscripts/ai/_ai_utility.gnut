@@ -32,12 +32,6 @@ void function SpawnDoubleDoorAtCrosshair()
 	DispatchSpawn(ddr)
 }
 
-<<<<<<< HEAD
-=======
-
-// New functions for the Movement Recorder
-
->>>>>>> bba69ab81491429ae636b203f5c85feff2e4928a
 array<entity> dummyList;
 bool continueLoop = true;
 
@@ -82,37 +76,6 @@ void function DestroyDummys()
     }
 }
 
-<<<<<<< HEAD
-=======
-// Original Movement Recorder function, not really necessary anymore
-
-// void function RecordingAnimationTest()
-// {
-// //By Colombia
-// 	entity player = GetPlayerArray()[0]
-// 	vector initialpos = player.GetOrigin()
-// 	vector initialang = player.GetAngles()
-// 	player.StartRecordingAnimation(initialpos, initialang)
-// 	Message(player, "RECORDING MOVEMENT", "", 1.5)
-// 	wait 5
-// 	file.recordingAnims.append( player.StopRecordingAnimation() )
-// 	var anim = file.recordingAnims[file.recordingAnims.len()-1]
-// 	asset playermodel = player.GetModelName()
-// 	WaitFrame()
-// 	Message(player, "PLAYING MOVEMENT", "", 1.5)
-// 	printt(anim) //userdata
-// 	while(true)
-// 	{
-// 		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
-// 		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-// 		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
-// 		wait GetRecordedAnimationDuration( anim )
-// 		if(IsValid(dummy))
-// 		dummy.Destroy()
-// 	}
-// }
-
->>>>>>> bba69ab81491429ae636b203f5c85feff2e4928a
 void function CreateGravitationalForce( )
 {
 	entity point_push = CreateEntity( "point_push" )
