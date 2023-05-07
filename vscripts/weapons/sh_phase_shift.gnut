@@ -600,7 +600,7 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 		{
 			//EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_START_SOUND_3P )
 			foreach (entity p in GetPlayerArray())
-				EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, ent.GetOrigin(), p, SHIFTER_START_SOUND_3P )
+				if (ent != p) EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, ent.GetOrigin(), p, SHIFTER_START_SOUND_3P )
 			EmitSoundOnEntityExceptToPlayerNotPredicted( ent, ent, SHIFTER_LOOP_SOUND_3P )
 		}
 
