@@ -946,7 +946,7 @@ Scripts:
 	custom_maps/_custom_maps_3.nut
 	custom_maps/_custom_maps_4.nut
 	custom_maps/_custom_deafps_maps.nut
-	custom_maps/_custom_movement_maps.nut
+	custom_maps/_movement_gym.nut
 	custom_maps/_custom_doormap.nut
 	//map editor props
 	_place_map_editor_props_here.nut

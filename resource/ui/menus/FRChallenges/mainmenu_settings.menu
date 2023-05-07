@@ -609,7 +609,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			classname				"SettingsBtn"
 			conCommand				"net_minimumPacketLossDC"
 			minValue				1
-			maxValue				10
+			maxValue				20
 			stepSize				1
 			showConVarAsFloat		0
 			pin_to_sibling          SpawnDistanceText

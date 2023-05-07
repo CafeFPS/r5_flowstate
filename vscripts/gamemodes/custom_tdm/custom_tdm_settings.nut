@@ -20,6 +20,7 @@ global const table TDM_PLAYER_SETTINGS = {
     ["leech_range"]=64,
     ["impactSpeed"]=380,
     ["slidedecel"]=50,
+    ["automantle_enable"] = 1,
     ["slidevelocitydecay"]=0.7
 }
 

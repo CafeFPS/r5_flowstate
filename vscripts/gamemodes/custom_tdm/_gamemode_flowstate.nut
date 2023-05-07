@@ -126,10 +126,15 @@ void function _CustomTDM_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
-	SurvivalFreefall_Init() //Enables freefall/skydive
+	if (GetCurrentPlaylistName() != "movement_gym")
+		SurvivalFreefall_Init() //Enables freefall/skydive
+	
 	PrecacheCustomMapsProps()
 	PrecacheZeesMapProps()
-	PrecacheMovementMapProps()
+	
+	if (GetCurrentPlaylistName() == "movement_gym")
+		PrecacheMovementGymProps()
+	
 	PrecacheDEAFPSMapProps()
 
     __InitAdmins()
@@ -164,7 +169,11 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
-		AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+		
+		if( GetCurrentPlaylistName() != "movement_gym" ){
+			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+		}
+		
 		AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 		AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
 		AddClientCommandCallback("god", ClientCommand_God)
@@ -2104,10 +2113,9 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Movement Gym v0.8")
-    {
-        DestroyPlayerProps()
-        wait 1
+	} else if (file.selectedLocation.name == "Movement Gym") {
+		DestroyPlayerProps()
+		wait 1
 		thread MovementGym()
 	}
 
@@ -2360,8 +2368,8 @@ void function SimpleChampionUI()
 		if( !IsValid( player ) ) continue
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		if(file.selectedLocation.name == "Movement Gym v0.8"){
-			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Parkour Course by Treeree and JayTheYggdrasil modified by DEAFPS \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		if( GetCurrentPlaylistName() == "movement_gym" ) {
+			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
 		} else {
 			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
 		}
@@ -2453,7 +2461,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if ( file.selectedLocation.name == "Movement Gym v0.8" )
+    if ( file.selectedLocation.name == "Movement Gym" )
         ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
@@ -2488,8 +2496,10 @@ entity function CreateRingBoundary(LocationSettings location)
 	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
 
 	//Audio thread for ring
-	foreach(sPlayer in GetPlayerArray())
+	if( GetCurrentPlaylistName() != "movement_gym" ){
+		foreach(sPlayer in GetPlayerArray())
 		thread AudioThread(circle, sPlayer, ringRadius)
+	}
 
 	//Damage thread for ring
 	thread RingDamage(circle, ringRadius)

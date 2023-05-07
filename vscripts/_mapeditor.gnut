@@ -19,12 +19,12 @@ global function ReMapTeleportToMap
 
 global function ReMapSetOrigin
 global function ReMapSetAngles
-global function ReMapSetZiplineVars01
-global function ReMapSetZiplineVars02
-global function ReMapSetRemapArrayVec01
-global function ReMapSetRemapArrayVec02
-global function ReMapSetZiplinePanelModel
-global function ReMapSetZiplinePanelSettings
+global function ReMapSetBool
+global function ReMapSetFloat
+global function ReMapSetInt
+global function ReMapSetVectorArray01
+global function ReMapSetVectorArray02
+global function ReMapSetAssetArray01
 
 global function ReMapCreateZipline
 
@@ -177,7 +177,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
     }
 }
 
-entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false)
+entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float float02 = 1, bool addToArray = false)
 {
     entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
     e.kv.fadedist = fade
@@ -195,7 +195,7 @@ entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantl
     
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
-    e.SetModelScale( scale )
+    e.SetModelScale( float02 )
 
     if(addToArray)
         MapEditorEnts.append(e)
@@ -223,7 +223,7 @@ array < entity > function MapEditor_SpawnDoor( vector org, vector ang, int type,
             door.SetOrigin( org + door.GetRightVector() * 60 )
             DispatchSpawn( door )
 
-            entity oppositeDoor = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang + < 0, 180, 0 >, gold )
+            entity oppositeDoor = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, < -ang.x, ang.y + 180, -ang.z >, gold )
             oppositeDoor.SetOrigin( org + oppositeDoor.GetRightVector() * 60 )
             oppositeDoor.LinkToEnt( door )
             DispatchSpawn( oppositeDoor )
@@ -315,7 +315,7 @@ entity function MapEditor_CreateTrigger( vector origin, vector angles, float rad
     return trigger
 }
 
-entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float scale, string color, asset collisionModel, bool addToArray = false )
+entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float float02, string color, asset collisionModel, bool addToArray = false )
 {
     entity bubbleShield = CreateEntity( "prop_dynamic" )
     bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
@@ -324,7 +324,7 @@ entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector 
     bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
     bubbleShield.SetOrigin( origin )
     bubbleShield.SetAngles( angles )
-    bubbleShield.SetModelScale( scale )
+    bubbleShield.SetModelScale( float02 )
     // Blocks bullets, projectiles but not players and not AI
     bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
     DispatchSpawn( bubbleShield )
@@ -382,7 +382,7 @@ entity function SetNodeRopeProperties( entity rope )
     rope.kv.MoveSpeed = 64
     rope.kv.Slack = 25
     rope.kv.Subdiv = "2"
-    rope.kv.Width = "2"
+    rope.kv.float03 = "2"
     rope.kv.Type = "0"
     rope.kv.TextureScale = "1"
     rope.kv.PositionInterpolator = 2
@@ -450,7 +450,7 @@ void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addT
     rope_start.kv.MoveSpeed = 64
     rope_start.kv.Slack = 25
     rope_start.kv.Subdiv = "2"
-    rope_start.kv.Width = "2"
+    rope_start.kv.float03 = "2"
     rope_start.kv.Type = "0"
     rope_start.kv.TextureScale = "1"
     rope_start.kv.RopeMaterial = "cable/zipline.vmt"
@@ -466,7 +466,7 @@ void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addT
     rope_end.kv.MoveSpeed = 64
     rope_end.kv.Slack = 25
     rope_end.kv.Subdiv = "2"
-    rope_end.kv.Width = "2"
+    rope_end.kv.float03 = "2"
     rope_end.kv.Type = "0"
     rope_end.kv.TextureScale = "1"
     rope_end.kv.RopeMaterial = "cable/zipline.vmt"
@@ -555,27 +555,31 @@ vector origin01 = < 0, 0, 0 >
 vector origin02 = < 0, 0, 0 >
 vector angles01 = < 0, 0, 0 >
 vector angles02 = < 0, 0, 0 >
-bool isVertical = true
-float fadeDistance = -1.0
-float scale = 1.0
-float width = 2.0
-float speedScale = 1.0
-float lengthScale = 1.0
-int preserveVelocity = 0
-int dropToBottom = 1
-float startAutoDetachDistance = 150
-float endAutoDetachDistance = 50
-bool restPoint = false
-int pushOffInDirectionX = 1
-bool isMoving = false
-int detachEndOnSpawn = 0
-int detachEndOnUse = 0
-array< vector > remapArrayVec01 = []
-array< vector > remapArrayVec02 = []
-array< asset > optionalPanelsSkin = []
-float panelTimerMin = 32.0
-float panelTimerMax = 60.0
-int panelMaxUse = 0
+array< vector > arrayVec01 = []
+array< vector > arrayVec02 = []
+
+bool bool01 = true
+bool bool02 = false
+bool bool03 = false
+
+float float01 = -1.0
+float float02 = 1.0
+float float03 = 2.0
+float float04 = 1.0
+float float05 = 1.0
+float float06 = 150.0
+float float07 = 50.0
+float float08 = 32.0
+float float09 = 60.0
+
+int int01 = 0
+int int02 = 1
+int int03 = 1
+int int04 = 0
+int int05 = 0
+int int06 = 0
+
+array< asset > arrayAsset01 = []
 
 void function ReMapSetOrigin( vector vec01, vector vec02 )
 {
@@ -589,73 +593,71 @@ void function ReMapSetAngles( vector vec01, vector vec02 )
     angles02 = vec02
 }
 
-void function ReMapSetZiplineVars01( bool isVertical_, float fadeDistance_, float scale_, float width_, float speedScale_, float lengthScale_, int preserveVelocity_, int dropToBottom_ )
+void function ReMapSetBool( array < bool > arr )
 {
-    isVertical = isVertical_
-    fadeDistance = fadeDistance_
-    scale = scale_
-    width = width_
-    speedScale = speedScale_
-    lengthScale = lengthScale_
-    preserveVelocity = preserveVelocity_
-    dropToBottom = dropToBottom_
+    if ( arr.len() >= 1 ) bool01 = arr[ 0 ]
+    if ( arr.len() >= 2 ) bool02 = arr[ 1 ]
+    if ( arr.len() >= 3 ) bool03 = arr[ 2 ]
 }
 
-void function ReMapSetZiplineVars02( float startAutoDetachDistance_, float endAutoDetachDistance_, bool restPoint_, int pushOffInDirectionX_, bool isMoving_, int detachEndOnSpawn_, int detachEndOnUse_ )
+void function ReMapSetFloat( array < float > arr )
 {
-    startAutoDetachDistance = startAutoDetachDistance_
-    endAutoDetachDistance = endAutoDetachDistance_
-    restPoint = restPoint_
-    pushOffInDirectionX = pushOffInDirectionX_
-    isMoving = isMoving_
-    detachEndOnSpawn = detachEndOnSpawn_
-    detachEndOnUse = detachEndOnUse_
+    if ( arr.len() >= 1 ) float01 = arr[ 0 ]
+    if ( arr.len() >= 2 ) float02 = arr[ 1 ]
+    if ( arr.len() >= 3 ) float03 = arr[ 2 ]
+    if ( arr.len() >= 4 ) float04 = arr[ 3 ]
+    if ( arr.len() >= 5 ) float05 = arr[ 4 ]
+    if ( arr.len() >= 6 ) float06 = arr[ 5 ]
+    if ( arr.len() >= 7 ) float07 = arr[ 6 ]
+    if ( arr.len() >= 8 ) float08 = arr[ 7 ]
+    if ( arr.len() >= 9 ) float09 = arr[ 8 ]
 }
 
-void function ReMapSetRemapArrayVec01( array< vector > remapArrayVec01_ )
+void function ReMapSetInt( array < int > arr )
 {
-    remapArrayVec01 = remapArrayVec01_
+    if ( arr.len() >= 1 ) int01 = arr[ 0 ]
+    if ( arr.len() >= 2 ) int02 = arr[ 1 ]
+    if ( arr.len() >= 3 ) int03 = arr[ 2 ]
+    if ( arr.len() >= 4 ) int04 = arr[ 3 ]
+    if ( arr.len() >= 5 ) int05 = arr[ 4 ]
+    if ( arr.len() >= 6 ) int06 = arr[ 5 ]
 }
 
-void function ReMapSetRemapArrayVec02( array< vector > remapArrayVec02_ )
+void function ReMapSetVectorArray01( array< vector > arr )
 {
-    remapArrayVec02 = remapArrayVec02_
+    arrayVec01 = arr
 }
 
-void function ReMapSetZiplinePanelModel( array< asset > optionalPanelsSkin_ )
+void function ReMapSetVectorArray02( array< vector > arr )
 {
-    optionalPanelsSkin = optionalPanelsSkin_
+    arrayVec02 = arr
 }
 
-void function ReMapSetZiplinePanelSettings( float panelTimerMin_, float panelTimerMax_, int panelMaxUse_ )
+void function ReMapSetAssetArray01( array< asset > arr )
 {
-    panelTimerMin = panelTimerMin_
-    panelTimerMax = panelTimerMax_
-    panelMaxUse = panelMaxUse_
+    arrayAsset01 = arr
 }
 
 void function ReMapCreateZipline()
 {
-    MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, isVertical, fadeDistance, scale, width, speedScale, lengthScale, preserveVelocity, dropToBottom, startAutoDetachDistance, endAutoDetachDistance, restPoint, pushOffInDirectionX, isMoving, detachEndOnSpawn, detachEndOnUse, remapArrayVec01, remapArrayVec02, optionalPanelsSkin, panelTimerMin, panelTimerMax, panelMaxUse, true )
+    MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, bool01, float01, float02, float03, float04, float05, int01, int02, float06, float07, bool02, int03, bool03, int04, int05, arrayVec01, arrayVec02, arrayAsset01, float08, float09, int06, true )
 }
 
 void function ReMapTeleportToMap()
 {
-    int origin = remapArrayVec01.len()
-    int angles = remapArrayVec02.len()
+    int origin = arrayVec01.len()
+    int angles = arrayVec02.len()
 
     if ( origin != angles ) return
 
-    int i
-
     foreach ( player in GetPlayerArray() )
     {
-        i = RandomIntRange( 0, origin )
+        int i = RandomIntRange( 0, origin )
 
         if ( IsValid( player ) )
         {
-            player.SetOrigin( remapArrayVec01[ i ] )
-            player.SetAngles( remapArrayVec02[ i ] )
+            player.SetOrigin( arrayVec01[ i ] )
+            player.SetAngles( arrayVec02[ i ] )
             player.SetVelocity( < 0, 0, 0 > )
         }
     }
