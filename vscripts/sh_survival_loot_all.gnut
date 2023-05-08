@@ -185,6 +185,21 @@ struct CustomGrenadeData
 	float carePackageChance
 }
 
+global struct CustomAmmoData
+{
+	string className,
+	asset icon = $"rui/hud/gametype_icons/survival/sur_ammo_bullet_large",
+	asset model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_hc.rmdl",
+	string sound = "survival_loot_pickup_HeavyAmmo",
+	string sound3p = "survival_loot_pickup_3p_HeavyAmmo",
+	string printname = "Custom Ammo",
+    string pingCommsAction = "PING_AMMO_HIGHCAL",
+	string desc = "Custom Ammo Desc",
+	int countPerDrop = 80,
+	int stackSize = 80,
+	float chance = 10.0
+}
+
 array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
 
 array<CustomHopupData> function GetCustomHopupArray()
@@ -229,20 +244,39 @@ float function GetLootTableFloat( string ref, var datatable, int rowIndex, strin
 
 void function SURVIVAL_Loot_All_InitShared()
 {
-	#if(!UI)
-		//
-	#endif
-	var dt = GetDataTable( $"datatable/survival_loot.rpak" )
 	file.lootIndexToString.clear()
 	file.lootData.clear()
 
-	var attachmentTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
-
 	file.disabledRefs.clear()
-	string disabledRefs = GetCurrentPlaylistVarString( "survival_disabled_loot", " " )
-	file.disabledRefs = split( disabledRefs, " " )
+	file.disabledRefs = split( GetCurrentPlaylistVarString( "survival_disabled_loot", " " ), " " )
+	
+	
+	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot.rpak" ) )
+	//if(!IsLobby())
+	//	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot_sdk.rpak" ))
+	
+	#if CLIENT || SERVER
+	if(GameRules_GetGameMode() == "flowstate_snd")
+		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_custom_loot.rpak" ))
+	#endif
+	
+	RegisterCustomAmmos()
+	RegisterNewCustomAttachments()
+	RegisterNewCustomWeapons()
+	
+	RegisterCustomWeapons() //from playlist
+	#if(UI)
+		RegisterSignal( "GatherFriendInfo" )
+		RegisterSignal( "GatheredEnoughFriendInfo" )
+		SURVIVAL_UIInit_Override_DeathBox_RUI()
+	#endif
 
-	array<string> icons = []
+	file.initialized = true
+}
+
+void function SURVIVAL_Loot_RegFromDataTable(var dt)
+{
+	var attachmentTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
 	int numRows = GetDatatableRowCount( dt )
 	for ( int i = 0; i < numRows; i++ )
 	{
@@ -432,10 +466,6 @@ void function SURVIVAL_Loot_All_InitShared()
 		#endif
 	}
 
-	foreach(string icon in icons)
-	{
-
-	}
 	RegisterCustomWeapons()
 
 	#if(UI)
@@ -588,6 +618,204 @@ array<string> function GetCustomHopupsForWeapon(string className)
 	}
 	return result
 }
+
+void function RegisterCustomAmmo(CustomAmmoData AmmoData)
+{
+	LootData data
+	data.ref = AmmoData.className
+	data.baseWeapon = AmmoData.className
+
+	data.pickupString = AmmoData.printname
+	data.desc = AmmoData.desc
+	data.hudIcon = AmmoData.icon
+	data.model = AmmoData.model
+	data.tier = 1
+	data.countPerDrop = AmmoData.countPerDrop
+	data.inventorySlotCount = AmmoData.stackSize
+	data.lootType = eLootType.AMMO
+	data.pickupSound_1p = AmmoData.sound
+	data.pickupSound_3p = AmmoData.sound3p
+
+	#if SERVER || CLIENT
+	data.pingCommsAction = GetCommsActionForName( AmmoData.pingCommsAction )
+	#endif
+
+	data.index = file.lootIndexToString.len()
+	file.lootIndexToString.append( data.ref )
+	file.lootData[ data.ref ] <- data
+
+	#if !UI
+	AddCustomItemToLootPool( data.ref, "ammo", AmmoData.chance)
+	#endif
+}
+
+void function RegisterCustomAmmos()
+{
+	CustomAmmoData SniperAmmo = {
+		className = "sniper",
+		printname = "Sniper Ammo",
+		desc = "",
+
+		icon = $"rui/hud/gametype_icons/survival/sur_ammo_sniper",
+		model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl",
+		sound = "survival_loot_pickup_HeavyAmmo",
+		sound3p = "survival_loot_pickup_3p_HeavyAmmo",
+		pingCommsAction = "BLANK",
+		countPerDrop = 15,
+		stackSize = 30,
+		chance = 10.0
+	}
+
+	// CustomAmmoData ExplosiveAmmo = {
+		// printname = "Explosive Ammo",
+		// className = "explosive",
+
+		// desc = "",
+		// icon = $"rui/hud/gametype_icons/survival/sur_ammo_explosive",
+		// model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl",
+		// sound = "survival_loot_pickup_titan_ammo",
+		// sound3p = "survival_loot_pickup_3p_titan_ammo",
+		// pingCommsAction = "BLANK",
+		// countPerDrop = 5,
+		// stackSize = 10,
+		// chance = 10.0
+	// }
+
+	RegisterCustomAmmo(SniperAmmo)
+	// RegisterCustomAmmo(ExplosiveAmmo)
+}
+
+void function RegisterNewCustomAttachments()
+{
+	CustomHopupData sniper_mag_l1
+	sniper_mag_l1.className = "sniper_mag_l1"
+	sniper_mag_l1.displayName = "Sniper Mag level 1"
+	sniper_mag_l1.desc = "Sniper Mag level 1"
+	sniper_mag_l1.tier = 1
+	#if !UI
+	sniper_mag_l1.icon = $"rui/flowstatecustom/sniper_mag"
+	sniper_mag_l1.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
+	#endif
+	sniper_mag_l1.lowWeight = 5.0
+	sniper_mag_l1.medWeight = 10.0
+	sniper_mag_l1.highWeight = 25.0
+	sniper_mag_l1.attachmentSlot = "mag"
+	
+	CustomHopupData sniper_mag_l2
+	sniper_mag_l2.className = "sniper_mag_l2"
+	sniper_mag_l2.displayName = "Sniper Mag level 2"
+	sniper_mag_l2.desc = "Sniper Mag level 2"
+	sniper_mag_l2.tier = 2
+	#if !UI
+	sniper_mag_l2.icon = $"rui/flowstatecustom/sniper_mag"
+	sniper_mag_l2.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
+	#endif
+	sniper_mag_l2.lowWeight = 5.0
+	sniper_mag_l2.medWeight = 10.0
+	sniper_mag_l2.highWeight = 25.0
+	sniper_mag_l2.attachmentSlot = "mag"	
+	
+	CustomHopupData sniper_mag_l3
+	sniper_mag_l3.className = "sniper_mag_l3"
+	sniper_mag_l3.displayName = "Sniper Mag level 3"
+	sniper_mag_l3.desc = "Sniper Mag level 3"
+	sniper_mag_l3.tier = 3
+	#if !UI
+	sniper_mag_l3.icon = $"rui/flowstatecustom/sniper_mag"
+	sniper_mag_l3.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
+	#endif
+	sniper_mag_l3.lowWeight = 5.0
+	sniper_mag_l3.medWeight = 10.0
+	sniper_mag_l3.highWeight = 25.0
+	sniper_mag_l3.attachmentSlot = "mag"	
+
+	CustomHopupData skull_piercer
+	skull_piercer.className = "hopup_headshot_dmg"
+	skull_piercer.displayName = "Skull Piercer"
+	skull_piercer.desc = "Skull Piercer"
+	skull_piercer.tier = 4
+	#if !UI
+	skull_piercer.icon = $"rui/pilot_loadout/mods/hopup_skullpiercer"
+	skull_piercer.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl"
+	#endif
+	skull_piercer.lowWeight = 5.0
+	skull_piercer.medWeight = 10.0
+	skull_piercer.highWeight = 25.0
+	skull_piercer.attachmentSlot = "hopup"
+	
+	CreateCustomHopup(sniper_mag_l1)
+	CreateCustomHopup(sniper_mag_l2)
+	CreateCustomHopup(sniper_mag_l3)
+	CreateCustomHopup(skull_piercer)
+}
+
+void function RegisterNewCustomWeapons()
+{
+	CustomWeaponData volt
+	volt.className = "mp_weapon_volt_smg"
+	volt.tier = 1
+	volt.baseMods = []
+	volt.supportedAttachments = ["barrel", "mag", "sight", "grip"]
+	volt.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
+	volt.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
+	volt.weaponType = "smg"
+	volt.lowWeaponChance = 5.0
+	volt.medWeaponChance = 10.0
+	volt.highWeaponChance = 25.0
+	volt.isCP = false
+	
+	CustomWeaponData sentinel
+	sentinel.className = "mp_weapon_sentinel"
+	sentinel.tier = 1
+	sentinel.baseMods = []
+	sentinel.supportedAttachments = ["mag", "sight", "grip"]
+	sentinel.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
+	sentinel.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
+	sentinel.weaponType = "sniper"
+	sentinel.lowWeaponChance = 5.0
+	sentinel.medWeaponChance = 10.0
+	sentinel.highWeaponChance = 25.0
+	sentinel.isCP = false
+
+	CustomWeaponData kraber
+	kraber.className = "mp_weapon_sniper"
+	kraber.tier = 5
+	kraber.baseMods = []
+	kraber.supportedAttachments = []
+	kraber.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
+	kraber.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
+	kraber.weaponType = "sniper"
+	kraber.lowWeaponChance = 0
+	kraber.medWeaponChance = 0
+	kraber.highWeaponChance = 0
+	kraber.isCP = true
+
+	CustomWeaponData throwingknife
+	throwingknife.className = "mp_weapon_throwingknife"
+	throwingknife.tier = 5
+	throwingknife.baseMods = []
+	throwingknife.supportedAttachments = []
+	throwingknife.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
+	throwingknife.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
+	throwingknife.weaponType = "pistol"
+	throwingknife.lowWeaponChance = 0
+	throwingknife.medWeaponChance = 0
+	throwingknife.highWeaponChance = 0
+	throwingknife.isCP = true
+	
+	RegisterWeapon(volt)
+	RegisterCustomAttachments(GetCustomHopupsForWeapon(volt.className))	
+	
+	RegisterWeapon(sentinel)
+	RegisterCustomAttachments(GetCustomHopupsForWeapon(sentinel.className))	
+	
+	RegisterWeapon(kraber)
+	RegisterCustomAttachments(GetCustomHopupsForWeapon(kraber.className))	
+	
+	RegisterWeapon(throwingknife)
+	RegisterCustomAttachments(GetCustomHopupsForWeapon(throwingknife.className))	
+}
+
 
 void function RegisterCustomGrenade(CustomGrenadeData grenadeData) {
 	LootData data
@@ -884,6 +1112,7 @@ int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 			return eLootType.BACKPACK
 
 		case "custom_pickup":
+		case "bomb":
 			return eLootType.CUSTOMPICKUP
 
 		case "helmet":

@@ -142,8 +142,8 @@ void function Death_Package_Init()
 		PrecacheEffect( $"P_exp_spectre_death" )
 		PrecacheEffect( $"xo_exp_death" )
 
-		if ( SentryTurretsExplodeOnDeath() )
-			PrecacheEffect( TURRET_DEATH_FX )
+		// if ( SentryTurretsExplodeOnDeath() )
+			// PrecacheEffect( TURRET_DEATH_FX )
 
 		PrecacheModel( $"mdl/gibs/human_gibs.rmdl" )
 
@@ -276,20 +276,20 @@ void function HandleDeathPackage( entity ent, var damageInfo )
 		DamageInfo_SetDeathPackage( damageInfo, "knockback" )
 	}
 
-	if ( SentryTurretsExplodeOnDeath() )
-	{
-		if ( IsTurret( ent ) )
-		{
-			if ( ent.GetClassName() == "npc_turret_sentry" )
-			{
-				PlayFX( TURRET_DEATH_FX, ent.GetOrigin(), ent.GetAngles() )
-				if ( ent.Dev_GetAISettingByKeyField( "turret_explode_on_death" ) == 1 )
-					ent.Destroy()
+	// if ( SentryTurretsExplodeOnDeath() )
+	// {
+		// if ( IsTurret( ent ) )
+		// {
+			// if ( ent.GetClassName() == "npc_turret_sentry" )
+			// {
+				// PlayFX( TURRET_DEATH_FX, ent.GetOrigin(), ent.GetAngles() )
+				// if ( ent.Dev_GetAISettingByKeyField( "turret_explode_on_death" ) == 1 )
+					// ent.Destroy()
 
-				return
-			}
-		}
-	}
+				// return
+			// }
+		// }
+	// }
 
 	if ( !( "silentDeath" in ent.s ) )
 	{

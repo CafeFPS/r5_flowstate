@@ -15,6 +15,10 @@ var function OnWeaponPrimaryAttack_ability_phase_rewind( entity weapon, WeaponPr
 {
 	timetest = Time()
 	entity player = weapon.GetWeaponOwner()
+	
+	if ( player.IsPhaseShifted() )
+		return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+	
 	#if SERVER
 	thread RewindPlayer(player)
 	#endif

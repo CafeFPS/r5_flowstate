@@ -142,7 +142,7 @@ WeaponData
             "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG_OG"
             "viewmodel_offset_ads_by_centerpoint" 		"1"
 
-            "viewmodel_offset_ads" 				    "0 13 -0.15"
+            "viewmodel_offset_ads" 				    "0 13 0"
 
             "dof_zoom_nearDepthStart"				"1.0"
             "dof_zoom_nearDepthEnd"					"8.5"

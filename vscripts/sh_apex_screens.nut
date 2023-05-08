@@ -1336,7 +1336,8 @@ var function CreateApexScreenRUIElement( ApexScreenState screen )
 		RuiSetBool( rui, "sharesPropWithEnvironmentalRUI", true )
 
 	RuiTrackInt( rui, "cameraNearbyEnemySquads", GetLocalViewPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "cameraNearbyEnemySquads" ) )
-
+	RuiSetFloat3( rui, "logoTint", <1.0, 1.0, 1.0> )
+	
 	#if(true)
 		if ( IsFallLTM() )
 		{

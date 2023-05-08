@@ -165,9 +165,9 @@ void function GameModes_Init()
 	#endif
 
 	
-	gameMode = CUSTOM_TDM
+	gameMode = fs_dm
 	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "custom_tdm" )
+	GameMode_SetName( gameMode, "fs_dm" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
@@ -191,9 +191,9 @@ void function GameModes_Init()
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
-	gameMode = MAP_EDITOR
+	gameMode = map_editor_deprecated
 	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "map_editor" )
+	GameMode_SetName( gameMode, "map_editor_deprecated" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
@@ -204,9 +204,35 @@ void function GameModes_Init()
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
-	gameMode = CUSTOM_AIMTRAINER
+	gameMode = fs_aimtrainer
 	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "custom_aimtrainer" )
+	GameMode_SetName( gameMode, "fs_aimtrainer" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
+	gameMode = fs_prophunt
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "fs_prophunt" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
+	gameMode = fs_duckhunt
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "fs_duckhunt" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )

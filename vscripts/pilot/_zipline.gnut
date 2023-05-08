@@ -747,9 +747,10 @@ function CreateZiplineJetEffects( entity player )
 
 void function CodeCallback_ZiplineMount( entity player, entity zipline )
 {
-	// printl( "Mounting zipline")
+	player.p.ziplineUsages++
+	thread ResetZiplineUsageDelayed(player)
 	#if SERVER
-		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_attach", "3p_zipline_attach", player, player )
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_attach", "3p_zipline_attach", player, player )		
 	#endif
 
 }
@@ -758,7 +759,7 @@ void function CodeCallback_ZiplineStart( entity player, entity zipline )
 {
 	#if SERVER
 		CreateZiplineJetEffects( player )
-		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_loop", "3p_zipline_loop", player, player )
+		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_loop", "3p_zipline_loop", player, player )		
 		foreach ( callback in _ZiplineStartCallbacks )
 			thread callback( player, zipline )
 	#endif

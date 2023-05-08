@@ -1,7 +1,6 @@
 global function MpAbilityPhaseWalk_Init
 
 global function OnWeaponActivate_ability_phase_walk
-global function OnWeaponDeactivate_ability_phase_walk
 global function OnWeaponPrimaryAttack_ability_phase_walk
 global function OnWeaponChargeBegin_ability_phase_walk
 global function OnWeaponChargeEnd_ability_phase_walk
@@ -13,7 +12,6 @@ void function MpAbilityPhaseWalk_Init()
 {
 	PrecacheParticleSystem( PHASE_WALK_APPEAR_PRE_FX )
 }
-
 
 void function OnWeaponActivate_ability_phase_walk( entity weapon )
 {
@@ -31,27 +29,6 @@ void function OnWeaponActivate_ability_phase_walk( entity weapon )
 	}
 		
 		
-	#endif
-}
-
-void function OnWeaponDeactivate_ability_phase_walk( entity weapon )
-{
-	#if SERVER
-	entity player = weapon.GetWeaponOwner()
-	if(returnPropBool() || player.GetTeam() == TEAM_IMC){
-		printt("Flowstate DEBUG - Angles locked for prop team player.", player, player.GetAngles())
-		thread PROPHUNT_GiveAndManageRandomProp(player, true)
-
-	} else {
-		int newscore = player.p.PROPHUNT_Max3changes + 1 	//using int as a boolean
-		player.p.PROPHUNT_Max3changes = newscore
-		if (player.p.PROPHUNT_Max3changes <= 3){
-			thread PROPHUNT_GiveAndManageRandomProp(player)
-			} else {
-			printt("Flowstate DEBUG - Max amount of changes reached: ", player)
-			Message(player, "prophunt", "Max amount of changes reached.", 1)
-			}
-	}
 	#endif
 }
 

@@ -88,7 +88,6 @@ void function Cl_Survival_LootInit()
 	RegisterConCommandTriggeredCallback( "weaponSelectPrimary1", AttemptCancelHeal )
 	RegisterConCommandTriggeredCallback( "weaponSelectOrdnance", AttemptCancelHeal )
 	RegisterConCommandTriggeredCallback( "+scriptCommand4", UseSelectedHealthPickupType )
-	RegisterConCommandTriggeredCallback( "scoreboard_toggle_focus", UseSelectedHealthPickupType )
 	RegisterConCommandTriggeredCallback( "+use_alt", TryHolsterWeapon )
 
 	RegisterConCommandTriggeredCallback( "weaponSelectPrimary0", OnPlayerSwitchesToWeapon00 )
@@ -413,9 +412,12 @@ void function CreateDeathBoxRui( entity deathBox )
 		return
 
 	expect EHI( ehi )
-
-	clGlobal.levelEnt.Signal( "CreateDeathBoxRui" )
-	clGlobal.levelEnt.EndSignal( "CreateDeathBoxRui" )
+	
+	if( GameRules_GetGameMode() != "fs_aimtrainer" )
+	{
+		clGlobal.levelEnt.Signal( "CreateDeathBoxRui" )
+		clGlobal.levelEnt.EndSignal( "CreateDeathBoxRui" )
+	}
 
 	deathBox.EndSignal( "OnDestroy" )
 
@@ -642,7 +644,10 @@ void function Sur_OnUseEntGainFocus( entity ent )
 	}
 	else if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
 	{
-		thread CreateDeathBoxRui( ent )
+		if( GameRules_GetGameMode() != "fs_aimtrainer" )
+		{
+			thread CreateDeathBoxRui( ent )
+		}
 	}
 }
 

@@ -34,7 +34,7 @@ void function InitMainMenu( var newMenuArg )
 
 	file.subtitle = Hud_GetChild( file.menu, "Subtitle" )
 	var subtitleRui = Hud_GetRui( file.subtitle )
-	RuiSetString( subtitleRui, "subtitleText", "Reloaded".toupper() )
+	RuiSetString( subtitleRui, "subtitleText", "Flowstate ".toupper() + FLOWSTATE_VERSION )
 
 	file.versionDisplay = Hud_GetChild( menu, "VersionDisplay" )
 	file.signedInDisplay = Hud_GetChild( menu, "SignInDisplay" )

@@ -343,7 +343,7 @@ Scripts:
 	
 	melee/sh_melee.gnut
 	melee/sh_melee_synced.gnut
-	gamemodes/sh_gamemode_survival.nut
+	gamemodes/survival/sh_gamemode_survival.nut
 
 	sh_ping.gnut
 ]
@@ -499,7 +499,7 @@ Scripts:
 	conversation/_survival_commentary.gnut
 
 	gamemodes/_gamemode_tdm.nut
-	gamemodes/_gamemode_survival.nut
+	gamemodes/survival/_gamemode_survival.nut
 	mp/_base_gametype_mp.gnut
 	mp/_playlist.gnut
   mp/_bombardment_utility.gnut
@@ -587,7 +587,7 @@ Scripts:
 
 	//cinematic_mp/_ai_skits_clientdebugging.nut
 	//cinematic_mp/_cinematic_mp_client.nut
-	gamemodes/cl_gamemode_survival.nut
+	gamemodes/survival/cl_gamemode_survival.nut
 
 	cl_survival_loot.nut
 	cl_survival_inventory.nut
@@ -818,17 +818,30 @@ Scripts:
 	//KillReplay
 	ui/KillReplay/menu_killreplay.nut
 	
-	//R5RUI
-	ui/R5RMenus/menu_main.nut
-	ui/R5RMenus/menu_lobby.nut
-	ui/R5RMenus/menu_private_match.nut
-	ui/R5RMenus/panel_home.nut
-	ui/R5RMenus/panel_serverbrowser.nut
-	ui/R5RMenus/panel_mainmenu.nut
-	ui/R5RMenus/panel_playlist.nut
-	ui/R5RMenus/panel_map.nut
-	ui/R5RMenus/panel_visibility.nut
+	//R5R Main Menu
+	ui/CustomLobby/menu_main.nut
+	ui/CustomLobby/panel_mainmenu.nut
+
+	//R5R Lobby
+	ui/CustomLobby/menu_lobby.nut
+	ui/CustomLobby/panel_home.nut
+	ui/CustomLobby/panel_create.nut
+	ui/CustomLobby/panel_serverbrowser.nut
+	ui/CustomLobby/panel_legends.nut
+	ui/CustomLobby/panel_loadout.nut
+
+	//R5R Extra
+	ui/CustomLobby/menu_news.nut
+	ui/CustomLobby/menu_gamemodeselect.nut
+	ui/CustomLobby/panel_map.nut
+	ui/CustomLobby/panel_playlist.nut
+	ui/CustomLobby/panel_visibility.nut
 	ui/CTFMenus/menu_ctf_vote.nut
+	//Statistics
+	ui/FlowstateDM/flowstate_statistics.nut
+	ui/FlowstateDM/flowstate_menu_vote.nut
+	
+	ui/menu_weaponmods.nut
 ]
 
 When: "SERVER || UI "
@@ -881,6 +894,7 @@ Scripts:
 	weapons/sh_care_package.nut
 
 	mp/sh_weapon_inspect.gnut
+	weapons/mp_weapon_throwingknife.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -919,25 +933,28 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	gamemodes/custom_tdm/sh_gamemode_custom_tdm.nut
-	gamemodes/custom_tdm/custom_tdm_settings.nut
+	gamemodes/fs_tdm/sh_gamemode_fsdm.nut
+	gamemodes/fs_tdm/fsdm_settings.nut
 	gamemodes/custom_ctf/sh_gamemode_custom_ctf.nut
 	gamemodes/custom_ctf/custom_ctf_settings.nut
-	gamemodes/custom_aimtrainer/sh_aimtrainer.nut
+	gamemodes/fs_aimtrainer/sh_gamemode_aimtrainer.nut
+	gamemodes/fs_prophunt/sh_gamemode_prophunt.nut
+	gamemodes/fs_duckhunt/sh_gamemode_duckhunt.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
 ]
 
 When: "SERVER"
 Scripts:
 [
-	//gamemodes
-	gamemodes/custom_tdm/_gamemode_flowstate.nut
-	gamemodes/custom_tdm/_gamemode_1v1.nut
+	gamemodes/fs_tdm/_gamemode_fsdm.nut
+	gamemodes/fs_1v1/_gamemode_1v1.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
-	gamemodes/custom_prophunt/_gamemode_prophunt.nut
-	gamemodes/custom_surf/_gamemode_surf.nut
-	gamemodes/custom_surf/_gamemode_surf2.nut
-	gamemodes/custom_aimtrainer/_aimtrainer.nut
+	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
+	gamemodes/fs_prophunt/_gamemode_prophunt.nut
+	gamemodes/fs_surf/_gamemode_surf.nut
+	gamemodes/fs_surf/_gamemode_surf2.nut
+	
+	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut
 	//maps
 	custom_maps/_custom_maps_1.nut
@@ -945,7 +962,7 @@ Scripts:
 	custom_maps/_custom_maps_3.nut
 	custom_maps/_custom_maps_4.nut
 	custom_maps/_custom_deafps_maps.nut
-	custom_maps/_movement_gym.nut
+	gamemodes/fs_movementgym/_movement_gym.nut
 	custom_maps/_custom_doormap.nut
 	//map editor props
 	_place_map_editor_props_here.nut
@@ -959,9 +976,12 @@ Scripts:
 When: "CLIENT"
 Scripts:
 [
-	gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut
+	gamemodes/fs_movementgym/cl_movement_gym.nut
+	gamemodes/fs_tdm/cl_gamemode_fsdm.nut
 	gamemodes/custom_ctf/cl_gamemode_custom_ctf.nut
-	gamemodes/custom_aimtrainer/cl_aimtrainer.nut
+	gamemodes/fs_aimtrainer/cl_gamemode_aimtrainer.nut
+	gamemodes/fs_duckhunt/cl_gamemode_duckhunt.nut
+	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
 	lobby/lobbyvm/cl_lobbyvm.nut
 ]
 

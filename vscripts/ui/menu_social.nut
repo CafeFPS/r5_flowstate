@@ -1100,6 +1100,8 @@ void function InspectMenu_OnClose()
 	RunMenuClientFunction( "ClearAllCharacterPreview" )
 
 	RemoveCallback_UserInfoUpdated( OnUserInfoUpdated )
+
+	ActivateNav(0)
 }
 
 

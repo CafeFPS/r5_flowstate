@@ -23,7 +23,7 @@ Download depot.zip and replace all the content into your Apex S3 main folder.
 
 # How to run
 You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
-1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
+1. Choose playlist. fs_aimtrainer (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
 2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
 3. Start the server!
 4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!

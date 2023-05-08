@@ -131,9 +131,66 @@ void function LoadCommsActionsFromDatatable()
 }
 
 
+void function RegisterCustomComs()
+{
+	// ammo
+	RegisterCustomCom( eCommsAction.PING_AMMO_SNIPER,           "ping_foundAmmoSniper")
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_AMMO_SNIPER, "ping_needAmmoSniper")
+
+	// weapons
+	RegisterCustomCom( eCommsAction.PING_WEAPON_VOLT,          "ping_foundVoltSmg")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_SMART_PISTOL,  "ping_foundPistol")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_SENTINEL,      "ping_foundSentinel")
+
+    // npcs
+
+	asset icon = $"rui/hud/ping/icon_ping_enemy"
+	asset iconasset = $"settings/itemflav/ping/ping_enemy.rpak"
+	string chattext = "#PING_ENEMY_SPOTTED_GENERAL"
+	string shorttext = "#PROMPT_PING_ENEMY_SPOTTED_GENERAL_SHORT"
+	string menutext = "#PROMPT_PING_ENEMY_SPOTTED_GENERAL"
+
+	// creatures
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_SPIDER, "ping_spotSpider", icon, iconasset, chattext, shorttext, menutext)
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_PROWLER, "ping_spotProwler", icon, iconasset, chattext, shorttext, menutext)
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_GOLIATH, "ping_spotGoliath", icon, iconasset, chattext, shorttext, menutext)
+
+	// robots
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_DRONE, "ping_spotDrone", icon, iconasset, chattext, shorttext, menutext )
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_TITAN, "ping_spotTitan", icon, iconasset, chattext, shorttext, menutext )
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_REAPER, "ping_spotReaper", icon, iconasset, chattext, shorttext, menutext )
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_SPECTRE, "ping_spotSpectre", icon, iconasset, chattext, shorttext, menutext )
+	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_TICK, "ping_spotTick", icon, iconasset, chattext, shorttext, menutext )
+}
+
+void function RegisterCustomCom( int index, string alias, asset icon = $"", asset pingAsset = $"", string chattext = "#PING_LOOT", string shorttext = "", string menutext = "")
+{
+	if(index in file.actions)
+	    return
+
+	if(pingAsset != $"")
+	    RegisterItemFlavorFromSettingsAsset( pingAsset )
+
+	CommsAction action
+	action.chatText = chattext
+	action.menuText = menutext
+	action.shortText = shorttext
+	action.chatText = chattext
+	action.defaultIcon = icon
+	action.aliasSubname = alias
+	action.hasCalm = true
+	action.hasUrgent = true
+	action.hasCalmFar = false
+	action.hasUrgentFar = false
+	action.index = index
+
+	file.actions[index] <- action
+}
+
 void function ShQuickchat_Init()
 {
 	AddCallback_RegisterRootItemFlavors( LoadCommsActionsFromDatatable )
+	RegisterCustomComs()
 
 	#if SERVER
 		AddClientCommandCallback( "ClientCommand_Quickchat", ClientCommand_Quickchat )
@@ -152,6 +209,7 @@ void function DEV_ReloadCommsTable()
 {
 	file.actions.clear()
 	LoadCommsActionsFromDatatable()
+	RegisterCustomComs()
 }
 
 #if CLIENT
@@ -283,11 +341,11 @@ array<string> function GetSubjectNamesForCommsAction( int commsAction, entity su
 	}
 
 
-
-		if ( commsAction == eCommsAction.PING_LOOT_VAULT || commsAction == eCommsAction.PING_LOOT_VAULT_OPEN || commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SQUAD || commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SELF )
-		{
-			return [Localize( "#LOOT_VAULT_UI_TITLE" )]
-		}
+	if ( commsAction == eCommsAction.PING_LOOT_VAULT ||
+		commsAction == eCommsAction.PING_LOOT_VAULT_OPEN ||
+		commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SQUAD ||
+		commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SELF )
+		return [Localize( "#LOOT_VAULT_UI_TITLE" )]
 
 
 	return ["<subjectUnk:[" + subjectEnt + "]>"]

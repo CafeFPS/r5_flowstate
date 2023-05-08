@@ -1,0 +1,41 @@
+#base "_base_ability_ultimate.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									""
+	"shortprintname"   								""
+	"description" 									""
+	"longdesc"										""
+
+	"menu_icon"										"rui/pilot_loadout/suit/light"
+    "hud_icon"										"rui/flowstatecustom/prophunt_changeprops"
+
+	"weapon_type_flags"								"WPT_ULTIMATE"
+	"weaponClass" 									"human"
+	"weaponType"									"tactical"
+	"fire_mode"   									"offhand"
+	"offhand_default_inventory_slot"				"4"
+	"offhand_keep_primary_in_hand"					"0"
+	"offhand_holster_primary"						"1"
+    "hide_holstered_sidearm_when_active"			"1"
+    "offhand_interupts_weapon_anims"				"1"
+    "zoom_effects"                                  "0"
+
+	//Infinite Ammo
+    "uses_ammo_pool"								"0"
+	"ammo_min_to_fire"								"1"
+	"ammo_per_shot"									"1"
+	"ammo_no_remove_from_stockpile"					"1"
+
+    "allow_empty_fire"								"1"
+    "regen_ammo_refill_rate"						"1"
+    "regen_ammo_refill_start_delay"					"0.0"
+
+    "ammo_default_total"							"500"
+    "ammo_stockpile_max"                            "420"
+	
+	Mods
+	{
+	}
+}

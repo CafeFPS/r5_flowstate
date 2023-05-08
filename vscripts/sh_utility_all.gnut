@@ -1627,7 +1627,7 @@ vector function GetRandomCenterBiasedToEdge( vector center , float minDeviation,
 vector function GetRandomCenter( vector center , float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
 {
 	float deviation = RandomFloatRange( minDeviation, maxDeviation )
-	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
+	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) , 0>
 	vector newCenter = center + (AnglesToForward( angles )*deviation)
 	return newCenter
 }

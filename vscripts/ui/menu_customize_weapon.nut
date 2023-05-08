@@ -22,14 +22,6 @@ void function InitCustomizeWeaponMenu( var newMenuArg )
 	file.decorationRui = Hud_GetRui( Hud_GetChild( menu, "Decoration" ) )
 	file.titleRui = Hud_GetRui( Hud_GetChild( menu, "Title" ) )
 
-	file.weaponTabBodyPanelList = [
-		Hud_GetChild( menu, "WeaponSkinsPanel0" )
-		Hud_GetChild( menu, "WeaponSkinsPanel1" )
-		Hud_GetChild( menu, "WeaponSkinsPanel2" )
-		Hud_GetChild( menu, "WeaponSkinsPanel3" )
-		Hud_GetChild( menu, "WeaponSkinsPanel4" )
-	]
-
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, CustomizeWeaponMenu_OnOpen )
 	AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, CustomizeWeaponMenu_OnShow )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, CustomizeWeaponMenu_OnClose )
@@ -38,7 +30,7 @@ void function InitCustomizeWeaponMenu( var newMenuArg )
 	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_SELECT", "" )
 	AddMenuFooterOption( menu, LEFT, BUTTON_X, true, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
-	AddMenuFooterOption( menu, LEFT, BUTTON_X, true, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
+	//AddMenuFooterOption( menu, LEFT, BUTTON_X, true, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 }
 
 
@@ -49,7 +41,7 @@ void function CustomizeWeaponMenu_OnOpen()
 	RuiSetGameTime( file.decorationRui, "initTime", Time() )
 	RuiSetString( file.titleRui, "title", Localize( ItemFlavor_GetLongName( GetTopLevelCustomizeContext() ) ).toupper() )
 
-	AddCallback_OnTopLevelCustomizeContextChanged( file.menu, CustomizeWeaponMenu_Update )
+	//AddCallback_OnTopLevelCustomizeContextChanged( file.menu, CustomizeWeaponMenu_Update )
 	CustomizeWeaponMenu_Update( file.menu )
 
 	if ( uiGlobal.lastMenuNavDirection == MENU_NAV_FORWARD )
@@ -70,13 +62,21 @@ void function CustomizeWeaponMenu_OnShow()
 
 void function CustomizeWeaponMenu_OnClose()
 {
-	RemoveCallback_OnTopLevelCustomizeContextChanged( file.menu, CustomizeWeaponMenu_Update )
+	//RemoveCallback_OnTopLevelCustomizeContextChanged( file.menu, CustomizeWeaponMenu_Update )
 	CustomizeWeaponMenu_Update( file.menu )
 }
 
 
 void function CustomizeWeaponMenu_Update( var menu )
 {
+	file.weaponTabBodyPanelList = [
+		Hud_GetChild( menu, "WeaponSkinsPanel0" )
+		Hud_GetChild( menu, "WeaponSkinsPanel1" )
+		Hud_GetChild( menu, "WeaponSkinsPanel2" )
+		Hud_GetChild( menu, "WeaponSkinsPanel3" )
+		Hud_GetChild( menu, "WeaponSkinsPanel4" )
+	]
+
 	for ( int panelIdx = 0; panelIdx < file.weaponTabBodyPanelList.len(); panelIdx++ )
 	{
 		var tabBodyPanel = file.weaponTabBodyPanelList[panelIdx]
@@ -84,7 +84,7 @@ void function CustomizeWeaponMenu_Update( var menu )
 		if ( panelIdx < file.weaponList.len() )
 		{
 			ItemFlavor weapon = file.weaponList[panelIdx]
-			Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.WeaponTab[weapon], OnNewnessQueryChangedUpdatePanelTab, tabBodyPanel )
+			//Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.WeaponTab[weapon], OnNewnessQueryChangedUpdatePanelTab, tabBodyPanel )
 		}
 	}
 	file.weaponList.clear()
@@ -107,7 +107,7 @@ void function CustomizeWeaponMenu_Update( var menu )
 			AddTab( menu, tabBodyPanel, Localize( ItemFlavor_GetShortName( weapon ) ).toupper(), false, tabBarLeftOffsetFracIfVisible )
 
 			WeaponSkinsPanel_SetWeapon( tabBodyPanel, weapon )
-			Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.WeaponTab[weapon], OnNewnessQueryChangedUpdatePanelTab, tabBodyPanel )
+			//Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.WeaponTab[weapon], OnNewnessQueryChangedUpdatePanelTab, tabBodyPanel )
 		}
 	}
 

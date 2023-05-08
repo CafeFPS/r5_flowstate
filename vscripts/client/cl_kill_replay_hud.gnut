@@ -6,11 +6,13 @@ global function KillReplayHud_Deactivate
 
 global function ServerCallback_KillReplayHud_Activate
 global function ServerCallback_KillReplayHud_Deactivate
+global function ServerCallback_UpdateSpectatorTargetCount
 
 struct
 {
 	var killReplayOverlayRui
 	bool IsWatchingReplay = false
+	int allowedSpectatorTargetCount = 0
 } file
 
 void function ClKillReplayHud_Init()
@@ -59,11 +61,11 @@ string function GetRefFromDamageSourceId( int damageSourceId )
 }
 
 void function ServerCallback_KillReplayHud_Activate() {	
-		Custom_KillReplayHud_Activate()
+	Custom_KillReplayHud_Activate()
 }
 
 void function ServerCallback_KillReplayHud_Deactivate() {
-		Custom_KillReplayHud_Deactivate()
+	Custom_KillReplayHud_Deactivate()
 }
 
 void function KillReplayHud_Activate()
@@ -210,6 +212,11 @@ void function RoundWinningKillReplayClientHud_Deactivate() //Not doing screen fa
 
 void function Custom_KillReplayHud_Activate()
 {
+	entity player = GetLocalClientPlayer()
+	
+	if ( !IsValid( player ) )
+		return
+	
 	if ( IsReplayRoundWinning() )
 		return
 
@@ -250,7 +257,14 @@ void function Custom_KillReplayHud_Activate()
 	}
 
 	//Open Kill Replay Hud
-	RunUIScript("OpenKillReplayHud", image, attackerName, armorTier, islocalclient)
+	RunUIScript("OpenKillReplayHud", image, attackerName, armorTier, islocalclient, GameRules_GetGameMode() == "fs_prophunt" )
+}
+
+void function ServerCallback_UpdateSpectatorTargetCount(int targetCount, bool reverse)
+{
+	file.allowedSpectatorTargetCount = targetCount
+	
+	RunUIScript("UI_FlowstateCustomSetSpectateTargetCount", file.allowedSpectatorTargetCount, reverse)
 }
 
 void function Custom_KillReplayHud_Deactivate()
@@ -260,9 +274,14 @@ void function Custom_KillReplayHud_Deactivate()
 
 	if ( IsReplayRoundWinning() )
 		return
-
+	
+	bool isProphunt = false
+	
+	if(GameRules_GetGameMode() == "fs_prophunt")
+		isProphunt = true
+	
 	//Close the replay menu
-	RunUIScript("CloseKillReplayHud")
+	RunUIScript("CloseKillReplayHud", isProphunt)
 
 	GetLocalClientPlayer().Signal( "DeactivateKillReplayHud" )
 }
@@ -271,12 +290,32 @@ void function UpdatePlayerHealthAndSheild(entity attacker)
 {
 	//Gets armor Tier
 	int armorTier = EquipmentSlot_GetEquipmentTier( attacker, "armor" )
-
+	
+	entity observerTarget = attacker
+	
+	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( attacker ), Loadout_CharacterClass() )
+	asset image = CharacterClass_GetGalleryPortrait( character )
+	
 	//Update health and sheild while they are watching the replay
     while(file.IsWatchingReplay)
     {
-		if(IsValid(attacker))	
-			RunUIScript("ReplayHud_UpdatePlayerHealthAndSheild", GetHealthFrac( attacker ), GetShieldHealthFrac( attacker ), armorTier)
+		observerTarget = GetLocalClientPlayer().GetObserverTarget()
+		
+		if( IsValid(observerTarget) && observerTarget.IsPlayer() && observerTarget != attacker )
+		{
+			attacker = observerTarget // so we can update name too
+			armorTier = EquipmentSlot_GetEquipmentTier( attacker, "armor" ) //update armor tier for new spectator targets
+			character = LoadoutSlot_WaitForItemFlavor( ToEHI( attacker ), Loadout_CharacterClass() )
+			image = CharacterClass_GetGalleryPortrait( character )
+		}
+		
+		if(!IsValid(attacker)) {
+			attacker = GetLocalClientPlayer().GetObserverTarget()
+			WaitFrame()
+			continue
+		}
+		
+		RunUIScript("ReplayHud_UpdatePlayerData", GetHealthFrac( attacker ), GetShieldHealthFrac( attacker ), armorTier, attacker.GetPlayerName(), image)
 
 		WaitFrame()
     }

@@ -1,0 +1,1878 @@
+"scripts/resource/ui/menus/FlowstateDM/flowstate_prophunt_scoreboard.menu"
+{
+	"menu"
+	{
+		"ControlName"						"Frame"
+		"xpos"								"0"
+		"ypos"								"0"
+		"zpos"								"3"
+		"wide"								"f0"
+		"tall"								"f0"
+		"autoResize"						"0"
+		"pinCorner"							"0"
+		"visible"							"1"
+		"enabled"							"1"
+		"tabPosition"						"0"
+		"PaintBackgroundType"				"0"
+		"infocus_bgcolor_override"			"0 0 0 0"
+		"outoffocus_bgcolor_override"		"0 0 0 0"
+		"modal"								"1"
+
+		"DarkenBackground"
+		{
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"%100"
+			"tall"					"%100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 20"
+			"visible"				"1"
+			"paintbackground"		"1"
+		}
+
+		"TextCredits2"
+		{
+			"ControlName"				"Label"
+			"xpos"						"-30"
+			"ypos"						"-40"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"30"
+			"visible"					"1"
+			"fontHeight"				"35"
+			"labelText"					"APEX PROPHUNT"
+			"font"						"TitleBoldFont"
+			"allcaps"					1
+			"fgcolor_override"			"255 0 119 255"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
+		}
+		
+		"TextCredits"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"32"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"22"
+			"labelText"					"Made by @CafeFPS - ©Respawn Entertainment"
+			"font"						"DefaultBold_62_DropShadow"
+			"allcaps"					"0"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"TextCredits2"
+			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
+			"pin_to_sibling_corner"		"BOTTOM_RIGHT"
+		}
+		
+		"ScoreboardText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-40"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"50"
+			"labelText"					"Scoreboard"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 155"
+			"pin_to_sibling"			"TimerFrame"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		"TimerFrame"
+		{
+			"ControlName"				RuiPanel
+			"rui"						"ui/tabs_background.rpak"
+			"visible"					1
+			"drawColor"					"0 0 0 50"
+			"wide"						"f0"
+			"tall"						"125"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		//////////////////
+		//PROPS SCOREBOARD
+		//////////////////
+
+		"PropsScoreboardBG"
+		{
+			"classname"				"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"%-20"
+			"ypos"					"%-70"
+			"tall"					"50"
+			"wide" 					"530"
+			"fillColor"				"34 34 34 230"
+			"drawColor"				"30 30 30 230"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"DarkenBackground"
+			"pin_corner_to_sibling"	"BOTTOM"
+			"pin_to_sibling_corner"	"BOTTOM"
+		}
+		
+		"PropsScoreboardTitleBox"
+		{
+			ControlName					RuiPanel
+			rui                     	"ui/lobby_challenge_box.rpak"
+			"wide"						"215"
+			"tall"						"40"
+			"xpos"						"-25"
+			"ypos"						"50"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"173 3 252 200"
+			"drawColor"					"173 3 252 200"
+			"pin_to_sibling"			"PropsScoreboardBG"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		"PropsScoreboardTitle"
+		{
+			"ControlName"				"Label"
+			"xpos"						"30"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					"PROPS SCOREBOARD"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"PropsScoreboardTitleBox"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
+		}
+		
+		"PropsBG"
+		{
+			"classname"				"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"530"
+			"fillColor"				"30 30 30 180"
+			"drawColor"				"30 30 30 180"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"0"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"PlayerNameLbl"
+		{
+			"classname"				"ScoreboardPropsUI"
+			"ControlName"			"Label"
+			"labelText"				"Player Name"
+			"xpos"					"-50"
+			"ypos"					"0"
+			"auto_wide_tocontents"	"1"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"TimesSurvivedLbl"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"Label"
+			"labelText"				"Survived"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"SurvivalTimeLbl"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"Label"
+			"labelText"				"Time Alive"
+			"xpos"					"-400"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+
+		"NameLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"TimesSurvivedLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"SurvivalTimeLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"-395"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"LeftLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"RightLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_RIGHT"
+			"pin_to_sibling_corner"	"BOTTOM_RIGHT"
+		}
+
+		"BottomLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"530"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsBG"
+			"pin_corner_to_sibling"	"BOTTOM_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"TopLine"
+		{
+			"classname"					"ScoreboardPropsUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"530"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"PropsBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"TOP_LEFT"
+		}
+
+		"PlayerRow0"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"0"
+			
+
+			"pin_to_sibling"			"PropsScoreboardBG"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow1"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"1"
+
+			"pin_to_sibling"			"PlayerRow0"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow2"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"2"
+
+			"pin_to_sibling"			"PlayerRow1"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow3"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"3"
+
+			"pin_to_sibling"			"PlayerRow2"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow4"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"4"
+
+			"pin_to_sibling"			"PlayerRow3"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow5"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"5"
+
+			"pin_to_sibling"			"PlayerRow4"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow6"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"6"
+
+			"pin_to_sibling"			"PlayerRow5"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow7"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"7"
+
+			"pin_to_sibling"			"PlayerRow6"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow8"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"8"
+
+			"pin_to_sibling"			"PlayerRow7"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRow9"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardPropsUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"9"
+
+			"pin_to_sibling"			"PlayerRow8"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerName0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerName9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-210"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"TimesSurvived9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"SurvivalTime9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-355"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardPropsUI"
+
+			"pin_to_sibling"			"PlayerRow9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		////////////////////
+		//HUNTERS SCOREBOARD
+		////////////////////
+
+		"HuntersScoreboardBG"
+		{
+			"classname"				"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"%20"
+			"ypos"					"%-70"
+			"tall"					"50"
+			"wide" 					"380"
+			"fillColor"				"34 34 34 230"
+			"drawColor"				"30 30 30 230"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"DarkenBackground"
+			"pin_corner_to_sibling"	"BOTTOM"
+			"pin_to_sibling_corner"	"BOTTOM"
+		}
+		
+		"HuntersScoreboardTitleBox"
+		{
+			ControlName					RuiPanel
+			rui                     	"ui/lobby_challenge_box.rpak"
+			"wide"						"215"
+			"tall"						"40"
+			"xpos"						"-25"
+			"ypos"						"50"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"173 3 252 200"
+			"drawColor"					"173 3 252 200"
+			"pin_to_sibling"			"HuntersScoreboardBG"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		"HuntersScoreboardTitle"
+		{
+			"ControlName"				"Label"
+			"xpos"						"30"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					"HUNTERS SCOREBOARD"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"HuntersScoreboardTitleBox"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
+		}		
+		"HuntersBG"
+		{
+			"classname"				"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"380"
+			"fillColor"				"30 30 30 180"
+			"drawColor"				"30 30 30 180"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"0"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"PlayerNameHuntersLbl"
+		{
+			"classname"				"ScoreboardHuntersUI"
+			"ControlName"			"Label"
+			"labelText"				"Player Name"
+			"xpos"					"-50"
+			"ypos"					"0"
+			"auto_wide_tocontents"	"1"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"PropsKilledLbl"
+		{
+			"classname"				"ScoreboardHuntersUI"
+			"ControlName"			"Label"
+			"labelText"				"Kills"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
+		"NameLine2"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"PropsKilledLine"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"LeftLine2"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"RightLine2"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"400"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersScoreboardBG"
+			"pin_corner_to_sibling"	"TOP_RIGHT"
+			"pin_to_sibling_corner"	"BOTTOM_RIGHT"
+		}
+
+		"BottomLine2"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"380"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersBG"
+			"pin_corner_to_sibling"	"BOTTOM_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+
+		"TopLine2"
+		{
+			"classname"					"ScoreboardHuntersUI"
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"2"
+			"wide" 					"380"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"HuntersBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"TOP_LEFT"
+		}
+
+		"PlayerRowHunters0"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"0"
+			
+
+			"pin_to_sibling"			"HuntersScoreboardBG"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters1"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"1"
+
+			"pin_to_sibling"			"PlayerRowHunters0"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters2"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"2"
+
+			"pin_to_sibling"			"PlayerRowHunters1"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters3"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"3"
+
+			"pin_to_sibling"			"PlayerRowHunters2"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters4"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"4"
+
+			"pin_to_sibling"			"PlayerRowHunters3"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters5"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"5"
+
+			"pin_to_sibling"			"PlayerRowHunters4"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters6"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"6"
+
+			"pin_to_sibling"			"PlayerRowHunters5"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters7"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"7"
+
+			"pin_to_sibling"			"PlayerRowHunters6"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters8"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"8"
+
+			"pin_to_sibling"			"PlayerRowHunters7"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerRowHunters9"
+		{
+			"ControlName"				"RuiButton"
+			"classname"					"ScoreboardHuntersUIButton"
+			"wide"						"530"
+			"tall"						"40"
+			"visible"					"1"
+			"enabled"					"1"
+			"style"						"RuiButton"
+			"rui"						"ui/tab_button.rpak"
+			"labelText"					""
+			"cursorVelocityModifier"  	"0.7"
+			"zpos"						"1"
+			"scriptID"					"9"
+
+			"pin_to_sibling"			"PlayerRowHunters8"
+			"pin_corner_to_sibling"		"TOP_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+
+		"PlayerNameHunters0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PlayerNameHunters9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-15"
+			"ypos"						"0"
+			"zpos"						"0"
+			"wide"						"630"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-210"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"PropsKilled9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ScoreboardHuntersUI"
+
+			"pin_to_sibling"			"PlayerRowHunters9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+		
+		
+	}
+}

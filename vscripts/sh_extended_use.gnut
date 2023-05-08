@@ -126,6 +126,10 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 					{
 						player.MovementEnable()
 					}
+					if(GameRules_GetGameMode() == "flowstate_snd")
+					{
+						Highlight_ClearFriendlyHighlight( player )
+					}
 				}
 
 				if ( settings.exclusiveUse )

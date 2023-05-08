@@ -102,7 +102,7 @@
 	// Ammo
 	//
                    
-	"ammo_pool_type"                           "highcal"
+	"ammo_pool_type"                           "sniper"
      
                                                          
       

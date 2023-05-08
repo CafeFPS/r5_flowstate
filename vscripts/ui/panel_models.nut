@@ -85,7 +85,7 @@ void function InitPanelAssets(string map) {
 
 	array<string> sections = GetMapSections(map) //!FIXME
 	//printl("LEN / 4: " + sections.len() / 4)
-	printl(sections.len())
+	//printl(sections.len())
 	if (sections.len() / 4 < 1) {
 		// if you cant even fit more than 1 section just put it all in the first one
 		file.indexedPanelAssets[0] <- sections
@@ -107,9 +107,9 @@ void function InitPanelAssets(string map) {
 			array<string> panelSections = sections.slice(last, index)
 			file.indexedPanelAssets[i] <- panelSections
 			//printl("PANEL ASSETS: " + i.tostring())
-			foreach(sec in panelSections) {
-				//printl(sec)
-			}
+			//foreach(sec in panelSections) {
+			//	printl(sec)
+			//}
 			if(completed) {
 				break
 			}

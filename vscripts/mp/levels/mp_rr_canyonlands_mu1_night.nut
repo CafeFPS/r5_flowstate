@@ -70,7 +70,7 @@ void function SharedInit()
 {
 	ShPrecacheShadowSquadAssets()
 	ShPrecacheEvacShipAssets()
-	ShLootCreeps_Init()
+	//ShLootCreeps_Init()
 
 }
 
