@@ -1586,10 +1586,10 @@ void function InitMenus()
 	///////
 
 	//FLOWSTATE DM
-		//Statistics
-		AddMenu( "StatisticsUI", $"scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu", InitStatisticsUI )
-		AddMenu( "FSDMVoteMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_menu_vote.menu", Init_FSDM_VoteMenu )
-		AddMenu( "FSProphuntScoreboardMenu", $"scripts/resource/ui/menus/FlowstateDM/fs_prophunt_scoreboard.menu", Init_FSDM_ProphuntScoreboardMenu )
+	//Statistics
+	AddMenu( "StatisticsUI", $"scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu", InitStatisticsUI )
+	AddMenu( "FSDMVoteMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_menu_vote.menu", Init_FSDM_VoteMenu )
+	AddMenu( "FSProphuntScoreboardMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_prophunt_scoreboard.menu", Init_FSDM_ProphuntScoreboardMenu )
 
 	//Custom Weapon Mods Menu
 	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )

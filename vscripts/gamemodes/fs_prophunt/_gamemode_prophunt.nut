@@ -64,7 +64,12 @@ void function _GamemodeProphunt_Init()
 		
 		default:
 			entity startEnt = GetEnt( "info_player_start" )
-
+			
+			if(!IsValid(startEnt)) {
+				printt("error, you used the wrong map for this gamemode")
+				return
+			}
+			
 			FS_PROPHUNT.lobbyLocation = startEnt.GetOrigin()
 			FS_PROPHUNT.lobbyAngles = startEnt.GetAngles()
 		break			
@@ -669,8 +674,8 @@ void function PROPHUNT_Lobby()
 	if(FS_PROPHUNT.currentRound == 1)
 		FS_PROPHUNT.selectedLocation = FS_PROPHUNT.locationSettings.getrandom()
 	
-	if(FS_PROPHUNT.selectedLocation.name == "Skill trainer By CafeFPS")
-		SkillTrainerLoad()
+	// if(FS_PROPHUNT.selectedLocation.name == "Skill trainer By CafeFPS")
+		// SkillTrainerLoad()
 	
 	foreach(player in GetPlayerArray())
 	{
@@ -693,37 +698,43 @@ void function PROPHUNT_Lobby()
 		SetRealms(player, 64)
 	}
 	wait 2
-
-	if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
+	
+	bool enteredwaitingidk = false
+	
+	if(GetPlayerArray().len() < 2)
 	{
-		while(true)
+		enteredwaitingidk = true
+		
+		if(IsValid(FS_PROPHUNT.ringBoundary))
+			FS_PROPHUNT.ringBoundary.Destroy()
+		
+		SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
+
+		while( GetPlayerArray_Alive().len() < 2 )
 		{
-			array<entity> playersON = GetPlayerArray_Alive()
-			if(playersON.len() > 1 )
+			foreach(player in GetPlayerArray())
 			{
-				foreach(player in GetPlayerArray())
-				{
-					if(!IsValid(player)) continue
-		
-					// Remote_CallFunction_NonReplay( player, "PROPHUNT_CustomHint", 8, 0)
-				}
-				wait 5
-				// break
+				if(!IsValid(player)) continue
 				
-			} else {
-				
-				foreach(player in GetPlayerArray())
-				{
-					if(!IsValid(player)) continue
-		
-					Remote_CallFunction_NonReplay( player, "PROPHUNT_CustomHint", 9, 0)
-				}
-				wait 5			
+				Message(player, "PROPHUNT", "Waiting another player to start", 2, "")
 			}
-			WaitFrame()
+			
+			wait 5
 		}
 	}
-	
+
+	if(enteredwaitingidk)
+	{
+		foreach(player in GetPlayerArray())
+		{
+			if(!IsValid(player)) continue
+			
+			Message(player, "PROPHUNT", "STARTING", 3, "")
+		}
+		
+		wait 5
+	}
+
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	
@@ -1175,7 +1186,8 @@ void function PROPHUNT_GameLoop()
 		//printt("DEBUG MAX VOTES: " + FS_PROPHUNT.maxvotesallowedforTeamIMC + " " + FS_PROPHUNT.maxvotesallowedforTeamMILITIA)
 		// Set voting to be allowed
 		FS_PROPHUNT.votingtime = true
-
+		float endtimeVotingTime = Time() + 16
+		
 		// For each player, set voting screen and update maps that are picked for voting
 		foreach( player in GetPlayerArray() )
 		{
@@ -1184,7 +1196,7 @@ void function PROPHUNT_GameLoop()
 			
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_PROPHUNT.mapIds[0], FS_PROPHUNT.mapIds[1], FS_PROPHUNT.mapIds[2], FS_PROPHUNT.mapIds[3])
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, endtimeVotingTime, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 		}
 
 		wait 16
@@ -1805,27 +1817,27 @@ void function RingDamage( entity circle, float currentRadius)
 
 bool function ClientCommand_NextRoundPROPHUNT(entity player, array<string> args)
 {
-	// if(player.GetPlayerName() == FlowState_Hoster() || player.GetPlayerName() == FlowState_Admin1() || player.GetPlayerName() == FlowState_Admin2() || player.GetPlayerName() == FlowState_Admin3() || player.GetPlayerName() == FlowState_Admin4()) 
-	// {
-		// if (args.len()) {
-			// string now = args[0]
-			// if (now == "now")
-			// {
-			   // SetTdmStateToNextRound()
-			// }
+	if(player.GetPlayerName() == FlowState_Hoster() || player.GetPlayerName() == FlowState_Admin1() || player.GetPlayerName() == FlowState_Admin2() || player.GetPlayerName() == FlowState_Admin3() || player.GetPlayerName() == FlowState_Admin4()) 
+	{
+		if (args.len()) {
+			string now = args[0]
+			if (now == "now")
+			{
+			   SetTdmStateToNextRound()
+			}
 			
-			// if(args.len() > 1){
-				// now = args[1]
-				// if (now == "now")
-				// {
-				   // SetTdmStateToNextRound()
-				// }
-			// }
-		// }
-	// }
-	// else {
-		// return false
-	// }
+			if(args.len() > 1){
+				now = args[1]
+				if (now == "now")
+				{
+				   SetTdmStateToNextRound()
+				}
+			}
+		}
+	}
+	else {
+		return false
+	}
 	
 	return true
 }

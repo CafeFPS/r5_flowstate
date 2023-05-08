@@ -492,6 +492,7 @@ void function FSDM_CloseVotingPhase()
 
 void function UpdateUIVoteTimer(int team)
 {
+	RunUIScript( "UpdateVoteTimerHeader_FSDM" )
     float time = team - Time()
     while(time > -1)
     {

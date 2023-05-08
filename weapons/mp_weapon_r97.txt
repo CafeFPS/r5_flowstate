@@ -71,7 +71,7 @@ WeaponData
 	"damage_type" 									"bullet"
 
 	// Ammo
-		"ammo_clip_size"   								"20"
+		"ammo_clip_size"   								"19"
 
 		"ammo_default_total"							"150"
 		"ammo_stockpile_max"							"150"
@@ -255,15 +255,15 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   							"22"
+			"ammo_clip_size"   							"21"
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"25"
+			"ammo_clip_size"   							"24"
 		}
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   							"28"
+			"ammo_clip_size"   							"27"
 		}
 
 		legendary1

@@ -45,6 +45,9 @@ void function MapEditor_Init()
 
 void function MapTriggers_Init()
 {
+	if(GameRules_GetGameMode() == "fs_duckhunt")
+		return
+	
     switch (GetMapName())
     {
         case "mp_rr_aqueduct_night":

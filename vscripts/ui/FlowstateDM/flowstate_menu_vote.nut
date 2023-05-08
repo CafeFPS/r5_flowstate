@@ -22,6 +22,7 @@ global function ClearScoreboardOnUI
 global function ClearProphuntScoreboardOnUI
 global function Disable_MILITIAButton
 global function Disable_IMCButton
+global function UpdateVoteTimerHeader_FSDM
 
 global struct PlayerInfo
 {
@@ -306,6 +307,11 @@ void function Close_FSDM_VoteMenu()
 void function UpdateVoteTimer_FSDM(int timeleft)
 {
 	Hud_SetText(Hud_GetChild( file.menu, "TimerText" ), timeleft.tostring())
+}
+
+void function UpdateVoteTimerHeader_FSDM()
+{
+	Hud_SetText(Hud_GetChild( file.menu, "TimerText2" ), "Voting Ends In")
 }
 
 //Update current votes for each map
