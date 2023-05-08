@@ -116,6 +116,7 @@ void function CoolCamera()
 		break
 		
 		case "mp_rr_canyonlands_staging":
+		case "mp_rr_ashs_redemption":
 		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
 		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
@@ -137,11 +138,23 @@ void function CoolCamera()
 		cutsceneSpawns.append(NewCameraPair(<32170.3008, -1944.38562, 3590.89258>,<0, 27.8040161, 0>))
 		break
 		
+		case "mp_rr_party_crasher":
 		case "mp_rr_party_crasher_new":
 		cutsceneSpawns.append(NewCameraPair(<-1363.75867, -2183.58081, 1354.65466>, <0, 72.5054092, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<2378.75439, 1177.52783, 1309.69019>, <0, 146.118546, 0>))
 		break
 		
+		case "mp_rr_arena_composite":
+		cutsceneSpawns.append(NewCameraPair(<2343.25171, 4311.43896, 829.289917>, <0, -139.293152, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<-1661.23608, 2852.71924, 657.674316>, <0, -56.0820427, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<-640.810059, 1039.97424, 514.500793>, <0, -23.5162239, 0>)) 
+		break
+		
+		case "mp_rr_aqueduct":
+		case "mp_rr_aqueduct_night":
+		cutsceneSpawns.append(NewCameraPair(<1593.85205, -3274.99365, 1044.39099>, <0, -126.270805, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<1489.99255, -6570.93262, 741.996887>, <0, 133.833832, 0>)) 
+		break
 	}
 
 
@@ -399,6 +412,8 @@ void function ServerCallback_OpenStatisticsUI()
 
 void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 {
+	if( GetLocalViewPlayer() != GetLocalClientPlayer() ) return
+	
 	if(shouldOpen)
 	{
 		//try { GetLocalClientPlayer().ClearMenuCameraEntity(); GetWinnerPropCameraEntities()[0].ClearParent(); GetWinnerPropCameraEntities()[0].Destroy(); GetWinnerPropCameraEntities()[1].Destroy() } catch (exceptio2n){ }

@@ -575,7 +575,14 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) )
 		return
-
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		
+		if ( sourceId == eDamageSourceId.damagedef_suicide )
+			return
+	}
 	UpdatePlayerCounts()
 		
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )

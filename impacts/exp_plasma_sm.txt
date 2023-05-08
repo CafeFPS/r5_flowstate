@@ -1,0 +1,192 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"rockets_droneplasmanearmiss"
+		"whizby_sound_from_AI"		"rockets_droneplasmanearmiss"
+		"whizby_maxDistancePilot"	"500"
+		"whizby_maxDistanceTitan"	"500"
+	}
+
+	FX
+	{
+		"C" "P_plasma_exp_SM" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_plasma_exp_SM" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_plasma_exp_SM" // metal_titan
+
+		"F" "P_plasma_exp_SM" //flesh
+		"G" "P_plasma_exp_SM" //metalgrate, chainlink, chain
+		"H" "P_plasma_exp_SM" //alienflesh
+
+		"J" "P_plasma_exp_SM" //grass
+		"K" "P_plasma_exp_SM" //Mud
+		"L" "P_plasma_exp_SM" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_plasma_exp_SM" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_plasma_exp_SM"
+		"O" "P_plasma_exp_SM" //Foliage
+		"P" "P_plasma_exp_SM" //Computer
+
+		"R" "P_plasma_exp_SM" //metalpanel, grenade, canister
+		"S" "P_impact_exp_med_water" //water, slime
+		"T" "P_plasma_exp_SM" //tile
+		"U" "P_plasma_exp_SM" //glass_breakable
+
+		"V" "P_plasma_exp_SM" //Metal Vent
+		"W" "P_plasma_exp_SM" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_plasma_exp_SM" //xo_shield
+
+		"Y" "P_plasma_exp_SM" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_plasma_exp_SM"  //sand
+
+		"0" "P_plasma_exp_SM"
+		"1" "P_plasma_exp_SM"
+		"2" "P_plasma_exp_SM"
+		"3" "P_plasma_exp_SM"
+		"4" "P_plasma_exp_SM"
+		"5" "P_plasma_exp_SM"
+		"6" "P_plasma_exp_SM"
+		"7" "P_plasma_exp_SM"
+		"8" "P_plasma_exp_SM"
+		"9" "P_plasma_exp_SM" //puddle
+
+		"airburst" "P_plasma_exp_SM"
+		"shieldhit" "P_plasma_exp_SM"
+		"critical_hit" "P_plasma_exp_SM"
+	}
+
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+
+	FX_victim
+	{
+		"shieldhit" "P_plasma_exp_SM"
+		"F" "P_plasma_exp_SM_victim" //flesh
+	}
+
+	Sound
+	{
+		"C" "explo_plasma_small"
+		"D" "explo_plasma_small"
+		"E" "explo_plasma_small"
+
+		"F" "explo_plasma_small"
+		"G" "explo_plasma_small"
+		"H" "explo_plasma_small"
+
+		"J" "explo_plasma_small"
+		"K" "explo_plasma_small"  // mud?
+		"L" "explo_plasma_small"
+		"M" "explo_plasma_small"
+		"N" "explo_plasma_small" // sand?
+		"O" "explo_plasma_small"
+		"P" "explo_plasma_small"
+
+		"R" "explo_plasma_small"
+		"S" "explo_plasma_small"
+		"T" "explo_plasma_small"
+		"U" "explo_plasma_small"
+
+		"V" "explo_plasma_small"
+		"W" "explo_plasma_small"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "explo_plasma_small"
+		"Z" "explo_plasma_small"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "explo_plasma_small"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "Explo_TRL_Impact_1P"
+		"D" "Explo_TRL_Impact_1P"
+		"E" "Explo_TRL_Impact_1P"
+
+		"F" "Explo_TRL_Impact_1P"
+		"G" "Explo_TRL_Impact_1P"
+		"H" "Explo_TRL_Impact_1P"
+
+		"J" "Explo_TRL_Impact_1P"
+		"K" "Explo_TRL_Impact_1P" // mud?
+		"L" "Explo_TRL_Impact_1P"
+		"M" "Explo_TRL_Impact_1P"
+		"N" "Explo_TRL_Impact_1P"	// sand?
+		"O" "Explo_TRL_Impact_1P"
+		"P" "Explo_TRL_Impact_1P"
+
+		"R" "Explo_TRL_Impact_1P"
+		"S" "Explo_TRL_Impact_1P"
+		"T" "Explo_TRL_Impact_1P"
+		"U" "Explo_TRL_Impact_1P"
+
+		"V" "Explo_TRL_Impact_1P"
+		"W" "Explo_TRL_Impact_1P"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "Explo_TRL_Impact_1P"
+		"Z" "Explo_TRL_Impact_1P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_TRL_Impact_1P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "explo_plasma_small"
+		"D" "explo_plasma_small"
+		"E" "Titan.TRL_Impact_3P_vs_1P"
+
+		"F" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+		"G" "explo_plasma_small"
+		"H" "explo_plasma_small"
+
+		"J" "explo_plasma_small"
+		"K" "explo_plasma_small"  // mud?
+		"L" "explo_plasma_small"
+		"M" "explo_plasma_small"
+		"N" "explo_plasma_small" // sand?
+		"O" "explo_plasma_small"
+		"P" "explo_plasma_small"
+
+		"R" "explo_plasma_small"
+		"S" "explo_plasma_small"
+		"T" "explo_plasma_small"
+		"U" "explo_plasma_small"
+
+		"V" "explo_plasma_small"
+		"W" "explo_plasma_small"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "explo_plasma_small"
+		"Z" "explo_plasma_small"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "explo_plasma_small"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+Sound_victim_from_AI
+	{
+		"F" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+		"P" "Android.Light.BulletImpact_3P_vs_1P"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+
+}

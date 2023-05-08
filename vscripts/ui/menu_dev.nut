@@ -397,7 +397,7 @@ void function SetupDefaultDevCommandsMP()
 	}
 	else
 	{
-		SetupDevCommand( "sv_cheats is false, type 'sv_cheats 1' in console to enable dev menu if you're the server admin.", "empty" )
+		SetupDevCommand( "Cheats are disabled! Type 'sv_cheats 1' in console to enable dev menu if you're the server admin.", "empty" )
 	}
 }
 
@@ -759,14 +759,14 @@ void function SetupTDMPrimaryWeapsons()
 	//Pistols
 	SetupDevCommand( "RE-45", "tgive p mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
 	SetupDevCommand( "P2020", "tgive p mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Wingman", "tgive p mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
+	SetupDevCommand( "Wingman", "tgive p mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3" )
 	//Shotguns
 	SetupDevCommand( "EVA-8", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
 	SetupDevCommand( "Peacekeeper", "tgive p mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
 	//SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
-	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
+	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 sniper_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
 	//SetupDevCommand( "Kraber", "tgive p mp_weapon_sniper" )
 	
@@ -800,7 +800,7 @@ void function SetupTDMSecondaryWeapsons()
 	//Pistols
 	SetupDevCommand( "RE-45", "tgive s mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
 	SetupDevCommand( "P2020", "tgive s mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Wingman", "tgive s mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
+	SetupDevCommand( "Wingman", "tgive s mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3" )
 	//Shotguns
 	SetupDevCommand( "EVA-8", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )

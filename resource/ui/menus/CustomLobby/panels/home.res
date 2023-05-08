@@ -42,7 +42,7 @@
 		ruiArgs
         {
             headerText     "Welcome To"
-			subText		   "R5Reloaded"
+			subText		   "R5Reloaded - Flowstate"
         }
 
         pin_to_sibling			TopRightContentAnchor
@@ -198,8 +198,9 @@
         ControlName				RuiButton
         wide					340
         tall					88
-        xpos                    0
-        ypos                    -70
+        xpos                    -70
+        ypos                    -450
+		zpos 10
         rui                     "ui/lobby_friend_button.rpak"
         labelText               ""
         visible					1
@@ -217,8 +218,8 @@
 		}
 
         pin_to_sibling			DarkenBackground
-        pin_corner_to_sibling	TOP
-        pin_to_sibling_corner	TOP
+        pin_corner_to_sibling	BOTTOM_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
     }
 
 	GameMenuButton

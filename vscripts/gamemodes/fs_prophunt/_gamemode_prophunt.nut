@@ -1805,33 +1805,39 @@ void function RingDamage( entity circle, float currentRadius)
 
 bool function ClientCommand_NextRoundPROPHUNT(entity player, array<string> args)
 {
-	if(player.GetPlayerName() == FlowState_Hoster() || player.GetPlayerName() == FlowState_Admin1() || player.GetPlayerName() == FlowState_Admin2() || player.GetPlayerName() == FlowState_Admin3() || player.GetPlayerName() == FlowState_Admin4()) 
-	{
-		if (args.len()) {
-			string now = args[0]
-			if (now == "now")
-			{
-			   SetTdmStateToNextRound()
-			}
+	// if(player.GetPlayerName() == FlowState_Hoster() || player.GetPlayerName() == FlowState_Admin1() || player.GetPlayerName() == FlowState_Admin2() || player.GetPlayerName() == FlowState_Admin3() || player.GetPlayerName() == FlowState_Admin4()) 
+	// {
+		// if (args.len()) {
+			// string now = args[0]
+			// if (now == "now")
+			// {
+			   // SetTdmStateToNextRound()
+			// }
 			
-			if(args.len() > 1){
-				now = args[1]
-				if (now == "now")
-				{
-				   SetTdmStateToNextRound()
-				}
-			}
-		}
-	}
-	else {
-		return false
-	}
+			// if(args.len() > 1){
+				// now = args[1]
+				// if (now == "now")
+				// {
+				   // SetTdmStateToNextRound()
+				// }
+			// }
+		// }
+	// }
+	// else {
+		// return false
+	// }
 	
 	return true
 }
 
 bool function ClientCommand_VoteForMap_PROPHUNT(entity player, array<string> args)
 {
+	if( !IsValid(player) ) 
+		return false
+	
+	if( args.len() != 1 )
+		return false
+
     // don't allow multiple votes
     if ( FS_PROPHUNT.votedPlayers.contains( player ) )
         return false
@@ -2170,9 +2176,9 @@ bool function ClientCommand_PROPHUNT_AskForTeam(entity player, array < string > 
 
 bool function ClientCommand_PROPHUNT_debugProphuntModels(entity player, array < string > args) 
 {	
-	player.SetBodyModelOverride( prophuntAssets[int(args[0])] )
-	player.SetArmsModelOverride( prophuntAssets[int(args[0])] )
-	player.p.PROPHUNT_LastPropEntity.SetModel( prophuntAssets[int(args[0])] )
+	// player.SetBodyModelOverride( prophuntAssets[int(args[0])] )
+	// player.SetArmsModelOverride( prophuntAssets[int(args[0])] )
+	// player.p.PROPHUNT_LastPropEntity.SetModel( prophuntAssets[int(args[0])] )
 	
 	return true
 }
@@ -2184,10 +2190,10 @@ void function PROPHUNT_GiveRandomPrimaryWeapon(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
-		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
 		"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 stock_tactical_l2 barrel_stabilizer_l1",
 		"mp_weapon_pdw optic_cq_hcog_classic highcal_mag_l3 stock_tactical_l3",
-		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3",
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3",
 		"mp_weapon_vinson stock_tactical_l2 highcal_mag_l3",
 		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2 barrel_stabilizer_l2",
 		"mp_weapon_lmg barrel_stabilizer_l1 stock_tactical_l3",

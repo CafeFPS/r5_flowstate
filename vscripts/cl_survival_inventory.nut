@@ -384,7 +384,7 @@ void function GroundAction( int lootAction, string guid, bool isAltAction, bool 
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return
 
-	if( GameRules_GetGameMode() == "flowstate_aimtrainer" ) //&& 
+	if( GameRules_GetGameMode() == "fs_aimtrainer" ) //&& 
 	{
 		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootEnt.GetSurvivalInt() )
 		
@@ -616,7 +616,7 @@ void function SurvivalMenu_Internal( entity player, string uiScript, entity deat
 
 	if ( IsValid( deathBox ) )
 	{
-		if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+		if(GameRules_GetGameMode() == "fs_aimtrainer")
 			thread StartUpdatingArmorSwapLastTime()
 		
 		thread TrackDistanceFromDeathBox( player, deathBox )
@@ -650,7 +650,7 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 	OnThreadEnd(
 		function() : (player)
 		{
-			if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+			if(GameRules_GetGameMode() == "fs_aimtrainer")
 				Signal(player, "StopArmorSwapStopwatch")
 			
 			if ( Survival_IsGroundlistOpen() )
@@ -1911,7 +1911,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	bool showUpgrades  = !sortByType && GetCurrentPlaylistVarBool( "deathbox_show_upgrades", true )
 	bool splitUnusable = !sortByType && GetCurrentPlaylistVarBool( "deathbox_split_unusable", true )
 	
-	if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+	if(GameRules_GetGameMode() == "fs_aimtrainer")
 	{
 		sortByType    = false
 		showUpgrades  = false
@@ -1920,7 +1920,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	
 	foreach ( gd in allItems )
 	{
-		if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+		if(GameRules_GetGameMode() == "fs_aimtrainer")
 			{
 				if ( gd.lootData.ref == "armor_pickup_lv4_all_fast" || gd.lootData.ref == "armor_pickup_lv3" || gd.lootData.ref == "armor_pickup_lv2" || gd.lootData.ref == "armor_pickup_lv1")
 				{
@@ -1980,9 +1980,9 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	}
 	file.filteredGroundItems.extend( relevantItems )
 	
-	if(GameRules_GetGameMode() == "flowstate_aimtrainer")
+	if(GameRules_GetGameMode() == "fs_aimtrainer")
 	{
-		file.filteredGroundItems.append( CreateHeaderData( "SWAP HERE", $"rui/customemotes/amogusred" ) )
+		file.filteredGroundItems.append( CreateHeaderData( "SWAP HERE", $"" ) )
 		file.filteredGroundItems.extend( swapItem )
 	}
 	

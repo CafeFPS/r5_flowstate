@@ -69,6 +69,14 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 
 void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo, bool downed = false)
 {
+	if( is1v1EnabledAndAllowed() )
+	{
+		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		
+		if ( sourceId == eDamageSourceId.damagedef_suicide )
+			return
+	}
+				
 	if ( downed && GetGameState() >= eGameState.Playing)
 		AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 	else if( !downed && GetGameState() >= eGameState.Playing )

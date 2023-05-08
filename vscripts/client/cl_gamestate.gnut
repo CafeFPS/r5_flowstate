@@ -199,9 +199,6 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
-		
-		// if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
-			// RuiSetString( rui, "gameModeString", "APEX 1v1" )
 
 		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
 			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )

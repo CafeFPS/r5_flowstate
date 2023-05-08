@@ -130,10 +130,7 @@ void function ClientCodeCallback_MapSpawn()
 	SV_CL_Shared_Init()
 	
 	//for custom ui/textures by @CafeFPS
-	if(!IsLobby())
-	{
-		RequestPakFile( "ui_flowstate" )
-	}
+	RequestPakFile( "ui_flowstate" )
 }
 
 

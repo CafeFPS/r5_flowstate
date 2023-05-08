@@ -87,8 +87,8 @@ void function ClMainHud_Init()
 	
 	RegisterServerVarChangeCallback( "gameState", UpdateMainHudFromGameState )
 	AddCallback_OnPlayerLifeStateChanged( UpdateMainHudFromLifeState )
-	if(GameRules_GetGameMode() == SURVIVAL )
-		RegisterServerVarChangeCallback( "minimapState", UpdateMinimapVisibility )
+	
+	RegisterServerVarChangeCallback( "minimapState", UpdateMinimapVisibility )
 
 	AddCinematicEventFlagChangedCallback( CE_FLAG_EMBARK, CinematicEventUpdateDoF )
 	AddCinematicEventFlagChangedCallback( CE_FLAG_EXECUTION, CinematicEventUpdateDoF )

@@ -1,4 +1,4 @@
-"scripts/resource/ui/menus/FlowstateDM/flowstate_prophunt_scoreboard.menu"
+"scripts/resource/ui/menus/FlowstateDM/fs_prophunt_scoreboard.menu"
 {
 	"menu"
 	{
@@ -117,8 +117,8 @@
 			"ypos"					"%-70"
 			"tall"					"50"
 			"wide" 					"530"
-			"fillColor"				"34 34 34 100"
-			"drawColor"				"30 30 30 100"
+			"fillColor"				"34 34 34 230"
+			"drawColor"				"30 30 30 230"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"

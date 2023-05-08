@@ -722,7 +722,7 @@ bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, Attachment
 		// Means that certain weapons will have barrels added to them if a custom barrel is compatible.
 		// still won't allow them to equip vanilla attachments, however.
 		// Default OFF.
-		if (GetCurrentPlaylistVarBool("custom_hopup_override_weapon_attachments", false) && att.attachPoint != "")
+		if (att.attachPoint != "") // GetCurrentPlaylistVarBool("custom_hopup_override_weapon_attachments", false) && 
 		{
 			weapon.supportedAttachments.append( att.attachPoint )
 			//if (weapon.attachmentStyle == "") weapon.attachmentStyle = "hopup"

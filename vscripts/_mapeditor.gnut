@@ -196,11 +196,48 @@ entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantl
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
     e.SetModelScale( float02 )
-
+	e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
+	
     if(addToArray)
         MapEditorEnts.append(e)
     
-    return e
+	if(GameRules_GetGameMode() != "fs_duckhunt")
+		return e
+	
+	if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid(e) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid(e) )
+	{
+		//printt("Disabled solid plant")
+		e.kv.solid = 0
+	} else
+	{
+		e.kv.solid = 6
+	}
+	
+	if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
+		CreateFanPusher(e.GetOrigin()+Vector(0,0,56), e.GetAngles())
+	
+	if( a == $"mdl/industrial/traffic_cone_01.rmdl" )
+	{
+		SpawnKillerWalls(e.GetOrigin())
+		e.Destroy()
+		return null
+	}
+	
+	if( a == $"mdl/industrial/traffic_tube_01.rmdl" )
+	{
+		SpawnMovingPlatform(e.GetOrigin())
+		e.Destroy()
+		return null		
+	}
+
+	if( a == $"mdl/industrial/traffic_barrel_01.rmdl" )
+	{
+		SpawnMovingPlatformWithFanPusher(e.GetOrigin())
+		e.Destroy()
+		return null		
+	}
+	
+	return e
 }
 
 array < entity > function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold = false, bool spawnOpen = false, bool addToArray = false )

@@ -305,7 +305,7 @@ string function ReturnChallengeName(int index)
 			final = "SMOOTHBOT"
 			break
 		case 13:
-			final = "TODO"
+			final = "BOUNCES SIMULATOR"
 			break
 		case 14:
 			final = "GRENADES PRACTICE"
@@ -317,7 +317,7 @@ string function ReturnChallengeName(int index)
 			final = "RUNNING TARGETS"
 			break
 		case 17:
-			final = "TODO"
+			final = "ARMOR SWAP"
 			break
 		case 0:
 		default: 
@@ -535,6 +535,15 @@ void function ToggleArmorSwapUI(bool toggle)
 	Hud_SetVisible(HudElement( "BestTimeValue" ), toggle)
 	Hud_SetVisible(HudElement( "AverageTime" ), toggle)
 	Hud_SetVisible(HudElement( "AverageTimeValue" ), toggle)
+	
+	if(toggle)
+	{
+		thread function():()
+		{
+			wait 3
+			AimTrainer_QuickHint( "Move to spawn new deathboxes", true, 5 )
+		}()	
+	}
 }
 
 void function StartUpdatingArmorSwapLastTime() //create a new struct and function to calculate the elapsed times
@@ -885,7 +894,7 @@ void function StartChallenge8Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
+	thread CreateDescriptionRUI("Hit the dummies to get points.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge8")
 }

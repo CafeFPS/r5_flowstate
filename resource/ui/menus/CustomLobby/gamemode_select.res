@@ -168,7 +168,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ControlName				RuiButton
             classname               "MenuButton"
             wide					280
-            tall					120
+            tall					130
             ypos                    -150
             xpos                    -120
             zpos                    10
@@ -182,8 +182,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "Firing Range"
-                modeDescText "Run around in the custom Firing Range"
+                modeNameText "Aim Trainer"
+                modeDescText "Challenge yourself in the Flowstate Aim Trainer"
                 modeImage "rui/menu/gamemode/firing_range"
             }
 
@@ -197,7 +197,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ControlName				RuiButton
             classname               "MenuButton"
             wide					280
-            tall					120
+            tall					130
             ypos                    0
             xpos                    10
             zpos                    10

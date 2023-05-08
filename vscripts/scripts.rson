@@ -894,6 +894,7 @@ Scripts:
 	weapons/sh_care_package.nut
 
 	mp/sh_weapon_inspect.gnut
+	weapons/mp_weapon_throwingknife.nut
 ]
 
 When: "SERVER || CLIENT"

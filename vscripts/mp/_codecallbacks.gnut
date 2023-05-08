@@ -463,8 +463,16 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 			EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 			
-			if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
 			{
+				if( is1v1EnabledAndAllowed() )
+				{
+					int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+					
+					if ( sourceId == eDamageSourceId.damagedef_suicide )
+						return
+				}
+				
 				if( IsValid( ent ) )
 					AddPlayerScore( attacker, "Sur_DownedPilot", ent )
 				

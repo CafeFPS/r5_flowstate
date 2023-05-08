@@ -10,6 +10,8 @@ global function SpawnKillerWalls
 global function SpawnMovingPlatform
 global function SpawnMovingPlatformWithFanPusher
 
+const int MAX_DUCKS_PLAYERS = 2
+
 struct {
 	float endTime = 0
 	bool InProgress = false
@@ -77,10 +79,6 @@ void function _GamemodeDuckhunt_Init()
 	
 	AddCallback_EntitiesDidLoad( _OnEntitiesDidLoad )
 	
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundDUCKHUNT)
-	AddClientCommandCallback("sethunter", ClientCommand_AskForHunterTemp)
-	AddClientCommandCallback("kickplayer", ClientCommand_DuckHuntKick)
-	
 	PrecacheParticleSystem( $"P_s2s_flap_wind" )
 	PrecacheParticleSystem($"P_impact_shieldbreaker_sparks")
 	RegisterSignal("EndLobbyDistanceThread")
@@ -104,17 +102,17 @@ void function _OnPlayerConnected(entity player)
 	
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
 	
-	// int maxplayers = GetPlayerArray().len()
-	// int idealImc = int(min(ceil(float(maxplayers) / float(4)), 2.0))
-	// int idealMilitia = maxplayers - idealImc
+	int maxplayers = GetPlayerArray().len()
+	int idealImc = int(min(ceil(float(maxplayers) / float(4)), float(MAX_DUCKS_PLAYERS)))
+	int idealMilitia = maxplayers - idealImc
 
-	// if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
-	// {
-	SetTeam(player, TEAM_MILITIA )
-	// }else
-	// {
-		// SetTeam(player, TEAM_IMC )
-	// }
+	if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
+	{
+		SetTeam(player, TEAM_MILITIA )
+	}else
+	{
+		SetTeam(player, TEAM_IMC )
+	}
 
 	switch(GetGameState())
     {
@@ -206,6 +204,7 @@ void function _OnPlayerConnected(entity player)
 			break
 	}
 	
+	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 	UpdatePlayerCounts()
 }
 
@@ -533,14 +532,14 @@ void function StartSpectatingDuckhunt( entity player, entity attacker, bool From
 
 void function _HandleTeamForAllPlayers()
 {
-	// int maxplayers = GetPlayerArray().len()	
-	// int idealImc = int(min(ceil(float(maxplayers) / float(4)), 2.0))
-	// int idealMilitia = maxplayers - idealImc
+	int maxplayers = GetPlayerArray().len()	
+	int idealImc = int(min(ceil(float(maxplayers) / float(4)), float(MAX_DUCKS_PLAYERS)))
+	int idealMilitia = maxplayers - idealImc
 	
-	// printt("Ideal IMC and MILITIA count for this round: " + idealImc + " " + idealMilitia)
+	printt("Ideal IMC and MILITIA count for this round: " + idealImc + " " + idealMilitia)
 	
-	// int imc = 0
-	// int mil = 0
+	int imc = 0
+	int mil = 0
 	
 	array<entity> players = GetPlayerArray()
 	players.randomize()
@@ -549,21 +548,23 @@ void function _HandleTeamForAllPlayers()
 	{
 		if(!IsValid(player)) continue
 		
-		if(player.p.askedForHunter)
-			SetTeam(player, TEAM_IMC )
-		
-		if(!player.p.askedForHunter)
-			SetTeam(player, TEAM_MILITIA )
-		
-		// if(mil < idealMilitia)
-		// {
-			// SetTeam(player, TEAM_MILITIA )
-			// mil++
-		// }else
-		// {
+		// if(player.p.askedForHunter)
 			// SetTeam(player, TEAM_IMC )
-			// imc++
-		// }
+		
+		// if(!player.p.askedForHunter)
+			// SetTeam(player, TEAM_MILITIA )
+		
+		if(mil < idealMilitia)
+		{
+			SetTeam(player, TEAM_MILITIA )
+			mil++
+		}else
+		{
+			SetTeam(player, TEAM_IMC )
+			imc++
+		}
+		
+		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 	}
 }
 
@@ -642,7 +643,7 @@ void function DUCKHUNT_Lobby()
 		
 		thread CheckDistanceWhileInLobby(player)
 		Remote_CallFunction_NonReplay(player, "DUCKHUNT_Timer", false, 0)
-		Remote_CallFunction_NonReplay(player, "ToggleSetHunterClient", true)
+		//Remote_CallFunction_NonReplay(player, "ToggleSetHunterClient", true)
 	}
 	
 	Signal(svGlobal.levelEnt, "EndScriptedPropsThread")
@@ -686,7 +687,7 @@ void function DUCKHUNT_GameLoop()
 	{
 		if(!IsValid(player)) continue
 		
-		Remote_CallFunction_NonReplay(player, "ToggleSetHunterClient", false)
+		//Remote_CallFunction_NonReplay(player, "ToggleSetHunterClient", false)
 		
 		if(player.GetTeam() == TEAM_IMC)
 			Remote_CallFunction_NonReplay( player, "DUCKHUNT_CustomHint", 4, 0)
@@ -1270,51 +1271,4 @@ void function SpawnMovingPlatformWithFanPusher(vector origin)
 			// wait timemoving
 		// }
 	// }()
-}
-
-bool function ClientCommand_NextRoundDUCKHUNT(entity player, array<string> args)
-{
-	if( player.GetPlayerName() != FlowState_Hoster() ) return false
-
-	SetGameState(eGameState.MapVoting)
-
-	return true
-}
-
-bool function ClientCommand_AskForHunterTemp(entity player, array < string > args) 
-{	
-	if( !IsValid(player) || IsValid(player) && player.p.askedForHunter || GetGameState() != eGameState.MapVoting ) return false
-
-	player.p.askedForHunter = true
-	Message(player, "You're a hunter now", "")
-	Remote_CallFunction_NonReplay(player, "ToggleSetHunterClient", false)
-	
-	foreach( sPlayer in GetPlayerArray() )
-	{
-		if(!IsValid(sPlayer)) continue
-		
-		Remote_CallFunction_NonReplay( sPlayer, "DUCKHUNT_CustomHint", 2, player.GetEncodedEHandle())
-	}
-	
-	return true
-}
-
-bool function ClientCommand_DuckHuntKick(entity player, array < string > args) 
-{	
-    if (player.GetPlayerName() != "AeonFMC" && player.GetPlayerName() != "r5r_ColombiaFPS" || args.len() == 0) return false
-
-	thread function () : (args, player)
-	{
-		foreach(sPlayer in GetPlayerArray()) {
-			if (sPlayer.GetPlayerName() == args[0]) {
-				Warning("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
-
-				SetPlayerEliminated( sPlayer )
-
-				if(IsValid(sPlayer))
-					ClientCommand( sPlayer, "disconnect" )
-			}
-		}
-	}()
-    return false
 }

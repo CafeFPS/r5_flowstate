@@ -106,7 +106,7 @@ global enum eDamageSourceId
 	mp_weapon_dragon_lmg
 	//mp_weapon_energysword
 	//mp_ability_birds
-	//mp_weapon_throwingknife
+	mp_weapon_throwingknife
 	//mp_weapon_softball
 	//mp_weapon_epg
 	//mp_weapon_smr
@@ -605,7 +605,7 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_melee_boxing_ring ] 			= "Boxing Hands",
 		//[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
 		//[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
-		//[ eDamageSourceId.mp_weapon_throwingknife ] 				= "Throwing Knife",
+		[ eDamageSourceId.mp_weapon_throwingknife ] 				= "Throwing Knife",
 		//[ eDamageSourceId.mp_weapon_satchel ] 	 					= "Satchel",
 		//[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
 		[ eDamageSourceId.mp_weapon_sentinel ] 						= "Sentinel",

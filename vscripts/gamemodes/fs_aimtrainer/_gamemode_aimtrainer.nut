@@ -485,7 +485,7 @@ void function StartFloatingTargetChallenge(entity player)
 }
 
 //CHALLENGE "Popcorn targets"
-void function StartPopcornChallenge(entity player)
+void function StartPopcornChallenge(entity player, bool secondvariant = false)
 {
 	if(!IsValid(player)) return
 	
@@ -508,9 +508,12 @@ void function StartPopcornChallenge(entity player)
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 	
+	if(secondvariant)
+		thread MakePlayerBounce(player)
+	
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesEntities.dummies.len()<4)
+		if(ChallengesEntities.dummies.len()<7)
 				thread CreateDummyPopcornChallenge(player)
 		WaitFrame()
 	}
@@ -519,7 +522,7 @@ void function StartPopcornChallenge(entity player)
 void function CreateDummyPopcornChallenge(entity player)
 {
 	float r = float(RandomInt(6)) / float(6) * 2 * PI
-	entity dummy = CreateDummy( 99, player.GetOrigin() + 100 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>, <0,90,0> )
+	entity dummy = CreateDummy( 99, player.GetOrigin() + 50 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>, <0,90,0> )
 	EndSignal(dummy, "OnDeath")
 
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
@@ -544,12 +547,56 @@ void function CreateDummyPopcornChallenge(entity player)
 				int enemyID    = GetParticleSystemIndex( $"P_enemy_jump_jet_ON_trails" )
 				entity enemyFX = StartParticleEffectOnEntity_ReturnEntity( dummy, enemyID, FX_PATTACH_POINT_FOLLOW, dummy.LookupAttachment( attachment ) )
 		}
-
+	thread CheckDistanceFromPlayer(player, dummy)
 	while(IsValid(ai)){		
 		if( ai.GetOrigin().z - floorLocation.z < 50)
 		{
-			vector angles2 = VectorToAngles( player.GetOrigin() - ai.GetOrigin())
-			ai.SetAngles(angles2)
+			vector angles2 = VectorToAngles( Vector(player.GetOrigin().x, player.GetOrigin().y, floorCenterForPlayer.z) - ai.GetOrigin())
+			ai.SetAngles(Vector(0, angles2.y, 0))
+			
+			if(CoinFlip())
+				random = 1
+			else
+				random = -1
+
+			int random2 = RandomIntRangeInclusive(1,5)
+			if(random2 == 5 || random2 == 4)
+				ai.SetVelocity(AnglesToForward( angles2 ) * 128 + AnglesToUp(angles2)*RandomFloatRange(512,1024))
+			else
+				ai.SetVelocity((AnglesToRight( angles2 ) * RandomFloatRange(128,256) * random ) + AnglesToUp(angles2)*RandomFloatRange(512,1024))
+				
+			EmitSoundOnEntity( ai, "JumpPad_LaunchPlayer_3p" )
+		}
+		WaitFrame()
+	}
+}
+
+void function CheckDistanceFromPlayer(entity player, entity ai)
+{
+	while( IsValid(ai) )
+	{
+		if( Distance( player.GetOrigin(), ai.GetOrigin() ) > 1500)
+		{
+			ChallengesEntities.dummies.removebyvalue(ai)
+			ai.Destroy()
+			break
+		}
+	
+		WaitFrame()
+	}
+}
+
+void function MakePlayerBounce(entity player)
+{
+	EndSignal(player, "ChallengeTimeOver")
+	
+	entity ai = player
+	int random = 1				
+	if(CoinFlip()) random = -1
+	while(IsValid(ai)){		
+		if( ai.GetOrigin().z - floorLocation.z < 50)
+		{
+			vector angles2 = player.GetAngles()
 			
 			if(CoinFlip())
 				random = 1
@@ -565,7 +612,7 @@ void function CreateDummyPopcornChallenge(entity player)
 			EmitSoundOnEntity( ai, "JumpPad_LaunchPlayer_3p" )
 		}
 		WaitFrame()
-	}
+	}	
 }
 
 //CHALLENGE "Shooting Valk's ult"
@@ -2090,7 +2137,12 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 void function StartArmorSwapChallenge(entity player)
 {
 	if(!IsValid(player)) return
-	player.SetOrigin(onGroundLocationPos)
+	
+	if( GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
+		player.SetOrigin(<10377.2695, 6253.86523, -4303.90625>)
+	else
+		player.SetOrigin(onGroundLocationPos)
+	
 	player.SetAngles(onGroundLocationAngs)
 	EndSignal(player, "ChallengeTimeOver")
 
@@ -2107,9 +2159,6 @@ void function StartArmorSwapChallenge(entity player)
 	
 	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
 
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	thread ChallengeWatcherThread(endtime, player)
-
 	WaitFrame()
 	while(true){
 		array<vector> NewcircleLocations = NavMesh_RandomPositions( AimTrainerOriginToGround( <player.GetOrigin().x, player.GetOrigin().y, 10000> ), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
@@ -2118,24 +2167,19 @@ void function StartArmorSwapChallenge(entity player)
 			circleLocations.clear()
 			circleLocations = NewcircleLocations
 		}
-		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
 		
 		foreach(deathbox in ChallengesEntities.dummies)
 			if(!IsValid(deathbox)) 
 				ChallengesEntities.dummies.removebyvalue(deathbox)
 		
-		while(ChallengesEntities.dummies.len()<5){
+		while(ChallengesEntities.dummies.len()<4){
 			vector org1 = player.GetOrigin()
 			
 			int locationindex = RandomInt(circleLocations.len())
-			vector org2 = circleLocations[locationindex]
-			vector vec2 = org1 - org2
-			
-			int random = 1
-			if(CoinFlip()) random = -1
-			vector angles2 = AnglesToRight(VectorToAngles(vec2))*90*random
-			
+
 			vector circleoriginfordeathbox = circleLocations[locationindex]
+			
+			NewcircleLocations.removebyvalue( circleoriginfordeathbox )
 			
 			entity deathbox = CreateAimtrainerDeathbox( player, circleoriginfordeathbox)
 			ChallengesEntities.dummies.append(deathbox)
@@ -2192,7 +2236,8 @@ entity function CreateAimtrainerDeathbox( entity player, vector origin)
 
 entity function FlowState_CreateDeathBox( entity player, vector origin)
 {
-	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, origin, <0, 45, 0>, 6 )
+	int randomyaw = RandomIntRange(-360,360)
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, origin, <0, randomyaw, 0>, 6 )
 	
 	box.kv.fadedist = 10000
 	SetTargetName( box, DEATH_BOX_TARGETNAME )
@@ -2203,9 +2248,8 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
 	box.SetOwner( player )
 	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
-	//box.AllowMantle()
 	
-	box.SetNetBool( "overrideRUI", false )
+	box.SetNetBool( "overrideRUI", true )
 	
 	array<string> coolDevs = [
 		"R5R_CafeFPS",
@@ -2222,7 +2266,7 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	]
 
 	box.SetCustomOwnerName( coolDevs.getrandom() )
-	box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( Loadout_CharacterClass() , LoadoutSlot_GetItemFlavor( ToEHI( player ) , Loadout_CharacterClass() ) ) )
+	box.SetNetInt( "characterIndex", RandomInt(10) )
 
 	Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 	Highlight_ClearNeutralHighlight( box )
@@ -2230,7 +2274,8 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	vector restPos = box.GetOrigin()
 	vector fallPos = restPos + < 0, 0, 54 >
 
-	thread (void function( entity box , vector restPos , vector fallPos) {
+	thread function() : (box , restPos , fallPos, randomyaw) 
+	{
 		entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
 		if ( IsValid( box ) )
 			{
@@ -2241,12 +2286,13 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 		if ( IsValid( box ) )
 			mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
 		wait 0.5
+		// mover.NonPhysicsRotateTo( Vector(0, randomyaw, anglesonground.z), 0.5, 0.5, 0.0 )
+		// wait 0.5
 		if ( IsValid( box ) )
 			box.ClearParent()
 		if ( IsValid( mover ) )
 			mover.Destroy()
-
-	}) ( box , restPos , fallPos)
+	} ()
 		
 	return box
 }
@@ -2819,7 +2865,7 @@ bool function CC_StartChallenge7( entity player, array<string> args )
 bool function CC_StartChallenge8( entity player, array<string> args )
 {
 	PreChallengeStart(player, 13)
-	// thread StartTapyDuckStrafesChallenge(player)
+	thread StartPopcornChallenge(player, true)
 	return false
 }
 bool function CC_StartChallenge1NewC( entity player, array<string> args )

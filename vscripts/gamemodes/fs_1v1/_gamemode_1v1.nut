@@ -597,10 +597,14 @@ void function giveWeaponInRandomWeaponPool(entity player)
 
 	    GiveRandomPrimaryWeaponMetagame(player)
 		GiveRandomSecondaryWeaponMetagame(player)
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		if(!isPlayerInRestingList(player))
-	    	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-		// group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	    	player.GiveOffhandWeapon( "melee_boxing_ring", OFFHAND_MELEE, [] )
+		
+		//hack to fix first reload
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		player.ClearFirstDeployForAllWeapons()
 	}
 	catch (e)
 	{}
@@ -648,7 +652,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 				TakeAllWeapons(player)
 				thread LoadCustomWeapon(player)
 			}
-			player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		}
 		catch (erroree)
 		{
@@ -1099,6 +1103,10 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	while(true)
 	{
 		WaitFrame()
+		
+		if( GetScoreboardShowingState() )
+			continue
+		
 		//遍历等待队列
 		foreach (playerInWatingSctruct in soloPlayersWaiting )
 		{
@@ -1309,6 +1317,10 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			thread respawnInSoloMode(eachPlayer, index)
 		}
 		newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
+		
+		if(IsValid(GetMainRingBoundary()))
+			newGroup.ring.SetParent(GetMainRingBoundary())
+		
 		setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
 		//realms = 0 means visible for everyone,so it should be more than 1
 		setRealms_1v1(newGroup.player1,newGroup.slotIndex+1) //to ensure realms is more than 0
@@ -1325,3 +1337,40 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	)
 
 }//thread
+
+void function ForceAllRoundsToFinish_solomode()
+{
+	foreach(player in GetPlayerArray())
+	{
+		if(!IsValid(player)) continue
+		
+		try{
+			if(player.p.isSpectating)
+			{
+				player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+				player.p.isSpectating = false
+				player.SetSpecReplayDelay( 0 )
+				player.SetObserverTarget( null )
+				player.StopObserverMode()
+				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				player.MakeVisible()
+				player.ClearInvulnerable()
+				player.SetTakeDamageType( DAMAGE_YES )
+			}
+		}catch(e420){}
+		
+		if(isPlayerInWatingList(player))
+			return
+
+		soloGroupStruct group = returnSoloGroupOfPlayer(player) 
+		destroyRingsForGroup(group)
+		
+		if(!group.IsKeep)
+			group.IsFinished = true //tell solo thread this round has finished
+		
+		soloModePlayerToWaitingList( player )
+		setRealms_1v1(player,64)
+	}
+	
+	soloPlayersInProgress.clear()
+}

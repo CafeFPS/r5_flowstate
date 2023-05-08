@@ -413,7 +413,7 @@ void function CreateDeathBoxRui( entity deathBox )
 
 	expect EHI( ehi )
 	
-	if( GameRules_GetGameMode() != "flowstate_aimtrainer" )
+	if( GameRules_GetGameMode() != "fs_aimtrainer" )
 	{
 		clGlobal.levelEnt.Signal( "CreateDeathBoxRui" )
 		clGlobal.levelEnt.EndSignal( "CreateDeathBoxRui" )
@@ -644,7 +644,7 @@ void function Sur_OnUseEntGainFocus( entity ent )
 	}
 	else if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
 	{
-		if( GameRules_GetGameMode() != "flowstate_aimtrainer" )
+		if( GameRules_GetGameMode() != "fs_aimtrainer" )
 		{
 			thread CreateDeathBoxRui( ent )
 		}

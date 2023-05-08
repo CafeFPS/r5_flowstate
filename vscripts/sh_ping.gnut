@@ -929,8 +929,6 @@ bool function PingIsAllowed( entity player )
 		return false
 	if ( GetGameState() == eGameState.PickLoadout )
 		return false
-	if ( GetGameState() == eGameState.WaitingForPlayers && !GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
-		return false
 	if ( player.GetPlayerNetBool( "pingEnabled" ) == false )
 		return false
 

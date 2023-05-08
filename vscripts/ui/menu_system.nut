@@ -216,9 +216,9 @@ void function OnSystemMenu_Open()
 void function UpdateSystemPanel( var panel )
 {
 	//temp workaround, not the best place for this tbh
-	if( IsConnected() && GetCurrentPlaylistName() != "flowstate_aimtrainer" )
+	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
-	else if( IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer" )
+	else if( IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
@@ -232,12 +232,12 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" && IsConnected() )
+		if( GetCurrentPlaylistName() == "flowstate_snd" && IsConnected() || GetCurrentPlaylistName() == "fs_dm" && IsConnected())
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 		
-		if( GetCurrentPlaylistName() != "flowstate_aimtrainer" )
+		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
@@ -269,10 +269,10 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
-		{
-			SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
-		}
+		// if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
+		// {
+			// SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
+		// }
 	}
 	else
 	{
@@ -284,7 +284,7 @@ void function UpdateSystemPanel( var panel )
 		#endif
 	}
 
-	const int maxNumButtons = 4;
+	const int maxNumButtons = 5;
 	for( int i = 0; i < maxNumButtons; i++ )
 	{
 		if( i > 0 && i < buttonIndex)
@@ -299,7 +299,7 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if(IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer")
+	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
@@ -326,7 +326,7 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer"){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -337,7 +337,7 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "flowstate_aimtrainer"){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}

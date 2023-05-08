@@ -1210,13 +1210,19 @@ void function InitMenuEntities()
 		ModelData_SetBaseOrigin( file.playCharacter, <0, 523, 0>)
 		ModelData_SetBaseAngles( file.playCharacter, <0, -90, 0>)
 	}
-	
+
 	model = CreateMenuModel( file.playCharacter, $"mdl/dev/empty_model.rmdl" )
 	ItemFlavor character     = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterClass() )
 	ItemFlavor characterSkin = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterSkin( character ) )
 	CharacterSkin_Apply( model, characterSkin )
 	model.SetAlive( true )
-	
+		
+	entity lobbyLight = CreateClientSideDynamicLight( Vector(file.playCharacter.model.GetOrigin().x, file.playCharacter.model.GetOrigin().y, file.playCharacter.model.GetOrigin().z + 80) + file.playCharacter.model.GetForwardVector() * 40, < 0, 0, 0 >, DLIGHT_WHITE, 200 )
+	lobbyLight.SetLightExponent( 2 )
+
+	entity lobbyLight2 = CreateClientSideDynamicLight( Vector(file.playCharacter.model.GetOrigin().x, file.playCharacter.model.GetOrigin().y, file.playCharacter.model.GetOrigin().z) + file.playCharacter.model.GetRightVector() * 50 + file.playCharacter.model.GetForwardVector() * 50, < 0, 0, 0 >, DLIGHT_RICH_BROWN, 200 )
+	lobbyLight2.SetLightExponent( 4 )
+		
 	if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
 		refEnt = GetEntByScriptName( "customize_character_ref" )
@@ -1729,7 +1735,7 @@ void function DisplayPartyMemberModelThread( PartyMemberDisplayThreadData data )
 
 	data.body.MakeSafeForUIScriptHack()
 	data.body.Anim_Play( data.idleActivity )
-
+	
 /*
 	data.rui = CreateFullscreenRui( $"ui/lobby_player_info.rpak" )
 

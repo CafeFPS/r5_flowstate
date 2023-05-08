@@ -9,7 +9,7 @@ WeaponData
 	"description" 									"#WPN_WINGMAN_DESC"
 	"longdesc" 										"#WPN_WINGMAN_LONGDESC"
 
-	"ammo_pool_type"								"highcal"
+	"ammo_pool_type"								"sniper"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_wingman"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_wingman"
@@ -252,15 +252,15 @@ WeaponData
 			"fire_sound_1_npc"				"weapon_wingman_fire_skull_3p"
         }
 
-        highcal_mag_l1
+        sniper_mag_l1
 		{
 			"ammo_clip_size"   							"7"
 		}
-		highcal_mag_l2
+		sniper_mag_l2
 		{
 			"ammo_clip_size"   							"8"
 		}
-		highcal_mag_l3
+		sniper_mag_l3
 		{
 			"ammo_clip_size"   							"9"
 		}

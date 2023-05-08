@@ -247,6 +247,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/xp_badge.rmdl" )
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
+	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
+	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
 
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
@@ -297,9 +299,14 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
+	PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
+	PrecacheWeapon( $"melee_boxing_ring")
+	PrecacheWeapon( $"mp_weapon_throwingknife" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"melee_bolo_sword" )
 	PrecacheWeapon( $"mp_weapon_bolo_sword_primary" )
+	PrecacheWeapon( $"melee_shadowsquad_hands" )
+	PrecacheWeapon( $"mp_weapon_shadow_squad_hands_primary" )	
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
 	PrecacheWeapon( $"mp_weapon_frag_drone" )
 	PrecacheWeapon( $"npc_weapon_energy_shotgun" )

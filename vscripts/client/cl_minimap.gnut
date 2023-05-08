@@ -39,11 +39,8 @@ global function GetMinimapBackgroundTileImage
 
 global function SetMapFeatureItem
 global function RemoveMapFeatureItemByName
-
 global function Minimap_EnableDraw_Internal
 global function Minimap_DisableDraw_Internal
-global function UpdateImageAndScaleOnMinimapRUI
-
 #if DEVELOPER
 global function DumpMinimapHandles
 #endif
@@ -127,6 +124,8 @@ const int OF_NO_TEAM_COLOR = 1 << 9
 
 void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
+	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
 	Assert( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
 
 	MinmapPackage minimapPackage
@@ -324,15 +323,9 @@ void function ClMinimap_Init()
 	// create unitframe ruis for the fullmap screen
 	// Taking off one of these to save memory. If we ever need to go above a 3 person team, add it back.
 	//file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-	if(GameRules_GetGameMode() == "flowstate_snd")
-	{
-		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-	}
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-	
 	foreach( rui in file.fullmap_unitframesRui )
 	{
 		InitHUDRui( rui, false )
@@ -432,9 +425,6 @@ asset function GetFullmapAsset( string className, int customState )
 
 asset function GetMinimapBackgroundTileImage()
 {
-	if(GetMapName() == "mp_rr_party_crasher_new")
-		return $"overviews/mp_rr_canyonlands_bg"
-	
 	//return $"overviews/mp_rr_canyonlands_64k_x_64k_bg_tile"
 	return file.minimapBackgroundTileImage
 }
@@ -749,7 +739,7 @@ var function Minimap_AddCustomLayer( asset ruiAsset, int sortKey = MINIMAP_Z_LAY
 void function OnPlayerCreate( entity player )
 {
 	entity viewPlayer = GetLocalViewPlayer()
-	if ( IsValid( viewPlayer ) && viewPlayer.GetTeam() == player.GetTeam() && GameRules_GetGameMode() == SURVIVAL)
+	if ( IsValid( viewPlayer ) && viewPlayer.GetTeam() == player.GetTeam() )
 		UpdateFullmapRuiTracks()
 
 	if ( player != GetLocalClientPlayer() )
@@ -843,7 +833,7 @@ void function OnPlayerCreate( entity player )
 
 	RuiSetFloat3( file.minimap_base, "mapCorner", <mapCornerX, mapCornerY, 0> )
 	RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
-	
+	RuiSetFloat( file.minimap_base, "mapScale", mapScale )
 	RuiSetBool( file.minimap_base, "isNorthFacing", !GetConVarBool( "hud_setting_minimapRotate" ) )
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
@@ -852,24 +842,6 @@ void function OnPlayerCreate( entity player )
 	UpdatePlayerRuiTracking( player )
 }
 
-void function UpdateImageAndScaleOnMinimapRUI(asset image, float scale)
-{
-	try{
-		if(file.minimap_base != null)
-		{
-			RuiSetImage( file.minimap_base, "mapImage", image )
-			RuiSetFloat( file.minimap_base, "mapScale", scale )
-			
-			//RuiSetFloat( file.minimap_base, "displayDist", file.threatMaxDist )
-			
-			// if( file.minimap_base != null)
-				// RuiSetBool( file.minimap_base, "isNorthFacing", true )
-			
-			// if( file.minimap_you != null)
-				// RuiSetBool( file.minimap_you, "isNorthFacing", true )
-		}
-	}catch(e420){}
-}
 
 void function Minimap_OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 {
@@ -882,14 +854,9 @@ void function UpdatePlayerRuiTracking( entity player )
 	Assert( player == GetLocalClientPlayer() )
 
 	entity viewPlayer = GetLocalViewPlayer()
-	
-	//if(GameRules_GetGameMode() != "flowstate_snd")
-	//{
-		RuiTrackFloat3( file.minimap_base, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
-		RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )
-	//} else 
-	//	thread HACK_TrackPlayerPositionOnScript( file.minimap_base, viewPlayer, false )
 
+	RuiTrackFloat3( file.minimap_base, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+	RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )
 	RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
@@ -1368,6 +1335,8 @@ void function Minimap_SetBlankBackground( bool doBlank )
 
 void function Minimap_SetSizeScale( float scale )
 {
+	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
 	file.minimapSizeScale = scale
 
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", scale )
@@ -1468,6 +1437,8 @@ void function Minimap_EnableDraw()
 
 void function Minimap_DisableDraw_Internal()
 {
+	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
 	file.minimapEnabled = false
 
 	RuiSetVisible( file.minimap_base, false )
@@ -1489,6 +1460,8 @@ void function Minimap_DisableDraw_Internal()
 
 void function Minimap_EnableDraw_Internal()
 {
+	if(GetCurrentPlaylistVarBool( "r5reloaded_aimtrainer", false )) return
+
 	file.minimapEnabled = true
 
 	RuiSetVisible( file.minimap_base, true )
@@ -1548,8 +1521,7 @@ void function Fullmap_RemoveRui( var rui )
 void function Fullmap_SetVisible( bool state )
 {
 	FullMap_UpdateTopologies()
-	UpdateSurveyBeaconHint()             
-
+	UpdateSurveyBeaconHint() // TODO: meh
 	UpdateMapFeatures()
 	UpdateCameraVisibility()
 
@@ -1568,7 +1540,6 @@ void function Fullmap_SetVisible_MapOnly( bool state )
 	file.fullmapVisible = state
 
 }
-
 
 bool function Fullmap_IsVisible()
 {

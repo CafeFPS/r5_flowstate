@@ -411,7 +411,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return true
 
-	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) )
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) && GameRules_GetGameMode() != "fs_aimtrainer")
 		return true
 
 	entity deathBox = null
@@ -430,6 +430,17 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
 			return true
+		
+		if( GameRules_GetGameMode() == "fs_aimtrainer" )
+		{
+			thread function() : (deathBox)
+			{
+				wait 1
+				if(IsValid(deathBox))
+					deathBox.Destroy()
+			}()
+			return true
+		}
 	}
 
 	Survival_PickupItem( lootEnt, player, pickupFlags, deathBox )
@@ -1423,10 +1434,24 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			mods.append( mod )
 		}
 	}
-
-	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
+	
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, [] )
+	
+	try{
+		if(IsValid(weapon))
+		{
+			foreach(mod in mods)
+			{
+				weapon.AddMod(mod)
+			}
+		}
+	}catch(e420){}
+	
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
-
+	
+	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+		weapon.AddMod("duckhunt")
+	
 	int clipCount = pickup.GetClipCount()
 	if ( clipCount > 0 )
 	{
@@ -1545,7 +1570,8 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 
 	box.SetOwner( player )
 	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
-
+	box.AllowMantle()
+	
 	if ( hasCard )
 	{
 		box.SetNetBool( "overrideRUI", false )

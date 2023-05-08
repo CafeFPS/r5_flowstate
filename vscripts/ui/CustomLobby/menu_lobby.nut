@@ -178,20 +178,20 @@ void function CreateNavButtons()
 		Play_SetupUI()
 	} )
 
-	AddNavButton("Legends", Hud_GetChild(file.menu, "LegendsPanel"), ePresentationType.CHARACTER_SELECT, void function( var button ) {
-		R5RCharactersPanel_Show()
-	} )
-
-	//Item flavor bugged, disable for now
-	AddNavButton("Loadout", Hud_GetChild(file.menu, "LoadoutPanel"), ePresentationType.WEAPON_CATEGORY, void function( var button ) {
-		ShowLoadoutPanel()
-	}, false )
+	AddNavButton("Servers", Hud_GetChild(file.menu, "ServerBrowserPanel"), ePresentationType.COLLECTION_EVENT, void function( var button ) { } )
 
 	AddNavButton("Create", Hud_GetChild(file.menu, "CreatePanel"), ePresentationType.CHARACTER_SELECT, void function( var button ) {
 		OnCreateMatchOpen()
 	} )
 
-	AddNavButton("Servers", Hud_GetChild(file.menu, "ServerBrowserPanel"), ePresentationType.COLLECTION_EVENT, void function( var button ) { } )
+	AddNavButton("Legends", Hud_GetChild(file.menu, "LegendsPanel"), ePresentationType.CHARACTER_SELECT, void function( var button ) {
+		R5RCharactersPanel_Show()
+	} )
+
+	//Item flavor bugged, disable for now
+	// AddNavButton("Loadout", Hud_GetChild(file.menu, "LoadoutPanel"), ePresentationType.WEAPON_CATEGORY, void function( var button ) {
+		// ShowLoadoutPanel()
+	// }, false )
 
 	/*AddNavButton("Settings", null, void function( var button ) {
 		AdvanceMenu( GetMenu( "MiscMenu" ) )
