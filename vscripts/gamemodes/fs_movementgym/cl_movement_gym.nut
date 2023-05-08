@@ -551,9 +551,8 @@ void function MG_Ultrakill_styleemeter(){
 				
 				
 				//reset if inactive-------------------------------------------------
-				if(TimeNow - laststyletime > 5.0){
+				if(TimeNow - laststyletime > 5.0 && stylepoints > 0.0){
 					stylepoints = 0.0
-					printf("lost combo")
 				}
 				
 				//constantly loose points
