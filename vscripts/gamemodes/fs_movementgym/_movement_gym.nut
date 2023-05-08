@@ -11,15 +11,14 @@ globalize_all_functions
 //Init Movement Gym With Map 1
 void
 function MovementGym() {
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_skygarden") {
-
+  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_composite") {
+    
     // Commands
     AddClientCommandCallback("hub", ClientCommand_Hub)
     AddClientCommandCallback("invis", ClientCommand_invis)
     AddClientCommandCallback("meter", ClientCommand_meter)
     AddClientCommandCallback("keys", ClientCommand_keys)
-    
-    AddClientCommandCallback("spectate", ClientCommand_Spec)
+    //AddClientCommandCallback("spectate", _MG_Spectate_by_name) //99% ready will update via pull after release
 
     //Map init
     //PrecacheMovementGymProps()
@@ -171,9 +170,6 @@ function PrecacheMovementGymProps() {
     PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl" )
     PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl" )
     PrecacheModel( $"mdl/industrial/landing_mat_metal_03_large.rmdl" )
-    
-    PrecacheModel( $"mdl/fx/core_energy.rmdl" )
-
 
 }
 
@@ -304,24 +300,69 @@ function ClientCommand_keys(entity user, array < string > args) {
   return true
 }
 
-bool
-function ClientCommand_Spec(entity user, array < string > args) {
-    if( !IsValid(user) || args.len() == 0 )
-	return false
-  
-  if(args[0] == "off"){
-	user.RemoveFromAllRealms()
-	user.AddToRealm(1)
-	ClientCommand_SpectateEnemies(user, args)
-  }
-  
-  if(args[0] == "on"){
-	user.AddToAllRealms()
-	ClientCommand_SpectateEnemies(user, args)
+bool function _MG_Spectate_by_name(entity player, array<string> name){
+	if( !IsValid(player) || name.len() == 0 ){
+		Message(player, "Incorrect Usage", "Try: spectate playername\n Or to stop spectating try: spectate stop")
+		return false
+	}
 	
-  }
-  return true
+	if( Time() - player.p.lastTimeSpectateUsed < 3 )
+	{
+		Message( player, "Spam Protection", "It is in cool down. Please try again later." )
+		return false
+	}
+	
+	
+	if(name[0] == "stop"){
+		if(IsValid(player) && player.p.isSpectating){
+			player.p.isSpectating = false
+			player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+			player.SetObserverTarget( null )
+			player.StopObserverMode()
+			player.p.lastTimeSpectateUsed = Time()
+			DecideRespawnPlayer(player, true)
+			if(IsValid(player)){
+				player.RemoveFromAllRealms()
+				player.AddToRealm(1)
+			}
+			return true
+		}
+	}
+	
+	if(name[0] != "stop" && player.GetPlayerName() != name[0] && !player.p.isSpectating && player.IsInRealm(1)){
+		foreach(target in GetPlayerArray_Alive()) {
+			if( target.GetPlayerName() == name[0] ){
+				player.AddToAllRealms()
+				if(IsValid(target) && target.IsInRealm(1)){
+					player.p.isSpectating = true
+					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+					player.SetPlayerNetInt( "spectatorTargetCount", 1 )
+					player.SetObserverTarget( target )
+					player.SetSpecReplayDelay( 5 )
+					player.StartObserverMode( OBS_MODE_IN_EYE )
+					player.p.lastTimeSpectateUsed = Time()
+					//thread _MG_Spectate_checker(player, target)
+					return true
+				} else {
+					Message(player, "Player is hidden", "or is surfing :)")
+					player.RemoveFromAllRealms()
+					player.AddToRealm(1)
+					return false
+				}
+				
+			} else {
+				Message(player, "Invalid Player Name", "or player are already spectating someone")
+				return false
+			}	
+		}	
+	} else {
+		Message(player, "Invalid Parameters", "Possible Reasons:\n wrong username\n you are already spectating someone\n unhide players\n exit surf\n ")
+		return false
+	}
+	
+	return false
 }
+
 
 //whacky glowy button
 entity
@@ -486,8 +527,6 @@ function MovementGym_Hub_Buttons() {
   MapEditor_CreateProp($"mdl/industrial/screwdriver_octane.rmdl", < 10517, 10181.96, -4230.4 > , < 0, -180, -90 > , true, 5000, -1, 4.98262)
   MapEditor_CreateProp($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 10509, 10076.96, -4217.5 > , < 90, 0, 0 > , true, 5000, -1, 1.367478)
   MapEditor_CreateProp($"mdl/props/lifeline_needle/lifeline_needle.rmdl", < 10517.2, 9993.263, -4230.4 > , < 0, -90, -90 > , true, 5000, -1, 6.85924)
-  
-  MapEditor_CreateProp( $"mdl/fx/core_energy.rmdl", < -21600, 400, -26500 >, < 0, 0, 0 >, true, 50000, -1, 5.1 )
 
 
   foreach(entity ent in NoCollisionArray) ent.kv.solid = 0
@@ -7774,4 +7813,3 @@ function MovementGym_Surf_Kitsune_lvl7() {
   DispatchSpawn(trigger_0)
 
 }
-

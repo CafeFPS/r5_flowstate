@@ -5,6 +5,7 @@ globalize_all_functions
 bool kmh
 float speedometer_hz
 string time = ""
+bool s4lighting
 
 // init
 void function Cl_MovementGym_Init()
@@ -14,6 +15,7 @@ void function Cl_MovementGym_Init()
 	// Get Movement Gym User Settings
 	speedometer_hz = 0.05
 	kmh = true
+	s4lighting = false
 	
 	// Register Signals
 	RegisterSignal("StopStopWatch")
@@ -22,6 +24,7 @@ void function Cl_MovementGym_Init()
 	// Hud 
 	MG_Speedometer_toggle(true)
 	MG_MovementOverlay_toggle(true)
+	thread MG_ForceLighting()
 }
 
 
@@ -88,10 +91,12 @@ void function MG_StopWatch_Obituary(int seconds, entity name, int map){
 		} else if (usertime > 9) {
 			time = "0:" + usertime
 			Obituary_Print_Localized( "%$rui/menu/store/feature_timer% " + name.GetPlayerName() + " has finished" + " Map " + map + " in " + time, GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		} else {
+		} else if (usertime > 0) {
 			time = "0:0" + usertime
 			Obituary_Print_Localized( "%$rui/menu/store/feature_timer% " + name.GetPlayerName() + " has finished" + " Map " + map + " in " + time, GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-	}
+		}
+	
+
 }
 
 void function MG_StopWatch_destroy(){
@@ -236,7 +241,19 @@ void function MG_Checkpoint_Msg(){
 	AnnouncementFromClass( player, announcement )	
 }
 
-
+void function MG_ForceLighting(){
+	if(s4lighting){
+		while(true){
+			if(GetConVarFloat( "mat_sky_scale") != 0.5 || GetConVarFloat( "mat_sun_scale") != 2.5 || GetConVarString( "mat_sun_color") != "2.0 1.2 0.5 1.0"){
+				// Force Client settings
+				SetConVarFloat( "mat_sky_scale", 0.5 )
+				SetConVarFloat( "mat_sun_scale", 2.5 )
+				SetConVarString( "mat_sun_color", "2.0 1.2 0.5 1.0" )
+			}
+		WaitFrame()
+		}
+	}
+}
 
 //Movement WASD overlay
 void function MG_MovementOverlay_toggle(bool visible){
@@ -249,23 +266,24 @@ void function MG_MovementOverlay_toggle(bool visible){
 		Hud_SetVisible(HudElement( "MG_MO_SPACE" ), true)
 		
 		// W
-		RegisterButtonPressedCallback(KEY_W, MG_MovementOverlay_W_Pressed)
-		RegisterButtonReleasedCallback(KEY_W, MG_MovementOverlay_W_Released)
+		RegisterConCommandTriggeredCallback("+forward", MG_MovementOverlay_W_Pressed)
+		RegisterConCommandTriggeredCallback("-forward", MG_MovementOverlay_W_Released)
 		// A
-		RegisterButtonPressedCallback(KEY_A, MG_MovementOverlay_A_Pressed)
-		RegisterButtonReleasedCallback(KEY_A, MG_MovementOverlay_A_Released)
+		RegisterConCommandTriggeredCallback("+moveleft", MG_MovementOverlay_A_Pressed)
+		RegisterConCommandTriggeredCallback("-moveleft", MG_MovementOverlay_A_Released)
 		// S
-		RegisterButtonPressedCallback(KEY_S, MG_MovementOverlay_S_Pressed)
-		RegisterButtonReleasedCallback(KEY_S, MG_MovementOverlay_S_Released)
+		RegisterConCommandTriggeredCallback("+backward", MG_MovementOverlay_S_Pressed)
+		RegisterConCommandTriggeredCallback("-backward", MG_MovementOverlay_S_Released)
 		// D
-		RegisterButtonPressedCallback(KEY_D, MG_MovementOverlay_D_Pressed)
-		RegisterButtonReleasedCallback(KEY_D, MG_MovementOverlay_D_Released)
+		RegisterConCommandTriggeredCallback("+moveright", MG_MovementOverlay_D_Pressed)
+		RegisterConCommandTriggeredCallback("-moveright", MG_MovementOverlay_D_Released)
 		// CTRL
-		RegisterButtonPressedCallback(KEY_LCONTROL, MG_MovementOverlay_CTRL_Pressed)
-		RegisterButtonReleasedCallback(KEY_LCONTROL, MG_MovementOverlay_CTRL_Released)
+		RegisterConCommandTriggeredCallback("+duck", MG_MovementOverlay_CTRL_Pressed)
+		RegisterConCommandTriggeredCallback("-duck", MG_MovementOverlay_CTRL_Released)
 		// SPACE
-		RegisterButtonPressedCallback(KEY_SPACE, MG_MovementOverlay_SPACE_Pressed)
-		RegisterButtonReleasedCallback(KEY_SPACE, MG_MovementOverlay_SPACE_Released)
+		RegisterConCommandTriggeredCallback("+jump", MG_MovementOverlay_SPACE_Pressed)
+		RegisterConCommandTriggeredCallback("-jump", MG_MovementOverlay_SPACE_Released)
+		
 	} else {
 		Hud_SetVisible(HudElement( "MG_MO_W" ), false)
 		Hud_SetVisible(HudElement( "MG_MO_A" ), false)
@@ -275,28 +293,28 @@ void function MG_MovementOverlay_toggle(bool visible){
 		Hud_SetVisible(HudElement( "MG_MO_SPACE" ), false)
 		
 		// W
-		DeregisterButtonPressedCallback(KEY_W, MG_MovementOverlay_W_Pressed)
-		DeregisterButtonReleasedCallback(KEY_W, MG_MovementOverlay_W_Released)
+		DeregisterConCommandTriggeredCallback("+forward", MG_MovementOverlay_W_Pressed)
+		DeregisterConCommandTriggeredCallback("-forward", MG_MovementOverlay_W_Released)
 		// A
-		DeregisterButtonPressedCallback(KEY_A, MG_MovementOverlay_A_Pressed)
-		DeregisterButtonReleasedCallback(KEY_A, MG_MovementOverlay_A_Released)
+		DeregisterConCommandTriggeredCallback("+moveleft", MG_MovementOverlay_A_Pressed)
+		DeregisterConCommandTriggeredCallback("-moveleft", MG_MovementOverlay_A_Released)
 		// S
-		DeregisterButtonPressedCallback(KEY_S, MG_MovementOverlay_S_Pressed)
-		DeregisterButtonReleasedCallback(KEY_S, MG_MovementOverlay_S_Released)
+		DeregisterConCommandTriggeredCallback("+backward", MG_MovementOverlay_S_Pressed)
+		DeregisterConCommandTriggeredCallback("-backward", MG_MovementOverlay_S_Released)
 		// D
-		DeregisterButtonPressedCallback(KEY_D, MG_MovementOverlay_D_Pressed)
-		DeregisterButtonReleasedCallback(KEY_D, MG_MovementOverlay_D_Released)
+		DeregisterConCommandTriggeredCallback("+moveright", MG_MovementOverlay_D_Pressed)
+		DeregisterConCommandTriggeredCallback("-moveright", MG_MovementOverlay_D_Released)
 		// CTRL
-		DeregisterButtonPressedCallback(KEY_LCONTROL, MG_MovementOverlay_CTRL_Pressed)
-		DeregisterButtonReleasedCallback(KEY_LCONTROL, MG_MovementOverlay_CTRL_Released)
+		DeregisterConCommandTriggeredCallback("+duck", MG_MovementOverlay_CTRL_Pressed)
+		DeregisterConCommandTriggeredCallback("-duck", MG_MovementOverlay_CTRL_Released)
 		// SPACE
-		DeregisterButtonPressedCallback(KEY_SPACE, MG_MovementOverlay_SPACE_Pressed)
-		DeregisterButtonReleasedCallback(KEY_SPACE, MG_MovementOverlay_SPACE_Released)
+		DeregisterConCommandTriggeredCallback("+jump", MG_MovementOverlay_SPACE_Pressed)
+		DeregisterConCommandTriggeredCallback("-jump", MG_MovementOverlay_SPACE_Released)
 	}
 }
 
 void function MG_MovementOverlay_W_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_W" ), "%W%")
+  Hud_SetText(HudElement( "MG_MO_W" ), "%forward%")
 }
 
 void function MG_MovementOverlay_W_Released(var button){
@@ -304,7 +322,7 @@ void function MG_MovementOverlay_W_Released(var button){
 }
 
 void function MG_MovementOverlay_A_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_A" ), "%A%")
+  Hud_SetText(HudElement( "MG_MO_A" ), "%moveleft%")
 }
 
 void function MG_MovementOverlay_A_Released(var button){
@@ -312,7 +330,7 @@ void function MG_MovementOverlay_A_Released(var button){
 }
 
 void function MG_MovementOverlay_S_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_S" ), "%S%")
+  Hud_SetText(HudElement( "MG_MO_S" ), "%backward%")
 }
 
 void function MG_MovementOverlay_S_Released(var button){
@@ -320,7 +338,7 @@ void function MG_MovementOverlay_S_Released(var button){
 }
 
 void function MG_MovementOverlay_D_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_D" ), "%D%")
+  Hud_SetText(HudElement( "MG_MO_D" ), "%moveright%")
 }
 
 void function MG_MovementOverlay_D_Released(var button){
@@ -328,7 +346,7 @@ void function MG_MovementOverlay_D_Released(var button){
 }
 
 void function MG_MovementOverlay_CTRL_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_CTRL" ), "%LCTRL%")
+  Hud_SetText(HudElement( "MG_MO_CTRL" ), "%duck%")
 }
 
 void function MG_MovementOverlay_CTRL_Released(var button){
@@ -336,13 +354,12 @@ void function MG_MovementOverlay_CTRL_Released(var button){
 }
 
 void function MG_MovementOverlay_SPACE_Pressed(var button){
-  Hud_SetText(HudElement( "MG_MO_SPACE" ), "%SPACE%")
+  Hud_SetText(HudElement( "MG_MO_SPACE" ), "%jump%")
 }
 
 void function MG_MovementOverlay_SPACE_Released(var button){
   Hud_SetText(HudElement( "MG_MO_SPACE" ), " ")
 }
-
 
 //Ultrakill stylemeter
 void function MG_Ultrakill_styleemeter_toggle(bool visible){
