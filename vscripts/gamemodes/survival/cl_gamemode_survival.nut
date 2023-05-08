@@ -2961,7 +2961,9 @@ bool function GetWaitingForPlayersOverlayEnabled( entity player )
 		return false
 	if ( GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
 		return false
-
+	if(GameRules_GetGameMode() != SURVIVAL)
+		return false
+	
 	return true
 }
 
