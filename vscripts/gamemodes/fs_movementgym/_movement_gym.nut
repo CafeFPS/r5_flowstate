@@ -18,6 +18,7 @@ function MovementGym() {
     AddClientCommandCallback("invis", ClientCommand_invis)
     AddClientCommandCallback("meter", ClientCommand_meter)
     AddClientCommandCallback("keys", ClientCommand_keys)
+    AddClientCommandCallback("style", ClientCommand_style)
     //AddClientCommandCallback("spectate", _MG_Spectate_by_name) //99% ready will update via pull after release
 
     //Map init
@@ -300,6 +301,28 @@ function ClientCommand_keys(entity user, array < string > args) {
   return true
 }
 
+//Stylemeter on/off
+bool
+function ClientCommand_style(entity user, array < string > args) {
+    if( !IsValid(user) || args.len() == 0 )
+	return false
+  
+  if(args[0] == "off"){
+	if(user.p.stylemeterVisible == true){
+		Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", false)
+		user.p.stylemeterVisible = false
+	}
+  }
+  
+  if(args[0] == "on"){
+	if(user.p.stylemeterVisible == false){
+		Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", true)
+		user.p.stylemeterVisible = true
+	}
+  }
+  return true
+}
+
 bool function _MG_Spectate_by_name(entity player, array<string> name){
 	if( !IsValid(player) || name.len() == 0 ){
 		Message(player, "Incorrect Usage", "Try: spectate playername\n Or to stop spectating try: spectate stop")
@@ -458,8 +481,8 @@ function MovementGym_Hub() {
       //apply melee
 
         TakeAllWeapons(ent)
-        ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        ent.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -490,8 +513,8 @@ function MovementGym_Hub() {
       //apply melee
 
         TakeAllWeapons(ent)
-        ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        ent.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -613,8 +636,8 @@ function MovementGym_Hub_Buttons() {
       //apply melee
 
         TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        user.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
 
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
@@ -665,8 +688,8 @@ function MovementGym_Map2_Button(){
             //apply melee
 
         TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
+        user.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
 	
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 2 by DEAFPS")

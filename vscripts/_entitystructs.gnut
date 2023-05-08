@@ -739,7 +739,7 @@ global struct ServerPlayerStruct
 	
 	bool speedometerVisible = true
 	bool movementOverlayVisible = true
-	
+	bool stylemeterVisible = false
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null

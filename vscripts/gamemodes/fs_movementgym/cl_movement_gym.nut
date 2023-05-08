@@ -7,6 +7,8 @@ float speedometer_hz
 string time = ""
 bool s4lighting
 
+float stylepoints = 0
+
 // init
 void function Cl_MovementGym_Init()
 {
@@ -16,16 +18,53 @@ void function Cl_MovementGym_Init()
 	speedometer_hz = 0.05
 	kmh = true
 	s4lighting = false
+	thread MG_Settings_listener()
 	
 	// Register Signals
 	RegisterSignal("StopStopWatch")
 	RegisterSignal("StopSpeedometer")
+	RegisterSignal("StopStylemeter")
+	RegisterSignal("StopS4")
 	
 	// Hud 
 	MG_Speedometer_toggle(true)
 	MG_MovementOverlay_toggle(true)
-	thread MG_ForceLighting()
+	MG_Ultrakill_styleemeter_toggle(false)
 }
+
+void function MG_Settings_listener(){
+	string setting
+	entity player = GetLocalClientPlayer()
+	string playername = player.GetPlayerName()
+	
+	while(true){
+		setting = GetConVarString("name")
+		
+		switch (setting) {
+			case "mph":
+				kmh = false
+				MG_Speedometer_destroy()
+				WaitFrame()
+				thread MG_Speedometer()
+				SetConVarString("name", playername)
+				break
+			case "kmh":
+				kmh = true
+				MG_Speedometer_destroy()
+				WaitFrame()
+				thread MG_Speedometer()
+				SetConVarString("name", playername)
+				break
+			case "s4":
+				s4lighting = true
+				thread MG_ForceLighting()
+				SetConVarString("name", playername)
+				break
+		}
+		WaitFrame()
+	}		
+}
+
 
 
 // StopWatch
@@ -242,6 +281,9 @@ void function MG_Checkpoint_Msg(){
 }
 
 void function MG_ForceLighting(){
+	entity player = GetLocalClientPlayer()
+	EndSignal(player, "StopS4")
+	
 	if(s4lighting){
 		while(true){
 			if(GetConVarFloat( "mat_sky_scale") != 0.5 || GetConVarFloat( "mat_sun_scale") != 2.5 || GetConVarString( "mat_sun_color") != "2.0 1.2 0.5 1.0"){
@@ -364,8 +406,208 @@ void function MG_MovementOverlay_SPACE_Released(var button){
 //Ultrakill stylemeter
 void function MG_Ultrakill_styleemeter_toggle(bool visible){
 	if(visible == true){
-		//placeholder
+		thread MG_Ultrakill_styleemeter()
 	} else {
-		//placeholder
+		MG_Ultrakill_styleemeter_destroy()
 	}
+}
+
+void function MG_Ultrakill_styleemeter(){
+	
+	int timesUsedSlide
+	float slidetime
+	float lastslide
+	
+	int timesUsedWR
+	float wallruntime
+	float lastwallrun
+	
+	float lastmantle
+	bool wasmantle
+	
+	float sprinttime
+	float airtime
+	
+	int timesUsedSG
+	float lastSG
+	
+	float laststyletime
+	
+	float StyleBarWidth
+	
+	entity player = GetLocalClientPlayer()
+	EndSignal(player, "StopStylemeter")
+	
+	Hud_SetVisible(HudElement( "MG_Style_Bar" ), true)
+	
+	Hud_SetVisible(HudElement( "MG_Style_Label" ), true)
+	Hud_SetY( HudElement( "MG_Style_Label" ), -40 )
+	
+	Hud_SetVisible(HudElement( "MG_Style_History_Wallrun" ), true)
+	Hud_SetVisible(HudElement( "MG_Style_History_Superglide" ), true)
+	Hud_SetVisible(HudElement( "MG_Style_History_Slide" ), true)
+	Hud_SetVisible(HudElement( "MG_Style_History_Speed" ), true)
+	
+
+	
+	
+	while(true){
+		
+		entity playerr = GetLocalClientPlayer()
+		if( !playerr.IsObserver()){
+			if (IsValid(playerr)){
+				
+				float TimeNow = Time()
+				float playerVel
+				vector playerVelV = playerr.GetVelocity()
+			
+				playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
+				
+				
+				//airtime---------------------------------------------------------
+				if(!player.IsOnGround()){
+					airtime += 0.025
+					//if(airtime > 0.2 && airtime < 1){
+					//	stylepoints += 3.0
+					//}
+				}else if(player.IsOnGround()){
+					airtime = 0.0
+				}
+				
+				
+				//slidetime---------------------------------------------------------
+				if(player.IsSliding() && player.IsOnGround()){
+					slidetime += 0.025
+					//if(slidetime > 0.2 && slidetime < 1){
+					//	stylepoints += 3.0
+					//}
+				}else if(!player.IsOnGround()){
+					slidetime = 0.0
+				}
+				
+				//slide
+				if(player.IsSliding() && player.IsOnGround() && TimeNow - slidetime > 1){
+					float reward = 2.0
+					stylepoints += reward
+					laststyletime = TimeNow
+					lastslide = TimeNow
+					timesUsedSlide++
+					string msg = "%$rui/bullet_point% Slide ^002FFF00+" + (reward*timesUsedSlide).tostring()
+					Hud_SetText( HudElement( "MG_Style_History_Slide" ), msg)
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Slide" ), 255, 0, 1 )
+					EmitSoundOnEntity( player, RESPAWN_BEACON_LOOP_SOUND )
+					StopSoundOnEntity( player, RESPAWN_BEACON_LOOP_SOUND )
+					
+				}
+				
+				//walltime---------------------------------------------------------
+				if(player.IsWallRunning() && !player.IsOnGround()){
+					wallruntime += 0.025
+					//if(wallruntime > 0.2 && wallruntime < 1){
+					//	stylepoints += 3.0
+					//}
+				}else if(player.IsOnGround()){
+					wallruntime = 0.0
+				}
+				
+				//wallrun
+				if(player.IsWallRunning() && TimeNow - wallruntime > 5){
+					float reward = 5.0
+					stylepoints += reward
+					laststyletime = TimeNow
+					lastwallrun = TimeNow
+					timesUsedWR++
+					string msg = "%$rui/bullet_point% Wallrun/Climb ^002FFF00+" + (reward*timesUsedWR).tostring()
+					Hud_SetText( HudElement( "MG_Style_History_Wallrun" ), msg)
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Wallrun" ), 255, 0, 1 )
+					EmitSoundOnEntity( player, RESPAWN_BEACON_LOOP_SOUND )
+					StopSoundOnEntity( player, RESPAWN_BEACON_LOOP_SOUND )
+				}
+				
+				
+				//SuperGlide------------------------------------------------------
+				if(player.IsMantling()){
+					wasmantle = true
+					lastmantle = TimeNow
+				}
+				
+				if(wasmantle == true && !player.IsOnGround() && playerVel > 500 &&  player.IsSliding() && airtime <= 0.05){
+					float reward = 50.0
+					stylepoints += reward
+					laststyletime = TimeNow
+					lastSG = TimeNow
+					timesUsedSG++
+					string msg = "%$rui/bullet_point% Superglide ^002FFF00+" + (reward*timesUsedSG).tostring()
+					Hud_SetText( HudElement( "MG_Style_History_Superglide" ), msg)
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Superglide" ), 255, 0, 1 )
+					EmitSoundOnEntity( player, PING_SOUND_DEFAULT )
+				}
+				
+				if (TimeNow - lastmantle > 0.25){
+					lastmantle = 0.0
+					wasmantle = false
+				}
+
+				
+				
+				//reset if inactive-------------------------------------------------
+				if(TimeNow - laststyletime > 5.0){
+					stylepoints = 0.0
+					printf("lost combo")
+				}
+				
+				//constantly loose points
+				if(stylepoints >= 1.0){
+					stylepoints -= 0.5
+				}
+								
+				//reset times used-------------------------------------------------
+				if(TimeNow - lastSG > 1.5){
+					timesUsedSG = 0
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Superglide" ), 0, 0.1, 1 )
+				}
+				
+				if(TimeNow - lastwallrun > 1.5){
+					timesUsedWR = 0
+					//Hud_SetText( HudElement( "MG_Style_History_Wallrun" ), " ")
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Wallrun" ), 0, 0.1, 1 )
+				}
+				
+				if(TimeNow - lastslide > 1.5){
+					timesUsedSlide = 0
+					//Hud_SetText( HudElement( "MG_Style_History_Slide" ), " ")
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Slide" ), 0, 0.1, 1 )
+				}
+								
+				//prevent negative-------------------------------------------------
+				if(stylepoints < 0.0 || TimeNow - laststyletime > 5.0){
+					stylepoints = 0.0
+				}
+				
+				//update points-----------------------------------------------------
+				StyleBarWidth = (stylepoints/4.0)
+				if(StyleBarWidth > 500.0)
+					StyleBarWidth = 500.0
+				
+				Hud_SetText( HudElement( "MG_Style_Label" ), "Stylepoints ^FFC83200" + stylepoints.tointeger())
+				Hud_SetWidth( HudElement( "MG_Style_Bar" ), StyleBarWidth)
+				
+			}
+		}
+		
+		wait 0.025
+	}
+	
+}
+
+void function MG_Ultrakill_styleemeter_destroy(){
+	entity player = GetLocalClientPlayer()
+	Signal(player, "StopStylemeter")
+	
+	Hud_SetVisible(HudElement( "MG_Style_Bar" ), false)
+	Hud_SetVisible(HudElement( "MG_Style_Label" ), false)
+	Hud_SetVisible(HudElement( "MG_Style_History_Wallrun" ), false)
+	Hud_SetVisible(HudElement( "MG_Style_History_Superglide" ), false)
+	Hud_SetVisible(HudElement( "MG_Style_History_Slide" ), false)
+	Hud_SetVisible(HudElement( "MG_Style_History_Speed" ), false)
 }
