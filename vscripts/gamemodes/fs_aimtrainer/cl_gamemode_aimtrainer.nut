@@ -541,7 +541,7 @@ void function ToggleArmorSwapUI(bool toggle)
 		thread function():()
 		{
 			wait 3
-			AimTrainer_QuickHint( "Move to spawn new deathboxes", true, 5 )
+			AimTrainer_QuickHint( "Move to spawn new deathboxes", true, 15 )
 		}()	
 	}
 }

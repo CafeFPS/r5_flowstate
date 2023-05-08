@@ -2159,14 +2159,18 @@ void function StartArmorSwapChallenge(entity player)
 	
 	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
 
-	WaitFrame()
 	while(true){
+		WaitFrame()
 		array<vector> NewcircleLocations = NavMesh_RandomPositions( AimTrainerOriginToGround( <player.GetOrigin().x, player.GetOrigin().y, 10000> ), HULL_HUMAN, 10, 20*AimTrainer_SPAWN_DISTANCE, 50*AimTrainer_SPAWN_DISTANCE  )
 		if(NewcircleLocations.len() > 0 ) 
 		{
-			circleLocations.clear()
-			circleLocations = NewcircleLocations
+			circleLocations.clear()			
 		}
+		
+		circleLocations = NewcircleLocations	
+		
+		if(circleLocations.len() == 0)
+			continue
 		
 		foreach(deathbox in ChallengesEntities.dummies)
 			if(!IsValid(deathbox)) 
@@ -2188,8 +2192,7 @@ void function StartArmorSwapChallenge(entity player)
 			thread EnableDeathboxMantleAfterSomeTime(deathbox)
 			
 			wait 0.2
-		}
-		WaitFrame()
+		}		
 	}
 }
 
@@ -2253,6 +2256,7 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	
 	array<string> coolDevs = [
 		"R5R_CafeFPS",
+		"R5R_DEAFPS",
 		"R5R_AyeZee",
 		"R5R_Makimakima",
 		"R5R_Endergreen12",
