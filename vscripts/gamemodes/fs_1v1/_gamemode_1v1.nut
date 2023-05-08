@@ -597,9 +597,9 @@ void function giveWeaponInRandomWeaponPool(entity player)
 
 	    GiveRandomPrimaryWeaponMetagame(player)
 		GiveRandomSecondaryWeaponMetagame(player)
-		player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		if(!isPlayerInRestingList(player))
-	    	player.GiveOffhandWeapon( "melee_boxing_ring", OFFHAND_MELEE, [] )
+	    	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 		
 		//hack to fix first reload
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
@@ -652,7 +652,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 				TakeAllWeapons(player)
 				thread LoadCustomWeapon(player)
 			}
-			player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		}
 		catch (erroree)
 		{

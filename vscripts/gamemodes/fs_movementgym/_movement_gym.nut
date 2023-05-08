@@ -481,8 +481,8 @@ function MovementGym_Hub() {
       //apply melee
 
         TakeAllWeapons(ent)
-        ent.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        ent.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
+        ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -513,8 +513,8 @@ function MovementGym_Hub() {
       //apply melee
 
         TakeAllWeapons(ent)
-        ent.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        ent.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
+        ent.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        ent.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
@@ -636,8 +636,8 @@ function MovementGym_Hub_Buttons() {
       //apply melee
 
         TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
+        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
@@ -688,8 +688,8 @@ function MovementGym_Map2_Button(){
             //apply melee
 
         TakeAllWeapons(user)
-        user.GiveWeapon("mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-        user.GiveOffhandWeapon("melee_boxing_ring", OFFHAND_MELEE, [])
+        user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+        user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 	
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 2 by DEAFPS")
