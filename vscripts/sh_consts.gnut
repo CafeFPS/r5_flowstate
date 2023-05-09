@@ -1,3 +1,4 @@
+global string FLOWSTATE_VERSION = "v3.71"
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
 global const float FLT_MAX = 3.40282e+38
@@ -96,10 +97,15 @@ global const MENUFALL                   = "menufall"
 global const TEAM_DEATHMATCH            = "tdm"
 global const SURVIVAL                   = "survival"
 global const FREELANCE                  = "freelance"
-global const CUSTOM_TDM                 = "custom_tdm"
 global const CUSTOM_CTF                 = "custom_ctf"
-global const CUSTOM_AIMTRAINER			= "custom_aimtrainer"
-global const MAP_EDITOR					= "map_editor"
+
+global const map_editor_deprecated		= "map_editor_deprecated"
+
+//gamemodes by @CafeFPS
+global const fs_dm               = "fs_dm"
+global const fs_aimtrainer		= "fs_aimtrainer"
+global const fs_prophunt				= "fs_prophunt"
+global const fs_duckhunt				= "fs_duckhunt"
 
 global const FREELANCE_ENABLED          = false
 
@@ -316,12 +322,16 @@ global const int BURN_R = 246
 global const int BURN_G = 134
 global const int BURN_B = 40
 
+global const int AIRDROP_R = 10
+global const int AIRDROP_G = 224
+global const int AIRDROP_B = 233
+
 global const vector TEAM_COLOR_ENEMY = 		<ENEMY_R, ENEMY_G, ENEMY_B>
 global const vector TEAM_COLOR_FRIENDLY = 	<FRIENDLY_R, FRIENDLY_G, FRIENDLY_B>
 global const vector TEAM_COLOR_PARTY = 		<PARTY_R, PARTY_G, PARTY_B>
 global const vector TEAM_COLOR_YOU = 		<LOCAL_R, LOCAL_G, LOCAL_B>
 global const vector BURN_COLOR = 			<BURN_R, BURN_G, BURN_B>
-global const vector COLOR_AIRDROP = 		<10,224,233>
+global const vector COLOR_AIRDROP = 		<AIRDROP_R, AIRDROP_G, AIRDROP_B>
 // END OFFICIAL
 
 global const TIME_ZOFFSET = 11520
@@ -571,7 +581,7 @@ global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
 global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
 global const KILL_REPLAY_AFTER_KILL_TIME 				= 2.0
 
-global const DEATHCAM_TIME_SHORT 						= 1.5
+global const DEATHCAM_TIME_SHORT 						= 3.0
 global const KILL_REPLAY_BEFORE_KILL_TIME_SHORT 		= 3.5
 global const KILL_REPLAY_AFTER_KILL_TIME_SHORT 			= 1.0
 global const RESPAWN_BUTTON_BUFFER 						= 0.0 // the amount of time before you're allowed to respawn, after DEATHCAM_TIME
@@ -1194,6 +1204,8 @@ NPCMF_WALK_NONCOMBAT
 
 global const ZIPLINE_IDLE_ANIM = "pt_zipline_slide_idle"
 
+global const float ZIPLINES_COOLDOWN = 1.5
+
 global const DEFAULT_CONVERSATION_DEBOUNCE_TIME 	= 10.0
 global const AI_CONVERSATION_RANGE_SQR 				= 20250000
 global const AI_CONVERSATION_RANGE 					= 4500 // should match above
@@ -1688,15 +1700,31 @@ global enum eCommsAction
 	PING_WEAPON_SEMIPISTOL,
 	PING_WEAPON_AUTOPISTOL,
 	PING_WEAPON_DEFENDER,
+	PING_WEAPON_VOLT,
+	PING_WEAPON_ARCHER,
+	PING_WEAPON_SOFTBALL,
+	PING_WEAPON_SMR,
+	PING_WEAPON_EPG,
+	PING_WEAPON_WINGMAN_ELITE,
+	PING_WEAPON_SMART_PISTOL,
+	PING_WEAPON_SENTINEL,
+	PING_WEAPON_THROWINGKNIFE,
+	PING_WEAPON_SHEILA_HMG,
+	PING_WEAPON_CAR,
+
 	//
 	PING_OFFHAND_GRENADE_FIRESTAR,
 	PING_OFFHAND_GRENADE_FRAG,
 	PING_OFFHAND_GRENADE_ARC,
+	PING_OFFHAND_GRENADE_GRAV,
+
 	//
 	PING_AMMO_BULLET,
 	PING_AMMO_SPECIAL,
 	PING_AMMO_SHOTGUN,
 	PING_AMMO_HIGHCAL,
+	PING_AMMO_SNIPER,
+	PING_AMMO_EXPLOSIVE
 	//
 	PING_EQUIPMENT_ARMOR_1,
 	PING_EQUIPMENT_ARMOR_2,
@@ -1831,6 +1859,8 @@ global enum eCommsAction
 	PING_ENEMY_NPC_SPIDER,
 	PING_ENEMY_NPC_PROWLER,
 	PING_ENEMY_NPC_GOLIATH,
+	PING_ENEMY_NPC_GUNSHIP,
+	PING_ENEMY_NPC_TURRET,
 	//
 	PING_NPC_LOOT_TICK,
 	//
@@ -1890,6 +1920,8 @@ global enum eCommsAction
 	INVENTORY_NEED_AMMO_SPECIAL,
 	INVENTORY_NEED_AMMO_HIGHCAL,
 	INVENTORY_NEED_AMMO_SHOTGUN,
+	INVENTORY_NEED_AMMO_SNIPER,
+	INVENTORY_NEED_AMMO_EXPLOSIVE,
 	INVENTORY_NEED_FIRST_WEAPON,
 	INVENTORY_NEED_ANOTHER_WEAPON,
 	INVENTORY_NEED_ARMOR,
@@ -1903,6 +1935,8 @@ global enum eCommsAction
 	INVENTORY_NEED_ATTACHMENT_MAG_SPECIAL,
 	INVENTORY_NEED_ATTACHMENT_MAG_SHOTGUN,
 	INVENTORY_NEED_ATTACHMENT_MAG_HIGHCAL,
+	INVENTORY_NEED_ATTACHMENT_MAG_SNIPER,
+	INVENTORY_NEED_ATTACHMENT_MAG_EXPLOSIVE,
 
 	INVENTORY_NEED_ATTACHMENT_SIGHT_PISTOL,
 	INVENTORY_NEED_ATTACHMENT_SIGHT_SMG,
@@ -2255,6 +2289,8 @@ global const vector AMMO_SHOTGUN_COLOR 		= <155, 51, 15> / 255.0
 global const vector AMMO_ENERGY_COLOR 		= <132, 160, 61> / 255.0
 global const vector AMMO_SMALL_COLOR 		= <180, 123, 68> / 255.0
 global const vector AMMO_LARGE_COLOR 		= <84, 155, 131> / 255.0
+global const vector AMMO_SNIPER_COLOR 		= <74.0, 73.0, 147.0> / 255.0
+global const vector AMMO_EXPLOSIVE_COLOR 	= <163.0, 93.0, 72.0> / 255.0
 
 global const vector AMMO_LEGENDARY_COLOR 	= <255, 215, 30> / 255.0
 
@@ -2263,6 +2299,8 @@ global const table<string, vector> ammoColors = {
 	special = AMMO_ENERGY_COLOR
 	shotgun = AMMO_SHOTGUN_COLOR
 	highcal = AMMO_LARGE_COLOR
+	sniper = AMMO_SNIPER_COLOR
+	explosive = AMMO_EXPLOSIVE_COLOR
 }
 
 global struct BurnDamageSettings

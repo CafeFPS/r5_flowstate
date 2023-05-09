@@ -175,7 +175,7 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 				// 	UpdateProScreen( player, weapon )
 				// }
 
-				string weaponCategory = GetWeaponInfoFileKeyField_GlobalString( weapon.GetWeaponClassName(), "menu_category" )
+				string weaponCategory = expect string( weapon.GetWeaponInfoFileKeyField( "menu_category" ) )
 				if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
 				{
 					int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )

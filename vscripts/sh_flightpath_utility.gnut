@@ -5,6 +5,8 @@ untyped
 globalize_all_functions
 
 global const ANALYSIS_PREVIEW_TIME = 5.0
+global const vector AIRDROP_MAXS = <80,80,256>
+global  const vector AIRDROP_MINS = <-80,-80,0>
 
 struct AirdropBadPlace
 {
@@ -909,8 +911,7 @@ bool function FlightPathHasNodeAndMatchesAINData( FlightPath flightPath )
 const bool DEBUG_DROP_POINTS = false
 const bool DEBUG_DROP_POINTS_LINES = false
 const DEBUG_DRAW_TIME = 0.02
-const vector AIRDROP_MAXS = <80,80,256>
-const vector AIRDROP_MINS = <-80,-80,0>
+
 
 bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePackage = false, entity realmEnt = null)
 {

@@ -278,13 +278,25 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
+	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" )
+		return true
+
 	if ( attacker == target )
 		return false
 
 	if ( target.IsBreakableGlass() )
-		return true //
+		return true
 
 	if ( !target.CanBeMeleed() )
+		return false
+	
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "flowstate_snd" && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
+		return false	
+
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "flowstate_snd" && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
+		return false	
+	
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_duckhunt" )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -541,7 +553,14 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	// Early out if we didn't hit anything
 	if ( !IsValid( target ) )
 		return
-
+	
+	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
+	{
+		target = target.GetParent()
+	
+		if ( !IsValid( target ) )
+			return
+	}
 	// Impact effects
 	if ( !attacker.PlayerMelee_IsAttackActive() )
 		return
@@ -595,8 +614,8 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		//if ( IsHumanSized( target ) )
 		//	target.SetContinueAnimatingAfterRagdoll( true )
 
-		int TEMP_targetHealthBefore         = target.GetHealth() // todo(dw): remove
-		bool TEMP_isTargetBleedingOutBefore = Bleedout_IsBleedingOut( target ) // todo(dw): remove
+		// int TEMP_targetHealthBefore         = target.GetHealth() // todo(dw): remove
+		// bool TEMP_isTargetBleedingOutBefore = Bleedout_IsBleedingOut( target ) // todo(dw): remove
 
 		table damageTable = {
 			scriptType = meleeAttackWeapon.GetWeaponDamageFlags(),

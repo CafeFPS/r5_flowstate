@@ -1874,7 +1874,7 @@ StatCalcFuncInfo function SetupGetAccountLevelForStat( StatEntry calcEntry, arra
 
 	info.calcFunc_Int = (int function ( entity player, array<StatEntry> sourceEntries, int when ) {
 		int xpProgress   = GetPlayerAccountXPProgress( ToEHI( player ) )
-		int accountLevel = GetAccountLevelForXP( xpProgress )
+		int accountLevel = RandomIntRange(5,100) //GetAccountLevelForXP( xpProgress )//TODO: IMPLEMENT A REAL XP SYSTEM
 		return minint( accountLevel, 100 )
 	})
 

@@ -1494,11 +1494,13 @@ function SetSwitchUseFunc( button, func, ent = null )
 	file.switchCallbacks[ button ].append( Table )
 }
 
+float fanradius = 50
+float fanPushDist = 256
 
 void function FanPusherThink( entity fanPusher )
 {
-	float fanPushDist = 3000
-
+	EndSignal(fanPusher, "OnDestroy")
+	
 	if ( fanPusher.HasKey( "height" ) )
 		fanPushDist = float( fanPusher.kv.height )
 
@@ -1508,17 +1510,14 @@ void function FanPusherThink( entity fanPusher )
 	}
 	else
 	{
-		float gravityScale = GetGlobalSettingsFloat( DEFAULT_PILOT_SETTINGS, "gravityscale" )
+		float gravityScale = 1.0
 		fanPushDist *= gravityScale // adjusted for new gravity scale
 	}
 
-	float radius = float( fanPusher.kv.script_radius )
+	float radius = fanradius
 	vector forward = AnglesToForward( fanPusher.GetAngles() )
 	vector cylinderBottom = fanPusher.GetOrigin()
 	vector cylinderTop = cylinderBottom + ( forward * fanPushDist )
-
-	if ( FAN_DEBUG )
-		DebugDrawCylinder( fanPusher.GetOrigin(), fanPusher.GetAngles(), radius, fanPushDist, 100, 0, 0, true, 120.0 )
 
 	string flag = ""
 	if ( fanPusher.HasKey( "script_flag" ) )
@@ -1545,8 +1544,16 @@ void function FanPusherThink( entity fanPusher )
 
 	FanOnSoundEffects( fanPusher, radius, fanSoundEntity )
 
-	while( true )
+	while( IsValid(fanPusher) )
 	{
+		//make this update each frame so fan can be moved
+		forward = AnglesToForward( fanPusher.GetAngles() )
+		cylinderBottom = fanPusher.GetOrigin()
+		cylinderTop = cylinderBottom + ( forward * fanPushDist )
+		
+		if ( FAN_DEBUG )
+			DebugDrawCylinder( fanPusher.GetOrigin(), fanPusher.GetAngles(), radius, fanPushDist, 100, 0, 0, true, 0.1 )
+		
 		if ( flag != "" && !Flag( flag ) )
 		{
 			foreach( entity ent, float time in startTimes )
@@ -1563,7 +1570,7 @@ void function FanPusherThink( entity fanPusher )
 		fanPushables.clear()
 		fanPushables.extend( GetPlayerArray() )
 		fanPushables.extend( GetNPCArray() )
-		fanPushables.extend( GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, cylinderBottom, fanPushDist ) )
+		//fanPushables.extend( GetProjectileArrayEx( "any", TEAM_ANY, TEAM_ANY, cylinderBottom, fanPushDist ) )
 		fanPushables.extend( GetEntArrayByClass_Expensive( "prop_physics" ) )
 
 		foreach( entity ent in fanPushables )
@@ -1613,8 +1620,8 @@ void function FanPusherThink( entity fanPusher )
 				float distanceFromFanAlongTunnel = Distance( pointAlongTunnel, cylinderBottom )
 
 				float fanStrength = GetFanStrengthWithGeoBlockage( ent, testPos, cylinderBottom, cylinderTop, forward )
-				if ( ent.IsPlayer() )
-					ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", fanStrength, 0.0 )
+				// if ( ent.IsPlayer() )
+					// ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", fanStrength, 0.0 )
 
 				if ( lifterFan )
 					fanStrength = GraphCapped( distanceFromFanAlongTunnel, 0.0, fanPushDist, 1.0, 0.0 )
@@ -1670,8 +1677,8 @@ void function FanPusherThink( entity fanPusher )
 					delete startHeights[ ent ]
 				}
 
-				if ( ent.IsPlayer() )
-					ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", 0.0, 1.0 )
+				// if ( ent.IsPlayer() )
+					// ent.SetPlayerNetFloatOverTime( "FanRumbleStrength", 0.0, 1.0 )
 			}
 		}
 		WaitFrame()
@@ -1690,11 +1697,12 @@ void function PlayerInWindTunnel( entity player )
 				printt( "OUT!" )
 			if ( IsValid( player ) )
 			{
+				//player.MovementEnable()
 				player.SetOneHandedWeaponUsageOff()
 				FadeOutSoundOnEntity( player, "Beacon_WindBuffet_Player", 1.0 )
 
-				player.kv.airSpeed = player.GetPlayerSettingsField( "airSpeed" )
-				player.kv.airAcceleration = player.GetPlayerSettingsField( "airAcceleration" )
+				player.kv.airSpeed = player.GetPlayerSettingFloat( "airSpeed" )
+				player.kv.airAcceleration = player.GetPlayerSettingFloat( "airAcceleration" )
 			}
 		}
 	)
@@ -1704,13 +1712,13 @@ void function PlayerInWindTunnel( entity player )
 
 	bool playingWindBuffet = false
 
-	player.kv.airSpeed = 150
-	player.kv.airAcceleration = 650
+	player.kv.airSpeed = 80
+	player.kv.airAcceleration = 800
 
 	while( player.e.inWindTunnel )
 	{
 		//player.GetViewModelEntity().SetPoseParameter( poseIndex, player.e.windTunnelStrength )
-
+		//player.MovementDisable()
 		if ( player.e.windTunnelStrength > 0 )
 		{
 			player.SetOneHandedWeaponUsageOn()

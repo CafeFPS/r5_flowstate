@@ -1,0 +1,201 @@
+resource/ui/menus/customize_weapon.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		ScreenBlur
+		{
+			ControlName				Label
+		    labelText				""
+		}
+
+		TabsCommon
+		{
+			ControlName				CNestedPanel
+			classname				"TabsCommonClass"
+			ypos                    -132
+			zpos					1
+			wide					f0
+			tall					44
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/tabs_weapon_customize.res"
+
+			pin_to_sibling			ScreenFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		Decoration
+		{
+			ControlName             RuiPanel
+   			wide					f0
+   			tall                    f0
+	        rui                     "ui/customize_character_menu_decoration.rpak"
+		}
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Title
+        {
+            ControlName				RuiPanel
+            ypos					-48
+            wide					912
+            tall					65
+            visible				    1
+            rui                     "ui/menu_title.rpak"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	    WeaponSkinsPanel0
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1824
+			tall					814
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/weapon_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    WeaponSkinsPanel1
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1824
+			tall					814
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/weapon_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    WeaponSkinsPanel2
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1824
+			tall					814
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/weapon_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    WeaponSkinsPanel3
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1824
+			tall					814
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/weapon_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    WeaponSkinsPanel4
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1824
+			tall					814
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/weapon_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		ButtonTooltip
+		{
+			ControlName				CNestedPanel
+			InheritProperties		ButtonTooltip
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}

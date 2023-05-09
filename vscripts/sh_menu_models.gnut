@@ -206,7 +206,10 @@ struct
 
 	array<void functionref()> mouseWheelDownCallbacks
 	array<void functionref()> mouseWheelUpCallbacks
-
+	
+	// a table of capturePanels and menus, each of which contains an array of callbacks
+    table< var, array< void functionref( int deltaX, int deltaY ) > > mouseMovementCaptureCallbacks = {}
+    
     table<string, vector> scriptEntitiesOrigins = {
         default_camera_target = <9216, 0, 56>
         customize_weapon_camera_target = <7168, 0, 56>
@@ -295,6 +298,7 @@ global function RunMenuClientFunction
 global function UI_SetPresentationType
 
 global function UICodeCallback_MouseMovementCapture
+global function AddMouseMovementCaptureHandler
 global function OnMouseWheelDown
 global function OnMouseWheelUp
 
@@ -339,7 +343,7 @@ void function ClMenuModels_Init()
 	AddCallback_OnClientScriptInit( OnClientScriptInit )
 	AddCallback_FullUpdate( OnFullUpdate )
 
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 	{
 		file.scriptEntitiesOrigins["customize_weapon_camera_target"] = GetMapPosition()
 		file.scriptEntitiesAngles["customize_weapon_camera_target"] = GetMapAngles()
@@ -351,7 +355,7 @@ void function OnClientScriptInit( entity player )
 {
 	thread InitMenuEntities()
 	thread ModelRotationThread()
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		thread ModelListRotationThread()
 }
 
@@ -362,7 +366,7 @@ void function OnFullUpdate()
 
 bool function MenuMapEntitiesExist()
 {
-   	 if(GameRules_GetGameMode() == "map_editor")
+   	 if(GameRules_GetGameMode() == "map_editor_deprecated")
 	 	return true
 
 	array<string> entNames =
@@ -405,7 +409,7 @@ void function ClearModelMenu() {
 
 void function ApplyEventPositioning()
 {
-    if(GameRules_GetGameMode() != "map_editor")
+    if(GameRules_GetGameMode() != "map_editor_deprecated")
     {
         array<entity> ents
         ents.append( GetEntByScriptName( "play_camera_target" ) )
@@ -1130,7 +1134,7 @@ void function InitMenuEntities()
 			return
 	#endif
 
-    if(GameRules_GetGameMode() != "map_editor")
+    if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
         Assert( MenuMapEntitiesExist() )
 
@@ -1143,7 +1147,7 @@ void function InitMenuEntities()
 
 	InitPresentationData()
     
-    if( GameRules_GetGameMode() != "map_editor" ) 
+    if( GameRules_GetGameMode() != "map_editor_deprecated" ) 
 	{
         InitTeammatePosition( "play_teammate1_ref", "ACT_MP_MENU_LOBBY_LEFT_IDLE" )
         InitTeammatePosition( "play_teammate2_ref", "ACT_MP_MENU_LOBBY_RIGHT_IDLE" )
@@ -1153,7 +1157,7 @@ void function InitMenuEntities()
 
 	file.cameraTargets.clear()
 	file.cameraStartOriginsAngles.clear()
-    if(GameRules_GetGameMode() != "map_editor")
+    if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
 	    foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
 	    {
@@ -1172,7 +1176,7 @@ void function InitMenuEntities()
 	    }
     }
 
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 	{
 		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
 	}
@@ -1185,7 +1189,7 @@ void function InitMenuEntities()
 		return //
 
 	
-	if(GameRules_GetGameMode() != "map_editor")
+	if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
     	entity localPlayer = GetLocalClientPlayer()
     	localPlayer.SetMenuCameraEntityWithAudio( clGlobal.menuCamera ) //
@@ -1195,7 +1199,7 @@ void function InitMenuEntities()
 	entity model
 	float[2] baseRotationDelta
 
-	if(GameRules_GetGameMode() != "map_editor")
+	if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
 		refEnt = GetEntByScriptName( "play_character_ref" )
 		ModelData_SetBaseOrigin( file.playCharacter, refEnt.GetOrigin() )
@@ -1206,14 +1210,20 @@ void function InitMenuEntities()
 		ModelData_SetBaseOrigin( file.playCharacter, <0, 523, 0>)
 		ModelData_SetBaseAngles( file.playCharacter, <0, -90, 0>)
 	}
-	
+
 	model = CreateMenuModel( file.playCharacter, $"mdl/dev/empty_model.rmdl" )
 	ItemFlavor character     = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterClass() )
 	ItemFlavor characterSkin = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterSkin( character ) )
 	CharacterSkin_Apply( model, characterSkin )
 	model.SetAlive( true )
-	
-	if(GameRules_GetGameMode() != "map_editor")
+		
+	entity lobbyLight = CreateClientSideDynamicLight( Vector(file.playCharacter.model.GetOrigin().x, file.playCharacter.model.GetOrigin().y, file.playCharacter.model.GetOrigin().z + 80) + file.playCharacter.model.GetForwardVector() * 40, < 0, 0, 0 >, DLIGHT_WHITE, 200 )
+	lobbyLight.SetLightExponent( 2 )
+
+	entity lobbyLight2 = CreateClientSideDynamicLight( Vector(file.playCharacter.model.GetOrigin().x, file.playCharacter.model.GetOrigin().y, file.playCharacter.model.GetOrigin().z) + file.playCharacter.model.GetRightVector() * 50 + file.playCharacter.model.GetForwardVector() * 50, < 0, 0, 0 >, DLIGHT_RICH_BROWN, 200 )
+	lobbyLight2.SetLightExponent( 4 )
+		
+	if(GameRules_GetGameMode() != "map_editor_deprecated")
 	{
 		refEnt = GetEntByScriptName( "customize_character_ref" )
 		ModelData_SetBaseOrigin( file.customizeCharacter, refEnt.GetOrigin() )
@@ -1258,7 +1268,7 @@ void function InitMenuEntities()
 	//thread DrawOrg( ModelData_GetMover( file.playCharacter ) )
 	//thread DrawOrg( ModelData_GetMover( file.customizeWeapon ) )
 	
-	if(GameRules_GetGameMode() != "map_editor")
+	if(GameRules_GetGameMode() != "map_editor_deprecated")
 		InitBattlePassLights()
 	InitLightingConfigs()
 
@@ -1285,7 +1295,7 @@ entity function CreateMenuModel( MenuModelData modelData, asset modelAsset )
 	entity model = CreateClientSidePropDynamic( origin, angles, modelAsset )
 	model.SetVisibleForLocalPlayer( 0 )
 	model.MakeSafeForUIScriptHack()
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		model.SetModelScale(1 + file.scale)
 	ModelData_SetModel( modelData, model )
 
@@ -1725,7 +1735,7 @@ void function DisplayPartyMemberModelThread( PartyMemberDisplayThreadData data )
 
 	data.body.MakeSafeForUIScriptHack()
 	data.body.Anim_Play( data.idleActivity )
-
+	
 /*
 	data.rui = CreateFullscreenRui( $"ui/lobby_player_info.rpak" )
 
@@ -2339,7 +2349,7 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 		return
 	}
 
-	if (GameRules_GetGameMode() == "map_editor") {
+	if (GameRules_GetGameMode() == "map_editor_deprecated") {
 		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
 	}
 
@@ -2350,7 +2360,7 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 
 	int cameraTargetName = file.presentationData[ presentationType ].cameraTargetName
 	entity cameraTarget  = file.cameraTargets[ cameraTargetName ]
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 	{
 		cameraTarget.SetOrigin(GetMapPosition())
 		cameraTarget.SetAngles(GetMapAngles())
@@ -2529,7 +2539,7 @@ void function UpdateMenuMouseWheelUp()
 		return
 
 	file.mouseWheelNewValue += MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 	{
 		file.scale += SCALE_OFFSET
 		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
@@ -2542,7 +2552,7 @@ void function UpdateMenuMouseWheelDown()
 		return
 
 	file.mouseWheelNewValue -= MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 	{
 		file.scale -= SCALE_OFFSET
 		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
@@ -2700,8 +2710,40 @@ void function UI_SetPresentationType( int newPresentationType )
 		RunClientScript( "UpdateMenuWithPartyMembers" )
 }
 
+// this function registers a callback (or "handler") function for a MouseMovementCapture menu panel
+// use this for scrollbars, sliders, etc.
+void function AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )
+{
+    // if the capturePanel or menu already has an array in the table, we append to the array
+    // if not, we should create the array, [func] just turns func into an array
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu].append( func )
+    else
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu] <- [func]
+}
+
+void function RunMouseMovementCallbacks( var capturePanelOrMenu, int deltaX, int deltaY )
+{
+    // check that the capturePanelOrMenu is in the table before trying anything stupid
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+    {
+        // iterate through the different callback functions
+        foreach ( void functionref( int deltaX, int deltaY ) callback in file.mouseMovementCaptureCallbacks[capturePanelOrMenu] )
+        {
+            // run the callback function
+            callback( deltaX, deltaY )
+        }
+    }
+}
+
 void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )
 {
+	// run callbacks for the capturePanel
+    RunMouseMovementCallbacks( capturePanel, deltaX, deltaY )
+
+	// get the current menu and run callbacks, this preserves backwards compatibility
+    RunMouseMovementCallbacks( GetActiveMenu(), deltaX, deltaY )
+
 	float screenScaleXModifier = 1920.0 / GetScreenSize().width // 1920 is base screen width
 	float mouseXRotateDelta    = deltaX * screenScaleXModifier * MOUSE_ROTATE_MULTIPLIER
 	//printt( "deltaX:", deltaX, "screenScaleXModifier:", screenScaleXModifier, "mouseXRotateDelta:", mouseXRotateDelta )

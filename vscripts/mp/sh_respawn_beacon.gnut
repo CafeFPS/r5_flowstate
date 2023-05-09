@@ -355,7 +355,7 @@ void function OnRespawnChamberSpawned( entity ent )
 
 	ent.Destroy()
 
-	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS )
+	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || GameRules_GetGameMode() != SURVIVAL )
 		return
 
 	// spawn a new one with the correct targetname
@@ -977,7 +977,10 @@ void function RespawnBeacons_OnSquadEliminated( int team )
 void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSourceID )
 {
 	entity player = deathbox.GetOwner()
-
+	
+	if( GameRules_GetGameMode() == "fs_aimtrainer" )
+		return
+	
 	if ( !IsValid( player ) )
 		return
 

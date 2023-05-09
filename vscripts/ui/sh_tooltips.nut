@@ -281,6 +281,7 @@ void function UpdateToolTipElement( var toolTipElement, var focusElement )
 		case eCommsAction.INVENTORY_NEED_AMMO_SPECIAL:
 		case eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL:
 		case eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN:
+		case eCommsAction.INVENTORY_NEED_AMMO_SNIPER:
 			dt.commsPromptDefault = IsControllerModeActive() ? "#PING_PROMPT_REQUEST_AMMO_GAMEPAD" : "#PING_PROMPT_REQUEST_AMMO"
 	}
 

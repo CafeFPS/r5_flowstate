@@ -19,13 +19,13 @@ void function InitCardBadgesPanel( var panel )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	//
-	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_CLEAR", "#X_BUTTON_CLEAR", null, bool function () : ()
 	{
 		return ( CustomizeMenus_IsFocusedItemUnlocked() && !CustomizeMenus_IsFocusedItemEquippable() )
 	} )
-	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 	//
 	//
 	//
@@ -147,7 +147,19 @@ void function CardBadgesPanel_Update( var panel )
 						}
 					}
 				}
-				toolTipData.descText = Localize( ItemFlavor_GetShortDescription( flav ) )
+
+				//R5Reloaded Temp
+				if(ItemFlavor_GetHumanReadableRef(flav) == "gcard_badge_account_dev_badge")
+				{
+					toolTipData.titleText = "R5Reloaded Badge"
+					toolTipData.descText = "Play R5Reloaded"
+				}
+				else
+					toolTipData.descText = Localize( ItemFlavor_GetShortDescription( flav ) )
+				//////////////////////////////////////////////////////////////
+
+				//Original Code
+				//toolTipData.descText = Localize( ItemFlavor_GetShortDescription( flav ) )
 
 				toolTipData.actionHint2 = badgeHint
 			}
@@ -228,6 +240,8 @@ void function PreviewCardBadge( ItemFlavor flav )
 
 int function CanEquipCanBuyBadgeCheck( ItemFlavor unused )
 {
+	return eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
+
 	int status = CanEquipCanBuyCharacterItemCheck( unused )
 	if ( status == eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY )
 		return eItemCanEquipCanBuyStatus.CAN_EQUIP_CANNOT_BUY
@@ -268,14 +282,14 @@ void function SortBadgesAndFilter( ItemFlavor character, array<ItemFlavor> badge
 
 bool function ShouldDisplayBadge( ItemFlavor badge, table<ItemFlavor, int> equippedBadgeSet, ItemFlavor character )
 {
-	if ( GladiatorCardBadge_ShouldHideIfLocked( badge ) )
+	/*if ( GladiatorCardBadge_ShouldHideIfLocked( badge ) )
 	{
 		if ( !IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), Loadout_GladiatorCardBadge( character, 0 ), badge ) )//
 			return false
 	}
 
 	if ( GladiatorCardBadge_IsTheEmpty( badge ) )
-		return false
+		return false*/
 
 	return true
 }

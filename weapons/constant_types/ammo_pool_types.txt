@@ -8,6 +8,8 @@
 	special
 	highcal
 	shotgun
+	sniper
+	explosive
 
 	//_count
 /////////////////////////////

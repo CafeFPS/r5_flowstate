@@ -1,0 +1,34 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	// Models
+	"viewmodel"   								"mdl/weapons/empty_handed/ptpov_boxinghand.rmdl"
+	"playermodel" 								"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_boxing_ring"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_boxing_ring"
+
+	// FX
+	"impact_effect_table"						"melee_human"
+
+	// Behavior
+	"melee_raise_recovery_animtime_normal"		"0.75"
+	"melee_raise_recovery_animtime_quick"		"0.75"
+
+	// More punchy knockback compared to normal BR melee
+	"melee_knockback_velocity_magnitude"		"600"
+
+	// Animation
+	"activitymodifier3P"						"boxer"
+}

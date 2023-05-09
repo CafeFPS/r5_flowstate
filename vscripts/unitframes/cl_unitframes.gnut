@@ -12,6 +12,7 @@ global function AddCallback_OnTeamUnitFrameCreated
 global function AddCallback_OnTeamUnitFrameDestroyed
 
 global function SetUnitFrameDataFromOwner
+global function UpdateRUITest
 
 #if DEVELOPER
 global function PrintUnitFrames
@@ -108,6 +109,11 @@ void function OnViewPlayerChanged( entity newViewPlayer )
 	RefrechUnitframesForPlayer( newViewPlayer )
 }
 
+void function UpdateRUITest()
+{
+	RefrechUnitframesForPlayer(GetLocalClientPlayer())
+	thread InitSurvivalHealthBar()
+}
 
 void function RefrechUnitframesForPlayer( entity player )
 {
@@ -123,7 +129,7 @@ void function RefrechUnitframesForPlayer( entity player )
 
 	foreach ( unitframePlayer, unitFrame in file.teamUnitFrames )
 	{
-		if ( !IsValid( unitframePlayer ) || unitframePlayer.GetTeam() != playerTeam )
+		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && GameRules_GetGameMode() == "flowstate_snd" || unitframePlayer.GetTeam() != playerTeam )
 			playersToRemove.append( unitframePlayer )
 	}
 
@@ -195,7 +201,7 @@ void function CreateTeamUnitFrame( entity player )
 
 asset function GetUnitFrameAssetForGameMode()
 {
-	if ( IsFallLTM() || GetCurrentPlaylistVarBool( "minified_unitframes_enabled", false ) )
+	if ( IsFallLTM() || GetCurrentPlaylistVarBool( "minified_unitframes_enabled", false ) || GameRules_GetGameMode() == "fs_prophunt"  || GameRules_GetGameMode() == "fs_duckhunt")
 		return $"ui/unitframe_shadow_squad.rpak"
 
 	return $"ui/unitframe_survival_v3.rpak"
@@ -421,9 +427,12 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 
 	if ( playerTeam != viewer.GetTeam() )
 		return false
-
-	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
+	
+	if( GameRules_GetGameMode() == "flowstate_snd" && !IsAlive(player) )
 		return false
+	
+	// if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
+		// return false
 
 	return true
 }

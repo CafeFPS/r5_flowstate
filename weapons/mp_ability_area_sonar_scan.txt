@@ -156,6 +156,19 @@ WeaponData
         {
 
         }
+		
+		infinite_ammo
+		{
+			"fire_rate"   									"1.5"
+			"holster_time"									"0.2"
+			"deploy_time" 									"0.2"
+	
+			//Infinite Ammo
+			"uses_ammo_pool"								"0"
+			"ammo_min_to_fire"								"1"
+			"ammo_per_shot"									"1"
+			"ammo_no_remove_from_stockpile"					"1"
+		}
 	}
 
 	active_crosshair_count				"2"

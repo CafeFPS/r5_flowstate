@@ -229,8 +229,8 @@ void function OnDoorSpawned( entity door )
 			// Special legacy case for a specific door model
 			// Faster to do these experiments in script than to keep changing models in leveled and recompiling
 			// TODO: Should eventually delete
-			bool useBlockableDoors = GetCurrentPlaylistVarBool( "survival_force_blockable_doors", true )
-			bool useCodeDoors = GetCurrentPlaylistVarBool( "survival_force_code_doors", true )
+			bool useBlockableDoors = GetCurrentPlaylistVarBool( "survival_force_blockable_doors", false )
+			bool useCodeDoors = GetCurrentPlaylistVarBool( "survival_force_code_doors", false )//TODO: FIX THIS ASAP
 			if ( useCodeDoors )
 			{
 				bool makeLeftDoor  = false, makeRightDoor = false

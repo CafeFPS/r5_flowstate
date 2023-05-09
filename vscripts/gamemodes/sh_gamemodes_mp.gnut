@@ -52,8 +52,8 @@ void function GameModes_Init_SV_CL()
 	{
 		#if SERVER
 			GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
-			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetEvacEnabled( gameMode, false )
 		#elseif CLIENT
 			//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
@@ -64,47 +64,6 @@ void function GameModes_Init_SV_CL()
 		#endif
 	}
 
-	////////////////////////////
-	//                        //
-	//        Freelance       //
-	//                        //
-	////////////////////////////
-
-	#if FREELANCE_ENABLED
-	gameMode = FREELANCE
-
-	{
-		#if SERVER
-			GameMode_AddServerInit( gameMode, GamemodeFreelance_Init )
-			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-			GameMode_SetEvacEnabled( gameMode, false )
-		#elseif CLIENT
-			// GameMode_AddClientInit( gameMode, ClGamemodeFreelance_Init )
-		#endif
-	}
-	#endif
-
-	////////////////////////////
-	//                        //
-	//       Custom TDM       //
-	//                        //
-	////////////////////////////
-
-	gameMode = CUSTOM_TDM
-	#if SERVER || CLIENT
-		GameMode_AddSharedInit(gameMode, Sh_CustomTDM_Init)
-		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
-	#endif
-	#if SERVER
-	GameMode_AddServerInit(gameMode, _CustomTDM_Init)
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetEvacEnabled( gameMode, false )
-	#elseif CLIENT
-	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
-	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
-	#endif
 
 	////////////////////////////
 	//                        //
@@ -119,8 +78,8 @@ void function GameModes_Init_SV_CL()
 	#endif
 	#if SERVER
 	GameMode_AddServerInit(gameMode, _CustomCTF_Init)
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
 	#elseif CLIENT
 	GameMode_AddClientInit(gameMode, Cl_CustomCTF_Init)
@@ -133,41 +92,97 @@ void function GameModes_Init_SV_CL()
 	//                        //
 	////////////////////////////
 
-	gameMode = MAP_EDITOR
+	gameMode = map_editor_deprecated
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_MapEditor_Init)
 		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
 	#endif
 	#if SERVER
 	GameMode_AddServerInit(gameMode, _MapEditor_Init)
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
 	#elseif CLIENT
 	GameMode_AddClientInit(gameMode, Cl_MapEditor_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 
-	//////////////////////////////////////
-	//                                  //
-	//       Custom AIMTRAINER       	//
-	//                                  //
-	//////////////////////////////////////
+	//
+	//FLOWSTATE DM
+	//
+	
+	gameMode = fs_dm
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, Sh_CustomTDM_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _CustomTDM_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif
 
-	gameMode = CUSTOM_AIMTRAINER
+	//
+	//FLOWSTATE AIMTRAINER
+	//
+	
+	gameMode = fs_aimtrainer
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_ChallengesByColombia_Init)
 		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
 	#endif
 	#if SERVER
 	GameMode_AddServerInit(gameMode, _ChallengesByColombia_Init)
-	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
 	#elseif CLIENT
 	GameMode_AddClientInit(gameMode, Cl_ChallengesByColombia_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
+	
+	//
+	//FLOWSTATE PROPHUNT
+	//
+	
+	gameMode = fs_prophunt
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, GamemodeProphuntShared_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _GamemodeProphunt_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, ClGamemodeProphunt_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif	
+	
+	//
+	//FLOWSTATE DUCKHUNT
+	//
+	
+	gameMode = fs_duckhunt
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, GamemodeDuckhuntShared_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _GamemodeDuckhunt_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_GamemodeDuckhunt_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif	
+
 	
 	#if DEVSCRIPTS
 		Dev_GameModes_Init_SV_CL()
