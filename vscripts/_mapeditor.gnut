@@ -315,7 +315,7 @@ entity function MapEditor_CreateTrigger( vector origin, vector angles, float rad
     return trigger
 }
 
-entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float float02, string color, asset collisionModel, bool addToArray = false )
+entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float scale, string color, asset collisionModel, bool addToArray = false )
 {
     entity bubbleShield = CreateEntity( "prop_dynamic" )
     bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
@@ -324,7 +324,7 @@ entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector 
     bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
     bubbleShield.SetOrigin( origin )
     bubbleShield.SetAngles( angles )
-    bubbleShield.SetModelScale( float02 )
+    bubbleShield.SetModelScale( scale )
     // Blocks bullets, projectiles but not players and not AI
     bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
     DispatchSpawn( bubbleShield )
@@ -369,7 +369,7 @@ entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin 
     lootbin.kv.solid = SOLID_VPHYSICS
 
     DispatchSpawn( lootbin )
-    lootbin.SetSkin(skin)
+    lootbin.SetSkin( skin )
 
     if(addToArray)
         MapEditorEnts.append(lootbin)
@@ -382,7 +382,7 @@ entity function SetNodeRopeProperties( entity rope )
     rope.kv.MoveSpeed = 64
     rope.kv.Slack = 25
     rope.kv.Subdiv = "2"
-    rope.kv.float03 = "2"
+    rope.kv.Width = "2"
     rope.kv.Type = "0"
     rope.kv.TextureScale = "1"
     rope.kv.PositionInterpolator = 2
@@ -450,7 +450,7 @@ void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addT
     rope_start.kv.MoveSpeed = 64
     rope_start.kv.Slack = 25
     rope_start.kv.Subdiv = "2"
-    rope_start.kv.float03 = "2"
+    rope_start.kv.Width = "2"
     rope_start.kv.Type = "0"
     rope_start.kv.TextureScale = "1"
     rope_start.kv.RopeMaterial = "cable/zipline.vmt"
@@ -466,7 +466,7 @@ void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addT
     rope_end.kv.MoveSpeed = 64
     rope_end.kv.Slack = 25
     rope_end.kv.Subdiv = "2"
-    rope_end.kv.float03 = "2"
+    rope_end.kv.Width = "2"
     rope_end.kv.Type = "0"
     rope_end.kv.TextureScale = "1"
     rope_end.kv.RopeMaterial = "cable/zipline.vmt"
