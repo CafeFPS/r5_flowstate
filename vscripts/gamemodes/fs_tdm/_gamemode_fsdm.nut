@@ -902,6 +902,8 @@ void function CheckForObservedTarget(entity player)
 	OnThreadEnd(
 		function() : ( player )
 		{
+			if( !IsValid(player) ) return
+			
 			if(IsValid(player.p.lastFrameObservedTarget))
 			{
 				player.p.lastFrameObservedTarget.SetPlayerNetInt( "playerObservedCount", max(0, player.p.lastFrameObservedTarget.GetPlayerNetInt( "playerObservedCount" ) - 1) )
