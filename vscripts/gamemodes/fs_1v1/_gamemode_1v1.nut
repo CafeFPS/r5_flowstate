@@ -190,7 +190,7 @@ void function deleteWaitingPlayer(entity player)
 
 bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
-	if( !IsValid(player) || !IsAlive(player) )
+	if( !IsValid(player) ) //|| !IsAlive(player) )
 		return false
 	
 	if(soloPlayersResting.contains(player))
