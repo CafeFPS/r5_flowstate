@@ -1136,8 +1136,13 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+				}
+			}
+		}
 	  
         } else { 
 	  
@@ -1155,8 +1160,13 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+				}
+			}
+		}
 	  }
 }
     })
@@ -2128,8 +2138,13 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+				}
+			}
+		}
 	  
         } else { 
 	  
@@ -2147,8 +2162,13 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+				}
+			}
+		}
 	}
       }
     })
@@ -7773,10 +7793,6 @@ function MovementGym_Surf_Kitsune_lvl7() {
           user.p.startTime = 0
 	  
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
-	  
-	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 3)
 
         } else {
 
@@ -7792,10 +7808,6 @@ function MovementGym_Surf_Kitsune_lvl7() {
           user.p.startTime = 0
 	  
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
-	  
-	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 3)
         }
       }
     })
