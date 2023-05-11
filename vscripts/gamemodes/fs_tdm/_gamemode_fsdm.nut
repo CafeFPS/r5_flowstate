@@ -2089,19 +2089,18 @@ void function SimpleChampionUI()
 			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
 		}
 
-	if (FlowState_LockPOI()) {
-		file.nextMapIndex = FlowState_LockedPOI()
-	}
-
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
-	
-	if( !FlowState_LockPOI() )
-		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
-	
-	if( FlowState_EnableMovementGym() )
+
+	if( !VOTING_PHASE_ENABLE )
 	{
 		file.selectedLocation = file.locationSettings[ choice ]
+		
+		if( FlowState_LockPOI() )
+			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
+	} else
+	{
+		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
 	}
 
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
