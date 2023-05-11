@@ -232,7 +232,7 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" && IsConnected() || GetCurrentPlaylistName() == "fs_dm" && IsConnected())
+		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1" )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
@@ -258,7 +258,7 @@ void function UpdateSystemPanel( var panel )
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "fs_dm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		if( GetCurrentPlaylistName() == "fs_dm" && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
