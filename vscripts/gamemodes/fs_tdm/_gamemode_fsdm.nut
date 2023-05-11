@@ -2622,13 +2622,13 @@ void function SimpleChampionUI()
 	
 	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 	
-	FS_DM.scoreboardShowing = true
-	
 	if( is1v1EnabledAndAllowed() )
 		ForceAllRoundsToFinish_solomode()
 	
 	if( SCOREBOARD_ENABLE )
 	{
+		FS_DM.scoreboardShowing = true
+		
 		foreach( player in GetPlayerArray() )
 		{
 			if( !IsValid( player ) )
@@ -2654,9 +2654,10 @@ void function SimpleChampionUI()
 			}
 		}
 		
+		FS_DM.scoreboardShowing = false
 	}
 	
-	FS_DM.scoreboardShowing = false
+	
 
 	if( VOTING_PHASE_ENABLE )
 	{
