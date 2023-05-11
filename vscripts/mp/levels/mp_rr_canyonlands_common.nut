@@ -1267,20 +1267,18 @@ void function MinimapPackage_HoverTankDestination( entity ent, var rui )
 #endif
 
 #if SERVER
-entity function CreateEditorPropKCLobby(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, int realm = -1)
+entity function CreateEditorPropKCLobby(asset a, vector pos, vector ang, bool mantle = true, float fade = 2000, int realm = -1)
 {
 	vector newpos = pos
     entity e = CreatePropDynamic(a,newpos,ang,SOLID_VPHYSICS,fade)
+	e.kv.solid = 6
     e.kv.fadedist = fade
-    if(mantle) e.AllowMantle()
+    e.AllowMantle()
 
     if (realm > -1) {
         e.RemoveFromAllRealms()
         e.AddToRealm(realm)
     }
-
-    string positionSerialized = newpos.x.tostring() + "," + newpos.y.tostring() + "," + newpos.z.tostring()
-    string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
 
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm

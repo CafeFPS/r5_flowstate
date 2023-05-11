@@ -2986,6 +2986,16 @@ void function UpdateBadRepPresent()
 	level.ui.badRepPresent = found
 }
 
+void function Dev_ServerToClientCommand( entity player, string text )
+{
+	// Build the message on the client
+	for ( int i = 0; i < sendMessage.len(); i++ )
+	{
+		Remote_CallFunction_NonReplay( player, "Dev_BuildClientMessage", 2, sendMessage[i] )
+	}
+	Remote_CallFunction_NonReplay( player, "Dev_BuildClientMessage", '\0' )
+}
+
 void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
 {
 	#if DEVELOPER

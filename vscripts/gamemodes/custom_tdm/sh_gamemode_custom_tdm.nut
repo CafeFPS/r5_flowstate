@@ -1974,6 +1974,8 @@ StoredWeapon function Equipment_GetRespawnKit_Weapon(string input, int type, int
 
         foreach ( string key, array<string> mods in filteredMods )
         {
+            if (key == "sight" && weapon.name == "mp_weapon_lstar")
+                continue
             float maxWeight = 0.0
             foreach (string mod in mods)
             {

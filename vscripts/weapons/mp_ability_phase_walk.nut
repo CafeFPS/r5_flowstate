@@ -80,6 +80,7 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 
 		if ( weapon.HasMod( "phase_travel" ) )
 		{
+			ScreenFade( player, 255, 255, 255, 255, 0.5, 0.0, FFADE_IN )
 			CycleRealms(player)
 			if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )

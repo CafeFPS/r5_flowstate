@@ -73,7 +73,7 @@ void function Flowstate_CheckPlayerIsAFK(entity player)
 	int finishTime
 
 	int afkTime = 0
-	int MAX_AFK_TIME = 18000	
+	int MAX_AFK_TIME = 18000
 	while(IsValid(player))
 	{
 		if(IsAlive(player))
