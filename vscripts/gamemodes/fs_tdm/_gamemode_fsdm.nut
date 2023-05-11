@@ -104,7 +104,7 @@ struct {
 	bool mapSkyToggle = false
 	array<string> allChatLines
 	array<string> battlelog
-	string authkey = "123"
+	string authkey = ""
 } file
 
 struct
