@@ -393,6 +393,9 @@ void function ServerCallback_SendScoreboardToClient(int eHandle, int score, int 
 
 void function ServerCallback_SendProphuntPropsScoreboardToClient(int eHandle, int score, int survivaltime)
 {
+	if ( !EHIHasValidScriptStruct( eHandle ) ) 
+		return
+	
 	RunUIScript( "SendPropsScoreboardToUI", EHI_GetName(eHandle), score, survivaltime)
 }
 
