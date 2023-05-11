@@ -401,6 +401,9 @@ void function ServerCallback_SendProphuntPropsScoreboardToClient(int eHandle, in
 
 void function ServerCallback_SendProphuntHuntersScoreboardToClient(int eHandle, int propskilled)
 {
+	if ( !EHIHasValidScriptStruct( eHandle ) ) 
+		return
+	
 	RunUIScript( "SendHuntersScoreboardToUI", EHI_GetName(eHandle), propskilled)
 }
 
