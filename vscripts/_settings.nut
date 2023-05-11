@@ -622,7 +622,10 @@ void function Settings_Init()
 		MAX_TEAM_PLAYERS = GetMaxTeamPlayers()
 		printl( "MAX_TEAM_PLAYERS: " + MAX_TEAM_PLAYERS )
 
-		GAMEDESC_CURRENT = GAMETYPE_DESC[GAMETYPE]
+		if (GAMETYPE in GAMETYPE_DESC)
+		{
+			GAMEDESC_CURRENT = GAMETYPE_DESC[GAMETYPE]
+		}
 
 		Assert( GAMETYPE in GAMETYPE_TEXT, "Unsupported gamemode: " + GameRules_GetGameMode() + " is not a valid game mode." )
 

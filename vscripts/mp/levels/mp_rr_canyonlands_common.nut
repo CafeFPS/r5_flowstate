@@ -79,6 +79,9 @@ struct
 
 void function Canyonlands_MapInit_Common()
 {
+	#if SERVER
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	#endif
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 	
 	if(GameRules_GetGameMode() != SURVIVAL)
@@ -95,7 +98,6 @@ void function Canyonlands_MapInit_Common()
 	#if SERVER
 	RegisterSignal( "NessyDamaged" )
 	PrecacheModel( NESSY_MODEL )
-	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif
 
 	//printt( "Canyonlands_MapInit_Common" )
@@ -231,8 +233,9 @@ void function EntitiesDidLoad()
 
 void function __EntitiesDidLoad()
 {
-	print("FUCK")
-	SpawnEditorProps()
+	printt("FUCK IT WE BALL")
+	SpawnEditorProps_4D()
+	return
 
 	if( GameRules_GetGameMode() != FREELANCE || GameRules_GetGameMode() == SURVIVAL )
 	{
@@ -1263,27 +1266,7 @@ void function MinimapPackage_HoverTankDestination( entity ent, var rui )
 #endif
 
 #if SERVER
-entity function CreateEditorPropKCLobby(asset a, vector pos, vector ang, bool mantle = true, float fade = 2000, int realm = -1)
-{
-	vector newpos = pos
-    entity e = CreatePropDynamic(a,newpos,ang,SOLID_VPHYSICS,fade)
-	e.kv.solid = 6
-    e.kv.fadedist = fade
-    e.AllowMantle()
-
-    if (realm > -1) {
-        e.RemoveFromAllRealms()
-        e.AddToRealm(realm)
-    }
-
-    e.SetScriptName("editor_placed_prop")
-    e.e.gameModeId = realm
-    //printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
-
-    return e
-}
-
-void function SpawnEditorProps()
+void function SpawnEditorProps_4D()
 {
     // Written by mostly fireproof. Let me know if there are any issues!
     printl("---- NEW EDITOR DATA ----")
