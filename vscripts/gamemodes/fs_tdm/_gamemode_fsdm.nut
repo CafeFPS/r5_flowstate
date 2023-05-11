@@ -182,7 +182,7 @@ void function _CustomTDM_Init()
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
 		
-		if( GetCurrentPlaylistName() != "fs_movementgym" ){
+		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
 		
