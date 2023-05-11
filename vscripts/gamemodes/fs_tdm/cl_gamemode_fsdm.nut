@@ -385,8 +385,9 @@ void function OpenTDMWeaponSelectorUI()
 
 void function ServerCallback_SendScoreboardToClient(int eHandle, int score, int deaths, float kd, int damage, int latency)
 {
-	// for(int i = 1; i < 21; i++ )
-	// {} debug
+	if ( !EHIHasValidScriptStruct( eHandle ) ) 
+		return
+		
 	RunUIScript( "SendScoreboardToUI", EHI_GetName(eHandle), score, deaths, kd, damage, latency)
 }
 
