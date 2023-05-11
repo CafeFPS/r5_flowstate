@@ -462,7 +462,7 @@ void function DevRespawnPlayer( entity player, bool shouldForce, void functionre
 	{
 		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 
-		if( IsFiringRangeGameMode() || GameRules_GetGameMode() == "custom_tdm" )
+		if( IsFiringRangeGameMode() || GameRules_GetGameMode() == "fs_dm" )
 			return
 		
 		wait 1.0

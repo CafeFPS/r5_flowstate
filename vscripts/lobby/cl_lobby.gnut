@@ -14,6 +14,13 @@ void function Lobby_AddLocalPlayer()
 
 	SetStandardAbilityBindingsForPilot( player )
 	RefreshPresentationType()
+	
+	foreach ( model in GetEntArrayByScriptName( "lobby_background_character" ) )
+	{
+		if(IsValid(model))
+			model.Destroy()
+	}
+
 }
 
 void function UICallback_ChangeLobbyCameraPosition(int tabIndex)

@@ -323,7 +323,45 @@ asset function GetModeEmblemImage( string playlistName )
 		else
 			Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
 	}
+	#if CLIENT
+	switch(GameRules_GetGameMode())
+	{
+		case "fs_prophunt":
+		emblemImage = $"rui/flowstatecustom/prophunt"
+		break
+		
+		case "fs_duckhunt":
+		emblemImage = $"rui/flowstatecustom/duckhunt"
+		break
+		
+		case "fs_dm":
+		emblemImage = $"rui/flowstatecustom/dm"
+		break
 
+		case "flowstate_pkknockback":
+		emblemImage = $"rui/flowstatecustom/pkpushback2"
+		break
+		
+		case "flowstate_snd":
+		emblemImage = $"rui/flowstatecustom/sndgamemode"
+		break
+		
+		// case "flowstate_infection":
+		// emblemImage = $"rui/flowstatecustom/infection"
+		// break
+	}
+	
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	{
+		emblemImage = $"rui/flowstatecustom/movementgym"
+	}
+	
+	if( GetCurrentPlaylistName() == "fs_1v1" )
+	{
+		emblemImage = $"rui/flowstatecustom/1v1"
+	}
+	#endif
+		
 	return emblemImage
 }
 #if UI

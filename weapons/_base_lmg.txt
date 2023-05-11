@@ -92,6 +92,14 @@ WeaponData
             "viewdrift_hipfire_air_scale_yaw"               "0.0"
         }                                     
          
-      
+		infectionPerkQuickReload
+		{
+			"reload_time" 									"1.0"
+			"reload_time_late1" 							"0.50"
+			"reload_time_late2" 							"0.50"
+			"reloadempty_time"								"1.0"
+			"reloadempty_time_late1"						"0.50"
+			"reloadempty_time_late2"						"0.50"			
+		}      
     }
 }

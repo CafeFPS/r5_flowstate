@@ -82,8 +82,11 @@ function BaseGametype_Init()
 
 void function BaseGametypeEntitiesDidLoad()
 {
-	OutOfBoundsSetup()
 	TriggerHurtSetup()
+	
+	if(GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" ) return
+
+	OutOfBoundsSetup()
 }
 
 function CreateTeamColorControlPoints()
@@ -1764,6 +1767,9 @@ void function EntityCheckOutOfBoundsThread( entity trigger, entity ent )
 
 void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var value )
 {
+	if(GetGameState() != eGameState.Playing)
+		return
+
 	//printt( "ENTITY", ent, "IS OUT OF BOUNDS ON TRIGGER", trigger )
 
 	if ( ent.e.destroyOutOfBounds )

@@ -46,12 +46,12 @@ bool s_nextShowWantsTPPrompt    = false
 #if CLIENT
 void function ClScoreboard_Init()
 {
-	RegisterConCommandTriggeredCallback( "+showscores", OnScoreboardButtonPressed )
-	RegisterMenuButtonPressedCallback( BUTTON_BACK, OnScoreboardButtonPressed )
+	//RegisterConCommandTriggeredCallback( "+showscores", OnScoreboardButtonPressed )
+	//RegisterMenuButtonPressedCallback( BUTTON_BACK, OnScoreboardButtonPressed )
 
 	RegisterSignal( "OnHideScoreboard" )
 
-	AddCallback_GameStateEnter( eGameState.WinnerDetermined, UpdateScoreboardVisibility )
+	//AddCallback_GameStateEnter( eGameState.WinnerDetermined, UpdateScoreboardVisibility )
 
 	clGlobal.isScoreboardShown = false
 }
@@ -189,11 +189,11 @@ void function UpdateScoreboardVisibility()
 		foreach ( func in file.scoreboardShowCallbacks )
 			func()
 
-		thread clGlobal.showScoreboardFunc()
+		// thread clGlobal.showScoreboardFunc() //don't show scoreboard in fullmap it looks bad
 	}
 	else
 	{
-		thread clGlobal.hideScoreboardFunc()
+		// thread clGlobal.hideScoreboardFunc()
 
 		RunUIScript( "SetShowingMap", false )
 

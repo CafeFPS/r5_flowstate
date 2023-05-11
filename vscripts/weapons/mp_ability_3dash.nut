@@ -92,6 +92,7 @@ void function CycleRealms(entity player, int index = -1)
 
 void function DashPlayer(entity player, float chargeTime)
 {
+	player.Zipline_Stop()
 	if ( GetMapName() == "mp_rr_ashs_redemption" ) return
 	player.Zipline_Stop()
 	vector yes

@@ -226,7 +226,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.25 | Made by @CafeFPS"
+			labelText				"v1.3 | Made by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -921,63 +921,133 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			pin_to_sibling_corner	CENTER
 		}
 		
-	// Challenge8NewC
-		// {
-			// "ControlName"			"RuiButton"
-			// wide					260
-			// tall					55
-			// "rui"                   "ui/invisible.rpak"
-			// "labelText"             ""
-			// "visible"				"1"
-			// sound_focus           "UI_Menu_Focus"
-			// "sound_accept"          "UI_Menu_Accept"
-			// "cursorPriority"        "-1"
+	Challenge8NewC
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Armor Swap Trainer"
+			}
+			wide					270
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
 
-			// xpos                    0
-			// ypos                    %7.5
-			// zpos                    3
-            // visible 0
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
 			
-			// pin_to_sibling          Challenge7NewC
-			// pin_corner_to_sibling   BOTTOM
-			// pin_to_sibling_corner   BOTTOM
-		// }
-	
-		// Challenge8NewCText
-		// {
-			// ControlName				Label
-			// auto_wide_tocontents    1
-			// labelText				"Dummies Survival"
-			// visible                 0
-			// zpos 3
-			// tall					55
-			// fontHeight				30
-			// font					Default
-			// fgcolor_override		"255 255 255 255"
+			pin_to_sibling          Challenge7NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
 
-			// ypos                    0
-			// xpos					-12
-			// pin_to_sibling          Challenge8NewC
-			// pin_corner_to_sibling   BOTTOM_LEFT
-			// pin_to_sibling_corner   BOTTOM_LEFT
-		// }
+		Challenge8NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					270
+			tall					50
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"105 63 1 200"
+            drawColor		"105 63 1 200"
+
+			pin_to_sibling			Challenge8NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
 		
-		// Challenge8NewCDialogFrame
-		// {
-            // ControlName		ImagePanel
-			// wide					260
-			// tall					55
-			// xpos                    0
-			// ypos                    0
-			// zpos                    1
-			// visible			0
-            // scaleImage		1
-            // fillColor		"30 30 30 200"
-            // drawColor		"30 30 30 200"
+	Challenge8NewC_IsNewChallenge
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"New!"
+			visible                 1
+			xpos 					45
+			zpos 					3
+			tall					55
+			fontHeight				20
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
 
-			// pin_to_sibling			Challenge8NewC
-			// pin_corner_to_sibling	CENTER
-			// pin_to_sibling_corner	CENTER
-		// }
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8NewC
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}	
+		
+	Challenge8
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Bounces Simulator"
+			}
+			wide					270
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge7
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+		
+	Challenge8_IsNewChallenge
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"New!"
+			visible                 1
+			xpos 					45
+			zpos 					3
+			tall					55
+			fontHeight				20
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}	
+		Challenge8DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					270
+			tall					50
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"105 63 1 200"
+            drawColor		"105 63 1 200"
+
+			pin_to_sibling			Challenge8
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+	
 	}
 }

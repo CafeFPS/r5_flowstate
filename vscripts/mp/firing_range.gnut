@@ -545,7 +545,7 @@ void function SpawnAttachments()
 			if(ammoType != ammoType2)
 				continue
 
-			entity r = file.rackSpawns[ammoIndex].point
+			entity r = file.rackSpawns[ammoIndex - 1].point
 			vector firstPos = r.GetOrigin() - r.GetRightVector()*cornerOffset
 
 			int row = 0

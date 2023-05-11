@@ -1,0 +1,178 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"none" // set up in mp_weapon_grenade_gravity.txt
+		"whizby_sound_from_AI"		"none" // set up in mp_weapon_grenade_gravity.txt
+
+	}
+
+	FX
+	{
+		"C" "P_plasma_exp_LG" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_plasma_exp_LG" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_plasma_exp_LG" // metal_titan
+
+		"F" "P_plasma_exp_LG" //flesh
+		"G" "P_plasma_exp_LG" //metalgrate, chainlink, chain
+		"H" "P_plasma_exp_LG" //alienflesh
+
+		"J" "P_plasma_exp_LG" //grass
+		"K" "P_plasma_exp_LG" //Mud
+		"L" "P_plasma_exp_LG" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_plasma_exp_LG" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_plasma_exp_LG"
+		"O" "P_plasma_exp_LG" //Foliage
+		"P" "P_plasma_exp_LG" //Computer
+
+		"R" "P_plasma_exp_LG" //metalpanel, grenade, canister
+		"S" "P_plasma_exp_LG" //water, slime
+		"T" "P_plasma_exp_LG" //tile
+		"U" "P_plasma_exp_LG" //glass_breakable
+
+		"V" "P_plasma_exp_LG" //Metal Vent
+		"W" "P_plasma_exp_LG" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_plasma_exp_LG" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_plasma_exp_LG"  //sand
+
+		"0" "P_plasma_exp_LG"
+		"1" "P_plasma_exp_LG"
+		"2" "P_plasma_exp_LG"
+		"3" "P_plasma_exp_LG"
+		"4" "P_plasma_exp_LG"
+		"5" "P_plasma_exp_LG"
+		"6" "P_plasma_exp_LG"
+		"7" "P_plasma_exp_LG"
+		"8" "P_plasma_exp_LG"
+		"9" "P_plasma_exp_LG" //puddle
+
+		"airburst" "P_plasma_exp_LG"
+		"critical_hit" "P_plasma_exp_LG"
+
+		"headshot_flesh" "P_plasma_exp_LG"
+		"headshot_mechanical" "P_plasma_exp_LG"
+	}
+
+	Sound
+	{
+		"C" "gravitystar_explo_3P"
+		"D" "gravitystar_explo_3P"
+		"E" "gravitystar_explo_3P"
+
+		"F" "gravitystar_explo_3P"
+		"G" "gravitystar_explo_3P"
+		"H" "gravitystar_explo_3P"
+
+		"J" "gravitystar_explo_3P"
+		"K" "gravitystar_explo_3P"
+		"L" "gravitystar_explo_3P"
+		"M" "gravitystar_explo_3P"
+		"N" "gravitystar_explo_3P"
+		"O" "gravitystar_explo_3P"
+		"P" "gravitystar_explo_3P"
+
+		"R" "gravitystar_explo_3P"
+		"S" "gravitystar_explo_3P"
+		"T" "gravitystar_explo_3P"
+		"U" "gravitystar_explo_3P"
+
+		"V" "gravitystar_explo_3P"
+		"W" "gravitystar_explo_3P"
+		"X" "gravitystar_explo_3P"
+		"Y" "gravitystar_explo_3P"
+		"Z" "gravitystar_explo_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "gravitystar_explo_3P"
+		"shieldhit" "gravitystar_explo_3P"
+
+		"headshot_flesh" "gravitystar_explo_3P"
+		"headshot_mechanical" "gravitystar_explo_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "gravitystar_explo_3p"
+		"D" "gravitystar_explo_3p"
+		"E" "gravitystar_explo_3p"
+
+		"F" "gravitystar_explo_3p"
+		"G" "gravitystar_explo_3p"
+		"H" "gravitystar_explo_3p"
+
+		"J" "gravitystar_explo_3p"
+		"K" "gravitystar_explo_3p"  // mud?
+		"L" "gravitystar_explo_3p"
+		"M" "gravitystar_explo_3p"
+		"N" "gravitystar_explo_3p"	// sand?
+		"O" "gravitystar_explo_3p"
+		"P" "gravitystar_explo_3p"
+
+		"R" "gravitystar_explo_3p"
+		"S" "gravitystar_explo_3p"
+		"T" "gravitystar_explo_3p"
+		"U" "gravitystar_explo_3p"
+
+		"V" "gravitystar_explo_3p"
+		"W" "gravitystar_explo_3p"
+		"X"	"gravitystar_explo_3P"
+		"Y" "gravitystar_explo_3p"
+		"Z" "gravitystar_explo_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "gravitystar_explo_3p"
+		"shieldhit" "gravitystar_explo_3P"
+
+		"headshot_flesh" "gravitystar_explo_3p"
+		"headshot_mechanical" "gravitystar_explo_3p"
+	}
+
+	Sound_victim
+	{
+		"C" "gravitystar_explo_3P"
+		"D" "gravitystar_explo_3P"
+		"E" "gravitystar_explo_3P"
+
+		"F" "gravitystar_explo_3P"
+		"G" "gravitystar_explo_3P"
+		"H" "gravitystar_explo_3P"
+
+		"J" "gravitystar_explo_3P"
+		"K" "gravitystar_explo_3P"
+		"L" "gravitystar_explo_3P"
+		"M" "gravitystar_explo_3P"
+		"N" "gravitystar_explo_3P"
+		"O" "gravitystar_explo_3P"
+		"P" "gravitystar_explo_3P"
+
+		"R" "gravitystar_explo_3P"
+		"S" "gravitystar_explo_3P"
+		"T" "gravitystar_explo_3P"
+		"U" "gravitystar_explo_3P"
+
+		"V" "gravitystar_explo_3P"
+		"W" "gravitystar_explo_3P"
+		"X" "gravitystar_explo_3P"
+		"Y" "gravitystar_explo_3P"
+		"Z" "gravitystar_explo_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "gravitystar_explo_3P"
+		"shieldhit" "gravitystar_explo_3P"
+
+		"headshot_flesh" "gravitystar_explo_3P"
+		"headshot_mechanical" "gravitystar_explo_3P"
+	}
+
+
+}

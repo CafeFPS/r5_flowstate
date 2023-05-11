@@ -98,8 +98,8 @@ void function InitGroundListMenu( var newMenuArg )
 
 	file.quickSwapGrid = Hud_GetChild( menu, "QuickSwapGrid" )
 	GridPanel_Init( file.quickSwapGrid, INVENTORY_ROWS, INVENTORY_COLS, OnBindQuickSwapItem, GetInventoryItemCount, Survival_CommonButtonInit )
-	GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICK, OnQuickSwapItemClick )
-	GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICKRIGHT, OnQuickSwapItemClickRight )
+	// GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICK, OnQuickSwapItemClick )
+	// GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICKRIGHT, OnQuickSwapItemClickRight )
 
 	GridPanel_SetCommandHandler( file.quickSwapGrid, OnQuickSwapMenuCommand )
 
@@ -114,12 +114,12 @@ void function InitGroundListMenu( var newMenuArg )
 
 	AddMenuFooterOption( menu, RIGHT, BUTTON_B, true, "#B_BUTTON_CLOSE", "#CLOSE" )
 
-	var weaponSwapButton = Hud_GetChild( menu, "WeaponSwapButton" )
-	var rui = Hud_GetRui( weaponSwapButton )
-	RuiSetImage( rui, "iconImage", $"rui/hud/loot/weapon_swap_icon" )
-	//
-	RuiSetInt( rui, "lootTier", 1 )
-	Hud_AddEventHandler( weaponSwapButton, UIE_CLICK, OnWeaponSwapButtonClick )
+	// var weaponSwapButton = Hud_GetChild( menu, "WeaponSwapButton" )
+	// var rui = Hud_GetRui( weaponSwapButton )
+	// RuiSetImage( rui, "iconImage", $"rui/hud/loot/weapon_swap_icon" )
+	// //
+	// RuiSetInt( rui, "lootTier", 1 )
+	//Hud_AddEventHandler( weaponSwapButton, UIE_CLICK, OnWeaponSwapButtonClick )
 }
 
 void function OnSurvivalGroundListMenu_Open()

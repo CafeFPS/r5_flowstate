@@ -31,8 +31,8 @@ global function GetPilotTitanStatusForPlayer
 global function GameState_UpdateRuiRoundEndGameTime
 
 global function ClGameState_SetSwitchingSidesSubText
-
 global function UpdateIsSonyMP
+global function SND_ForceUpdateObservedCount
 
 global enum ePlayerStatusType
 {
@@ -100,7 +100,7 @@ void function ClGameState_Init()
 {
 	RegisterSignal( "GameStateChanged" )
 	RegisterServerVarChangeCallback( "gameState", ClGameState_Changed )
-	RegisterServerVarChangeCallback( "badRepPresent", UpdateScoreboardBadRepPresentMessage )
+	//RegisterServerVarChangeCallback( "badRepPresent", UpdateScoreboardBadRepPresentMessage )
 	AddOnSpectatorTargetChangedCallback( GameState_SpectatorTargetChanged )
 
 	AddCallback_OnClientScriptInit( ClGameState_AddClient )
@@ -145,25 +145,81 @@ void function Hud_SetModeEmblem()
 
 void function SetCommonScoreRUIVars( var rui )
 {
+	switch( GameRules_GetGameMode() )
+	{
+		case "flowstate_infection":
+			RuiSetString( rui, "gameModeString", "FS INFECTED" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
+			RuiSetString( rui, "squadsRemaining2TextSingular", "INFECTED" )
+			RuiSetString( rui, "squadsRemaining2TextPlural", "INFECTED" )
+			return
+		
+		case "fs_prophunt":
+			RuiSetString( rui, "gameModeString", "FS PROPHUNT" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PROP ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PROPS ALIVE" )
+			RuiSetVisible(rui, true)
+			return
+			
+		case "fs_duckhunt":
+			RuiSetString( rui, "gameModeString", "FS DUCKHUNT" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "DUCK ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "DUCKS ALIVE" )
+			RuiSetVisible(rui, true)	
+			return
+			
+		case "flowstate_snd":
+			RuiSetString( rui, "gameModeString", "FS SEARCH AND DESTROY" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
+			RuiSetVisible(rui, true)	
+			return
+	}
+
+	//Legacy, clean up this later ?
+	
 	if ( IsFallLTM() )
 	{
-		RuiSetString( rui, "gameModeString", "" ) //
+		RuiSetString( rui, "gameModeString", "" )
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 		RuiSetString( rui, "squadsRemaining2TextSingular", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
 		RuiSetString( rui, "squadsRemaining2TextPlural", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
 		return
-	}
+	}	
+	
 	if ( IsSoloMode() )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", GameRules_GetGameMode() == "custom_tdm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
-		RuiSetString( rui, "squadsRemainingTextPlural", GameRules_GetGameMode() == "custom_tdm" ? "PLAYERS ONLINE" : "#SURVIVAL_PLAYERS_REMAIN" )
+		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
+
+		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
+			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
+		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
+			RuiSetString( rui, "gameModeString", "HACKERS VS PROS" )
+		else if(GetCurrentPlaylistName() == "fs_movementgym")
+			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
+		else if(GetCurrentPlaylistName() == "fs_1v1")
+			RuiSetString( rui, "gameModeString", "FS 1v1" )
+		
+		if(GameRules_GetGameMode() == "flowstate_pkknockback")
+		{
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetString( rui, "gameModeString", "PK PUSHBACK" )
+		}
 	}
 	else if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false )){
+		RuiSetString( rui, "gameModeString", "DUMMIES HORDE" )
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "DUMMIES REMAINING" )
+		RuiSetString( rui, "squadsRemainingTextSingular", "DUMMY REMAINING" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "DUMMIES REMAINING" )
 	}
 	else
@@ -187,11 +243,19 @@ void function UpdateCommonScoreRuiTracking( var rui, entity player )
 	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
 	RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 	RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
+
 	RuiTrackBool( rui, "hasDeathFieldImmunity", player, RUI_TRACK_SCRIPT_NETWORK_VAR_BOOL, GetNetworkedVariableIndex( "hasDeathFieldImmunity" ) )
 
 	if ( IsRankedGame() )
 		RuiTrackInt( rui, "assistCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "assists" ) )
 
+}
+
+void function SND_ForceUpdateObservedCount(int newObservedCount)
+{
+	var rui = file.gamestateRui
+	
+	RuiSetInt( rui, "playerObservedCount", newObservedCount )
 }
 
 void function GameModeScoreBarUpdateRules_Default( var rui )
@@ -254,11 +318,11 @@ void function ClGameState_AddClient( entity player )
 		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_BAD_REPUTATION" )
 	#endif
 
-	player.cv.hudCheaterMessage <- HudElement( "HudCheaterMessage" )
-	if ( !Durango_IsDurango() && !IsLobby() && player.HasBadReputation() )
-		player.cv.hudCheaterMessage.Show()
-	else
-		player.cv.hudCheaterMessage.Hide()
+	// player.cv.hudCheaterMessage <- HudElement( "HudCheaterMessage" )
+	// if ( !Durango_IsDurango() && !IsLobby() && player.HasBadReputation() )
+		// player.cv.hudCheaterMessage.Show()
+	// else
+		// player.cv.hudCheaterMessage.Hide()
 }
 
 
@@ -748,7 +812,7 @@ void function ClGameState_Changed()
 			break
 	}
 
-	UpdateIsSonyMP()
+	//UpdateIsSonyMP()
 }
 
 void function GameState_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )

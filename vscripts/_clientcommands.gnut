@@ -24,7 +24,10 @@ bool function ClientCommand_noclip( entity player, array<string> args )
 {
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return true
-		
+	
+	if ( IsValid( player.GetParent() ) )
+		return false
+				
 	if ( player.IsPhaseShifted() )
 		return false
 
@@ -39,8 +42,7 @@ bool function ClientCommand_noclip( entity player, array<string> args )
 bool function ClientCommand_ToggleThirdPerson( entity player, array<string> args )
 {
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return true
-	
+		return false
 	if ( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOff() 	
 	else

@@ -178,7 +178,7 @@ void function InitWeaponScripts()
 	MpWeaponTrophy_Init()
 
 	MpWeaponBasicBolt_Init()
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		MpWeaponEditor_Init()
 
 	#if SERVER
@@ -5379,7 +5379,7 @@ bool function IsFallLTM()
 
 bool function IsLobbyFallLTM()
 {
-	return false //GetCurrentPlaylistVarInt( "menu_fall_ltm", 0 ) == 1
+	return GetCurrentPlaylistVarInt( "menu_fall_ltm", 0 ) == 1
 }
 
 

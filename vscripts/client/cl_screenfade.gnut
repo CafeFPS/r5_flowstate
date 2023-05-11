@@ -42,7 +42,7 @@ void function ClScreenfade_Init()
 
 	RuiSetFloat3( file.screenFade, "fadeColor", <0, 0, 0> )
 	RuiSetFloat( file.screenFade, "fadeAlpha", 0.0 )
-	RuiSetImage( file.screenFade, "emblemImage", GetModeEmblemImage( GetCurrentPlaylistName() ) )
+	//RuiSetImage( file.screenFade, "emblemImage", GetModeEmblemImage( GetCurrentPlaylistName() ) )
 }
 
 

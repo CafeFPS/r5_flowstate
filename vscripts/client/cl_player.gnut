@@ -621,7 +621,8 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	if ( victim.IsTitan() && isKillShot )
 		ClientScreenShake( 8, 10, 1, <0, 0, 0> )
 
-	BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+	if ( GameRules_GetGameMode() != "fs_prophunt" )
+		BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
 
 	if ( isShieldBreak )
 		PlayShieldBreakEffect( victim )
@@ -1586,21 +1587,19 @@ void function PlayShieldBreakEffect( entity ent )
 		int armorTier = EquipmentSlot_GetEquipmentTier( ent, "armor" )
 		shieldColor = GetFXRarityColorForTier( armorTier )
 	}
-#if(false)
-
-
-
-
-#endif
 
 	int shieldBreakFX = GetParticleSystemIndex( SHIELD_BREAK_FX )
 
-	int attachID
-	if ( shieldEnt.IsTitan() )
-		attachID = shieldEnt.LookupAttachment( "exp_torso_main" )
-	else
-		attachID = shieldEnt.LookupAttachment( "ref" ) // TEMP
-
+	int attachID = shieldEnt.LookupAttachment( "ref" )
+	
+	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	{
+		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
+		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
+		
+		return
+	}
+	
 	int shieldFXHandle = StartParticleEffectOnEntity( shieldEnt, shieldBreakFX, FX_PATTACH_POINT_FOLLOW, attachID )
 	EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
 }
@@ -1620,12 +1619,15 @@ void function PlayShieldActivateEffect( entity ent )
 
 	int shieldBreakFX = GetParticleSystemIndex( SHIELD_MAX_FX )
 
-	int attachID
-	if ( shieldEnt.IsTitan() )
-		attachID = shieldEnt.LookupAttachment( "exp_torso_main" )
-	else
-		attachID = shieldEnt.LookupAttachment( "ref" ) // TEMP
-
+	int attachID = ent.LookupAttachment( "ref" )
+	
+	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	{
+		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
+		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
+		
+		return
+	}
 	int shieldFXHandle = StartParticleEffectOnEntity( shieldEnt, shieldBreakFX, FX_PATTACH_POINT_FOLLOW, attachID )
 	EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
 }
@@ -1636,12 +1638,16 @@ void function PlayIt( entity victim )
 	float shieldHealthFrac = GetShieldHealthFrac( victim )
 
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
-	int attachID
-	if ( victim.IsTitan() )
-		attachID = victim.LookupAttachment( "exp_torso_main" )
-	else
-		attachID = victim.LookupAttachment( "ref" ) // TEMP
-
+	int attachID = victim.LookupAttachment( "ref" )
+	
+	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	{
+		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
+		EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
+		
+		return
+	}
+	
 	int shieldFXHandle = StartParticleEffectOnEntity( victim, shieldbodyFX, FX_PATTACH_POINT_FOLLOW, attachID )
 
 	EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
@@ -1667,12 +1673,23 @@ void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldCo
 	float shieldHealthFrac = GetShieldHealthFrac( victim )
 
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
-	int attachID
-	if ( victim.IsTitan() )
-		attachID = victim.LookupAttachment( "exp_torso_main" )
-	else
-		attachID = victim.LookupAttachment( "ref" ) // TEMP
+	int attachID = victim.LookupAttachment( "ref" )
+	
+	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	{
+		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
+		vector color
 
+		if ( shieldColorOverride == < -1, -1, -1 > )
+			color = GetShieldEffectCurrentColor( 1 - shieldHealthFrac )
+		else
+			color = shieldColorOverride
+
+		EffectSetControlPointVector( shieldFXHandle, 1, color )	
+		
+		return
+	}
+	
 	int shieldFXHandle = StartParticleEffectOnEntity( victim, shieldbodyFX, FX_PATTACH_POINT_FOLLOW, attachID )
 
 	vector color

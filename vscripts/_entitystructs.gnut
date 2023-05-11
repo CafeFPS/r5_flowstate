@@ -409,6 +409,37 @@ global struct ServerEntityStruct
 
 	//Arthur's revenge
 	array<entity> birdsFromThisCluster
+
+	//portal gun
+	bool isplayercomingfromportal1 = false
+	bool isplayercomingfromportal2 = false
+	
+	bool alreadyPingedUltraDecoy = false
+	bool isBeingAttackedByDroneMedic = false
+	
+	//HoloSprays mp
+	array<entity> holoSpraysFX
+	
+	//Tridents
+	string LastTridentAnim
+	entity driver = null
+	entity driverDummy = null
+	entity physicsCar = null
+	bool isBoosting = false
+	bool isInAirborne = false
+	bool canBoost = true
+	bool canReset = true
+	
+	TraceResults& hoverTrace
+	vector forwardSpeed
+	
+	//Ring Flare
+	int currentRadius
+	
+	//Bomb
+	
+	//Idk
+	bool testOpen = false
 }
 
 global struct MeritData
@@ -706,6 +737,9 @@ global struct ServerPlayerStruct
 	
 	int currentMelee = 0
 	
+	bool speedometerVisible = true
+	bool movementOverlayVisible = true
+	bool stylemeterVisible = false
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null
@@ -716,10 +750,16 @@ global struct ServerPlayerStruct
 	bool isParentedToFlyer = false
 	entity ParentedFlyer
 	//Prophunt by Colombia
-	int PROPHUNT_Max3changes
+	int PROPHUNT_ChangePropUsageLimit
+	int PROPHUNT_DecoysPropUsageLimit
+	int PROPHUNT_FlashbangPropUsageLimit
+	entity PROPHUNT_LastPropEntity
 	bool PROPHUNT_isSpectatorDiedMidRound = false
-	bool PROPHUNT_DestroyProp = false
+	bool PROPHUNT_AreAnglesLocked = false
 	asset PROPHUNT_LastModel
+	int PROPHUNT_LastModelIndex
+	int PROPHUNT_TimesSurvivedAsProp = 0
+	int PROPHUNT_SurvivalTime = 0
 	
 	//By Endergreen
 	// This is for Octane's ability chatter
@@ -759,7 +799,7 @@ global struct ServerPlayerStruct
 	EditorMode& selectedEditorMode
 	EditorMode ornull lastEditorMode
 	
-	//Rocketpod Weapon
+	//Rocketpod Weapon and Guided Missiles
 	vector guidedLaserPoint
 	
 	//Holospray
@@ -767,6 +807,77 @@ global struct ServerPlayerStruct
 	
 	//Data request
 	float lastTimeDataRequestUsed = 0
+	
+	//Needler
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	//Super decys (mirage buff)
+	entity lastDecoy
+	
+	//Super doc (lifeline buff)
+	entity lastdocdrone
+	
+	//Asked for team, prophunt
+	int teamasked = -1
+	
+	//HoloSprays mp
+	array<entity> holoSpraysBase
+	
+	float lastRightInput = 0
+	float lastForwardInput = 0
+	
+	//Duckhunt
+	bool wasTeleported = false	
+	bool lastFloorCheckPoint = false
+	bool askedForHunter = false
+	
+	//knockbacks
+	int roundPlayerPoints = 0
+	int ampedDamageBonus = 0
+	float lastTimeGrabberBoostZonePoints = 0
+	float currentPlayerSpeed = 1.0
+	int ampedFireRateBonus = 0
+	int totalpoints = 0
+	
+	//infection	
+	array<entity> shadowAttachedEntities
+	float allowedTimeForNextKill
+	bool isLastManStanding
+	bool amIAlphaZombie
+	bool hasInfectedNear
+	
+	//infection perks
+	int infectionRoundKills
+	int gainedPerks
+	
+	bool hasSecondaryWeaponPerk
+	bool hasQuickReloadPerk
+	bool hasBetterMagsPerk
+	bool hasHardenedPerk
+	
+	//SND
+	bool isSNDAttackerPlayer
+	bool playerHasBomb
+	bool playerIsPlantingBomb
+	bool didPlayerBuyAWeapon
+	bool survivedShouldSaveWeapons = false
+	
+	int grenadesBought = 0
+	int availableMoney
+	string weapon1ref = ""
+	string weapon2ref = ""
+	int weapon1lvl = -1
+	int weapon2lvl = -1
+
+	//Hackers vs pros
+	bool enableAimbot = false
+	
+	//mokey
+	bool insideBubbleMokey = false
+	
+	string snd_knifecolor = "255, 255, 255"
 }
 
 global struct ChallengeScore
@@ -870,6 +981,13 @@ global struct ServerAIStruct
 	// r5 stuff
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
+	
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	
+	entity decoyOwner
 	string lastSchedule
 	string lastAnim
 }
@@ -908,6 +1026,24 @@ global struct ServerWeaponStruct
 	entity ziplineStartModel
 	var ziplineStartPos
 	bool translocate_isADSForced
+
+	//portal gun
+	entity portal1root = null
+	entity portal2root = null
+	entity trigger1 = null
+	entity trigger2 = null
+	vector startpos
+	vector endpos
+	bool issecondportalshot = false
+	vector portal1savedNormalAngle
+	vector portal2savedNormalAngle
+	vector portal1savedNormal
+	vector portal2savedNormal
+	vector portal1savedSurfaceAngle
+	vector portal2savedSurfaceAngle
+	
+	vector portal1RefAngles
+	vector portal2RefAngles
 }
 
 
@@ -967,7 +1103,8 @@ global struct ServerProjectileStruct
 	vector ownerLocationDebug
 	vector savedSurfaceNormal
 	float lastTeleportTime
-	
+	bool dontbouncethistime = false
+	entity weapon
 	array<entity> healWeaponEffects
 }
 
@@ -999,6 +1136,10 @@ global struct ServerPlayerDecoyStruct
 {
 	array< entity > fxHandles
 	array< string > loopingSounds
+	asset characterSetFile 
+	asset modelName
+	bool F_or_B_CoinFlip
+	entity owner
 }
 
 // hooked up to entity.sp in code

@@ -275,7 +275,224 @@ int function SmartAmmo_FireWeapon_Bullet( entity weapon, WeaponPrimaryAttackPara
 
 	return 1
 }
+int function SmartAmmo_FireNeedler( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType )
+//By ColombiaFPS
+{
+	if ( !IsValid( weapon ) )
+		return 0
 
+	if ( !weapon.SmartAmmo_IsEnabled() )
+	{
+		if ( !SmartAmmo_GetAllowUnlockedFiring( weapon ) )
+		{
+			SmartAmmo_SetWeaponFireFailedTime( weapon )
+			return 0
+		}
+	}
+
+	#if CLIENT
+		if ( IsWatchingReplay() )
+			return 0 // temp fix for SmartAmmo_GetStoredTargets not returning the same list during kill replay
+	#endif
+
+	array<entity> storedTargets = weapon.SmartAmmo_GetStoredTargets()
+	
+
+	bool weaponRequiresTrackedMarks = SmartAmmo_WeaponRequiresTrackedMarks( weapon )
+	if ( weaponRequiresTrackedMarks )
+		RemovePartiallyTrackedEnts( weapon, storedTargets )
+	array< SmartAmmoTarget > targets = weapon.SmartAmmo_GetTargets()
+	//TODO: Update with cleaner tracking count method.
+	table targetFracs
+	table targetActiveShots
+
+	
+	foreach ( target in targets )
+	{
+		//printt("Target detected: " + target)
+		
+		if ( target.fraction < 1.0 )
+			continue
+
+		targetFracs[target.ent] <- target.fraction
+		targetActiveShots[target.ent] <- target.activeShot
+	}
+
+	if ( attackParams.burstIndex == 0 )
+	{
+		// The first time we fire the weapon we store off all targets we are locked onto so we can iterate through them with each burst shot.
+		// The reason we have to store them off is because if burst bullet 1 kills the first target they will be removed from the smart targets array
+		// when the second burst bullet is fired, and when we try to shoot target '2' we will actually be shooting target '3' becuase index 0 is removed
+		// and all targets shift in the array
+
+		weapon.SmartAmmo_StoreTargets()
+		
+		//printt( "Storing", weapon.SmartAmmo_GetStoredTargets().len(), "targets" )
+		//PrintTable( weapon.SmartAmmo_GetStoredTargets() )
+		
+		storedTargets = weapon.SmartAmmo_GetStoredTargets()
+		if ( weaponRequiresTrackedMarks )
+			RemovePartiallyTrackedEnts( weapon, storedTargets )
+		// figure out how many targets to hit with one pull of the trigger
+		int maxTargetedBurst = SmartAmmo_GetMaxTargetedBurst( weapon )
+
+		bool alwaysDoBurst = weapon.GetWeaponSettingBool( eWeaponVar.smart_ammo_always_do_burst )
+		int burstCount = 0
+		if ( weapon.GetWeaponSettingBool( eWeaponVar.smart_ammo_alt_lock_style ) )
+		{
+			float chargeFrac = 1 - weapon.GetWeaponChargeFraction()
+			float shotFrac = 1 / float( maxTargetedBurst )
+
+			if ( chargeFrac < shotFrac )
+				return 0
+		}
+
+		foreach ( target in storedTargets )
+		{
+			Assert( target in targetFracs )
+
+			burstCount += int( floor( targetFracs[target] ) )
+		}
+
+		if ( alwaysDoBurst )
+			burstCount = maxTargetedBurst
+
+		burstCount = minint( maxTargetedBurst, burstCount )
+
+		if ( weapon.GetWeaponInfoFileKeyField( "smart_ammo_doBurstPerTarget" ) == 1 )
+			burstCount *= storedTargets.len()
+
+		if ( burstCount <= 0 )
+			burstCount = 0
+
+		weapon.SetWeaponBurstFireCount( burstCount )
+	}
+
+	array<entity> expandedStoredTargets = []
+
+	foreach ( target in storedTargets )
+	{
+		int burstCount
+
+		if ( target in targetFracs )
+			burstCount = int( floor( targetFracs[target] ) )
+		else
+			burstCount = 1
+
+		for ( int index = 0; index < burstCount; index++ )
+		{
+			expandedStoredTargets.append( target )
+		}
+	}
+
+	// Figure out the target we should be shooting this round
+	entity target = null
+	if ( expandedStoredTargets.len() > 0 )
+	{
+		int index = attackParams.burstIndex % expandedStoredTargets.len()
+		target = expandedStoredTargets[index]
+	}
+
+	// Tried to shoot at a target but it's no longer valid. Don't do anything
+	if ( target != null && !IsValid( target ) )
+		return 0
+
+	bool activeShot = false
+	if ( target in targetActiveShots )
+	{
+		if ( targetActiveShots[target] )
+		{
+			activeShot = true
+			damageType = damageType | DF_HEADSHOT
+			explosionDamageType = explosionDamageType | DF_HEADSHOT
+		}
+	}
+
+	// Fire the weapon
+	
+	if(target){
+		return SmartAmmo_FireWeapon_HomingMissile_Fixed( weapon, attackParams, damageType, explosionDamageType, activeShot, target )
+	} else {
+		
+		bool shouldPredict = weapon.ShouldPredictProjectiles()
+
+		#if CLIENT
+			if ( !shouldPredict )
+				return 1
+		#endif
+		
+		SmartAmmo_SetWeaponFireFailedTime( weapon )
+		
+		float missileSpeed = 0.5
+		
+		WeaponFireMissileParams fireMissileParams
+		fireMissileParams.pos = attackParams.pos
+		fireMissileParams.dir = attackParams.dir
+		fireMissileParams.speed = missileSpeed/10
+		fireMissileParams.scriptTouchDamageType = damageType
+		fireMissileParams.scriptExplosionDamageType = explosionDamageType
+		fireMissileParams.doRandomVelocAndThinkVars = true
+		fireMissileParams.clientPredicted = true
+		
+		entity missile2 = weapon.FireWeaponMissile( fireMissileParams )
+			#if SERVER
+					entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_skydive_trail_CP" ), missile2.GetOrigin(), <0, 0, 0>)
+					trailFXHandle.SetParent(missile2, "ref")
+					// trailFXHandle.SetAngles(<RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
+					EffectSetControlPointVector( trailFXHandle, 1, <97, 50, 168> )
+					missile2.kv.gravity = 1
+			#endif
+		return 1
+	}
+	
+	return 0
+}
+
+
+int function SmartAmmo_FireWeapon_HomingMissile_Fixed( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType, bool activeShot, entity target )
+{
+	bool shouldPredict = weapon.ShouldPredictProjectiles()
+
+	#if CLIENT
+		if ( !shouldPredict )
+			return 1
+	#endif
+
+	entity player = weapon.GetWeaponOwner()
+	vector attackPos = attackParams.pos
+	vector attackDir = attackParams.dir
+	
+	float missileSpeed = 0.4
+
+	local homingSpeed = 2000
+	
+	//printt("homing speed " + homingSpeed.tostring())
+	
+	local missileSpeedLimit = SmartAmmo_GetMissileSpeedLimit( weapon )
+
+		WeaponFireMissileParams fireMissileParams
+		fireMissileParams.pos = attackPos
+		fireMissileParams.dir = attackDir
+		fireMissileParams.speed = missileSpeed/10
+		fireMissileParams.scriptTouchDamageType = damageType
+		fireMissileParams.scriptExplosionDamageType = explosionDamageType
+		fireMissileParams.doRandomVelocAndThinkVars = true
+		fireMissileParams.clientPredicted = true
+		
+		entity missile2 = weapon.FireWeaponMissile( fireMissileParams )
+
+		SetTeam( missile2, player.GetTeam() )
+		missile2.SetHomingSpeeds( homingSpeed, homingSpeed )
+		SmartAmmo_SetMissileTarget( missile2, target )
+	#if SERVER
+					entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_skydive_trail_CP" ), missile2.GetOrigin(), <0, 0, 0>)
+					trailFXHandle.SetParent(missile2, "ref")
+					// trailFXHandle.SetAngles(<RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
+					EffectSetControlPointVector( trailFXHandle, 1, <97, 50, 168> )
+					missile2.kv.gravity = 1
+	#endif
+	return 1
+}
 int function SmartAmmo_FireWeapon_HomingMissile( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType, bool activeShot, entity target )
 {
 	bool shouldPredict = weapon.ShouldPredictProjectiles()

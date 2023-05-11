@@ -56,6 +56,8 @@ void function CustomizeCharacterMenu_OnOpen()
 	if ( !file.tabsInitialized )
 	{
 		array<var> panels = GetMenuTabBodyPanels( file.menu )
+		panels.remove(0)
+		panels.remove(1)
 		foreach ( panel in panels )
 			AddTab( file.menu, panel, GetPanelTabTitle( panel ) )
 
@@ -77,7 +79,7 @@ void function CustomizeCharacterMenu_OnOpen()
 	RuiSetString( file.titleRui, "title", Localize( ItemFlavor_GetLongName( character ) ).toupper() )
 	RuiSetGameTime( file.decorationRui, "initTime", Time() )
 
-	RegisterNewnessCallbacks( character )
+	//RegisterNewnessCallbacks( character )
 
 }
 
@@ -85,7 +87,7 @@ void function CustomizeCharacterMenu_OnOpen()
 void function CustomizeCharacterMenu_OnClose()
 {
 	ItemFlavor character = expect ItemFlavor( file.characterOrNull )
-	DeregisterNewnessCallbacks( character )
+	//DeregisterNewnessCallbacks( character )
 
 	file.characterOrNull = null
 	SetTopLevelCustomizeContext( null )
@@ -117,6 +119,8 @@ void function DeregisterNewnessCallbacks( ItemFlavor character )
 void function CustomizeCharacterMenu_OnNavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
+
+	UI_SetPresentationType( ePresentationType.CHARACTER_SELECT )
 
 	CloseActiveMenu()
 }

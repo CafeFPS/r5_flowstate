@@ -144,7 +144,7 @@ void function Sequence_WaitingForPlayers()
 
 	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
 		
-	if(GameRules_GetGameMode() == "custom_tdm")
+	if(GameRules_GetGameMode() != SURVIVAL) 
 	{	
 		SetGameState( eGameState.Playing )
 		return	
@@ -424,7 +424,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	// ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	// CharacterSkin_Apply( player, playerCharacterSkin )
 
-	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor")
+	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor_deprecated")
 		GiveLoadoutRelatedWeapons( player )
 
 	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
@@ -436,7 +436,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	UpdatePlayerCounts()
 	
-	if(GameRules_GetGameMode() == "map_editor")
+	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		thread (void function() : ( player )
 		{
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
@@ -463,16 +463,16 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
 {
-	array< array< string > > emoteArrays = [ [ "skydive_emote_bangalore_backflip" ], [ "skydive_emote_bloodhound_backflip" ], [ "skydive_emote_caustic_backflip" ], [ "skydive_emote_gibraltar_backflip" , 
-								"skydive_emote_gibraltar_surf" ], [ "skydive_emote_lifeline_backflip", "skydive_emote_lifeline_windmill" ], [ "skydive_emote_mirage_backflip", 
-								"skydive_emote_mirage_rodeo" ], [ "skydive_emote_octane_backflip" ], [ "skydive_emote_pathfinder_backflip", "skydive_emote_pathfinder_birdattack" ], 
-								[ "skydive_emote_wattson_backflip", "skydive_emote_wattson_explorer" ], [ "skydive_emote_wraith_backflip" ] ]
+	// array< array< string > > emoteArrays = [ [ "skydive_emote_bangalore_backflip" ], [ "skydive_emote_bloodhound_backflip" ], [ "skydive_emote_caustic_backflip" ], [ "skydive_emote_gibraltar_backflip" , 
+								// "skydive_emote_gibraltar_surf" ], [ "skydive_emote_lifeline_backflip", "skydive_emote_lifeline_windmill" ], [ "skydive_emote_mirage_backflip", 
+								// "skydive_emote_mirage_rodeo" ], [ "skydive_emote_octane_backflip" ], [ "skydive_emote_pathfinder_backflip", "skydive_emote_pathfinder_birdattack" ], 
+								// [ "skydive_emote_wattson_backflip", "skydive_emote_wattson_explorer" ], [ "skydive_emote_wraith_backflip" ] ]
 
-	foreach( emoteArray in emoteArrays )
-	{
-		for( int i = 0; i < emoteArray.len(); i++ )
-			ClientCommand( player, "loadouts_devset skydive_emote_" + i + " " + emoteArray[ i ] )
-	}
+	// foreach( emoteArray in emoteArrays )
+	// {
+		// for( int i = 0; i < emoteArray.len(); i++ )
+			// ClientCommand( player, "loadouts_devset skydive_emote_" + i + " " + emoteArray[ i ] )
+	// }
 }
 #endif
 
@@ -576,7 +576,14 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) )
 		return
-
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		
+		if ( sourceId == eDamageSourceId.damagedef_suicide )
+			return
+	}
 	UpdatePlayerCounts()
 		
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )
@@ -586,6 +593,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
 	victim.FreezeControlsOnServer()
+	
+	if(GameRules_GetGameMode() == "flowstate_snd") 
+		return
 	
 	victim.SetPredictionEnabled( false )
 
@@ -619,18 +629,38 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			if(GameRules_GetGameMode() == "custom_tdm") break
-		
-			entity startEnt = GetEnt( "info_player_start" )
+			
+			if( GameRules_GetGameMode() == "map_editor_deprecated")
+				DecideRespawnPlayer( player )
+			
+			if( GameRules_GetGameMode() != SURVIVAL ) break
 
-			player.SetOrigin( startEnt.GetOrigin() )
-			player.SetAngles( startEnt.GetAngles() )
+			switch(GetMapName())
+			{
+				case "mp_rr_canyonlands_64k_x_64k":
+				case "mp_rr_canyonlands_mu1":
+				case "mp_rr_canyonlands_mu1_night":				
+					player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
+					player.SetAngles( <0, 65.3776093, 0> )
+				break
+				
+				case "mp_rr_desertlands_64k_x_64k":
+				case "mp_rr_desertlands_64k_x_64k_nx":
+				case "mp_rr_desertlands_64k_x_64k_tt":
+				case "mp_rr_desertlands_mu1":
+					player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
+					player.SetAngles( <0, -136.298843, 0> )
+				break
+				
+				default:
+					entity startEnt = GetEnt( "info_player_start" )
+					player.SetOrigin( startEnt.GetOrigin() )
+					player.SetAngles( startEnt.GetAngles() )
+				break
+			}
 
 			player.FreezeControlsOnServer()
 
-			if( GameRules_GetGameMode() == "map_editor")
-				DecideRespawnPlayer( player )
-			
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled()
 				&& GetGameState() == eGameState.WaitingForPlayers )
 				DecideRespawnPlayer( player, false )
@@ -678,21 +708,50 @@ void function UpdatePlayerCounts()
 {
 
 	string currGameMode = GameRules_GetGameMode()
-	if(currGameMode == "custom_tdm"){
-		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
-		
-		if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){
-		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )}
-		else {
-		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray().len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetPlayerArray().len() )
-		}
 	
-	} else {
+	switch(currGameMode)
+	{
+		case "flowstate_infection":
+		SetGlobalNetInt( "livingPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() )
+		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )
+		SetGlobalNetInt( "squadsRemainingCount", 2 )
+		break
+		
+		case "fs_dm":
+		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
+		break
+		
+		case "fs_prophunt":
+		array<entity> propsAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
+		SetGlobalNetInt( "livingPlayerCount", propsAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", propsAlive.len() )		
+		break
+
+		case "flowstate_pkknockback":
+		array<entity> playersAlive = GetPlayerArray_Alive()
+		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
+		break
+		
+		case "fs_duckhunt":
+		array<entity> ducksAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
+		SetGlobalNetInt( "livingPlayerCount", ducksAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", ducksAlive.len() )		
+		break
+		
+		case "flowstate_snd":
+		foreach(player in GetPlayerArray())
+			Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
+		break
+		
+		default:
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )		
+		break
 	}
+
 }
 #endif
 

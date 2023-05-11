@@ -673,13 +673,13 @@ void function Dev_PrintClientMessage( float duration )
 	Announcement_SetDuration( announcement, duration )
 	Announcement_SetPurge( announcement, true )
 	
-	if( GetCurrentPlaylistName() == "custom_tdm" || GetCurrentPlaylistName() == "custom_surf" )
+	if(GameRules_GetGameMode() == "fs_dm" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_snd")
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "movement_gym" )
+	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1")
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

@@ -26,9 +26,9 @@ void function InitCharacterSkinsPanel( var panel )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_A, false, "#A_BUTTON_SELECT", "", null, CustomizeMenus_IsFocusedItem )
-	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
-	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_STICK_LEFT, false, "#MENU_ZOOM_CONTROLS_GAMEPAD", "#MENU_ZOOM_CONTROLS" )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
@@ -40,6 +40,9 @@ void function InitCharacterSkinsPanel( var panel )
 	HudElem_SetRuiArg( file.heirloomButton, "buttonText", "" )
 	HudElem_SetRuiArg( file.heirloomButton, "descText", "" )
 	Hud_AddEventHandler( file.heirloomButton, UIE_CLICK, CustomizeCharacterMenu_HeirloomButton_OnActivate )
+
+	Hud_SetVisible(file.heirloomButton, false)
+	Hud_SetVisible(Hud_GetChild( panel, "ActionButton" ), false)
 	//RegisterSignal( "PROTO_StopButtonThumbnailsThink" )
 }
 
@@ -48,32 +51,32 @@ void function CharacterSkinsPanel_OnShow( var panel )
 {
 	UI_SetPresentationType( ePresentationType.CHARACTER_SKIN )
 
-	AddCallback_OnTopLevelCustomizeContextChanged( panel, CharacterSkinsPanel_Update )
+	//AddCallback_OnTopLevelCustomizeContextChanged( panel, CharacterSkinsPanel_Update )
 	RunClientScript( "EnableModelTurn" )
-	thread TrackIsOverScrollBar( file.listPanel )
+	//thread TrackIsOverScrollBar( file.listPanel )
 	CharacterSkinsPanel_Update( panel )
 
 	//
-	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
-	CustomizeCharacterMenu_UpdateHeirloomButton()
+	//AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
+	//CustomizeCharacterMenu_UpdateHeirloomButton()
 }
 
 
 void function CharacterSkinsPanel_OnHide( var panel )
 {
-	RemoveCallback_OnTopLevelCustomizeContextChanged( panel, CharacterSkinsPanel_Update )
-	Signal( uiGlobal.signalDummy, "TrackIsOverScrollBar" )
+	//RemoveCallback_OnTopLevelCustomizeContextChanged( panel, CharacterSkinsPanel_Update )
+	//Signal( uiGlobal.signalDummy, "TrackIsOverScrollBar" )
 	RunClientScript( "EnableModelTurn" )
 	CharacterSkinsPanel_Update( panel )
 
 	//Signal( panel, "PROTO_StopButtonThumbnailsThink" )
-	RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
+	//RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
 }
 
 
 void function CharacterSkinsPanel_Update( var panel )
 {
-	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
+	/*var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
 
 	// cleanup
 	foreach ( int flavIdx, ItemFlavor unused in file.characterSkinList )
@@ -83,14 +86,14 @@ void function CharacterSkinsPanel_Update( var panel )
 	}
 	file.characterSkinList.clear()
 
-	CustomizeMenus_SetActionButton( null )
+	CustomizeMenus_SetActionButton( null )*/
 
 	RunMenuClientFunction( "ClearAllCharacterPreview" )
 
 	// setup, but only if we're active
-	if ( IsPanelActive( file.panel ) && IsTopLevelCustomizeContextValid() )
+	//if ( IsPanelActive( file.panel ) && IsTopLevelCustomizeContextValid() )
 	{
-		LoadoutEntry entry = Loadout_CharacterSkin( GetTopLevelCustomizeContext() )
+		/*LoadoutEntry entry = Loadout_CharacterSkin( GetTopLevelCustomizeContext() )
 		file.characterSkinList = GetLoadoutItemsSortedForMenu( entry, CharacterSkin_GetSortOrdinal )
 		FilterCharacterSkinList( file.characterSkinList )
 
@@ -101,9 +104,9 @@ void function CharacterSkinsPanel_Update( var panel )
 			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewCharacterSkin, CanEquipCanBuyCharacterItemCheck )
 		}
 
-		CustomizeMenus_SetActionButton( Hud_GetChild( panel, "ActionButton" ) )
+		CustomizeMenus_SetActionButton( Hud_GetChild( panel, "ActionButton" ) )*/
 
-		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterSkinList , false ) )
+		RuiSetString( file.headerRui, "collected", "0/0" ) //CustomizeMenus_GetCollectedString( entry, file.characterSkinList , false )
 	}
 }
 

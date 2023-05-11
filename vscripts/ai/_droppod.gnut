@@ -206,7 +206,9 @@ void function DropPodThreatIndicator(entity dropPod)
 #endif
 void function DropPodBeamWaitForUse(entity dropPod, vector origin, vector angles)
 {
-    dropPod.EndSignal( "OnUse" )
+	dropPod.EndSignal( "OnDestroy" )	
+	dropPod.EndSignal( "OnUse" )
+	
     entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FAR_SPAWN_FX ), origin, angles)
     
     OnThreadEnd(
@@ -454,6 +456,8 @@ function CheckPlayersIntersectingPod( pod, targetOrigin )
 
 	foreach ( player in playerList )
 	{
+		if(!IsValid(player)) continue
+		
 		local playerOrigin = player.GetOrigin()
 		if ( DistanceSqr( targetOrigin, playerOrigin ) > safeRadiusSqr )
         {
@@ -545,9 +549,10 @@ void function PushPlayerAndCreateDropPodCollision( entity pod, vector targetOrig
 		}
 	)
 
-	while ( CheckPlayersIntersectingPod( pod, targetOrigin ) )
-		wait( 0.1 )
-
+	while ( IsValid(pod) && CheckPlayersIntersectingPod( pod, targetOrigin ) )
+		WaitFrame()
+	
+	if(IsValid(pod))
 	pod.Solid()
 }
 

@@ -52,7 +52,9 @@ void function Bleedout_Init()
 
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
-	AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
+	
+	if(GameRules_GetGameMode() == SURVIVAL) //FIXME
+		AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
 
 	PrecacheParticleSystem( FX_BLOODTRAIL )
 	PrecacheParticleSystem( $"P_drone_medic_shield_beam" )
@@ -133,12 +135,12 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	file.lastAttacker[ player ] = attacker
 	
 	thread Bleedout_DeathProtection( player )
-	SetPlayerEliminated( player )
+	
+	if(GameRules_GetGameMode() != "fs_duckhunt")
+		SetPlayerEliminated( player )
+		
 	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
 	player.SetHealth( 100 )
-
-	if( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
-		player.SetPlayerNetBool( "usedSelfRevive", false )
 	
 	if( IsValid( attacker ) && attacker.IsPlayer() )
 		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
@@ -158,7 +160,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	if ( Bleedout_GetSelfResEnabled( player ) )
 		thread EnablePlayerSelfRes( player )
 	
-	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
+	if ( Bleedout_GetDeathOnTeamBleedout( player ) && GameRules_GetGameMode() != "fs_duckhunt" ) //FIXME
 		thread Bleedout_CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
@@ -168,21 +170,25 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 
 void function Bleedout_DeathProtection( entity player )
 {
-	MakeInvincible(player)
+	if (IsValid(player))
+		MakeInvincible(player)
 	wait 1.05
-	if(IsValid(player))
+	if (IsValid(player))
 		ClearInvincible(player)
 }
 
 void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
 {
+	if(!IsValid(player)) return
+		
 	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
 	bool hasPlayed = false
 
 	HolsterAndDisableWeapons( player )
 
-	while( file.isBleeding[ player ] )
+	while( IsValid(player) && file.isBleeding[ player ] )
 	{
+
 		if( player.IsOnGround() && lastPlayerVel.z <= -1000 || player.IsOnGround() && !hasPlayed )
 		{
 			thread function() : ( player )
@@ -224,13 +230,10 @@ void function PlayerDying( entity player )
 	player.SetUseDoomedAnims(true)
 	player.ForceCrouch()
 	player.SetOneHandedWeaponUsageOn()
-	float bleedoutEndTime = Time() + bleedoutTime
-	
-	WaitFrame() //This is needed so we can change killshot damage to remaining health (bleethrough perfection)
-	if(!IsValid(player)) return
-	
-	player.SetHealth( 100 )
 	BleedoutState_SetPlayerBleedoutState( player, BS_BLEEDING_OUT )
+
+	float bleedoutEndTime = Time() + bleedoutTime
+
 	entity bleedoutWp = CreateWaypoint_Bleedout( player, bleedoutEndTime )
 	player.SetPlayerNetTime( "bleedoutEndTime", bleedoutEndTime )
 
@@ -259,8 +262,6 @@ void function PlayerDying( entity player )
 		{
 			if ( IsValid( player ) )
 			{
-				BleedoutState_SetPlayerBleedoutState( player, BS_NOT_BLEEDING_OUT )
-				
 				foreach ( id in ids )
 					StatusEffect_Stop( player, id )
 
@@ -277,6 +278,8 @@ void function PlayerDying( entity player )
 				player.SetUseDoomedAnims(false)
 				player.SetOneHandedWeaponUsageOff()
 				//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_PlayerRevivedDOF" )
+
+				BleedoutState_SetPlayerBleedoutState( player, BS_NOT_BLEEDING_OUT )
 
 				DeleteWaypoint_Safe( player, bleedoutWp )
 
@@ -522,8 +525,18 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 
 	if ( selfRes )
 		healerAnimation = "mp_pt_" + toResRigWeight + "_self_revive_crouch"
-
+	
+	float playbackRate = 1.0
+	
+	
 	float firstAidTime = playerHealer.GetSequenceDuration( healerAnimation )
+	
+	if(GameRules_GetGameMode() == "fs_duckhunt")
+	{
+		playbackRate = 1.35
+		firstAidTime = firstAidTime*0.65
+	}
+	
 	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( playerHealer )
 
 	float endTime = Time() + firstAidTime
@@ -560,8 +573,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 				file.IsGivingFirstAidTo[ playerHealer ] = null
 				DestroyPlayAnimationEntityBlocker( playerHealer )
 				playerHealer.Anim_Stop()
-				playerHealer.ClearParent()				
-				// playerHealer.SnapEyesToFeet() //idk
+				playerHealer.ClearParent()
 				ClearPlayerAnimViewEntity( playerHealer )
 				DeployAndEnableWeapons( playerHealer )
 				playerHealer.MovementEnable()
@@ -581,13 +593,21 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 
 				if ( !file.isBleeding[ playerToRes ] )
 				{
-					playerToRes.ForceStand()
-
 					// hack
 					thread function() : ( playerToRes )
 					{
-						wait 0.1
+						if(!IsValid(playerToRes)) return
+						playerToRes.ForceStand()
+						WaitFrame()
+						if(!IsValid(playerToRes)) return
 						playerToRes.UnforceStand()
+						
+						if(GameRules_GetGameMode() == "fs_duckhunt")
+						{
+							Highlight_SetFriendlyHighlight( playerToRes, "prophunt_teammate" )
+							GivePassive(playerToRes, ePassives.PAS_PILOT_BLOOD)
+						}
+						BleedoutState_SetPlayerBleedoutState( playerToRes, BS_NOT_BLEEDING_OUT )
 					}()
 				}
 			}
@@ -605,7 +625,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	reviverSequence.useAnimatedRefAttachment = false
 	reviverSequence.thirdPersonCameraAttachments = ["VDU"]
 	reviverSequence.thirdPersonCameraVisibilityChecks = true
-	reviverSequence.playerPushable = false
+	reviverSequence.playerPushable = true
 	reviverSequence.snapPlayerFeetToEyes = false
 	
 	FirstPersonSequenceStruct toResSequence
@@ -631,14 +651,19 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 		PlayBattleChatterLineToSpeakerAndTeam( playerHealer, "bc_revivingPlayer" )
 		thread FirstPersonSequence( toResSequence, playerToRes, playerHealer )
 	}
-
+	
+	if(playbackRate != 1.0)
+	{
+		playerHealer.Anim_SetPlaybackRate(playbackRate)
+		playerToRes.Anim_SetPlaybackRate(playbackRate)
+	}
 	waitthread TrackContinuousUse( playerHealer, playerToRes, firstAidTime, true )
 
 	//Heal player health
 	playerToRes.SetHealth( playerToRes.GetMaxHealth() * firstAidHealPercent )
 	file.isBleeding[ playerToRes ] = false
 	file.lastAttacker[ playerToRes ] = svGlobal.worldspawn
-	if ( IsPilotEliminationBased() )
+	if ( IsPilotEliminationBased() && GameRules_GetGameMode() != "fs_duckhunt" )
 		ClearPlayerEliminated( playerToRes )
 
 	if ( IsValid( file.Callback_OnPlayerGiveFirstAid ) )
@@ -684,12 +709,22 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 {
 	if ( IsValid( attacker ) )
 	{
-		player.Die( attacker, attacker, { damageSourceId = eDamageSourceId.bleedout } )
+		try{
+			player.Die( attacker, attacker, { damageSourceId = eDamageSourceId.bleedout } )
 		//player.BecomeRagdoll( Vector(0,0,0), false )
+		}catch(e420)
+		{
+			printt("Was not fixed, debug this asap")
+		}
 	}
 	else
 	{
-		player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
+		try{
+			player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
+		}catch(e420)
+		{
+			printt("Was not fixed, debug this asap 2")
+		}
 		//player.BecomeRagdoll( Vector(0,0,0), false )
 	}
 

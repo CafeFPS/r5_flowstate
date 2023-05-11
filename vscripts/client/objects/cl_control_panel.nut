@@ -22,8 +22,8 @@ void function ClControlPanel_Init()
 	PrecacheParticleSystem( $"panel_light_red" )
 	PrecacheParticleSystem( $"runway_light_orange" )
 
-	AddCreateCallback( "prop_control_panel", CreateCallback_Panel )
-	AddDestroyCallback( "prop_control_panel", DestroyCallback_Panel )
+	//AddCreateCallback( "prop_control_panel", CreateCallback_Panel )
+	//AddDestroyCallback( "prop_control_panel", DestroyCallback_Panel )
 }
 
 void function AddPanelUpdateCallback( panel, func )

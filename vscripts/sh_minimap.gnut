@@ -74,6 +74,9 @@ global enum eMinimapObject_prop_script
 	RESPAWN_CHAMBER,
 	RESPAWN_DNA,
 	TRAIN,
+	SND_A,
+	SND_B,
+	BOMB,
 	COUNT
 }
 

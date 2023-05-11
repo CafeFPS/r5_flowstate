@@ -44,15 +44,20 @@ void function ClPlayer_Common_Precache()
 
 	PrecacheParticleSystem( SCREENFX_WARPJUMP )
 	PrecacheParticleSystem( SCREENFX_WARPJUMPDLIGHT )
-	PrecacheParticleSystem( FX_KILLSHOT_BLOODSPRAY )
+
 	PrecacheParticleSystem( FX_KILLSHOT_MECHANICAL )
 	PrecacheParticleSystem( FX_KILLSHOT_AR )
-	PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_SML )
-	PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_MED )
-	PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_LRG )
 	PrecacheParticleSystem( SHIELD_BODY_FX )
 	PrecacheParticleSystem( SHIELD_BREAK_FX )
 	PrecacheParticleSystem( SHIELD_MAX_FX )
+
+	if(GameRules_GetGameMode() != "fs_prophunt")
+	{
+		PrecacheParticleSystem( FX_KILLSHOT_BLOODSPRAY )
+		PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_SML )
+		PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_MED )
+		PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_LRG )	
+	}
 }
 
 bool function PlayHeadshotConfirmSound( entity attacker, entity victim, entity weapon, bool isKillShot )

@@ -309,6 +309,28 @@
             "viewmodel_offset_zoom_frac_start"      "0.2"
             "viewmodel_offset_zoom_frac_end"        "0.8"
 		}
+		
+		"duckhunt"
+		{
+			"reload_time"                              "2.5"
+			"reload_time_late1"                        "2.5"
+			"reload_time_late2"                        "2.5"
+			"reloadempty_time"                         "2.5"
+			"reloadempty_time_late1"                   "2.5"
+			"reloadempty_time_late2"                   "2.5"
+			"reloadempty_time_late3"                   "2.5"
+			"rechamber_time"                           "0.8"
+			
+			"zoom_time_in"                             "0.25"
+			"zoom_time_out"                            "0.25"
+			"zoom_toggle_lerp_time"		               "0.01"
+
+			"deployfirst_time"                         "0.5"
+			"deploy_time"                              "0.5"
+			"holster_time"                             "0.2"
+			"lower_time"                               "0.4"
+			"raise_time"                               "0.4"
+		}
 	}
 
 	// RUI

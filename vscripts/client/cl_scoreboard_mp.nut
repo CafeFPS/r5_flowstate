@@ -86,7 +86,7 @@ void function ClScoreboardMp_Init()
 	clGlobal.hideScoreboardFunc = HideScoreboardMP
 	clGlobal.scoreboardInputFunc = ScoreboardInputMP
 
-	RegisterConCommandTriggeredCallback( "+scriptCommand4", ScoreboardToggleFocus )
+	// RegisterConCommandTriggeredCallback( "+scriptCommand4", ScoreboardToggleFocus )
 	RegisterConCommandTriggeredCallback( "scoreboard_toggle_focus", ScoreboardToggleFocus )
 }
 
@@ -310,7 +310,7 @@ void function ScoreboardFadeOut()
 
 void function ShowScoreboardMP()
 {
-	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == "custom_aimtrainer" ) return
+	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
 		
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	

@@ -31,7 +31,52 @@ void function SpawnDoubleDoorAtCrosshair()
 	ddr.LinkToEnt( ddl )
 	DispatchSpawn(ddr)
 }
- 
+
+array<entity> dummyList;
+bool continueLoop = true;
+
+void function StartMovementRecorder(length = 10)
+{
+	//By Colombia
+	entity player = GetPlayerArray()[0]
+	vector initialpos = player.GetOrigin()
+	vector initialang = player.GetAngles()
+	player.StartRecordingAnimation(initialpos, initialang)
+	Message(player, "RECORDING MOVEMENT", "", 1.5)
+	wait length
+	file.recordingAnims.append( player.StopRecordingAnimation() )
+	var anim = file.recordingAnims[file.recordingAnims.len()-1]
+	asset playermodel = player.GetModelName()
+	WaitFrame()
+	Message(player, "PLAYING MOVEMENT", "", 1.5)
+	printt(anim) //userdata
+
+	continueLoop = true;
+	while(continueLoop)
+	{
+		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
+		dummyList.append(dummy);
+		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
+		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
+		wait GetRecordedAnimationDuration( anim )
+		if(IsValid(dummy))
+		dummy.Destroy()
+	}
+}
+
+void function DestroyDummys()
+{
+    continueLoop = false;
+
+    while (dummyList.len() > 0)
+    {
+        entity dummy = dummyList.pop();
+        if (IsValid(dummy))
+            dummy.Destroy();
+    }
+}
+
+// deprecated
 void function RecordingAnimationTest()
 {
 //By Colombia
@@ -57,6 +102,7 @@ void function RecordingAnimationTest()
 		dummy.Destroy()
 	}
 }
+
 
 void function CreateGravitationalForce( )
 {
@@ -365,19 +411,19 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 	}()
 }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     entity function CreateEditorPropZero(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1)
     {
 		//########################################
-		//d8888b. d8888b.  .d88b.  d8888b. .d8888. 
-		//88  `8D 88  `8D .8P  Y8. 88  `8D 88'  YP 
-		//88oodD' 88oobY' 88    88 88oodD' `8bo.   
-		//88~~~   88`8b   88    88 88~~~     `Y8b. 
-		//88      88 `88. `8b  d8' 88      db   8D 
+		//d8888b. d8888b.  .d88b.  d8888b. .d8888.
+		//88  `8D 88  `8D .8P  Y8. 88  `8D 88'  YP
+		//88oodD' 88oobY' 88    88 88oodD' `8bo.
+		//88~~~   88`8b   88    88 88~~~     `Y8b.
+		//88      88 `88. `8b  d8' 88      db   8D
 		//88      88   YD  `Y88P'  88      `8888Y'
-		//######################################## 		
+		//########################################
     	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
     	e.kv.fadedist = fade
 		e.kv.rendermode = 0
@@ -385,43 +431,43 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 		e.kv.solid = 6
 		e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
     	if(mantle) e.AllowMantle()
-    
+
     	if (realm > -1) {
     		e.RemoveFromAllRealms()
     		e.AddToRealm(realm)
     	}
     	string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
     	string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
-    
+
     	e.SetScriptName("editor_placed_prop")
     	e.e.gameModeId = realm
-    
+
     	//printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
-    
+
     	return e
     }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     entity function CreateEditorEntity(asset entity_name, vector pos, vector ang)
     {
 
 	  //####################################################################
-	  //d88888b d8b   db d888888b d888888b d888888b d888888b d88888b .d8888. 
-	  //88'     888o  88 `~~88~~'   `88'   `~~88~~'   `88'   88'     88'  YP 
-	  //88ooooo 88V8o 88    88       88       88       88    88ooooo `8bo.   
-	  //88~~~~~ 88 V8o88    88       88       88       88    88~~~~~   `Y8b. 
-	  //88.     88  V888    88      .88.      88      .88.   88.     db   8D 
+	  //d88888b d8b   db d888888b d888888b d888888b d888888b d88888b .d8888.
+	  //88'     888o  88 `~~88~~'   `88'   `~~88~~'   `88'   88'     88'  YP
+	  //88ooooo 88V8o 88    88       88       88       88    88ooooo `8bo.
+	  //88~~~~~ 88 V8o88    88       88       88       88    88~~~~~   `Y8b.
+	  //88.     88  V888    88      .88.      88      .88.   88.     db   8D
 	  //Y88888P VP   V8P    YP    Y888888P    YP    Y888888P Y88888P `8888Y'  Written by Zer0Bytes#4428
 	  //####################################################################
 
-      array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"] 
+      array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
       string randomWeapon = weapons[RandomInt(weapons.len())]
       entity result
-    
+
       switch (string(entity_name))  // not the best way of doing this idk
       {
-    
+
         case "npc_dummie":
         entity dummie = CreateDummy( TEAM_UNASSIGNED, pos, ang )
         SetSpawnOption_Alert(dummie)
@@ -430,7 +476,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         dummie.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
     	result = dummie
         break
-    
+
         case "npc_dummie_ignore":  // unkillable dummies
         entity ent_npc = CreateEntity( "npc_dummie" )
         SetSpawnOption_AISettings( ent_npc, "npc_dummie_combat" )
@@ -444,7 +490,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         ent_npc.SetSkin(RandomInt(6))
     	result = ent_npc
         break
-    
+
         case "ent_lootbin":
         entity ent_lootbin = CreateLootBin(pos,ang)
         SetTargetName( ent_lootbin, "LootBin" )
@@ -452,7 +498,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         ent_lootbin.SetAngles( ang )
     	result = ent_lootbin
         break
-    
+
         case "ent_singleDoor": // single door
     	entity singleDoor = CreateEntity("prop_door")
     	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
@@ -460,14 +506,14 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     	singleDoor.SetAngles( ang - <0,90,0>)
     	DispatchSpawn(singleDoor)
         break
-    
+
         case "ent_doubledoor": // double door
         entity DoorLeft = CreateEntity("prop_door")
     	DoorLeft.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
     	DoorLeft.SetAngles(ang - <0,90,0>)
     	DoorLeft.SetOrigin(pos + DoorLeft.GetRightVector() * 60)
     	DispatchSpawn(DoorLeft)
-    
+
     	entity DoorRight = CreateEntity("prop_door")
     	DoorRight.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
     	DoorRight.SetAngles(ang + <0,90,0>)
@@ -475,38 +521,38 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     	DoorRight.LinkToEnt( DoorRight )
     	DispatchSpawn(DoorRight)
         break
-    
+
         default:
         break
       }
       string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
       string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
-    
+
       //printl("[Load0_Entity]" + string(entity_name) + ";" + positionSerialized + ";" + anglesSerialized + ";")
       result.kv.fadedist = 2000
-    
+
       return result
     }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     entity function CreateEditorPilot(asset entity_name,int model_select,int anim_select,vector pos, vector ang)
     {
-        //###################################################      
-        //d8888b. d888888b db       .d88b.  d888888b .d8888. 
-        //88   8D    88'   88      .8P  Y8.  ~~88    88'  YP 
-        //88oodD'    88    88      88    88    88     8bo.   
-        //88~~~      88    88      88    88    88       Y8b. 
-        //88        .88.   88booo.  8b  d8'    88    db   8D 
-        //88      Y888888P Y88888P   Y88P'     YP     8888Y' 
-        //###################################################  Written by Zer0Bytes#4428                         
-                                                          
+        //###################################################
+        //d8888b. d888888b db       .d88b.  d888888b .d8888.
+        //88   8D    88'   88      .8P  Y8.  ~~88    88'  YP
+        //88oodD'    88    88      88    88    88     8bo.
+        //88~~~      88    88      88    88    88       Y8b.
+        //88        .88.   88booo.  8b  d8'    88    db   8D
+        //88      Y888888P Y88888P   Y88P'     YP     8888Y'
+        //###################################################  Written by Zer0Bytes#4428
+
         //defaults if nothing is selected
         array <asset> model_array = [$"mdl/humans/class/medium/pilot_medium_holo.rmdl"]
         array <string> anim_array = ["mirage_menu_lobby_center_laugh"] // can be pulled from legion and make sure to remove "_0" etc
 
         Assert( model_select, "No Model Choosen Set to 1!" )
-		
+
         switch (string(entity_name))  // not the best way of doing this idk
         {
 	        case "pilot_mirage":
@@ -522,77 +568,77 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 	                "pilot_freefall_emote_backflip"
 				]
             break
-        
+
             case "pilot_gibraltar":
                 model_array = [
 					$"mdl/humans/class/heavy/pilot_heavy_gibraltar.rmdl"
 				]
                 anim_array = ["gibraltar_menu_lobby_center_slap"]
             break
-        
+
             case "pilot_support":
                 model_array = [
 					$"mdl/humans/class/light/pilot_light_support.rmdl"
 				]
                 anim_array = ["lifeline_idle_UA_dance"]
             break
-        
+
             case "pilot_bloodhound":
                 model_array = [
 					$"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl"
 				]
                 anim_array = ["bloodhound_menu_lobby_center_pet"]
             break
-        
+
             case "pilot_bangalore":
                 model_array =[
 					$"mdl/humans/class/medium/pilot_medium_bangalore.rmdl"
 				]
                 anim_array = ["bangalore_menu_lobby_center_hair"]
             break
-        
+
             case "pilot_wraith":
                 model_array = [
 					$"mdl/humans/class/light/pilot_light_wraith.rmdl"
 				]
                 anim_array = ["wraith_menu_lobby_center_voices"]
             break
-        
+
             case "pilot_pathfinder":
                 model_array = [
 					$"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl"
 				]
                 anim_array  = ["pathfinder_menu_lobby_center_hopping"]
             break
-        
+
             case "pilot_stim":
                 model_array = [
 					$"mdl/Humans/class/medium/pilot_medium_stim.rmdl"
 				]
                 anim_array = ["octane_menu_lobby_center_leg"]
             break
-        
+
             case "pilot_wattson":
                 model_array = [
 					$"mdl/humans/class/light/pilot_light_wattson.rmdl"
 				]
                 anim_array = ["wattson_menu_lobby_center_idle"]
             break
-        
+
             case "pilot_caustic":
                 model_array = [
 					$"mdl/humans/class/heavy/pilot_heavy_caustic.rmdl"
 				]
                 anim_array = ["caustic_menu_lobby_center_recorder"]
             break
-        
+
             case "pilot_crypto":
                 model_array = [
 					$"mdl/Humans/class/medium/pilot_medium_crypto.rmdl"
 				]
                 anim_array = ["crypto_menu_lobby_center_drone"]
             break
-        
+
 		    case "npc_tick":
                 model_array = [
 				$"mdl/robots/drone_frag/drone_frag_loot.rmdl",
@@ -606,11 +652,11 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 				"sd_angry_idle",
 				"sp_suicide_spectre_explode_stand"]
             break
-		    
+
             default:
             break
         }
-        
+
         asset model
 		for (int m;m < model_array.len();m++) // go trough array
 		{
@@ -623,7 +669,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 				model = model_array[model_select - 1]
 			}
 		}
-		
+
 
         entity ent_prop = CreatePropDynamic(model,pos,ang,SOLID_VPHYSICS,30000)
         ent_prop.kv.fadedist = 30000 // lower fading
@@ -633,7 +679,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         ent_prop.kv.fadedist = 2000
         string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
         string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
-        
+
         if (anim_select != 0 )
         {
 			string anim
@@ -663,7 +709,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     			}
     			thread PlayAnim( ent_prop, anim )
                 break
-    
+
     			case 3: // small spook
     			if (string(entity_name) == "npc_tick")
     			{
@@ -671,7 +717,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     			}
     			thread PlayAnim( ent_prop, anim )
                 break
-    
+
     			case 4: // small front flip spook
     			if (string(entity_name) == "npc_tick")
     			{
@@ -679,42 +725,42 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     			}
     			thread AnimationLoop( ent_prop, anim, RotateLoopSpeed)
                 break
-                //tick end 
+                //tick end
 
 				case 5: // big boy
 				ent_prop.SetModelScale(7.0)
 				thread BigMirageRotateLoop(ent_prop,anim,RotateLoopSpeed * 8) // rotation
 				break
-	
+
 				case 6: // table smol mirages
 				ent_prop.SetModelScale(0.5)
 				thread PlayAnim( ent_prop, anim )
 				thread MiniMirageRotateLoop(ent_prop,RotateLoopSpeed) // rotation
 				break
-    
+
                 default:
                 thread PlayAnim( ent_prop, anim )
                 break
             }
         } else{  // 0 - no animation / t-pose
             //printl( "[Load0_Pilot]" + string(model) + ";" + positionSerialized + ";" + anglesSerialized + ";")
-    		
+
     	}
-    
+
     	return ent_prop
     }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     array<entity> function ent_ZipLine(vector startPos,vector endPos,bool pathfinder_model)
     {
 		//##################################################################
-		//d88888D d888888b d8888b. db      d888888b d8b   db d88888b .d8888. 
-		//YP  d8'   `88'   88  `8D 88        `88'   888o  88 88'     88'  YP 
-		//   d8'     88    88oodD' 88         88    88V8o 88 88ooooo `8bo.   
-		//  d8'      88    88~~~   88         88    88 V8o88 88~~~~~   `Y8b. 
-		// d8' db   .88.   88      88booo.   .88.   88  V888 88.     db   8D 
-		//d88888P Y888888P 88      Y88888P Y888888P VP   V8P Y88888P `8888Y' 
+		//d88888D d888888b d8888b. db      d888888b d8b   db d88888b .d8888.
+		//YP  d8'   `88'   88  `8D 88        `88'   888o  88 88'     88'  YP
+		//   d8'     88    88oodD' 88         88    88V8o 88 88ooooo `8bo.
+		//  d8'      88    88~~~   88         88    88 V8o88 88~~~~~   `Y8b.
+		// d8' db   .88.   88      88booo.   .88.   88  V888 88.     db   8D
+		//d88888P Y888888P 88      Y88888P Y888888P VP   V8P Y88888P `8888Y'
         //################################################################## Written by Zer0Bytes#4428
 
 		vector pathfinder_offset = <0,0,120>
@@ -739,7 +785,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     	entity zipline_end = CreateEntity( "zipline_end" )
     	zipline_end.kv.ZiplineAutoDetachDistance = "160"
 		entity ent_model_end
-    	
+
 		if (pathfinder_model)
 		{
 			ent_model_end = CreateEditorPropZero( PATHFINDER_ZIP_MODEL, endPos, <0,0,0>, true, 50000, -1 )
@@ -753,7 +799,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     	zipline_start.LinkToEnt( zipline_end )
     	DispatchSpawn( zipline_start )
     	DispatchSpawn( zipline_end )
-    
+
 		if (pathfinder_model)
 		{
 			ziplineEnts = [ zipline_start, zipline_end ,ent_model_start,ent_model_end]
@@ -761,25 +807,25 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 		{
 			ziplineEnts = [ zipline_start, zipline_end ]
 		}
-		    
+
     	return ziplineEnts
     }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     entity function GenerateRings(asset ring_MODEL,vector origin,float rotate_speed,float ring_size)
     {
     	//Zer0Bytes#4428
-    
+
         // #########################################
         // d8888b. d888888b d8b   db  d888b  .d8888.
         // 88   8D    88'   888o  88 88' Y8b 88'  YP
-        // 88oobY'    88    88V8o 88 88       8bo.  
+        // 88oobY'    88    88V8o 88 88       8bo.
         // 88 8b      88    88 V8o88 88  ooo    Y8b.
         // 88  88.   .88.   88  V888 88. ~8~ db   8D
         // 88   YD Y888888P VP   V8P  Y888P   8888Y'
         // ######################################### Written by Zer0Bytes#4428
-    
+
         Assert( ring_MODEL != null, "No Ring Asset Selected" )
         Assert( origin != null, "No Origin Set" )
     	int amount_rings = 2 // the amount of rings
@@ -788,12 +834,12 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     	entity ent_ring
     	for (int i;i < amount_rings;i++) // top spinning rings
     	{
-    		
+
     		origin = origin + <0,0,2048 * i + ring_size_multiplier> // modify the y
-    
+
             for (int j = 0;j < 4;j++) // side duplication
     		{
-    			switch(j) 
+    			switch(j)
     			{
     				case 0:  // 180
     				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <0,0,0>, true, -1, -1 )
@@ -827,7 +873,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-22,0,0>, true, -1, -1 )
     			    thread vRotateLoop(ent_ring,rotate_speed,false)
     				break
-    
+
     			}
     			ent_ring.NotSolid()
 
@@ -842,33 +888,33 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         }
     	return ent_ring
     }
-    
-    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-    
+
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
+
     vector wallz_oldorigin_y
     void function CreateInvisibleWall(asset MODEL,vector origin,vector angles,int amount,float spacesize)
     {
-        
+
         // ##############################################
-        // db   d8b   db   d8b   db      db      d88888D 
-        // 88   I8I   88 d8   8b 88      88      YP  d8  
-        // 88   I8I   88 88ooo88 88      88         d8   
-        // Y8   I8I   88 88   88 88      88        d8    
-        //  8b d8'8b d8  88   88 88booo  88booo   d8  db 
-        //   8b8   8d8   YP   YP Y88888P Y88888P d88888P 
+        // db   d8b   db   d8b   db      db      d88888D
+        // 88   I8I   88 d8   8b 88      88      YP  d8
+        // 88   I8I   88 88ooo88 88      88         d8
+        // Y8   I8I   88 88   88 88      88        d8
+        //  8b d8'8b d8  88   88 88booo  88booo   d8  db
+        //   8b8   8d8   YP   YP Y88888P Y88888P d88888P
         // ############################################## Written by Zer0Bytes#4428
-    
+
     	Assert( MODEL != null, "No Asset Selected" )
-    
+
         vector add_spacesize
         vector origin_y
         int check
-        origin = origin - <0,0,spacesize> 
-    
+        origin = origin - <0,0,spacesize>
+
         for (int i;i < amount;i++)
         {
-            add_spacesize = <0,0,spacesize> 
-            
+            add_spacesize = <0,0,spacesize>
+
             if(check != 0) // add to location
             {
                 origin_y = origin_y + add_spacesize // next position
@@ -878,7 +924,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
                 check = 1
             }
             entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 200, -1 )
-            
+
             ent_inviswall.kv.renderamt = 255
             ent_inviswall.kv.rendermode = 3
             ent_inviswall.kv.rendercolor = "0 0 0 50"
@@ -894,12 +940,12 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         vector add_spacesize
         vector origin_y
         int check
-        origin = origin - <0,0,spacesize> 
-    
+        origin = origin - <0,0,spacesize>
+
         for (int i;i < amount;i++)
         {
-            add_spacesize = <0,0,spacesize> 
-            
+            add_spacesize = <0,0,spacesize>
+
             if(check != 0) // add to location
             {
                 origin_y = origin_y - add_spacesize // next position
@@ -909,13 +955,13 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
                 check = 1
             }
             entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 50000, -1 )
-        
+
             wallz_oldorigin_y = origin_y
         }
         //wait 0.3
     }
 
-    void function DEV_TeleportPlayers(vector pos, vector ang) 
+    void function DEV_TeleportPlayers(vector pos, vector ang)
     {
         int playersize = GetPlayerArray().len()
         for (int i;i < playersize ;i++)
@@ -929,14 +975,14 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     		}
     	}
     }
-    
-    void function DEV_ChargePlayers() 
+
+    void function DEV_ChargePlayers()
     {
         int playersize = GetPlayerArray().len()
         for (int i;i < playersize ;i++)
     	{
             entity player = GetPlayerArray()[i]
-    
+
     		if(IsValidPlayer(player))
     		{
     			player.GetOffhandWeapon( OFFHAND_INVENTORY )
@@ -945,10 +991,10 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     			.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
                 printl("[DEV_Charger]" + player.GetTargetName() + "["+ string(i) + "]" + ";")
     		}
-    		
+
     	}
     }
-    
+
     void function DEV_StatusPlayers()
     {
         int playersize = GetPlayerArray().len()
@@ -957,7 +1003,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     		entity player = GetPlayerArray()[i]
     		if(IsValidPlayer(player))
     		{
-                
+
     		    vector origin = GetPlayerCrosshairOrigin( player )
 
                 printl("["+ player.GetTargetName() + "] ["+ string(i)  + "]-----------------------------")
@@ -970,12 +1016,12 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     }
 
     // #########################################
-    // db       .d88b.   .d88b.  d8888b. .d8888. 
-    // 88      .8P  Y8. .8P  Y8. 88  `8D 88'  YP 
-    // 88      88    88 88    88 88oodD' `8bo.   
-    // 88      88    88 88    88 88~~~     `Y8b. 
-    // 88booo. `8b  d8' `8b  d8' 88      db   8D 
-    // Y88888P  `Y88P'   `Y88P'  88      `8888Y' 
+    // db       .d88b.   .d88b.  d8888b. .d8888.
+    // 88      .8P  Y8. .8P  Y8. 88  `8D 88'  YP
+    // 88      88    88 88    88 88oodD' `8bo.
+    // 88      88    88 88    88 88~~~     `Y8b.
+    // 88booo. `8b  d8' `8b  d8' 88      db   8D
+    // Y88888P  `Y88P'   `Y88P'  88      `8888Y'
     // ######################################### Written by Zer0Bytes#4428
 
     void function RotateLoop(entity ent,float speed,bool rightside)
@@ -994,7 +1040,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         WaitFrame()
         }
     }
-    
+
     void function vRotateLoop(entity ent,float speed,bool rightside)
     {
         vector result
@@ -1012,7 +1058,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         WaitFrame()
         }
     }
-    
+
     void function AnimationLoop(entity decoy,string anim,float speed)
     {
         vector result
@@ -1060,12 +1106,12 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     // ################
 	// d88888b db    db
 	// 88'     `8b  d8'
-	// 88ooo    `8bd8' 
-	// 88~~~    .dPYb. 
+	// 88ooo    `8bd8'
+	// 88~~~    .dPYb.
 	// 88      .8P  Y8.
-	// YP      YP    YP    
+	// YP      YP    YP
     // ################ Written by Zer0Bytes#4428
-	
+
     entity function ApplyFX(asset FX,entity ent_prop)
     {
         entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), ent_prop.GetOrigin(), ent_prop.GetAngles())
@@ -1074,25 +1120,25 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
         //ent_prop.kv.rendermode = 3
         //ent_prop.kv.rendercolor = "255 0 0 50"
     	//ent_prop.kv.solid = 0 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
-    
+
         trailFXHandle.FXEnableRenderAlways()
         return trailFXHandle
     }
-    
+
     entity function CreateFX(asset FX,vector Origin,vector Angles)
     {
         entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), Origin, Angles)
         trailFXHandle.FXEnableRenderAlways()
         return trailFXHandle
     }
-    
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D
 void function DEV_SpawnLootBinAtCrosshair()
 {
 	entity player = GetPlayerArray()[ 0 ]
 
 	vector origin = GetPlayerCrosshairOrigin( player )
-	
+
 	vector org1 = origin
 	vector org2 = player.GetOrigin()
 	vector vec1 = org2 - org1
@@ -1102,7 +1148,7 @@ void function DEV_SpawnLootBinAtCrosshair()
 	entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
 	SetTargetName( ent_lootbin, "LootBin" )
 	ent_lootbin.SetOrigin( origin )
-	ent_lootbin.SetAngles( angles1 )	
+	ent_lootbin.SetAngles( angles1 )
 }
 
 void function DEV_SpawnDummyAtCrosshair()
@@ -1110,7 +1156,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	entity player = GetPlayerArray()[ 0 ]
 
 	vector origin = GetPlayerCrosshairOrigin( player )
-	
+
 	vector org2 = player.GetOrigin()
 	vector vec1 = org2 - origin
 	vector angles1 = VectorToAngles( vec1 )
@@ -1119,12 +1165,12 @@ void function DEV_SpawnDummyAtCrosshair()
 	entity dummy = CreateDummy( 99, origin, angles1 )
 	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
-	else 
+	else
 		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
-	
+
 	int randomShield = 75
 	int shieldskin = 1
-	
+
 	if(GetCurrentPlaylistVarBool( "dummies_have_random_shields", true ))
 		switch(RandomIntRangeInclusive(3,3)){
 			case 1:
@@ -1146,7 +1192,7 @@ void function DEV_SpawnDummyAtCrosshair()
 		}
 
 
-	DispatchSpawn( dummy )	
+	DispatchSpawn( dummy )
 	dummy.SetOrigin(origin)
 	dummy.SetShieldHealthMax( randomShield )
 	dummy.SetShieldHealth( randomShield )
@@ -1167,7 +1213,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	
 	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
 		thread PlayAnimOnTrainingDummy(dummy)
-	
+
     array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
     string randomWeapon = weapons[RandomInt(weapons.len())]
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
@@ -1206,7 +1252,7 @@ void function DEV_SpawnProwlerAtCrosshair()
 	entity prowler = CreateProwler( 99, origin, angles )
 
 	DispatchSpawn( prowler )
-	
+
     prowler.SetSkin(RandomInt(5))
 }
 
@@ -1292,14 +1338,14 @@ void function DEV_SpawnLegendAtCrosshair()
 	entity player = GetPlayerArray()[ 0 ]
 
 	vector origin = GetPlayerCrosshairOrigin( player )
-	
+
 	vector org2 = player.GetOrigin()
 	vector vec1 = org2 - origin
 	vector angles1 = VectorToAngles( vec1 )
 	angles1.x = 0
 
 	entity dummy
-	
+
 	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
 		dummy = CreateLegend_ai( 99, origin, angles1 )
 	else
@@ -1307,10 +1353,10 @@ void function DEV_SpawnLegendAtCrosshair()
 		dummy = CreateLegend_ai( 99, origin, angles1, true)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
-		dummy.EnableNPCFlag( NPC_IGNORE_ALL )		
+		dummy.EnableNPCFlag( NPC_IGNORE_ALL )
 	}
-	
-	DispatchSpawn( dummy )	
+
+	DispatchSpawn( dummy )
 	dummy.SetOrigin(origin)
 	dummy.SetShieldHealthMax( 25 )
 	dummy.SetShieldHealth( 25 )
