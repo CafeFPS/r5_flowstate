@@ -82,7 +82,7 @@ void function _GamemodeProphunt_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
-	SurvivalFreefall_Init() //Enables freefall/skydive
+	//SurvivalFreefall_Init() //Enables freefall/skydive
 	
 	RegisterSignal("DestroyProp")
 	RegisterSignal("EndLobbyDistanceThread")

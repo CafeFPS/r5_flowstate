@@ -184,6 +184,9 @@ global function GetSkydiveSmokeColorForTeam
 
 void function SurvivalFreefall_Init()
 {
+	if(GameRules_GetGameMode() == "fs_prophunt")
+		return
+	
 	#if SERVER
 		PrecacheParticleSystem( PLAYER_WIND_FX )
 		//PrecacheParticleSystem( SKYDIVE_SMOKE_FX )
