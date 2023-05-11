@@ -186,6 +186,8 @@ void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback t
 
 	while( file.isBleeding[ player ] )
 	{
+		if(!IsValid(player)) return
+		
 		if( player.IsOnGround() && lastPlayerVel.z <= -1000 || player.IsOnGround() && !hasPlayed )
 		{
 			thread function() : ( player )
