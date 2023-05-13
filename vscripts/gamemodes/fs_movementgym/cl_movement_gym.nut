@@ -179,7 +179,7 @@ void function MG_Speedometer(){
 					
 					playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 					
-					float playerVelNormal = playerVel * (0.091392) //KM/H
+					float playerVelNormal = playerVel * (0.06858) //KM/H
 					
 					int playerVelNormalInt = playerVelNormal.tointeger()
 					
@@ -239,7 +239,7 @@ void function MG_Speedometer(){
 						
 						playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 						
-						float playerVelNormal = playerVel * (0.091392) //KM/H
+						float playerVelNormal = playerVel * (0.06858) //KM/H
 						float playerVelBigMac = playerVelNormal * (0.621371) //MPH
 						
 						int playerVelNormalInt = playerVelNormal.tointeger()
