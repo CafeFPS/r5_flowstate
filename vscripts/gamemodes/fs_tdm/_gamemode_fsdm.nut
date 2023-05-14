@@ -2423,7 +2423,6 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-		
 			if( Time() == endTime - 900 )
 			{
 				foreach( player in GetPlayerArray() )
