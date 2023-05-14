@@ -2423,7 +2423,17 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-		
+			if( Time() == endTime - 2700 )
+			{
+				if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+					MovementGymSaveTimesToFile()
+			}
+			
+			if( Time() == endTime - 1800 )
+			{
+				if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+					MovementGymSaveTimesToFile()
+			}		
 			if( Time() == endTime - 900 )
 			{
 				foreach( player in GetPlayerArray() )
@@ -2433,6 +2443,9 @@ void function SimpleChampionUI()
 						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
 				}
+				
+				if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+					MovementGymSaveTimesToFile()
 			}
 			if( Time() == endTime - 600 )
 			{
