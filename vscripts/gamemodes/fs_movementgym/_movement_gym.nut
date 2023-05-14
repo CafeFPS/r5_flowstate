@@ -196,6 +196,8 @@ function MovementGymSaveTimesToFile() {
   DevTextBufferDumpToFile("MovementGymLogs/MovementGym_Results_" + GetUnixTimestamp() + ".txt")
 
   Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
+  file.allTimes.clear()
+  Warning("[!] allTimes array has been cleared === ")
 }
 
 //hub command
