@@ -203,6 +203,9 @@ function MovementGymSaveTimesToFile() {
 //hub command
 bool
 function ClientCommand_Hub(entity user, array < string > args) {
+  if( !IsValid(user) )
+	return false
+
   EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
   TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
   StatusEffect_StopAllOfType(user, eStatusEffect.stim_visual_effect)
@@ -238,6 +241,9 @@ function ClientCommand_Hub(entity user, array < string > args) {
 //invis toggle command
 bool
 function ClientCommand_invis(entity user, array < string > args) {
+  if( !IsValid(user) )
+	return false
+
   if (user.p.isPlayerInvisAllowed == true) {
     if (user.IsInRealm(1)) {
       user.RemoveFromAllRealms()
