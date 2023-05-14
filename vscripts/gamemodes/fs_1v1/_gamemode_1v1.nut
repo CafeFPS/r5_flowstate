@@ -1316,10 +1316,12 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			thread respawnInSoloMode(eachPlayer, index)
 		}
-		newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
-		
-		if(IsValid(GetMainRingBoundary()))
-			newGroup.ring.SetParent(GetMainRingBoundary())
+		try{
+			newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
+			
+			if(IsValid(GetMainRingBoundary()))
+				newGroup.ring.SetParent(GetMainRingBoundary())
+		}catch(e420){}
 		
 		setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
 		//realms = 0 means visible for everyone,so it should be more than 1
