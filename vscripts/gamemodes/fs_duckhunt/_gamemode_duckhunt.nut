@@ -114,7 +114,9 @@ void function _OnPlayerConnected(entity player)
 	{
 		SetTeam(player, TEAM_IMC )
 	}
-
+	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:
