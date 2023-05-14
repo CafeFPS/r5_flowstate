@@ -736,6 +736,9 @@ global struct ServerPlayerStruct
 	
 	bool isPlayerInvisAllowed = true
 	
+	float lastInvis = 0
+	float lastHub = 0
+	
 	int currentMelee = 0
 	
 	bool speedometerVisible = true
