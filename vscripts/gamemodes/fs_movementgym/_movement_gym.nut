@@ -83,6 +83,9 @@ function MovementGym() {
     WaitFrame()
     
     MovementGym_Surf_Button()
+    WaitFrame()
+    
+    thread MovementGymSaveTimesToFile_thread()
 
   }
 }
@@ -198,6 +201,14 @@ function MovementGymSaveTimesToFile() {
   Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
   file.allTimes.clear()
   Warning("[!] allTimes array has been cleared === ")
+}
+
+void
+function MovementGymSaveTimesToFile_thread() {
+	while(FlowState_EnableMovementGymLogs()){
+		wait 300
+		MovementGymSaveTimesToFile()
+	}
 }
 
 //hub command
