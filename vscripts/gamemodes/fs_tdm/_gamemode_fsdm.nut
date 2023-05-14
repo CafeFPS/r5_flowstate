@@ -560,6 +560,8 @@ void function _OnPlayerConnected(entity player)
 	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
 		thread __HighPingCheck( player )
 	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {

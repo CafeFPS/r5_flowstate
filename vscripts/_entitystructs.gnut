@@ -723,6 +723,7 @@ global struct ServerPlayerStruct
 	bool isSpectating = false
 	bool isAdmin = false
 	int ziplineUsages = 0
+	float lastmoved
 	
 	//MovementGym
 	bool isTimerActive = false

@@ -59,36 +59,9 @@ void function OnClientConnected( entity player )
 	
 	//Phase Rewind Record Positions. Colombia
 	thread RecordPositions(player)
-	
-	//Afk autokick thread. Colombia
-	if(GameRules_GetGameMode() == "fs_dm" || GameRules_GetGameMode() == "custom_ctf")
-		thread Flowstate_CheckPlayerIsAFK(player)
-	
+
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
-}
-
-void function Flowstate_CheckPlayerIsAFK(entity player)
-{
-	int finishTime
-	while(IsValid(player) && !IsAdmin(player))
-	{
-		if(player.GetVelocity().Length() == 0)
-		{
-			finishTime = int(Time()) + 180
-			while(IsValid(player) && IsAlive(player) && !player.p.isSpectating && player.GetVelocity().Length() == 0 && Time() < finishTime && GetGameState() == eGameState.Playing)
-			{
-				if(finishTime-int(Time()) == 10)
-					Message(player, "AFK ALERT", "You're afk, server will kick you if you don't move in the next 10 seconds.")
-				
-				if(finishTime-int(Time()) == 1)
-					ClientCommand( player, "disconnect" )
-			
-				wait 1
-			}
-		}
-		wait 1
-	}	
 }
 
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.

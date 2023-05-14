@@ -435,6 +435,7 @@ Scripts:
 	ai/_titan_npc_behavior.gnut
 	conversation/_conversation_schedule.gnut
 	mp/_ai_superspectre.nut
+	mp/_antiafk.nut
 	mp/_base_gametype.gnut
 	mp/_changemap.nut
 	mp/_codecallbacks.gnut
