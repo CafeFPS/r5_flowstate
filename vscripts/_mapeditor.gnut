@@ -45,14 +45,11 @@ const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
 
 void function MapEditor_Init()
 {
-    ReMapCreateJumpTower(<1400,0,0>,<0,0,0>,3000)
-    ReMapCreateJumpTower(<800,0,0>,<0,45,0>,2000)
-    ReMapCreateJumpTower(<200,0,0>,<0,90,0>,1000)
-
     PrecacheModel( BALLON_BASE_MDL )
     PrecacheModel( BALLON_MDL )
 
     MapTriggers_Init()
+    AddCallback_EntitiesDidLoad( ReMapDidLoad )
 }
 
 void function MapTriggers_Init()
@@ -100,6 +97,11 @@ void function MapTriggers_Init()
         default:
             break
     }
+}
+
+void function ReMapDidLoad()
+{
+    
 }
 
 entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float height = 2000, bool debugdraw = false)
@@ -602,7 +604,7 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     ballon_base.AllowMantle()
 
     entity ballon_top = CreateEntity( "prop_dynamic" )
-    ballon_top.SetOrigin( origin + < -2, 2.75, height > )
+    ballon_top.SetOrigin( origin + < 0, 0, height > )
     ballon_top.SetAngles( < 0, angles.y, 0 > )
     ballon_top.SetModelScale( 1 )
     ballon_top.SetValueForModelKey( BALLON_MDL )
@@ -623,11 +625,13 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
         DispatchSpawn( ent )
     }
 
-    // Need to create a zipline
+    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
+    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
 
-    entity trigger = MapEditor_CreateTrigger( origin + < -2, 2.75, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
+    MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
+
+    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, true, addToArray )
     trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
-    trigger.SetScriptName( "trigger_skydive" )
 
     DispatchSpawn( trigger )
 }
