@@ -31,6 +31,7 @@ global function GetSkydiveSmokeColorForTeam
 	global function PlayerSkydiveFromCurrentPosition
 	global function PlayerSkydiveLandingFromCurrentPosition
 	global function PlayerFallAssistanceDetection
+    global function ForcedSkydiveTriggerThink_EnterCallback
 	global function ClientCommand_StopFreefallFollowMode
 
 	const bool SKYDIVE_DEBUG = false
