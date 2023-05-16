@@ -76,6 +76,34 @@ void function DestroyDummys()
     }
 }
 
+// deprecated
+void function RecordingAnimationTest()
+{
+//By Colombia
+	entity player = GetPlayerArray()[0]
+	vector initialpos = player.GetOrigin()
+	vector initialang = player.GetAngles()
+	player.StartRecordingAnimation(initialpos, initialang)
+	Message(player, "RECORDING MOVEMENT", "", 1.5)
+	wait 5
+	file.recordingAnims.append( player.StopRecordingAnimation() )
+	var anim = file.recordingAnims[file.recordingAnims.len()-1]
+	asset playermodel = player.GetModelName()
+	WaitFrame()
+	Message(player, "PLAYING MOVEMENT", "", 1.5)
+	printt(anim) //userdata
+	while(true)
+	{
+		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
+		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
+		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
+		wait GetRecordedAnimationDuration( anim )
+		if(IsValid(dummy))
+		dummy.Destroy()
+	}
+}
+
+
 void function CreateGravitationalForce( )
 {
 	entity point_push = CreateEntity( "point_push" )

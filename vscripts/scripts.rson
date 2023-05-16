@@ -435,6 +435,7 @@ Scripts:
 	ai/_titan_npc_behavior.gnut
 	conversation/_conversation_schedule.gnut
 	mp/_ai_superspectre.nut
+	mp/_antiafk.nut
 	mp/_base_gametype.gnut
 	mp/_changemap.nut
 	mp/_codecallbacks.gnut
@@ -964,6 +965,7 @@ Scripts:
 	custom_maps/_custom_deafps_maps.nut
 	gamemodes/fs_movementgym/_movement_gym.nut
 	custom_maps/_custom_doormap.nut
+	custom_maps/_custom_grapplemap.nut
 	//map editor props
 	_place_map_editor_props_here.nut
 

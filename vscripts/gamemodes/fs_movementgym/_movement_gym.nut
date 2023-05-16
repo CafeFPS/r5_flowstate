@@ -83,6 +83,9 @@ function MovementGym() {
     WaitFrame()
     
     MovementGym_Surf_Button()
+    WaitFrame()
+    
+    thread MovementGymSaveTimesToFile_thread()
 
   }
 }
@@ -196,11 +199,27 @@ function MovementGymSaveTimesToFile() {
   DevTextBufferDumpToFile("MovementGymLogs/MovementGym_Results_" + GetUnixTimestamp() + ".txt")
 
   Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
+  file.allTimes.clear()
+  Warning("[!] allTimes array has been cleared === ")
+}
+
+void
+function MovementGymSaveTimesToFile_thread() {
+	while(FlowState_EnableMovementGymLogs()){
+		wait 300
+		MovementGymSaveTimesToFile()
+	}
 }
 
 //hub command
 bool
 function ClientCommand_Hub(entity user, array < string > args) {
+  if( !IsValid(user) )
+	return false
+
+  if(Time() - user.p.lastHub < 3)
+	return false
+
   EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
   TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
   StatusEffect_StopAllOfType(user, eStatusEffect.stim_visual_effect)
@@ -225,10 +244,13 @@ function ClientCommand_Hub(entity user, array < string > args) {
     user.AddToRealm(1)
     user.MakeVisible()
     Message(user, "You are now Visible")
+    user.p.lastInvis = Time()
   }
-
+  
   //Force Default Player Settings
   SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
+  
+  user.p.lastHub = Time()
 
   return true
 }
@@ -236,17 +258,25 @@ function ClientCommand_Hub(entity user, array < string > args) {
 //invis toggle command
 bool
 function ClientCommand_invis(entity user, array < string > args) {
+  if( !IsValid(user) )
+	return false
+
+  if(Time() - user.p.lastInvis < 3)
+	return false
+
   if (user.p.isPlayerInvisAllowed == true) {
     if (user.IsInRealm(1)) {
       user.RemoveFromAllRealms()
       user.AddToRealm(2)
       user.MakeInvisible()
       Message(user, "You are now Invisible")
+      user.p.lastInvis = Time()
     } else {
       user.RemoveFromAllRealms()
       user.AddToRealm(1)
       user.MakeVisible()
       Message(user, "You are now Visible")
+      user.p.lastInvis = Time()
     }
   } else {
     Message(user, "This action is not allowed right now")
@@ -1136,8 +1166,13 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+				}
+			}
+		}
 	  
         } else { 
 	  
@@ -1155,8 +1190,13 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+				}
+			}
+		}
 	  }
 }
     })
@@ -2128,8 +2168,13 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+				}
+			}
+		}
 	  
         } else { 
 	  
@@ -2147,8 +2192,13 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
+		if(user.IsInRealm(1)){
+			foreach(entity sPlayer in GetPlayerArray()){
+				if(sPlayer.IsInRealm(1)){
+					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
+				}
+			}
+		}
 	}
       }
     })
@@ -7773,10 +7823,6 @@ function MovementGym_Surf_Kitsune_lvl7() {
           user.p.startTime = 0
 	  
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
-	  
-	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 
         } else {
 
@@ -7792,10 +7838,6 @@ function MovementGym_Surf_Kitsune_lvl7() {
           user.p.startTime = 0
 	  
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
-	  
-	  //Send time to killfeed
-	  foreach(entity sPlayer in GetPlayerArray())
-		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
         }
       }
     })

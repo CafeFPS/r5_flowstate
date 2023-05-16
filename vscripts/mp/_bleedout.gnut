@@ -179,13 +179,16 @@ void function Bleedout_DeathProtection( entity player )
 
 void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
 {
+	if(!IsValid(player)) return
+		
 	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
 	bool hasPlayed = false
 
 	HolsterAndDisableWeapons( player )
 
-	while( file.isBleeding[ player ] )
+	while( IsValid(player) && file.isBleeding[ player ] )
 	{
+
 		if( player.IsOnGround() && lastPlayerVel.z <= -1000 || player.IsOnGround() && !hasPlayed )
 		{
 			thread function() : ( player )

@@ -104,7 +104,7 @@ struct {
 	bool mapSkyToggle = false
 	array<string> allChatLines
 	array<string> battlelog
-	string authkey = "123"
+	string authkey = ""
 } file
 
 struct
@@ -182,7 +182,7 @@ void function _CustomTDM_Init()
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
 		
-		if( GetCurrentPlaylistName() != "fs_movementgym" ){
+		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
 		
@@ -560,10 +560,12 @@ void function _OnPlayerConnected(entity player)
 	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
 		thread __HighPingCheck( player )
 	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.1")
+			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.2")
 			HolsterAndDisableWeapons(player)
 			wait 9
 			if(!IsValid(player)) return
@@ -616,7 +618,8 @@ void function isChineseServer()
 
 void function __HighPingCheck(entity player)
 {
-	wait 12
+	wait 12 //latency is always high when connecting?
+	
     if(!IsValid(player) || IsValid(player) && IsAdmin(player) ) return
 
 	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
@@ -626,16 +629,15 @@ void function __HighPingCheck(entity player)
 		HolsterAndDisableWeapons( player )
 
 		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
-
+		
 		wait 3
 
 		if(!IsValid(player)) return
-		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping!]")
-		ClientCommand( player, "disconnect" )
+		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
+		KickPlayerById( player.GetPlatformUID() )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "fs_dm"){
-		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
-		, 5)
+		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	}
 }
 
@@ -902,6 +904,8 @@ void function CheckForObservedTarget(entity player)
 	OnThreadEnd(
 		function() : ( player )
 		{
+			if( !IsValid(player) ) return
+			
 			if(IsValid(player.p.lastFrameObservedTarget))
 			{
 				player.p.lastFrameObservedTarget.SetPlayerNetInt( "playerObservedCount", max(0, player.p.lastFrameObservedTarget.GetPlayerNetInt( "playerObservedCount" ) - 1) )
@@ -2087,19 +2091,18 @@ void function SimpleChampionUI()
 			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
 		}
 
-	if (FlowState_LockPOI()) {
-		file.nextMapIndex = FlowState_LockedPOI()
-	}
-
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
-	
-	if( !FlowState_LockPOI() )
-		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
-	
-	if( FlowState_EnableMovementGym() )
+
+	if( !VOTING_PHASE_ENABLE )
 	{
 		file.selectedLocation = file.locationSettings[ choice ]
+		
+		if( FlowState_LockPOI() )
+			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
+	} else
+	{
+		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
 	}
 
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
@@ -2420,7 +2423,6 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-		
 			if( Time() == endTime - 900 )
 			{
 				foreach( player in GetPlayerArray() )
@@ -2620,13 +2622,13 @@ void function SimpleChampionUI()
 	
 	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 	
-	FS_DM.scoreboardShowing = true
-	
 	if( is1v1EnabledAndAllowed() )
 		ForceAllRoundsToFinish_solomode()
 	
 	if( SCOREBOARD_ENABLE )
 	{
+		FS_DM.scoreboardShowing = true
+		
 		foreach( player in GetPlayerArray() )
 		{
 			if( !IsValid( player ) )
@@ -2652,9 +2654,10 @@ void function SimpleChampionUI()
 			}
 		}
 		
+		FS_DM.scoreboardShowing = false
 	}
 	
-	FS_DM.scoreboardShowing = false
+	
 
 	if( VOTING_PHASE_ENABLE )
 	{

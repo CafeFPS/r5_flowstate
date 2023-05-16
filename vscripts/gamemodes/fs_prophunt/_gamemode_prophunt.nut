@@ -82,7 +82,7 @@ void function _GamemodeProphunt_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
-	SurvivalFreefall_Init() //Enables freefall/skydive
+	//SurvivalFreefall_Init() //Enables freefall/skydive
 	
 	RegisterSignal("DestroyProp")
 	RegisterSignal("EndLobbyDistanceThread")
@@ -188,7 +188,9 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
 	player.SetShieldHealth( 75 )
 	player.AllowMantle()
-			
+	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:

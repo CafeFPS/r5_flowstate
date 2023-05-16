@@ -114,7 +114,9 @@ void function _OnPlayerConnected(entity player)
 	{
 		SetTeam(player, TEAM_IMC )
 	}
-
+	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:
@@ -653,6 +655,37 @@ void function DUCKHUNT_Lobby()
 	
 	DestroyServerProps()
 	
+	bool enteredwaitingidk = false
+	
+	if(GetPlayerArray().len() < 2)
+	{
+		enteredwaitingidk = true
+
+		while( GetPlayerArray_Alive().len() < 2 )
+		{
+			foreach(player in GetPlayerArray())
+			{
+				if(!IsValid(player)) continue
+				
+				Message(player, "DUCKHUNT", "Waiting another player to start", 2, "")
+			}
+			
+			wait 5
+		}
+	}
+
+	if(enteredwaitingidk)
+	{
+		foreach(player in GetPlayerArray())
+		{
+			if(!IsValid(player)) continue
+			
+			Message(player, "DUCKHUNT", "STARTING", 3, "")
+		}
+		
+		wait 5
+	}
+
 	if(IsOdd(FS_DUCKHUNT.currentRound))
 	{
 		FS_DUCKHUNT.spawnedmap = 1

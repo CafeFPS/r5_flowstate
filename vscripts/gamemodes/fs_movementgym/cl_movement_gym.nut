@@ -179,7 +179,7 @@ void function MG_Speedometer(){
 					
 					playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 					
-					float playerVelNormal = playerVel * (0.091392) //KM/H
+					float playerVelNormal = playerVel * (0.06858) //KM/H
 					
 					int playerVelNormalInt = playerVelNormal.tointeger()
 					
@@ -196,7 +196,7 @@ void function MG_Speedometer(){
 						
 						playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 						
-						float playerVelNormal = playerVel * (0.091392) //KM/H
+						float playerVelNormal = playerVel * (0.06858) //KM/H
 						
 						int playerVelNormalInt = playerVelNormal.tointeger()
 						
@@ -220,7 +220,7 @@ void function MG_Speedometer(){
 					
 					playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 					
-					float playerVelNormal = playerVel * (0.091392) //KM/H
+					float playerVelNormal = playerVel * (0.06858) //KM/H
 					float playerVelBigMac = playerVelNormal * (0.621371) //MPH
 					
 					int playerVelNormalInt = playerVelNormal.tointeger()
@@ -239,7 +239,7 @@ void function MG_Speedometer(){
 						
 						playerVel = sqrt(playerVelV.x * playerVelV.x + playerVelV.y * playerVelV.y + playerVelV.z * playerVelV.z)
 						
-						float playerVelNormal = playerVel * (0.091392) //KM/H
+						float playerVelNormal = playerVel * (0.06858) //KM/H
 						float playerVelBigMac = playerVelNormal * (0.621371) //MPH
 						
 						int playerVelNormalInt = playerVelNormal.tointeger()
@@ -431,6 +431,12 @@ void function MG_Ultrakill_styleemeter(){
 	int timesUsedSG
 	float lastSG
 	
+	float ziptime
+	float lastzip
+	
+	int timesUsedSJ
+	float lastSJ
+	
 	float laststyletime
 	
 	float StyleBarWidth
@@ -441,7 +447,7 @@ void function MG_Ultrakill_styleemeter(){
 	Hud_SetVisible(HudElement( "MG_Style_Bar" ), true)
 	
 	Hud_SetVisible(HudElement( "MG_Style_Label" ), true)
-	Hud_SetY( HudElement( "MG_Style_Label" ), -40 )
+	//Hud_SetY( HudElement( "MG_Style_Label" ), -40 )
 	
 	Hud_SetVisible(HudElement( "MG_Style_History_Wallrun" ), true)
 	Hud_SetVisible(HudElement( "MG_Style_History_Superglide" ), true)
@@ -465,7 +471,7 @@ void function MG_Ultrakill_styleemeter(){
 				
 				
 				//airtime---------------------------------------------------------
-				if(!player.IsOnGround()){
+				if(!player.IsOnGround() && !player.ContextAction_IsZipline()){
 					airtime += 0.025
 					//if(airtime > 0.2 && airtime < 1){
 					//	stylepoints += 3.0
@@ -547,6 +553,31 @@ void function MG_Ultrakill_styleemeter(){
 					lastmantle = 0.0
 					wasmantle = false
 				}
+				
+				//SuperJump------------------------------------------------------
+				if(player.ContextAction_IsZipline() && !player.IsOnGround()){
+					ziptime += 0.025
+					lastzip = TimeNow
+				}else if(player.IsOnGround()){
+					ziptime = 0.0
+				}
+				
+				if(!player.IsOnGround() && !player.ContextAction_IsZipline() && TimeNow - lastzip <= 0.05 && ziptime <= 0.2){
+					float reward = 50.0
+					stylepoints += reward
+					laststyletime = TimeNow
+					lastSJ = TimeNow
+					timesUsedSJ++
+					string msg = "%$rui/bullet_point% Superjump ^002FFF00+" + (reward*timesUsedSJ).tostring()
+					Hud_SetText( HudElement( "MG_Style_History_Superglide" ), msg)
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Superglide" ), 255, 0, 1 )
+					EmitSoundOnEntity( player, PING_SOUND_DEFAULT )
+				}
+				
+				if (TimeNow - lastmantle > 0.25){
+					lastmantle = 0.0
+					wasmantle = false
+				}
 
 				
 				
@@ -561,7 +592,12 @@ void function MG_Ultrakill_styleemeter(){
 				}
 								
 				//reset times used-------------------------------------------------
-				if(TimeNow - lastSG > 1.5){
+				if(TimeNow - lastSJ > 1.5 && timesUsedSJ != 0 ){
+					timesUsedSJ = 0
+					Hud_FadeOverTime( HudElement( "MG_Style_History_Superglide" ), 0, 0.1, 1 )
+				}
+				
+				if(TimeNow - lastSG > 1.5 && timesUsedSG != 0){
 					timesUsedSG = 0
 					Hud_FadeOverTime( HudElement( "MG_Style_History_Superglide" ), 0, 0.1, 1 )
 				}
