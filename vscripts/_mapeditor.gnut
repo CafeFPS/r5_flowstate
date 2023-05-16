@@ -14,6 +14,7 @@ global function MapEditor_CreateButton
 global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
+global function ReMapCreateJumpTower
 global function MapEditor_RemoveAllEnts
 global function ReMapTeleportToMap
 
@@ -38,9 +39,17 @@ global enum eMapEditorDoorType
 
 global array<entity> MapEditorEnts;
 
+const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
+const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+
+
 void function MapEditor_Init()
 {
+    PrecacheModel( BALLON_BASE_MDL )
+    PrecacheModel( BALLON_MDL )
+
     MapTriggers_Init()
+    AddCallback_EntitiesDidLoad( ReMapDidLoad )
 }
 
 void function MapTriggers_Init()
@@ -90,12 +99,17 @@ void function MapTriggers_Init()
     }
 }
 
-entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float Height = 2000, bool debugdraw = false)
+void function ReMapDidLoad()
+{
+    
+}
+
+entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float height = 2000, bool debugdraw = false)
 {
     // Set up the trigger
     entity trigger = CreateEntity( "trigger_cylinder" )
     trigger.SetRadius( radius )
-    trigger.SetAboveHeight( Height )
+    trigger.SetAboveHeight( height )
     trigger.SetBelowHeight( 50 )
     trigger.SetOrigin( origin )
     trigger.SetEnterCallback(  WallTriggerEnter )
@@ -180,7 +194,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
     }
 }
 
-entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float float02 = 1, bool addToArray = false)
+entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false)
 {
     entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
     e.kv.fadedist = fade
@@ -198,7 +212,7 @@ entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantl
     
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
-    e.SetModelScale( float02 )
+    e.SetModelScale( scale )
 	e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
 	
     if(addToArray)
@@ -577,6 +591,49 @@ entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight,
     }
 
     return hint
+}
+
+void function ReMapCreateJumpTower( vector origin, vector angles, float height, bool addToArray = false )
+{
+    entity ballon_base = CreateEntity( "prop_dynamic" )
+    ballon_base.SetOrigin( origin )
+    ballon_base.SetAngles( < 0, angles.y, 0 > )
+    ballon_base.SetModelScale( 1 )
+    ballon_base.SetValueForModelKey( BALLON_BASE_MDL )
+    ballon_base.kv.solid = 6
+    ballon_base.AllowMantle()
+
+    entity ballon_top = CreateEntity( "prop_dynamic" )
+    ballon_top.SetOrigin( origin + < 0, 0, height > )
+    ballon_top.SetAngles( < 0, angles.y, 0 > )
+    ballon_top.SetModelScale( 1 )
+    ballon_top.SetValueForModelKey( BALLON_MDL )
+    ballon_top.kv.solid = 3
+
+    array < entity > ballonArr = [ ballon_base, ballon_top ]
+
+    foreach ( ent in ballonArr )
+    {
+        ent.kv.fadedist = -1
+        ent.kv.renderamt = 255
+        ent.kv.rendercolor = "255 255 255"
+        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+        ent.SetScriptName( "jump_tower" )
+
+        if( addToArray ) MapEditorEnts.append( ent )
+
+        DispatchSpawn( ent )
+    }
+
+    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
+    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
+
+    MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
+
+    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
+    trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
+
+    DispatchSpawn( trigger )
 }
 
 void function MapEditor_RemoveAllEnts()
