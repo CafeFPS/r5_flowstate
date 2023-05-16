@@ -43,7 +43,7 @@ void function AfkWarning( entity player )
 
 void function CheckAfkKickThread(entity player)
 {
-	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName )
+	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName() )
 	
 	while( true )
 	{
