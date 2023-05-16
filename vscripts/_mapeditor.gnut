@@ -625,8 +625,8 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
         DispatchSpawn( ent )
     }
 
-    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
-    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
+    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
+    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
 
     MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
 
