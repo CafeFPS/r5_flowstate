@@ -606,7 +606,7 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     ballon_top.SetAngles( < 0, angles.y, 0 > )
     ballon_top.SetModelScale( 1 )
     ballon_top.SetValueForModelKey( BALLON_MDL )
-    ballon_top.kv.solid = SOLID_VPHYSICS
+    ballon_top.kv.solid = 3
 
     array < entity > ballonArr = [ ballon_base, ballon_top ]
 
@@ -615,7 +615,6 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
         ent.kv.fadedist = -1
         ent.kv.renderamt = 255
         ent.kv.rendercolor = "255 255 255"
-        ent.kv.solid = SOLID_VPHYSICS
         ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
         ent.SetScriptName( "jump_tower" )
 
