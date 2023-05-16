@@ -630,7 +630,7 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
 
     MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
 
-    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, true, addToArray )
+    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
     trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
 
     DispatchSpawn( trigger )
