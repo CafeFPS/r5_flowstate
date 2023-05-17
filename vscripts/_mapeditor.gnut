@@ -17,6 +17,7 @@ global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
 global function MapEditor_RemoveAllEnts
 global function ReMapTeleportToMap
+global function ReMapWritePlayerInfoToFile
 
 global function ReMapSetOrigin
 global function ReMapSetAngles
@@ -758,4 +759,17 @@ void function ReMapTeleportToMap()
             player.SetVelocity( < 0, 0, 0 > )
         }
     }
+}
+
+void function ReMapWritePlayerInfoToFile()
+{
+    DevTextBufferClear()
+
+    string file = "scripts/player_info.txt"
+
+    DevTextBufferWrite( "origin = " + GetPlayerArray()[0].GetOrigin().tostring() + "\n" )
+    DevTextBufferWrite( "angles = " + GetPlayerArray()[0].GetAngles().tostring() )
+
+    DevP4Checkout( file )
+    DevTextBufferDumpToFile( file )
 }
