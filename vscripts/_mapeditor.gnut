@@ -15,7 +15,7 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
-global function MapEditor_RemoveAllEnts
+global function ReMapRemoveAllEnts
 global function ReMapTeleportToMap
 global function ReMapWritePlayerInfoToFile
 
@@ -637,7 +637,7 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     DispatchSpawn( trigger )
 }
 
-void function MapEditor_RemoveAllEnts()
+void function ReMapRemoveAllEnts()
 {
     foreach(entity ent in MapEditorEnts)
         if ( IsValid( ent ) )
