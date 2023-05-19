@@ -453,7 +453,7 @@ void function soloModefixDelayStart(entity player)
 void function setRealms_1v1(entity ent,int realmIndex)
 {
 	if(!IsValid(ent)) return
-	if(realmIndex>63)
+	if(realmIndex>62)
 	{
 		ent.AddToAllRealms()
 		return
@@ -667,7 +667,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		player.SetTakeDamageType( DAMAGE_YES )
 
 		//set realms for resting player
-		setRealms_1v1(player,64)//more than 63 means AddToAllRealms
+		setRealms_1v1(player,63)//more than 63 means AddToAllRealms
 
 		return
 	}//玩家在休息模式
@@ -1371,7 +1371,7 @@ void function ForceAllRoundsToFinish_solomode()
 			group.IsFinished = true //tell solo thread this round has finished
 		
 		soloModePlayerToWaitingList( player )
-		setRealms_1v1(player,64)
+		setRealms_1v1(player,63)
 	}
 	
 	soloPlayersInProgress.clear()
