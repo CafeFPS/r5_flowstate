@@ -453,7 +453,7 @@ void function soloModefixDelayStart(entity player)
 void function setRealms_1v1(entity ent,int realmIndex)
 {
 	if(!IsValid(ent)) return
-	if(realmIndex>62)
+	if(realmIndex>63)
 	{
 		ent.AddToAllRealms()
 		return
@@ -982,6 +982,8 @@ void function _soloModeInit(string mapName)
 			
 			return //不在休息队列中不能使用观战功能
 		}
+		else
+			setRealms_1v1(player,64)
 
 
 	    try
