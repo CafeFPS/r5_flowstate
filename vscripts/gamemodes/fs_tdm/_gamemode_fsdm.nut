@@ -3602,9 +3602,10 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
     if ( !IsValid(player) || !IsAdmin(player) || args.len() == 0 ) return false
 
     foreach(sPlayer in GetPlayerArray()) {
-        if (sPlayer.GetPlayerName() == args[0]) {
-            Warning("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
-            ClientCommand( sPlayer, "disconnect" )
+        if (sPlayer.GetPlayerName() == args[0]) 
+		{
+			Warning("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + ":" + sPlayer.GetPlatformUID() + " -> [By Admin!]")
+			KickPlayerById( sPlayer.GetPlatformUID() )
             return true
         }
     }
