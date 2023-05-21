@@ -1961,6 +1961,9 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
+		
+		if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
+			return
 
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
 		{
@@ -1977,16 +1980,13 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 		if ( trigger.IsTeslaTrapObstructed() )
 			return
 
-		if ( start.GetTeam() != crossingEnt.GetTeam() )
+		if ( !TrippedEntIsFriendly( crossingEnt, start ) )
+		{
 			return
+		}
 
-		// if ( !TrippedEntIsFriendly( crossingEnt, start ) )
-		// {
-			// return
-		// }
-
-		// if ( !TrippedEntIsFriendlyObstructionType( crossingEnt ) )
-			// return
+		if ( !TrippedEntIsFriendlyObstructionType( crossingEnt ) )
+			return
 
 		trigger.SetObstructedEndTime( Time() + 0.4 )
 
@@ -2346,7 +2346,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			trigger.kv.triggerFilterUseNew = 1
 
 			SetTeam( trigger, player.GetTeam() )
-
+			
+			trigger.e.teslaTrapTriggerCreationTime = Time()
 			DispatchSpawn( trigger )
 		}
 

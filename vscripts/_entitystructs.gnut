@@ -444,6 +444,7 @@ global struct ServerEntityStruct
 	//wattson q
 	bool isLinked = false
 	array<entity> attachedTriggersToPole
+	float teslaTrapTriggerCreationTime
 }
 
 global struct MeritData
