@@ -2008,27 +2008,7 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 	
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
-		
-		//Trigger does not detect doors :c so this is not working
-		if ( crossingEnt.GetNetworkedClassName() == "prop_door" || crossingEnt.GetScriptName() == "survival_door_plain" )
-		{
-			vector doorAlong = -crossingEnt.GetRightVector()
-			vector doorPerp = crossingEnt.GetForwardVector()
-			vector doorUp = crossingEnt.GetUpVector()
-			vector effectDir
-			if ( DotProduct( doorPerp, trigger.GetForwardVector() ) > 0 )
-				effectDir = doorPerp
-			else
-				effectDir = -doorPerp
 
-			vector doorCenter = crossingEnt.GetOrigin() + 30.0 * doorAlong + 54.0 * doorUp
-
-			StartParticleEffectInWorld( GetParticleSystemIndex( $"P_door_breach" ), doorCenter, VectorToAngles( trigger.GetForwardVector() ) )
-			EmitSoundAtPosition( TEAM_ANY, crossingEnt.GetOrigin(), "Door_Impact_Break" )
-			crossingEnt.Destroy()
-			return
-		}
-		
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
 		{
 			if(crossingEnt.IsPlayer() && Time() > crossingEnt.p.lastTimeAppliedEMPByTeslaTrap + TESLA_TRAP_LINK_DAMAGE_INTERVAL_UPDATE )
@@ -2441,7 +2421,65 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 		
 		if( !attachTo.IsLinkedToEnt(poleFence) )
 			attachTo.LinkToEnt(poleFence)
+		
+		thread TeslaTrap_TracesToCheckForOtherEntities(trigger, attachTo, poleFence)
 	}
+}
+
+void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity start, entity end)
+{
+	wait TESLA_TRAP_ACTIVATE_DELAY
+	
+	entity ownerPlayer = trigger.GetOwner()
+	
+	while(IsValid(trigger))
+	{
+		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+			
+		//doors
+		if( IsValid( hResult.hitEnt ) && hResult.hitEnt.GetNetworkedClassName() == "prop_door" )
+		{
+			entity door = hResult.hitEnt
+
+			TraceResults hResult2 = TraceHull( end.GetOrigin() + Vector(0,0,50), start.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+			
+			entity door2
+			if( IsValid( hResult2.hitEnt ) && hResult2.hitEnt.GetNetworkedClassName() == "prop_door" )
+				door2 = hResult2.hitEnt
+			
+			wait 0.1
+			
+			if(IsValid(door))
+				TeslaTrap_DoorDestroy( trigger, door )
+			
+			if(IsValid(door2))
+				TeslaTrap_DoorDestroy( trigger, door2 )
+			
+			continue
+		}
+		
+		wait 0.1
+	}
+}
+
+void function TeslaTrap_DoorDestroy(entity trigger, entity door)
+{
+	if( !IsValid(door) ) return
+	
+	vector doorAlong = -door.GetRightVector()
+	vector doorPerp = door.GetForwardVector()
+	vector doorUp = door.GetUpVector()
+	vector effectDir
+	if ( DotProduct( doorPerp, trigger.GetForwardVector() ) > 0 )
+		effectDir = doorPerp
+	else
+		effectDir = -doorPerp
+
+	vector doorCenter = door.GetOrigin() + 30.0 * doorAlong + 54.0 * doorUp
+
+	StartParticleEffectInWorld( GetParticleSystemIndex( $"P_door_breach" ), doorCenter, VectorToAngles( trigger.GetForwardVector() ) )
+	EmitSoundAtPosition( TEAM_ANY, door.GetOrigin(), "Door_Impact_Break" )	
+	door.Destroy()
 }
 
 const float FENCE_SEVERITY_SLOWTURN 				= 0.35
