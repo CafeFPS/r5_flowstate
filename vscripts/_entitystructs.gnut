@@ -440,6 +440,11 @@ global struct ServerEntityStruct
 	
 	//Idk
 	bool testOpen = false
+	
+	//wattson q
+	bool isLinked = false
+	array<entity> attachedTriggersToPole
+	float teslaTrapTriggerCreationTime
 }
 
 global struct MeritData
@@ -883,6 +888,10 @@ global struct ServerPlayerStruct
 	
 	string snd_knifecolor = "255, 255, 255"
 	
+	//wattson q
+	float lastTimeDamagedByTeslaTrap
+	float lastTimeAppliedEMPByTeslaTrap
+  
 	float lastTgiveUsedTime
 }
 

@@ -114,6 +114,8 @@ global function OnWeaponPrimaryAttack_GenericBoltWithDrop_NPC
 global function OnWeaponPrimaryAttack_GenericMissile_NPC
 global function EMP_DamagedPlayerOrNPC
 global function EMP_FX
+global function EMPGrenade_ArcBeam
+global function EMPGrenade_EffectsPlayer
 global function GetWeaponDPS
 global function GetTTK
 global function GetWeaponModsFromDamageInfo
@@ -307,6 +309,8 @@ void function WeaponUtility_Init()
 			AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
 			AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, EMP_DamagedPlayerOrNPC )
 		}
+		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, EMP_DamagedPlayerOrNPC )
+		
 		AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
 		AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
 		AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
@@ -3748,9 +3752,12 @@ void function EMPGrenade_EffectsPlayer( entity player, var damageInfo )
 	float fadeoutDuration = EMP_GRENADE_PILOT_SCREEN_EFFECTS_FADE * frac
 	float duration        = EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN + ((EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MAX - EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN) * frac) - fadeoutDuration
 	//vector origin = inflictor.GetOrigin()
-
+	
 	int dmgSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
+	
+	if( dmgSource == eDamageSourceId.mp_weapon_tesla_trap )
+		duration = 3
+	
 	if ( player.IsTitan() )
 	{
 		// Hit player should do EMP screen effects locally
