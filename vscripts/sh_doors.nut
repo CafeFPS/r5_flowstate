@@ -964,30 +964,6 @@ void function OnCodeDoorUsed( entity door, entity player, int useInputFlags )
 	#if MP
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.DOOR_USE, door, door.GetWorldSpaceCenter(), player.GetTeam(), player )
 	#endif
-	
-	// array<entity> triggers = GetEntArrayByScriptName( "tesla_trap_trigger" )
-	
-	
-	// entity crossingEnt = door
-
-	// if ( crossingEnt.GetNetworkedClassName() == "prop_door" || crossingEnt.GetScriptName() == "survival_door_plain" )
-	// {
-		// vector doorAlong = -crossingEnt.GetRightVector()
-		// vector doorPerp = crossingEnt.GetForwardVector()
-		// vector doorUp = crossingEnt.GetUpVector()
-		// vector effectDir
-		// if ( DotProduct( doorPerp, player.GetForwardVector() ) > 0 )
-			// effectDir = doorPerp
-		// else
-			// effectDir = -doorPerp
-
-		// vector doorCenter = crossingEnt.GetOrigin() + 30.0 * doorAlong + 54.0 * doorUp
-
-		// StartParticleEffectInWorld( GetParticleSystemIndex( $"P_door_breach" ), doorCenter, VectorToAngles( player.GetForwardVector() ) )
-		// EmitSoundAtPosition( TEAM_ANY, crossingEnt.GetOrigin(), "Door_Impact_Break" )
-		// crossingEnt.Destroy()
-		// return
-	// }
 }
 
 void function BlockableDoorThink( entity door )
