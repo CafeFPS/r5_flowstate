@@ -19,7 +19,7 @@ void function ClInitFallingForever() {
     file.infoRuis.append( file.timerRui )
 
     // Button Prompts
-    AddInputHint( "%zoom%", "%offhand4% Save Available Checkpoint" )
+    // AddInputHint( "%zoom%", "%offhand4% Save Available Checkpoint" )
     AddInputHint( "%attack%", "Restore to Current Checkpoint" )
     AddInputHint( "%use%", "Restore to Previous Checkpoint" )
     AddInputHint( "%reload%", "Complete Restart" )

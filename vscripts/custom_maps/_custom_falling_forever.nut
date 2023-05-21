@@ -88,7 +88,7 @@ void function InitPlayerFallingForever( entity player ) {
     mapData.playerFiles[player] <- file
     
     // Teleport player to the map start
-    player.SetOrigin( <7422, 3817, 55300> )
+    player.SetOrigin( <7422, 3700, 55300> )
 	player.SetAngles( <0, 90, 0> )
 	player.KnockBack( <0, 0, -100>, 0.1 )
 
@@ -300,7 +300,11 @@ void function StopRecording( entity player ) {
 
 	file.history = []
 	file.isPending = true
+
 	EnableCheckpointAvailability( player )
+
+	// Autosave Checkpoint
+	JustSave( player )
 }
 
 void function printCheckpoints( entity player ) {
@@ -331,41 +335,59 @@ void function RestoreCheckpoint( entity player, RecordingData animData, string m
 
     Message( player, message, "", animDuration + 1 )
 
-	// player.FreezeControlsOnServer()
-	player.SetThirdPersonShoulderModeOn()
+	// Set third person settings
+	player.SetTrackEntityDistanceMode("scriptOffset")
+	player.SetTrackEntityShouldViewAnglesFollowTrackedEntity(true)
+	player.SetTrackEntityOffsetDistance(150)
+	player.SetTrackEntityLookaheadMaxAngle(90)
+	player.SetTrackEntityLookaheadLerpAheadRate(10)
+	player.SetTrackEntityMinYaw(-180)
+	player.SetTrackEntityMaxYaw(180)
+	player.SetTrackEntityMinPitch(-90)
+	player.SetTrackEntityMaxPitch(90)
+	player.SetTrackEntityOffsetHeight( player.EyePosition().z - player.GetOrigin().z )
 
-    // Teleport them to the top of the map, to raise their max climb height.
+	// Have them start watching a dummy
+	asset playermodel = player.GetModelName()
+	entity dummy = CreatePropDynamic( playermodel, pos, ang, SOLID_BBOX, 99999 )
+
+	dummy.PlayRecordedAnimation( anim, pos, ang, 0 )
+	dummy.SetRecordedAnimationPlaybackRate( 0 )
+
+	player.SetAngles( ang ) // Set angle so they are facing the right direction.
+	player.SetTrackEntity(dummy)
+
+    // Meanwhile, teleport the player to the top of the map, to reset their max climb height.
 	player.SetOrigin( <7422, 3817, 55300> )
 	player.KnockBack( <0, 0, -100>, 0.1 )
 
-	wait 0.2 // So they touch the ground.
+	wait 0.75 // Small wait to allow player to gain bairings in spectator
+	dummy.SetRecordedAnimationPlaybackRate( 1 )
 
-    // Teleport them again to lower their climb height to what it was.
+	wait ( animDuration - 1.5 )
+
+	// "Countdown" to regaining control
+	player.SetTrackEntityOffsetDistance(100)
+	wait 0.3
+	player.SetTrackEntityOffsetDistance(50)
+	wait 0.3
+	player.SetTrackEntityOffsetDistance(20)
+	wait 0.3
+	player.SetTrackEntityOffsetDistance(0)
+
+	// Set player max climb height
 	player.KnockBack( <0, 0, 1000>, 0.1 )
 	player.SetOrigin( <7422, 3817, animData.restoreHeight> )
 
 	WaitFrame()
 
-    // Lots of magic numbers to make it feel right
-	player.PlayRecordedAnimation( anim, pos, ang, 0 )
-	player.SetRecordedAnimationPlaybackRate( 0 )
+	// Remove third person
+	player.SetTrackEntity( player )
+	dummy.Destroy()
+	player.SetTrackEntity( null )
 
-	wait 0.75
-
-	player.SetRecordedAnimationPlaybackRate( 1 )
-
-	wait ( animDuration - 1.35 )
-	player.SetThirdPersonShoulderModeOff()
-	wait 1.05
-	player.SetRecordedAnimationPlaybackRate( 100 )
-	player.ClearParent()
-	// player.UnfreezeControlsOnServer()
-
-	WaitFrame()
-
-    // Set their true vel, pos & ang.
+	// Set full final restore state
 	player.SetOrigin( animData.restoreState.pos )
-	player.SetAngles( animData.restoreState.ang )
 	player.KnockBack( animData.restoreState.vel, 0.1 )
 	file.minHeight = animData.restoreHeight
 
@@ -406,13 +428,13 @@ void function RestoreToStart( entity player ) {
 	DisableCheckpointAvailability( player )
     file.minHeight = 999999
     file.history = []
-    file.resetCount += 1
+    file.resetCount = 0
 
 	file.started = false
 
     file.checkpoints = []
 
-    player.SetOrigin( <7422, 3817, 55300> )
+    player.SetOrigin( <7422, 3700, 55300> )
 	player.SetAngles( <0, 90, 0> )
 	player.KnockBack( <0, 0, -100>, 0.1 )
 }
@@ -470,7 +492,7 @@ void function FallingForeverMapFinish( entity player ) {
 			timeMessage = format("%d m %0.1f s", minutes, seconds )
 		}
 
-		Message( player, format("Time: %s\nCPs Set %d\nResets %d.", timeMessage, file.checkpoints.len(), file.resetCount), "", 5 )
+		Message( player, format("Time: %s\nResets %d.", timeMessage, file.resetCount), "", 5 )
 
 		file.started = false
 	}
