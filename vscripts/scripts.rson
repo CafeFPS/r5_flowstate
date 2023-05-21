@@ -966,6 +966,8 @@ Scripts:
 	gamemodes/fs_movementgym/_movement_gym.nut
 	custom_maps/_custom_doormap.nut
 	custom_maps/_custom_grapplemap.nut
+	custom_maps/_custom_falling_forever.nut
+
 	//map editor props
 	_place_map_editor_props_here.nut
 
@@ -985,6 +987,8 @@ Scripts:
 	gamemodes/fs_duckhunt/cl_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
 	lobby/lobbyvm/cl_lobbyvm.nut
+
+	custom_maps/cl_custom_falling_forever.nut
 ]
 
 
