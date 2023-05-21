@@ -15,10 +15,11 @@
 // DONE snapTo is not reloaded properly after placing a pole, but if you holster then activate ability again it snaps correctly
 // DONE damage happens every 4 ticks?, emp applys every tick of fence damage
 // DONE improve kill pole logic, in retail it uses dissolve and the prop script is converted to "tesla_trap_dead" while is being destroyed
+// DONE doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
 
-// doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
 // fix minimap
 // add to player realms
+// fix ai (dummies) detection + damage + visuals
 
 untyped
 
