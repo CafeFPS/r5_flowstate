@@ -3654,7 +3654,7 @@ void function EMP_FX( asset effect, entity ent, string tag, float duration )
 	int attachId = ent.LookupAttachment( tag )
 
 	entity fxHandle = StartParticleEffectOnEntity_ReturnEntity( ent, fxId, FX_PATTACH_POINT_FOLLOW, attachId )
-	fxHandle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	fxHandle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY
 	fxHandle.SetOwner( ent )
 
 	OnThreadEnd(
