@@ -946,10 +946,14 @@ void function OnCodeDoorSpawned( entity door )
 	door.SetHealth( door.GetMaxHealth() )
 	door.SetTakeDamageType( DAMAGE_YES )
 	door.SetDamageNotifications( true )
+	
+	door.EnableAttackableByAI( AI_PRIORITY_NO_THREAT, 0, AI_AP_FLAG_NONE ) 
+	door.SetTouchTriggers( true )
+	
 	AddEntityCallback_OnPostDamaged( door, BlockableDoor_OnDamage )
 	SetObjectCanBeMeleed( door, true )
 	SetVisibleEntitiesInConeQueriableEnabled( door, true )
-
+	
 	AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 
 	AddCallback_OnUseEntity( door, OnCodeDoorUsed )
@@ -957,9 +961,9 @@ void function OnCodeDoorSpawned( entity door )
 
 void function OnCodeDoorUsed( entity door, entity player, int useInputFlags )
 {
-#if MP
+	#if MP
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.DOOR_USE, door, door.GetWorldSpaceCenter(), player.GetTeam(), player )
-#endif
+	#endif
 }
 
 void function BlockableDoorThink( entity door )

@@ -2,9 +2,23 @@ untyped
 
 globalize_all_functions
 
-struct{
-	array<var> recordingAnims
-}file
+void function StartRunningForward(entity player)
+{
+	OnThreadEnd(
+		function() : ( player )
+		{
+			ClientCommand(player, "-speed")
+			ClientCommand(player, "-forward")
+		}
+	)
+	
+	while(IsAlive(player))
+	{
+		ClientCommand(player, "+speed")
+		ClientCommand(player, "+forward")
+		WaitFrame()
+	}
+}
 
 void function SpawnDoubleDoorAtCrosshair()
 {
@@ -31,78 +45,6 @@ void function SpawnDoubleDoorAtCrosshair()
 	ddr.LinkToEnt( ddl )
 	DispatchSpawn(ddr)
 }
-
-array<entity> dummyList;
-bool continueLoop = true;
-
-void function StartMovementRecorder(length = 10)
-{
-	//By Colombia
-	entity player = GetPlayerArray()[0]
-	vector initialpos = player.GetOrigin()
-	vector initialang = player.GetAngles()
-	player.StartRecordingAnimation(initialpos, initialang)
-	Message(player, "RECORDING MOVEMENT", "", 1.5)
-	wait length
-	file.recordingAnims.append( player.StopRecordingAnimation() )
-	var anim = file.recordingAnims[file.recordingAnims.len()-1]
-	asset playermodel = player.GetModelName()
-	WaitFrame()
-	Message(player, "PLAYING MOVEMENT", "", 1.5)
-	printt(anim) //userdata
-
-	continueLoop = true;
-	while(continueLoop)
-	{
-		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
-		dummyList.append(dummy);
-		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
-		wait GetRecordedAnimationDuration( anim )
-		if(IsValid(dummy))
-		dummy.Destroy()
-	}
-}
-
-void function DestroyDummys()
-{
-    continueLoop = false;
-
-    while (dummyList.len() > 0)
-    {
-        entity dummy = dummyList.pop();
-        if (IsValid(dummy))
-            dummy.Destroy();
-    }
-}
-
-// deprecated
-void function RecordingAnimationTest()
-{
-//By Colombia
-	entity player = GetPlayerArray()[0]
-	vector initialpos = player.GetOrigin()
-	vector initialang = player.GetAngles()
-	player.StartRecordingAnimation(initialpos, initialang)
-	Message(player, "RECORDING MOVEMENT", "", 1.5)
-	wait 5
-	file.recordingAnims.append( player.StopRecordingAnimation() )
-	var anim = file.recordingAnims[file.recordingAnims.len()-1]
-	asset playermodel = player.GetModelName()
-	WaitFrame()
-	Message(player, "PLAYING MOVEMENT", "", 1.5)
-	printt(anim) //userdata
-	while(true)
-	{
-		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
-		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
-		wait GetRecordedAnimationDuration( anim )
-		if(IsValid(dummy))
-		dummy.Destroy()
-	}
-}
-
 
 void function CreateGravitationalForce( )
 {
