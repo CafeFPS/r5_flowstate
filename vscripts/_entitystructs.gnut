@@ -891,6 +891,8 @@ global struct ServerPlayerStruct
 	//wattson q
 	float lastTimeDamagedByTeslaTrap
 	float lastTimeAppliedEMPByTeslaTrap
+  
+	float lastTgiveUsedTime
 }
 
 global struct ChallengeScore

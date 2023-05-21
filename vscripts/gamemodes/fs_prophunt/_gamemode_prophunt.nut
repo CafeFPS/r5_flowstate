@@ -189,7 +189,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	player.SetShieldHealth( 75 )
 	player.AllowMantle()
 	
-	thread Flowstate_InitAFKThreadForPlayer(player)
+	//thread Flowstate_InitAFKThreadForPlayer(player)
 	
 	switch(GetGameState())
     {

@@ -424,8 +424,6 @@ void function ServerCallback_OpenStatisticsUI()
 
 void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 {
-	if( GetLocalViewPlayer() != GetLocalClientPlayer() ) return
-	
 	if(shouldOpen)
 	{
 		//try { GetLocalClientPlayer().ClearMenuCameraEntity(); GetWinnerPropCameraEntities()[0].ClearParent(); GetWinnerPropCameraEntities()[0].Destroy(); GetWinnerPropCameraEntities()[1].Destroy() } catch (exceptio2n){ }

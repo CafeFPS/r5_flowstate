@@ -993,6 +993,7 @@ When: "SERVER"
 Scripts:
 [
 	freelance/_freelance.gnut
+	mp/_movement_recorder.nut
 ]
 
 
