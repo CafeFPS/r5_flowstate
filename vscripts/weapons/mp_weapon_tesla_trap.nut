@@ -436,8 +436,6 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 	
 	#if SERVER		
 		thread Flowstate_CreateTeslaTrap(weapon, model, placementInfo)
-		// TODO: only play this line the first time place places her fence per tac use
-		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 	#endif 
 		
 	PlayerUsedOffhand( ownerPlayer, weapon, true, null, {pos = placementInfo.origin} )
@@ -1769,7 +1767,7 @@ void function ClientCodeCallback_TeslaTrapLinked( entity trigger, entity start, 
 	if ( !IsValid( trigger ) ) //
 		return
 
-	printt("New fence created!")
+	//printt("New fence created!")
 	
 	thread TeslaTrap_CreateClientTeslaTrapEffects( trigger, start, end )
 }
@@ -2004,7 +2002,7 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 	if( !IsValid( crossingEnt ) || !IsValid( trigger ) )
 		return
 	
-	printt("fence is being crossed by " + crossingEnt)
+	//printt("fence is being crossed by " + crossingEnt)
 	
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
@@ -2369,7 +2367,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 		
 		if( direction == 1 )
 		{
-			printt( "va hacia abajo" )
+			//printt( "va hacia abajo" )
 			spawnOrigin = poleFence.GetOrigin()
 			trigger.SetParent( poleFence )
 			trigger.SetTeslaLink( poleFence, attachTo, Vector(0,0,1), 100 )
@@ -2377,7 +2375,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 		}
 		else if( direction == -1 )
 		{
-			printt( "va hacia arriba" )
+			//printt( "va hacia arriba" )
 			spawnOrigin = attachTo.GetOrigin()
 			trigger.SetParent( attachTo )
 			trigger.SetTeslaLink( attachTo, poleFence, Vector(0,0,1), 100 )
@@ -2431,10 +2429,12 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 	wait TESLA_TRAP_ACTIVATE_DELAY
 	
 	entity ownerPlayer = trigger.GetOwner()
-		
+	
 	if( !IsValid(trigger) || !IsValid(ownerPlayer) )
 		return
-
+	
+	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
+	
 	while(IsValid(trigger))
 	{
 		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
