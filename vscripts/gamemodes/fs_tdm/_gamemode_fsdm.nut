@@ -3811,7 +3811,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		Message(player, "ABILITY BLACKLISTED")
 		return false
 	}
-
+	
+	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
+	{
+		Message(player, "TGIVE COOLDOWN")
+		return false
+	}
 	entity weapon
 
 	try {
@@ -3870,7 +3875,10 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
     }
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() )
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
-
+	
+	player.p.lastTgiveUsedTime = Time()
+	player.ClearFirstDeployForAllWeapons()
+	
     return true
 }
 
