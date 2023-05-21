@@ -9,6 +9,10 @@ void function RemoteFunctions_Init_Begin()
 {
 	Remote_BeginRegisteringFunctions()
 	_RegisteringFunctions = true
+
+	// Falling Forever Custom Timer
+	Remote_RegisterClientFunction("ServerCallback_SetTimer", "float", 0.0, 999999.0, 32)
+<<<<<<< HEAD
 	
 	//Minimap Toggle
 	Remote_RegisterClientFunction("Minimap_EnableDraw_Internal")
