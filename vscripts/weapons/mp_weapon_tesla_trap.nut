@@ -20,6 +20,7 @@
 // fix minimap
 // add to player realms
 // fix ai (dummies) detection + damage + visuals
+// check if trap is obstructed before destroying doors?
 
 untyped
 
@@ -118,7 +119,7 @@ const float TESLA_TRAP_REACTIVATE_DELAY = 0.4
 const float TESLA_TRAP_CONE_HEIGHT_OFFSET = 24.0
 
 const float TESLA_TRAP_LINK_HEIGHT = 24.0
-const float TESLA_TRAP_LINK_DIST = 768.0       
+const float TESLA_TRAP_LINK_DIST = 768.0
 const float TESLA_TRAP_LINK_CANCEL_DIST = 1024.0
 const float TESLA_TRAP_LINK_SNAP_DIST = 98.0
 const float TESLA_TRAP_LINK_DIST_SQR = TESLA_TRAP_LINK_DIST * TESLA_TRAP_LINK_DIST
@@ -152,7 +153,7 @@ const float TESLA_TRAP_LINK_TRIGGER_RADIUS = 96.0
 const float TESLA_TRAP_PING_VO_DBOUNCE = 6.0
 const float TESLA_TRAP_LINK_VO_DBOUNCE = 3
 const float TESLA_TRAP_PLACEMENT_END_VO_DBOUNCE = 15.0
-const float TESLA_TRAP_CONSIDERED_FAR_DIST = 2953      
+const float TESLA_TRAP_CONSIDERED_FAR_DIST = 2953
 
 const bool TESLA_TRAP_DEBUG_DRAW = false
 const bool TESLA_TRAP_DEBUG_DRAW_PLACEMENT = false
@@ -160,7 +161,7 @@ const bool TESLA_TRAP_DEBUG_DRAW_GROUND_CLAMP_PLACEMENT = false
 const bool TESLA_TRAP_DEBUG_DRAW_GROUND_CLEARANCE = false
 const bool TESLA_TRAP_DEBUG_DRAW_POST_INTERSECTION = false
 
-const int TESLA_TRAP_TRACE_MASK = TRACE_MASK_SHOT & ~TRACE_MASK_WATER
+const int TESLA_TRAP_TRACE_MASK = TRACE_MASK_SHOT & ~TRACE_MASK_WATER | TRACE_MASK_NPCWORLDSTATIC
 
 enum eDeployLinkFlags
 {
@@ -194,7 +195,7 @@ struct TeslaTrapPlayerPlacementData
 	int    maxLinks
 	vector viewOrigin
 	vector viewForward
-	vector playerOrigin 
+	vector playerOrigin
 	vector playerForward
 
 }
@@ -228,7 +229,7 @@ struct
 
 	entity                       			proxyEnt
 	array<entity>                       	allTraps
-	
+
 	#if CLIENT
 		table< int, array< int > >			linkFXs_client
 		table< int, entity >				linkAGs_client
@@ -237,7 +238,7 @@ struct
 		table< entity, var >				trapRui
 		table< entity, TrapMinimapData >	trapMinimapData
 		float								proxyBaseOffset = -1.0
-	#endif             
+	#endif
 
 	array<string> parentToRoot = [
 		"_hover_tank_interior"
@@ -271,7 +272,7 @@ void function MpWeaponTeslaTrap_Init()
 	#if SERVER
 	RegisterSignal( "TeslaTrap_PlayerCrossed" )
 	RegisterSignal( "StopAnimThreadForPole" )
-	
+
 	AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, Fence_DamagedPlayerOrNPC )
 	#endif
 
@@ -293,7 +294,7 @@ void function MpWeaponTeslaTrap_Init()
 
 		AddCallback_PlayerClassActuallyChanged( TeslaTrap_OnPlayerClassChanged )
 		AddCallback_OnPlayerChangedTeam( TeslaTrap_OnPlayerTeamChanged )
-	#endif         
+	#endif
 
 	RegisterSignal( "TeslaTrap_StopFocalTrapUpdate" )
 	file.balance_teslaTrapRange	= GetCurrentPlaylistVarFloat( "tesla_trap_range_override", TESLA_TRAP_PLACEMENT_RANGE_MAX_UPDATE )
@@ -368,7 +369,7 @@ void function OnWeaponOwnerChanged_weapon_tesla_trap( entity weapon, WeaponOwner
 			thread TeslaTrap_TrackFocalTrapForPlayer( changeParams.newOwner )
 			thread TeslaTrap_UpdateHudMarkers( changeParams.newOwner )
 		}
-	#endif         
+	#endif
 }
 
 bool function OnWeaponAttemptOffhandSwitch_weapon_tesla_trap( entity weapon )
@@ -380,16 +381,10 @@ bool function OnWeaponAttemptOffhandSwitch_weapon_tesla_trap( entity weapon )
 		return false
 
 	entity player = weapon.GetWeaponOwner()
-	if ( player.IsPhaseShifted() )
+	if ( player.IsPhaseShifted() || player.IsZiplining() )
 		return false
 
-	if ( player.IsZiplining() )
-		return false
-
-	asset model  = TESLA_TRAP_PROXY_MODEL
-	entity proxy = TeslaTrap_CreateTrapPlacementProxy( model )
-
-	TeslaTrap_UpdateFocalNodeForPlayer( ownerPlayer, proxy )
+	TeslaTrap_UpdateFocalNodeForPlayer( ownerPlayer, TeslaTrap_CreateTrapPlacementProxy( TESLA_TRAP_PROXY_MODEL ) )
 
 	if ( weapon == ownerPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) )
 		return true //
@@ -409,15 +404,32 @@ bool function OnWeaponAttemptOffhandSwitch_weapon_tesla_trap( entity weapon )
 	return true
 }
 
+bool function Placement_IsHitEntScriptedPlaceable( entity hitEnt, int depth )
+{
+	if ( hitEnt.IsWorld() )
+		return false
+
+	var hitEntClassname = hitEnt.GetNetworkedClassName()
+	if ( hitEntClassname == "func_brush" || hitEntClassname == "script_mover" || hitEntClassname == "func_brush_lightweight" )
+		return true
+
+	//if ( ALLOWED_SCRIPT_PARENT_ENTS.contains( hitEnt.GetScriptName() ) )
+	//{
+	//	return true
+	//}
+
+	if ( depth > 0  && IsValid( hitEnt.GetParent() ))
+		return Placement_IsHitEntScriptedPlaceable( hitEnt.GetParent(), depth - 1 )
+
+	return false
+}
+
 var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 	Assert( ownerPlayer.IsPlayer() )
 
-	asset model = TESLA_TRAP_PROXY_MODEL
-
-	entity proxy                         = TeslaTrap_CreateTrapPlacementProxy( model )
-	TeslaTrapPlacementInfo placementInfo = TeslaTrap_GetPlacementInfo( ownerPlayer, proxy )
+	TeslaTrapPlacementInfo placementInfo = TeslaTrap_GetPlacementInfo( ownerPlayer, TeslaTrap_CreateTrapPlacementProxy( TESLA_TRAP_PROXY_MODEL ) )
 	TeslaTrap_PlacementInfoScriptChecks( ownerPlayer, placementInfo )
 
 	if ( !placementInfo.success )
@@ -434,11 +446,11 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 
 		return 0
 	}
-	
-	#if SERVER		
-		thread Flowstate_CreateTeslaTrap(weapon, model, placementInfo)
-	#endif 
-		
+
+	#if SERVER
+		thread Flowstate_CreateTeslaTrap(weapon, TESLA_TRAP_PROXY_MODEL, placementInfo)
+	#endif
+
 	PlayerUsedOffhand( ownerPlayer, weapon, true, null, {pos = placementInfo.origin} )
 
 	if ( IsValid( placementInfo.snapTo ) )
@@ -456,6 +468,7 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 	else
 		return weapon.GetAmmoPerShot()
 }
+
 void function TeslaTrap_PlacementInfoScriptChecks( entity player, TeslaTrapPlacementInfo placementInfo )
 {
 	bool canSnap = TelsaTrap_AttemptSnapToNeighbor( player, placementInfo.origin, placementInfo )
@@ -470,6 +483,7 @@ void function TeslaTrap_PlacementInfoScriptChecks( entity player, TeslaTrapPlace
 		}
 	}
 }
+
 TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfo( entity player, entity proxy, bool ignorePlacedTraps = false, int maxFallbacks = 3 )
 {
 	if ( IsValid( file.framePlacementInfo ) )
@@ -509,8 +523,8 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfo( entity player, entit
 	vector upEnd	= upStart - <0, 0, 44.0>
 	upResults = TraceHull( upStart, upEnd, TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE, <0, 0, 1>, player )
 
-	vector roofTraceStart = eyePos                                                    
-	vector roofTraceEnd = ( upResults.endPos + <0, 0, 12.0> ) - ( <viewVec.x, viewVec.y, 0> * 4.0 )                                                                                                      
+	vector roofTraceStart = eyePos
+	vector roofTraceEnd = ( upResults.endPos + <0, 0, 12.0> ) - ( <viewVec.x, viewVec.y, 0> * 4.0 )
 	TraceResults roofTraceResults = TraceLine( roofTraceStart, roofTraceEnd, ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE, player )
 	if ( roofTraceResults.fraction < 1.0 )
 	{
@@ -570,12 +584,11 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfoFromTraceResults( enti
 			isUpTraced = true
 		}
 	}
-	                                                           
+
 	if ( !isUpTraced && IsValid( hullTraceResults.hitEnt ) )
 		isScriptedPlaceable = Placement_IsHitEntScriptedPlaceable( hullTraceResults.hitEnt, 1 )
 
 	bool success = isUpTraced || ( !hullTraceResults.startSolid && hullTraceResults.fraction < 1.0 && (hullTraceResults.hitEnt.IsWorld() || isScriptedPlaceable) )
-
 
 	entity parentTo
 	if ( IsValid( hullTraceResults.hitEnt ) && (hullTraceResults.hitEnt.GetNetworkedClassName() == "func_brush" || hullTraceResults.hitEnt.GetNetworkedClassName() == "script_mover" || hullTraceResults.hitEnt.GetNetworkedClassName() == "func_brush_lightweight") )
@@ -613,7 +626,7 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfoFromTraceResults( enti
 		surfaceAngles = angles
 		success = false
 	}
-	
+
 	if ( !isUpTraced )
 	{
 		if ( success && !TeslaTrap_PlayerReachPos( player, player.EyePosition(), hullTraceResults.endPos, true, 90, ignoreEnts ) )
@@ -693,7 +706,6 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfoFromTraceResults( enti
 		proxyTestPos = hullTraceResults.endPos
 		proxyTestAngles = surfaceAngles
 
-		           
 		TraceResults traceResult = TraceLine( proxyTestPos + (hullTraceResults.surfaceNormal * 2), proxyTestPos + (hullTraceResults.surfaceNormal * -2), ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE, player )
 		if ( traceResult.fraction == 1.0 )
 		{
@@ -739,9 +751,8 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfoFromTraceResults( enti
 
 bool function TeslaTrap_PlayerReachPos( entity player, vector startPos, vector targetPos, bool doTrace, float degrees, array<entity> ignoreEnts )
 {
-	float minDot = deg_cos( degrees )
-	float dot    = DotProduct( Normalize( targetPos - startPos ), player.GetViewVector() )
-	if ( dot < minDot )
+	float dot = DotProduct( Normalize( targetPos - startPos ), player.GetViewVector() )
+	if ( dot < deg_cos( degrees ) )
 		return false
 
 	if ( doTrace )
@@ -774,7 +785,7 @@ bool function TelsaTrap_AttemptSnapToNeighbor( entity player, vector origin, Tes
 
 	entity focalTrap = TeslaTrap_GetFocalTrapForPlayer( player )
 	entity focalTrapParent = focalTrap.GetParent()
-	
+
 	if ( IsValid( focalTrapParent ) )
 	{
 		while ( IsValid( focalTrapParent.GetParent() ) )
@@ -784,8 +795,7 @@ bool function TelsaTrap_AttemptSnapToNeighbor( entity player, vector origin, Tes
 	entity closestTrap
 	float closestDist = TESLA_TRAP_PLACEMENT_SPACING_MIN_SQR
 
-	array<entity> traps = TeslaTrap_GetAllLinkable(player)
-	foreach ( entity trap in traps )
+	foreach ( entity trap in TeslaTrap_GetAllLinkable( player ) )
 	{
 		if ( trap == focalTrap )
 			continue
@@ -795,16 +805,16 @@ bool function TelsaTrap_AttemptSnapToNeighbor( entity player, vector origin, Tes
 			continue
 
 		entity trapParent = trap.GetParent()
-		
-		                  
+
+
 		if ( IsValid( focalTrapParent ) )
 		{
 			if ( !IsValid( trapParent ) )
 				continue
-			
+
 			while ( IsValid( trapParent.GetParent() ) )
 				trapParent = trapParent.GetParent()
-			
+
 			if ( trapParent != focalTrapParent )
 				continue
 		}
@@ -855,6 +865,7 @@ entity function TeslaTrap_CreateTrapPlacementProxy( asset modelName )
 		#else
 			entity proxy = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, modelName )
 		#endif
+
 		proxy.kv.renderamt = 255
 		proxy.kv.rendermode = 3
 		proxy.kv.rendercolor = "255 255 255 255"
@@ -904,9 +915,7 @@ void function TeslaTrap_OnBeginPlacement( entity player, int statusEffect, bool 
 	if ( player != GetLocalViewPlayer() )
 		return
 
-	asset model = TESLA_TRAP_PROXY_MODEL
-
-	thread TeslaTrap_PlacementProxy( player, model )
+	thread TeslaTrap_PlacementProxy( player, TESLA_TRAP_PROXY_MODEL )
 }
 
 void function TeslaTrap_OnEndPlacement( entity player, int statusEffect, bool actuallyChanged )
@@ -1104,7 +1113,7 @@ entity function TeslaTrap_CalculateFocalTrap( entity player, entity trap )
 			viewExcluded++
 			continue
 		}
-		
+
 		TeslaTrapSortingData sortingData = file.trapSortingData[ otherTrap ]
 		sortingData.sortingRating = viewRating
 		sortingData.distSqr = Distance2DSqr( placementData.playerOrigin, otherTrap.GetOrigin() )
@@ -1114,7 +1123,7 @@ entity function TeslaTrap_CalculateFocalTrap( entity player, entity trap )
 
 	if ( !filteredTraps.len() )
 		return null
-	
+
 	filteredTraps.sort( TeslaTrap_LinkTrapSort )
 
 	TeslaTrapPlacementInfo placementInfo = TeslaTrap_GetPlacementInfo( player, trap, true, 0 )
@@ -1141,19 +1150,16 @@ void function TeslaTrap_TrackFocalTrapForPlayer( entity player )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
 
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || player != GetLocalViewPlayer())
 		return
 
-	if ( player != GetLocalViewPlayer() )
-		return
 
 	player.Signal( "TeslaTrap_StopFocalTrapUpdate" )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "TeslaTrap_StopFocalTrapUpdate" )
 
-	asset model  = TESLA_TRAP_PROXY_MODEL
-	entity proxy = TeslaTrap_CreateTrapPlacementProxy( model )
+	entity proxy = TeslaTrap_CreateTrapPlacementProxy( TESLA_TRAP_PROXY_MODEL )
 
 	while ( true )
 	{
@@ -1170,9 +1176,7 @@ void function TeslaTrap_UpdateFocalNodeForPlayer( entity player, entity proxy )
 	if ( IsValid( focalTrap ) )
 	{
 		if ( TeslaTrap_GetAll().contains( focalTrap ) )
-		{
 			TeslaTrap_SetFocalTrapForPlayer( player, focalTrap )
-		}
 	}
 	else
 	{
@@ -1186,9 +1190,7 @@ void function TeslaTrap_OnPlayerTeamChanged( entity player, int oldTeam, int new
 	foreach( array<int>fxIDs in file.linkFXs_client )
 	{
 		foreach( int fxID in fxIDs )
-		{
 			EffectWake( fxID )
-		}
 	}
 }
 #endif
@@ -1230,26 +1232,22 @@ bool function TeslaTrap_PlayerHasFocalTrap( entity player )
 
 	return false
 	#endif
-	
+
 	#if SERVER
-	return player.GetPlayerNetEnt("focalTrap") != null ? true : false 
+	return player.GetPlayerNetEnt("focalTrap") != null ? true : false
 	#endif
 }
 
 entity function TeslaTrap_GetFocalTrapForPlayer( entity player )
 {
-	#if CLIENT
-	entity focalTrap = null
-	if ( player in file.focalTrap )
-	{
-		focalTrap = file.focalTrap[ player ]
-	}
-
-	return focalTrap
-	#endif
-	
 	#if SERVER
 	return player.GetPlayerNetEnt("focalTrap")
+	#elseif CLIENT
+	entity focalTrap = null
+	if ( player in file.focalTrap )
+		focalTrap = file.focalTrap[ player ]
+
+	return focalTrap
 	#endif
 }
 
@@ -1360,75 +1358,38 @@ bool function TeslaTrap_CanUse( entity player, entity ent )
 
 array<entity> function TeslaTrap_GetAll()
 {
-	#if SERVER
-		array<entity> allTraps = file.allTraps
-		return allTraps
-	#elseif CLIENT
-		array<entity> allTraps = file.allTraps
-		return allTraps
-	#endif
+	return file.allTraps
 }
 
 array<entity> function TeslaTrap_GetAllLinkable(entity player)
 {
-	#if SERVER
-		array<entity> allTraps = file.allTraps
-		array<entity> linkableTraps
-		foreach ( entity trap in allTraps )
-		{
-			if( !IsValid(trap))
-				continue
-			
-			if ( !trap.DoesShareRealms( player ) )
-				continue
-			
-			linkableTraps.append(trap)
-		}
-		return linkableTraps
-	#elseif CLIENT
-		array<entity> allTraps = file.allTraps
-		array<entity> linkableTraps
-		foreach ( entity trap in allTraps )
-		{
-			if( !IsValid(trap))
-				continue
-			
-			if ( !trap.DoesShareRealms( player ) )
-				continue
-			
-			linkableTraps.append(trap)
-		}
-		return linkableTraps
-	#endif
+	array<entity> linkableTraps
+	foreach ( entity trap in file.allTraps )
+	{
+		if( !IsValid(trap) )
+			continue
+
+		if ( !trap.DoesShareRealms( player ) )
+			continue
+
+		linkableTraps.append(trap)
+	}
+
+	return linkableTraps
 }
 
 array<entity> function TeslaTrap_GetAllDead()
 {
-	#if SERVER
-		array<entity> allTraps = file.allTraps
-		array<entity> deadTraps
-		foreach ( entity trap in allTraps )
-		{
-			if( !IsValid(trap))
-				continue
-			
-			if ( trap.GetScriptName() == "tesla_trap_dead" )
-				deadTraps.append( trap )
-		}
-		return deadTraps
-	#elseif CLIENT
-		array<entity> allTraps = file.allTraps
-		array<entity> deadTraps
-		foreach ( entity trap in allTraps )
-		{
-			if( !IsValid(trap))
-				continue
-			
-			if ( trap.GetScriptName() == "tesla_trap_dead" )
-				deadTraps.append( trap )
-		}
-		return deadTraps
-	#endif
+	array<entity> deadTraps
+	foreach ( entity trap in file.allTraps )
+	{
+		if( !IsValid(trap) )
+			continue
+
+		if ( trap.GetScriptName() == "tesla_trap_dead" )
+			deadTraps.append( trap )
+	}
+	return deadTraps
 }
 
 #if CLIENT
@@ -1447,13 +1408,11 @@ void function TeslaTrap_MaxDistanceAutoCancelUpdate( entity player )
 	{
 		if ( TeslaTrap_PlayerHasFocalTrap( player ) )
 		{
-			entity focalTrap                     = TeslaTrap_GetFocalTrapForPlayer( player )
-			float playerDistSqr                    = DistanceSqr( focalTrap.GetOrigin(), player.GetOrigin() )
-			if ( playerDistSqr >= (TESLA_TRAP_LINK_CANCEL_DIST * TESLA_TRAP_LINK_CANCEL_DIST) )
+			entity focalTrap = TeslaTrap_GetFocalTrapForPlayer( player )
+			if ( DistanceSqr( focalTrap.GetOrigin(), player.GetOrigin() ) >= (TESLA_TRAP_LINK_CANCEL_DIST * TESLA_TRAP_LINK_CANCEL_DIST) )
 			{
 				TeslaTrapPlacementInfo placementInfo = TeslaTrap_GetPlacementInfo( player, proxy, false, 0 )//
-				float trapDistSqr                    = DistanceSqr( focalTrap.GetOrigin(), placementInfo.origin )
-				if ( trapDistSqr >= (TESLA_TRAP_LINK_CANCEL_DIST * TESLA_TRAP_LINK_CANCEL_DIST) )
+				if ( DistanceSqr( focalTrap.GetOrigin(), placementInfo.origin ) >= (TESLA_TRAP_LINK_CANCEL_DIST * TESLA_TRAP_LINK_CANCEL_DIST) )
 					player.ClientCommand( "invnext" )
 			}
 		}
@@ -1505,23 +1464,25 @@ void function TeslaTrap_OnPropScriptCreated( entity ent )
 	switch ( ent.GetScriptName() )
 	{
 		case TESLA_TRAP_NAME:
-			TeslaTrapSortingData sortingData
-			file.trapSortingData[ ent ] <- sortingData
-
-			CreateTrapMinimapData( ent )
-
-			file.allTraps.append( ent )
-			thread TeslaTrap_CreateHUDMarker( ent )
-			AddEntityCallback_GetUseEntOverrideText( ent, TeslaTrap_UseTextOverride )
-			SetCallback_CanUseEntityCallback( ent, TeslaTrap_CanUse )
-
-			//doesn't look like a good way to do this but it works for now. Colombia
-			if(ent.GetOwner() == GetLocalClientPlayer())
 			{
-				TeslaTrap_ClearFocalTrapForPlayer( GetLocalClientPlayer() )
-				TeslaTrap_SetFocalTrapForPlayer( GetLocalClientPlayer(), ent )
+				TeslaTrapSortingData sortingData
+				file.trapSortingData[ ent ] <- sortingData
+
+				CreateTrapMinimapData( ent )
+
+				file.allTraps.append( ent )
+				thread TeslaTrap_CreateHUDMarker( ent )
+				AddEntityCallback_GetUseEntOverrideText( ent, TeslaTrap_UseTextOverride )
+				SetCallback_CanUseEntityCallback( ent, TeslaTrap_CanUse )
+
+				//doesn't look like a good way to do this but it works for now. Colombia
+				if(ent.GetOwner() == GetLocalClientPlayer())
+				{
+					TeslaTrap_ClearFocalTrapForPlayer( GetLocalClientPlayer() )
+					TeslaTrap_SetFocalTrapForPlayer( GetLocalClientPlayer(), ent )
+				}
+				break
 			}
-			break
 	}
 }
 
@@ -1531,6 +1492,7 @@ void function TeslaTrap_OnPropScriptDestroyed( entity ent )
 
 	if ( file.allTraps.contains( ent ) )
 		file.allTraps.fastremovebyvalue( ent )
+
 	if ( ent in file.trapSortingData )
 		delete file.trapSortingData[ ent ]
 }
@@ -1571,10 +1533,9 @@ void function TeslaTrap_CreateHUDMarker( entity trap )
 	if ( !TeslaTrap_ShouldShowIcon( localClientPlayer, trap ) )
 		return
 
-	int attachment = trap.LookupAttachment( "REF" )
 	vector pos     = trap.GetOrigin() + (trap.GetUpVector() * TESLA_TRAP_ICON_HEIGHT)
 	var rui        = CreateCockpitRui( $"ui/tesla_trap_marker_icons.rpak", 0 )
-	RuiTrackFloat3( rui, "pos", trap, RUI_TRACK_POINT_FOLLOW, attachment )
+	RuiTrackFloat3( rui, "pos", trap, RUI_TRACK_POINT_FOLLOW, trap.LookupAttachment( "REF" ) )
 	RuiSetBool( rui, "linkMode", false )
 	RuiTrackInt( rui, "teamRelation", trap, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
 	RuiKeepSortKeyUpdated( rui, true, "pos" )
@@ -1599,7 +1560,6 @@ void function TeslaTrap_CreateHUDMarker( entity trap )
 
 void function TeslaTrap_UpdateHudMarkers( entity localClientPlayer )
 {
-
 	localClientPlayer.Signal( "TeslaTrap_StopHudIconUpdate" )
 	localClientPlayer.EndSignal( "OnDestroy" )
 	localClientPlayer.EndSignal( "TeslaTrap_StopHudIconUpdate" )
@@ -1690,13 +1650,14 @@ void function TeslaTrap_UpdateHudMarkers( entity localClientPlayer )
 bool function TeslaTrap_ShouldShowIcon( entity localPlayer, entity trapProxy )
 {
 	return false
-	
-	// if ( !GamePlayingOrSuddenDeath() )
-		// return false
-	// if ( IsEnemyTeam( localPlayer.GetTeam(), trapProxy.GetTeam() ) )
-		// return false
 
-	// return true
+	if ( !GamePlayingOrSuddenDeath() )
+		return false
+	
+	if ( IsEnemyTeam( localPlayer.GetTeam(), trapProxy.GetTeam() ) )
+		return false
+
+	return true
 }
 
 string function TeslaTrap_UseTextOverride( entity ent )
@@ -1707,9 +1668,7 @@ string function TeslaTrap_UseTextOverride( entity ent )
 		return "#WPN_DIRTY_BOMB_NO_INTERACTION"
 
 	if ( player == ent.GetOwner() )
-	{
 		return ""
-	}
 
 	return "#WPN_DIRTY_BOMB_NO_INTERACTION"
 }
@@ -1768,8 +1727,10 @@ void function ClientCodeCallback_TeslaTrapLinked( entity trigger, entity start, 
 	if ( !IsValid( trigger ) ) //
 		return
 
-	//printt("New fence created!")
-	
+	#if DEVELOPER
+		printt("New fence created! : " + start + " -> " + end)
+	#endif
+
 	thread TeslaTrap_CreateClientTeslaTrapEffects( trigger, start, end )
 }
 
@@ -1778,7 +1739,7 @@ void function TeslaTrap_CreateClientTeslaTrapEffects( entity trigger, entity sta
 	EndSignal( trigger, "OnDestroy" )
 	EndSignal( start, "OnDestroy" )
 	EndSignal( end, "OnDestroy" )
-	
+
 	int finalBeamCount = int( 100 / TESLA_TRAP_LINK_HEIGHT )
 
 	if ( finalBeamCount == 0 )
@@ -1876,13 +1837,10 @@ void function RefreshTrapTriggerMinimapConnection( entity trap )
 
 void function UpdateTrapTriggerMinimapConnection( entity trigger, bool isVisible )
 {
-
 	entity startTrap = trigger.GetTeslaTrapStart()
 
 	if ( !( startTrap in file.trapMinimapData ) )
-	{
 		return
-	}
 
 	foreach ( index, _trigger in file.trapMinimapData[ startTrap ].triggerArray )
 	{
@@ -1914,7 +1872,6 @@ void function ClientCodeCallback_TeslaTrapVisibilityChanged( entity trigger, ent
 
 		if ( triggerFXID in file.linkAGs_client )
 		{
-			                                
 			entity ambientGeneric = file.linkAGs_client[ triggerFXID ]
 
 			if ( IsValid( ambientGeneric ) )
@@ -1961,7 +1918,7 @@ void function ClientCodeCallback_TeslaTrapVisibilityChanged( entity trigger, ent
 	{
 		foreach( int fxID in file.linkFXs_client[triggerFXID] )
 			EffectStop( fxID, false, true )
-		
+
 		file.linkFXs_client[triggerFXID] <- []
 
 		if ( triggerFXID in file.linkAGs_client )
@@ -1972,13 +1929,11 @@ void function ClientCodeCallback_TeslaTrapVisibilityChanged( entity trigger, ent
 		}
 	}
 }
-#endif              
+#endif
 
 bool function TrippedEntIsFriendly( entity crossingEnt, entity trapStart )
 {
-	int trapTeam = trapStart.GetTeam()
-	
-	if ( IsFriendlyTeam( crossingEnt.GetTeam(), trapTeam ) )
+	if ( IsFriendlyTeam( crossingEnt.GetTeam(), trapStart.GetTeam() ) )
 		return true
 
 	// if ( crossingEnt == trapStart.GetOwner() )
@@ -1989,12 +1944,9 @@ bool function TrippedEntIsFriendly( entity crossingEnt, entity trapStart )
 
 bool function TrippedEntIsFriendlyObstructionType( entity crossingEnt )
 {
-	if ( crossingEnt.IsPlayer() )
+	if ( crossingEnt.IsPlayer() || crossingEnt.IsPlayerDecoy() )
 		return true
-	
-	if ( crossingEnt.IsPlayerDecoy() )
-		return true
-	
+
 	return false
 }
 
@@ -2002,9 +1954,11 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 {
 	if( !IsValid( crossingEnt ) || !IsValid( trigger ) )
 		return
-	
-	//printt("fence is being crossed by " + crossingEnt)
-	
+
+	#if DEVELOPER
+		printt("fence is being crossed by " + crossingEnt )
+	#endif
+
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
 
@@ -2016,27 +1970,24 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 				crossingEnt.p.lastTimeAppliedEMPByTeslaTrap = Time()
 			}
 		}
-		else
-		{
-			trigger.SetObstructedEndTime( Time() + 0.4 )
-		}
+		else trigger.SetObstructedEndTime( Time() + 0.4 )
 	#endif
 
 	#if CLIENT
 		if ( trigger.IsTeslaTrapObstructed() )
 			return
-		
+
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
 			return
-		
+
 		// if ( !TrippedEntIsFriendly( crossingEnt, start ) )
 		// {
 			// return
 		// }
-		
+
 		// if ( !TrippedEntIsFriendlyObstructionType( crossingEnt ) )
 			// return
-			
+
 		trigger.SetObstructedEndTime( Time() + 0.4 )
 
 		UpdateTrapTriggerMinimapConnection( trigger, false )
@@ -2057,7 +2008,7 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 			entity ambientGeneric = file.linkAGs_client[ triggerFXID ]
 			ambientGeneric.SetEnabled( false )
 		}
-	#endif              
+	#endif
 }
 
 bool function TeslaTrap_AreTrapsLinked( entity mainTrap, entity otherTrap )
@@ -2072,10 +2023,7 @@ bool function TeslaTrap_AreTrapsLinked( entity mainTrap, entity otherTrap )
 }
 bool function TeslaTrap_CanLink_ObjectPlacer( vector trapPos, vector trapUp, entity otherTrap, TeslaTrapPlacementInfo placementInfo )
 {
-	if ( otherTrap.GetScriptName() == "tesla_trap_dead" )
-		return false
-
-	if ( otherTrap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX )
+	if ( otherTrap.GetScriptName() == "tesla_trap_dead" || otherTrap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX )
 		return false
 
 	if ( placementInfo.deployLinkState != eDeployLinkFlags.DLF_NONE )
@@ -2084,15 +2032,15 @@ bool function TeslaTrap_CanLink_ObjectPlacer( vector trapPos, vector trapUp, ent
 	entity otherParent = otherTrap.GetParent()
 	entity parentOfParent = placementInfo.parentTo
 
-	
+
 	if ( IsValid( parentOfParent ) )
 	{
 		if ( !IsValid( otherParent ) )
 			return false
-		
+
 		while ( IsValid( otherParent.GetParent() ) )
 			otherParent = otherParent.GetParent()
-		
+
 		while ( IsValid( parentOfParent.GetParent() ) )
 			parentOfParent = parentOfParent.GetParent()
 
@@ -2107,11 +2055,8 @@ bool function TeslaTrap_CanLink_ObjectPlacer( vector trapPos, vector trapUp, ent
 	vector otherOrigin = otherTrap.GetOrigin()
 	float distSqr = DistanceSqr( trapPos, otherOrigin )
 
-	if ( distSqr > TESLA_TRAP_LINK_DIST_SQR )
-		return false
-
 	int beamCount = TeslaTrap_GetLinkLOSBeamCount( trapPos, trapUp, otherOrigin, otherTrap.GetUpVector(), null, otherTrap )
-	if ( beamCount < TESLA_TRAP_LINK_FX_MIN )
+	if ( beamCount < TESLA_TRAP_LINK_FX_MIN  || distSqr > TESLA_TRAP_LINK_DIST_SQR)
 		return false
 
 	if ( TeslaTrap_IsLinkAngleTooSteep( trapPos, otherTrap ) )
@@ -2124,16 +2069,10 @@ bool function TeslaTrap_CanLink_ObjectPlacer( vector trapPos, vector trapUp, ent
 }
 bool function TeslaTrap_CanLink( entity trap, vector trapPos, vector trapUp, entity otherTrap, TeslaTrapPlacementInfo placementInfo )
 {
-	if ( trap == otherTrap )
+	if ( trap == otherTrap || otherTrap.GetScriptName() == "tesla_trap_dead" )
 		return false
 
-	if ( otherTrap.GetScriptName() == "tesla_trap_dead" )
-		return false
-
-	if ( otherTrap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX )
-		return false
-
-	if ( trap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX )
+	if ( otherTrap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX || trap.GetLinkEntArray().len() >= TESLA_TRAP_LINK_COUNT_MAX)
 		return false
 
 	if ( placementInfo.deployLinkState != eDeployLinkFlags.DLF_NONE )
@@ -2142,9 +2081,7 @@ bool function TeslaTrap_CanLink( entity trap, vector trapPos, vector trapUp, ent
 	entity otherParent = otherTrap.GetParent()
 	if ( IsValid( placementInfo.parentTo ) )
 	{
-		if ( IsValid( otherParent ) && otherParent != placementInfo.parentTo )
-			return false
-		else if ( !IsValid( otherParent ) )
+		if ( IsValid( otherParent ) && otherParent != placementInfo.parentTo  || !IsValid( otherParent ) )
 			return false
 	}
 	else if ( IsValid( otherParent ) )
@@ -2153,12 +2090,8 @@ bool function TeslaTrap_CanLink( entity trap, vector trapPos, vector trapUp, ent
 	vector otherOrigin = otherTrap.GetOrigin()
 	float distSqr = DistanceSqr( trapPos, otherOrigin )
 
-	if ( distSqr > TESLA_TRAP_LINK_DIST_SQR )
-		return false
-
-	                                                               
 	int beamCount = TeslaTrap_GetLinkLOSBeamCount( trapPos, trapUp, otherOrigin, otherTrap.GetUpVector(), trap, otherTrap )
-	if ( beamCount < TESLA_TRAP_LINK_FX_MIN )
+	if ( beamCount < TESLA_TRAP_LINK_FX_MIN || distSqr > TESLA_TRAP_LINK_DIST_SQR )
 		return false
 
 	placementInfo.beamCount = beamCount
@@ -2176,9 +2109,7 @@ bool function TeslaTrap_CanDeploy( entity trap, vector testPos, vector testUp, e
 	}
 
 	if ( TeslaTrap_IsLinkAngleTooSteep( testPos, otherTrap ) )
-	{
 		return false
-	}
 
 	return true
 }
@@ -2194,6 +2125,7 @@ int function TeslaTrap_GetLinkLOSBeamCount( vector mainOrigin, vector mainUp, ve
 	array<entity> ignoreEnts = GetPlayerArray_Alive()
 	ignoreEnts.extend( GetAllPropDoors() )
 	ignoreEnts.extend( GetAllDeathBoxes() )
+
 	if( IsValid( mainTrap ) )
 		ignoreEnts.append( mainTrap )
 	if( IsValid( otherTrap ) )
@@ -2203,7 +2135,7 @@ int function TeslaTrap_GetLinkLOSBeamCount( vector mainOrigin, vector mainUp, ve
 	{
 		vector startOffset   = mainOrigin + (mainUp * (TESLA_TRAP_LINK_HEIGHT * i))
 		vector endOffset     = otherOrigin + (otherUp * (TESLA_TRAP_LINK_HEIGHT * i))
-		TraceResults results = TraceLineHighDetail( startOffset, endOffset, ignoreEnts, TESLA_TRAP_TRACE_MASK, TRACE_COLLISION_GROUP_BLOCK_WEAPONS )
+		TraceResults results = TraceLineHighDetail( startOffset, endOffset, ignoreEnts, TESLA_TRAP_TRACE_MASK, TRACE_COLLISION_GROUP_NONE )
 
 		if ( TESLA_TRAP_DEBUG_DRAW )
 		{
@@ -2239,10 +2171,10 @@ bool function TeslaTrap_IsLinkAngleTooSteep( vector proxyTestPos, entity otherTr
 }
 
 #if SERVER
-void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPlacementInfo placementInfo ) 
+void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPlacementInfo placementInfo )
 {
 	entity player = weapon.GetWeaponOwner()
-	
+
 	if( !IsValid(player) || !IsAlive(player) )
 		return
 
@@ -2252,79 +2184,82 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 	vector origin = placementInfo.origin
 	vector angles = placementInfo.angles
-	
+
 	CleanUpOldestPole(snapTo)
-	
+
 	if( IsValid(snapTo) )
 	{
 		poleFence = snapTo
+
 	} else
 	{
 		poleFence = CreateEntity( "prop_script" )
-		poleFence.SetValueForModelKey( model )
-		poleFence.kv.fadedist = -1
-		poleFence.kv.renderamt = 255
-		poleFence.kv.rendercolor = "255 255 255"
-		poleFence.kv.solid = 6
-		poleFence.SetOrigin( origin )
-		poleFence.SetAngles( angles )
-		poleFence.SetScriptName( TESLA_TRAP_NAME )
-		poleFence.SetOwner( player )
-		SetTeam(poleFence, player.GetTeam())
-		
-		Highlight_SetOwnedHighlight( poleFence, "sp_friendly_hero" )
-		Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
-		
-		DispatchSpawn( poleFence )
-		
+		{
+			poleFence.SetValueForModelKey( model )
+			poleFence.kv.fadedist = -1
+			poleFence.kv.renderamt = 255
+			poleFence.kv.rendercolor = "255 255 255"
+			poleFence.kv.solid = 6
+			poleFence.SetOrigin( origin )
+			poleFence.SetAngles( angles )
+			poleFence.SetScriptName( TESLA_TRAP_NAME )
+			poleFence.SetOwner( player )
+			SetTeam(poleFence, player.GetTeam())
+
+			Highlight_SetOwnedHighlight( poleFence, "sp_friendly_hero" )
+			Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
+
+			DispatchSpawn( poleFence )
+		}
+
 		poleFence.Anim_Play( "prop_fence_idle" )
 
 		file.allTraps.append( poleFence ) // add to server array
-		
+
 		TeslaTrapSortingData sortingData
 		file.trapSortingData[ poleFence ] <- sortingData  // add to server sorting array
 
-		entity placeFx = StartParticleEffectOnEntity_ReturnEntity( poleFence, GetParticleSystemIndex( TESLA_TRAP_PLACE_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )	
+		entity placeFx = StartParticleEffectOnEntity_ReturnEntity( poleFence, GetParticleSystemIndex( TESLA_TRAP_PLACE_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 		EmitSoundOnEntity( poleFence, TESLA_TRAP_PLACEMENT_SOUND )
-		
+
 		player.SetPlayerNetEnt( "focalTrap", null )
 		player.SetPlayerNetEnt( "focalTrap", poleFence ) //force focalTrap to be newest one
-		
-		OnFencePoleSpawned(poleFence)
+
+		OnFencePoleSpawned( poleFence )
 	}
 
 	if( IsValid(attachTo) && IsValid(poleFence) )
-	{	
+	{
 		if ( poleFence.IsMarkedForDeletion() )
 			return
-		
+
 		entity startFx = StartParticleEffectOnEntity_ReturnEntity( poleFence, GetParticleSystemIndex( TESLA_TRAP_START_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 		EmitSoundOnEntity( poleFence, TESLA_TRAP_ACTIVATE_SOUND )
-		
+
 		bool linkIsForTwoExistingPoles = false
-		
+
 		if( attachTo.e.isLinked && poleFence.e.isLinked )
 			linkIsForTwoExistingPoles = true // to add 1 second delay for activation
-		
+
 		thread function() : ( poleFence, attachTo )
 		{
-			EndSignal(poleFence, "OnDestroy") 
-			EndSignal(attachTo, "OnDestroy") 
-			
-			if(!attachTo.e.isLinked)
+			EndSignal(poleFence, "OnDestroy")
+			EndSignal(attachTo, "OnDestroy")
+
+			if( !attachTo.e.isLinked )
 			{
 				EmitSoundOnEntity( attachTo, TESLA_TRAP_POLE_RISE_SOUND )
 				attachTo.e.isLinked = true
-				attachTo.Anim_Play( "prop_fence_expand" )				
+				attachTo.Anim_Play( "prop_fence_expand" )
 			}
-			
-			if(!poleFence.e.isLinked)
+
+			if( !poleFence.e.isLinked )
 			{
 				EmitSoundOnEntity( poleFence, TESLA_TRAP_POLE_RISE_SOUND )
 				poleFence.e.isLinked = true
-				poleFence.Anim_Play( "prop_fence_expand" )	
+				poleFence.Anim_Play( "prop_fence_expand" )
 			}
-			
+
 			wait attachTo.GetSequenceDuration( "prop_fence_expand" )
 		}()
 
@@ -2333,91 +2268,97 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			DestroyPole(poleFence)
 			return
 		}
-		
-		if( !IsValid(attachTo) ) 
+
+		if( !IsValid(attachTo) )
 		{
-			thread function() : (poleFence)
+			thread function() : ( poleFence )
 			{
-				if(!IsValid(poleFence)) return
-					
-				EndSignal(poleFence, "OnDestroy") 
-				
-				poleFence.Anim_Play( "prop_fence_close" )				
+				if( !IsValid( poleFence ) ) return
+
+				EndSignal(poleFence, "OnDestroy")
+
+				poleFence.Anim_Play( "prop_fence_close" )
 				wait poleFence.GetSequenceDuration( "prop_fence_close" )
-				
-				if(!IsValid( poleFence ))
+
+				if( !IsValid( poleFence ) )
 					return
-					
+
 				poleFence.Anim_Play( "prop_fence_idle" )
 				wait poleFence.GetSequenceDuration( "prop_fence_idle" )
-				
-				DestroyPole(poleFence)
+
+				DestroyPole( poleFence )
 			}()
-			
+
 			return
 		}
-			
+
 		entity trigger = CreateEntity( "trigger_cylinder_heavy" )
-		trigger.SetOwner( player )
-		trigger.SetRadius( Distance( attachTo.GetOrigin(), poleFence.GetOrigin() + Vector(0,0,100) ) )
-		
-		int direction = int( signum( attachTo.GetOrigin().z - (poleFence.GetOrigin().z + 100) ) )
-		vector spawnOrigin 
-		float above
-		float below
-		
-		if( direction == 1 )
 		{
-			//printt( "va hacia abajo" )
-			spawnOrigin = poleFence.GetOrigin()
-			trigger.SetParent( poleFence )
-			trigger.SetTeslaLink( poleFence, attachTo, Vector(0,0,1), 100 )
-			above = fabs(poleFence.GetOrigin().z - (attachTo.GetOrigin().z + 100))
+			trigger.SetOwner( player )
+			trigger.SetRadius( Distance( attachTo.GetOrigin(), poleFence.GetOrigin() + Vector(0,0,100) ) )
+
+			int direction = int( signum( attachTo.GetOrigin().z - (poleFence.GetOrigin().z + 100) ) )
+			vector spawnOrigin
+			float above
+			float below
+
+			if( direction == 1 )
+			{
+				#if DEVELOPER
+				printt( "va hacia abajo" )
+				#endif
+				spawnOrigin = poleFence.GetOrigin()
+				trigger.SetParent( poleFence )
+				trigger.SetTeslaLink( poleFence, attachTo, Vector(0,0,1), 100 )
+				above = fabs(poleFence.GetOrigin().z - (attachTo.GetOrigin().z + 100))
+			}
+			else if( direction == -1 )
+			{
+				#if DEVELOPER
+				printt( "va hacia arriba" )
+				#endif
+				spawnOrigin = attachTo.GetOrigin()
+				trigger.SetParent( attachTo )
+				trigger.SetTeslaLink( attachTo, poleFence, Vector(0,0,1), 100 )
+				above = fabs(attachTo.GetOrigin().z - (poleFence.GetOrigin().z + 100) )
+			}
+
+			trigger.SetAboveHeight( above )
+			trigger.SetBelowHeight( 1000 )	//max below height, actual one is calculated internally, if we put 0 if won't create trigger in some cases when fence angles is too step
+
+			trigger.SetScriptName( "tesla_trap_trigger" )
+			trigger.SetOrigin( spawnOrigin )
+			trigger.SetAngles( angles )
+			trigger.SetTriggerType( TT_TESLA_TRAP )
+
+			float obstructedEndTime = Time() + TESLA_TRAP_ACTIVATE_DELAY
+
+			// if( linkIsForTwoExistingPoles )
+				// obstructedEndTime = Time() + TESLA_TRAP_ACTIVATE_DELAY
+
+			trigger.SetObstructedEndTime( obstructedEndTime ) // so it's activated after placed
+
+			trigger.kv.triggerFilterNonCharacter = 1
+			trigger.kv.triggerFilterTeamBeast = 1
+			trigger.kv.triggerFilterPlayerDecoys = 1
+			trigger.kv.triggerFilterTeamNeutral = 1
+			trigger.kv.triggerFilterTeamOther = 1
+			trigger.kv.triggerFilterUseNew = 1
+
+			SetTeam( trigger, player.GetTeam() )
+
+			DispatchSpawn( trigger )
 		}
-		else if( direction == -1 )
-		{
-			//printt( "va hacia arriba" )
-			spawnOrigin = attachTo.GetOrigin()
-			trigger.SetParent( attachTo )
-			trigger.SetTeslaLink( attachTo, poleFence, Vector(0,0,1), 100 )
-			above = fabs(attachTo.GetOrigin().z - (poleFence.GetOrigin().z + 100) )
-		}
-		
-		trigger.SetAboveHeight( above )
-		trigger.SetBelowHeight( 1000 )	//max below height, actual one is calculated internally, if we put 0 if won't create trigger in some cases when fence angles is too step
-		
-		trigger.SetScriptName( "tesla_trap_trigger" )
-		trigger.SetOrigin( spawnOrigin )
-		trigger.SetAngles( angles )
-		trigger.SetTriggerType( TT_TESLA_TRAP )
 
-		float obstructedEndTime = Time() + TESLA_TRAP_ACTIVATE_DELAY
-		
-		// if( linkIsForTwoExistingPoles )
-			// obstructedEndTime = Time() + TESLA_TRAP_ACTIVATE_DELAY
-		
-		trigger.SetObstructedEndTime( obstructedEndTime ) // so it's activated after placed
-
-		trigger.kv.triggerFilterNonCharacter = 1
-		trigger.kv.triggerFilterTeamBeast = 1
-		trigger.kv.triggerFilterPlayerDecoys = 1
-		trigger.kv.triggerFilterTeamNeutral = 1
-		trigger.kv.triggerFilterTeamOther = 1
-		trigger.kv.triggerFilterUseNew = 1
-
-		SetTeam( trigger, player.GetTeam() )
-
-		DispatchSpawn( trigger )
-		
 		trigger.SearchForNewTouchingEntity()
-		
+
 		attachTo.e.attachedTriggersToPole.append( trigger )
 		poleFence.e.attachedTriggersToPole.append( trigger )
-		
+
 		//set links for additional script reading
 		if( !poleFence.IsLinkedToEnt(attachTo) )
 			poleFence.LinkToEnt(attachTo)
-		
+
 		if( !attachTo.IsLinkedToEnt(poleFence) )
 			attachTo.LinkToEnt(poleFence)
 		
@@ -2429,9 +2370,12 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 {
 	wait TESLA_TRAP_ACTIVATE_DELAY
 	
+	if( !IsValid(trigger) ) 
+		return
+	
 	entity ownerPlayer = trigger.GetOwner()
 	
-	if( !IsValid(trigger) || !IsValid(ownerPlayer) )
+	if( !IsValid(ownerPlayer) )
 		return
 	
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
@@ -2499,17 +2443,14 @@ void function Fence_DamagedPlayerOrNPC( entity ent, var damageInfo )
 
 void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset humanFx, float slowTurn, float slowMove )
 {
-	if ( !IsValid( ent ) )
-		return
-
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
+	if ( !IsValid( ent ) || DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
 		return
 
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
-	
+
 	if ( !IsValid( inflictor ) )
 		return
-	
+
 	if( Time() <= ent.p.lastTimeDamagedByTeslaTrap + 4.0 )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
@@ -2518,7 +2459,7 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()
 	}
-	
+
 	string tag = ""
 	asset effect
 
@@ -2537,7 +2478,7 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 		tag = "CHESTFOCUS"
 		effect = humanFx
 	}
-	
+
 	ent.Signal( "ArcStunned" )
 
 	if ( tag != "" )
@@ -2567,15 +2508,12 @@ void function CleanUpOldestPole(entity snapTo)
 	{
 		entity poleToDestroy = file.allTraps[ 0 ]
 
-		if( !IsValid(poleToDestroy) ) 
+		if( !IsValid( poleToDestroy ) || IsValid( snapTo ) && snapTo == poleToDestroy )
 			return
 
-		if( IsValid(snapTo) && snapTo == poleToDestroy )
-			return
-		
 		foreach(trigger in poleToDestroy.e.attachedTriggersToPole)
 		{
-			if(IsValid(trigger))
+			if( IsValid( trigger ) )
 				trigger.Destroy()
 		}
 
@@ -2583,7 +2521,7 @@ void function CleanUpOldestPole(entity snapTo)
 			file.allTraps.removebyvalue( poleToDestroy )
 		if ( poleToDestroy in file.trapSortingData )
 			delete file.trapSortingData[ poleToDestroy ]
-		
+
 		foreach( anotherPole in poleToDestroy.GetLinkEntArray() )
 		{
 			if(anotherPole.IsLinkedToEnt( poleToDestroy ))
@@ -2613,45 +2551,42 @@ void function FencePole_OnDamaged( entity ent, var damageInfo )
 {
 	if( !IsValid(ent) )
 		return
-	
+
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	float damage = DamageInfo_GetDamage( damageInfo )
 	attacker.NotifyDidDamage
 	(
 		ent,
 		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetDamagePosition( damageInfo ),
 		DamageInfo_GetCustomDamageType( damageInfo ),
 		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetDamageFlags( damageInfo ),
 		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetWeapon( damageInfo ),
 		DamageInfo_GetDistFromAttackOrigin( damageInfo )
 	)
 	float FencePoleNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	
+
 	if ( FencePoleNextHealth > 0)
 	{
 		ent.SetHealth( FencePoleNextHealth )
 	} else
 	{
-		DestroyPole(ent)
+		DestroyPole( ent )
 	}
 }
 
 void function DestroyPole(entity ent)
 {
-	if(!IsValid(ent)) 
+	if( !IsValid( ent ) || ent.GetScriptName() == "tesla_trap_dead")
 		return
-	
-	if( ent.GetScriptName() == "tesla_trap_dead" )
-		return
-	
+
 	ent.SetScriptName( "tesla_trap_dead" )
-	
-	foreach(trigger in ent.e.attachedTriggersToPole)
+
+	foreach( trigger in ent.e.attachedTriggersToPole )
 	{
-		if(IsValid(trigger))
+		if( IsValid(trigger) )
 			trigger.Destroy()
 	}
 
@@ -2665,43 +2600,43 @@ void function DestroyPole(entity ent)
 		file.allTraps.fastremovebyvalue( ent )
 	if ( ent in file.trapSortingData )
 		delete file.trapSortingData[ ent ]
-	
+
 	ent.SetTakeDamageType( DAMAGE_NO )
 	ent.kv.solid = 0
 
 	foreach( entity anotherPole in file.allTraps )
 	{
 		array<entity> validTriggers
-		
+
 		foreach(trigger in anotherPole.e.attachedTriggersToPole)
 		{
 			if(IsValid(trigger))
 				validTriggers.append(trigger)
 		}
-		
+
 		if( validTriggers.len() == 0 && anotherPole.e.isLinked ) // close the poles that will remain without link after this removal
-		{	
+		{
 			anotherPole.e.isLinked = false
-			
+
 			thread function() : (anotherPole)
 			{
 				if(!IsValid(anotherPole)) return
-				
-				EndSignal(anotherPole, "OnDestroy") 	
-				
-				anotherPole.Anim_Play( "prop_fence_close" )				
-				wait anotherPole.GetSequenceDuration( "prop_fence_close" )		
-				
+
+				EndSignal(anotherPole, "OnDestroy")
+
+				anotherPole.Anim_Play( "prop_fence_close" )
+				wait anotherPole.GetSequenceDuration( "prop_fence_close" )
+
 				if(!IsValid(anotherPole)) return
-				
+
 				anotherPole.Anim_Play( "prop_fence_idle" )
 			}()
 		}
 	}
-	
+
 	if(ent.e.isLinked)
 		ent.Anim_Play( "prop_fence_close" )
-	
+
 	ent.UnsetUsable()
 	ent.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)
 }
@@ -2723,27 +2658,27 @@ void function SetPoleFenceUsable( entity poleFence )
 
 bool function PoleFence_CanUse(entity player, entity pole)
 {
-	if( pole.GetOwner() == player )
+	if( pole.GetOwner() == player || pole.GetTeam() == player.GetTeam())
 		return true
-	
-	if( pole.GetTeam() == player.GetTeam() )
-		return true
-	
+
 	return false
 }
 
 void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
 {
-	if(!IsValid(poleFence) || !IsValid(player)) return
-	
+	if(!IsValid(poleFence) || !IsValid(player))
+	    return
+
 	if( poleFence.GetOwner() != player)
 		return
-	
+
 	DestroyPole(poleFence)
-	
+
 	//return one tactical usage
 	entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-	if(!IsValid(tactical)) return
+	if( !IsValid(tactical) )
+	    return
+
 	tactical.SetWeaponPrimaryClipCount( min(tactical.GetWeaponPrimaryClipCount() + tactical.GetAmmoPerShot(), tactical.GetWeaponPrimaryClipCountMax()) )
 }
 #endif
