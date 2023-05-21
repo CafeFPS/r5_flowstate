@@ -5403,30 +5403,3 @@ void function WaitForGameState(int state) {
 		WaitFrame()
 	}
 }
-
-bool function Placement_IsHitEntScriptedPlaceable( entity hitEnt, int depth )
-{
-	if ( hitEnt.IsWorld() )
-		return false
-
-	var hitEntClassname = hitEnt.GetNetworkedClassName()
-	if ( hitEntClassname == "func_brush" || hitEntClassname == "script_mover" || hitEntClassname == "func_brush_lightweight" )
-	{
-		return true
-	}
-
-	//if ( ALLOWED_SCRIPT_PARENT_ENTS.contains( hitEnt.GetScriptName() ) )
-	//{
-	//	return true
-	//}
-
-	if ( depth > 0 )
-	{
-		if ( IsValid( hitEnt.GetParent() ) )
-		{
-			return Placement_IsHitEntScriptedPlaceable( hitEnt.GetParent(), depth - 1 )
-		}
-	}
-
-	return false
-}
