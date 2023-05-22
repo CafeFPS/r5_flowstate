@@ -2703,19 +2703,30 @@ void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags
 
 void function TeslaTrap_AdsSlurpsFences(entity player) 
 {
+	if( !IsValid(player) ) 
+		return
+
+	if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && player.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() != "mp_weapon_tesla_trap" ) 
+		return
+	
 	entity attachTo = player.GetPlayerNetEnt( "focalTrap" )
 	
-	if( !IsValid(attachTo) ) return
-	
+	if( !IsValid(attachTo) ) 
+		return
+		
 	foreach(pole in file.allTraps)
 	{
-		if(!IsValid(pole)) continue
-		
+		if( !IsValid(player) ) 
+			break
+	
+		if( !IsValid(pole) ) 
+			continue
+
 		array<entity> attachedPoles = pole.GetLinkEntArray()
 		
 		if( attachedPoles.len() == 0 )
 		{
-			if(IsValid(attachTo))
+			if( IsValid(attachTo) )
 			{
 				DestroyPole( attachTo )
 				ReturnOneTacticalUsage(player)
@@ -2724,11 +2735,11 @@ void function TeslaTrap_AdsSlurpsFences(entity player)
 		{
 			foreach( trap in attachedPoles )
 			{
-				if(!IsValid(trap)) continue
+				if( !IsValid(trap) ) continue
 				
 				if( trap == attachTo )
 				{
-					if(IsValid(attachTo) && pole) 
+					if( IsValid(attachTo) && pole ) 
 					{
 						DestroyPole( attachTo )
 						ReturnOneTacticalUsage(player)
