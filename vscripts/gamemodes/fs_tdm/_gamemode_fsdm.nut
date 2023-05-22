@@ -455,7 +455,8 @@ void function _OnPlayerConnected(entity player)
 
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-
+	player.p.lastTgiveUsedTime = Time()
+	
 	if(FlowState_RandomGunsEverydie())
 	    Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)
 	else if (FlowState_Gungame())
