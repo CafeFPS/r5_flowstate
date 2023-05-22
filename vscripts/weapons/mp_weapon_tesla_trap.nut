@@ -1266,7 +1266,12 @@ void function OnFocusTrapChanged( entity player, entity oldEnt, entity newEnt, b
 	entity localViewPlayer = GetLocalViewPlayer()
 	if ( !IsValid( localViewPlayer ) )
 		return
-
+	
+	entity focalTrap = TeslaTrap_GetFocalTrapForPlayer( player )
+	
+	if( IsValid(focalTrap) && focalTrap == newEnt )
+		return
+	
 	if ( !IsValid( newEnt ) )
 	{
 		TeslaTrap_ClearFocalTrapForPlayer( localViewPlayer )
@@ -1484,8 +1489,7 @@ void function TeslaTrap_OnPropScriptCreated( entity ent )
 				AddEntityCallback_GetUseEntOverrideText( ent, TeslaTrap_UseTextOverride )
 				SetCallback_CanUseEntityCallback( ent, TeslaTrap_CanUse )
 
-				//doesn't look like a good way to do this but it works for now. Colombia
-				if(ent.GetOwner() == GetLocalClientPlayer())
+				if( ent.GetOwner() == GetLocalClientPlayer() )
 				{
 					TeslaTrap_ClearFocalTrapForPlayer( GetLocalClientPlayer() )
 					TeslaTrap_SetFocalTrapForPlayer( GetLocalClientPlayer(), ent )
@@ -2218,6 +2222,9 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
 
 			DispatchSpawn( poleFence )
+
+			TeslaTrap_ClearFocalTrapForPlayer( player )
+			TeslaTrap_SetFocalTrapForPlayer( player, poleFence )
 		}
 
 		poleFence.Anim_Play( "prop_fence_idle" )
@@ -2229,9 +2236,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 		entity placeFx = StartParticleEffectOnEntity_ReturnEntity( poleFence, GetParticleSystemIndex( TESLA_TRAP_PLACE_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 		EmitSoundOnEntity( poleFence, TESLA_TRAP_PLACEMENT_SOUND )
-
-		player.SetPlayerNetEnt( "focalTrap", null )
-		player.SetPlayerNetEnt( "focalTrap", poleFence ) //force focalTrap to be newest one
 
 		OnFencePoleSpawned( poleFence )
 	}
