@@ -2370,8 +2370,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity start, entity end)
 {
-	wait TESLA_TRAP_ACTIVATE_DELAY
-
 	if( !IsValid(trigger) ) 
 		return
 	
@@ -2382,7 +2380,7 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 	
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 	
-	while(IsValid(trigger))
+	while( IsValid(trigger) && IsValid(start) && IsValid(end) )
 	{
 		if( Time() < trigger.GetObstructedEndTime() )
 		{
