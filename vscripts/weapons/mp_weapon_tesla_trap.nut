@@ -1966,7 +1966,10 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 		{					
 			if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
 				return
-
+			
+			if( Time() < trigger.GetObstructedEndTime() )
+				return
+			
 			if(crossingEnt.IsPlayer() && Time() > crossingEnt.p.lastTimeAppliedEMPByTeslaTrap + TESLA_TRAP_LINK_DAMAGE_INTERVAL_UPDATE )
 			{
 				crossingEnt.TakeDamage( TESLA_TRAP_LINK_DAMAGE_AMOUNT_UPDATE, ownerPlayer, ownerPlayer, { damageSourceId=eDamageSourceId.mp_weapon_tesla_trap } )
