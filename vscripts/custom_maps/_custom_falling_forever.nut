@@ -235,10 +235,6 @@ void function fail( entity player, string message ) {
 
 	WaitFrame()
 
-	// Skip if in start area
-	if ( player.GetOrigin().z > 55200 && player.GetOrigin().z < 55500 )
-		return
-
 	// Skip if grounded but still falling
 	if ( onGround && player.GetVelocity().z < 0 )
 		return
