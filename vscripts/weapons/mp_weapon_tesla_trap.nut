@@ -1956,17 +1956,17 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 		return
 
 	#if DEVELOPER
-		printt("fence is being crossed by " + crossingEnt )
+		// printt("fence is being crossed by " + crossingEnt )
 	#endif
 
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
-		
-		if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
-			return
 
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
-		{
+		{					
+			if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
+				return
+
 			if(crossingEnt.IsPlayer() && Time() > crossingEnt.p.lastTimeAppliedEMPByTeslaTrap + TESLA_TRAP_LINK_DAMAGE_INTERVAL_UPDATE )
 			{
 				crossingEnt.TakeDamage( TESLA_TRAP_LINK_DAMAGE_AMOUNT_UPDATE, ownerPlayer, ownerPlayer, { damageSourceId=eDamageSourceId.mp_weapon_tesla_trap } )
@@ -1981,9 +1981,7 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 			return
 
 		if ( !TrippedEntIsFriendly( crossingEnt, start ) )
-		{
 			return
-		}
 
 		if ( !TrippedEntIsFriendlyObstructionType( crossingEnt ) )
 			return
@@ -2370,7 +2368,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity start, entity end)
 {
 	wait TESLA_TRAP_ACTIVATE_DELAY
-	
+
 	if( !IsValid(trigger) ) 
 		return
 	
@@ -2383,8 +2381,13 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 	
 	while(IsValid(trigger))
 	{
+		if( Time() < trigger.GetObstructedEndTime() )
+		{
+			wait 0.1
+			continue
+		}
 		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-			
+
 		//doors
 		if( IsValid( hResult.hitEnt ) && hResult.hitEnt.GetNetworkedClassName() == "prop_door" )
 		{
