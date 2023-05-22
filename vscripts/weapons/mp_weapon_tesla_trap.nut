@@ -1483,13 +1483,6 @@ void function TeslaTrap_OnPropScriptCreated( entity ent )
 				thread TeslaTrap_CreateHUDMarker( ent )
 				AddEntityCallback_GetUseEntOverrideText( ent, TeslaTrap_UseTextOverride )
 				SetCallback_CanUseEntityCallback( ent, TeslaTrap_CanUse )
-
-				//doesn't look like a good way to do this but it works for now. Colombia
-				if(ent.GetOwner() == GetLocalClientPlayer())
-				{
-					TeslaTrap_ClearFocalTrapForPlayer( GetLocalClientPlayer() )
-					TeslaTrap_SetFocalTrapForPlayer( GetLocalClientPlayer(), ent )
-				}
 				break
 			}
 	}
