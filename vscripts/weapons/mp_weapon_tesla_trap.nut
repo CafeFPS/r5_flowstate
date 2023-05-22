@@ -16,11 +16,13 @@
 // DONE damage happens every 4 ticks?, emp applys every tick of fence damage
 // DONE improve kill pole logic, in retail it uses dissolve and the prop script is converted to "tesla_trap_dead" while is being destroyed
 // DONE doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
+// DONE check if trap is obstructed before destroying doors?
+// DONE add ads button slurp feature
 
 // fix minimap
 // add to player realms
 // fix ai (dummies) detection + damage + visuals
-// check if trap is obstructed before destroying doors?
+
 
 untyped
 
@@ -332,6 +334,11 @@ void function OnWeaponActivate_weapon_tesla_trap( entity weapon )
 
 	int statusEffect = eStatusEffect.placing_tesla_trap
 	StatusEffect_AddEndless( ownerPlayer, statusEffect, 1.0 )
+	
+	#if SERVER
+	AddButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM_TOGGLE, TeslaTrap_AdsSlurpsFences )
+	AddButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM, TeslaTrap_AdsSlurpsFences )
+	#endif
 }
 
 void function OnWeaponDeactivate_weapon_tesla_trap( entity weapon )
@@ -349,6 +356,8 @@ void function OnWeaponDeactivate_weapon_tesla_trap( entity weapon )
 	StatusEffect_StopAllOfType( ownerPlayer, eStatusEffect.placing_tesla_trap )
 
 	#if SERVER
+	RemoveButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM_TOGGLE, TeslaTrap_AdsSlurpsFences )
+	RemoveButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM, TeslaTrap_AdsSlurpsFences )
 	#endif
 }
 
@@ -383,7 +392,7 @@ bool function OnWeaponAttemptOffhandSwitch_weapon_tesla_trap( entity weapon )
 	entity player = weapon.GetWeaponOwner()
 	if ( player.IsPhaseShifted() || player.IsZiplining() )
 		return false
-
+	
 	TeslaTrap_UpdateFocalNodeForPlayer( ownerPlayer, TeslaTrap_CreateTrapPlacementProxy( TESLA_TRAP_PROXY_MODEL ) )
 
 	if ( weapon == ownerPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) )
@@ -1074,7 +1083,7 @@ void function TeslaTrap_PlacementProxy( entity player, asset model )
 				proxyRangeTable[ proxy ] = -1
 			}
 		}
-
+		
 		WaitFrame()
 	}
 }
@@ -1649,8 +1658,6 @@ void function TeslaTrap_UpdateHudMarkers( entity localClientPlayer )
 
 bool function TeslaTrap_ShouldShowIcon( entity localPlayer, entity trapProxy )
 {
-	return false
-
 	if ( !GamePlayingOrSuddenDeath() )
 		return false
 	
@@ -2244,6 +2251,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 		thread function() : ( poleFence, attachTo )
 		{
+			Signal(poleFence, "StopAnimThreadForPole")
+			Signal(attachTo, "StopAnimThreadForPole")
 			EndSignal(poleFence, "OnDestroy")
 			EndSignal(attachTo, "OnDestroy")
 
@@ -2277,7 +2286,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 				if( !IsValid( poleFence ) ) return
 
 				EndSignal(poleFence, "OnDestroy")
-
+				EndSignal(poleFence, "StopAnimThreadForPole")
+				
 				poleFence.Anim_Play( "prop_fence_close" )
 				wait poleFence.GetSequenceDuration( "prop_fence_close" )
 
@@ -2628,7 +2638,8 @@ void function DestroyPole(entity ent)
 				if(!IsValid(anotherPole)) return
 
 				EndSignal(anotherPole, "OnDestroy")
-
+				EndSignal(anotherPole, "StopAnimThreadForPole")
+				
 				anotherPole.Anim_Play( "prop_fence_close" )
 				wait anotherPole.GetSequenceDuration( "prop_fence_close" )
 
@@ -2668,6 +2679,15 @@ bool function PoleFence_CanUse(entity player, entity pole)
 
 	return false
 }
+void function ReturnOneTacticalUsage(entity player)
+{
+	//return one tactical usage
+	entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+	if( !IsValid(tactical) )
+	    return
+
+	tactical.SetWeaponPrimaryClipCount( min(tactical.GetWeaponPrimaryClipCount() + tactical.GetAmmoPerShot(), tactical.GetWeaponPrimaryClipCountMax()) )	
+}
 
 void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
 {
@@ -2678,12 +2698,48 @@ void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags
 		return
 
 	DestroyPole(poleFence)
+	ReturnOneTacticalUsage(player)
+}
 
-	//return one tactical usage
-	entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-	if( !IsValid(tactical) )
-	    return
-
-	tactical.SetWeaponPrimaryClipCount( min(tactical.GetWeaponPrimaryClipCount() + tactical.GetAmmoPerShot(), tactical.GetWeaponPrimaryClipCountMax()) )
+void function TeslaTrap_AdsSlurpsFences(entity player) 
+{
+	entity attachTo = player.GetPlayerNetEnt( "focalTrap" )
+	
+	if( !IsValid(attachTo) ) return
+	
+	foreach(pole in file.allTraps)
+	{
+		if(!IsValid(pole)) continue
+		
+		array<entity> attachedPoles = pole.GetLinkEntArray()
+		
+		if( attachedPoles.len() == 0 )
+		{
+			if(IsValid(attachTo))
+			{
+				DestroyPole( attachTo )
+				ReturnOneTacticalUsage(player)
+			}
+		} else 
+		{
+			foreach( trap in attachedPoles )
+			{
+				if(!IsValid(trap)) continue
+				
+				if( trap == attachTo )
+				{
+					if(IsValid(attachTo) && pole) 
+					{
+						DestroyPole( attachTo )
+						ReturnOneTacticalUsage(player)
+						
+						TeslaTrap_ClearFocalTrapForPlayer( player )
+						TeslaTrap_SetFocalTrapForPlayer( player, pole )
+					}
+				}
+			}
+		}
+	}
 }
 #endif
+
