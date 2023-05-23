@@ -25,18 +25,18 @@ void function ClInitFallingForever() {
     AddInputHint( "%reload%", "Complete Restart" )
 }
 
-void function ServerCallback_SetTimer( float currentTime ) {
+void function ServerCallback_SetTimer( int currentTime ) {
     if(!file.isInitialized) {
         ClInitFallingForever()
         file.isInitialized = true
     }
 
     if ( currentTime < 60 ) {
-        RuiSetString( file.timerRui, "hintText", format("Timer - %0.1fs", currentTime ) )
+        RuiSetString( file.timerRui, "hintText", format("Timer - %ds", currentTime ) )
     } else {
-        int minutes = int( currentTime / 60 )
-        float seconds = currentTime - 60 * minutes
-        RuiSetString( file.timerRui, "hintText", format("Timer - %dm %0.1fs", minutes, seconds ) )
+        int minutes = currentTime / 60
+        int seconds = currentTime - 60 * minutes
+        RuiSetString( file.timerRui, "hintText", format("Timer - %dm %ds", minutes, seconds ) )
     }
 }
 
