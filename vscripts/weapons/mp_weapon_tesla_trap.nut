@@ -2196,7 +2196,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 	vector origin = placementInfo.origin
 	vector angles = placementInfo.angles
 
-	CleanUpOldestPole(snapTo)
+	CleanUpOldestPole(player, snapTo)
 
 	if( IsValid(snapTo) )
 	{
@@ -2396,7 +2396,7 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 	
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 	
-	while( IsValid(trigger) && IsValid(start) && IsValid(end) )
+	while( IsValid(ownerPlayer) && IsValid(trigger) && IsValid(start) && IsValid(end) )
 	{
 		if( Time() < trigger.GetObstructedEndTime() )
 		{
@@ -2523,11 +2523,23 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 
 }
 
-void function CleanUpOldestPole(entity snapTo)
+void function CleanUpOldestPole(entity player, entity snapTo)
 {
-	if( file.allTraps.len() == TESLA_TRAP_MAX_TRAPS )
+	array<entity> playerTraps
+	
+	foreach(trap in file.allTraps)
 	{
-		entity poleToDestroy = file.allTraps[ 0 ]
+		if( !IsValid(trap) ) continue
+		
+		if( trap.GetOwner() == player )
+		{
+			playerTraps.append( trap )
+		}
+	}
+	
+	if( playerTraps.len() == TESLA_TRAP_MAX_TRAPS && IsValid( playerTraps[ 0 ] ) )
+	{
+		entity poleToDestroy = playerTraps[ 0 ]
 
 		if( !IsValid( poleToDestroy ) || IsValid( snapTo ) && snapTo == poleToDestroy )
 			return
@@ -2600,7 +2612,7 @@ void function FencePole_OnDamaged( entity ent, var damageInfo )
 
 void function DestroyPole(entity ent)
 {
-	if( !IsValid( ent ) || ent.GetScriptName() == "tesla_trap_dead")
+	if( !IsValid( ent ) || ent.GetScriptName() == "tesla_trap_dead" )
 		return
 
 	ent.SetScriptName( "tesla_trap_dead" )
@@ -2697,11 +2709,8 @@ void function ReturnOneTacticalUsage(entity player)
 
 void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
 {
-	if(!IsValid(poleFence) || !IsValid(player))
+	if(!IsValid(poleFence) || !IsValid(player) || poleFence.GetOwner() != player || poleFence.GetTeam() == player.GetTeam())
 	    return
-
-	if( poleFence.GetOwner() != player)
-		return
 
 	DestroyPole(poleFence)
 	ReturnOneTacticalUsage(player)
