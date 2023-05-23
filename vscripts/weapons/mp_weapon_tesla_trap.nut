@@ -18,12 +18,11 @@
 // DONE doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
 // DONE check if trap is obstructed before destroying doors?
 // DONE add ads button slurp feature
+// DONE add to player realms
 
 // fix minimap
-// add to player realms
 // fix ai (dummies) detection + damage + visuals
-
-
+	
 untyped
 
 global function MpWeaponTeslaTrap_Init
@@ -2222,7 +2221,10 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
 
 			DispatchSpawn( poleFence )
-
+			
+			poleFence.RemoveFromAllRealms()
+			poleFence.AddToOtherEntitysRealms( player )
+		
 			TeslaTrap_ClearFocalTrapForPlayer( player )
 			TeslaTrap_SetFocalTrapForPlayer( player, poleFence )
 		}
