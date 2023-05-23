@@ -2726,7 +2726,7 @@ void function TeslaTrap_AdsSlurpsFences(entity player)
 	
 	entity attachTo = player.GetPlayerNetEnt( "focalTrap" )
 	
-	if( !IsValid(attachTo) ) 
+	if( !IsValid(attachTo) || attachTo.GetOwner() != player ) 
 		return
 		
 	foreach(pole in file.allTraps)
