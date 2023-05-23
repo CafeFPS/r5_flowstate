@@ -1237,12 +1237,17 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		
+		if( weapon.LookupAttachment( "CHARM" ) != 0 )
+			weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
 	}
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		
+		if( weapon.LookupAttachment( "CHARM" ) != 0 )
+			weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+			
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	}
 	
