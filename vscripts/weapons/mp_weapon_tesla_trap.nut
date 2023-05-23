@@ -1,25 +1,7 @@
-//Reimplemented by @CafeFPS
+// Reimplemented by @CafeFPS (Retículo Endoplasmático#5955)
+// everyone else -- advice
 
-//todo:
-// DONE add health to pole
-// DONE destroy logic (pick up)
-// DONE show waypoint with fence crossed icon when a player crosses it
-// DONE You can hold up to 4 charges of this ability. You gain one charge every 15 seconds, and can pick up unused nodes to regain a charge.
-// DONE merge retail client script to fix various differences
-// DONE if snapto is valid pole, just create the link, check linked state for snapto to play proper anims
-// DONE if focaltrap and snapto are valid poles, just create the link
-// DONE don't allow new poles to be attached to the old ones if they already have two links, this is already implemented but it's not working for some reason
-// DONE if 12 traps are placed, start removing the oldest one, if a link is going to be created towards the oldest one, don's destroy it just create the link
-// DONE add delay to the link if focaltrap and snapto are valid poles, it shouldn't be instant
-// DONE fix small delay when activating the ability (this does not exist in retail, you can place a fence instantly after pressing q)
-// DONE snapTo is not reloaded properly after placing a pole, but if you holster then activate ability again it snaps correctly
-// DONE damage happens every 4 ticks?, emp applys every tick of fence damage
-// DONE improve kill pole logic, in retail it uses dissolve and the prop script is converted to "tesla_trap_dead" while is being destroyed
-// DONE doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
-// DONE check if trap is obstructed before destroying doors?
-// DONE add ads button slurp feature
-// DONE add to player realms
-
+// todo
 // fix minimap
 // fix ai (dummies) detection + damage + visuals
 	
