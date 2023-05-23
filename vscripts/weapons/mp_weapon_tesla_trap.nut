@@ -1956,9 +1956,6 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
 		{					
-			if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
-				return
-			
 			if( Time() < trigger.GetObstructedEndTime() )
 				return
 			
@@ -2346,7 +2343,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 			SetTeam( trigger, player.GetTeam() )
 			
-			trigger.e.teslaTrapTriggerCreationTime = Time()
 			DispatchSpawn( trigger )
 		}
 
@@ -2691,7 +2687,7 @@ void function ReturnOneTacticalUsage(entity player)
 
 void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
 {
-	if(!IsValid(poleFence) || !IsValid(player) || poleFence.GetOwner() != player || poleFence.GetTeam() == player.GetTeam())
+	if(!IsValid(poleFence) || !IsValid(player) || poleFence.GetOwner() != player || poleFence.GetTeam() != player.GetTeam())
 	    return
 
 	DestroyPole(poleFence)
