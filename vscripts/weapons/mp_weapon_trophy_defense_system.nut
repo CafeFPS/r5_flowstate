@@ -584,7 +584,8 @@ void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacem
 	pylon.e.pylonhealth = TROPHY_HEALTH_AMOUNT
 	pylon.EndSignal( "OnDestroy" )
 	pylon.SetScriptName("pylon")
-
+	pylon.AllowMantle()
+	
 	// can be detected by sonar
 	pylon.Highlight_Enable()
 	AddSonarDetectionForPropScript( pylon )
