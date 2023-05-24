@@ -2723,6 +2723,7 @@ void function TeslaTrap_AdsSlurpsFences(entity player)
 			{
 				DestroyPole( attachTo )
 				ReturnOneTacticalUsage(player)
+				player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_PICKUP", 0)
 			}
 		} else 
 		{
@@ -2736,6 +2737,7 @@ void function TeslaTrap_AdsSlurpsFences(entity player)
 					{
 						DestroyPole( attachTo )
 						ReturnOneTacticalUsage(player)
+						player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_PICKUP", 0)
 						
 						TeslaTrap_ClearFocalTrapForPlayer( player )
 						TeslaTrap_SetFocalTrapForPlayer( player, pole )
