@@ -76,20 +76,18 @@ void function Survival_Leviathan_ConsiderLookAtEnt(entity ent)
 void function RespawnPlayerInDropship( entity player )
 {
 	const float POS_OFFSET = -500.0 // Offset from dropship's origin
+
 	entity dropship = Sur_GetPlaneEnt()
 
 	vector dropshipPlayerOrigin = dropship.GetOrigin()
-	vector dropshipPlayerAngles = dropship.GetAngles()
-	
 	dropshipPlayerOrigin.z += POS_OFFSET
-	dropshipPlayerAngles.x += 30
-	
+
 	DecideRespawnPlayer( player, false )
 
 	player.SetParent( dropship )
-	
+
 	player.SetOrigin( dropshipPlayerOrigin )
-	player.SetAngles( dropshipPlayerAngles )
+	player.SetAngles( dropship.GetAngles() )
 
 	player.UnfreezeControlsOnServer()
 
