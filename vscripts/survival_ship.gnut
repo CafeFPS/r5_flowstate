@@ -201,12 +201,22 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
 
-	foreach ( squadPlayer in squadPlayers )
+	foreach ( entity squadPlayer in squadPlayers )
 	{
-		//add white shield on drop
-		Inventory_SetPlayerEquipment(squadPlayer, "armor_pickup_lv1", "armor")
-		squadPlayer.SetShieldHealth(50)
+		ResetPlayerInventory( squadPlayer )
 		
+		//add white shield on drop
+		{
+			Inventory_SetPlayerEquipment(squadPlayer, "armor_pickup_lv1", "armor")
+			squadPlayer.SetShieldHealthMax(50)
+			squadPlayer.SetShieldHealth(50)
+			
+			Survival_SetInventoryEnabled( squadPlayer, true )
+			
+			// todo: find why it's not playing fx on cockpit
+			// BroadcastItemPickup( squadPlayer, "armor_pickup_lv1", eLootAction.EQUIP )
+		}
+
 		if ( squadPlayer != player )
 		{
 			squadPlayer.ClearParent()
