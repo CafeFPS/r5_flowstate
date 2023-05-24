@@ -1262,18 +1262,15 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 void function WpnAutoReload( entity player )
 {	
 	if(!IsValid(player)) return
+
+	entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	
-	try
-	{
-		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	if(IsValid(primary))
 		primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+	
+	if(IsValid(sec))
 		sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
-	}
-	catch (error)
-	{
-		
-	}
 }
 
 void function WpnAutoReloadOnKill( entity player )
@@ -3831,39 +3828,35 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 			case "p":
 			case "primary":
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-				if( IsValid( primary ) ){
+				if( IsValid( primary ) )
 					player.TakeWeaponByEntNow( primary )
-					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
-				}
+				
+				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
+				
 			break
 			case "s":
 			case "secondary":
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-				if( IsValid( secondary ) ) {
+				if( IsValid( secondary ) ) 
 					player.TakeWeaponByEntNow( secondary )
-					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
-				}
+				
+				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
 			break
 			case "t":
 			case "tactical":
-				entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-				if( IsValid( tactical ) ) {
-					float oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
+				entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
+				if ( IsValid( tactical ) )
 					player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-
-					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
-					entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-					newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
-				}
+					
+				tactical = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
 			break
 			case "u":
 			case "ultimate":
 				entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 				if( IsValid( ultimate ) )
-				{
 					player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
-				}
+				
+				ultimate = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
 			break
 		}
 	} catch( e420 ) {
@@ -3880,10 +3873,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
         }
     }
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() )
+	{
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+		player.ClearFirstDeployForAllWeapons()
+	}
 	
 	player.p.lastTgiveUsedTime = Time()
-	player.ClearFirstDeployForAllWeapons()
 	
     return true
 }
