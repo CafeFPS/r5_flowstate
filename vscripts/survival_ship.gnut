@@ -203,6 +203,10 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	foreach ( squadPlayer in squadPlayers )
 	{
+		//add white shield on drop
+		Inventory_SetPlayerEquipment(squadPlayer, "armor_pickup_lv1", "armor")
+		squadPlayer.SetShieldHealth(50)
+		
 		if ( squadPlayer != player )
 		{
 			squadPlayer.ClearParent()
