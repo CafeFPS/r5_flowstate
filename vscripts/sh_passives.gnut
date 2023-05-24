@@ -543,7 +543,7 @@ void function PilotBlood_Passive_Body(entity player, int passive, bool didHave, 
 
 void function PassiveToggleFortified( entity player, int passive, bool didHave, bool nowHas )
 {
-	if ( !IsAlive( player ) )
+	if ( !IsValid( player ) )
 		return
 
 	if ( didHave )
