@@ -3089,7 +3089,10 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 		SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), character )
 
 	player.SetPlayerNetBool( "hasLockedInCharacter", true )
-
+	
+	if( ItemFlavor_GetHumanReadableRef( character ) == "character_wattson" )
+		player.SetArmsModelOverride( $"mdl/Weapons/arms/pov_pilot_light_wattson.rmdl" )
+	
 	return true
 }
 
