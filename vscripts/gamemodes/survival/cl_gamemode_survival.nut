@@ -1294,7 +1294,7 @@ void function NextCircleStartTimeChanged( entity player, float old, float new, b
 	if ( new < Time() )
 		return
 
-	if ( actuallyChanged && GamePlaying() )
+	if ( actuallyChanged && GamePlaying() && GetCurrentPlaylistName() != "fs_movementgym" )
 	{
 		if ( !GetCurrentPlaylistVarBool( "deathfield_starts_after_ship_flyout", true ) && SURVIVAL_GetCurrentDeathFieldStage() == 0 )
 			return //
