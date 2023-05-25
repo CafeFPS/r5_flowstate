@@ -893,6 +893,8 @@ global struct ServerPlayerStruct
 	float lastTimeAppliedEMPByTeslaTrap
   
 	float lastTgiveUsedTime
+	
+	float lastTimeShotSlowApplied_Global = 0
 }
 
 global struct ChallengeScore

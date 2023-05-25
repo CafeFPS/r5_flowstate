@@ -49,6 +49,9 @@ function Wallrun_OnPlayerSpawn( player )
 
 function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 {
+	if( !IsValid(player) ) 
+		return
+	
 	if ( IsDemigod( player ) )
 	{
 		EntityDemigod_TryAdjustDamageInfo( player, damageInfo )
@@ -56,21 +59,28 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	}
 
 	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
-
+		
+	// Bullet slow reduces your velocity by 40% for 0.25 seconds, and cannot proc again for 3.0 seconds.
+	if( GameRules_GetGameMode() == SURVIVAL && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 )
+	{
+		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.4, 0.25, 0.25 )
+		player.p.lastTimeShotSlowApplied_Global = Time()
+	}
+	
 	//Super dumb headshots gamemode
-	if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && attacker != player)
+	if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
 	{
 		DamageInfo_SetDamage( damageInfo, 420.0)
 		return 0.0
 	}
-	else if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && !IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && attacker != player)
+	else if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && !IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
 	{
 		DamageInfo_SetDamage( damageInfo, 0.0)
 		return 0.0
 	}
 	
 	//Helmets fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
-	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
+	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
 		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
 		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" )
