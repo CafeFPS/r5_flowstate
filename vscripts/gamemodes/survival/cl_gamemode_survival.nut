@@ -176,6 +176,12 @@ struct MinimapLabelStruct
 	float  scale = 1.0
 }
 
+struct WaitingForPlayersCameraLocPair
+{
+    vector origin = <0, 0, 0>
+    vector angles = <0, 0, 0>
+}
+
 global struct SquadSummaryPlayerData
 {
 	int eHandle
@@ -2976,13 +2982,22 @@ void function WaitingForPlayersOverlay_Setup( entity player )
 	s_overlayRui = CreatePermanentCockpitRui( $"ui/waiting_for_players_blackscreen.rpak", -1 )
 	RuiSetResolutionToScreenSize( s_overlayRui )
 
-	RuiSetBool( s_overlayRui, "isOpaque", PreGame_GetWaitingForPlayersHasBlackScreen() && !CircularHudEnabled() )
-
 	UpdateWaitingForPlayersMuteHint()
+	
+	if( GetCamerasForMap( GetMapName() ).len() > 0 )
+	{
+		RuiSetBool( s_overlayRui, "isOpaque", false )
+		WaitingForPlayers_CreateCustomCameras()
+	} else 
+	{
+		RuiSetBool( s_overlayRui, "isOpaque", PreGame_GetWaitingForPlayersHasBlackScreen() && !CircularHudEnabled() )
+	}
 }
 
 void function WaitingForPlayersOverlay_Destroy()
 {
+	WaitingForPlayers_RemoveCustomCameras()
+	
 	if ( s_overlayRui == null )
 		return
 
@@ -2999,6 +3014,73 @@ void function UpdateWaitingForPlayersMuteHint()
 	if ( SquadMuteIntroEnabled() && !IsSoloMode() )
 		muteString = Localize( IsSquadMuted() ? "#CHAR_SEL_BUTTON_UNMUTE" : "#CHAR_SEL_BUTTON_MUTE" )
 	RuiSetString( s_overlayRui, "squadMuteHint", muteString )
+}
+
+void function WaitingForPlayers_CreateCustomCameras()
+{
+	entity player = GetLocalClientPlayer()
+	
+	WaitingForPlayersCameraLocPair waitingForPlayersCamera = ReturnCameraForThisTime()
+	
+	vector origin = waitingForPlayersCamera.origin
+	origin.z += 100
+	
+	entity camera = CreateClientSidePointCamera( origin, waitingForPlayersCamera.angles, 70 )
+	player.ClearMenuCameraEntity()
+    player.SetMenuCameraEntityWithAudio( camera )
+    camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
+}
+
+WaitingForPlayersCameraLocPair function NewCameraPair(vector origin, vector angles)
+{
+    WaitingForPlayersCameraLocPair locPair
+    locPair.origin = origin
+    locPair.angles = angles
+
+    return locPair
+}
+
+WaitingForPlayersCameraLocPair function ReturnCameraForThisTime()
+{
+	return GetCamerasForMap( GetMapName() ).getrandom()
+}
+
+array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
+{
+	array<WaitingForPlayersCameraLocPair> cutsceneSpawns
+	
+	switch(map)
+	{
+		case "mp_rr_desertlands_64k_x_64k":
+		case "mp_rr_desertlands_64k_x_64k_nx":
+		case "mp_rr_desertlands_64k_x_64k_tt":
+			cutsceneSpawns.append(NewCameraPair(<-17572.3301, 11646.5137, -3777.35034>, <0, 155.688446, 0>))
+			cutsceneSpawns.append(NewCameraPair(<-15497.5586, 25198.2129, -4041.42749>, <0, 9.20065498, 0>))
+			cutsceneSpawns.append(NewCameraPair(<28017.6992, 8541.48926, -3296.67017>, <0, 106.955139, 0>))
+			cutsceneSpawns.append(NewCameraPair(<10490.2441, 6386.27734, -4340.8833>, <-23, -120.848991, 0>))
+			cutsceneSpawns.append(NewCameraPair(<-1528.49048, -7687.84863, -4087.68896>, <0, -7.29582596, 0>))
+			cutsceneSpawns.append(NewCameraPair(<4207.39697, -21928.7891, -3208.28174>, <0, -16.8694267, 0>))
+		break
+		
+		case "mp_rr_canyonlands_64k_x_64k":
+		case "mp_rr_canyonlands_mu1":
+		case "mp_rr_canyonlands_mu1_night":
+			cutsceneSpawns.append(NewCameraPair(<-5994.90723, 18442.8027, 2651.94556>, <-10, -22.33891964, 0>))
+			cutsceneSpawns.append(NewCameraPair(<-15657.6152, 1151.25757, 2797.65894>, <0, 136.286438, 0>))
+			cutsceneSpawns.append(NewCameraPair(<-19287.0762, -13268.7295, 2853.4231>, <0, 143.08432, 0>))
+			cutsceneSpawns.append(NewCameraPair(<27498.7637, 7363.46045, 2946.03491>, <0, 112.879173, 0>))
+		break
+	}
+	
+	return cutsceneSpawns	
+}
+
+void function WaitingForPlayers_RemoveCustomCameras()
+{
+	entity player = GetLocalClientPlayer()
+	
+	player.ClearMenuCameraEntity()
+	SetMapSetting_FogEnabled( true )
 }
 
 void function OnGamestatePlaying()
