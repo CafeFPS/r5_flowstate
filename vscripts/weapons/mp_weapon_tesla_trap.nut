@@ -2670,6 +2670,9 @@ void function SetPoleFenceUsable( entity poleFence )
 
 bool function PoleFence_CanUse(entity player, entity pole)
 {
+	if(	!IsValid(player) || !IsValid(pole))
+		return false
+	
 	if( pole.GetOwner() == player || pole.GetTeam() == player.GetTeam())
 		return true
 
