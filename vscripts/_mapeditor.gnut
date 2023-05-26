@@ -15,8 +15,9 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
-global function MapEditor_RemoveAllEnts
+global function ReMapRemoveAllEnts
 global function ReMapTeleportToMap
+global function ReMapWritePlayerInfoToFile
 
 global function ReMapSetOrigin
 global function ReMapSetAngles
@@ -37,10 +38,12 @@ global enum eMapEditorDoorType
     Horizontal
 }
 
-global array<entity> MapEditorEnts;
+global array< entity > MapEditorEnts;
 
 const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
 const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+
+const bool IS_FLOWSTATE_SCRIPT = true
 
 
 void function MapEditor_Init()
@@ -54,9 +57,9 @@ void function MapEditor_Init()
 
 void function MapTriggers_Init()
 {
-	if(GameRules_GetGameMode() == "fs_duckhunt")
-		return
-	
+    if(GameRules_GetGameMode() == "fs_duckhunt")
+        return
+    
     switch (GetMapName())
     {
         case "mp_rr_aqueduct_night":
@@ -194,67 +197,67 @@ void function WallTriggerEnter( entity trigger , entity ent )
     }
 }
 
-entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false)
+entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false )
 {
-    entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+    entity e = CreatePropDynamic( a, pos, ang, SOLID_VPHYSICS, fade )
     e.kv.fadedist = fade
     e.kv.rendermode = 0
     e.kv.renderamt = 1
     e.kv.solid = 6
     e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 
-    if(mantle) e.AllowMantle()
+    if( mantle ) e.AllowMantle()
     
-    if (realm > -1) {
+    if (realm > -1)
+    {
         e.RemoveFromAllRealms()
-        e.AddToRealm(realm)
+        e.AddToRealm( realm )
     }
     
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
     e.SetModelScale( scale )
-	e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
-	
-    if(addToArray)
-        MapEditorEnts.append(e)
-    
-	if(GameRules_GetGameMode() != "fs_duckhunt")
-		return e
-	
-	if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid(e) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid(e) )
-	{
-		//printt("Disabled solid plant")
-		e.kv.solid = 0
-	} else
-	{
-		e.kv.solid = 6
-	}
-	
-	if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
-		CreateFanPusher(e.GetOrigin()+Vector(0,0,56), e.GetAngles())
-	
-	if( a == $"mdl/industrial/traffic_cone_01.rmdl" )
-	{
-		SpawnKillerWalls(e.GetOrigin())
-		e.Destroy()
-		return null
-	}
-	
-	if( a == $"mdl/industrial/traffic_tube_01.rmdl" )
-	{
-		SpawnMovingPlatform(e.GetOrigin())
-		e.Destroy()
-		return null		
-	}
 
-	if( a == $"mdl/industrial/traffic_barrel_01.rmdl" )
-	{
-		SpawnMovingPlatformWithFanPusher(e.GetOrigin())
-		e.Destroy()
-		return null		
-	}
-	
-	return e
+    #if IS_FLOWSTATE_SCRIPT
+        e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
+    
+        if( GameRules_GetGameMode() == "fs_duckhunt" )
+        {
+            if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid( e ) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid( e ) )
+            {
+                e.kv.solid = 0
+            }
+            else e.kv.solid = 6
+    
+            if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
+                CreateFanPusher( e.GetOrigin() + Vector( 0, 0, 56 ), e.GetAngles() )
+    
+            if( a == $"mdl/industrial/traffic_cone_01.rmdl" )
+            {
+                SpawnKillerWalls( e.GetOrigin() )
+                e.Destroy()
+                return null
+            }
+    
+            if( a == $"mdl/industrial/traffic_tube_01.rmdl" )
+            {
+                SpawnMovingPlatform( e.GetOrigin() )
+                e.Destroy()
+                return null		
+            }
+    
+            if( a == $"mdl/industrial/traffic_barrel_01.rmdl" )
+            {
+                SpawnMovingPlatformWithFanPusher( e.GetOrigin() )
+                e.Destroy()
+                return null		
+            }
+        }
+    #endif
+
+    if( addToArray ) MapEditorEnts.append( e )
+    
+    return e
 }
 
 array < entity > function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold = false, bool spawnOpen = false, bool addToArray = false )
@@ -363,8 +366,7 @@ entity function MapEditor_CreateTrigger( vector origin, vector angles, float rad
         DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -totalheight, 255, 90, 0, true, 9999.9 )
     }
 
-    if(addToArray)
-        MapEditorEnts.append(trigger)
+    if( addToArray ) MapEditorEnts.append( trigger )
 
     return trigger
 }
@@ -385,8 +387,7 @@ entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector 
 
     EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 
-    if(addToArray)
-        MapEditorEnts.append(bubbleShield)
+    if( addToArray ) MapEditorEnts.append( bubbleShield )
 
     return bubbleShield
 }
@@ -396,8 +397,7 @@ void function MapEditor_CreateRespawnableWeaponRack(vector pos, vector ang, stri
     entity rack = CreateWeaponRack(pos, ang, weaponName)
     thread OnPickupFromRackThread(GetWeaponFromRack(rack), weaponName, spawnTime)
 
-    if(addToArray)
-        MapEditorEnts.append(rack)
+    if(addToArray ) MapEditorEnts.append( rack )
 }
 
 // When the weapon is grabbed from the rack -> respawn it
@@ -425,8 +425,7 @@ entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin 
     DispatchSpawn( lootbin )
     lootbin.SetSkin( skin )
 
-    if(addToArray)
-        MapEditorEnts.append(lootbin)
+    if( addToArray ) MapEditorEnts.append( lootbin )
 
     return lootbin
 }
@@ -454,16 +453,14 @@ void function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
 {
     JumpPad_CreatedCallback(jumpPad)
 
-    if(addToArray)
-        MapEditorEnts.append(jumpPad)
+    if( addToArray ) MapEditorEnts.append( jumpPad )
 }
 
 void function MapEditor_CreateButton( entity ent, void functionref( entity, entity, int ) callbackFunc, bool addToArray = false )
 {
-    AddCallback_OnUseEntity(ent, callbackFunc)
+    AddCallback_OnUseEntity( ent, callbackFunc )
 
-    if(addToArray)
-        MapEditorEnts.append(ent)
+    if( addToArray ) MapEditorEnts.append( ent )
 }
 
 void function MapEditor_CreateLinkedZipline( array<vector> nodes, bool addToArray = false )
@@ -485,11 +482,10 @@ void function MapEditor_CreateLinkedZipline( array<vector> nodes, bool addToArra
             ropes[i].LinkToEnt( ropes[i + 1]  )
     }
 
-    foreach(entity rope in ropes) {
+    foreach( entity rope in ropes ) {
         DispatchSpawn( rope )
 
-        if(addToArray)
-            MapEditorEnts.append(rope)
+        if( addToArray ) MapEditorEnts.append( rope )
     }
 }
 
@@ -534,10 +530,9 @@ void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addT
     DispatchSpawn( rope_start )
     DispatchSpawn( rope_end )
 
-    if(addToArray)
+    if( addToArray )
     {
-        MapEditorEnts.append(rope_start)
-        MapEditorEnts.append(rope_end)
+        MapEditorEnts.extend( [ rope_start, rope_end ] )
     }
 }
 
@@ -636,11 +631,12 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     DispatchSpawn( trigger )
 }
 
-void function MapEditor_RemoveAllEnts()
+void function ReMapRemoveAllEnts()
 {
-    foreach(entity ent in MapEditorEnts)
-        if ( IsValid( ent ) )
-            ent.Destroy()
+    foreach( entity ent in MapEditorEnts )
+    {
+        if ( IsValid( ent ) ) ent.Destroy()
+    }     
 
     MapEditorEnts.clear();
 }
@@ -758,4 +754,17 @@ void function ReMapTeleportToMap()
             player.SetVelocity( < 0, 0, 0 > )
         }
     }
+}
+
+void function ReMapWritePlayerInfoToFile()
+{
+    DevTextBufferClear()
+
+    string file = "scripts/player_info.txt"
+
+    DevTextBufferWrite( "origin = " + GetPlayerArray()[0].GetOrigin().tostring() + "\n" )
+    DevTextBufferWrite( "angles = " + GetPlayerArray()[0].GetAngles().tostring() )
+
+    DevP4Checkout( file )
+    DevTextBufferDumpToFile( file )
 }
