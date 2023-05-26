@@ -24,7 +24,6 @@ void function ShPassiveAdrenaline_Init()
 	#endif
 	
 	#if SERVER
-	RegisterSignal( "EndAdrenalinePassiveThread" )
 	AddCallback_OnPassiveChanged( ePassives.PAS_ADRENALINE, PassiveAdrenaline_OnPassiveChanged )
 	#endif
 }
@@ -32,8 +31,8 @@ void function ShPassiveAdrenaline_Init()
 #if SERVER
 void function PassiveAdrenaline_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
 {
-	if ( didHave )
-		Signal(player, "EndAdrenalinePassiveThread")
+	if ( didHave && IsValid(player.p.vortexTriggerDoubleTime) )
+		player.p.vortexTriggerDoubleTime.Destroy()
 
 	if ( nowHas )
 	{
@@ -52,10 +51,6 @@ void function Flowstate_GrantAdrenaline( entity player )
 {
 	if(!IsValid(player) || !player.IsPlayer() || !player.HasPassive( ePassives.PAS_ADRENALINE ) || GameRules_GetGameMode() != SURVIVAL ) 
 		return
-	
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "EndAdrenalinePassiveThread" )
 
 	entity vortexSphere = CreateEntity( "vortex_sphere" )
 	int spawnFlags = SF_ABSORB_CYLINDER | SF_BLOCK_OWNER_WEAPON //SF_ABSORB_BULLETS | SF_BLOCK_NPC_WEAPON_LOF |
@@ -69,6 +64,8 @@ void function Flowstate_GrantAdrenaline( entity player )
 	vortexSphere.kv.physics_fov = 360
 	vortexSphere.kv.physics_max_mass = 2
 	vortexSphere.kv.physics_max_size = 6
+	
+	player.p.vortexTriggerDoubleTime = vortexSphere
 	
 	//vortex trigger (pog)
 	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Adrenaline_OnProjectilesTriggerTouch ) //normal bullets + grenades

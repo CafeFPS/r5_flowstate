@@ -895,6 +895,7 @@ global struct ServerPlayerStruct
 	float lastTgiveUsedTime
 	
 	float lastTimeShotSlowApplied_Global = 0
+	entity vortexTriggerDoubleTime
 }
 
 global struct ChallengeScore
