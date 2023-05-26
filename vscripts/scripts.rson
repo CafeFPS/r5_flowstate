@@ -515,7 +515,6 @@ Scripts:
 	pilot/_pilot_tracking_vision.gnut
 	pilot/_pilot_passive_gas_gear.gnut
 	pilot/_pilot_passive_medic.gnut
-	pilot/_pilot_passive_adrenaline.gnut
 	mp/_jump_pads.gnut
 ]
 
@@ -523,7 +522,10 @@ When: "SERVER || CLIENT"
 Scripts:
 [
 	sh_sneak_peek.gnut
+	
 	pilot/sh_pilot_passive_voices.gnut
+	pilot/sh_pilot_passive_adrenaline.gnut
+	
 	mp/sh_desertlands_train.nut
 	sh_scoreboard.gnut
 ]
@@ -595,7 +597,6 @@ Scripts:
 	cl_survival_ship.gnut
 
 	pilot/cl_pilot_tracking_vision.gnut
-	pilot/cl_pilot_passive_adrenaline.gnut
 	client/cl_bleedout.gnut
 	mp/cl_jump_pads.gnut
 ]
