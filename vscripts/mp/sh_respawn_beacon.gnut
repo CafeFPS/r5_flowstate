@@ -129,7 +129,9 @@ void function Sh_RespawnBeacon_Init()
 		RegisterButtonPressedCallback( KEY_SPACE, TryPingRespawnItem )
 		RegisterButtonPressedCallback( BUTTON_A, TryPingRespawnItem )
 
-		SetMapFeatureItem( 1000, "#RESPAWN_BEACON", "#RESPAWN_BEACON_DESC", RESPAWN_BEACON_ICON )
+		if ( (GetRespawnStyle() == eRespawnStyle.RESPAWN_CHAMBERS) && RespawnBeaconsAreEnabled() )
+			SetMapFeatureItem( 1100, "#RESPAWN_BEACON", "#RESPAWN_BEACON_DESC", RESPAWN_BEACON_ICON )
+
 	#elseif SERVER
 		AddSpawnCallback( "prop_dynamic", RespawnEntitySpawned )
 		AddSpawnCallback( "prop_script", RespawnEntitySpawned )
@@ -183,7 +185,6 @@ void function Sh_RespawnBeacon_Init()
 		if ( GetRespawnStyle() == eRespawnStyle.RESPAWN_CHAMBERS )
 		{
 			AddCallback_OnDeathBoxSpawned( OnDeathBoxSpawned )
-			AddCallback_OnGetBestObserverTarget( GetBestObserverTarget )
 		}
 	#endif
 	
@@ -287,6 +288,10 @@ void function UpdateRespawnChamberRuis( var rui, bool waitingToBeRespawned )
 	}
 }
 #endif
+bool function RespawnBeaconsAreEnabled()
+{
+	return GetCurrentPlaylistVarBool( "respawn_beacons_enabled", true )
+}
 
 void function RespawnEntitySpawned( entity ent )
 {
@@ -1109,16 +1114,18 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
+
+	player.FreezeControlsOnServer()
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
 
 	entity dummyEnt = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl" ) // TODO: use generic model.  Can't use player settings here since they could be a spectator
 	float idleTime = dummyEnt.GetSequenceDuration( animData.idleAnim )
 	float jumpTime = dummyEnt.GetSequenceDuration( animData.jumpAnim )
 	float totalTime = idleTime + jumpTime
-
-	Remote_CallFunction_NonReplay( player, "ServerCallback_RespawnPodStarted", Time() + totalTime )
 	dummyEnt.Destroy()
-
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RespawnPodStarted", Time() + totalTime )
+	
 	player.p.respawnPod = ship
 	player.StartObserverMode( OBS_MODE_CHASE )
 	player.SetObserverTarget( ship )
@@ -1158,8 +1165,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 	wait idleTime
 	
-	if(!IsValid(player)) return
-	
+	if(!IsValid(player) || !IsValid(ship) ) return
+
 	player.StopObserverMode()
 	ClearPlayerEliminated( player )
 	player.p.respawnPodLanded = true
@@ -1173,16 +1180,24 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	e[ "didHolsterAndDisableWeapons" ] <- true
 	player.SetInvulnerable()
 	EmitSoundOnEntityOnlyToPlayer( player, player, animData.firstPersonJumpOutSound )
+	
 	waitthread FirstPersonSequence( jumpAnimSequence, player, ship )
-
+	
+	if(!IsValid(player) ) 
+		return
+	
 	//return controls
-	player.SetAngles( player.GetAngles() ) // this works don't change it
+	DecideRespawnPlayer( player )
+	player.SetAngles( player.GetAngles() ) // this works don't change it	
 	player.ClearInvulnerable()
 	player.UnfreezeControlsOnServer()
 
 	FallTempAirControl( player )
+	
+	if(!IsValid(player)) 
+		return
+	
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_returnFromRespawn" )
-	DecideRespawnPlayer( player )
 }
 
 void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, int pos, vector teleportOrigin )
@@ -1276,7 +1291,12 @@ void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, in
 void function FadePlayerView( entity player, float duration, table<string,bool> e )
 {
 	player.EndSignal( "OnDeath" )
+	
 	wait duration
+	
+	if( !IsValid(player) ) 
+		return
+	
 	RemoveCinematicFlag( player, CE_FLAG_EMBARK )
 	e[ "clearDof" ] = false
 	ScreenFadeFromBlack( player, 1.0, 1.0 )
@@ -1324,18 +1344,6 @@ void function OnPlayerTouchGround( entity player )
 	player.p.lastRespawnTouchGroundTime = Time()
 
 	PIN_PlayerLandedOnGround( player )
-}
-
-entity function GetBestObserverTarget( entity observer, bool reverse )
-{
-	if ( IsValid( observer.p.respawnPod ) )
-	{
-		if ( observer.GetObserverMode() != OBS_MODE_CHASE )
-			observer.StartObserverMode( OBS_MODE_CHASE )
-		return observer.p.respawnPod
-	}
-
-	return null
 }
 #endif
 
