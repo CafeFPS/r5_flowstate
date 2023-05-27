@@ -231,7 +231,7 @@ void function Flowstate_DestroyChestfocusParticleDelayed( entity ent )
 		}
 	)
 	
-	wait 1.5
+	wait GetAreaSonarScanDuration() - AREA_SONAR_SCAN_HIGHLIGHT_DURATION
 }
 
 void function IncrementSonarPerTeam( int team )
