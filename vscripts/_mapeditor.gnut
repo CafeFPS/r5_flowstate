@@ -15,7 +15,7 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
-global function ReMapCreateRespawnableMedKit
+global function ReMapCreateRespawnableHeal
 global function ReMapCreateSpeedBoost
 
 global function ReMapSetOrigin
@@ -41,6 +41,13 @@ global enum eMapEditorDoorType
     Horizontal
 }
 
+global enum eReMapHealType
+{
+    Heal,
+    Shield,
+    Both
+}
+
 // Remote ent send by ReMap
 global array< entity > MapEditorEnts;
 
@@ -50,9 +57,12 @@ const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
 
 // Respawnable MedKit
 const asset MEDKIT_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_large.rmdl"
+const asset BATTERY_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_shield_battery_large.rmdl"
+const asset PHOENIX_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_phoenix_kit_v1.rmdl"
 const asset MEDKIT_FX = $"P_LL_med_drone_jet_ctr_loop"
 const asset MEDKIT_SFX = $"survival_loot_pickup_Medkit_3P"
-const string MEDKIT_HEAL_SFX  = "Lifeline_Drone_Healing_1P"
+const asset BATTERY_SFX = $"survival_loot_pickup_Battery_Shield_3p"
+const string HEAL_SFX  = "Lifeline_Drone_Healing_1P"
 
 // Respawnable Boost
 const asset BOOST_MDL = $"mdl/fx/plasma_sphere_01.rmdl"
@@ -68,8 +78,11 @@ void function MapEditor_Init()
     PrecacheModel( BALLON_MDL )
 
     PrecacheModel( MEDKIT_MDL )
+    PrecacheModel( BATTERY_MDL )
+    PrecacheModel( PHOENIX_MDL )
     PrecacheParticleSystem( MEDKIT_FX )
     PrecacheParticleSystem( MEDKIT_SFX )
+    PrecacheParticleSystem( BATTERY_SFX )
 
     PrecacheModel( BOOST_MDL )
     PrecacheModel( BOOST_CIRCLE )
@@ -128,9 +141,7 @@ void function MapTriggers_Init()
 
 void function ReMapDidLoad()
 {
-    //ReMapCreateRespawnableMedKit( < 3243, 5408, -4296 >, 3, 3, true )
-    //ReMapCreateRespawnableMedKit( < 3143, 5408, -4296 >, 3, 3, false )
-    ReMapCreateSpeedBoost( < 3243, 5408, -4296 >, < 3, 162, 255 >, 5.0, 0.35, 3.5, 0.5 )
+    
 }
 
 entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float height = 2000, bool debugdraw = false)
@@ -657,12 +668,13 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     DispatchSpawn( trigger )
 }
 
-struct RespawnableMedKit
+struct RespawnableHealStruct
 {
-    entity medkit
-    entity medkit_proxy
+    entity heal
+    entity heal_proxy
     vector spawnPos
 
+    int healType
     float respawnTime = 10.0
     float healTime = 3.0
     bool progressive = false
@@ -670,76 +682,82 @@ struct RespawnableMedKit
     array< entity > fx
 }
 
-void function ReMapCreateRespawnableMedKit( vector spawnPos, float respawnTime, float healTime, bool progressive, bool addToArray = false )
+array< entity > isPhoenixActive = []
+
+void function ReMapCreateRespawnableHeal( vector spawnPos, int healType, float respawnTime, float healTime, bool progressive, bool addToArray = false )
 {
-    RespawnableMedKit instance
+    RespawnableHealStruct instance
     instance.spawnPos = spawnPos
     instance.respawnTime = respawnTime
     instance.healTime = healTime
     instance.progressive = progressive
     instance.addToArray = addToArray
+    instance.healType = healType
 
-    instance.medkit = CreateFRProp( MEDKIT_MDL, instance.spawnPos + < 0, 0, 32 > , ZERO_VECTOR, true, 50000 )
-    instance.medkit.SetModelScale( 1 )
-    instance.medkit.kv.renderamt = 255
-    instance.medkit.kv.rendermode = 3
-    instance.medkit.kv.rendercolor = "255 255 255 200"
-    instance.medkit.kv.solid = 0
-    instance.medkit.NotSolid()
-    thread RotateEntity( instance.medkit, 7.0 , false )
+    instance.heal = MapEditor_CreateProp( DetermineHealModel( instance.healType ), instance.spawnPos + < 0, 0, 32 >, ZERO_VECTOR, false, 50000 )
+    instance.heal.SetModelScale( 1 )
+    instance.heal.kv.renderamt = 255
+    instance.heal.kv.rendercolor = "255 255 255 200"
+    instance.heal.kv.solid = 0
+    instance.heal.NotSolid()
+    thread RotateEntity( instance.heal, 7.0 , false )
 
     for ( int i = 0; i < 4; i++ )
     {
-        entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( MEDKIT_FX ), instance.medkit.GetOrigin(), < 0, 0 +  i * 90, 0 > )
-        fx.SetParent( instance.medkit )
+        entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( MEDKIT_FX ), instance.heal.GetOrigin(), < 0, 0 +  i * 90, 0 > )
+        fx.SetParent( instance.heal )
         instance.fx.append( fx )
     }
 
-    EmitSoundOnEntity( instance.medkit, MEDKIT_SFX )
-        wait 2
-    StopSoundOnEntity( instance.medkit, MEDKIT_SFX )
+    SetSurvivalPropHighlight( instance.heal, instance.healType == eReMapHealType.Both ? "survival_item_epic" : "survival_item_rare", false )
 
-    instance.medkit_proxy = CreateEntity( "trigger_cylinder" )
-    instance.medkit_proxy.SetRadius( 50 )
-    instance.medkit_proxy.SetAboveHeight( 60 )
-    instance.medkit_proxy.SetBelowHeight( 0 )
-    instance.medkit_proxy.SetOrigin( instance.spawnPos )
-    DispatchSpawn( instance.medkit_proxy )
-    instance.medkit_proxy.SetParent( instance.medkit )
-    thread OnTouchMedKit( instance )
+    EmitSoundOnEntity( instance.heal, DetermineHealSound( instance.healType ) )
+        wait 2
+    StopSoundOnEntity( instance.heal, DetermineHealSound( instance.healType ) )
+
+    instance.heal_proxy = CreateEntity( "trigger_cylinder" )
+    instance.heal_proxy.SetRadius( 50 )
+    instance.heal_proxy.SetAboveHeight( 60 )
+    instance.heal_proxy.SetBelowHeight( 0 )
+    instance.heal_proxy.SetOrigin( instance.spawnPos )
+    DispatchSpawn( instance.heal_proxy )
+    instance.heal_proxy.SetParent( instance.heal )
+    thread OnTouchHeal( instance )
 
     if ( addToArray )
     {
-        MapEditorEnts.extend( [ instance.medkit, instance.medkit_proxy ] )
+        MapEditorEnts.extend( [ instance.heal, instance.heal_proxy ] )
 
         foreach ( entity fx in instance.fx ) MapEditorEnts.append( fx )
     }
 }
 
-void function OnTouchMedKit( RespawnableMedKit instance )
+void function OnTouchHeal( RespawnableHealStruct instance )
 {
     bool active = true
     while ( active )
     {
-        if ( !IsValid( instance.medkit_proxy ) ) break
+        if ( !IsValid( instance.heal_proxy ) ) break
 
-        array< entity > touchingEnts = instance.medkit_proxy.GetTouchingEntities()
+        array< entity > touchingEnts = instance.heal_proxy.GetTouchingEntities()
 
         foreach ( touchingEnt in touchingEnts )
         {
-            if ( touchingEnt.IsPlayer() && IsValid( touchingEnt ) && touchingEnt.GetHealth() != touchingEnt.GetMaxHealth() || touchingEnt.GetShieldHealth() != touchingEnt.GetShieldHealthMax() )
+            if ( touchingEnt.IsPlayer() && IsValid( touchingEnt ) && PlayerCanUse_RespawnableHeal( touchingEnt, instance.healType ) )
             {
+                isPhoenixActive.append( touchingEnt )
+
                 StatusEffect_AddEndless( touchingEnt, eStatusEffect.drone_healing, 1 )
 
-                EmitSoundOnEntityOnlyToPlayer( touchingEnt, touchingEnt, MEDKIT_HEAL_SFX )
-                instance.medkit.kv.rendercolor = "255 255 255 50"
+                EmitSoundOnEntityOnlyToPlayer( touchingEnt, touchingEnt, HEAL_SFX )
+                instance.heal.kv.rendercolor = "255 255 255 50"
                 for ( int i = 0; i < instance.fx.len(); i++ )
                 {
                     if ( IsValid( instance.fx[i] ) ) instance.fx[i].Destroy()
                 }
                 instance.fx.clear()
 
-                bool hasShield = EquipmentSlot_GetLootRefForSlot( touchingEnt, "armor" ) != ""
+                thread DestroyHeal( instance )
 
                 if ( instance.progressive )
                 {
@@ -751,21 +769,30 @@ void function OnTouchMedKit( RespawnableMedKit instance )
 
                     if ( IsValid( touchingEnt ) )
                     {
-                if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
-                if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
+                        bool hasShield = EquipmentSlot_GetLootRefForSlot( touchingEnt, "armor" ) != ""
 
-                        if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
+                        switch ( instance.healType )
+                        {
+                            case eReMapHealType.Heal:
+                                touchingEnt.SetHealth( touchingEnt.GetMaxHealth() )
+                                break
 
-                        touchingEnt.SetHealth( touchingEnt.GetMaxHealth() )
+                            case eReMapHealType.Shield:
+                                if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
+                                break
+
+                            case eReMapHealType.Both:
+                                touchingEnt.SetHealth( touchingEnt.GetMaxHealth() )
+                                if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
+                            break
+                        }
                     }
                 }
 
-                StopSoundOnEntity( touchingEnt, MEDKIT_HEAL_SFX )
+                isPhoenixActive.removebyvalue( touchingEnt )
+
+                StopSoundOnEntity( touchingEnt, HEAL_SFX )
                 StatusEffect_StopAllOfType( touchingEnt, eStatusEffect.drone_healing )
-
-                thread OnMedkitPickup( instance )
-
-                if ( IsValid( instance.medkit_proxy ) ) instance.medkit_proxy.Destroy()
             }
         }
         
@@ -773,7 +800,16 @@ void function OnTouchMedKit( RespawnableMedKit instance )
     }
 }
 
-void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit instance )
+void function DestroyHeal( RespawnableHealStruct instance )
+{
+    wait instance.healTime
+
+    thread OnHealPickup( instance )
+
+    if ( IsValid( instance.heal_proxy ) ) instance.heal_proxy.Destroy()
+}
+
+void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct instance )
 {
     bool hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
     bool hasLowHealth = touchingEnt.GetHealth() < touchingEnt.GetMaxHealth()
@@ -787,10 +823,10 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit ins
     bool isTakingFire = false
 
     //Heal health first
-    if( hasLowHealth )
+    if ( hasLowHealth && instance.healType == eReMapHealType.Heal || instance.healType == eReMapHealType.Both )
     {
         float healWait = ( instance.healTime / 2 ) / HealthRemaining
-        while( hasLowHealth )
+        while ( hasLowHealth )
         {
             if ( IsTakingFire( health, touchingEnt.GetHealth() ) || IsTakingFire( shield, touchingEnt.GetShieldHealth() ) )
             {
@@ -804,7 +840,7 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit ins
 
             hasLowHealth = touchingEnt.GetHealth() < touchingEnt.GetMaxHealth()
 
-            if( touchingEnt.GetHealth() + 1 > touchingEnt.GetMaxHealth() )
+            if ( touchingEnt.GetHealth() + 1 > touchingEnt.GetMaxHealth() )
             {
                 touchingEnt.SetHealth( touchingEnt.GetMaxHealth() )
             }
@@ -815,10 +851,10 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit ins
     }
 
     //now gen sheild
-    if( hasLowShield && !isTakingFire )
+    if ( hasLowShield && !isTakingFire && instance.healType == eReMapHealType.Shield || instance.healType == eReMapHealType.Both )
     {
         float sheildWait = ( instance.healTime / 2 ) / SheildRemaining
-        while( hasLowShield )
+        while ( hasLowShield )
         {
             if ( IsTakingFire( shield, touchingEnt.GetShieldHealth() ) )
             {
@@ -831,7 +867,7 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit ins
 
             hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
 
-            if( touchingEnt.GetShieldHealth() + 1 > touchingEnt.GetShieldHealthMax() )
+            if ( touchingEnt.GetShieldHealth() + 1 > touchingEnt.GetShieldHealthMax() )
             {
                 touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
             }
@@ -842,18 +878,57 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableMedKit ins
     }
 }
 
+asset function DetermineHealModel( int healType )
+{
+    switch ( healType )
+    {
+        case eReMapHealType.Heal: return MEDKIT_MDL
+        case eReMapHealType.Shield: return BATTERY_MDL
+        case eReMapHealType.Both: return PHOENIX_MDL
+    }
+
+    return $"mdl/dev/empty.rmdl"
+}
+
+asset function DetermineHealSound( int healType )
+{
+    switch ( healType )
+    {
+        case eReMapHealType.Heal: return MEDKIT_SFX
+        case eReMapHealType.Shield:
+        case eReMapHealType.Both: return BATTERY_SFX
+    }
+
+    return MEDKIT_SFX
+}
+
+bool function PlayerCanUse_RespawnableHeal( entity player, int healType )
+{
+    switch ( healType )
+    {
+        case eReMapHealType.Heal:
+            return player.GetHealth() != player.GetMaxHealth() && !isPhoenixActive.contains( player )
+        case eReMapHealType.Shield:
+            return player.GetShieldHealth() != player.GetShieldHealthMax() && !isPhoenixActive.contains( player )
+        case eReMapHealType.Both:
+        return player.GetHealth() != player.GetMaxHealth() || player.GetShieldHealth() != player.GetShieldHealthMax()
+    }
+
+    return false
+}
+
 bool function IsTakingFire( int startingHeal, int currentHeal )
 {
     return currentHeal < startingHeal
 }
 
-void function OnMedkitPickup( RespawnableMedKit instance )
+void function OnHealPickup( RespawnableHealStruct instance )
 {
-    instance.medkit_proxy.WaitSignal( "OnDestroy" )
+    instance.heal_proxy.WaitSignal( "OnDestroy" )
     wait instance.respawnTime
-    if ( IsValid( instance.medkit ) ) instance.medkit.Destroy()
+    if ( IsValid( instance.heal ) ) instance.heal.Destroy()
     
-    ReMapCreateRespawnableMedKit( instance.spawnPos, instance.respawnTime, instance.healTime, instance.progressive, instance.addToArray )
+    ReMapCreateRespawnableHeal( instance.spawnPos, instance.healType, instance.respawnTime, instance.healTime, instance.progressive, instance.addToArray )
 }
 
 void function RotateEntity( entity ent, float speed, bool rightside )
@@ -962,7 +1037,7 @@ void function CreateBoostTrigger( RespawnableBoost instance )
 
         foreach( touchingEnt in touchingEnts  )
         {
-            if ( touchingEnt.IsPlayer() )
+            if ( touchingEnt.IsPlayer() && IsValid( touchingEnt ) )
             {
                 StatusEffect_AddTimed( touchingEnt, eStatusEffect.speed_boost, instance.strengh, instance.boostDuration, instance.fadeTime )
 
