@@ -790,6 +790,7 @@ void function OnTouchHeal( RespawnableHealStruct instance )
                 }
 
                 isPhoenixActive.removebyvalue( touchingEnt )
+                ArrayRemoveInvalid( isPhoenixActive )
 
                 StopSoundOnEntity( touchingEnt, HEAL_SFX )
                 StatusEffect_StopAllOfType( touchingEnt, eStatusEffect.drone_healing )
