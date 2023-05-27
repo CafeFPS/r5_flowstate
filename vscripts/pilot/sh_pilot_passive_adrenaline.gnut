@@ -1,3 +1,5 @@
+//Server made by @CafeFPS
+
 global function ShPassiveAdrenaline_Init
 
 #if CLIENT
