@@ -168,6 +168,7 @@ global struct SvGlobals
 	array< void functionref( entity, entity, string, int, vector, vector ) > onWeaponAttackCallbacks
 	array< void functionref( entity ) > onPreClientDisconnectedCallbacks
 	array< void functionref( entity, entity, int ) > onDeathBoxSpawnedCallbacks
+	array< entity functionref( entity, bool ) > onGetBestObserverTargetCallbacks
 }
 
 global SvGlobals svGlobal
