@@ -668,6 +668,7 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     DispatchSpawn( trigger )
 }
 
+// RespawnableHeal was inspired by the script of Zer0Bytes#4428
 struct RespawnableHealStruct
 {
     entity heal
@@ -712,8 +713,6 @@ void function ReMapCreateRespawnableHeal( vector spawnPos, int healType, float r
     SetSurvivalPropHighlight( instance.heal, instance.healType == eReMapHealType.Both ? "survival_item_epic" : "survival_item_rare", false )
 
     EmitSoundOnEntity( instance.heal, DetermineHealSound( instance.healType ) )
-        wait 2
-    StopSoundOnEntity( instance.heal, DetermineHealSound( instance.healType ) )
 
     instance.heal_proxy = CreateEntity( "trigger_cylinder" )
     instance.heal_proxy.SetRadius( 50 )
@@ -958,6 +957,7 @@ void function RotateEntity( entity ent, float speed, bool rightside )
     }
 }
 
+// RespawnableBoost was inspired by the script of Archtux#9300
 struct RespawnableBoost
 {
     entity boost
@@ -1022,7 +1022,10 @@ void function ReMapCreateSpeedBoost( vector spawnPos, vector color, float respaw
     instance.boost_proxy.SetParent( instance.boost )
     DispatchSpawn( instance.boost_proxy )
 
-    if ( addToArray ) MapEditorEnts.append( instance.boost )
+    if ( addToArray )
+    {
+        MapEditorEnts.extend( [ instance.boost, instance.boost_proxy, circle ] )
+    }
 
     thread CreateBoostTrigger( instance )
 }
