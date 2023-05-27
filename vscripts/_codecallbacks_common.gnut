@@ -81,6 +81,7 @@ global function CodeCallback_OnPlayerBeginWallhang
 global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
+global function CodeCallback_GetBestObserverTarget
 global function CodeCallback_OnWeaponAttack
 
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
@@ -154,6 +155,20 @@ struct
 	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
 } file
+
+entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
+{
+	//todo add team only check
+	
+	if ( IsValid( observer.p.respawnPod ) )
+	{
+		if ( observer.GetObserverMode() != OBS_MODE_CHASE )
+			observer.StartObserverMode( OBS_MODE_CHASE )
+		return observer.p.respawnPod
+	}
+
+	return null
+}
 
 void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 {
@@ -626,7 +641,8 @@ void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, en
 
 void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )
 {
-	
+	Assert( !svGlobal.onGetBestObserverTargetCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnGetBestObserverTarget" )
+	svGlobal.onGetBestObserverTargetCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_GameStatePostEnter( int number, void functionref( ) callbackFunc )
