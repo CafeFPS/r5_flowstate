@@ -856,7 +856,6 @@ global const TITAN_DAMAGE_STAGE_3 			= 0.25
 global const TITAN_DAMAGE_STAGE_DOOMED 		= 0.0
 global const int DOOMED_MIN_HEALTH 			= 1
 
-global const float AREA_SONAR_SCAN_RADIUS 			= 1250.0
 global const float AREA_SONAR_SCAN_PULSE_DURATION 	= 6.0
 
 global const float SONAR_GRENADE_RADIUS 			= 1250.0
