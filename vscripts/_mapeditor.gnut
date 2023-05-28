@@ -45,6 +45,8 @@ global enum eReMapHealType
 {
     Heal,
     Shield,
+    HealSmall,
+    ShieldSmall,
     Both
 }
 
@@ -57,11 +59,19 @@ const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
 
 // Respawnable MedKit
 const asset MEDKIT_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_large.rmdl"
-const asset BATTERY_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_shield_battery_large.rmdl"
-const asset PHOENIX_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_phoenix_kit_v1.rmdl"
 const asset MEDKIT_FX = $"P_LL_med_drone_jet_ctr_loop"
 const asset MEDKIT_SFX = $"survival_loot_pickup_Medkit_3P"
+
+const asset MEDKIT_SMALL_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_small.rmdl"
+const asset MEDKIT_SMALL_SFX = $"survival_loot_pickup_3p_small_health"
+
+const asset BATTERY_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_shield_battery_large.rmdl"
 const asset BATTERY_SFX = $"survival_loot_pickup_Battery_Shield_3p"
+
+const asset BATTERY_SMALL_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_shield_battery_small.rmdl"
+
+const asset PHOENIX_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_phoenix_kit_v1.rmdl"
+
 const string HEAL_SFX  = "Lifeline_Drone_Healing_1P"
 
 // Respawnable Boost
@@ -78,11 +88,18 @@ void function MapEditor_Init()
     PrecacheModel( BALLON_MDL )
 
     PrecacheModel( MEDKIT_MDL )
-    PrecacheModel( BATTERY_MDL )
-    PrecacheModel( PHOENIX_MDL )
     PrecacheParticleSystem( MEDKIT_FX )
     PrecacheParticleSystem( MEDKIT_SFX )
+
+    PrecacheModel( MEDKIT_SMALL_MDL )
+    PrecacheParticleSystem( MEDKIT_SMALL_SFX )
+
+    PrecacheModel( BATTERY_MDL )
     PrecacheParticleSystem( BATTERY_SFX )
+
+    PrecacheModel( BATTERY_SMALL_MDL )
+
+    PrecacheModel( PHOENIX_MDL )
 
     PrecacheModel( BOOST_MDL )
     PrecacheModel( BOOST_CIRCLE )
@@ -678,19 +695,23 @@ struct RespawnableHealStruct
     int healType
     float respawnTime = 10.0
     float healTime = 3.0
+    int healAmount = 25
     bool progressive = false
     bool addToArray = false
     array< entity > fx
 }
 
+array< entity > isHealActive = []
+array< entity > isShieldActive = []
 array< entity > isPhoenixActive = []
 
-void function ReMapCreateRespawnableHeal( vector spawnPos, int healType, float respawnTime, float healTime, bool progressive, bool addToArray = false )
+void function ReMapCreateRespawnableHeal( vector spawnPos, int healType, float respawnTime, float healTime, int healAmount, bool progressive, bool addToArray = false )
 {
     RespawnableHealStruct instance
     instance.spawnPos = spawnPos
     instance.respawnTime = respawnTime
     instance.healTime = healTime
+    instance.healAmount = healAmount
     instance.progressive = progressive
     instance.addToArray = addToArray
     instance.healType = healType
@@ -710,7 +731,7 @@ void function ReMapCreateRespawnableHeal( vector spawnPos, int healType, float r
         instance.fx.append( fx )
     }
 
-    SetSurvivalPropHighlight( instance.heal, instance.healType == eReMapHealType.Both ? "survival_item_epic" : "survival_item_rare", false )
+    SetSurvivalPropHighlight( instance.heal, DeterminePropHighlight( instance.healType ), false )
 
     EmitSoundOnEntity( instance.heal, DetermineHealSound( instance.healType ) )
 
@@ -744,11 +765,13 @@ void function OnTouchHeal( RespawnableHealStruct instance )
         {
             if ( touchingEnt.IsPlayer() && IsValid( touchingEnt ) && PlayerCanUse_RespawnableHeal( touchingEnt, instance.healType ) )
             {
-                isPhoenixActive.append( touchingEnt )
+                DetermineArray( touchingEnt, instance.healType )
 
+                StopSoundOnEntity( touchingEnt, HEAL_SFX )
+                StatusEffect_StopAllOfType( touchingEnt, eStatusEffect.drone_healing )
                 StatusEffect_AddEndless( touchingEnt, eStatusEffect.drone_healing, 1 )
-
                 EmitSoundOnEntityOnlyToPlayer( touchingEnt, touchingEnt, HEAL_SFX )
+
                 instance.heal.kv.rendercolor = "255 255 255 50"
                 for ( int i = 0; i < instance.fx.len(); i++ )
                 {
@@ -775,9 +798,17 @@ void function OnTouchHeal( RespawnableHealStruct instance )
                             case eReMapHealType.Heal:
                                 touchingEnt.SetHealth( touchingEnt.GetMaxHealth() )
                                 break
+                            
+                            case eReMapHealType.HealSmall:
+                                touchingEnt.SetHealth( min( touchingEnt.GetMaxHealth(), touchingEnt.GetHealth() + instance.healAmount ) )
+                                break
 
                             case eReMapHealType.Shield:
                                 if ( hasShield ) touchingEnt.SetShieldHealth( touchingEnt.GetShieldHealthMax() )
+                                break
+
+                            case eReMapHealType.ShieldSmall:
+                                if ( hasShield ) touchingEnt.SetShieldHealth( min( touchingEnt.GetShieldHealthMax(), touchingEnt.GetShieldHealth() + instance.healAmount ) )
                                 break
 
                             case eReMapHealType.Both:
@@ -788,8 +819,7 @@ void function OnTouchHeal( RespawnableHealStruct instance )
                     }
                 }
 
-                isPhoenixActive.removebyvalue( touchingEnt )
-                ArrayRemoveInvalid( isPhoenixActive )
+                DetermineArray( touchingEnt, instance.healType, true )
 
                 StopSoundOnEntity( touchingEnt, HEAL_SFX )
                 StatusEffect_StopAllOfType( touchingEnt, eStatusEffect.drone_healing )
@@ -811,8 +841,8 @@ void function DestroyHeal( RespawnableHealStruct instance )
 
 void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct instance )
 {
-    bool hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
     bool hasLowHealth = touchingEnt.GetHealth() < touchingEnt.GetMaxHealth()
+    bool hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
 
     int HealthRemaining = touchingEnt.GetMaxHealth() - touchingEnt.GetHealth()
     int SheildRemaining = touchingEnt.GetShieldHealthMax() - touchingEnt.GetShieldHealth()
@@ -823,9 +853,10 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct
     bool isTakingFire = false
 
     //Heal health first
-    if ( hasLowHealth && instance.healType == eReMapHealType.Heal || instance.healType == eReMapHealType.Both )
+    if ( hasLowHealth && instance.healType == eReMapHealType.HealSmall || instance.healType == eReMapHealType.Heal || instance.healType == eReMapHealType.Both )
     {
         float healWait = ( instance.healTime / 2 ) / HealthRemaining
+        int amount = touchingEnt.GetHealth() + instance.healAmount
         while ( hasLowHealth )
         {
             if ( IsTakingFire( health, touchingEnt.GetHealth() ) || IsTakingFire( shield, touchingEnt.GetShieldHealth() ) )
@@ -838,7 +869,14 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct
                 shield = touchingEnt.GetShieldHealth()
             }
 
-            hasLowHealth = touchingEnt.GetHealth() < touchingEnt.GetMaxHealth()
+            if ( instance.healType == eReMapHealType.HealSmall )
+            {
+                hasLowHealth = touchingEnt.GetHealth() < min( touchingEnt.GetMaxHealth(), amount )
+            }
+            else
+            {
+                hasLowHealth = touchingEnt.GetHealth() < touchingEnt.GetMaxHealth()
+            }
 
             if ( touchingEnt.GetHealth() + 1 > touchingEnt.GetMaxHealth() )
             {
@@ -851,9 +889,10 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct
     }
 
     //now gen sheild
-    if ( hasLowShield && !isTakingFire && instance.healType == eReMapHealType.Shield || instance.healType == eReMapHealType.Both )
+    if ( hasLowShield && !isTakingFire && instance.healType == eReMapHealType.ShieldSmall || instance.healType == eReMapHealType.Shield || instance.healType == eReMapHealType.Both )
     {
         float sheildWait = ( instance.healTime / 2 ) / SheildRemaining
+        int amount = touchingEnt.GetShieldHealth() + instance.healAmount
         while ( hasLowShield )
         {
             if ( IsTakingFire( shield, touchingEnt.GetShieldHealth() ) )
@@ -865,7 +904,14 @@ void function OnProgressiveHealPlayer( entity touchingEnt, RespawnableHealStruct
                 shield = touchingEnt.GetShieldHealth()
             }
 
-            hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
+            if ( instance.healType == eReMapHealType.ShieldSmall )
+            {
+                hasLowShield = touchingEnt.GetShieldHealth() < min( touchingEnt.GetShieldHealthMax(), amount )
+            }
+            else
+            {
+                hasLowShield = touchingEnt.GetShieldHealth() < touchingEnt.GetShieldHealthMax()
+            }
 
             if ( touchingEnt.GetShieldHealth() + 1 > touchingEnt.GetShieldHealthMax() )
             {
@@ -882,9 +928,11 @@ asset function DetermineHealModel( int healType )
 {
     switch ( healType )
     {
-        case eReMapHealType.Heal: return MEDKIT_MDL
-        case eReMapHealType.Shield: return BATTERY_MDL
-        case eReMapHealType.Both: return PHOENIX_MDL
+        case eReMapHealType.HealSmall:   return MEDKIT_SMALL_MDL
+        case eReMapHealType.ShieldSmall: return BATTERY_SMALL_MDL
+        case eReMapHealType.Heal:        return MEDKIT_MDL
+        case eReMapHealType.Shield:      return BATTERY_MDL
+        case eReMapHealType.Both:        return PHOENIX_MDL
     }
 
     return $"mdl/dev/empty.rmdl"
@@ -894,12 +942,68 @@ asset function DetermineHealSound( int healType )
 {
     switch ( healType )
     {
-        case eReMapHealType.Heal: return MEDKIT_SFX
+        case eReMapHealType.HealSmall: return MEDKIT_SMALL_SFX
+        case eReMapHealType.Heal:      return MEDKIT_SFX
+
+        case eReMapHealType.ShieldSmall:
         case eReMapHealType.Shield:
-        case eReMapHealType.Both: return BATTERY_SFX
+        case eReMapHealType.Both:      return BATTERY_SFX
     }
 
     return MEDKIT_SFX
+}
+
+string function DeterminePropHighlight( int healType )
+{
+    switch ( healType )
+    {
+        case eReMapHealType.HealSmall:
+        case eReMapHealType.ShieldSmall:
+            return "survival_item_common"
+
+        case eReMapHealType.Heal:
+        case eReMapHealType.Shield:
+            return "survival_item_rare"
+
+        case eReMapHealType.Both: return "survival_item_epic"
+    }
+
+    return "survival_item_common"
+}
+
+void function DetermineArray( entity player, int healType, bool remove = false )
+{
+    switch ( healType )
+    {
+        case eReMapHealType.HealSmall:
+        case eReMapHealType.Heal:
+            if ( remove )
+            {
+                isHealActive.removebyvalue( player )
+                ArrayRemoveInvalid( isHealActive )
+            }
+            else isHealActive.append( player )
+            break
+
+        case eReMapHealType.ShieldSmall:
+        case eReMapHealType.Shield:
+            if ( remove )
+            {
+                isShieldActive.removebyvalue( player )
+                ArrayRemoveInvalid( isShieldActive )
+            }
+            else isShieldActive.append( player )
+            break
+
+        case eReMapHealType.Both:
+            if ( remove )
+            {
+                isPhoenixActive.removebyvalue( player )
+                ArrayRemoveInvalid( isPhoenixActive )
+            }
+            else isPhoenixActive.append( player )
+        break
+    }
 }
 
 bool function PlayerCanUse_RespawnableHeal( entity player, int healType )
@@ -907,9 +1011,11 @@ bool function PlayerCanUse_RespawnableHeal( entity player, int healType )
     switch ( healType )
     {
         case eReMapHealType.Heal:
-            return player.GetHealth() != player.GetMaxHealth() && !isPhoenixActive.contains( player )
+        case eReMapHealType.HealSmall:
+            return player.GetHealth() != player.GetMaxHealth() && !isPhoenixActive.contains( player ) && !isHealActive.contains( player )
         case eReMapHealType.Shield:
-            return player.GetShieldHealth() != player.GetShieldHealthMax() && !isPhoenixActive.contains( player )
+        case eReMapHealType.ShieldSmall:
+            return player.GetShieldHealth() != player.GetShieldHealthMax() && !isPhoenixActive.contains( player ) && !isShieldActive.contains( player )
         case eReMapHealType.Both:
         return player.GetHealth() != player.GetMaxHealth() || player.GetShieldHealth() != player.GetShieldHealthMax()
     }
@@ -928,7 +1034,7 @@ void function OnHealPickup( RespawnableHealStruct instance )
     wait instance.respawnTime
     if ( IsValid( instance.heal ) ) instance.heal.Destroy()
     
-    ReMapCreateRespawnableHeal( instance.spawnPos, instance.healType, instance.respawnTime, instance.healTime, instance.progressive, instance.addToArray )
+    ReMapCreateRespawnableHeal( instance.spawnPos, instance.healType, instance.respawnTime, instance.healTime, instance.healAmount, instance.progressive, instance.addToArray )
 }
 
 void function RotateEntity( entity ent, float speed, bool rightside )
