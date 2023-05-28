@@ -279,26 +279,34 @@ void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger
 	EndSignal( revealedEnt, "OnDestroy" )
 	
 	entity owner = trigger.GetOwner()
+	int team = owner.GetTeam()
 	
-	IncrementSonarPerTeam( owner.GetTeam() )
-	SonarStart( revealedEnt, revealedEnt.GetOrigin(), owner.GetTeam(), owner )
+	IncrementSonarPerTeam( team )
+	SonarStart( revealedEnt, revealedEnt.GetOrigin(), team, owner )
 	
 	#if DEVELOPER
 	printt("target revealed by area sonar scan " + revealedEnt )
 	#endif
 	
-	wait AREA_SONAR_SCAN_HIGHLIGHT_DURATION
+	OnThreadEnd(
+		function() : ( revealedEnt, team, trigger )
+		{
+			if ( !IsValid( revealedEnt ) )
+				return
+			
+			#if DEVELOPER
+			printt("sonar highlight removed" )
+			#endif
 	
-	if ( !IsValid(revealedEnt) || !revealedEnt.e.sonarTriggers.contains( trigger ) )
-		return
+			if( revealedEnt.e.sonarTriggers.contains(trigger) )
+				revealedEnt.e.sonarTriggers.fastremovebyvalue( trigger )
+			
+			SonarEnd( revealedEnt, team )
+			DecrementSonarPerTeam( team )
+		}
+	)
 
-	revealedEnt.e.sonarTriggers.fastremovebyvalue( trigger )
-	SonarEnd( revealedEnt, owner.GetTeam() )
-	DecrementSonarPerTeam( owner.GetTeam() )
-	
-	#if DEVELOPER
-	printt("we tried to remove the highlight" )
-	#endif
+	wait AREA_SONAR_SCAN_HIGHLIGHT_DURATION
 }
 
 
