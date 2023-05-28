@@ -1,6 +1,6 @@
 untyped
 
-global function MapEditor_Init
+global function ReMap_Init
 
 global function MapEditor_CreateProp
 global function MapEditor_SpawnDoor
@@ -18,20 +18,20 @@ global function ReMapCreateJumpTower
 global function ReMapCreateRespawnableHeal
 global function ReMapCreateSpeedBoost
 
-global function ReMapSetOrigin
-global function ReMapSetAngles
-global function ReMapSetBool
-global function ReMapSetFloat
-global function ReMapSetInt
-global function ReMapSetVectorArray01
-global function ReMapSetVectorArray02
-global function ReMapSetAssetArray01
+global function External_ReMapSetOrigin
+global function External_ReMapSetAngles
+global function External_ReMapSetBool
+global function External_ReMapSetFloat
+global function External_ReMapSetInt
+global function External_ReMapSetVectorArray01
+global function External_ReMapSetVectorArray02
+global function External_ReMapSetAssetArray01
 
-global function ReMapRemoveAllEnts
-global function ReMapTeleportToMap
-global function ReMapWritePlayerInfoToFile
+global function External_ReMapRemoveAllEnts
+global function External_ReMapTeleportToMap
+global function External_ReMapWritePlayerInfoToFile
 
-global function ReMapCreateZipline
+global function External_ReMapCreateZiplineWithSettings
 
 global enum eMapEditorDoorType
 {
@@ -82,7 +82,7 @@ const asset BOOST_SPRINT_FP = $"P_sprint_FP"
 const bool IS_FLOWSTATE_SCRIPT = true
 
 
-void function MapEditor_Init()
+void function ReMap_Init()
 {
     PrecacheModel( BALLON_BASE_MDL )
     PrecacheModel( BALLON_MDL )
@@ -1211,26 +1211,26 @@ int int06 = 0
 
 array< asset > arrayAsset01 = []
 
-void function ReMapSetOrigin( vector vec01, vector vec02 )
+void function External_ReMapSetOrigin( vector vec01, vector vec02 )
 {
     origin01 = vec01
     origin02 = vec02
 }
 
-void function ReMapSetAngles( vector vec01, vector vec02 )
+void function External_ReMapSetAngles( vector vec01, vector vec02 )
 {
     angles01 = vec01
     angles02 = vec02
 }
 
-void function ReMapSetBool( array < bool > arr )
+void function External_ReMapSetBool( array < bool > arr )
 {
     if ( arr.len() >= 1 ) bool01 = arr[ 0 ]
     if ( arr.len() >= 2 ) bool02 = arr[ 1 ]
     if ( arr.len() >= 3 ) bool03 = arr[ 2 ]
 }
 
-void function ReMapSetFloat( array < float > arr )
+void function External_ReMapSetFloat( array < float > arr )
 {
     if ( arr.len() >= 1 ) float01 = arr[ 0 ]
     if ( arr.len() >= 2 ) float02 = arr[ 1 ]
@@ -1243,7 +1243,7 @@ void function ReMapSetFloat( array < float > arr )
     if ( arr.len() >= 9 ) float09 = arr[ 8 ]
 }
 
-void function ReMapSetInt( array < int > arr )
+void function External_ReMapSetInt( array < int > arr )
 {
     if ( arr.len() >= 1 ) int01 = arr[ 0 ]
     if ( arr.len() >= 2 ) int02 = arr[ 1 ]
@@ -1253,27 +1253,27 @@ void function ReMapSetInt( array < int > arr )
     if ( arr.len() >= 6 ) int06 = arr[ 5 ]
 }
 
-void function ReMapSetVectorArray01( array< vector > arr )
+void function External_ReMapSetVectorArray01( array< vector > arr )
 {
     arrayVec01 = arr
 }
 
-void function ReMapSetVectorArray02( array< vector > arr )
+void function External_ReMapSetVectorArray02( array< vector > arr )
 {
     arrayVec02 = arr
 }
 
-void function ReMapSetAssetArray01( array< asset > arr )
+void function External_ReMapSetAssetArray01( array< asset > arr )
 {
     arrayAsset01 = arr
 }
 
-void function ReMapCreateZipline()
+void function External_ReMapCreateZiplineWithSettings()
 {
     MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, bool01, float01, float02, float03, float04, float05, int01, int02, float06, float07, bool02, int03, bool03, int04, int05, arrayVec01, arrayVec02, arrayAsset01, float08, float09, int06, true )
 }
 
-void function ReMapRemoveAllEnts()
+void function External_ReMapRemoveAllEnts()
 {
     foreach( entity ent in MapEditorEnts )
     {
@@ -1283,7 +1283,7 @@ void function ReMapRemoveAllEnts()
     MapEditorEnts.clear();
 }
 
-void function ReMapTeleportToMap()
+void function External_ReMapTeleportToMap()
 {
     int origin = arrayVec01.len()
     int angles = arrayVec02.len()
@@ -1303,7 +1303,7 @@ void function ReMapTeleportToMap()
     }
 }
 
-void function ReMapWritePlayerInfoToFile()
+void function External_ReMapWritePlayerInfoToFile()
 {
     DevTextBufferClear()
 
