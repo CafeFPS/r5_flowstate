@@ -1017,7 +1017,7 @@ bool function PlayerCanUse_RespawnableHeal( entity player, int healType )
         case eReMapHealType.ShieldSmall:
             return player.GetShieldHealth() != player.GetShieldHealthMax() && !isPhoenixActive.contains( player ) && !isShieldActive.contains( player )
         case eReMapHealType.Both:
-        return player.GetHealth() != player.GetMaxHealth() || player.GetShieldHealth() != player.GetShieldHealthMax()
+        return player.GetHealth() != player.GetMaxHealth() || player.GetShieldHealth() != player.GetShieldHealthMax() && !isShieldActive.contains( player )
     }
 
     return false
