@@ -3496,6 +3496,9 @@ void function SetTeam( entity ent, int team )
 		else
 		{
 			ent.Code_SetTeam( team )
+			
+			if( ent.IsPlayer() && IsAlive(ent) && ent.p.isConnected )
+				Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
 		}
 	#endif
 }
