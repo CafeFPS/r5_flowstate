@@ -190,7 +190,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//seterrorhandler(void function() {})
 	//ScriptCompilerTest()
 	LoadDiamond()
-	MapEditor_Init()
+	ReMap_Init()
 	LootTicks_Init()
 
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
