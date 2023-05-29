@@ -675,7 +675,10 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	entity player = GetLocalClientPlayer() //Changed to local client instead of local view to avoid bad player username? idk Colombia
+	entity player = GetLocalViewPlayer()
+	
+	if( GameRules_GetGameMode() != SURVIVAL )
+		player = GetLocalClientPlayer()
 	
 	OnThreadEnd(
 		function() : ( player )
@@ -687,8 +690,6 @@ void function InitSurvivalHealthBar()
 	
 	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
 		WaitFrame()
-
-
 }
 
 
