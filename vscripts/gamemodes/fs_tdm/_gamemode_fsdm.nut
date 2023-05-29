@@ -3138,6 +3138,9 @@ void function AssignCharacter( entity player, int index )
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
+	if( !IsValid( player ) || IsDisconnected( player ) )
+		return
+	
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )
 	{
