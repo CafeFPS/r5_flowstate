@@ -666,6 +666,8 @@ void function OnClientConnected( entity player )
 
 			break
 	}
+	
+	player.p.isConnected = true
 }
 
 void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )

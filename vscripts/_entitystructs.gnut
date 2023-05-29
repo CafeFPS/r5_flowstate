@@ -605,6 +605,7 @@ global struct ServerPlayerStruct
 	float lastFullHealthTime
 
 	bool isDisconnected = false
+	bool isConnected = false
 	array<int> empStatusEffectsToClearForPhaseShift //Not great, done to avoid needing code work to get a separate empSlow/empSTurnEffects
 
 	float stats_wallrunTime = 0
