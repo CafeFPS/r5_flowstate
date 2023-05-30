@@ -3776,7 +3776,7 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 		return false
 	
     try{
-    	Message(player,"Latency board", LatencyBoard(), 42069)
+    	Message(player,"Latency board", LatencyBoard(), 8.420)
     }catch(e) {}
 
     return true
