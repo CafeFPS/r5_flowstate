@@ -2558,7 +2558,7 @@ void function SimpleChampionUI()
 	{
 		if( !IsValid( player ) ) continue
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		if( GetCurrentPlaylistName() == "movement_gym" ) {
+		if( GetCurrentPlaylistName() == "fs_movementgym" ) {
 					Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n        With help from AyeZee#6969, Julefox#0050 & @CafeFPS", 7, "UI_Menu_RoundSummary_Results" )
 				}
 		player.SetThirdPersonShoulderModeOff()	
@@ -3776,7 +3776,7 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 		return false
 	
     try{
-    	Message(player,"Latency board", LatencyBoard(), 8)
+    	Message(player,"Latency board", LatencyBoard(), 42069)
     }catch(e) {}
 
     return true
