@@ -161,19 +161,23 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 	int smokeFxId = GetParticleSystemIndex( fx )
 	entity smokeFX = StartParticleEffectOnEntity_ReturnEntity( projectile, smokeFxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 
-	ThreatDetection_CreateThreatZoneForBombardment( null, projectile.GetOrigin(), -1, DEFENSIVE_BOMBARDMENT_RADIUS, 1.0 )
-	
 	EmitSoundOnEntity( projectile, sound_incoming_first)
 
-	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, projectile.GetOrigin(),
+	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, origin,
 		DEFENSIVE_BOMBARDMENT_RADIUS,
 		DEFENSIVE_BOMBARDMENT_DENSITY,
 		DEFENSIVE_BOMBARDMENT_DURATION,
 		DEFENSIVE_BOMBARDMENT_DELAY )
-
+	
+	//Create a threat zone for the passive voices and store the ID so we can clean it up later.
+	int threatZoneID = ThreatDetection_CreateThreatZone( owner, eThreatDetectionZoneType.BOMBARDMENT, origin, owner.GetTeam(), DEFENSIVE_BOMBARDMENT_RADIUS, DEFENSIVE_BOMBARDMENT_RADIUS/2, 0.1, 0.1, 0)
+	
 	wait DEFENSIVE_BOMBARDMENT_DURATION + DEFENSIVE_BOMBARDMENT_DELAY
 
 	if ( IsValid( smokeFX ) )
 		EffectStop( smokeFX )
+	
+	//Remove the threat zone for this bombardment.
+	ThreatDetection_DestroyThreatZone( threatZoneID )
 }
 #endif

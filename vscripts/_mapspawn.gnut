@@ -43,6 +43,12 @@ global struct spawnCallbackEditorClassFuncArray
 
 global typedef pilotEliminationDialogueCallbackType void functionref( int, array<entity>, int, array<entity> )
 
+//ThreatEventCallbackData needs to be registered before svGlobal
+global struct ThreatEventCallbackData
+{
+	int typeState
+}
+
 global struct SvGlobals
 {
 	entity worldspawn
@@ -168,7 +174,13 @@ global struct SvGlobals
 	array< void functionref( entity, entity, string, int, vector, vector ) > onWeaponAttackCallbacks
 	array< void functionref( entity ) > onPreClientDisconnectedCallbacks
 	array< void functionref( entity, entity, int ) > onDeathBoxSpawnedCallbacks
+	
+	// next spectator target handling
 	array< entity functionref( entity, bool ) > onGetBestObserverTargetCallbacks
+	
+	// voices passive
+	table< int, void functionref( entity, ThreatEventCallbackData ) > onThreatEventActivationCallbacks
+	table< int, void functionref( entity, ThreatEventCallbackData ) > onThreatEventStateChangeCallbacks
 }
 
 global SvGlobals svGlobal

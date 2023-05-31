@@ -269,7 +269,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	AddSonarDetectionForPropScript( canisterProxy )
 
 	//Create a threat zone for the passive voices and store the ID so we can clean it up later.
-	int threatZoneID = ThreatDetection_CreateThreatZoneForTrap( owner, canisterProxy.GetOrigin(), team )
+	int threatZoneID = ThreatDetection_CreateThreatZone( owner, eThreatDetectionZoneType.TRAP, canisterProxy.GetOrigin(), team, 512, 128, 1, 0.1, 0)
 
 	// Landing sound handled in impact table: exp_dirty_bomb.txt
 	// EmitSoundOnEntity( canisterProxy, "GasTrap_Land_Default" )

@@ -3,9 +3,6 @@ global function SurvivalCommentary_GetKillLeaderEEH
 global function SurvivalCommentary_GetChampionTeam
 global function SurvivalCommentary_GetChampionEEH
 global function AddSurvivalCommentaryEvent
-global function SurvivalCommentary_InitThreatChatterForPlayer
-global function SurvivalCommentary_OnThreatActivationBombardment
-global function SurvivalCommentary_OnThreatActivationGrenade
 global function SurvivalCommentary_HostAnnounce
 global function SurvivalCommentary_KilledPlayerAnnounce
 global function SurvivalCommentary_ResetAllData
@@ -363,19 +360,4 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, selectedResponseName, responsePlayer )
 	}
-}
-
-void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )
-{
-	
-}
-
-void function SurvivalCommentary_OnThreatActivationBombardment( entity player, ThreatEventCallbackData data )
-{
-	
-}
-
-void function SurvivalCommentary_OnThreatActivationGrenade( entity player, ThreatEventCallbackData data )
-{
-	
 }

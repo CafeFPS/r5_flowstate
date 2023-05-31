@@ -99,21 +99,6 @@ global struct LootZone
     string ref
 }
 
-global struct ThreatEventCallbackData
-{
-	int typeState
-}
-
-global enum eThreatDetectionZoneType
-{
-	TRAP,
-	AMBUSH,
-	PING,
-	KILLZONE,
-	BOMBARDMENT,
-	GRENADE
-}
-
 global enum eStatUpdateTime
 {
 	DISTANCE,

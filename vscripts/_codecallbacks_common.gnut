@@ -650,14 +650,17 @@ void function AddCallback_GameStatePostEnter( int number, void functionref( ) ca
 
 }
 
+//Passive Voices
 void function AddCallback_OnThreatEventActivation( entity player, int threat, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
 {
-	
+	Assert( !( threat in svGlobal.onThreatEventActivationCallbacks ), "Already added " + string( callbackFunc ) + " with AddCallback_OnThreatEventActivation for " + threat )
+	svGlobal.onThreatEventActivationCallbacks[ threat ] <- callbackFunc
 }
 
 void function AddCallback_OnThreatEventStateChange( entity player, int threat, int watch, int view, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
 {
-	
+	Assert( !( threat in svGlobal.onThreatEventStateChangeCallbacks ), "Already added " + string( callbackFunc ) + " with AddCallback_OnThreatEventStateChange for " + threat )
+	svGlobal.onThreatEventStateChangeCallbacks[ threat ] <- callbackFunc
 }
 
 //=====================================================================================
