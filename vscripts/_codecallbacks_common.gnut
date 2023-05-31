@@ -167,6 +167,9 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 		return observer.p.respawnPod
 	}
 
+	foreach( cb in svGlobal.onGetBestObserverTargetCallbacks )
+		cb( observer, reverse )
+	
 	return null
 }
 
