@@ -3032,6 +3032,18 @@ void function WaitingForPlayers_CreateCustomCameras()
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 }
 
+void function WaitingForPlayers_RemoveCustomCameras()
+{
+	entity player = GetLocalClientPlayer()
+	
+	player.ClearMenuCameraEntity()
+	SetMapSetting_FogEnabled( true )
+	
+	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
+	entity camera = CreateClientSidePointCamera( targetCamera.GetOrigin(), targetCamera.GetAngles(), 35.5 )
+	player.SetMenuCameraEntity( camera )
+}
+
 WaitingForPlayersCameraLocPair function NewCameraPair(vector origin, vector angles)
 {
     WaitingForPlayersCameraLocPair locPair
@@ -3074,14 +3086,6 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 	}
 	
 	return cutsceneSpawns	
-}
-
-void function WaitingForPlayers_RemoveCustomCameras()
-{
-	entity player = GetLocalClientPlayer()
-	
-	player.ClearMenuCameraEntity()
-	SetMapSetting_FogEnabled( true )
 }
 
 void function OnGamestatePlaying()

@@ -878,7 +878,7 @@ void function DoChampionSquadCardsPresentation()
 	RuiSetString( rui, "topHeader", topHeader )
 	RuiSetGameTime( rui, "transitionInAt", Time() )
 	RuiSetGameTime( rui, "transitionOutAt", GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
-	RuiSetFloat( rui, "xpBonusAmount", XpEventTypeData_GetAmount( XP_TYPE.KILL_CHAMPION_MEMBER ) )
+	RuiSetFloat( rui, "xpBonusAmount", 420 ) //XpEventTypeData_GetAmount( XP_TYPE.KILL_CHAMPION_MEMBER )
 	RuiSetBool( rui, "isDuoMode", GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
 
 	array<entity> teammates = GetPlayerSquad()
