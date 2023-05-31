@@ -6,7 +6,6 @@ global function KillReplayHud_Deactivate
 
 global function ServerCallback_KillReplayHud_Activate
 global function ServerCallback_KillReplayHud_Deactivate
-global function ServerCallback_UpdateSpectatorTargetCount
 
 struct
 {
@@ -258,13 +257,6 @@ void function Custom_KillReplayHud_Activate()
 
 	//Open Kill Replay Hud
 	RunUIScript("OpenKillReplayHud", image, attackerName, armorTier, islocalclient, GameRules_GetGameMode() == "fs_prophunt" )
-}
-
-void function ServerCallback_UpdateSpectatorTargetCount(int targetCount, bool reverse)
-{
-	file.allowedSpectatorTargetCount = targetCount
-	
-	RunUIScript("UI_FlowstateCustomSetSpectateTargetCount", file.allowedSpectatorTargetCount, reverse)
 }
 
 void function Custom_KillReplayHud_Deactivate()

@@ -20,6 +20,7 @@ global function DeathScreenOnReportButtonClick
 global function DeathScreenTryToggleGladCard
 global function DeathScreenPingRespawn
 global function DeathScreenSpectateNext
+global function DeathScreenSpectatePrev
 global function DeathScreenSkipDeathCam
 global function DeathScreenUpdateCursor
 
@@ -537,13 +538,12 @@ void function DeathScreenOnReportButtonClick( var button )
 {
 	if ( InputIsButtonDown( BUTTON_STICK_RIGHT ) || InputIsButtonDown( KEY_R ) )
 	{
-		thread ReportPlayerOnHold()
+		LaunchExternalWebBrowser( "https://google.com", WEBBROWSER_FLAG_NONE )
 		return
 	}
 	else
 	{
-		//
-		RunClientScript( "UICallback_ReportPlayer" )
+		LaunchExternalWebBrowser( "https://google.com", WEBBROWSER_FLAG_NONE )
 	}
 }
 
@@ -554,6 +554,11 @@ void function DeathScreenSpectateNext( var button )
 		ClientCommand( "spec_next" )
 }
 
+void function DeathScreenSpectatePrev( var button )
+{
+	if ( DeathScreenCanChangeSpectateTarget() )
+		ClientCommand( "spec_prev" )
+}
 
 void function DeathScreenTryToggleGladCard( var button )
 {
