@@ -152,6 +152,7 @@ void function PassivesShared_Init()
 		AddCallback_OnPassiveChanged( ePassives.PAS_FORTIFIED, PassiveToggleFortified )
 		AddCallback_OnPassiveChanged( ePassives.PAS_MEDIC, Lifeline_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PILOT_BLOOD, PilotBlood_Passive )
+		AddCallback_OnPassiveChanged( ePassives.PAS_PATHFINDER, Pathfinder_PassiveToggle )
 	#endif
 
 	#if CLIENT
@@ -575,9 +576,28 @@ void function OnFortifiedPlayerDamaged( entity victim, var damageInfo )
 		return
 	
 	float damage = DamageInfo_GetDamage( damageInfo )
-	bool isValidHeadShot = IsValidHeadShot( damageInfo, victim )
-	
-	if( !isValidHeadShot )
+
+	if( !IsValidHeadShot( damageInfo, victim ) )
 		DamageInfo_SetDamage( damageInfo, damage - damage*0.15)
+}
+
+void function Pathfinder_PassiveToggle( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( !IsValid( player ) )
+		return
+	
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+	
+	if ( didHave )
+	{
+		foreach( p in teamPlayers )
+			thread SetSurveyBaconMinimapVisibility( player, false )
+	}
+
+	if ( nowHas )
+	{
+		foreach( p in teamPlayers )
+			thread SetSurveyBaconMinimapVisibility( player, true )
+	}
 }
 #endif

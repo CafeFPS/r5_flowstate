@@ -1244,48 +1244,22 @@ void function Pathfinder_RandomizeSurveyLocations()
 		minimapObj.Minimap_SetClampToEdge( false )
 
 		array<entity> players = GetPlayerArray()
-		array<entity> pathfinders
+		
 		foreach( player in players )
-		{
 			minimapObj.Minimap_Hide( player.GetTeam(), null )
-			if ( player.HasPassive( ePassives.PAS_PATHFINDER ) )
-				pathfinders.append( player )
-		}
 
-		foreach( pathfinder in pathfinders )
-		{
-			int team            = pathfinder.GetTeam()
-			minimapObj.Minimap_AlwaysShow( team, null )
-			array<entity> teammates = GetPlayerArrayOfTeam( team )
-			foreach ( ent in teammates )
-			{
-				Remote_CallFunction_NonReplay( ent, "ServerCallback_Survival_CreateBeaconWorldIcon", beacon, minimapObj )
-			}
-		}
 		beacon.SetOwner( minimapObj )
 		file.surveyMinimapEnts.append( minimapObj )
 		file.surveyBeacons.append( beacon )
 	}
 }
 
-void function SetSurveyBaconMinimapVisibility( entity player )
+void function SetSurveyBaconMinimapVisibility( entity player, bool show)
 {
-	wait 0.01
-	
 	if ( !IsValid( player ) )
 		return
-		
+	
 	int team = player.GetTeam()
-	bool hasPathfinder = false
-
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
-	foreach( p in teamPlayers )
-	{
-		if ( !p.HasPassive( ePassives.PAS_PATHFINDER ) )
-			continue
-		hasPathfinder = true
-		break
-	}
 
 	foreach( beacon in file.surveyBeacons )
 	{
@@ -1294,7 +1268,7 @@ void function SetSurveyBaconMinimapVisibility( entity player )
 			if ( beacon.GetOwner() != minimapObj )
 				continue
 
-			if ( hasPathfinder )
+			if ( show )
 			{
 				minimapObj.Minimap_AlwaysShow( team, null )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_CreateBeaconWorldIcon", beacon, minimapObj )
