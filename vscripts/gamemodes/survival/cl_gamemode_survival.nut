@@ -3095,7 +3095,8 @@ void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
 	
-	GetLocalClientPlayer().ClearMenuCameraEntity()
+	if( GetCurrentPlaylistName() == SURVIVAL )
+		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
 
 void function Survival_RunCharacterSelection()
