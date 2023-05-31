@@ -3038,7 +3038,10 @@ void function WaitingForPlayers_RemoveCustomCameras()
 	
 	player.ClearMenuCameraEntity()
 	SetMapSetting_FogEnabled( true )
-	
+
+	if( GetCurrentPlaylistName() != SURVIVAL )
+		return
+		
 	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
 	entity camera = CreateClientSidePointCamera( targetCamera.GetOrigin(), targetCamera.GetAngles(), 35.5 )
 	player.SetMenuCameraEntity( camera )
@@ -3091,6 +3094,9 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
+	
+	if( GetCurrentPlaylistName() == SURVIVAL )
+		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
 
 void function Survival_RunCharacterSelection()
