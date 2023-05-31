@@ -1017,7 +1017,7 @@ void function SURVIVAL_CalculateAirdropPositions()
         {
             Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
 
-            if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y ))
+            if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y % 360 ))
             {
                 //force this to loop again if we didn't verify our airdropPoint
                 j--;
@@ -1027,7 +1027,7 @@ void function SURVIVAL_CalculateAirdropPositions()
                 previousAirdrops.push(airdropPoint.origin)
                 printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
                 airdropData.originArray.append(airdropPoint.origin)
-                airdropData.anglesArray.append(airdropPoint.angles)
+                airdropData.anglesArray.append( Vector(airdropPoint.angles.x % 360, airdropPoint.angles.y % 360, airdropPoint.angles.z % 360) )
 
                 //Should impl contents here.
                 airdropData.contents.append([dataArr[2], dataArr[3], dataArr[4]])
