@@ -662,7 +662,7 @@ void function Cl_Survival_AddClient( entity player )
 	if ( GetCurrentPlaylistVarBool( "pc_force_pushtotalk", false ) )
 		player.ClientCommand( "+pushtotalk" )
 	
-	SetConVarFloat( "dof_variable_blur", 0.0 )
+	//SetConVarFloat( "dof_variable_blur", 0.0 )
 
 	WaitingForPlayersOverlay_Setup( player )
 	
@@ -3229,7 +3229,7 @@ void function ServerCallback_PlayerBootsOnGround()
 
 	DoF_LerpFarDepthToDefault( 0.5 )
 	DoF_LerpNearDepthToDefault( 0.5 )
-	SetConVarFloat( "dof_variable_blur", 0.0 )
+	//SetConVarFloat( "dof_variable_blur", 0.0 )
 }
 
 
