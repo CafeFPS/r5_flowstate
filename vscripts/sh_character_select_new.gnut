@@ -3315,8 +3315,8 @@ void function CharacterSelect_OnClientConnected( entity player )
 	if ( !fileLevel.assignedLockStepOrder )
 		return
 
-	printt( "LATE CONNECTING PLAYER", player, "MISSED LOCK STEP ASSIGNMENT!" )
-
+	printt( "LATE CONNECTING PLAYER", player, "MISSED LOCK STEP ASSIGNMENT! TRYING TO ASSIGN A NEW ONE..." )
+	
 	int team                   = player.GetTeam()
 	array<entity> squadPlayers = GetPlayerArrayOfTeam( team )
 	squadPlayers.fastremovebyvalue( player )
@@ -3333,8 +3333,11 @@ void function CharacterSelect_OnClientConnected( entity player )
 		if ( validLockstepIndexies.contains( squadPlayerIndex ) )
 			validLockstepIndexies.removebyvalue( squadPlayerIndex )
 	}
-	Assert( validLockstepIndexies.len() > 0, "Player joined lock-step late, and the team was full. Couldn't assign the late player a lockstep index" )
-
+	
+	// Player joined lock-step late, and the team was full. Couldn't assign the late player a lockstep index
+	if( validLockstepIndexies.len() == 0 ) //fix crash spamming sv_addbot with same team
+		return
+	
 	// Give the player the last available lockstep index that isn't used. We want to give them the last one possible in hopes they will get to pick a character. If we give them the FIRST available they're more likely to miss their turn.
 	int pickIndex = validLockstepIndexies.pop()
 	printt( "team", team, "player", player, "pick:", pickIndex )
@@ -3342,9 +3345,13 @@ void function CharacterSelect_OnClientConnected( entity player )
 	// Assert that our pick index isn't used yet
 	foreach( entity squadPlayer in squadPlayers )
 	{
-		Assert( squadPlayer.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) != pickIndex )
+		if( squadPlayer.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) == pickIndex )
+			return
 	}
 
+	printt( "LATE CONNECTING PLAYER", player, "NEW LOCK STEP ASSIGNED!", pickIndex )
+	
+	// Assign lockstep index
 	player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", pickIndex )
 }
 
