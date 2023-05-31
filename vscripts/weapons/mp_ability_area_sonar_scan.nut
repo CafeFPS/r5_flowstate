@@ -1,3 +1,5 @@
+// Updated by @CafeFPS
+
 global function MpAbilityAreaSonarScan_Init
 
 global function OnWeaponActivate_ability_area_sonar_scan
