@@ -172,7 +172,7 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 		return observer.p.respawnPod
 	}
 	
-	//Force teammate observer target when spec_next and spec_prev is used
+	//Force teammate observer target when spec_next and spec_prev are used
 	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || GameRules_GetGameMode() == SURVIVAL )
 	{
 		int team = observer.GetTeam()
