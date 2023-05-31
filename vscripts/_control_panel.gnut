@@ -236,7 +236,10 @@ void function SetPathfinder_HandUSB( entity player, bool showUSB = false )
 	if ( showUSB )
 	{
 		wait 1
-
+		
+		if( !IsValid(player) ) 
+			return
+		
 		int usbIndex = firstPersonProxy.FindBodygroup( "l_hand_usb" )
 		// show the usb
 		if ( firstPersonProxy.GetBodygroupModelIndex( usbIndex ) == 0 )
@@ -245,7 +248,10 @@ void function SetPathfinder_HandUSB( entity player, bool showUSB = false )
 	else
 	{
 		wait 1
-
+		
+		if( !IsValid(player) ) 
+			return
+		
 		int usbIndex = firstPersonProxy.FindBodygroup( "l_hand_usb" )
 		// hide the usb
 		if ( firstPersonProxy.GetBodygroupModelIndex( usbIndex ) != 0 )
