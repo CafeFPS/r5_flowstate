@@ -3735,9 +3735,12 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 	DeathScreenUpdate()
 	entity clientPlayer = GetLocalClientPlayer()
 
-	if(!IsValid(clientPlayer)) return
+	Assert( IsValid( clientPlayer ) )
+
+	bool isPureSpectator = clientPlayer.GetTeam() == TEAM_SPECTATOR
 	
-	ShowChampionVictoryScreen( winningTeam )
+	if ( clientPlayer.GetTeam() == winningTeam || IsAlive( clientPlayer ) || isPureSpectator )
+		ShowChampionVictoryScreen( winningTeam )
 }
 
 void function ServerCallback_DestroyEndAnnouncement()
