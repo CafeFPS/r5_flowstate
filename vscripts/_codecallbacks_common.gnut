@@ -82,6 +82,7 @@ global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
 global function CodeCallback_GetBestObserverTarget
+global function CodeCallback_OnClientDisconnected
 global function CodeCallback_OnWeaponAttack
 
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
@@ -1072,4 +1073,12 @@ void function CodeCallback_OnPlayerEndWallhang( entity player )
 void function AddCallback_OnPlayerInventoryChanged( void functionref( entity ) callbackFunc )
 {
 	file.playerInventoryChangedCallbacks.append( callbackFunc )
+}
+
+void function CodeCallback_OnClientDisconnected(entity player, string reason)
+{
+	printt("CodeCallback_OnClientDisconnected ", player, reason)
+	
+	foreach(cb in svGlobal.onClientDisconnectedCallbacks)
+		cb(player)
 }
