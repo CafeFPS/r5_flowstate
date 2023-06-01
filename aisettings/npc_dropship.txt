@@ -8,7 +8,7 @@ npc_dropship
 	ui_targetinfo			"" [$mp] //targetinfo_titan
 	ui_targetinfo			"" [$sp]
 
-	HullType				"HULL_FLYING_VEHICLE"
+	HullType				"HULL_SMALL" //As dropships don't use the navmesh to navigate, we're changing to the small navmesh as they're ubiquituous and more precise
 	AIClass					vehicle
 	BodyType				vehicle
 
