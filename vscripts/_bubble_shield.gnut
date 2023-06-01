@@ -238,12 +238,14 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 		SetTeam( friendlyColoredFX, team )
 		friendlyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		EffectSetControlPointVector(  friendlyColoredFX, 1, FRIENDLY_COLOR_FX )
-
+		friendlyColoredFX.SetParent( bubbleShield )
+		
 		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( BUBBLE_BUNKER_SHIELD_FX ), coloredFXOrigin, <0, 0, 0> )
 		SetTeam( enemyColoredFX, team )
 		enemyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 		EffectSetControlPointVector(  enemyColoredFX, 1, ENEMY_COLOR_FX )
-
+		enemyColoredFX.SetParent( bubbleShield )
+		
 		bubbleShieldFXs.append( friendlyColoredFX )
 		bubbleShieldFXs.append( enemyColoredFX )
 	}
