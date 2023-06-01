@@ -44,8 +44,8 @@ global enum eLossForgivenessReason
 global enum eDeathScreenPanel
 {
 	NONE = -1,
-	DEATH_RECAP,
 	SPECTATE,
+	DEATH_RECAP,
 	SQUAD_SUMMARY
 }
 

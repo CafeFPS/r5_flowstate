@@ -487,7 +487,7 @@ void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to u
 	This part describes the spectator functions.
 */
 
-void function PlayerStartSpectating( entity player, entity attacker, bool squadCheck = false, int team = 0, bool FromConnectingPlayerEliminated = false)
+void function PlayerStartSpectating( entity player, entity attacker, bool squadCheck = false, int team = 0, bool FromConnectingPlayerEliminated = false, int attackerEHandle = -1)
 {	
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	clientTeam.fastremovebyvalue( player )
@@ -514,7 +514,7 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 	}
 	else
 		specTarget = clientTeam.getrandom()
-
+	
 	if(squadCheck)
 	{		
 		RespawnBeacons_OnSquadEliminated( team ) // this sets respawnStatus too
@@ -532,21 +532,23 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
 	}
+		
+	wait 3 //Time to send death recap updated signal
 	
-	// if ( !FromConnectingPlayerEliminated )
-	// {
-		// player.SetThirdPersonShoulderModeOn()
-		// wait 3
-		// if(!IsValid(player)) return
-	// }
+	if( !IsValid( player ) )
+		return
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
 
-	wait GetDeathCamLength( player ) // To show deathcamera
+	wait GetDeathCamLength() - 3 // To show deathcamera
 	
-	if( IsValid( specTarget ) && ShouldSetObserverTarget( specTarget ) && !IsAlive( player ) )
+	if( !IsValid( player ) )
+		return
+	
+	if( !IsAlive( player ) && IsValid( specTarget ) && ShouldSetObserverTarget( specTarget ) )
 	{
 		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
-		if( GetCurrentPlaylistName() != SURVIVAL )
-			player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
+		player.SetSpecReplayDelay( 1 )
 		player.StartObserverMode( OBS_MODE_IN_EYE )
 		player.SetObserverTarget( specTarget )
 		player.SetPlayerCanToggleObserverMode( false )

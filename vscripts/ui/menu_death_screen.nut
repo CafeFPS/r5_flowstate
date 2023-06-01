@@ -222,8 +222,8 @@ void function EnableDeathScreenTab_Internal( int tabIndex, bool enable )
 			break
 
 		default:
-			unreachable
-			break
+			printt("Bad NUM DEBUG " + tabIndex )
+			return
 	}
 
 

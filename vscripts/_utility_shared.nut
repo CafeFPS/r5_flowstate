@@ -3071,7 +3071,7 @@ bool function HasBitMask( int bitsExisting, int bitsToCheck )
 	return bitsCommon == bitsToCheck
 }
 
-float function GetDeathCamLength( entity player )
+float function GetDeathCamLength( )
 {
 	if ( GetGameState() < eGameState.Playing )
 		return DEATHCAM_TIME_SHORT

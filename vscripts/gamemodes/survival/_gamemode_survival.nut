@@ -699,25 +699,25 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
+	int attackerEHandle = -1
+	int victimEHandle = -1
+	
 	if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
 	{
-		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-		int victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
-			
-		if(victimEHandle != -1 && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && IsValid( victim.p.DeathRecap_PreviousShotEnemyPlayer ) && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+		attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+		victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+		entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+		
+		if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
 		{
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
 			ResetDeathRecapBlock(victim)
 		}
 		if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
 		{
 			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
 			ResetDeathRecapBlock(attacker)		
-		}
-
-		if(attackerEHandle != -1)
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)	
-		
+		}		
 	}
 	SetPlayerEliminated( victim )
 
@@ -725,8 +725,11 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		thread function() : ( victim )
 		{
-			wait GetDeathCamLength( victim )
-
+			wait GetDeathCamLength()
+			
+			if( !IsValid(victim) )
+				return
+			
 			//SetRandomStagingPositionForPlayer( victim )
 			DecideRespawnPlayer( victim )
 		}()
@@ -749,9 +752,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( teamEliminated )
 	{
-		thread PlayerStartSpectating( victim, attacker, true, victim.GetTeam())	
+		thread PlayerStartSpectating( victim, attacker, true, victim.GetTeam(), false, attackerEHandle)	
 	} else
-		thread PlayerStartSpectating( victim, attacker, false )	
+		thread PlayerStartSpectating( victim, attacker, false, 0, false, attackerEHandle)	
 	
 	// Restore weapons for deathbox
 	if ( victim.p.storedWeapons.len() > 0 )
