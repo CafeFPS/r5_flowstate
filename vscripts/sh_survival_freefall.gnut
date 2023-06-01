@@ -18,7 +18,37 @@ const asset PLAYER_WIND_FX 	= $"P_wind_cruising"
 
 global const string JUMPTOWER_PING_NAME = "jump_tower"
 
-const array<vector> skydiveSmokeColors = [ <178,184,244>, <143,222,95>, <255,134,26>, <255,251,130>, <255,202,254> ]
+const array<vector> skydiveSmokeColors = [
+	<110, 49, 1>,               
+	<10, 88, 106>,          
+	<6, 131, 149>,           
+	                           
+	<27, 71, 105>,          
+	<31, 84, 205>,          
+	                          
+	<68, 42, 96>,          
+	<110, 44, 111>,            
+	                           
+	<173, 45, 119>,            
+	                         
+	<176, 28, 81>,          
+	                          
+	<195, 0, 11>,          
+	<197, 67, 32>,       
+	<120, 30, 19>,            
+	<159, 59, 13>,           
+	<119, 75, 0>,           
+	<204, 121, 19>,            
+	<150, 125, 0>,           
+	                         
+	<133, 147, 10>,           
+	<73, 88, 3>,           
+	<112, 151, 67>,           
+	<57, 137, 52>,           
+	<47, 90, 26>,           
+	                          
+	<0, 116, 88>           
+]
 global function GetSkydiveSmokeColorForTeam
 
 
@@ -364,15 +394,6 @@ void function PlayerSkydiveLandingFromCurrentPosition( entity player )
 	waitthread PlayerSkyDive( player, player.GetViewVector(), [player], player, false, false )
 }
 
-void function RGB_Skydive(entity fx)
-{
-	while(IsValid(fx))
-	{
-		EffectSetControlPointVector( fx, 1, Vector(RandomInt(255), RandomInt(255), RandomInt(255)) )
-		wait 0.25
-	}
-}
-
 void function PlayerSkyDive( entity player, vector driverViewVector, array<entity> squadPlayers, entity leaderPlayer, bool jumpingFromPlane = true, bool freefallEnabled = true )
 {
 	// Lets us restart this thread and kill previous thread for dev testing
@@ -549,12 +570,6 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 		enemyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 		EffectSetControlPointVector( enemyFX, 1, smokeColor * ENEMY_SMOKE_COLOR_MULT )
 		jumpJetFX.append( enemyFX )
-		
-		if(GetCurrentPlaylistVarBool( "rgb_skydive", true ))
-		{
-			thread RGB_Skydive( friendlyFX )
-			thread RGB_Skydive( enemyFX )
-		}
 	}
 
 	
@@ -681,8 +696,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	vector smokeColor = GetSkydiveSmokeColorForTeam( player.GetTeam() )
 	entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( SKYDIVE_SMOKE_COLOR_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
 	EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
-	if(GetCurrentPlaylistVarBool( "rgb_skydive", true ))
-		thread RGB_Skydive(smokeTrailFX)
+	
 	smokeFX.append( smokeTrailFX )
 
 	OnThreadEnd(
@@ -707,6 +721,8 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 			foreach( entity ent in smokeFX )
 			{
+				if( !IsValid( ent ) ) continue
+				
 				EffectStop( ent )
 				ent.Destroy()
 			}
