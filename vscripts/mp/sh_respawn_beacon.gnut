@@ -8,13 +8,13 @@ global function GetRespawnStyle
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
-#if DEVELOPER
+global function OnRespawnChamberSpawned
+global function OnMobileRespawnChamberSpawned
+
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
-global function RespawnPlayersInDropshipAtPoint2
-global function RespawnPlayersInDropshipAtPointTDM
 #endif
-#endif
+
 
 #if CLIENT
 global function ServerCallback_RespawnPodStarted
@@ -32,12 +32,18 @@ global const string RESPAWN_CHAMBER_TARGETNAME         = "respawn_chamber"
 global const string RESPAWN_DNA_TARGETNAME             = "respawn_dna"
 global const string RESPAWN_DROPSHIP_TARGETNAME        = "respawn_dropship"
 
+global const asset MOBILE_RESPAWN_BEACON_MODEL 			= $"mdl/props/mobile_respawn_beacon/mobile_respawn_beacon_animated.rmdl"
+global const string MOBILE_RESPAWN_BEACON_TARGETNAME 	= "respawn_chamber_mobile"
+global const string MOBILE_RESPAWN_BEACON_SCRIPTNAME 	= "respawn_chamber_mobile"
+const int RESPAWN_THANKS_DELAY = 4
+
 const float RESPAWN_BEACON_HOLO_EFFECT_HEIGHT          = 75.0
 
 global const float RESPAWN_DNA_LIFETIME                = 90.0
 const float RESPAWN_DROP_TIME                          = 10.0
 const asset RESPAWN_BEACON_MODEL                       = $"mdl/dev/empty_model.rmdl"
 global const float RESPAWN_BEACON_RESPAWN_TIME         = 5.0
+global const float MOBILE_RESPAWN_BEACON_RESPAWN_TIME         = 7.0
 
 global const string RESPAWN_BEACON_SUCCESS_SOUND       = "Survival_RespawnChamber_Activate"
 global const string RESPAWN_BEACON_LOOP_SOUND          = "Survival_RespawnBeacon_Linking_loop"
@@ -112,7 +118,6 @@ void function Sh_RespawnBeacon_Init()
 	PrecacheParticleSystem( RESPAWN_BEACON_EMITTER_FX )
 	PrecacheParticleSystem( RESPAWN_BEACON_BEAM_FX )
 	PrecacheParticleSystem( RESPAWN_BEACON_SCAN_FX )
-
 
 	#if CLIENT
 		RegisterSignal( "ReviveRuiThread" )
@@ -249,6 +254,9 @@ void function RespawnStatusChanged( entity player, int old, int new, bool actual
 
 	foreach ( ent in file.allStations )
 	{
+		if( ent.GetTargetName() == MOBILE_RESPAWN_BEACON_TARGETNAME )
+			continue
+		
 		if ( waitingToBeRespawned )
 		{
 			if ( !EffectDoesExist( file.chamberToBeamFX[ ent ] ) )
@@ -297,8 +305,10 @@ void function RespawnEntitySpawned( entity ent )
 {
 	switch ( ent.GetTargetName() )
 	{
+		case MOBILE_RESPAWN_BEACON_TARGETNAME:
+			ent.Anim_Play("mobile_respawn_beacon_idle")
 		case RESPAWN_CHAMBER_TARGETNAME:
-#if CLIENT
+			#if CLIENT
 			AddEntityCallback_GetUseEntOverrideText( ent, RespawnChamber_TextOverride )
 			var rui = AddOverheadIcon( ent, RESPAWN_BEACON_ICON, false, $"ui/overhead_icon_respawn_beacon.rpak" )
 			RuiSetFloat2( rui, "iconSize", <80,80,0> )
@@ -310,9 +320,9 @@ void function RespawnEntitySpawned( entity ent )
 
 			if ( GetCurrentPlaylistVarBool( "enable_radar_on_respawn_beacons", true ) )
 				thread AddRadarToRespawnStation( ent )
-#endif
+			#endif
 
-#if SERVER
+			#if SERVER
 			ent.DisableHibernation()
 			ent.AllowMantle()
 			ent.SetUsable()
@@ -322,21 +332,21 @@ void function RespawnEntitySpawned( entity ent )
 			ent.Minimap_SetClampToEdge( false )
 			ent.Minimap_SetCustomState( eMinimapObject_prop_script.RESPAWN_CHAMBER )
 			ent.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
-#endif
+			#endif
 
 			file.allStations.append( ent )
 
 			SetCallback_CanUseEntityCallback( ent, IsNotBusy )
 			AddCallback_OnUseEntity( ent, RespawnChamberOnUse )
 			break
-
-#if SERVER
+			
+			#if SERVER
 			ent.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_OWNER
 			ent.Hide()
 			ent.Minimap_SetAlignUpright( true )
 			ent.Minimap_SetClampToEdge( true )
 			ent.Minimap_SetCustomState( eMinimapObject_prop_script.RESPAWN_DNA )
-#endif
+			#endif
 			break
 	}
 
@@ -350,14 +360,6 @@ void function OnRespawnChamberSpawned( entity ent )
 	vector origin = ent.GetOrigin()
 	vector angles = ent.GetAngles()
 
-	array<entity> links = ent.GetLinkEntArray()
-	entity link
-
-	if ( links.len() > 0 )
-	{
-		link = links[0]
-	}
-
 	ent.Destroy()
 
 	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || GameRules_GetGameMode() != SURVIVAL )
@@ -365,19 +367,38 @@ void function OnRespawnChamberSpawned( entity ent )
 
 	// spawn a new one with the correct targetname
 	entity respawnChamber = CreatePropScript_NoDispatchSpawn( model, origin, angles, 6 )
+
 	SetTargetName( respawnChamber, RESPAWN_CHAMBER_TARGETNAME )
 	respawnChamber.SetScriptName("script_survival_revival_chamber")
-	DispatchSpawn( respawnChamber )
 
-	if ( IsValid( link ) )
-	{
-		respawnChamber.e.hasBomb = true
-		respawnChamber.e.lastBouncePosition = link.GetOrigin()
-		respawnChamber.e.goalAngles = link.GetAngles()
-		link.Destroy()
-	}
+	
+	DispatchSpawn( respawnChamber )
 }
 
+void function OnMobileRespawnChamberSpawned( entity ent )
+{
+	asset model = ent.GetModelName()
+
+	vector origin = ent.GetOrigin()
+	vector angles = ent.GetAngles()
+
+	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || GameRules_GetGameMode() != SURVIVAL )
+		return
+
+	// spawn a new one with the correct targetname
+	entity respawnChamber = CreatePropScript_NoDispatchSpawn( model, origin, angles, 6 )
+
+	respawnChamber.SetOwner( ent.GetOwner() )
+	SetTargetName( respawnChamber, MOBILE_RESPAWN_BEACON_TARGETNAME )
+	respawnChamber.SetScriptName( MOBILE_RESPAWN_BEACON_SCRIPTNAME )
+	
+	//todo
+	//in retail this is only applied when player can actually res (if all teammates are alive they won't have highlight)
+	Highlight_SetNeutralHighlight( respawnChamber, "sp_friendly_hero" )
+
+	ent.Destroy()
+	DispatchSpawn( respawnChamber )
+}
 
 void function RespawnBeacon_OnClientDisconnected( entity player )
 {
@@ -387,23 +408,8 @@ void function RespawnBeacon_OnClientDisconnected( entity player )
 
 void function RespawnPlayersInDropship( array<entity> players, entity beacon )
 {
-	Point p
+	Point p = GetClosestRespawnDropoff( beacon.GetOrigin() )
 
-	if ( beacon.e.hasBomb )
-	{
-		p.origin = beacon.e.lastBouncePosition
-		p.angles = beacon.e.goalAngles
-	}
-	else if ( beacon.GetLinkEntArray().len() == 0 )
-	{
-		p = GetClosestRespawnDropoff( beacon.GetOrigin() )
-	}
-	else
-	{
-		entity link = beacon.GetLinkEntArray()[0]
-		p.origin = link.GetOrigin()
-		p.angles = link.GetAngles()
-	}
 	thread RespawnPlayersInDropshipAtPoint( players, p.origin, AnglesCompose( p.angles, <0,0,0> ) )
 }
 
@@ -455,75 +461,6 @@ void function RespawnPlayersInDropshipAtPoint( array<entity> players, vector ori
 
     dropship.Destroy()
 }
-
-void function RespawnPlayersInDropshipAtPointTDM( array<entity> players, vector origin, vector angles )
-{
-	entity dropship = CreateEntity( "npc_dropship" )
-	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
-	SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
-	DispatchSpawn( dropship )
-	dropship.SetInvulnerable()
-	dropship.DisableHibernation()
-	EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
-	thread JetwashFX( dropship )
-
-	dropship.DisableGrappleAttachment()
-
-	dropship.SetOrigin( origin )
-	dropship.SetAngles( angles )
-	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
-
-	int i=0
-	foreach ( player in players )
-	{
-		if ( IsValid( player ) )
-		{
-			thread RespawnBeacon_PutPlayerInDropship2 ( player, dropship, i, attachResult.position )
-		}
-		i++
-	}
-
-	EndSignal( dropship, "OnDestroy" )
-
-	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
-	dropship.MakeInvisible()
-	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
-	dropship.MakeVisible()
-	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
-	dropship.Destroy()
-}
-
-void function RespawnPlayersInDropshipAtPoint2( entity player, vector origin, vector angles )
-{
-	entity dropship = CreateEntity( "npc_dropship" )
-	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
-	SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
-	DispatchSpawn( dropship )
-	dropship.SetInvulnerable()
-	dropship.DisableHibernation()
-	//EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
-	thread JetwashFX( dropship )
-
-	dropship.DisableGrappleAttachment()
-
-	dropship.SetOrigin( origin )
-	dropship.SetAngles( angles )
-	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
-
-	int i=0
-	thread RespawnBeacon_PutPlayerInDropship2( player, dropship, i, attachResult.position )
-
-	EndSignal( dropship, "OnDestroy" )
-
-	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
-	dropship.MakeInvisible()
-	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
-	dropship.MakeVisible()
-	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
-	dropship.Destroy()
-}
-
-
 
 void function DelayedDestroyDNA( entity ent, float lifetime )
 {
@@ -610,6 +547,12 @@ void function AddRadarToRespawnStation( entity ent )
 
 	array<int> fx
 	fx.append( StartParticleEffectOnEntity( fxHolder, GetParticleSystemIndex( RESPAWN_BEACON_EMITTER_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 ) )
+	
+	if( ent.GetTargetName() == MOBILE_RESPAWN_BEACON_TARGETNAME ) 
+	{
+		fx.append( StartParticleEffectOnEntityWithPos( ent, GetParticleSystemIndex( RESPAWN_BEACON_BEAM_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0,0,0>, <0,0,0> ) )
+	}
+	
 	EmitSoundOnEntity( fxHolder, SOUND_HOLOGRAM_LOOP )
 
 	OnThreadEnd(
@@ -690,7 +633,12 @@ string function RespawnDNA_TextOverride( entity ent )
 
 float function GetRespawnStationUseTime( entity ent )
 {
-	return RESPAWN_BEACON_RESPAWN_TIME
+	if( ent.GetTargetName() == MOBILE_RESPAWN_BEACON_TARGETNAME )
+		return MOBILE_RESPAWN_BEACON_RESPAWN_TIME
+	else
+		return RESPAWN_BEACON_RESPAWN_TIME
+	
+	unreachable
 }
 
 
@@ -760,7 +708,31 @@ void function RespawnUserTeam( entity ent, entity playerUser, ExtendedUseSetting
 	asset model = ent.GetModelName()
 	vector origin = ent.GetOrigin()
 	vector angles = ent.GetAngles()
+	
+	if( ent.GetTargetName() == MOBILE_RESPAWN_BEACON_TARGETNAME )
+	{
+		ent.Destroy()
+		entity newEnt = CreatePropDynamic( model, origin, angles, 0 )
+		StartParticleEffectOnEntityWithPos( newEnt, fxId, FX_PATTACH_POINT_FOLLOW_NOROTATE, newEnt.LookupAttachment( "FX_EMITTER" ), newEnt.GetOrigin(), <0,0,0> )
+		
+		thread RespawnTeamPlayers( newEnt, playerUser.GetTeam(), playerUser )
 
+		thread function() : (newEnt)
+		{
+			if(!IsValid(newEnt)) return
+			
+			// if (!isSloped)
+			newEnt.Anim_Play("mobile_respawn_beacon_destruction")
+		
+			wait newEnt.GetSequenceDuration("mobile_respawn_beacon_destruction")
+			
+			if(!IsValid(newEnt)) return
+			
+			newEnt.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
+		}()
+		return
+	}
+	
 	entity newEnt = CreatePropDynamicLightweight( model, origin, angles, 6 )
 	StartParticleEffectOnEntityWithPos( newEnt, fxId, FX_PATTACH_POINT_FOLLOW_NOROTATE, newEnt.LookupAttachment( "FX_EMITTER" ), newEnt.GetOrigin(), <0,0,0> )
 	//newEnt.Anim_Play( "mh_active_2_inactive" )
@@ -1115,7 +1087,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
 
-	player.FreezeControlsOnServer()
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
 
 	entity dummyEnt = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl" ) // TODO: use generic model.  Can't use player settings here since they could be a spectator
@@ -1132,7 +1103,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	player.SetPlayerCanToggleObserverMode(false)
 
 	ScreenFadeFromBlack( player, 1.0, 1.0 )
-
+	player.UnfreezeControlsOnServer() // so player can move the camera around the dropship
+	
 	table<string,bool> e
 	e[ "clearDof" ] <- true
 	e[ "didHolsterAndDisableWeapons" ] <- false
@@ -1177,6 +1149,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 	thread FadePlayerView( player, 0.1, e )
 	HolsterAndDisableWeapons( player )
+	player.FreezeControlsOnServer() // so player can't move the camer while jumping from ship
+	
 	e[ "didHolsterAndDisableWeapons" ] <- true
 	player.SetInvulnerable()
 	EmitSoundOnEntityOnlyToPlayer( player, player, animData.firstPersonJumpOutSound )
@@ -1190,7 +1164,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	DecideRespawnPlayer( player )
 	player.SetAngles( player.GetAngles() ) // this works don't change it	
 	player.ClearInvulnerable()
-	player.UnfreezeControlsOnServer()
+	player.UnfreezeControlsOnServer() //once jumped, return controls
 
 	FallTempAirControl( player )
 	
@@ -1327,7 +1301,7 @@ entity function GetClosestValidStation( vector origin )
 
 void function FallTempAirControl( entity player )
 {
-	if ( player.IsOnGround() )
+	if ( !IsValid(player) || player.IsOnGround() )
 		return
 
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
@@ -1337,12 +1311,15 @@ void function FallTempAirControl( entity player )
 
 void function OnPlayerTouchGround( entity player )
 {
+	if( !IsValid(player) ) 
+		return
+	
 	RemovePlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 	player.kv.airSpeed = player.GetPlayerSettingFloat( "airSpeed" )
 	player.kv.airAcceleration = player.GetPlayerSettingFloat( "airAcceleration" )
 
 	player.p.lastRespawnTouchGroundTime = Time()
-
+	
 	PIN_PlayerLandedOnGround( player )
 }
 #endif
@@ -1595,6 +1572,7 @@ bool function IsRespawnStationEnt( entity ent )
 {
 	switch( ent.GetTargetName() )
 	{
+		case MOBILE_RESPAWN_BEACON_TARGETNAME:
 		case RESPAWN_CHAMBER_TARGETNAME:
 			return true
 
