@@ -182,10 +182,18 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 				
 		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
 			players.removebyvalue( observer )
-		
-		if(players.len() == 0) 
-			return null
 
+		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
+		{
+			team = currentTargetEnt.GetTeam()
+			players = GetPlayerArrayOfTeam_Alive( team )
+		}
+		
+		observer.SetPlayerNetInt( "spectatorTargetCount", players.len() )
+		
+		if( players.len() == 0 ) 
+			return null
+		
 		int currentTarget = 0
 		
 		if( IsValid( currentTargetEnt ) )

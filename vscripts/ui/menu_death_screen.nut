@@ -82,7 +82,7 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 			break
 
 		case eDeathScreenPanel.SPECTATE:
-			AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "#DEATH_SCREEN_NEXT_SPECTATE", "#DEATH_SCREEN_NEXT_SPECTATE", DeathScreenSpectateNext, DeathScreenCanChangeSpectateTarget )
+			AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", DeathScreenSpectateNext, DeathScreenCanChangeSpectateTarget )
 
 			string gladCardMessageString = "#SPECTATE_HIDE_BANNER"
 			if ( !IsGladCardShowing() )
@@ -90,7 +90,7 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 
 			file.gladCardToggleInputData = AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, gladCardMessageString, gladCardMessageString, DeathScreenTryToggleGladCard )
 
-			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#BUTTON_SKIP", "#BUTTON_SKIP", DeathScreenSkipDeathCam, CanSkipDeathCam )
+			// AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#BUTTON_SKIP", "#BUTTON_SKIP", DeathScreenSkipDeathCam, CanSkipDeathCam )
 
 			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_GLADIATOR_CARD", "#HINT_PING_GLADIATOR_CARD", DeathScreenPingRespawn, DeathScreenRespawnWaitingForPickup )
 			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_RESPAWN_BEACON", "#HINT_PING_RESPAWN_BEACON", DeathScreenPingRespawn, DeathScreenRespawnWaitingForDelivery )
