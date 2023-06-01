@@ -3019,6 +3019,12 @@ void function UpdateWaitingForPlayersMuteHint()
 
 void function WaitingForPlayers_CreateCustomCameras()
 {
+	if( GetCurrentPlaylistName() == "survival_dev" && s_overlayRui != null )
+	{
+		RuiSetBool( s_overlayRui, "isOpaque", true )
+		return
+	}
+	
 	entity player = GetLocalClientPlayer()
 	
 	WaitingForPlayersCameraLocPair waitingForPlayersCamera = ReturnCameraForThisTime()
