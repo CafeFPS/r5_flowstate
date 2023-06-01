@@ -11,14 +11,10 @@ global function GibraltarIsInDome
 const float BUBBLE_BUNKER_DEPLOY_DELAY = 1.0
 const float BUBBLE_BUNKER_DURATION_WARNING = 5.0
 
-const bool BUBBLE_BUNKER_DAMAGE_ENEMIES = false
-
 const float BUBBLE_BUNKER_ANGLE_LIMIT = 0.55
 
 global const asset BUBBLE_BUNKER_BEAM_FX = $"P_wpn_BBunker_beam"
 global const asset BUBBLE_BUNKER_BEAM_END_FX = $"P_wpn_BBunker_beam_end"
-global const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
-global const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
 global const asset BUBBLE_BUNKER_SHIELD_PROJECTILE = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
 
 global const string BUBBLE_BUNKER_SOUND_ENDING = "Gibraltar_BubbleShield_Ending"
@@ -46,8 +42,6 @@ void function MpWeaponBubbleBunker_Init()
 {
 	PrecacheParticleSystem( BUBBLE_BUNKER_BEAM_END_FX )
 	PrecacheParticleSystem( BUBBLE_BUNKER_BEAM_FX )
-	PrecacheParticleSystem( BUBBLE_BUNKER_SHIELD_FX )
-	PrecacheModel( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	PrecacheModel( BUBBLE_BUNKER_SHIELD_PROJECTILE )
 
 	#if SERVER
@@ -219,10 +213,6 @@ void function DeployBubbleBunker( entity projectile, float duration )
 	waitthread PlayAnim( projectile, "prop_bubbleshield_deploy", mover )
 	thread BubbleShieldIdleAnims( projectile, mover )
 
-	//projectile.Anim_Play( "prop_bubbleshield_deploy" )
-	//WaittillAnimDone( projectile )
-	//projectile.Anim_Play( "prop_bubbleshield_deploy_idle" )
-
 	int startAttachID = projectile.LookupAttachment( "fx_beam" )
 	vector beamFXOrigin = projectile.GetAttachmentOrigin( startAttachID )
 
@@ -230,8 +220,6 @@ void function DeployBubbleBunker( entity projectile, float duration )
 
 	owner.EndSignal( "OnDestroy" )
 	mover.EndSignal( "OnDestroy" )
-
-//	EmitSoundOnEntity( projectile, "Wpn_ArcTrap_Land" )
 
 	OnThreadEnd(
 		function() : ( mover, projectile, wp, oldParent )
@@ -283,7 +271,7 @@ void function CreateBubbleShieldAroundProjectile( entity projectile, int team, f
 
 	owner.EndSignal( "CleanupPlayerPermanents" )
 
-	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), <0,0,0>/*projectile.GetAngles()*/, owner, duration, BUBBLE_BUNKER_DAMAGE_ENEMIES, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), <0,0,0>/*projectile.GetAngles()*/, owner, duration )
 	bubbleShield.RemoveFromAllRealms()
 	bubbleShield.AddToOtherEntitysRealms( projectile )
 
