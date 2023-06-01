@@ -1149,7 +1149,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 	thread FadePlayerView( player, 0.1, e )
 	HolsterAndDisableWeapons( player )
-	player.FreezeControlsOnServer() // so player can't move the camer while jumping from ship
+	player.FreezeControlsOnServer() // so player can't move the camera while jumping from ship
 	
 	e[ "didHolsterAndDisableWeapons" ] <- true
 	player.SetInvulnerable()
