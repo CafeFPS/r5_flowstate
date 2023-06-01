@@ -189,13 +189,13 @@ void function ServerCallback_ShowDeathScreen()
 {
 	entity player = GetLocalClientPlayer()
 
-	int tabIndex = eDeathScreenPanel.SPECTATE
-
 	file.isOpen = true
 
 	if ( ShouldShowDeathScreen() )
-		ShowDeathScreen( tabIndex )
-
+		ShowDeathScreen( eDeathScreenPanel.SPECTATE )
+	
+	RunUIScript( "UI_EnableDeathScreenTab", eDeathScreenPanel.SQUAD_SUMMARY, false )
+	
 	int deathDefaultTab = GetCurrentPlaylistVarInt( "death_screen_default_tab", eDeathScreenPanel.SPECTATE )
 	if( GetGameState() < eGameState.WinnerDetermined && deathDefaultTab != eDeathScreenPanel.SPECTATE )
 	{
