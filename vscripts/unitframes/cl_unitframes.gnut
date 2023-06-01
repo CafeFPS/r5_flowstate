@@ -431,8 +431,8 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 	if( GameRules_GetGameMode() == "flowstate_snd" && !IsAlive(player) )
 		return false
 	
-	// if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
-		// return false
+	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
+		return false
 
 	return true
 }
