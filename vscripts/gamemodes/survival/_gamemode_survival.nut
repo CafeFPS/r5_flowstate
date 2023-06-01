@@ -245,7 +245,15 @@ void function Sequence_Playing()
 
 		centerEnt.Destroy()
 		minimapPlaneEnt.Destroy()
-		dropship.Destroy()
+		minimapPlaneEnt.ClearParent()
+		try{
+			ClearChildren( dropship, true )
+			dropship.Destroy()}
+		catch( e420 )
+		{
+			printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
+		}
+		
 	}
 
 	wait 5.0
@@ -841,7 +849,7 @@ void function OnClientConnected( entity player )
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			{
 				array<ItemFlavor> characters = GetAllCharacters()
-				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() )
+				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() ) //todo dont give an already used character
 			}
 			
 			if ( IsFiringRangeGameMode() )

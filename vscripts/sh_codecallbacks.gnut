@@ -517,18 +517,19 @@ void function CodeCallback_OnUseEnd( entity player )
 
 void function AddCallback_OnUseButtonPressed( entity player, void functionref( entity ) callbackFunc )
 {
-	Assert( player.IsPlayer() )
-	Assert( !player.e.onPlayerUseButtonPressed.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
-
+	if ( player.e.onPlayerUseButtonPressed.contains( callbackFunc ) )
+		return
+	
 	player.e.onPlayerUseButtonPressed.append( callbackFunc )
 }
 
 
 void function RemoveCallback_OnUseButtonPressed( entity player, void functionref( entity ) callbackFunc )
 {
-	int ornull funcPos = player.e.onPlayerUseButtonPressed.find( callbackFunc )
-	Assert( funcPos != null, "Cannot remove " + string( callbackFunc ) + " that was not added to entity" )
-	player.e.onPlayerUseButtonPressed.remove( expect int( funcPos ) )
+	if ( !player.e.onPlayerUseButtonPressed.contains( callbackFunc ) )
+		return
+	
+	player.e.onPlayerUseButtonPressed.fastremovebyvalue( callbackFunc )
 }
 
 

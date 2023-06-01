@@ -162,20 +162,14 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 
 void function Survival_DropPlayerFromPlane_UseCallback( entity player )
 {
-	Survival_DropPlayerFromPlane( player, true )
+	Survival_DropPlayerFromPlane( player )
 }
 
-bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback = false )
+bool function Survival_DropPlayerFromPlane( entity player )
 {
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 	{
-		if ( fromUseCallback )
-		{
-			int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-			if ( funcPos != -1 )
-				RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-		}
-
+		RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 		return false
 	}
 
@@ -190,13 +184,6 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	array<entity> squadPlayers = [ player ]
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
-	
-	if ( fromUseCallback )
-	{
-		int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-		if ( funcPos != -1 )
-			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-	}
 
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
@@ -227,12 +214,14 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 			}
 		}
 
+		RemoveCallback_OnUseButtonPressed( squadPlayer, Survival_DropPlayerFromPlane_UseCallback )
+		
 		squadPlayer.ClearParent()
 		squadPlayer.UnforceCrouch()
-
+		
 		TakeAllWeapons( squadPlayer )
 		DecideRespawnPlayer( squadPlayer )
-
+	
 		squadPlayer.Show()
 		squadPlayer.Solid()
 		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
@@ -240,7 +229,7 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
 			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
-
+		
 		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
 	}
 
