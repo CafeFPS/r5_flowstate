@@ -1502,8 +1502,22 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 
 	if ( data.lootType == eLootType.RESOURCE && count != data.countPerDrop )
 		count *= data.countPerDrop
-
-	loot.SetClipCount( count )
+	
+	int fixAmmoCount = count
+	switch( data.ref )
+	{
+		case "bullet":
+		case "special":
+		case "highcal":
+		fixAmmoCount = 20
+		break
+		
+		case "sniper":
+		fixAmmoCount = 14
+		break
+	}
+	
+	loot.SetClipCount( fixAmmoCount )
 
 	if ( data.lootType == eLootType.MAINWEAPON )
 		loot.SetWeaponName( data.baseWeapon )
