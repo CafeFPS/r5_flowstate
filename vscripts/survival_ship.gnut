@@ -228,9 +228,14 @@ void function CommonPlayerDropLines(entity player)
 	if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
 		player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
 	
-	//add white shield on drop
+	//add white shield, two syringes and two cells
 	{
 		Inventory_SetPlayerEquipment( player, "armor_pickup_lv1", "armor")
+		
+		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+		foreach(item in loot)
+			SURVIVAL_AddToPlayerInventory(player, item, 2)
+				
 		player.SetShieldHealthMax(50)
 		player.SetShieldHealth(50)
 		
