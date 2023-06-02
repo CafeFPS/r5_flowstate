@@ -1097,7 +1097,7 @@ void function ReMapCreateSpeedBoost( vector spawnPos, vector color, float respaw
         boost.kv.solid = 0
         boost.SetValueForModelKey( BOOST_MDL )
         boost.SetModelScale( 0.5 )
-        boost.kv.rendercolor = instance.color.x + " " + instance.color.y + " " + instance.color.z
+        boost.kv.rendercolor = VecToString( instance.color )
         boost.kv.fadedist = 20000
 
         boost.SetOrigin( instance.spawnPos + < 0, 0, 50 > )
@@ -1116,7 +1116,7 @@ void function ReMapCreateSpeedBoost( vector spawnPos, vector color, float respaw
     circle.SetModelScale( 0.1 )
     circle.SetValueForModelKey( BOOST_CIRCLE )
     circle.SetOrigin( instance.spawnPos )
-    circle.kv.rendercolor = instance.color.x + " " + instance.color.y + " " + instance.color.z
+    circle.kv.rendercolor = VecToString( instance.color )
     circle.kv.fadedist = 20000
     DispatchSpawn( circle )
 
