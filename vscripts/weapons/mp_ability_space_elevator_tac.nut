@@ -18,6 +18,9 @@ const float SPACEELEVATOR_TUNING_TO_CENTER_SPEED = 50
 const float SPACEELEVATOR_TUNING_MAX_EJECT_TIME = 0.5
 const float SPACEELEVATOR_TUNING_AWAY_FROM_CENTER_DIST = 40
 
+// voyageDB script
+const float SPACEELEVATOR_TUNING_TOP_FRAC = 0.935
+
 //unused, implement at some point when we figure what they do lol
 const float SPACEELEVATOR_TUNING_HORIZ_ACCEL = 2000
 const float SPACEELEVATOR_TUNING_TO_CENTER_ACCEL = 0
@@ -192,7 +195,7 @@ void function OnProjectileCollision_lift( entity projectile, vector pos, vector 
 		top.SetRadius( SPACEELEVATOR_TUNING_RADIUS )
 		top.SetAboveHeight( 256 )
 		top.SetBelowHeight( 0 )
-		top.SetOrigin( pos + <0, 0, SPACEELEVATOR_TUNING_HEIGHT*0.935> )
+		top.SetOrigin( pos + <0, 0, SPACEELEVATOR_TUNING_HEIGHT * SPACEELEVATOR_TUNING_TOP_FRAC> )
 		top.RemoveFromAllRealms()
 		top.AddToOtherEntitysRealms( projectile )
 		top.SetEnterCallback( TopEnterCallback )
@@ -389,30 +392,33 @@ void function PlayerOnLiftMovement(entity bottom, entity player)
 {
 	EndSignal(player, "OnDeath")
 	EndSignal(bottom, "OnDestroy")
-	
+
+	// voyageDB script: better handling player control
+	player.kv.airAcceleration = SPACEELEVATOR_TUNING_HORIZ_ACCEL
+	player.kv.airSpeed = SPACEELEVATOR_TUNING_HORIZ_SPEED
+
 	while( IsValid(bottom) && IsValid(player) && bottom.IsTouching(player)  )
 	{
 		player.kv.gravity = 0.00001
-		float UPVELOCITY
+		float upVelocity
 
-		if(GetPlayerElevatorProgress(bottom, player) <= 0.935)
-			UPVELOCITY = SPACEELEVATOR_TUNING_UP_SPEED
-		else
-			UPVELOCITY = SPACEELEVATOR_TUNING_AWAY_FROM_CENTER_DIST
-
-		vector newVelocity
-		
-		if(player.GetInputAxisForward() != 0 || player.GetInputAxisRight() != 0)
-			newVelocity = (AnglesToForward(player.GetAngles())*signum(player.GetInputAxisForward()) + AnglesToRight(player.GetAngles())*signum(player.GetInputAxisRight()))*SPACEELEVATOR_TUNING_HORIZ_SPEED
-		else
+		float currentFrac = GetPlayerElevatorProgress(bottom, player)
+		if( currentFrac <= SPACEELEVATOR_TUNING_TOP_FRAC )
+			upVelocity = SPACEELEVATOR_TUNING_UP_SPEED
+		else // near top
 		{
-			vector enemyOrigin = player.GetOrigin()
-			vector dir = Normalize( bottom.GetOrigin() - player.GetOrigin() )
-			float dist = Distance( enemyOrigin, bottom.GetOrigin() )
-			newVelocity = dir * GraphCapped( dist, SPACEELEVATOR_TUNING_RADIUS, SPACEELEVATOR_TUNING_RADIUS, 0, SPACEELEVATOR_TUNING_TO_CENTER_SPEED )
+			float toTopFrac = 1 - currentFrac - SPACEELEVATOR_TUNING_TOP_FRAC
+			upVelocity = max( SPACEELEVATOR_TUNING_AWAY_FROM_CENTER_DIST, SPACEELEVATOR_TUNING_TOP_FRAC * SPACEELEVATOR_TUNING_UP_SPEED )
 		}
-			
-		newVelocity.z = UPVELOCITY
+
+		vector newVelocity = player.GetVelocity()
+		
+		if ( PlayerNotDoingInput( player ) ) // not doing any input
+			newVelocity = RemoveVelocityHorizonal( newVelocity )
+		else
+			newVelocity = LimitVelocityHorizontal( newVelocity, SPACEELEVATOR_TUNING_HORIZ_SPEED )
+
+		newVelocity.z = upVelocity
 		player.SetVelocity( newVelocity )
 		printt(player.GetVelocity().z)
 		WaitFrame()
@@ -439,6 +445,57 @@ float function GetPlayerElevatorProgress( entity elevator, entity player )
 	}
 	return progress
 }
+
+// voyageDB script: new utility
+bool function PlayerNotDoingInput( entity player )
+{
+	vector inputVec = GetPlayerVelocityFromInput( player, 1 )
+    vector inputAngs = VectorToAngles( inputVec )
+    inputAngs.x = 0
+    inputAngs.y -= 180
+    //print( inputAngs )
+	return inputAngs.x == 0 && inputAngs.y == 0
+}
+
+vector function GetPlayerVelocityFromInput( entity player, float speed )
+{
+	vector angles = player.EyeAngles()
+	float xAxis = player.GetInputAxisRight()
+	float yAxis = player.GetInputAxisForward()
+	vector directionForward = GetDirectionFromInput( angles, xAxis, yAxis )
+
+	return directionForward * speed
+}
+
+vector function GetDirectionFromInput( vector playerAngles, float xAxis, float yAxis )
+{
+	playerAngles.x = 0
+	playerAngles.z = 0
+	vector forward = AnglesToForward( playerAngles )
+	vector right = AnglesToRight( playerAngles )
+
+	vector directionVec = Vector(0,0,0)
+	directionVec += right * xAxis
+	directionVec += forward * yAxis
+
+	vector directionAngles = VectorToAngles( directionVec )
+	vector directionForward = AnglesToForward( directionAngles )
+
+	return directionForward
+}
+
+vector function RemoveVelocityHorizonal( vector vel )
+{
+    vector horzVel = <vel.x, vel.y, 0>
+
+    float speed = 0.0
+	horzVel = Normalize( horzVel )
+	horzVel *= speed
+	vel.x = horzVel.x
+	vel.y = horzVel.y
+	return vel
+}
+// end
 
 void function FallTempAirControl( entity player )
 {
