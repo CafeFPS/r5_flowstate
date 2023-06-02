@@ -309,7 +309,7 @@ void function DeployMedicCanister( entity projectile )
 	droneMedic.e.isDoorBlocker = true
 	droneMedic.SetOrigin( origin )
 	droneMedic.SetAngles( angles )
-	droneMedic.kv.SpawnAsPhysicsMover = 0
+	// droneMedic.kv.SpawnAsPhysicsMover = 0
 	DispatchSpawn( droneMedic )
 
 	droneMedic.EndSignal( "OnDestroy" )
@@ -353,7 +353,7 @@ void function DeployMedicCanister( entity projectile )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_DEPLOYABLE_MEDIC, owner, droneMedic.GetOrigin(), owner.GetTeam(), owner )
 
-	//thread DroneMedicHoverThink( droneMedic, velocity ) // requires physics mover, in retail it does not hover anymore and drone is not solid because mover does not hover (however it does have physics? cuz it has bob) todo find a solution for this
+	thread DroneMedicHoverThink( droneMedic, velocity ) // requires physics mover, in retail it does not hover anymore and drone is not solid because mover does not hover (however it does have physics? cuz it has bob) todo find a solution for this
 	
 	thread DroneMedicAnims( droneMedic )
 
