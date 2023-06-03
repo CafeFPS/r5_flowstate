@@ -114,12 +114,13 @@ array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGr
 {
 	array<string> group
     int numBlank = 0
-	int tries = 0
+	int tries
     for(int i = 0; i < numLootItems; i++)
     {
 		string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
 		if(ref == "blank")
 		{
+			tries = 0
 			for(int j = 0; j < 1; j++)
 			{
 				ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
@@ -132,7 +133,7 @@ array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGr
 		}
 		group.append(ref)
     }
-
+	
     return group
 }
 
