@@ -326,7 +326,8 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		data.droppodRotate = GetLootTableBool( data.ref, dt, i, "droppodRotate" )
 		data.isDynamic = GetLootTableBool( data.ref, dt, i, "isDynamic" )
 		data.conditional = GetLootTableBool( data.ref, dt, i, "conditional" )
-
+		data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
+		data.countPerDrop = GetLootTableInt( data.ref, dt, i, "countPerDrop" )
 		data.pickupString = GetLootTableString( data.ref, dt, i, "pickupString" )
 		data.desc = GetLootTableString( data.ref, dt, i, "desc" )		
 		data.tier = GetLootTableInt( data.ref, dt, i, "tier" )
@@ -451,46 +452,6 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 				break
 		}
 
-		//Adjust inventory count and count per drop for some items, grenades and ammo types
-		switch( data.ref )
-		{
-			case "health_pickup_combo_small":
-			case "health_pickup_health_small":
-			data.countPerDrop = 2
-			data.inventorySlotCount = 4
-			break
-			
-			case "health_pickup_combo_large":
-			case "health_pickup_health_large":
-			data.countPerDrop = 1
-			data.inventorySlotCount = 2
-			break
-			
-			case "mp_weapon_thermite_grenade":
-			case "mp_weapon_frag_grenade":
-			case "mp_weapon_grenade_emp":
-			data.countPerDrop = 1
-			data.inventorySlotCount = 1
-			break
-			
-			case "bullet":
-			case "special":
-			case "highcal":
-			data.countPerDrop = 20
-			data.inventorySlotCount = 60
-			break
-			
-			case "sniper":
-			data.countPerDrop = 14
-			data.inventorySlotCount = 28
-			break
-			
-			default:
-			data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
-			data.countPerDrop = GetLootTableInt( data.ref, dt, i, "countPerDrop" )
-			break
-		}
-		
 		//Save
 		{
 			data.index = file.lootIndexToString.len()
