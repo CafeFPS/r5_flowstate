@@ -52,8 +52,8 @@ void function CodeCallback_Init()
 
 void function OnClientConnected( entity player )
 {
-	printt("Flowstate DEBUG - New player connected. Base codecallback OnPlayerConnected.", player)
-	printt("Flowstate DEBUG - The gamemode running is: " + GameRules_GetGameMode())
+	printt( "[+] New player connected! ", player )
+
 	//Wraith Q fix. Colombia
 	player.SetForceVisibleInPhaseShift(true)
 	

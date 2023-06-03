@@ -1036,7 +1036,7 @@ void function SURVIVAL_CalculateAirdropPositions()
             else
             {
                 previousAirdrops.push(airdropPoint.origin)
-                printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
+                //printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
                 airdropData.originArray.append(airdropPoint.origin)
                 airdropData.anglesArray.append( Vector(airdropPoint.angles.x % 360, airdropPoint.angles.y % 360, airdropPoint.angles.z % 360) )
 
