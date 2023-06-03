@@ -981,15 +981,7 @@ ItemFlavor function GetRandomGoodItemFlavorForLoadoutSlot( EHI playerEHI, Loadou
 {
 	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
 
-	entry.validItemFlavorList_CopyForRandomizing.randomize()
-	foreach ( ItemFlavor flav in entry.validItemFlavorList_CopyForRandomizing )
-	{
-		if ( IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, flav, shouldIgnoreGRX ) )
-			return flav
-	}
-
-	Assert( false, "Could not find a random unlocked item flavor for loadout slot: " + entry.id )
-	unreachable
+	return entry.validItemFlavorList_CopyForRandomizing.getrandom()
 }
 
 
