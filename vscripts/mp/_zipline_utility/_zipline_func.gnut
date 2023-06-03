@@ -201,8 +201,8 @@ array< entity > function Zipline_InitZipline( ZiplineUtility zipline )
 
     if ( vars.restPoint && !vars.isMoving )
     {
-        startEntityZiplinePoint.kv._zipline_rest_point_0    = VecToString( startZiplinePos )
-        startEntityZiplinePoint.kv._zipline_rest_point_1    = VecToString( endZiplinePos )
+        startEntityZiplinePoint.kv._zipline_rest_point_0    = VectorToString( startZiplinePos )
+        startEntityZiplinePoint.kv._zipline_rest_point_1    = VectorToString( endZiplinePos )
     }
 
     startEntityZiplinePoint.SetAngles( startZiplineAng )
