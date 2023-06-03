@@ -271,10 +271,10 @@ void function SURVIVAL_Loot_All_InitShared()
 		SURVIVAL_UIInit_Override_DeathBox_RUI()
 	#endif
 	
-	#if DEVELOPER
-	foreach( data in file.lootData )			
-		printt( "DEBUG REF: ", data.ref, data.countPerDrop, data.inventorySlotCount )
-	#endif
+	// #if DEVELOPER
+	// foreach( data in file.lootData )			
+		// printt( "DEBUG REF: ", data.ref, data.countPerDrop, data.inventorySlotCount )
+	// #endif
 	
 	file.initialized = true
 }

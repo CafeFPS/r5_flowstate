@@ -113,20 +113,27 @@ string function SURVIVAL_GetWeightedItemFromGroup(string groupRef)
 array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )
 {
 	array<string> group
-    int numBlank = 0;
+    int numBlank = 0
+	int tries = 0
     for(int i = 0; i < numLootItems; i++)
     {
-        string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup);
-        group.append(ref)
-        if(ref == "blank")
-            numBlank++
+		string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
+		if(ref == "blank")
+		{
+			for(int j = 0; j < 1; j++)
+			{
+				ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
+				if(ref == "blank" && tries < 5)
+				{
+					j--
+					tries++
+				}
+			}
+		}
+		group.append(ref)
     }
-    if(numBlank == numLootItems) //If all are blank, always return at least one item.
-        return SURVIVAL_GetMultipleWeightedItemsFromGroup( lootGroup, 1)
-    else
-        return group
 
-    unreachable
+    return group
 }
 
 

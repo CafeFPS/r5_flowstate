@@ -58,6 +58,7 @@ struct {
 	array<LootZone> lootZones
 	LootZone hotZone
 	table<vector, array<string> > vaultLootSpawned
+	array<entity> spawnedAmmoStacks
 } file
 
 bool function InfiniteAmmoEnabled()
@@ -651,7 +652,7 @@ void function OnGroundLootSpawned( entity ent )
 		spawnOrigin.z += 1.5
 	}
 
-	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
+	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -1502,22 +1503,8 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 
 	if ( data.lootType == eLootType.RESOURCE && count != data.countPerDrop )
 		count *= data.countPerDrop
-	
-	int fixAmmoCount = count
-	switch( data.ref )
-	{
-		case "bullet":
-		case "special":
-		case "highcal":
-		fixAmmoCount = 20
-		break
-		
-		case "sniper":
-		fixAmmoCount = 14
-		break
-	}
-	
-	loot.SetClipCount( fixAmmoCount )
+
+	loot.SetClipCount( count )
 
 	if ( data.lootType == eLootType.MAINWEAPON )
 		loot.SetWeaponName( data.baseWeapon )
@@ -1730,23 +1717,64 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	//printt( "SpawnWeaponAndAmmo", ref, origin )
 	entity ent
 
-	//Also spawn 2 ammo containers (as one because edict limit)
+	//Also spawn 2 ammo containers with coinflip (based on retail)
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 	string ammoType = itemData.ammoType
+	
+	array<vector> circlePositions
+	
+	for(int i = 0; i < 8; i++)
+	{
+		float r = float(i) / float( 8 ) * 2 * PI
+		circlePositions.append( origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0> )
+	}
+	
+	circlePositions.randomize()
 
 	if ( SURVIVAL_Loot_IsRefValid( ammoType ) )
 	{
 		itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
-		ent = SpawnGenericLoot(ammoType, origin + <RandomFloatRange( 25.0, 50.0 ), RandomFloatRange( 25.0, 50.0 ), 0>, <0, RandomFloatRange( -180.0, 180.0 ), 1>, itemData.countPerDrop * 2)
+
+		foreach( ammo in file.spawnedAmmoStacks )
+		{
+			foreach( possiblePos in circlePositions )
+			{
+				if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
+					circlePositions.fastremovebyvalue( possiblePos )
+			}
+		}
+	
+		if( circlePositions.len() == 0 )
+		{
+			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			return ent
+		}
+		
+		vector nextOrigin = circlePositions.getrandom()
+		
+		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		circlePositions.fastremovebyvalue( nextOrigin )
+		
+		if( circlePositions.len() == 0 )
+		{
+			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			return ent
+		}
+
+		if( CoinFlip() )
+		{
+			nextOrigin = circlePositions.getrandom()
+			file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		}
 	}
 
-	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180.0, 180.0 ), 90>, 1)
+	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
 	return ent
 }
 
 entity function SpawnArmor( string ref, vector origin )
 {
-	return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180.0, 180.0 ), 1>, 1)
+	return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180, 180 ), 1>, 1)
 }
 
 entity function SpawnNothing( string ref, vector origin, vector angles )
