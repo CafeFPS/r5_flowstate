@@ -916,7 +916,7 @@ string function DEV_DescribeLoadoutSlot( LoadoutEntry entry, int slotContentsInd
 }
 
 
-bool function IsItemFlavorUnlockedForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor, bool shouldIgnoreGRX = false, bool shouldIgnoreOtherSlots = false )
+bool function IsItemFlavorUnlockedForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor, bool shouldIgnoreGRX = true, bool shouldIgnoreOtherSlots = false )
 {
 	#if CLIENT || UI
 		Assert( playerEHI == EHI_null || playerEHI == LocalClientEHI() )
