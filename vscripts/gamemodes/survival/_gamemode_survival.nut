@@ -848,8 +848,7 @@ void function OnClientConnected( entity player )
 		case eGameState.Playing:
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			{
-				array<ItemFlavor> characters = GetAllCharacters()
-				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() ) //todo dont give an already used character
+				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 			}
 			
 			if ( IsFiringRangeGameMode() )
