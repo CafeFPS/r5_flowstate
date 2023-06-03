@@ -1018,8 +1018,8 @@ void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) 
 						
 						wait 2.0
 						
-						if ( IsValid( deathBox ) )
-							deathBox.Destroy()
+						if ( IsValid( box ) )
+							box.Destroy()
 					}()
 				}
 			}
