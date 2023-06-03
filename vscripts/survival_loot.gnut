@@ -1669,7 +1669,7 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	prop_physics.SetAngles( deathbox.GetAngles() )
 	DispatchSpawn( prop_physics )
 
-	playerVelocity += deathbox.GetUpVector() * 300
+	playerVelocity += deathbox.GetUpVector() * 300 // player velocity probably needs a limit, needs more testing, same for deathbox inertia scale. Seems to work fine for now
 	deathbox.SetParent( prop_physics )
 	prop_physics.Hide()
 	prop_physics.NotSolid()
