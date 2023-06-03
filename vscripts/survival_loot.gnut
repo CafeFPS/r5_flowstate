@@ -454,7 +454,21 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 			thread function() : ( deathBox )
 			{
-				wait 3.0
+				wait 1.0
+				
+				if( !IsValid( deathBox ) )
+					return
+			
+				entity boxPhysics = deathBox.GetParent()
+			
+				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
+				{
+					deathBox.ClearParent()
+					boxPhysics.Destroy()
+				}
+
+				wait 2.0
+				
 				if ( IsValid( deathBox ) )
 					deathBox.Destroy()
 			}()
@@ -538,11 +552,32 @@ bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args 
 	{
 		if ( deathBox.GetLinkEntArray().len() == 0 )
 		{
+			entity boxPhysics = deathBox.GetParent()
+			if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
+			{
+				deathBox.ClearParent()
+				boxPhysics.Destroy()
+			}
+			
 			deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
 
 			thread function() : ( deathBox )
 			{
-				wait 3.0
+				wait 1.0
+				
+				if( !IsValid( deathBox ) )
+					return
+			
+				entity boxPhysics = deathBox.GetParent()
+			
+				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
+				{
+					deathBox.ClearParent()
+					boxPhysics.Destroy()
+				}
+
+				wait 2.0
+				
 				if ( IsValid( deathBox ) )
 					deathBox.Destroy()
 			}()
@@ -1618,27 +1653,34 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 		Highlight_ClearNeutralHighlight( box )
 
-		thread DeathBoxFakePhysics( box )
+		thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 	}
 
 	return box
 }
 
-void function DeathBoxFakePhysics( entity box )
+void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 {
-	vector restPos = box.GetOrigin()
-	vector fallPos = restPos + < 0, 0, 54 >
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( $"mdl/props/death_box/death_box_01.rmdl" )
+	prop_physics.kv.solid = 0
+	prop_physics.kv.spawnflags = SF_PHYSPROP_DEBRIS
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	prop_physics.kv.minhealthdmg = 9999
+	prop_physics.kv.nodamageforces = 1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 0.5
+	prop_physics.SetOrigin( deathbox.GetOrigin() )
+	prop_physics.SetAngles( deathbox.GetAngles() )
+	DispatchSpawn( prop_physics )
 
-	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
-	box.SetParent( mover, "", true )
-
-	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
-	wait 0.5
-	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
-	wait 0.5
-	if ( IsValid( box ) )
-		box.ClearParent()
-	mover.Destroy()
+	playerVelocity += deathbox.GetUpVector() * 300
+	deathbox.SetParent( prop_physics )
+	prop_physics.Hide()
+	prop_physics.NotSolid()
+	prop_physics.SetVelocity( playerVelocity )
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1 )
