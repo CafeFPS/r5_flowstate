@@ -421,7 +421,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 
-	TakingFireDialogue( attacker, victim, weapon )
+	//TakingFireDialogue( attacker, victim, weapon )
 
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
 	{	
