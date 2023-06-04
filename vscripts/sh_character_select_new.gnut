@@ -3094,6 +3094,10 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
 			GivePassive( player, ePassives.PAS_FORTIFIED )
+	} else
+	{
+		if( PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
+			TakePassive( player, ePassives.PAS_FORTIFIED )
 	}
 	
 	return true
