@@ -351,15 +351,20 @@ asset function GetModeEmblemImage( string playlistName )
 		// break
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	switch( GetCurrentPlaylistName() )
 	{
+		case "fs_movementgym":
 		emblemImage = $"rui/flowstatecustom/movementgym"
-	}
-	
-	if( GetCurrentPlaylistName() == "fs_1v1" )
-	{
+		break
+		
+		case "fs_1v1":
 		emblemImage = $"rui/flowstatecustom/1v1"
-	}
+		break
+		
+		case "fs_survival_duos":
+		emblemImage = $"rui/menu/gamemode_emblem/duos"
+		break
+	}	
 	#endif
 		
 	return emblemImage
