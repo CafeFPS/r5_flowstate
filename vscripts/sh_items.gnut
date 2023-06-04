@@ -99,6 +99,7 @@ global function ServerToClient_ItemFlavorConsistencyCheckFailed
 global function ClientToUI_ItemFlavorConsistencyCheckFailed
 #endif
 
+global function GetItemFlavorPlaylistOpinion
 
 global const bool DEBUG_ITEM_FLAVOR_REGISTRATION = false
 
