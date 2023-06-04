@@ -106,6 +106,12 @@ void function CodeCallback_ThreatDetection_OnSourcesCeased( entity player, int t
 
 void function CodeCallback_ThreatDetection_OnStateChange( entity player, int threatType, int threatFlags, int newThreatState, int oldThreatState )
 {
+	if( !IsValid(player) )
+		return
+	
+	if( Bleedout_IsBleedingOut( player ) )
+		return
+	
 	#if DEVELOPER
 	printt( "++++-------------------------------------------------------++++" )
 	printt( "[ThreatDetection] OnStateChange" )
@@ -125,6 +131,12 @@ void function CodeCallback_ThreatDetection_OnStateChange( entity player, int thr
 
 void function CodeCallback_ThreatDetection_OnNewSource( entity player, int threatType, int threatFlags, int newThreatState, int oldThreatState )
 {
+	if( !IsValid(player) )
+		return
+	
+	if( Bleedout_IsBleedingOut( player ) )
+		return
+	
 	#if DEVELOPER
 	printt( "++++-------------------------------------------------------++++" )
 	printt( "[ThreatDetection] OnNewSource" )
