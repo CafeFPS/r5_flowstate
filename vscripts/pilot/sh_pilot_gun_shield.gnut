@@ -5,6 +5,7 @@ global function TrackFirstPersonGunShield
 #if SERVER
 global function CreateGunAttachedShield
 global function CreateGunAttachedShieldModel
+global function CreateIncapShieldModel
 
 global struct GunShieldSettings
 {
@@ -17,6 +18,35 @@ global struct GunShieldSettings
 	float bulletFOV = 30
 	float sphereRadius = 20
 	float sphereHeight = 20
+	entity ownerWeapon
+	entity owner
+	asset shieldFX
+	entity parentEnt
+	string parentAttachment = ""
+	string gunVortexAttachment = ""
+	void functionref( entity, var ) bulletHitRules
+	bool functionref( entity, entity, bool ) projectileHitRules
+	vector localVortexAngles
+	vector fxOverrideAngles
+	int impacteffectcolorID = 0
+
+	asset model
+	vector modelOverrideAngles
+	bool modelHide = true
+	bool modelBlockRadiusDamage = false
+}
+
+global struct IncapShieldSettings
+{
+	bool invulnerable = false
+	bool useFriendlyEnemyFx = false
+	bool useFxColorOverride = false
+	vector fxColorOverride = <255,255,255>
+	float maxHealth = 100
+	int spawnflags = SF_ABSORB_BULLETS
+	float bulletFOV = 100
+	float sphereRadius = 100
+	float sphereHeight = 100
 	entity ownerWeapon
 	entity owner
 	asset shieldFX
@@ -261,6 +291,109 @@ entity function CreateGunAttachedShieldModel( GunShieldSettings gs )
 			wallFX.RemoveFromAllRealms()
 			wallFX.AddToOtherEntitysRealms( gs.owner )
 		}
+	}
+	else
+	{
+		array<int> visFlags  = [ ENTITY_VISIBLE_TO_FRIENDLY, ENTITY_VISIBLE_TO_ENEMY ]
+		array<vector> colors = [ TEAM_COLOR_FRIENDLY, TEAM_COLOR_ENEMY ]
+
+		for ( int i = 0; i < visFlags.len(); i++ )
+		{
+			int v    = visFlags[i]
+			vector c = colors[i]
+			entity s
+
+			s = StartParticleEffectOnEntityWithPos_ReturnEntity( shieldModel, GetParticleSystemIndex( gs.shieldFX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, fxAngles )
+
+			s.SetOwner( gs.owner )
+			SetTeam( s, gs.owner.GetTeam() )
+			s.kv.VisibilityFlags = v
+			s.DisableHibernation()
+			shieldModel.e.fxControlPoints.append( s )
+			EffectSetControlPointVector( s, 2, c )
+
+			if ( gs.owner != null )
+			{
+				s.RemoveFromAllRealms()
+				s.AddToOtherEntitysRealms( gs.owner )
+			}
+		}
+	}
+
+	return shieldModel
+}
+
+entity function CreateIncapShieldModel( IncapShieldSettings gs )
+{
+	int idx            = gs.parentEnt.LookupAttachment( gs.parentAttachment )
+
+	entity shieldModel = CreatePropShield( gs.model, gs.impacteffectcolorID, gs.parentEnt.GetAttachmentOrigin( idx ), AnglesCompose( gs.parentEnt.GetAttachmentAngles( idx ), gs.modelOverrideAngles ), 6 )
+
+	shieldModel.kv.collisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+	
+	if ( gs.modelHide )
+		shieldModel.Hide()
+
+	if ( gs.modelBlockRadiusDamage )
+		shieldModel.SetBlocksRadiusDamage( true )
+
+	if ( gs.owner != null )
+	{
+		shieldModel.RemoveFromAllRealms()
+		shieldModel.AddToOtherEntitysRealms( gs.owner )
+	}
+
+	shieldModel.SetMaxHealth( gs.maxHealth )
+	shieldModel.SetHealth( gs.maxHealth )
+	SetTeam( shieldModel, gs.owner.GetTeam() )
+
+	if ( !gs.invulnerable )
+		shieldModel.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+	else
+		shieldModel.SetTakeDamageType( DAMAGE_NO )
+
+	shieldModel.SetOwner( gs.owner )
+	shieldModel.SetParent( gs.parentEnt, gs.parentAttachment, true )
+	
+	gs.ownerWeapon.SetWeaponUtilityEntity( shieldModel )
+
+	shieldModel.e.ownerWeapon = gs.ownerWeapon
+
+	vector fxAngles = AnglesCompose( gs.parentEnt.GetAttachmentAngles( idx ), AnglesCompose( gs.fxOverrideAngles, <-90, 0, 180> ) )
+	// shieldModel.SetAngles( fxAngles )
+	
+	if ( !gs.useFriendlyEnemyFx )
+	{
+		shieldModel.e.shieldWallFX = StartParticleEffectOnEntityWithPos_ReturnEntity( shieldModel, GetParticleSystemIndex( gs.shieldFX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+		entity wallFX = shieldModel.e.shieldWallFX
+
+		wallFX.SetOwner( gs.owner )
+		if( gs.useFxColorOverride )
+		{
+			shieldModel.e.fxControlPoints.append( wallFX )
+			EffectSetControlPointVector( wallFX, 1, <1,1,1> )
+			EffectSetControlPointVector( wallFX, 2, gs.fxColorOverride )
+			
+			string r = gs.fxColorOverride.x.tostring()
+			string g = gs.fxColorOverride.y.tostring()
+			string b = gs.fxColorOverride.z.tostring()
+			
+			shieldModel.kv.rendercolor = r + " " + g + " " + b
+		}
+
+		if ( GetCurrentPlaylistVarInt( "survival_3p_downed_camera", 0 ) == 1 )
+			wallFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		else
+			wallFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // not owner only ENTITY_VISIBLE_TO_EVERYONE
+
+		wallFX.DisableHibernation()
+
+		if ( gs.owner != null )
+		{
+			wallFX.RemoveFromAllRealms()
+			wallFX.AddToOtherEntitysRealms( gs.owner )
+		}
+		wallFX.SetAngles( fxAngles )
 	}
 	else
 	{
