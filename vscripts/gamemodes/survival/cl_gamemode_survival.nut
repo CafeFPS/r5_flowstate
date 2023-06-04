@@ -3069,7 +3069,7 @@ void function WaitingForPlayers_RemoveCustomCameras()
 	SetMapSetting_FogEnabled( true )
 	DisableCustomMapAndGamemodeNameFrames()
 	
-	if( GetCurrentPlaylistName() != SURVIVAL )
+	if( GetCurrentPlaylistName() != "fs_survival" && GetCurrentPlaylistName() != "fs_survival_duos" && GetCurrentPlaylistName() != "fs_survival_solos" )
 		return
 		
 	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )

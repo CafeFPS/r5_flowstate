@@ -49,7 +49,10 @@ void function GamemodeSurvival_Init()
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	
+	AddClientCommandCallback("forceminplayers", ForceMinPlayersReached)
+	
+	
 	AddCallback_GameStateEnter(
 		eGameState.Playing,
 		void function()
@@ -1071,4 +1074,10 @@ void function Survival_AddCallback_OnAirdropLaunched( void functionref( entity d
 void function Survival_CleanupPlayerPermanents( entity player )
 {
 
+}
+
+bool function ForceMinPlayersReached( entity player, array<string> args )
+{
+	FlagSet( "MinPlayersReached" )	
+	return true
 }
