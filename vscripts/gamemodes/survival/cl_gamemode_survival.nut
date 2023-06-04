@@ -2942,6 +2942,8 @@ void function EnableToggleMuteKeys()
 
 void function DisableToggleMuteKeys()
 {
+	DisableCustomMapAndGamemodeNameFrames()
+	
 	if ( !SquadMuteIntroEnabled() )
 		return
 
@@ -3036,6 +3038,27 @@ void function WaitingForPlayers_CreateCustomCameras()
 	player.ClearMenuCameraEntity()
     player.SetMenuCameraEntityWithAudio( camera )
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
+	
+	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
+	
+	
+	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_GamemodeFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/gamemode")
+	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_MapFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/map")
+	
+	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeName" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), true)
+
+	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), GetCurrentPlaylistVarString( "name", "APEX" ) )
+	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), "#" + GetMapName())
+}
+
+void function DisableCustomMapAndGamemodeNameFrames()
+{
+	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeName" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), false)
 }
 
 void function WaitingForPlayers_RemoveCustomCameras()
@@ -3044,7 +3067,8 @@ void function WaitingForPlayers_RemoveCustomCameras()
 	
 	player.ClearMenuCameraEntity()
 	SetMapSetting_FogEnabled( true )
-
+	DisableCustomMapAndGamemodeNameFrames()
+	
 	if( GetCurrentPlaylistName() != SURVIVAL )
 		return
 		

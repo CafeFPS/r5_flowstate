@@ -219,13 +219,14 @@ void function Sequence_PickLoadout()
 		SetGlobalNetTime( "characterSelectLockstepStartTime", startTime )
 		SetGlobalNetTime( "characterSelectLockstepEndTime", endTime )
 		
-		if( pickIndex == 0 )
-		{
+		//compare player pick with GetLoadoutSlotContentsIndexInternal( playerEHI, entry ) before setting a forced pick
+		// if( pickIndex == 0 ) 
+		// {
 			foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
 			{
 				Flowstate_AssignUniqueCharacterForPlayer(player, false)
 			}
-		}
+		// }
 		
 		wait timeSpentOnSelection
 
@@ -500,6 +501,12 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	#if DEVELOPER
 	SetSkydiveEmotesForAllCharacters( player )
 	#endif
+
+	//Set highlight to mantain retail behavior
+	if( GameRules_GetGameMode() == SURVIVAL )
+	{
+		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
+	}
 }
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
