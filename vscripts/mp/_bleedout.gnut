@@ -144,9 +144,6 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	file.lastAttacker[ player ] = attacker
 	
 	thread Bleedout_DeathProtection( player )
-	
-	if(GameRules_GetGameMode() != "fs_duckhunt")
-		SetPlayerEliminated( player )
 
 	//for reference
 	// const float BLEEDOUT_TIME_LV1 = 90.0
@@ -722,6 +719,10 @@ void function BloodTrail( entity player )
 
 void function PlayerDiesFromBleedout( entity player, entity attacker )
 {
+	if( IsValid( player ) && GameRules_GetGameMode() != "fs_duckhunt")
+		SetPlayerEliminated( player )
+
+
 	if ( IsValid( attacker ) )
 	{
 		try{
