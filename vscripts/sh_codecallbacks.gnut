@@ -348,8 +348,9 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 			UpdateKillReplayIconPosition()*/
 	#else
 		player.kv.renderColor = "255 255 255 255"
-	
-		TakeAllPassives( player )
+		
+		if( GameRules_GetGameMode() != SURVIVAL)
+			TakeAllPassives( player )
 		
 		InitDamageStates( player )
 	#endif
