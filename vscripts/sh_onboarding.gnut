@@ -120,7 +120,7 @@ void function Sequence_WaitingForPlayers()
 	float timeSpentWaitingForPlayers = 0.0
 	float maximumTimeToSpendToWaitForPlayers = PreGame_GetWaitingForPlayersDelayMax() - PreGame_GetWaitingForPlayersDelayMin()
 
-	bool shouldNotWaitForever = maximumTimeToSpendToWaitForPlayers > 0.0 && !PreGame_GetWaitingForPlayersWaitForeverEnabled()
+	// bool shouldNotWaitForever = maximumTimeToSpendToWaitForPlayers > 0.0 && !PreGame_GetWaitingForPlayersWaitForeverEnabled()
 
 	while ( !Flag( "MinPlayersReached" ) )
 	{
@@ -131,11 +131,11 @@ void function Sequence_WaitingForPlayers()
 
 		int connectedPlayerCount = GetPlayerArray().len()
 
-		if ( shouldNotWaitForever 
-			&& timeSpentWaitingForPlayers >= maximumTimeToSpendToWaitForPlayers
-			&& connectedPlayerCount > 0
-			)
-			break
+		// if ( shouldNotWaitForever 
+			// && timeSpentWaitingForPlayers >= maximumTimeToSpendToWaitForPlayers
+			// && connectedPlayerCount > 0
+			// )
+			// break
 	}
 
 	// Update to make client aware of the countdown
