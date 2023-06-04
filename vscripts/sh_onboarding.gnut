@@ -270,7 +270,7 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	
 	foreach( character in characters )
 	{
-		int playlistOpinion = ItemFlavor_GetPlaylistOpinion( character )
+		int playlistOpinion = ItemFlavor_GetPlaylistOpinion( ItemFlavor_GetHumanReadableRef( character ) )
 		
 		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED )
 		{
