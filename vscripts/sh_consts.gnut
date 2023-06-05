@@ -292,7 +292,7 @@ global const GRUNT_EXECUTE_GROUP_COOLDOWN_MAX			= 	31
 //default to give for connecting players.  This might have to be changed to something else as right now it's controlling the "good" intro for fracture.
 global const CONNECT_TIME_DEFAULT = 23
 
-global const OUT_OF_BOUNDS_TIME_LIMIT = 30.0
+global const OUT_OF_BOUNDS_TIME_LIMIT = 15.0
 global const OUT_OF_BOUNDS_DECAY_TIME = 15.0
 global const OUT_OF_BOUNDS_DECAY_DELAY = 1.0
 
