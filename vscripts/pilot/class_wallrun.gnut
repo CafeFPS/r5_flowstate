@@ -59,9 +59,11 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	}
 
 	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
-		
+
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
 	// Bullet slow reduces your velocity by 40% for 0.25 seconds, and cannot proc again for 3.0 seconds.
-	if( GameRules_GetGameMode() == SURVIVAL && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 )
+	if( GameRules_GetGameMode() == SURVIVAL && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 && damageSourceId != eDamageSourceId.deathField)
 	{
 		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.4, 0.25, 0.25 )
 		player.p.lastTimeShotSlowApplied_Global = Time()
