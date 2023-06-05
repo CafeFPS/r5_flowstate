@@ -1983,6 +1983,8 @@ void function TryThankForLoot( entity player, entity wp, entity pingEnt, int pin
 
 	thread function() : ( player, wp, pingEnt )
 	{
+		EndSignal( wp, "OnDestroy" )
+		
 		entity pickedUpBy = expect entity( pingEnt.WaitSignal( "OnItemPickup" ).player )
 
 		if ( !IsValid( pickedUpBy ) || player == pickedUpBy || !IsValid( wp ) )
