@@ -699,7 +699,7 @@ global struct ServerPlayerStruct
 	int respawnsGiven
 	int revivesGiven
 
-	array<float> attackedTeam
+	table<int, float> attackedTeam
 
 	int killedEnemy
 	float lastDownedEnemyTime

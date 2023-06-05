@@ -421,7 +421,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 
-	//TakingFireDialogue( attacker, victim, weapon )
+	TakingFireDialogue( attacker, victim, weapon )
 
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
 	{	
@@ -499,14 +499,16 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	float farTime = 5
 	int attackerTeam = attacker.GetTeam()
 
-	bool inTime
+	bool inTime = false
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 	{
-		if(!IsValid(player)) continue
-		if( player.p.attackedTeam.len() < attackerTeam )
-			player.p.attackedTeam.resize( attackerTeam + 2, -returnTime )
-
-		if( Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
+		if( !IsValid(player) )
+			continue
+		
+		if( !(attackerTeam in player.p.attackedTeam) )
+			player.p.attackedTeam[ attackerTeam ] <- -returnTime
+		
+		if( attackerTeam in player.p.attackedTeam && Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
 			inTime = true
 	}
 
@@ -519,13 +521,16 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	}
 
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
-		player.p.attackedTeam[ attackerTeam ] = Time()
+	{
+		if( attackerTeam in player.p.attackedTeam )
+			player.p.attackedTeam[ attackerTeam ] = Time()
+	}
 
 	if( inTime )
 		return
 
 	int attackerTotalTeam = 0
-	foreach( time in victim.p.attackedTeam )
+	foreach( team, time in victim.p.attackedTeam )
 		if( Time() - time < returnTime )
 			attackerTotalTeam++
 	
