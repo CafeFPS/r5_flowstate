@@ -102,7 +102,7 @@ void function SV_Survival_Loot_Init()
 
 	RegisterSignal( "SwitchToOrdnance" )
 	RegisterSignal( "SwapToNextOrdnance" )
-
+	RegisterSignal( "EndTyThread" )
 	RegisterSignal( "OnItemPickup" )
 
 	AddPingCallbackForType( ePingType.LOOT, TryThankForLoot )
@@ -1211,8 +1211,40 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	FakePhysicsThrow( player, loot, fwd * 100 )
 
 	BroadcastItemDrop( player, ref )
+	
+	thread function() : ( player, loot )
+	{
+		EndSignal( loot, "EndTyThread" )
+		
+		thread TimeOutThanksPromptForThrowedLoot( loot )
+		
+		entity pickedUpBy = expect entity( loot.WaitSignal( "OnItemPickup" ).player )
 
+		if ( !IsValid( pickedUpBy ) || player == pickedUpBy || pickedUpBy.GetTeam() != player.GetTeam() )
+			return
+
+		Remote_CallFunction_NonReplay( pickedUpBy, "ServerCallback_PromptSayThanks", player )
+	}()
+	
 	return loot
+}
+
+void function TimeOutThanksPromptForThrowedLoot( entity loot )
+{
+	EndSignal( loot, "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( loot )
+		{
+			if( IsValid( loot ) )
+				Signal( loot, "EndTyThread" )
+		}
+	)
+	
+	float endtime = Time() + 60
+	
+	while( Time() < endtime )
+		wait 1
 }
 
 void function EquipAttachments_Internal( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory, bool returnToInventory, bool forceActive, bool idk, entity deathBox )
