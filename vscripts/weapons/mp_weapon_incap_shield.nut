@@ -307,7 +307,7 @@ entity function CreateIncapShieldEntity( entity player, entity vortexWeapon )
 	gs.useFxColorOverride = true
 	gs.fxColorOverride = GetIncapShieldColorFromInventory( player )
 	gs.model = INCAP_SHIELD_FX_COL
-	gs.modelHide = false
+	gs.modelHide = true
 	gs.modelOverrideAngles = <90, 0, 0>
 	gs.fxOverrideAngles = forward
 
