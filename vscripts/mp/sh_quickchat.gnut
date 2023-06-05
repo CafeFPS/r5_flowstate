@@ -221,7 +221,7 @@ void function Quickchat( entity player, int index, entity subject = null )
 	string add = ""
 	if ( IsValid( subject ) )
 	{
-		add = " " + eCommsFlags.NONE + " " + subject.GetEncodedEHandle()
+		add = " " + eCommsFlags.NONE + " 42069 " + subject.GetEncodedEHandle()
 	}
 
 	player.ClientCommand( "ClientCommand_Quickchat " + index + add )
