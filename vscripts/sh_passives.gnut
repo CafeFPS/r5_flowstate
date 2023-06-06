@@ -83,6 +83,9 @@ global enum ePassives
 	PAS_FORTIFIED,
 	PAS_LOWPROFILE,
 	PAS_PILOT_BLOOD
+	//new
+	PAS_BONUS_SMALL_HEAL,
+	PAS_EXTRA_MED_INV,
 
 	_count,
 }
@@ -99,6 +102,8 @@ global const table<int, string> PASSIVE_NAME_MAP = {
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE",
 	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD",
+	[ePassives.PAS_BONUS_SMALL_HEAL] = "Improved Minor Heal",
+	[ePassives.PAS_EXTRA_MED_INV] = "Deep Pockets"
 
 }
 global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
@@ -110,6 +115,8 @@ global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED_DESC",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE_DESC",
 	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD_DESC",
+	[ePassives.PAS_BONUS_SMALL_HEAL] = "Improved Minor Heal",
+	[ePassives.PAS_EXTRA_MED_INV] = "Deep Pockets"
 }
 #endif
 

@@ -13,7 +13,7 @@ table< string, array<LootDistro> > LootDistribution //groupRef : array of EntryR
 
 void function SURVIVAL_LootDistribution_InitShared()
 {
-    var dt = GetDataTable( $"datatable/survival_loot_groups_new.rpak" )
+    var dt = GetDataTable( $"datatable/flowstate_all_new_groups.rpak" )
     int numRows = GetDatatableRowCount( dt )
     string currentGroupRef
     array<LootDistro> distributions
@@ -34,16 +34,17 @@ void function SURVIVAL_LootDistribution_InitShared()
 				continue
 			}
 		}
-        
+
+		
         float entryDistribution = GetDataTableFloat( dt, i, GetDataTableColumnByName( dt, "entryDistribution" ) )
         int groupTier = GetDataTableInt( dt, i, GetDataTableColumnByName( dt, "groupTier" ) )
         
-        if(groupRef == "") //This is not a group header, this is content of a group
+        if(groupRef == "" && IsNewLootEnabled( entryRef )) //This is not a group header, this is content of a group
         {
             LootDistro ld = NewLootDistro(entryRef, entryDistribution)
             distributions.push(ld)
         }
-        if(groupRef != "") //Found a group header, accumulate anything so far into the previous group 
+        if(groupRef != "" ) //Found a group header, accumulate anything so far into the previous group 
         {
             // Checks if the group has already been overriden by AddCustomItemToLootPool.
             // If so, extend the group instead of replacing it.
@@ -93,20 +94,30 @@ string function SURVIVAL_GetWeightedItemFromGroup(string groupRef)
     //Get the loot ref that was rolled
     float accumulate = 0
     string theRef = ""
-   
-    foreach(LootDistro distro in groupDistro)
+	int tries
+	
+	for(int i = 0; i < 1; i++)
     {
-        if(accumulate <= lootRoll && accumulate + distro.chance > lootRoll)
-        {
-            if(!IsPackedGroup(distro.ref))
-                theRef = distro.ref
-            else
-                theRef = SURVIVAL_GetWeightedItemFromGroup(distro.ref)  
-            break
-        }
-        else
-            accumulate += distro.chance
-    }
+		foreach(LootDistro distro in groupDistro)
+		{
+			if(accumulate <= lootRoll && accumulate + distro.chance > lootRoll)
+			{
+				if(!IsPackedGroup(distro.ref))
+					theRef = distro.ref
+				else
+					theRef = SURVIVAL_GetWeightedItemFromGroup(distro.ref)  
+				break
+			}
+			else
+				accumulate += distro.chance
+		}
+	
+		if( theRef == "" && tries < 5 )
+		{
+			i--
+			tries++
+		}	
+	}
     return theRef
 }
 
@@ -118,13 +129,13 @@ array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGr
     for(int i = 0; i < numLootItems; i++)
     {
 		string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
-		if(ref == "blank")
+		if(ref == "blank" || ref == "")
 		{
 			tries = 0
 			for(int j = 0; j < 1; j++)
 			{
 				ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
-				if(ref == "blank" && tries < 5)
+				if(ref == "blank" && tries < 5 || ref == "" && tries < 5 )
 				{
 					j--
 					tries++

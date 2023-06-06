@@ -302,6 +302,7 @@ global enum eAttachmentTag
 	SNIPER
 	SMG
 	LAUNCHER
+	MARKSMAN
 	ALL
 	BARREL
 }
@@ -314,6 +315,7 @@ global const table<string, int> weaponClassToTag = {
 	sniper    = eAttachmentTag.SNIPER
 	smg       = eAttachmentTag.SMG
 	launcher  = eAttachmentTag.LAUNCHER
+	marksman = eAttachmentTag.MARKSMAN
 }
 
 global struct KitHealData
@@ -384,8 +386,8 @@ struct
 	table<string,string> toggleAttachments
 	table<string, string> weaponAutoToggledAttachments =
 	{
-		["mp_weapon_g2"] 		= "hopup_double_tap",
-		["mp_weapon_shotgun"] 	= "hopup_double_tap",
+		// ["mp_weapon_g2"] 		= "hopup_double_tap",
+		// ["mp_weapon_shotgun"] 	= "hopup_double_tap",
 	}
 	table<string, bool functionref( string, entity ) > conditionalLootChecks
 } file
@@ -530,16 +532,6 @@ void function SURVIVAL_Loot_InitShared()
 		string aRef = GetDataTableString( attachmentTable, i, GetDataTableColumnByName( attachmentTable, "mod" ) )
 
 		string featureFlagRef = GetDataTableString( attachmentTable, i, GetDataTableColumnByName( attachmentTable, "featureFlag" ) )
-		if ( featureFlagRef != "" )
-		{
-			Assert( ForAssertingOnly_IsValidFeatureFlagString( featureFlagRef ),
-				format( "Reference to '%s' in 'survival_weapon_mods.csv' is gated by unknown feature flag: %s", aRef, featureFlagRef ) )
-			if ( !GetFeatureFlagByString( featureFlagRef ) )
-			{
-				//printf( "Skipping reference to '%s' in 'survival_weapon_mods.csv' because feature flag %s is off.", aRef, featureFlagRef )
-				continue
-			}
-		}
 
 		string toggleMod = GetDataTableString( attachmentTable, i, GetDataTableColumnByName( attachmentTable, "toggleMod" ) )
 		if ( toggleMod != "" )
@@ -551,7 +543,7 @@ void function SURVIVAL_Loot_InitShared()
 	// --------------------------
 	// attachment data
 	// --------------------------
-	var attachmentMatrix = GetDataTable( $"datatable/weapon_attachment_matrix.rpak" )
+	var attachmentMatrix = GetDataTable( $"datatable/flowstate_weapon_attachment_data.rpak" )
 	int amRowCount       = GetDatatableRowCount( attachmentMatrix )
 
 	array<LootData> allWeapons = SURVIVAL_Loot_GetByType( eLootType.MAINWEAPON )
@@ -579,18 +571,9 @@ void function SURVIVAL_Loot_InitShared()
 	for ( int i = 0; i < amRowCount; i++ )
 	{
 		string attachmentName = GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "attachmentName" ) )
-
-		//
 		if ( attachmentName == "featureFlag" )
 		{
 			featureFlagRowIdx = i
-			continue
-		}
-
-		string rowFeatureFlagRef = GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "featureFlag" ) )
-		if ( rowFeatureFlagRef != "" && !GetFeatureFlagByString( rowFeatureFlagRef ) )
-		{
-			//printf( "Skipping attachment ref %s because feature flag %s is off.", attachmentName, rowFeatureFlagRef )
 			continue
 		}
 
@@ -604,15 +587,6 @@ void function SURVIVAL_Loot_InitShared()
 				continue
 
 			int col = GetDataTableColumnByName( attachmentMatrix, data.baseWeapon )
-
-			// commented out because it caused errors for custom weapons.
-			// You might be able to move this to the if section below.
-			/*string colFeatureFlagRef = GetDataTableString( attachmentMatrix, featureFlagRowIdx, col )
-			if ( colFeatureFlagRef != "" && !GetFeatureFlagByString( colFeatureFlagRef ) )
-			{
-				//printf( "Skipping weapon attachment data for %s because feature flag %s is off.", data.baseWeapon, colFeatureFlagRef )
-				continue
-			}*/
 
 			if ( col != -1 )
 			{
@@ -2781,10 +2755,6 @@ void function Dev_SpawnAllLootTypes( vector startPos, vector diffPosCol, vector 
 			continue
 		}
 		*/
-
-		if ( data.minInWorld < 0 )
-			continue
-
 		int col = (idx % countPerRow)
 		int row = (idx / countPerRow)
 		vector pos = startPos + col * diffPosCol + row * diffPosRow
@@ -3558,7 +3528,9 @@ string function GetStringForTagId( int tagId )
 			return "#TAG_SMG"
 		case eAttachmentTag.LAUNCHER:
 			return "#TAG_LAUNCHER"
-
+		case eAttachmentTag.MARKSMAN:
+			return "#TAG_MARKSMAN"
+			
 		default:
 			Assert( false )
 	}
