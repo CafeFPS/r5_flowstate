@@ -4764,10 +4764,22 @@ void function PlayerHudSetWeaponInspect( bool inspect )
 
 void function ServerCallback_NessyMessage( int state )
 {
-	if ( state == 0 )
-		Obituary_Print_Localized( Localize( "#NESSY_APPEARS" ) )
-	if ( state == 1 )
-		Obituary_Print_Localized( Localize( "#NESSY_SURFACES" ) )
+	switch( state )
+	{
+		case 0:
+			Obituary_Print_Localized( Localize( "#NESSY_APPEARS" ) )
+		break
+		
+		case 1:
+			Obituary_Print_Localized( Localize( "#NESSY_SURFACES" ) )
+		break
+		
+		case 40:
+		// printt("Mantling, zipline use count reset.")
+		entity player = GetLocalClientPlayer()
+		player.p.ziplineUsages = 0
+		break
+	}
 }
 
 

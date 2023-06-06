@@ -658,6 +658,17 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		victim.SetObserverTarget( null )
 }
 
+void function ResetZiplineUseCountOnMantle( entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	// printt("Mantling, zipline use count reset.")
+	
+	player.p.ziplineUsages = 0
+	Remote_CallFunction_NonReplay( player, "ServerCallback_NessyMessage", 40 )
+}
+
 void function OnClientConnected( entity player )
 {
 	// Min players logic
@@ -670,7 +681,7 @@ void function OnClientConnected( entity player )
 	if ( connectedPlayerCount >= minPlayers && !Flag( "MinPlayersReached" ) )
 		FlagSet( "MinPlayersReached" )
 	// Min players logic end
-
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, ResetZiplineUseCountOnMantle )
 	UpdatePlayerCounts()
 
 	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
