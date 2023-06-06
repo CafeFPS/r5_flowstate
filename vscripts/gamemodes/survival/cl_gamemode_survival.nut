@@ -4751,7 +4751,7 @@ void function ServerCallback_NessyMessage( int state )
 		break
 		
 		case 40:
-		printt("Mantling, zipline use count reset.")
+		//printt("Mantling, zipline use count reset.")
 		entity player = GetLocalClientPlayer()
 		player.p.ziplineUsages = 0
 		break
