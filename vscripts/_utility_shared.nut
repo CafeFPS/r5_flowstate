@@ -97,6 +97,18 @@ global enum eGradeFlags
 	IS_LOCKED = (1 << 3),
 }
 
+struct
+{
+	//array<entity>                 invalidEntsForPlacingPermanentsOnto
+	//table<entity, RefEntAreaData> invalidAreasRelativeToEntForPlacingPermanentsOnto
+
+	//int functionref()            getNumTeamsRemainingCallback
+	//float functionref()			 getDeathCamTimeOverride
+	//float functionref()			 getDeathCamSpectateTimeOverride
+	array<string>				 nonInstalledModsTracked
+
+	//UpdraftTriggerSettings&      updraftSettings = { ... }
+} file
 
 void function Utility_Shared_Init()
 {
@@ -4659,6 +4671,27 @@ bool function GradeFlagsHas( entity ent, int gradeFlags )
 //
 //	return ""
 //}
+array<string> function GetValidLootModsInstalled( entity weapon )
+{
+	string weaponName = GetWeaponClassName( weapon )
+
+	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return []
+
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
+		return []
+
+	array<string> mods = GetWeaponMods( weapon )
+	array<string> validMods
+
+	foreach ( mod in mods )
+	{
+		if ( SURVIVAL_Loot_IsRefValid( mod ) )                                         
+			validMods.append( mod )
+	}
+
+	return validMods
+}
 
 array<string> function GetValidModsInstalled( entity weapon )
 {
@@ -4703,14 +4736,30 @@ array<string> function GetNonInstallableWeaponMods( entity weapon )
 			installedMods.append( mod )
 	}
 
-	foreach ( mod in installedMods )
-	{
-		VerifyToggleMods( mod, foundMods )
-	}
+	VerifyToggleMods( foundMods )
 
 	return foundMods
 }
+array<string> function GetNonInstallableTrackableWeaponMods( entity weapon )
+{
+	string weaponName = GetWeaponClassName( weapon )
 
+	if ( weapon.GetNetworkedClassName() != "prop_survival" && !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return weapon.GetMods()
+
+	bool isAttachmentLocked = SURVIVAL_Weapon_IsAttachmentLocked( weaponName )
+
+	array<string> mods = GetWeaponMods( weapon )
+	array<string> trackedMods
+
+	foreach ( mod in mods )
+	{
+		if ( ( !CanAttachToWeapon( mod, weaponName ) || isAttachmentLocked ) && file.nonInstalledModsTracked.contains( mod ) )
+			trackedMods.append( mod )
+	}
+
+	return trackedMods
+}
 string function GetWeaponClassName( entity weaponOrProp )
 {
 	string weaponName
@@ -4893,7 +4942,7 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "grip" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, "grip" ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
@@ -4904,24 +4953,10 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 			break
 
 		case "barrel":
-			return "barrel_stabilizer"
-			break
-
-		case "mag":
-			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
-			if ( weaponData.ammoType == "bullet" )
-				return "mag_straight"
-			if ( weaponData.ammoType == "special" )
-				return "mag_energy"
-			if ( weaponData.ammoType == "shotgun" )
-				return "mag_shotgun"
-			break
-
-		case "hopup":
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "hopup" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, "barrel" ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
@@ -4929,25 +4964,76 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 
 				return attachmentData.attachmentStyle
 			}
+
+			break
+
+		case "mag":
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
+			if ( weaponData.ammoType == BULLET_AMMO )
+				return "mag_straight"
+			if ( weaponData.ammoType == SPECIAL_AMMO || weaponData.ammoType == ARROWS_AMMO )
+				return "mag_energy"
+			if ( weaponData.ammoType == SHOTGUN_AMMO )
+				return "mag_shotgun"
+			if ( weaponData.ammoType == SNIPER_AMMO )
+				return "mag_sniper"
+            if ( weaponData.ref == "mp_weapon_car" )
+                return "mag_car"
+
+			break
+
+		case "hopup":
+		case "hopupMulti_a":
+		case "hopupMulti_b":
+			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
+			string attachmentStyle = ""
+			bool moreThanOneHopup = false
+			foreach ( attachmentData in attachments )
+			{
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, attachmentPoint ) )
+					continue
+
+				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
+					continue
+
+				if ( attachmentStyle != "" && !attachmentData.lootTags.contains( "FakeHopup" ) )
+				{
+					moreThanOneHopup = true
+					break
+				}
+
+				if ( !attachmentData.lootTags.contains( "FakeHopup" ) )
+					attachmentStyle = attachmentData.attachmentStyle
+			}
+
+			if ( moreThanOneHopup )
+				return attachmentPoint
+			else if ( attachmentStyle != "" )
+				return attachmentStyle
+
 			break
 	}
 
 	return attachmentPoint
 }
-
 array<string> function GetAttachmentsForPoint( string attachmentPoint, string weaponName )
 {
 	array<string> attachmentRefs
 	switch ( attachmentPoint )
 	{
 		case "hopup":
+		case "hopupMulti_a":
+		case "hopupMulti_b":
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "hopup" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, attachmentPoint ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
+					continue
+
+				if ( attachmentData.lootTags.contains ( "FakeHopup" ) )
 					continue
 
 				attachmentRefs.append( attachmentData.ref )
@@ -4955,7 +5041,7 @@ array<string> function GetAttachmentsForPoint( string attachmentPoint, string we
 			break
 
 		default:
-			Assert( 0, "attachmentPoint " + attachmentPoint + " is not supported, but could be." )
+			Assert( false, "attachmentPoint " + attachmentPoint + " is not supported, but could be." )
 	}
 
 	return attachmentRefs

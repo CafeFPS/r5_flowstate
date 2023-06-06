@@ -666,11 +666,11 @@ void function PlaySoundForCommsAction( entity player, int commsAction, CommsOpti
 		string flavorEvent = flavorEventOverride == "" ? file.actions[commsAction].flavorEvent : flavorEventOverride
 		if ( subEvent != "" )
 		{
-			thread PlaySoundForSubActionWhenPrimaryFinishes( soundHandle, commsAction, GetCommsActionForName( subEvent ), player, opt, flavorEvent )
+			thread PlaySoundForSubActionWhenPrimaryFinishes( soundHandle, commsAction, GetCommsActionEnumForName( subEvent ), player, opt, flavorEvent )
 		}
 		else if ( flavorEvent != "" )
 		{
-			int flavorAction = GetCommsActionForName( flavorEvent )
+			int flavorAction = GetCommsActionEnumForName( flavorEvent )
 			string flavorSound = GetPlayerDialogSound( player, flavorAction, opt )
 			if ( DoesAliasExist( flavorSound ) && ShouldPlayFlavorAction( player, flavorAction ) )
 			{

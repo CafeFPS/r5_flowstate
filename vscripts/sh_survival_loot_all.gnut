@@ -115,27 +115,14 @@ global enum eLootType
 	BACKPACK
 	HELMET
 	BLANK
-	#if(true)
-		DATAKNIFE
-	#endif
+	DATAKNIFE
 	RESOURCE
+	GADGET
 
 	_count
 }
 
 global const int HAS_DEATHBOX_OVERRIDE_FRIEND_PROFILES_TO_SEND = 3
-
-#if(false)
-
-
-
-
-#endif
-
-#if(false)
-
-#endif
-
 
 #if(true)
 global struct OverrideDeathBoxRUI_NetworkOptimizedStruct
@@ -193,22 +180,7 @@ struct CustomGrenadeData
 	float carePackageChance
 }
 
-global struct CustomAmmoData
-{
-	string className,
-	asset icon = $"rui/hud/gametype_icons/survival/sur_ammo_bullet_large",
-	asset model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_hc.rmdl",
-	string sound = "survival_loot_pickup_HeavyAmmo",
-	string sound3p = "survival_loot_pickup_3p_HeavyAmmo",
-	string printname = "Custom Ammo",
-    string pingCommsAction = "PING_AMMO_HIGHCAL",
-	string desc = "Custom Ammo Desc",
-	int countPerDrop = 80,
-	int stackSize = 80,
-	float chance = 10.0
-}
-
-array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
+array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup", "hopupMulti_a", "hopupMulti_b"]
 
 array<CustomHopupData> function GetCustomHopupArray()
 {
@@ -274,6 +246,7 @@ bool function IsNewLootEnabled( string ref )
 	switch( ref )
 	{
 		case "":
+		case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
 		case "mp_weapon_3030":
 		case "mp_weapon_nemesis":
@@ -296,11 +269,43 @@ bool function IsNewLootEnabled( string ref )
 		case "mp_ability_void_ring":
 		case "mp_ability_mobile_respawn_beacon":
 		case "mp_ability_redeploy_balloon":
-		// case "hopup_smart_reload":
-		// case "hopup_dual_loader":
+		case "hopup_smart_reload":
+		case "hopup_dual_loader":
 		case "backpack_pickup_lv4_revive_boost":
 		
 		return false
+	}
+	
+	return true
+}
+
+bool function IsModelNotPortedYet( asset model )
+{
+	switch( model )
+	{
+		case $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_lasersight_v1.rmdl":
+		case $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_mag_sniper_v1.rmdl":
+		
+		return true
+	}
+	
+	return false
+}
+
+
+bool ENABLE_DEFINED_SETS = false
+
+bool function EnableWhiteBlueAndPurplePredefinedSets( string ref )
+{
+	array<string> stripedref = split( ref, "_" )
+
+	switch( stripedref[stripedref.len()-1] )
+	{
+		case "whiteset":
+		case "blueset":
+		case "purpleset":
+		
+		return ENABLE_DEFINED_SETS
 	}
 	
 	return true
@@ -324,8 +329,8 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 
 		string pingCommsActionName = GetLootTableString( data.ref, dt, i, "pingCommsAction" )
 
-		#if SERVER || CLIENT
-		data.pingCommsAction = GetCommsActionForName( pingCommsActionName )
+		#if (SERVER || CLIENT)
+			data.pingCommsAction = GetCommsActionEnumForName( pingCommsActionName )
 		#endif
 
 		string lootType = GetLootTableString( data.ref, dt, i, "type" )
@@ -337,7 +342,7 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 			data.baseWeapon = data.ref
 		}
 		
-		if( !IsNewLootEnabled( data.baseWeapon ) )
+		if( !IsNewLootEnabled( data.baseWeapon ) || !EnableWhiteBlueAndPurplePredefinedSets( data.ref ) )
 			continue
 		
 		data.fakeAmmoIcon = GetLootTableAsset( data.ref, dt, i, "fakeAmmoIcon" )
@@ -346,6 +351,10 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		data.baseMods = split( GetLootTableString( data.ref, dt, i, "baseMods" ), " " )
 
 		data.model = GetLootTableAsset( data.ref, dt, i, "pickupModel" )
+		
+		if( IsModelNotPortedYet( data.model ) )
+			data.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl"
+		
 		data.skinOverride = GetLootTableInt( data.ref, dt, i, "skinOverride" )
 		data.hudIcon = GetLootTableAsset( data.ref, dt, i, "icon" )
 		data.attachSound = GetLootTableString( data.ref, dt, i, "attachSound" )
@@ -640,37 +649,6 @@ array<string> function GetCustomHopupsForWeapon(string className)
 	}
 	return result
 }
-
-void function RegisterCustomAmmo(CustomAmmoData AmmoData)
-{
-	LootData data
-	data.ref = AmmoData.className
-	data.baseWeapon = AmmoData.className
-
-	data.pickupString = AmmoData.printname
-	data.desc = AmmoData.desc
-	data.hudIcon = AmmoData.icon
-	data.model = AmmoData.model
-	data.tier = 1
-	data.countPerDrop = AmmoData.countPerDrop
-	data.inventorySlotCount = AmmoData.stackSize
-	data.lootType = eLootType.AMMO
-	data.pickupSound_1p = AmmoData.sound
-	data.pickupSound_3p = AmmoData.sound3p
-
-	#if SERVER || CLIENT
-	data.pingCommsAction = GetCommsActionForName( AmmoData.pingCommsAction )
-	#endif
-
-	data.index = file.lootIndexToString.len()
-	file.lootIndexToString.append( data.ref )
-	file.lootData[ data.ref ] <- data
-
-	#if !UI
-	AddCustomItemToLootPool( data.ref, "ammo", AmmoData.chance)
-	#endif
-}
-
 
 void function RegisterCustomGrenade(CustomGrenadeData grenadeData) {
 	LootData data

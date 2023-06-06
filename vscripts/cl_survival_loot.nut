@@ -733,7 +733,7 @@ table<string, string> function BuildAttachmentMapForPickupPrompt( entity player,
 		{
 			if ( SURVIVAL_Loot_IsRefValid( mod ) && (SURVIVAL_Loot_GetLootDataByRef( mod ).lootType == eLootType.ATTACHMENT) )
 			{
-				string attachPoint = GetAttachPointForAttachment( mod )
+				string attachPoint = GetAttachPointForAttachmentOnWeapon(lootRef.lootData.ref, mod )
 				results[attachPoint] <- mod
 			}
 		}
@@ -1307,7 +1307,7 @@ bool function TryOpenQuickSwap( entity overrideItem = null )
 		entity player = GetLocalClientPlayer()
 
 		entity deathBox = player.GetUsePromptEntity()
-		if ( deathBox.GetTargetName() != DEATH_BOX_TARGETNAME )
+		if ( IsValid( deathBox ) && deathBox.GetTargetName() != DEATH_BOX_TARGETNAME )
 			deathBox = null
 
 		if ( itemToUse.GetTargetName() != DEATH_BOX_TARGETNAME )

@@ -2,6 +2,7 @@ global function SURVIVAL_Loot_InitShared
 #if SERVER
 global function SURVIVAL_Loot_GetAllLoot
 #endif
+global function CodeCallback_WeaponModCommandCheckMods
 
 global function Survival_PickupItem
 global function SURVIVAL_Loot_GetGeneralTypeStringFromType
@@ -23,7 +24,9 @@ global function SURVIVAL_CountItemsTypesInInventory
 global function GetCategoryTitleFromPriority
 global function SortByPriorityThenTier
 global function GetPriorityForLootType
-global function GetCommsActionForName
+global function GetCommsActionEnumForName
+global function GetWeaponClassNameWithLockedSet
+global function WeaponLootRefIsLockedSet
 
 global function SURVIVAL_GetActiveWeapon
 global function SURVIVAL_GetLastActiveWeapon
@@ -36,9 +39,15 @@ global function SURVIVAL_RemoveFromPlayerInventory
 global function SURVIVAL_GetPlayerInventory
 global function SURVIVAL_CountPrimaryWeapons
 
-global function GetAttachPointForAttachment
+global function GetAttachPointsForAttachment
+global function GetAttachPointForAttachmentOnWeapon
+global function CanAttachmentEquipToAttachPoint
+global function CanAttachmentEquipToOneOfAttachPoints
+global function IsAttachmentAmbiguousForWeapon
 global function IsModTypeSight
 global function GetWeaponAmmoType
+global function IsAttachmentAnUpgrade
+global function GetOtherWeapon
 global function CanPlayerLoot
 
 global function SURVIVAL_GetActionForGroundItem
@@ -110,7 +119,7 @@ global function SURVIVAL_GetPrimaryWeaponsSorted
 global function SURVIVAL_CanQuickAttach
 global function SURVIVAL_CanQuickAttachWithMod
 global function SURVIVAL_CanAddModToWeapon
-global function GetInstalledWeaponAttachment
+global function GetInstalledWeaponAttachmentForPoint
 global function GetAllWeaponAttachments
 
 global function SURVIVAL_GetAllPlayerOrdnance
@@ -161,14 +170,20 @@ global function SURVIVAL_UpdateIcons
 global function SortByLootTier
 global function SortInventoryByLootTier
 
-global function GetToggleAttachmentsList
+global function GetAttachmentsWithToggleModsList
+global function GetToggleModsRequiredAttachmentsList
 global function VerifyToggleMods
 global function ApplyDefaultToggledMods
+global function ReplaceOpticInMods
+global function GetAltModsToRemoveOnCleanup
+global function CleanupAltMods
 
 global function SURVIVAL_GetLootDataFromWeapon
 global function SURVIVAL_Weapon_IsAttachmentLocked
+global function SURVIVAL_IsAttachmentPointLocked
 global function SURVIVAL_Weapon_IsFullyKitted
-global function SURVIVAL_Weapon_GetFullyKittedMods
+
+global function SURVIVAL_Weapon_GetBaseMods
 
 global function SURVIVAL_GetStowedWeaponSlot
 
@@ -176,10 +191,67 @@ global function IsValidAttachment
 global function GetAttachmentData
 
 global function GetNameOfTeammateWithVaultKey
+global const string WEAPON_LOCKEDSET_SUFFIX_GOLD = "_gold"
+global const string WEAPON_LOCKEDSET_MOD_GOLD = "gold"
+global const string WEAPON_LOCKEDSET_SUFFIX_WHITESET = "_whiteset"
+global const string WEAPON_LOCKEDSET_MOD_WHITESET = "whiteset"
+global const string WEAPON_LOCKEDSET_SUFFIX_BLUESET = "_blueset"
+global const string WEAPON_LOCKEDSET_MOD_BLUESET = "blueset"
+global const string WEAPON_LOCKEDSET_SUFFIX_PURPLESET = "_purpleset"
+global const string WEAPON_LOCKEDSET_MOD_PURPLESET = "purpleset"
+global const array<string> WEAPON_SET_STRINGS_FOR_TIER = [ "", WEAPON_LOCKEDSET_SUFFIX_WHITESET, WEAPON_LOCKEDSET_SUFFIX_BLUESET, WEAPON_LOCKEDSET_SUFFIX_PURPLESET, WEAPON_LOCKEDSET_SUFFIX_GOLD ]
+global const string WEAPON_LOCKEDSET_SUFFIX_GOLDPAINTBALL = "_gold_paintball"
+global const string WEAPON_LOCKEDSET_MOD_GOLDPAINTBALL = "gold_paintball"
+global const string WEAPON_LOCKEDSET_SUFFIX_PURPLEPAINTBALL = "_purple_paintball"
+global const string WEAPON_LOCKEDSET_MOD_PURPLEPAINTBALL = "purple_paintball"
+global const string WEAPON_LOCKEDSET_SUFFIX_BLUEPAINTBALL = "_blue_paintball"
+global const string WEAPON_LOCKEDSET_MOD_BLUEPAINTBALL = "blue_paintball"
+                                
+                                                                       
+                                                                         
+      
+                               
+global const string WEAPON_LOCKEDSET_SUFFIX_CUPID = "_cupid"
+global const string WEAPON_LOCKEDSET_MOD_CUPID = "cupid"
+      
+                                
+                                                            
+                                                                          
+                                                            
+                                                                          
+                                                              
+                                                                            
+                                                              
+                                                                            
+      
+                                                                      
+const table< string, string > LOCKEDSET_MOD_TO_SUFFIX = {
+	[WEAPON_LOCKEDSET_MOD_GOLDPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_GOLDPAINTBALL,
+	[WEAPON_LOCKEDSET_MOD_PURPLEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_PURPLEPAINTBALL,
+	[WEAPON_LOCKEDSET_MOD_BLUEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_BLUEPAINTBALL,
+                                 
+                                                                         
+       
+                                
+		[WEAPON_LOCKEDSET_MOD_CUPID] = WEAPON_LOCKEDSET_SUFFIX_CUPID,
+       
+                                 
+                                                               
+                                                               
+                                                                 
+                                                                 
+       
+}
 
+global const string WEAPON_LOCKEDSET_MOD_CRATE = "crate"
+
+global const string WEAPON_SUFFIX_NONCOMBAT = "_noncombat"
+
+global const bool REMOVE_KITTED_WEAPONS_FROM_SPAWNING = true
 
 const string SFX_BACKPACK_FULL = "UI_Survival_BackPackFull"
 const string SFX_CANNOT_USE = "UI_Survival_LootPickupDeny"
+const string SFX_ORDNANCE_AUTO_PICKUP = "Ctrl_Pickup_Ordnance_1p"
 
 global const int MIN_LOOT_TIER = 0
 global const int MAX_LOOT_TIER = 5
@@ -192,7 +264,30 @@ global const float SURVIVAL_GROUNDLIST_NEARBY_RADIUS = 1500.0
 
 global const bool LOOT_GROUND_VERTICAL_LINES = true
 
-global const AUTOPICKUP_DISTANCE = 50.0
+global const AUTOPICKUP_DISTANCE = 64.0
+const float AUTOPICKUP_ORDNANCE_DISTANCE = 110.0
+
+                       
+                                                     
+                                                                
+                                                                          
+      
+
+const int EVOLVING_ARMOR_DAMAGE_TIER1 = 100
+const int EVOLVING_ARMOR_DAMAGE_TIER2 = 150
+const int EVOLVING_ARMOR_DAMAGE_TIER3 = 300
+const int EVOLVING_ARMOR_DAMAGE_TIER4 = 750
+
+const FX_SHIELD_EVO_UPGRADE_FP = $"P_armor_evo_upgrade_FP"
+global const FX_SHIELD_EVO_UPGRADE_3P = $"P_armor_evo_upgrade"
+
+                  
+                                                       
+      
+
+global const FX_AIRDROP_BEAM_CP = $"P_ar_loot_drop_point_far_cp"
+global const FX_AIRDROP_GROUND_MARKER_DEFAULT_CP = $"P_ar_loot_drop_point_cp"
+global const FX_AIRDROP_GROUND_MARKER_CRAFTING_CP = $"P_ar_loot_drop_point_cp"
 
 #if LOOT_GROUND_VERTICAL_LINES
 global const float VERTICAL_LINE_WIDTH = 48
@@ -204,14 +299,21 @@ global const float VERTICAL_LINE_DIST_MAX = SURVIVAL_PICKUP_ALL_MAX_RANGE
 #endif
 #endif
 
+global enum ePropSurvivalFlag
+                                                                          
+{
+	HIDE_LOOT_LINE = (1 << 0),
+}
 
 global enum eLootSortCategories
 {
 	WEAPONS,
 	AMMO,
+	SPECIAL,
+	PVE,
 	EQUIPMENT,
-	ATTACHMENTS,
 	CONSUMABLES,
+	ATTACHMENTS,
 	DEFAULT,
 }
 
@@ -248,7 +350,14 @@ global enum eHealthPickupCategory
 	ULTIMATE
 }
 
-
+global enum eWeaponLockedSet
+{
+	INVALID,
+	WHITESET,
+	BLUESET,
+	PURPLESET,
+	GOLD
+}
 
 global const int SURVIVAL_MAX_AMMO_PICKUPS = 2000
 
@@ -269,8 +378,9 @@ global struct LootActionStruct
 global struct LootRef
 {
 	entity lootEnt
-	int lootProperty
-	int count
+	int    lootProperty
+	int    lootExtraProperty
+	int    count
 
 	LootData& lootData
 }
@@ -320,11 +430,11 @@ global const table<string, int> weaponClassToTag = {
 
 global struct KitHealData
 {
-	HealthPickup &healthKit
-	int kitType
-	int count
-	int overHeal
-	int overShield
+	HealthPickup & healthKit
+	int            kitType
+	int            count
+	int            overHeal
+	int            overShield
 
 	int possibleHealthAdd
 	int possibleShieldAdd
@@ -339,23 +449,24 @@ array<int> healthKitUseOrder = []
 
 global struct AttachmentTagData
 {
-	string ammoRef
-	array<int> attachmentTags
+	string        ammoRef
+	array<int>    attachmentTags
 	array<string> weaponRefs
+	table<int,string> exceptionToTheRuleForThisWeaponClass
 }
 
 global struct AttachmentData
 {
-	string ref
-	array<string> compatibleWeapons
-	string attachPoint
+	string             ref
+	array<string>      compatibleWeapons
+	array<string>      attachPoints
 	AttachmentTagData& tagData
 }
 
 struct CachedLootActionData
 {
 	LootActionStruct& actionStruct
-	float lastUpdateTime
+	float             lastUpdateTime
 }
 
 struct
@@ -383,17 +494,22 @@ struct
 #endif // SERVER / CLIENT
 
 	table<int, HealthPickup> healthPickups
-	table<string,string> toggleAttachments
+	table<string, string>                                        attachmentsWithToggleMods
+	table< string, array<string> >                               toggleModsRequiredAttachments
+
 	table<string, string> weaponAutoToggledAttachments =
 	{
-		// ["mp_weapon_g2"] 		= "hopup_double_tap",
-		// ["mp_weapon_shotgun"] 	= "hopup_double_tap",
+		["mp_weapon_g2"] = "hopup_double_tap",
+		["mp_weapon_shotgun"] = "hopup_double_tap",
+		["mp_weapon_energy_shotgun"] = "hopup_energy_choke",
+		["mp_weapon_doubletake"] = "hopup_energy_choke",
 	}
+	array<string>                                                altModsToRemoveOnDrop = [ "altfire" ]
 	table<string, bool functionref( string, entity ) > conditionalLootChecks
 } file
 
 
-int function GetCommsActionForName( string name )
+int function GetCommsActionEnumForName( string name )
 {
 	if ( name == "" )
 		return eCommsAction.BLANK
@@ -524,7 +640,7 @@ void function SURVIVAL_Loot_InitShared()
 
 	file.initialized = true
 
-	var attachmentTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
+	var attachmentTable = GetDataTable( $"datatable/flowstate_weapon_mods.rpak" )
 	int numRows = GetDatatableRowCount( attachmentTable )
 
 	for ( int i = 0; i < numRows; i++ )
@@ -536,7 +652,10 @@ void function SURVIVAL_Loot_InitShared()
 		string toggleMod = GetDataTableString( attachmentTable, i, GetDataTableColumnByName( attachmentTable, "toggleMod" ) )
 		if ( toggleMod != "" )
 		{
-			file.toggleAttachments[ aRef ] <- toggleMod
+			file.attachmentsWithToggleMods[ aRef ] <- toggleMod
+			if ( !(toggleMod in file.toggleModsRequiredAttachments) )
+				file.toggleModsRequiredAttachments[ toggleMod ] <- []
+			file.toggleModsRequiredAttachments[ toggleMod ].append( aRef )
 		}
 	}
 
@@ -554,7 +673,7 @@ void function SURVIVAL_Loot_InitShared()
 		if ( !(wData.lootTags[0] in weaponsByClass) )
 			weaponsByClass[wData.lootTags[0]] <- []
 
-		if ( wData.ref.find( "_gold" ) >= 0 )
+		if ( WeaponLootRefIsLockedSet( wData.ref ) )
 			continue
 
 		if ( wData.supportedAttachments.len() == 0 )
@@ -566,148 +685,227 @@ void function SURVIVAL_Loot_InitShared()
 		weaponsByClass[wData.lootTags[0]].append( wData.ref )
 	}
 
-	int featureFlagRowIdx = -1
-
 	for ( int i = 0; i < amRowCount; i++ )
 	{
 		string attachmentName = GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "attachmentName" ) )
-		if ( attachmentName == "featureFlag" )
-		{
-			featureFlagRowIdx = i
-			continue
-		}
 
 		AttachmentData aData
 		aData.ref = attachmentName
-		aData.attachPoint = GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "attachmentPoint" ) )
-
-		foreach ( data in allWeapons )
+		aData.attachPoints = split( GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "attachmentPoint" ) ), WHITESPACE_CHARACTERS )
+		if ( SURVIVAL_Loot_IsRefValid( aData.ref ) && !SURVIVAL_Loot_IsRefDisabled( aData.ref ) )
 		{
-			if ( aData.compatibleWeapons.contains( data.baseWeapon ) )
-				continue
-
-			int col = GetDataTableColumnByName( attachmentMatrix, data.baseWeapon )
-
-			if ( col != -1 )
+			foreach ( data in allWeapons )
 			{
-				string x = GetDataTableString( attachmentMatrix, i, col )
+				if ( aData.compatibleWeapons.contains( data.baseWeapon ) )
+					continue
 
-				if ( x != "" && data.supportedAttachments.contains( aData.attachPoint ) )
+				Assert( !IsAttachmentAmbiguousForWeapon( aData.ref, data.ref, aData.attachPoints ) )
+
+				int col = GetDataTableColumnByName( attachmentMatrix, data.baseWeapon )
+
+				if ( col != -1 )
 				{
-					aData.compatibleWeapons.append( data.baseWeapon )
+					string x = GetDataTableString( attachmentMatrix, i, col )
+					bool attachmentIsEnabled = x == "x" ? true : false
+				
+					foreach ( string attachPoint in aData.attachPoints )
+					{
+						if ( attachmentIsEnabled && data.supportedAttachments.contains( attachPoint ) )
+						{
+							printt( data.baseWeapon + " adding " + aData.ref )
+							aData.compatibleWeapons.append( data.baseWeapon )
+						}
+					}
 				}
+
+				// Make attachments compatible with custom weapons.
+				// Transferred to a function for cleaning up.
+				// else if (IsAttachmentCompatibleWithCustomWeapon(data, aData)) aData.compatibleWeapons.append( data.baseWeapon )
 			}
-			// Make attachments compatible with custom weapons.
-			// Transferred to a function for cleaning up.
-			else if (IsAttachmentCompatibleWithCustomWeapon(data, aData)) aData.compatibleWeapons.append( data.baseWeapon )
 		}
 
 		file.attachmentMatrix[ attachmentName ] <- aData
 	}
+	bool debugAttachments = false
+	// // Makes custom hopups compatible with vanilla and custom weapons.
+	// // Way to check for them is simple enough..
+	// foreach(CustomHopupData a in GetCustomHopupArray()){
+		// AttachmentData aData
+		// // class name - also the name of the mod to be added.
+		// aData.ref = a.className
+		// // attachment slot
+		// aData.attachPoint = a.attachmentSlot
 
-	// Makes custom hopups compatible with vanilla and custom weapons.
-	// Way to check for them is simple enough..
-	foreach(CustomHopupData a in GetCustomHopupArray()){
-		AttachmentData aData
-		// class name - also the name of the mod to be added.
-		aData.ref = a.className
-		// attachment slot
-		aData.attachPoint = a.attachmentSlot
-
-		foreach ( data in allWeapons )
-		{
-			if (IsAttachmentCompatibleWithCustomWeapon(data, aData)) aData.compatibleWeapons.append( data.baseWeapon )
-		}
-		// add to da matrix.
-		file.attachmentMatrix[aData.ref] <- aData
-	}
+		// foreach ( data in allWeapons )
+		// {
+			// if (IsAttachmentCompatibleWithCustomWeapon(data, aData)) aData.compatibleWeapons.append( data.baseWeapon )
+		// }
+		// // add to da matrix.
+		// file.attachmentMatrix[aData.ref] <- aData
+	// }
 
 	foreach ( aData in file.attachmentMatrix )
 	{
-		if ( aData.attachPoint == "barrel" ) //TODO: logic...
+		foreach ( string attachPoint in aData.attachPoints )
 		{
-			aData.tagData.attachmentTags.append( eAttachmentTag.BARREL )
-		}
-		else if ( aData.attachPoint == "mag" ) // TODO: logic...
-		{
-			foreach ( weaponClass, weaponList in weaponsByClass )
+			if ( attachPoint == "barrel" )                 
 			{
-				foreach ( weaponRef in weaponList )
+				aData.tagData.attachmentTags.append( eAttachmentTag.BARREL )
+			}
+			else if ( attachPoint == "mag" )                  
+			{
+				foreach ( weaponClass, weaponList in weaponsByClass )
 				{
-					if ( aData.compatibleWeapons.contains( weaponRef ) )
+					foreach ( weaponRef in weaponList )
 					{
-						LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
-						aData.tagData.ammoRef = weaponData.ammoType
+						if ( aData.compatibleWeapons.contains( weaponRef ) )
+						{
+							LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+							aData.tagData.ammoRef = weaponData.ammoType
+						}
 					}
 				}
 			}
-		}
-		else
-		{
-			array<int> attachmentTags       = []
-			array<string> attachmentUniques = []
-
-			foreach ( weaponClass, weaponList in weaponsByClass )
+			else
 			{
-				array<string> attachableWeapons = []
-				foreach ( weaponRef in weaponList )
-				{
-					if ( !aData.compatibleWeapons.contains( weaponRef ) )
-						continue
+				array<int> attachmentTags       = []
+				array<string> attachmentUniques = []
 
-					attachableWeapons.append( weaponRef )
+				foreach ( weaponClass, weaponList in weaponsByClass )
+				{
+					array<string> attachableWeapons = []
+					string incompatibleWeapon = ""
+					foreach ( weaponRef in weaponList )
+					{
+						if ( !aData.compatibleWeapons.contains( weaponRef ) )
+						{
+							if ( debugAttachments )
+								printt( format( "Attachment %s: NOT compatible with weaponRef %s", aData.ref, weaponRef ) )
+
+							incompatibleWeapon = weaponRef
+						}
+						else
+						{
+							if ( debugAttachments )
+								printt( format( "Attachment %s: appending weaponRef %s", aData.ref, weaponRef ) )
+
+							attachableWeapons.append( weaponRef )
+						}
+					}
+
+					if ( attachableWeapons.len() == weaponList.len() && weaponList.len() != 0 )
+					{
+						if ( debugAttachments )
+							printt( format( "Attachment %s: appending weaponClass %s", aData.ref, string(weaponClassToTag[weaponClass] ) ) )
+
+						attachmentTags.append( weaponClassToTag[weaponClass] )
+					}
+					else if ( attachableWeapons.len() == weaponList.len() - 1 && weaponList.len() != 0 )
+					{
+						if ( debugAttachments )
+							printt( format( "Attachment %s: exception to the rule for weaponClass %s is weapon %s", aData.ref, string(weaponClassToTag[weaponClass] ), incompatibleWeapon ) )
+
+						attachmentTags.append( weaponClassToTag[weaponClass] )
+						array<string> baseMods = SURVIVAL_Weapon_GetBaseMods( incompatibleWeapon )
+						if ( !baseMods.contains( "crate" ) )
+							aData.tagData.exceptionToTheRuleForThisWeaponClass[ weaponClassToTag[weaponClass] ] <- incompatibleWeapon
+					}
+					else
+					{
+						if ( debugAttachments )
+							printt( format( "Attachment %s: NOT appending weaponClass %s because it should have %d members to be considered complete", aData.ref, string(weaponClassToTag[weaponClass] ), weaponList.len() ) )
+
+						attachmentUniques.extend( attachableWeapons )
+					}
 				}
 
-				if ( attachableWeapons.len() == weaponList.len() && weaponList.len() != 0)
-				{
-					attachmentTags.append( weaponClassToTag[weaponClass] )
-				}
-				else
-				{
-					attachmentUniques.extend( attachableWeapons )
-				}
+				bool supportsAll = attachmentTags.len() == weaponsByClass.len()
+
+				if ( supportsAll )
+					attachmentTags = [eAttachmentTag.ALL]
+
+				aData.tagData.attachmentTags = attachmentTags
+				aData.tagData.weaponRefs = attachmentUniques
+			}
+		}
+	}
+	int attachRefCol = GetDataTableColumnByName( attachmentMatrix, "attachmentName" )
+	Assert( attachRefCol != -1, "Attachment Ref column not found in weapon attachment matrix datatable" )
+	foreach ( LootData wData in allWeapons )
+	{
+		if ( SURVIVAL_Loot_IsRefDisabled( wData.ref ) )
+			continue
+
+		int weaponCol = GetDataTableColumnByName( attachmentMatrix, wData.baseWeapon )
+		if ( weaponCol == -1 )
+			continue
+
+		array< string > attachmentsToDisable
+		foreach ( supportedAttachment in wData.supportedAttachments )
+		{
+			int matchingAttachments = 0
+			for ( int i = 0; i < amRowCount; i++ )
+			{
+				string attachmentRef = GetDataTableString( attachmentMatrix, i, attachRefCol )
+
+				if ( !SURVIVAL_Loot_IsRefValid( attachmentRef) || SURVIVAL_Loot_IsRefDisabled( attachmentRef ) )
+					continue
+
+				string attachPoint = GetAttachPointForAttachmentOnWeapon( wData.ref, attachmentRef)
+
+				if ( attachPoint != supportedAttachment )
+					continue
+
+				string x = GetDataTableString( attachmentMatrix, i, weaponCol )
+				bool attachmentIsEnabled = x == "x" ? true : false
+				
+				if ( attachmentIsEnabled )
+					matchingAttachments += 1
 			}
 
-			bool supportsAll = attachmentTags.len() == weaponsByClass.len()
-
-			if ( supportsAll )
-				attachmentTags = [eAttachmentTag.ALL]
-
-			aData.tagData.attachmentTags = attachmentTags
-			aData.tagData.weaponRefs = attachmentUniques
+			if ( matchingAttachments == 0 )
+			{
+				attachmentsToDisable.append( supportedAttachment )
+			}
 		}
-	}
-}
 
-bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, AttachmentData att)
-{
-	// Check attachment compatiblity with custom weapon. Or vice-versa.
-	//
-	// Because checking for every single circumstance is way more performance heavy and ugly as hell,
-	// instead we check if the mod with the same name of the attachment class name exists on the weapon.
-	//
-	// Sure, it means we can make multiple mag attachments compatible with the same weapon,
-	// but that isn't necessarily bad.
-	array<string> mods = GetWeaponMods_Global( weapon.baseWeapon )
-	if (!mods.contains(att.ref)) return false
-	//printt(att.ref, "|", att.attachPoint, "|", weapon.ref)
-	if (!weapon.supportedAttachments.contains( att.attachPoint )) {
-		// Allows adding  attachment slots to normal weapons if attachments are compatible.
-		// Means that certain weapons will have barrels added to them if a custom barrel is compatible.
-		// still won't allow them to equip vanilla attachments, however.
-		// Default OFF.
-		if (att.attachPoint != "") // GetCurrentPlaylistVarBool("custom_hopup_override_weapon_attachments", false) && 
+		foreach ( attachmentToDisable in attachmentsToDisable )
 		{
-			weapon.supportedAttachments.append( att.attachPoint )
-			//if (weapon.attachmentStyle == "") weapon.attachmentStyle = "hopup"
-			if (SURVIVAL_Loot_GetLootDataByRef(att.ref).attachmentStyle == "") SURVIVAL_Loot_GetLootDataByRef(att.ref).attachmentStyle = "hopup"
+			wData.supportedAttachments.removebyvalue( attachmentToDisable )
+			wData.disabledAttachments.append( attachmentToDisable )
 		}
-		else return false
 	}
-	// debug.
-	//printt("Attachment", att.ref, "has been found to be compatible with", weapon.ref)
-	return true
 }
+
+// bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, AttachmentData att)
+// {
+	// // Check attachment compatiblity with custom weapon. Or vice-versa.
+	// //
+	// // Because checking for every single circumstance is way more performance heavy and ugly as hell,
+	// // instead we check if the mod with the same name of the attachment class name exists on the weapon.
+	// //
+	// // Sure, it means we can make multiple mag attachments compatible with the same weapon,
+	// // but that isn't necessarily bad.
+	// array<string> mods = GetWeaponMods_Global( weapon.baseWeapon )
+	// if (!mods.contains(att.ref)) return false
+	// //printt(att.ref, "|", att.attachPoint, "|", weapon.ref)
+	// if (!weapon.supportedAttachments.contains( att.attachPoint )) {
+		// // Allows adding  attachment slots to normal weapons if attachments are compatible.
+		// // Means that certain weapons will have barrels added to them if a custom barrel is compatible.
+		// // still won't allow them to equip vanilla attachments, however.
+		// // Default OFF.
+		// if (att.attachPoint != "") // GetCurrentPlaylistVarBool("custom_hopup_override_weapon_attachments", false) && 
+		// {
+			// weapon.supportedAttachments.append( att.attachPoint )
+			// //if (weapon.attachmentStyle == "") weapon.attachmentStyle = "hopup"
+			// if (SURVIVAL_Loot_GetLootDataByRef(att.ref).attachmentStyle == "") SURVIVAL_Loot_GetLootDataByRef(att.ref).attachmentStyle = "hopup"
+		// }
+		// else return false
+	// }
+	// // debug.
+	// //printt("Attachment", att.ref, "has been found to be compatible with", weapon.ref)
+	// return true
+// }
 
 #if SERVER
 void function OnClientConnected( entity player )
@@ -718,9 +916,10 @@ void function OnClientConnected( entity player )
 		file.playerInventoryData[player][ slot ] <- ""
 	}
 
-	ValidateDataTable( player, "datatable/survival_loot.rpak" )
-	ValidateDataTable( player, "datatable/survival_weapon_mods.rpak" )
-    ValidateDataTable( player, "datatable/survival_loot_groups_new.rpak" )
+	// ValidateDataTable( player, "datatable/flowstate_all_new.rpak" )
+	// ValidateDataTable( player, "datatable/flowstate_weapon_mods.rpak" )
+    // ValidateDataTable( player, "datatable/flowstate_all_new_groups.rpak" )
+	// ValidateDataTable( player, "datatable/flowstate_weapon_attachment_data" )
 }
 
 void function OnPlayerRespawned( entity player )
@@ -746,7 +945,87 @@ array<entity> function SURVIVAL_Loot_GetAllLoot()
 {
 	return file.allLoot
 }
+string function GetWeaponClassNameWithLockedSet( entity weapon )
+{
+	string result = weapon.GetWeaponClassName()
+
+	foreach ( mod, suffix in LOCKEDSET_MOD_TO_SUFFIX )
+	{
+		if ( weapon.HasMod( mod ) )
+		{
+			result += suffix
+			return result
+		}
+	}
+
+	// switch( weapon.GetWeaponLockedSet() )
+	// {
+		// case eWeaponLockedSet.WHITESET:
+			// result += WEAPON_LOCKEDSET_SUFFIX_WHITESET
+			// break
+
+		// case eWeaponLockedSet.BLUESET:
+			// result += WEAPON_LOCKEDSET_SUFFIX_BLUESET
+			// break
+
+		// case eWeaponLockedSet.PURPLESET:
+			// result += WEAPON_LOCKEDSET_SUFFIX_PURPLESET
+			// break
+
+		// case eWeaponLockedSet.GOLD:
+			// result += WEAPON_LOCKEDSET_SUFFIX_GOLD
+			// break
+	// }
+
+	return result
+}
+
+bool function WeaponLootRefIsLockedSet( string ref )
+{
+	                                                                              
+	if ( SURVIVAL_Loot_IsRefValid( ref ) )
+	{
+		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( ref )
+		return weaponData.baseWeapon != ref
+	}
+	return false
+}
 //#endif
+bool function CodeCallback_WeaponModCommandCheckMods( entity player, entity weapon, string mod, bool isAdd )
+{
+	array<string> alwaysAllowedMods = [
+		"akimbo",
+		"vertical_firestar",
+		"double_link_mod",
+		"altfire_selectfire",
+		"altfire",
+		"altfire_highcal",
+		"altfire_double_tap",
+		"hopup_paintball",
+	]
+
+	//if ( mod == "choke" || mod == "kinetic_choke")
+		//return EnergyChoke_OnWeaponModCommandCheckMods( player, weapon, mod, isAdd )
+
+	if ( alwaysAllowedMods.contains( mod ) )
+		return true
+
+
+	if ( Consumable_IsValidModCommand( player, weapon, mod, isAdd ) )
+		return true
+
+                           
+                                                                      
+             
+      
+
+	#if DEV
+		if ( GetBugReproNum() == 762 )
+			return true
+	#endif
+
+	return false
+}
 
 bool function CanPlayerLoot( entity player )
 {
@@ -819,11 +1098,11 @@ string function SURVIVAL_Loot_GetDetailTypeStringFromRef( string ref )
 			else if ( pickupInfo.healAmount > 0 && pickupInfo.healCap > 100 )
 				return "#HEAL_TYPE_COMBO"
 			else if ( pickupInfo.healAmount > 0 )
-				return "#HEAL_TYPE_HEALTH"
-			else if ( pickupInfo.shieldAmount > 0 )
-				return "#HEAL_TYPE_SHIELD"
-			else if ( pickupInfo.ultimateAmount > 0 )
-				return "#HEAL_TYPE_ULTIMATE"
+					return "#HEAL_TYPE_HEALTH"
+				else if ( pickupInfo.shieldAmount > 0 )
+						return "#HEAL_TYPE_SHIELD"
+					else if ( pickupInfo.ultimateAmount > 0 )
+							return "#HEAL_TYPE_ULTIMATE"
 			return ""
 		case eLootType.ARMOR:
 			return "#ITEM_TYPE_DEFENSE"
@@ -832,16 +1111,18 @@ string function SURVIVAL_Loot_GetDetailTypeStringFromRef( string ref )
 		case eLootType.JUMPKIT:
 			return ""
 		case eLootType.ORDNANCE:
+			if ( lootData.ref == "mp_ability_mobile_respawn_beacon" )
+				return "#ITEM_TYPE_SPECIAL"
 			return "#ITEM_TYPE_THROWN"
 		case eLootType.ATTACHMENT:
-			string attachPoint = GetAttachPointForAttachment( lootData.ref )
-			return GetAttachmentPointName( attachPoint )
+			array<string> attachPoints = GetAttachPointsForAttachment( lootData.ref )
+			return GetAttachmentPointName( attachPoints[0] )
 		case eLootType.BACKPACK:
 			return ""
 		case eLootType.CUSTOMPICKUP:
 			return ""
 		case eLootType.HELMET:
-			return ""
+			return "#ITEM_TYPE_DEFENSE"
 		case eLootType.DATAKNIFE:
 			return "#ITEM_TYPE_SPECIAL"
 		case eLootType.RESOURCE:
@@ -920,7 +1201,7 @@ HealthPickup function SURVIVAL_Loot_GetHealthKitDataFromStruct( int kitType )
 
 bool function IsModTypeSight( string modName, string weaponName )
 {
-	return GetAttachPointForAttachment( modName ) == "sight"
+	return CanAttachmentEquipToAttachPoint( modName, "sight" )
 }
 
 
@@ -994,16 +1275,85 @@ bool function SURVIVAL_Loot_RunConditionalCheck( string ref, entity player )
 	return file.conditionalLootChecks[ ref ]( ref, player )
 }
 
-string function GetAttachPointForAttachment( string attachmentName )
+array<string> function GetAttachPointsForAttachment( string attachmentName )
 {
-	// Support for custom attachments.
-	// Leaves normal attachments unchanged too so it still works as intended,
-	// and is also faster.
-	return file.attachmentMatrix[attachmentName].attachPoint
+	if ( !IsValidAttachment( attachmentName ) )
+		Assert( false, "Attachment " + attachmentName + " not defined in datatable/weapon_attachment_matrix.rpak" )
+
+	AttachmentData aData = GetAttachmentData( attachmentName )
+	return aData.attachPoints
 }
 
+string function GetAttachPointForAttachmentOnWeapon( string weaponRef, string attachmentName )
+{
+	Assert( SURVIVAL_Loot_IsRefValid( weaponRef ), "Invalid weapon loot ref: " + weaponRef )
+
+	                                                                                       
+	array<string> attachPoints = GetAttachPointsForAttachment( attachmentName )
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+	foreach ( string weaponAttachPoint in weaponData.supportedAttachments )
+	{
+		if ( attachPoints.contains( weaponAttachPoint ) )
+			return weaponAttachPoint
+	}
+
+	foreach ( string weaponAttachPoint in weaponData.disabledAttachments )
+	{
+		if ( attachPoints.contains( weaponAttachPoint ) )
+			return weaponAttachPoint
+	}
+
+	return ""
+}
+
+bool function CanAttachmentEquipToAttachPoint( string attachmentName, string attachPoint )
+{
+	array<string> attachPointsForAttachment = GetAttachPointsForAttachment( attachmentName )
+	return attachPointsForAttachment.contains( attachPoint )
+}
+
+bool function CanAttachmentEquipToOneOfAttachPoints( string attachmentName, array<string> attachPoints )
+{
+	array<string> attachPointsForAttachment = GetAttachPointsForAttachment( attachmentName )
+
+	foreach ( string ap in attachPoints )
+	{
+		if ( attachPointsForAttachment.contains( ap ) )
+			return true
+	}
+	return false
+}
+
+bool function IsAttachmentAmbiguousForWeapon( string attachment, string weaponName, array< string > attachmentPoints )
+{
+	if ( weaponName == "" )
+		return false
+
+	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return false
+
+	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
+		return false
+
+	LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
+
+	array<string> allAttachPoints = weaponData.supportedAttachments
+	array<string> attachPointsForAttachment = attachmentPoints
+	bool alreadyFoundValidSlot    = false
+	foreach ( string attachPoint in allAttachPoints )
+	{
+		if ( attachPointsForAttachment.contains( attachPoint ) )
+		{
+			if ( alreadyFoundValidSlot )
+				return true
+			alreadyFoundValidSlot = true
+		}
+	}
+
+	return false
+}
 #if CLIENT || SERVER
-string function GetInstalledWeaponAttachment( entity weapon, string attachmentPoint )
+string function GetInstalledWeaponAttachmentForPoint( entity weapon, string attachmentPoint )
 {
 	array<string> mods = GetWeaponMods( weapon )
 
@@ -1012,7 +1362,7 @@ string function GetInstalledWeaponAttachment( entity weapon, string attachmentPo
 		if ( !SURVIVAL_Loot_IsRefValid( attachmentName ) )
 			continue
 
-		if ( GetAttachPointForAttachment( attachmentName ) == attachmentPoint )
+		if ( CanAttachmentEquipToAttachPoint( attachmentName, attachmentPoint ) )
 			return attachmentName
 	}
 
@@ -1023,7 +1373,7 @@ string function GetInstalledWeaponAttachment( entity weapon, string attachmentPo
 
 string function AmmoType_GetRefFromIndex( int ammoType )
 {
-	foreach ( ref,type in eAmmoPoolType )
+	foreach ( ref, type in eAmmoPoolType )
 	{
 		if ( type == ammoType )
 			return ref
@@ -1034,7 +1384,7 @@ string function AmmoType_GetRefFromIndex( int ammoType )
 
 string function WeaponType_GetRefFromIndex( int weaponType )
 {
-	foreach ( ref,type in eDamageSourceId )
+	foreach ( ref, type in eDamageSourceId )
 	{
 		if ( type == weaponType )
 			return ref
@@ -1052,7 +1402,7 @@ int function SURVIVAL_GetTitanWeaponStoreCount( entity weapon )
 {
 	if ( weapon.IsChargeWeapon() )
 	{
-		return int( (1.0-weapon.GetWeaponChargeFraction()) * 100.0 )
+		return int( (1.0 - weapon.GetWeaponChargeFraction()) * 100.0 )
 	}
 
 	return weapon.GetWeaponPrimaryClipCount()
@@ -1071,8 +1421,7 @@ string function GetWeaponAmmoType( string weaponName )
 
 int function SURVIVAL_GetInventoryLimit( entity player )
 {
-	//printt("SURVIVAL_GetInventoryLimit sh_surv_loot")
-	int limit = 0
+	int limit  = 0
 	int bpTier = EquipmentSlot_GetEquipmentTier( player, "backpack" )
 	switch ( bpTier )
 	{
@@ -1153,9 +1502,18 @@ int function SURVIVAL_CountItemsInInventory( entity player, string ref )
 	return count
 }
 
-entity function SURVIVAL_GetLastActiveWeapon( entity player )
+
+entity function SURVIVAL_GetLastActiveWeapon( entity player, bool includeSling = false )
 {
-	array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+                  
+                       
+                    
+                                                                     
+      
+                                                       
+      
+		array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+       
 
 	entity weapon
 
@@ -1174,32 +1532,54 @@ string function SURVIVAL_GetActiveWeapon( entity player )
 }
 string function SURVIVAL_GetStowedWeapon( entity player )
 {
+	string equipmentSlotName
 	int activeWeaponSlot = SURVIVAL_GetActiveWeaponSlot( player )
 	int stowedWeaponSlot = EquipmentSlot_GetOtherWeaponSlotInt( activeWeaponSlot )
 
 	if ( stowedWeaponSlot == -1 )
 		return ""
 
-	// TODO: Make this better, no string concatenation
-	return EquipmentSlot_GetEquippedLootDataForSlot( player, "main_weapon" + stowedWeaponSlot ).ref
+	equipmentSlotName = "main_weapon" + stowedWeaponSlot
+
+	                                                  
+	return EquipmentSlot_GetEquippedLootDataForSlot( player, equipmentSlotName ).ref
 }
 
-int function SURVIVAL_GetActiveWeaponSlot( entity player )
+
+int function SURVIVAL_GetActiveWeaponSlot( entity player, bool includeSling = false )
 {
-	entity activeWeapon = SURVIVAL_GetLastActiveWeapon( player )
-
-	if ( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) == activeWeapon )
-		return 0
-	else if ( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) == activeWeapon )
-		return 1
-
-	return -1
+	entity activeWeapon = SURVIVAL_GetLastActiveWeapon( player, includeSling )
+	return GetSlotForWeapon( player, activeWeapon )
 }
 
 int function SURVIVAL_GetStowedWeaponSlot( entity player )
 {
 	int activeWeaponSlot = SURVIVAL_GetActiveWeaponSlot( player )
-	return EquipmentSlot_GetOtherWeaponSlotInt( activeWeaponSlot )
+                  
+                                                                                                                                    
+      
+		return EquipmentSlot_GetOtherWeaponSlotInt( activeWeaponSlot )
+       
+}
+
+entity function GetOtherWeapon( entity weapon, entity player )
+{
+	if ( !IsValid( weapon ) )
+		return null
+
+	if ( !IsValid( player ) )
+		return null
+
+	int slot      = GetSlotForWeapon( player, weapon )
+	int otherSlot = EquipmentSlot_GetOtherWeaponSlotInt( slot )
+	if ( otherSlot < 0 )
+		return null
+
+	entity otherWeapon = player.GetNormalWeapon( otherSlot )
+	if ( !IsValid( otherWeapon ) )
+		return null
+
+	return otherWeapon
 }
 
 
@@ -1858,18 +2238,17 @@ string function SURVIVAL_GetModToRemoveForAttachment( entity player, entity weap
 	if ( weapon.IsWeaponOffhand() )
 		return "invalid"
 
-	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+	LootData data      = SURVIVAL_GetLootDataFromWeapon( weapon )
 	array<string> mods = weapon.GetMods()
 
 	if ( !SURVIVAL_Loot_IsRefValid( data.ref ) )
 		return "invalid"
 
-	string attachmentPoint = GetAttachPointForAttachment( attachmentRef )
+	string attachmentPoint = GetAttachPointForAttachmentOnWeapon( data.ref, attachmentRef )
 
 	if ( CanAttachToWeapon( attachmentRef, data.ref ) )
 	{
-		string modToRemove = GetInstalledWeaponAttachment( weapon, attachmentPoint )
-		return modToRemove
+		return GetInstalledWeaponAttachmentForPoint( weapon, attachmentPoint )
 	}
 
 	return "invalid"
@@ -1892,7 +2271,7 @@ bool function SURVIVAL_CanAddModToWeapon( entity player, entity weapon, string i
 	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
 	string weaponName = data.ref
 
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
+	if ( SURVIVAL_IsAttachmentPointLocked( weaponName, GetAttachPointForAttachmentOnWeapon( weaponName, item ) ) )
 		return false
 
 	if ( weapon.IsDiscarding() )
@@ -1931,7 +2310,7 @@ table<string, string> function GetAllWeaponAttachments( entity weapon )
 	table<string, string> mods
 
 	foreach ( s in slots )
-		mods[ s ] <- GetInstalledWeaponAttachment( weapon, s )
+		mods[ s ] <- GetInstalledWeaponAttachmentForPoint( weapon, s )
 
 	return mods
 }
@@ -1985,14 +2364,17 @@ string function SURVIVAL_GetWeaponAttachmentForPoint( entity player, int weaponS
 	if ( !IsValid( player.GetNormalWeapon( weaponSlot ) ) )
 		return ""
 
-	return GetInstalledWeaponAttachment( player.GetNormalWeapon( weaponSlot ), attachmentPoint )
+	return GetInstalledWeaponAttachmentForPoint( player.GetNormalWeapon( weaponSlot ), attachmentPoint )
 }
 
 
-LootActionStruct function SURVIVAL_GetActionForEquipment( entity player, LootData lootData, bool isAltAction = false )
+LootActionStruct function SURVIVAL_GetActionForEquipment( entity player, LootData lootData, bool isAltAction = false, bool isCharacterAction = false )
 {
 	if ( isAltAction )
 		return SURVIVAL_GetAltActionForEquipment( player, lootData )
+
+	if( isCharacterAction )
+		return SURVIVAL_GetCharacterActionForEquipment( player, lootData )
 
 	LootTypeData lt = GetLootTypeData( lootData.lootType )
 
@@ -2013,6 +2395,18 @@ LootActionStruct function SURVIVAL_GetAltActionForEquipment( entity player, Loot
 	return as
 }
 
+LootActionStruct function SURVIVAL_GetCharacterActionForEquipment( entity player, LootData lootData )
+{
+	LootTypeData lt = GetLootTypeData( lootData.lootType )
+
+	LootActionStruct as
+	if( lt.equipmentCharacterActionFunc != null )
+		as.action = lt.equipmentCharacterActionFunc( player )
+	else
+		as.action = eLootAction.NONE
+
+	return as
+}
 
 LootActionStruct function SURVIVAL_GetActionForBackpackItem( entity player, LootData lootData, bool isAltAction = false )
 {
@@ -2042,33 +2436,39 @@ LootActionStruct function SURVIVAL_GetActionForBackpackItem( entity player, Loot
 
 LootActionStruct function SURVIVAL_GetActionForAttachment( entity player, LootData lootData, bool replaceEmptyOnly, bool tryStowedWeapon, bool upgradeOnly )
 {
-	int action = eLootAction.NONE
+	int action    = eLootAction.NONE
 	string reason = ""
 
-	string attachmentPoint = GetAttachPointForAttachment( lootData.ref )
-
 	array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+
+	string attachmentPointForMain = ""
+	string attachmentPointForStowed = ""
+	bool haveBetterAttachOnMain = false
+	bool haveBetterAttachOnStowed = false
 
 	bool wouldHaveEquipped = false
 
 	if ( weapons.len() > 0 )
 	{
-		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapons[0] )
-		string activeWeapon = weaponData.ref
-		bool canAttach = CanAttachToWeapon( lootData.ref, activeWeapon )
-		bool isEmpty = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachment( weapons[0], attachmentPoint ) == "" : false
-		bool isSame = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachment( weapons[0], attachmentPoint ) == lootData.ref : false
-		bool isUpgrade = attachmentPoint == "sight" || attachmentPoint == "hopup" || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_ACTIVE )
+		string activeWeapon = GetWeaponClassNameWithLockedSet( weapons[0] )
+		bool canAttach      = CanAttachToWeapon( lootData.ref, activeWeapon )
+		attachmentPointForMain = GetAttachPointForAttachmentOnWeapon( activeWeapon, lootData.ref )
+		bool isEmpty        = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachmentForPoint( weapons[0], attachmentPointForMain ) == "" : false
+		bool isSame         = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachmentForPoint( weapons[0], attachmentPointForMain ) == lootData.ref : false
+		bool isUpgrade      = ["sight", "hopup", "hopupMulti_a", "hopupMulti_b"].contains( attachmentPointForMain ) || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_ACTIVE )
 
-		bool canReallyEquip = !( activeWeapon == ""
-			|| !canAttach
-			|| isSame
-			|| ( replaceEmptyOnly && !isEmpty ) )
+		bool canReallyEquip = !(activeWeapon == ""
+				|| !canAttach
+				|| isSame
+				|| (replaceEmptyOnly && !isEmpty))
 
 		wouldHaveEquipped = canReallyEquip || wouldHaveEquipped
 
-		if ( !canReallyEquip || ( upgradeOnly && !isUpgrade ) )
+		if ( !canReallyEquip || (upgradeOnly && !isUpgrade) )
 		{
+			if ( upgradeOnly && !isUpgrade )
+				haveBetterAttachOnMain = true
+
 			if ( tryStowedWeapon && weapons.len() > 1 )
 				action = eLootAction.ATTACH_TO_STOWED
 			else
@@ -2083,20 +2483,24 @@ LootActionStruct function SURVIVAL_GetActionForAttachment( entity player, LootDa
 	if ( action == eLootAction.ATTACH_TO_STOWED )
 	{
 		string activeWeapon = SURVIVAL_GetStowedWeapon( player )
-		bool canAttach = CanAttachToWeapon( lootData.ref, activeWeapon )
-		bool isEmpty = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachment( weapons[1], attachmentPoint ) == "" : false
-		bool isSame = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachment( weapons[1], attachmentPoint ) == lootData.ref : false
-		bool isUpgrade = attachmentPoint == "sight" || attachmentPoint == "hopup" || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_STOWED )
+		bool canAttach      = CanAttachToWeapon( lootData.ref, activeWeapon )
+		attachmentPointForStowed = GetAttachPointForAttachmentOnWeapon( activeWeapon, lootData.ref )
+		bool isEmpty        = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachmentForPoint( weapons[1], attachmentPointForStowed ) == "" : false
+		bool isSame         = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachmentForPoint( weapons[1], attachmentPointForStowed ) == lootData.ref : false
+		bool isUpgrade      = ["sight", "hopup", "hopupMulti_a", "hopupMulti_b"].contains( attachmentPointForStowed ) || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_STOWED )
 
-		bool canReallyEquip = !( activeWeapon == ""
+		bool canReallyEquip = !(activeWeapon == ""
 				|| !canAttach
 				|| isSame
-				|| ( replaceEmptyOnly && !isEmpty ) )
+				|| (replaceEmptyOnly && !isEmpty))
 
 		wouldHaveEquipped = canReallyEquip || wouldHaveEquipped
 
-		if ( !canReallyEquip || ( upgradeOnly && !isUpgrade ) )
+		if ( !canReallyEquip || (upgradeOnly && !isUpgrade) )
 		{
+			if ( upgradeOnly && !isUpgrade )
+				haveBetterAttachOnStowed = true
+
 			action = eLootAction.NONE
 		}
 		else
@@ -2111,7 +2515,22 @@ LootActionStruct function SURVIVAL_GetActionForAttachment( entity player, LootDa
 	{
 		action = eLootAction.IGNORE
 		#if CLIENT
-		reason = Localize( "#REASON_YOU_HAVE_A_BETTER", Localize( GetAttachmentPointName( attachmentPoint ) ) )
+			string betterAttachPoint = ""
+			if ( haveBetterAttachOnMain )
+			{
+				betterAttachPoint = attachmentPointForMain
+			}
+			else if ( haveBetterAttachOnStowed )
+			{
+				betterAttachPoint = attachmentPointForStowed
+			}
+			else
+			{
+				Assert( false, "Reached script that should be unreachable! If this happens in live we won't show a reason why you cannot attach." )
+			}
+
+			if ( betterAttachPoint != "" )
+				reason = Localize( "#REASON_YOU_HAVE_A_BETTER", Localize( GetAttachmentPointName( betterAttachPoint ) ) )
 		#endif
 	}
 
@@ -2330,12 +2749,30 @@ LootRef function SURVIVAL_CreateLootRef( LootData lootData, entity lootEnt )
 	return lootRef
 }
 
+
+bool function SURVIVAL_HasSpecificItemInInventory( entity player, string ref, int count )
+{
+	LootData data                                  = SURVIVAL_Loot_GetLootDataByRef( ref )
+	int type                                       = data.index
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+	foreach ( invItem in playerInventory )
+	{
+		if ( invItem.type == type && invItem.count == count )
+		{
+			return true
+		}
+	}
+
+	return false
+}
+
+
 bool function SURVIVAL_IsLootIrrelevant( entity player, entity lootItem, LootData lootData, int lootContext )
 {
 	LootRef lootRef = SURVIVAL_CreateLootRef( lootData, lootItem )
 
 	LootActionStruct asMain = SURVIVAL_GetActionForItem( player, lootContext, lootRef, false )
-	LootActionStruct asAlt = SURVIVAL_GetActionForItem( player, lootContext, lootRef, true )
+	LootActionStruct asAlt  = SURVIVAL_GetActionForItem( player, lootContext, lootRef, true )
 
 	int lootAction    = asMain.action
 	int altLootAction = asAlt.action
@@ -2347,14 +2784,21 @@ bool function SURVIVAL_IsLootIrrelevant( entity player, entity lootItem, LootDat
 	}
 	else if ( lootData.lootType == eLootType.ATTACHMENT )
 	{
-		return ( lootAction == eLootAction.PICKUP || lootAction == eLootAction.NONE || lootAction == eLootAction.IGNORE )
+		return (lootAction == eLootAction.PICKUP || lootAction == eLootAction.NONE || lootAction == eLootAction.IGNORE)
 	}
 	else if ( lootData.lootType == eLootType.AMMO )
 	{
-		return ( !IsAmmoInUse( player, lootData.ref ) )
+		return (!IsAmmoInUse( player, lootData.ref ))
 	}
 
-	return ( lootAction == eLootAction.NONE && altLootAction == eLootAction.NONE )
+                    
+                                        
+   
+                                                                                                                            
+   
+                          
+
+	return (lootAction == eLootAction.NONE && altLootAction == eLootAction.NONE)
 }
 
 bool function SURVIVAL_IsLootAnUpgrade( entity player, entity lootItem, LootData lootData, int lootContext )
@@ -2381,12 +2825,23 @@ bool function SURVIVAL_IsLootAnUpgrade( entity player, entity lootItem, LootData
 		{
 			case eLootType.ATTACHMENT:
 
-				string attachmentPoint = GetAttachPointForAttachment( lootData.ref )
+				array<string> attachmentPoints = GetAttachPointsForAttachment( lootData.ref )
 
-				if ( attachmentPoint == "sight" || attachmentPoint == "hopup" )
+				if ( CanAttachmentEquipToOneOfAttachPoints( lootData.ref, ["sight", "hopup", "hopupMulti_a", "hopupMulti_b"] ) )
 				{
-					array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
-					return GetInstalledWeaponAttachment( weapons[0], attachmentPoint ) == ""
+					array<entity> weapons = SURVIVAL_GetPrimaryWeapons( player )
+					foreach ( string attachmentPoint in attachmentPoints )
+					{
+						foreach ( w in weapons )
+						{
+							if ( GetInstalledWeaponAttachmentForPoint( w, attachmentPoint ) == "" && !WeaponLootRefIsLockedSet( GetWeaponClassNameWithLockedSet( w ) ) && CanAttachToWeapon( lootData.ref, GetWeaponClassName( w ) ) )
+							{
+								return true
+							}
+						}
+					}
+
+					return false
 				}
 				else
 				{
@@ -2413,8 +2868,7 @@ bool function SURVIVAL_IsLootAnUpgrade( entity player, entity lootItem, LootData
 
 bool function IsAttachmentAnUpgrade( entity player, LootData lootData, int action )
 {
-	array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
-	string attachmentPoint = GetAttachPointForAttachment( lootData.ref )
+	array<entity> weapons  = SURVIVAL_GetPrimaryWeaponsSorted( player )
 	string installed
 
 	LootData attachedData
@@ -2422,11 +2876,13 @@ bool function IsAttachmentAnUpgrade( entity player, LootData lootData, int actio
 
 	if ( action == eLootAction.ATTACH_TO_ACTIVE )
 	{
-		installed = GetInstalledWeaponAttachment( weapons[0], attachmentPoint )
+		string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapons[0] ), lootData.ref )
+		installed = GetInstalledWeaponAttachmentForPoint( weapons[0], attachPoint )
 	}
 	else if ( action == eLootAction.ATTACH_TO_STOWED )
 	{
-		installed = GetInstalledWeaponAttachment( weapons[1], attachmentPoint )
+		string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapons[1] ), lootData.ref )
+		installed = GetInstalledWeaponAttachmentForPoint( weapons[1], attachPoint )
 	}
 
 	if ( SURVIVAL_Loot_IsRefValid( installed ) )
@@ -2437,7 +2893,8 @@ bool function IsAttachmentAnUpgrade( entity player, LootData lootData, int actio
 	return attachedData.tier < lootData.tier
 }
 
-LootActionStruct function SURVIVAL_GetActionForItem( entity player, int context, LootRef lootRef, bool isAltAction )
+
+LootActionStruct function SURVIVAL_GetActionForItem( entity player, int context, LootRef lootRef, bool isAltAction, bool isCharacterAction = false )
 {
 	LootActionStruct as
 	LootData actionLoot = lootRef.lootData
@@ -2447,27 +2904,29 @@ LootActionStruct function SURVIVAL_GetActionForItem( entity player, int context,
 	else if ( context == eLootContext.BACKPACK )
 		as = SURVIVAL_GetActionForBackpackItem( player, actionLoot, isAltAction )
 	else if ( context == eLootContext.EQUIPMENT )
-		as = SURVIVAL_GetActionForEquipment( player, actionLoot, isAltAction )
+		as = SURVIVAL_GetActionForEquipment( player, actionLoot, isAltAction, isCharacterAction )
 
 	return as
 }
 
 #if CLIENT
-LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int context, LootRef lootRef, bool isAltAction, bool isInMenu )
+LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int context, LootRef lootRef, bool isAltAction, bool isInMenu, bool isCharacterAction = false, string equipmentSlot = ""  )
 {
 	int action
 	LootData actionLoot = lootRef.lootData
 
-	//string buttonString = isAltAction ? "%&use_alt%" : "%[|weaponSelectPrimary0]%"
 	string buttonString = isAltAction ? "%&use_alt%" : "%&use%"
 
 	if ( isInMenu )
 	{
-		buttonString = isAltAction ? "%[X_BUTTON|MOUSE2]%" : "%[A_BUTTON|MOUSE1]%"
+		buttonString = isAltAction ? "%[X_BUTTON|MOUSE2]%" : isCharacterAction ? "%[L_SHOULDER|q]%" : "%[A_BUTTON|MOUSE1]%"
 	}
 
-	LootActionStruct as = SURVIVAL_GetActionForItem( player, context, lootRef, isAltAction )
+	LootActionStruct as = SURVIVAL_GetActionForItem( player, context, lootRef, isAltAction, isCharacterAction )
 	action = as.action
+
+	if ( SURVIVAL_EquipmentPretendsToBeBlank( lootRef.lootData.ref ) )
+		action = eLootAction.NONE
 
 	string actionString = SURVIVAL_GetStringForLootAction( action )
 
@@ -2476,7 +2935,7 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 		case eLootAction.USE:
 			if ( actionLoot.lootType == eLootType.HEALTH )
 			{
-				HealthPickup pickup = SURVIVAL_Loot_GetHealthKitDataFromStruct( SURVIVAL_Loot_GetHealthPickupTypeFromRef( lootRef.lootData.ref ))
+				HealthPickup pickup = SURVIVAL_Loot_GetHealthKitDataFromStruct( SURVIVAL_Loot_GetHealthPickupTypeFromRef( lootRef.lootData.ref ) )
 				int kitCat          = SURVIVAL_Loot_GetHealthPickupCategoryFromData( pickup )
 				bool hasShield      = EquipmentSlot_GetLootRefForSlot( player, "armor" ) != ""
 
@@ -2509,9 +2968,11 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 
 				if ( kitCat == eHealthPickupCategory.ULTIMATE )
 				{
+					entity ultAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+					if ( !IsValid( ultAbility ) )                                            
+						return as
 
-					entity ultAbility = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
-					int ammo = ultAbility.GetWeaponPrimaryClipCount()
+					int ammo    = ultAbility.GetWeaponPrimaryClipCount()
 					int maxAmmo = ultAbility.GetWeaponPrimaryClipCountMax()
 
 					if ( ammo >= maxAmmo )
@@ -2544,13 +3005,13 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 				}
 
 				LootData replaceWeaponData = SURVIVAL_Loot_GetLootDataByRef( replaceWeapon )
-				string hintString = GetLootPromptStyle() == eLootPromptStyle.COMPACT ? "#ACTION_REPLACE" : "#ACTION_EQUIP"
+				string hintString          = GetLootPromptStyle() == eLootPromptStyle.COMPACT ? "#ACTION_REPLACE" : "#ACTION_EQUIP"
 				as.displayString = Localize( "#LOOT_ACTION_ON_ITEM", buttonString, Localize( hintString ), Localize( replaceWeaponData.pickupString ) )
 			}
 			else
 			{
 				LootData lootData = lootRef.lootData
-				LootTypeData lt = GetLootTypeData( lootData.lootType )
+				LootTypeData lt   = GetLootTypeData( lootData.lootType )
 				LootData equippedData
 
 				if ( lt.equipmentSlot != "" )
@@ -2585,16 +3046,19 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 				if ( selectedWeaponData.lootType != eLootType.MAINWEAPON )
 					break
 
-				string attachmentPoint = GetAttachPointForAttachment( actionLoot.ref )
+				entity weapon = player.GetNormalWeapon( weaponSlot )
+				string attachmentPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapon ), actionLoot.ref )
+				if ( attachmentPoint == "" )
+					break
 
-				string attachment = SURVIVAL_GetWeaponAttachmentForPoint( player, weaponSlot, attachmentPoint )
-				if ( attachment == "" )
+				string currentAttachmentForIntendedSlot = GetInstalledWeaponAttachmentForPoint( weapon, attachmentPoint )
+				if ( currentAttachmentForIntendedSlot == "" )
 				{
 					as.displayString = Localize( "#LOOT_ACTION", buttonString, actionString )
 					LootData blankData
 
-					// TODO : string concatenation is bad
-					string equipSlot = "main_weapon" + weaponSlot + "_" + attachmentPoint
+					                                     
+					string equipSlot       = "main_weapon" + weaponSlot + "_" + attachmentPoint
 					string attachmentStyle = GetAttachmentPointStyle( attachmentPoint, selectedWeapon )
 
 					blankData.ref = attachmentPoint
@@ -2605,7 +3069,7 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 				}
 				else
 				{
-					LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( attachment )
+					LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( currentAttachmentForIntendedSlot )
 
 					string baseString = "#LOOT_ACTION_ON_ITEM"
 					if ( action == eLootAction.ATTACH_TO_STOWED )
@@ -2620,10 +3084,7 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 
 		case eLootAction.DISMANTLE:
 			as.displayString = ""
-				if ( SURVIVAL_AltUseSwapsWeapon() )
-						as.displayString = Localize( "#LOOT_ACTION", buttonString, Localize( "#ACTION_REPLACE_WEAPON" ) )
-				else if ( lootRef.lootEnt != null && SURVIVAL_CanDismantleMods( player, lootRef.lootEnt ) )
-						as.displayString = Localize( "#LOOT_ACTION", buttonString, Localize( "#ACTION_DISMANTLE" ) )
+			as.displayString = Localize( "#LOOT_ACTION", buttonString, Localize( "#ACTION_REPLACE_WEAPON" ) )
 			break
 
 		case eLootAction.NONE:
@@ -2670,7 +3131,7 @@ void function SURVIVAL_UpdateStringForEquipmentAction( entity player, string equ
 
 		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( fromWeapon )
 
-		if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref ) )
+		if ( SURVIVAL_IsAttachmentPointLocked( weaponData.ref, actionLoot.attachmentStyle ) )
 		{
 			as.action = eLootAction.NONE
 			as.displayString = ""
@@ -2687,20 +3148,17 @@ void function SURVIVAL_UpdateStringForEquipmentAction( entity player, string equ
 				EquipmentSlot ws = Survival_GetEquipmentSlotDataByRef( es.attachmentWeaponSlot )
 				EquipmentSlot ns = Survival_GetEquipmentSlotDataByRef( ws.nextWeaponSlot )
 
-				entity attachWeapon = player.GetNormalWeapon( ns.weaponSlot )
+				entity attachWeapon       = player.GetNormalWeapon( ns.weaponSlot )
 				LootData attachWeaponData = SURVIVAL_GetLootDataFromWeapon( attachWeapon )
 
-				bool couldHaveAttached = ( IsValid( attachWeapon ) &&
-					SURVIVAL_Loot_IsRefValid( attachWeaponData.ref ) &&
-					CanAttachToWeapon( actionLoot.ref, attachWeaponData.baseWeapon )
-					)
-
-				bool canAttach = !SURVIVAL_Weapon_IsAttachmentLocked( attachWeaponData.ref ) && couldHaveAttached
+				bool canAttach = (IsValid( attachWeapon ) &&
+									SURVIVAL_Loot_IsRefValid( attachWeaponData.ref ) &&
+									CanAttachToWeapon( actionLoot.ref, attachWeaponData.ref ) )
 
 				if ( !canAttach )
 				{
-					if ( couldHaveAttached && SURVIVAL_Weapon_IsAttachmentLocked( attachWeaponData.ref ) )
-						 as.displayString = Localize( "#REASON_CANNOT_TRANSFER_FULLY_KITTED" )
+					if ( SURVIVAL_IsAttachmentPointLocked( attachWeaponData.ref, actionLoot.ref ) )
+						as.displayString = Localize( "#REASON_CANNOT_TRANSFER_FULLY_KITTED" )
 					else if ( attachWeaponData.pickupString != "" )
 						as.displayString = Localize( "#REASON_CANNOT_TRANSFER", Localize( attachWeaponData.pickupString ) )
 					else
@@ -3107,6 +3565,17 @@ bool function SurvivalLoot_CanUseFunction( entity player, entity ent )
 	return true
 }
 
+bool function ThirdPersonUseDistanceCheck( entity player, entity targetEnt )
+{
+	const float MAX_PC_USE_DISTANCE_SQR = (80.0 * 80.0)
+	vector entPos    = targetEnt.GetOrigin()
+	vector playerPos = player.GetOrigin()
+	if ( Distance2DSqr( entPos, playerPos ) > MAX_PC_USE_DISTANCE_SQR )
+		return false
+
+	return true
+}
+
 #if LOOT_GROUND_VERTICAL_LINES
 bool function SurvivalLoot_PlayerLookingAtLine( entity player, entity ent )
 {
@@ -3115,15 +3584,7 @@ bool function SurvivalLoot_PlayerLookingAtLine( entity player, entity ent )
 	//	return true
 
 	if ( player.IsThirdPersonShoulderModeOn() )
-	{
-		const float MAX_PC_USE_DISTANCE_SQR = (80.0 * 80.0)
-		vector entPos = ent.GetOrigin()
-		vector playerPos = player.GetOrigin()
-		if ( Distance2DSqr( entPos, playerPos ) > MAX_PC_USE_DISTANCE_SQR )
-			return false
-
-		return true
-	}
+		return ThirdPersonUseDistanceCheck( player, ent )
 
 	vector viewVector = player.GetViewVector()
 	vector viewAngles = player.CameraAngles()
@@ -3186,80 +3647,6 @@ bool function SurvivalLoot_PlayerLookingAtLine( entity player, entity ent )
 	//DebugDrawSphere( pointOnLine, 1.0, 255, 0, 0, true, 0.1 )
 	//DebugDrawSphere( pointOnLinePlane, 1.0, 255, 255, 0, true, 0.1 )
 	return true
-
-
-	//vector up = AnglesToUp( viewAngles )
-	//vector entPosOnViewLine = GetIntersectionOfLineAndPlane( entPos, entPos + <0,0,1>, viewPos, up )
-	//vector entPosOnLine = GetClosestPointOnLine( topPos, botPos, viewPos )
-
-	//printt( entPosOnLine )
-
-	//if ( entPosOnLine.z > topPos.z )
-	//	return false
-	//
-	//if ( entPosOnLine.z < botPos.z )
-	//	return false
-	//
-	//return true
-
-	/*
-	bool playerLookingUp = player.CameraAngles().x <= 10
-	bool isClose = Distance( player.GetOrigin(), ent.GetOrigin() ) < LOOKING_AT_LINE_CHECK_IGNORE_DIST
-
-	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
-	LootRef lootRef = SURVIVAL_CreateLootRef( lootData, ent )
-	LootActionStruct asMain = SURVIVAL_GetActionForGroundItem( player, lootRef, false )
-	LootActionStruct asAlt = SURVIVAL_GetActionForGroundItem( player, lootRef, true )
-	bool canUse = asMain.action != eLootAction.NONE || asAlt.action != eLootAction.NONE
-
-	if ( isClose || playerLookingUp || !canUse )
-	{
-		float minAngle = 25.0
-
-		if ( playerLookingUp )
-			minAngle = min( 10.0, minAngle )
-
-		if ( isClose )
-			minAngle = min( 10.0, minAngle )
-
-		if ( !canUse )
-			minAngle = min( 15.0, minAngle )
-
-		if ( PlayerCanSee( player, ent, false, minAngle ) )
-		{
-			return true
-		}
-		else if ( playerLookingUp || !canUse )
-		{
-			return false
-		}
-	}
-
-	vector viewAngles = player.CameraAngles()
-	vector viewPos    = player.CameraPosition()
-	vector entPos     = ent.GetOrigin()
-	vector mins       = ent.GetBoundingMins()
-	vector maxs       = ent.GetBoundingMaxs()
-
-	vector topPos = entPos + <0,0,VERTICAL_LINE_HEIGHT - 10.0>
-	vector botPos = entPos + <0,0,mins.z - 5.0>
-
-	vector up = AnglesToUp( viewAngles )
-
-	if ( DotProduct( up, <0,0,1> ) == 0.0 )
-		return false
-
-	vector entPosOnViewLine = expect vector(GetIntersectionOfLineAndPlane( entPos, entPos + <0,0,1>, viewPos, up ))
-	vector entPosOnLine = GetClosestPointOnLine( topPos, botPos, entPosOnViewLine )
-
-	if ( entPosOnLine.z > topPos.z )
-		return false
-
-	if ( entPosOnLine.z < botPos.z )
-		return false
-
-	return true
-	*/
 }
 #endif
 
@@ -3313,34 +3700,67 @@ int function SortByLootTier( string ref1, string ref2 )
 
 	return 0
 }
-
-table<string,string> function GetToggleAttachmentsList()
+table<string, string> function GetAttachmentsWithToggleModsList()
 {
-	return file.toggleAttachments
+	return file.attachmentsWithToggleMods
 }
 
-// TODO : this should be in a mod changed callback or something
-void function VerifyToggleMods( string mod, array<string> mods )
-{
-	if ( mod in GetToggleAttachmentsList() )
-	{
-		string toggleMod = file.toggleAttachments[mod]
 
-		if ( mods.contains(toggleMod) && !mods.contains(mod) )
+table< string, array<string> > function GetToggleModsRequiredAttachmentsList()
+{
+	return file.toggleModsRequiredAttachments
+}
+bool function ToggleModHasRequiredAttachments( string toggleMod, array<string> mods )
+{
+	if ( !(toggleMod in GetToggleModsRequiredAttachmentsList()) )                                                             
+		return true
+
+	array<string> attachmentMods = file.toggleModsRequiredAttachments[ toggleMod ]
+
+	foreach ( string attachmentMod in attachmentMods )
+	{
+		if ( mods.contains( attachmentMod ) )
+			return true
+	}
+
+	return false
+}
+
+void function VerifyToggleMods( array<string> mods )
+{
+	array<string> attachmentMods
+	bool foundAttachment
+	array<string> modsCopy = clone mods
+	foreach ( string mod in modsCopy )
+	{
+		if ( !ToggleModHasRequiredAttachments( mod, mods ) )
 		{
-			mods.fastremovebyvalue(toggleMod)
+			mods.fastremovebyvalue( mod )
 		}
-		//else if ( mods.contains(mod) && !mods.contains(toggleMod) )
-		//{
-		//	mods.append(toggleMod)
-		//}
+	}
+}
+
+
+array<string> function GetAltModsToRemoveOnCleanup()
+{
+	return file.altModsToRemoveOnDrop
+}
+
+
+void function CleanupAltMods( array<string> mods )
+{
+	array<string> modsCopy = clone mods
+	foreach ( string mod in modsCopy )
+	{
+		if ( GetAltModsToRemoveOnCleanup().contains( mod ) )
+			mods.fastremovebyvalue( mod )
 	}
 }
 
 //
 void function ApplyDefaultToggledMods( string weaponClassName, string hopupMod, array<string> mods )
 {
-	if ( !( hopupMod in GetToggleAttachmentsList() ) )
+	if ( !(hopupMod in GetAttachmentsWithToggleModsList()) )
 		return
 
 	if ( !(weaponClassName in file.weaponAutoToggledAttachments) )
@@ -3350,10 +3770,35 @@ void function ApplyDefaultToggledMods( string weaponClassName, string hopupMod, 
 	if ( hopupToToggle != hopupMod )
 		return
 
-	string toggleMod = file.toggleAttachments[hopupMod]
+	string toggleMod = file.attachmentsWithToggleMods[hopupMod]
 
 	if ( !mods.contains( toggleMod ) )
 		mods.append( toggleMod )
+}
+
+void function ReplaceOpticInMods( array<string> mods, string opticRef )
+{
+	bool replacedOptic = false
+	for( int j = 0; j < mods.len(); ++j )
+	{
+		if( !SURVIVAL_Loot_IsRefValid( mods[j] ) )
+			continue
+
+		LootData attachData = SURVIVAL_Loot_GetLootDataByRef( mods[j] )
+		if( attachData.attachmentStyle.find( "sight" ) >= 0 )
+		{
+			if( opticRef == "" )
+				mods.remove( j )
+			else
+				mods[j] = opticRef
+
+			replacedOptic = true
+			break
+		}
+	}
+
+	if( !replacedOptic && opticRef != "" )
+		mods.append( opticRef )
 }
 
 int function SURVIVAL_GetPlayerShieldHealthFromArmor( entity player )
@@ -3542,7 +3987,7 @@ string function GetStringForTagId( int tagId )
 #if CLIENT || SERVER
 table<string, string> function GetCompatibleAttachmentsFromWeapon( entity player, entity fromWeapon, string toWeapon )
 {
-	array<string> modsOnWeapon = GetValidModsInstalled( fromWeapon )
+	array<string> modsOnWeapon            = GetValidLootModsInstalled( fromWeapon )
 	array<string> filledInAttachmentSlots = []
 
 	modsOnWeapon.sort( SortByLootTier )
@@ -3554,7 +3999,7 @@ table<string, string> function GetCompatibleAttachmentsFromWeapon( entity player
 		LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
 		Assert( data.lootType == eLootType.ATTACHMENT, data.lootType )
 
-		string attachPoint = GetAttachPointForAttachment( item )
+		string attachPoint = GetAttachPointForAttachmentOnWeapon( toWeapon, item )
 		if ( CanAttachToWeapon( item, toWeapon ) && !filledInAttachmentSlots.contains( attachPoint ) )
 		{
 			filledInAttachmentSlots.append( attachPoint )
@@ -3580,7 +4025,7 @@ table<string, string> function GetCompatibleAttachmentsFromInventory( entity pla
 		if ( data.lootType != eLootType.ATTACHMENT )
 			continue
 
-		string attachPoint = GetAttachPointForAttachment( data.ref )
+		string attachPoint = GetAttachPointForAttachmentOnWeapon( toWeapon, data.ref )
 		if ( CanAttachToWeapon( data.ref, toWeapon ) && !filledInAttachmentSlots.contains( attachPoint ) )
 		{
 			filledInAttachmentSlots.append( attachPoint )
@@ -3858,6 +4303,31 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 	return pickedUp
 }
 
+bool function SURVIVAL_IsAttachmentPointLocked( string weaponName, string attachmentPoint )
+{
+                        
+                     
+              
+       
+
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && attachmentPoint != "sight" )
+		return true
+
+	return false
+}
+
+
+bool function SURVIVAL_Weapon_IsFullyKitted( string weaponName )
+{
+	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return false
+	return SURVIVAL_Loot_GetLootDataByRef( weaponName ).lootTags.contains( WEAPON_LOCKEDSET_MOD_GOLD )
+}
+array<string> function SURVIVAL_Weapon_GetBaseMods( string weaponName )
+{
+	return clone(SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods)
+}
+
 LootData function SURVIVAL_GetLootDataFromWeapon( entity weapon )
 {
 	LootData data
@@ -3888,22 +4358,20 @@ bool function SURVIVAL_Weapon_IsAttachmentLocked( string weaponName )
 	return baseMods.contains( "gold" ) || baseMods.contains( "crate" )
 }
 
-bool function SURVIVAL_Weapon_IsFullyKitted( string weaponName )
-{
-	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
-		return false
-	return SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods.contains( "gold" )
-}
-
-array<string> function SURVIVAL_Weapon_GetFullyKittedMods( string weaponName )
-{
-	return SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods
-}
 
 
 bool function IsValidAttachment( string attachment )
 {
 	return ( attachment in file.attachmentMatrix )
+}
+
+bool function SURVIVAL_EquipmentPretendsToBeBlank( string ref )
+{
+	if ( !SURVIVAL_Loot_IsRefValid( ref ) )
+		return false
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	return data.pretendsToBeBlank
 }
 
 AttachmentData function GetAttachmentData( string attachment )

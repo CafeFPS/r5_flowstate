@@ -636,7 +636,7 @@ void function UpdateModsOnSurvivalWeaponRui( var rui, entity weapon )
 		{
 			RuiSetBool( rui, ruiAttachmentAllowedArgs[attachmentName], true )
 
-			string mod = GetInstalledWeaponAttachment( weapon, attachmentName )
+			string mod = GetInstalledWeaponAttachmentForPoint( weapon, attachmentName )
 			if ( SURVIVAL_Loot_IsRefValid( mod ) )
 			{
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( mod )

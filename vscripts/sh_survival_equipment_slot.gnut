@@ -1,6 +1,7 @@
 global function SURVIVAL_EquipmentSlot_InitShared
 
 global function Survival_GetEquipmentSlotDataByRef
+global function Survival_GetEquipmentSlotDataByType
 global function Survival_GetCommsActionForEquipmentSlot
 global function GetEmptyEquipmentImage
 
@@ -16,42 +17,96 @@ global function EquipmentSlot_GetEquippedLootDataForSlot
 global function EquipmentSlot_GetWeaponSlotForEquipmentSlot
 global function EquipmentSlot_GetLootRefForSlot
 global function EquipmentSlot_IsValidEquipmentSlot
+global function EquipmentSlot_IsValidForPlayer
+global function EquipmentSlot_IsValidEquipmentSlotType
 
 global function GetAllAttachmentPoints
 global function RegisterAttachmentPoint
 global function GetAttachmentPointName
 
 global const table<string, asset> emptyAttachmentSlotImages = {
-	barrel                 = $"rui/pilot_loadout/mods/empty_barrel"
-	barrel_stabilizer      = $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
-	grip                   = $"rui/pilot_loadout/mods/empty_stock"
-	stock                  = $"rui/pilot_loadout/mods/empty_stock"
-	stock_tactical         = $"rui/pilot_loadout/mods/empty_stock_tactical"
-	stock_sniper           = $"rui/pilot_loadout/mods/empty_stock_sniper"
-	mag                    = $"rui/pilot_loadout/mods/empty_mag"
-	mag_straight           = $"rui/pilot_loadout/mods/empty_mag_straight"
-	mag_energy             = $"rui/pilot_loadout/mods/empty_energy_mag"
-	mag_shotgun            = $"rui/pilot_loadout/mods/empty_mag_shotgun"
-	sight                  = $"rui/pilot_loadout/mods/empty_sight"
-	hopup                  = $"rui/pilot_loadout/mods/empty_hopup"
-	hopup_turbocharger     = $"rui/pilot_loadout/mods/empty_hopup_turbocharger"
-	hopup_selectfire       = $"rui/pilot_loadout/mods/empty_hopup_autofire"
-	hopup_em_choke         = $"rui/pilot_loadout/mods/empty_hopup_em_choke"
-	hopup_skullpiercer     = $"rui/pilot_loadout/mods/empty_hopup_skullpiercer"
-	hopup_shield_breaker   = $"rui/pilot_loadout/mods/empty_hopup_shield_breaker"
-	hopup_unshielded_dmg   = $"rui/pilot_loadout/mods/empty_hopup_unshielded_dmg"
-	hopup_highcal_rounds   = $"rui/pilot_loadout/mods/empty_hopup_anvilreceiver"
-	hopup_double_tap       = $"rui/pilot_loadout/mods/empty_hopup_doubletap"
+	barrel = $"rui/pilot_loadout/mods/empty_barrel"
+	barrel_stabilizer = $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
+	laser_sight = $"rui/pilot_loadout/mods/empty_laser_sight"
+	grip = $"rui/pilot_loadout/mods/empty_stock_tactical"
+	stock = $"rui/pilot_loadout/mods/empty_stock_tactical"
+	stock_tactical = $"rui/pilot_loadout/mods/empty_stock_tactical"
+	stock_sniper = $"rui/pilot_loadout/mods/empty_stock_sniper"
+	mag = $"rui/pilot_loadout/mods/empty_mag"
+	mag_car = $"rui/pilot_loadout/mods/CAR_Empty_Mag_Icon"
+	mag_straight = $"rui/pilot_loadout/mods/empty_mag_straight"
+	mag_energy = $"rui/pilot_loadout/mods/empty_energy_mag"
+	mag_shotgun = $"rui/pilot_loadout/mods/empty_mag_shotgun"
+	mag_sniper = $"rui/pilot_loadout/mods/empty_mag_sniper"
+	sight = $"rui/pilot_loadout/mods/empty_sight"
+	hopup = $"rui/pilot_loadout/mods/empty_hopup"
+	hopupMulti_a = $"rui/pilot_loadout/mods/empty_hopup"
+	hopupMulti_b = $"rui/pilot_loadout/mods/empty_hopup"
+	hopup_turbocharger = $"rui/pilot_loadout/mods/empty_hopup_turbocharger"
+	hopup_selectfire = $"rui/pilot_loadout/mods/empty_hopup_autofire"
+	hopup_em_choke = $"rui/pilot_loadout/mods/empty_hopup_em_choke"
+	hopup_skullpiercer = $"rui/pilot_loadout/mods/empty_hopup_skullpiercer"
+	hopup_shield_breaker = $"rui/pilot_loadout/mods/empty_hopup_shield_breaker"
+                   
+                                                                     
+       
+	hopup_smart_reload = $"rui/pilot_loadout/mods/hopup_smart_reload_empty"
+	hopup_kinetic_loader = $"rui/pilot_loadout/mods/empty_hopup_kinetic_feeder"
+	hopup_dual_loader = $"rui/pilot_loadout/mods/empty_hopup_dualshell"
+	hopup_unshielded_dmg = $"rui/pilot_loadout/mods/empty_hopup_unshielded_dmg"
+	hopup_highcal_rounds = $"rui/pilot_loadout/mods/empty_hopup_anvilreceiver"
+	hopup_double_tap = $"rui/pilot_loadout/mods/empty_hopup_doubletap"
+	hopup_paintball = $"rui/pilot_loadout/mods/empty_hopup_graffiti"
+	hopup_quickdraw_holster = $"rui/pilot_loadout/mods/empty_hopup_quickdraw_holster"
+	hopup_marksmans_tempo = $"rui/pilot_loadout/mods/empty_hopup_marksmans_tempo"
+	hopup_shatter_rounds = $"rui/pilot_loadout/mods/empty_hopup_shatter_caps"
+                         
+                                                                                 
+       
+                           
+                                                                     
+       
 }
 
 #if CLIENT
 global function AddCallback_OnEquipSlotTrackingIntChanged
 #endif
 
+global enum eEquipmentSlotType
+{
+	BACKPACK,
+	BANDOLIER,
+	SHIELDCAPACITOR,
+	HELMET,
+	ARMOR,
+	INCAPSHIELD,
+	GADGETSLOT,
+	MAIN_WEAPON0,
+	MAIN_WEAPON0_SIGHT,
+	MAIN_WEAPON0_MAG,
+	MAIN_WEAPON0_GRIP,
+	MAIN_WEAPON0_BARREL,
+	MAIN_WEAPON0_HOPUP,
+	MAIN_WEAPON0_HOPUPMULTI_A,
+	MAIN_WEAPON0_HOPUPMULTI_B,
+	MAIN_WEAPON1,
+	MAIN_WEAPON1_SIGHT,
+	MAIN_WEAPON1_MAG,
+	MAIN_WEAPON1_GRIP,
+	MAIN_WEAPON1_BARREL,
+	MAIN_WEAPON1_HOPUP,
+	MAIN_WEAPON1_HOPUPMULTI_A,
+	MAIN_WEAPON1_HOPUPMULTI_B,
+	SLING_WEAPON,
+
+	COUNT,
+}
+
 global struct EquipmentSlot
 {
 	string ref
-	asset emptyImage = $""
+	int type
+	asset  emptyImage = $""
 	string title = ""
 
 	#if SERVER
@@ -60,10 +115,10 @@ global struct EquipmentSlot
 	#endif
 
 	#if SERVER || CLIENT
-	string functionref( entity player, string slot ) getEquippedRefFunc
-	int                                              trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP
-	int                                              trackingVisionExchangePOI = -1
-	int                                              trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP
+		string functionref( entity player, string slot ) getEquippedRefFunc
+		int                                              trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP
+		int                                              trackingVisionExchangePOI = -1
+		int                                              trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP
 	#endif
 
 	#if CLIENT
@@ -72,7 +127,7 @@ global struct EquipmentSlot
 
 	int                                                                            emptyCommsAction = eCommsAction.BLANK
 	int functionref( string equipmentSlot, string equipmentRef, EquipmentSlot es ) emptyCommsActionFunc
-	int functionref( string equipmentSlotRef, string itemRef )                     filledCommsActionFunc
+	int functionref( string equipmentSlotRef, string itemRef, EquipmentSlot es )   filledCommsActionFunc
 	int                                                                            weaponSlot = -1
 	string                                                                         attachmentPoint
 	string                                                                         nextWeaponSlot = ""
@@ -81,12 +136,16 @@ global struct EquipmentSlot
 
 	string unitFrameTierVar = ""
 	string unitFrameImageVar = ""
+
+	int passiveRequired = -1
 }
 
 struct
 {
 	array<string> allAttachmentPoints
 	table<string, EquipmentSlot> equipSlotData
+	table<int, EquipmentSlot>    equipSlotDataByType
+	var shieldRegenRUI
 } file
 
 // TODO: these should be turned into Bakery assets
@@ -329,6 +388,12 @@ EquipmentSlot function Survival_GetEquipmentSlotDataByRef( string ref )
 	return file.equipSlotData[ref]
 }
 
+EquipmentSlot function Survival_GetEquipmentSlotDataByType( int type )
+{
+	Assert ( type in file.equipSlotDataByType )
+	return file.equipSlotDataByType[type]
+}
+
 EquipmentSlot function RegisterEquipslot( string ref )
 {
 	EquipmentSlot e
@@ -448,29 +513,75 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 	return eCommsAction.QUICKCHAT_READY
 }
 
-int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef )
+int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef, EquipmentSlot es )
 {
+	#if CLIENT
 	LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
-
-	switch( lootData.ammoType )
+	string ammotype = lootData.ammoType
+	                                                                              
+	entity weapon      = GetLocalClientPlayer().GetNormalWeapon( Survival_GetEquipmentSlotDataByRef( equipmentSlotRef ).weaponSlot )
+	string weaponClassName = weapon.GetWeaponClassName()
+	if ( weaponClassName == itemRef )
+	{
+		                                                                      
+		//if ( GetInfiniteAmmo( weapon ) )
+		//{
+		//	ammotype = ""
+		//}
+		//else if ( weaponClassName == "mp_weapon_car" )
+		//{
+		//	ammotype = AmmoType_GetRefFromIndex( weapon.GetWeaponAmmoPoolType() )
+		//}
+	}
+	switch( ammotype )
 	{
 		case "":
 			return eCommsAction.BLANK
-		case "bullet":
+
+		case BULLET_AMMO:
+                            
+			// if ( GetLocalClientPlayer().AmmoPool_GetCount( eAmmoPoolType.bullet ) <= 0 )
+				// return eCommsAction.INVENTORY_NO_AMMO_BULLET
+         
 			return eCommsAction.INVENTORY_NEED_AMMO_BULLET
-		case "special":
+
+		case SPECIAL_AMMO:
+                            
+			// if ( GetLocalClientPlayer().AmmoPool_GetCount( eAmmoPoolType.special ) <= 0 )
+				// return eCommsAction.INVENTORY_NO_AMMO_SPECIAL
+         
 			return eCommsAction.INVENTORY_NEED_AMMO_SPECIAL
-		case "highcal":
+
+		case HIGHCAL_AMMO:
+                            
+			// if ( GetLocalClientPlayer().AmmoPool_GetCount( eAmmoPoolType.highcal ) <= 0 )
+				// return eCommsAction.INVENTORY_NO_AMMO_HIGHCAL
+         
 			return eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL
-		case "shotgun":
+
+		case SHOTGUN_AMMO:
+                            
+			// if ( GetLocalClientPlayer().AmmoPool_GetCount( eAmmoPoolType.shotgun ) <= 0 )
+				// return eCommsAction.INVENTORY_NO_AMMO_SHOTGUN
+         
 			return eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN
-		case "sniper":
+
+                       
+                 
+                                                    
+        
+		case SNIPER_AMMO:
+                           
+			// if ( GetLocalClientPlayer().AmmoPool_GetCount( eAmmoPoolType.sniper ) <= 0 )
+				// return eCommsAction.INVENTORY_NO_AMMO_SNIPER
+        
 			return eCommsAction.INVENTORY_NEED_AMMO_SNIPER
 		case "explosive":
 			return eCommsAction.INVENTORY_NEED_AMMO_EXPLOSIVE
 	}
 
-	Warning( "GetCommsActionForEquipmentSlot() - Unhandled ammo type '" + lootData.ammoType + "'" )
+	Warning( "GetCommsActionForEquipmentSlot() - Unhandled ammo type '" + ammotype + "'" )
+	#endif          
 	return eCommsAction.BLANK
 }
 
@@ -522,7 +633,7 @@ int function Survival_GetCommsActionForEquipmentSlot( string equipmentSlot, stri
 	else
 	{
 		if ( es.filledCommsActionFunc != null )
-			return es.filledCommsActionFunc( equipmentSlot, equipmentRef )
+			return es.filledCommsActionFunc( equipmentSlot, equipmentRef, es )
 	}
 
 	return eCommsAction.BLANK
@@ -552,6 +663,24 @@ bool function EquipmentSlot_IsValidEquipmentSlot( string equipmentSlot )
 	return (equipmentSlot in file.equipSlotData)
 }
 
+bool function EquipmentSlot_IsValidForPlayer( string equipmentSlot, entity player )
+{
+	if ( !EquipmentSlot_IsValidEquipmentSlot( equipmentSlot ) )
+		return false
+
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+
+	if ( es.passiveRequired >= 0 )
+		return PlayerHasPassive( player, es.passiveRequired )
+
+	return true
+}
+
+bool function EquipmentSlot_IsValidEquipmentSlotType( int equipmentSlotType )
+{
+	return equipmentSlotType >= 0 && equipmentSlotType < eEquipmentSlotType.COUNT && (equipmentSlotType in file.equipSlotDataByType)
+}
+
 bool function EquipmentSlot_IsAttachmentSlot( string equipmentSlot )
 {
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
@@ -566,13 +695,13 @@ string function EquipmentSlot_GetAttachmentPointForSlot( string equipmentSlot )
 
 int function EquipmentSlot_GetOtherWeaponSlotInt( int equipmentSlotInt )
 {
-	if ( equipmentSlotInt == -1)
+	if ( equipmentSlotInt == -1 )
 		return -1
 
 	EquipmentSlot es
 
 	bool found = false
-	foreach ( slot,slotData in EquipmentSlot_GetAllEquipmentSlots() )
+	foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
 	{
 		if ( slotData.weaponSlot == equipmentSlotInt )
 		{
@@ -643,6 +772,9 @@ string function GetEquippedRefBasedOnTrackingNetInt( entity player, string equip
 {
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
 
+	if ( !IsValid( player ) )
+		return ""
+
 	if ( es.trackingNetInt == "" )
 		return ""
 
@@ -659,8 +791,8 @@ string function GetEquippedRefBasedOnTrackingNetInt( entity player, string equip
 string function GetEquippedWeaponForPlayer( entity player, string equipmentSlot )
 {
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
-	entity weapon = player.GetNormalWeapon( es.weaponSlot )
-	if ( !IsValid(weapon) )
+	entity weapon    = player.GetNormalWeapon( es.weaponSlot )
+	if ( !IsValid( weapon ) )
 		return ""
 
 	LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
@@ -670,17 +802,17 @@ string function GetEquippedWeaponForPlayer( entity player, string equipmentSlot 
 
 string function GetEquippedAttachmentOnWeaponForPlayer( entity player, string equipmentSlot )
 {
-	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	EquipmentSlot es       = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
 	EquipmentSlot esWeapon = Survival_GetEquipmentSlotDataByRef( es.attachmentWeaponSlot )
 
 	entity weapon = player.GetNormalWeapon( esWeapon.weaponSlot )
-	if ( !IsValid(weapon) )
+	if ( !IsValid( weapon ) )
 		return ""
 
 	if ( !SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
 		return ""
 
-	return GetInstalledWeaponAttachment( weapon, es.attachmentPoint )
+	return GetInstalledWeaponAttachmentForPoint( weapon, es.attachmentPoint )
 }
 #endif
 

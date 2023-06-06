@@ -1516,7 +1516,7 @@ void function ToggleFireSelect( entity player )
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return
 
-	foreach ( mod, toggleMod in GetToggleAttachmentsList() )
+	foreach ( mod, toggleMod in GetAttachmentsWithToggleModsList() )
 	{
 		if ( IsModActive( weapon, mod ) )
 		{

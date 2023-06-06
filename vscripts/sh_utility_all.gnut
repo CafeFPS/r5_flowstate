@@ -25,6 +25,8 @@ global enum eDaysOfWeek
 	_NUM_DAYS
 }
 
+global const string WHITESPACE_CHARACTERS = "\r\n\t "
+
 global struct TimeParts
 {
 	int year

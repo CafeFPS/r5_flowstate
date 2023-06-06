@@ -35,8 +35,8 @@ global function Consumable_SetClientTypeOnly
 #if SERVER
 global function Consumable_AddCallback_OnPlayerHealingStarted
 global function Consumable_AddCallback_OnPlayerHealingEnded
-global function Consumable_IsValidModCommand
 #endif // SERVER
+global function Consumable_IsValidModCommand
 
 global enum eConsumableType
 {
@@ -1444,7 +1444,17 @@ void function Consumable_AddCallback_OnPlayerHealingEnded( void functionref(enti
 	Assert( !file.Callbacks_OnPlayerHealingEnded.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Consumable_AddCallback_OnPlayerHealingStarted" )
 	file.Callbacks_OnPlayerHealingEnded.append( callbackFunc )
 }
+#endif // SERVER
 
+// ======================================================================================================================
+//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
+// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
+// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
+//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
+//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
+// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
+//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
+// ======================================================================================================================
 bool function Consumable_IsValidModCommand( entity player, entity weapon, string mod, bool isAdd )
 {
 	if ( weapon.GetWeaponClassName() != CONSUMABLE_WEAPON_NAME )
@@ -1461,17 +1471,6 @@ bool function Consumable_IsValidModCommand( entity player, entity weapon, string
 
 	return true
 }
-#endif // SERVER
-
-// ======================================================================================================================
-//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
-// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
-// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
-//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
-//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
-// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
-//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
-// ======================================================================================================================
 
 bool function Consumable_IsValidConsumableInfo( int consumableType )
 {

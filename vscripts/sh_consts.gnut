@@ -20,6 +20,13 @@ global const DIFFICULTY_NORMAL 		= 1
 global const DIFFICULTY_HARD 		= 2
 global const DIFFICULTY_MASTER 		= 3
 
+global const string BULLET_AMMO = "bullet"
+global const string HIGHCAL_AMMO = "highcal"
+global const string SHOTGUN_AMMO = "shotgun"
+global const string SPECIAL_AMMO = "special"
+global const string ARROWS_AMMO = "arrows"
+global const string SNIPER_AMMO = "sniper"
+
 #if UI
 global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
 #endif
