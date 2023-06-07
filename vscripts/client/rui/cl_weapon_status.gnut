@@ -226,7 +226,7 @@ void function OnSelectedWeaponChanged( entity selectedWeapon )
 		RuiSetBool( file.weapon_hud_rui, "isMainWeaponSelected", false )
 		bool isOffhandUsesAmmoStatus = selectedWeapon.GetWeaponSettingBool( eWeaponVar.offhand_uses_hud_ammo_status )
 
-		if ( !isOffhandUsesAmmoStatus )
+		if ( !isOffhandUsesAmmoStatus && GetLocalClientPlayer().GetTeam() != TEAM_SPECTATOR )
 			return
 	}
 
@@ -552,6 +552,13 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_SINGLE", true )
 		}
 	}
+	else if ( weapon.HasMod( "hopup_energy_choke" ) )
+	 {
+		 if ( weapon.HasMod( "choke" ) )
+			 SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
+		 else
+			 SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
+	 }
 	else
 	{
 		if ( IsWeaponInSingleShotMode( weapon ) )
@@ -676,9 +683,10 @@ void function ClearWeaponToggleHUD()
 
 bool function WeaponHasFireModeSelect( entity weapon )
 {
-	if ( DoesModExist( weapon, "hopup_selectfire" ) )
-		return IsModActive( weapon, "hopup_selectfire" )
-	else if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ))
+	if ( DoesModExist( weapon, "hopup_selectfire" ) && IsModActive( weapon, "hopup_selectfire" ) )
+		return true
+                      
+	else if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ) )
 		return true
 	else if ( DoesModExist( weapon, "hopup_double_tap" ) && IsModActive( weapon, "hopup_double_tap" ) )
 		return true
@@ -697,6 +705,9 @@ bool function WeaponIsUsingAltFireMode( entity weapon )
 		return IsModActive( weapon, "altfire_double_tap" )
 	if ( DoesModExist( weapon, "altfire" ) )
 		return IsModActive( weapon, "altfire" )
+		
+	if ( DoesModExist( weapon, "hopup_selectfire" ) && IsModActive( weapon, "hopup_selectfire" ) )
+		return IsModActive( weapon, "hopup_selectfire" )
 	return false
 }
 
@@ -728,24 +739,61 @@ void function UpdateFireSelectHint( entity player, entity weapon, string mod )
 		AnnouncementMessageRight( player, Localize( "#FIRE_MODE_COLON", Localize( message ) ), "", <1, 1, 1>, $"", 1.0 )
 }
 
+void function UpdateChokeHint( entity player, entity weapon, string mod )
+{
+	string message = ""
+	if ( weapon.HasMod( "choke" ) )
+		message = "#ENERGY_CHOKE_ENABLED"
+	else
+		message = "#ENERGY_CHOKE_DISABLED"
+
+	AnnouncementMessageRight( player, Localize( message ), "", <1, 1, 1>, $"", 1.0 )
+}
 
 void function OnPlayerAddWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
-		UpdateFireSelectHint( player, weapon, mod )
-
-	OnSelectedWeaponChanged( weapon )
+	if ( IsModAltfireMod( mod ) )
+	{
+		if ( WeaponHasFireModeSelect( weapon ) )
+			UpdateFireSelectHint( player, weapon, mod )
+	}
+	if ( mod == "choke" )
+	{
+		UpdateChokeHint( player, weapon, mod )
+	}
 }
 
 
 void function OnPlayerRemoveWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
-		UpdateFireSelectHint( player, weapon, mod )
-
-	OnSelectedWeaponChanged( weapon )
+	if ( IsModAltfireMod( mod ) )
+	{
+		if ( WeaponHasFireModeSelect( weapon ) )
+			UpdateFireSelectHint( player, weapon, mod )
+	}
+	if ( mod == "choke" )
+	{
+		UpdateChokeHint( player, weapon, mod )
+	}
 }
 
+bool function IsModAltfireMod( string mod )
+{
+	if ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" || mod == "altfire_selectfire")
+		return true
+                         
+                                         
+             
+       
+                         
+                                         
+             
+       
+	if ( mod == "shatter_rounds_mode" )
+		return true
+
+	return false
+}
 
 bool function CanShowWeaponCycleHint( entity selectedWeapon, entity weaponInSlot0, entity weaponInSlot1 )
 {
