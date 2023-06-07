@@ -11,6 +11,7 @@ global function GetBloodhoundColorCorrectionID
 #endif //
 
 const float HUNT_MODE_DURATION = 30
+const float HUNT_MODE_KNOCKDOWN_TIME_BONUS = 5.0
 const asset HUNT_MODE_ACTIVATION_SCREEN_FX = $"P_hunt_screen"
 const asset HUNT_MODE_BODY_FX = $"P_hunt_body"
 
@@ -211,20 +212,17 @@ void function HuntMode_UpdatePlayerScreenColorCorrection( entity player )
 	ColorCorrection_SetExclusive( file.colorCorrection, true )
 	ColorCorrection_SetWeight( file.colorCorrection, 1.0 )
 
-	const FOV_SCALE = 1.00
-	const LERP_IN_TIME = 0.0125	// hack! because statusEffect doesn't seem to have a lerp in feature?
+	const FOV_SCALE = 1.2
+	const LERP_IN_TIME = 0.0125                                                                         
 	float startTime = Time()
 
 	while ( true )
 	{
 		float weight = StatusEffect_GetSeverity( player, eStatusEffect.hunt_mode_visuals )
-		//printt( weight )
+		                  
 		weight = GraphCapped( Time() - startTime, 0, LERP_IN_TIME, 0, weight )
 
 		ColorCorrection_SetWeight( file.colorCorrection, weight )
-
-		float fovScale = GraphCapped( weight, 0, 1, 1, FOV_SCALE )
-		player.SetFOVScale( fovScale, 1 )	// adding a lerp time here increases the total lerp I think
 
 		WaitFrame()
 	}

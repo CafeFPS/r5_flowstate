@@ -65,7 +65,11 @@ global struct ConsumableInfo
 	table< int, float > healBonus = {
 		[ePassives.PAS_SYRINGE_BONUS] = 0.0,
 		[ePassives.PAS_HEALTH_BONUS_MED] = 0.0,
-		[ePassives.PAS_HEALTH_BONUS_ALL] = 0.0
+		[ePassives.PAS_HEALTH_BONUS_ALL] = 0.0,
+		[ePassives.PAS_BONUS_SMALL_HEAL] = 25.0
+	}
+	table< int, float > shieldBonus = {
+		[ePassives.PAS_BONUS_SMALL_HEAL] = 25.0
 	}
 	float               healCap = 100
 
@@ -185,7 +189,7 @@ void function Consumable_Init()
 			phoenixKit.healAmount = 100.0
 			phoenixKit.shieldAmount = 100.0
 			phoenixKit.chargeSoundName = "PhoenixKit_Charge"
-			phoenixKit.cancelSoundName = ""
+			phoenixKit.cancelSoundName = "shield_battery_failure"
 			phoenixKit.modName = "phoenix_kit"
 		}
 		file.consumableTypeToInfo[ eConsumableType.COMBO_FULL ] <- phoenixKit
@@ -200,7 +204,7 @@ void function Consumable_Init()
 			shieldLarge.shieldAmount = 100.0
 			shieldLarge.healCap = 0.0
 			shieldLarge.chargeSoundName = "Shield_Battery_Charge"
-			shieldLarge.cancelSoundName = ""
+			shieldLarge.cancelSoundName = "shield_battery_failure"
 			shieldLarge.modName = "shield_large"
 		}
 		file.consumableTypeToInfo[ eConsumableType.SHIELD_LARGE ] <- shieldLarge
@@ -215,7 +219,7 @@ void function Consumable_Init()
 			shieldSmall.shieldAmount = 25.0
 			shieldSmall.healCap = 0.0
 			shieldSmall.chargeSoundName = "Shield_Battery_Charge_Short"
-			shieldSmall.cancelSoundName = ""
+			shieldSmall.cancelSoundName = "shield_battery_failure"
 			shieldSmall.modName = "shield_small"
 		}
 		file.consumableTypeToInfo[ eConsumableType.SHIELD_SMALL ] <- shieldSmall
@@ -229,7 +233,7 @@ void function Consumable_Init()
 			healthLarge.healAmount = 100.0
 			healthLarge.shieldAmount = 0.0
 			healthLarge.chargeSoundName = "Health_Syringe_Charge"
-			healthLarge.cancelSoundName = ""
+			healthLarge.cancelSoundName = "Health_Syringe_Failure"
 			healthLarge.modName = "health_large"
 		}
 		file.consumableTypeToInfo[ eConsumableType.HEALTH_LARGE ] <- healthLarge
@@ -243,7 +247,7 @@ void function Consumable_Init()
 			healthSmall.healAmount = 25.0
 			healthSmall.shieldAmount = 0.0
 			healthSmall.chargeSoundName = "Health_Syringe_Charge_Short"
-			healthSmall.cancelSoundName = ""
+			healthSmall.cancelSoundName = "Health_Syringe_Failure"
 			healthSmall.modName = "health_small"
 		}
 		file.consumableTypeToInfo[ eConsumableType.HEALTH_SMALL ] <- healthSmall
@@ -468,7 +472,14 @@ void function OnWeaponActivate_Consumable( entity weapon )
 		if ( Time() - file.playerToLastHealChatterTime[ weaponOwner ] > HEAL_CHATTER_DEBOUNCE )
 		{
 			file.playerToLastHealChatterTime[ weaponOwner ] <- Time()
-			PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healing" )
+				if(modName == "phoenix_kit")
+				{
+					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healingPhoenix" )
+				}
+				else
+				{
+					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healing" )
+				}
 		}
 	}
 	else if ( file.consumableTypeToInfo[ consumableType ].shieldAmount > 0 )

@@ -24,8 +24,10 @@ const int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
 
 const string DIRTY_BOMB_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep"
 
+const int DIRTY_BOMB_HEALTH = 150
+global const float DIRTY_BOMB_CLOUD_LINGER_TIME = 2.0
 const float DIRTY_BOMB_GAS_RADIUS = 256.0
-const float DIRTY_BOMB_GAS_DURATION = 12.5
+const float DIRTY_BOMB_GAS_DURATION = 11.0
 const float DIRTY_BOMB_DETECTION_RADIUS = 140.0
 
 const float DIRTY_BOMB_THROW_POWER = 1.0
@@ -309,7 +311,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 			thread RemoveCanister( canisterProxy, mover )
 		}
 	)
-
+	
 	canisterProxy.EndSignal( "OnDestroy" )
 	canisterProxy.EndSignal( "DirtyBomb_Detonated" )
 	canisterProxy.EndSignal( "DirtyBomb_PickedUp" )
@@ -361,9 +363,9 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	//trigger.Destroy()
 
 	canisterProxy.Solid()
-
+	
 	waitthread PlayAnim( canisterProxy, "prop_caustic_gastank_deploy", mover )
-
+	
 	thread WaitForCanisterPickup( canisterProxy )
 	thread CreateDirtyBombTriggerArea( canisterProxy, team )
 
@@ -382,6 +384,34 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	}
 
 	WaitForever()
+}
+
+void function CausticTrap_OnDamaged(entity ent, var damageInfo)
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	float canisterHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if ( canisterHealth > 0 && IsValid(ent))
+	{
+		ent.SetHealth(canisterHealth)
+	} else if (IsValid(ent))
+	{
+		ent.SetTakeDamageType( DAMAGE_NO )
+		ent.kv.solid = 0
+		ent.Destroy()
+	}
 }
 
 void function RemoveCanister( entity canisterProxy, entity mover )
@@ -403,7 +433,7 @@ void function RemoveCanister( entity canisterProxy, entity mover )
 	if ( IsValid( canisterProxy ) )
 	{
 		canisterProxy.EndSignal( "OnDestroy" )
-		canisterProxy.SetTakeDamageType( DAMAGE_NO )
+		// canisterProxy.SetTakeDamageType( DAMAGE_NO )
 		canisterProxy.NotSolid()
 
 		float duration = canisterProxy.GetSequenceDuration( "prop_caustic_gastank_destroy" )
@@ -653,11 +683,17 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 
 	if ( IsValid( owner ) )
 		StatsHook_DirtyBomb_OnDetonate( owner, attacker )
-
+	
+	canisterProxy.SetMaxHealth( DIRTY_BOMB_HEALTH )
+	canisterProxy.SetHealth( DIRTY_BOMB_HEALTH )
+	canisterProxy.SetTakeDamageType( DAMAGE_YES )
+	canisterProxy.SetDamageNotifications( true )
+	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged) 
+	
 	EmitSoundOnEntity( canisterProxy, "GasTrap_Activate" )
 	EmitSoundOnEntity( canisterProxy, "GasTrap_TrapLoop" ) // Sweetener for gas trap -- cloud has its own sound in sh_gas.gnut
 	entity fx = PlayLoopFXOnEntity( DIRTY_BOMB_CANISTER_FX_ALL, canisterProxy, "fx_top" )
-	canisterProxy.SetTakeDamageType( DAMAGE_NO )
+	// canisterProxy.SetTakeDamageType( DAMAGE_NO )
 	Highlight_SetOwnedHighlight( canisterProxy, "caustic_gas_canister" )
 	Highlight_SetFriendlyHighlight( canisterProxy, "caustic_gas_canister" )
 

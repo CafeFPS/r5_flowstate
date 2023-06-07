@@ -120,7 +120,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			&& inflictor.HasKey( "damageSourceName" ) )
 		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
 	
-	if( inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == 169 )
+	if( IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == 169 )
 		attackerIsNPC = true //force lava to damage shields
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS

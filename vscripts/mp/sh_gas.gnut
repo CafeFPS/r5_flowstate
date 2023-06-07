@@ -14,7 +14,7 @@ global function ShGas_Init
 
 global function PlayerHasGasProtection
 
-const float GAS_TEAMMATE_PROTECTION_RADIUS = 200.0
+const float GAS_TEAMMATE_PROTECTION_RADIUS = 400.0
 const bool GAS_CLOUD_DEBUG_DRAW = false
 
 const asset FX_GAS_SMOKE_LARGE = $"P_smokescreen_poison"
@@ -41,16 +41,18 @@ const float GAS_CLOUD_WEAR_OFF_GAS_GEAR = 0.5
 const float GAS_CLOUD_WEAR_OFF_NORMAL 	= 2.0
 
 const float GAS_CLOUD_DMG_TICK_RATE = 1.0
-//const float GAS_CLOUD_DMG_DELAY = 2//1.0
-const float GAS_CLOUD_DMG_EXPOSURE_INTERVAL = 1.0
-const float GAS_CLOUD_DMG_INITIAL = 4.0
-const float GAS_CLOUD_DMG_MAX = 10.0
+const float GAS_CLOUD_DMG_DELAY = 1.0
+const float GAS_CLOUD_DMG_EXPOSURE_INTERVAL = 2.0
+const float GAS_CLOUD_DMG_MIN = 5.0
+const float GAS_CLOUD_DMG_FLAT = 5.0
 const int 	GAS_CLOUD_DAMAGE_FLAGS = DF_NO_HITBEEP | DF_BYPASS_SHIELD | DF_NO_SELF_DAMAGE
 
 const float GAS_CLOUD_EXPOSURE_TICK_RATE = 0.1
 const float GAS_CLOUD_EXPOSURE_DBOUNCE = 0.2
 
 const float GAS_CLOUD_FADE_TIME = 3.5
+
+const float GAS_CLOUD_LARGE_UPWARD_OFFSET_SCALAR = 0.9
 
 const string GAS_CLOUD_VENTILATOR_SOUND = "Caustic_Gas_Breath_Loop_1p"
 const string GAS_CLOUD_BREATHING_SOUND 	= "gruntcooper_wounded_loop_1p"
@@ -450,8 +452,8 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 
 	//Scale Damage
 	float timeInGas = target.e.gasLastExpoTime - target.e.gasEnterTime
-	float dmgMult = GAS_CLOUD_DMG_INITIAL + floor( timeInGas / GAS_CLOUD_DMG_EXPOSURE_INTERVAL )
-	dmgMult = min( GAS_CLOUD_DMG_MAX, dmgMult )
+	float dmgMult = GAS_CLOUD_DMG_MIN + floor( timeInGas / GAS_CLOUD_DMG_EXPOSURE_INTERVAL )
+	dmgMult = min( GAS_CLOUD_DMG_FLAT, dmgMult )
 
 	Assert ( dmgMult >= 1.0 )
 
@@ -575,9 +577,6 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
 
-	if ( IsValid( smokescreen.smokeSource ) )
-	smokescreen.smokeSource.EndSignal( "OnDestroy" )
-
 	float damageTickRate = smokescreen.damageTickRate
 
 	vector center = GetFXCenterFromSmokescreen( smokescreen )
@@ -619,10 +618,12 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	entity gasDmgInflictor = CreateScriptRef( center, <0,0,0> )
 	gasDmgInflictor.e.onlyDamageEntitiesOncePerTick = true
 
+	entity smokeOriginRef = CreateScriptRef( smokescreen.origin, <0,0,0> )
+	
 	if ( IsValid( smokescreen.smokeSource ) )
 	{
-		gasExpoInflictor.SetParent( smokescreen.smokeSource )
-		gasDmgInflictor.SetParent( smokescreen.smokeSource )
+		gasExpoInflictor.SetParent( smokeOriginRef )
+		gasDmgInflictor.SetParent( smokeOriginRef )
 	}
 
 	if ( IsValid( smokescreen.inflictor ) )
@@ -634,14 +635,17 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	}
 
 	OnThreadEnd(
-	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeFXs )
+	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeOriginRef, smokeFXs )
 		{
 			if ( IsValid( gasExpoInflictor ) )
 				gasExpoInflictor.Destroy()
 
 			if ( IsValid( gasDmgInflictor ) )
 				gasDmgInflictor.Destroy()
-
+			
+			if ( IsValid( smokeOriginRef ) )
+				smokeOriginRef.Destroy()
+			
 			if ( IsValid( smokescreen.smokeSource ) )
 			{
 				StopSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
@@ -659,7 +663,8 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 
 	float lastDamageTime = Time()
 	bool fxDestroyed = false
-
+	bool onetime = true
+	
 	if ( IsValid( smokescreen.smokeSource ) )
 	{
 		EmitSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
@@ -670,6 +675,13 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 		center = GetFXCenterFromSmokescreen( smokescreen )
 
 		bool doDamage = (Time() - lastDamageTime >= damageTickRate) || lastDamageTime == Time()
+		
+		if ( !IsValid( smokescreen.smokeSource ) && onetime )
+		{
+			endTime = Time() + DIRTY_BOMB_CLOUD_LINGER_TIME
+			onetime = false
+		}
+		
 		for ( int i=0; i<offsetVectors.len(); i++ )
 		{
 			vector offsetVector = offsetVectors[i]
@@ -977,7 +989,9 @@ void function GasCloud_StartVisualEffect( entity ent, int statusEffect, bool act
 			EffectSetIsWithCockpit( fxHandle, true )
 
 			thread GasScreenFXThink( viewPlayer, fxHandle )
-			thread UpdatePlayerGasCloudDOF( viewPlayer, statusEffect )
+			
+			if (GetCurrentPlaylistVarBool( "caustic_gas_causes_DOF_blur", false ))
+				thread UpdatePlayerGasCloudDOF( viewPlayer, statusEffect )
 		}
 
 		Chroma_StartGasCloudEffect()
@@ -1080,7 +1094,7 @@ void function ShowPassiveGasProtectionOnHUD_Internal( entity player )
 	string name = ""
 	entity caustic
 
-	bool shouldHaveEffect = GetCurrentPlaylistVarBool( "enable_caustic_protection_effect", false )
+	bool shouldHaveEffect = true                                                                         
 
 	while ( name == "" )
 	{
@@ -1095,7 +1109,7 @@ void function ShowPassiveGasProtectionOnHUD_Internal( entity player )
 
 	RuiSetString( rui, "playerName", name )
 
-	vector color = TEAM_COLOR_FRIENDLY
+	vector color = <217,245,14>
 	float drawTick = 0.01
 
 	int fxId = GetParticleSystemIndex( GAS_PROTECTION_RING_FX )
@@ -1126,7 +1140,7 @@ void function ShowPassiveGasProtectionOnHUD_Internal( entity player )
 				int attachId = caustic.LookupAttachment( "ORIGIN" )
 				e[ "fxHandle" ] = StartParticleEffectOnEntity( caustic, fxId, FX_PATTACH_POINT_FOLLOW, attachId )
 				EffectSetControlPointVector( e[ "fxHandle" ], 1, <10.0, GAS_TEAMMATE_PROTECTION_RADIUS / AR_EFFECT_SIZE,0> )
-				EffectSetControlPointVector( e[ "fxHandle" ], 2, TEAM_COLOR_FRIENDLY )
+				EffectSetControlPointVector( e[ "fxHandle" ], 2, color )
 			}
 
 			//DebugDrawCircle( caustic.GetOrigin() + <0,0,32>, <0,0,1>, GAS_TEAMMATE_PROTECTION_RADIUS, int( color.x ), int( color.y ), int( color.z ), false, drawTick + 0.01 )
