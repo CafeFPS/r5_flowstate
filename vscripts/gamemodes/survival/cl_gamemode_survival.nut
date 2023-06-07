@@ -453,14 +453,6 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 	table<string,int> e
 	e["fxHandle"] <- -1
 
-	OnThreadEnd(
-		function() : ( e )
-		{
-			if ( e["fxHandle"] != -1 )
-				EffectStop( e["fxHandle"], true, false )
-		}
-	)
-	
 	while ( IsValid( player ) )
 	{
 		weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -496,8 +488,6 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		}
 		wait 0.05
 	}
-
-	WaitForever()
 }
 
 void function InitInWorldScreens()
