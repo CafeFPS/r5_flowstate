@@ -406,16 +406,7 @@ void function CausticTrap_OnDamaged(entity ent, var damageInfo)
 		DamageInfo_GetWeapon( damageInfo ), 
 		DamageInfo_GetDistFromAttackOrigin( damageInfo )
 	)
-	float canisterHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	if ( canisterHealth > 0 && IsValid(ent))
-	{
-		ent.SetHealth(canisterHealth)
-	} else if (IsValid(ent))
-	{
-		ent.SetTakeDamageType( DAMAGE_NO )
-		ent.kv.solid = 0
-		// ent.Destroy()
-	}
+
 }
 
 void function RemoveCanister( entity canisterProxy, entity mover )
@@ -687,13 +678,7 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 
 	if ( IsValid( owner ) )
 		StatsHook_DirtyBomb_OnDetonate( owner, attacker )
-	
-	canisterProxy.SetMaxHealth( DIRTY_BOMB_HEALTH )
-	canisterProxy.SetHealth( DIRTY_BOMB_HEALTH )
-	canisterProxy.SetTakeDamageType( DAMAGE_YES )
-	canisterProxy.SetDamageNotifications( true )
-	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged) 
-	
+
 	EmitSoundOnEntity( canisterProxy, "GasTrap_Activate" )
 	EmitSoundOnEntity( canisterProxy, "GasTrap_TrapLoop" ) // Sweetener for gas trap -- cloud has its own sound in sh_gas.gnut
 	entity fx = PlayLoopFXOnEntity( DIRTY_BOMB_CANISTER_FX_ALL, canisterProxy, "fx_top" )
@@ -704,7 +689,13 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	wait DIRTY_BOMB_ACTIVATE_DELAY
 
 	attacker = IsValid( attacker ) ? attacker : svGlobal.worldspawn
-
+	
+	canisterProxy.SetMaxHealth( DIRTY_BOMB_HEALTH )
+	canisterProxy.SetHealth( DIRTY_BOMB_HEALTH )
+	canisterProxy.SetTakeDamageType( DAMAGE_YES )
+	canisterProxy.SetDamageNotifications( true )
+	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged) 
+	
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, canisterProxy, canisterProxy.GetOrigin(), attacker.GetTeam(), attacker )
 	CreateGasCloudMediumAtOrigin( canisterProxy, attacker, canisterProxy.GetOrigin() + <0,0,DIRTY_BOMB_GAS_CLOUD_HEIGHT>, DIRTY_BOMB_GAS_DURATION )
 
