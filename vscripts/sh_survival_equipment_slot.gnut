@@ -445,7 +445,9 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_SHOTGUN
 			else if ( weaponData.lootTags.contains( "sniper" ) )
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_SNIPER
-
+			else if ( weaponData.lootTags.contains( "marksman" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_MARKSMAN
+			
 			//Assert( 0, "why" )
 			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
 			return eCommsAction.BLANK
@@ -464,6 +466,8 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_SHOTGUN
 			else if ( weaponData.lootTags.contains( "sniper" ) )
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_SNIPER
+			else if ( weaponData.lootTags.contains( "marksman" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_MARKSMAN
 
 			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
 			return eCommsAction.BLANK
@@ -471,9 +475,9 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 		case "barrel":
 		{
 			if ( weaponData.lootTags.contains( "pistol" ) )
-				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_PISTOL
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_LASERSIGHT_PISTOL
 			else if ( weaponData.lootTags.contains( "smg" ) )
-				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SMG
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_LASERSIGHT_SMG
 			else if ( weaponData.lootTags.contains( "assault" ) )
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_ASSAULT
 			else if ( weaponData.lootTags.contains( "lmg" ) )
@@ -482,7 +486,8 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SHOTGUN
 			else if ( weaponData.lootTags.contains( "sniper" ) )
 				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SNIPER
-
+			else if ( weaponData.lootTags.contains( "marksman" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_MARKSMAN
 			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
 			return eCommsAction.BLANK
 		}
