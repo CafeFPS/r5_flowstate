@@ -3,7 +3,8 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
-
+	placing_respawn_beacon
+	slowedbyCustomGrenade
 	anti_slow
 	move_slow
 	turn_slow
