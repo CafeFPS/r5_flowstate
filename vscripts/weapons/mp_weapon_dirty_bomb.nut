@@ -388,8 +388,12 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 
 void function CausticTrap_OnDamaged(entity ent, var damageInfo)
 {
+	if( !IsValid( ent ) )
+		return
+	
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	float damage = DamageInfo_GetDamage( damageInfo )
+	
 	attacker.NotifyDidDamage
 	(
 		ent,
@@ -410,7 +414,7 @@ void function CausticTrap_OnDamaged(entity ent, var damageInfo)
 	{
 		ent.SetTakeDamageType( DAMAGE_NO )
 		ent.kv.solid = 0
-		ent.Destroy()
+		// ent.Destroy()
 	}
 }
 
