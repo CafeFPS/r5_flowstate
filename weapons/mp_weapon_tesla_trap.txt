@@ -225,10 +225,6 @@ WeaponData
             "regen_ammo_refill_rate"    "*1.25"
         }
 
-	    burn_card_weapon_mod
-        {
-
-        }
         survival_finite_ordnance
         {
 

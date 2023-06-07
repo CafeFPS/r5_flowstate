@@ -1,11 +1,5 @@
-#base "_base_sniper.txt"
-#base "_base_sniper_optics.txt"
-
-                   
+#base "_base_marksman_weapon.txt"
 #base "_base_mags_energy.txt"
-      
-
-#base "_base_stocks_sniper.txt"
 
 "WeaponData"
 {
@@ -43,7 +37,7 @@
 	"OnProjectileCollision"                         "OnProjectileCollision_weapon_doubletake"
 
 	"charge_time" 					"0.85"
-	"charge_cooldown_time"			"0.1"
+	"charge_cooldown_time"			"1"
 	"charge_cooldown_delay"   		"0.1"
 
 	"charge_levels"					"4"
@@ -116,7 +110,7 @@
 	// energy weapons have less drop
 	"projectile_drag_coefficient" 					"0.0"
 
-	"bolt_hitsize"									"0.0"
+	"bolt_hitsize"									"0.25"
 
     //"bolt_hitsize_grow1_time"				        "0.123"  //~100m
     //"bolt_hitsize_grow1_size"				        "0.33"
@@ -129,19 +123,27 @@
 	"projectile_spread_choke_frac_1" 				"1.0"
 	"projectile_spread_choke_frac_2" 				"0.60"
 	"projectile_spread_choke_frac_3" 				"0.25"
-	"projectile_spread_choke_frac_4" 				"0.05"
+	"projectile_spread_choke_frac_4" 				"0.01"
 
 	// Ammo
 	//
-
-	"ammo_pool_type"                               "special"
-	"ammo_clip_size"                               "18"
-	"ammo_stockpile_max"                           "120"
-	"ammo_default_total"                           "120"
-	"ammo_per_shot"                                "3"
-	"ammo_min_to_fire"                             "3"
+                        
+                                  
+                                                                               
+                                   
+                                                        
+                                           
+                               
+     
+	"ammo_clip_size"   							    "6"
+    "ammo_default_total"							"0"
+    "ammo_no_remove_from_stockpile"					"1"
+    "uses_ammo_pool"								"1"
+    "ammo_pool_type"								"special"
+      
+	"ammo_per_shot"                                "1"
+	"ammo_min_to_fire"                             "1"
 	"ammo_clip_random_loss_on_npc_drop_chunksize"  "1"
-	"ammo_no_remove_from_stockpile"                "1"
 	"reload_enabled"                               "1"
 	"allow_empty_click"                            "1"
 	"empty_reload_only"                            "0"
@@ -201,11 +203,11 @@
 
 	// Spread
 	//
-	"spread_stand_hip"                         "4"
-	"spread_stand_hip_run"                     "6"
-	"spread_stand_hip_sprint"                  "7"
-	"spread_crouch_hip"                        "3"
-	"spread_air_hip"                           "8"
+	"spread_stand_hip"                         "3"
+	"spread_stand_hip_run"                     "5"
+	"spread_stand_hip_sprint"                  "6"
+	"spread_crouch_hip"                        "2.25"
+	"spread_air_hip"                           "7"
 
 	"spread_stand_ads"						    "0"
     "spread_crouch_ads"   					    "0"
@@ -300,9 +302,12 @@
 	"projectile_trail_effect_0"                    "P_tracer_proj_sniper_blue"
 
 	// FX
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"                         "P_wpn_mflash_dbltake_FP"
+	"fx_muzzle_flash_world"                        "P_wpn_mflash_dbltake"
+
+	"fx_shell_eject_attach"                    "shell"
+    "fx_muzzle_flash_attach_scoped"            "muzzle_flash_scoped"
+
 	// FX - Shells
 	"fx_shell_eject_attach_scoped" 					"shell"
 	"fx_shell_eject2_attach" 						"shell_L"
@@ -341,21 +346,32 @@
 
 	"Mods"
 	{
-	    gold
-	    {
-	    }
-
-		"survival_finite_ammo"
+        hopup_kinetic_loader
+        {
+        }
+		hopup_kinetic_choke
 		{
-			"ammo_stockpile_max"             "24"
-			"ammo_default_total"             "0"
-			"ammo_no_remove_from_stockpile"  "0"
-			"uses_ammo_pool"                 "1"
-			"low_ammo_fraction"              "0.3"
+		}
+        kinetic_choke
+        {
+            "mod_activity_modifier"			"fire_select"
+
+                                    
+
+                                                  
+
+                 
+
+            			"charge_time" 					"*0.36"
+
+                  
+        }
+		hopup_energy_choke
+		{
 		}
 
-		"hopup_energy_choke"
-		{
+		choke //toggle mod of hopup_energy_choke
+			{
 			"mod_activity_modifier"			"fire_select"
 
                         
@@ -544,27 +560,26 @@
 
 		energy_mag_l1
 		{
-			"ammo_clip_size"   					"21"
+			"ammo_clip_size"   					"7"
 		}
 
 		energy_mag_l2
 		{
-			"ammo_clip_size"   					"24"
+			"ammo_clip_size"   					"8"
 		}
 
 		energy_mag_l3
 		{
-			"ammo_clip_size"   					"27"
+			"ammo_clip_size"   					"10"
 		}
-      
-
-               
-                                                                                                     
-                    
-         
-                                                                                          
-         
-      
+		energy_mag_l4
+		{
+			"ammo_clip_size"   					"10"
+		}
+        amped_damage
+        {
+            "projectile_trail_effect_0"     				"P_tracer_proj_sniper_shield_breaker"
+        }
 	}
 
 	// RUI

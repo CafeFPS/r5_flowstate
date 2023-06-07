@@ -13,6 +13,7 @@ WeaponData
 	"pickup_press_prompt" 							"[USE] [WEAPONNAME]"
 	"minimap_reveal_distance"						"32000"
 	"fire_mode"   									"offhand"
+	"offhand_cancelled_by_melee"					"1"
 	"is_toss_weapon"								"1"
 	"play_fire_weapon_sound_on_toss"				"1"
 	"offhand_default_inventory_slot"				"1"
@@ -56,10 +57,14 @@ WeaponData
     "zipline_grenade_snap_distance"					"250"
     "zipline_grenade_snap_angle"					"10"
 
-	"projectile_launch_speed"						"2600"
-	"projectile_first_person_offset_fraction"		"2"
-	"projectile_launch_pitch_offset"				"6"
-
+	"projectile_launch_speed"                       "2600"
+                     
+        "projectile_gravity_scale"                      "0"
+        "projectile_first_person_offset_fraction"       "0"
+        "projectile_launch_pitch_offset"                "0"
+        "zipline_distance_min"                          "700"
+        "zipline_distance_max"                          "8000"
+        
 	"grenade_fuse_time"								"10.0"
 	"start_fuse_on_launch"                          "0"
 
@@ -109,6 +114,10 @@ WeaponData
 	"charge_require_input"							"1"
 	"charge_remain_full_when_fired"					"1"
 
+                     
+	    // Sound FX - Impacts
+	    "impact_effect_table"                           "default_nosound_nowhizby"
+       
 	// Damage - When Used by Players
 	"damage_type" 									"burn"
 	"damage_near_distance"							"100"
@@ -147,10 +156,14 @@ WeaponData
     "fire_duration"									"0.5"
 
 	// Behavior
-	//"fire_rate"   									"5"
+	//"fire_rate"   							    "5"
 	"zoom_time_in"									"0.2"
 	"zoom_time_out"   								"0.2"
-	"zoom_fov"										"55"
+                     
+	    "zoom_fov"                                  "26.2756" // 3x @ 70
+      
+                                                         
+       
 	"reload_time" 									"4.75"
 	"reload_time_late1" 							"3.75"
 	"reload_time_late2" 							"2.95"
@@ -316,7 +329,42 @@ WeaponData
 
         survival_finite_ordnance
         {
-
+		}
+        beacon_1
+        {
+			"ammo_clip_size"								"110"
+		    "ammo_min_to_fire"								"110"
+		    "ammo_per_shot"									"110"
+        }
+        beacon_2
+        {
+			"ammo_clip_size"								"100"
+		    "ammo_min_to_fire"								"100"
+		    "ammo_per_shot"									"100"
+        }
+        beacon_3
+        {
+			"ammo_clip_size"								"90"
+		    "ammo_min_to_fire"								"90"
+		    "ammo_per_shot"									"90"
+        }
+        beacon_4
+        {
+			"ammo_clip_size"								"80"
+		    "ammo_min_to_fire"								"80"
+		    "ammo_per_shot"									"80"
+        }
+        beacon_5
+        {
+			"ammo_clip_size"								"70"
+		    "ammo_min_to_fire"								"70"
+		    "ammo_per_shot"									"70"
+        }
+        beacon_6
+        {
+			"ammo_clip_size"								"60"
+		    "ammo_min_to_fire"								"60"
+		    "ammo_per_shot"									"60"
         }
 	}
 }

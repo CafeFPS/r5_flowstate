@@ -14,6 +14,7 @@ WeaponData
 	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
+	"offhand_cancelled_by_melee"					"1"
 	"is_toss_weapon"								"1"
 	"minimap_reveal_distance"						"32000"
 	"leveled_pickup"								"1"

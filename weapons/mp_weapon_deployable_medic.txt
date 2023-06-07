@@ -60,6 +60,7 @@ WeaponData
 
 	"grenade_disc_throw"							"1"
 	"projectile_gravity_scale"						"0.005"
+	"projectile_inherit_owner_velocity_scale"		"0.9"  //when sprinting
 
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
@@ -225,10 +226,8 @@ WeaponData
 	"viewkick_spring" 								"pistol"
 
 	"ammo_drains_to_empty_on_fire"					"1"
-
-	MP_BASE
-	{
-		"ammo_clip_size"   								"450"
+	
+    "ammo_clip_size"   								"450"
     "ammo_default_total"							"450"
     "ammo_display"									"bar"
     "ammo_min_to_fire"								"450"
@@ -236,22 +235,6 @@ WeaponData
     "ammo_stockpile_max"							"450"
     "regen_ammo_refill_rate"						"10"
     "regen_ammo_refill_start_delay"					"0.0"
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"40"
-		"ammo_default_total"							"40"
-		"ammo_display"									"bar"
-		"ammo_min_to_fire"								"20"
-		"ammo_per_shot"									"20"
-		"ammo_stockpile_max"							"100"
-		"regen_ammo_refill_rate"						"1"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-	}
 
 	// Rumble
 	"rumble"  										"3"
@@ -268,10 +251,6 @@ WeaponData
 			"regen_ammo_refill_rate"    "*1.25"
 		}
 
-		burn_card_weapon_mod
-		{
-
-		}
 
 		survival_finite_ordnance
 		{

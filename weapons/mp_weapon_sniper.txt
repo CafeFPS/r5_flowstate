@@ -66,12 +66,12 @@
 
 	// Damage
 	//
-	"damage_near_value"                        "145"
-	"damage_far_value"                         "145"
-	"damage_very_far_value"                    "145"
-	"damage_near_value_titanarmor"             "145"
-	"damage_far_value_titanarmor"              "145"
-	"damage_very_far_value_titanarmor"         "145"
+	"damage_near_value"                        "140"
+	"damage_far_value"                         "140"
+	"damage_very_far_value"                    "140"
+	"damage_near_value_titanarmor"             "140"
+	"damage_far_value_titanarmor"              "140"
+	"damage_very_far_value_titanarmor"         "140"
 
 	"damage_rodeo"                             "900"
 
@@ -80,7 +80,7 @@
 	"pass_through_depth"                       "64"
 	"pass_through_damage_preserved_scale"      "0.8"
 
-    "damage_headshot_scale"                    "3.0"
+    "damage_headshot_scale"                    "2.0"
 	"damage_leg_scale"                         "0.8"
 
 
@@ -107,8 +107,12 @@
 	"ammo_stockpile_max"                       "8"
 	"ammo_default_total"                       "12"
 	"ammo_min_to_fire"                         "1"
-	"ammo_no_remove_from_stockpile"            "1"
 	"reload_enabled"                           "1"
+
+	// ammo
+    "ammo_no_remove_from_stockpile" 	"0"
+    "uses_ammo_pool" 					"0"
+    "low_ammo_fraction"                 "0.25"
 
 	"reload_time"                              "3.2"
 	"reload_time_late1"                        "1.95"
@@ -265,18 +269,6 @@
 
 	"Mods"
 	{
-	    crate
-	    {
-	    }
-
-		"survival_finite_ammo"
-		{
-			// ammo
-			"ammo_no_remove_from_stockpile" 	"0"
-			"uses_ammo_pool" 					"0"
-			"low_ammo_fraction"                 "0.25"
-		}
-
         // HACK must define "script_optic_toggle_name" for this to work
 		"optic_toggle"
 		{

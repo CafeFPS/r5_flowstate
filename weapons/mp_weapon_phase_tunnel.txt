@@ -129,6 +129,7 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"1"
 	"allow_headshots" 								"0"
+	"offhand_allow_swap_to_on_zipline"              "0"
 
 	// Spread
 	"spread_stand_hip"  								"0"

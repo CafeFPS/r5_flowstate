@@ -33,6 +33,7 @@ WeaponData
 	// Models
 	"viewmodel"   									"mdl/weapons/prowler_smg/ptpov_prowler_smg.rmdl"
 	"playermodel" 									"mdl/weapons/prowler_smg/w_prowler_smg.rmdl"
+	"holster_offset"								"8 0 0"
 
 	"chroma_color"									".2 1 .6"
 
@@ -72,38 +73,39 @@ WeaponData
 	"low_ammo_sound_name_1"							"car_LowAmmo_Shot1"
 
 	"damage_type" 									"bullet"
+	"damage_near_value"   							"15"
+    "damage_far_value"								"15"
+    "damage_very_far_value"							"15"
+    "damage_near_value_titanarmor"					"15"
+    "damage_far_value_titanarmor" 					"15"
+    "damage_very_far_value_titanarmor" 				"15"
+    "damage_rodeo" 									"110"
 
+                     
+                                
+                                          
+                                                                                                                   
+                                                 
+                                     
+     
 	"ammo_clip_size"   								"20"
-
-
-	"ammo_clip_size"   								"20"
-    "ammo_default_total"							"100"
+    "ammo_default_total"							"0"
     "ammo_stockpile_max"							"36"
     "ammo_no_remove_from_stockpile"					"1"
-   
+    "uses_ammo_pool"								"1"
+    "ammo_pool_type"								"highcal"
+      
 
     "ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.2"
-	
 
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    // Damage - When Used by NPCs
+    "npc_damage_near_value"   						"9"
+    "npc_damage_far_value"							"7"
+    "npc_damage_near_value_titanarmor"				"0"
+    "npc_damage_far_value_titanarmor" 				"0"
+    "npc_max_range"   								"2000"
 
-		"damage_near_value"   							"14"
-		"damage_far_value"								"14"
-   	 	"damage_very_far_value"							"14"
-		"damage_near_value_titanarmor"					"14"
-		"damage_far_value_titanarmor" 					"14"
-		"damage_very_far_value_titanarmor" 				"14"
-		"damage_rodeo" 									"110"
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"9"
-		"npc_damage_far_value"							"7"
-		"npc_damage_near_value_titanarmor"				"0"
-		"npc_damage_far_value_titanarmor" 				"0"
-
-		"npc_max_range"   								"2000"
 
 	// NPC
 	"npc_min_engage_range"							"0"
@@ -232,34 +234,6 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"36"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.2"
-
-	   		"uses_ammo_pool"								"1"
-        }
-
-        hopup_selectfire
-        {
-        	// This mod is only used to indicate that the hop-up is active
-        	// When player changes fire modes, we activate "altfire"
-        }
-
-        // autofire
-        altfire
-        {
-		
-        }
-
-
 		optic_cq_hcog_classic
 		{
 			"bodygroup2_set"	       						"0"
@@ -323,6 +297,10 @@ WeaponData
 		{
 			"ammo_clip_size"   							"35"
 		}
+        highcal_mag_l4
+        {
+            "ammo_clip_size"   							"35"
+        }
 
                
                                                                                                      

@@ -82,11 +82,15 @@ WeaponData
 
     "damage_shield_scale"                           "1"
 
-   "ammo_default_total"							"100"
-    "ammo_stockpile_max"							"18"
-	"ammo_no_remove_from_stockpile"					"1"
 	"ammo_min_to_fire"								"1"
 	"ammo_per_shot"                                 "1"
+
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"18"
+    "ammo_no_remove_from_stockpile"					"0"
+
+    "low_ammo_fraction" 							"0.3"
+    "uses_ammo_pool"								"1"
 
 	// Ammo
 	"ammo_clip_size"   								"8"
@@ -107,7 +111,6 @@ WeaponData
 	"damage_near_distance"							"250"
 	"damage_far_distance" 							"850"
 	"damage_headshot_scale"							"1.25"
-	"damage_leg_scale"                              "1.0"
 
 	// Damage - When Used by NPCs
 	"npc_damage_near_value"   						"25"
@@ -247,24 +250,8 @@ WeaponData
     "sound_burn_damage_tick_1p" 	"flesh_thermiteburn_3p_vs_1p"
 
 	Mods
-	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"18"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
-        }
-
-                         
-                               
-       		shotgun_bolt_l1
+	{       
+    	shotgun_bolt_l1
 		{
 		    "fire_rate" 	"*1.1"
 		}
@@ -278,6 +265,11 @@ WeaponData
 		{
 		    "fire_rate" 	"*1.3"
 		}  
+
+		shotgun_bolt_l4
+        {
+            "fire_rate" 	"*1.3"
+        }
                                                             
          
       
@@ -336,6 +328,11 @@ WeaponData
         }
 
         shotgun_bolt_l3_double_tap
+        {
+            "fire_rate"             "*0.7692307"     // 1/1.3 to cancel out bolt fire_rate bonus
+            "burst_fire_delay"      "*0.85"
+        }
+        shotgun_bolt_l4_double_tap
         {
             "fire_rate"             "*0.7692307"     // 1/1.3 to cancel out bolt fire_rate bonus
             "burst_fire_delay"      "*0.85"

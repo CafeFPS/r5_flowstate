@@ -52,8 +52,7 @@ WeaponData
 
 
 	// FX - Firing
-	"fx_muzzle_flash_view"							"P_muzzleflash_defender_FP"
-	"fx_muzzle_flash_world"							"P_muzzleflash_defender"
+
 	"tracer_effect"   								"P_wpn_defender_beam"
 	"tracer_effect_first_person"  					"P_wpn_defender_beam"
 	"impact_effect_table" 							"exp_defender"

@@ -87,14 +87,21 @@ WeaponData
 	// Behavior
 	"deployfirst_time"								"1.25"
 
-	"ammo_clip_size"   								"30"
+
 
 	"ammo_min_to_fire"								"1"
 	"ammo_clip_random_loss_on_npc_drop_chunksize"	"3"
 
-    "ammo_default_total"							"180"
-    "ammo_stockpile_max"							"180"
-    "ammo_no_remove_from_stockpile"					"1"
+    "ammo_no_remove_from_stockpile"					"0"
+
+    "low_ammo_fraction" 							"0.4"
+
+
+                    
+    "ammo_clip_size"   								"30"
+    "ammo_default_total"							"240"
+    "ammo_stockpile_max"							"210"
+    "uses_ammo_pool"								"0"
 
     // Damage - When Used by Players
     "damage_near_value"   							"23"
@@ -139,7 +146,8 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"15.5"
 	"burst_fire_count"								"3"
-"burst_fire_delay"								"0.28"  //"0.32"
+	"burst_fire_delay"								"0.28"  //"0.32"
+
 	"reload_time" 									"2.4"
 	"reload_time_late1"								"1.54"
 	"reloadempty_time"								"2.85"
@@ -265,14 +273,30 @@ WeaponData
 
 	Mods
 	{
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"36"
-            "ammo_no_remove_from_stockpile"					"0"
+		crate	    {}
 
-            "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+	        barrel_stabilizer_l3
+	        {
+	            "bodygroup27_set"	                "1"
+
+	            "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+	            "viewkick_pitch_base" 				"*0.8"
+	            "viewkick_pitch_random"   			"*0.65"
+	            "viewkick_yaw_base" 				"*0.8"
+	            "viewkick_yaw_random"   			"*0.75"
+	        }
+		hopup_smart_reload
+        {
+        }
+
+        fast_reload_mod
+        {
+            "reload_time" 									"1.75"
+        }
+
+        overloaded_ammo
+        {
+            "ammo_clip_size"   							"++9"
         }
 
         // single shot
@@ -341,6 +365,14 @@ WeaponData
 		{
 			"ammo_clip_size"   							"++12"
 		}
+        highcal_mag_l4
+        {
+                                
+	            "ammo_clip_size"   							"30"
+                 
+                                    
+         
+        }
 
 		legendary1
 		{

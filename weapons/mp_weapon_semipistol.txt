@@ -53,18 +53,33 @@ WeaponData
 	"ammo_clip_size"   								"14"
 
 	"projectile_launch_speed"						"18500"
-   "ammo_default_total"							"30"
+
+
+	"ammo_min_to_fire"								"1"
+    "ammo_default_total"							"0"
     "ammo_stockpile_max"							"24"
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
+    "low_ammo_fraction" 							"0.3"
 
 	// Damage - When Used by Players
-	"damage_near_value"   							"18"
-	"damage_far_value"								"18"
-	"damage_very_far_value"							"18"
-	"damage_near_value_titanarmor"					"18"
-	"damage_far_value_titanarmor" 					"18"
-	"damage_very_far_value_titanarmor" 				"18"
+               
+                                   
+                                
+                                    
+                                         
+                                         
+                                             
+      
+		"damage_near_value"   							"18"
+	    "damage_far_value"								"18"
+	    "damage_very_far_value"							"18"
+	    "damage_near_value_titanarmor"					"18"
+	    "damage_far_value_titanarmor" 					"18"
+	    "damage_very_far_value_titanarmor" 				"18"
+       
+
+
 	"damage_rodeo" 									"190"
 	
 	"fx_muzzle_flash_view"							""
@@ -147,20 +162,11 @@ WeaponData
 	"viewkick_ads_weaponFraction" 					"0.2"
 	"viewkick_ads_weaponFraction_vmScale" 			"0.8"
 
-
-                         
-                                
-                                    
-                                                       
-                                   
-                                 
-     
-	"spread_stand_hip"								"2.2"
-	"spread_stand_hip_run"							"5.0"
-	"spread_stand_hip_sprint"                       "6.5"
-	"spread_crouch_hip"   							"1.5"
-	"spread_air_hip"  								"8.0"
-      
+	"spread_stand_hip"								"4.4"
+	"spread_stand_hip_run"							"10.0"
+	"spread_stand_hip_sprint"                       "13.0"
+	"spread_crouch_hip"   							"3.0"
+	"spread_air_hip"  								"16.0"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	//setting to "0" so it's tunable in Bakery
@@ -187,18 +193,7 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
 
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"24"
-            "ammo_no_remove_from_stockpile"					"0"
-	   		"uses_ammo_pool"								"1"
-	   		"low_ammo_fraction" 							"0.3"
-        }
 		
 		silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460
 		{
@@ -276,6 +271,14 @@ WeaponData
 			//Extended Ammo
 			"ammo_clip_size"   							"21"
 		}
+        bullets_mag_l4
+        {
+                          
+                                              
+                 
+                "ammo_clip_size"   							"21"
+                  
+        }
 
 		legendary1
 		{

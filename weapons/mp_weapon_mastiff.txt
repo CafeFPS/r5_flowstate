@@ -95,14 +95,18 @@ WeaponData
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// Ammo
-	  "ammo_clip_size"                                "5"
-	  
-	  	"ammo_per_shot"									"1"
-
-	"ammo_no_remove_from_stockpile"					"1"
-	
-    "ammo_default_total"                            "100"
-	"ammo_stockpile_max"							"100"
+                       
+    "ammo_clip_size"                                "5"
+    "ammo_default_total"                            "0"
+    "ammo_pool_type"                                "shotgun"
+    "uses_ammo_pool"                                "1"
+     
+                                                       
+                                                        
+                                                        
+                                                    
+                                        
+      
 	"ammo_min_to_fire"								"1"
 	"reload_is_segmented"                           "1"
 	 "reload_allow_ads"                              "1"
@@ -128,7 +132,6 @@ WeaponData
 
                                     
       
-	"damage_leg_scale"                              "1.0"
 
     // NPC
     "proficiency_poor_spreadscale"					"7.0"
@@ -285,15 +288,6 @@ WeaponData
 
 	Mods
 	{
-	    crate
-	    {
-	    }
-
-        survival_finite_ammo
-        {
-            "ammo_no_remove_from_stockpile"		"0"
-	   		"uses_ammo_pool"					"0"
-        }
 
                
                                                                                                            
@@ -313,7 +307,13 @@ WeaponData
         shotgun_bolt_l3
         {
             "fire_rate" 		"*1.2"
-        }                      
+        }
+
+                         
+        shotgun_bolt_l4
+        {
+            "fire_rate" 		"*1.2"
+        }                    
                                          
          
       

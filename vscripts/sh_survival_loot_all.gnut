@@ -246,6 +246,7 @@ bool function IsNewLootEnabled( string ref )
 	switch( ref )
 	{
 		case "":
+		case "mp_weapon_sentinel":
 		case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
 		case "mp_weapon_3030":

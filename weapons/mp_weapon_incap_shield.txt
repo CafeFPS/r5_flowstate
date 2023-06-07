@@ -24,6 +24,8 @@ WeaponData
     "does_not_interrupt_cloak"						"1"
     "allow_gibraltar_shield"                        "0"
 
+    "charge_require_input"							"1"
+
 	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_weapon_incap_shield"
     "OnWeaponChargeBegin"					       	"OnWeaponChargeBegin_weapon_incap_shield"
     "OnWeaponChargeEnd"					    		"OnWeaponChargeEnd_weapon_incap_shield"
@@ -63,7 +65,7 @@ WeaponData
     "holster_time"									"0.15"
     "deploy_time" 									"0.25"
     "lower_time"  									"0.25"
-    "raise_time"  									"0.15"
+    "raise_time"  									"0.25"
     //"vortex_refire_behavior"                        "absorb"
     "allow_empty_fire"								"0"
     "allow_empty_click"   							"0"
@@ -117,20 +119,13 @@ WeaponData
 
     Mods
     {
-        survival_finite_ammo
-        {
-            //"ammo_clip_size"   								"1"
-            //"ammo_default_total"							"1"
-            //"ammo_stockpile_max"							"0"
-            //"ammo_no_remove_from_stockpile"					"0"
+		incap_lvl_0
+		{
+			"charge_time" 							"0"
+			"viewmodel"   							"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+			"activitymodifier"						"incap_lvl_0"
+		}
 
-            //"low_ammo_fraction" 							"0.3"
-            //"uses_ammo_pool"								"1"
-
-            //"reload_time" 									"2.0"
-            //"reloadempty_time"								"2.0"
-            //"reload_enabled"								"1"
-        }
         survival_tier_02
         {
         }
