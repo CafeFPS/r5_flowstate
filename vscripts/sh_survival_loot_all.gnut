@@ -279,20 +279,6 @@ bool function IsNewLootEnabled( string ref )
 	return true
 }
 
-bool function IsModelNotPortedYet( asset model )
-{
-	switch( model )
-	{
-		case $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_lasersight_v1.rmdl":
-		case $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_mag_sniper_v1.rmdl":
-		
-		return true
-	}
-	
-	return false
-}
-
-
 bool ENABLE_DEFINED_SETS = false
 
 bool function EnableWhiteBlueAndPurplePredefinedSets( string ref )
@@ -349,12 +335,7 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		//if (data.fakeAmmoIcon != "") printt("Fake ammo icon for", data.ref, "-", data.fakeAmmoIcon)
 
 		data.baseMods = split( GetLootTableString( data.ref, dt, i, "baseMods" ), " " )
-
 		data.model = GetLootTableAsset( data.ref, dt, i, "pickupModel" )
-		
-		if( IsModelNotPortedYet( data.model ) )
-			data.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl"
-		
 		data.skinOverride = GetLootTableInt( data.ref, dt, i, "skinOverride" )
 		data.hudIcon = GetLootTableAsset( data.ref, dt, i, "icon" )
 		data.attachSound = GetLootTableString( data.ref, dt, i, "attachSound" )

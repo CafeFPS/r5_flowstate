@@ -350,15 +350,6 @@ global enum eHealthPickupCategory
 	ULTIMATE
 }
 
-global enum eWeaponLockedSet
-{
-	INVALID,
-	WHITESET,
-	BLUESET,
-	PURPLESET,
-	GOLD
-}
-
 global const int SURVIVAL_MAX_AMMO_PICKUPS = 2000
 
 global const bool DROP_BOX_ON_DEATH = true
@@ -4350,15 +4341,23 @@ LootData function SURVIVAL_GetLootDataFromWeapon( entity weapon )
 	return data
 }
 
+
 bool function SURVIVAL_Weapon_IsAttachmentLocked( string weaponName )
 {
 	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
 		return false
-	array<string> baseMods = SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods
-	return baseMods.contains( "gold" ) || baseMods.contains( "crate" )
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( weaponName )
+	array<string> baseMods = data.baseMods
+	array<string> lootTags = data.lootTags
+
+	if ( baseMods.contains( WEAPON_LOCKEDSET_MOD_CRATE ) )
+		return true
+
+	if ( WeaponLootRefIsLockedSet( data.ref ) )
+		return true
+
+	return false
 }
-
-
 
 bool function IsValidAttachment( string attachment )
 {

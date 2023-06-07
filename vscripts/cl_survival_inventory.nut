@@ -69,6 +69,7 @@ global function UpdateHealHint
 global function GroundListUpdateNextFrame
 global function GetCountForLootType
 global function RegisterUseFunctionForItem
+global function OnLocalPlayerPickedUpItem
 
 global enum eGroundListBehavior
 {
@@ -132,7 +133,7 @@ void function Cl_Survival_InventoryInit()
 	AddCallback_OnUpdateTooltip( eTooltipStyle.LOOT_PROMPT, OnUpdateLootPrompt )
 	AddCallback_OnUpdateTooltip( eTooltipStyle.WEAPON_LOOT_PROMPT, OnUpdateLootPrompt )
 
-	AddCallback_LocalPlayerPickedUpLoot( TryUpdateGroundList )
+	AddCallback_LocalPlayerPickedUpLoot( OnLocalPlayerPickedUpItem )
 
 	AddLocalPlayerTookDamageCallback( TryCloseSurvivalInventoryFromDamage )
 	AddLocalPlayerTookDamageCallback( ShowHealHint )
@@ -846,10 +847,35 @@ bool function DispatchLootAction( int lootContext, int lootAction, var param, bo
 int function GetCommsActionForBackpackItem( var button, int position )
 {
 	entity player = GetLocalClientPlayer()
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+	if ( ( position < playerInventory.len() ) && ( position >= 0 ) )
+	{
+		ConsumableInventoryItem item = playerInventory[ position ]
+		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( item.type )
 
-	//
-	//
-	//
+		if (lootData.lootType == eLootType.AMMO)
+		{
+			switch ( AmmoType_GetTypeFromRef( lootData.ref ) )
+			{
+				case eAmmoPoolType.bullet:
+					return eCommsAction.INVENTORY_NEED_AMMO_BULLET
+
+				case eAmmoPoolType.special:
+					return eCommsAction.INVENTORY_NEED_AMMO_SPECIAL
+
+				case eAmmoPoolType.highcal:
+					return eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL
+
+				case eAmmoPoolType.shotgun:
+					return eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN
+
+				case eAmmoPoolType.sniper:
+					return eCommsAction.INVENTORY_NEED_AMMO_SNIPER
+				//case eAmmoPoolType.arrows:
+				//	return eCommsAction.INVENTORY_NEED_AMMO_ARROWS
+			}
+		}
+	}
 
 	return eCommsAction.BLANK
 }
@@ -903,7 +929,8 @@ void function UICallback_UpdateEquipmentButton( var button )
 		entity weapon          = player.GetNormalWeapon( esWeapon.weaponSlot )
 
 		LootData wData = SURVIVAL_GetLootDataFromWeapon( weapon )
-		RuiSetBool( rui, "isFullyKitted", wData.tier == 4 )
+		                                                     
+		RuiSetBool( rui, "isFullyKitted", SURVIVAL_IsAttachmentPointLocked( wData.ref, attachmentPoint ) )
 		RuiSetBool( rui, "showBrackets", true )
 
 		if ( IsValid( weapon ) && SURVIVAL_Loot_IsRefValid( wData.ref ) && AttachmentPointSupported( attachmentPoint, wData.ref ) )
@@ -1008,8 +1035,10 @@ void function EquipmentButtonInit( var button, string equipmentSlot, LootData lo
 	RuiSetInt( rui, "lootTier", lootData.tier )
 	RuiSetInt( rui, "count", count )
 
-	if ( lootData.passive != ePassives.INVALID )
-		RuiSetString( rui, "passiveText", PASSIVE_NAME_MAP[lootData.passive] )
+	                                              
+	  	                                                                      
+	                                                                                     
+	RuiSetString( rui, "passiveText", "" )                                
 
 	bool isMainWeapon = EquipmentSlot_IsMainWeaponSlot( equipmentSlot )
 
@@ -1328,7 +1357,7 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	RuiSetImage( rui, "iconImage", groundLootData.lootData.hudIcon )
 	RuiSetInt( rui, "lootTier", groundLootData.lootData.tier )
 	RuiSetInt( rui, "count", groundLootData.count )
-	RuiSetInt( rui, "lootType", isMainWeapon ? 1 : 0 )
+	RuiSetInt( rui, "lootType", groundLootData.lootData.lootType )
 	RuiSetBool( rui, "isPinged", isPinged )
 	RuiSetImage( rui, "ammoTypeImage", $"" )
 
@@ -2061,11 +2090,10 @@ void function UpdateHealHint( entity player )
 		if ( Time() - file.lastHealHintDisplayTime < 10.0 )
 			return
 
-		file.lastHealHintDisplayTime = Time()
-
 		if ( CanDeployHealDrone( player ) && player.GetHealth() < player.GetMaxHealth() )
 		{
 			AddPlayerHint( HINT_DURATION, 0.25, $"", "#SURVIVAL_MEDIC_HEAL_HINT" )
+			file.lastHealHintDisplayTime = Time()
 			return
 		}
 
@@ -2291,8 +2319,11 @@ void function TryCloseSurvivalInventoryFromDamage( float damage, vector damageOr
 {
 	if ( GetLocalClientPlayer() == GetLocalViewPlayer() )
 	{
-		if ( IsValid( attacker ) && (attacker.IsNPC() || attacker.IsPlayer()) )
-			RunUIScript( "TryCloseSurvivalInventoryFromDamage", null )
+		if ( GetConVarBool( "player_setting_damage_closes_deathbox_menu" ) )
+		{
+			if ( IsValid( attacker ) && (attacker.IsNPC() || attacker.IsPlayer()) )
+				RunUIScript( "TryCloseSurvivalInventoryFromDamage", null )
+		}
 	}
 }
 
@@ -2531,6 +2562,14 @@ void function WeaponSwap( entity player )
 	player.EndSignal( "OnDestroy" )
 
 	player.ClientCommand( "invnext" )
+}
+
+void function OnLocalPlayerPickedUpItem( entity player, LootData data, int lootAction )
+{
+	TryUpdateGroundList( player, data, lootAction )
+
+	if ( IsValid( player ) )
+		EmitSoundOnEntity( player, data.pickupSound_1p )
 }
 
 
