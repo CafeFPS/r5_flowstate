@@ -105,6 +105,7 @@ void function SV_Survival_Loot_Init()
 	RegisterSignal( "EndTyThread" )
 	RegisterSignal( "OnItemPickup" )
 	PrecacheParticleSystem( $"P_wpn_lasercannon_aim_short_blue" )
+	PrecacheParticleSystem( $"P_wpn_lasercannon_aim" )
 	AddPingCallbackForType( ePingType.LOOT, TryThankForLoot )
 
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
@@ -1039,12 +1040,6 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	weaponFrom.RemoveMod( ref )
 	weaponTo.AddMod( ref )
 
-	if( ref == "laser_sight_l1" || ref == "laser_sight_l2" ||  ref == "laser_sight_l3" )
-	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponTo)
-		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponFrom)
-	}
-		
 	if ( toAttachPointAttachmentRef != "" )
 		weaponFrom.AddMod( toAttachPointAttachmentRef )
 
@@ -1470,8 +1465,8 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		}
 	}
 
-	if ( !InfiniteAmmoEnabled() )
-		mods.append( "survival_finite_ammo" )
+	// if ( !InfiniteAmmoEnabled() )
+		// mods.append( "survival_finite_ammo" )
 
 	foreach ( possibleHopupMod in newEquipData.baseMods )
 		ApplyDefaultToggledMods( newEquipData.baseWeapon, possibleHopupMod, mods )

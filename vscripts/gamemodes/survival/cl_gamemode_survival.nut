@@ -437,10 +437,68 @@ void function Survival_EntitiesDidLoad()
 	{
 		AddMinimapLabel( data.name, data.pos.x, data.pos.y, data.width, data.scale )
 	}
-
+	thread Flowstate_CheckForLaserSightsAndApplyEffect()
 	file.toposInitialized = true
 }
 
+
+void function Flowstate_CheckForLaserSightsAndApplyEffect()
+{
+	entity player = GetLocalClientPlayer()
+
+	entity weapon
+	entity weapon2
+	entity activeWeapon
+	
+	table<string,int> e
+	e["fxHandle"] <- -1
+
+	OnThreadEnd(
+		function() : ( e )
+		{
+			if ( e["fxHandle"] != -1 )
+				EffectStop( e["fxHandle"], true, false )
+		}
+	)
+	
+	while ( IsValid( player ) )
+	{
+		weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		
+		if( !IsAlive( player ) || !IsValid( weapon ) && !IsValid( weapon2 ) || !IsValid( activeWeapon ) || activeWeapon.IsWeaponAdsButtonPressed() || activeWeapon != weapon && activeWeapon != weapon2 || player.IsUsingOffhandWeapon( eActiveInventorySlot.mainHand ) || activeWeapon.IsWeaponMelee() )
+		{
+			if ( e["fxHandle"] != -1 )
+			{
+				EffectStop( e["fxHandle"], true, false )
+				e["fxHandle"] = -1
+			}
+			wait 0.05
+			continue
+		}
+		array<string> mods = activeWeapon.GetMods()
+		bool hasLaser = false
+		foreach ( mod in mods )
+		{
+			if( !SURVIVAL_Loot_IsRefValid( mod ) )
+				continue
+			
+			if ( mod == "laser_sight_l1" || mod == "laser_sight_l2" || mod == "laser_sight_l3" || mod == "laser_sight_l4" )
+			{
+				hasLaser = true
+			}
+		}
+		
+		if ( hasLaser && e["fxHandle"] == -1)
+		{
+			e["fxHandle"] = activeWeapon.PlayWeaponEffectReturnViewEffectHandle( $"P_wpn_lasercannon_aim", $"", "muzzle_flash" )
+		}
+		wait 0.05
+	}
+
+	WaitForever()
+}
 
 void function InitInWorldScreens()
 {

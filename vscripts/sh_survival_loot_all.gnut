@@ -272,7 +272,7 @@ bool function IsNewLootEnabled( string ref )
 		case "mp_ability_redeploy_balloon":
 		case "hopup_smart_reload":
 		case "hopup_dual_loader":
-		case "backpack_pickup_lv4_revive_boost":
+		//case "backpack_pickup_lv4_revive_boost":
 		
 		return false
 	}

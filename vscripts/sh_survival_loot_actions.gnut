@@ -276,9 +276,6 @@ bool function AttachToWeapon( entity player, entity weapon, string item, string 
 	{
 		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weapon.GetWeaponClassName() )
 		EquipAttachments_Internal( player, weapon, item, modToRemove, takeFromInventory, returnToInventory, forceActive, false, deathBox )
-		
-		if( item == "laser_sight_l1" || item == "laser_sight_l2" ||  item == "laser_sight_l3" )
-			Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weapon)
 	}
 #endif
 
