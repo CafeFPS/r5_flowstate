@@ -1,10 +1,6 @@
 #base "_base_lmg.txt"
-#base "_base_barrels_large.txt"
-
-                   
 #base "_base_mags_energy.txt"
-      
-
+#base "_base_barrels_large.txt"
 #base "_base_stocks_tactical.txt"
 
 WeaponData
@@ -88,9 +84,10 @@ WeaponData
 	"fx_shell_eject_world"							"wpn_shelleject_rifle_assault"
 	"fx_shell_eject_attach"							"shell"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+
+	"fx_muzzle_flash_view"							"P_mflash_pulse_LMG_FP"
+	"fx_muzzle_flash_world"							"P_mflash_pulse_LMG"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"chroma_color"									".1 1 .1"
 
@@ -421,20 +418,21 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
-		{
+	survival_finite_ammo
+	{
             "ammo_default_total"							"0"
             "ammo_stockpile_max"							"66"
             "ammo_no_remove_from_stockpile"					"0"
 
             "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+		"uses_ammo_pool"								"1"
         }
 
+        "barrel_stabilizer_l4_flash_hider"
+        {
+            "fx_muzzle_flash_view"				"P_mflash_pulse_LMG_sup_FP"
+            "fx_muzzle_flash_world"				"P_mflash_pulse_LMG_sup"
+        }
         hopup_turbocharger
         {
 			// faster ROF spin up
@@ -455,6 +453,13 @@ WeaponData
 			"burst_or_looping_fire_sound_start_npc"			""
 			"burst_or_looping_fire_sound_middle_npc"		""
 			"burst_or_looping_fire_sound_end_npc"			""
+
+		"damage_near_value"   							"14"
+            "damage_far_value"								"14"
+            "damage_very_far_value"							"14"
+            "damage_near_value_titanarmor"					"14"
+            "damage_far_value_titanarmor" 					"14"
+            "damage_very_far_value_titanarmor" 				"14"
         }
 
                    
@@ -472,7 +477,11 @@ WeaponData
 		{
 			"ammo_clip_size"   					"48"
 		}
-      
+
+        	energy_mag_l4
+        	{
+            		"ammo_clip_size"   		        	"48"
+        	}      
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
@@ -480,6 +489,35 @@ WeaponData
 			"fx_muzzle_flash_world"							""
 			"fx_muzzle_flash_attach"						""
 		}
+        optic_cq_hcog_classic
+        {
+            "ui2_enable"			"0"
+        }
+
+        optic_cq_hcog_bruiser
+        {
+            "ui2_enable"			"0"
+        }
+
+        optic_cq_holosight
+        {
+            "ui2_enable"			"0"
+        }
+
+        optic_cq_holosight_variable
+        {
+            "ui2_enable"			"0"
+        }
+
+        optic_ranged_hcog
+        {
+            "ui2_enable"			"0"
+        }
+
+        optic_ranged_aog_variable
+        {
+            "ui2_enable"			"0"
+        }
 	}
 
 

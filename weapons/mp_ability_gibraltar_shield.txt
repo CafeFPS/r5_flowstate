@@ -12,6 +12,7 @@ WeaponData
 	"offhand_active_slot"                           "altHand"
 	"offhand_activates_on_zoom"						"1"
 	"offhand_deploy_requires_input"					"1"
+	"offhand_allow_swap_to_on_zipline"              "0"
 
 	"menu_icon"										"rui/titan_loadout/defensive/titan_defensive_sword_block_menu"
 	"hud_icon"										"rui/titan_loadout/defensive/titan_defensive_sword_block"

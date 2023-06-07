@@ -2,6 +2,16 @@
 
 WeaponData
 {
+    weaponType                          tactical
+    weapon_type_flags                   WPT_TACTICAL
+    offhand_default_inventory_slot      1
+
+    // Sounds
+    sound_disabledfire                  "Survival_UI_Ability_NotReady_Silenced"
+    sound_dryfire                       "Survival_UI_Ability_NotReady"
+    sound_weapon_ready                  "survival_ui_tactical_ready"
+
+    update_player_last_fire_time        0	
 	Mods
 	{
 		//

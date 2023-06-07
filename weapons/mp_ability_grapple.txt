@@ -64,7 +64,7 @@ WeaponData
 	"allow_empty_click"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
-	"breaks_cloak"									"0"
+	"breaks_cloak"									"1"
 	"primary_fire_does_not_block_sprint"			"1"
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"
@@ -84,12 +84,20 @@ WeaponData
     "grapple_power_use_rate"						"0"
     "grapple_maxLength"								"850"
     "grapple_maxLengthVert"							"850"
-    "ammo_clip_size"								"300"
-    "ammo_default_total"							"0"
     "ammo_display"									"count"
-    "ammo_min_to_fire"								"300"
-    "ammo_per_shot"									"300"
-    "ammo_stockpile_max"							"300"
+                                     
+                                                         
+                                                         
+                                                         
+                                                         
+                                    
+         
+    "ammo_clip_size"                                "300"
+    "ammo_min_to_fire"                              "300"
+    "ammo_per_shot"                                 "300"
+    "ammo_stockpile_max"                            "300"
+    "ammo_default_total"							"300"
+          
     "regen_ammo_refill_rate"						"10"
     "regen_ammo_refill_start_delay"					"0"
     "ammo_no_remove_from_stockpile"					"0"
@@ -145,78 +153,6 @@ WeaponData
             "grapple_power_required"	"*0.8"		// Needs to be reciprocal of the refill rate multiplier - 1 / 1.25
         }
 
-		spree_lvl1_grapple
-		{
-		}
-		spree_lvl2_grapple
-		{
-		}
-		spree_lvl3_grapple
-		{
-			"fire_rate"										"*2.25"
-		}
-		pas_power_cell
-		{
-			//this not used, actual setting in pilot_mp.set
-			"regen_ammo_refill_rate"	"*1.35"
-		}
-        looking_at_hover_tank
-        {
-            "grapple_maxLength"								"1800"
-            "grapple_maxLengthVert"							"1800"
-        }
-		pm0
-		{
-			"grapple_power_required"	"0"
-			"grapple_power_use_rate"	"0"
-			"offhand_hold_enabled"		"1"
-			"fire_mode"					"offhand"
-			"instant_swap_to"			"1"
-			"instant_swap_from"			"1"
-		}
-		pm1
-		{
-			"grapple_power_required"	"0"
-			"grapple_power_use_rate"	"0"
-			"offhand_hold_enabled"		"1"
-			"fire_mode"					"offhand"
-			"instant_swap_to"			"1"
-			"instant_swap_from"			"1"
-			//
-			"grapple_maxLength"			"3000"
-			"grapple_maxLengthVert"		"3000"
-		}
-		pm2
-		{
-			"grapple_power_required"	"0"
-			"grapple_power_use_rate"	"0"
-			"offhand_hold_enabled"		"1"
-			"fire_mode"					"offhand"
-			"instant_swap_to"			"1"
-			"instant_swap_from"			"1"
-			//
-			"grapple_maxLength"			"3000"
-			"grapple_maxLengthVert"		"3000"
-			//
-			"impulse_force"   								"20000"
-			"explosion_damage"								"100"
-			"explosion_damage_heavy_armor"					"400"
-			"explosion_inner_radius"  						"75"
-			"explosionradius" 								"350"
-
-			custom_float_0		1.5		// CHARGE TIME
-		}
-		amped_tacticals
-		{
-			"grapple_power_required"						"50"
-			"grapple_power_use_rate"						"50"
-		}
-
-		all_grapple
-		{
-			"grapple_power_required"						"33"
-			"grapple_power_use_rate"						"33"
-		}
         survival_finite_ordnance
         {
 

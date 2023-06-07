@@ -17,6 +17,7 @@ WeaponData
 	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
+	"offhand_cancelled_by_melee"					"1"
 	"is_toss_weapon"                                "0"
 	"offhand_default_inventory_slot"				"4"
 	"offhand_interupts_weapon_anims"				"1"
@@ -29,9 +30,9 @@ WeaponData
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
 
 	// Ammo
-	"ammo_clip_size"   								"300"
-	"ammo_min_to_fire"								"300"
-    "ammo_per_shot"									"300"
+	"ammo_clip_size"   								"210"
+	"ammo_min_to_fire"								"210"
+    "ammo_per_shot"									"210"
 	"ammo_default_total"							"0"
 	"ammo_display"									"count"
 	"ammo_stockpile_max"							"0"

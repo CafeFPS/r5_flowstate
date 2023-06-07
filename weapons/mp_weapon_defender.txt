@@ -52,6 +52,8 @@ WeaponData
 
 
 	// FX - Firing
+	"fx_muzzle_flash_view"							"P_muzzleflash_defender_FP"
+	"fx_muzzle_flash_world"							"P_muzzleflash_defender"
 	"tracer_effect"   								"P_wpn_defender_beam"
 	"tracer_effect_first_person"  					"P_wpn_defender_beam"
 	"impact_effect_table" 							"exp_defender"
@@ -79,11 +81,10 @@ WeaponData
 	"uses_ammo_pool"								"1"
 	"ammo_pool_type"								"sniper"
 
-	"ammo_clip_size"   								"8"
     "ammo_default_total"							"24"
     "ammo_stockpile_max"							"24"
     "ammo_no_remove_from_stockpile"					"0"
-	"ammo_clip_size"   								"8"
+	"ammo_clip_size"   								"6"
 	"ammo_min_to_fire"								"2"
 	"ammo_per_shot"                                 "2"
 	"low_ammo_fraction" 							"0.34"
@@ -305,17 +306,6 @@ WeaponData
 
 	Mods
 	{
-		"survival_finite_ammo"
-		{
-			"ammo_default_total"             "24"
-			"ammo_no_remove_from_stockpile"  "0"
-			"uses_ammo_pool"                 "1"
-		}
-
-        gold
-        {
-        }
-
         hopup_multiplexer
         {
             "charge_time" 									"1.8"

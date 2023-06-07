@@ -3,6 +3,18 @@
 WeaponData
 {
 	"OnWeaponRegenBegin"				"Ultimate_OnWeaponRegenBegin"
+    	//weaponType                          ultimate
+    	weapon_type_flags                   WPT_ULTIMATE
+    	offhand_default_inventory_slot      4
+
+    	OnWeaponRegenBegin                  Ultimate_OnWeaponRegenBegin
+    
+    	// Sounds
+    	sound_disabledfire                  "Survival_UI_Ability_NotReady_Silenced"
+    	sound_dryfire                       "Survival_UI_Ability_NotReady"
+    	sound_weapon_ready                  "Survival_UI_Ultimate_Ready"
+
+	offhand_interupts_weapon_anims				1
 
 	Mods
 	{

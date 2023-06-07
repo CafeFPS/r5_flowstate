@@ -19,6 +19,9 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction("ServerCallback_KillReplayHud_Deactivate")
 	//Update teammates rui
 	Remote_RegisterClientFunction("UpdateRUITest")
+	//Laser
+	Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
+	Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")
 	
 	//Custom gamemodes
 	switch ( GameRules_GetGameMode() )
@@ -37,9 +40,7 @@ void function RemoteFunctions_Init_Begin()
 				break
 			}
 			
-			Remote_RegisterClientFunction("ServerCallback_ToggleDotForHitscanWeapons", "bool")
-			Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
-			Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")			
+			Remote_RegisterClientFunction("ServerCallback_ToggleDotForHitscanWeapons", "bool")		
 			Remote_RegisterClientFunction("ServerCallback_OpenStatisticsUI") //REVISIT
 			Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)
 			Remote_RegisterClientFunction("ServerCallback_FSDM_OpenVotingPhase", "bool")
@@ -80,8 +81,6 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")
 			Remote_RegisterClientFunction("ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies", "entity", "entity")
 			Remote_RegisterClientFunction("ServerCallback_ToggleDotForHitscanWeapons", "bool")
-			Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
-			Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")
 			break
 		// case flowstate_snd:
 			// Remote_RegisterClientFunction("Sh_SetAttackingLocations", "int", 0, 10)

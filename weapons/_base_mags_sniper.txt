@@ -1,0 +1,26 @@
+WeaponData
+{
+	Mods
+	{
+		// NOTE: many weapons will override the default ammo_clip_size upgrade in their settings
+
+		sniper_mag_l1
+		{
+			"ammo_clip_size"   					"*1.25"
+		}
+
+		sniper_mag_l2
+		{
+			"ammo_clip_size"   					"*1.5"
+		}
+
+		sniper_mag_l3
+		{
+			"ammo_clip_size"   					"*2"
+		}
+		sniper_mag_l3
+		{
+			"ammo_clip_size"   					"*2"
+		}
+	}
+}
