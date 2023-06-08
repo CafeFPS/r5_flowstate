@@ -1401,11 +1401,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	if ( dropCurrentWeapon && oldEquipData.ref != "" )
 	{
-		// printt("dropping current weapon", activeWeapon)
-
 		array<string> activeMods = activeWeapon.GetMods()
 
-		if ( !activeMods.contains( "gold" ) )
+		if ( !activeMods.contains( "gold" ) && !SURVIVAL_Weapon_IsAttachmentLocked( newEquip ) )
 		{
 			table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
 			foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
@@ -1417,9 +1415,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 					if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
 						continue
 
-					array<string> attachPoints = GetAttachPointsForAttachment( baseMod )
-
-					if ( GetAttachmentPointName( attachPoints[0] ) == wepPoint )
+					if ( GetAttachPointForAttachmentOnWeapon( oldEquipData.ref, baseMod ) == wepPoint )
 					{
 						skipThisAttachment = true
 						break
@@ -1502,44 +1498,36 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			mods.append( mod )
 		}
 	}
-	array<string> splitRef = split(newEquipData.ref, "_")
-	array<string> lockedSetMods
 	
-	if( splitRef.len() > 0 && splitRef[ splitRef.len() - 1 ] == "gold" ) //todo add white blue and purple sets
-		lockedSetMods.append( "gold" )
-
-	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, lockedSetMods )
+	entity weapon 
 	
 	try{
-		if(IsValid(weapon))
-		{
-			foreach(mod in mods)
-			{
-				weapon.AddMod(mod)
-			}
-		}
+	weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
 	}catch(e420){}
 	
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
-	
-	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
-		weapon.AddMod("duckhunt")
-	
-	int clipCount = pickup.GetClipCount()
-	if ( clipCount > 0 )
+	if( IsValid( weapon ) )
 	{
-		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+		
+		if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+			weapon.AddMod("duckhunt")
+		
+		int clipCount = pickup.GetClipCount()
+		if ( clipCount > 0 )
+		{
+			int ammoType = weapon.GetWeaponAmmoPoolType()
 
-		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
+			int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+			int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
 
-		if ( weapon.UsesClipsForAmmo() )
-			weapon.SetWeaponPrimaryClipCount( ammoToGive )
-		else {
-			player.AmmoPool_SetCapacity( 65535 )
+			if ( weapon.UsesClipsForAmmo() )
+				weapon.SetWeaponPrimaryClipCount( ammoToGive )
+			else {
+				player.AmmoPool_SetCapacity( 65535 )
 
-			int safeAmmoCount = int(min( player.AmmoPool_GetCount( ammoType ) + ammoToGive, 65535))
-			player.AmmoPool_SetCount( ammoType, safeAmmoCount )
+				int safeAmmoCount = int(min( player.AmmoPool_GetCount( ammoType ) + ammoToGive, 65535))
+				player.AmmoPool_SetCount( ammoType, safeAmmoCount )
+			}
 		}
 	}
 
