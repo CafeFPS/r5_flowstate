@@ -4932,7 +4932,7 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 			weaponNameBase += splitRef[i]
 	}
 
-	printt("debug final str " + weaponNameBase )
+	// printt("debug final str " + weaponNameBase )
 	
 	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg == "sight" && aData.compatibleWeapons.contains( weaponNameBase ) )
 		return true
