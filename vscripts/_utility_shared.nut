@@ -4917,7 +4917,26 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 		return false
 	
 	AttachmentData aData = GetAttachmentData( attachment )
+	array<string> splitRef = split(weaponName, "_")
+	
+	if( splitRef[splitRef.len() - 1] == "gold" )
+		splitRef.fastremovebyvalue(splitRef[splitRef.len() - 1])
+	
+	string weaponNameBase
+	
+	for( int i = 0; i < splitRef.len(); i++ )
+	{
+		if( i != 0 )
+			weaponNameBase += "_"+splitRef[i]
+		else
+			weaponNameBase += splitRef[i]
+	}
 
+	printt("debug final str " + weaponNameBase )
+	
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg == "sight" && aData.compatibleWeapons.contains( weaponNameBase ) )
+		return true
+	
 	// this is now pre-computed when building AttachmentData
 	//if ( !AttachmentPointSupported( aData.attachPoint, weaponName ) )
 	//	return false
