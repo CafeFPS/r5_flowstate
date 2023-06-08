@@ -4910,10 +4910,10 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 
 	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
 		return false
-
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && attachment != "sight" )
-		return true
-	else if( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
+	
+	string refAttachPointOg = GetAttachPointForAttachmentOnWeapon( weaponName, attachment )
+	
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg != "sight" )
 		return false
 	
 	AttachmentData aData = GetAttachmentData( attachment )

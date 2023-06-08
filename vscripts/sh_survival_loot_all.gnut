@@ -470,8 +470,6 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 			
 			file.lootData[ data.ref ] <- data
 
-			// printt( "adding loot: " + data.ref )
-
 			#if SERVER
 				SURVIVAL_AddSpawnPointGroup( data.ref )
 			#endif

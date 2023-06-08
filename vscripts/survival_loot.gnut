@@ -1019,8 +1019,10 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 
 	if ( !CanAttachToWeapon( ref, GetWeaponClassName( weaponTo ) ) )
 		return true // Unsupported attachment
-
-	if ( weaponFromLootData.baseMods.contains( ref ) )
+	
+	string refAttachPointOg = GetAttachPointForAttachmentOnWeapon( weaponFrom.GetWeaponClassName(), ref )
+	
+	if ( refAttachPointOg != "sight" && weaponFromLootData.baseMods.contains( ref ) )
 		return true // A default non-removable attachment
 
 	string refAttachPoint = GetAttachPointForAttachmentOnWeapon( weaponTo.GetWeaponClassName(), ref )
@@ -1028,7 +1030,7 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 
 	if ( toAttachPointAttachmentRef != "" )
 	{
-		if ( weaponToLootData.baseMods.contains( toAttachPointAttachmentRef ) )
+		if ( refAttachPoint != "sight" && weaponToLootData.baseMods.contains( toAttachPointAttachmentRef ) )
 			return true // Can't swap default attachments
 
 		if ( !CanAttachToWeapon( toAttachPointAttachmentRef, GetWeaponClassName( weaponFrom ) ) )

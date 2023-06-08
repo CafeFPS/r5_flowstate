@@ -704,7 +704,6 @@ void function SURVIVAL_Loot_InitShared()
 					{
 						if ( attachmentIsEnabled && data.supportedAttachments.contains( attachPoint ) )
 						{
-							printt( data.baseWeapon + " adding " + aData.ref )
 							aData.compatibleWeapons.append( data.baseWeapon )
 						}
 					}
