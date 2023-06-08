@@ -346,6 +346,9 @@
 
 	"Mods"
 	{
+        gold
+        {
+        }
         hopup_kinetic_loader
         {
         }

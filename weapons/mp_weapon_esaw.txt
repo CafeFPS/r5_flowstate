@@ -418,6 +418,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
 	survival_finite_ammo
 	{
             "ammo_default_total"							"0"

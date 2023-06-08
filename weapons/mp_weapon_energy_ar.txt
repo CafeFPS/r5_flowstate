@@ -280,6 +280,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
         hopup_turbocharger
         {
         	"charge_time" 					"0.01"

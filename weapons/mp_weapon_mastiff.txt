@@ -288,6 +288,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
 
                
                                                                                                            

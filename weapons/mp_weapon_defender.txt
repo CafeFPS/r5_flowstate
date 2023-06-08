@@ -305,6 +305,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
         hopup_multiplexer
         {
             "charge_time" 									"1.8"

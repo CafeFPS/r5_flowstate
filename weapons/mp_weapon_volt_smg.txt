@@ -385,7 +385,10 @@ WeaponData
 
 	Mods
 	{
-		
+        gold
+        {
+        }
+
         barrel_stabilizer_l4_flash_hider
         {
             "fx_muzzle_flash_view"                ""

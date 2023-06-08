@@ -234,6 +234,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
 		optic_cq_hcog_classic
 		{
 			"bodygroup2_set"	       						"0"

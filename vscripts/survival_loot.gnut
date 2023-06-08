@@ -1500,8 +1500,13 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			mods.append( mod )
 		}
 	}
+	array<string> splitRef = split(newEquipData.ref, "_")
+	array<string> lockedSetMods
 	
-	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, [] )
+	if( splitRef.len() > 0 && splitRef[ splitRef.len() - 1 ] == "gold" ) //todo add white blue and purple sets
+		lockedSetMods.append( "gold" )
+
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, lockedSetMods )
 	
 	try{
 		if(IsValid(weapon))

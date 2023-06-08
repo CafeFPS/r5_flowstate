@@ -219,6 +219,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
     		laser_sight_l1
             {
             		"spread_stand_hip"								"*0.80"

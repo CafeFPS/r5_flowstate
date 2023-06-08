@@ -226,6 +226,7 @@ global const string WEAPON_LOCKEDSET_MOD_CUPID = "cupid"
       
                                                                       
 const table< string, string > LOCKEDSET_MOD_TO_SUFFIX = {
+	[WEAPON_LOCKEDSET_MOD_GOLD] = WEAPON_LOCKEDSET_SUFFIX_GOLD,
 	[WEAPON_LOCKEDSET_MOD_GOLDPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_GOLDPAINTBALL,
 	[WEAPON_LOCKEDSET_MOD_PURPLEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_PURPLEPAINTBALL,
 	[WEAPON_LOCKEDSET_MOD_BLUEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_BLUEPAINTBALL,
@@ -4296,11 +4297,8 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 
 bool function SURVIVAL_IsAttachmentPointLocked( string weaponName, string attachmentPoint )
 {
-                        
-                     
-              
-       
-
+	//printt( SURVIVAL_Weapon_IsAttachmentLocked( weaponName )) 
+	
 	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && attachmentPoint != "sight" )
 		return true
 
@@ -4349,8 +4347,8 @@ bool function SURVIVAL_Weapon_IsAttachmentLocked( string weaponName )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( weaponName )
 	array<string> baseMods = data.baseMods
 	array<string> lootTags = data.lootTags
-
-	if ( baseMods.contains( WEAPON_LOCKEDSET_MOD_CRATE ) )
+	
+	if ( baseMods.contains( WEAPON_LOCKEDSET_MOD_CRATE ) || baseMods.contains( WEAPON_LOCKEDSET_MOD_GOLD ) )
 		return true
 
 	if ( WeaponLootRefIsLockedSet( data.ref ) )

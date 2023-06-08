@@ -218,7 +218,9 @@ WeaponData
 
 	Mods
 	{
-
+		gold
+		{
+		}
         // single shot
 		altfire
 		{

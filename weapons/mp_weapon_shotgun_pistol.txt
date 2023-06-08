@@ -266,6 +266,9 @@ WeaponData
 
 	Mods
 	{
+        gold
+        {
+        }
 
 
         silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460

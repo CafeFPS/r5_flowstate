@@ -250,7 +250,10 @@ WeaponData
     "sound_burn_damage_tick_1p" 	"flesh_thermiteburn_3p_vs_1p"
 
 	Mods
-	{       
+	{
+        gold
+        {
+        }       
     	shotgun_bolt_l1
 		{
 		    "fire_rate" 	"*1.1"

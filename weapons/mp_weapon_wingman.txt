@@ -235,6 +235,9 @@ WeaponData
 
 	Mods
 	{
+	    gold
+        {
+        }
         hopup_headshot_dmg
         {
         	"damage_headshot_scale"			"2.25"

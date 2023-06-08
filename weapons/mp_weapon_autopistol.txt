@@ -245,6 +245,9 @@ WeaponData
 	"burst_or_looping_fire_sound_end_npc"		"Weapon_Alternator_LoopEnd_NPC"
 	Mods
 	{
+        gold
+        {
+        }
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
