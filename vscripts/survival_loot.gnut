@@ -1470,7 +1470,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		ApplyDefaultToggledMods( newEquipData.baseWeapon, possibleHopupMod, mods )
 
 	// Auto-pickup suitable attachments from inventory
-	if ( !mods.contains( "gold" ) )
+	if ( !mods.contains( "gold" ) || !mods.contains( "crate" ) )
 	{
 		table<string, string> suitableAttachmentsFromInventory = GetCompatibleAttachmentsFromInventory( player, newEquipData.baseWeapon )
 		foreach ( point, mod in suitableAttachmentsFromInventory )
