@@ -1862,7 +1862,11 @@ array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity play
 
 	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
 	droppedWeapon.SetClipCount( weaponToDrop.GetWeaponPrimaryClipCount() )
-
+	
+	//Hack, temp fix for charge rifle glitch, if it doesn't have ammo and you throw it, it will have 6 ammo again
+	if( dropWeaponData.ref == "mp_weapon_defender" && weaponToDrop.GetWeaponPrimaryClipCount() == 0 )
+		droppedWeapon.SetClipCount( 1 )
+	
 	BroadcastItemDrop( player, dropWeaponData.ref )
 
 	array<entity> lootToDrop = [ droppedWeapon ]
