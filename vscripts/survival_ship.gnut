@@ -11,6 +11,7 @@ global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
 global function SURVIVAL_SetMapCenter
 global function SURVIVAL_SetMapDelta
+global function GiveBasicSurvivalItems
 #if DEVELOPER
 global function GetDropshipClearance
 #endif
@@ -228,22 +229,30 @@ void function CommonPlayerDropLines(entity player)
 	if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
 		player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
 	
-	//add white shield, two syringes and two cells
-	{
-		Inventory_SetPlayerEquipment( player, "armor_pickup_lv1", "armor")
-		
-		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
-		foreach(item in loot)
-			SURVIVAL_AddToPlayerInventory(player, item, 2)
-				
-		player.SetShieldHealthMax(50)
-		player.SetShieldHealth(50)
-		
-		Survival_SetInventoryEnabled( player, true )
-		
-		// todo: find why it's not playing fx on cockpit
-		// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )
-	}
+	GiveBasicSurvivalItems( player )
+}
+
+void function GiveBasicSurvivalItems( entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	//add white shield, white knockdown shield, white helmet, two syringes and two cells
+	Inventory_SetPlayerEquipment( player, "armor_pickup_lv1", "armor")
+	Inventory_SetPlayerEquipment( player, "helmet_pickup_lv1", "helmet")
+	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv1", "incapshield")
+	
+	array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+	foreach(item in loot)
+		SURVIVAL_AddToPlayerInventory(player, item, 2)
+			
+	player.SetShieldHealthMax(50)
+	player.SetShieldHealth(50)
+	
+	Survival_SetInventoryEnabled( player, true )
+	
+	// todo: find why it's not playing fx on cockpit
+	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
 }
 
 bool function Survival_HasPlayerJumpedOutOfPlane( entity player )

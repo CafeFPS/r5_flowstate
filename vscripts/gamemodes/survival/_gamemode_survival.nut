@@ -138,7 +138,7 @@ void function Sequence_Playing()
 			// player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 
 			DecideRespawnPlayer( player )
-
+			GiveBasicSurvivalItems( player )
 			// i++
 		}
 
@@ -830,11 +830,12 @@ void function OnClientConnected( entity player )
 	player.p.squadRank = 0
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-
+	
 	if ( IsFiringRangeGameMode() )
 	{
 		SetRandomStagingPositionForPlayer( player )
 		DecideRespawnPlayer( player )
+		GiveBasicSurvivalItems( player )
 		return
 	} else if ( IsSurvivalTraining() )
 	{
@@ -904,7 +905,7 @@ void function OnClientConnected( entity player )
 					vector origin = respawnCandidates.getrandom().GetOrigin()
 
 					DecideRespawnPlayer( player )
-
+					GiveBasicSurvivalItems( player )
 					player.SetOrigin( origin )
 					PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,256>, origin )
 				}
