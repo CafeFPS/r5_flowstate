@@ -1,7 +1,8 @@
 #base "_base_lmg.txt"
-#base "_base_barrels_large.txt"
-#base "_base_mags_energy.txt"
+#base "_base_barrels_medium.txt"
 #base "_base_stocks_tactical.txt"
+
+#base "_base_mags_energy.txt"
 
 WeaponData
 {

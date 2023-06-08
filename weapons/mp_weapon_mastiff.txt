@@ -1,4 +1,5 @@
 #base "_base_shotgun.txt"
+#base "_base_character_mods.txt"
 #base "_base_optics_cq.txt"
 #base "_base_optics_cq_threat.txt"
 #base "_base_shotgun_bolts.txt"

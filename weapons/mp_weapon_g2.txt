@@ -1,9 +1,6 @@
-#base "_base_sniper.txt"
-#base "_base_sniper_optics.txt"
+#base "_base_marksman_weapon.txt"
 #base "_base_barrels_medium.txt"
 #base "_base_mags_light.txt"
-#base "_base_stocks_sniper.txt"
-
 
 "WeaponData"
 {

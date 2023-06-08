@@ -1,7 +1,6 @@
 #base "_base_lmg.txt"
-#base "_base_mags_heavy.txt"
+#base "_base_mags_light.txt"
 #base "_base_stocks_tactical.txt"
-#base "_base_barrels_large.txt"
 #base "_base_projectile_ricochet.txt"
 
 WeaponData
