@@ -464,6 +464,12 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		mods.clear()
+		if( !IsValid( activeWeapon ) )
+		{
+			wait 0.05
+			continue
+		}
+		
 		mods = activeWeapon.GetMods()
 		
 		exitCheck = false
