@@ -318,7 +318,7 @@ void function ClGamemodeSurvival_Init()
 	RegisterSignal( "ClearSwapOnUseThread" )
 	RegisterSignal( "DroppodLanded" )
 	RegisterSignal( "SquadEliminated" )
-
+	RegisterSignal( "RestartLaserSightThread" )
 	FlagInit( "SquadEliminated" )
 
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_survival.rpak" )
@@ -444,13 +444,18 @@ void function Survival_EntitiesDidLoad()
 
 void function Flowstate_CheckForLaserSightsAndApplyEffect()
 {
+	Signal( clGlobal.signalDummy, "RestartLaserSightThread" )
+	EndSignal( clGlobal.signalDummy, "RestartLaserSightThread" )
+	
 	entity player = GetLocalClientPlayer()
-
+	
 	entity weapon
 	entity weapon2
 	entity activeWeapon
-	
+	array<string> mods
 	table<string,int> e
+	bool hasLaser = false
+	bool exitCheck = false
 	e["fxHandle"] <- -1
 
 	while ( IsValid( player ) )
@@ -458,8 +463,36 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		mods.clear()
+		mods = activeWeapon.GetMods()
 		
-		if( !IsAlive( player ) || !IsValid( weapon ) && !IsValid( weapon2 ) || !IsValid( activeWeapon ) || activeWeapon.IsWeaponAdsButtonPressed() || activeWeapon != weapon && activeWeapon != weapon2 || player.IsUsingOffhandWeapon( eActiveInventorySlot.mainHand ) || activeWeapon.IsWeaponMelee() )
+		exitCheck = false
+		hasLaser = false
+		
+		foreach ( mod in mods )
+		{			
+			if( exitCheck )
+				continue
+			
+			if( !SURVIVAL_Loot_IsRefValid( mod ) )
+				continue
+			
+			if ( mod != "laser_sight_l1" && mod != "laser_sight_l2" && mod != "laser_sight_l3" && mod != "laser_sight_l4" )
+			{
+				hasLaser = false
+			} else
+			{
+				hasLaser = true
+				exitCheck = true
+				continue
+			}
+		}
+		
+		// #if DEVELOPER
+		// printt("DEBUG LASER - ID: " + e["fxHandle"] + " - hasLaser: " + hasLaser )
+		// #endif
+		
+		if( !IsAlive( player ) || !IsValid( weapon ) && !IsValid( weapon2 ) || !IsValid( activeWeapon ) || activeWeapon.IsWeaponAdsButtonPressed() || activeWeapon != weapon && activeWeapon != weapon2 || activeWeapon.IsWeaponMelee() || activeWeapon.IsDiscarding() || !hasLaser )
 		{
 			if ( e["fxHandle"] != -1 )
 			{
@@ -468,18 +501,6 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 			}
 			wait 0.05
 			continue
-		}
-		array<string> mods = activeWeapon.GetMods()
-		bool hasLaser = false
-		foreach ( mod in mods )
-		{
-			if( !SURVIVAL_Loot_IsRefValid( mod ) )
-				continue
-			
-			if ( mod == "laser_sight_l1" || mod == "laser_sight_l2" || mod == "laser_sight_l3" || mod == "laser_sight_l4" )
-			{
-				hasLaser = true
-			}
 		}
 		
 		if ( hasLaser && e["fxHandle"] == -1)
