@@ -199,7 +199,7 @@ void function CheckUncontrolled( entity player ) {
     int thisReset = file.resetCount
     int thisStart = file.startCount
 
-    thread function () : ( thisClimb, thisReset, player ) {
+    thread function () : ( thisClimb, thisReset, thisStart, player ) {
         wait 2.5
 
         // In order to fail, we must be on the same climb, and not have reset yet.
