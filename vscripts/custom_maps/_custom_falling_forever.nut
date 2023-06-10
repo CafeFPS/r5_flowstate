@@ -1,3 +1,12 @@
+// #####################################################
+// #######           FALLING FOREVER             #######
+// #######         By @JayTheYggdrasil           #######
+// #####################################################
+
+// How to play:
+// Load into Worlds Edge in survival_dev
+// Then run the command "scipt InitFallingForver()"
+
 global function InitFallingForever
 
 global struct SimpleState {
@@ -24,6 +33,7 @@ struct FallingForeverPlayer {
 
 	bool started = false
 	float startTime = 0
+	int startCount = 0
 
 	float minHeight = 999999
 	int climbCount = 0
@@ -187,13 +197,14 @@ void function CheckUncontrolled( entity player ) {
 
 	int thisClimb = file.climbCount
     int thisReset = file.resetCount
+	int thisStart = file.startCount
 
     thread function () : ( thisClimb, thisReset, player ) {
 		wait 2.5
 
         // In order to fail, we must be on the same climb, and not have reset yet.
         FallingForeverPlayer file = GetPlayerFile( player )
-		if( thisClimb == file.climbCount && thisReset == file.resetCount && file.isActive ) {
+		if( thisClimb == file.climbCount && thisReset == file.resetCount && file.isActive && file.startCount == thisStart ) {
 			thread fail( player, "Falling a bit too quick are we?" )
 		}
 	}()
@@ -502,6 +513,7 @@ void function FallingForeverMapStart( entity player ) {
 	if ( pos.y > 4050 && pos.z > 55000 && !file.started ) {
 		file.startTime = Time()
 		file.started = true
+		file.startCount += 1
 		Message( player, "Timer Started", "", 1 )
 		CheckUncontrolled( player )
 	}
