@@ -99,21 +99,6 @@ global struct LootZone
     string ref
 }
 
-global struct ThreatEventCallbackData
-{
-	int typeState
-}
-
-global enum eThreatDetectionZoneType
-{
-	TRAP,
-	AMBUSH,
-	PING,
-	KILLZONE,
-	BOMBARDMENT,
-	GRENADE
-}
-
 global enum eStatUpdateTime
 {
 	DISTANCE,
@@ -605,6 +590,7 @@ global struct ServerPlayerStruct
 	float lastFullHealthTime
 
 	bool isDisconnected = false
+	bool isConnected = false
 	array<int> empStatusEffectsToClearForPhaseShift //Not great, done to avoid needing code work to get a separate empSlow/empSTurnEffects
 
 	float stats_wallrunTime = 0
@@ -893,6 +879,9 @@ global struct ServerPlayerStruct
 	float lastTimeAppliedEMPByTeslaTrap
   
 	float lastTgiveUsedTime
+	
+	float lastTimeShotSlowApplied_Global = 0
+	entity vortexTriggerDoubleTime
 }
 
 global struct ChallengeScore

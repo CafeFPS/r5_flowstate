@@ -484,7 +484,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 void function UICodeCallback_LevelInit( string levelname )
 {
-	printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
+	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
 	
 	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
 	{	

@@ -258,7 +258,7 @@ void function InitLootBin( entity lootbin )
 	
 	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
 	{
-		AddMultipleLootItemsToLootBin( lootbin, SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRange(3,4) ) )
+		AddMultipleLootItemsToLootBin( lootbin, SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3, 4) ) )
 	}
 }
 
@@ -414,32 +414,26 @@ Point function GetLootBinSpawnLocation( entity lootbin, int lootI, int lootCount
 	return p
 }
 
-void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount )
+void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount, bool parentedToWeapon = false)
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
+	int countPerDrop = data.countPerDrop
+	
+	vector angles = p.angles
+	
+	if( parentedToWeapon )
+		countPerDrop *= 2
+	
+	if ( data.lootType == eLootType.AMMO )
+		angles = AnglesCompose( p.angles, <0, 90, 0> )
+
+	entity loot = SpawnGenericLoot( ref, p.origin, angles, countPerDrop )
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( lootbin )
 	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, lootbin )
 	loot.SetParent( lootbin )
 	file.lootBinsSpawnedLootMap[lootbin].append( loot )
-
-	if ( data.lootType == eLootType.MAINWEAPON )
-	{
-		string ammoRef = data.ammoType
-		if ( SURVIVAL_Loot_IsRefValid( ammoRef ) )
-		{
-			LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoRef )
-			vector rgt        = AnglesToRight( p.angles )
-			vector dwn        = AnglesToUp( p.angles ) * -1
-			entity ammo       = SpawnGenericLoot( ammoRef, p.origin + rgt * 8 + dwn * 5, AnglesCompose( p.angles, <0, 90, 0> ), ammoData.countPerDrop * 2 )
-			ammo.RemoveFromAllRealms()
-			ammo.AddToOtherEntitysRealms( lootbin )
-			ammo.SetParent( lootbin )
-			file.lootBinsSpawnedLootMap[lootbin].append( ammo )
-		}
-	}
 }
 
 void function SURVIVAL_DebugLootBins()
@@ -502,20 +496,33 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 
 		int lootIndex             = 0
 		array<string> lootToSpawn = GetLootBinContents( lootbin )
-
-		foreach( callbackFunc in file.onLootBinOpenedCallbacks )
-			callbackFunc( player, lootbin, lootToSpawn )
+		table<string, bool> finalLoot
+		
+		foreach( item in lootToSpawn )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
+			finalLoot[ item ] <- false
+			if ( data.lootType == eLootType.MAINWEAPON )
+			{
+				finalLoot[ data.ammoType ] <- true
+			}
+		}
+		
+		// todo fix callback for loot creeps spawn, not used rn
+		// foreach( callbackFunc in file.onLootBinOpenedCallbacks )
+			// callbackFunc( player, lootbin, finalLoot )
 
 		if( lootbin.e.shouldSpawnLoot )
 		{
-			foreach ( ref in lootToSpawn )
+			foreach ( ref, fromWeapon in finalLoot )
 			{
-				SpawnLootInLootBin( lootbin, ref, lootIndex, lootToSpawn.len() )
+				SpawnLootInLootBin( lootbin, ref, lootIndex, finalLoot.len(), fromWeapon )
 				lootIndex++
 			}
 		}
 
 		lootToSpawn.clear()
+		finalLoot.clear()
 	}
 
 	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )

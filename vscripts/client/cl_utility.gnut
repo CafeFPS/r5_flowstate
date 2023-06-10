@@ -665,6 +665,13 @@ void function Dev_PrintClientMessage( float duration )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )
+		
+		if(duration == 8.420)
+		{
+			Announcement_SetDuration( announcement, 5 )
+			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+			Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+		}
 	}
 	
 	AnnouncementFromClass( player, announcement )

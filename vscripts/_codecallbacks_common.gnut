@@ -81,6 +81,8 @@ global function CodeCallback_OnPlayerBeginWallhang
 global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
+global function CodeCallback_GetBestObserverTarget
+global function CodeCallback_OnClientDisconnected
 global function CodeCallback_OnWeaponAttack
 
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
@@ -154,6 +156,82 @@ struct
 	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
 } file
+
+entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
+{
+	#if DEVELOPER
+	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
+	#endif
+	
+	if( !IsValid( observer ) )
+		return null
+	
+	if ( IsValid( observer.p.respawnPod ) )
+	{
+		if ( observer.GetObserverMode() != OBS_MODE_CHASE )
+			observer.StartObserverMode( OBS_MODE_CHASE )
+		return observer.p.respawnPod
+	}
+	
+	//Force teammate observer target when spec_next and spec_prev are used
+	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || GameRules_GetGameMode() == SURVIVAL )
+	{
+		int team = observer.GetTeam()
+		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
+		entity potentialTarget 
+		entity currentTargetEnt = observer.GetObserverTarget()
+				
+		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
+			players.removebyvalue( observer )
+
+		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
+		{
+			team = currentTargetEnt.GetTeam()
+			players = GetPlayerArrayOfTeam_Alive( team )
+		}
+		
+		observer.SetPlayerNetInt( "spectatorTargetCount", players.len() )
+		
+		if( players.len() == 0 ) 
+			return null
+		
+		int currentTarget = 0
+		
+		if( IsValid( currentTargetEnt ) )
+		{
+			for( int i = 0; i < players.len(); i++ )
+			{
+				if( players[i] == currentTargetEnt )
+					currentTarget = i
+			}
+		}
+		
+		if( reverse )
+		{
+			int nextIndex
+			if( currentTarget - 1 < 0 )
+				potentialTarget = players[ players.len() - 1 ]
+			else
+				potentialTarget = players[ currentTarget - 1 ]
+		}
+		else
+		{
+			int nextIndex
+			if( currentTarget + 1 > players.len() - 1 )
+				potentialTarget = players[ 0 ]
+			else
+				potentialTarget = players[ currentTarget + 1 ]
+		}
+		
+		if( IsValid(potentialTarget) && potentialTarget != currentTargetEnt )
+			return potentialTarget
+	}
+	
+	foreach( cb in svGlobal.onGetBestObserverTargetCallbacks )
+		cb( observer, reverse )
+	
+	return null
+}
 
 void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 {
@@ -626,7 +704,8 @@ void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, en
 
 void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )
 {
-	
+	Assert( !svGlobal.onGetBestObserverTargetCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnGetBestObserverTarget" )
+	svGlobal.onGetBestObserverTargetCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_GameStatePostEnter( int number, void functionref( ) callbackFunc )
@@ -634,14 +713,17 @@ void function AddCallback_GameStatePostEnter( int number, void functionref( ) ca
 
 }
 
+//Passive Voices
 void function AddCallback_OnThreatEventActivation( entity player, int threat, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
 {
-	
+	Assert( !( threat in svGlobal.onThreatEventActivationCallbacks ), "Already added " + string( callbackFunc ) + " with AddCallback_OnThreatEventActivation for " + threat )
+	svGlobal.onThreatEventActivationCallbacks[ threat ] <- callbackFunc
 }
 
 void function AddCallback_OnThreatEventStateChange( entity player, int threat, int watch, int view, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
 {
-	
+	Assert( !( threat in svGlobal.onThreatEventStateChangeCallbacks ), "Already added " + string( callbackFunc ) + " with AddCallback_OnThreatEventStateChange for " + threat )
+	svGlobal.onThreatEventStateChangeCallbacks[ threat ] <- callbackFunc
 }
 
 //=====================================================================================
@@ -991,4 +1073,12 @@ void function CodeCallback_OnPlayerEndWallhang( entity player )
 void function AddCallback_OnPlayerInventoryChanged( void functionref( entity ) callbackFunc )
 {
 	file.playerInventoryChangedCallbacks.append( callbackFunc )
+}
+
+void function CodeCallback_OnClientDisconnected(entity player, string reason)
+{
+	printt("CodeCallback_OnClientDisconnected ", player, reason)
+	
+	foreach(cb in svGlobal.onClientDisconnectedCallbacks)
+		cb(player)
 }

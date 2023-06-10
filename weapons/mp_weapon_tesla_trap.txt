@@ -1,3 +1,6 @@
+// Reimplemented by @CafeFPS (Retículo Endoplasmático#5955)
+// everyone else -- advice
+
 #base "_base_ability_tactical.txt"
 
 WeaponData

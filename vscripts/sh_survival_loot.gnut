@@ -3877,7 +3877,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 
 		PIN_ItemPickup( player, pickup, lootRef.lootData.ref, unitsPickedUp )
 
-		printt( "LOOTED:", lootRef.lootData.ref, "x" + unitsPickedUp )
+		printt( "LOOTED:", lootRef.lootData.ref, "x" + unitsPickedUp, "index " + data.index)
 
 		SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
 	}

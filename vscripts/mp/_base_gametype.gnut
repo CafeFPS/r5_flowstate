@@ -862,7 +862,7 @@ bool function ShouldSetObserverTarget( entity attacker )
 
 float function CalculateLengthOfKillReplay( entity player, int methodOfDeath ) //Meant to be called on the same frame player dies
 {
-	return GetDeathCamLength( player ) + GetKillReplayBeforeTime( player, methodOfDeath ) + GetKillReplayAfterTime( player )
+	return GetDeathCamLength() + GetKillReplayBeforeTime( player, methodOfDeath ) + GetKillReplayAfterTime( player )
 }
 
 float function GetKillReplayBeforeTime( entity player, int methodOfDeath )
@@ -1021,7 +1021,7 @@ bool function ClientCommand_RespawnPlayer( entity player, array<string>args )
 		player.SetPersistentVar( "spawnAsTitan", false )
 	}
 
-	float deathCamLength = GetDeathCamLength( player )
+	float deathCamLength = GetDeathCamLength()
 	float skipBufferTime = 0.5
 	if ( Time() > (player.p.postDeathThreadStartTime + deathCamLength) - skipBufferTime )
 	{

@@ -1,27 +1,10 @@
-//Reimplemented by @CafeFPS
+// Reimplemented by @CafeFPS (Retículo Endoplasmático#5955)
+// everyone else -- advice
 
-//todo:
-// DONE add health to pole
-// DONE destroy logic (pick up)
-// DONE show waypoint with fence crossed icon when a player crosses it
-// DONE You can hold up to 4 charges of this ability. You gain one charge every 15 seconds, and can pick up unused nodes to regain a charge.
-// DONE merge retail client script to fix various differences
-// DONE if snapto is valid pole, just create the link, check linked state for snapto to play proper anims
-// DONE if focaltrap and snapto are valid poles, just create the link
-// DONE don't allow new poles to be attached to the old ones if they already have two links, this is already implemented but it's not working for some reason
-// DONE if 12 traps are placed, start removing the oldest one, if a link is going to be created towards the oldest one, don's destroy it just create the link
-// DONE add delay to the link if focaltrap and snapto are valid poles, it shouldn't be instant
-// DONE fix small delay when activating the ability (this does not exist in retail, you can place a fence instantly after pressing q)
-// DONE snapTo is not reloaded properly after placing a pole, but if you holster then activate ability again it snaps correctly
-// DONE damage happens every 4 ticks?, emp applys every tick of fence damage
-// DONE improve kill pole logic, in retail it uses dissolve and the prop script is converted to "tesla_trap_dead" while is being destroyed
-// DONE doors must be destroyed if they cross fence, why trigger does not detect doors? it needs a different implementation?
-
+// todo
 // fix minimap
-// add to player realms
 // fix ai (dummies) detection + damage + visuals
-// check if trap is obstructed before destroying doors?
-
+	
 untyped
 
 global function MpWeaponTeslaTrap_Init
@@ -332,6 +315,11 @@ void function OnWeaponActivate_weapon_tesla_trap( entity weapon )
 
 	int statusEffect = eStatusEffect.placing_tesla_trap
 	StatusEffect_AddEndless( ownerPlayer, statusEffect, 1.0 )
+	
+	#if SERVER
+	AddButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM_TOGGLE, TeslaTrap_AdsSlurpsFences )
+	AddButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM, TeslaTrap_AdsSlurpsFences )
+	#endif
 }
 
 void function OnWeaponDeactivate_weapon_tesla_trap( entity weapon )
@@ -349,6 +337,8 @@ void function OnWeaponDeactivate_weapon_tesla_trap( entity weapon )
 	StatusEffect_StopAllOfType( ownerPlayer, eStatusEffect.placing_tesla_trap )
 
 	#if SERVER
+	RemoveButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM_TOGGLE, TeslaTrap_AdsSlurpsFences )
+	RemoveButtonPressedPlayerInputCallback( ownerPlayer, IN_ZOOM, TeslaTrap_AdsSlurpsFences )
 	#endif
 }
 
@@ -383,7 +373,7 @@ bool function OnWeaponAttemptOffhandSwitch_weapon_tesla_trap( entity weapon )
 	entity player = weapon.GetWeaponOwner()
 	if ( player.IsPhaseShifted() || player.IsZiplining() )
 		return false
-
+	
 	TeslaTrap_UpdateFocalNodeForPlayer( ownerPlayer, TeslaTrap_CreateTrapPlacementProxy( TESLA_TRAP_PROXY_MODEL ) )
 
 	if ( weapon == ownerPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand ) )
@@ -1074,7 +1064,7 @@ void function TeslaTrap_PlacementProxy( entity player, asset model )
 				proxyRangeTable[ proxy ] = -1
 			}
 		}
-
+		
 		WaitFrame()
 	}
 }
@@ -1257,7 +1247,12 @@ void function OnFocusTrapChanged( entity player, entity oldEnt, entity newEnt, b
 	entity localViewPlayer = GetLocalViewPlayer()
 	if ( !IsValid( localViewPlayer ) )
 		return
-
+	
+	entity focalTrap = TeslaTrap_GetFocalTrapForPlayer( player )
+	
+	if( IsValid(focalTrap) && focalTrap == newEnt )
+		return
+	
 	if ( !IsValid( newEnt ) )
 	{
 		TeslaTrap_ClearFocalTrapForPlayer( localViewPlayer )
@@ -1475,8 +1470,7 @@ void function TeslaTrap_OnPropScriptCreated( entity ent )
 				AddEntityCallback_GetUseEntOverrideText( ent, TeslaTrap_UseTextOverride )
 				SetCallback_CanUseEntityCallback( ent, TeslaTrap_CanUse )
 
-				//doesn't look like a good way to do this but it works for now. Colombia
-				if(ent.GetOwner() == GetLocalClientPlayer())
+				if( ent.GetOwner() == GetLocalClientPlayer() )
 				{
 					TeslaTrap_ClearFocalTrapForPlayer( GetLocalClientPlayer() )
 					TeslaTrap_SetFocalTrapForPlayer( GetLocalClientPlayer(), ent )
@@ -1649,8 +1643,6 @@ void function TeslaTrap_UpdateHudMarkers( entity localClientPlayer )
 
 bool function TeslaTrap_ShouldShowIcon( entity localPlayer, entity trapProxy )
 {
-	return false
-
 	if ( !GamePlayingOrSuddenDeath() )
 		return false
 	
@@ -1956,17 +1948,17 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 		return
 
 	#if DEVELOPER
-		printt("fence is being crossed by " + crossingEnt )
+		// printt("fence is being crossed by " + crossingEnt )
 	#endif
 
 	#if SERVER
 		entity ownerPlayer = trigger.GetOwner()
-		
-		if( Time() < trigger.e.teslaTrapTriggerCreationTime + TESLA_TRAP_ACTIVATE_DELAY )
-			return
 
 		if ( start.GetTeam() != crossingEnt.GetTeam() )
-		{
+		{					
+			if( Time() < trigger.GetObstructedEndTime() )
+				return
+			
 			if(crossingEnt.IsPlayer() && Time() > crossingEnt.p.lastTimeAppliedEMPByTeslaTrap + TESLA_TRAP_LINK_DAMAGE_INTERVAL_UPDATE )
 			{
 				crossingEnt.TakeDamage( TESLA_TRAP_LINK_DAMAGE_AMOUNT_UPDATE, ownerPlayer, ownerPlayer, { damageSourceId=eDamageSourceId.mp_weapon_tesla_trap } )
@@ -1981,9 +1973,7 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 			return
 
 		if ( !TrippedEntIsFriendly( crossingEnt, start ) )
-		{
 			return
-		}
 
 		if ( !TrippedEntIsFriendlyObstructionType( crossingEnt ) )
 			return
@@ -2185,7 +2175,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 	vector origin = placementInfo.origin
 	vector angles = placementInfo.angles
 
-	CleanUpOldestPole(snapTo)
+	CleanUpOldestPole(player, snapTo)
 
 	if( IsValid(snapTo) )
 	{
@@ -2210,6 +2200,12 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
 
 			DispatchSpawn( poleFence )
+			
+			poleFence.RemoveFromAllRealms()
+			poleFence.AddToOtherEntitysRealms( player )
+		
+			TeslaTrap_ClearFocalTrapForPlayer( player )
+			TeslaTrap_SetFocalTrapForPlayer( player, poleFence )
 		}
 
 		poleFence.Anim_Play( "prop_fence_idle" )
@@ -2221,9 +2217,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 		entity placeFx = StartParticleEffectOnEntity_ReturnEntity( poleFence, GetParticleSystemIndex( TESLA_TRAP_PLACE_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 		EmitSoundOnEntity( poleFence, TESLA_TRAP_PLACEMENT_SOUND )
-
-		player.SetPlayerNetEnt( "focalTrap", null )
-		player.SetPlayerNetEnt( "focalTrap", poleFence ) //force focalTrap to be newest one
 
 		OnFencePoleSpawned( poleFence )
 	}
@@ -2243,6 +2236,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 		thread function() : ( poleFence, attachTo )
 		{
+			Signal(poleFence, "StopAnimThreadForPole")
+			Signal(attachTo, "StopAnimThreadForPole")
 			EndSignal(poleFence, "OnDestroy")
 			EndSignal(attachTo, "OnDestroy")
 
@@ -2276,7 +2271,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 				if( !IsValid( poleFence ) ) return
 
 				EndSignal(poleFence, "OnDestroy")
-
+				EndSignal(poleFence, "StopAnimThreadForPole")
+				
 				poleFence.Anim_Play( "prop_fence_close" )
 				wait poleFence.GetSequenceDuration( "prop_fence_close" )
 
@@ -2347,7 +2343,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 			SetTeam( trigger, player.GetTeam() )
 			
-			trigger.e.teslaTrapTriggerCreationTime = Time()
 			DispatchSpawn( trigger )
 		}
 
@@ -2369,8 +2364,6 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity start, entity end)
 {
-	wait TESLA_TRAP_ACTIVATE_DELAY
-	
 	if( !IsValid(trigger) ) 
 		return
 	
@@ -2381,10 +2374,15 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 	
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 	
-	while(IsValid(trigger))
+	while( IsValid(ownerPlayer) && IsValid(trigger) && IsValid(start) && IsValid(end) )
 	{
+		if( Time() < trigger.GetObstructedEndTime() )
+		{
+			wait 0.1
+			continue
+		}
 		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-			
+
 		//doors
 		if( IsValid( hResult.hitEnt ) && hResult.hitEnt.GetNetworkedClassName() == "prop_door" )
 		{
@@ -2503,11 +2501,23 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 
 }
 
-void function CleanUpOldestPole(entity snapTo)
+void function CleanUpOldestPole(entity player, entity snapTo)
 {
-	if( file.allTraps.len() == TESLA_TRAP_MAX_TRAPS )
+	array<entity> playerTraps
+	
+	foreach(trap in file.allTraps)
 	{
-		entity poleToDestroy = file.allTraps[ 0 ]
+		if( !IsValid(trap) ) continue
+		
+		if( trap.GetOwner() == player )
+		{
+			playerTraps.append( trap )
+		}
+	}
+	
+	if( playerTraps.len() == TESLA_TRAP_MAX_TRAPS && IsValid( playerTraps[ 0 ] ) )
+	{
+		entity poleToDestroy = playerTraps[ 0 ]
 
 		if( !IsValid( poleToDestroy ) || IsValid( snapTo ) && snapTo == poleToDestroy )
 			return
@@ -2580,7 +2590,7 @@ void function FencePole_OnDamaged( entity ent, var damageInfo )
 
 void function DestroyPole(entity ent)
 {
-	if( !IsValid( ent ) || ent.GetScriptName() == "tesla_trap_dead")
+	if( !IsValid( ent ) || ent.GetScriptName() == "tesla_trap_dead" )
 		return
 
 	ent.SetScriptName( "tesla_trap_dead" )
@@ -2624,7 +2634,8 @@ void function DestroyPole(entity ent)
 				if(!IsValid(anotherPole)) return
 
 				EndSignal(anotherPole, "OnDestroy")
-
+				EndSignal(anotherPole, "StopAnimThreadForPole")
+				
 				anotherPole.Anim_Play( "prop_fence_close" )
 				wait anotherPole.GetSequenceDuration( "prop_fence_close" )
 
@@ -2659,27 +2670,85 @@ void function SetPoleFenceUsable( entity poleFence )
 
 bool function PoleFence_CanUse(entity player, entity pole)
 {
+	if(	!IsValid(player) || !IsValid(pole))
+		return false
+	
 	if( pole.GetOwner() == player || pole.GetTeam() == player.GetTeam())
 		return true
 
 	return false
 }
-
-void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
+void function ReturnOneTacticalUsage(entity player)
 {
-	if(!IsValid(poleFence) || !IsValid(player))
-	    return
-
-	if( poleFence.GetOwner() != player)
-		return
-
-	DestroyPole(poleFence)
-
 	//return one tactical usage
 	entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 	if( !IsValid(tactical) )
 	    return
 
-	tactical.SetWeaponPrimaryClipCount( min(tactical.GetWeaponPrimaryClipCount() + tactical.GetAmmoPerShot(), tactical.GetWeaponPrimaryClipCountMax()) )
+	tactical.SetWeaponPrimaryClipCount( min(tactical.GetWeaponPrimaryClipCount() + tactical.GetAmmoPerShot(), tactical.GetWeaponPrimaryClipCountMax()) )	
+}
+
+void function OnPolePickedUp( entity poleFence, entity player, int useInputFlags )
+{
+	if(!IsValid(poleFence) || !IsValid(player) || poleFence.GetOwner() != player || poleFence.GetTeam() != player.GetTeam())
+	    return
+
+	DestroyPole(poleFence)
+	ReturnOneTacticalUsage(player)
+}
+
+void function TeslaTrap_AdsSlurpsFences(entity player) 
+{
+	if( !IsValid(player) ) 
+		return
+
+	if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && player.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() != "mp_weapon_tesla_trap" ) 
+		return
+	
+	entity attachTo = player.GetPlayerNetEnt( "focalTrap" )
+	
+	if( !IsValid(attachTo) || attachTo.GetOwner() != player ) 
+		return
+		
+	foreach(pole in file.allTraps)
+	{
+		if( !IsValid(player) ) 
+			break
+	
+		if( !IsValid(pole) ) 
+			continue
+
+		array<entity> attachedPoles = pole.GetLinkEntArray()
+		
+		if( attachedPoles.len() == 0 )
+		{
+			if( IsValid(attachTo) )
+			{
+				DestroyPole( attachTo )
+				ReturnOneTacticalUsage(player)
+				player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_PICKUP", 0)
+			}
+		} else 
+		{
+			foreach( trap in attachedPoles )
+			{
+				if( !IsValid(trap) ) continue
+				
+				if( trap == attachTo )
+				{
+					if( IsValid(attachTo) && pole ) 
+					{
+						DestroyPole( attachTo )
+						ReturnOneTacticalUsage(player)
+						player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_PICKUP", 0)
+						
+						TeslaTrap_ClearFocalTrapForPlayer( player )
+						TeslaTrap_SetFocalTrapForPlayer( player, pole )
+					}
+				}
+			}
+		}
+	}
 }
 #endif
+

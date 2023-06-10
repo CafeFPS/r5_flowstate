@@ -292,9 +292,9 @@ void function DesertlandsTrain_Init()
 
 	// Spawn Highlight Beam
 	PrecacheParticleSystem( TRAIN_POI_BEAM )
-	entity trainBeam =  StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( TRAIN_POI_BEAM ), cars[cars.len()-1].GetOrigin(), <90,0,0> )
+	entity trainBeam =  StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( TRAIN_POI_BEAM ), cars[cars.len()-1].GetOrigin(), <0,0,0> )
 	trainBeam.SetParent(cars[cars.len()-1])
-
+	trainBeam.SetAbsAngles( <90,0,0> )
 
 	// Start the train
 	for(int i = 0; i<file.true_trainCarCount; i++)

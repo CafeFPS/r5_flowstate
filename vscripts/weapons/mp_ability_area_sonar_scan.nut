@@ -1,3 +1,5 @@
+// Updated by @CafeFPS
+
 global function MpAbilityAreaSonarScan_Init
 
 global function OnWeaponActivate_ability_area_sonar_scan
@@ -7,6 +9,10 @@ global function OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan
 global function ServerCallback_SonarAreaScanTarget
 #endif //CLIENT
 
+#if SERVER
+global function GetAreaSonarScanDuration
+#endif
+
 const asset FLASHEFFECT    = $"P_sonar_bloodhound"
 const asset EYEEFFECT    = $"P_sonar_bloodhound_eyes"
 const asset AREA_SCAN_ACTIVATION_SCREEN_FX = $"P_sonar"
@@ -14,19 +20,51 @@ const asset FX_SONAR_TARGET = $"P_ar_target_sonar"
 
 const int AREA_SCAN_SKIN_INDEX = 9
 
+const float AREA_SONAR_SCAN_RADIUS = 3000.0
 const float AREA_SONAR_SCAN_HUD_FEEDBACK_DURATION = 3.0
-const float AREA_SONAR_SCAN_DURATION = 2.0
-const float AREA_SONAR_SCAN_CONE_FOV = 90.0
+const float AREA_SONAR_SCAN_DURATION = 3.0
+
+global const float AREA_SONAR_SCAN_HIGHLIGHT_DURATION = 1.5
+
+const float AREA_SONAR_SCAN_CONE_FOV = 125.0
 
 struct
 {
 	int colorCorrection
 	int screeFxHandle
+	float areaSonarScanDuration
+	float areaSonarScanRadius
+	float areaSonarScanRadiusSqr
+	float areaSonarScanFOV
 
-#if SERVER
+
+	#if SERVER
 	table< entity, entity > eyesEffectHandles
-#endif
+	#endif
 } file
+
+void function MpAbilityAreaSonarScan_Init()
+{
+	PrecacheParticleSystem( FLASHEFFECT )
+	PrecacheParticleSystem( EYEEFFECT )
+	PrecacheParticleSystem( FX_SONAR_TARGET )
+
+	file.areaSonarScanDuration = GetCurrentPlaylistVarFloat( "bloodhound_scan_duration_override", AREA_SONAR_SCAN_DURATION )
+	file.areaSonarScanRadius = GetCurrentPlaylistVarFloat( "area_sonar_scan_radius_override", AREA_SONAR_SCAN_RADIUS )
+	file.areaSonarScanRadiusSqr = file.areaSonarScanRadius * file.areaSonarScanRadius
+	file.areaSonarScanFOV = GetCurrentPlaylistVarFloat( "bloodhound_scan_cone_fov_override", AREA_SONAR_SCAN_CONE_FOV )
+
+	#if CLIENT
+		PrecacheParticleSystem( AREA_SCAN_ACTIVATION_SCREEN_FX )
+		file.colorCorrection = ColorCorrection_Register( "materials/correction/area_sonar_scan.raw_hdr" )
+
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_pulse_visuals, AreaSonarScan_StartScreenEffect )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_pulse_visuals, AreaSonarScan_StopScreenEffect )
+	#endif //CLIENT
+
+	RegisterSignal( "AreaSonarScan_Activated" )
+
+}
 
 void function OnWeaponActivate_ability_area_sonar_scan( entity weapon )
 {
@@ -54,22 +92,9 @@ var function OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan( entity weap
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
 }
 
-void function MpAbilityAreaSonarScan_Init()
+float function AreaSonarScan_GetConeFOV()
 {
-	PrecacheParticleSystem( FLASHEFFECT )
-	PrecacheParticleSystem( EYEEFFECT )
-	PrecacheParticleSystem( FX_SONAR_TARGET )
-
-	#if CLIENT
-		PrecacheParticleSystem( AREA_SCAN_ACTIVATION_SCREEN_FX )
-		file.colorCorrection = ColorCorrection_Register( "materials/correction/area_sonar_scan.raw_hdr" )
-
-		StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_pulse_visuals, AreaSonarScan_StartScreenEffect )
-		StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_pulse_visuals, AreaSonarScan_StopScreenEffect )
-	#endif //CLIENT
-
-	RegisterSignal( "AreaSonarScan_Activated" )
-
+	return file.areaSonarScanFOV
 }
 
 #if SERVER
@@ -87,8 +112,8 @@ void function AreaSonarScan_SonarThink( entity owner )
 	owner.EndSignal( "OnDeath" )
 	owner.EndSignal( "OnDestroy" )
 
-	StatusEffect_AddTimed( owner, eStatusEffect.device_detected, 0.01, AREA_SONAR_SCAN_DURATION, 0.0 )
-	StatusEffect_AddTimed( owner, eStatusEffect.sonar_pulse_visuals, 1, AREA_SONAR_SCAN_DURATION, 0.0 )
+	StatusEffect_AddTimed( owner, eStatusEffect.device_detected, 0.01, file.areaSonarScanDuration, 0.0 )
+	StatusEffect_AddTimed( owner, eStatusEffect.sonar_pulse_visuals, 1, file.areaSonarScanDuration, 0.0 )
 
 	int attachmentID = owner.LookupAttachment( "HEADSHOT" )
 
@@ -96,9 +121,9 @@ void function AreaSonarScan_SonarThink( entity owner )
 	vector pulseOrigin = owner.GetAttachmentOrigin( attachmentID )
 	array<entity> ents = []
 
-	entity trigger = CreateTriggerRadiusMultiple( pulseOrigin, AREA_SONAR_SCAN_RADIUS, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
+	entity trigger = CreateTriggerRadiusMultiple( pulseOrigin, file.areaSonarScanRadius, ents, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
 	trigger.e.sonarConeDirection 	= owner.GetViewForward()
-	trigger.e.sonarConeFOV 			= AREA_SONAR_SCAN_CONE_FOV
+	trigger.e.sonarConeFOV 			= file.areaSonarScanFOV
 	trigger.e.sonarConeDetections	= 0
 	SetTeam( trigger, team )
 	trigger.SetOwner( owner )
@@ -158,7 +183,7 @@ void function AreaSonarScan_SonarThink( entity owner )
 	file.eyesEffectHandles[owner].kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // not owner only
 
 	WaitFrame()
-//	wait AREA_SONAR_SCAN_DURATION
+//	wait file.areaSonarScanDuration
 }
 
 void function AreaSonarScan_PropScriptUpdate( entity owner )
@@ -172,9 +197,9 @@ void function AreaSonarScan_PropScriptUpdate( entity owner )
 	vector pulseOrigin = owner.GetAttachmentOrigin( attachmentID )
 
 	array<entity> sonarRegisteredPropScripts = GetSonarRegisteredPropScripts()
-	entity triggerPropScript = CreateTriggerRadiusMultiple( pulseOrigin, AREA_SONAR_SCAN_RADIUS, sonarRegisteredPropScripts, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
+	entity triggerPropScript = CreateTriggerRadiusMultiple( pulseOrigin, file.areaSonarScanRadius, sonarRegisteredPropScripts, TRIG_FLAG_START_DISABLED | TRIG_FLAG_NO_PHASE_SHIFT )
 	triggerPropScript.e.sonarConeDirection 	= owner.GetViewForward()
-	triggerPropScript.e.sonarConeFOV 		= AREA_SONAR_SCAN_CONE_FOV
+	triggerPropScript.e.sonarConeFOV 		= file.areaSonarScanFOV
 	SetTeam( triggerPropScript, team )
 	triggerPropScript.SetOwner( owner )
 	triggerPropScript.RemoveFromAllRealms()
@@ -193,7 +218,7 @@ void function AreaSonarScan_PropScriptUpdate( entity owner )
 	AddCallback_ScriptTriggerEnter( triggerPropScript, AreaSonarScan_OnSonarTriggerEnter )
 	ScriptTriggerSetEnabled( triggerPropScript, true )
 
-	wait AREA_SONAR_SCAN_DURATION
+	wait file.areaSonarScanDuration
 }
 
 void function AreaSonarScan_BroadcastPulseConeEffectToPlayers( vector pulseConeOrigin, vector pulseConeDir, float pulseConeFOV, array<entity> players, int team, entity owner )
@@ -202,7 +227,7 @@ void function AreaSonarScan_BroadcastPulseConeEffectToPlayers( vector pulseConeO
 	{
 		bool showTrail = ( owner == player )
 		if ( owner.DoesShareRealms( player ) )
-			Remote_CallFunction_Replay( player, "ServerCallback_SonarPulseConeFromPosition", pulseConeOrigin, AREA_SONAR_SCAN_RADIUS, pulseConeDir, pulseConeFOV, team, 3.0, true, showTrail )
+			Remote_CallFunction_Replay( player, "ServerCallback_SonarPulseConeFromPosition", pulseConeOrigin, file.areaSonarScanRadius, pulseConeDir, pulseConeFOV, team, 3.0, true, showTrail )
 	}
 }
 
@@ -239,18 +264,53 @@ void function AreaSonarScan_OnSonarTriggerEnter( entity trigger, entity ent )
 		trigger.e.sonarConeDetections++
 
 	ent.e.sonarTriggers.append( trigger )
-
-	// remote call everyone on the bloodhound team
-	array<entity> teamPlayers = GetPlayerArrayOfTeam_AliveConnected( owner.GetTeam() )
-	foreach ( player in teamPlayers )
-		Remote_CallFunction_Replay( player, "ServerCallback_SonarAreaScanTarget", ent, owner )
-
+	
+	//Start sonar for owner team
+	thread Flowstate_HighlightPlayerTimed( ent, trigger )
+	
 	// remote call the sonar target if it's a player
 	if ( ent.IsPlayer() )
 		Remote_CallFunction_Replay( ent, "ServerCallback_SonarAreaScanTarget", ent, owner )
 
-	StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
+	//StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
 }
+
+void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger )
+{
+	EndSignal( revealedEnt, "OnDeath" )
+	EndSignal( revealedEnt, "OnDestroy" )
+	
+	entity owner = trigger.GetOwner()
+	int team = owner.GetTeam()
+	
+	IncrementSonarPerTeam( team )
+	SonarStart( revealedEnt, revealedEnt.GetOrigin(), team, owner )
+	
+	#if DEVELOPER
+	printt("target revealed by area sonar scan " + revealedEnt )
+	#endif
+	
+	OnThreadEnd(
+		function() : ( revealedEnt, team, trigger )
+		{
+			if ( !IsValid( revealedEnt ) )
+				return
+			
+			#if DEVELOPER
+			printt("sonar highlight removed" )
+			#endif
+	
+			if( revealedEnt.e.sonarTriggers.contains(trigger) )
+				revealedEnt.e.sonarTriggers.fastremovebyvalue( trigger )
+			
+			SonarEnd( revealedEnt, team )
+			DecrementSonarPerTeam( team )
+		}
+	)
+
+	wait AREA_SONAR_SCAN_HIGHLIGHT_DURATION
+}
+
 
 bool function IsHostileSonarTarget( entity owner, entity ent )
 {
@@ -262,20 +322,18 @@ bool function IsHostileSonarTarget( entity owner, entity ent )
 
 	return true
 }
+
+float function GetAreaSonarScanDuration()
+{
+	return file.areaSonarScanDuration
+}
 #endif
 
 #if CLIENT
-
 void function ServerCallback_SonarAreaScanTarget( entity sonarTarget, entity owner )
 {
-	entity viewPlayer = GetLocalViewPlayer()
-	int viewPlayerTeam = viewPlayer.GetTeam()
-	int ownerTeam = owner.GetTeam()
-
 	if ( sonarTarget == GetLocalViewPlayer() )
 		thread CreateViemodelSonarFlash( sonarTarget )
-	else if ( viewPlayerTeam == ownerTeam )
-		thread CreateSonarCloneForEnt( sonarTarget, owner )
 }
 
 void function CreateViemodelSonarFlash( entity ent )
@@ -351,7 +409,7 @@ void function CreateSonarCloneForEnt( entity sonarTarget, entity owner )
 		}
 	)
 
-	wait AREA_SONAR_SCAN_DURATION
+	wait file.areaSonarScanDuration
 	entClone.Destroy()
 }
 

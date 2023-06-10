@@ -44,8 +44,8 @@ global enum eLossForgivenessReason
 global enum eDeathScreenPanel
 {
 	NONE = -1,
-	DEATH_RECAP,
 	SPECTATE,
+	DEATH_RECAP,
 	SQUAD_SUMMARY
 }
 
@@ -575,7 +575,7 @@ global enum eStickState
 }
 
 //Max Time spent after death before respawning again is DEATHCAM_TIME + KILL_REPLAY_BEFORE_KILL_TIME_TITAN + KILL_REPLAY_AFTER_KILL_TIME
-global const DEATHCAM_TIME 								= 11.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
+global const DEATHCAM_TIME 								= 8.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
 global const KILL_REPLAY_BEFORE_KILL_TIME_PILOT 		= 3.5
 global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
 global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
@@ -856,7 +856,6 @@ global const TITAN_DAMAGE_STAGE_3 			= 0.25
 global const TITAN_DAMAGE_STAGE_DOOMED 		= 0.0
 global const int DOOMED_MIN_HEALTH 			= 1
 
-global const float AREA_SONAR_SCAN_RADIUS 			= 1250.0
 global const float AREA_SONAR_SCAN_PULSE_DURATION 	= 6.0
 
 global const float SONAR_GRENADE_RADIUS 			= 1250.0
@@ -2252,10 +2251,10 @@ global const asset LOOT_PICKUP_HINT_COMPACT_RUI		= $"ui/loot_pickup_hint_compact
 global const asset WEAPON_PICKUP_HINT_DEFAULT_RUI	= $"ui/loot_pickup_hint_weapon.rpak"
 global const asset WEAPON_PICKUP_HINT_COMPACT_RUI	= $"ui/loot_pickup_hint_weapon_compact.rpak"
 
-global const int SURVIVAL_BACKPACK_LIMIT = 8
-global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 10
-global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 12
-global const int SURVIVAL_BACKPACK_LIMIT_MAX = 14
+global const int SURVIVAL_BACKPACK_LIMIT = 10
+global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 12
+global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 14
+global const int SURVIVAL_BACKPACK_LIMIT_MAX = 16
 
 global const int DEBUG_BULLET_DROP = 0
 

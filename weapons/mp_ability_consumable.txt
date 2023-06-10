@@ -12,6 +12,7 @@ WeaponData
 	"weapon_type_flags"								"WPT_CONSUMABLE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
+	"offhand_cancelled_by_melee"					"1"
     "is_toss_weapon"                                "0"
 	"offhand_default_inventory_slot"				"2"
 	"offhand_interupts_weapon_anims"				"1"
@@ -100,6 +101,30 @@ WeaponData
 
 	"cooldown_type"									"ammo_instant"	// hud display
 	"activitymodifier"								"mp_ability_consumable"
+	// Bob
+	"bob_cycle_time"  						"0.4"
+	"bob_vert_dist"   						"0.1" //"0.19"
+	"bob_horz_dist"   						"0.1"
+	"bob_max_speed"   						"100" //"150"
+	"bob_pitch"   							"0.75"
+	"bob_yaw" 								"-1.7"
+	"bob_roll"								"1.2"
+	// Sway - General
+	"sway_rotate_attach"                       "SWAY_ROTATE"
+	"sway_min_x"                               "-0.5"
+	"sway_min_y"                               "-0.5"
+	"sway_min_z"                               "-0.6"
+	"sway_max_x"                               "0.5"
+	"sway_max_y"                               "0.5"
+	"sway_max_z"                               "0.6"
+	"sway_min_pitch"                           "-3"
+	"sway_min_yaw"                             "-2.5"
+	"sway_min_roll"                            "-4"
+	"sway_max_pitch"                           "3"
+	"sway_max_yaw"                             "2.5"
+	"sway_max_roll"                            "4"
+	"sway_translate_gain"                      "2.5"
+	"sway_rotate_gain"                         "7"
 
 	Mods
 	{

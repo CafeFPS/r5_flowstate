@@ -11,6 +11,9 @@ global function WaitUntilTitanStandsOrDies
 global function DestroyBubbleShield
 global function CreateBubbleShieldWithSettings
 
+global const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
+global const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
+
 const float SHIELD_TITAN_DAMAGE_FLOOR = 0
 const float SHIELD_TITAN_DAMAGE_CEILING = 16000 //Some arbitrarily large number really
 const float SHIELD_PILOT_DAMAGE_FLOOR = 0
@@ -43,7 +46,9 @@ void function BubbleShield_Init()
 	RegisterSignal( "TitanBrokeBubbleShield" )
 	RegisterSignal( "NewBubbleShield" )
 	RegisterSignal( "StopBubbleShieldDamage" )
-
+	PrecacheParticleSystem( BUBBLE_BUNKER_SHIELD_FX )
+	PrecacheModel( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	
 	//InitBubbleShieldDamageStructValues( file.titanDamageStruct, SHIELD_TITAN_DAMAGE_FLOOR, SHIELD_TITAN_DAMAGE_CEILING, [ 12.0, 5.0, 2.0 ] )
 	//InitBubbleShieldDamageStructValues( file.pilotDamageStruct, SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
 	//InitBubbleShieldDamageStructValues( file.aiDamageStruct, 	SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
@@ -198,10 +203,10 @@ void function DestroyBubbleShield( entity bubbleShield )
 	}
 }
 
-entity function CreateBubbleShieldWithSettings( int team, vector origin, vector angles, entity owner = null, float duration = 9999, bool damage = true, asset effectName = EMPTY_MODEL, asset collisionModel = EMPTY_MODEL )
+entity function CreateBubbleShieldWithSettings( int team, vector origin, vector angles, entity owner = null, float duration = 9999 )
 {
 	entity bubbleShield = CreateEntity( "prop_dynamic" )
-	bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
+	bubbleShield.SetValueForModelKey( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	bubbleShield.kv.solid = SOLID_VPHYSICS
     bubbleShield.kv.rendercolor = "81 130 151"
     bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
@@ -212,47 +217,42 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
 	bubbleShield.SetBlocksRadiusDamage( true )
 	DispatchSpawn( bubbleShield )
-	//bubbleShield.Hide()  //TODO: FIX IT
+	bubbleShield.SetOwner( owner )
+	bubbleShield.Hide()
 
 	SetTeam( bubbleShield, team )
 	array<entity> bubbleShieldFXs
 
-	vector coloredFXOrigin = origin + Vector( 0, 0, 25 )
-	table bubbleShieldDotS = expect table( bubbleShield.s )
+	vector coloredFXOrigin = origin
+	
 	if ( team == TEAM_UNASSIGNED )
 	{
-		entity neutralColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		entity neutralColoredFX = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( BUBBLE_BUNKER_SHIELD_FX ), coloredFXOrigin, <0, 0, 0> )
 		SetTeam( neutralColoredFX, team )
-		bubbleShieldDotS.neutralColoredFX <- neutralColoredFX
 		bubbleShieldFXs.append( neutralColoredFX )
 	}
 	else
 	{
 		//Create friendly and enemy colored particle systems
-		entity friendlyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		entity friendlyColoredFX = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( BUBBLE_BUNKER_SHIELD_FX ), coloredFXOrigin, <0, 0, 0> )
 		SetTeam( friendlyColoredFX, team )
 		friendlyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
 		EffectSetControlPointVector(  friendlyColoredFX, 1, FRIENDLY_COLOR_FX )
-
-		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX, coloredFXOrigin, <0, 0, 0> )
+		friendlyColoredFX.SetParent( bubbleShield )
+		
+		entity enemyColoredFX = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( BUBBLE_BUNKER_SHIELD_FX ), coloredFXOrigin, <0, 0, 0> )
 		SetTeam( enemyColoredFX, team )
 		enemyColoredFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 		EffectSetControlPointVector(  enemyColoredFX, 1, ENEMY_COLOR_FX )
-
-		bubbleShieldDotS.friendlyColoredFX <- friendlyColoredFX
-		bubbleShieldDotS.enemyColoredFX <- enemyColoredFX
+		enemyColoredFX.SetParent( bubbleShield )
+		
 		bubbleShieldFXs.append( friendlyColoredFX )
 		bubbleShieldFXs.append( enemyColoredFX )
 	}
 
-	#if MP
-	//DisableTitanfallForLifetimeOfEntityNearOrigin( bubbleShield, origin, TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS )
-	#endif
-
 	EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 
 	thread CleanupBubbleShield( bubbleShield, bubbleShieldFXs, duration )
-	//thread BubbleShieldDamageEnemies( bubbleShield, owner )
 
 	return bubbleShield
 }
@@ -264,7 +264,7 @@ void function CleanupBubbleShield( entity bubbleShield, array<entity> bubbleShie
 	OnThreadEnd(
 		function () : ( bubbleShield, bubbleShieldFXs )
 		{
-			if ( IsValid_ThisFrame( bubbleShield ) )
+			if ( IsValid( bubbleShield ) )
 			{
 				StopSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 				EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Ending" )
@@ -273,7 +273,7 @@ void function CleanupBubbleShield( entity bubbleShield, array<entity> bubbleShie
 
 			foreach ( fx in bubbleShieldFXs )
 			{
-				if ( IsValid_ThisFrame( fx ) )
+				if ( IsValid( fx ) )
 				{
 					EffectStop( fx )
 				}

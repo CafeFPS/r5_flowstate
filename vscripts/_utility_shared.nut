@@ -3071,7 +3071,7 @@ bool function HasBitMask( int bitsExisting, int bitsToCheck )
 	return bitsCommon == bitsToCheck
 }
 
-float function GetDeathCamLength( entity player )
+float function GetDeathCamLength( )
 {
 	if ( GetGameState() < eGameState.Playing )
 		return DEATHCAM_TIME_SHORT
@@ -3496,6 +3496,9 @@ void function SetTeam( entity ent, int team )
 		else
 		{
 			ent.Code_SetTeam( team )
+			
+			if( ent.IsPlayer() && IsAlive(ent) && ent.p.isConnected )
+				Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
 		}
 	#endif
 }

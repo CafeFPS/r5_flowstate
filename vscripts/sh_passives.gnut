@@ -149,8 +149,10 @@ void function PassivesShared_Init()
 		AddCallback_OnPlayerAssist( Passives_OnPlayerAssist )
 		Bleedout_AddCallback_OnPlayerStartBleedout( Passives_OnPlayerStartBleedout )
 		AddCallback_OnPassiveChanged( ePassives.PAS_FAST_HEAL, PassiveToggleFastHeal )
+		AddCallback_OnPassiveChanged( ePassives.PAS_FORTIFIED, PassiveToggleFortified )
 		AddCallback_OnPassiveChanged( ePassives.PAS_MEDIC, Lifeline_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PILOT_BLOOD, PilotBlood_Passive )
+		AddCallback_OnPassiveChanged( ePassives.PAS_PATHFINDER, Pathfinder_PassiveToggle )
 	#endif
 
 	#if CLIENT
@@ -461,10 +463,7 @@ void function DecoyDropThink( entity player )
 
 	wait endTime - Time()
 }
-#endif
 
-
-#if SERVER
 void function Lifeline_PassiveToggle( entity player, int passive, bool didHave, bool nowHas )
 {
 	//We only want to update during character selection. Death or disconnect shouldn't impact teammate's backpack space.
@@ -481,9 +480,7 @@ void function Lifeline_PassiveToggle( entity player, int passive, bool didHave, 
 		GiveExtraWeaponMod( player, "lifeline_heal" )
 	}
 }
-#endif
 
-#if SERVER
 void function PassiveToggleFastHeal( entity player, int passive, bool didHave, bool nowHas )
 {
 	if ( !IsAlive( player ) )
@@ -503,10 +500,7 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 		GiveExtraWeaponMod( player, "fast_heal" )
 	}
 }
-#endif
 
-
-#if SERVER
 void function PilotBlood_Passive( entity player, int passive, bool didHave, bool nowHas )
 {
 	thread PilotBlood_Passive_Body(player, passive, didHave, nowHas)
@@ -545,6 +539,65 @@ void function PilotBlood_Passive_Body(entity player, int passive, bool didHave, 
 		}
 
 		
+	}
+}
+
+void function PassiveToggleFortified( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( didHave )
+	{
+		#if DEVELOPER
+		printt("[DEBUG] removed fortified perk for player ", player)
+		#endif
+		RemoveEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
+	}
+
+	if ( nowHas )
+	{
+		#if DEVELOPER
+		printt("[DEBUG] player has fortified perk ", player)
+		#endif
+		AddEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
+	}
+}
+
+void function OnFortifiedPlayerDamaged( entity victim, var damageInfo )
+{
+	if ( !IsValid( victim ) || !victim.IsPlayer() ) //|| Bleedout_IsBleedingOut( victim ) )
+		return
+	
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+	
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
+		return
+	
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if( !IsValidHeadShot( damageInfo, victim ) )
+		DamageInfo_SetDamage( damageInfo, damage - damage*0.15)
+}
+
+void function Pathfinder_PassiveToggle( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( !IsValid( player ) )
+		return
+	
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+	
+	if ( didHave )
+	{
+		foreach( p in teamPlayers )
+			thread SetSurveyBaconMinimapVisibility( player, false )
+	}
+
+	if ( nowHas )
+	{
+		foreach( p in teamPlayers )
+			thread SetSurveyBaconMinimapVisibility( player, true )
 	}
 }
 #endif
