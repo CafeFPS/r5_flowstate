@@ -139,8 +139,6 @@ void function TrackPlayerFallingForever( entity player ) {
             file.minHeight = pos.z
         }
 
-        // printl("#### DEBUG INFO ####\nCheckpoints: " + file.checkpoints.len() + "\nisActive: " + file.isActive + "\nisStarted: " + file.started)
-
         // Keep track of the history
         // This is needed for selecting a sensible checkpoint.
         if(file.isRecording && file.isActive && !player.IsWallRunning() && !player.IsOnGround() && !player.IsWallHanging()) {
@@ -154,8 +152,6 @@ void function TrackPlayerFallingForever( entity player ) {
             state.ang = <0, ang.y, ang.z>
 
             file.history.append( state )
-            
-            // printl( "Recording" )
         }
 
         // Timer things
@@ -178,7 +174,6 @@ void function end_climb( entity player ) {
 
     if ( file.isActive ) {
         file.minHeight = file.minHeight - 273 // Bonus penalty for ending a climb
-        printl("Height Penalty Added")
     }
 
     CheckUncontrolled( player )
@@ -231,10 +226,8 @@ void function record_climbs( entity player ) {
     // Only stop recording if we've been in the air for at least a second
     if(file.history.len() >= 10)
         StopRecording( player )
-    
-    printl(file.history.len())
 
-    file.history = []
+    file.history.clear()
     StartRecording( player )
 
     file.climbCount += 1
@@ -301,11 +294,12 @@ void function StopRecording( entity player ) {
 
     file.pendingRecord.anim = player.StopRecordingAnimation()
 
+	printl( "Recording:" )
     printt( file.pendingRecord.anim )
 
     file.isRecording = false
 
-    file.history = []
+    file.history.clear()
     file.isPending = true
 
     EnableCheckpointAvailability( player )
@@ -422,7 +416,7 @@ void function JustSave( entity player ) {
         Message( player, "Checkpoint Set", "", 1 )
     }
 
-    printCheckpoints( player )
+    // printCheckpoints( player )
 }
 
 void function RestoreToStart( entity player ) {
@@ -434,12 +428,12 @@ void function RestoreToStart( entity player ) {
     file.isPending = false
     DisableCheckpointAvailability( player )
     file.minHeight = 999999
-    file.history = []
+    file.history.clear()
     file.resetCount = 0
 
     file.started = false
 
-    file.checkpoints = []
+    file.checkpoints.clear()
 
     player.SetOrigin( <7422, 3700, 55300> )
     player.SetAngles( <0, 90, 0> )
@@ -462,7 +456,7 @@ void function RemoveAndRestore( entity player ) {
         thread RestoreCheckpoint( player, file.checkpoints[file.checkpoints.len() - 1], "Forgetting this checkpoint\nRestoring to previous checkpoint." )
     }
 
-    printCheckpoints( player )
+    // printCheckpoints( player )
 }
 
 void function JustRestore( entity player ) {
