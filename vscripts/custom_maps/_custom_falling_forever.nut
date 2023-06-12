@@ -235,12 +235,17 @@ void function record_climbs( entity player ) {
 
 void function fail( entity player, string message ) {
     FallingForeverPlayer file = GetPlayerFile( player )
-    bool onGround = player.IsOnGround()
 
+	// Get the current state
+    bool onGround = player.IsOnGround()
+	bool isClimbing = player.IsWallRunning()
+
+	// Wait 0.1s to see how it evolves
     WaitFrame()
 
-    // Skip if grounded but still falling
-    if ( onGround && player.GetVelocity().z < 0 )
+	// The "grounded" state is funky.
+    // Skip if "grounded" or climbing but still falling
+    if ( ( isClimbing || onGround ) && player.GetVelocity().z < 0 )
         return
 
     // Skip if we haven't started
