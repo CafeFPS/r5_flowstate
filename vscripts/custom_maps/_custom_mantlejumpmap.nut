@@ -967,7 +967,7 @@ void function mantlemap_load() {    // Props Array
     MapEditor_CreateZiplineFromUnity( < 5529.738, -29133.52, 26049.73 >, < 0, -179.9996, 0 >, < 5525.155, -28562.9, 26061.73 >, < 0, -179.9996, 0 >, false, -1, 1, 2, 1, 1, 0, 1, 150, 150, false, 0, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
 
     // Buttons
-    AddCallback_OnUseEntity( CreateFRButton(< 1939.141, 14610.98, 32901.26 >, < 0, 179.9865, 0 >, "%use% Finish Timer"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 1939.141, 14610.98, 32901.26 >, < 0, 179.9865, 0 >, "%use% Finish Timer/Go to Lobby"), void function(entity panel, entity user, int input)
     {
 int reset = 0
 file.cp_table[user] <- file.first_cp
@@ -1003,7 +1003,7 @@ if (IsValid(user)) {
 }
     })
 
-    AddCallback_OnUseEntity( CreateFRButton(< 511.0371, -19286.22, 15076.09 >, < 0, 0, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 511.0371, -19286.22, 15076.09 >, < 0, 0, 0 >, "%use% Start/Stop Timer"), void function(entity panel, entity user, int input)
     {
 if (user.GetPersistentVar("gen") == 0) {
     array<ItemFlavor> characters = GetAllCharacters()
@@ -1018,7 +1018,7 @@ if (user.GetPersistentVar("gen") == 0) {
 }
     })
 
-    AddCallback_OnUseEntity( CreateFRButton(< 3208.55, 12481.08, 14079.62 >, < 0, -90, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 3208.55, 12481.08, 14079.62 >, < 0, -90, 0 >, "%use% Start/Stop Timer"), void function(entity panel, entity user, int input)
     {
 if (user.GetPersistentVar("gen") == 0) {
     array<ItemFlavor> characters = GetAllCharacters()
@@ -1033,7 +1033,7 @@ if (user.GetPersistentVar("gen") == 0) {
 }
     })
 
-    AddCallback_OnUseEntity( CreateFRButton(< 5001.053, -29432.39, 29325.23 >, < 0, 179.9934, -0.0001 >, "%use% Finish Timer"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 5001.053, -29432.39, 29325.23 >, < 0, 179.9934, -0.0001 >, "%use% Finish Timer/Go to Lobby"), void function(entity panel, entity user, int input)
     {
 int reset = 0
 file.cp_table[user] <- file.first_cp
