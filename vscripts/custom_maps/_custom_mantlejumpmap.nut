@@ -37,6 +37,7 @@ void function mantlemap_precache() {
     PrecacheModel( $"mdl/firstgen/firstgen_pipe_256_goldfoil_01.rmdl")
     PrecacheModel( $"mdl/floating_village/lagoon_window_metal_shutters_open_80x128.rmdl")
     PrecacheModel( $"mdl/desertlands/desertlands_large_liquid_tank_01.rmdl")
+    PrecacheModel( $"mdl/fx/energy_ring_edge.rmdl")
 }
 
 
@@ -1175,7 +1176,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 922.5293, -21970.6, 17937.23 >) {
                 file.cp_table[ent] <- < 922.5293, -21970.6, 17937.23 >
@@ -1255,7 +1256,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1610.515, -22242.55, 19324.64 >) {
                 file.cp_table[ent] <- < 1610.515, -22242.55, 19324.64 >
@@ -1320,7 +1321,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 3089.513, 11066, 16129.52 >) {
                 file.cp_table[ent] <- < 3089.513, 11066, 16129.52 >
@@ -1370,7 +1371,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1943.575, 14758.1, 31781.8 >) {
                 file.cp_table[ent] <- < 1943.575, 14758.1, 31781.8 >
@@ -1435,7 +1436,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1835.787, -26701.4, 21555.3 >) {
                 file.cp_table[ent] <- < 1835.787, -26701.4, 21555.3 >
@@ -1515,7 +1516,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1751.5, 12357.01, 28746.5 >) {
                 file.cp_table[ent] <- < 1751.5, 12357.01, 28746.5 >
@@ -1730,7 +1731,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 3414.953, -28042.9, 25170.73 >) {
                 file.cp_table[ent] <- < 3414.953, -28042.9, 25170.73 >
@@ -1785,7 +1786,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -1816,7 +1817,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -1947,7 +1948,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1530.497, 10178.15, 19141.5 >) {
                 file.cp_table[ent] <- < 1530.497, 10178.15, 19141.5 >
@@ -1997,7 +1998,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1600.39, 10249.96, 21114.5 >) {
                 file.cp_table[ent] <- < 1600.39, 10249.96, 21114.5 >
@@ -2067,7 +2068,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2083,7 +2084,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2139,7 +2140,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 921.6299, -19380.24, 16737 >) {
                 file.cp_table[ent] <- < 921.6299, -19380.24, 16737 >
@@ -2189,7 +2190,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 4813.953, -28042.9, 25510.73 >) {
                 file.cp_table[ent] <- < 4813.953, -28042.9, 25510.73 >
@@ -2274,7 +2275,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2285,7 +2286,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1255.738, 11257.17, 25470.02 >) {
                 file.cp_table[ent] <- < 1255.738, 11257.17, 25470.02 >
@@ -2350,7 +2351,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 2924.964, -28034.89, 23680.73 >) {
                 file.cp_table[ent] <- < 2924.964, -28034.89, 23680.73 >
@@ -2415,7 +2416,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 423.4482, -19355.29, 15129 >) {
                 file.cp_table[ent] <- < 423.4482, -19355.29, 15129 >
@@ -2525,7 +2526,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 3066.2, -27525, 21950.53 >) {
                 file.cp_table[ent] <- < 3066.2, -27525, 21950.53 >
@@ -2655,7 +2656,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2701,7 +2702,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2717,7 +2718,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -2743,7 +2744,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1602.35, 9441.996, 20142.5 >) {
                 file.cp_table[ent] <- < 1602.35, 9441.996, 20142.5 >
@@ -2793,7 +2794,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 3088.624, 12585.7, 14129.37 >) {
                 file.cp_table[ent] <- < 3088.624, 12585.7, 14129.37 >
@@ -2903,7 +2904,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1611.159, -24675.79, 19413.03 >) {
                 file.cp_table[ent] <- < 1611.159, -24675.79, 19413.03 >
@@ -2999,7 +3000,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 4260.018, -28033.01, 23331.73 >) {
                 file.cp_table[ent] <- < 4260.018, -28033.01, 23331.73 >
@@ -3064,7 +3065,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1263.737, 10575.17, 23265.5 >) {
                 file.cp_table[ent] <- < 1263.737, 10575.17, 23265.5 >
@@ -3134,7 +3135,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -3145,7 +3146,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 4994.953, -29352.89, 29370.73 >) {
                 file.cp_table[ent] <- < 4994.953, -29352.89, 29370.73 >
@@ -3330,7 +3331,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1256.487, 11549, 26677.5 >) {
                 file.cp_table[ent] <- < 1256.487, 11549, 26677.5 >
@@ -3410,7 +3411,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1938.938, 12847.44, 29788.5 >) {
                 file.cp_table[ent] <- < 1938.938, 12847.44, 29788.5 >
@@ -3475,7 +3476,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1923.977, 13379.5, 31441.8 >) {
                 file.cp_table[ent] <- < 1923.977, 13379.5, 31441.8 >
@@ -3545,7 +3546,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -3556,7 +3557,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1938.938, 12769.44, 30683.92 >) {
                 file.cp_table[ent] <- < 1938.938, 12769.44, 30683.92 >
@@ -3641,7 +3642,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -3697,7 +3698,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1472.737, 10915.17, 24369.5 >) {
                 file.cp_table[ent] <- < 1472.737, 10915.17, 24369.5 >
@@ -3747,7 +3748,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1479.437, 10456.58, 22189.5 >) {
                 file.cp_table[ent] <- < 1479.437, 10456.58, 22189.5 >
@@ -3812,7 +3813,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 2470.7, 10793.09, 17142.5 >) {
                 file.cp_table[ent] <- < 2470.7, 10793.09, 17142.5 >
@@ -3877,7 +3878,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 2265.349, 10099, 18140.5 >) {
                 file.cp_table[ent] <- < 2265.349, 10099, 18140.5 >
@@ -3927,7 +3928,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 3089.513, 11768, 15123.5 >) {
                 file.cp_table[ent] <- < 3089.513, 11768, 15123.5 >
@@ -3982,7 +3983,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4083,7 +4084,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1256.487, 12172, 27709.5 >) {
                 file.cp_table[ent] <- < 1256.487, 12172, 27709.5 >
@@ -4133,7 +4134,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1610.51, -23504.96, 19324.64 >) {
                 file.cp_table[ent] <- < 1610.51, -23504.96, 19324.64 >
@@ -4203,7 +4204,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4214,7 +4215,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1833.327, -25001.33, 20953.57 >) {
                 file.cp_table[ent] <- < 1833.327, -25001.33, 20953.57 >
@@ -4279,7 +4280,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 921.8325, -19826.42, 17912.72 >) {
                 file.cp_table[ent] <- < 921.8325, -19826.42, 17912.72 >
@@ -4359,7 +4360,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 1942.569, 14730.1, 32952 >) {
                 file.cp_table[ent] <- < 1942.569, 14730.1, 32952 >
@@ -4429,7 +4430,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4456,7 +4457,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 5313.953, -29160.9, 27486.73 >) {
                 file.cp_table[ent] <- < 5313.953, -29160.9, 27486.73 >
@@ -4542,7 +4543,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4558,7 +4559,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4574,7 +4575,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4631,7 +4632,7 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         int reset = 0
-        
+
         if (ent in file.cp_table) {
             if (file.cp_table[ent] != < 5313.953, -29161.89, 27486.73 >) {
                 file.cp_table[ent] <- < 5313.953, -29161.89, 27486.73 >
@@ -4702,7 +4703,7 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
@@ -4720,11 +4721,1238 @@ if (IsValid(user)) {
             ent.SetOrigin(file.first_cp)
         }
         ent.SetVelocity( < 0, 0, 0 >)
-    
+
     }
 }
     })
     DispatchSpawn( trigger_153 )
 
+    // Props
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3006.854, 12562.96, 14078.6 >, < 0, 179.9865, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3203.054, 11776.55, 15117.9 >, < 0, 89.9932, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3208.454, 11080.25, 16125.4 >, < 0, 179.9865, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2477.954, 10676.75, 17138.4 >, < 0, 179.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2380.954, 10106.75, 18138.4 >, < 0, -90.007, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1536.954, 10061.75, 19138 >, < 0, 179.993, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1718.954, 9448.755, 20138.4 >, < 0, -90.007, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1482.954, 10241.75, 21111.4 >, < 0, 89.9833, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1488.954, 10339.75, 22186.4 >, < 0, 179.9473, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1145.954, 10568.75, 23262.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1356.354, 10906.75, 24365.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1131.954, 11251.75, 25465.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1140.954, 11542.75, 26673.4 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1140.054, 12161.75, 27704.4 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1746.054, 12473.75, 28741.4 >, < 0, -0.0365, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1822.854, 12839.85, 29783 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2054.954, 12849.96, 30587.9 >, < 0, -0.0135, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1829.454, 13479.55, 31389 >, < 0, -0.0275, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1842.654, 14780.96, 31730.4 >, < 0, -0.0275, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3170.754, 12562.96, 14078.6 >, < 0, 179.9865, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2970.254, 11776.55, 15117.9 >, < 0, 89.9932, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2970.554, 11080.25, 16125.4 >, < 0, 179.9865, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2477.954, 10911.85, 17138.4 >, < 0, 179.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2146.554, 10106.75, 18138.4 >, < 0, -90.007, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1536.954, 10297.05, 19138 >, < 0, 179.993, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1483.654, 9448.755, 20138.4 >, < 0, -90.007, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1718.954, 10241.75, 21111.4 >, < 0, 89.9833, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1488.954, 10575.16, 22186.4 >, < 0, 179.9473, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1382.054, 10568.75, 23262.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1374.154, 11251.75, 25465.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2056.854, 12839.85, 29783 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2021.854, 13479.55, 31389 >, < 0, -0.0275, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1375.154, 12161.75, 27704.4 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1591.654, 10906.75, 24365.4 >, < 0, 89.9494, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1375.254, 11542.75, 26673.4 >, < 0, 89.9634, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1746.054, 12238.85, 28741.4 >, < 0, -0.0365, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1818.354, 12849.96, 30587.9 >, < 0, -0.0135, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2040.254, 14780.96, 31730.4 >, < 0, -0.0275, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 522.9539, -19508.34, 15076.6 >, < 0, 0.0029, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 821.9539, -19280.55, 16685.6 >, < 0, 90.004, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1020.851, -19926.34, 17860.8 >, < 0.009, 0.0029, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1022.854, -22070.55, 17887.8 >, < 0, -89.9967, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1710.954, -22346.14, 19281.9 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1711.454, -23604.35, 19279.5 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1710.454, -24774.64, 19362.3 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1934.054, -24902.55, 20908.7 >, < 0, 179.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1936.454, -26602.55, 21502 >, < 0, 179.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3168.154, -27624.14, 21897.3 >, < 0, -90.0068, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 4161.154, -28133.75, 23287.4 >, < 0, -0.0065, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2824.854, -28134.64, 23630.8 >, < 0, -179.9963, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3513.654, -27943.75, 25127.1 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 4913.354, -27944.64, 25465.8 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 5413.654, -29261.14, 27441.3 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 324.3538, -19508.34, 15076.6 >, < 0, 0.0029, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1020.554, -19280.55, 16685.6 >, < 0, 90.004, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 823.3513, -19926.34, 17860.8 >, < 0.009, 0.0029, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 823.7539, -22070.55, 17887.8 >, < 0, -89.9967, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1511.454, -22346.14, 19281.9 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1513.554, -23604.35, 19279.5 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1512.954, -24774.64, 19362.3 >, < 0, 89.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1934.054, -25100.25, 20908.7 >, < 0, 179.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 1936.454, -26796.05, 21502 >, < 0, 179.9932, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2968.954, -27624.14, 21897.3 >, < 0, -90.0068, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 4161.154, -27936.14, 23287.4 >, < 0, -0.0065, -0.0001 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 2824.854, -27936.14, 23630.8 >, < 0, -179.9963, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 3513.654, -28141.64, 25127.1 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 4913.354, -28141.55, 25465.8 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 5215.454, -29261.14, 27441.3 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
+
+    // Triggers
+    entity trigger_900 = MapEditor_CreateTrigger( < 3006.854, 12562.96, 14093.52 >, < 0, 179.9865, 0 >, 28.15, 15, false )
+    trigger_900.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3089.513, 11854, 15110.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+    Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_900 )
+    entity trigger_901 = MapEditor_CreateTrigger( < 3203.054, 11776.55, 15132.82 >, < 0, 89.9932, 0 >, 28.15, 15, false )
+    trigger_901.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3089.513, 11152, 16116.12 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_901 )
+    entity trigger_902 = MapEditor_CreateTrigger( < 3208.454, 11080.25, 16140.32 >, < 0, 89.9932, 0 >, 28.15, 15, false )
+    trigger_902.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2556.699, 10793.09, 17129.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_902 )
+    entity trigger_903 = MapEditor_CreateTrigger( < 2477.954, 10676.75, 17153.32 >, < 0, 89.9702, 0 >, 28.15, 15, false )
+    trigger_903.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2265.352, 10185, 18127.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_903 )
+    entity trigger_904 = MapEditor_CreateTrigger( < 2380.954, 10106.75, 18153.32 >, < 0, 179.9997, 0 >, 28.15, 15, false )
+    trigger_904.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1616.496, 10178.15, 19128.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_904 )
+    entity trigger_905 = MapEditor_CreateTrigger( < 1536.954, 10061.75, 19152.92 >, < 0, 89.9998, 0 >, 28.15, 15, false )
+    trigger_905.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1602.353, 9527.995, 20129.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_905 )
+    entity trigger_906 = MapEditor_CreateTrigger( < 1718.954, 9448.755, 20153.32 >, < 0, 179.9997, 0 >, 28.15, 15, false )
+    trigger_906.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1600.42, 10163.96, 21101.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_906 )
+    entity trigger_907 = MapEditor_CreateTrigger( < 1482.954, 10241.75, 21126.32 >, < 0, -0.0099, 0 >, 28.15, 15, false )
+    trigger_907.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1565.436, 10456.56, 22176.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_907 )
+    entity trigger_908 = MapEditor_CreateTrigger( < 1488.954, 10339.75, 22201.32 >, < 0, 89.954, 0 >, 28.15, 15, false )
+    trigger_908.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1263.716, 10489.17, 23252.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_908 )
+    entity trigger_909 = MapEditor_CreateTrigger( < 1145.954, 10568.75, 23277.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_909.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1472.716, 10829.17, 24356.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_909 )
+    entity trigger_9010 = MapEditor_CreateTrigger( < 1356.354, 10906.75, 24380.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_9010.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1255.717, 11171.17, 25456.62 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9010 )
+    entity trigger_9011 = MapEditor_CreateTrigger( < 1131.954, 11251.75, 25480.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_9011.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1256.487, 11463, 26664.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9011 )
+    entity trigger_9012 = MapEditor_CreateTrigger( < 1140.954, 11542.75, 26688.32 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9012.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1256.487, 12086, 27696.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9012 )
+    entity trigger_9013 = MapEditor_CreateTrigger( < 1140.054, 12161.75, 27719.32 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9013.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1665.5, 12357.01, 28733.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9013 )
+    entity trigger_9014 = MapEditor_CreateTrigger( < 1746.054, 12473.75, 28756.32 >, < 0, -90.0298, 0 >, 28.15, 15, false )
+    trigger_9014.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1938.938, 12761.44, 29775.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9014 )
+    entity trigger_9015 = MapEditor_CreateTrigger( < 1822.854, 12839.85, 29797.92 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9015.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1938.938, 12769.44, 30683.92 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9015 )
+    entity trigger_9016 = MapEditor_CreateTrigger( < 2054.954, 12849.96, 30602.82 >, < 0, -90.0068, 0 >, 28.15, 15, false )
+    trigger_9016.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1923.977, 13379.5, 31441.8 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9016 )
+    entity trigger_9017 = MapEditor_CreateTrigger( < 1829.454, 13479.55, 31403.92 >, < 0, -90.0208, 0 >, 28.15, 15, false )
+    trigger_9017.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1943.575, 14758.1, 31781.8 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9017 )
+    entity trigger_9018 = MapEditor_CreateTrigger( < 1842.654, 14780.96, 31745.32 >, < 0, -90.0208, 0 >, 28.15, 15, false )
+    trigger_9018.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3088.613, 12494.5, 14129.37 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9018 )
+    entity trigger_9019 = MapEditor_CreateTrigger( < 3170.754, 12562.96, 14093.52 >, < 0, 179.9865, 0 >, 28.15, 15, false )
+    trigger_9019.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1943.575, 14758.1, 31781.8 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9019 )
+    entity trigger_9020 = MapEditor_CreateTrigger( < 2970.254, 11776.55, 15132.82 >, < 0, 89.9932, 0 >, 28.15, 15, false )
+    trigger_9020.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3088.613, 12494.5, 14129.37 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9020 )
+    entity trigger_9021 = MapEditor_CreateTrigger( < 2970.554, 11080.25, 16140.32 >, < 0, 89.9932, 0 >, 28.15, 15, false )
+    trigger_9021.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3089.513, 11854, 15110.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9021 )
+    entity trigger_9022 = MapEditor_CreateTrigger( < 2477.954, 10911.85, 17153.32 >, < 0, 89.9702, 0 >, 28.15, 15, false )
+    trigger_9022.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3089.513, 11152, 16116.12 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9022 )
+    entity trigger_9023 = MapEditor_CreateTrigger( < 2146.554, 10106.75, 18153.32 >, < 0, 179.9997, 0 >, 28.15, 15, false )
+    trigger_9023.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2556.699, 10793.09, 17129.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9023 )
+    entity trigger_9024 = MapEditor_CreateTrigger( < 1536.954, 10297.05, 19152.92 >, < 0, 89.9998, 0 >, 28.15, 15, false )
+    trigger_9024.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2265.352, 10185, 18127.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9024 )
+    entity trigger_9025 = MapEditor_CreateTrigger( < 1483.654, 9448.755, 20153.32 >, < 0, 179.9997, 0 >, 28.15, 15, false )
+    trigger_9025.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1616.496, 10178.15, 19128.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9025 )
+    entity trigger_9026 = MapEditor_CreateTrigger( < 1718.954, 10241.75, 21126.32 >, < 0, -0.0099, 0 >, 28.15, 15, false )
+    trigger_9026.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1602.353, 9527.995, 20129.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9026 )
+    entity trigger_9027 = MapEditor_CreateTrigger( < 1488.954, 10575.16, 22201.32 >, < 0, 89.954, 0 >, 28.15, 15, false )
+    trigger_9027.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1600.42, 10163.96, 21101.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9027 )
+    entity trigger_9028 = MapEditor_CreateTrigger( < 1382.054, 10568.75, 23277.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_9028.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1565.436, 10456.56, 22176.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9028 )
+    entity trigger_9029 = MapEditor_CreateTrigger( < 1374.154, 11251.75, 25480.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_9029.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1472.716, 10829.17, 24356.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9029 )
+    entity trigger_9030 = MapEditor_CreateTrigger( < 2056.854, 12839.85, 29797.92 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9030.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1665.5, 12357.01, 28733.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9030 )
+    entity trigger_9031 = MapEditor_CreateTrigger( < 2021.854, 13479.55, 31403.92 >, < 0, -90.0208, 0 >, 28.15, 15, false )
+    trigger_9031.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1938.938, 12769.44, 30683.92 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9031 )
+    entity trigger_9032 = MapEditor_CreateTrigger( < 1375.154, 12161.75, 27719.32 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9032.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1256.487, 11463, 26664.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9032 )
+    entity trigger_9033 = MapEditor_CreateTrigger( < 1591.654, 10906.75, 24380.32 >, < 0, -0.0438, 0 >, 28.15, 15, false )
+    trigger_9033.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1263.716, 10489.17, 23252.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9033 )
+    entity trigger_9034 = MapEditor_CreateTrigger( < 1375.254, 11542.75, 26688.32 >, < 0, -0.0298, 0 >, 28.15, 15, false )
+    trigger_9034.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1255.717, 11171.17, 25456.62 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9034 )
+    entity trigger_9035 = MapEditor_CreateTrigger( < 1746.054, 12238.85, 28756.32 >, < 0, -90.0298, 0 >, 28.15, 15, false )
+    trigger_9035.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1256.487, 12086, 27696.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9035 )
+    entity trigger_9036 = MapEditor_CreateTrigger( < 1818.354, 12849.96, 30602.82 >, < 0, -90.0068, 0 >, 28.15, 15, false )
+    trigger_9036.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1938.938, 12761.44, 29775.1 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9036 )
+    entity trigger_9037 = MapEditor_CreateTrigger( < 2040.254, 14780.96, 31745.32 >, < 0, -90.0208, 0 >, 28.15, 15, false )
+    trigger_9037.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1923.977, 13379.5, 31441.8 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9037 )
+    entity trigger_9038 = MapEditor_CreateTrigger( < 522.9539, -19508.34, 15091.52 >, < 0, 0.0029, 0 >, 28.15, 15, false )
+    trigger_9038.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 921.6301, -19380.24, 16737 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+    Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9038 )
+    entity trigger_9039 = MapEditor_CreateTrigger( < 821.9539, -19280.55, 16700.52 >, < 0, 90.004, 0 >, 28.15, 15, false )
+    trigger_9039.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 921.8325, -19826.42, 17912.72 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9039 )
+    entity trigger_9040 = MapEditor_CreateTrigger( < 1020.854, -19926.34, 17875.72 >, < -0.0001, -89.9904, -0.009 >, 28.15, 15, false )
+    trigger_9040.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 922.5293, -21970.6, 17937.23 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9040 )
+    entity trigger_9041 = MapEditor_CreateTrigger( < 1022.854, -22070.55, 17902.72 >, < 0, -179.9899, 0 >, 28.15, 15, false )
+    trigger_9041.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1610.515, -22242.55, 19324.64 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9041 )
+    entity trigger_9042 = MapEditor_CreateTrigger( < 1710.954, -22346.14, 19296.82 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9042.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1610.51, -23504.96, 19324.64 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9042 )
+    entity trigger_9043 = MapEditor_CreateTrigger( < 1711.454, -23604.35, 19294.42 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9043.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1611.159, -24675.79, 19413.03 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9043 )
+    entity trigger_9044 = MapEditor_CreateTrigger( < 1710.454, -24774.64, 19377.22 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9044.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1833.327, -25001.33, 20953.57 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9044 )
+    entity trigger_9045 = MapEditor_CreateTrigger( < 1934.054, -24902.55, 20923.62 >, < -0.0001, 89.9999, 0 >, 28.15, 15, false )
+    trigger_9045.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1835.786, -26701.4, 21555.3 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9045 )
+    entity trigger_9046 = MapEditor_CreateTrigger( < 1936.454, -26602.55, 21516.92 >, < -0.0001, 89.9999, 0 >, 28.15, 15, false )
+    trigger_9046.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3066.2, -27525, 21950.53 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9046 )
+    entity trigger_9047 = MapEditor_CreateTrigger( < 3168.154, -27624.14, 21912.22 >, < 0, -180, 0 >, 28.15, 15, false )
+    trigger_9047.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 4260.018, -28033.01, 23331.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9047 )
+    entity trigger_9048 = MapEditor_CreateTrigger( < 4161.154, -28133.75, 23302.32 >, < -0.0001, -89.9998, 0 >, 28.15, 15, false )
+    trigger_9048.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2924.964, -28034.89, 23680.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9048 )
+    entity trigger_9049 = MapEditor_CreateTrigger( < 2824.854, -28134.64, 23645.72 >, < 0, 90.0104, 0 >, 28.15, 15, false )
+    trigger_9049.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3414.953, -28042.9, 25170.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9049 )
+    entity trigger_9050 = MapEditor_CreateTrigger( < 3513.654, -27943.75, 25142.02 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9050.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 4813.953, -28042.9, 25510.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9050 )
+    entity trigger_9051 = MapEditor_CreateTrigger( < 4913.354, -27944.64, 25480.72 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9051.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 5313.953, -29160.9, 27486.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9051 )
+    entity trigger_9052 = MapEditor_CreateTrigger( < 5413.654, -29261.14, 27456.22 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9052.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 423.458, -19409.2, 15129 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the next cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9052 )
+    entity trigger_9053 = MapEditor_CreateTrigger( < 324.3538, -19508.34, 15091.52 >, < 0, 0.0029, 0 >, 28.15, 15, false )
+    trigger_9053.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 5313.955, -29160.9, 27486.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9053 )
+    entity trigger_9054 = MapEditor_CreateTrigger( < 1020.554, -19280.55, 16700.52 >, < 0, 90.004, 0 >, 28.15, 15, false )
+    trigger_9054.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 423.4578, -19409.2, 15129 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9054 )
+    entity trigger_9055 = MapEditor_CreateTrigger( < 823.3538, -19926.34, 17875.72 >, < -0.0001, -89.9904, -0.009 >, 28.15, 15, false )
+    trigger_9055.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 921.6299, -19380.24, 16737 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9055 )
+    entity trigger_9056 = MapEditor_CreateTrigger( < 823.7539, -22070.55, 17902.72 >, < 0, -179.9899, 0 >, 28.15, 15, false )
+    trigger_9056.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 921.8325, -19826.42, 17912.72 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9056 )
+    entity trigger_9057 = MapEditor_CreateTrigger( < 1511.454, -22346.14, 19296.82 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9057.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 922.5293, -21970.6, 17937.23 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9057 )
+    entity trigger_9058 = MapEditor_CreateTrigger( < 1513.554, -23604.35, 19294.42 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9058.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1610.515, -22242.55, 19324.64 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9058 )
+    entity trigger_9059 = MapEditor_CreateTrigger( < 1512.954, -24774.64, 19377.22 >, < -0.0001, -0.0001, 0 >, 28.15, 15, false )
+    trigger_9059.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1610.51, -23504.96, 19324.64 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9059 )
+    entity trigger_9060 = MapEditor_CreateTrigger( < 1934.054, -25100.25, 20923.62 >, < -0.0001, 89.9999, 0 >, 28.15, 15, false )
+    trigger_9060.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1611.159, -24675.79, 19413.03 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9060 )
+    entity trigger_9061 = MapEditor_CreateTrigger( < 1936.454, -26796.05, 21516.92 >, < -0.0001, 89.9999, 0 >, 28.15, 15, false )
+    trigger_9061.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1833.327, -25001.33, 20953.57 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9061 )
+    entity trigger_9062 = MapEditor_CreateTrigger( < 2968.954, -27624.14, 21912.22 >, < 0, -180, 0 >, 28.15, 15, false )
+    trigger_9062.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 1835.787, -26701.4, 21555.3 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9062 )
+    entity trigger_9063 = MapEditor_CreateTrigger( < 4161.154, -27936.14, 23302.32 >, < -0.0001, -89.9998, 0 >, 28.15, 15, false )
+    trigger_9063.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3066.2, -27525, 21950.53 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9063 )
+    entity trigger_9064 = MapEditor_CreateTrigger( < 2824.854, -27936.14, 23645.72 >, < 0, 90.0104, 0 >, 28.15, 15, false )
+    trigger_9064.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 4260.018, -28033.01, 23331.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9064 )
+    entity trigger_9065 = MapEditor_CreateTrigger( < 3513.654, -28141.64, 25142.02 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9065.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 2924.964, -28034.89, 23680.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9065 )
+    entity trigger_9066 = MapEditor_CreateTrigger( < 4913.354, -28141.55, 25480.72 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9066.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 3414.953, -28042.9, 25170.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9066 )
+    entity trigger_9067 = MapEditor_CreateTrigger( < 5215.454, -29261.14, 27456.22 >, < 0, 179.9935, -0.0001 >, 28.15, 15, false )
+    trigger_9067.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+    if (IsValid(ent)) {
+    if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
+        if (ent.GetPersistentVarAsInt("gen") == 0) {
+            ent.SetOrigin(< 4813.953, -28042.9, 25510.73 >)
+            
+            ent.SetVelocity(< 0, 0, 0 >)
+            Message(ent, "Going to the previous cp")
+        } else {
+            Message(ent, "Can't use it while Timer is running!")
+        }
+    }
+}
+    })
+    DispatchSpawn( trigger_9067 )
 
 }
