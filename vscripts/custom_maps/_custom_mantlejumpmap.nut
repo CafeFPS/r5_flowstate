@@ -4797,6 +4797,79 @@ if (IsValid(user)) {
     MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 4913.354, -28141.55, 25465.8 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
     MapEditor_CreateProp( $"mdl/fx/energy_ring_edge.rmdl", < 5215.454, -29261.14, 27441.3 >, < 0.0001, -90.0132, 0 >, true, 50000, -1, 5.3625 )
 
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 5215.454, -29261.14, 27525.02 >, < 90, 89.9941, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 4913.354, -28141.55, 25550.72 >, < 90, -0.0067, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3513.654, -28141.64, 25212.1 >, < 90, -0.0068, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2824.854, -27936.14, 23715.62 >, < 90, 0.011, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 4161.154, -27936.14, 23372.52 >, < 90, 0.0005, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2968.954, -27624.14, 21982.42 >, < 90, 90.0005, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1936.454, -26796.05, 21587.22 >, < 90, -179.9999, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1934.054, -25100.25, 20994.42 >, < 90, -179.9999, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1512.954, -24774.64, 19446.92 >, < 90, 90.0001, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1513.554, -23604.35, 19364.42 >, < 90, 90, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1511.454, -22346.14, 19365.72 >, < 89.9802, 90.0001, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 823.7539, -22070.55, 17971.82 >, < 90, 90.0106, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 823.3647, -19926.34, 17946.12 >, < 90, 90.0189, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1020.554, -19280.55, 16770.52 >, < 90, -89.9887, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 324.3538, -19508.34, 15161.82 >, < 90, 90.0099, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 5413.954, -29261.17, 27442.22 >, < -90, -90.0067, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 4913.354, -27941.34, 25467.42 >, < -90, 179.9935, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3513.654, -27943.75, 25128.92 >, < -90, 179.9935, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2824.854, -28134.64, 23632.32 >, < -90, -179.9897, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 4161.154, -28133.75, 23288.72 >, < -90, -179.9996, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3168.154, -27624.14, 21899.42 >, < -90, -90.0002, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1936.454, -26602.55, 21503.72 >, < -90, 0.0001, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1934.054, -24902.55, 20910.82 >, < -90, 0.0001, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1710.454, -24774.64, 19363.32 >, < -90, -89.9999, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1711.454, -23604.35, 19281.02 >, < -90, -89.9999, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1710.954, -22346.14, 19283.22 >, < -90, -89.9999, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1022.854, -22070.55, 17889.22 >, < -90, -89.99, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1020.852, -19926.34, 17862.92 >, < -90, -89.9994, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 821.9539, -19280.55, 16687.12 >, < -90, 90.0107, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 522.9539, -19508.34, 15078.42 >, < -90, -89.9903, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2040.227, 14781.55, 31815.57 >, < 90, -0.0209, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2055.854, 12850.03, 30589.92 >, < -90, 179.9934, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1746.053, 12236.66, 28827.12 >, < 89.972, -90.0301, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1375.254, 11542.75, 26758.62 >, < 89.972, 179.9706, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1375.154, 12161.75, 27789.42 >, < 89.972, -0.03, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1591.654, 10906.75, 24450.32 >, < 89.9657, 179.9569, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2021.827, 13480.75, 31474.02 >, < 89.972, -0.021, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2055.454, 12839.86, 29867.92 >, < 89.972, -0.0299, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1374.154, 11251.75, 25550.62 >, < 89.9657, 179.9571, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1382.054, 10568.75, 23347.62 >, < 89.9657, 179.957, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1488.954, 10575.16, 22271.62 >, < 89.972, -90.0453, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1718.954, 10241.75, 21183.72 >, < 90, -0.0012, 0 >, true, 50000, -1, 5.3625 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1483.654, 9448.755, 20223.82 >, < 90, 0.0004, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1536.954, 10297.05, 19223.32 >, < 89.972, -89.9995, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2146.554, 10106.75, 18223.52 >, < 90, 0.0004, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2477.954, 10911.85, 17223.62 >, < 89.9802, -90.0291, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2970.554, 11080.25, 16210.22 >, < 90, 179.9822, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2970.254, 11776.55, 15203.22 >, < 89.9802, 0.0003, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3170.754, 12562.96, 14080.12 >, < -90, -0.0066, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1842.654, 14781.55, 31732.48 >, < -90, 179.9794, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1829.454, 13480.75, 31391.12 >, < -89.9802, 179.9794, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1817.354, 12850.08, 30672.62 >, < 89.9802, -0.0063, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1820.254, 12839.86, 29785.12 >, < -89.972, 179.9705, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1746.053, 12472.55, 28743.32 >, < -89.9604, 89.9706, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1140.054, 12161.75, 27706.12 >, < -89.972, 179.9707, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1140.954, 11542.75, 26675.72 >, < -89.9802, -0.0298, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1131.954, 11251.75, 25467.92 >, < -89.9604, -0.0438, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1145.954, 10568.75, 23264.42 >, < -89.972, -0.0439, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1356.354, 10906.75, 24367.72 >, < -89.972, -0.0438, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1488.954, 10339.75, 22188.22 >, < -89.9657, 89.954, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1482.954, 10241.75, 21113.72 >, < -90, -179.9942, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1718.954, 9448.755, 20140.52 >, < -90, 179.9998, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 1536.954, 10061.75, 19139.02 >, < -90, 89.9998, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2380.954, 10106.75, 18140.82 >, < -90, 179.9998, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 2477.954, 10676.75, 17140.72 >, < -89.972, 89.9702, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3208.454, 11080.25, 16140.32 >, < -90, -0.0066, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3203.054, 11776.55, 15119.72 >, < -89.9802, -179.9997, 0 >, true, 50000, -1, 6.9404 )
+    MapEditor_CreateProp( $"mdl/weapons/bullets/damage_arrow.rmdl", < 3006.854, 12562.96, 14163.82 >, < 90, 179.9938, 0 >, true, 50000, -1, 6.9404 )
+
+
+
+
+
     // Triggers
     entity trigger_900 = MapEditor_CreateTrigger( < 3006.854, 12562.96, 14093.52 >, < 0, 179.9865, 0 >, 28.15, 15, false )
     trigger_900.SetEnterCallback( void function(entity trigger , entity ent)
@@ -4804,10 +4877,10 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         if (ent.GetPersistentVarAsInt("gen") == 0) {
-            ent.SetOrigin(< 3089.513, 11854, 15110.1 >)
+            ent.SetOrigin(< 1943.575, 14758.1, 31781.8 >)
             
             ent.SetVelocity(< 0, 0, 0 >)
-    Message(ent, "Going to the next cp")
+    Message(ent, "Going to the previous cp")
         } else {
             Message(ent, "Can't use it while Timer is running!")
         }
@@ -5127,10 +5200,10 @@ if (IsValid(user)) {
     if (IsValid(ent)) {
     if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) {
         if (ent.GetPersistentVarAsInt("gen") == 0) {
-            ent.SetOrigin(< 1943.575, 14758.1, 31781.8 >)
+            ent.SetOrigin(< 3089.513, 11854, 15110.1 >)
             
             ent.SetVelocity(< 0, 0, 0 >)
-            Message(ent, "Going to the previous cp")
+            Message(ent, "Going to the next cp")
         } else {
             Message(ent, "Can't use it while Timer is running!")
         }
