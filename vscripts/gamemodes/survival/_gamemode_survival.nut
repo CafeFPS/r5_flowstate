@@ -848,8 +848,7 @@ void function OnClientConnected( entity player )
 		case eGameState.Playing:
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			{
-				array<ItemFlavor> characters = GetAllCharacters()
-				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() ) //todo dont give an already used character
+				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 			}
 			
 			if ( IsFiringRangeGameMode() )
@@ -1036,7 +1035,7 @@ void function SURVIVAL_CalculateAirdropPositions()
             else
             {
                 previousAirdrops.push(airdropPoint.origin)
-                printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
+                //printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
                 airdropData.originArray.append(airdropPoint.origin)
                 airdropData.anglesArray.append( Vector(airdropPoint.angles.x % 360, airdropPoint.angles.y % 360, airdropPoint.angles.z % 360) )
 

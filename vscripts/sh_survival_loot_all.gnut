@@ -250,7 +250,6 @@ void function SURVIVAL_Loot_All_InitShared()
 	file.disabledRefs.clear()
 	file.disabledRefs = split( GetCurrentPlaylistVarString( "survival_disabled_loot", " " ), " " )
 	
-	
 	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot.rpak" ) )
 	//if(!IsLobby())
 	//	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot_sdk.rpak" ))
@@ -260,17 +259,23 @@ void function SURVIVAL_Loot_All_InitShared()
 		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_custom_loot.rpak" ))
 	#endif
 	
+	//Custom loot
 	RegisterCustomAmmos()
 	RegisterNewCustomAttachments()
 	RegisterNewCustomWeapons()
-	
-	RegisterCustomWeapons() //from playlist
+	RegisterCustomWeapons()
+
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
 		RegisterSignal( "GatheredEnoughFriendInfo" )
 		SURVIVAL_UIInit_Override_DeathBox_RUI()
 	#endif
-
+	
+	// #if DEVELOPER
+	// foreach( data in file.lootData )			
+		// printt( "DEBUG REF: ", data.ref, data.countPerDrop, data.inventorySlotCount )
+	// #endif
+	
 	file.initialized = true
 }
 
@@ -321,13 +326,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		data.droppodRotate = GetLootTableBool( data.ref, dt, i, "droppodRotate" )
 		data.isDynamic = GetLootTableBool( data.ref, dt, i, "isDynamic" )
 		data.conditional = GetLootTableBool( data.ref, dt, i, "conditional" )
-
-		data.pickupString = GetLootTableString( data.ref, dt, i, "pickupString" )
-		data.desc = GetLootTableString( data.ref, dt, i, "desc" )
-
+		data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
 		data.countPerDrop = GetLootTableInt( data.ref, dt, i, "countPerDrop" )
+		data.pickupString = GetLootTableString( data.ref, dt, i, "pickupString" )
+		data.desc = GetLootTableString( data.ref, dt, i, "desc" )		
 		data.tier = GetLootTableInt( data.ref, dt, i, "tier" )
-
 		string supportedAttachmentsString  = GetLootTableString( data.ref, dt, i, "supportedAttachments" )
 		array<string> supportedAttachments = split( supportedAttachmentsString, " " )
 		supportedAttachments.sort(
@@ -350,7 +353,6 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
 		data.netInt = GetLootTableString( data.ref, dt, i, "netInt" )
-		data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
 
 		#if SERVER || CLIENT
 		data.minInWorld = GetLootTableFloat( data.ref, dt, i, "minInWorld" )
@@ -450,9 +452,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 				break
 		}
 
+		//Save
 		{
 			data.index = file.lootIndexToString.len()
 			file.lootIndexToString.append( data.ref )
+			
 			file.lootData[ data.ref ] <- data
 
 			#if SERVER
@@ -466,15 +470,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		#endif
 	}
 
-	RegisterCustomWeapons()
-
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
 		RegisterSignal( "GatheredEnoughFriendInfo" )
 		SURVIVAL_UIInit_Override_DeathBox_RUI()
 	#endif
-
-	file.initialized = true
 }
 
 struct CustomWeaponData
@@ -661,8 +661,8 @@ void function RegisterCustomAmmos()
 		sound = "survival_loot_pickup_HeavyAmmo",
 		sound3p = "survival_loot_pickup_3p_HeavyAmmo",
 		pingCommsAction = "BLANK",
-		countPerDrop = 15,
-		stackSize = 30,
+		countPerDrop = 14,
+		stackSize = 28,
 		chance = 10.0
 	}
 

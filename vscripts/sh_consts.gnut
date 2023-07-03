@@ -2251,10 +2251,10 @@ global const asset LOOT_PICKUP_HINT_COMPACT_RUI		= $"ui/loot_pickup_hint_compact
 global const asset WEAPON_PICKUP_HINT_DEFAULT_RUI	= $"ui/loot_pickup_hint_weapon.rpak"
 global const asset WEAPON_PICKUP_HINT_COMPACT_RUI	= $"ui/loot_pickup_hint_weapon_compact.rpak"
 
-global const int SURVIVAL_BACKPACK_LIMIT = 8
-global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 10
-global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 12
-global const int SURVIVAL_BACKPACK_LIMIT_MAX = 14
+global const int SURVIVAL_BACKPACK_LIMIT = 10
+global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 12
+global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 14
+global const int SURVIVAL_BACKPACK_LIMIT_MAX = 16
 
 global const int DEBUG_BULLET_DROP = 0
 

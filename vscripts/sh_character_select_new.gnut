@@ -2,11 +2,6 @@
 Todo:
 -Make clients see the picking player skin, not their own skin
 -Don't interrupt ready-up anims unless we have to (it's your turn to pick, or the next player locked in)
-
-Changelist By Colombia:
--I don't remember, use git diff lmao
-
-add r5reloaded_AnimatedCharacterSelect to playlist so you can enable/disable this feature.
 */
 
 #if SERVER
@@ -23,7 +18,6 @@ const asset BACKGROUND_GEO_MODEL_LEGACY   = $"mdl/levels_terrain/mp_lobby/mp_cha
 
 #if SERVER
 global function AssignLockStepOrder
-global function CharacterSelect_TryAssignCharacterCandidatesToPlayer
 global function CharacterSelect_AssignCharacter
 #endif
 
@@ -3083,10 +3077,13 @@ void function DebugMenuThink()
 #if SERVER
 bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor character, bool updateLoadoutSlot = true )
 {
-	printt( "AssignCharacter: player", player, "is now", ItemFlavor_GetHumanReadableRef( character ) )
-
-	if ( updateLoadoutSlot )
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	
+	if ( updateLoadoutSlot && ItemFlavor_GetHumanReadableRef( playerCharacter ) != ItemFlavor_GetHumanReadableRef( character ) )
+	{
 		SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), character )
+		printt( "AssignCharacter: player", player, "is now", ItemFlavor_GetHumanReadableRef( character ) )
+	}
 
 	player.SetPlayerNetBool( "hasLockedInCharacter", true )
 	
@@ -3097,35 +3094,13 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
 			GivePassive( player, ePassives.PAS_FORTIFIED )
+	} else
+	{
+		if( PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
+			TakePassive( player, ePassives.PAS_FORTIFIED )
 	}
 	
 	return true
-}
-
-// The function checks if the candidates are suitable for assignment and removes unsuitable candidates.
-// If there are 1 or more suitable candidates left, the first candidate is assigned (order of priority).
-// If there are no suitable candidates left, a random character is assigned.
-bool function CharacterSelect_TryAssignCharacterCandidatesToPlayer( entity player, array<SettingsAssetGUID> candidates )
-{
-	foreach ( candidate in candidates )
-		foreach ( squadMates in GetPlayerArrayOfTeam( player.GetTeam() ) )
-			if ( !IsValidItemFlavorGUID( candidate )
-				|| !IsItemFlavorUnlockedForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), GetItemFlavorByGUID( candidate ) )
-				|| ItemFlavor_GetGUID( LoadoutSlot_GetItemFlavor( ToEHI( squadMates ), Loadout_CharacterClass() ) ) == candidate
-				)
-			candidates.fastremovebyvalue( candidate )
-
-	bool retValue = true
-
-	if ( candidates.len() == 0 ) {
-		candidates.append( ItemFlavor_GetGUID( GetRandomGoodItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() ) ) )
-		retValue = false // No suitable candidates found from the candidates list, a random character was assigned
-	}
-
-	ItemFlavor selectedCandidate = GetItemFlavorByGUID( candidates[0] )
-	CharacterSelect_AssignCharacter( player, selectedCandidate )
-
-	return retValue
 }
 
 bool function ClientCommand_UpdateCharacterLock( entity player, array<string> args )

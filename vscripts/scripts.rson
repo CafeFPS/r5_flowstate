@@ -967,6 +967,7 @@ Scripts:
 	gamemodes/fs_movementgym/_movement_gym.nut
 	custom_maps/_custom_doormap.nut
 	custom_maps/_custom_grapplemap.nut
+	custom_maps/_custom_mantlejumpmap.nut
 	//map editor props
 	_place_map_editor_props_here.nut
 

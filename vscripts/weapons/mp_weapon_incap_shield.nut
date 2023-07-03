@@ -17,6 +17,9 @@ global function IncapShield_GetMaxShieldHealthFromTier
 const INCAP_SHIELD_FX_WALL_FP = $"P_down_shield_CP" //$"P_gun_shield_gibraltar_3P" //Should be FP, but Gibraltar Shield FP fx don't color change
 const INCAP_SHIELD_FX_WALL = $"P_down_shield_CP" //$"P_gun_shield_gibraltar_3P"
 const INCAP_SHIELD_FX_COL = $"mdl/fx/down_shield_01.rmdl" //$"mdl/fx/gibralter_gun_shield.rmdl"
+
+const float INCAP_SHIELD_MOVE_SLOW_SEVERITY = 0.55
+
 const INCAP_SHIELD_FX_BREAK = $"P_down_shield_break_CP"
 
 const string SOUND_PILOT_INCAP_SHIELD_3P = "BleedOut_Shield_Sustain_3p"
@@ -163,7 +166,7 @@ void function OnWeaponActivate_incap_shield( entity weapon )
 void function CreateIncapShield( entity player, entity weapon )
 {
 	thread IncapShieldThink( player, weapon )
-	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.move_slow, 0.55 ) )
+	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.move_slow, INCAP_SHIELD_MOVE_SLOW_SEVERITY ) )
 }
 
 void function IncapShieldThink( entity player, entity vortexWeapon )
@@ -287,7 +290,7 @@ entity function CreateIncapShieldEntity( entity player, entity vortexWeapon )
 	vector dir = player.EyeAngles()
 	vector forward = AnglesToForward( dir )
 
-	GunShieldSettings gs
+	IncapShieldSettings gs
 	gs.invulnerable = false
 	gs.maxHealth = float( IncapShield_GetMaxShieldHealthFromTier( IncapShield_GetShieldTier( player ) ) )
 	gs.impacteffectcolorID = IncapShield_GetShieldImpactColorID( player )
@@ -300,11 +303,11 @@ entity function CreateIncapShieldEntity( entity player, entity vortexWeapon )
 	gs.useFxColorOverride = true
 	gs.fxColorOverride = GetIncapShieldColorFromInventory( player )
 	gs.model = INCAP_SHIELD_FX_COL
-	gs.modelHide = true
-	gs.modelOverrideAngles = forward // <91, 0, 0>
-	gs.fxOverrideAngles = <0, 0, 0>
+	gs.modelHide = false
+	gs.modelOverrideAngles = <90, 0, 0>
+	gs.fxOverrideAngles = forward
 
-	entity vortexSphere = CreateGunAttachedShieldModel( gs )
+	entity vortexSphere = CreateIncapShieldModel( gs )
 	return vortexSphere
 }
 

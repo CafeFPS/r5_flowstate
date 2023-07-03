@@ -58,6 +58,7 @@ struct {
 	array<LootZone> lootZones
 	LootZone hotZone
 	table<vector, array<string> > vaultLootSpawned
+	array<entity> spawnedAmmoStacks
 } file
 
 bool function InfiniteAmmoEnabled()
@@ -453,7 +454,21 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 			thread function() : ( deathBox )
 			{
-				wait 3.0
+				wait 1.0
+				
+				if( !IsValid( deathBox ) )
+					return
+			
+				entity boxPhysics = deathBox.GetParent()
+			
+				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
+				{
+					deathBox.ClearParent()
+					boxPhysics.Destroy()
+				}
+
+				wait 2.0
+				
 				if ( IsValid( deathBox ) )
 					deathBox.Destroy()
 			}()
@@ -541,7 +556,21 @@ bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args 
 
 			thread function() : ( deathBox )
 			{
-				wait 3.0
+				wait 1.0
+				
+				if( !IsValid( deathBox ) )
+					return
+			
+				entity boxPhysics = deathBox.GetParent()
+			
+				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
+				{
+					deathBox.ClearParent()
+					boxPhysics.Destroy()
+				}
+
+				wait 2.0
+				
 				if ( IsValid( deathBox ) )
 					deathBox.Destroy()
 			}()
@@ -651,7 +680,7 @@ void function OnGroundLootSpawned( entity ent )
 		spawnOrigin.z += 1.5
 	}
 
-	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
+	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -1617,27 +1646,34 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 		Highlight_ClearNeutralHighlight( box )
 
-		thread DeathBoxFakePhysics( box )
+		thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 	}
 
 	return box
 }
 
-void function DeathBoxFakePhysics( entity box )
+void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 {
-	vector restPos = box.GetOrigin()
-	vector fallPos = restPos + < 0, 0, 54 >
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( $"mdl/props/death_box/death_box_01.rmdl" )
+	prop_physics.kv.solid = 0
+	prop_physics.kv.spawnflags = SF_PHYSPROP_DEBRIS
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	prop_physics.kv.minhealthdmg = 9999
+	prop_physics.kv.nodamageforces = 1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 0.5
+	prop_physics.SetOrigin( deathbox.GetOrigin() )
+	prop_physics.SetAngles( deathbox.GetAngles() )
+	DispatchSpawn( prop_physics )
 
-	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
-	box.SetParent( mover, "", true )
-
-	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
-	wait 0.5
-	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
-	wait 0.5
-	if ( IsValid( box ) )
-		box.ClearParent()
-	mover.Destroy()
+	playerVelocity += deathbox.GetUpVector() * 300 // player velocity probably needs a limit, needs more testing, same for deathbox inertia scale. Seems to work fine for now
+	deathbox.SetParent( prop_physics )
+	prop_physics.Hide()
+	prop_physics.NotSolid()
+	prop_physics.SetVelocity( playerVelocity )
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1 )
@@ -1716,23 +1752,64 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	//printt( "SpawnWeaponAndAmmo", ref, origin )
 	entity ent
 
-	//Also spawn 2 ammo containers (as one because edict limit)
+	//Also spawn 2 ammo containers with coinflip (based on retail)
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 	string ammoType = itemData.ammoType
+	
+	array<vector> circlePositions
+	
+	for(int i = 0; i < 8; i++)
+	{
+		float r = float(i) / float( 8 ) * 2 * PI
+		circlePositions.append( origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0> )
+	}
+	
+	circlePositions.randomize()
 
 	if ( SURVIVAL_Loot_IsRefValid( ammoType ) )
 	{
 		itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
-		ent = SpawnGenericLoot(ammoType, origin + <RandomFloatRange( 25.0, 50.0 ), RandomFloatRange( 25.0, 50.0 ), 0>, <0, RandomFloatRange( -180.0, 180.0 ), 1>, itemData.countPerDrop * 2)
+
+		foreach( ammo in file.spawnedAmmoStacks )
+		{
+			foreach( possiblePos in circlePositions )
+			{
+				if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
+					circlePositions.fastremovebyvalue( possiblePos )
+			}
+		}
+	
+		if( circlePositions.len() == 0 )
+		{
+			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			return ent
+		}
+		
+		vector nextOrigin = circlePositions.getrandom()
+		
+		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		circlePositions.fastremovebyvalue( nextOrigin )
+		
+		if( circlePositions.len() == 0 )
+		{
+			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			return ent
+		}
+
+		if( CoinFlip() )
+		{
+			nextOrigin = circlePositions.getrandom()
+			file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		}
 	}
 
-	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180.0, 180.0 ), 90>, 1)
+	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
 	return ent
 }
 
 entity function SpawnArmor( string ref, vector origin )
 {
-	return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180.0, 180.0 ), 1>, 1)
+	return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180, 180 ), 1>, 1)
 }
 
 entity function SpawnNothing( string ref, vector origin, vector angles )

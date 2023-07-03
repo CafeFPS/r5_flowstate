@@ -56,14 +56,14 @@ void function OnPlayerCreated( entity player )
 
 void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 {
+	printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
+	
 	if ( PlayerShouldHaveUnitFrame( player ) )
 	{
-		printt( "UF: OnPlayerTeamChanged add", player, oldTeam, newTeam )
 		CreateTeamUnitFrame( player )
 	}
 	else
 	{
-		printt( "UF: OnPlayerTeamChanged dest", player, oldTeam, newTeam )
 		DestroyTeamUnitFrame( player )
 	}
 }
