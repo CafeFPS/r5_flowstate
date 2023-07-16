@@ -54,8 +54,7 @@ global struct SmokescreenStruct
 
 vector function GetFXCenterFromSmokescreen( SmokescreenStruct smokescreen )
 {
-	vector origin = <0, 0, 0>
-	return origin
+	return smokescreen.origin
 }
 
 struct SmokescreenFXStruct

@@ -6,12 +6,17 @@ global function SetVaultPanelOpenMinimapObj
 global function GetVaultPanelOpenMinimapObj
 global function VaultPanel_GetBestMinimapObjs
 global function VaultPanel_GetAllMinimapObjs
+global function VaultPanel_HasPlayerDataKnife
 
 global function HACK_IsVaultDoor
 global function IsValidLootVaultDoorEnt
 global function IsVaultPanel
 global function GetVaultPanelFromDoor
-
+global function GetAllVaultPanelsData
+#if SERVER
+global function SetMinimapObjectVisibleToPlayer
+global function SetVaultPanelState
+#endif
 global function VaultPanel_GetTeammateWithKey
 
 global const string LOOT_VAULT_PANEL_SCRIPTNAME = "LootVaultPanel"
@@ -22,7 +27,7 @@ global const string LOOT_VAULT_AUDIO_OPEN = "LootVault_Open"
 global const string LOOT_VAULT_AUDIO_ACCESS = "lootVault_Access"
 global const string LOOT_VAULT_AUDIO_STATUSBAR = "LootVault_StatusBar"
 
-enum ePanelState
+global enum ePanelState
 {
 	LOCKED,
 	UNLOCKING,
@@ -36,7 +41,7 @@ struct LootVaultPanelData
 
 	array<entity> vaultDoors
 	#if SERVER
-
+	int openByTeamNumber = -1
 	#endif // SERVER
 
 	entity minimapObj
@@ -46,8 +51,8 @@ struct LootVaultPanelData
 struct
 {
 	array< LootVaultPanelData > vaultControlPanels
-	array< void functionref( LootVaultPanelData, int ) > vaultPanelUnlockingStateCallbacks
-	array< void functionref( LootVaultPanelData, int ) > vaultPanelUnlockedStateCallbacks
+	// array< void functionref( LootVaultPanelData, int ) > vaultPanelUnlockingStateCallbacks
+	// array< void functionref( LootVaultPanelData, int ) > vaultPanelUnlockedStateCallbacks
 
 	array< entity > vaultDoors
 	entity textPanel
@@ -60,6 +65,7 @@ void function Sh_Loot_Vault_Panel_Init()
 	AddSpawnCallback( "prop_dynamic", VaultPanelSpawned )
 	AddSpawnCallback( "prop_door", VaultDoorSpawned)
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	AddCallback_OnClientConnected( Vault_PlayerConnected )
 	#endif // SERVER
 
 	#if CLIENT
@@ -68,8 +74,8 @@ void function Sh_Loot_Vault_Panel_Init()
 	#endif // CLIENT
 
 
-	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
-	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
+	// LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
+	// LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
 }
 
 
@@ -81,12 +87,13 @@ void function VaultPanelSpawned( entity panel )
 	LootVaultPanelData newPanel
 	newPanel.panel = panel
 
-	#if SERVER
-	
-	#endif // SERVER
-
 	file.vaultControlPanels.append( newPanel )
-//	SetVaultPanelState(panel, ePanelState.UNLOCKED)
+	SetVaultPanelState(panel, ePanelState.LOCKED)
+
+	#if SERVER
+	AddVaultToMinimap_Locked(panel)
+	AddVaultToMinimap_Open(panel)
+	#endif // SERVER
 
 	SetVaultPanelUsable( panel )
 }
@@ -145,47 +152,23 @@ void function SetVaultPanelState( entity panel, int panelState )
 
 	panelData.panelState = panelState
 
-	switch ( panelState )
-	{
-		case ePanelState.LOCKED:
-			return
-		case ePanelState.UNLOCKING:
-		{
-			//printf( "LootVaultPanelDebug: Changing panel state to UNLOCKING" )
-			LootVaultPanelState_Unlocking( panelData, panelState )
-		}
-		case ePanelState.UNLOCKED:
-		{
-			//printf( "LootVaultPanelDebug: Changing panel state to UNLOCKED" )
-			LootVaultPanelState_Unlocked( panelData, panelState )
-		}
-		default:
-			return
-	}
-}
-
-void function LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( void functionref( LootVaultPanelData, int ) callbackFunc )
-{
-	Assert( !file.vaultPanelUnlockingStateCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with LootVaultPanels_AddCallback_OnVaultPanelStateChanged" )
-	file.vaultPanelUnlockingStateCallbacks.append( callbackFunc )
-}
-
-void function LootVaultPanelState_Unlocking( LootVaultPanelData panelData, int panelState )
-{
-	foreach ( func in file.vaultPanelUnlockingStateCallbacks )
-		func( panelData, panelData.panelState  )
-}
-
-void function LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( void functionref( LootVaultPanelData, int ) callbackFunc )
-{
-	Assert( !file.vaultPanelUnlockedStateCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with LootVaultPanels_AddCallback_OnVaultPanelStateChanged" )
-	file.vaultPanelUnlockedStateCallbacks.append( callbackFunc )
-}
-
-void function LootVaultPanelState_Unlocked( LootVaultPanelData panelData, int panelState )
-{
-	foreach ( func in file.vaultPanelUnlockedStateCallbacks )
-		func( panelData, panelData.panelState  )
+	// switch ( panelState )
+	// {
+		// case ePanelState.LOCKED:
+			// return
+		// case ePanelState.UNLOCKING:
+		// {
+			// //printf( "LootVaultPanelDebug: Changing panel state to UNLOCKING" )
+			// // LootVaultPanelState_Unlocking( panelData, panelState )
+		// }
+		// case ePanelState.UNLOCKED:
+		// {
+			// //printf( "LootVaultPanelDebug: Changing panel state to UNLOCKED" )
+			// // LootVaultPanelState_Unlocked( panelData, panelState )
+		// }
+		// default:
+			// return
+	// }
 }
 
 const int VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS = 60
@@ -217,8 +200,7 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 		return
 
 	// TODO: Fix vault key
-	
-//	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
+	//	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
 	if ( !VaultPanel_HasPlayerDataKnife(playerUser) )
 			return
 
@@ -235,14 +217,14 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 	settings.displayRui = $"ui/health_use_progress.rpak"
 	settings.icon = $"rui/hud/gametype_icons/survival/data_knife"
 	settings.hint = "#HINT_VAULT_UNLOCKING"
-
-	//
 	#endif // CLIENT
 
 	#if SERVER
+		settings.holsterWeapon = true
+		settings.movementDisable = true
+		settings.exclusiveUse = true
 
-
-
+		SetVaultPanelState( panel, ePanelState.UNLOCKING )
 	#endif // SERVER
 
 	thread ExtendedUse( panel, playerUser, settings )
@@ -258,126 +240,79 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 	
 	LootVaultPanelData panelData = GetVaultPanelDataFromEntity( panel )
 
-	//printf( "LootVaultPanelDebug: Panel Use Success" )
-
 	#if SERVER
 
-	// TODO: proper anims
-
-	foreach( entity door in GetVaultPanelDataFromEntity( panel ).vaultDoors)
-	{
-		door.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
-	}
-	
 	panel.SetSkin(0)
 	panel.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
+	
+	thread function() : ( player, panel, panelData )
+	{
+		vector playerOrg = player.GetOrigin()
+		int playerTeam = player.GetTeam()
+		
+		while( IsValid( panel ) )
+			WaitFrame()
+		
+		SetVaultPanelState( panel, ePanelState.UNLOCKED )
+		panelData.openByTeamNumber = playerTeam
+		
+		bool mateHasAnotherKey = false
+		
+		foreach( mate in GetPlayerArrayOfTeam( playerTeam ) )
+		{
+			if( IsValid( player ) && mate == player ) continue
+			
+			if( VaultPanel_HasPlayerDataKnife( mate ) )
+				mateHasAnotherKey= true
+		}
+		
+		foreach( mate in GetPlayerArrayOfTeam( playerTeam ) )
+		{
+			foreach( minimapObj in VaultPanel_GetAllMinimapObjs() )
+				SetMinimapObjectVisibleToPlayer( mate, minimapObj, false )
+			
+			if( !mateHasAnotherKey )
+				SetMinimapObjectVisibleToPlayer( mate, GetVaultPanelOpenMinimapObj( panel ), true )
+			else
+			{
+				foreach( minimapObj in VaultPanel_GetBestMinimapObjs() )
+					SetMinimapObjectVisibleToPlayer( mate, minimapObj, false )
+			}
+		}
+		
+		foreach( sPlayer in GetPlayerArray() )
+		{
+			if( sPlayer.GetTeam() == playerTeam )
+				continue
+			
+			if( VaultPanel_HasPlayerDataKnife( sPlayer ) )
+			{
+				foreach( teammember in GetPlayerArrayOfTeam( sPlayer.GetTeam() ) )
+				{
+					foreach( minimapObj in VaultPanel_GetAllMinimapObjs() )
+						SetMinimapObjectVisibleToPlayer( teammember, minimapObj, false )
 
+					foreach( minimapObj in VaultPanel_GetBestMinimapObjs() )
+						SetMinimapObjectVisibleToPlayer( teammember, minimapObj, true )
+				}
+			}
+		}
+
+		entity fakeUser = CreateEntity( "prop_dynamic" )
+		fakeUser.SetOrigin( playerOrg )
+		
+		foreach( entity door in GetVaultPanelDataFromEntity( panel ).vaultDoors)
+		{
+			door.OpenDoor( fakeUser )
+		}
+		fakeUser.Destroy()
+	}()
+	
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultOpened" )
 	
 	SURVIVAL_RemoveFromPlayerInventory( player, "data_knife", 1 )
 
 	#endif
-
-	if ( panelData.panelState != ePanelState.UNLOCKING )
-		SetVaultPanelState( panel, ePanelState.UNLOCKING )
-}
-
-void function VaultPanelUnlocking( LootVaultPanelData panelData, int panelState )
-{
-	if ( panelState != ePanelState.UNLOCKING )
-		return
-
-	//printf( "LootVaultPanelDebug: Panel State: Unlocking" )
-
-	SetVaultPanelUnusable( panelData.panel )
-
-	#if SERVER
-
-	#endif // SERVER
-
-	thread HideVaultPanel( panelData )
-}
-
-void function VaultPanelUnlocked( LootVaultPanelData panelData, int panelState )
-{
-	if ( panelState != ePanelState.UNLOCKED )
-	{
-		return
-	}
-
-	//printf( "LootVaultPanelDebug: Panel State: Unlocked" )
-
-	#if SERVER
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	#endif // SERVER
-}
-
-#if SERVER
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif // SERVER
-
-void function HideVaultPanel( LootVaultPanelData panelData )
-{
-	entity panel = panelData.panel
-
-	#if SERVER
-
-	#endif // SERVER
-
-	wait 2.0
-
-	SetVaultPanelState( panelData.panel, ePanelState.UNLOCKED )
 }
 
 #if CLIENT
@@ -459,13 +394,6 @@ void function SetVaultPanelUsable( entity panel )
 	#endif // CLIENT
 }
 
-void function SetVaultPanelUnusable( entity panel )
-{
-	#if SERVER
-	SetVaultPanelState( panel, ePanelState.LOCKED )
-	#endif // SERVER
-}
-
 void function SetVaultPanelMinimapObj( entity panel, entity minimapObj )
 {
 	LootVaultPanelData panelData = GetVaultPanelDataFromEntity( panel )
@@ -505,16 +433,40 @@ entity function GetBestVaultPanelMinimapObj( entity panel )
 }
 
 #if SERVER
+void function AddVaultToMinimap_Locked( entity panel )
+{
+	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", panel.GetOrigin() )
+	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.VAULT_PANEL )
+	SetTargetName( minimapObj, "vaultIconLocked" )
+	
+	SetVaultPanelMinimapObj( panel, minimapObj )
+}
 
+void function AddVaultToMinimap_Open( entity panel )
+{
+	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", panel.GetOrigin() )
+	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.VAULT_PANEL_OPEN )
+	SetTargetName( minimapObj, "vaultIconOpen" )
+	
+	SetVaultPanelOpenMinimapObj( panel, minimapObj )
+}
 
+void function SetMinimapObjectVisibleToPlayer( entity player, entity minimapObj, bool visible )
+{
+	if( visible )
+		minimapObj.Minimap_AlwaysShow( 0, player )
+	else
+		minimapObj.Minimap_Hide( 0, player )
+}
 
-
-
-
+void function Vault_PlayerConnected( entity player ) 
+{
+	foreach( panel in VaultPanel_GetAllMinimapObjs() )
+		SetMinimapObjectVisibleToPlayer( player, panel, false )
+}
 
 #endif
 
-//
 bool function HACK_IsVaultDoor( entity ent )
 {
 	if ( !IsValid( ent ) )
@@ -581,6 +533,11 @@ entity function VaultPanel_GetTeammateWithKey( int teamIdx )
 	return null
 }
 
+array< LootVaultPanelData > function GetAllVaultPanelsData()
+{
+	return file.vaultControlPanels
+}
+
 array< entity > function VaultPanel_GetBestMinimapObjs()
 {
 	array<entity> mapObjs
@@ -617,7 +574,7 @@ bool function VaultPanel_HasPlayerDataKnife(entity player)
 
 	foreach ( invItem in playerInventory )
 	{
-		if(invItem.type == 106) // no clue what its const is called, 120 == dataknife/vaultkey
+		if(invItem.type == 122)
 			return true
 	}
 	return false

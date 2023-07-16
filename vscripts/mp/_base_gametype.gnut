@@ -1769,7 +1769,10 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 {
 	if(GetGameState() != eGameState.Playing)
 		return
-
+	
+	if( !IsValid( ent ) || !ent.IsPlayer() || ent.Player_IsFreefalling() )
+		return
+	
 	//printt( "ENTITY", ent, "IS OUT OF BOUNDS ON TRIGGER", trigger )
 
 	if ( ent.e.destroyOutOfBounds )

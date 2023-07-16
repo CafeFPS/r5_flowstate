@@ -447,10 +447,7 @@ void function EntitiesDidLoad()
 	if ( Flag( "FlightPath_Airdrop" ) )
 	{
 		AddAinAnalysisIndex( DROPPOD_MODEL, AIRDROP_BASE_ANIM )
-
-		asset model = DROPPOD_MODEL //InitFlightPathAsset( "fp_titan_model" )
-
-		flightPath = CreateFlightAnalysis( model, AIRDROP_BASE_ANIM, {} )
+		flightPath = CreateFlightAnalysis( DROPPOD_MODEL, AIRDROP_BASE_ANIM, {} )
 		AddBoundingMins( flightPath, <-65,-65,0> )
 		AddBoundingMaxs( flightPath, <65,65,240> )
 		AddAnalysisTraceMask( flightPath, CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_GRATE | CONTENTS_MOVEABLE | CONTENTS_TITANCLIP )
@@ -458,7 +455,6 @@ void function EntitiesDidLoad()
 		AddIdleAnimation( flightPath, AIRDROP_BASE_ANIM )
 		AddAnalysisFunc( flightPath, TryAirdropPoint, HULL_TITAN )
 		AddAnalysisIterator( flightPath, 1 ) // iterate each node
-
 
 
 		// THIS IS THE FLIGHT ANALYSIS USED FOR END ZONE CIRCLES
@@ -469,7 +465,7 @@ void function EntitiesDidLoad()
 		AddBoundingMaxs( flightPath, <65,65,240> )
 		AddAnalysisTraceMask( flightPath, CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_GRATE | CONTENTS_MOVEABLE | CONTENTS_TITANCLIP )
 
-		AddIdleAnimation( flightPath, AIRDROP_BASE_ANIM )
+		AddIdleAnimation( flightPath, CARE_PACKAGE_IDLE )
 		AddAnalysisFunc( flightPath, TryCircleEndZone, HULL_TITAN )
 		AddAnalysisIterator( flightPath, 1 ) // iterate each node
 	}

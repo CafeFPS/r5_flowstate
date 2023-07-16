@@ -936,6 +936,9 @@ void function RemovePlayerMovementEventCallback( entity player, int playerMoveme
 		return
 	}
 	
+	if( !(playerMovementEvent in callbackTable) )
+		return
+	
 	callbackTable[ playerMovementEvent ].fastremovebyvalue( callbackFunc )
 
 	if ( callbackTable[ playerMovementEvent ].len() == 0 )
@@ -947,12 +950,15 @@ void function RemovePlayerMovementEventCallback( entity player, int playerMoveme
 
 }
 
+bool PRINT_MOVEMENT = false
+
 void function CodeCallback_OnPlayerJump( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Jump")
+	
 	if ( ! ( ePlayerMovementEvents.JUMP in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Jump")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.JUMP ] )
@@ -961,10 +967,11 @@ void function CodeCallback_OnPlayerJump( entity player )
 
 void function CodeCallback_OnPlayerDoubleJump( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Double Jump")
+
 	if ( ! ( ePlayerMovementEvents.DOUBLE_JUMP in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Double Jump")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.DOUBLE_JUMP ] )
@@ -973,10 +980,11 @@ void function CodeCallback_OnPlayerDoubleJump( entity player )
 
 void function CodeCallback_OnPlayerDodge( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Dodge" )
+
 	if ( ! ( ePlayerMovementEvents.DODGE in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Dodge" )
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.DODGE ] )
@@ -985,10 +993,11 @@ void function CodeCallback_OnPlayerDodge( entity player )
 
 void function CodeCallback_OnPlayerLeaveGround( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Left Ground")
+	
 	if ( ! ( ePlayerMovementEvents.LEAVE_GROUND in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Left Ground")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.LEAVE_GROUND ] )
@@ -997,10 +1006,11 @@ void function CodeCallback_OnPlayerLeaveGround( entity player )
 
 void function CodeCallback_OnPlayerTouchGround( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Touch Ground")
+	
 	if ( ! ( ePlayerMovementEvents.TOUCH_GROUND in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Touch Ground")
 
 	array<void functionref(entity)> callbacks = clone player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.TOUCH_GROUND ]
 
@@ -1011,10 +1021,11 @@ void function CodeCallback_OnPlayerTouchGround( entity player )
 
 void function CodeCallback_OnPlayerMantle( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Mantle")
+	
 	if ( ! ( ePlayerMovementEvents.MANTLE in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Mantle")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.MANTLE ] )
@@ -1023,10 +1034,11 @@ void function CodeCallback_OnPlayerMantle( entity player )
 
 void function CodeCallback_OnPlayerBeginWallrun( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Wallrun Begin")
+	
 	if ( ! ( ePlayerMovementEvents.BEGIN_WALLRUN in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Wallrun Begin")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.BEGIN_WALLRUN ] )
@@ -1035,10 +1047,11 @@ void function CodeCallback_OnPlayerBeginWallrun( entity player )
 
 void function CodeCallback_OnPlayerEndWallrun( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Wallrun End")
+	
 	if ( ! ( ePlayerMovementEvents.END_WALLRUN in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Wallrun End")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.END_WALLRUN ] )
@@ -1047,10 +1060,11 @@ void function CodeCallback_OnPlayerEndWallrun( entity player )
 
 void function CodeCallback_OnPlayerBeginWallhang( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Wallhang Begin")
+
 	if ( ! ( ePlayerMovementEvents.BEGIN_WALLHANG in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Wallhang Begin")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.BEGIN_WALLHANG ] )
@@ -1059,10 +1073,11 @@ void function CodeCallback_OnPlayerBeginWallhang( entity player )
 
 void function CodeCallback_OnPlayerEndWallhang( entity player )
 {
+	if( PRINT_MOVEMENT )
+		printt( "Player Wallhang End")
+	
 	if ( ! ( ePlayerMovementEvents.END_WALLHANG in player.p.playerMovementEventCallbacks ) )
 		return
-
-	//printt( "Player Wallhang End")
 
 	//Run actual functions
 	foreach( callbackFunc in player.p.playerMovementEventCallbacks[ ePlayerMovementEvents.END_WALLHANG ] )

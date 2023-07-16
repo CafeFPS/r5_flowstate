@@ -3,6 +3,7 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
+	ring_immunity
 	placing_respawn_beacon
 	slowedbyCustomGrenade
 	anti_slow

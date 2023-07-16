@@ -213,7 +213,7 @@ void function AddCallback_OnPetTitanModeChanged( void functionref( entity ) call
 
 void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity player )
 {
-	printt( "ClientCodeCallback_OnPlayerConsumableInventoryChanged" )
+	//printt( "ClientCodeCallback_OnPlayerConsumableInventoryChanged" )
 	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
 		return
 

@@ -259,6 +259,7 @@ bool function IsNewLootEnabled( string ref )
 		case "armor_pickup_lv2_evolving":
 		case "armor_pickup_lv3_evolving":
 		case "armor_pickup_lv5_evolving":
+		case "mp_weapon_throwingknife":
 		// case "laser_sight_l1":
 		// case "laser_sight_l2": 
 		// case "laser_sight_l3":
@@ -267,6 +268,7 @@ bool function IsNewLootEnabled( string ref )
 		// case "energy_mag_l4":
 		// case "sniper_mag_l4":
 		// case "shotgun_bolt_l4":
+		case "hopup_selectfire":
 		case "mp_ability_void_ring":
 		case "mp_ability_mobile_respawn_beacon":
 		case "mp_ability_redeploy_balloon":
@@ -1017,7 +1019,19 @@ vector function GetRarityColor( entity ent )
 	Assert( lootIndex >= 0 )
 	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
 
-	return GetKeyColor( COLORID_TEXT_LOOT_TIER0, lootData.tier )
+	switch ( lootData.tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, lootData.tier )
+	}
+	
+	unreachable
 }
 #endif
 
@@ -1064,6 +1078,15 @@ vector function GetFXRarityColorForTier( int tier )
 
 		case eLootTier.LEGENDARY:
 			return LOOT_COLOR_LEGENDARY
+			
+		case 5:
+			return LOOT_COLOR_HEIRLOOM
+			
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
 
 		default:
 			return <255, 255, 255>
@@ -1071,7 +1094,17 @@ vector function GetFXRarityColorForTier( int tier )
 #endif
 
 #if !SERVER
-	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier )
+	switch ( tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, tier )
+	}
 #endif
 
 	unreachable
@@ -1101,6 +1134,12 @@ vector function GetFXRarityColorForUnlockable( int tier )
 
 			case eLootTier.HEIRLOOM:
 				return LOOT_COLOR_HEIRLOOM
+			
+			case 6:
+				return <36, 194, 25>
+				
+			case 7:
+				return <191, 25, 194>
 
 			default:
 				return <255, 255, 255>
@@ -1108,7 +1147,17 @@ vector function GetFXRarityColorForUnlockable( int tier )
 #endif
 
 #if !SERVER
-	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier + 1 )
+	switch ( tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, tier + 1 )
+	}
 #endif
 
 	unreachable

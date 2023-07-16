@@ -3077,6 +3077,8 @@ void function DebugMenuThink()
 #if SERVER
 bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor character, bool updateLoadoutSlot = true )
 {
+	TakeAllPassives( player )
+	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	
 	if ( updateLoadoutSlot && ItemFlavor_GetHumanReadableRef( playerCharacter ) != ItemFlavor_GetHumanReadableRef( character ) )
@@ -3096,12 +3098,8 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
 			GivePassive( player, ePassives.PAS_FORTIFIED )
-	} else
-	{
-		if( PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
-			TakePassive( player, ePassives.PAS_FORTIFIED )
 	}
-	
+
 	return true
 }
 
@@ -3647,7 +3645,7 @@ bool function DoesBackgroundEntExist()
 	return GetEntArrayByScriptName( BACKGROUND_ENT_NAME ).len() > 0
 }
 
-void function FlashScreenWhite( float holdTime = 0.5, float fadeOutDuration = 2.0 )
+void function FlashScreenWhite( float holdTime = 0.5, float fadeOutDuration = 0.5 )
 {
 	EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
 

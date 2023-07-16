@@ -61,7 +61,12 @@
 	"fx_muzzle_flash_attach"						""
 	
 	// Behavior- Aim Assist
+	"aimassist_disable_hipfire"                "1"
+	"aimassist_disable_ads"                    "1"
+	"aimassist_disable_hipfire_titansonly"     "1"
+	"aimassist_disable_ads_titansonly"         "1"
 	"aimassist_adspull_weaponclass"            "none"
+	"gamepad_use_yaw_speed_for_pitch_ads"      "1"
 
 
 	// Damage
@@ -269,6 +274,12 @@
 
 	"Mods"
 	{
+	    crate
+	    {
+	    }
+
+
+
         // HACK must define "script_optic_toggle_name" for this to work
 		"optic_toggle"
 		{

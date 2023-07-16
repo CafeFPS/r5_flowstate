@@ -659,9 +659,13 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		bool isAttackingGround           = endPosition.z <= attacker.GetOrigin().z
 		attackerKnockBackVelocity.z = 0.0
 		attackerKnockBackVelocity *= 0.5
+		
+		if( GetCurrentPlaylistVarBool( "flowstate_enable_punch_boosting", false ) )
+			attackerKnockBackVelocity += attacker.GetVelocity()
+		
 		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround )
 		{
-			attacker.KnockBack( attackerKnockBackVelocity + attacker.GetVelocity(), 0.25 )
+			attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
 		}
 
 		attacker.GrappleDetach()

@@ -203,11 +203,17 @@ bool function Survival_DropPlayerFromPlane( entity player )
 		{
 			CommonPlayerDropLines( squadPlayer )
 			thread PlayerSkyDive( squadPlayer, player.GetViewVector(), squad, player )
+			
+			if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+				Message( squadPlayer, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
 		}
 	} else if ( !player.GetPlayerNetBool( "isJumpmaster" ) && !player.GetPlayerNetBool( "isJumpingWithSquad" ) ) //Dropping solo
 	{
 		CommonPlayerDropLines( player )
 		thread PlayerSkyDive( player, player.GetViewVector(), [player], player )
+		
+		if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+			Message( player, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
 	}
 	return true
 }
@@ -250,7 +256,13 @@ void function GiveBasicSurvivalItems( entity player )
 	player.SetShieldHealth(50)
 	
 	Survival_SetInventoryEnabled( player, true )
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	
+	if( ItemFlavor_GetHumanReadableRef( playerCharacter ) != "character_gibraltar" )
+	{
+		player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
+		player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
+	}
 	// todo: find why it's not playing fx on cockpit
 	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
 }

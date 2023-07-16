@@ -430,6 +430,22 @@ global struct ServerEntityStruct
 	bool isLinked = false
 	array<entity> attachedTriggersToPole
 	float teslaTrapTriggerCreationTime
+	
+	//crate weapon ammo count
+	int crateWeaponLastAmmo = -1
+	string crateWeaponCustomSight = "-1"
+	
+	//cargobots
+	int currentTier = 1
+	bool hasVaultKey = false
+	
+	//pylon
+	entity reminderFx
+	float shieldAmountCount
+	
+	//backpack limit
+	array<string> lootToAttachToBackpack
+	bool itemReachedGround = false
 }
 
 global struct MeritData
@@ -880,8 +896,18 @@ global struct ServerPlayerStruct
   
 	float lastTgiveUsedTime
 	
+	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
+	
+	//bangalore's passive
 	entity vortexTriggerDoubleTime
+	
+	//wattson ultimate
+	entity lastTrophy
+	
+	float huntEndTime
+	bool huntEnable = false
+	array<int> huntIds = []
 }
 
 global struct ChallengeScore
@@ -1140,6 +1166,7 @@ global struct ServerPlayerDecoyStruct
 {
 	array< entity > fxHandles
 	array< string > loopingSounds
+	float endTime
 	asset characterSetFile 
 	asset modelName
 	bool F_or_B_CoinFlip

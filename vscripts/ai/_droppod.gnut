@@ -15,6 +15,7 @@ global const DP_COLL_MODEL = $"mdl/vehicle/droppod_loot/droppod_loot_animated.rm
 global const int AIR_DROP_BAD_PLACE_RADIUS = 1
 const FAR_SPAWN_FX = $"P_ar_loot_drop_point_far"
 global function AirdropItems
+global function AirdropItems_Lifeline
 global function AirDropFireteam
 global function BeaconDrop
 global function CreateBeacondrop
@@ -82,6 +83,30 @@ void function AirdropItems( vector origin, vector angles, array<string> contents
 
 }
 
+void function AirdropItems_Lifeline( vector origin, vector angles, array<string> contents, entity fxToStop, string animationName, entity owner, int skin, string sourceWeaponClassName )
+{
+	entity dropPod = CreateDropPod( origin, angles, sourceWeaponClassName )
+	dropPod.SetSkin( skin )
+    dropPod.SetScriptName( "lifeline_care_package" )
+	
+    entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
+    thread DropPodBeamWaitForUse(dropPod, origin, angles)
+	
+    thread WaitForDropFX(dropPod, animationName, origin, angles)
+	
+	waitthread LaunchAnimDropPod( dropPod, animationName, OriginToGround( origin ), angles )
+	    if(IsValid(threatProxy))
+        threatProxy.Destroy()
+
+	InitDropPod( dropPod )
+    
+    if(IsValid(fxToStop))
+        fxToStop.Destroy()
+	
+	AddMultipleLootItemsToDropPod_Lifeline(dropPod, contents)
+
+}
+
 void function AirDropFireteam( vector origin, vector angles, string animationName, int skin, string sourceWeaponClassName, entity player )
 {
 	entity dropPod = CreateDropPod( origin, angles, sourceWeaponClassName )
@@ -108,6 +133,93 @@ void function WaitForDropFX(entity dropPod, string animationName, vector origin,
     float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
 	wait scaledTime
     DropPodOnImpactFXAndShake(dropPod, origin, angles)
+}
+
+void function SpawnLootInDropPod_Lifeline( entity dropPod, string ref, int lootI, int lootCount )
+{
+	Point p = GetDropPodSpawnLocation( dropPod, lootI, lootCount )
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+    string attachment
+    string pos
+	float offset = 0
+	
+	if( lootCount == 5 )
+	{
+		switch(lootI)
+		{
+			case 0:
+				attachment = "LOOT_R_MID"
+				break
+			case 1:
+				attachment = "LOOT_C_AMMO_1"
+				offset = 10
+				break
+			case 2:
+				attachment = "LOOT_C_AMMO_2"
+				offset = -10
+				break
+			case 3:
+				attachment = "LOOT_L_AMMO_1"
+				offset = 10
+				break
+			case 4:
+				attachment = "LOOT_L_AMMO_2"
+				offset = -10
+				break
+		}
+	} else if( lootCount == 6 ) 
+	{
+		switch(lootI)
+		{
+			case 0:
+				attachment = "LOOT_R_AMMO_1"
+				offset = 10
+				break
+			case 1:
+				attachment = "LOOT_R_AMMO_2"
+				offset = -10
+				break
+			case 2:
+				attachment = "LOOT_C_AMMO_1"
+				offset = 10
+				break
+			case 3:
+				attachment = "LOOT_C_AMMO_2"
+				offset = -10
+				break
+			case 4:
+				attachment = "LOOT_L_AMMO_1"
+				offset = 10
+				break
+			case 5:
+				attachment = "LOOT_L_AMMO_2"
+				offset = -10
+				break
+		}
+	}
+	
+    int attachmentIndex = dropPod.LookupAttachment( attachment )
+	vector origin = dropPod.GetAttachmentOrigin( attachmentIndex )
+	
+	origin.z += offset // fix me
+	
+    vector angles = dropPod.GetAttachmentAngles( attachmentIndex )
+
+    entity loot = SpawnGenericLoot( ref, origin, angles, data.countPerDrop )
+	loot.RemoveFromAllRealms()
+	loot.AddToOtherEntitysRealms( dropPod )
+	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, dropPod )
+
+    loot.SetParent(dropPod, attachment, true)
+	
+    if(data.lootType == eLootType.ATTACHMENT && data.attachmentStyle != "sight" || data.lootType == eLootType.BACKPACK || data.lootType == eLootType.INCAPSHIELD || ref == "health_pickup_health_large" || ref == "health_pickup_health_small" )
+    {
+		angles = angles + <90, 0, 0>
+		loot.SetAbsAngles( angles )
+	}
+
+	file.lootBinsSpawnedLootMap[dropPod].append( loot )
 }
 
 void function SpawnLootInDropPod( entity dropPod, string ref, int lootI, int lootCount )
@@ -146,24 +258,17 @@ void function SpawnLootInDropPod( entity dropPod, string ref, int lootI, int loo
     int attachmentIndex = dropPod.LookupAttachment( attachment )
   
     vector angles = dropPod.GetAttachmentAngles( attachmentIndex )
-    if(data.lootType == eLootType.ATTACHMENT || data.lootType == eLootType.BACKPACK || data.lootType == eLootType.INCAPSHIELD)
+    if(data.lootType == eLootType.ATTACHMENT && data.attachmentStyle != "sight" || data.lootType == eLootType.BACKPACK || data.lootType == eLootType.INCAPSHIELD || ref == "health_pickup_health_large" || ref == "health_pickup_health_small" )
         angles = angles + <90, 0, 0>
-    
+
     entity loot = SpawnGenericLoot( ref, dropPod.GetAttachmentOrigin( attachmentIndex ), angles, data.countPerDrop )
-    
+
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( dropPod )
 	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, dropPod )
-    
-    switch(data.lootType)
-    {
-        //case eLootType.ATTACHMENT:
-        //case eLootType.BACKPACK:
-        case eLootType.HEALTH:
-            loot.SetParent(dropPod, attachment, false)
-        default:
-            loot.SetParent(dropPod, attachment, true)
-    }
+
+    loot.SetParent(dropPod, attachment, true)
+	loot.SetAbsAngles( angles )
     
 	file.lootBinsSpawnedLootMap[dropPod].append( loot )
 }
@@ -174,6 +279,13 @@ void function AddMultipleLootItemsToDropPod( entity dropPod, array<string> refs 
 	int numRefs = refs.len()
 	for ( int i; i < numRefs; i++ )
 		AddLootTodropPod( dropPod, SURVIVAL_GetWeightedItemFromGroup(refs[ i ]) )
+}
+
+void function AddMultipleLootItemsToDropPod_Lifeline( entity dropPod, array<string> refs )
+{
+	int numRefs = refs.len()
+	for ( int i; i < numRefs; i++ )
+		AddLootTodropPod( dropPod, refs[ i ] )
 }
 
 void function AddLootTodropPod( entity dropPod, string ref )
@@ -272,7 +384,7 @@ void function HandleDropPodUse( entity dropPod, entity player )
 	if ( !DropPod_IsOpen( dropPod ) )
 		thread DropPod_PlayOpenSequence( dropPod, player )
 	if ( IsValid( player ) )
-		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, dropPod, dropPod.GetWorldSpaceCenter(), player.GetTeam(), player )
+		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.DROPPOD, dropPod, dropPod.GetWorldSpaceCenter(), player.GetTeam(), player )
 }
 
 void function DropPod_PlayOpenSequence( entity dropPod, entity player )
@@ -296,8 +408,12 @@ void function DropPod_PlayOpenSequence( entity dropPod, entity player )
 
 		foreach ( ref in lootToSpawn )
 		{
-		 	SpawnLootInDropPod( dropPod, ref, lootIndex, lootToSpawn.len() )
-		 	lootIndex++
+			if( dropPod.GetScriptName() != "lifeline_care_package" )
+				SpawnLootInDropPod( dropPod, ref, lootIndex, lootToSpawn.len() )
+			else
+				SpawnLootInDropPod_Lifeline( dropPod, ref, lootIndex, lootToSpawn.len() )
+			
+			lootIndex++
 		}
 
 		lootToSpawn.clear()

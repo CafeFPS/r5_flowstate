@@ -17,9 +17,16 @@ void function RemoteFunctions_Init_Begin()
 	//Custom KillReplay
 	Remote_RegisterClientFunction("ServerCallback_KillReplayHud_Activate")
 	Remote_RegisterClientFunction("ServerCallback_KillReplayHud_Deactivate")
+	
 	//Update teammates rui
 	Remote_RegisterClientFunction("UpdateRUITest")
-
+	
+	//Evo shield mod
+	Remote_RegisterClientFunction("EvoShield_PlayFX", "int", 0, 10)
+	
+	//Custom HoloSpray
+	Remote_RegisterClientFunction("HoloSpray_OnUse", "int", INT_MIN, INT_MAX, "int", 0, 255)
+	
 	//Custom gamemodes
 	switch ( GameRules_GetGameMode() )
 	{

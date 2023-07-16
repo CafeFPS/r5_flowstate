@@ -14,7 +14,7 @@ global function Minimap_UpdateNorthFacingOnSettingChange
 
 global function Minimap_RingPulseAtLocation
 global function ServerCallback_RingPulseMinimap
-
+global function Minimap_DontCreateRuisForEnemies
 global function Minimap_EnableDraw
 global function Minimap_DisableDraw
 
@@ -218,8 +218,8 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOOST_STORE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_BoostStore )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_ARC_TRAP_RUI, MinimapPackage_ArcTrap )
 
-	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem, FULLMAP_OBJECT_RUI, MinimapPackage_TrophySystem )
-
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem, FULLMAP_OBJECT_RUI, FullmapPackage_TrophySystem )
+	
 
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.DIRTY_BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_DirtyBomb, FULLMAP_OBJECT_RUI, MinimapPackage_DirtyBomb )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.CRYPTO_DRONE, MINIMAP_OBJECT_RUI, MinimapPackage_CryptoDrone, FULLMAP_OBJECT_RUI, MinimapPackage_CryptoDrone )
@@ -615,13 +615,29 @@ void function Minimap_RunInitFunction( entity ent, var rui )
 	minimapAssetMap[className][customState].initFunction( ent, rui )
 }
 
+bool function Minimap_DontCreateRuisForEnemies( entity ent )
+{
+	return IsFriendlyTeam( ent.GetTeam(), GetLocalViewPlayer().GetTeam() )
+}
 
 bool function ShouldCreateRuiForPlayer( entity ent, entity viewPlayer )
 {
 	foreach ( callbackFunc in clGlobal.onMinimapEntShouldCreateCallbacks )
 	{
 		if ( !callbackFunc( ent ) )
+		{
 			return false
+		}
+	}
+
+	if ( ent.GetScriptName() in clGlobal.onMinimapEntShouldCreateCallbacks_scriptname )
+	{
+		return clGlobal.onMinimapEntShouldCreateCallbacks_scriptname[ ent.GetScriptName() ]( ent )
+	}
+
+	if ( ent.GetTargetName() in clGlobal.onMinimapEntShouldCreateCallbacks_targetname )
+	{
+		return clGlobal.onMinimapEntShouldCreateCallbacks_targetname[ ent.GetTargetName() ]( ent )
 	}
 	return true
 }
@@ -1124,19 +1140,18 @@ void function MinimapPackage_ArcTrap( entity ent, var rui )
 	RegisterTeslaTrapMinimapRui( ent, rui )
 }
 
+void function FullmapPackage_TrophySystem( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+}
 
 void function MinimapPackage_TrophySystem( entity ent, var rui )
 {
-	// RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
-	// RuiSetImage( rui, "clampedImage", $"" )
-	// RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
-
-	RuiSetImage( rui, "defaultIcon", $"rui/hud/ultimate_icons/ultimate_wattson_in_world" )
-	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/ultimate_icons/ultimate_wattson_in_world" )
-	RuiSetBool( rui, "useTeamColor", false )
-	RuiSetFloat( rui, "iconBlend", 0.0 )
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
+	RuiSetImage( rui, "clampedImage", $"" )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
 }
-
 
 void function MinimapPackage_DirtyBomb( entity ent, var rui )
 {

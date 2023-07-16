@@ -11,6 +11,8 @@ global struct ClGlobals
 	array<void functionref( entity )> onLocalClientPlayerSpawnedCallbacks
 	array<void functionref( entity )> onMinimapEntSpawnedCallbacks
 	array<bool functionref( entity )> onMinimapEntShouldCreateCallbacks
+	table<string,bool functionref( entity )> onMinimapEntShouldCreateCallbacks_scriptname
+	table<string,bool functionref( entity )> onMinimapEntShouldCreateCallbacks_targetname
 	array<void functionref( entity )> onUseEntGainFocusCallbacks
 	array<void functionref( entity )> onUseEntLoseFocusCallbacks
 	array<void functionref( entity )> addLocalPlayerFuncs

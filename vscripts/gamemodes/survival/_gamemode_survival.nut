@@ -27,8 +27,7 @@ global function EnemyDownedDialogue
 global function TakingFireDialogue
 global function GetAllDroppableItems
 
-int MAXBLOCKTIME = 2
-float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 70 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
+//float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
 struct
 {
@@ -37,6 +36,11 @@ struct
 
 void function GamemodeSurvival_Init()
 {
+	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
+		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
+	else
+		SetConVarBool("sv_forceChatToTeamOnly", true)
+	
 	SurvivalFreefall_Init()
 	Sh_ArenaDeathField_Init()
 	SurvivalShip_Init()
@@ -45,13 +49,16 @@ void function GamemodeSurvival_Init()
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 	
 	SetConVarFloat( "sv_usercmd_max_queued", 750 )
-	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 24 )
+	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 20 )
+	SetConVarBool( "sv_stressbots", false )
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 	
-	AddClientCommandCallback("forceminplayers", ForceMinPlayersReached)
+	AddClientCommandCallback( "dev_forceminplayers", Dev_ForceMinPlayersReached )
+	AddClientCommandCallback( "dev_reloadlevel", Dev_ReloadLevel )
 	
+	FillSkyWithClouds()
 	
 	AddCallback_GameStateEnter(
 		eGameState.Playing,
@@ -149,7 +156,7 @@ void function Sequence_Playing()
 	{
 		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
 		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
+		float DROP_TIMEOUT_TIME = 0 // GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
 
 		array<vector> foundFlightPath = Survival_GeneratePlaneFlightPath()
 
@@ -258,7 +265,9 @@ void function Sequence_Playing()
 		}
 		
 	}
-
+	
+	FlagClear( "SpawnInDropship" )
+	
 	wait 5.0
 
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
@@ -271,7 +280,12 @@ void function Sequence_Playing()
 	{
 		if ( GetNumTeamsRemaining() <= 1 )
 		{
-			int winnerTeam = GetTeamsForPlayers( GetPlayerArray_AliveConnected() )[0]
+			int winnerTeam
+			if( GetTeamsForPlayers( GetPlayerArray_AliveConnected() ).len() > 0 )
+				winnerTeam = GetTeamsForPlayers( GetPlayerArray_AliveConnected() )[0]
+			else
+				winnerTeam = -1
+			
 			level.nv.winningTeam = winnerTeam
 
 			SetGameState( eGameState.WinnerDetermined )
@@ -339,16 +353,17 @@ void function Sequence_Epilogue()
 
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
+	
+	WaitForever()
+	// if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
+		// wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
+	// else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
+		// WaitForever()
 
-	if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
-		wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
-	else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
-		WaitForever()
-
-	if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
-		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-	else
-		ShutdownHostGame()
+	// if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
+		// GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	// else
+		// ShutdownHostGame()
 }
 
 void function UpdateMatchSummaryPersistentVars( int team )
@@ -423,13 +438,18 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
 
+	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
+	{
+		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
+	}
+	
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
 	{	
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
 		thread EnemyDownedDialogue( attacker, victim )
-		
+
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 
@@ -543,11 +563,13 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 			PlayBattleChatterLineToSpeakerAndTeam( victim, "bc_takingFire" )
 }
 
+int DEATHRECAP_MAXBLOCKTIME = 2
+
 void function HandleDeathRecapData(entity victim, var damageInfo)
 //By CaféDeColombiaFPS
 {	
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	if(!attacker.IsPlayer()) return //fix abilities? implement damageSourceId and scriptDamageType
+	if(!attacker.IsPlayer()) return
 	
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 	
@@ -560,7 +582,7 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 	float shieldHealthFrac = GetShieldHealthFrac( victim )
 	float healthFrac = GetHealthFrac( victim )
 
-	if ( weapon == attacker.p.DeathRecap_PreviousShotWeapon && victim == attacker.p.DeathRecap_PreviousShotEnemyPlayer ) //Time() < attacker.p.DeathRecap_BlockTime + MAXBLOCKTIME && 
+	if ( weapon == attacker.p.DeathRecap_PreviousShotWeapon && victim == attacker.p.DeathRecap_PreviousShotEnemyPlayer ) //Time() < attacker.p.DeathRecap_BlockTime + DEATHRECAP_MAXBLOCKTIME && 
 	{
 		//Register Data
 		attacker.p.DeathRecap_DataToSend.attackerEHandle = attackerEHandle
@@ -577,9 +599,11 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 	}
 	else
 	{
-		if(weapon != attacker.p.DeathRecap_PreviousShotWeapon || victim != attacker.p.DeathRecap_PreviousShotEnemyPlayer) // || Time() >= attacker.p.DeathRecap_BlockTime + MAXBLOCKTIME )
+		if(weapon != attacker.p.DeathRecap_PreviousShotWeapon || victim != attacker.p.DeathRecap_PreviousShotEnemyPlayer) // || Time() >= attacker.p.DeathRecap_BlockTime + DEATHRECAP_MAXBLOCKTIME )
 		{
-			if(victimEHandle != -1  && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+		
+			if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
 			{
 				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
 				ResetDeathRecapBlock(victim)
@@ -592,6 +616,7 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 			
 		}
 		
+		//todo add shield + health block break
 		//Save weapon and player before sending data, so next shot we'll see if it's the same to create a new block
 		attacker.p.DeathRecap_PreviousShotWeapon = weapon
 		attacker.p.DeathRecap_PreviousShotEnemyPlayer = victim
@@ -753,8 +778,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 	}
 
-	int victimTeamNumber = victim.GetTeam()
-	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
+	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victim.GetTeam() )
 	bool teamEliminated = victimTeam.len() == 0
 	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
 
@@ -842,6 +866,18 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
+	} else if ( GetCurrentPlaylistName() == "survival_dev" )
+	{
+		vector origin
+		if( GetPlayerArray_Alive().len() > 0 )
+			origin = GetPlayerArray_Alive()[0].GetOrigin()
+		
+		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL ) 
+		Flowstate_AssignUniqueCharacterForPlayer(player, true)
+		DecideRespawnPlayer( player )
+		GiveBasicSurvivalItems( player )
+		player.SetOrigin( origin )
+		return		
 	}
 
 	switch ( GetGameState() )
@@ -852,7 +888,7 @@ void function OnClientConnected( entity player )
 		case eGameState.Prematch:
 			if ( IsValid( Sur_GetPlaneEnt() ) )
 				RespawnPlayerInDropship( player )
-
+				printt( "connected prematch" )
 			break
 		case eGameState.Playing:
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
@@ -867,48 +903,24 @@ void function OnClientConnected( entity player )
 				SetRandomStagingPositionForPlayer( player )
 				DecideRespawnPlayer( player )
 			}
-			else if ( Flag( "SpawnInDropship" ) )
+			else if ( Flag( "SpawnInDropship" ) && IsValid( Sur_GetPlaneEnt() ) )
+			{
 				RespawnPlayerInDropship( player )
-			else
+				printt( "connected dropship playing" )
+			}
+			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
 			{
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 
-				if ( IsPlayerEliminated( player ) )
-					thread PlayerStartSpectating( player, null, false, 0, true)
-				else
-				{
-					
-					array<entity> beacons
-					
-					foreach(prop in GetEntArrayByClass_Expensive( "prop_dynamic" ))
-						if(prop.GetTargetName() == RESPAWN_CHAMBER_TARGETNAME)
-							beacons.append(prop)
-		
-					foreach(beacon in beacons)
-						if(!SURVIVAL_PosInsideDeathField(beacon.GetOrigin()))
-							beacons.fastremovebyvalue(beacon)
-					
-					if(beacons.len() == 0)
-					{
-						beacons.clear()
-						beacons = GetPlayerArray_AliveConnected()
-					}
-					
-					array<entity> respawnCandidates = isAlone ? beacons : playerTeam
-					respawnCandidates.fastremovebyvalue( player )
-
-					if ( respawnCandidates.len() == 0 )
-					{
-						Message(player, "NO SPAWN POINTS :(")
-						break
-					}
-					vector origin = respawnCandidates.getrandom().GetOrigin()
-
-					DecideRespawnPlayer( player )
-					GiveBasicSurvivalItems( player )
-					player.SetOrigin( origin )
-					PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,256>, origin )
-				}
+				SetTeam( player, TEAM_SPECTATOR )
+				
+				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray_Alive().len() )
+				player.SetSpecReplayDelay( 1 )
+				player.StartObserverMode( OBS_MODE_IN_EYE )
+				player.SetObserverTarget( GetPlayerArray_Alive().getrandom() )
+				player.SetPlayerCanToggleObserverMode( false )
+				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 			}
 
 			break
@@ -1082,8 +1094,26 @@ void function Survival_CleanupPlayerPermanents( entity player )
 
 }
 
-bool function ForceMinPlayersReached( entity player, array<string> args )
+bool function Dev_ForceMinPlayersReached( entity player, array<string> args )
 {
+	if( !IsValid( player ) )
+		return true
+	
+	if( player.GetPlayerName() != "r5r_ColombiaFPS" )
+		return true
+	
 	FlagSet( "MinPlayersReached" )	
+	return true
+}
+
+bool function Dev_ReloadLevel( entity player, array<string> args )
+{
+	if( !IsValid( player ) )
+		return true
+	
+	if( player.GetPlayerName() != "r5r_ColombiaFPS" )
+		return true
+	
+	GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )	
 	return true
 }

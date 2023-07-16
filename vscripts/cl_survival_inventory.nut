@@ -720,6 +720,10 @@ void function UICallback_UpdateInventoryButton( var button, int position )
 	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( item.type )
 	RuiSetImage( rui, "iconImage", lootData.hudIcon )
 	RuiSetInt( rui, "lootTier", lootData.tier )
+
+	if( lootData.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+	
 	RuiSetInt( rui, "count", item.count )
 	RuiSetInt( rui, "maxCount", SURVIVAL_GetInventorySlotCountForPlayer( player, lootData ) )
 
@@ -949,6 +953,10 @@ void function UICallback_UpdateEquipmentButton( var button )
 				if ( SURVIVAL_Weapon_IsAttachmentLocked( wData.ref ) )
 				{
 					RuiSetInt( rui, "lootTier", wData.tier )
+					
+					if( wData.tier > 5 )
+						RuiSetInt( rui, "lootTier", 5 )
+
 				}
 			}
 		}
@@ -1033,6 +1041,10 @@ void function EquipmentButtonInit( var button, string equipmentSlot, LootData lo
 	var rui       = Hud_GetRui( button )
 	RuiSetImage( rui, "iconImage", lootData.hudIcon )
 	RuiSetInt( rui, "lootTier", lootData.tier )
+
+	if( lootData.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+					
 	RuiSetInt( rui, "count", count )
 
 	                                              
@@ -1226,20 +1238,38 @@ int function SortByPriorityThenTierForGroundLoot( GroundLootData a, GroundLootDa
 	else if ( aPriority > bPriority )
 		return 1
 
-	if ( a.lootData.lootType < b.lootData.lootType )
-		return -1
-	if ( a.lootData.lootType > b.lootData.lootType )
-		return 1
-
 	if ( a.lootData.tier > b.lootData.tier )
 		return -1
 	if ( a.lootData.tier < b.lootData.tier )
 		return 1
 
 
+	if ( a.lootData.lootType < b.lootData.lootType )
+		return -1
+	if ( a.lootData.lootType > b.lootData.lootType )
+		return 1
+
 	return 0
 }
 
+int function SortAmmoByEnum( GroundLootData a, GroundLootData b )
+{
+	LootData A = a.lootData
+	LootData B = b.lootData
+	
+	if( A.ammoType == "" || B.ammoType == "" )
+		return 0
+	
+	int ammoIndex1 = AmmoType_GetTypeFromRef( A.ammoType )
+	int ammoIndex2 = AmmoType_GetTypeFromRef( B.ammoType )
+
+	if ( ammoIndex1 < ammoIndex2 )
+		return -1
+	else if ( ammoIndex1 > ammoIndex2 )
+		return 1
+	
+	return 0
+}
 
 void function UICallback_EnableTriggerStrafing()
 {
@@ -1321,8 +1351,9 @@ void function UICallback_UpdateGroundItem( var button, int position )
 
 	if ( groundLootData.isHeader )
 	{
-		RuiSetImage( rui, "iconImage", groundLootData.lootData.hudIcon )
+		RuiSetImage( rui, "iconImage", $"" )
 		RuiSetString( rui, "buttonText", groundLootData.lootData.pickupString )
+		RuiSetInt( rui, "count", 0 )
 		return
 	}
 
@@ -1349,7 +1380,8 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	}
 
 	bool isMainWeapon = (groundLootData.lootData.lootType == eLootType.MAINWEAPON)
-
+	bool isAmmo = (groundLootData.lootData.lootType == eLootType.AMMO)
+	
 	bool isPinged     = IsGroundLootPinged( groundLootData )
 	bool isPingedByUs = IsGroundLootPinged( groundLootData, player )
 
@@ -1358,6 +1390,18 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	RuiSetInt( rui, "lootTier", groundLootData.lootData.tier )
 	RuiSetInt( rui, "count", groundLootData.count )
 	RuiSetInt( rui, "lootType", groundLootData.lootData.lootType )
+
+	if( groundLootData.lootData.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+
+	// printt( "DEBUGGING ITEM IN DEATHBOX" )
+	// printt( "name: " + combinedTitle )
+	// printt( "count: " + groundLootData.count )
+	// printt( "loot type" + groundLootData.lootData.lootType )
+	// printt( "isPinged" + isPinged )
+	
+	RuiSetInt( rui, "count", isMainWeapon ? 0 : groundLootData.count )
+
 	RuiSetBool( rui, "isPinged", isPinged )
 	RuiSetImage( rui, "ammoTypeImage", $"" )
 
@@ -1372,7 +1416,12 @@ void function UICallback_UpdateGroundItem( var button, int position )
 		}
 		RuiSetImage( rui, "ammoTypeImage", icon )
 	}
-
+	
+	if( isAmmo )
+	{
+		RuiSetString( rui, "buttonText", "" )
+	}
+	
 	Hud_SetLocked( button, !groundLootData.isRelevant )
 	RuiSetBool( rui, "isUpgrade", groundLootData.isUpgrade )
 
@@ -1555,6 +1604,10 @@ void function UICallback_UpdateQuickSwapItem( var button, int position )
 	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( item.type )
 	RuiSetImage( rui, "iconImage", lootData.hudIcon )
 	RuiSetInt( rui, "lootTier", lootData.tier )
+	
+	if( lootData.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+	
 	RuiSetInt( rui, "count", item.count )
 	RuiSetInt( rui, "maxCount", SURVIVAL_GetInventorySlotCountForPlayer( player, lootData ) )
 
@@ -1670,6 +1723,10 @@ void function UICallback_UpdateQuickSwapItemButton( var button, int guid )
 	RuiSetString( rui, "buttonText", combinedTitle )
 	RuiSetImage( rui, "iconImage", lootData.hudIcon )
 	RuiSetInt( rui, "lootTier", lootData.tier )
+
+	if( lootData.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+	
 	RuiSetInt( rui, "count", count )
 	RuiSetInt( rui, "lootType", isMainWeapon ? 1 : 0 )
 
@@ -1841,16 +1898,19 @@ void function GroundItemUpdate( entity player, array<entity> loot )
 	foreach ( index, item in file.filteredGroundItems )
 	{
 		RunUIScript( "SurvivalGroundItem_SetGroundItemHeader", index, item.isHeader )
+		RunUIScript( "SurvivalGroundItem_SetGroundItemWeapon", index, item.lootData.lootType == eLootType.MAINWEAPON )
+		RunUIScript( "SurvivalGroundItem_SetGroundItemAmmo", index, item.lootData.lootType == eLootType.AMMO )
 	}
+
 	RunUIScript( "SurvivalGroundItem_EndUpdate" )
 }
 
 
 void function GroundItemsDiff( entity player, array<entity> loot )
 {
-	array<int> indecesInList
+	IntSet indicesInList
 
-	foreach ( gd in file.filteredGroundItems )
+	foreach ( index, gd in file.filteredGroundItems )
 	{
 		gd.guids.clear()
 
@@ -1870,31 +1930,47 @@ void function GroundItemsDiff( entity player, array<entity> loot )
 		}
 
 		gd.count = currentCount
-		indecesInList.append( gd.lootData.index )
+		indicesInList[gd.lootData.index] <- IN_SET
 	}
 
 	table<string, GroundLootData> extras
+	bool showUpgrades = GetCurrentPlaylistVarBool( "deathbox_show_upgrades", false )
 
 	foreach ( item in loot )
 	{
 		if ( item.GetNetworkedClassName() != "prop_survival" )
 			continue
 
-		if ( !indecesInList.contains( item.GetSurvivalInt() ) )
+		if ( !(item.GetSurvivalInt() in indicesInList) )
 		{
 			LootData data = SURVIVAL_Loot_GetLootDataByIndex( item.GetSurvivalInt() )
 			GroundLootData gd
+			gd.lootData = data
 
 			if ( data.ref in extras )
 				gd = extras[ data.ref ]
 			else
 			{
 				extras[ data.ref ] <- gd
-				gd.isRelevant = SURVIVAL_IsLootIrrelevant( player, item, gd.lootData, eLootContext.GROUND )
-				gd.isUpgrade = (GetCurrentPlaylistVarBool( "deathbox_show_upgrades", true ) && SURVIVAL_IsLootAnUpgrade( player, item, gd.lootData, eLootContext.GROUND ))
+
+				if ( showUpgrades && SURVIVAL_IsLootAnUpgrade( player, item, gd.lootData, eLootContext.GROUND ) )
+				{
+					gd.isRelevant = true
+					gd.isUpgrade = true
+				}
+				else if ( SURVIVAL_IsLootIrrelevant( player, item, gd.lootData, eLootContext.GROUND ) )
+				{
+					gd.isRelevant = false
+					gd.isUpgrade = false
+				}
+				else
+				{
+					gd.isRelevant = true
+					gd.isUpgrade = false
+				}
 			}
 
-			gd.lootData = data
+
 			gd.count += item.GetClipCount()
 			gd.guids.append( item.GetEncodedEHandle() )
 		}
@@ -1983,7 +2059,11 @@ void function GroundItemsInit( entity player, array<entity> loot )
 			relevantItems.append( gd )
 		}
 	}
-
+		//grab all ammo and sort it again
+		
+		// grab consumables and put grenades first than healings
+		
+		
 	if ( sortByType )
 	{
 		upgradeItems.sort( SortByPriorityThenTierForGroundLoot )
@@ -1996,7 +2076,15 @@ void function GroundItemsInit( entity player, array<entity> loot )
 		relevantItems.sort( SortByAmmoThenTierThenPriority )
 		unusableItems.sort( SortByAmmoThenTierThenPriority )
 	}
-
+	
+	// relevantItems.sort ( SortAmmoByEnum )
+	
+	printt( "DEATHBOX ITEMS DEBUG" )
+	foreach( item in relevantItems )
+	{
+		printt( item.lootData.ref )
+	}
+	
 	if ( upgradeItems.len() > 0 )
 	{
 		file.filteredGroundItems.append( CreateHeaderData( "#HEADER_UPGRADES", $"rui/pilot_loadout/kit/titan_cowboy_filled" ) )
@@ -2056,6 +2144,7 @@ GroundLootData function CreateHeaderData( string title, asset icon )
 	LootData data
 	data.pickupString = title
 	data.hudIcon = icon
+	data.lootType = eLootType.BLANK
 	gd.lootData = data
 	return gd
 }
@@ -2777,16 +2866,11 @@ void function TEMP_UpdatePlayerRui( var rui, entity player )
 				int tier      = data.tier
 				asset hudIcon = data.hudIcon
 
-				#if(false)
-
-
-
-
-
-
-#endif
-
 				RuiSetInt( rui, es.unitFrameTierVar, tier )
+				
+				if( tier > 5 )
+					RuiSetInt( rui, es.unitFrameTierVar, 5 )
+				
 				RuiSetImage( rui, es.unitFrameImageVar, hudIcon )
 			}
 		}
@@ -2795,9 +2879,6 @@ void function TEMP_UpdatePlayerRui( var rui, entity player )
 		RuiSetFloat( rui, "playerHealthFrac", GetHealthFrac( player ) )
 		RuiSetFloat( rui, "playerShieldFrac", GetShieldHealthFrac( player ) )
 		RuiSetInt( rui, "teamMemberIndex", player.GetTeamMemberIndex() )
-		#if(false)
-
-#endif //
 
 		vector shieldFrac = < SURVIVAL_GetArmorShieldCapacity( 0 ) / 100.0,
 				SURVIVAL_GetArmorShieldCapacity( 1 ) / 100.0,
@@ -2841,6 +2922,10 @@ void function TEMP_UpdateTeammateRui( var rui, entity ent )
 				asset hudIcon = tier > 0 ? data.hudIcon : es.emptyImage
 
 				RuiSetInt( rui, es.unitFrameTierVar, tier )
+				
+				if( tier > 5 )
+					RuiSetInt( rui, es.unitFrameTierVar, 5 )
+				
 				RuiSetImage( rui, es.unitFrameImageVar, hudIcon )
 			}
 		}

@@ -110,22 +110,23 @@ void function DeployGas_Internal( entity projectile )
 
 	wait 0.2
 
-	entity mover = CreateScriptMover( origin )
-	mover.SetOwner( owner )
+	entity dummyCloudSource = CreateScriptMover( origin )
+	dummyCloudSource.SetOwner( owner )
 	if(owner)
 	{
-		mover.RemoveFromAllRealms()
-		mover.AddToOtherEntitysRealms( owner )
+		dummyCloudSource.RemoveFromAllRealms()
+		dummyCloudSource.AddToOtherEntitysRealms( owner )
 	}
 
 	if ( IsValid( myParent ) )
 	{
-		mover.SetParent( myParent )
+		entity parentPoint = CreateScriptMover( origin, Vector( 0, 0, 0 ) )
+		parentPoint.SetParent( myParent )
+		dummyCloudSource.SetParent( parentPoint )
 	}
 
-	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, mover, mover.GetOrigin(), mover.GetTeam(), mover )
-	CreateGasCloudLarge( mover, WEAPON_GAS_GRENADE_DURATION, WEAPON_GAS_GRENADE_OFFSET )
-	thread DelayedDestroy( mover, WEAPON_GAS_GRENADE_DURATION )
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, dummyCloudSource, dummyCloudSource.GetOrigin(), dummyCloudSource.GetTeam(), dummyCloudSource )
+	CreateGasCloudLarge( dummyCloudSource, WEAPON_GAS_GRENADE_DURATION, WEAPON_GAS_GRENADE_OFFSET )
 }
 
 #endif

@@ -117,7 +117,7 @@ void function OnProjectileCollision_WeaponDefensiveBombardmentExplosion( entity 
 		projectile.Destroy()
 		return
 	}
-	
+	PlayImpactFXTable( projectile.GetOrigin(), projectile, "exp_artillery_plasma" )
 	Explosion_DamageDefSimple( eDamageSourceId.damagedef_defensive_bombardment, pos, player, projectile, pos )
 	projectile.Destroy()
 	#endif

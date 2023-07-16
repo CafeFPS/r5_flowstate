@@ -9,58 +9,19 @@ global bool isPermanentDmg = false
 global float sPermanentDmg = 0.0
 struct
 {
-	int healthRegenRate
+	float healthRegenRate
 	float healthRegenStartDelay
 	float healthRegenTickTime
 } file
 
 void function HealthRegen_Init()
 {
-		file.healthRegenRate = 1 //6.0 ttf2
-		file.healthRegenTickTime = 2.0 // HEALTH_REGEN_TICK_TIME
-		file.healthRegenStartDelay = 5.0 // ttf2 value
-		AddCallback_PlayerClassChanged( HealthRegen_OnPlayerClassChangedMP )
+		file.healthRegenRate = 1.85 //values that seems to fit with retail
+		file.healthRegenTickTime = 0.60 //values that seems to fit with retail
+		file.healthRegenStartDelay = 5.0
 		AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
 		RegisterSignal( "PilotHealthRegenThink" )
 }
-
-/*
-void function PilotHealthRegenThinkSP( entity player )
-{
-	player.EndSignal( "OnDestroy" )
-
-	while ( IsValid( player ) )
-	{
-		wait( HEALTH_REGEN_TICK_TIME )
-
-		if ( !IsAlive( player ) )
-			continue
-
-		if ( !IsPilot( player ) )
-			continue
-
-		// if ( shGlobal.proto_pilotHealthRegenDisabled )
-		// 	continue
-
-		//Assert( IsTestMap() || player.GetPlayerSettings() == DEFAULT_PILOT_SETTINGS, "for now, we should all be pilot_solo at all times, or in a test map." )
-
-		if ( player.GetHealth() == player.GetMaxHealth() )
-			continue
-
-		float healthRegenRate = 4.0
-		float healthRegenStartDelay = GraphCapped( player.GetHealth(), 0, player.GetMaxHealth(), 3.0, 0.8 )
-
-		//printt( "recentDamage " + recentDamage + " delay " + healthRegenStartDelay + " rate " + healthRegenRate )
-
-		if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
-		{
-			continue
-		}
-
-		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
-	}
-}
-*/
 
 bool function IsHealActive( entity player )
 {
@@ -76,17 +37,14 @@ void function PilotHealthRegenThinkMP( entity player )
 	// There's a delay when you change legends, have to compensate
 	wait 1
 	
-	if(!HealthRegen_IsPlayerAllowed(player))	// Don't give it if they shouldn't have it
+	if(!HealthRegen_IsPlayerAllowed(player))
 		return
 
-	//float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
-//	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
-//	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HEALTH_REGEN ) )
-//		healthRegenStartDelay = 2.5
-
+	int tick
+	
 	while ( IsValid( player ) )
 	{
-		wait( file.healthRegenTickTime /*HEALTH_REGEN_TICK_TIME*/ )
+		wait( file.healthRegenTickTime )
 
 		if ( !IsAlive( player ) )
 			continue
@@ -94,47 +52,59 @@ void function PilotHealthRegenThinkMP( entity player )
 		if ( !IsPilot( player ) )
 			continue
 
-		// if ( shGlobal.proto_pilotHealthRegenDisabled )
-		// 	continue
-
-		// float healthRegenRate = file.healthRegenRate 	// health regen per tick
-
 		if ( player.GetHealth() == player.GetMaxHealth() )
 			continue
 
-		// No regen during phase shift
 		if ( player.IsPhaseShifted() )
+		{
+			StatusEffect_StopAllOfType( player, eStatusEffect.target_health )
+			tick = 0
 			continue
+		}
 
 		if ( IsHealActive( player ) )
 		{
+			StatusEffect_StopAllOfType( player, eStatusEffect.target_health )
+			tick = 0
 			continue
-			// if ( Time() - player.p.lastDamageTime < min( ABILITY_STIM_REGEN_DELAY, healthRegenStartDelay ) )
-			// 	continue
-			// else
-			// 	healthRegenRate = healthRegenRate * ABILITY_STIM_REGEN_MOD
 		}
 		else if ( Time() - player.p.lastDamageTime < file.healthRegenStartDelay )
 		{
+			StatusEffect_StopAllOfType( player, eStatusEffect.target_health )
+			tick = 0
 			continue
 		}
-
-		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + file.healthRegenRate ) )
+		
+		if( tick == 0 )
+		{
+			//printt( floor( player.GetHealth() + int(file.healthRegenRate*1.5)) / 100 ) 
+			// Green regen HUD bar
+			float value = float( player.GetHealth() + int(file.healthRegenRate*2) )
+			StatusEffect_AddTimed
+			(
+				player, 
+				eStatusEffect.target_health,
+				value / 100,
+				file.healthRegenTickTime*3,
+				0
+			)
+			tick++
+			continue
+		} else if( tick == 2 )
+		{
+			tick = 0
+			player.SetHealth( minint( player.GetMaxHealth(),  player.GetHealth() + int( file.healthRegenRate ) ) )
+		} else
+		{
+			player.SetHealth( minint( player.GetMaxHealth(), player.GetHealth() + int( file.healthRegenRate ) ) )
+			tick++
+		}
+		
 		if ( player.GetHealth() == player.GetMaxHealth() )
 		{
 			ClearRecentDamageHistory( player )
 			ClearLastAttacker( player )
 		}
-
-		// Green regen HUD bar
-		StatusEffect_AddTimed
-		(
-			player, 
-			eStatusEffect.target_health, // effect
-			float(player.GetHealth() + file.healthRegenRate*2) / player.GetMaxHealth(), // effect frac
-			file.healthRegenTickTime+0.1, // duration
-			0 // duration 2?
-		)
 	}
 }
 

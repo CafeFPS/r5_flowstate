@@ -4466,7 +4466,9 @@ void function UnlockWeaponsAndMelee( entity player )
 void function DelayedDestroy( entity mover, float lifetime )
 {
 	wait( lifetime )
-	mover.Destroy()
+	
+	if( IsValid( mover ) )
+		mover.Destroy()
 }
 
 void function SwapToLastEquippedPrimary( entity player )

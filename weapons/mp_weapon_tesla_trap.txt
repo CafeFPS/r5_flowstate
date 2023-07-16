@@ -37,8 +37,10 @@ WeaponData
     "OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_tesla_trap"
     "OnWeaponOwnerChanged"                          "OnWeaponOwnerChanged_weapon_tesla_trap"
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+	
 	"projectile_ignores_vortex"						"fall_vortex"
-
+	
+	
 	// Menu Stats
 
 	// Models
@@ -255,10 +257,6 @@ WeaponData
             "regen_ammo_refill_rate"    "*2.00"
         }
 
-        interception_pylon_super_charge
-        {
-            "regen_ammo_refill_rate"    "*10.00"
-        }
         extra_tactical_charges
         {
             "ammo_clip_size"   								"90"
@@ -268,24 +266,6 @@ WeaponData
             "ammo_stockpile_max"							"15"
             "regen_ammo_refill_rate"						"0.5"
         }
-
-                            
-                      
-         
-                                  
-                                          
-                                         
-                                       
-                                          
-         
-
-                               
-         
-                                                               
-                                            
-                                            
-         
-           
 
         interception_pylon_super_charge
         {

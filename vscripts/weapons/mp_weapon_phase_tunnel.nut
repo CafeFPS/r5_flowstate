@@ -47,16 +47,16 @@ const float PHASE_TUNNEL_PLACEMENT_HEIGHT_STANDING         = 45.0
 const float PHASE_TUNNEL_PLACEMENT_HEIGHT_CROUCHING        = 20
 
 //PHASE TUNNEL TELEPORT TIME VARS
-const float PHASE_TUNNEL_LIFETIME                          = 60.0
+const float PHASE_TUNNEL_LIFETIME                          = 45.0
 const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MIN          = 0.3
-const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MAX          = 2.0
+const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MAX          = 3.5
 const float PHASE_TUNNEL_TELEPORT_DBOUNCE                  = 0.5
 const float PHASE_TUNNEL_TELEPORT_DBOUNCE_PROJECTILE       = 1.0
 const float PHASE_TUNNEL_PATH_FOLLOW_TICK                  = 0.1
 const float PHASE_TUNNEL_PATH_SNAPSHOT_INTERVAL            = 0.1
 
-const float PHASE_TUNNEL_PLACEMENT_RADIUS                  = 4098.0
-const float PHASE_TUNNEL_PLACEMENT_DIST                    = 4098.0
+const float PHASE_TUNNEL_PLACEMENT_RADIUS                  = 6000.0
+const float PHASE_TUNNEL_PLACEMENT_DIST                    = 6000.0
 const float PHASE_TUNNEL_MIN_PORTAL_DIST_SQR               = 128.0 * 128.0
 const float PHASE_TUNNEL_MIN_GEO_REVERSE_DIST              = 48.0
 

@@ -97,11 +97,16 @@ global enum eGradeFlags
 	IS_LOCKED = (1 << 3),
 }
 
+struct RefEntAreaData
+{
+	vector areaMin
+	vector areaMax
+}
+
 struct
 {
-	//array<entity>                 invalidEntsForPlacingPermanentsOnto
-	//table<entity, RefEntAreaData> invalidAreasRelativeToEntForPlacingPermanentsOnto
-
+	array<entity>                 invalidEntsForPlacingPermanentsOnto
+	table<entity, RefEntAreaData> invalidAreasRelativeToEntForPlacingPermanentsOnto
 	//int functionref()            getNumTeamsRemainingCallback
 	//float functionref()			 getDeathCamTimeOverride
 	//float functionref()			 getDeathCamSpectateTimeOverride
@@ -138,7 +143,7 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "grenade_frag" )
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
-	
+	MpWeaponEmoteProjector_Init()
 	MpWeaponDoubletake_Init()
 	//MpWeaponGrenadeGravity_Init()
 	MpSpaceElevatorAbility_Init()
@@ -5165,8 +5170,9 @@ array<entity> function GetFriendlySquadArrayForPlayer_AliveConnected( entity pla
 	{
 		if ( !IsAlive( player ) )
 			return []
+
 		#if SERVER
-		
+
 		// if (teamsWithPlayersAlive.len() == 0)
 		// {
 		// 	teamsWithPlayersAlive.append( team )
@@ -5179,7 +5185,7 @@ array<entity> function GetFriendlySquadArrayForPlayer_AliveConnected( entity pla
 		// 		teamFound = true
 		// }
 
-	#endif
+		#endif
 		return [player]
 	}
 
@@ -5512,4 +5518,67 @@ void function WaitForGameState(int state) {
 	{
 		WaitFrame()
 	}
+}
+
+void function AddEntToInvalidEntsForPlacingPermanentsOnto( entity ent )
+{
+	Assert( !file.invalidEntsForPlacingPermanentsOnto.contains( ent ) )
+	file.invalidEntsForPlacingPermanentsOnto.append( ent )
+}
+
+
+void function RemoveEntFromInvalidEntsForPlacingPermanentsOnto( entity ent )
+{
+	Assert( file.invalidEntsForPlacingPermanentsOnto.contains( ent ) )
+	file.invalidEntsForPlacingPermanentsOnto.removebyvalue( ent )
+}
+
+
+bool function IsEntInvalidForPlacingPermanentOnto( entity ent )
+{
+	return file.invalidEntsForPlacingPermanentsOnto.contains( ent )
+}
+
+
+void function AddRefEntAreaToInvalidOriginsForPlacingPermanentsOnto( entity refEnt, vector areaMin, vector areaMax )
+{
+	Assert( !(refEnt in file.invalidAreasRelativeToEntForPlacingPermanentsOnto) )
+
+	RefEntAreaData data
+	data.areaMin = areaMin
+	data.areaMax = areaMax
+
+	file.invalidAreasRelativeToEntForPlacingPermanentsOnto[refEnt] <- data
+}
+
+
+void function RemoveRefEntAreaFromInvalidOriginsForPlacingPermanentsOnto( entity refEnt )
+{
+	if ( refEnt in file.invalidAreasRelativeToEntForPlacingPermanentsOnto )
+	{
+		delete file.invalidAreasRelativeToEntForPlacingPermanentsOnto[ refEnt ]
+	}
+	else
+	{
+		Assert( false, "Ref ent is not in table of ref ent areas." )
+	}
+}
+
+
+bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
+{
+	foreach ( entity refEnt, RefEntAreaData data in file.invalidAreasRelativeToEntForPlacingPermanentsOnto )
+	{
+		if ( !IsValid( refEnt ) )
+			continue
+
+		vector localPos = WorldPosToLocalPos_NoEnt( origin, refEnt.GetOrigin(), refEnt.GetAngles() )
+
+		if ( localPos.x > data.areaMin.x && localPos.x < data.areaMax.x
+		&& localPos.y > data.areaMin.y && localPos.y < data.areaMax.y
+		&& localPos.z > data.areaMin.z && localPos.z < data.areaMax.z )
+			return true
+	}
+
+	return false
 }

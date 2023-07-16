@@ -18,6 +18,7 @@ global function SetTitanMeterGainScale
 
 // r5 stuff
 global function SvCodeCallbacksCommon_Init
+global function EvoCurrentShieldToNextTier
 
 struct AccumulatedDamageData
 {
@@ -456,6 +457,8 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			}
 			
 			UpdatePlayerCounts()
+			
+			EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
 
@@ -858,7 +861,15 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	vector attackerOrigin = Vector( 0, 0, 0 )
 	if ( IsValid( attacker ) )
+	{
 		attackerOrigin = attacker.GetOrigin()
+		
+		//Fake evo shields
+		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		{
+			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
+		}
+	}
 
 	if ( IsAlive( player ) )
 	{
@@ -880,6 +891,50 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
+}
+
+void function EvoCurrentShieldToNextTier( var damageInfo, entity attacker )
+{
+	LootData currentShield = EquipmentSlot_GetEquippedLootDataForSlot( attacker, "armor" )
+	
+	if( currentShield.tier >= 7 || currentShield.tier == 4 )
+		return
+	
+	int oldshield = attacker.GetShieldHealth()
+	string nextShield = returnShieldNameForCurrentShieldName( currentShield )
+	LootData nextShieldData = SURVIVAL_Loot_GetLootDataByRef( nextShield )
+	if( currentShield.ref != "" )
+		SURVIVAL_RemoveFromPlayerInventory(attacker, currentShield.ref, 1)
+	Inventory_SetPlayerEquipment( attacker, nextShield, "armor" )
+	attacker.SetShieldHealth( oldshield )
+	
+	Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", nextShieldData.tier )
+}
+
+string function returnShieldNameForCurrentShieldName( LootData currentShield  )
+{
+	switch( currentShield.ref )
+	{
+		case "":
+		return "armor_pickup_lv1"
+
+		case "armor_pickup_lv1":
+		return "armor_pickup_lv2"
+		
+		case "armor_pickup_lv2":
+		return "armor_pickup_lv3"
+		
+		case "armor_pickup_lv3":
+		return "armor_pickup_lv5"
+		
+		case "armor_pickup_lv5":
+		return "armor_pickup_lv6"
+
+		case "armor_pickup_lv6":
+		return "armor_pickup_lv7"
+	}
+	
+	return ""
 }
 
 function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker, eModSourceID, int damageType, int damageSourceId, TitanDamage titanDamage )

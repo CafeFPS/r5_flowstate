@@ -126,7 +126,9 @@ WeaponData
 	"sway_max_roll"                            "4"
 	"sway_translate_gain"                      "2.5"
 	"sway_rotate_gain"                         "7"
-
+	
+	"viewmodel_offset_hip" 					"-4 2 -1"
+	
 	Mods
 	{
 		health_small
@@ -145,6 +147,8 @@ WeaponData
 			"fx_muzzle_flash_view"					"P_health_inj_mflash_FP"
 			"fx_muzzle_flash_world"					"P_health_inj_mflash"
 			"fx_muzzle_flash_attach"				"muzzle_flash"
+			
+			"viewmodel_offset_hip" 					"0 0 0"
 		}
 
 		health_large
@@ -182,6 +186,7 @@ WeaponData
 			"dof_nearDepthEnd"                      "1.0"
 			"dof_zoom_nearDepthStart"               "1.0"
 			"dof_zoom_nearDepthEnd"                 "12.0"
+			"viewmodel_offset_hip" 					"0 0 0"
 
 		}
 

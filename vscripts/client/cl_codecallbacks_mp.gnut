@@ -185,6 +185,8 @@ void function ClientCodeCallback_OnEntityCreation( entity ent )
 
 	if ( ent.IsPlayer() )
 		ShEHI_OnPlayerCreated( ent )
+	else if( ent.GetScriptName() == "flowstate_holo_spray" )
+		ShEHI_OnHoloSprayCreated( ent )
 
 	if ( IsLobby() )
 	{

@@ -6,6 +6,8 @@ global function ShGas_Init
 	global function CreateGasCloudLarge
 	global function CreateGasCloudMediumAtOrigin
 	global function MakeEntityAsGasEmitter
+	global function GasCloud_RampDamageBasedOnExposureTime_Copy
+	global function GasCloud_HandleGasExposure_Copy
 #endif //SERVER
 
 #if CLIENT
@@ -15,7 +17,7 @@ global function ShGas_Init
 global function PlayerHasGasProtection
 
 const float GAS_TEAMMATE_PROTECTION_RADIUS = 400.0
-const bool GAS_CLOUD_DEBUG_DRAW = false
+const bool GAS_CLOUD_DEBUG_DRAW = true
 
 const asset FX_GAS_SMOKE_LARGE = $"P_smokescreen_poison"
 const asset FX_GAS_SMOKE = $"P_gastrap_fill"
@@ -231,6 +233,9 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 	//It should never do real damage, that's damagedef_grenade_gas's job.
 	DamageInfo_SetDamage( damageInfo, 0.0 )
 
+	if( target.GetScriptName() == "caustic_trap" || target.GetScriptName() == "tesla_trap")
+		return
+	
 	//Handle the case where a projectile entering gas is marked for deletion.
 	if ( !IsValid( target ) )
 		return
@@ -239,7 +244,7 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 	if ( target.IsTitan() )
 		return
 
-	if ( !target.IsPlayer() && !target.IsNPC() )
+	if ( !target.IsPlayer() && !target.IsNPC() && target.GetScriptName() != TESLA_TRAP_NAME )
 		return
 
 	//If gas exposure has already been handled for this target don't handle it again this frame.
@@ -264,12 +269,64 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 		}
 	}
 
-	//Update the last time player was exposed to gas to be now.
+	//Update the last time target was exposed to gas to be now.
 	target.e.gasLastExpoTime = Time()
-
+	
 	//If the target was not already exposed to gas, start gas exposure update.
 	if ( newGasExposure )
+	{
 		thread GasExposureUpdate( target )
+	}
+}
+
+void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
+{
+	//The Gas Exposure Damage Type is only used to detect gas exposure and to ensure that damage radius blockers stop gas exposure.
+	//It should never do real damage, that's damagedef_grenade_gas's job.
+	DamageInfo_SetDamage( damageInfo, 0.0 )
+	printt( "GasCloud_HandleGasExposure_Copy thread for " + target )
+	if ( target.GetScriptName() != TESLA_TRAP_NAME )
+		return
+	
+	//Handle the case where a projectile entering gas is marked for deletion.
+	if ( !IsValid( target ) )
+		return
+
+	//Gas does not affect titans
+	if ( target.IsTitan() )
+		return
+
+
+	//If gas exposure has already been handled for this target don't handle it again this frame.
+	if ( target.e.gasLastExpoTime == Time() )
+		return
+
+	//If the target was not previously touching gas. Note the time at which they entered the gas.
+	bool newGasExposure = false
+	if ( target.e.gasEnterTime == -1 )
+	{
+		newGasExposure = true
+		target.e.gasEnterTime = Time()
+
+		if ( GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true ) )
+		{
+			entity inflictor = DamageInfo_GetInflictor( damageInfo )
+			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
+			{
+				if ( StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection ) == 0 )
+					StatusEffect_AddTimed( target, eStatusEffect.gas_slow_protection, 1.0, 2.0, 1.0 )
+			}
+		}
+	}
+
+	//Update the last time target was exposed to gas to be now.
+	target.e.gasLastExpoTime = Time()
+	
+	//If the target was not already exposed to gas, start gas exposure update.
+	if ( newGasExposure )
+	{
+		thread GasExposureUpdate( target )
+	}
 }
 
 void function GasExposureUpdate( entity target )
@@ -312,14 +369,16 @@ void function GasExposureUpdate( entity target )
 
 			FadeOutSoundOnEntity( target, GAS_CLOUD_VENTILATOR_SOUND, 3.0 )
 			FadeOutSoundOnEntity( target, GAS_CLOUD_BREATHING_SOUND, 3.0 )
-
-			if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
-				StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
-			if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
-				StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
-			//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
-			//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
-
+			
+			if( target.IsPlayer() )
+			{
+				if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
+					StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
+				if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
+					StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
+				//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
+				//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
+			}
 		}
 	} )
 
@@ -341,32 +400,34 @@ void function GasExposureUpdate( entity target )
 		//printt( "TIME SINCE: " + tSinceExpo )
 
 		//If the entity hasn't taken damage in slightly more than a gas damage tick interval, they are not in gas.
-		bool inGas = true
-		if ( tSinceExpo > GAS_CLOUD_EXPOSURE_TICK_RATE * 2 )
-			inGas = false
-
-		if ( inGas )
+		if( target.IsPlayer() )
 		{
-			//Increase Gas Exposure FX
-			float effectScalar = GraphCapped( tInGas, 0.0, GAS_CLOUD_EFFECT_BUILD_TIME, 0.0, 1.0 )
-			GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+			bool inGas = true
+			if ( tSinceExpo > GAS_CLOUD_EXPOSURE_TICK_RATE * 2 )
+				inGas = false
+
+			if ( inGas )
+			{
+				//Increase Gas Exposure FX
+				float effectScalar = GraphCapped( tInGas, 0.0, GAS_CLOUD_EFFECT_BUILD_TIME, 0.0, 1.0 )
+				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+			}
+			else
+			{
+				//Decrease Gas Exposure FX and stop update if it has been long enough.
+				float wearOffTimeGasGear_No 	= tInGas > GAS_CLOUD_WEAR_OFF_NORMAL ? GAS_CLOUD_WEAR_OFF_NORMAL : max( tInGas, 0.1 )
+				float wearOffTimeGasGear_Yes 	= tInGas > GAS_CLOUD_WEAR_OFF_GAS_GEAR ? GAS_CLOUD_WEAR_OFF_GAS_GEAR : max( tInGas, 0.1 )
+				float wearOffTime = wearOffTimeGasGear_No
+				if ( target.IsPlayer() )
+					wearOffTime = PlayerHasGasProtection( target ) ? wearOffTimeGasGear_Yes : wearOffTimeGasGear_No
+
+				float effectScalar = GraphCapped( tSinceExpo, wearOffTime, 0.0, 0.0, 1.0 )
+				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+
+				if ( effectScalar == 0.0 )
+					return
+			}
 		}
-		else
-		{
-			//Decrease Gas Exposure FX and stop update if it has been long enough.
-			float wearOffTimeGasGear_No 	= tInGas > GAS_CLOUD_WEAR_OFF_NORMAL ? GAS_CLOUD_WEAR_OFF_NORMAL : max( tInGas, 0.1 )
-			float wearOffTimeGasGear_Yes 	= tInGas > GAS_CLOUD_WEAR_OFF_GAS_GEAR ? GAS_CLOUD_WEAR_OFF_GAS_GEAR : max( tInGas, 0.1 )
-			float wearOffTime = wearOffTimeGasGear_No
-			if ( target.IsPlayer() )
-				wearOffTime = PlayerHasGasProtection( target ) ? wearOffTimeGasGear_Yes : wearOffTimeGasGear_No
-
-			float effectScalar = GraphCapped( tSinceExpo, wearOffTime, 0.0, 0.0, 1.0 )
-			GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
-
-			if ( effectScalar == 0.0 )
-				return
-		}
-
 		WaitFrame()
 	}
 }
@@ -416,6 +477,11 @@ void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEf
 
 void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageInfo )
 {
+	if( target.GetScriptName() == "caustic_trap" || target.GetScriptName() == "tesla_trap" )
+		return
+
+	printt( "ramping damage for " + target )
+	
 	//Players with gas gear aren't effected
 	if ( target.IsPlayer() )
 	{
@@ -453,8 +519,8 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	//Scale Damage
 	float timeInGas = target.e.gasLastExpoTime - target.e.gasEnterTime
 	float dmgMult = GAS_CLOUD_DMG_MIN + floor( timeInGas / GAS_CLOUD_DMG_EXPOSURE_INTERVAL )
-	dmgMult = min( GAS_CLOUD_DMG_FLAT, dmgMult )
-
+	dmgMult = max( GAS_CLOUD_DMG_FLAT, dmgMult )
+	
 	Assert ( dmgMult >= 1.0 )
 
 	target.e.gasLastDamageTime = Time()
@@ -464,7 +530,72 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 		EmitSoundOnEntityExceptToPlayer( target, target, "flesh_causticgas_damage_3p" )
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
 	}
+	
+	printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	DamageInfo_ScaleDamage( damageInfo, dmgMult )
+	attacker.e.sharedGasDamageHelper[ target ] = Time()
+}
 
+
+void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var damageInfo )
+{
+	if( target.GetScriptName() == "caustic_trap" )
+		return
+
+	//printt( "ramping damage for " + target )
+	
+	//Players with gas gear aren't effected
+	if ( target.IsPlayer() )
+	{
+		//If the player has gas gear passive they take no damage from gas.
+		if ( PlayerHasGasProtection( target ) )
+		{
+			DamageInfo_ScaleDamage( damageInfo, 0 )
+			return
+		}
+	}
+
+	//Titans are not effected.
+	if ( target.IsTitan() )
+		return
+
+	//if the target is not in gas return.
+	if ( !IsEntInGas( target ) )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !( target in attacker.e.sharedGasDamageHelper ) )
+	{
+		//printt( "added new ent in gas to attacker table " )
+		attacker.e.sharedGasDamageHelper[ target ] <- Time()
+	}
+	else
+	{
+		//If the player already took gas damage they take no additional damage from it
+		if ( Time() - attacker.e.sharedGasDamageHelper[ target ] < GAS_CLOUD_DMG_TICK_RATE )
+		{
+			//printt( "already took damage setting damage to 0 this frame " )
+			DamageInfo_ScaleDamage( damageInfo, 0 )
+			return
+		}
+	}
+
+	//Scale Damage
+	float timeInGas = target.e.gasLastExpoTime - target.e.gasEnterTime  //debug here for tesla trap, why dmg mult is so high for tesla trap.
+	float dmgMult = GAS_CLOUD_DMG_MIN + floor( timeInGas / GAS_CLOUD_DMG_EXPOSURE_INTERVAL )
+	dmgMult = max( GAS_CLOUD_DMG_FLAT, dmgMult )
+	
+	Assert ( dmgMult >= 1.0 )
+
+	target.e.gasLastDamageTime = Time()
+
+	if ( target.IsPlayer() )
+	{
+		EmitSoundOnEntityExceptToPlayer( target, target, "flesh_causticgas_damage_3p" )
+		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
+	}
+	
+	printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
 	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	attacker.e.sharedGasDamageHelper[ target ] = Time()
 }
@@ -585,14 +716,30 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 
 	float offset = radius / 2
 	array<vector> offsetVectors = [
-	MapAngleToRadius( 0, offset ),
-	MapAngleToRadius( 45, offset ),
-	MapAngleToRadius( 90, offset ),
-	MapAngleToRadius( 135, offset ),
-	MapAngleToRadius( 180, offset ),
-	MapAngleToRadius( 225, offset ),
-	MapAngleToRadius( 270, offset ),
-	MapAngleToRadius( 315, offset )
+		MapAngleToRadius( 0, offset ),
+		MapAngleToRadius( 15, offset ),
+		MapAngleToRadius( 30, offset ),
+		MapAngleToRadius( 45, offset ),
+		MapAngleToRadius( 60, offset ),
+		MapAngleToRadius( 75, offset ),
+		MapAngleToRadius( 90, offset ),
+		MapAngleToRadius( 105, offset ),
+		MapAngleToRadius( 120, offset ),
+		MapAngleToRadius( 135, offset ),
+		MapAngleToRadius( 150, offset ),
+		MapAngleToRadius( 165, offset ),
+		MapAngleToRadius( 180, offset ),
+		MapAngleToRadius( 195, offset ),
+		MapAngleToRadius( 210, offset ),
+		MapAngleToRadius( 225, offset ),
+		MapAngleToRadius( 240, offset ),
+		MapAngleToRadius( 255, offset ),
+		MapAngleToRadius( 270, offset ),
+		MapAngleToRadius( 285, offset ),
+		MapAngleToRadius( 300, offset ),
+		MapAngleToRadius( 315, offset ),
+		MapAngleToRadius( 330, offset ),
+		MapAngleToRadius( 345, offset )
 	]
 
 	table<int ,array<entity> > smokeFXs
@@ -615,7 +762,26 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	gasExpoInflictor.e.spawnTime = Time()
 	SetTeam( gasExpoInflictor, smokescreen.attacker.GetTeam() )
 
-	entity gasDmgInflictor = CreateScriptRef( center, <0,0,0> )
+	entity gasDmgInflictor = CreateEntity( "script_ref" )
+
+	gasDmgInflictor.SetOrigin( center )
+	gasDmgInflictor.SetAngles( <0,0,0> )
+	
+	gasDmgInflictor.SetScriptName( "caustic_trap_gas" )
+	
+	if( IsValid( smokescreen.attacker ) )
+		gasDmgInflictor.SetBossPlayer( smokescreen.attacker )
+	
+	DispatchSpawn( gasDmgInflictor )
+	
+	entity TrainOrMover = smokescreen.weaponOrProjectile.GetParent()
+	
+	if( IsValid( TrainOrMover ) )
+	{
+		gasExpoInflictor.SetParent( TrainOrMover )
+		gasDmgInflictor.SetParent( TrainOrMover )
+	}
+	
 	gasDmgInflictor.e.onlyDamageEntitiesOncePerTick = true
 
 	entity smokeOriginRef = CreateScriptRef( smokescreen.origin, <0,0,0> )
@@ -635,7 +801,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	}
 
 	OnThreadEnd(
-	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeOriginRef, smokeFXs )
+	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeOriginRef, smokeFXs, TrainOrMover )
 		{
 			if ( IsValid( gasExpoInflictor ) )
 				gasExpoInflictor.Destroy()
@@ -645,11 +811,6 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 			
 			if ( IsValid( smokeOriginRef ) )
 				smokeOriginRef.Destroy()
-			
-			if ( IsValid( smokescreen.smokeSource ) )
-			{
-				StopSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
-			}
 
 			foreach ( entArray in smokeFXs )
 			{
@@ -658,6 +819,15 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 				if ( IsValid( entArray[1] ) )
 					entArray[1].Destroy()
 			}
+			
+			if ( IsValid( smokescreen.smokeSource ) )
+			{
+				StopSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
+				smokescreen.smokeSource.Destroy()
+			}
+			
+			if( IsValid( TrainOrMover ) )
+				TrainOrMover.Destroy()
 		}
 	)
 
@@ -672,40 +842,50 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 
 	while ( Time() <= endTime )
 	{		
-		center = GetFXCenterFromSmokescreen( smokescreen )
 
+		center = GetFXCenterFromSmokescreen( smokescreen )
+		
+		if( IsValid( TrainOrMover ) )
+			center = TrainOrMover.GetOrigin()
+		
 		bool doDamage = (Time() - lastDamageTime >= damageTickRate) || lastDamageTime == Time()
-		
-		if ( !IsValid( smokescreen.smokeSource ) && onetime )
-		{
-			endTime = Time() + DIRTY_BOMB_CLOUD_LINGER_TIME
-			onetime = false
-		}
-		
+
 		for ( int i=0; i<offsetVectors.len(); i++ )
 		{
 			vector offsetVector = offsetVectors[i]
 			vector offsetCenter = center + offsetVector
-			vector radiusOrigin = smokescreen.origin + offsetCenter
+			vector radiusOrigin
 
+			TraceResults trace
+
+			array<entity> ignoreEnts = GetGasEmitters()
+			if ( IsValid( smokescreen.smokeSource ) )
+				ignoreEnts.append( smokescreen.smokeSource )
+
+			trace = TraceLine( center, offsetCenter, ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS, smokescreen.smokeSource )
+				
+			vector dif = ( trace.endPos - center) * trace.fraction
+			radiusOrigin = center + dif
+
+			if ( GAS_CLOUD_DEBUG_DRAW )
+			{
+				// printt( "DEBUG GAS TRACE \n hitEnt: " + trace.hitEnt + "\n endPos " + trace.endPos + "\n fraction " + trace.fraction )
+				DebugDrawLine( center, trace.endPos, 0, 0, 255, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
+				DebugDrawHemiSphere( radiusOrigin, Vector(0,0,0), 25.0, 20, 210, 255, false, GAS_CLOUD_EXPOSURE_TICK_RATE )
+			}
+
+			if ( GAS_CLOUD_DEBUG_DRAW )
+			{
+				DebugDrawCircle( radiusOrigin + FX_GAS_SMOKE_OFFSET, <0,0,0>, offset, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE ) //gas emitter
+				//DebugDrawCircle( offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0>, offset * 0.45, 255, 255, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE ) //trace blocker volume?
+			}
+				
 			if ( !fxDestroyed )
 			{
-				TraceResults trace
-
-				array<entity> ignoreEnts = GetGasEmitters()
-				if ( IsValid( smokescreen.smokeSource ) )
-					ignoreEnts.append( smokescreen.smokeSource )
-
-				trace = TraceLine( center, offsetCenter, ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS, smokescreen.smokeSource )
 				if ( trace.hitEnt != null && !trace.hitSky )
 				{
-					vector dif = ( offsetCenter - center ) * trace.fraction
-					radiusOrigin = center + dif
 
-					if ( GAS_CLOUD_DEBUG_DRAW )
-						DebugDrawLine( center, radiusOrigin, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
-
-					if ( trace.fraction < 0.5 )
+					if ( trace.fraction < 1 )
 					{
 						if ( offsetVector != offsetVectors[0] && IsValid( smokeFXs[i][0] ) )
 							smokeFXs[i][0].Destroy()
@@ -720,25 +900,28 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							{
 								entity fx
 								if ( smokescreen.smokeSource == null )
-									fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0> )
+									fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), radiusOrigin + FX_GAS_SMOKE_OFFSET, <0,0,0> )
 								else
-									fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, offsetVector - FX_GAS_SMOKE_OFFSET, <0,0,0> )
+									fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, dif - FX_GAS_SMOKE_OFFSET, <0,0,0> )
 
 								if ( smokescreen.fxPointCP1toCenter )
 									EffectSetControlPointVector( fx, 1, center )
 
 								smokeFXs[i][0] = fx
-								smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+								// smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
 
-								if ( smokescreen.smokeSource != null )
-									smokeFXs[i][1].SetParent( smokescreen.smokeSource )
+								// if ( smokescreen.smokeSource != null )
+									// smokeFXs[i][1].SetParent( smokescreen.smokeSource )
 
 								if ( IsValid( smokescreen.inflictor ) )
 								{
 									foreach ( ent in smokeFXs[ i ] )
 									{
-										ent.RemoveFromAllRealms()
-										ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+										if( IsValid( ent ) )
+										{
+											ent.RemoveFromAllRealms()
+											ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+										}
 									}
 								}
 							}
@@ -748,7 +931,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 								if ( smokescreen.smokeSource == null )
 								{
 									smokeFXs[i][0].SetOrigin( org )
-									smokeFXs[i][1].SetOrigin( org )
+									// smokeFXs[i][1].SetOrigin( org )
 								}
 							}
 						}
@@ -762,16 +945,16 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 						{
 							entity fx
 
-							if ( smokescreen.smokeSource == null )
-								fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0> )
+							if ( !IsValid( smokescreen.smokeSource ) )
+								fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), radiusOrigin + FX_GAS_SMOKE_OFFSET, <0,0,0> )
 							else
-								fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, offsetVector - FX_GAS_SMOKE_OFFSET, <0,0,0> )
+								fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, dif - FX_GAS_SMOKE_OFFSET, <0,0,0> )
 
 							if ( smokescreen.fxPointCP1toCenter )
 								EffectSetControlPointVector( fx, 1, center )
 
 							smokeFXs[i][0] = fx
-							smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+							// smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
 
 							//if ( smokescreen.smokeSource != null )
 							//	smokeFXs[i][1].SetParent( smokescreen.smokeSource )
@@ -780,30 +963,26 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							{
 								foreach ( ent in smokeFXs[ i ] )
 								{
-									//ent.RemoveFromAllRealms()
-									//ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+									if( IsValid( ent ) )
+									{
+										ent.RemoveFromAllRealms()
+										ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+									}
 								}
 							}
 						}
 						else
 						{
-							vector org = offsetCenter + FX_GAS_SMOKE_OFFSET
-							if ( smokescreen.smokeSource == null )
+							vector org = radiusOrigin + FX_GAS_SMOKE_OFFSET
+							if ( !IsValid( smokescreen.smokeSource ) )
 							{
 								smokeFXs[i][0].SetOrigin( org )
-								smokeFXs[i][1].SetOrigin( org )
+								// smokeFXs[i][1].SetOrigin( org )
 							}
 						}
 					}
-					if ( GAS_CLOUD_DEBUG_DRAW )
-						DebugDrawLine( offsetCenter, center, 0, 255, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
 				}
 
-				if ( GAS_CLOUD_DEBUG_DRAW )
-				{
-					DebugDrawCircle( radiusOrigin, <0,0,0>, radius / 2, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
-					DebugDrawCircle( radiusOrigin, <0,0,0>, radius / 2, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
-				}
 			}
 
 			if ( Time() > endTime - GAS_CLOUD_FADE_TIME && !fxDestroyed )
@@ -821,11 +1000,10 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 				smokeFXs.clear()
 			}
 			
-			// TODO: Somehow adding more gas emitters will do +1 dmg per instance, no clue how to fix yet
-
+			// Add damagedef_gas_exposure which is set to 0 damage in damage callback and adds highlights etc
 			RadiusDamage
 			(
-				radiusOrigin,										// center
+				offsetCenter,										// center
 				svGlobal.worldspawn,								// attacker
 				gasExpoInflictor,									// inflictor
 				1.0,												// damage
@@ -837,7 +1015,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 				0.0,												// explosionForce
 				smokescreen.damageFlags,							// scriptDamageFlags
 				eDamageSourceId.damagedef_gas_exposure 				// scriptDamageSourceIdentifier
-			)			
+			)
 
 			//DO GAS RADIUS DAMAGE HERE EVERY TICK TIME.
 			if ( doDamage )
@@ -845,20 +1023,21 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 				//Deal gas grenade damage
 				RadiusDamage
 				(
-					radiusOrigin,										// center
+					offsetCenter,										// center
 					smokescreen.attacker,								// attacker
 					gasDmgInflictor,									// inflictor
-					dpsPilot,											// damage
-					dpsTitan,											// damageHeavyArmor
+					1.0,												// damage
+					1.0,												// damageHeavyArmor
 					offset,												// innerRadius
 					offset,												// outerRadius
 					SF_ENVEXPLOSION_MASK_BRUSHONLY,						// flags
 					0.0,												// distanceFromAttacker
 					0.0,												// explosionForce
 					smokescreen.damageFlags,							// scriptDamageFlags
-					smokescreen.damageSource 							// scriptDamageSourceIdentifier
+					eDamageSourceId.damagedef_grenade_gas				// scriptDamageSourceIdentifier
 				)
 			}
+
 		}
 
 		//If we dealt damage this frame update last damage time.
@@ -866,6 +1045,15 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 			lastDamageTime = Time()
 
 		wait GAS_CLOUD_EXPOSURE_TICK_RATE
+		
+		if ( Time() > endTime && onetime || !IsValid( smokescreen.smokeSource ) && onetime )
+		{
+			#if DEVELOPER
+			printt( "2s linger started" )
+			#endif
+			endTime = Time() + DIRTY_BOMB_CLOUD_LINGER_TIME
+			onetime = false
+		}
 	}
 }
 

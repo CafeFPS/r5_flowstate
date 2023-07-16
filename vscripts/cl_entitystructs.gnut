@@ -194,6 +194,7 @@ global struct ClientPlayerStruct
 	bool insideBubbleMokey = false
 	
 	string snd_knifecolor = "255, 255, 255"
+	int holosprayChoice
 }
 
 

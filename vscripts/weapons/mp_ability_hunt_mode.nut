@@ -5,6 +5,7 @@ global function OnWeaponDeactivate_hunt_mode
 
 #if SERVER
 global function BurnMeter_HuntMode
+global function OnPlayerDowned_UpdateHuntEndTime
 #endif //SERVER
 #if DEVELOPER && CLIENT 
 global function GetBloodhoundColorCorrectionID
@@ -26,7 +27,6 @@ void function MpAbilityHuntModeWeapon_Init()
 {
 	#if SERVER
 		PrecacheParticleSystem( HUNT_MODE_BODY_FX )
-
 	#endif //SERVER
 
 	RegisterSignal( "HuntMode_ForceAbilityStop" )
@@ -111,25 +111,31 @@ void function BurnMeter_HuntMode( entity player )
 void function HuntMode_Start( entity player )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
+	
+	player.p.huntEndTime = Time() + HUNT_MODE_DURATION
+	player.p.huntEnable = true
+	player.p.huntIds.clear()
+	
 	player.EndSignal( "OnDeath" )
+	player.EndSignal( "HuntMode_ForceAbilityStop" )
 	//EmitSoundOnEntityOnlyToPlayer( player, player, "beastofthehunt_activate_1P" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "beastofthehunt_activate_3P" )
-
-	StatusEffect_AddTimed( player, eStatusEffect.threat_vision, 1.0, HUNT_MODE_DURATION, 5.0 )
-	StatusEffect_AddTimed( player, eStatusEffect.hunt_mode, 1.0, HUNT_MODE_DURATION, HUNT_MODE_DURATION )
-	StatusEffect_AddTimed( player, eStatusEffect.hunt_mode_visuals, 1.0, HUNT_MODE_DURATION, 5.0 )
-	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.15, HUNT_MODE_DURATION, 5.0 )
+	
+	player.p.huntIds.append( StatusEffect_AddTimed( player, eStatusEffect.threat_vision, 1.0, HUNT_MODE_DURATION, 5.0 ) )
+	player.p.huntIds.append( StatusEffect_AddTimed( player, eStatusEffect.hunt_mode, 1.0, HUNT_MODE_DURATION, HUNT_MODE_DURATION ) )
+	player.p.huntIds.append( StatusEffect_AddTimed( player, eStatusEffect.hunt_mode_visuals, 1.0, HUNT_MODE_DURATION, 5.0 ) )
+	player.p.huntIds.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.15, HUNT_MODE_DURATION, 5.0 ) )
 
 	thread HuntMode_PlayLoopingBodyFx( player )
 
-	
-	
-	
 	OnThreadEnd(
 	function() : ( player )
 		{
 			if ( IsValid( player ) )
 			{
+				player.p.huntEndTime = -1
+				player.p.huntEnable = false
+				player.p.huntIds.clear()
 				StatusEffect_StopAllOfType( player, eStatusEffect.threat_vision )
 				StatusEffect_StopAllOfType( player, eStatusEffect.hunt_mode )
 				StatusEffect_StopAllOfType( player, eStatusEffect.hunt_mode_visuals )
@@ -137,8 +143,24 @@ void function HuntMode_Start( entity player )
 			}
 		}
 	)
+	
+	while( IsValid( player ) && IsAlive( player ) && Time() < player.p.huntEndTime )
+		WaitFrame()
+}
 
-	wait HUNT_MODE_DURATION
+void function OnPlayerDowned_UpdateHuntEndTime( entity victim, entity attacker, var damageInfo )
+{
+	if( !IsValid( attacker ) || !IsAlive( attacker ) || !attacker.IsPlayer() || !attacker.p.huntEnable || !victim.IsPlayer() || attacker.p.huntIds.len() == 0 )
+		return
+	
+	float idRemainingTime = StatusEffect_GetTimeRemaining( attacker, eStatusEffect.hunt_mode )
+	float timeToAdd = idRemainingTime + 5 // 5 shouldn't be fixed, it depends on remaining time and result should add between 5 and 15 seconds. Colombia
+	attacker.p.huntEndTime += timeToAdd
+	
+	foreach( activeStatusEffect in attacker.p.huntIds )
+	{	
+		StatusEffect_SetDuration(attacker, activeStatusEffect, min( HUNT_MODE_DURATION, timeToAdd ))
+	}
 }
 
 void function HuntMode_PlayLoopingBodyFx( entity player )

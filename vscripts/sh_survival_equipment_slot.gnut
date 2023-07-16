@@ -592,7 +592,7 @@ int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef, 
 
 asset function GetEmptyEquipmentImage( string equipmentSlot )
 {
-	printt(equipmentSlot)
+	// printt(equipmentSlot)
 	
 	if(GameRules_GetGameMode() == "flowstate_snd")
 	{
@@ -848,7 +848,7 @@ void function Equipment_ApplyBackpack( entity player, string backpack )
 		{
 			ConsumableInventoryItem invItem = playerInventory[i]
 			LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-			SURVIVAL_DropBackpackItem( player, data.ref, invItem.count )
+			SURVIVAL_DropBackpackItem( player, data.ref, invItem.count, true )
 		}
 	}
 }

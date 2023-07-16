@@ -298,7 +298,7 @@ void function Chroma_SkyDiveUpdate()
 
 			if ( IsValid( parentPlayer ) && parentPlayer.IsPlayer() )
 			{
-				printt( "parented" )
+				//printt( "parented" )
 
 				players[playerPingPong][1] = parentPlayer
 
@@ -700,15 +700,20 @@ void function Chroma_TookDamage( float damage, vector damageOrigin, int damageTy
 void function Chroma_ViewPlayerChanged( entity player )
 {
 	Chroma_UpdateHealthOverlay()
+	if( file.consumableOverlayHandle != -1 )
+		EndProgressOverlay()
 }
 
 
 void function Chroma_UltimateReady()
 {
-	entity player = GetLocalViewPlayer()
-
+	entity player              = GetLocalViewPlayer()
 	LoadoutEntry characterSlot = Loadout_CharacterClass()
-	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
+
+	if ( !LoadoutSlot_IsReady( ToEHI( player ), characterSlot ) )
+		return
+
+	ItemFlavor character                    = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
 	CharacterHudUltimateColorData colorData = CharacterClass_GetHudUltimateColorData( character )
 
 	table< float, vector > gradient = {[0.5] = colorData.ultimateColor, [1.0] = colorData.ultimateColorHighlight}
@@ -845,6 +850,11 @@ void function Chroma_PlayerUsedAbility( entity player, entity offhandWeapon )
 		return
 	}
 
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
+	if ( !LoadoutSlot_IsReady( ToEHI( player ), characterSlot ) )
+		return
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
+
 	array<int> offhandIndices = [ OFFHAND_TACTICAL, OFFHAND_ULTIMATE ]
 	foreach ( index in offhandIndices )
 	{
@@ -855,8 +865,6 @@ void function Chroma_PlayerUsedAbility( entity player, entity offhandWeapon )
 		if ( weapon != offhandWeapon )
 			continue
 
-		LoadoutEntry characterSlot = Loadout_CharacterClass()
-		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
 		table< float, vector > gradient = CharacterClass_GetChromaGradient( character )
 
 		Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_FLASH, gradient, 2.0 )

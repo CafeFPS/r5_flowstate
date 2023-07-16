@@ -885,7 +885,8 @@ Scripts:
 	weapons/mp_ability_crypto_drone.nut
 	weapons/mp_ability_crypto_drone_emp.nut
 	
-
+	weapons/mp_ability_emote_projector.nut
+	
 	sh_clientmusic.gnut
 
 	sh_waypoints.gnut

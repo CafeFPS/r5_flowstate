@@ -129,8 +129,8 @@ void function ClientCodeCallback_MapSpawn()
 
 	SV_CL_Shared_Init()
 	
+	//RequestPakFile( "ui_flowstate" )
 	//for custom ui/textures by @CafeFPS
-	RequestPakFile( "ui_flowstate" )
 }
 
 

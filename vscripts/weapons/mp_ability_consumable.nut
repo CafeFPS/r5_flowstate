@@ -187,7 +187,7 @@ void function Consumable_Init()
 		{
 			phoenixKit.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_full" )
 			phoenixKit.healAmount = 100.0
-			phoenixKit.shieldAmount = 100.0
+			phoenixKit.shieldAmount = 250.0
 			phoenixKit.chargeSoundName = "PhoenixKit_Charge"
 			phoenixKit.cancelSoundName = "shield_battery_failure"
 			phoenixKit.modName = "phoenix_kit"
@@ -201,7 +201,7 @@ void function Consumable_Init()
 		{
 			shieldLarge.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_large" )
 			shieldLarge.healAmount = 0.0
-			shieldLarge.shieldAmount = 100.0
+			shieldLarge.shieldAmount = 125.0
 			shieldLarge.healCap = 0.0
 			shieldLarge.chargeSoundName = "Shield_Battery_Charge"
 			shieldLarge.cancelSoundName = "shield_battery_failure"
@@ -415,7 +415,7 @@ void function OnWeaponActivate_Consumable( entity weapon )
 
 		if ( GetCurrentPlaylistVarBool( "survival_healthkits_limit_movement", true ) )
 		{
-			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, GetCurrentPlaylistVarFloat( "survival_healthkits_move_speed_reduction", 0.4 ) ) )
+			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
 			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
 		}
 
@@ -979,10 +979,10 @@ void function SwitchSelectedConsumableIfEmptyAndPushClientSelectionToServer( ent
 
 	if ( SURVIVAL_CountItemsInInventory( player, kitInfo.lootData.ref ) == 0 )
 	{
+		// printt( "SwitchSelectedConsumableIfEmptyAndPushClientSelectionToServer" )
 		file.clientSelectedConsumableType = Consumable_GetBestConsumableTypeForPlayer( player )
+		Consumable_SetSelectedConsumableType( file.clientSelectedConsumableType )
 	}
-
-	Consumable_SetSelectedConsumableType( file.clientSelectedConsumableType )
 }
 
 void function TryUpdateCurrentSelectedConsumableToBest( entity player )
@@ -1332,6 +1332,7 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 	{
 		if ( useData.usedHealth )
 		{
+			printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
 			player.SetShieldHealth( minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ) )
 		}
 		else if ( shouldUpdateShields )

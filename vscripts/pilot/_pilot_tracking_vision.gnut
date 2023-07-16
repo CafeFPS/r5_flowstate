@@ -1,15 +1,122 @@
-// stub script
+//Reimplemented by @CafeFPS
+
 global function GetAllTrackingPlayers
 global function HeatMapStat
 global function TrackingVision_CreatePOI
 global function TrackingVision_Init
 
+void function TrackingVision_Init()
+{
+	BirdClusterSharedInit()
+	
+	AddCallback_OnClientConnected( TrackingVision_OnPlayerConnected )
+	RegisterSignal( "SuperglideDetectionReset" )
+}
+
+void function TrackingVision_OnPlayerConnected( entity player ) 
+{
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_OnPlayerMantle )
+	
+	thread Flowstate_TrackingVision_PlayerFootprintsThread( player )
+}
+
+void function Flowstate_TrackingVision_OnPlayerMantle( entity player ) 
+{
+	thread Flowstate_TrackingVision_TryToTrackSuperglide( player )
+}
+
+void function Flowstate_TrackingVision_TryToTrackSuperglide( entity player )
+{
+	Signal( player, "SuperglideDetectionReset" )
+	EndSignal( player, "SuperglideDetectionReset" )
+	
+	float TimeNow
+	float playerVel
+	vector playerVelV
+	float airtime
+	bool wasmantle
+	float lastmantle
+	float endTime = Time() + 5
+
+	while( IsValid( player ) && !player.IsObserver() && Time() < endTime)
+	{
+		if ( IsValid( player ) )
+		{	
+			TimeNow = Time()
+			playerVelV = player.GetVelocity()
+			playerVel = playerVelV.Length()
+		
+			if( !player.IsOnGround() && !player.ContextAction_IsZipline() )
+				airtime += 0.025
+			else if( player.IsOnGround() )
+				airtime = 0.0
+
+			if(player.IsMantling())
+			{
+				wasmantle = true
+				lastmantle = TimeNow
+			}
+			
+			if(wasmantle == true && !player.IsOnGround() && playerVel > 480 &&  player.IsSliding() && airtime <= 0.5)
+			{
+				printt( "Superglide detected for player " + player.GetPlayerName() + " at " + player.GetOrigin() )
+				TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE, player, player.GetOrigin(), player.GetTeam(), player )	
+				break
+			}
+			
+			if (TimeNow - lastmantle > 0.25)
+			{
+				lastmantle = 0.0
+				wasmantle = false
+			}
+		}
+		
+		WaitFrame()
+	}
+}
+
+void function Flowstate_TrackingVision_PlayerFootprintsThread( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+	
+	int poiTypeToUse
+	vector vel
+
+	while( IsValid( player ) )
+	{
+		wait 1
+		
+		poiTypeToUse = eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_FOOTPRINT
+		vel = player.GetVelocity()
+
+		if( vel.Length() == 0 )
+			continue
+
+		if( !player.IsOnGround() )
+			continue
+
+		if( player.IsPhaseShifted() )
+			continue
+
+		if( player.IsSliding() )
+		{
+			poiTypeToUse = eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SLIDE
+		}
+
+		TrackingVision_CreatePOI( poiTypeToUse, player, player.GetOrigin(), player.GetTeam(), player )	
+	}
+}
+
 array<entity> function GetAllTrackingPlayers()
 {
 	array<entity> players
-	return players
 	
-	//return GetPlayerArray()
+	foreach( player in GetPlayerArray() )
+		if( PlayerHasPassive( player, ePassives.PAS_TRACKING_VISION ) )
+			players.append( player )
+		
+	return players
 }
 
 void function HeatMapStat( entity player, string id, vector origin )
@@ -17,12 +124,18 @@ void function HeatMapStat( entity player, string id, vector origin )
 
 }
 
-void function TrackingVision_CreatePOI( int poiType, entity target, vector position, int team, entity player )
+entity function TrackingVision_CreatePOI( int poiType, entity target, vector position, int team, entity player )
 {
-
-}
-
-void function TrackingVision_Init()
-{
+	if( !IsValid( player ) || !IsValid( target ) )
+		return null
 	
+	entity poiEntity = CreatePlayerPOIAndReturnEntity( eWaypoint.BASIC_POI, poiType, position, target, team, TrackingVision_GetPriorityForPOIType( poiType ), player)
+
+	if ( IsValid( poiEntity ) )
+	{
+		poiEntity.RemoveFromAllRealms()
+		poiEntity.AddToOtherEntitysRealms( player )
+	}
+	
+	return poiEntity
 }

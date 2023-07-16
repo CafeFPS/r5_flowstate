@@ -21,6 +21,7 @@ global function DissolveLootBin
 global function Thread_DissolveMovableLootBin
 global function RefreshLootBin
 global function ClearLootBinContents
+global function LootBin_PlayCloseSequence
 #elseif CLIENT
 global function ServerCallback_RefreshLootbinHighlight
 #endif
@@ -295,12 +296,6 @@ array<entity> function GetAllLootBins()
 #if SERVER
 array<string> function GetLootBinContents( entity bin )
 {
-	for ( int i = file.lootBinsLootInside[ bin ].len() - 1; i >= 0; i-- )
-	{
-		if ( file.lootBinsLootInside[ bin ][i] == "blank" )
-			file.lootBinsLootInside[ bin ].remove( i )
-	}
-
 	return file.lootBinsLootInside[ bin ]
 }
 #endif
@@ -398,6 +393,11 @@ void function AddMultipleLootItemsToLootBin( entity lootBin, array<string> refs 
 void function AddLootToLootBin( entity lootBin, string ref )
 {
 	file.lootBinsLootInside[ lootBin ].append( ref )
+	
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	
+	if ( data.lootType == eLootType.MAINWEAPON )
+		file.lootBinsLootInside[ lootBin ].append( data.ammoType )
 }
 #endif
 
@@ -414,16 +414,22 @@ Point function GetLootBinSpawnLocation( entity lootbin, int lootI, int lootCount
 	return p
 }
 
-void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount, bool parentedToWeapon = false)
+void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount, string previousRef = "")
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+
 	int countPerDrop = data.countPerDrop
 	
 	vector angles = p.angles
 	
-	if( parentedToWeapon )
-		countPerDrop *= 2
+	if( previousRef != "" )
+	{
+		LootData previousRefData = SURVIVAL_Loot_GetLootDataByRef( previousRef )
+		
+		if( previousRefData.lootType == eLootType.MAINWEAPON )
+			countPerDrop *= 2
+	}
 	
 	if ( data.lootType == eLootType.AMMO )
 		angles = AnglesCompose( p.angles, <0, 90, 0> )
@@ -495,34 +501,23 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 		StopSoundOnEntity( lootbin, SOUND_LOOT_BIN_IDLE )
 
 		int lootIndex             = 0
-		array<string> lootToSpawn = GetLootBinContents( lootbin )
-		table<string, bool> finalLoot
-		
-		foreach( item in lootToSpawn )
-		{
-			LootData data = SURVIVAL_Loot_GetLootDataByRef( item )
-			finalLoot[ item ] <- false
-			if ( data.lootType == eLootType.MAINWEAPON )
-			{
-				finalLoot[ data.ammoType ] <- true
-			}
-		}
-		
-		// todo fix callback for loot creeps spawn, not used rn
-		// foreach( callbackFunc in file.onLootBinOpenedCallbacks )
-			// callbackFunc( player, lootbin, finalLoot )
+		array<string> finalLoot = GetLootBinContents( lootbin )
+
+		foreach( callbackFunc in file.onLootBinOpenedCallbacks )
+			callbackFunc( player, lootbin, finalLoot )
 
 		if( lootbin.e.shouldSpawnLoot )
 		{
-			foreach ( ref, fromWeapon in finalLoot )
+			for( int i = 0; i < finalLoot.len(); i++ )
 			{
-				SpawnLootInLootBin( lootbin, ref, lootIndex, finalLoot.len(), fromWeapon )
+				string ref = finalLoot[i]
+				if( i == 0 )
+					SpawnLootInLootBin( lootbin, ref, lootIndex, finalLoot.len() )
+				else
+					SpawnLootInLootBin( lootbin, ref, lootIndex, finalLoot.len(), finalLoot[ i - 1 ]) 
 				lootIndex++
 			}
 		}
-
-		lootToSpawn.clear()
-		finalLoot.clear()
 	}
 
 	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )

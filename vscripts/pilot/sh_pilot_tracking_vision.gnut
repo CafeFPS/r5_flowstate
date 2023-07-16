@@ -33,6 +33,7 @@ global enum eTrackingVisionNetworkedPOITypes
 	PLAYER_TRAVERSAL_FOOTPRINT,
 	PLAYER_TRAVERSAL_SLIDE,
 	PLAYER_TRAVERSAL_MANTLE,
+	PLAYER_TRAVERSAL_SUPERGLIDE,
 	PLAYER_TRAVERSAL_JUMP_DOWN_START,
 	PLAYER_TRAVERSAL_JUMP_DOWN_STOP,
 	PLAYER_TRAVERSAL_LAUNCH_PAD,
@@ -153,6 +154,7 @@ int function TrackingVision_GetPriorityForPOIType( int poiEventID )
 			return eTrackingPOIPriority.NORMAL
 
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_MANTLE:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_JUMP_DOWN_STOP:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_LAUNCH_PAD:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_PHASE_DASH_START:
@@ -214,6 +216,7 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_FOOTPRINT:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SLIDE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_MANTLE:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_JUMP_DOWN_START:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_JUMP_DOWN_STOP:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_LAUNCH_PAD:
@@ -262,7 +265,10 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_JUMP_PAD:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_PHASE_GATE:
 			return < 0, 0, 32.0 >
-
+			
+		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TESLA_TRAP:
+			return < 0, 0, 50 >
+			
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TROPHY_SYSTEM:
 			return < 0, 0, 8.0 >
 

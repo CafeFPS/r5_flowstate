@@ -541,11 +541,12 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	clientTeam.fastremovebyvalue( player )
 
+	bool isSolos = IsSoloMode()
 	bool isAloneOrSquadEliminated = clientTeam.len() == 0
 	
 	entity specTarget = null
 
-	if ( Spectator_GetReplayIsEnabled() )
+	if ( Spectator_GetReplayIsEnabled() || isSolos )
 	{
 		if ( attacker == player ) return;
 		if ( attacker == null ) return;
@@ -559,7 +560,7 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		if ( alivePlayers.len() > 0 )
 			specTarget = alivePlayers.getrandom()
 		else
-			return
+			return //GG
 	}
 	else
 		specTarget = clientTeam.getrandom()
@@ -596,6 +597,18 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 	
 	if( !IsAlive( player ) && IsValid( specTarget ) && ShouldSetObserverTarget( specTarget ) )
 	{
+		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
+		player.SetSpecReplayDelay( 1 )
+		player.StartObserverMode( OBS_MODE_IN_EYE )
+		player.SetObserverTarget( specTarget )
+		player.SetPlayerCanToggleObserverMode( false )
+	} else if( !IsAlive( player ) && GetPlayerArray_Alive().len() > 0 )
+	{
+		specTarget = GetPlayerArray_Alive().getrandom()
+		
+		if( !ShouldSetObserverTarget( specTarget ) )
+			return // GG
+		
 		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
 		player.SetSpecReplayDelay( 1 )
 		player.StartObserverMode( OBS_MODE_IN_EYE )

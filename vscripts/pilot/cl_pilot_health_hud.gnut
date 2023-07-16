@@ -10,6 +10,7 @@ global function PilotEMP_Internal
 global function HealthHUD_ClearFX
 
 global function SetHealthDisplayRange
+global function EvoShield_PlayFX
 
 const HEALTHDMGSTATE1_MP         = 0.75
 const HEALTHDMGSTATE2_MP         = 0.50
@@ -43,6 +44,7 @@ struct
 	float healthDisplayMin
 
 	int healthFXCount = 0
+	var warnRui
 } file
 
 
@@ -397,5 +399,104 @@ void function PlayShieldOverlayFX( entity player, int particleSystemIdx )
 	vector shieldColor = GetFXRarityColorForTier( armorTier )
 
 	EffectSetControlPointVector( fxHandle, 1, shieldColor )
+
+	if( armorTier == 7 )
+	{
+		thread function () : (fxHandle) 
+		{
+			while( EffectDoesExist( fxHandle ) )
+			{
+				EffectSetControlPointVector( fxHandle, 1, Vector(RandomInt(255), RandomInt(255), RandomInt(255)) )
+				wait 0.11
+			}
+		}()
+	}
+}
+
+void function EvoShield_PlayFX( int tier )
+{
+	entity player = GetLocalViewPlayer()
+	
+	if( player != GetLocalClientPlayer() )
+		return
+	
+	entity cockpit = player.GetCockpit()
+	if ( !cockpit )
+		return
+	
+
+	EmitSoundOnEntity( player, "UI_InGame_FD_WaveIncoming" )
+	int fxHandle = StartParticleEffectOnEntity( cockpit, file.shieldFullFX, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	
+	vector shieldColor = GetFXRarityColorForTier( tier )
+	
+	int shieldadded
+
+	shieldadded = SURVIVAL_GetArmorShieldCapacity( tier ) - SURVIVAL_GetArmorShieldCapacity( tier - 1 )
+	
+	string hint = "Shield upgraded! +" + shieldadded.tostring()
+	
+	switch( tier )
+	{
+		case 1:
+		hint = "Shield upgraded to Common! +" + shieldadded.tostring()
+		break
+		
+		case 2:
+		hint = "Shield upgraded to Blue! +" + shieldadded.tostring()
+		break
+		
+		case 3:
+		hint = "Shield upgraded to Purple! +" + shieldadded.tostring()
+		break
+		
+		// case 4:
+		// hint = "Shield upgraded to Legendary Rainbow! +" + shieldadded.tostring()
+		// break
+		
+		case 5:
+		hint = "Shield upgraded to Mythic! +" + shieldadded.tostring()
+		break
+		
+		case 6:
+		hint = "Shield upgraded to Emerald! +" + shieldadded.tostring()
+		break
+		
+		case 7:
+		hint = "Shield upgraded to Rainbow! +" + shieldadded.tostring()
+		break
+	}
+
+	CreateEvoShieldsHint( hint, 4, shieldColor )
+	EffectSetControlPointVector( fxHandle, 1, shieldColor )
+	
+	if( tier == 7 )
+	{
+		thread function () : (fxHandle) 
+		{
+			while( EffectDoesExist( fxHandle ) )
+			{
+				EffectSetControlPointVector( fxHandle, 1, Vector(RandomInt(255), RandomInt(255), RandomInt(255)) )
+				wait 0.11
+			}
+		}()
+	}
+}
+
+
+void function CreateEvoShieldsHint( string msg, float duration , vector shieldColor )
+{
+	if ( file.warnRui != null )
+	{
+		RuiDestroyIfAlive( file.warnRui )
+		file.warnRui = null
+	}
+
+	file.warnRui = CreateFullscreenRui( $"ui/announcement_quick_right.rpak" )
+	
+	RuiSetGameTime( file.warnRui, "startTime", Time() )
+	RuiSetString( file.warnRui, "messageText", msg )
+	RuiSetFloat( file.warnRui, "duration", duration )
+	RuiSetFloat3( file.warnRui, "eventColor", SrgbToLinear( shieldColor / 255.0 ) )
 }
 #endif

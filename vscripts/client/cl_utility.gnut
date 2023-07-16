@@ -196,7 +196,19 @@ void function AddCallback_MinimapEntSpawned( void functionref( entity ) callback
 	clGlobal.onMinimapEntSpawnedCallbacks.append( callbackFunc )
 }
 
-void function AddCallback_MinimapEntShoudCreateCheck( bool functionref( entity ) callbackFunc )
+void function AddCallback_MinimapEntShouldCreateCheck_Scriptname( string scriptname, bool functionref( entity ) callbackFunc )
+{
+	Assert( !( scriptname in clGlobal.onMinimapEntShouldCreateCallbacks_scriptname ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShouldCreateCheck_Scriptname" )
+	clGlobal.onMinimapEntShouldCreateCallbacks_scriptname[scriptname] <- callbackFunc
+}
+
+void function AddCallback_MinimapEntShouldCreateCheck_Targetname( string targetname, bool functionref( entity ) callbackFunc )
+{
+	Assert( !( targetname in clGlobal.onMinimapEntShouldCreateCallbacks_targetname ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShouldCreateCheck_Targetname" )
+	clGlobal.onMinimapEntShouldCreateCallbacks_targetname[targetname] <- callbackFunc
+}
+
+void function AddCallback_MinimapEntShouldCreateCheck( bool functionref( entity ) callbackFunc )
 {
 	Assert( !clGlobal.onMinimapEntShouldCreateCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShoudCreateCheck" )
 	clGlobal.onMinimapEntShouldCreateCallbacks.append( callbackFunc )
@@ -661,7 +673,7 @@ void function Dev_PrintClientMessage( float duration )
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1")
+	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos")
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

@@ -47,6 +47,7 @@ global function IsAttachmentAmbiguousForWeapon
 global function IsModTypeSight
 global function GetWeaponAmmoType
 global function IsAttachmentAnUpgrade
+global function IsAttachmentAnUpgradeForWeapon
 global function GetOtherWeapon
 global function CanPlayerLoot
 
@@ -80,6 +81,8 @@ global function SURVIVAL_GetCharacterShieldHealthMaxForArmor
 
 global function SURVIVAL_IsLootIrrelevant
 global function SURVIVAL_IsLootAnUpgrade
+global function SURVIVAL_IsLootRefAnUpgrade
+
 global function SURVIVAL_GetActionForItem
 global function SURVIVAL_GetInventorySlotCountForPlayer
 
@@ -159,8 +162,6 @@ global function ServerCallback_AttachedMod
 #if SERVER
 global function Inventory_SetPlayerEquipment
 global function Inventory_GetPlayerEquipment
-
-global function DoExecutionBonus
 #endif // SERVER
 
 #if CLIENT
@@ -255,7 +256,7 @@ const string SFX_CANNOT_USE = "UI_Survival_LootPickupDeny"
 const string SFX_ORDNANCE_AUTO_PICKUP = "Ctrl_Pickup_Ordnance_1p"
 
 global const int MIN_LOOT_TIER = 0
-global const int MAX_LOOT_TIER = 5
+global const int MAX_LOOT_TIER = 7
 global const int NUM_LOOT_TIERS = MAX_LOOT_TIER - MIN_LOOT_TIER + 1
 
 const float LOOKING_AT_LINE_CHECK_IGNORE_DIST = 100.0
@@ -570,7 +571,7 @@ void function SURVIVAL_Loot_InitShared()
 			healthPickup.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_full" )
 			healthPickup.interactionTime = 10.0
 			healthPickup.healAmount = 100.0
-			healthPickup.shieldAmount = 100.0
+			healthPickup.shieldAmount = 250.0
 		}
 		file.healthPickups[ eHealthPickupType.COMBO_FULL ] <- healthPickup
 	}
@@ -1917,8 +1918,6 @@ void function OnPropSurvivalCreate( entity prop )
 {
 	int index = prop.GetSurvivalInt()
 
-	//printt("Surv idx ", index)
-
 	if ( index < 0 )
 		return
 
@@ -2441,14 +2440,21 @@ LootActionStruct function SURVIVAL_GetActionForAttachment( entity player, LootDa
 
 	if ( weapons.len() > 0 )
 	{
-		string activeWeapon = GetWeaponClassNameWithLockedSet( weapons[0] )
-		bool canAttach      = CanAttachToWeapon( lootData.ref, activeWeapon )
-		attachmentPointForMain = GetAttachPointForAttachmentOnWeapon( activeWeapon, lootData.ref )
-		bool isEmpty        = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachmentForPoint( weapons[0], attachmentPointForMain ) == "" : false
-		bool isSame         = canAttach && weapons.len() > 0 ? GetInstalledWeaponAttachmentForPoint( weapons[0], attachmentPointForMain ) == lootData.ref : false
+		entity activeWeapon = weapons[0]
+		string activeWeaponName = GetWeaponClassNameWithLockedSet( activeWeapon )
+		bool canAttach      = CanAttachToWeapon( lootData.ref, activeWeaponName )
+		attachmentPointForMain = GetAttachPointForAttachmentOnWeapon( activeWeaponName, lootData.ref )
+		string installedAttachment = GetInstalledWeaponAttachmentForPoint( activeWeapon, attachmentPointForMain )
+		bool isEmpty        = canAttach && weapons.len() > 0 ? installedAttachment == "" : false
+		bool isSame         = canAttach && weapons.len() > 0 ? installedAttachment == lootData.ref : false
 		bool isUpgrade      = ["sight", "hopup", "hopupMulti_a", "hopupMulti_b"].contains( attachmentPointForMain ) || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_ACTIVE )
 
-		bool canReallyEquip = !(activeWeapon == ""
+                
+                                                                              
+                      
+        
+
+		bool canReallyEquip = !(activeWeaponName == ""
 				|| !canAttach
 				|| isSame
 				|| (replaceEmptyOnly && !isEmpty))
@@ -2473,14 +2479,21 @@ LootActionStruct function SURVIVAL_GetActionForAttachment( entity player, LootDa
 
 	if ( action == eLootAction.ATTACH_TO_STOWED )
 	{
-		string activeWeapon = SURVIVAL_GetStowedWeapon( player )
-		bool canAttach      = CanAttachToWeapon( lootData.ref, activeWeapon )
-		attachmentPointForStowed = GetAttachPointForAttachmentOnWeapon( activeWeapon, lootData.ref )
-		bool isEmpty        = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachmentForPoint( weapons[1], attachmentPointForStowed ) == "" : false
-		bool isSame         = canAttach && weapons.len() > 1 ? GetInstalledWeaponAttachmentForPoint( weapons[1], attachmentPointForStowed ) == lootData.ref : false
+		entity stowedWeapon = weapons[1]
+		string stowedWeaponName = SURVIVAL_GetStowedWeapon( player )
+		bool canAttach      = CanAttachToWeapon( lootData.ref, stowedWeaponName )
+		attachmentPointForStowed = GetAttachPointForAttachmentOnWeapon( stowedWeaponName, lootData.ref )
+		string installedAttachment = GetInstalledWeaponAttachmentForPoint( stowedWeapon, attachmentPointForStowed )
+		bool isEmpty        = canAttach && weapons.len() > 1 ? installedAttachment == "" : false
+		bool isSame         = canAttach && weapons.len() > 1 ? installedAttachment == lootData.ref : false
 		bool isUpgrade      = ["sight", "hopup", "hopupMulti_a", "hopupMulti_b"].contains( attachmentPointForStowed ) || IsAttachmentAnUpgrade( player, lootData, eLootAction.ATTACH_TO_STOWED )
 
-		bool canReallyEquip = !(activeWeapon == ""
+                
+                                                                              
+                      
+        
+
+		bool canReallyEquip = !(stowedWeaponName == ""
 				|| !canAttach
 				|| isSame
 				|| (replaceEmptyOnly && !isEmpty))
@@ -2792,6 +2805,21 @@ bool function SURVIVAL_IsLootIrrelevant( entity player, entity lootItem, LootDat
 	return (lootAction == eLootAction.NONE && altLootAction == eLootAction.NONE)
 }
 
+bool function SURVIVAL_IsLootRefAnUpgrade( entity player, LootData lootData )
+{
+	int currentTier = 999
+
+	LootTypeData ltData = GetLootTypeData( lootData.lootType )
+
+	if ( ltData.equipmentSlot != "" )
+	{
+		LootData equippedData = EquipmentSlot_GetEquippedLootDataForSlot( player, ltData.equipmentSlot )
+		currentTier = equippedData.tier
+	}
+
+	return currentTier < lootData.tier
+}
+
 bool function SURVIVAL_IsLootAnUpgrade( entity player, entity lootItem, LootData lootData, int lootContext )
 {
 	bool irrelevant = SURVIVAL_IsLootIrrelevant( player, lootItem, lootData, lootContext )
@@ -2884,6 +2912,24 @@ bool function IsAttachmentAnUpgrade( entity player, LootData lootData, int actio
 	return attachedData.tier < lootData.tier
 }
 
+bool function IsAttachmentAnUpgradeForWeapon( entity player, LootData lootData, entity weapon )
+{
+	array<entity> weapons  = SURVIVAL_GetPrimaryWeaponsSorted( player )
+	string installed
+
+	LootData attachedData
+	attachedData.tier = -1
+
+	string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapon ), lootData.ref )
+	installed = GetInstalledWeaponAttachmentForPoint( weapon, attachPoint )
+
+	if ( SURVIVAL_Loot_IsRefValid( installed ) )
+	{
+		attachedData = SURVIVAL_Loot_GetLootDataByRef( installed )
+	}
+
+	return attachedData.tier < lootData.tier
+}
 
 LootActionStruct function SURVIVAL_GetActionForItem( entity player, int context, LootRef lootRef, bool isAltAction, bool isCharacterAction = false )
 {
@@ -3299,13 +3345,13 @@ void function Dev_SpawnBotWithIncapShieldToView( int shieldTier )
 #if CLIENT || SERVER
 void function Inventory_RegisterNetworking()
 {
-	Remote_RegisterClientFunction( "ServerCallback_PickedupItem", "entity", "int", 0, 256, "int", 0, 256 )
-	Remote_RegisterClientFunction( "ServerCallback_DroppedItem", "entity", "int", 0, 256 )
+	Remote_RegisterClientFunction( "ServerCallback_PickedupItem", "entity", "int", 0, 512, "int", 0, 512 )
+	Remote_RegisterClientFunction( "ServerCallback_DroppedItem", "entity", "int", 0, 512 )
 	// Yes. This was changed.
 	// It's because if we don't, the game will flop itself when you pick certain items up.
 	// If there's a better solution, you're welcome to suggest it.
 	// They shouldn't have added ranges into this.
-	Remote_RegisterClientFunction( "ServerCallback_AttachedMod", "int", 0, 100, "int", 0, 256 )
+	Remote_RegisterClientFunction( "ServerCallback_AttachedMod", "int", 0, 999, "int", 0, 999 )
 }
 #endif // CLIENT || SERVER
 
@@ -3466,53 +3512,6 @@ string function Inventory_GetPlayerEquipment( entity player, string equipmentSlo
 	return file.playerInventoryData[ player ][ equipmentSlot ]
 }
 
-const int BONUS_SHIELD_FROM_PASSIVE = 50
-
-void function DoExecutionBonus( entity attacker, entity victim )
-{
-	if ( !attacker.IsPlayer() )
-		return
-
-	vector fwd = AnglesToForward( attacker.EyeAngles() )
-	vector throwOrigin = attacker.GetOrigin()
-
-	if ( PlayerHasPassive( attacker, ePassives.PAS_EXEC_BONUS_HEALTH ) )
-	{
-		string healthPickup = SURVIVAL_GetWeightedItemFromGroup( "Health_Low" )
-		SURVIVAL_ThrowLootFromPoint( throwOrigin, fwd, healthPickup, 1 )
-	}
-
-	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 1 && PlayerHasPassive( attacker, ePassives.PAS_EXEC_BONUS_ARMOR ) )
-	{
-		attacker.SetShieldHealth( attacker.GetShieldHealthMax() )
-	}
-
-	if ( PlayerHasPassive( attacker, ePassives.PAS_EXEC_BONUS_AMMO ) )
-	{
-		int random = RandomInt( 2 )
-
-		if ( random == 0 )
-				SURVIVAL_ThrowLootFromPoint( throwOrigin, fwd, "highcal", 1 )
-		else if ( random == 1 )
-				SURVIVAL_ThrowLootFromPoint( throwOrigin, fwd, "shotgun", 1 )
-			else
-				SURVIVAL_ThrowLootFromPoint( throwOrigin, fwd, "bullet", 1 )
-	}
-
-	if ( PlayerHasPassive( attacker, ePassives.PAS_EXEC_BONUS_ULT ) )
-	{
-		entity ult = attacker.GetOffhandWeapon( OFFHAND_ULTIMATE )
-		if ( IsValid( ult ) )
-		{
-			int maxClipCount = ult.GetWeaponPrimaryClipCountMax()
-			if ( ult.GetWeaponPrimaryClipCount() < maxClipCount )
-			{
-				int bonusClip = int(float(maxClipCount) * 0.4) // grant the player a 40% ultimate cooldown reduction when executing (if they have the appropriate passive)
-				ult.SetWeaponPrimaryClipCount( minint( (ult.GetWeaponPrimaryClipCount() + bonusClip), maxClipCount ) )
-			}
-		}
-	}
-}
 #endif // SERVER
 
 #if CLIENT
@@ -3815,6 +3814,12 @@ int function SURVIVAL_GetArmorShieldCapacity( int tier )
 		case 3:
 		case 4:
 			return 100
+		case 5:
+			return 125
+		case 6:
+			return 175
+		case 7:
+			return 225
 	}
 
 	return 0
@@ -3822,11 +3827,6 @@ int function SURVIVAL_GetArmorShieldCapacity( int tier )
 
 int function SURVIVAL_GetCharacterShieldHealthMaxForArmor( entity player, LootData data )
 {
-	#if(false)
-
-
-#endif
-
 	int shieldMaxHealth = GetPlayerSettingBaseShield( player )
 	int tier = data.tier
 
@@ -3845,6 +3845,15 @@ int function SURVIVAL_GetCharacterShieldHealthMaxForArmor( entity player, LootDa
 		case 4:
 			shieldMaxHealth += 100
 			break
+		case 5:
+			shieldMaxHealth += 125
+			break
+		case 6:
+			shieldMaxHealth += 175
+			break
+		case 7:
+			shieldMaxHealth += 225
+			break
 		default:
 			Assert( 0, "Invalid armor tier" )
 			shieldMaxHealth += 0
@@ -3852,8 +3861,6 @@ int function SURVIVAL_GetCharacterShieldHealthMaxForArmor( entity player, LootDa
 
 	return shieldMaxHealth
 }
-
-
 
 int function SortByPriorityThenTier( ConsumableInventoryItem a, ConsumableInventoryItem b )
 {
@@ -3900,8 +3907,10 @@ int function GetPriorityForLootType( LootData lootData )
 
 		case eLootType.ORDNANCE:
 		case eLootType.HEALTH:
-		case eLootType.DATAKNIFE:
+
 		case eLootType.CUSTOMPICKUP:
+                      
+		case eLootType.DATAKNIFE:
 			return eLootSortCategories.CONSUMABLES
 
 		case eLootType.HELMET:
@@ -3913,8 +3922,10 @@ int function GetPriorityForLootType( LootData lootData )
 
 		case eLootType.MAINWEAPON:
 			return eLootSortCategories.WEAPONS
+
 		case eLootType.AMMO:
 			return eLootSortCategories.AMMO
+
 		case eLootType.RESOURCE:
 			return eLootSortCategories.DEFAULT
 
@@ -4180,23 +4191,14 @@ bool function DeathBox_CanUseFunction( entity player, entity ent )
 
 void function OnUseSurvivalPickup( entity pickup, entity player, int useInputFlags )
 {
-	#if SERVER
-		//printt("OnUseSurvivalPickup Server", SURVIVAL_CanPlayerPickup( player, pickup ))
-	#endif
 	if ( !SURVIVAL_CanPlayerPickup( player, pickup ) )
 		return
-
-	#if SERVER
-		//printt("OnUseSurvivalPickup Server can pickup")
-	#endif
 
 	if ( !SURVIVAL_Loot_IsLootIndexValid( pickup.GetSurvivalInt() ) )
 		return
 
-	//printt("OnUseSurvivalPickup#3453")
-
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
-	int lootType = data.lootType
+	int lootType  = data.lootType
 
 	bool pickedUp = false
 
@@ -4205,14 +4207,14 @@ void function OnUseSurvivalPickup( entity pickup, entity player, int useInputFla
 	else if ( useInputFlags & USE_INPUT_DEFAULT )
 		pickedUp = Survival_PickupItem( pickup, player )
 
-	if ( pickedUp )
-		return
-
-	if ( useInputFlags & USE_INPUT_LONG )
-		pickedUp = Survival_PickupItem( pickup, player, PICKUP_FLAG_LONG )
+	if ( !pickedUp )
+	{
+		if ( useInputFlags & USE_INPUT_LONG )
+			Survival_PickupItem( pickup, player, PICKUP_FLAG_LONG )
+	}
 }
 
-bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null, LootActionStruct ornull forcedAction = null )
 {
 	if ( !IsValid( pickup ) )
 		return false
@@ -4226,72 +4228,65 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 	LootTypeData lt = GetLootTypeData( data.lootType )
 	LootActionStruct as
 	LootRef lootRef = SURVIVAL_CreateLootRef( data, pickup )
-	bool useAlt = ( pickupFlags & PICKUP_FLAG_ALT ) > 0
-	bool useLong = ( pickupFlags & PICKUP_FLAG_LONG ) > 0
+	bool useAlt     = (pickupFlags & PICKUP_FLAG_ALT) > 0
+	bool useLong    = (pickupFlags & PICKUP_FLAG_LONG) > 0
 
 	as = SURVIVAL_GetActionForGroundItem( player, lootRef, useAlt, useLong )
 
-	int oldAmmo = pickup.GetClipCount()
+	int pickupCount    = pickup.GetClipCount()
+	bool shouldDestroy = SURVIVAL_ApplyLootAction( as.action, pickup, player, pickupFlags, deathBox, desiredCount )
+	int newPickupCount = pickup.GetClipCount()
 
-	bool shouldDestroy = SURVIVAL_ApplyLootAction( as.action, pickup, player, pickupFlags, deathBox )
-
-	bool pickedup = pickup.GetClipCount() < oldAmmo
-
-	//printt("picked-up", as.action, pickedup, shouldDestroy, pickup.GetClipCount(), oldAmmo, as.action)
+	int unitsPickedUp = pickupCount - newPickupCount
+	if ( lootRef.lootData.lootType == eLootType.MAINWEAPON )
+		unitsPickedUp = (shouldDestroy ? 1 : 0)
+	bool pickedUpAnything = unitsPickedUp > 0
 
 	#if CLIENT
-	if ( Time() - pickup.e.lastUseTime > 0.5 )
-	{
-		SURVIVAL_Loot_UpdateRuiLastUseTime( pickup )
+		if ( (Time() - pickup.e.lastUseTime) > 0.5 )
+		{
+			SURVIVAL_Loot_UpdateRuiLastUseTime( pickup )
 
-		if ( shouldDestroy )
-		{
-			PlayLootPickupFeedbackFX( pickup )
-			EmitSoundOnEntity( player, data.pickupSound_1p )
-			pickup.e.predictedUseSuccess = true
-		}
-		else
-		{
-			switch ( as.action )
+			if ( shouldDestroy )
 			{
-				case eLootAction.PICKUP:
-					UpdateInventoryCounter( player, data.ref, true )
-				case eLootAction.SWAP:
-					EmitSoundOnEntity( player, SFX_BACKPACK_FULL )
-					break
+				PlayLootPickupFeedbackFX( pickup )
+				pickup.e.predictedUseSuccess = true
+			}
+			else
+			{
+				switch ( as.action )
+				{
+					case eLootAction.PICKUP:
+						if( GetGameState() != eGameState.Prematch || !GetCurrentPlaylistVarBool( "hide_inventory_counter_in_prematch", false ) )
+							UpdateInventoryCounter( player, data.ref, true )
 
-				default:
-					EmitSoundOnEntity( player, SFX_CANNOT_USE )
+					case eLootAction.SWAP:
+						EmitSoundOnEntity( player, SFX_BACKPACK_FULL )
+						break
+
+					default:
+						EmitSoundOnEntity( player, SFX_CANNOT_USE )
+				}
+
+				pickup.e.predictedUseSuccess = false
 			}
 
-			pickup.e.predictedUseSuccess = false
+			pickup.e.lastUseTime = Time()
 		}
-
-		pickup.e.lastUseTime = Time()
-	}
-
-	#endif
-
-	#if SERVER
-	if ( shouldDestroy || pickedup )
+	#elseif SERVER
+	if ( shouldDestroy || pickedUpAnything )
 	{
 		int countPerDrop = lootRef.lootData.countPerDrop
-		int unitsPickedUp = pickup.GetClipCount()
-
-		if ( lootRef.lootData.lootType == eLootType.AMMO || lootRef.lootData.lootType == eLootType.ORDNANCE )
-			unitsPickedUp = int( max( unitsPickedUp, oldAmmo ) )
-		else if ( lootRef.lootData.lootType == eLootType.MAINWEAPON )
-			unitsPickedUp = 1
 
 		PIN_ItemPickup( player, pickup, lootRef.lootData.ref, unitsPickedUp )
 
-		printt( "LOOTED:", lootRef.lootData.ref, "x" + unitsPickedUp, "index " + data.index)
+		printt( "LOOTED by: " + player.GetPlayerName(), lootRef.lootData.ref, "x" + unitsPickedUp, "index: " + data.index)
 
 		SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
 	}
 	#endif
 
-	return pickedUp
+	return pickedUpAnything
 }
 
 bool function SURVIVAL_IsAttachmentPointLocked( string weaponName, string attachmentPoint )
@@ -4379,6 +4374,18 @@ int function SURVIVAL_GetInventorySlotCountForPlayer( entity player, LootData da
 {
 	int result = data.inventorySlotCount
 
+	if ( data.lootType == eLootType.HEALTH )
+	{
+		if ( PlayerHasPassive( player, ePassives.PAS_BATTERY_POWERED ) && data.ref == "health_pickup_ultimate" )
+		{
+			result += GetCurrentPlaylistVarInt( "wattson_ult_accel_extra", 1 )
+		}
+		if ( PlayerHasPassive( player, ePassives.PAS_EXTRA_MED_INV ) )
+		{
+			if ( data.ref == "health_pickup_health_large" || data.ref == "health_pickup_combo_large" || data.ref == "health_pickup_combo_full" )
+				result++
+		}
+	}
 
 	return result
 }
@@ -4387,8 +4394,16 @@ string function GetNameOfTeammateWithVaultKey( int team )
 {
 	foreach( player in GetPlayerArrayOfTeam( team ) )
 	{
-		if ( player.GetPlayerNetBool( "hasDataKnife" ) )
-			return player.GetPlayerName()
+		if( !IsValid( player ) || !IsAlive( player) )
+			continue
+		
+		array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+		foreach ( invItem in playerInventory )
+		{
+			if(invItem.type == 122)
+				return player.GetPlayerName()
+		}
 	}
 
 	return ""

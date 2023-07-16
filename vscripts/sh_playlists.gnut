@@ -313,16 +313,16 @@ string function Playlist_GetLTMSlotPlaylist()
 
 asset function GetModeEmblemImage( string playlistName )
 {
-	string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
+	// string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
 	asset emblemImage = $""
 
-	if ( emblemKey != "" )
-	{
-		if ( emblemKey in GAMEMODE_EMBLEM_MAP )
-			emblemImage = GAMEMODE_EMBLEM_MAP[emblemKey]
-		else
-			Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
-	}
+	// if ( emblemKey != "" )
+	// {
+		// if ( emblemKey in GAMEMODE_EMBLEM_MAP )
+			// emblemImage = GAMEMODE_EMBLEM_MAP[emblemKey]
+		// else
+			// Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
+	// }
 	#if CLIENT
 	switch(GameRules_GetGameMode())
 	{
@@ -363,6 +363,10 @@ asset function GetModeEmblemImage( string playlistName )
 		
 		case "fs_survival_duos":
 		emblemImage = $"rui/menu/gamemode_emblem/duos"
+		break
+		
+		case "fs_survival_solos":
+		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
 	}	
 	#endif

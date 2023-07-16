@@ -283,12 +283,12 @@ void function Dev_SetFillerFriends( int count )
 #if SERVER
 void function QueueUpdateStryderWithPlayersStryderCharDataArray( entity player )
 {
-	Throttle( player.p.playerStryderDataUpdateThrottle, PLAYER_STRYDER_CHAR_DATA_ARRAY_CASUAL_UPDATE_DEBOUNCE_INTERVAL, void function() : ( player ) {
-		if ( !IsValid( player ) )
-			return
+	// Throttle( player.p.playerStryderDataUpdateThrottle, PLAYER_STRYDER_CHAR_DATA_ARRAY_CASUAL_UPDATE_DEBOUNCE_INTERVAL, void function() : ( player ) {
+		// if ( !IsValid( player ) )
+			// return
 
-		ImmediatelyUpdateStryderWithPlayersStryderCharDataArray( player )
-	} )
+		// ImmediatelyUpdateStryderWithPlayersStryderCharDataArray( player )
+	// } )
 }
 #endif
 

@@ -7,10 +7,7 @@ global function JumpPadsWeaponJumppad_CreatedCallback
 // copied from r5-90 mp_rr_desertlands_common
 const float JUMP_PAD_PUSH_RADIUS = 45.0
 const float JUMP_PAD_PUSH_PROJECTILE_RADIUS = 32.0//98.0
-const float JUMP_PAD_PUSH_VELOCITY = 1100
-const float JUMP_PAD_VIEW_PUNCH_SOFT = 25.0
-const float JUMP_PAD_VIEW_PUNCH_HARD = 4.0
-const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
+
 const float JUMP_PAD_VIEW_PUNCH_SOFT_TITAN = 120.0
 const float JUMP_PAD_VIEW_PUNCH_HARD_TITAN = 20.0
 const float JUMP_PAD_VIEW_PUNCH_RAND_TITAN = 20.0
@@ -27,51 +24,66 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 void function JumpPad_Init()
 {
 	RegisterSignal("JumpPadStart")
-	RegisterSignal( "JumpPad_GiveDoubleJump" )
   	AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
 }
 
 void function JumpPad_GiveDoubleJump( entity player )
 {
-	Assert( player.IsPlayer() )
+	if( !IsValid( player) || !player.IsPlayer() )
+		return
 
 	player.EndSignal( "OnDeath" )
-	player.EndSignal( "JumpPad_GiveDoubleJump" )
-
-	wait 0.05
+	player.EndSignal( "OnDestroy" )
 	
+	while( player.IsOnGround() )
+		WaitFrame()
+
 	if(!IsValid(player)) return
 	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
-			
+
 	if ( !player.IsOnGround() )
 	{
-		int health = player.GetHealth() //old health
-		int shield = player.GetShieldHealth() //old shieldhealth
-		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) //for some reason this set health to 100 (new character set file apparently)
+		int health = player.GetHealth()
+		int shield = player.GetShieldHealth()
+		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) // I hate this. Colombia
 		if( GameRules_GetGameMode() == SURVIVAL )
 			GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
 		
 		if(!IsAlive(player)) return
-		player.SetHealth(health) //set old health
+		player.SetHealth(health)
 		player.SetShieldHealth(shield) //set old shieldhealth
 	}
-
+	AddButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
+	
 	OnThreadEnd( function() : ( player, characterSetFile, passive )
 	{
-		if ( IsValid( player ) )
+		if ( !IsValid( player ) )
+			return
+	
+		StopSoundOnEntity( player, "jumpjet_jet_body_1p" )
+		StopSoundOnEntity( player, "jumpjet_jet_body_3p_enemy" )
+	
+		bool stillHasDoubleJumpMod = false
+
+		foreach( mod in player.GetPlayerSettingsMods() )
+			if( mod == "enable_doublejump" )
+				stillHasDoubleJumpMod = true
+
+		if ( IsValid( player ) && stillHasDoubleJumpMod )
 		{
-			int health = player.GetHealth() //old health
-			int shield = player.GetShieldHealth() //old shieldhealth
-			player.SetPlayerSettingsWithMods( characterSetFile, [] ) //for some reason this set health to 100 (new character set file apparently)
+			int health = player.GetHealth()
+			int shield = player.GetShieldHealth()
+			player.SetPlayerSettingsWithMods( characterSetFile, [] ) // I hate this. Colombia
 			if( GameRules_GetGameMode() == SURVIVAL )
 				GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
 			
 			if(!IsAlive(player)) return
-			player.SetHealth(health) //set old health
-			player.SetShieldHealth(shield) //set old shieldhealth
+			player.SetHealth(health)
+			player.SetShieldHealth(shield)
+			RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
 		}
 	})
 
@@ -81,25 +93,51 @@ void function JumpPad_GiveDoubleJump( entity player )
 	}
 }
 
+void function JumpPad_consumeDoubleJump( entity player )
+{
+	player.SetVelocity( player.GetVelocity() + player.GetUpVector() * 100 ) 
+	
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
+	
+	int health = player.GetHealth()
+	int shield = player.GetShieldHealth()
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	if( GameRules_GetGameMode() == SURVIVAL )
+		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+			
+	if(!IsAlive(player)) return
+	player.SetHealth(health)
+	player.SetShieldHealth(shield)
+	EmitSoundOnEntityOnlyToPlayer( player, player, "jumpjet_jet_body_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "jumpjet_jet_body_3p_enemy" )
+	
+	RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
+}
+
+const float JUMP_PAD_PUSH_VELOCITY = 1200
+const float JUMP_PAD_VIEW_PUNCH_SOFT = 35.0
+const float JUMP_PAD_VIEW_PUNCH_HARD = 4.0
+const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
+
 void function JumpPad_CreatedCallback( entity jumpPad )
 {
 
-  vector origin = jumpPad.GetOrigin() // should this allow weapon_jump_pad to be OriginToGround
+	vector origin = jumpPad.GetOrigin() // should this allow weapon_jump_pad to be OriginToGround
 	vector angles = jumpPad.GetAngles()
 
-entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
+	entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 
 	if( IsValid( jumpPad.GetParent() ) )
 	{
 		mover.SetParent( jumpPad.GetParent() )
 	}
 	jumpPad.SetParent( mover )
-
-  thread JumpPad_PlayAnims( jumpPad, mover )
-
-	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
-	// SetTargetName( trigger, "geyser_trigger" )
-
+	
+	thread JumpPad_PlayAnims( jumpPad, mover )
+	
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )	
 	trigger.SetOwner( jumpPad )
 	trigger.SetRadius( JUMP_PAD_PUSH_RADIUS )
 	trigger.SetAboveHeight( 32 )
@@ -109,20 +147,20 @@ entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 	trigger.SetTriggerType( TT_JUMP_PAD )
 	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.25 )
 	trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
-	//trigger.SetLaunchDir( <0.0, 0.0, 1.0> )
+
 	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( OnJumpPadAreaEnter )
     
-  //Need to set parent so the jump trigger is destroyed with the pad entity
-  trigger.SetParent( jumpPad )
+	//Need to set parent so the jump trigger is destroyed with the pad entity
+	trigger.SetParent( jumpPad )
 
 	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, "GEYSER_PING_SCRIPT_NAME" ) // todo: replace geyser_ping_script_name --
 	// traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
 
 	AddEntityCallback_OnDamaged( jumpPad, JumpPad_OnTakeDamage )
-  AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
+	AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
 }
 
 void function JumpPadsWeaponJumppad_CreatedCallback( entity jumpPad )
@@ -138,7 +176,7 @@ void function JumpPadsWeaponJumppad_CreatedCallback( entity jumpPad )
 	trigger.SetOrigin( origin )
 	trigger.SetAngles( angles )
 	trigger.SetTriggerType( TT_JUMP_PAD )
-	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.25 )
+	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.20 )
 	trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
 	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"
@@ -159,11 +197,12 @@ void function JumpPad_OnDeath( entity ent, var damageInfo )
 void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
 {
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-  printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
+	printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
+
 	if ( IsValid( attacker ) && attacker.IsPlayer() )
 	{
-	PlayerDamageFeedback( ent, damageInfo, 0 )
-    UpdateDamageState( ent, damageInfo )
+		PlayerDamageFeedback( ent, damageInfo, 0 )
+		UpdateDamageState( ent, damageInfo )
 	}
 }
 
@@ -184,14 +223,13 @@ void function JumpPad_PlayLaunchAnim( entity trigger )
 
 void function OnJumpPadAreaEnter( entity trigger, entity ent )
 {
-	if( !ent.IsPlayer() )
-		return
-
-	thread JumpPad_PlayLaunchAnim( trigger )
-	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
-
 	if( !IsValid( ent ) || !ent.IsPlayer() )
 		return
+
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_LAUNCH_PAD, ent, ent.GetOrigin(), ent.GetTeam(), ent )
+	
+	thread JumpPad_PlayLaunchAnim( trigger )
+	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ent ), Loadout_CharacterClass() )
 	string charRef = ItemFlavor_GetHumanReadableRef( character )
@@ -206,19 +244,26 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 void function JumpPadAirborne( entity player ) {
 	if ( !IsPilot( player ) )
 		return
+	
+	//1p sound playing in cl_jump_pads
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_Ascent_Windrush" )
+	
+	EmitSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+	
 	OnThreadEnd(
 		function() : ( player )
 		{
 			if ( IsValid( player ) )
 			{
 				StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+				StopSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
 			}
 		}
 	)
-	WaitFrame()
-	wait 0.1
+	
+	// WaitFrame()
+	
 	while( IsValid(player) && !player.IsOnGround() )
 	{
 		WaitFrame()

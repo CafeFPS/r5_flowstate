@@ -90,9 +90,9 @@ void function Cl_Survival_LootInit()
 	RegisterConCommandTriggeredCallback( "+scriptCommand4", UseSelectedHealthPickupType )
 	RegisterConCommandTriggeredCallback( "+use_alt", TryHolsterWeapon )
 
-	RegisterConCommandTriggeredCallback( "weaponSelectPrimary0", OnPlayerSwitchesToWeapon00 )
-	RegisterConCommandTriggeredCallback( "weaponSelectPrimary1", OnPlayerSwitchesToWeapon01 )
-	RegisterConCommandTriggeredCallback( "+weaponCycle", OnPlayerSwitchesWeapons )
+	// RegisterConCommandTriggeredCallback( "weaponSelectPrimary0", OnPlayerSwitchesToWeapon00 )
+	// RegisterConCommandTriggeredCallback( "weaponSelectPrimary1", OnPlayerSwitchesToWeapon01 )
+	// RegisterConCommandTriggeredCallback( "+weaponCycle", OnPlayerSwitchesWeapons )
 
 	AddCreateTitanCockpitCallback( OnTitanCockpitCreated )
 	AddCreatePilotCockpitCallback( OnPilotCockpitCreated )
@@ -261,7 +261,7 @@ void function UseSelectedHealthPickupType( entity player )
 {
 	if ( HealthkitWheelToggleEnabled() && IsCommsMenuActive() )
 		return
-	printt("UseSelectedHealthPickupType ", WeaponDrivenConsumablesEnabled())
+	//printt("UseSelectedHealthPickupType ", WeaponDrivenConsumablesEnabled())
 
 	if ( WeaponDrivenConsumablesEnabled() )
 	{
@@ -295,12 +295,13 @@ void function UseSelectedHealthPickupType( entity player )
 
 void function Survival_UseHealthPack( entity player, string ref )
 {
+	printt( "DEBUG THIS - Add missing function Sur_UseHealthPack" )
 	//if ( Time() < file.nextHealthAllowTime )
 	//	return
 
 	//file.nextHealthAllowTime = Time() + waitTime
-	printt("!!! Sur_UseHealthPack", ref)
-	player.ClientCommand( "Sur_UseHealthPack " + ref )
+	// printt("!!! Sur_UseHealthPack", ref)
+	// player.ClientCommand( "Sur_UseHealthPack " + ref )
 }
 
 
@@ -309,13 +310,13 @@ void function ServerToClient_OnStartedUsingHealthPack( int kitType )
 	HealthPickup kitData = SURVIVAL_Loot_GetHealthKitDataFromStruct( kitType )
 	LootData lootData    = kitData.lootData
 
-	float waitScale
-	if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_FAST_HEAL ) && (kitData.healAmount > 0) )
-		waitScale = 0.5
-	else if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_MEDIC ) && (kitData.healAmount > 0) )
-		waitScale = 0.75
-	else
-		waitScale = 1.0
+	float waitScale = 1.0
+	// if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_FAST_HEAL ) && (kitData.healAmount > 0) )
+		// waitScale = 0.5
+	// else if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_MEDIC ) && (kitData.healAmount > 0) )
+		// waitScale = 0.75
+	// else
+		// waitScale = 1.0
 	float waitTime  = (kitData.interactionTime * waitScale)
 
 	RuiSetBool( file.healthUseProgressRui, "isVisible", true )
@@ -763,7 +764,10 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 
 	RuiSetImage( rui, "iconImage", data.hudIcon )
 	RuiSetInt( rui, "lootTier", data.tier )
-
+	
+	if( data.tier > 5 )
+		RuiSetInt( rui, "lootTier", 5 )
+		
 	vector iconScale = data.lootType == eLootType.MAINWEAPON ? <2.0, 1.0, 0.0> : <1.0, 1.0, 0.0>
 	RuiSetFloat2( rui, "iconScale", iconScale )
 
@@ -1280,6 +1284,9 @@ void function ShowVerticalLineStruct( VerticalLineStruct lineStruct, entity ent 
 	#if LINE_COLORS
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
 		RuiSetInt( lineStruct.rui, "tier", data.tier )
+		
+		if( data.tier > 5 )
+			RuiSetInt( lineStruct.rui, "tier", 5 )
 	#else
 		RuiSetInt( lineStruct.rui, "tier", 1 )
 	#endif
@@ -1611,9 +1618,9 @@ void function SetupSurvivalLoot( var categories )
 	foreach( string cat in stringCats )
 		catTypes.append( SURVIVAL_Loot_GetLootTypeFromString( cat ) )
 
-	// HACK
-	if ( catTypes.contains( eLootType.ATTACHMENT ) )
-		RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
+	// // HACK
+	// if ( catTypes.contains( eLootType.ATTACHMENT ) )
+		// RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
 
 	// flip thru all the loot and find the ones that match the cats we want to display
 	foreach ( ref, data in SURVIVAL_Loot_GetLootDataTable() )

@@ -197,8 +197,8 @@ void function SetCommonScoreRUIVars( var rui )
 	if ( IsSoloMode() )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ONLINE" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
+		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
 
 		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
 			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
@@ -208,6 +208,8 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
 		else if(GetCurrentPlaylistName() == "fs_1v1")
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
+		else if( GetCurrentPlaylistName() == "fs_survival_solos" )
+			RuiSetString( rui, "gameModeString", "APEX SOLO" )
 		
 		if(GameRules_GetGameMode() == "flowstate_pkknockback")
 		{

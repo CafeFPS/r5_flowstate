@@ -26,6 +26,7 @@ global function CreateMovementMapDummieFromMapLoad
 global function CC_MenuGiveAimTrainerWeapon
 global function CC_AimTrainer_SelectWeaponSlot
 global function CC_AimTrainer_CloseWeaponSelector
+global function CreateAimtrainerDeathbox
 
 vector floorLocation
 vector floorCenterForPlayer
@@ -2220,15 +2221,40 @@ void function EnableDeathboxMantleAfterSomeTime(entity deathbox)
 entity function CreateAimtrainerDeathbox( entity player, vector origin)
 {
 	entity deathBox = FlowState_CreateDeathBox( player, origin)
-
+	
+	int weaponcount
 	foreach ( invItem in AimTrainer_FillDeathbox( player ) )
 	{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-
+		
+		if( data.lootType == eLootType.MAINWEAPON && weaponcount == 2 )
+		{
+			continue
+		}
+		
+		if( data.lootType == eLootType.MAINWEAPON )
+		{
+			weaponcount++
+		}
 		entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
 		AddToDeathBox( loot, deathBox )
 	}
 
+		entity energy = SpawnGenericLoot( "special", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+		AddToDeathBox( energy, deathBox )
+		
+		entity shotgun = SpawnGenericLoot( "shotgun", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+		AddToDeathBox( shotgun, deathBox )
+		
+		entity heavy = SpawnGenericLoot( "highcal", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+		AddToDeathBox( heavy, deathBox )
+		
+		entity light = SpawnGenericLoot( "bullet", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+		AddToDeathBox( light, deathBox )
+		
+		entity sniper = SpawnGenericLoot( "sniper", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+		AddToDeathBox( sniper, deathBox )
+		
 	UpdateDeathBoxHighlight( deathBox )
 
 	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )
@@ -2249,8 +2275,8 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	box.Solid()
 	box.SetUsable()
 	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
-	box.SetOwner( player )
-	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+	// box.SetOwner( player )
+	// box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
 	
 	box.SetNetBool( "overrideRUI", true )
 	
@@ -2346,6 +2372,23 @@ array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
 	foreach(ref in newRefs)
 	{
 		LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+		ConsumableInventoryItem fsItem
+
+		fsItem.type = attachmentData.index
+		fsItem.count = 1
+
+		final.append( fsItem )
+	}
+	
+	array<string> alotofitems = SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 20 )
+	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Low", 20 ) )
+	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Low", 20 ) )
+	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Medium", 20 ) )
+	
+	foreach( item in alotofitems )
+	{
+		LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( item )
 
 		ConsumableInventoryItem fsItem
 

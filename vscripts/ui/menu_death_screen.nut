@@ -598,8 +598,8 @@ void function DeathScreenSkipDeathCam( var button )
 	//
 
 	//
-	if ( CanSkipDeathCam () )
-		ClientCommand( "SkipDeathCam" )
+	//if ( CanSkipDeathCam () )
+		//ClientCommand( "SkipDeathCam" )
 }
 
 void function ReportPlayerOnHold()

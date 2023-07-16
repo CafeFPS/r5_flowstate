@@ -74,11 +74,14 @@ global struct ShuffleData
 	int        _pos
 }
 
+const int THROTTLE_DEFAULT_MAXPERINTERVAL = 1
+const float THROTTLE_DEFAULT_INTERVAL = 1.0
 global struct ThrottleData
 {
-	float              lastRunTime = 0.0
-	bool               isQueued = false
-	void functionref() latestFunc
+	float lastProcessTime = 0.0
+	float decayingActionCount = 0
+	float interval = THROTTLE_DEFAULT_INTERVAL
+	int   maxPerInterval = THROTTLE_DEFAULT_MAXPERINTERVAL
 }
 
 global struct WaitQuotaItem
@@ -1617,21 +1620,44 @@ bool function AllegianceCheck( int req, entity entA, entity entB )
 }
 #endif // !UI
 
-vector function GetRandomCenterBiasedToEdge( vector center , float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
+vector function GetRandomCenterBiasedToEdge( vector center, float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
 {
 	float deviation = RandomFloatRange( 0.0, 1.0 )
-	deviation = minDeviation + (sqrt( deviation )*( maxDeviation-minDeviation ))
-	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
-	vector newCenter = center + (AnglesToForward( angles )*deviation)
+	deviation = minDeviation + (sqrt( deviation ) * (maxDeviation - minDeviation))
+	vector angles    = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
+	vector newCenter = center + (AnglesToForward( angles ) * deviation)
 	return newCenter
 }
 
-vector function GetRandomCenter( vector center , float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
+
+vector function GetRandomCenter( vector center, float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360, var randomSeed = null )
 {
-	float deviation = RandomFloatRange( minDeviation, maxDeviation )
-	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) , 0>
-	vector newCenter = center + (AnglesToForward( angles )*deviation)
+	float deviation
+	vector angles
+	// if ( IsValid ( randomSeed ) )
+	// {
+		// deviation = RandomFloatRangeSeeded( randomSeed, minDeviation, maxDeviation )
+		// angles = <0, RandomFloatRangeSeeded( randomSeed, minAngle, maxAngle ) % 360, 0>
+	// }
+	// else
+	// {
+		deviation = RandomFloatRange( minDeviation, maxDeviation )
+		angles = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
+	// }
+	vector newCenter = center + (AnglesToForward( angles ) * deviation)
 	return newCenter
+}
+
+
+vector function GetRandomCenterDistributed( vector center, float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
+{
+	float deviation   = RandomFloatRange( minDeviation, maxDeviation )
+	float angles      = RandomFloatRange( minAngle, maxAngle ) % 360
+	float scale_ratio = 0
+	if ( maxDeviation > 0 )	              
+		scale_ratio = maxDeviation / sqrt( maxDeviation )
+	float r           = sqrt( deviation ) * scale_ratio
+	return center + (< deg_cos( angles ) * r, deg_sin( angles ) * r, 0 >)
 }
 
 
@@ -2041,6 +2067,8 @@ bool function DisplayObituaryName()
 vector function GetKeyColor( int colorID, int optionalParam = 0 )
 {
 	Assert( optionalParam >= 0, "optionalParam must not be negative" )
+	
+	//return Vector( 22, 163, 0 )
 	return ColorPalette_GetColorFromID( colorID + optionalParam )
 }
 #endif
@@ -2056,32 +2084,27 @@ bool function IsAccessibilityNarrationEnabled()
 }
 #endif
 
-
-void function Throttle( ThrottleData data, float interval, void functionref() func )
+ThrottleData function InitThrottle( float interval = THROTTLE_DEFAULT_INTERVAL, int maxPerInterval = THROTTLE_DEFAULT_MAXPERINTERVAL )
 {
-	data.latestFunc = func
+	ThrottleData data
+	data.interval = interval
+	data.maxPerInterval = maxPerInterval
 
-	if ( data.isQueued )
-		return
-
-	thread __ThrottleInternalThread( data, interval )
+	return data
 }
 
 
-void function __ThrottleInternalThread( ThrottleData data, float interval )
+bool function Throttle( ThrottleData data )
 {
-	OnThreadEnd( void function() : ( data ) {
-		data.isQueued = false
-		data.latestFunc = null
-	} )
+	float timeSinceLastAction = Time() - data.lastProcessTime
+	data.lastProcessTime = Time()
 
-	data.isQueued = true
+	data.decayingActionCount = max( 0.0, data.decayingActionCount - timeSinceLastAction / (data.interval / data.maxPerInterval) )
+	if ( data.decayingActionCount > data.interval )
+		return true
 
-	wait max( 0.01, interval - (Time() - data.lastRunTime) )
-
-	data.lastRunTime = Time()
-
-	data.latestFunc()
+	data.decayingActionCount += 1.0
+	return false
 }
 
 const float GAMMA = 2.4

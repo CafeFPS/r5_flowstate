@@ -1,7 +1,7 @@
 #base "_base_sniper.txt"
 #base "_base_sniper_optics.txt"
 #base "_base_barrels_large.txt"
-#base "_base_mags_heavy.txt"
+#base "_base_mags_sniper.txt"
 #base "_base_stocks_sniper.txt"
 
 "WeaponData"

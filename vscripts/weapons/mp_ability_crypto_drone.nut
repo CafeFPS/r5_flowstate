@@ -129,7 +129,7 @@ void function MpAbilityCryptoDrone_Init()
 	AddCreateCallback( "player_vehicle", CryptoDrone_OnPropScriptCreated )
 	AddDestroyCallback( "player_vehicle", CryptoDrone_OnPropScriptDestroyed )
 	AddCallback_OnPlayerChangedTeam( CryptoDrone_OnPlayerTeamChanged )
-	RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptDroneRecall )
+	//RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptDroneRecall )
 	AddCallback_OnWeaponStatusUpdate( CryptoDrone_WeaponStatusCheck )
 	AddCallback_OnPlayerLifeStateChanged( CryptoDrone_OnLifeStateChanged )
 	#endif

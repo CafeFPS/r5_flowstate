@@ -84,6 +84,7 @@ void function InitGroundListMenu( var newMenuArg )
 	ListPanel_SetKeyPressHandler( file.groundList, OnGroundItemKeyPress )
 	ListPanel_SetScrollCallback( file.groundList, OnGroundListScroll )
 	ListPanel_SetItemHeightCallback( file.groundList, GetGroundListItemHeight )
+	ListPanel_SetItemWidthCallback( file.groundList, GetGroundListItemWidth )
 	ListPanel_SetItemHeaderCheckCallback( file.groundList, GetGroundListItemIsHeader )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_INPUT_MODE_CHANGED, OnSurvivalGroundListMenu_InputModeChanged )
@@ -98,8 +99,8 @@ void function InitGroundListMenu( var newMenuArg )
 
 	file.quickSwapGrid = Hud_GetChild( menu, "QuickSwapGrid" )
 	GridPanel_Init( file.quickSwapGrid, INVENTORY_ROWS, INVENTORY_COLS, OnBindQuickSwapItem, GetInventoryItemCount, Survival_CommonButtonInit )
-	// GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICK, OnQuickSwapItemClick )
-	// GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICKRIGHT, OnQuickSwapItemClickRight )
+	GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICK, OnQuickSwapItemClick )
+	GridPanel_SetButtonHandler( file.quickSwapGrid, UIE_CLICKRIGHT, OnQuickSwapItemClickRight )
 
 	GridPanel_SetCommandHandler( file.quickSwapGrid, OnQuickSwapMenuCommand )
 
@@ -516,7 +517,26 @@ void function OnWeaponSwapButtonClick( var button )
 
 float function GetGroundListItemHeight( var panel, int index )
 {
-	return SurvivalGroundItem_IsHeader( index ) ? 0.5 : 1.0
+	if( SurvivalGroundItem_IsHeader( index ) )
+		return 0.5
+	
+	if( SurvivalGroundItem_IsWeapon( index ) || SurvivalGroundItem_IsAmmo( index ) )
+		return 1.0
+
+	return 1.0
+}
+
+float function GetGroundListItemWidth( var panel, int index )
+{
+	if( SurvivalGroundItem_IsHeader( index ) )
+		return 1
+	
+	if( SurvivalGroundItem_IsWeapon( index ) )
+		return 0.497
+	else if( SurvivalGroundItem_IsAmmo( index ) )
+		return 0.195
+	
+	return 1
 }
 
 bool function GetGroundListItemIsHeader( var panel, int index )

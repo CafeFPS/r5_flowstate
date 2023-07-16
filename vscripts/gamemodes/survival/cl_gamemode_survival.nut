@@ -378,7 +378,7 @@ void function ClGamemodeSurvival_Init()
 	AddScoreboardShowCallback( Sur_OnScoreboardShow )
 	AddScoreboardHideCallback( Sur_OnScoreboardHide )
 
-	AddCallback_MinimapEntShoudCreateCheck( DontCreateRuisForEnemies )
+	AddCallback_MinimapEntShouldCreateCheck( DontCreateRuisForEnemies )
 	AddCallback_MinimapEntSpawned( AddInWorldMinimapObject )
 	AddCallback_LocalViewPlayerSpawned( AddInWorldMinimapObject )
 
@@ -431,13 +431,20 @@ void function ClGamemodeSurvival_Init()
 
 void function Survival_EntitiesDidLoad()
 {
+	SetConVarInt( "fps_max", 190 ) //remove me when 190 fps fix arrives
+	
 	InitInWorldScreens()
 
 	foreach ( data in file.minimapLabels )
 	{
 		AddMinimapLabel( data.name, data.pos.x, data.pos.y, data.width, data.scale )
 	}
+	
 	thread Flowstate_CheckForLaserSightsAndApplyEffect()
+	
+	// Hud_SetVisible(HudElement( "Overshields_TestFrame" ), true)	
+	// RuiSetImage( Hud_GetRui( HudElement( "Overshields_TestFrame" ) ), "basicImage", $"rui/flowstatecustom/overshield_info_box")
+	
 	file.toposInitialized = true
 }
 
@@ -464,13 +471,9 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		mods.clear()
-		if( !IsValid( activeWeapon ) )
-		{
-			wait 0.05
-			continue
-		}
-		
-		mods = activeWeapon.GetMods()
+
+		if( IsValid( activeWeapon ) )
+			mods = activeWeapon.GetMods()
 		
 		exitCheck = false
 		hasLaser = false
@@ -498,7 +501,17 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		// printt("DEBUG LASER - ID: " + e["fxHandle"] + " - hasLaser: " + hasLaser )
 		// #endif
 		
-		if( !IsAlive( player ) || !IsValid( weapon ) && !IsValid( weapon2 ) || !IsValid( activeWeapon ) || activeWeapon.IsWeaponAdsButtonPressed() || activeWeapon != weapon && activeWeapon != weapon2 || activeWeapon.IsWeaponMelee() || activeWeapon.IsDiscarding() || !hasLaser )
+		if( !IsAlive( player ) || 
+			!IsValid( weapon ) && !IsValid( weapon2 ) || 
+			!IsValid( activeWeapon ) || 
+			activeWeapon.IsWeaponAdsButtonPressed() || 
+			activeWeapon != weapon && activeWeapon != weapon2 || 
+			activeWeapon.GetWeaponClassName().find("melee") > 0 || 
+			activeWeapon.IsDiscarding() || 
+			!hasLaser || 
+			player.Player_IsFreefalling() ||
+			player != GetLocalViewPlayer() ||
+			player.IsThirdPersonShoulderModeOn() )
 		{
 			if ( e["fxHandle"] != -1 )
 			{
@@ -509,7 +522,8 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 			continue
 		}
 		
-		if ( hasLaser && e["fxHandle"] == -1)
+		
+		if ( hasLaser && e["fxHandle"] == -1 )
 		{
 			e["fxHandle"] = activeWeapon.PlayWeaponEffectReturnViewEffectHandle( $"P_wpn_lasercannon_aim", $"", "muzzle_flash" )
 		}
@@ -1470,6 +1484,9 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 
 	if ( player == GetLocalViewPlayer() )
 	{
+		if( tier > 5 )
+			tier = 5
+		
 		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
 		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
 		UpdateActiveLootPings()
@@ -2535,6 +2552,47 @@ void function Survival_OnPlayerClassChanged( entity player )
 	}
 
 	ServerCallback_ClearHints()
+
+	bool doublejumpTest = false
+	foreach( mod in player.GetPlayerSettingsMods() )
+		if( mod == "enable_doublejump" )
+			doublejumpTest = true
+	
+	if( doublejumpTest )
+	{
+		if( !player.IsOnGround() )
+		{
+			thread function () : ( player )
+			{
+				EndSignal( player, "OnDeath" )
+				
+				AddPlayerHint( 5.0, 0.25, $"", "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
+				
+				OnThreadEnd(
+					function () : ( player )
+					{
+						HidePlayerHint( "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
+					}
+				)
+				
+				bool stillHasDoubleJumpMod
+				
+				while( !player.IsOnGround() )
+				{
+					stillHasDoubleJumpMod = false
+					
+					foreach( mod in player.GetPlayerSettingsMods() )
+						if( mod == "enable_doublejump" )
+							stillHasDoubleJumpMod = true
+						
+					if( !stillHasDoubleJumpMod )
+						break
+					
+					WaitFrame()
+				}
+			}()
+		}
+	}
 }
 
 
@@ -3115,7 +3173,9 @@ void function WaitingForPlayers_CreateCustomCameras()
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 	
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
-	
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
 	
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_GamemodeFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/gamemode")
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_MapFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/map")
@@ -3134,6 +3194,10 @@ void function DisableCustomMapAndGamemodeNameFrames()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeName" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), false)
+	
 }
 
 void function WaitingForPlayers_RemoveCustomCameras()
@@ -3200,7 +3264,7 @@ void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
 	
-	if( GetCurrentPlaylistName() == SURVIVAL )
+	if( GetCurrentPlaylistName() == "fs_survival" || GetCurrentPlaylistName() == "fs_survival_duos" || GetCurrentPlaylistName() == "fs_survival_solos" )
 		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
 
@@ -4850,7 +4914,7 @@ void function ServerCallback_NessyMessage( int state )
 		break
 		
 		case 40:
-		printt("Mantling, zipline use count reset.")
+		//printt("Mantling, zipline use count reset.")
 		entity player = GetLocalClientPlayer()
 		player.p.ziplineUsages = 0
 		break

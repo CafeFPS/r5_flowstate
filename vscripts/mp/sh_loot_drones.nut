@@ -141,7 +141,7 @@ void function LootDroneSpawned( entity droneEnt )
 		return
 
 	#if CLIENT
-		printf( "LootDroneClientDebug: Adding Drone to Client Data" )
+		//printf( "LootDroneClientDebug: Adding Drone to Client Data" )
 		AddDroneClientData( droneEnt )
 	#endif // CLIENT
 }
@@ -149,7 +149,7 @@ void function LootDroneSpawned( entity droneEnt )
 #if CLIENT
 void function ServerCallback_AddDroneClientData( entity droneEnt )
 {
-	printf( "LootDroneClientDebug: ServerCallback_AddDroneClientData" )
+	//printf( "LootDroneClientDebug: ServerCallback_AddDroneClientData" )
 	AddDroneClientData( droneEnt )
 }
 
@@ -161,7 +161,7 @@ void function AddDroneClientData( entity droneEnt )
 	if ( droneEnt in file.droneToClientData )
 		return
 
-	printf( "LootDroneClientDebug: Adding Clientside Drone Data entry" )
+	//printf( "LootDroneClientDebug: Adding Clientside Drone Data entry" )
 	LootDroneClientData clientData
 	clientData.model = droneEnt
 	SetLootDroneTrailFX( clientData )
