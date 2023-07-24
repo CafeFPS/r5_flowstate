@@ -647,7 +647,8 @@ void function UpdateModsOnSurvivalWeaponRui( var rui, entity weapon )
 			if ( SURVIVAL_Loot_IsRefValid( mod ) )
 			{
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( mod )
-				if ( isAttachmentLockedWeapon )
+				string attachmentStyle = GetAttachmentPointStyle( attachmentName, weaponRef )
+				if ( isAttachmentLockedWeapon && attachmentStyle != "sight" )
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], weaponData.tier )
 				else
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], data.tier )

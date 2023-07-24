@@ -53,10 +53,12 @@ void function LaunchCustomLobby()
 	file.is_working = true
 
 	ShowSpinner(true)
-
+	
+	#if LISTEN_SERVER
 	wait 1
 
 	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#endif // LISTEN_SERVER
 	ShowSpinner(false)
 
 	file.is_working = false

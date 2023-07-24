@@ -1,7 +1,6 @@
 #base "_base_lmg.txt"
 #base "_base_barrels_medium.txt"
 #base "_base_stocks_tactical.txt"
-
 #base "_base_mags_energy.txt"
 
 WeaponData
@@ -27,18 +26,15 @@ WeaponData
 	"cooldown_type"									"chargeFrac"
     "cooldown_time"	                                "0.16" // actually, "blowoff animation time"
     "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
-    "charge_cooldown_time"                          "1.19"  // controls length of overheat anim (along with delay)
+    "charge_cooldown_time"                          "3.63"  // controls length of overheat anim (along with delay)
     "charge_cooldown_delay"                         "0.08"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
-                     
     "projectile_launch_speed"                       "24000"
-     
-                                       
-      
+
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_gravity_scale"						"0.5"
 	"projectile_lifetime" 							"4.0"
@@ -72,9 +68,9 @@ WeaponData
 	"impact_effect_table" 							"lstar"
 	"projectile_adjust_to_gun_barrel"				"1"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"							"P_muz_lstar_FP"
+	"fx_muzzle_flash_world"							"P_muz_lstar"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_LSTAR_Fire_1P"
@@ -136,15 +132,6 @@ WeaponData
 	"bolt_hitsize_grow2_size"						"2.5" //"7.0"
 	"bolt_hitsize_growfinal_lerptime"				"0.18"
 	"bolt_hitsize_growfinal_size"					"3.5" //"7.0"
-     
-                                       
-                                     
-                                      
-                                     
-                                            
-                                        
-      
-
 
 	"bolt_gravity_enabled"							"1"
 
@@ -307,10 +294,8 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-                      
-                                                 
-      
-		"viewkick_pitch_softScale"						"2.6"   //"2.0"
+
+	"viewkick_pitch_softScale"						"2.6"   //"2.0"
 	"viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
@@ -341,10 +326,7 @@ WeaponData
 	"viewkick_scale_yaw_valueLerpStart"   			"5"
 	"viewkick_scale_pitch_valueLerpEnd" 			"0"
 	"viewkick_scale_yaw_valueLerpEnd" 				"5"
-                     
-                                                          
-                                               
-     
+
     "viewkick_scale_valueDecayDelay"  				"0.1"
     "viewkick_scale_valueDecayRate"   				"60"
       
@@ -386,17 +368,6 @@ WeaponData
     "ammo_suck_behavior"							"primary_weapons"
     "chance_for_bonus_last_shot_in_clip"			"0"
     "critical_hit"									"1"
-
-
-                     
-                                                       
-                                        
-                                                       
-                                                                                      
-                                   
-                                    
-
-     
 
 	"ammo_clip_size"   								"0"
 	//"ammo_clip_reload_max"							"40"
@@ -466,12 +437,7 @@ WeaponData
 	"dof_nearDepthEnd"							    "0.0"
 
 	// Behavior
-                     
-                                                          
-     
 	"fire_rate"   									"10.0"
-      
-
 	"zoom_time_in"                                  "0.34"
 	"zoom_time_out"                                 "0.3"
 	"zoom_fov"										"55"
@@ -509,13 +475,8 @@ WeaponData
     //"clip_bodygroup_show_for_milestone_2"	"0"
     //"clip_bodygroup_show_for_milestone_3"	"0"
 
-               
-         
-  
-                                       
-                                       
-  
-      
+ 	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_LSTAR"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_LSTAR"              
 
 	Mods
 	{
@@ -625,14 +586,107 @@ WeaponData
         {
             "ui1_enable"			"0"
         }
+	}
 
-               
-                                                                                                           
-                    
-         
-                                                                                          
-         
-      
+	// THIS IS A BUNCH OF DIRTY HACKS! We can't put actual primitive values for ui args, so we have to link it to some value.
+    //  I'm using eWeaponVar.ammo_per_shot = 1 to set the showChargeFrac "bool" and to avoid divide by 0 issues with clipSize
+
+    //classic
+    UiData6
+    {
+        "ui"	"ui/hcog_classic_sights"
+        "mesh" 	"models/weapons/attachments/hcog_classic_sights"
+        Args
+        {
+            vis							player_zoomfrac
+            ammo						weapon_ammoClipCount
+            clipSize					eWeaponVar.ammo_per_shot
+            centerOffset		        weapon_ads_center_offset
+            showChargeFrac              eWeaponVar.ammo_per_shot
+            chargeFrac                  player_chargeFrac
+        }
+    }
+
+    //bruiser
+    UiData7
+    {
+        "ui"						"ui/hcog_upper"
+        "mesh"						"models/weapons/attachments/hcog2_rui_upper"
+        Args
+        {
+            vis							player_zoomfrac
+            ammo						weapon_ammoClipCount
+            clipSize					eWeaponVar.ammo_per_shot
+            centerOffset		        weapon_ads_center_offset
+            showChargeFrac              eWeaponVar.ammo_per_shot
+            chargeFrac                  player_chargeFrac
+        }
+    }
+
+    //holo
+	UiData8
+	{
+		"ui"					"ui/holo_sights"
+		"mesh"					"models/weapons/attachments/holo_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+			clipCount			eWeaponVar.ammo_per_shot
+			centerOffset		weapon_ads_center_offset
+			showChargeFrac      eWeaponVar.ammo_per_shot
+            chargeFrac          player_chargeFrac
+		}
+	}
+
+    //1x-2x
+	UiData9
+	{
+		"ui"						"ui/holo_variable_sights"
+		"mesh"						"models/weapons/attachments/holo_variable_sights"
+		Args
+		{
+			vis						player_zoomfrac
+			ammo					weapon_ammoClipCount
+			clipSize				eWeaponVar.ammo_per_shot
+			zoomFOV                 weapon_zoom_fov
+			centerOffset			weapon_ads_center_offset
+			showChargeFrac          eWeaponVar.ammo_per_shot
+			chargeFrac              player_chargeFrac
+		}
+	}
+
+    //3x
+	UiData16
+	{
+		"ui"					"ui/hcog_ranged_sights"
+		"mesh"					"models/weapons/attachments/acgs_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+			showChargeFrac      eWeaponVar.ammo_per_shot
+			chargeFrac          player_chargeFrac
+		}
+	}
+
+    //2x-4x
+	UiData17
+	{
+		"ui"	"ui/aog_variable_sights"
+		"mesh" "models/weapons/attachments/aog_variable_sights"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+		}
 	}
 
 	"ui1_enable"		"1"

@@ -507,13 +507,13 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	bool isShadowShot              = (damageType & DF_SHADOW_DAMAGE) ? true : false
 	bool isOvershieldShot		   = (damageType & DF_OVERSHIELD ) ? true : false
 	
-	if( victim.IsPlayer() )
-	{
-		LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
+	// if( victim.IsPlayer() )
+	// {
+		// LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
 		
-		if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
-			isOvershieldShot = true
-	}
+		// if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
+			// isOvershieldShot = true
+	// }
 	
 	bool playKillSound = isKillShot
 
@@ -578,10 +578,10 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 			armorColor = GetFXRarityColorForTier( armorTier )
 		}	
 		
-		PlayShieldHitEffect( params, armorColor, armorTier )
+		//PlayShieldHitEffect( params, armorColor, armorTier )
 		showCrosshairHitIndicator = true
 	}
-	else if ( isArmorShot )
+	else if ( isArmorShot || isShieldShot )
 	{
 		int armorTier = 0
 		if ( damageFlags & DAMAGEFLAG_ARMOR1 )
@@ -595,24 +595,9 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 
 		vector armorColor = GetFXRarityColorForTier( armorTier )
 
-		PlayShieldHitEffect( params, armorColor )
-	}
-	else if ( isShieldShot )
-	{
-		int armorTier = 0
-		if ( damageFlags & DAMAGEFLAG_ARMOR1 )
-			armorTier = 1
-		else if ( damageFlags & DAMAGEFLAG_ARMOR2 )
-			armorTier = 2
-		else if ( damageFlags & DAMAGEFLAG_ARMOR3 )
-			armorTier = 3
-		else if ( damageFlags & DAMAGEFLAG_ARMOR4 )
-			armorTier = 4
-
-		vector armorColor = GetFXRarityColorForTier( armorTier )
-
-		PlayShieldHitEffect( params, armorColor )
-		showCrosshairHitIndicator = true
+		//PlayShieldHitEffect( params, armorColor )
+		if ( isShieldShot )
+			showCrosshairHitIndicator = true
 	}
 	else if ( damageAmount <= 0 )
 	{

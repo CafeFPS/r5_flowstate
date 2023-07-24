@@ -166,42 +166,12 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 		{
 			case eStoredWeaponType.main:
 				weapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-				weapon.SetWeaponSkin( 1 )
-				weapon.SetWeaponCamo( 0 )
-				#if MP
-				// if ( storedWeapon.isProScreenOwner )
-				// {
-				// 	weapon.SetProScreenOwner( player )
-				// 	UpdateProScreen( player, weapon )
-				// }
-
-				string weaponCategory = expect string( weapon.GetWeaponInfoFileKeyField( "menu_category" ) )
-				if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
-				{
-					int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )
-					int clipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
-
-					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, defaultTotal - clipSize )
-
-					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-				}
-				else
-				{
-					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
-					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-				}
-				#else
 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
 				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
 					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-				#endif
-
 
 				if ( storedWeapon.activeWeapon )
 					activeWeaponSlot = i
-
 				break
 
 			case eStoredWeaponType.offhand:

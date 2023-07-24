@@ -765,8 +765,8 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 	RuiSetImage( rui, "iconImage", data.hudIcon )
 	RuiSetInt( rui, "lootTier", data.tier )
 	
-	if( data.tier > 5 )
-		RuiSetInt( rui, "lootTier", 5 )
+	// if( data.tier > 5 )
+		// RuiSetInt( rui, "lootTier", 5 )
 		
 	vector iconScale = data.lootType == eLootType.MAINWEAPON ? <2.0, 1.0, 0.0> : <1.0, 1.0, 0.0>
 	RuiSetFloat2( rui, "iconScale", iconScale )
@@ -1285,8 +1285,8 @@ void function ShowVerticalLineStruct( VerticalLineStruct lineStruct, entity ent 
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
 		RuiSetInt( lineStruct.rui, "tier", data.tier )
 		
-		if( data.tier > 5 )
-			RuiSetInt( lineStruct.rui, "tier", 5 )
+		// if( data.tier > 5 )
+			// RuiSetInt( lineStruct.rui, "tier", 5 )
 	#else
 		RuiSetInt( lineStruct.rui, "tier", 1 )
 	#endif

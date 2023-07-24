@@ -368,7 +368,9 @@ void function OpenSettingsMenu()
 
 void function HostEndMatch()
 {
+	#if LISTEN_SERVER
 	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#endif // LISTEN_SERVER
 }
 
 void function RunSpectateCommand()

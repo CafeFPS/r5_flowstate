@@ -23,6 +23,9 @@ void function InitQuickSwapMenu( var newMenuArg )
 	file.menu = menu
 	Survival_RegisterInventoryMenu( menu )
 
+	AddMenuEventHandler( menu, eUIEvent.MENU_INPUT_MODE_CHANGED, OnSurvivalQuickSwapMenu_InputModeChanged )
+	Survival_AddPassthroughCommandsToMenu( menu )
+
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnSurvivalQuickSwapMenu_Open )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnSurvivalQuickSwapMenu_NavBack )
 	AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, OnSurvivalQuickSwapMenu_Show )
@@ -58,7 +61,15 @@ void function OnSurvivalQuickSwapMenu_Open()
 void function OnSurvivalQuickSwapMenu_Show()
 {
 	SetBlurEnabled( false )
+	SetMenuReceivesCommands( file.menu, PROTO_Survival_DoInventoryMenusUseCommands() && !IsControllerModeActive() )
 }
+
+
+void function OnSurvivalQuickSwapMenu_InputModeChanged()
+{
+	SetMenuReceivesCommands( file.menu, PROTO_Survival_DoInventoryMenusUseCommands() && !IsControllerModeActive() )
+}
+
 
 void function UpdateQuickSwapMenu()
 {

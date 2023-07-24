@@ -825,7 +825,7 @@ void function OnPlayerCreate( entity player )
 		RuiSetString( file.minimap_coords, "uid", " " )
 		RuiSetInt( file.minimap_coords, "uidPart1", 0 ) // int( uidPart1 )
 		RuiSetInt( file.minimap_coords, "uidPart2", 0 ) // int( uidPart2 )
-		RuiTrackString( file.minimap_coords, "name", GetLocalClientPlayer(), RUI_TRACK_PLAYER_NAME_STRING )
+		RuiSetString( file.minimap_coords, "name", "R5Reloaded v2.2.6 RC" )
 	}
 
 	asset mapImage       = Minimap_GetAssetForKey( "minimap" )
@@ -1707,9 +1707,9 @@ void function UpdateEquipmentSlot( entity player, var rui )
 			int tier      = data.tier
 			asset hudIcon = tier > 0 ? data.hudIcon : es.emptyImage
 
-			if(equipSlot == "armor" && player.GetShieldHealthMax() > 100)
-					RuiSetInt( rui, es.unitFrameTierVar, 5 )
-				else
+			// if(equipSlot == "armor" && player.GetShieldHealthMax() > 100)
+					// RuiSetInt( rui, es.unitFrameTierVar, 5 )
+				// else
 					RuiSetInt( rui, es.unitFrameTierVar, tier )
 			RuiSetImage( rui, es.unitFrameImageVar, hudIcon )
 		}

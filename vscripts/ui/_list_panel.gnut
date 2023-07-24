@@ -646,8 +646,8 @@ array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset
 		lastIndex++
 	}
 	
-	printt( data.ammoCount ) 
-	printt( data.weaponCount ) 
+	//printt( data.ammoCount ) 
+	//printt( data.weaponCount ) 
 
 	return visibleIndices
 }
@@ -681,7 +681,7 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 	data.listOffset = clamp( lastOffset + (data.scrollValue * SCROLL_SPEED), 0, (data.totalListSize - (data.panelHeight / data.totalListSize) * data.totalListSize) )
 	data.listOffset = max( data.listOffset, 0 )
 	
-	printt( "data.listOffset " + data.listOffset )
+	//printt( "data.listOffset " + data.listOffset )
 	array<int> visibleIndices = GetVisibleListItemsIndices( data, data.listOffset )
 
 	foreach ( itemIndex in lastVisibleIndices )
@@ -1086,7 +1086,7 @@ float function ListPanel_GetTotalSize( ListPanelData data, bool updateOffsets = 
 	int baseButtonHeight = data.buttonHeight
 	int listItemCount    = ListPanel_GetItemCount( data )
 	
-	printt( "data.indexAtOffset is " + listItemCount )
+	//printt( "data.indexAtOffset is " + listItemCount )
 	
 	if ( updateOffsets )
 		data.indexAtOffset.resize( listItemCount )

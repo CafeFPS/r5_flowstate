@@ -1029,7 +1029,10 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		if ( slowZone && !_lastFrameSlowZone )
 		{
 			if( freefallEnabled && player.Player_IsFreefalling() && !player.Player_IsFreefallAnticipating() )
+			{
+				player.Anim_Stop()
 				player.Player_BeginFreefallAnticipate()
+			}
 
 			StopSoundOnEntity( player, "Survival_DropSequence_Travel_1P" )
 			StopSoundOnEntity( player, "Survival_DropSequence_Travel_3P" )

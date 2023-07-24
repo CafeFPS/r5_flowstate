@@ -398,7 +398,7 @@ FileStruct_LifetimeLevel& fileLevel
 
 /////////////////////////
 /////////////////////////
-//// Initialiszation ////
+//// Initialization ////
 /////////////////////////
 /////////////////////////
 
@@ -507,7 +507,7 @@ void function CleanupNestedGladiatorCard( NestedGladiatorCardHandle handle, bool
 	ChangeNestedGladiatorCardOwner( handle, EHI_null )
 
 	if ( !isParentAlreadyDead )
-		RuiDestroyNested( handle.parentRui, handle.argName )
+		RuiDestroyNestedIfAlive( handle.parentRui, handle.argName )
 	handle.parentRui = null
 	handle.cardRui = null
 
@@ -532,28 +532,25 @@ void function ChangeNestedGladiatorCardPresentation( NestedGladiatorCardHandle h
 	handle.isBackFace = (handle.presentation > eGladCardPresentation._MARK_BACK_START && handle.presentation < eGladCardPresentation._MARK_BACK_END)
 	handle.shouldShowDetails = (handle.presentation == eGladCardPresentation.FRONT_DETAILS)
 
-	if ( AreGladiatorCardsEnabled() )
-	{
-		asset ruiAsset = $""
-		if ( handle.presentation == eGladCardPresentation.FULL_BOX )
-			ruiAsset = $"ui/gladiator_card_full_box.rpak"
-		else if ( handle.isFrontFace )
-			ruiAsset = $"ui/gladiator_card_frontface.rpak"
-		else if ( handle.isBackFace )
-			ruiAsset = $"ui/gladiator_card_backface.rpak"
+	asset ruiAsset = $""
+	if ( handle.presentation == eGladCardPresentation.FULL_BOX )
+		ruiAsset = $"ui/gladiator_card_full_box.rpak"
+	else if ( handle.isFrontFace )
+		ruiAsset = $"ui/gladiator_card_frontface.rpak"
+	else if ( handle.isBackFace )
+		ruiAsset = $"ui/gladiator_card_backface.rpak"
 
-		if ( handle.cardRui != null )
-		{
-			RuiDestroyNested( handle.parentRui, handle.argName )
-			handle.cardRui = null
-			handle.fgFrameNWS.rui = null
-			handle.bgFrameNWS.rui = null
-			for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
-				handle.badgeNWSList[badgeIndex].rui = null
-		}
-		if ( ruiAsset != $"" )
-			handle.cardRui = RuiCreateNested( handle.parentRui, handle.argName, ruiAsset )
+	RuiDestroyNestedIfAlive( handle.parentRui, handle.argName )
+	if ( handle.cardRui != null )
+	{
+		handle.cardRui = null
+		handle.fgFrameNWS.rui = null
+		handle.bgFrameNWS.rui = null
+		for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
+			handle.badgeNWSList[badgeIndex].rui = null
 	}
+	if ( ruiAsset != $"" )
+		handle.cardRui = RuiCreateNested( handle.parentRui, handle.argName, ruiAsset )
 
 	TriggerNestedGladiatorCardUpdate( handle )
 }
@@ -1497,7 +1494,6 @@ void function TriggerNestedGladiatorCardUpdate( NestedGladiatorCardHandle handle
 void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle )
 {
 	WaitEndFrame()
-	handle.updateQueued = false
 
 	Signal( handle, "ActualUpdateNestedGladiatorCard" )
 
@@ -1631,12 +1627,6 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 				}
 			}
 		}
-
-		if ( handle.presentation == eGladCardPresentation.FULL_BOX )
-		{
-			rankedScoreOrNull = handle.rankedScoreOrNull
-			rankedLadderPosOrNull = handle.rankedLadderPosOrNull
-		}
 	}
 
 	//printt( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! character:", characterOrNull == null ? "null" : ItemFlavor_GetRef( expect ItemFlavor(characterOrNull) ) )
@@ -1710,131 +1700,116 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 			fgFrameRuiAsset = $""
 		}
 	}
-
-	if ( handle.cardRui != null )
-	{
-		int rankScore = 0
-		int ladderPos = 99999
-
-		if ( handle.presentation == eGladCardPresentation.FULL_BOX )
+	
+	try{
+		if ( handle.cardRui != null )
 		{
-			if ( rankedScoreOrNull != null )
-				rankScore = expect int( rankedScoreOrNull )
-			else if ( EEHHasValidScriptStruct( handle.currentOwnerEHI ) )
-				rankScore = GetPlayerRankScoreFromEHI( handle.currentOwnerEHI )
+			RuiSetString( handle.cardRui, "playerName", playerName )
+			RuiSetInt( handle.cardRui, "teamMemberIndex", teamMemberIndex )
+			RuiSetBool( handle.cardRui, "shouldShowDetails", handle.shouldShowDetails )
 
-			if ( rankedLadderPosOrNull != null )
-				ladderPos = expect int( rankedLadderPosOrNull )
-			else if ( EEHHasValidScriptStruct( handle.currentOwnerEHI ) )
-				ladderPos = GetPlayerLadderPosFromEHI( handle.currentOwnerEHI )
-		}
+			for ( int idx = 0; idx < GLADIATOR_CARDS_NUM_FRAME_KEY_COLORS; idx++ )
+				RuiSetFloat3( handle.cardRui, "keyCol" + idx, keyColors[idx] )
 
-		RuiSetString( handle.cardRui, "playerName", playerName )
-		RuiSetInt( handle.cardRui, "teamMemberIndex", teamMemberIndex )
-		RuiSetBool( handle.cardRui, "shouldShowDetails", handle.shouldShowDetails )
-
-		for ( int idx = 0; idx < GLADIATOR_CARDS_NUM_FRAME_KEY_COLORS; idx++ )
-			RuiSetFloat3( handle.cardRui, "keyCol" + idx, keyColors[idx] )
-
-		if ( handle.isFrontFace )
-		{
-			Assert( handle.parentRui != null )
-			RuiSetBool( handle.cardRui, "isAlive", isAlive || IsLobby() )
-			#if DEVELOPER
-				RuiSetBool( handle.cardRui, "devShowSafeAreaOverlay", fileLevel.DEV_showSafeAreaOverlay )
-			#endif
-
-			var bgFrameRui = UpdateGladiatorCardNestedWidget( handle, "bgFrameInstance", handle.bgFrameNWS, bgFrameRuiAsset )
-			if ( bgFrameRui != null )
+			if ( handle.isFrontFace )
 			{
-				if ( !frameHasOwnRUI )
-				{
-					RuiSetBool( bgFrameRui, "isArtFullFrame", isArtFullFrame )
-					RuiSetImage( bgFrameRui, "bgImage", bgFrameImageAsset )
-				}
-			}
+				Assert( handle.parentRui != null )
+				RuiSetBool( handle.cardRui, "isAlive", isAlive || IsLobby() )
+				#if DEVELOPER
+					RuiSetBool( handle.cardRui, "devShowSafeAreaOverlay", fileLevel.DEV_showSafeAreaOverlay )
+				#endif
 
-			var fgFrameRui = UpdateGladiatorCardNestedWidget( handle, "fgFrameInstance", handle.fgFrameNWS, fgFrameRuiAsset )
-			if ( fgFrameRui != null )
-			{
-				//RuiSetString( fgFrameRui, "playerName", playerName )
-				int stancePIPSlotIndex = -1
-				if ( handle.characterCaptureStateOrNull != null )
+				var bgFrameRui = UpdateGladiatorCardNestedWidget( handle, "bgFrameInstance", handle.bgFrameNWS, bgFrameRuiAsset )
+				if ( bgFrameRui != null )
 				{
-					CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
-					if ( ccs.stancePIPSlotStateOrNull != null )
-						stancePIPSlotIndex = PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) )
-
-					if ( handle.onStancePIPSlotReadyFunc == null )
+					if ( !frameHasOwnRUI )
 					{
-						handle.onStancePIPSlotReadyFunc = void function( int stancePIPSlotIndex, float movingSeqEndTime ) : ( handle )
-						{
-							// start of closure
-							if ( handle.cardRui != null && handle.fgFrameNWS.rui != null )
-							{
-								RuiSetGameTime( handle.cardRui, "movingSeqEndTime", movingSeqEndTime )
-								RuiSetInt( handle.fgFrameNWS.rui, "stancePIPSlot", stancePIPSlotIndex )
-
-								//CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
-								//printt( "#SETTTTT", stancePIPSlotIndex, ccs.key, handle.currentOwnerEHI )
-							}
-							// end of closure
-						}
+						RuiSetBool( bgFrameRui, "isArtFullFrame", isArtFullFrame )
+						RuiSetImage( bgFrameRui, "bgImage", bgFrameImageAsset )
 					}
-					if ( !(handle.onStancePIPSlotReadyFunc in ccs.onPIPSlotReadyFuncSet) )
-						ccs.onPIPSlotReadyFuncSet[handle.onStancePIPSlotReadyFunc] <- true
 				}
-				RuiSetInt( fgFrameRui, "stancePIPSlot", stancePIPSlotIndex )
 
-				if ( !frameHasOwnRUI )
+				var fgFrameRui = UpdateGladiatorCardNestedWidget( handle, "fgFrameInstance", handle.fgFrameNWS, fgFrameRuiAsset )
+				if ( fgFrameRui != null )
 				{
-					RuiSetBool( fgFrameRui, "isArtFullFrame", isArtFullFrame )
-					RuiSetImage( fgFrameRui, "fgImage", fgFrameImageAsset )
-					RuiSetFloat( fgFrameRui, "fgImageBlend", fgFrameBlend )
-					RuiSetFloat( fgFrameRui, "fgImagePremul", fgFramePremul )
-					RuiSetImage( fgFrameRui, "bgImage", bgFrameImageAsset )
+					//RuiSetString( fgFrameRui, "playerName", playerName )
+					int stancePIPSlotIndex = -1
+					if ( handle.characterCaptureStateOrNull != null )
+					{
+						CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
+						if ( ccs.stancePIPSlotStateOrNull != null )
+							stancePIPSlotIndex = PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) )
+
+						if ( handle.onStancePIPSlotReadyFunc == null )
+						{
+							handle.onStancePIPSlotReadyFunc = void function( int stancePIPSlotIndex, float movingSeqEndTime ) : ( handle )
+							{
+								// start of closure
+								if ( handle.cardRui != null && handle.fgFrameNWS.rui != null )
+								{
+									RuiSetGameTime( handle.cardRui, "movingSeqEndTime", movingSeqEndTime )
+									RuiSetInt( handle.fgFrameNWS.rui, "stancePIPSlot", stancePIPSlotIndex )
+
+									//CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
+									//printt( "#SETTTTT", stancePIPSlotIndex, ccs.key, handle.currentOwnerEHI )
+								}
+								// end of closure
+							}
+						}
+						if ( !(handle.onStancePIPSlotReadyFunc in ccs.onPIPSlotReadyFuncSet) )
+							ccs.onPIPSlotReadyFuncSet[handle.onStancePIPSlotReadyFunc] <- true
+					}
+					RuiSetInt( fgFrameRui, "stancePIPSlot", stancePIPSlotIndex )
+
+					if ( !frameHasOwnRUI )
+					{
+						RuiSetBool( fgFrameRui, "isArtFullFrame", isArtFullFrame )
+						RuiSetImage( fgFrameRui, "fgImage", fgFrameImageAsset )
+						RuiSetFloat( fgFrameRui, "fgImageBlend", fgFrameBlend )
+						RuiSetFloat( fgFrameRui, "fgImagePremul", fgFramePremul )
+						RuiSetImage( fgFrameRui, "bgImage", bgFrameImageAsset )
+					}
+				}
+			}
+
+			if ( handle.isBackFace )
+			{
+				UpdateStatTrackersOfNestedGladiatorCard( handle, characterOrNull )
+			}
+
+			if ( handle.presentation == eGladCardPresentation.FULL_BOX )
+			{
+				RuiSetBool( handle.cardRui, "frameHasOwnRUI", frameHasOwnRUI )
+
+
+				RuiSetBool( handle.cardRui, "isKiller", handle.isKiller )
+				RuiSetBool( handle.cardRui, "disableBlur", handle.disableBlur )
+			}
+
+			if ( handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL
+					|| handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_ANIMATED )
+			{
+				RuiSetInt( handle.cardRui, "teamMemberIndex", -1 )
+				RuiSetBool( handle.cardRui, "isChampion", (handle.currentOwnerEHI == GetGlobalNetInt( "championEEH" )) )
+			}
+
+			for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
+			{
+				var badgeRui = UpdateGladiatorCardNestedWidget( handle, "badge" + badgeIndex + "Instance", handle.badgeNWSList[badgeIndex], badgeRuiAssets[badgeIndex] )
+				if ( badgeRui != null )
+				{
+					RuiSetInt( badgeRui, "tier", badgeTiers[badgeIndex] )
+					if ( badgeImageAssets[badgeIndex] != $"" )
+						RuiSetImage( badgeRui, "img", badgeImageAssets[badgeIndex] )
 				}
 			}
 		}
-
-		if ( handle.isBackFace )
-		{
-			UpdateStatTrackersOfNestedGladiatorCard( handle, characterOrNull )
-		}
-
-		if ( handle.presentation == eGladCardPresentation.FULL_BOX )
-		{
-			RuiSetBool( handle.cardRui, "frameHasOwnRUI", frameHasOwnRUI )
-
-			bool showRanked = IsRankedGame()
-			if ( handle.rankedForceShowOrNull != null )
-				showRanked = expect bool( handle.rankedForceShowOrNull )
-			RuiSetBool( handle.cardRui, "showRanked", showRanked )
-			if ( showRanked )
-				PopulateRuiWithRankedBadgeDetails( handle.cardRui, rankScore, ladderPos )
-
-			RuiSetBool( handle.cardRui, "isKiller", handle.isKiller )
-			RuiSetBool( handle.cardRui, "disableBlur", handle.disableBlur )
-		}
-
-		if ( handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_STILL
-				|| handle.situation == eGladCardDisplaySituation.GAME_INTRO_CHAMPION_SQUAD_ANIMATED )
-		{
-			RuiSetInt( handle.cardRui, "teamMemberIndex", -1 )
-			RuiSetBool( handle.cardRui, "isChampion", (handle.currentOwnerEHI == GetGlobalNetInt( "championEEH" )) )
-		}
-
-		for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
-		{
-			var badgeRui = UpdateGladiatorCardNestedWidget( handle, "badge" + badgeIndex + "Instance", handle.badgeNWSList[badgeIndex], badgeRuiAssets[badgeIndex] )
-			if ( badgeRui != null )
-			{
-				RuiSetInt( badgeRui, "tier", badgeTiers[badgeIndex] )
-				if ( badgeImageAssets[badgeIndex] != $"" )
-					RuiSetImage( badgeRui, "img", badgeImageAssets[badgeIndex] )
-			}
-		}
+	}catch(e420)
+	{
+		printt("gladiators error, debug it" )
 	}
+		
+	handle.updateQueued = false
 }
 #endif
 
@@ -1846,7 +1821,7 @@ var function UpdateGladiatorCardNestedWidget( NestedGladiatorCardHandle handle, 
 	{
 		if ( nws.rui != null )
 		{
-			RuiDestroyNested( handle.cardRui, argName )
+			RuiDestroyNestedIfAlive( handle.cardRui, argName )
 			nws.rui = null
 			nws.ruiAsset = $""
 		}

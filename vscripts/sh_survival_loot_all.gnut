@@ -245,6 +245,13 @@ bool function IsNewLootEnabled( string ref )
 {
 	switch( ref )
 	{
+		case "armor_pickup_lv4_all_fast":
+			if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+				return false
+			else
+				return true
+		break
+
 		case "":
 		case "mp_weapon_sentinel":
 		case "incapshield_pickup_lv0":

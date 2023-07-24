@@ -50,6 +50,10 @@ void function GamemodeSurvival_Init()
 	
 	SetConVarFloat( "sv_usercmd_max_queued", 750 )
 	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 20 )
+
+	//Increase client command limit to 60
+	SetConVarInt("sv_quota_stringCmdsPerSecond", 60)
+
 	SetConVarBool( "sv_stressbots", false )
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
@@ -85,7 +89,7 @@ void function Survival_Leviathan_ConsiderLookAtEnt(entity ent)
 
 void function RespawnPlayerInDropship( entity player )
 {
-	const float POS_OFFSET = -500.0 // Offset from dropship's origin
+	const float POS_OFFSET = -525.0 // Offset from dropship's origin
 
 	entity dropship = Sur_GetPlaneEnt()
 
@@ -120,6 +124,12 @@ void function RespawnPlayerInDropship( entity player )
 		player.SetPlayerNetBool( "isJumpmaster", true )
 
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+
+	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+	{
+		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+	}
 }
 
 void function Sequence_Playing()
@@ -201,7 +211,7 @@ void function Sequence_Playing()
 				}
 			}
 
-			if ( !foundJumpmaster ) // No eligible jumpmasters? Shouldn't happen, but just in case
+			if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
 				jumpMaster = teamMembers.getrandom()
 
 			if ( jumpMaster != null )
@@ -228,7 +238,7 @@ void function Sequence_Playing()
 		SetGlobalNetTime( "PlaneDoorsOpenTime", referenceTime + timeDoorOpenWait )
 		SetGlobalNetTime( "PlaneDoorsCloseTime", referenceTime + timeDoorOpenWait + timeDoorCloseWait )
 
-		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, 0.0 )
+		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME, 0.0, 0.0 )
 
 		wait CharSelect_GetOutroTransitionDuration()
 
@@ -239,7 +249,7 @@ void function Sequence_Playing()
 		foreach ( player in GetPlayerArray_AliveConnected() )
 			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 
-		wait DROP_TOTAL_TIME
+		wait DROP_TOTAL_TIME - CharSelect_GetOutroTransitionDuration()
 
 		FlagClear( "PlaneDrop_Respawn_SetUseCallback" )
 
@@ -250,8 +260,6 @@ void function Sequence_Playing()
 			if ( player.GetPlayerNetBool( "playerInPlane" ) )
 				Survival_DropPlayerFromPlane_UseCallback( player )
 		}
-
-		wait DROP_TIMEOUT_TIME
 
 		centerEnt.Destroy()
 		minimapPlaneEnt.Destroy()
@@ -363,7 +371,7 @@ void function Sequence_Epilogue()
 	// if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
 		// GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 	// else
-		// ShutdownHostGame()
+		// DestroyServer()
 }
 
 void function UpdateMatchSummaryPersistentVars( int team )
@@ -408,7 +416,7 @@ void function HandleSquadElimination( int team )
 void function PlayerFullyDoomed( entity player )
 {
 	player.p.respawnChanceExpiryTime = Time()
-	player.p.squadRank = Survival_GetCurrentRank( player )
+	player.p.squadRank = 0 // Survival_GetCurrentRank( player )
 
 	//StatsHook_RecordPlacementStats( player )
 }
@@ -911,9 +919,6 @@ void function OnClientConnected( entity player )
 			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
 			{
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
-
-				SetTeam( player, TEAM_SPECTATOR )
-				
 				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
 				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray_Alive().len() )
 				player.SetSpecReplayDelay( 1 )

@@ -14,6 +14,7 @@ const float JUMP_PAD_VIEW_PUNCH_RAND_TITAN = 20.0
 const TEAM_JUMPJET_DBL = $"P_team_jump_jet_ON_trails"
 const ENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_ON_trails"
 const asset JUMP_PAD_MODEL = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl"
+const int JUMP_PAD_HEALTH = 200
 
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
 const float JUMP_PAD_ICON_HEIGHT_OFFSET = 48.0
@@ -116,7 +117,7 @@ void function JumpPad_consumeDoubleJump( entity player )
 	RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
 }
 
-const float JUMP_PAD_PUSH_VELOCITY = 1200
+const float JUMP_PAD_PUSH_VELOCITY = 1100
 const float JUMP_PAD_VIEW_PUNCH_SOFT = 35.0
 const float JUMP_PAD_VIEW_PUNCH_HARD = 4.0
 const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
@@ -135,7 +136,7 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 	}
 	jumpPad.SetParent( mover )
 	
-	thread JumpPad_PlayAnims( jumpPad, mover )
+	waitthread JumpPad_PlayAnims( jumpPad, mover )
 	
 	entity trigger = CreateEntity( "trigger_cylinder_heavy" )	
 	trigger.SetOwner( jumpPad )
@@ -158,7 +159,12 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 
 	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, "GEYSER_PING_SCRIPT_NAME" ) // todo: replace geyser_ping_script_name --
 	// traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
-
+	jumpPad.SetMaxHealth( JUMP_PAD_HEALTH )
+	jumpPad.SetHealth( JUMP_PAD_HEALTH )
+	jumpPad.SetDamageNotifications( false )
+	jumpPad.SetDeathNotifications( false )
+	//jumpPad.SetArmorType( ARMOR_TYPE_HEAVY )
+	
 	AddEntityCallback_OnDamaged( jumpPad, JumpPad_OnTakeDamage )
 	AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
 }
@@ -190,27 +196,54 @@ void function JumpPadsWeaponJumppad_CreatedCallback( entity jumpPad )
 void function JumpPad_OnDeath( entity ent, var damageInfo )
 {
   //todo: Explosion and sound 
-  EmitSoundOnEntity( ent, "JumpPad_Explo")
+  EmitSoundAtPosition( TEAM_UNASSIGNED, ent.GetOrigin(), "JumpPad_Explo" )
   PlayImpactFXTable( ent.GetOrigin(), ent, "titan_exp_ground" )
 }
 
 void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
 {
+	if( !IsValid( ent ) )
+		return
+
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
 
 	if ( IsValid( attacker ) && attacker.IsPlayer() )
 	{
-		PlayerDamageFeedback( ent, damageInfo, 0 )
-		UpdateDamageState( ent, damageInfo )
+		attacker.NotifyDidDamage
+		(
+			ent,
+			DamageInfo_GetHitBox( damageInfo ),
+			DamageInfo_GetDamagePosition( damageInfo ), 
+			DamageInfo_GetCustomDamageType( damageInfo ),
+			DamageInfo_GetDamage( damageInfo ),
+			DamageInfo_GetDamageFlags( damageInfo ), 
+			DamageInfo_GetHitGroup( damageInfo ),
+			DamageInfo_GetWeapon( damageInfo ), 
+			DamageInfo_GetDistFromAttackOrigin( damageInfo )
+		)
 	}
+
+	// Handle damage, props get destroyed on death, we don't want that.
+	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if( nextHealth > 0 )
+	{
+		ent.SetHealth(nextHealth)
+		return
+	}
+	
+	// "Died"
+	// Don't take damage anymore
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.kv.solid = 0
+	DamageInfo_SetDamage( damageInfo, 0)
+	ent.Die()
 }
 
 void function JumpPad_PlayAnims( entity jumpPad, entity mover )
 {
   EmitSoundOnEntity( jumpPad, "JumpPad_Deploy_Unpack" )
   PlayAnim( jumpPad, "prop_octane_jump_pad_deploy", mover )
-  PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )   
+  thread PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )   
 }
 
 void function JumpPad_PlayLaunchAnim( entity trigger )

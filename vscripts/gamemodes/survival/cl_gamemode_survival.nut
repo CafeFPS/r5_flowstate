@@ -295,6 +295,9 @@ struct
 
 void function ClGamemodeSurvival_Init()
 {
+	//Increase client command limit to 60
+	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
+
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
 	#if(false)
@@ -431,7 +434,7 @@ void function ClGamemodeSurvival_Init()
 
 void function Survival_EntitiesDidLoad()
 {
-	SetConVarInt( "fps_max", 190 ) //remove me when 190 fps fix arrives
+	//SetConVarInt( "fps_max", 190 ) //remove me when 190 fps fix arrives
 	
 	InitInWorldScreens()
 
@@ -454,7 +457,7 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 	Signal( clGlobal.signalDummy, "RestartLaserSightThread" )
 	EndSignal( clGlobal.signalDummy, "RestartLaserSightThread" )
 	
-	entity player = GetLocalClientPlayer()
+	entity player = GetLocalViewPlayer()
 	
 	entity weapon
 	entity weapon2
@@ -464,16 +467,23 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 	bool hasLaser = false
 	bool exitCheck = false
 	e["fxHandle"] <- -1
+	bool changedWeapon = false
 
-	while ( IsValid( player ) )
+	while ( true )
 	{
+		WaitFrame()
+		
+		if( !IsValid( player ) )
+			break
+
 		weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		changedWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == activeWeapon ? false : true
 		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		mods.clear()
 
 		if( IsValid( activeWeapon ) )
-			mods = activeWeapon.GetMods()
+			mods = clone activeWeapon.GetMods()
 		
 		exitCheck = false
 		hasLaser = false
@@ -498,7 +508,7 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 		}
 		
 		// #if DEVELOPER
-		// printt("DEBUG LASER - ID: " + e["fxHandle"] + " - hasLaser: " + hasLaser )
+		// printt("DEBUG LASER - ID: " + e["fxHandle"] + " - hasLaser: " + hasLaser + "\n Current active weapon: " + activeWeapon )
 		// #endif
 		
 		if( !IsAlive( player ) || 
@@ -511,23 +521,21 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 			!hasLaser || 
 			player.Player_IsFreefalling() ||
 			player != GetLocalViewPlayer() ||
-			player.IsThirdPersonShoulderModeOn() )
+			player.IsThirdPersonShoulderModeOn() ||
+			changedWeapon )
 		{
 			if ( e["fxHandle"] != -1 )
 			{
 				EffectStop( e["fxHandle"], true, false )
 				e["fxHandle"] = -1
 			}
-			wait 0.05
 			continue
 		}
-		
 		
 		if ( hasLaser && e["fxHandle"] == -1 )
 		{
 			e["fxHandle"] = activeWeapon.PlayWeaponEffectReturnViewEffectHandle( $"P_wpn_lasercannon_aim", $"", "muzzle_flash" )
 		}
-		wait 0.05
 	}
 }
 
@@ -1484,8 +1492,8 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 
 	if ( player == GetLocalViewPlayer() )
 	{
-		if( tier > 5 )
-			tier = 5
+		// if( tier > 5 )
+			// tier = 5
 		
 		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
 		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
@@ -3175,6 +3183,8 @@ void function WaitingForPlayers_CreateCustomCameras()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), true)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
 	
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_GamemodeFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/gamemode")
@@ -3196,6 +3206,8 @@ void function DisableCustomMapAndGamemodeNameFrames()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), false)
+	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), false)
 	
 }
@@ -3239,21 +3251,21 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 		case "mp_rr_desertlands_64k_x_64k":
 		case "mp_rr_desertlands_64k_x_64k_nx":
 		case "mp_rr_desertlands_64k_x_64k_tt":
-			cutsceneSpawns.append(NewCameraPair(<-17572.3301, 11646.5137, -3777.35034>, <0, 155.688446, 0>))
-			cutsceneSpawns.append(NewCameraPair(<-15497.5586, 25198.2129, -4041.42749>, <0, 9.20065498, 0>))
-			cutsceneSpawns.append(NewCameraPair(<28017.6992, 8541.48926, -3296.67017>, <0, 106.955139, 0>))
-			cutsceneSpawns.append(NewCameraPair(<10490.2441, 6386.27734, -4340.8833>, <-23, -120.848991, 0>))
-			cutsceneSpawns.append(NewCameraPair(<-1528.49048, -7687.84863, -4087.68896>, <0, -7.29582596, 0>))
-			cutsceneSpawns.append(NewCameraPair(<4207.39697, -21928.7891, -3208.28174>, <0, -16.8694267, 0>))
+			cutsceneSpawns.append(NewCameraPair( <-17572.3301, 11646.5137, -3777.35034>, <0, 155.688446, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <-15497.5586, 25198.2129, -4041.42749>, <0, 9.20065498, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <28017.6992, 8541.48926, -3296.67017>, <0, 106.955139, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <10490.2441, 6386.27734, -4340.8833>, <-23, -120.848991, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <-1528.49048, -7687.84863, -4087.68896>, <0, -7.29582596, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <4207.39697, -21928.7891, -3208.28174>, <0, -16.8694267, 0> ))
 		break
 		
 		case "mp_rr_canyonlands_64k_x_64k":
 		case "mp_rr_canyonlands_mu1":
 		case "mp_rr_canyonlands_mu1_night":
-			cutsceneSpawns.append(NewCameraPair(<-5994.90723, 18442.8027, 2651.94556>, <-10, -22.33891964, 0>))
-			cutsceneSpawns.append(NewCameraPair(<-15657.6152, 1151.25757, 2797.65894>, <0, 136.286438, 0>))
-			cutsceneSpawns.append(NewCameraPair(<-19287.0762, -13268.7295, 2853.4231>, <0, 143.08432, 0>))
-			cutsceneSpawns.append(NewCameraPair(<27498.7637, 7363.46045, 2946.03491>, <0, 112.879173, 0>))
+			cutsceneSpawns.append(NewCameraPair( <-6049.01807, 18478.2285, 2771.03174>, <0, -34.2617683, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <-15686.7402, 1259.25342, 2888.13013>, <0, 143.531845, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <-26376.4258, -3842.12036, 2760.02759>, <0, 52.9255295, 0> ))
+			cutsceneSpawns.append(NewCameraPair( <28823.8867, 4136.58398, 4171.0459>, <0, -135.179871, 0> ))
 		break
 	}
 	

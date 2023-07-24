@@ -173,7 +173,7 @@ bool function TryAttachItem( int action, entity pickup, entity player, int picku
 
 bool function TryPickupItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
-	//printt("TryPickupItem")
+	printt( "TryPickupItem DEBUG: ", action, pickup, player, pickupFlags, deathBox, desiredCount )
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
@@ -197,7 +197,7 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 		default:
 			pickedUp = PickupBackpackItem( pickup, player, pickupFlags )
 	}
-	//printt("TryPickupItem", pickedUp)
+	printt("TryPickupItem", pickedUp)
 
 #if CLIENT
 	if ( !pickedUp )

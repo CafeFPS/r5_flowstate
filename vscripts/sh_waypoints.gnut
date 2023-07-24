@@ -1474,8 +1474,8 @@ void function InstanceLootPing( entity wp )
 	RuiSetInt( rui, "lootTier", lootData.tier )
 	RuiSetBool( rui, "drawHeightLine", true )
 	
-	if( lootData.tier > 5 )
-		RuiSetInt( rui, "lootTier", 5 )
+	// if( lootData.tier > 5 )
+		// RuiSetInt( rui, "lootTier", 5 )
 		
 	if ( lootData.lootType == eLootType.MAINWEAPON )
 	{
@@ -1540,16 +1540,16 @@ void function InstanceLootPing( entity wp )
 		wp.wp.ruiMinimap = AddLocationPingToMinimapNoClamp( lootItem, lootData.hudIcon, MINIMAP_SIZE_SMALL, <1, 1, 0> )
 		RuiSetInt( wp.wp.ruiMinimap, "lootTier", lootData.tier )
 
-		if( lootData.tier > 5 )
-			RuiSetInt( wp.wp.ruiMinimap, "lootTier", 5 )
+		// if( lootData.tier > 5 )
+			// RuiSetInt( wp.wp.ruiMinimap, "lootTier", 5 )
 
 		Assert( wp.wp.ruiFullmap == null )
 		wp.wp.ruiFullmap = AddLocationPingToFullmap( lootItem, lootData.hudIcon, FULLMAP_SIZE_SMALL, <1, 1, 0> )
 		Fullmap_AddRui( wp.wp.ruiFullmap )
 		RuiSetInt( wp.wp.ruiFullmap, "lootTier", lootData.tier )
 
-		if( lootData.tier > 5 )
-			RuiSetInt( wp.wp.ruiMinimap, "lootTier", 5 )
+		// if( lootData.tier > 5 )
+			// RuiSetInt( wp.wp.ruiMinimap, "lootTier", 5 )
 	}
 
 	if ( !IsWatchingReplay() )

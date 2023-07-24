@@ -48,7 +48,10 @@ void function SpawnMultipleLootTicksForMap()
     for(int i = 0; i < maxTicksToSpawn; i++)
     {
         entity lzEnt = tickSpawns[i]
-        SpawnLootTick(lzEnt.GetOrigin() + <0, 0, 50>, lzEnt.GetAngles())
+        SpawnLootTick( lzEnt.GetOrigin() + <0, 0, 50>, Vector( 0, 0, 0 ) )
+		#if DEVELOPER
+		printt( "spawned tick at " + lzEnt.GetOrigin() )
+		#endif
     }
 }
 

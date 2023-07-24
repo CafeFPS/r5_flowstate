@@ -79,11 +79,11 @@ const int TRAIN_ACCELERATION = 50
 const int TRAIN_INIT_SPEED = 500
 const int TRAIN_MAX_SPEED = 500
 const int TRAIN_CAR_OFFSET = 840
-const asset TRAIN_POI_BEAM = $"P_ar_hot_zone_far"
+const asset TRAIN_POI_BEAM = $"P_ar_loot_train_far_blink"
 const int TRAIN_DURATION_TO_DEPART = 40
 const int TRAIN_DISTANCE_TO_BEGIN_STOP = 2500
-bool TRAIN_STOP_AT_STATIONS = true
-bool TRAIN_ENABLE_STOP_BUTTON = false
+const bool TRAIN_STOP_AT_STATIONS = true
+const bool TRAIN_ENABLE_STOP_BUTTON = false
 #endif
 
 struct
@@ -172,7 +172,7 @@ void function Train_StartTrainMovement()
 			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && GameRules_GetGameMode() == SURVIVAL)
 			{
 				ClearLootBinContents( bin )
-					AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 ) )
+				AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_HotZone", 4 ) )
 			}
 
 			entity parentPoint = CreateEntity( "script_mover_lightweight" )
@@ -202,7 +202,7 @@ void function Train_StartTrainMovement()
 	trainhead.Train_ClearBreadcrumbs()
 	
 	// Create the fx
-	entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TRAIN_POI_BEAM ), trainhead.GetOrigin() + <0,0,5>, <90,0,0> )
+	entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TRAIN_POI_BEAM ), trainhead.GetOrigin() + <0,0,5>, <0,0,0> )
 	fx.SetParent( trainhead )
 	//EffectSetControlPointVector( fx, 1, <1,1,1> )
 	
@@ -985,6 +985,8 @@ void function Dev_TpPlayerZeroToTrain()
 
 	entity p = GetPlayerArray()[0];
 	p.SetOrigin(trainhead.GetOrigin() + <0,0,256>)
+	
+	printt( "player tp to train ent " + trainhead ) 
 }
 
 #endif // if DEVELOPER

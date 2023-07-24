@@ -349,7 +349,7 @@ void function OnGroundListScroll( var panel, float scrollValue )
 	file.lastScrollTime = Time()
 
 	if ( file.trackedScrollValue > 7.0 )
-		RunClientScript( "GroundListUpdateNextFrame" )
+		RunClientScript( "GroundListResetNextFrame" )
 }
 
 

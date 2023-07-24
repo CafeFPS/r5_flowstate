@@ -317,11 +317,14 @@ void function JoinMatch(var button, table<int, string> StringStages)
 		EmitUISound("UI_Menu_Apex_Launch")
 		switch(quickplay.quickPlayType)
 		{
+			#if LISTEN_SERVER
+			// Amos: rework this?
 			case JoinType.QuickPlay:
 				SetSearchingText("Starting Match")
 				wait 2
 				CreateServer(GetUIMapName(g_SelectedQuickPlayMap), "", g_SelectedQuickPlayMap, g_SelectedQuickPlay, eServerVisibility.OFFLINE)
 				break;
+			#endif // LISTEN_SERVER
 			case JoinType.TopServerJoin:
 				SetSearchingText("Joining Match")
 				wait 2

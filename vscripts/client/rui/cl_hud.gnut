@@ -255,13 +255,13 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	bool isShadowShot    	= (damageType & DF_SHADOW_DAMAGE) ? true: false
 	bool isOvershieldShot	= (damageType & DF_OVERSHIELD) ? true : false
 
-	if( victim.IsPlayer() )
-	{
-		LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
+	// if( victim.IsPlayer() )
+	// {
+		// LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
 		
-		if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
-			isOvershieldShot = true
-	}
+		// if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
+			// isOvershieldShot = true
+	// }
 		
 	int sortKey = (file.lastSortKey++) % 100
 

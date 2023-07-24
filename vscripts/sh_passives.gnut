@@ -578,13 +578,17 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 
 	if ( didHave )
 	{
+		#if DEVELOPER
 		printt( "Pilot Blood passive removed for player" + player )
+		#endif
 		Signal( player, "EndPilotBloodThread" )
 	}
 
 	if ( nowHas )
 	{
+		#if DEVELOPER
 		printt( "Pilot Blood passive enabled for player" + player )
+		#endif
 		thread PilotBlood_Passive_Body( player )
 	}
 }
@@ -632,7 +636,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( didHave )
 	{
 		#if DEVELOPER
-		printt("[DEBUG] removed fortified perk for player ", player)
+		printt("Fortified passive granted! ", player)
 		#endif
 		RemoveEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -640,7 +644,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt("[DEBUG] player has fortified perk ", player)
+		printt("Fortified passive granted! ", player)
 		#endif
 		AddEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -690,13 +694,17 @@ void function Bloodhound_PassiveToggle( entity player, int passive, bool didHave
 
 	if ( didHave )
 	{
-		printt("Bloodhound passive removed")
+		#if DEVELOPER
+		printt("Tracking Vision passive removed ", player)
+		#endif
 		StatusEffect_StopAllOfType( player, eStatusEffect.tracking_vision)
 	}
 
 	if ( nowHas )
 	{
-		printt("Bloodhound passive granted!")
+		#if DEVELOPER
+		printt("Tracking Vision passive granted! ", player)
+		#endif
 		StatusEffect_AddEndless( player, eStatusEffect.tracking_vision, 1 )
 	}
 }

@@ -110,12 +110,22 @@ array<string> function Flowstate_BuildLifelineCarePackageLoot(entity ownerPlayer
 	array<LootData> armors = SURVIVAL_Loot_GetByType( eLootType.ARMOR )
 	array<LootData> playerArmorLoot //upgrade for each player
 	array<string> finalLoot
-	
+
 	foreach( mate in GetPlayerArrayOfTeam( ownerPlayer.GetTeam() ) )
 	{
 		string currentshield = EquipmentSlot_GetLootRefForSlot( mate, "armor" )
+		int currentShieldTier = EquipmentSlot_GetEquipmentTier( mate, "armor" )
 
 		bool found = false
+
+		if( currentShieldTier >= 3 && !found )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( "armor_pickup_lv3" )
+			playerArmorLoot.append( data )
+			found = true
+			continue
+		}
+
 		foreach( armor in armors )
 		{
 			if( armor.tier == 1 )
@@ -123,7 +133,7 @@ array<string> function Flowstate_BuildLifelineCarePackageLoot(entity ownerPlayer
 			
 			if( found )
 				continue
-			
+
 			if( SURVIVAL_IsLootRefAnUpgrade( mate, armor ) )
 			{
 				playerArmorLoot.append( armor )

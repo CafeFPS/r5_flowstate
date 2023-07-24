@@ -43,7 +43,7 @@
 	"charge_levels"					"4"
 	"charge_level_base"				"1"
 
-	"rui_crosshair_index"			"1"
+	"rui_crosshair_index"			"0"
 
 	// Enable Hopup RUIs
 	"ui20_enable"					"1"

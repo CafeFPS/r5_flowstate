@@ -383,8 +383,9 @@ void function HandleDropPodUse( entity dropPod, entity player )
 
 	if ( !DropPod_IsOpen( dropPod ) )
 		thread DropPod_PlayOpenSequence( dropPod, player )
-	if ( IsValid( player ) )
-		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.DROPPOD, dropPod, dropPod.GetWorldSpaceCenter(), player.GetTeam(), player )
+
+	//if ( IsValid( player ) )
+	//	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.DROPPOD, dropPod, dropPod.GetWorldSpaceCenter(), player.GetTeam(), player )
 }
 
 void function DropPod_PlayOpenSequence( entity dropPod, entity player )

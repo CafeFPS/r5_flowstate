@@ -104,7 +104,7 @@ void function ClGameState_Init()
 	AddOnSpectatorTargetChangedCallback( GameState_SpectatorTargetChanged )
 
 	AddCallback_OnClientScriptInit( ClGameState_AddClient )
-	AddCallback_OnScoreboardCreated( Hud_SetModeEmblem )
+	AddCallback_GameStateEnter( eGameState.Playing, Hud_SetModeEmblem )
 
 	CreateScoreRUI()
 }

@@ -96,6 +96,25 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 
 		#if SERVER
 		entity prop = CreatePropScript_NoDispatchSpawn( HOLO_SPRAY_BASE, origin, GoodAngles, 6 )
+
+		if( projectile.GetParent() ) // Parent to moving ents like train
+		{
+			#if DEVELOPER
+			printt( "Holo spray parented to moving ent" )
+			#endif
+
+			entity parentPoint = CreateEntity( "script_mover_lightweight" )
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( prop.GetModelName() )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( origin )
+			parentPoint.SetAngles( GoodAngles )
+			DispatchSpawn( parentPoint )
+			parentPoint.SetParent( projectile.GetParent() )
+			parentPoint.Hide()
+			prop.SetParent(parentPoint)
+		}
+
 		prop.SetScriptName( "flowstate_holo_spray" )
 		
 		entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( LIGHT_PARTICLE_TEST ), origin, Vector(-90,0,0) )
@@ -109,7 +128,7 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 
 		bool shouldDestroyFirstHolo = false
 		
-		if(player.p.holoSpraysBase.len() == 4)
+		if(player.p.holoSpraysBase.len() == 3)
 			shouldDestroyFirstHolo = true
 
 		if(shouldDestroyFirstHolo)
@@ -122,8 +141,10 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 				foreach(Fx in holoToDestroy.e.holoSpraysFX)
 					if(IsValid(Fx))
 						Fx.Destroy()
-				
 				holoToDestroy.Destroy()
+				
+				if( IsValid( holoToDestroy.GetParent() ) )
+					holoToDestroy.GetParent().Destroy()
 			}
 		}
 		
@@ -171,22 +192,6 @@ void function OnWeaponTossPrep_WeaponEmoteProjector( entity weapon, WeaponTossPr
 }
 
 #if CLIENT
-void function MoverCleanup( entity wp, entity mover )
-{
-	wp.EndSignal( "OnDestroy" )
-	mover.EndSignal( "OnDestroy" )
-
-	OnThreadEnd(
-		function() : ( mover) {
-			if ( IsValid( mover ) )
-				mover.Destroy()
-		}
-	)
-
-	while ( IsValid( wp ) )
-		wait 0.1
-}
-
 void function HoloSpray_OnUse( int propEhandle, int choice )
 {
 	thread function () : ( propEhandle, choice )
@@ -264,27 +269,36 @@ void function EmoteSetAngles(entity prop, var topo, vector origin)
 	OnThreadEnd(
 		function() : ( topo ) {
 			if(topo != null)
-				RuiDestroyIfAlive(topo)
+				RuiTopology_Destroy( topo )
 		}
 	)
 	
 	while( IsValid(prop) )
 	{
+		WaitFrame()
+		
+		if( !IsValid( prop ) )
+			break
+
 		entity player = GetLocalViewPlayer()
 		vector camPos = player.CameraPosition()
 		vector camAng = player.CameraAngles()
 		vector closestPoint    = GetClosestPointOnLine( camPos, camPos + (AnglesToRight( camAng ) * 100.0), origin )		
 		angles = VectorToAngles( origin - closestPoint )
 		
+		float width = 40
+		float height = 40
+		
+		origin = prop.GetOrigin() + (AnglesToUp( angles )*-1) * (height*0.5)
+		origin.z += 110
+	
 		if (  player.GetAdsFraction() > 0.99 ) //player adsing? hide it
 		{
 			UpdateOrientedTopologyPos(topo, origin, Vector( 90 * ( player.GetAdsFraction() - 0.1), angles.y, 0), 60, 60)
+			continue
 		}
-		else
-		{
-			UpdateOrientedTopologyPos(topo, origin, Vector(0,angles.y,0), 60, 60)
-		}
-		WaitFrame()
+		
+		UpdateOrientedTopologyPos(topo, origin, Vector(0,angles.y,0), 60, 60)
 	}
 }
 #endif

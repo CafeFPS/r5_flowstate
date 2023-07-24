@@ -689,6 +689,9 @@ void function OnGroundLootSpawned( entity ent )
 
 	int angleZ = 0
 
+	if( !ShouldSpawnThisLoot( itemRef ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		itemRef = "armor_pickup_lv1"
+
 	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
 }
 
@@ -1557,14 +1560,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
 		
 		player.HolsterWeapon()
-		// if( player.IsSprinting() )
-		// {
-			// // player.MovementDisable()
-			// // // ClientCommand( player, "-forward" )
-			// // ClientCommand( player, "-speed" )
-			// // player.DisableWeapon()
-		// }
-		
+
 		if ( IsValid( deathBox ) )
 		{
 			int weaponSlot = es.weaponSlot
@@ -1650,30 +1646,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{
 		printt( "DEBUG THIS - Failed to attach mod on give main weapon" )
 	}
-	
-	// if( player.IsSprinting() ) //Hack. I hate this. Colombia
-	// {
-		// // player.SetMoveSpeedScale( 1 )
-		// // player.ForceAutoSprintOff()
-		// // ClientCommand( player, "-speed" )
-		// thread function () : (player )
-		// {
-			// WaitFrame()
-			// player.EnableWeaponWithSlowDeploy()
-		// }()
-	// }
-	// else
-	
-	player.DeployWeapon()
-	// player.DelayEnableWeaponWithSlowDeploy( 1 )
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
 
-		// weapon.StartCustomActivity("ACT_VM_DRAW", 0)
-	
-	// weapon.SetNextAttackAllowedTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) )
-	// weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) )
-	
-	//printt( "GiveWeapon gave weapon: " + weapon + " \n- Native next attack allowed " + weapon.GetNextAttackAllowedTimeRaw() + " \n- idk: " + weapon.w.disallowDeployStackCount + " idk2: " + weapon.w.lastKnownOwner + "\n - Owner: " + weapon.GetOwner() + " \nPlayer bool force allow: " + player.p.forceAllowDeployOfWeapon )
+	player.DeployWeapon()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
 
 	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
 		weapon.AddMod("duckhunt")
@@ -1695,25 +1670,34 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		weapon.SetWeaponPrimaryClipCount( ammoToGive )
 
 	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
-	{
-		if(CoinFlip())
+		weapon.SetLegendaryModelIndex(RandomInt(4))
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
+	{		
+		int charmIndex = RandomInt( 2 )
+		
+		switch( charmIndex )
 		{
-			weapon.SetLegendaryModelIndex(RandomInt(4))
-		}
-		else
-		{
-			weapon.SetSkin(RandomInt(weapon.GetSkinCount()))
-			weapon.SetCamo(RandomInt(10))
+			case 0:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
+//				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
+			break
+			case 1:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
+			break
+			// case 2:
+				// weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
+			// break
 		}
 	}
-
+	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 }
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.EyePosition() + player.GetViewVector() * 10
+	return player.EyePosition() + player.GetForwardVector() * 12
 }
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
@@ -1737,9 +1721,6 @@ bool function ShouldSpawnThisLoot( string entryRef )
 
 entity function SpawnGenericLoot( string ref, vector origin, vector angles, int count )
 {
-	if( !ShouldSpawnThisLoot( ref) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
-		ref = "armor_pickup_lv1"
-
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	entity loot = CreateEntity( "prop_survival" )

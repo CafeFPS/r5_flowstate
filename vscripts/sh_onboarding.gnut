@@ -152,7 +152,7 @@ void function Sequence_WaitingForPlayers()
 	}
 
 	// Set champion randomly from among all players
-	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
+	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) && GetPlayerArray().len() > 0 )
 	{
 		entity champion = GetPlayerArray().getrandom()
 		SetChampion( champion )
@@ -266,7 +266,7 @@ void function Sequence_PickLoadout()
 
 void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 {
-	array< ItemFlavor > characters = GetAllCharacters()
+	array< ItemFlavor > characters = clone GetAllCharacters()
 	
 	foreach( character in characters )
 	{
@@ -563,7 +563,10 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 			return //GG
 	}
 	else
-		specTarget = clientTeam.getrandom()
+	{
+		if ( clientTeam.len() > 0 )
+			specTarget = clientTeam.getrandom()
+	}
 	
 	if(squadCheck)
 	{		
@@ -676,7 +679,7 @@ void function ResetZiplineUseCountOnMantle( entity player )
 	if( !IsValid( player ) )
 		return
 	
-	printt("Mantling, zipline use count reset.")
+	//printt("Mantling, zipline use count reset.")
 	
 	player.p.ziplineUsages = 0
 	Remote_CallFunction_NonReplay( player, "ServerCallback_NessyMessage", 40 )
