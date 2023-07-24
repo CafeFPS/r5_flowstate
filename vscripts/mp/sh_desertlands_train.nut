@@ -202,7 +202,7 @@ void function Train_StartTrainMovement()
 	trainhead.Train_ClearBreadcrumbs()
 	
 	// Create the fx
-	entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TRAIN_POI_BEAM ), trainhead.GetOrigin() + <0,0,5>, <0,0,0> )
+	entity fx = StartParticleEffectOnEntityWithPos_ReturnEntity( trainhead, GetParticleSystemIndex( TRAIN_POI_BEAM ), FX_PATTACH_CUSTOMORIGIN_FOLLOW_NOROTATE, -1, <0,0,0>, <0,0,0> )
 	fx.SetParent( trainhead )
 	//EffectSetControlPointVector( fx, 1, <1,1,1> )
 	
