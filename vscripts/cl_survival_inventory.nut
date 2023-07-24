@@ -1225,6 +1225,15 @@ int function SortByTierThenPriority( GroundLootData a, GroundLootData b )
 	return 0
 }
 
+int function SortByTier( GroundLootData a, GroundLootData b )
+{
+	if ( a.lootData.tier > b.lootData.tier )
+		return -1
+	if ( a.lootData.tier < b.lootData.tier )
+		return 1
+
+	return 0
+}
 
 int function SortByPriorityThenTierForGroundLoot( GroundLootData a, GroundLootData b )
 {
@@ -1930,30 +1939,7 @@ void function GroundItemUpdate( entity player, array<entity> loot )
 		}
 	}
 
-	//file.visibleItemIndices.clear()
 	file.shouldUpdateGroundItems = false
-	// RunUIScript( "SurvivalGroundItem_BeginUpdate" )
-
-	// if ( file.shouldResetGroundItems )
-	// {
-		// GroundItemsInit( player, loot )
-
-		// if ( GetCurrentPlaylistVarBool( "deathbox_diff_enabled", true ) )
-			// file.shouldResetGroundItems = false
-	// }
-	// else
-	// {
-		// GroundItemsDiff( player, loot )
-	// }
-
-	// RunUIScript( "SurvivalGroundItem_SetGroundItemCount", file.filteredGroundItems.len() )
-	// foreach ( index, item in file.filteredGroundItems )
-	// {
-		// RunUIScript( "SurvivalGroundItem_SetGroundItemHeader", index, item.isHeader )
-		// RunUIScript( "SurvivalGroundItem_SetGroundItemWeapon", index, item.lootData.lootType == eLootType.MAINWEAPON )
-		// RunUIScript( "SurvivalGroundItem_SetGroundItemAmmo", index, item.lootData.lootType == eLootType.AMMO )
-	// }
-
 	RunUIScript( "SurvivalGroundItem_EndUpdate" )
 }
 
@@ -2040,12 +2026,13 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	//new filteredGroundItems
 	array<GroundLootData> weapons
 	array<GroundLootData> ammo
-	array<GroundLootData> equipment
-	array<GroundLootData> grenadesAndHealings
+	array<GroundLootData> helmet
+	array<GroundLootData> backpack
+	array<GroundLootData> knockdownshield
+	array<GroundLootData> armor
+	array<GroundLootData> grenades
+	array<GroundLootData> healings
 	array<GroundLootData> attachments
-
-	//aimtrainer swap will be deprecated
-	array<GroundLootData> swapItem
 
 	table<string, GroundLootData> allItems
 
@@ -2072,64 +2059,80 @@ void function GroundItemsInit( entity player, array<entity> loot )
 
 	bool sortByType    = GetCurrentPlaylistVarBool( "deathbox_sort_by_type", true )
 
-	if(GameRules_GetGameMode() == "fs_aimtrainer")
-	{
-		sortByType    = false
-	}
-
 	foreach ( gd in allItems )
 	{
-		if(GameRules_GetGameMode() == "fs_aimtrainer")
-			{
-				if ( gd.lootData.ref == "armor_pickup_lv4_all_fast" || gd.lootData.ref == "armor_pickup_lv3" || gd.lootData.ref == "armor_pickup_lv2" || gd.lootData.ref == "armor_pickup_lv1")
-				{
-					gd.isRelevant = true
-					gd.isUpgrade = false
-					swapItem.append(gd)
-					continue
-				}
-			}
 		entity ent = GetEntFromGroundLootData( gd )
 
 		gd.isRelevant = true
 		gd.isUpgrade = false
 		
 		LootData data = gd.lootData
-		
-			// MAINWEAPON
-	// AMMO
-	// HEALTH
-	// ARMOR
-	// INCAPSHIELD
-	// JUMPKIT
-	// ORDNANCE
-	// ATTACHMENT
-	// CUSTOMPICKUP
-	// BACKPACK
-	// HELMET
-	// BLANK
-	// DATAKNIFE
-	// RESOURCE
-	// GADGET
-		
-		if( data.lootType == eLootType.MAINWEAPON )
-			weapons.append( gd )
-		else if( data.lootType == eLootType.AMMO )
-			ammo.append( gd )
-	}
 
+		switch( data.lootType )
+		{
+			case eLootType.MAINWEAPON:
+			weapons.append( gd )
+			break
+
+			case eLootType.AMMO:
+			ammo.append( gd )
+			break
+			
+			case eLootType.HELMET:
+			helmet.append( gd )
+			break
+			
+			case eLootType.BACKPACK:
+			backpack.append( gd )
+			break
+
+			case eLootType.INCAPSHIELD:
+			knockdownshield.append( gd )
+			break
+			
+			case eLootType.ARMOR:
+			armor.append( gd )
+			break
+			
+			case eLootType.ORDNANCE:
+			grenades.append( gd )
+			break
+			
+			case eLootType.HEALTH:
+			healings.append( gd )
+			break
+			
+			case eLootType.ATTACHMENT:
+			case eLootType.JUMPKIT:
+			case eLootType.CUSTOMPICKUP:
+			case eLootType.BLANK:
+			case eLootType.DATAKNIFE:
+			case eLootType.RESOURCE:
+			attachments.append( gd )
+			break
+		}
+
+	}
+	
+	weapons.sort( SortByTier )
+	ammo.sort( SortByTier )
+	helmet.sort( SortByTier )
+	backpack.sort( SortByTier )
+	knockdownshield.sort( SortByTier )
+	armor.sort( SortByTier )
+	grenades.sort( SortByTier )
+	healings.sort( SortByTier )
+	attachments.sort( SortByTier )
+	
 	file.filteredGroundItems.extend( weapons )
 	file.filteredGroundItems.extend( ammo )
-	file.filteredGroundItems.extend( equipment ) //sort, armor swap should be last
+	file.filteredGroundItems.extend( helmet )
+	file.filteredGroundItems.extend( backpack )
+	file.filteredGroundItems.extend( knockdownshield )
+	file.filteredGroundItems.extend( armor )
 	file.filteredGroundItems.extend( grenades )
 	file.filteredGroundItems.extend( healings )
 	file.filteredGroundItems.extend( attachments )
-
-	if(GameRules_GetGameMode() == "fs_aimtrainer")
-	{
-		file.filteredGroundItems.append( CreateHeaderData( "SWAP HERE", $"" ) )
-		file.filteredGroundItems.extend( swapItem )
-	}
 
 	if ( sortByType && file.filteredGroundItems.len() > 1 )
 	{
