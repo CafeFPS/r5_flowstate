@@ -481,8 +481,8 @@ struct
 	array<void functionref( entity , LootData , int )> localPlayerPickedupLootCallbacks
 
 	float lastCacheUpdateTime
-	table<entity,CachedLootActionData> cachedActionForGroundItemData
-	table<entity,CachedLootActionData> cachedActionForGroundItemDataAlt
+	table<entity, table<entity, CachedLootActionData> > cachedActionForGroundItemData
+	table<entity, table<entity, CachedLootActionData> > cachedActionForGroundItemDataAlt
 	array<entity> allDeathBoxes
 #endif // SERVER / CLIENT
 
@@ -2685,35 +2685,45 @@ LootActionStruct function SURVIVAL_GetActionForGroundItem( entity player, LootRe
 	CachedLootActionData cd
 
 	#if CLIENT
-	// OPTIMIZATION since this usually gets called multiple times in a frame
+		// OPTIMIZATION since this usually gets called multiple times in a frame
 
-	if ( file.lastCacheUpdateTime < Time() )
-	{
-		file.lastCacheUpdateTime = Time()
-		file.cachedActionForGroundItemDataAlt.clear()
-		file.cachedActionForGroundItemData.clear()
-	}
-
-	table<entity,CachedLootActionData> tableToUse = isAltAction ? file.cachedActionForGroundItemDataAlt : file.cachedActionForGroundItemData
-
-	if ( IsValid( lootRef.lootEnt ) )
-	{
-	if ( lootRef.lootEnt in tableToUse )
-	{
-		cd = tableToUse[ lootRef.lootEnt ]
-
-		if ( cd.lastUpdateTime == Time() )
+		if ( file.lastCacheUpdateTime < Time() )
 		{
-			return cd.actionStruct
+			file.lastCacheUpdateTime = Time()
+			file.cachedActionForGroundItemDataAlt.clear()
+			file.cachedActionForGroundItemData.clear()
 		}
 
-		tableToUse[ lootRef.lootEnt ].lastUpdateTime = Time()
-	}
-	else
-	{
-		tableToUse[ lootRef.lootEnt ] <- cd
-	}
-	}
+		if ( !(player in file.cachedActionForGroundItemDataAlt) )
+		{
+			file.cachedActionForGroundItemDataAlt[ player ] <- {}
+		}
+
+		if ( !(player in file.cachedActionForGroundItemData) )
+		{
+			file.cachedActionForGroundItemData[ player ] <- {}
+		}
+
+		table<entity, CachedLootActionData> tableToUse = isAltAction ? file.cachedActionForGroundItemDataAlt[ player ] : file.cachedActionForGroundItemData[ player ]
+
+		if ( IsValid( lootRef.lootEnt ) )
+		{
+			if ( lootRef.lootEnt in tableToUse )
+			{
+				cd = tableToUse[ lootRef.lootEnt ]
+
+				if ( cd.lastUpdateTime == Time() )
+				{
+					return cd.actionStruct
+				}
+
+				tableToUse[ lootRef.lootEnt ].lastUpdateTime = Time()
+			}
+			else
+			{
+				tableToUse[ lootRef.lootEnt ] <- cd
+			}
+		}
 	#endif
 
 	if ( isAltAction )
