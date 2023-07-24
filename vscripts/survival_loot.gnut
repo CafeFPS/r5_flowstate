@@ -692,6 +692,9 @@ void function OnGroundLootSpawned( entity ent )
 	if( !ShouldSpawnThisLoot( itemRef ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
 		itemRef = "armor_pickup_lv1"
 
+	if( itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
+		itemRef = "armor_pickup_lv3"
+
 	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
 }
 
