@@ -3,6 +3,13 @@
 global function InitLootDrones
 global function InitLootDronePaths
 global function SpawnLootDrones
+global function ReturnDroneDataFromRoller
+global function CargobotFallAndExpFxs
+
+#if DEVELOPER
+global function Dev_SpawnPlayerAtRandomCargobot
+#endif
+
 global const string LOOT_DRONE_PATH_NODE_ENTNAME = "loot_drone_path_node"
 global const float LOOT_DRONE_START_NODE_SELECTION_MIN_DISTANCE = 50
 global const vector LOOT_DRONE_ROTATOR_OFFSET = <8,0,-45>
@@ -15,6 +22,7 @@ global const float LOOT_DRONE_EXPLOSION_DAMAGEID = eDamageSourceId.ai_turret_exp
 struct {
 	array<array<entity> > dronePaths
 	table<entity, LootDroneData> droneData
+	array<entity> allDrones
 	array<LootDroneData> spawnedDronesorFlyers
 	entity lastattacker
 	array<LootData> ItemsTier1
@@ -138,11 +146,12 @@ LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
 	// Create the visible drone model using the model const.
 	// is this the correct way of doing this?
 	entity model = CreatePropDynamic( LOOT_DRONE_MODEL, startNode.GetOrigin(), startNode.GetAngles(), 6 )
-
+	
 	model.SetMaxHealth( LOOT_DRONE_HEALTH_MAX )
 	model.SetHealth( LOOT_DRONE_HEALTH_MAX )
 	model.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
-
+	
+	file.allDrones.append( model )
 	AddEntityCallback_OnDamaged( model, LootDrones_OnDamaged) 
 
 	// Set model entity in the struct.
@@ -176,7 +185,7 @@ LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
 	data.roller = SpawnLootRoller_Parented(data.rotator)
 	file.droneData[ model ] <- data
 	
-	//thread LootDroneSound( data )
+	thread LootDroneSound( data )
 	thread LootDroneState( data )
 	thread LootDroneMove( data )
 
@@ -203,6 +212,17 @@ entity ornull function LootDrones_GetAvailableStartNodeFromPath( array<entity> p
 			return pathNode
 	}
 	return null
+}
+
+LootDroneData function ReturnDroneDataFromRoller( entity roller ) 
+{
+	foreach ( entity model, LootDroneData data in file.droneData )
+	{
+		if( roller != null && data.roller == roller )
+			return data
+	}
+	
+	unreachable
 }
 
 void function LootDroneState( LootDroneData data )
@@ -262,7 +282,10 @@ void function LootDroneMove( LootDroneData data )
 		{
 			data.stoploottier = true
 
-			if ( IsValid( data.mover ) ) data.mover.Train_StopImmediately()
+			if ( !IsValid( data.mover ) ) 
+				return
+			
+			data.mover.Train_StopImmediately()
 			
 			TraceResults result = TraceLine
 			( 
@@ -281,43 +304,7 @@ void function LootDroneMove( LootDroneData data )
 			data.mover.NonPhysicsMoveTo( result.endPos, t, 0, 0	)
 			data.mover.NonPhysicsRotateTo( data.mover.GetAngles() + <0,0,180>, 1, 0, 0 )
 
-			// TEMP
-			thread( 
-				void function() : (data, t)
-				{
-					wait t
-
-					entity effect = StartParticleEffectInWorld_ReturnEntity
-					( 
-						GetParticleSystemIndex( LOOT_DRONE_FX_EXPLOSION ), 
-						data.mover.GetOrigin(), 
-						<0,0,0>
-					)
-					EmitSoundOnEntity( effect, LOOT_DRONE_CRASHED_SOUND )
-
-					// Kill the particles after a few secs, entity stays in the map indefinitely it seems
-					EntFireByHandle( effect, "Kill", "", 2, null, null )
-
-					// TODO: Find the right damage values and damageid
-					RadiusDamage
-					(
-						data.mover.GetOrigin(),													// center
-						data.model.GetOwner(),													// attacker
-						data.mover,																// inflictor
-						LOOT_DRONE_EXPLOSION_DAMAGE,											// damage
-						LOOT_DRONE_EXPLOSION_DAMAGE,											// damageHeavyArmor
-						LOOT_DRONE_EXPLOSION_RADIUS,											// innerRadius
-						LOOT_DRONE_EXPLOSION_RADIUS,											// outerRadius
-						SF_ENVEXPLOSION_MASK_BRUSHONLY,											// flags
-						0.0,																	// distanceFromAttacker
-						LOOT_DRONE_EXPLOSION_DAMAGE,											// explosionForce
-						DF_EXPLOSION | DF_GIB | DF_KNOCK_BACK,									// scriptDamageFlags
-						LOOT_DRONE_EXPLOSION_DAMAGEID 											// scriptDamageSourceIdentifier
-					)
-
-					data.mover.Destroy()
-				}
-			)()
+			thread CargobotFallAndExpFxs( data, t )
 		}
 	)
 
@@ -330,15 +317,53 @@ void function LootDroneMove( LootDroneData data )
 	WaitForever()
 }
 
+void function CargobotFallAndExpFxs( LootDroneData data, float time )
+{
+	wait time
+	
+	if( !IsValid( data.mover ) || !IsValid( data.model ) )
+		return
+
+	entity effect = StartParticleEffectInWorld_ReturnEntity
+	( 
+		GetParticleSystemIndex( LOOT_DRONE_FX_EXPLOSION ), 
+		data.mover.GetOrigin(), 
+		<0,0,0>
+	)
+	EmitSoundOnEntity( effect, LOOT_DRONE_CRASHED_SOUND )
+
+	// Kill the particles after a few secs, entity stays in the map indefinitely it seems
+	EntFireByHandle( effect, "Kill", "", 2, null, null )
+
+	// TODO: Find the right damage values and damageid
+	RadiusDamage
+	(
+		data.mover.GetOrigin(),													// center
+		data.model.GetOwner(),													// attacker
+		data.mover,																// inflictor
+		LOOT_DRONE_EXPLOSION_DAMAGE,											// damage
+		LOOT_DRONE_EXPLOSION_DAMAGE,											// damageHeavyArmor
+		LOOT_DRONE_EXPLOSION_RADIUS,											// innerRadius
+		LOOT_DRONE_EXPLOSION_RADIUS,											// outerRadius
+		SF_ENVEXPLOSION_MASK_BRUSHONLY,											// flags
+		0.0,																	// distanceFromAttacker
+		LOOT_DRONE_EXPLOSION_DAMAGE,											// explosionForce
+		DF_EXPLOSION | DF_GIB | DF_KNOCK_BACK,									// scriptDamageFlags
+		LOOT_DRONE_EXPLOSION_DAMAGEID 											// scriptDamageSourceIdentifier
+	)
+
+	data.mover.Destroy()
+}
+
 void function LootDroneSound( LootDroneData data )
 {
 	Assert( IsNewThread(), "Must be threaded off" )
 
-	EmitSoundOnEntity( data.model, LOOT_DRONE_LIVING_SOUND )
+	//EmitSoundOnEntity( data.model, LOOT_DRONE_LIVING_SOUND )
 
 	data.model.WaitSignal( "OnDeath" )
 
-	StopSoundOnEntity( data.model, LOOT_DRONE_LIVING_SOUND )
+	//StopSoundOnEntity( data.model, LOOT_DRONE_LIVING_SOUND )
 	EmitSoundOnEntity( data.model, LOOT_DRONE_DEATH_SOUND )
 
 	data.model.WaitSignal( SIGNAL_LOOT_DRONE_FALL_START )
@@ -406,3 +431,13 @@ void function LootDrones_OnDamaged(entity ent, var damageInfo)
 
 	ent.Signal("OnDeath")
 }
+
+#if DEVELOPER
+void function Dev_SpawnPlayerAtRandomCargobot( entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	player.SetOrigin( file.allDrones.getrandom().GetOrigin() )
+}
+#endif

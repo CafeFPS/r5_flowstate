@@ -44,8 +44,8 @@ entity function SpawnLootRoller_NoDispatchSpawn( vector origin, vector angles )
     roller.SetAngles(angles)
 
     // Health is handled by callbacks
-	roller.SetMaxHealth( 30 )
-	roller.SetHealth( 30 )
+	roller.SetMaxHealth( 100 )
+	roller.SetHealth( 100 )
 	roller.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
 	AddEntityCallback_OnKilled( roller, LootRollers_OnKilled)
 	AddEntityCallback_OnDamaged( roller, LootRollers_OnDamaged)
@@ -71,16 +71,21 @@ void function LootRollers_OnKilled(entity ent, var damageInfo)
 
 void function LootRollers_OnDamaged(entity ent, var damageInfo)
 {
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if( !IsValid( ent ) )
+		return
 
     // Don't get damaged by the drone crashing on it
     if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == LOOT_DRONE_EXPLOSION_DAMAGEID )
         return
+	
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
 
     // Only players can break it
 	if( !IsValid( attacker ) || !attacker.IsPlayer() )
 		return
 
+	LootDroneData droneData = ReturnDroneDataFromRoller( ent )
+	
 	attacker.NotifyDidDamage
 	(
 		ent,
@@ -93,8 +98,96 @@ void function LootRollers_OnDamaged(entity ent, var damageInfo)
 		DamageInfo_GetWeapon( damageInfo ),
 		DamageInfo_GetDistFromAttackOrigin( damageInfo )
 	)
-
-	// Handle damage, prop_physics doesn't want to lose health somehow even with DAMAGE_YES
+	
+	// the following implementation does not work
+	// if( Time() > droneData.lastPanicTime + LOOT_DRONE_PANIC_DURATION )
+		// LootDrone_Panic( droneData )
+	
+	// Handle damage, props get destroyed on death, we don't want that.
 	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	ent.SetHealth(nextHealth > 0.0 ? nextHealth : 0.0)
+	if( nextHealth > 0 )
+	{
+		ent.SetHealth(nextHealth)
+		return
+	}
+
+	if( ent.e.applyNewHealthOneTime )
+	{
+		ent.SetHealth( 0 )
+		return
+	}
+
+	if( !ent.e.applyNewHealthOneTime )
+	{
+		ent.SetHealth( 35 )
+		ent.e.applyNewHealthOneTime = true
+	}
+
+	//Kill the drone, not the roller
+	if( !IsValid( droneData.model ) ) return
+
+	droneData.model.TakeDamage( LOOT_DRONE_HEALTH_MAX, attacker, null, DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+	droneData.model.SetTakeDamageType( DAMAGE_NO )
+}
+
+void function LootDrone_Panic( LootDroneData data )
+{
+	data.lastPanicTime = Time()
+	
+	entity firstStopMover = CreateTrainSmoothPoint( data.mover.GetOrigin() )
+
+	entity lastNode = data.mover.Train_GetLastNode()
+	entity nextMovingNode = lastNode.GetNextTrainNode()
+	//Regenerate smooth points until next node
+	array< vector > smoothPoints //need to be saved before used cuz then it can't calculate smooth points due to broken link in the progress until the end of the loop. Colombia
+	for( int i = 1; i < 10; i++)
+	{
+		vector smoothPoint = lastNode.GetSmoothPositionAtDistance( data.mover.Train_GetLastDistance() + (Distance2D( data.mover.GetOrigin(), nextMovingNode.GetOrigin() ) / 10 ) * i )
+		smoothPoints.append( smoothPoint )
+	}
+	
+	foreach( slink in lastNode.GetLinkEntArray( ) )
+	{
+		//firstStopMover.LinkToEnt ( slink )
+		lastNode.UnlinkFromEnt( slink )
+	}
+	
+	lastNode.LinkToEnt( firstStopMover )
+
+	lastNode = firstStopMover
+	entity newNode
+
+	foreach( smoothPoint in smoothPoints )
+	{
+		newNode = CreateTrainSmoothPoint( smoothPoint )
+
+		newNode.LinkToEnt ( lastNode )
+		
+		lastNode.LinkToEnt( newNode )
+		
+		lastNode = newNode
+		
+		DebugDrawHemiSphere( smoothPoint, Vector( 0,0,0 ), 25.0, 20, 210, 255, false, 999.0 )
+	}
+	
+	//link the last one to next node
+	newNode.LinkToEnt( nextMovingNode )
+	
+	// Important so train can start in same place
+	firstStopMover.RegenerateSmoothPoints()
+
+	data.mover.Train_MoveToTrainNodeEx( firstStopMover, 0, LOOT_DRONE_FLIGHT_SPEED_PANIC, LOOT_DRONE_FLIGHT_SPEED_PANIC, LOOT_DRONE_FLIGHT_ACCEL )
+	data.mover.Train_AutoRoll( 5.0, 45.0, 1024.0 )
+}
+
+entity function CreateTrainSmoothPoint( vector origin )
+{
+	entity stopMover = CreateEntity( "script_mover_train_node" )
+	stopMover.kv.tangent_type = 0
+	stopMover.kv.num_smooth_points = 10 // ?? doesn't work
+	stopMover.kv.perfect_circular_rotation = 0
+	DispatchSpawn( stopMover )
+	stopMover.SetOrigin( origin )
+	
+	return stopMover
 }

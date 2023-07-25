@@ -446,6 +446,9 @@ global struct ServerEntityStruct
 	//backpack limit
 	array<string> lootToAttachToBackpack
 	bool itemReachedGround = false
+	
+	//cargobot thing
+	bool applyNewHealthOneTime = false
 }
 
 global struct MeritData
