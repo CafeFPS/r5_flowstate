@@ -216,11 +216,11 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_LOADOUT_CHEST, MINIMAP_OBJ_AREA_RUI, MinimapPackage_FDLoadoutChest )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_BATTERY_EXCHANGE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_FDBatteryExchange )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOOST_STORE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_BoostStore )
-	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_ARC_TRAP_RUI, MinimapPackage_ArcTrap )
-
+	
+	//WATTSON
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_ARC_TRAP_RUI, RegisterTeslaTrapMinimapRui, $"ui/in_world_minimap_tesla_trap.rpak", RegisterTeslaTrapMinimapRui )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem, FULLMAP_OBJECT_RUI, FullmapPackage_TrophySystem )
 	
-
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.DIRTY_BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_DirtyBomb, FULLMAP_OBJECT_RUI, MinimapPackage_DirtyBomb )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.CRYPTO_DRONE, MINIMAP_OBJECT_RUI, MinimapPackage_CryptoDrone, FULLMAP_OBJECT_RUI, MinimapPackage_CryptoDrone )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.DEPLOYABLE_MEDIC, MINIMAP_OBJECT_RUI, MinimapPackage_DeployableMedic )
@@ -289,7 +289,7 @@ void function ClMinimap_Init()
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
 
-	if ( GetCurrentPlaylistVarBool( "beta_watermark", false ) == true )
+	if ( GetCurrentPlaylistVarBool( "beta_watermark", false ) && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
 	{
 		file.minimap_coords = CreateMinimapRui( MINIMAP_UID_COORDS_RUI, MINIMAP_Z_BASE + 1000 )
 	}
@@ -556,11 +556,14 @@ var function CreateFullmapRuiForEnt( entity ent, entity viewPlayer )
 	RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
 	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
-	RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
-
-	RuiSetFloat( rui, "iconBlend", 1.0 )
-	RuiSetFloat( rui, "iconPremul", 0.0 )
-	RuiSetFloat2( rui, "iconScale", <1.0, 1.0, 0.0> )
+	
+	if( ent.GetScriptName() != TESLA_TRAP_NAME ) // tesla trap crashes with this, is there any other rui that crashes with this
+	{
+		RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
+		RuiSetFloat( rui, "iconBlend", 1.0 )
+		RuiSetFloat( rui, "iconPremul", 0.0 )
+		RuiSetFloat2( rui, "iconScale", <1.0, 1.0, 0.0> )
+	}
 
 	Fullmap_RunInitFunction( ent, rui )
 
@@ -825,7 +828,7 @@ void function OnPlayerCreate( entity player )
 		RuiSetString( file.minimap_coords, "uid", " " )
 		RuiSetInt( file.minimap_coords, "uidPart1", 0 ) // int( uidPart1 )
 		RuiSetInt( file.minimap_coords, "uidPart2", 0 ) // int( uidPart2 )
-		RuiSetString( file.minimap_coords, "name", "R5Reloaded v2.2.6 RC" )
+		RuiSetString( file.minimap_coords, "name", "R5Reloaded v2.2.6 RC \nFlowstate " + FLOWSTATE_VERSION )
 	}
 
 	asset mapImage       = Minimap_GetAssetForKey( "minimap" )
