@@ -3,7 +3,7 @@
 
                    
 #base "_base_mags_energy.txt"
-      
+
 
 #base "_base_stocks_sniper.txt"
 
@@ -17,7 +17,7 @@
 	"longdesc"                                     "#WPN_DOUBLETAKE_LONGDESC"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
-	
+
 	// UI - HUD
 	"menu_icon"										"rui/weapon_icons/r5/weapon_triple_take"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_triple_take"
@@ -75,10 +75,10 @@
 
 	// Behavior - ADS (tied to animation)
 	//
-	"ads_fov_zoomfrac_start"                "0.2"
-    "ads_fov_zoomfrac_end"                  "0.9"
-    "viewmodel_offset_zoom_frac_start"      "0.2"
-    "viewmodel_offset_zoom_frac_end"        "0.9"
+	"ads_fov_zoomfrac_start"                       "0.2"
+    "ads_fov_zoomfrac_end"                         "0.9"
+    "viewmodel_offset_zoom_frac_start"             "0.2"
+    "viewmodel_offset_zoom_frac_end"               "0.9"
 
 	// Damage
 	//
@@ -116,7 +116,7 @@
 	// energy weapons have less drop
 	"projectile_drag_coefficient" 					"0.0"
 
-	"bolt_hitsize"									"0.0"
+	"bolt_hitsize"									"0.25"
 
     //"bolt_hitsize_grow1_time"				        "0.123"  //~100m
     //"bolt_hitsize_grow1_size"				        "0.33"
@@ -129,19 +129,27 @@
 	"projectile_spread_choke_frac_1" 				"1.0"
 	"projectile_spread_choke_frac_2" 				"0.60"
 	"projectile_spread_choke_frac_3" 				"0.25"
-	"projectile_spread_choke_frac_4" 				"0.05"
+	"projectile_spread_choke_frac_4" 				"0.01"
 
 	// Ammo
 	//
-
-	"ammo_pool_type"                               "special"
-	"ammo_clip_size"                               "18"
-	"ammo_stockpile_max"                           "120"
-	"ammo_default_total"                           "120"
-	"ammo_per_shot"                                "3"
-	"ammo_min_to_fire"                             "3"
+                        
+                                  
+                                                                               
+                                   
+                                                        
+                                           
+                               
+     
+	"ammo_clip_size"   							    "6"
+    "ammo_default_total"							"0"
+    "ammo_no_remove_from_stockpile"					"1"
+    "uses_ammo_pool"								"1"
+    "ammo_pool_type"								"special"
+      
+	"ammo_per_shot"                                "1"
+	"ammo_min_to_fire"                             "1"
 	"ammo_clip_random_loss_on_npc_drop_chunksize"  "1"
-	"ammo_no_remove_from_stockpile"                "1"
 	"reload_enabled"                               "1"
 	"allow_empty_click"                            "1"
 	"empty_reload_only"                            "0"
@@ -201,11 +209,11 @@
 
 	// Spread
 	//
-	"spread_stand_hip"                         "4"
-	"spread_stand_hip_run"                     "6"
-	"spread_stand_hip_sprint"                  "7"
-	"spread_crouch_hip"                        "3"
-	"spread_air_hip"                           "8"
+	"spread_stand_hip"                         "3"
+	"spread_stand_hip_run"                     "5"
+	"spread_stand_hip_sprint"                  "6"
+	"spread_crouch_hip"                        "2.25"
+	"spread_air_hip"                           "7"
 
 	"spread_stand_ads"						    "0"
     "spread_crouch_ads"   					    "0"
@@ -229,9 +237,9 @@
 	//
 	"fire_sound_1_npc"                             "Weapon_DoubleTake_Fire_NPC"
 	"fire_sound_1_player_1p"                       "Weapon_DoubleTake_Fire_1P"
-	"fire_sound_2_player_1p"                       "large_shell_drop"
+	//"fire_sound_2_player_1p"                       "large_shell_drop"
 	"fire_sound_1_player_3p"                       "Weapon_DoubleTake_Fire_3P"
-	"fire_sound_2_player_3p"                       "large_shell_drop"
+	//"fire_sound_2_player_3p"                       "large_shell_drop"
 
 	// Sound - Low Ammo
 	"low_ammo_sound_name_1"                        "DoubleTake_LowAmmo_Shot1"
@@ -300,9 +308,12 @@
 	"projectile_trail_effect_0"                    "P_tracer_proj_sniper_blue"
 
 	// FX
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"                         "P_wpn_mflash_dbltake_FP"
+	"fx_muzzle_flash_world"                        "P_wpn_mflash_dbltake"
+
+	"fx_shell_eject_attach"                    "shell"
+    "fx_muzzle_flash_attach_scoped"            "muzzle_flash_scoped"
+
 	// FX - Shells
 	"fx_shell_eject_attach_scoped" 					"shell"
 	"fx_shell_eject2_attach" 						"shell_L"
@@ -339,11 +350,16 @@
     "burn_tick_rate"                "0.8"       //how often we do a damage tick = (tick_rate / burn_time)
     "sound_burn_damage_tick_1p" 	"flesh_thermiteburn_3p_vs_1p"
 
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_TRIPLETAKE"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_TRIPLETAKE"
+
+	"player_overheat_per_bullet"        "28"
+
 	"Mods"
 	{
 	    gold
-	    {
-	    }
+        {
+        }
 
 		"survival_finite_ammo"
 		{
@@ -544,17 +560,17 @@
 
 		energy_mag_l1
 		{
-			"ammo_clip_size"   					"21"
+			"ammo_clip_size"   					"7"
 		}
 
 		energy_mag_l2
 		{
-			"ammo_clip_size"   					"24"
+			"ammo_clip_size"   					"8"
 		}
 
 		energy_mag_l3
 		{
-			"ammo_clip_size"   					"27"
+			"ammo_clip_size"   					"10"
 		}
       
 
@@ -618,6 +634,7 @@
 			vis					player_zoomfrac
 			charge				player_chargeFrac
 			chargeEnabled		eWeaponVar.custom_int_0
+			centerOffset		weapon_ads_center_offset
 		}
 	}
 
