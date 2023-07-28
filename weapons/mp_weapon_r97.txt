@@ -11,7 +11,6 @@ WeaponData
 	"longdesc"										"#WPN_R97_LONGDESC"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
-	"ammo_pool_type"								"bullet"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_r97"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_r97"
@@ -42,8 +41,8 @@ WeaponData
 	"chroma_color"									"1 .9 .5"
 
 	//Sounds
-	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
-	"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
 	"fire_sound_2_player_1p"						"Weapon_R97_SecondShot_1P"
 	"fire_sound_2_player_3p"						""
 	"fire_sound_2_npc"								"Weapon_r97_secondshot_npc"
@@ -71,24 +70,37 @@ WeaponData
 	"damage_type" 									"bullet"
 
 	// Ammo
-		"ammo_clip_size"   								"19"
+	"ammo_clip_size"   								"19"
 
-		"ammo_default_total"							"150"
-		"ammo_stockpile_max"							"150"
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    "ammo_stockpile_max"					        "36"
+    "ammo_default_total"					        "0"
+    "ammo_no_remove_from_stockpile"			        "1"
+    "uses_ammo_pool"						        "1"
+    "ammo_pool_type"								"bullet"
+      
+    "ammo_min_to_fire"								"1"
+    "low_ammo_fraction" 					        "0.3"
 
-		// Damage - When Used by Players
+    // Damage - When Used by Players
+                      
     "damage_near_value"   							"12"
     "damage_far_value"								"12"
     "damage_very_far_value"							"12"
     "damage_near_value_titanarmor"					"12"
     "damage_far_value_titanarmor" 					"12"
     "damage_very_far_value_titanarmor" 				"12"
+     
+                                     
+                                  
+                                      
+                                           
+                                           
+                                               
       
     "damage_rodeo" 									"110"
 
-	   // Damage - When Used by NPCs
+
+    // Damage - When Used by NPCs
     "npc_damage_near_value_titanarmor"				"0"
     "npc_damage_far_value_titanarmor" 				"0"
     "npc_damage_near_value"   						"9"
@@ -106,7 +118,7 @@ WeaponData
 	"npc_max_engage_range"							"1100"
 	"npc_min_engage_range_heavy_armor"				"500"
 	"npc_max_engage_range_heavy_armor"				"2000"
-	
+
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						""
@@ -203,17 +215,27 @@ WeaponData
     "clip_bodygroup_show_for_milestone_2"	"1"
     "clip_bodygroup_show_for_milestone_3"	"1"
 
-	Mods
-	{
+    	Mods
+    	{
 		survival_finite_ammo
         {
             "ammo_default_total"					"0"
             "ammo_stockpile_max"					"36"
             "ammo_no_remove_from_stockpile"			"0"
 
-            "low_ammo_fraction" 					"0.3"
 
-	   		"uses_ammo_pool"						"1"
+           "reload_time"						"*0.75"
+           "reload_time_late1"					"*0.75"
+           "reload_time_late2"					"*0.75"
+           "reload_time_late3"					"*0.75"
+           "reload_time_late4"					"*0.75"
+           "reload_time_late5"					"*0.75"
+           "reloadempty_time"					"*0.75"
+           "reloadempty_time_late1"			"*0.75"
+           "reloadempty_time_late2"			"*0.75"
+           "reloadempty_time_late3"			"*0.75"
+           "reloadempty_time_late4"			"*0.75"
+           "reloadempty_time_late5"			"*0.75"
         }
 
         optic_cq_hcog_classic
@@ -245,7 +267,7 @@ WeaponData
 			"bodygroup2_set" 						"0"
 			"ui2_enable" 							"0"
 		}
-
+			
 		barrel_stabilizer_l4_flash_hider
         {
 			"fx_muzzle_flash_view"							""
@@ -271,7 +293,7 @@ WeaponData
 			"viewmodel"   									"mdl/weapons/r97/ptpov_r97_legendary_01.rmdl"
 			"playermodel" 									"mdl/weapons/r97/w_r97_legendary_01.rmdl"
 		}
-
+		
 	}
 
 
@@ -302,7 +324,7 @@ WeaponData
 			clipCount					weapon_ammoClipCount
 		}
 	}
-
+	
 	active_crosshair_count				"1"
 	rui_crosshair_index					"0"
 
