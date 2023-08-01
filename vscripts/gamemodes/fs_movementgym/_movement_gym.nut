@@ -9,384 +9,440 @@ globalize_all_functions
 //  ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
 
 //Init Movement Gym With Map 1
-void
-function MovementGym() {
-  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_composite") {
-    
-    // Commands
-    AddClientCommandCallback("hub", ClientCommand_Hub)
-    AddClientCommandCallback("invis", ClientCommand_invis)
-    AddClientCommandCallback("meter", ClientCommand_meter)
-    AddClientCommandCallback("keys", ClientCommand_keys)
-    AddClientCommandCallback("style", ClientCommand_style)
-    //AddClientCommandCallback("spectate", _MG_Spectate_by_name) //99% ready will update via pull after release
+void function MovementGym()
+{
+  if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_arena_composite" )
+  {
+	// Commands
+	AddClientCommandCallback("hub", ClientCommand_Hub)
+	AddClientCommandCallback("invis", ClientCommand_invis)
+	AddClientCommandCallback("meter", ClientCommand_meter)
+	AddClientCommandCallback("keys", ClientCommand_keys)
+	AddClientCommandCallback("style", ClientCommand_style)
+	//AddClientCommandCallback("spectate", _MG_Spectate_by_name) //99% ready will update via pull after release
 
-    //Map init
-    //PrecacheMovementGymProps()
-    //WaitFrame()
-    
-    MovementGym_Hub()
-    WaitFrame()
+	//Map init
+	//PrecacheMovementGymProps()
+	//WaitFrame()
+	
+	MovementGym_Hub()
+	WaitFrame()
 
-    MovementGym_Map1()
-    WaitFrame()
-    
-    MovementGym_Map2()
-    WaitFrame()
+	MovementGym_Map1()
+	WaitFrame()
+	
+	MovementGym_Map2()
+	WaitFrame()
 
-    MovementGym_Octane()
-    WaitFrame()
+	MovementGym_Octane()
+	WaitFrame()
 
-    MovementGym_Tapstrafe()
-    WaitFrame()
+	MovementGym_Tapstrafe()
+	WaitFrame()
 
-    MovementGym_Superglide()
-    WaitFrame()
+	MovementGym_Superglide()
+	WaitFrame()
 
-    MovementGym_MantleJumps()
-    WaitFrame()
+	MovementGym_MantleJumps()
+	WaitFrame()
 
-    MovementGym_Grapple1()
-    WaitFrame()
+	MovementGym_Grapple1()
+	WaitFrame()
 
-    MovementGym_Grapple2()
-    WaitFrame()
+	MovementGym_Grapple2()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl1()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl1()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl2()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl2()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl3()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl3()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl4()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl4()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl5()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl5()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl6()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl6()
+	WaitFrame()
 
-    MovementGym_Surf_Kitsune_lvl7()
-    WaitFrame()
+	MovementGym_Surf_Kitsune_lvl7()
+	WaitFrame()
 
-    MovementGym_Hub_Buttons()
-    WaitFrame()
+	MovementGym_Hub_Buttons()
+	WaitFrame()
 
-    MovementGym_Map1_Button()
-    WaitFrame()
-    
-    MovementGym_Map2_Button()
-    WaitFrame()
-    
-    MovementGym_Surf_Button()
-    WaitFrame()
-    
-    thread MovementGymSaveTimesToFile_thread()
+	MovementGym_Map1_Button()
+	WaitFrame()
+	
+	MovementGym_Map2_Button()
+	WaitFrame()
+	
+	MovementGym_Surf_Button()
+	WaitFrame()
+	
+	thread MovementGymSaveTimesToFile_thread()
 
   }
 }
 
 //Precache props
-void
-function PrecacheMovementGymProps() {
-    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_02.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
-    PrecacheModel( $"mdl/desertlands/highrise_square_top_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl" )
-    PrecacheModel( $"mdl/ola/sewer_railing_01_64.rmdl" )
-    PrecacheModel( $"mdl/ola/sewer_railing_01_128.rmdl" )
-    PrecacheModel( $"mdl/ola/sewer_railing_01_corner_in.rmdl" )
-    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_02.rmdl" )
-    PrecacheModel( $"mdl/lamps/light_parking_post.rmdl" )
-    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_01.rmdl" )
-    PrecacheModel( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl" )
-    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl" )
-    PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
-    PrecacheModel( $"mdl/industrial/underbelly_support_beam_256_01.rmdl" )
-    PrecacheModel( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl" )
-    PrecacheModel( $"mdl/signs/street_sign_arrow.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl" )
-    PrecacheModel( $"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl" )
-    PrecacheModel( $"mdl/domestic/bar_sink.rmdl" )
-    PrecacheModel( $"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl" )
-    PrecacheModel( $"mdl/domestic/tv_LED_med_panel.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_apartments_planter_02.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_building_ice_02.rmdl" )
-    PrecacheModel( $"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_02.rmdl" )
-    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl" )
-    PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
-    PrecacheModel( $"mdl/domestic/floor_rug_red.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desrtlands_icicles_06.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl" )
-    PrecacheModel( $"mdl/colony/ventilation_unit_01_black.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl" )
-    PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl" )
-    PrecacheModel( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl" )
-    PrecacheModel( $"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl" )
-    PrecacheModel( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl" )
-    PrecacheModel( $"mdl/signs/desertlands_city_newdawn_sign_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl" )
-    PrecacheModel( $"mdl/colony/antenna_03_colony.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_train_track_sign_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_column_01.rmdl" )
-    PrecacheModel( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl" )
-    PrecacheModel( $"mdl/barriers/shooting_range_target_02.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_fold_sign_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_03.rmdl" )
-    PrecacheModel( $"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl" )
-    PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
-    PrecacheModel( $"mdl/signs/Sign_no_tresspasing.rmdl" )
-    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot.rmdl" )
-    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl" )
-    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_3.rmdl" )
-    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_2.rmdl" )
-    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_1.rmdl" )
-    PrecacheModel( $"mdl/industrial/screwdriver_octane.rmdl" )
-    PrecacheModel( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
-    PrecacheModel( $"mdl/props/lifeline_needle/lifeline_needle.rmdl" )
-    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl" )
-    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl" )
-    PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl" )
-    PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl" )
-    PrecacheModel( $"mdl/industrial/landing_mat_metal_03_large.rmdl" )
-
+void function PrecacheMovementGymProps()
+{
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_platform_02.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
+	PrecacheModel( $"mdl/desertlands/highrise_square_top_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_lobby_double_doorframe_02.rmdl" )
+	PrecacheModel( $"mdl/ola/sewer_railing_01_64.rmdl" )
+	PrecacheModel( $"mdl/ola/sewer_railing_01_128.rmdl" )
+	PrecacheModel( $"mdl/ola/sewer_railing_01_corner_in.rmdl" )
+	PrecacheModel( $"mdl/foliage/icelandic_moss_grass_02.rmdl" )
+	PrecacheModel( $"mdl/lamps/light_parking_post.rmdl" )
+	PrecacheModel( $"mdl/foliage/icelandic_moss_grass_01.rmdl" )
+	PrecacheModel( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl" )
+	PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
+	PrecacheModel( $"mdl/industrial/underbelly_support_beam_256_01.rmdl" )
+	PrecacheModel( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl" )
+	PrecacheModel( $"mdl/signs/street_sign_arrow.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl" )
+	PrecacheModel( $"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl" )
+	PrecacheModel( $"mdl/domestic/bar_sink.rmdl" )
+	PrecacheModel( $"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl" )
+	PrecacheModel( $"mdl/domestic/tv_LED_med_panel.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_apartments_planter_02.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_building_ice_02.rmdl" )
+	PrecacheModel( $"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_02.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl" )
+	PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
+	PrecacheModel( $"mdl/domestic/floor_rug_red.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desrtlands_icicles_06.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl" )
+	PrecacheModel( $"mdl/colony/ventilation_unit_01_black.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl" )
+	PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl" )
+	PrecacheModel( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl" )
+	PrecacheModel( $"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl" )
+	PrecacheModel( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl" )
+	PrecacheModel( $"mdl/signs/desertlands_city_newdawn_sign_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl" )
+	PrecacheModel( $"mdl/colony/antenna_03_colony.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_train_track_sign_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_column_01.rmdl" )
+	PrecacheModel( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl" )
+	PrecacheModel( $"mdl/barriers/shooting_range_target_02.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_fold_sign_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/construction_bldg_platform_03.rmdl" )
+	PrecacheModel( $"mdl/weapons_r5/misc_crypto_drone/crypto_logo_holo.rmdl" )
+	PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
+	PrecacheModel( $"mdl/signs/Sign_no_tresspasing.rmdl" )
+	PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot.rmdl" )
+	PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl" )
+	PrecacheModel( $"mdl/signs/numbers/sign_number_lit_3.rmdl" )
+	PrecacheModel( $"mdl/signs/numbers/sign_number_lit_2.rmdl" )
+	PrecacheModel( $"mdl/signs/numbers/sign_number_lit_1.rmdl" )
+	PrecacheModel( $"mdl/industrial/screwdriver_octane.rmdl" )
+	PrecacheModel( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
+	PrecacheModel( $"mdl/props/lifeline_needle/lifeline_needle.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl" )
+	PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_192_01.rmdl" )
+	PrecacheModel( $"mdl/desertlands/fence_large_concrete_metal_dirty_64_01.rmdl" )
+	PrecacheModel( $"mdl/industrial/landing_mat_metal_03_large.rmdl" )
 }
 
 struct {
   array < string > allTimes
-}
-file
+} file
 
 //Save times to file
-void
-function MovementGymSaveTimesToFile() {
-  DevTextBufferClear()
-  DevTextBufferWrite("=== Movement Gym Times === \n\n")
-  DevTextBufferWrite("=== OID == Player Name == Run Time == Map === \n")
+void function MovementGymSaveTimesToFile()
+{
+	DevTextBufferClear()
+	DevTextBufferWrite("=== Movement Gym Times === \n\n")
+	DevTextBufferWrite("=== OID == Player Name == Run Time == Map === \n")
 
-  int i = 0
-  foreach(line in file.allTimes) {
-    DevTextBufferWrite(line + "\n")
-    i++
-  }
+	int i = 0
+	foreach(line in file.allTimes)
+	{
+		DevTextBufferWrite(line + "\n")
+		i++
+	}
 
-  DevP4Checkout("MovementGym_Results_" + GetUnixTimestamp() + ".txt")
-  DevTextBufferDumpToFile("MovementGymLogs/MovementGym_Results_" + GetUnixTimestamp() + ".txt")
+	// DevP4Checkout("MovementGym_Results_" + GetUnixTimestamp() + ".txt")
+	DevTextBufferDumpToFile("MovementGymLogs/MovementGym_Results_" + GetUnixTimestamp() + ".txt")
 
-  Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
-  file.allTimes.clear()
-  Warning("[!] allTimes array has been cleared === ")
+	Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
+	file.allTimes.clear()
+	Warning("[!] allTimes array has been cleared === ")
 }
 
-void
-function MovementGymSaveTimesToFile_thread() {
-	while(FlowState_EnableMovementGymLogs()){
-		wait 300
+void function MovementGymSaveTimesToFile_thread()
+{
+	while ( FlowState_EnableMovementGymLogs() )
+	{
+		wait 300 // save every 5 minutes
 		MovementGymSaveTimesToFile()
 	}
 }
 
-//hub command
-bool
-function ClientCommand_Hub(entity user, array < string > args) {
-  if( !IsValid(user) )
-	return false
+// command: return player to hub
+bool function ClientCommand_Hub(entity user, array < string > args)
+{
+	if( !IsValid(user) )
+		return true
 
-  if(Time() - user.p.lastHub < 3)
-	return false
+	if ( Time() - user.p.lastHub < 3 )
+		return true
 
-  EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-  TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-  StatusEffect_StopAllOfType(user, eStatusEffect.stim_visual_effect)
-  StatusEffect_StopAllOfType(user, eStatusEffect.speed_boost)
-  user.TakeOffhandWeapon(OFFHAND_TACTICAL)
-  user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-  user.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-  user.PhaseShiftCancel()
-  Message(user, "Hub")
-  //Start Checkpoint
-  user.p.allowCheckpoint = false
-  user.p.currentCheckpoint = 0
-  //Reset Timer
-  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
-  user.p.isTimerActive = false
-  user.p.startTime = 0
+	EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
+	TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
 
-  //Re-enable invis after surf
-  user.p.isPlayerInvisAllowed = true
-  if (user.IsInRealm(1) == false) {
-    user.RemoveFromAllRealms()
-    user.AddToRealm(1)
-    user.MakeVisible()
-    Message(user, "You are now Visible")
-    user.p.lastInvis = Time()
-  }
-  
-  //Force Default Player Settings
-  SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
-  
-  user.p.lastHub = Time()
-
-  return true
-}
-
-//invis toggle command
-bool
-function ClientCommand_invis(entity user, array < string > args) {
-  if( !IsValid(user) )
-	return false
-
-  if(Time() - user.p.lastInvis < 3)
-	return false
-
-  if (user.p.isPlayerInvisAllowed == true) {
-    if (user.IsInRealm(1)) {
-      user.RemoveFromAllRealms()
-      user.AddToRealm(2)
-      user.MakeInvisible()
-      Message(user, "You are now Invisible")
-      user.p.lastInvis = Time()
-    } else {
-      user.RemoveFromAllRealms()
-      user.AddToRealm(1)
-      user.MakeVisible()
-      Message(user, "You are now Visible")
-      user.p.lastInvis = Time()
-    }
-  } else {
-    Message(user, "This action is not allowed right now")
-  }
-  return true
-}
-
-
-//speedometer on/off
-bool
-function ClientCommand_meter(entity user, array < string > args) {
-  if( !IsValid(user) || args.len() == 0 )
-	return false
-  
-  if(args[0] == "off"){
-	if(user.p.speedometerVisible == true){
-		Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", false)
-		user.p.speedometerVisible = false
-	}
-  }
-  
-  if(args[0] == "on"){
-	if(user.p.speedometerVisible == false){
-		Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", true)
-		user.p.speedometerVisible = true
-	}
-  }
-  
-  return true
-}
-
-
-//Movement Overlay on/off
-bool
-function ClientCommand_keys(entity user, array < string > args) {
-    if( !IsValid(user) || args.len() == 0 )
-	return false
-  
-  if(args[0] == "off"){
-	if(user.p.movementOverlayVisible == true){
-		Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", false)
-		user.p.movementOverlayVisible = false
-	}
-  }
-  
-  if(args[0] == "on"){
-	if(user.p.movementOverlayVisible == false){
-		Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", true)
-		user.p.movementOverlayVisible = true
-	}
-  }
-  return true
-}
-
-//Stylemeter on/off
-bool
-function ClientCommand_style(entity user, array < string > args) {
-    if( !IsValid(user) || args.len() == 0 )
-	return false
-  
-  if(args[0] == "off"){
-	if(user.p.stylemeterVisible == true){
-		Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", false)
-		user.p.stylemeterVisible = false
-	}
-  }
-  
-  if(args[0] == "on"){
-	if(user.p.stylemeterVisible == false){
-		Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", true)
-		user.p.stylemeterVisible = true
-	}
-  }
-  return true
-}
-
-bool function _MG_Spectate_by_name(entity player, array<string> name){
-	if( !IsValid(player) || name.len() == 0 ){
-		Message(player, "Incorrect Usage", "Try: spectate playername\n Or to stop spectating try: spectate stop")
-		return false
-	}
+	StatusEffect_StopAllOfType(user, eStatusEffect.stim_visual_effect)
+	StatusEffect_StopAllOfType(user, eStatusEffect.speed_boost)
 	
-	if( Time() - player.p.lastTimeSpectateUsed < 3 )
+	// reset player's weapons
+	user.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	user.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+	user.PhaseShiftCancel()
+
+	Message(user, "Hub")
+
+	// Start Checkpoint
+	user.p.allowCheckpoint = false
+	user.p.currentCheckpoint = 0
+
+	// Reset Timer
+	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
+	user.p.isTimerActive = false
+	user.p.startTime = 0
+
+	//Re-enable invis after surf
+	user.p.isPlayerInvisAllowed = true
+	if ( !user.IsInRealm(1) )
 	{
-		Message( player, "Spam Protection", "It is in cool down. Please try again later." )
-		return false
+		user.RemoveFromAllRealms()
+		user.AddToRealm(1)
+		user.MakeVisible()
+		Message(user, "You are now Visible")
+		user.p.lastInvis = Time()
 	}
 	
+	// Force Default Player Settings
+	SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
 	
-	if(name[0] == "stop"){
-		if(IsValid(player) && player.p.isSpectating){
+	user.p.lastHub = Time()
+
+	return true
+}
+
+// command: toggle player visibility
+bool function ClientCommand_invis(entity user, array < string > args)
+{
+	if ( !IsValid(user) )
+		return true
+
+	if ( Time() - user.p.lastInvis < 3 )
+		return true
+
+	if ( !user.p.isPlayerInvisAllowed )
+	{
+		Message(user, "This action is not allowed right now")
+		return true
+	}
+
+	user.RemoveFromAllRealms()
+
+	if ( user.IsInRealm(1) )
+	{
+		user.AddToRealm(2)
+		user.MakeInvisible()
+
+		Message(user, "You are now Invisible")
+	}
+	else
+	{
+		user.AddToRealm(1)
+		user.MakeVisible()
+
+		Message(user, "You are now Visible")
+	}
+
+	user.p.lastInvis = Time()
+
+	return true
+}
+
+// command: toggle speedometer visibility
+bool function ClientCommand_meter(entity user, array < string > args)
+{
+	if ( !IsValid(user) || args.len() == 0 )
+		return true
+	
+	if ( args[0] == "off" )
+	{
+		if ( user.p.speedometerVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", false )
+			user.p.speedometerVisible = false
+		}
+	}
+	
+	if ( args[0] == "on" )
+	{
+		if ( !user.p.speedometerVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_Speedometer_toggle", true )
+			user.p.speedometerVisible = true
+		}
+	}
+	
+	return true
+}
+
+
+// command: toggle movement overlay
+bool function ClientCommand_keys(entity user, array < string > args)
+{
+	if ( !IsValid(user) || args.len() == 0 )
+		return true
+
+	if ( args[0] == "off" )
+	{
+		if ( user.p.movementOverlayVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", false)
+			user.p.movementOverlayVisible = false
+		}
+	}
+
+	if ( args[0] == "on" )
+	{
+		if ( !user.p.movementOverlayVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_MovementOverlay_toggle", true)
+			user.p.movementOverlayVisible = true
+		}
+	}
+
+	return true
+}
+
+// command: toggle stylemeter
+bool function ClientCommand_style(entity user, array < string > args)
+{
+	if ( !IsValid(user) || args.len() == 0 )
+		return true
+  
+	if ( args[0] == "off" )
+	{
+		if ( user.p.stylemeterVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", false)
+			user.p.stylemeterVisible = false
+		}
+	}
+	
+	if ( args[0] == "on" )
+	{
+		if ( !user.p.stylemeterVisible )
+		{
+			Remote_CallFunction_NonReplay( user, "MG_Ultrakill_styleemeter_toggle", true)
+			user.p.stylemeterVisible = true
+		}
+	}
+	return true
+}
+
+bool function _MG_Spectate_by_name(entity player, array<string> args)
+{
+	if( !IsValid(player) || args.len() == 0 )
+	{
+		Message(player, "Incorrect Usage", "Try: spectate playername\nOr to stop spectating try: spectate stop")
+		return true
+	}
+	
+	if ( Time() - player.p.lastTimeSpectateUsed < 3 )
+	{
+		Message( player, "Spam Protection", "Command is on cooldown. Please try again later" )
+		return true
+	}
+
+	if ( args[0] == "stop" )
+	{
+		if ( IsValid(player) && player.p.isSpectating )
+		{
 			player.p.isSpectating = false
 			player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 			player.SetObserverTarget( null )
 			player.StopObserverMode()
 			player.p.lastTimeSpectateUsed = Time()
+
 			DecideRespawnPlayer(player, true)
-			if(IsValid(player)){
+
+			if ( IsValid( player ) )
+			{
 				player.RemoveFromAllRealms()
 				player.AddToRealm(1)
 			}
+
 			return true
 		}
 	}
-	
-	if(name[0] != "stop" && player.GetPlayerName() != name[0] && !player.p.isSpectating && player.IsInRealm(1)){
-		foreach(target in GetPlayerArray_Alive()) {
-			if( target.GetPlayerName() == name[0] ){
+	else
+	{
+		if ( args[0] == player.GetPlayerName() )
+		{
+			Message( player, "Error", "You cannot spectate yourself")
+			return true
+		}
+
+		if ( player.p.isSpectating )
+		{
+			Message( player, "Error", "You are already spectating someone\nRun \"spectate stop\" and then try again" )
+			return true
+		}
+
+		if ( !player.IsInRealm(1) )
+		{
+			Message( player, "Error", "You cannot spectate players while invisible" )
+			return true
+		}
+
+		foreach ( target in GetPlayerArray_Alive() )
+		{
+			if ( target.GetPlayerName() == args[0] )
+			{
 				player.AddToAllRealms()
-				if(IsValid(target) && target.IsInRealm(1)){
+
+				if ( IsValid( target ) && target.IsInRealm(1) )
+				{
 					player.p.isSpectating = true
 					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 					player.SetPlayerNetInt( "spectatorTargetCount", 1 )
@@ -396,45 +452,49 @@ bool function _MG_Spectate_by_name(entity player, array<string> name){
 					player.p.lastTimeSpectateUsed = Time()
 					//thread _MG_Spectate_checker(player, target)
 					return true
-				} else {
+				}
+				else
+				{
 					Message(player, "Player is hidden", "or is surfing :)")
+
 					player.RemoveFromAllRealms()
 					player.AddToRealm(1)
-					return false
+
+					return true
 				}
-				
-			} else {
-				Message(player, "Invalid Player Name", "or player are already spectating someone")
-				return false
-			}	
-		}	
-	} else {
-		Message(player, "Invalid Parameters", "Possible Reasons:\n wrong username\n you are already spectating someone\n unhide players\n exit surf\n ")
-		return false
+			}
+		}
+
+		// if the player's name wasn't found in the alive player array
+		Message( player, "Error", "Invalid player\nName is either invalid, or the target is in spectate mode")
+
+		return true
 	}
 	
-	return false
+	return true
 }
 
+// glowing surf button
+entity function CreateSurfButton(vector pos, vector ang, string prompt)
+{
+	entity button = CreateEntity("prop_dynamic")
 
-//whacky glowy button
-entity
-function CreateSurfButton(vector pos, vector ang, string prompt) {
-  entity button = CreateEntity("prop_dynamic")
-  button.kv.solid = 0
-  button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
-  button.SetOrigin(pos)
-  button.SetAngles(ang)
-  DispatchSpawn(button)
-  button.SetUsable()
-  button.SetUsableByGroup("pilot")
-  button.SetUsePrompts(prompt, prompt)
-  button.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
-  button.Highlight_SetParam(0, 0, < 1.0, 1.0, 0 > )
-  return button
+	button.kv.solid = 0
+	button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
+	button.SetOrigin(pos)
+	button.SetAngles(ang)
+
+	DispatchSpawn(button)
+
+	button.SetUsable()
+	button.SetUsableByGroup("pilot")
+	button.SetUsePrompts(prompt, prompt)
+
+	button.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+	button.Highlight_SetParam(0, 0, < 1.0, 1.0, 0 > )
+
+	return button
 }
-
-
 
 //  ███    ███  █████  ██████      ███████ ███████  ██████  ███    ███ ███████ ███    ██ ████████ ███████ 
 //  ████  ████ ██   ██ ██   ██     ██      ██      ██       ████  ████ ██      ████   ██    ██    ██      

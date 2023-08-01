@@ -430,7 +430,7 @@ void function _OnPlayerConnected(entity player)
 {
 	while(IsDisconnected( player )) WaitFrame()
 
-    if(!IsValid(player)) return
+    if ( !IsValid( player ) ) return
 
 	if(FlowState_ForceCharacter() && !(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))){
 		player.SetPlayerNetBool( "hasLockedInCharacter", true)
@@ -569,7 +569,7 @@ void function _OnPlayerConnected(entity player)
 			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.2")
 			HolsterAndDisableWeapons(player)
 			wait 9
-			if(!IsValid(player)) return
+			if ( !IsValid( player ) ) return
 			
 			// EnableOffhandWeapons( player )
 			// DeployAndEnableWeapons(player)
@@ -591,8 +591,9 @@ void function _OnPlayerConnected(entity player)
 
 bool function is1v1EnabledAndAllowed()
 {
-	if (!GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+	if ( !GetCurrentPlaylistVarBool( "flowstate_1v1mode", false ) )
 		return false
+
 	switch (GetMapName())
 	{
 		case "mp_rr_arena_composite":
@@ -608,11 +609,8 @@ bool function is1v1EnabledAndAllowed()
 
 void function isChineseServer()
 {
-	if (GetCurrentPlaylistVarBool("flowstate_1v1mode_is_chinese_server", false) )
+	if ( GetCurrentPlaylistVarBool( "flowstate_1v1mode_is_chinese_server", false ) )
 	{
-		#if DEVELOPER
-		printt("is chinese server")
-		#endif
 		IS_CHINESE_SERVER = true
 	}
 }
@@ -621,7 +619,7 @@ void function __HighPingCheck(entity player)
 {
 	wait 12 //latency is always high when connecting?
 	
-    if(!IsValid(player) || IsValid(player) && IsAdmin(player) ) return
+    if( !IsValid(player) || IsValid(player) && IsAdmin(player) ) return
 
 	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
 	{
@@ -633,7 +631,7 @@ void function __HighPingCheck(entity player)
 		
 		wait 3
 
-		if(!IsValid(player)) return
+		if ( !IsValid( player ) ) return
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
 		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit." )
 		UpdatePlayerCounts()
@@ -945,7 +943,7 @@ void function CheckForObservedTarget(entity player)
 
 void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 {
-    if(!IsValid(player)) return
+    if ( !IsValid( player ) ) return
 	if( player.p.isSpectating )
 		return
 	if( player.IsObserver() )
@@ -1149,7 +1147,7 @@ void function TpPlayerToSpawnPoint(entity player)
 {
 	LocPair loc = _GetAppropriateSpawnLocation(player)
 
-	if(!IsValid(player)) return
+	if ( !IsValid( player ) ) return
     player.SetOrigin(loc.origin)
 	player.SetAngles(loc.angles)
 }
@@ -1178,7 +1176,7 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	while(Time() <= endTime)
 		wait 0.1
 	
-	if(!IsValid(player)) return
+	if ( !IsValid( player ) ) return
 	
 	player.MakeVisible()
 	player.ClearInvulnerable()
@@ -1223,14 +1221,14 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	{
 		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 		//maki script
-		if(!IsValid(tactical)) return
+		if ( !IsValid( tactical ) ) return
 		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
 	}
 	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
 	{
 		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 		//maki script
-		if(!IsValid(ultimate)) return
+		if ( !IsValid( ultimate ) ) return
 		ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
 	}
 
@@ -1261,7 +1259,7 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 
 void function WpnAutoReload( entity player )
 {	
-	if(!IsValid(player)) return
+	if ( !IsValid( player ) ) return
 
 	entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
@@ -1948,9 +1946,8 @@ void function KillStreakAnnouncer(entity player, bool died) {
     }
 }
 
-#if SERVER
-void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
 	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
 	player.SetShieldHealth( FlowState_ExtrashieldValue() )
@@ -1960,10 +1957,10 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 		}
 	}
 }
-#endif
 
-void function GiveGungameWeapon(entity player) {
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+void function GiveGungameWeapon(entity player) 
+{
 	int WeaponIndex = player.GetPlayerNetInt( "kills" )
 	int realweaponIndex = WeaponIndex
 	int MaxWeapons = 41
@@ -2031,14 +2028,14 @@ void function GiveGungameWeapon(entity player) {
 		}catch(e113){}
 }
 
- // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
+//  ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
 // ██   ███ ███████ ██ ████ ██ █████       ██      ██    ██ ██    ██ ██████
 // ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
- // ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
+//  ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
 
-void function RunTDM()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
@@ -2060,8 +2057,8 @@ void function RunTDM()
     WaitForever()
 }
 
-void function SimpleChampionUI()
 /////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
+void function SimpleChampionUI()
 {
 	//printt("Flowstate DEBUG - Game is starting.")
 
@@ -2090,9 +2087,9 @@ void function SimpleChampionUI()
 	}
 
 	if (!file.mapIndexChanged)
-		{
-			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
-		}
+	{
+		file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
+	}
 
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
@@ -2115,25 +2112,29 @@ void function SimpleChampionUI()
 	{
 		thread CreateShipRoomFallTriggers()
 	}
-	if (FlowState_RandomGuns() )
+
+	if ( FlowState_RandomGuns() )
     {
         file.randomprimary = RandomIntRangeInclusive( 0, 15 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 6 )
-    } else if (FlowState_RandomGunsMetagame())
+    }
+	else if ( FlowState_RandomGunsMetagame() )
 	{
 		file.randomprimary = RandomIntRangeInclusive( 0, 2 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
-	} else if (FlowState_RandomGunsEverydie())
+	}
+	else if ( FlowState_RandomGunsEverydie() )
 	{
 		file.randomprimary = RandomIntRangeInclusive( 0, 23 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
 	}
 
-	if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled())
+	if ( file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled() )
 	{
 		DestroyPlayerProps()
 		CreateFlowStateGroundMedKit( <10725, 5913,-4225>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
-	} else if( file.selectedLocation.name == "Skill trainer By CafeFPS" && FlowState_ExtrashieldsEnabled() )
+	}
+	else if ( file.selectedLocation.name == "Skill trainer By CafeFPS" && FlowState_ExtrashieldsEnabled() )
 	{
 		DestroyPlayerProps()
 		CreateFlowStateGroundMedKit( <17247,31823,-310>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
@@ -2347,7 +2348,7 @@ void function SimpleChampionUI()
 				// thread function() : (p)
 				// {
 					// wait 12
-					// if(!IsValid(p)) return
+					// if ( !IsValid( p ) ) return
 					// Message(p, "HACKERS VS PROS", "You're a Pro")
 				// }()			
 			// }
@@ -2359,7 +2360,7 @@ void function SimpleChampionUI()
 				thread function() : (p)
 				{
 					wait 12
-					if(!IsValid(p)) return
+					if ( !IsValid( p ) ) return
 					Message(p, "HACKERS VS PROS", "You're a Hacker")
 				}()
 			// }
@@ -2417,7 +2418,7 @@ void function SimpleChampionUI()
 			{
 				foreach(player in GetPlayerArray())
 				{
-					if(!IsValid(player)) continue
+					if ( !IsValid( player ) ) continue
 					
 					if(player.GetPlayerGameStat( PGS_KILLS ) >= HACKERS_VS_PRO_MAX_KILLS )
 					{
@@ -2517,7 +2518,7 @@ void function SimpleChampionUI()
 
 	foreach(player in GetPlayerArray())
 		{
-			if(!IsValid(player)) continue
+			if ( !IsValid( player ) ) continue
 
 			if(!IsAlive(player) && !player.p.isSpectating)
 			{
@@ -3015,7 +3016,7 @@ void function AudioThread(entity circle, entity player, float radius)
 	EmitSoundOnEntity( audio, soundToPlay )
 
 	while(IsValid(circle)){
-		if(!IsValid(player)) continue
+		if ( !IsValid( player ) ) continue
 		vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
 		vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
 		circleEdgePos.z = player.EyePosition().z
@@ -3067,7 +3068,7 @@ void function RingDamage( entity circle, float currentRadius)
 
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
-	if(!IsValid(player)) return
+	if ( !IsValid( player ) ) return
 	if(!IsAlive( player)) return
 
 	player.SetHealth( health )
@@ -3152,19 +3153,19 @@ void function Message( entity player, string text, string subText = "", float du
 		}
 	}
 	Remote_CallFunction_NonReplay( player, "Dev_PrintClientMessage", duration )
+
 	if ( sound != "" )
 		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 }
 
+// The challenger
 entity function PlayerWithMostDamage()
-//The challenger
 {
-
     int bestDamage = 0
 	entity bestPlayer
 
     foreach(player in GetPlayerArray()) {
-        if(!IsValid(player)) continue
+        if ( !IsValid( player ) ) continue
         if (int(player.p.playerDamageDealt) > bestDamage) {
             bestDamage = int(player.p.playerDamageDealt)
             bestPlayer = player
@@ -3174,34 +3175,37 @@ entity function PlayerWithMostDamage()
     return bestPlayer
 }
 
+// challenger's score
 int function GetDamageOfPlayerWithMostDamage()
-//Challenger's score
 {
     int bestDamage = 0
     foreach(player in GetPlayerArray()) {
-        if(!IsValid(player)) continue
+        if ( !IsValid( player ) ) continue
         if (int(player.p.playerDamageDealt) > bestDamage) bestDamage = int(player.p.playerDamageDealt)
     }
     return bestDamage
 }
 
-string function PlayerWithMostDamageName()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+string function PlayerWithMostDamageName()
 {
-entity player = PlayerWithMostDamage()
-if(!IsValid(player)) return "-still nobody-"
-string damagechampion = player.GetPlayerName()
-return damagechampion
+	entity player = PlayerWithMostDamage()
+	if ( !IsValid( player ) )
+		return "-still nobody-"
+
+	return player.GetPlayerName()
 }
 
+// the champion
 entity function GetBestPlayer()
-//The champion
 {
     int bestScore = 0
 	entity bestPlayer
 
-    foreach(player in GetPlayerArray()) {
-        if(!IsValid(player)) continue
+    foreach( player in GetPlayerArray() )
+	{
+        if ( !IsValid( player ) )
+			continue
         if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) {
             bestScore = player.GetPlayerGameStat( PGS_KILLS )
             bestPlayer = player
@@ -3211,44 +3215,51 @@ entity function GetBestPlayer()
     return bestPlayer
 }
 
+// champion's score
 int function GetBestPlayerScore()
-//Champion's score
 {
     int bestScore = 0
-    foreach(player in GetPlayerArray()) {
-        if(!IsValid(player)) continue
-        if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) bestScore = player.GetPlayerGameStat( PGS_KILLS )
+    foreach(player in GetPlayerArray())
+	{
+        if ( !IsValid( player ) )
+			continue
+
+        if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore)
+			bestScore = player.GetPlayerGameStat( PGS_KILLS )
     }
     return bestScore
 }
 
-string function GetBestPlayerName()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+string function GetBestPlayerName()
 {
-entity player = GetBestPlayer()
-if(!IsValid(player)) return "-still nobody-"
-string champion = player.GetPlayerName()
-return champion
+	entity player = GetBestPlayer()
+	if ( !IsValid( player ) )
+		return "-still nobody-"
+	string champion = player.GetPlayerName()
+	return champion
 }
 
-float function getkd(int kills, int deaths)
 //By michae\l/#1125 & Retículo Endoplasmático#5955
+float function getkd(int kills, int deaths)
 {
-float kd
-int floorkd
-if(deaths == 0) return kills.tofloat();
-kd = kills.tofloat() / deaths.tofloat()
-kd = kd*100
-floorkd = int(floor(kd+0.5))
-kd = (float(floorkd))/100
-return kd
+
+	if(deaths == 0)
+		return kills.tofloat();
+
+	float kd = kills.tofloat() / deaths.tofloat()
+	kd = kd*100
+
+	int floorkd = int(floor(kd+0.5))
+	kd = (float(floorkd))/100
+	return kd
 }
 
 void function SendScoreboardToClient()
 {
 	foreach(entity sPlayer in GetPlayerArray())
 	{
-		if(!IsValid(sPlayer)) continue
+		if ( !IsValid( sPlayer ) ) continue
 		
 		Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_ClearScoreboardOnClient")
 		
@@ -3256,7 +3267,7 @@ void function SendScoreboardToClient()
 		{
 			foreach(entity player in GetPlayerArray())
 			{
-				if(!IsValid(player)) continue
+				if ( !IsValid( player ) ) continue
 				
 				PlayerInfo p
 				p.eHandle = player.GetEncodedEHandle()
@@ -3304,7 +3315,7 @@ string function ScoreboardFinal(bool fromConsole = false)
 		switch(i)
 		{
 			case 0:
-				 msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
 				break
 			case 1:
 				msg = msg + "2. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
@@ -3423,7 +3434,7 @@ array<PlayerInfo> playersInfo = []
 void function ResetAllPlayerStats()
 {
     foreach(player in GetPlayerArray()) {
-        if(!IsValid(player)) continue
+        if ( !IsValid( player ) ) continue
         ResetPlayerStats(player)
     }
 }
@@ -3497,7 +3508,7 @@ bool function IsAdmin( entity player )
 
 bool function ClientCommand_VoteForMap(entity player, array<string> args)
 {
-	if(!IsValid(player))
+	if ( !IsValid( player ) )
 		return false
 	
 	if( args.len() != 1 )
@@ -3558,7 +3569,7 @@ bool function ClientCommand_MyFFAData(entity player, array < string > args)
 
 void function ShowPlayerKD(entity player, string name)
 {
-	// if(!IsValid(player)) 
+	// if ( !IsValid( player ) ) 
 		// return
 	
 	// player.p.lastTimeDataRequestUsed = Time()
@@ -4029,7 +4040,7 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 }
 bool function ClientCommand_BecomePro(entity p, array<string> args)
 {
-	if(!IsValid(p)) return false
+	if ( !IsValid( p ) ) return false
 	
 	SetTeam(p, TEAM_MILITIA)
 	ClearHackerOrBecomePro(p)
@@ -4037,7 +4048,7 @@ bool function ClientCommand_BecomePro(entity p, array<string> args)
 	thread function() : (p)
 	{
 		wait 1
-		if(!IsValid(p)) return
+		if ( !IsValid( p ) ) return
 		Message(p, "HACKERS VS PROS", "You're a Pro")
 	}()
 	return true
@@ -4162,7 +4173,7 @@ string function modChecker( string weaponMods )
 //Auto-load TDM Saved Weapons at Respawn
 void function LoadCustomWeapon(entity player)
 {
-	if(!IsValid(player)) return
+	if ( !IsValid( player ) ) return
 	if (player.GetPlayerName() in weaponlist)
 	{
 		// TakeAllWeapons(player)
@@ -4195,7 +4206,7 @@ void function LoadCustomWeapon(entity player)
 
 		wait 0.3
 
-		if(!IsValid(player)) return
+		if ( !IsValid( player ) ) return
 
 		WpnAutoReload(player)
 		WpnPulloutOnRespawn(player, 0)
@@ -4261,7 +4272,7 @@ bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 
 void function GivePlayerRandomCharacter(entity player)
 {
-	if(!IsValid(player)) 
+	if ( !IsValid( player ) ) 
 		return
 	
 	array<ItemFlavor> characters = GetAllCharacters()
@@ -4341,7 +4352,7 @@ void function ClearHackerOrBecomePro(entity player)
 	thread function() : (player)
 	{
 		wait 1
-		if(!IsValid(player)) return
+		if ( !IsValid( player ) ) return
 		Highlight_SetFriendlyHighlight( player, "infection_survivor_teammate" )
 		Highlight_ClearFriendlyHighlight( player )
 		Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
