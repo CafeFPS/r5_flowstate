@@ -398,9 +398,8 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
 		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 
-	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
-	if(GameRules_GetGameMode() == SURVIVAL)
-		TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+	if( GameRules_GetGameMode() == SURVIVAL )
+		TakeAllPassives( player )
 }
 
 void function GiveLoadoutRelatedWeapons( entity player )
