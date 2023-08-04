@@ -525,7 +525,7 @@ bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
         } catch (e) {}
 
         try{
-            string now = args[1]
+            now = args[1]
             if (now == "now")
             {
                 surf.tdmState = eTDMState.NEXT_ROUND_NOW
