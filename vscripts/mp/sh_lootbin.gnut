@@ -113,6 +113,20 @@ void function EntitiesDidLoad()
 
 void function InitLootBinFromMap( entity lootbin )
 {
+	if(GameRules_GetGameMode() == "flowstate_infection")
+	{
+		if ( file.lootBinList.contains( lootbin ) )
+			return
+		lootbin.SetScriptName(MYSTERY_BOX_SCRIPT_NAME)
+		AddMysteryBox(lootbin)
+		SetMysteryBoxUsable(lootbin)
+		file.numLootBins++
+		file.lootBinList.append( lootbin )
+	
+		printt( "new infected lootbin" )
+		return
+	}
+	
 	SURVIVAL_AddLootBin( lootbin )
 
 	if ( IsValid( lootbin ) )
@@ -608,7 +622,15 @@ bool function LootBin_IsBusy( entity lootbin )
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
 {
-	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME )
+	if(GameRules_GetGameMode() == "flowstate_infection")
+	{
+		AddMysteryBox( lootbin )
+		SetMysteryBoxUsable( lootbin )		
+		file.lootBinList.append( lootbin )
+		return
+	}
+	
+	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME && lootbin.GetScriptName() != "smartbin")
 		return
 
 	AddEntityCallback_GetUseEntOverrideText( lootbin, GetLootBinUseTextOverride )

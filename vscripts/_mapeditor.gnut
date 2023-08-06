@@ -473,7 +473,12 @@ void function OnPickupFromRackThread(entity item, string ref, float spawnTime, b
 entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin = 0, bool addToArray = false )
 {
     entity lootbin = CreateEntity( "prop_dynamic" )
-    lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+
+	if( GameRules_GetGameMode() == "flowstate_infection" )
+		lootbin.SetScriptName( MYSTERY_BOX_SCRIPT_NAME )
+	else
+		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+
     lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
     lootbin.SetOrigin( origin )
     lootbin.SetAngles( angles )

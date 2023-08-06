@@ -234,6 +234,9 @@ void function Train_OnPlayerConnected( entity player )
 
 void function Flowstate_Train_SetupBinsAtStation()
 {
+	if( GameRules_GetGameMode() == "flowstate_infection" )
+		return
+	
 	entity funcBrush
 	entity doors
 	entity lootBin

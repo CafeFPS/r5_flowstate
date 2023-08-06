@@ -379,8 +379,8 @@ Scripts:
 
 	_ultimates.gnut
 	sh_survival_persistentdamagelayer.gnut
-	gamemodes/sh_gamemode_shadow_squad.nut
-	
+	gamemodes/shadowfall/sh_gamemode_shadow_squad.nut
+	gamemodes/shadowfall/sh_gamemode_shadow_squad_precache.nut
 ]
 
 When: "SERVER"
@@ -943,6 +943,9 @@ Scripts:
 	gamemodes/fs_aimtrainer/sh_gamemode_aimtrainer.nut
 	gamemodes/fs_prophunt/sh_gamemode_prophunt.nut
 	gamemodes/fs_duckhunt/sh_gamemode_duckhunt.nut
+	gamemodes/fs_infection/sh_gamemode_infection.nut	
+	gamemodes/util/sh_custom_zombie_mystery_box.nut
+	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
 ]
 
@@ -954,6 +957,7 @@ Scripts:
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/_gamemode_prophunt.nut
+	gamemodes/fs_infection/_gamemode_infection.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
 	
@@ -987,6 +991,7 @@ Scripts:
 	gamemodes/fs_aimtrainer/cl_gamemode_aimtrainer.nut
 	gamemodes/fs_duckhunt/cl_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
+	gamemodes/fs_infection/cl_gamemode_infection.nut	
 	lobby/lobbyvm/cl_lobbyvm.nut
 ]
 

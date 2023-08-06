@@ -75,7 +75,7 @@ void function Open_FSDM_VotingPhase()
 		switch(GetCurrentPlaylistName())
 		{
 			case "fs_prophunt":
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE PROPHUNT" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS PROPHUNT" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 
@@ -85,20 +85,25 @@ void function Open_FSDM_VotingPhase()
 			break
 			
 			case "flowstate_snd":
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "SEARCH AND DESTROY" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS SEARCH AND DESTROY" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 			
 			case "flowstate_pkknockback":
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE PK PUSHBACK" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS PK PUSHBACK" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 						
 			case "flowstate_infection":
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE INFECTED" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS INFECTION" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 			
+			case "fs_1v1":
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS 1v1" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by makimakima#5561, mantained by @CafeFPS" )
+			break
+
 			default:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE SCRIPTS" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )

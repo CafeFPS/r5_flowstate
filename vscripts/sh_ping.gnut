@@ -165,6 +165,12 @@ global enum ePingType
 		SHADOWFALL_NEMESIS,
 
 		EDITOR_MODE,
+		
+	BOOSTZONE,
+	SPEEDZONE,
+	RAPIDFIREZONE,
+	SND_BOMB,
+	
 	_count
 }
 
@@ -292,7 +298,10 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs, bool is
 		case ePingType.ENEMY_TELEPORTER:
 		case ePingType.ENEMY_SHIELD:
 			return (isOurs ? PING_SOUND_ENEMY_1P : PING_SOUND_ENEMY_3P)
-
+		
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 		case ePingType.ABILITY_DOMESHIELD:
 		case ePingType.ABILITY_DRONEMEDIC:
 		case ePingType.ABILITY_WORMHOLE:
@@ -302,7 +311,8 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs, bool is
 		case ePingType.SHADOWFALL_LEGEND_DEATH:
 		case ePingType.SHADOWFALL_SHADOW_DEATH:
 		case ePingType.SHADOWFALL_NEMESIS:
-
+		case ePingType.SND_BOMB:
+		
 			return ""
 	}
 
@@ -929,6 +939,8 @@ bool function PingIsAllowed( entity player )
 		return false
 	if ( GetGameState() == eGameState.PickLoadout )
 		return false
+	if ( GetGameState() == eGameState.WaitingForPlayers && !GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
+		return false
 	if ( player.GetPlayerNetBool( "pingEnabled" ) == false )
 		return false
 
@@ -1170,7 +1182,14 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 				//DoClickAsOwner( player, wp )
 				switch ( pingType )
 				{
+					case ePingType.SHADOWFALL_LEGEND_DEATH:
+					case ePingType.SHADOWFALL_SHADOW_DEATH:
+					case ePingType.SHADOWFALL_NEMESIS:
+					case ePingType.SND_BOMB:
 					case ePingType.ENEMY_SPECIFIC:
+					case ePingType.BOOSTZONE:
+					case ePingType.SPEEDZONE:
+					case ePingType.RAPIDFIREZONE:
 						results.append( ePingReply.BLANK )
 						break
 
@@ -1192,6 +1211,16 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 			{
 				switch ( pingType )
 				{
+					case ePingType.SHADOWFALL_LEGEND_DEATH:
+					case ePingType.SHADOWFALL_SHADOW_DEATH:
+					case ePingType.SND_BOMB:
+					case ePingType.SHADOWFALL_NEMESIS:
+					case ePingType.BOOSTZONE:
+					case ePingType.SPEEDZONE:
+					case ePingType.RAPIDFIREZONE:
+						results.append( ePingReply.BLANK )
+						break
+						
 					case ePingType.ENEMY_SPECIFIC:
 						results.append( ePingReply.OK )
 						break
@@ -2246,20 +2275,29 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 			case "npc_boss_guts":
 			case "npc_training_dummy":
 			case "npc_dummie_combat":
-			case "npc_spider":
-			case "npc_soldier_infected":
-			case "npc_prowler":
 			case "npc_marvin":
-				// no specific callouts for these
-				break;
+				return eCommsAction.PING_ENEMY_SPOTTED_GENERAL
 
 				// Infantry:
 
 			case "npc_soldier_spcore_sniper":
 				return eCommsAction.PING_ENEMY_NPC_SNIPER
 
-				// Robots:
+			case "npc_soldier_infected":
+				return eCommsAction.PING_ENEMY_NPC_INFECTED
 
+			// npc pilots:
+			case "npc_pilot_elite":
+            case "npc_pilot_elite_assassin":
+            case "npc_pilot_elite_assassin_cqb":
+				return eCommsAction.PING_ENEMY_SPOTTED_GENERAL
+            case "npc_pilot_elite_assassin_sniper":
+				return eCommsAction.PING_ENEMY_NPC_SNIPER
+
+			// Robots:
+
+			case "npc_spectre":
+			case "npc_spectre_mortar":
 			case "npc_spectre_outlands":
 				return eCommsAction.PING_ENEMY_NPC_SPECTRE
 
@@ -2269,28 +2307,119 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 			case "npc_super_spectre_melee":
 				return eCommsAction.PING_ENEMY_NPC_REAPER
 
+			case "npc_drone":
+			case "npc_drone_beam":
+			case "npc_drone_cloaked":
 			case "npc_drone_plasma":
+			case "npc_drone_plasma_fast":
+			case "npc_drone_plasma_fd":
+			case "npc_drone_rocket":
+			case "npc_drone_rocket_fast":
+			case "npc_drone_shield":
+			case "npc_drone_worker":
+			case "npc_drone_worker_fast":
 				return eCommsAction.PING_ENEMY_NPC_DRONE
 
+			case "npc_frag_drone":
+			case "npc_frag_drone_fd":
+			case "npc_frag_drone_throwable":
 			case "npc_frag_drone_outlands":
 				return eCommsAction.PING_ENEMY_NPC_TICK
 
-			case "npc_titan_outlands":
-				return eCommsAction.PING_ENEMY_NPC_TITAN
-
-				// Creatures:
+			// Creatures:
 
 			case "npc_spider":
 				return eCommsAction.PING_ENEMY_NPC_SPIDER
-
+			case "npc_prowler":
+				return eCommsAction.PING_ENEMY_NPC_PROWLER
 			case "npc_goliath":
 				return eCommsAction.PING_ENEMY_NPC_GOLIATH
 
-			case "npc_soldier_infected":
-				return eCommsAction.PING_ENEMY_NPC_INFECTED
+			case "npc_gunship":
+			    return eCommsAction.PING_ENEMY_NPC_GUNSHIP
+
+			// titans
+
+			case "npc_titan_outlands":
+			case "npc_titan":
+			case "npc_titan_arc":
+			case "npc_titan_atlas":
+			case "npc_titan_atlas_ion_prime_bounty":
+			case "npc_titan_atlas_stickybomb":
+			case "npc_titan_atlas_stickybomb_boss_fd":
+			case "npc_titan_atlas_stickybomb_bounty":
+			case "npc_titan_atlas_tracker":
+			case "npc_titan_atlas_tracker_boss_fd":
+			case "npc_titan_atlas_tracker_bounty":
+			case "npc_titan_atlas_tracker_fd_sniper":
+			case "npc_titan_atlas_tracker_mortar":
+			case "npc_titan_atlas_vanguard":
+			case "npc_titan_atlas_vanguard_boss_fd":
+			case "npc_titan_atlas_vanguard_bounty":
+			case "npc_titan_auto":
+			case "npc_titan_auto_atlas":
+			case "npc_titan_auto_atlas_ion_prime":
+			case "npc_titan_auto_atlas_rocketeer":
+			case "npc_titan_auto_atlas_stickybomb":
+			case "npc_titan_auto_atlas_tone_prime":
+			case "npc_titan_auto_atlas_tracker":
+			case "npc_titan_auto_atlas_vanguard":
+			case "npc_titan_auto_ogre":
+			case "npc_titan_auto_ogre_fighter":
+			case "npc_titan_auto_ogre_legion_prime":
+			case "npc_titan_auto_ogre_meteor":
+			case "npc_titan_auto_ogre_minigun":
+			case "npc_titan_auto_ogre_scorch_prime":
+			case "npc_titan_auto_stryder":
+			case "npc_titan_auto_stryder_arc":
+			case "npc_titan_auto_stryder_leadwall":
+			case "npc_titan_auto_stryder_northstar_prime":
+			case "npc_titan_auto_stryder_ronin_prime":
+			case "npc_titan_auto_stryder_sniper":
+			case "npc_titan_buddy":
+			case "npc_titan_buddy_s2s":
+			case "npc_titan_buddy_skyway":
+			case "npc_titan_mortar":
+			case "npc_titan_nuke":
+			case "npc_titan_ogre":
+			case "npc_titan_ogre_fighter":
+			case "npc_titan_ogre_fighter_berserker_core":
+			case "npc_titan_ogre_legion_prime_bounty":
+			case "npc_titan_ogre_meteor":
+			case "npc_titan_ogre_meteor_boss_fd":
+			case "npc_titan_ogre_meteor_bounty":
+			case "npc_titan_ogre_meteor_nuke":
+			case "npc_titan_ogre_minigun":
+			case "npc_titan_ogre_minigun_boss_fd":
+			case "npc_titan_ogre_minigun_bounty":
+			case "npc_titan_ogre_minigun_nuke":
+			case "npc_titan_ogre_scorch_prime_bounty":
+			case "npc_titan_proto_stasisgun":
+			case "npc_titan_sarah":
+			case "npc_titan_sniper":
+			case "npc_titan_stryder":
+			case "npc_titan_stryder_arc":
+			case "npc_titan_stryder_leadwall":
+			case "npc_titan_stryder_leadwall_arc":
+			case "npc_titan_stryder_leadwall_boss_fd":
+			case "npc_titan_stryder_leadwall_bounty":
+			case "npc_titan_stryder_leadwall_shift_core":
+			case "npc_titan_stryder_northstar_prime_bounty":
+			case "npc_titan_stryder_rocketeer":
+			case "npc_titan_stryder_rocketeer_dash_core":
+			case "npc_titan_stryder_sniper":
+			case "npc_titan_stryder_sniper_boss_fd":
+			case "npc_titan_stryder_sniper_bounty":
+			case "npc_titan_stryder_sniper_fd":
+			case "npc_titan_vanguard":
+				return eCommsAction.PING_ENEMY_NPC_TITAN
 
 			default:
+			{
 				Warning( "%s() - Unhandled npc type '%s'.", FUNC_NAME(), settingsName )
+				return eCommsAction.PING_ENEMY_SPOTTED_GENERAL
+			}
+
 		}
 	}
 
@@ -2498,7 +2627,7 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 
 		case ePingType.SHADOWFALL_LEGEND_DEATH:
 			return eCommsAction.SHADOWFALL_LEGEND_DEATH
-
+		
 		case ePingType.SHADOWFALL_SHADOW_DEATH:
 			return eCommsAction.SHADOWFALL_SHADOW_DEATH
 
@@ -2531,12 +2660,16 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 		case ePingType.ABILITY_DRONEMEDIC:
 			return eCommsAction.SPAWN_DRONEMEDIC
 
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 		case ePingType.ABILITY_DOMESHIELD:
 		case ePingType.ABILITY_JUMPPAD:
 		case ePingType.BLEEDOUT:
 		case ePingType.SELF_REVIVE:
 		case ePingType.RESPAWN_CARD:
 		case ePingType.RESPAWN_BANNER:
+		case ePingType.SND_BOMB:
 			return eCommsAction.BLANK
 
 		case ePingType.BLOODHOUND_POI_TRAVELER:
@@ -2637,13 +2770,16 @@ asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedE
 			}
 
 			return RESPAWN_BEACON_ICON
-
+		
 		case ePingType.ABILITY_DOMESHIELD:
 			return $"rui/hud/tactical_icons/tactical_gibraltar"
-
+	
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 		case ePingType.SELF_REVIVE:
 			return $"rui/hud/gametype_icons/hunted/bleedout_selfrevive_icon"
-
+	
 		case ePingType.ABILITY_JUMPPAD:
 			return $"rui/hud/ultimate_icons/ultimate_octane_in_world"
 	}
@@ -2660,6 +2796,9 @@ asset function Ping_IconForPing_Minimap( entity player, int pingType, entity pin
 		case ePingType.RESPAWN_CARD: //Should probably use the triangle icon
 		case ePingType.BLEEDOUT:
 		case ePingType.RESPAWN_BANNER:
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 			return $"rui/hud/unitframes/frame_status_mask"
 	}
 
@@ -2673,6 +2812,9 @@ asset function Ping_IconForPing_Bigmap( entity player, int pingType, entity ping
 		case ePingType.RESPAWN_CARD: //Should probably use the triangle icon
 		case ePingType.BLEEDOUT:
 		case ePingType.RESPAWN_BANNER:
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 			return $"rui/hud/unitframes/frame_status_mask"
 	}
 
@@ -2714,6 +2856,9 @@ asset function Ping_RuiForPing_Hud( entity player, int pingType, entity pingedEn
 			return $"ui/waypoint_ping_entpos.rpak"
 
 		case ePingType.BLEEDOUT:
+		case ePingType.BOOSTZONE:
+		case ePingType.SPEEDZONE:
+		case ePingType.RAPIDFIREZONE:
 		case ePingType.RESPAWN_BANNER:
 
 			return $"ui/waypoint_status_timer_entpos.rpak"
@@ -2801,7 +2946,17 @@ vector function Ping_IconColorForPing_Hud( int pingType, bool isSameTeam )
 		case ePingType.RESPAWN_BANNER:
 			color = SrgbToLinear( GetKeyColor( COLORID_HUD_HEAL_COLOR ) / 255.0 )
 			break
-
+			
+		case ePingType.BOOSTZONE:
+			color = SrgbToLinear( Vector(0, 179, 255) / 255.0 )
+			break
+		case ePingType.SPEEDZONE:
+			color = SrgbToLinear( Vector(230, 0, 255) / 255.0 )
+			break
+		case ePingType.RAPIDFIREZONE:
+			color = SrgbToLinear( Vector(221, 255, 0) / 255.0 )
+			break
+			
 		default:
 			color = <1.0, 1.0, 1.0>
 	}

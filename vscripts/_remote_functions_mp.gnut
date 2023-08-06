@@ -144,19 +144,32 @@ void function RemoteFunctions_Init_Begin()
 			// Remote_RegisterUIFunction("SND_Disable_IMCButton")
 			// Remote_RegisterUIFunction("SND_Disable_MILITIAButton")
 			// break
-		// case flowstate_infection:
-			// Remote_RegisterClientFunction("ApplyInfectedHUD")
-			// Remote_RegisterClientFunction("CleanUpInfectedClientEffects")
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_OpenVotingPhase", "bool")
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_ChampionScreenHandle", "bool", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_UpdateVotingMaps", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_UpdateMapVotesClient", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
-			// Remote_RegisterClientFunction("ServerCallback_CoolCameraOnMenu")
-			// Remote_RegisterClientFunction("ServerCallback_FSDM_CoolCamera")
-			// Remote_RegisterClientFunction("INFECTION_QuickHint", "int", -25, 255, "bool", "int", INT_MIN, INT_MAX)
-			// Remote_RegisterClientFunction("ShowInfectedNearUI", "bool")
-			// break
+		case flowstate_infection:
+			Remote_RegisterClientFunction("ApplyInfectedHUD")
+			Remote_RegisterClientFunction("CleanUpInfectedClientEffects")
+			Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)
+			Remote_RegisterClientFunction("ServerCallback_FSDM_OpenVotingPhase", "bool")
+			Remote_RegisterClientFunction("ServerCallback_FSDM_ChampionScreenHandle", "bool", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
+			Remote_RegisterClientFunction("ServerCallback_FSDM_UpdateVotingMaps", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
+			Remote_RegisterClientFunction("ServerCallback_FSDM_UpdateMapVotesClient", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
+			Remote_RegisterClientFunction("ServerCallback_CoolCameraOnMenu")
+			Remote_RegisterClientFunction("ServerCallback_FSDM_CoolCamera")
+			Remote_RegisterClientFunction("INFECTION_QuickHint", "int", -25, 255, "bool", "int", INT_MIN, INT_MAX)
+			Remote_RegisterClientFunction("ShowInfectedNearUI", "bool")
+
+			//Evac
+			Remote_RegisterClientFunction( "Infection_CreateEvacCountdown", "int", 0, 255) 
+			Remote_RegisterClientFunction( "Infection_DestroyEvacCountdown" )
+			Remote_RegisterClientFunction( "CreateCoolCameraForCoolDropship", "entity")
+			Remote_RegisterClientFunction( "SignalToDestroyDropshipCamera" )
+			Remote_RegisterClientFunction( "Infection_CreateEvacShipMinimapIcons", "entity")
+
+			//Mystery Box
+			Remote_RegisterClientFunction( "ServerCallback_MysteryBoxPrinttObituary", "entity" )
+			Remote_RegisterClientFunction( "ServerCallback_MysteryBoxIsUsable", "entity", "bool" )
+			Remote_RegisterClientFunction( "ServerCallback_SetWeaponMysteryBoxUsable", "entity")
+			Remote_RegisterClientFunction( "ServerCallback_MysteryBoxChangeLocation_DoAnnouncement" )
+			break
 		case fs_duckhunt:
 			Remote_RegisterClientFunction("DUCKHUNT_CustomHint", "int", 0, 255, "int", INT_MIN, INT_MAX)
 			Remote_RegisterClientFunction("DUCKHUNT_Timer", "bool", "float", 0.0, 1000000.0, 32)

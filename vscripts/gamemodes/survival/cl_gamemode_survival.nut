@@ -1132,7 +1132,14 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackFloat( statusRui, "deathfieldDistance", player, RUI_TRACK_DEATHFIELD_DISTANCE )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
-	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true )
+	
+	if(GameRules_GetGameMode() != "flowstate_snd")
+	{
+		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
+		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
+	}
+	
+	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true || GameRules_GetGameMode() == "flowstate_infection")
 	{
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount2", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingShadowPlayerCount" ) )
@@ -3915,6 +3922,9 @@ void function ShowChampionVictoryScreen( int winningTeam )
 
 asset function GetChampionScreenRuiAsset()
 {
+	if(GameRules_GetGameMode() == "flowstate_infection")
+		return $"ui/shadowfall_legend_champion_screen.rpak"
+
 	if ( file.customChampionScreenRuiAsset != $"" )
 		return file.customChampionScreenRuiAsset
 
