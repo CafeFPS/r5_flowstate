@@ -322,28 +322,26 @@ void function AnimWindow_PlaySound_Precache( var settingsBlock )
 
 void function AnimWindow_PlaySound_Start( ScriptAnimWindow window, var settingsBlock )
 {
-	try{
-		string soundEventName = GetSettingsBlockString( settingsBlock, "soundEventName" )
-		
-		if( soundEventName == "settings/scriptAnimWIndow/sound_spider_casual_idle.rpak" ) return
-		
-		#if SERVER
-			Assert( 0, "Not Yet Implemented" )
-		#elseif CLIENT
-			entity viewPlayer = GetLocalViewPlayer()
-			if ( IsValid( viewPlayer ) && !viewPlayer.DoesShareRealms( window.ent ) )
-			{
-				windowSoundHandleMap[window.stringID] <- null
-				return
-			}
-			var soundHandle = EmitSoundOnEntity( window.ent, soundEventName )
+	string soundEventName = GetSettingsBlockString( settingsBlock, "soundEventName" )
+	
+	if( soundEventName == "settings/scriptAnimWIndow/sound_spider_casual_idle.rpak" ) return
+	
+	#if SERVER
+		Assert( 0, "Not Yet Implemented" )
+	#elseif CLIENT
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( IsValid( viewPlayer ) && !viewPlayer.DoesShareRealms( window.ent ) )
+		{
+			windowSoundHandleMap[window.stringID] <- null
+			return
+		}
+		var soundHandle = EmitSoundOnEntity( window.ent, soundEventName )
 
-			#if DEVELOPER
-				disableoverwrite( windowSoundHandleMap )
-			#endif
-			windowSoundHandleMap[window.stringID] <- soundHandle
+		#if DEVELOPER
+			disableoverwrite( windowSoundHandleMap )
 		#endif
-	}catch(e420){}
+		windowSoundHandleMap[window.stringID] <- soundHandle
+	#endif
 }
 
 
@@ -355,16 +353,14 @@ void function AnimWindow_PlaySound_Transition( ScriptAnimWindow window, var sett
 
 void function AnimWindow_PlaySound_Stop( ScriptAnimWindow window, var settingsBlock )
 {
-	try{
-		#if SERVER
-			Assert( 0, "NYI" )
-		#elseif CLIENT
-			entity viewPlayer = GetLocalViewPlayer()
-			if ( windowSoundHandleMap[window.stringID] )
-				StopSound( windowSoundHandleMap[window.stringID] )
-			delete windowSoundHandleMap[window.stringID]
-		#endif
-	}catch(e420){}
+	#if SERVER
+		Assert( 0, "NYI" )
+	#elseif CLIENT
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( windowSoundHandleMap[window.stringID] )
+			StopSound( windowSoundHandleMap[window.stringID] )
+		delete windowSoundHandleMap[window.stringID]
+	#endif
 }
 
 
@@ -383,16 +379,13 @@ table<string, AnimWindow_PlayFX_HandleOrNull> windowFXHandleMap = {}
 
 void function AnimWindow_PlayFX_Precache( var settingsBlock )
 {
-	try{
 	asset particleAsset = GetSettingsBlockStringAsAsset( settingsBlock, "particleSystemName" )
 	PrecacheParticleSystem( particleAsset )
-	}catch(e420){}
 }
 
 
 void function AnimWindow_PlayFX_Start( ScriptAnimWindow window, var settingsBlock )
 {
-	try{
 	asset particleAsset     = GetSettingsBlockStringAsAsset( settingsBlock, "particleSystemName" )
 	int particleSystemIndex = GetParticleSystemIndex( particleAsset )
 
@@ -464,7 +457,6 @@ void function AnimWindow_PlayFX_Start( ScriptAnimWindow window, var settingsBloc
 	#endif
 
 	windowFXHandleMap[window.stringID] <- fxHandleOrNull
-	}catch(e420){}
 }
 
 
@@ -722,38 +714,34 @@ void function RegisterAnimWindowType( bool isForThisVM, string type,
 #if SERVER
 void function CodeCallback_AnimWindowPrecache( asset windowSettingsAsset )
 {
-	try{
-		var block = GetSettingsBlockForAsset( windowSettingsAsset )
+	var block = GetSettingsBlockForAsset( windowSettingsAsset )
 
-		string windowType = GetSettingsBlockString( block, "type" )
-		Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
 
-		#if SCRIPT_ANIM_WINDOWS_DEBUG
-			printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
-		#endif
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
+	#endif
 
-		AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
-		if ( awti.precacheFunc != null )
-			awti.precacheFunc( block )
-	}catch(e420){}
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	if ( awti.precacheFunc != null )
+		awti.precacheFunc( block )
 }
 #elseif CLIENT
 void function ClientCodeCallback_AnimWindowPrecache( asset windowSettingsAsset )
 {
-	try{
-		var block = GetSettingsBlockForAsset( windowSettingsAsset )
+	var block = GetSettingsBlockForAsset( windowSettingsAsset )
 
-		string windowType = GetSettingsBlockString( block, "type" )
-		Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
 
-		#if SCRIPT_ANIM_WINDOWS_DEBUG
-			printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
-		#endif
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
+	#endif
 
-		AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
-		if ( awti.precacheFunc != null )
-			awti.precacheFunc( block )
-	}catch(e420){}
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	if ( awti.precacheFunc != null )
+		awti.precacheFunc( block )
 }
 #endif
 
@@ -761,22 +749,20 @@ void function ClientCodeCallback_AnimWindowPrecache( asset windowSettingsAsset )
 #if CLIENT
 void function ClientCodeCallback_AnimWindowStart( ScriptAnimWindow window )
 {
-	try{
-		Assert( IsValid( window.ent ) )
+	Assert( IsValid( window.ent ) )
 
-		var block = GetSettingsBlockForAsset( window.settingsAsset )
+	var block = GetSettingsBlockForAsset( window.settingsAsset )
 
-		string windowType = GetSettingsBlockString( block, "type" )
-		Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
 
-		#if SCRIPT_ANIM_WINDOWS_DEBUG
-			printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName + "; startCycle: " + window.startCycle + "><><><><><><><><><><" )
-		#endif
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName + "; startCycle: " + window.startCycle + "><><><><><><><><><><" )
+	#endif
 
-		AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
-		Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
-		awti.startFunc( window, block )
-	}catch(e420){}
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
+	awti.startFunc( window, block )
 }
 #endif
 
@@ -784,23 +770,21 @@ void function ClientCodeCallback_AnimWindowStart( ScriptAnimWindow window )
 #if CLIENT
 void function ClientCodeCallback_AnimWindowTransition( ScriptAnimWindow window )
 {
-	try{
-		Assert( IsValid( window.ent ) )
+	Assert( IsValid( window.ent ) )
 
-		var block = GetSettingsBlockForAsset( window.settingsAsset )
+	var block = GetSettingsBlockForAsset( window.settingsAsset )
 
-		string windowType = GetSettingsBlockString( block, "type" )
-		Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
 
-		#if SCRIPT_ANIM_WINDOWS_DEBUG
-			printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName )
-		#endif
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName )
+	#endif
 
-		AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
-		Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
-		if ( awti.transitionFunc != null )
-			awti.transitionFunc( window, block )
-	}catch(e420){}
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
+	if ( awti.transitionFunc != null )
+		awti.transitionFunc( window, block )
 }
 #endif
 
@@ -808,7 +792,6 @@ void function ClientCodeCallback_AnimWindowTransition( ScriptAnimWindow window )
 #if CLIENT
 void function ClientCodeCallback_AnimWindowStop( ScriptAnimWindow window )
 {
-	try{
 	Assert( IsValid( window.ent ) )
 
 	var block = GetSettingsBlockForAsset( window.settingsAsset )
@@ -823,7 +806,6 @@ void function ClientCodeCallback_AnimWindowStop( ScriptAnimWindow window )
 	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
 	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
 	awti.stopFunc( window, block )
-	}catch(e420){}
 }
 #endif
 

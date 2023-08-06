@@ -498,24 +498,25 @@ void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity play
     Message( player, "Map Finished", "Congrats you finished surf_kitsune", 5.0 )
 }
 
-
-bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 //Thanks Archtux#9300
 //Modified by Retículo Endoplasmático#5955 and michae\l/#1125
+bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 {
-if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin1 || player.GetPlayerName() == surf.admin2 || player.GetPlayerName() == surf.admin3 || player.GetPlayerName() == surf.admin4) {
-	
-    if (args.len()) {
+    if ( !IsValid( player ) )
+        return true
+    
+    if ( player.GetPlayerName() != surf.Hoster && player.GetPlayerName() != surf.admin1 && player.GetPlayerName() != surf.admin2 && player.GetPlayerName() != surf.admin3 && player.GetPlayerName() != surf.admin4 )
+        return false
 
-        try{
-            string now = args[0]
-            if (now == "now")
-            {
-               surf.tdmState = eTDMState.NEXT_ROUND_NOW
-			   surf.mapIndexChanged = false
-			   return true
-            }
-        } catch(e1) {}
+    if ( args.len() )
+    {
+        string now = args[0]
+        if (now == "now")
+        {
+            surf.tdmState = eTDMState.NEXT_ROUND_NOW
+            surf.mapIndexChanged = false
+            return true
+        }
 
         try{
             int mapIndex = int(args[0])
@@ -524,17 +525,14 @@ if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin
         } catch (e) {}
 
         try{
-            string now = args[1]
+            now = args[1]
             if (now == "now")
             {
-               surf.tdmState = eTDMState.NEXT_ROUND_NOW
+                surf.tdmState = eTDMState.NEXT_ROUND_NOW
             }
         } catch(e2) {}
     }
-	}
-	else {
-	return false
-	}
+	
 	return true
 }
 
