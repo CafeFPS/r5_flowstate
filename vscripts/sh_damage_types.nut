@@ -57,6 +57,7 @@ global enum eDamageSourceId
 	damagedef_creeping_bombardment_detcord_explosion
 	damagedef_tank_bombardment_detcord_explosion
 	damagedef_defensive_bombardment
+	damagedef_loot_drone_explosion
 
 	//Custom
 	damagedef_DocDrone

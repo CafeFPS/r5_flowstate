@@ -1167,7 +1167,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	ClearPlayerEliminated( player )
 	player.p.respawnPodLanded = true
 	DecideRespawnPlayer( player )
-	GiveBasicSurvivalItems( player )
 	ResetPlayerInventory( player )
 	player.SetOrigin( ship.GetOrigin() )
 
@@ -1189,6 +1188,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	player.SetAngles( player.GetAngles() ) // this works don't change it	
 	player.ClearInvulnerable()
 	player.UnfreezeControlsOnServer() //once jumped, return controls
+	GiveBasicSurvivalItems( player )
 
 	FallTempAirControl( player )
 	

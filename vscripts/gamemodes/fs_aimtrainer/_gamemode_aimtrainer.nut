@@ -2240,21 +2240,6 @@ entity function CreateAimtrainerDeathbox( entity player, vector origin)
 		AddToDeathBox( loot, deathBox )
 	}
 
-		entity energy = SpawnGenericLoot( "special", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
-		AddToDeathBox( energy, deathBox )
-		
-		entity shotgun = SpawnGenericLoot( "shotgun", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
-		AddToDeathBox( shotgun, deathBox )
-		
-		entity heavy = SpawnGenericLoot( "highcal", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
-		AddToDeathBox( heavy, deathBox )
-		
-		entity light = SpawnGenericLoot( "bullet", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
-		AddToDeathBox( light, deathBox )
-		
-		entity sniper = SpawnGenericLoot( "sniper", deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
-		AddToDeathBox( sniper, deathBox )
-		
 	UpdateDeathBoxHighlight( deathBox )
 
 	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )

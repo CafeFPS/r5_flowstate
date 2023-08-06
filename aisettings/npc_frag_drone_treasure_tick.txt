@@ -16,6 +16,7 @@ npc_frag_drone_treasure_tick
 
 	mechanical						1
 	creature                        1
+	nonCombatAI						1
 
 	DefaultModelName				"mdl/robots/drone_frag/drone_frag_loot.rmdl"
 	DefaultModelName_IMC			"mdl/robots/drone_frag/drone_frag_loot.rmdl"

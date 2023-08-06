@@ -97,6 +97,9 @@ global struct ClientEntityStruct
 	float lastGrappleTime
 	bool firsttime = true
 	int shieldTier
+	
+	//extra survival int property ( max shield for infinite shield )
+	int extraSurvivalProperty = -1
 }
 
 

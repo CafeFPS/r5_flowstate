@@ -120,7 +120,13 @@ array<string> function Flowstate_BuildLifelineCarePackageLoot(entity ownerPlayer
 
 		if( currentShieldTier >= 3 && !found )
 		{
-			LootData data = SURVIVAL_Loot_GetLootDataByRef( "armor_pickup_lv3" )
+			LootData data
+
+			if( GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+				data = SURVIVAL_Loot_GetLootDataByRef( "armor_pickup_lv1" )
+			else
+				data = SURVIVAL_Loot_GetLootDataByRef( "armor_pickup_lv3" )
+
 			playerArmorLoot.append( data )
 			found = true
 			continue
@@ -129,7 +135,14 @@ array<string> function Flowstate_BuildLifelineCarePackageLoot(entity ownerPlayer
 		foreach( armor in armors )
 		{
 			if( armor.tier == 1 )
+			{
+				if( GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+				{
+					playerArmorLoot.append( armor )
+					found = true
+				}
 				continue
+			}
 			
 			if( found )
 				continue

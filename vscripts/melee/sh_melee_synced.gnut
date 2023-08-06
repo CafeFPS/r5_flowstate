@@ -294,7 +294,10 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 					{
 						entity killCreditAttacker = null //If the attacker disconnected, we don't have a player to give credit to, that's fine. Script will not error
 						if ( IsValid( target.e.syncedMeleeAttacker ) )
+						{
 							killCreditAttacker = target.e.syncedMeleeAttacker
+							killCreditAttacker.SetShieldHealth( min( killCreditAttacker.GetShieldHealthMax(), 125 ) ) //refill shields after succesfull finisher, don't add more than red shield amount otherwise finisher would be broken in hiswattson ltm. Colombia
+						}
 
 						target.Die( killCreditAttacker, killCreditAttacker, {
 							damageType = DMG_MELEE_EXECUTION,

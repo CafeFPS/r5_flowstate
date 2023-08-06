@@ -36,6 +36,7 @@ global function LootZones_GetRefForOrigin
 global function CodeCallback_WeaponDropped
 global function CodeCallback_WeaponLoadoutPickup
 global function PlayerThrowLoot
+global function SwitchingTestIdk
 
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 
@@ -680,6 +681,15 @@ void function OnGroundLootSpawned( entity ent )
 	vector spawnOrigin = OriginToGround( ent.GetOrigin() )
 
 	spawnOrigin.z += 1.5
+
+	if( itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
+		itemRef = "armor_pickup_lv3"
+
+	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+	{
+		if( itemRef == "armor_pickup_lv2" || itemRef == "armor_pickup_lv3" || itemRef == "armor_pickup_lv4" || itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
+			itemRef = "armor_pickup_lv1"
+	}
 	
 	if(lt.specialCaseSpawnFunction != null)
 	{
@@ -688,12 +698,6 @@ void function OnGroundLootSpawned( entity ent )
 	}
 
 	int angleZ = 0
-
-	if( !ShouldSpawnThisLoot( itemRef ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
-		itemRef = "armor_pickup_lv1"
-
-	if( itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
-		itemRef = "armor_pickup_lv3"
 
 	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
 }
@@ -844,8 +848,15 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		entity spawnedItem = PlayerThrowLoot( player, itemData.ref )
 
 		if ( itemData.lootType == eLootType.ARMOR )
+		{
 			spawnedItem.SetSurvivalProperty( player.GetShieldHealth() )
-		
+			spawnedItem.e.extraSurvivalProperty = player.GetShieldHealthMax()
+			
+			if( itemData.ref == "armor_pickup_lv7" )
+				foreach ( sPlayer in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( sPlayer, "Flowstate_UpdateRainbowShieldExtraProperty", spawnedItem.GetEncodedEHandle(), spawnedItem.e.extraSurvivalProperty )
+		}
+
 		Inventory_SetPlayerEquipment( player, "", slotRef )
 
 		if ( itemData.lootType == eLootType.BACKPACK )
@@ -1259,16 +1270,19 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 0, 0>, int count = 1, bool fromBackpackLimit = false )
 {
 	vector origin = GetThrowOrigin( player )
-	vector fwd    = AnglesToForward( player.EyeAngles() )
+	vector fwd    = ( AnglesToForward( player.EyeAngles() ) * RandomIntRange( 80, 300) ) + ( AnglesToRight( player.EyeAngles() ) * RandomInt( 250 ) ) // This is ass Please fix. Colombia
+
+	if( CoinFlip() )
+		fwd    = ( AnglesToForward( player.EyeAngles() ) * RandomIntRange( 80, 300 ) ) - ( AnglesToRight( player.EyeAngles() ) * RandomInt( 250 ) ) // This is ass Please fix. Colombia
 
 	entity loot = SpawnGenericLoot( ref, origin, angles, count )
 
 	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 	
 	if( !fromBackpackLimit )
-		FakePhysicsThrow( player, loot, fwd * 100 )
+		FakePhysicsThrow( player, loot, fwd )
 	else
-		FakePhysicsThrow( player, loot, fwd * RandomIntRange( 100, 300 ) ) // This is just a workaround for items from backpack limit check dropping in same pos as backpack and not allowing to grab backpack. In retail, the items are attached to the backpack and spawned in a circle when the backpack reaches the ground, fix this
+		FakePhysicsThrow( player, loot, AnglesToForward( player.EyeAngles() ) * RandomIntRange( 100, 300 ) ) // This is just a workaround for items from backpack limit check dropping in same pos as backpack and not allowing to grab backpack. In retail, the items are attached to the backpack and spawned in a circle when the backpack reaches the ground, fix this
 	
 	BroadcastItemDrop( player, ref )
 	
@@ -1524,6 +1538,8 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	LootActionStruct as   = lt.groundActionFunc( player, lootRef )
 
 	array<string> mods = clone newEquipData.baseMods
+	entity weaponToDrop
+	int weaponSlot = WEAPON_INVENTORY_SLOT_ANY
 
 	if ( dropCurrentWeapon && oldEquipData.ref != "" )
 	{
@@ -1550,9 +1566,20 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 				if ( skipThisAttachment )
 					continue // There is already an installed attachment, don't install a second one
-
+				
+				try{
 				activeWeapon.RemoveMod( wepMod )
+				}catch(e420)
+				{
+					
+				}
+				
+								try{
 				mods.append( wepMod )
+						}catch(e421)
+				{
+					
+				}
 			}
 		}
 
@@ -1566,12 +1593,12 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 		if ( IsValid( deathBox ) )
 		{
-			int weaponSlot = es.weaponSlot
+			weaponSlot = es.weaponSlot
 
 			if ( weaponSlot == -1 )
 				return
 
-			entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+			weaponToDrop = player.GetNormalWeapon( weaponSlot )
 
 			if ( !IsValid( weaponToDrop ) )
 				return
@@ -1583,6 +1610,10 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		{
 			vector origin = GetThrowOrigin( player )
 			vector fwd    = AnglesToForward( player.EyeAngles() )
+			
+			weaponSlot = es.weaponSlot
+			if ( weaponSlot == -1 )
+				weaponToDrop = player.GetNormalWeapon( weaponSlot )
 
 			if ( es.specialCaseDropFunc != null )
 				es.specialCaseDropFunc( player, es.ref, origin, fwd )
@@ -1640,61 +1671,59 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			}
 		}
 	}
-		
-	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, [], true)
-	try{
-		foreach( mod in mods )
-			weapon.AddMod( mod )
-	}catch(e420)
+
+	thread function () : ( player, newEquipData, mods, pickup, dropCurrentWeapon, weaponSlot ) 
 	{
-		printt( "DEBUG THIS - Failed to attach mod on give main weapon" )
-	}
+		int clipCount = pickup.GetClipCount()
+		int lastAmmo = pickup.e.crateWeaponLastAmmo
 
-	player.DeployWeapon()
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+		entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
 
-	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
-		weapon.AddMod("duckhunt")
-	
-	int clipCount = pickup.GetClipCount()
-	
-	int ammoType = weapon.GetWeaponAmmoPoolType()
-
-	int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-	int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
-
-	if( newEquipData.baseMods.contains( "crate" ) )
-	{
-		if( pickup.e.crateWeaponLastAmmo != -1 )
-			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, pickup.e.crateWeaponLastAmmo )
-		else
-			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
-	} else if( weapon.UsesClipsForAmmo() )
-		weapon.SetWeaponPrimaryClipCount( ammoToGive )
-
-	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
-		weapon.SetLegendaryModelIndex(RandomInt(4))
-
-	if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
-	{		
-		int charmIndex = RandomInt( 2 )
-		
-		switch( charmIndex )
+		if(IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
 		{
-			case 0:
-				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
-//				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
-			break
-			case 1:
-				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
-			break
-			// case 2:
-				// weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
-			// break
+			weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
 		}
-	}
-	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+		player.EnableWeaponWithSlowDeploy()
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+
+		if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+			weapon.AddMod("duckhunt")
+		
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+
+		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
+
+		if( newEquipData.baseMods.contains( "crate" ) )
+		{
+			if( lastAmmo != -1 )
+				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
+			else
+				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
+		} else if( weapon.UsesClipsForAmmo() )
+			weapon.SetWeaponPrimaryClipCount( ammoToGive )
+
+		if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+			weapon.SetLegendaryModelIndex(RandomInt(4))
+
+		if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
+		{		
+			int charmIndex = RandomInt( 2 )
+			
+			switch( charmIndex )
+			{
+				case 0:
+					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
+					//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
+				break
+				case 1:
+					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
+				break
+			}
+		}
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	}()
 
 }
 
@@ -1927,7 +1956,7 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 	}()
 }
 
-void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )
+void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value, int extravalue = -1)
 {
 	// newEquip - ref
 	// Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0 )
@@ -1966,7 +1995,7 @@ void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int 
 			break*/
 	}
 
-	Inventory_SetPlayerEquipment(player, newEquip, slot, value)
+	Inventory_SetPlayerEquipment(player, newEquip, slot, value, extravalue)
 }
 
 entity function SpawnWeaponAndAmmo( string ref, vector origin )
@@ -2084,6 +2113,7 @@ array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity play
 		}
 	}
 
+	// player.TakeWeaponByEnt( weaponToDrop )
 	// player.DropWeapon( weaponToDrop )
 	player.TakeWeaponByEntNow( weaponToDrop )
 	// weaponToDrop.Destroy()
@@ -2091,6 +2121,15 @@ array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity play
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return lootToDrop
+}
+
+void function SwitchingTestIdk( entity player )
+{
+	while( true )
+	{
+		printt( player.IsSwitching( SURVIVAL_GetActiveWeaponSlot( player ) ) )
+		WaitFrame()
+	}
 }
 
 bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )

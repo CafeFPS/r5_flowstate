@@ -582,18 +582,17 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 			player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
 		else
 			player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
-		
+
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)		
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
 	}
 		
-	wait 3 //Time to send death recap updated signal
+	// wait 3 //Time to send death recap updated signal
 	
-	if( !IsValid( player ) )
-		return
-	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
+	// if( !IsValid( player ) )
+		// return
 
-	wait GetDeathCamLength() - 3 // To show deathcamera
+	wait GetDeathCamLength() //- 3 // To show deathcamera
 	
 	if( !IsValid( player ) )
 		return

@@ -298,6 +298,9 @@ void function ClGamemodeSurvival_Init()
 	//Increase client command limit to 60
 	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
 
+	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		SetConVarInt( "colorblind_mode", 0 )
+	
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
 	#if(false)
@@ -1626,65 +1629,19 @@ void function ToggleFireSelect( entity player )
 	}
 
 	bool canToggleAltfire = DoesModExist( weapon, "altfire" ) && !DoesModExist( weapon, "hopup_selectfire" )
-	#if(true)
-		if ( canToggleAltfire && IsModActive( weapon, "hopup_highcal_rounds" ) )
-			canToggleAltfire = false
-	#endif
+
+	if ( canToggleAltfire && IsModActive( weapon, "hopup_highcal_rounds" ) )
+		canToggleAltfire = false
+
 	if ( canToggleAltfire )
 	{
 		WeaponModCommand_Toggle( "altfire" )
 		return
 	}
-
-#if(false)
-//
-//
-
-
-
-
-
-
-#endif
-
-	#if(true)
-	if ( weapon.HasMod( "hopup_double_tap" ) )
+	
+	if( DoesModExist( weapon, "choke" ) )
 	{
-		WeaponModCommand_Toggle( "altfire_double_tap" )
-		return
-	}
-	#endif
-
-	#if(false)
-//
-
-
-
-
-
-#endif
-
-	#if(false)
-
-
-#endif
-
-	#if(false)
-
-
-#endif
-
-	//
-	if ( DoesModExist( weapon, "vertical_firestar" ) )
-	{
-		WeaponModCommand_Toggle( "vertical_firestar" )
-		return
-	}
-
-	//
-	if ( DoesModExist( weapon, "double_link_mod" ) )
-	{
-		WeaponModCommand_Toggle( "double_link_mod" )
+		WeaponModCommand_Toggle( "choke" )
 		return
 	}
 }

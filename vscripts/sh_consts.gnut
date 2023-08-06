@@ -1,4 +1,7 @@
-global string FLOWSTATE_VERSION = "v3.9"
+//custom
+global string FLOWSTATE_VERSION = "v3.92"
+global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
+
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
 global const float FLT_MAX = 3.40282e+38

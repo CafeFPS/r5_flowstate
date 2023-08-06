@@ -2023,6 +2023,9 @@ function ClearRespawnAvailable( entity player )
 
 void function SetPlayerEliminated( entity player )
 {
+	if( !IsValid( player ) )
+		return
+
 	EliminatedPlayers[player.GetPlayerName()] <- player.GetPlatformUID()
 	printt("PLAYER ELIMINATED ADDED TO TABLE. " + player.GetPlayerName() + " - " + player.GetPlatformUID())
 }
@@ -2044,6 +2047,9 @@ void function ClearPlayerPlaneViewMode( entity player )
 
 void function ClearPlayerEliminated( entity player )
 {
+	if( !IsValid( player ) )
+		return
+
 	if(player.GetPlayerName() in EliminatedPlayers)
 	{
 		printt("CLEARING ELIMINATED STATE FOR PLAYER " + player.GetPlayerName() + " - " + player.GetPlatformUID())

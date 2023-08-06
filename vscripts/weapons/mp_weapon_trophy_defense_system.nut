@@ -688,7 +688,7 @@ void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacem
 	
 	thread Trophy_Watcher( pylon )
 	thread Trophy_Anims( pylon )
-	waitthread Trophy_CreateTriggerArea( owner, pylon )
+	waitthread Trophy_CreateTriggerArea( pylon )
 }
 
 void function Trophy_Watcher( entity trophy )
@@ -696,8 +696,8 @@ void function Trophy_Watcher( entity trophy )
 	EndSignal( trophy, "OnDestroy" )
 	
 	entity player = trophy.GetBossPlayer()
-	EndSignal( player, "OnDeath" )
-	EndSignal( player, "OnDestroy" )
+	// EndSignal( player, "OnDeath" )
+	// EndSignal( player, "OnDestroy" )
 	
 	//float endtime = Time() + TROPHY_ENDTIME
 	
@@ -712,7 +712,7 @@ void function Trophy_Watcher( entity trophy )
 		}
 	)
 	
-	while( IsValid( trophy ) && IsValid( player ) && IsAlive( player ) ) //&& Time() < endtime )
+	while( IsValid( trophy ) ) //&& IsValid( player ) && IsAlive( player ) ) //&& Time() < endtime )
 		WaitFrame()
 }
 
@@ -739,7 +739,7 @@ void function Trophy_Anims( entity pylon ) {
 // Creates the active area 
 // based on the code i'm copying (deployable_medic.nut), this is team agnostic
 // Intercepts projectiles, charges shields
-void function Trophy_CreateTriggerArea( entity owner, entity pylon ) {
+void function Trophy_CreateTriggerArea( entity pylon ) {
 	printl("[pylon] Trigger area created")
 	Assert ( IsNewThread(), "Must be threaded" )
 	pylon.EndSignal( "OnDestroy" )
@@ -819,6 +819,9 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 	entity pylon = vortexTrigger.GetParent()
 	entity playersTrigger = vortexTrigger.GetLinkEnt()
 	
+	if( !IsValid( playersTrigger ) )
+		return
+
 	//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
 	if(!TROPHY_DESTROY_FRIENDLY_PROJECTILES)
 	{
@@ -829,7 +832,11 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 	//Check if the player threw the projectile in the trigger range
 	//If so dont zap this entity
 	entity player = projectile.GetOwner()
-	if(playersTrigger.IsTouching(player))
+	
+	if( !IsValid( player ) || !IsAlive( player ) )
+		return
+
+	if( playersTrigger.IsTouching( player ))
 	{
 		if (projectile.GetOwner() == player)
 		{
@@ -842,7 +849,7 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 
 void function HandleProjectileDestruction( entity player, entity pylon, entity projectile ) 
 {
-	if( !IsValid( projectile) || projectile.IsMarkedForDeletion() )
+	if( !IsValid( projectile) || projectile.IsMarkedForDeletion() || !IsValid( pylon ) )
 		return
 	
 	//Get weaponclassname from ent
@@ -970,7 +977,7 @@ void function Trophy_ShieldUpdate( entity trigger, entity pylon )
 
 	while(IsValid(trigger))
     {
-		if( pylon.e.shieldAmountCount >= TROPHY_SHIELD_AMOUNT )
+		if( IsValid( pylon ) && pylon.e.shieldAmountCount >= TROPHY_SHIELD_AMOUNT )
 		{
 			trigger.Destroy()
 			break

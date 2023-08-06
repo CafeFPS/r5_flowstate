@@ -449,6 +449,9 @@ global struct ServerEntityStruct
 	
 	//cargobot thing
 	bool applyNewHealthOneTime = false
+	
+	//extra survival int property ( max shield for infinite shield )
+	int extraSurvivalProperty = -1
 }
 
 global struct MeritData
@@ -757,7 +760,9 @@ global struct ServerPlayerStruct
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null
+	int DeathRecap_PreviousShotWeaponId = -1
 	entity DeathRecap_PreviousShotEnemyPlayer = null
+	bool DeathRecap_PlayerIsBuildingBlock = false
 	float DeathRecap_BlockTime = 0
 	
 	//Flyers Easteregg by Colombia
@@ -911,6 +916,8 @@ global struct ServerPlayerStruct
 	float huntEndTime
 	bool huntEnable = false
 	array<int> huntIds = []
+	
+	bool playerEnteredJumppadCrouching = false
 }
 
 global struct ChallengeScore

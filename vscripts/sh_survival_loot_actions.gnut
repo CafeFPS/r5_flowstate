@@ -641,6 +641,11 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 			{
 				int dropShieldHealth = player.GetShieldHealth()
 				drop.SetSurvivalProperty( dropShieldHealth )
+				drop.e.extraSurvivalProperty = player.GetShieldHealthMax()
+				
+				if( oldEquipData.ref == "armor_pickup_lv7" )
+					foreach ( sPlayer in GetPlayerArray() )
+						Remote_CallFunction_NonReplay( sPlayer, "Flowstate_UpdateRainbowShieldExtraProperty", drop.GetEncodedEHandle(), drop.e.extraSurvivalProperty )
 			}
 			else if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 4 )
 			{
@@ -667,7 +672,7 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) > 1 && GetCurrentPlaylistVarInt( "survival_shields", 1 ) < 4 )
 		propertyValue = player.GetShieldHealth()
 
-	SURVIVAL_GivePlayerEquipment( player, newEquip, propertyValue )
+	SURVIVAL_GivePlayerEquipment( player, newEquip, propertyValue, pickup.e.extraSurvivalProperty )
 #endif
 
 	return true

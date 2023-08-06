@@ -107,8 +107,8 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 
 	entity traceBlocker
 
-	if ( smokescreen.blockLOS )
-		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+	// if ( smokescreen.blockLOS )
+		// traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
 
 #if DEVELOPER
 	if ( SMOKESCREEN_DEBUG )

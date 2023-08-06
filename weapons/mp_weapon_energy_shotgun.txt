@@ -393,6 +393,11 @@ WeaponData
 			"rechamber_time" 	"*0.84"
 		}
 
+		shotgun_bolt_l4
+		{
+			"fire_rate" 		"*1.0"
+			"rechamber_time" 	"*0.84"
+		}
                          
                  
    

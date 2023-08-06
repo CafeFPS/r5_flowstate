@@ -15,14 +15,21 @@ void function TrackingVision_Init()
 
 void function TrackingVision_OnPlayerConnected( entity player ) 
 {
-	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_OnPlayerMantle )
-	
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.BEGIN_WALLRUN, Flowstate_TrackingVision_WalljumpDetection )
+
 	thread Flowstate_TrackingVision_PlayerFootprintsThread( player )
 }
 
-void function Flowstate_TrackingVision_OnPlayerMantle( entity player ) 
+void function Flowstate_TrackingVision_SuperglideDetection( entity player ) 
 {
 	thread Flowstate_TrackingVision_TryToTrackSuperglide( player )
+}
+
+void function Flowstate_TrackingVision_WalljumpDetection( entity player ) 
+{
+	//todo work a bit more on this, do a vel check? Colombia
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_WALLJUMP, player, player.GetOrigin(), player.GetTeam(), player )
 }
 
 void function Flowstate_TrackingVision_TryToTrackSuperglide( entity player )

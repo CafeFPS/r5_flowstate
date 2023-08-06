@@ -208,7 +208,7 @@ void function ListPanel_InitPanel( var panel, void functionref( var panel, var b
 
 	UISize screenSize = GetScreenSize()
 
-	data.paddingVert = ContentScaledYAsInt( data.paddingVert )
+	data.paddingVert = ContentScaledYAsInt( data.paddingVert ) - ( 2 * screenSize.height / 1080 )
 	data.paddingHoriz = ContentScaledXAsInt( data.paddingHoriz )
 	int buttonWidth  = Hud_GetWidth( listButtonElements[0] )
 	int buttonHeight = Hud_GetHeight( listButtonElements[0] )
@@ -736,11 +736,11 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 
 		if( SurvivalGroundItem_IsWeapon(itemIndex) && !ListPanel_IsHeaderItemAtIndex( data, itemIndex ) || SurvivalGroundItem_IsAmmo(itemIndex) && !ListPanel_IsHeaderItemAtIndex( data, itemIndex ) )
 		{	
-			Hud_SetHeight( listButton, Hud_GetHeight( listButton ) * 1.25 )
+			Hud_SetHeight( listButton, Hud_GetHeight( listButton ) * 1.3 )
 		}
 		
 		//poner dos armas por fila
-		if( SurvivalGroundItem_IsWeapon(itemIndex) && itemIndex > 1 && !ListPanel_IsHeaderItemAtIndex( data, itemIndex ) ) //&& !IsOdd( itemIndex ) 
+		if( SurvivalGroundItem_IsWeapon(itemIndex) && itemIndex > 1 && !ListPanel_IsHeaderItemAtIndex( data, itemIndex ) )
 		{
 			float previousY     = data.indexAtOffset[itemIndex-1] - data.listOffset - (ListPanel_GetItemHeight( data, itemIndex-1 ) + data.paddingVert)
 			Hud_SetY( listButton, previousY )
@@ -1128,6 +1128,7 @@ float function ListPanel_GetTotalSize( ListPanelData data, bool updateOffsets = 
 	bool alreadyAddedAnAmmo = false
 	int firstWeaponHeightWithPadding = -1
 	int firstAmmoHeightWithPadding = -1
+	UISize screenSize = GetScreenSize()
 	
 	for ( int index = 0; index < listItemCount; index++ )
 	{
@@ -1162,7 +1163,26 @@ float function ListPanel_GetTotalSize( ListPanelData data, bool updateOffsets = 
 			firstAmmoHeightWithPadding = toadd
 			alreadyAddedAnAmmo = true
 		}
+			
+		if( ListPanel_IsHeaderItemAtIndex( data, index ) && SurvivalGroundItem_GetHeaderIndex( index ) < 5  )
+		{
+			totalItemHeightWithPadding += ( 12 * screenSize.height / 1080 )
+		}
 		
+		if( index + 1 < listItemCount && ListPanel_IsHeaderItemAtIndex( data, index + 1 ) && SurvivalGroundItem_GetHeaderIndex( index + 1 ) < 5 )
+		{
+			totalItemHeightWithPadding += ( 30 * screenSize.height / 1080 )
+		}
+		
+		if( ListPanel_IsHeaderItemAtIndex( data, index ) && SurvivalGroundItem_GetHeaderIndex( index ) >= 5  )
+		{
+			totalItemHeightWithPadding += ( 12 * screenSize.height / 1080 )
+		}
+		
+		if( index + 1 < listItemCount && ListPanel_IsHeaderItemAtIndex( data, index + 1 ) && SurvivalGroundItem_GetHeaderIndex( index + 1 ) >= 5 )
+		{
+			totalItemHeightWithPadding += ( 10 * screenSize.height / 1080 )
+		}
 	}
 
 	return float( totalItemHeightWithPadding )

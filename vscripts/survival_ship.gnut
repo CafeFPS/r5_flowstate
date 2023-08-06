@@ -252,8 +252,8 @@ void function GiveBasicSurvivalItems( entity player )
 	foreach(item in loot)
 		SURVIVAL_AddToPlayerInventory(player, item, 2)
 			
-	player.SetShieldHealthMax(50)
-	player.SetShieldHealth(50)
+	player.SetShieldHealthMax(100)
+	player.SetShieldHealth(100)
 	
 	Survival_SetInventoryEnabled( player, true )
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )

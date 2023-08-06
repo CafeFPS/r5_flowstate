@@ -1342,8 +1342,7 @@ void function UICallback_UpdateGroundItem( var button, int position )
 
 	GroundLootData groundLootData = file.filteredGroundItems[position]
 
-	Hud_SetLocked( button, false )
-	Hud_SetEnabled( button, !groundLootData.isHeader ) //
+	Hud_SetEnabled( button, !groundLootData.isHeader )
 
 	RuiSetImage( rui, "iconImage", $"" )
 	RuiSetInt( rui, "lootTier", 0 )
@@ -1361,6 +1360,7 @@ void function UICallback_UpdateGroundItem( var button, int position )
 		RuiSetImage( rui, "iconImage", $"" )
 		RuiSetString( rui, "buttonText", groundLootData.lootData.pickupString )
 		RuiSetInt( rui, "count", 0 )
+		Hud_SetLocked( button, false )
 		return
 	}
 
@@ -1369,7 +1369,9 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	if ( !IsValid( ent ) )
 	{
 		Hud_SetEnabled( button, false )
-		return
+
+		if( groundLootData.lootData.lootType != eLootType.AMMO )
+			return
 	}
 
 	string combinedTitle = groundLootData.lootData.pickupString
@@ -1397,18 +1399,7 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	RuiSetInt( rui, "lootTier", groundLootData.lootData.tier )
 	RuiSetInt( rui, "count", groundLootData.count )
 	RuiSetInt( rui, "lootType", isMainWeapon ? 1 : 0 )
-
-	// if( groundLootData.lootData.tier > 5 )
-		// RuiSetInt( rui, "lootTier", 5 )
-
-	// printt( "DEBUGGING ITEM IN DEATHBOX" )
-	// printt( "name: " + combinedTitle )
-	// printt( "count: " + groundLootData.count )
-	// printt( "loot type" + groundLootData.lootData.lootType )
-	// printt( "isPinged" + isPinged )
-	
 	RuiSetInt( rui, "count", isMainWeapon ? 0 : groundLootData.count )
-
 	RuiSetBool( rui, "isPinged", isPinged )
 	RuiSetImage( rui, "ammoTypeImage", $"" )
 
@@ -1424,13 +1415,17 @@ void function UICallback_UpdateGroundItem( var button, int position )
 		RuiSetImage( rui, "ammoTypeImage", icon )
 	}
 	
+	Hud_SetLocked( button, !groundLootData.isRelevant )
+
+	RuiSetBool( rui, "isUpgrade", groundLootData.isUpgrade )
+		
 	if( isAmmo )
 	{
 		RuiSetString( rui, "buttonText", "" )
+		
+		if( !IsValid( ent ) ) // si es un fake slot, no mostrar tooltip data
+			return
 	}
-	
-	Hud_SetLocked( button, !groundLootData.isRelevant )
-	RuiSetBool( rui, "isUpgrade", groundLootData.isUpgrade )
 
 	ToolTipData dt
 	dt.tooltipStyle = isMainWeapon ? eTooltipStyle.WEAPON_LOOT_PROMPT : eTooltipStyle.LOOT_PROMPT
@@ -1443,10 +1438,11 @@ void function UICallback_UpdateGroundItem( var button, int position )
 	dt.lootPromptData.lootContext = eLootContext.GROUND
 	dt.lootPromptData.isPinged = isPinged
 	dt.lootPromptData.isPingedByUs = isPingedByUs
-	dt.lootPromptData.property = ent.GetSurvivalProperty()
+	if( IsValid( ent ) )
+		dt.lootPromptData.property = ent.GetSurvivalProperty()
 	dt.tooltipFlags = IsPingEnabledForPlayer( player ) ? dt.tooltipFlags : dt.tooltipFlags | eToolTipFlag.PING_DISSABLED
 
-	if ( isMainWeapon )
+	if ( isMainWeapon && IsValid( ent ) )
 		dt.lootPromptData.mods = ent.GetWeaponMods()
 
 	Hud_SetToolTipData( button, dt )
@@ -1936,6 +1932,7 @@ void function GroundItemUpdate( entity player, array<entity> loot )
 			RunUIScript( "SurvivalGroundItem_SetGroundItemHeader", index, item.isHeader )
 			RunUIScript( "SurvivalGroundItem_SetGroundItemWeapon", index, item.lootData.lootType == eLootType.MAINWEAPON )
 			RunUIScript( "SurvivalGroundItem_SetGroundItemAmmo", index, item.lootData.lootType == eLootType.AMMO )
+			RunUIScript( "SurvivalGroundItem_SetGroundHeaderIndex", index, item.isHeader ? item.lootData.index : -1 )
 		}
 	}
 
@@ -1972,7 +1969,6 @@ void function GroundItemsDiff( entity player, array<entity> loot )
 	}
 
 	table<string, GroundLootData> extras
-	bool showUpgrades = GetCurrentPlaylistVarBool( "deathbox_show_upgrades", false )
 
 	foreach ( item in loot )
 	{
@@ -1991,12 +1987,7 @@ void function GroundItemsDiff( entity player, array<entity> loot )
 			{
 				extras[ data.ref ] <- gd
 
-				if ( showUpgrades && SURVIVAL_IsLootAnUpgrade( player, item, gd.lootData, eLootContext.GROUND ) )
-				{
-					gd.isRelevant = true
-					gd.isUpgrade = true
-				}
-				else if ( SURVIVAL_IsLootIrrelevant( player, item, gd.lootData, eLootContext.GROUND ) )
+				if ( SURVIVAL_IsLootIrrelevant( player, item, gd.lootData, eLootContext.GROUND ) && gd.lootData.lootType != eLootType.MAINWEAPON )
 				{
 					gd.isRelevant = false
 					gd.isUpgrade = false
@@ -2007,7 +1998,6 @@ void function GroundItemsDiff( entity player, array<entity> loot )
 					gd.isUpgrade = false
 				}
 			}
-
 
 			gd.count += item.GetClipCount()
 			gd.guids.append( item.GetEncodedEHandle() )
@@ -2036,6 +2026,47 @@ void function GroundItemsInit( entity player, array<entity> loot )
 
 	table<string, GroundLootData> allItems
 
+	//add empty ammos
+	GroundLootData light
+	allItems[ "bullet" ] <- light
+	light.lootData = SURVIVAL_Loot_GetLootDataByRef( "bullet" )
+	light.count = 1
+	light.guids.append( 0 )
+	light.isRelevant = true
+	light.isUpgrade = false
+
+	GroundLootData heavy
+	allItems[ "highcal" ] <- heavy
+	heavy.lootData = SURVIVAL_Loot_GetLootDataByRef( "highcal" )
+	heavy.count = 1
+	heavy.guids.append( 0 )
+	heavy.isRelevant = true
+	heavy.isUpgrade = false
+
+	GroundLootData energy
+	allItems[ "special" ] <- energy
+	energy.lootData = SURVIVAL_Loot_GetLootDataByRef( "special" )
+	energy.count = 1
+	energy.guids.append( 0 )
+	energy.isRelevant = true
+	energy.isUpgrade = false
+
+	GroundLootData shotgun
+	allItems[ "shotgun" ] <- shotgun
+	shotgun.lootData = SURVIVAL_Loot_GetLootDataByRef( "shotgun" )
+	shotgun.count = 1
+	shotgun.guids.append( 0 )
+	shotgun.isRelevant = true
+	shotgun.isUpgrade = false
+
+	GroundLootData sniper
+	allItems[ "sniper" ] <- sniper
+	sniper.lootData = SURVIVAL_Loot_GetLootDataByRef( "sniper" )
+	sniper.count = 1
+	sniper.guids.append( 0 )
+	sniper.isRelevant = true
+	sniper.isUpgrade = false
+			
 	for ( int groundIndex = 0; groundIndex < loot.len(); groundIndex++ )
 	{
 		entity item = loot[groundIndex]
@@ -2055,17 +2086,23 @@ void function GroundItemsInit( entity player, array<entity> loot )
 		gd.lootData = data
 		gd.count += item.GetClipCount()
 		gd.guids.append( item.GetEncodedEHandle() )
-	}
 
-	bool sortByType    = GetCurrentPlaylistVarBool( "deathbox_sort_by_type", true )
+		if ( SURVIVAL_IsLootIrrelevant( player, item, gd.lootData, eLootContext.GROUND ) && gd.lootData.lootType != eLootType.MAINWEAPON )
+		{
+			gd.isRelevant = false
+			gd.isUpgrade = false
+		}
+		else
+		{
+			gd.isRelevant = true
+			gd.isUpgrade = false
+		}
+	}
 
 	foreach ( gd in allItems )
 	{
 		entity ent = GetEntFromGroundLootData( gd )
 
-		gd.isRelevant = true
-		gd.isUpgrade = false
-		
 		LootData data = gd.lootData
 
 		switch( data.lootType )
@@ -2115,7 +2152,6 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	}
 	
 	weapons.sort( SortByTier )
-	ammo.sort( SortByTier )
 	helmet.sort( SortByTier )
 	backpack.sort( SortByTier )
 	knockdownshield.sort( SortByTier )
@@ -2134,7 +2170,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	file.filteredGroundItems.extend( healings )
 	file.filteredGroundItems.extend( attachments )
 
-	if ( sortByType && file.filteredGroundItems.len() > 1 )
+	if ( file.filteredGroundItems.len() > 1 )
 	{
 		int lastLootCat = -1
 		for ( int i = file.filteredGroundItems.len() - 1; i >= -1; i-- )
@@ -2152,7 +2188,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 			{
 				if ( lastLootCat != -1 )
 				{
-					file.filteredGroundItems.insert( i + 1, CreateHeaderData( GetCategoryTitleFromPriority( lastLootCat ), $"" ) )
+					file.filteredGroundItems.insert( i + 1, CreateHeaderData( GetCategoryTitleFromPriority( lastLootCat ), $"", lastLootCat ) )
 				}
 
 				lastLootCat = cat
@@ -2161,8 +2197,7 @@ void function GroundItemsInit( entity player, array<entity> loot )
 	}
 }
 
-
-GroundLootData function CreateHeaderData( string title, asset icon )
+GroundLootData function CreateHeaderData( string title, asset icon, int indexCat = -1 )
 {
 	GroundLootData gd
 	gd.isHeader = true
@@ -2170,8 +2205,25 @@ GroundLootData function CreateHeaderData( string title, asset icon )
 	data.pickupString = title
 	data.hudIcon = icon
 	data.lootType = eLootType.BLANK
+	data.index = indexCat
 	gd.lootData = data
+	
+	//printt( "created header " + title + " with index " + indexCat )
 	return gd
+}
+
+bool function IsGearItem( LootData data )
+{
+	switch( data.lootType )
+	{
+		case eLootType.HELMET:
+		case eLootType.BACKPACK:
+		case eLootType.INCAPSHIELD:
+		case eLootType.ARMOR:
+		return true
+	}
+
+	return false
 }
 
 

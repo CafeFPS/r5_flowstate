@@ -557,7 +557,7 @@ var function CreateFullmapRuiForEnt( entity ent, entity viewPlayer )
 	RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
 	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
 	
-	if( ent.GetScriptName() != TESLA_TRAP_NAME ) // tesla trap crashes with this, is there any other rui that crashes with this
+	if( ent.GetScriptName() != TESLA_TRAP_NAME ) // tesla trap crashes with this, is there any other rui that crashes with this? Colombia
 	{
 		RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
 		RuiSetFloat( rui, "iconBlend", 1.0 )

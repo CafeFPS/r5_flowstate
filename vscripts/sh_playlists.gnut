@@ -368,7 +368,10 @@ asset function GetModeEmblemImage( string playlistName )
 		case "fs_survival_solos":
 		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
-	}	
+	}
+	
+	if( GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+		emblemImage = $"rui/flowstatecustom/hiswattson_ltms"
 	#endif
 		
 	return emblemImage

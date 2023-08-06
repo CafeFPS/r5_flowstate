@@ -27,6 +27,9 @@ void function RemoteFunctions_Init_Begin()
 	//Custom HoloSpray
 	Remote_RegisterClientFunction("HoloSpray_OnUse", "int", INT_MIN, INT_MAX, "int", 0, 255)
 
+	//Update rainbow extra property
+	Remote_RegisterClientFunction("Flowstate_UpdateRainbowShieldExtraProperty", "int", INT_MIN, INT_MAX, "int", 0, 9999)
+
 	//Fake Version Gate
 	Remote_RegisterClientFunction("Flowstate_YouNeedToUpdate")
 	

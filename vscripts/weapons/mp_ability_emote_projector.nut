@@ -313,6 +313,7 @@ bool function ClientCommand_HoloSpray_OnUse( entity player, array<string> args )
 	if ( args.len() < 1 )
 		return true
 
+	player.Signal( "PhaseTunnel_EndPlacement" )
 	player.p.holosprayChoice = int( args[0] )
 
 	return true

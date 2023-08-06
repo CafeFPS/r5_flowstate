@@ -188,7 +188,15 @@ entity function CreateEntity( string name )
 //		printl( " " )
 //		DumpStack(3)
 //	}
-	return Entities_CreateByClassname( name )
+
+//working on this. Colombia
+	entity idk
+	// try{
+		idk = Entities_CreateByClassname( name )
+	// }catch(e420)
+	// {
+	// }
+	return idk
 }
 
 // used from the console to quick-test fields
@@ -4476,10 +4484,21 @@ void function SwapToLastEquippedPrimary( entity player )
 	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, SURVIVAL_GetLastActiveWeapon( player ).GetClassName() )
 }
 
-entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
+entity function CreateTraceBlockerVolume( vector fxOrigin, float radius, bool b0, int contents, int team, string scriptname )
 {
-	entity traceBlocker
-	return traceBlocker
+	entity traceBlockerVol = CreateEntity( "trace_volume" )
+	traceBlockerVol.kv.origin = fxOrigin
+	traceBlockerVol.kv.angles = Vector(0,0,0)
+	traceBlockerVol.kv.contents = contents
+	traceBlockerVol.kv.team = team
+
+	traceBlockerVol.SetScriptName( scriptname )
+	SetTargetName( traceBlockerVol, scriptname )
+
+	DispatchSpawn( traceBlockerVol )
+	SetTeam( traceBlockerVol, team )
+
+	return traceBlockerVol
 }
 
 void function SetOutOfBoundsTimeLimit( float maxtime )

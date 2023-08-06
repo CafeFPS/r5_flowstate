@@ -210,7 +210,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
 		else if( GetCurrentPlaylistName() == "fs_survival_solos" )
 			RuiSetString( rui, "gameModeString", "APEX SOLO" )
-		
+
 		if(GameRules_GetGameMode() == "flowstate_pkknockback")
 		{
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )

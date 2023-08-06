@@ -17,7 +17,7 @@ global function ShGas_Init
 global function PlayerHasGasProtection
 
 const float GAS_TEAMMATE_PROTECTION_RADIUS = 400.0
-const bool GAS_CLOUD_DEBUG_DRAW = true
+const bool GAS_CLOUD_DEBUG_DRAW = false
 
 const asset FX_GAS_SMOKE_LARGE = $"P_smokescreen_poison"
 const asset FX_GAS_SMOKE = $"P_gastrap_fill"
@@ -908,10 +908,14 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 									EffectSetControlPointVector( fx, 1, center )
 
 								smokeFXs[i][0] = fx
-								// smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
-
-								// if ( smokescreen.smokeSource != null )
-									// smokeFXs[i][1].SetParent( smokescreen.smokeSource )
+								smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE| CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+								smokeFXs[i][1].SetBox( <-20, -20, -16>, <35, 35, 100> )
+								
+								#if DEVELOPER
+								DrawAngledBox( (offsetCenter + FX_GAS_SMOKE_OFFSET), Vector( 0,0,0 ), <-20, -20, -16>, <35, 35, 100>, 255, 0, 0, true, 15 )
+								#endif
+								if ( smokescreen.smokeSource != null )
+									smokeFXs[i][1].SetParent( smokescreen.smokeSource )
 
 								if ( IsValid( smokescreen.inflictor ) )
 								{
@@ -931,7 +935,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 								if ( smokescreen.smokeSource == null )
 								{
 									smokeFXs[i][0].SetOrigin( org )
-									// smokeFXs[i][1].SetOrigin( org )
+									smokeFXs[i][1].SetOrigin( org )
 								}
 							}
 						}
@@ -954,10 +958,15 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 								EffectSetControlPointVector( fx, 1, center )
 
 							smokeFXs[i][0] = fx
-							// smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+							smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE| CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+							smokeFXs[i][1].SetBox( <-20, -20, -16>, <35, 35, 100> )
+							
+							#if DEVELOPER
+							DrawAngledBox( (offsetCenter + FX_GAS_SMOKE_OFFSET), Vector( 0,0,0 ), <-20, -20, -16>, <35, 35, 100>, 255, 0, 0, true, 15 )
+							#endif
 
-							//if ( smokescreen.smokeSource != null )
-							//	smokeFXs[i][1].SetParent( smokescreen.smokeSource )
+							if ( smokescreen.smokeSource != null )
+								smokeFXs[i][1].SetParent( smokescreen.smokeSource )
 
 							if ( IsValid( smokescreen.inflictor ) )
 							{
@@ -977,7 +986,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							if ( !IsValid( smokescreen.smokeSource ) )
 							{
 								smokeFXs[i][0].SetOrigin( org )
-								// smokeFXs[i][1].SetOrigin( org )
+								smokeFXs[i][1].SetOrigin( org )
 							}
 						}
 					}

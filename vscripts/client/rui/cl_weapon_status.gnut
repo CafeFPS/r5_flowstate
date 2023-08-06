@@ -426,8 +426,8 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			vector ammoColor  = SrgbToLinear( <0.5, 0.5, 0.5> )
 			asset ammoIcon = weaponData.fakeAmmoIcon == $"" ? $"rui/hud/gametype_icons/survival/sur_ammo_unique" : weaponData.fakeAmmoIcon
 			bool isLegendary = weaponData.tier == 4
-			bool isCPWeapon = weaponData.tier >= 5
-			if ( weaponData.ammoType != "" )
+			bool isCPWeapon = weaponData.tier == 5
+			if ( weaponData.ammoType != "" && !isCPWeapon )
 			{
 				LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( weaponData.ammoType )
 				if ( weaponData.ammoType in ammoColors && weaponData.tier < 4 )
@@ -446,8 +446,7 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			
 			if ( isCPWeapon )
 			{
-				ammoColor = SrgbToLinear( <255, 10, 10> / 255.0 )
-				ammoIcon = $""
+				ammoColor = SrgbToLinear( <216, 0, 73> / 255.0 )
 			}
 			
 			RuiSetFloat3( rui, "ammoColorTab" + tabIndex, ammoColor )
@@ -552,13 +551,13 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_SINGLE", true )
 		}
 	}
-	else if ( weapon.HasMod( "hopup_energy_choke" ) )
-	 {
-		 if ( weapon.HasMod( "choke" ) )
-			 SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
-		 else
-			 SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
-	 }
+	// else if ( weapon.HasMod( "hopup_energy_choke" ) )
+	// {
+		 // if ( weapon.HasMod( "choke" ) )
+			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
+		 // else
+			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
+	// }
 	else
 	{
 		if ( IsWeaponInSingleShotMode( weapon ) )

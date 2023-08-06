@@ -59,12 +59,24 @@ entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpo
 {
     entity lootTick = CreateEntity( "npc_frag_drone" )
     {
+		origin += Vector( 0,0,-50 )
         SetSpawnOption_AISettings( lootTick, "npc_frag_drone_treasure_tick" )
         lootTick.SetOrigin( origin )
         lootTick.SetAngles( angles )
         lootTick.SetDamageNotifications( false )
         SetTeam( lootTick, TEAM_UNASSIGNED)
 
+		entity parentPoint = CreateEntity( "script_mover_lightweight" )
+		{
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( origin )
+			parentPoint.SetAngles( angles )
+			DispatchSpawn( parentPoint )
+			parentPoint.Hide()
+			lootTick.SetParent(parentPoint)
+		}
         AddEntityCallback_OnDamaged( lootTick, OnLootTickDamaged )
         AddEntityCallback_OnKilled( lootTick, OnLootTickKilled )
 
@@ -72,6 +84,12 @@ entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpo
         AddMultipleLootItemsToLootTick( lootTick, Lootpool )
 
         DispatchSpawn( lootTick )
+
+		// lootTick.SetPhysics( MOVETYPE_FLY ) // doesn't actually make it move, but allows pushers to interact with it
+		// lootTick.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_BULLETCLIP | CONTENTS_SOLID
+		// lootTick.Solid()
+		// lootTick.SetCollisionAllowed( true )
+		// lootTick.SetCollisionDetailHigh()
     }
 
     thread PlayAnim( lootTick, "sd_closed_to_open" )

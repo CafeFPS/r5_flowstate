@@ -630,7 +630,8 @@ void function TrackingVisionCreatePOIBlueprint( entity waypoint, int poiEventID,
 			waypoint.WaypointAddFlag( WPF_VISBILITY_LOS | WPF_VISIBILITY_SONAR )
 			waypoint.WaypointSetCheckDist( TRACKING_VISION_DRAW_DIST_MEDIUM )
 			break
-			
+		
+		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_WALLJUMP:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE:
 			waypoint.WaypointAddFlag( WPF_VISBILITY_LOS | WPF_VISIBILITY_SONAR )
 			waypoint.WaypointSetCheckDist( TRACKING_VISION_DRAW_DIST_MEDIUM )
@@ -999,6 +1000,12 @@ void function TrackingVision_GetDrawInfo( entity waypoint, TrackingVisionDrawInf
 			drawInfo.drawSize = eTrackingPOIDrawSize.SMALL
 			drawInfo.icon = $"rui/hud/poi_icons/poi_mantled"
 			drawInfo.displayText = "Superglided"
+			break
+
+		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_WALLJUMP:
+			drawInfo.drawSize = eTrackingPOIDrawSize.SMALL
+			drawInfo.icon = $"rui/hud/poi_icons/poi_mantled"
+			drawInfo.displayText = "Walljumped"
 			break
 
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_JUMP_DOWN_START:

@@ -311,12 +311,12 @@ void function WeaponUtility_Init()
 		}
 		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, EMP_DamagedPlayerOrNPC )
 		
-		AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
-		AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
-		AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
-		AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
-		AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
+		//AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
+		//AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
+		//AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
+		//AddCallback_OnPlayerKilled( OnPlayerKilled )
+		//AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
+		//AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
 
 		file.activeThermiteBurnsManagedEnts = CreateScriptManagedEntArray()
 

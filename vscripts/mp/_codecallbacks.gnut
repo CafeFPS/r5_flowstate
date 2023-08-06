@@ -456,8 +456,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 			}
 			
-			UpdatePlayerCounts()
-			
 			EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
@@ -897,18 +895,40 @@ void function EvoCurrentShieldToNextTier( var damageInfo, entity attacker )
 {
 	LootData currentShield = EquipmentSlot_GetEquippedLootDataForSlot( attacker, "armor" )
 	
-	if( currentShield.tier >= 7 || currentShield.tier == 4 )
+	if( currentShield.tier == 4 )
 		return
 	
 	int oldshield = attacker.GetShieldHealth()
-	string nextShield = returnShieldNameForCurrentShieldName( currentShield )
-	LootData nextShieldData = SURVIVAL_Loot_GetLootDataByRef( nextShield )
-	if( currentShield.ref != "" )
-		SURVIVAL_RemoveFromPlayerInventory(attacker, currentShield.ref, 1)
-	Inventory_SetPlayerEquipment( attacker, nextShield, "armor" )
-	attacker.SetShieldHealth( oldshield )
+	int newMaxShield = SURVIVAL_GetArmorShieldCapacity( currentShield.tier ) + FLOWSTATE_HWLTM_SHIELD_AMOUNT
 	
-	Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", nextShieldData.tier )
+	if( currentShield.tier == 0 )
+		newMaxShield = SURVIVAL_GetArmorShieldCapacity( 1 )
+	else if( currentShield.tier >= 7 )
+		newMaxShield = attacker.GetShieldHealthMax() + FLOWSTATE_HWLTM_SHIELD_AMOUNT
+	
+	if( newMaxShield >= SURVIVAL_GetArmorShieldCapacity( currentShield.tier ) )
+	{
+		string nextShield = returnShieldNameForCurrentShieldName( currentShield )
+		
+		if( nextShield == "" )
+		{
+			attacker.SetShieldHealthMax( newMaxShield )
+			attacker.SetShieldHealth( oldshield )
+			Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", 7 )
+			return
+		}
+
+		LootData nextShieldData = SURVIVAL_Loot_GetLootDataByRef( nextShield )
+
+		if( currentShield.ref != "" )
+			SURVIVAL_RemoveFromPlayerInventory(attacker, currentShield.ref, 1)
+
+		Inventory_SetPlayerEquipment( attacker, nextShield, "armor" )
+		Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", nextShieldData.tier )
+	}
+
+	attacker.SetShieldHealthMax( newMaxShield )
+	attacker.SetShieldHealth( oldshield )
 }
 
 string function returnShieldNameForCurrentShieldName( LootData currentShield  )
@@ -932,6 +952,9 @@ string function returnShieldNameForCurrentShieldName( LootData currentShield  )
 
 		case "armor_pickup_lv6":
 		return "armor_pickup_lv7"
+		
+		case "armor_pickup_lv7":
+		return ""
 	}
 	
 	return ""

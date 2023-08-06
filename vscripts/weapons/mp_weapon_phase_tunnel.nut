@@ -751,7 +751,15 @@ void function PhaseTunnel_CreateTriggerArea( entity tunnelEnt, PhaseTunnelPortal
 	portalMarker.SetScriptName( "portal_marker" )
 	portalMarker.DisableHibernation()
 
-	entity traceBlocker = CreateTraceBlockerVolume( origin, 24.0, false, CONTENTS_NOGRAPPLE, tunnelEnt.GetTeam(), PHASETUNNEL_BLOCKER_SCRIPTNAME )
+	entity traceBlocker = CreateTraceBlockerVolume( origin - Vector( 0,0,30 ), 24.0, false, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, tunnelEnt.GetTeam(), PHASETUNNEL_BLOCKER_SCRIPTNAME )
+	traceBlocker.SetBox( <-20, -20, -16>, <20, 20, 70> )
+	traceBlocker.SetAngles( angles + <0,-90,-90> )
+	traceBlocker.SetParent( portalMarker )
+	
+	#if DEVELOPER
+	DrawAngledBox( origin - Vector( 0,0,30 ), angles + <0,-90,-90>, <-20, -20, -16>, <20, 20, 70>, 255, 0, 0, true, 15 )
+	#endif
+
 	//traceBlocker.RemoveFromAllRealms()
 	//traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
 
@@ -1473,9 +1481,16 @@ void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseT
 								StopSoundOnEntity( fx, SOUND_PREPORTAL_LOOP )
 							}
 						}
-					)					
+					)
 
-					entity traceBlocker = CreateTraceBlockerVolume( fxOrigin, 24.0, false, CONTENTS_NOGRAPPLE, player.GetTeam(), PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME )
+					entity traceBlocker = CreateTraceBlockerVolume( fxOrigin, 24.0, false, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, player.GetTeam(), PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME )
+					traceBlocker.SetBox( <-20, -20, -16>, <20, 20, 20> )
+					traceBlocker.SetAngles( player.GetAngles() + <0,90,90> )
+
+					#if DEVELOPER
+					DrawAngledBox( fxOrigin, player.GetAngles() + <0,90,90>, <-20, -20, -16>, <20, 20, 20>, 255, 0, 0, true, 15 )
+					#endif
+
 					//traceBlocker.RemoveFromAllRealms()
 					//traceBlocker.AddToOtherEntitysRealms( player )
 					shutdownArray.append( traceBlocker )

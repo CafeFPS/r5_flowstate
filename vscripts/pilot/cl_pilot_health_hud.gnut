@@ -11,6 +11,7 @@ global function HealthHUD_ClearFX
 
 global function SetHealthDisplayRange
 global function EvoShield_PlayFX
+global function Init_EvoShields_Flowstate_HUD
 
 const HEALTHDMGSTATE1_MP         = 0.75
 const HEALTHDMGSTATE2_MP         = 0.50
@@ -45,6 +46,9 @@ struct
 
 	int healthFXCount = 0
 	var warnRui
+	UIPos& originalFlowstateShieldsPos
+	UISize& originalRes
+	bool changedViewPlayer = false
 } file
 
 
@@ -86,16 +90,34 @@ void function ClHealthHud_Init()
 
 	//AddLocalPlayerFunc( HealthHUD_AddPlayer )
 	AddCallback_OnViewPlayerChanged( HealthHUD_ViewPlayerChanged )
+	AddCallback_EntitiesDidLoad( HealthHUD_EntitiesDidLoad )
 }
 
+void function HealthHUD_EntitiesDidLoad()
+{
+	file.originalFlowstateShieldsPos = REPLACEHud_GetPos( HudElement( "FS_EvoShields_Frame" ) )
+	file.originalRes = GetScreenSize()
+}
 
 void function HealthOverlaySetSize()
 {
 	RuiSetResolutionToScreenSize( file.healthOverlay )
 	UISize screenSize = GetVirtualScreenSize( GetScreenSize().width, GetScreenSize().height )
 	RuiSetFloat2( file.healthOverlay, "actualRes", <float( screenSize.width ), float( screenSize.height ), 0> )
+	
+	file.originalFlowstateShieldsPos = REPLACEHud_GetPos( HudElement( "FS_EvoShields_Frame" ) )
+	
+	if( IsValid( GetLocalViewPlayer() ) && GetLocalViewPlayer().GetShieldHealth() > 0 )
+	{
+		Init_EvoShields_Flowstate_HUD( true, file.changedViewPlayer )
+		Flowstate_HUD_UpdateShieldHealthForPlayer()
+		
+		if( GetLocalViewPlayer() != GetLocalClientPlayer() )
+		{
+			Hud_SetPos( HudElement( "FS_EvoShields_Frame" ), file.originalFlowstateShieldsPos.x, file.originalFlowstateShieldsPos.y - (65  * GetScreenSize().height / 1080 ) )
+		}
+	}
 }
-
 
 void function PilotEMP_Internal( maxValue, float duration, float fadeTime, bool doSound = true )
 {
@@ -166,8 +188,13 @@ void function HealthHUD_ViewPlayerChanged( entity player )
 	player.s.healthFX <- []
 	player.s.shieldFX <- []
 	player.EnableHealthChangedCallback()
-
+	
 	thread SettingsChange_Update( player )
+	if( IsValid( GetLocalViewPlayer() ) && GetLocalViewPlayer().GetShieldHealth() > 0 )
+	{
+		Signal( GetLocalClientPlayer(), "ShieldChanged" )
+		Init_EvoShields_Flowstate_HUD( true, true )
+	}
 }
 
 
@@ -187,6 +214,7 @@ void function SettingsChange_Update( entity player )
 				case "default":
 				case "pilot":
 					InitHealthDisplayRange( player )
+					// Init_EvoShields_Flowstate_HUD()
 					thread HealthHUD_Update( player )
 					break
 
@@ -267,7 +295,9 @@ void function HealthHUD_Update( entity player )
 			shieldTier = EquipmentSlot_GetEquipmentTier( player, "armor" )
 			if ( shieldFrac != lastShieldFrac || shieldTier != lastShieldTier )
 				ShieldOverlayUpdate( player, shieldFrac, lastShieldFrac, player.GetShieldHealthMax() )
-
+			
+			Flowstate_HUD_UpdateShieldHealthForPlayer()
+			
 			lastHealthFrac = healthFrac
 			lastShieldFrac = shieldFrac
 			lastShieldTier = shieldTier
@@ -275,12 +305,99 @@ void function HealthHUD_Update( entity player )
 	}
 }
 
+void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayerChanged = false )
+{
+	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing )
+		return
+
+	if( viewPlayerChanged && GetLocalClientPlayer() != GetLocalViewPlayer() && !file.changedViewPlayer )
+	{
+		file.changedViewPlayer = true
+		Hud_SetPos( HudElement( "FS_EvoShields_Frame" ), file.originalFlowstateShieldsPos.x, file.originalFlowstateShieldsPos.y - (65  * GetScreenSize().height / 1080 ) )
+		
+		Flowstate_HUD_UpdateShieldHealthForPlayer()
+		return
+	} else if( viewPlayerChanged && GetLocalClientPlayer() == GetLocalViewPlayer() )
+	{
+		Hud_SetPos( HudElement( "FS_EvoShields_Frame" ), file.originalFlowstateShieldsPos.x, file.originalFlowstateShieldsPos.y)
+		file.changedViewPlayer = false
+	}
+	
+	Hud_SetVisible( HudElement( "FS_EvoShields_Frame" ), toggle )
+	Hud_SetVisible( HudElement( "FS_EvoShields_FrameShieldIcon" ), toggle )
+	Hud_SetVisible( HudElement( "FS_EvoShields_Text" ), toggle )
+	//Hud_SetVisible( HudElement( "FS_EvoShields_TextMax" ), toggle )
+	Hud_SetVisible( HudElement( "FS_EvoShields_Text_ShieldsMax" ), toggle )
+	Hud_SetVisible( HudElement( "FS_EvoShields_Text_Shields" ), toggle )
+	
+	if( !toggle )
+		return
+
+	RuiSetImage( Hud_GetRui( HudElement( "FS_EvoShields_Frame" ) ), "basicImage", $"rui/flowstatecustom/evoshields_hiswattson" )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_EvoShields_FrameShieldIcon" ) ), "basicImage", $"rui/flowstatecustom/evoshields_white" )
+}
+
+void function Flowstate_HUD_UpdateShieldHealthForPlayer()
+{
+	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing )
+		return
+	
+	entity player = GetLocalViewPlayer()
+
+	if( player.GetShieldHealthMax() == 0 )
+	{
+		Init_EvoShields_Flowstate_HUD( false )
+		return
+	}
+	
+	Init_EvoShields_Flowstate_HUD( true )
+
+	Hud_SetText( HudElement( "FS_EvoShields_Text_ShieldsMax" ), player.GetShieldHealthMax().tostring() )
+	Hud_SetText( HudElement( "FS_EvoShields_Text_Shields" ), player.GetShieldHealth().tostring() )
+	
+	RuiSetImage( Hud_GetRui( HudElement( "FS_EvoShields_FrameShieldIcon" ) ), "basicImage", Flowstate_HUD_ReturnShieldIconFromShieldTier( EquipmentSlot_GetEquipmentTier( GetLocalViewPlayer(), "armor" ) ) )
+}
+
+asset function Flowstate_HUD_ReturnShieldIconFromShieldTier( int tier )
+{
+	asset shieldIcon = $"rui/flowstatecustom/evoshields_white"
+
+	switch( tier )
+	{
+		case 0:
+			shieldIcon = $"rui/flowstatecustom/evoshields_white"
+		break
+		case 1:
+			shieldIcon = $"rui/flowstatecustom/evoshields_white"
+		break
+		case 2:
+			shieldIcon = $"rui/flowstatecustom/evoshields_blue"
+		break
+		case 3:
+			shieldIcon = $"rui/flowstatecustom/evoshields_purple"
+		break
+		case 4:
+			shieldIcon = $"rui/flowstatecustom/evoshields_white"
+		break
+		case 5:
+			shieldIcon = $"rui/flowstatecustom/evoshields_red"
+		break
+		case 6:
+			shieldIcon = $"rui/flowstatecustom/evoshields_green"
+		break
+		case 7:
+			shieldIcon = $"rui/flowstatecustom/evoshields_pink"
+		break
+	}
+	
+	return shieldIcon
+}
+
 
 void function PlayerWaittillHealthChanged( entity player )
 {
 	player.WaitSignal( "HealthChanged", "ShieldChanged" )
 }
-
 
 void function KillReplayHealthUpdate()
 {
@@ -423,53 +540,18 @@ void function EvoShield_PlayFX( int tier )
 	entity cockpit = player.GetCockpit()
 	if ( !cockpit )
 		return
-	
 
 	EmitSoundOnEntity( player, "UI_InGame_FD_WaveIncoming" )
 	int fxHandle = StartParticleEffectOnEntity( cockpit, file.shieldFullFX, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	
 	vector shieldColor = GetFXRarityColorForTier( tier )
-	
-	int shieldadded
 
-	shieldadded = SURVIVAL_GetArmorShieldCapacity( tier ) - SURVIVAL_GetArmorShieldCapacity( tier - 1 )
-	
-	string hint = "Shield upgraded! +" + shieldadded.tostring()
-	
-	switch( tier )
-	{
-		case 1:
-		hint = "Shield upgraded to Common! +" + shieldadded.tostring()
-		break
-		
-		case 2:
-		hint = "Shield upgraded to Blue! +" + shieldadded.tostring()
-		break
-		
-		case 3:
-		hint = "Shield upgraded to Purple! +" + shieldadded.tostring()
-		break
-		
-		// case 4:
-		// hint = "Shield upgraded to Legendary Rainbow! +" + shieldadded.tostring()
-		// break
-		
-		case 5:
-		hint = "Shield upgraded to Mythic! +" + shieldadded.tostring()
-		break
-		
-		case 6:
-		hint = "Shield upgraded to Emerald! +" + shieldadded.tostring()
-		break
-		
-		case 7:
-		hint = "Shield upgraded to Rainbow! +" + shieldadded.tostring()
-		break
-	}
+	string hint = "+" + FLOWSTATE_HWLTM_SHIELD_AMOUNT + " Max Shield Health"
 
 	CreateEvoShieldsHint( hint, 4, shieldColor )
 	EffectSetControlPointVector( fxHandle, 1, shieldColor )
-	
+	Signal( player, "ShieldChanged" )
+
 	if( tier == 7 )
 	{
 		thread function () : (fxHandle) 

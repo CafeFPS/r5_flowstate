@@ -54,6 +54,7 @@ global function WaitForLocalClientEHI
 
 #if SERVER || CLIENT
 global function ShEHI_OnHoloSprayCreated
+global function ShEHI_OnPropSurvivalCreated
 #endif
 
 // internal global functions
@@ -594,6 +595,38 @@ void function ShEHI_OnHoloSprayCreated( entity ent )
 	ehiss.isPlayer = false
 	ehiss.isConnected = true
 	ehiss.name = "holo"
+	ehiss.team = ent.GetTeam()
+	ehiss.teamMemberIndex = ent.GetTeamMemberIndex()
+
+	fileLevel.eehScriptStructMap[eeh] <- ehiss
+	#if CLIENT
+		ehiss.isLocalClientPlayer = false
+		ehiss.name = "holo"
+
+		Signal( fileLevel.signalDummy, "EHISignalDummyCreated" )
+	#endif
+}
+
+void function ShEHI_OnPropSurvivalCreated( entity ent )
+{
+	EHI ehi            = ToEHI( ent )
+	EncodedEHandle eeh = EHIToEncodedEHandle( ehi )
+
+	EHIScriptStruct ehiss
+	
+	#if SERVER
+		Assert( !(eeh in fileLevel.eehScriptStructMap) )
+		ehiss = ent.e.ehiss
+	#elseif CLIENT
+		if ( eeh in fileLevel.eehScriptStructMap )
+			ehiss = fileLevel.eehScriptStructMap[eeh]
+		ent.e.ehiss = ehiss
+	#endif
+
+	ehiss.ehi = ehi
+	ehiss.isPlayer = false
+	ehiss.isConnected = true
+	ehiss.name = "loot"
 	ehiss.team = ent.GetTeam()
 	ehiss.teamMemberIndex = ent.GetTeamMemberIndex()
 

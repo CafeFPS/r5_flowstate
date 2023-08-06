@@ -710,6 +710,7 @@ void function UpdateUseHintForEntity( entity ent, var rui = null )
 
 	LootRef lootRef = SURVIVAL_CreateLootRef( data, ent )
 	lootRef.count = ent.GetClipCount()
+	lootRef.lootExtraProperty = ent.e.extraSurvivalProperty
 	UpdateLootRuiWithData( player, rui, data, eLootContext.GROUND, lootRef, false )
 
 	entity pingWaypoint = Waypoint_GetWaypointForLootItemPingedBy( ent, player )
@@ -838,10 +839,13 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 	}
 	else if ( data.lootType == eLootType.ARMOR )
 	{
+		int maxShield = lootRef.lootExtraProperty != -1 ? lootRef.lootExtraProperty : SURVIVAL_GetArmorShieldCapacity( data.tier )
 		if ( !isInMenu && GetLootPromptStyle() == eLootPromptStyle.COMPACT )
-			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, SURVIVAL_GetArmorShieldCapacity( data.tier ) ) )
+		{
+			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, maxShield ) )
+		}
 
-		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(SURVIVAL_GetArmorShieldCapacity( data.tier )) * 100) )
+		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(maxShield) * 100) )
 	}
 
 	if ( data.ammoType != "" )

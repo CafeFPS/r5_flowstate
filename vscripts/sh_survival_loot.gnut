@@ -60,22 +60,6 @@ global function SURVIVAL_GetActionForAttachment
 global function SURVIVAL_CreateLootRef
 global function SURVIVAL_GetPlayerShieldHealthFromArmor
 global function SURVIVAL_GetArmorShieldCapacity
-global function SURVIVAL_GetCharacterShieldHealthMaxForArmor
-
-#if(false)
-
-
-
-
-
-
-
-
-
-//
-
-
-#endif //
 
 //global const string CMDNAME_PLAYER_SWITCHED_WEAPONS = "PlayerSwitchedWeapons"
 
@@ -166,6 +150,7 @@ global function Inventory_GetPlayerEquipment
 
 #if CLIENT
 global function SURVIVAL_UpdateIcons
+global function Flowstate_UpdateRainbowShieldExtraProperty
 #endif
 
 global function SortByLootTier
@@ -207,42 +192,15 @@ global const string WEAPON_LOCKEDSET_SUFFIX_PURPLEPAINTBALL = "_purple_paintball
 global const string WEAPON_LOCKEDSET_MOD_PURPLEPAINTBALL = "purple_paintball"
 global const string WEAPON_LOCKEDSET_SUFFIX_BLUEPAINTBALL = "_blue_paintball"
 global const string WEAPON_LOCKEDSET_MOD_BLUEPAINTBALL = "blue_paintball"
-                                
-                                                                       
-                                                                         
-      
-                               
 global const string WEAPON_LOCKEDSET_SUFFIX_CUPID = "_cupid"
 global const string WEAPON_LOCKEDSET_MOD_CUPID = "cupid"
-      
-                                
-                                                            
-                                                                          
-                                                            
-                                                                          
-                                                              
-                                                                            
-                                                              
-                                                                            
-      
-                                                                      
+
 const table< string, string > LOCKEDSET_MOD_TO_SUFFIX = {
 	[WEAPON_LOCKEDSET_MOD_GOLD] = WEAPON_LOCKEDSET_SUFFIX_GOLD,
 	[WEAPON_LOCKEDSET_MOD_GOLDPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_GOLDPAINTBALL,
 	[WEAPON_LOCKEDSET_MOD_PURPLEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_PURPLEPAINTBALL,
 	[WEAPON_LOCKEDSET_MOD_BLUEPAINTBALL] = WEAPON_LOCKEDSET_SUFFIX_BLUEPAINTBALL,
-                                 
-                                                                         
-       
-                                
-		[WEAPON_LOCKEDSET_MOD_CUPID] = WEAPON_LOCKEDSET_SUFFIX_CUPID,
-       
-                                 
-                                                               
-                                                               
-                                                                 
-                                                                 
-       
+	[WEAPON_LOCKEDSET_MOD_CUPID] = WEAPON_LOCKEDSET_SUFFIX_CUPID,
 }
 
 global const string WEAPON_LOCKEDSET_MOD_CRATE = "crate"
@@ -269,12 +227,6 @@ global const bool LOOT_GROUND_VERTICAL_LINES = true
 global const AUTOPICKUP_DISTANCE = 64.0
 const float AUTOPICKUP_ORDNANCE_DISTANCE = 110.0
 
-                       
-                                                     
-                                                                
-                                                                          
-      
-
 const int EVOLVING_ARMOR_DAMAGE_TIER1 = 100
 const int EVOLVING_ARMOR_DAMAGE_TIER2 = 150
 const int EVOLVING_ARMOR_DAMAGE_TIER3 = 300
@@ -282,10 +234,6 @@ const int EVOLVING_ARMOR_DAMAGE_TIER4 = 750
 
 const FX_SHIELD_EVO_UPGRADE_FP = $"P_armor_evo_upgrade_FP"
 global const FX_SHIELD_EVO_UPGRADE_3P = $"P_armor_evo_upgrade"
-
-                  
-                                                       
-      
 
 global const FX_AIRDROP_BEAM_CP = $"P_ar_loot_drop_point_far_cp"
 global const FX_AIRDROP_GROUND_MARKER_DEFAULT_CP = $"P_ar_loot_drop_point_cp"
@@ -302,7 +250,6 @@ global const float VERTICAL_LINE_DIST_MAX = SURVIVAL_PICKUP_ALL_MAX_RANGE
 #endif
 
 global enum ePropSurvivalFlag
-                                                                          
 {
 	HIDE_LOOT_LINE = (1 << 0),
 }
@@ -994,27 +941,14 @@ bool function CodeCallback_WeaponModCommandCheckMods( entity player, entity weap
 		"altfire_highcal",
 		"altfire_double_tap",
 		"hopup_paintball",
+		"choke"
 	]
-
-	//if ( mod == "choke" || mod == "kinetic_choke")
-		//return EnergyChoke_OnWeaponModCommandCheckMods( player, weapon, mod, isAdd )
 
 	if ( alwaysAllowedMods.contains( mod ) )
 		return true
 
-
 	if ( Consumable_IsValidModCommand( player, weapon, mod, isAdd ) )
 		return true
-
-                           
-                                                                      
-             
-      
-
-	#if DEV
-		if ( GetBugReproNum() == 762 )
-			return true
-	#endif
 
 	return false
 }
@@ -3463,7 +3397,7 @@ void function ServerCallback_AttachedMod( int wIdx, int mIdx )
 
 
 #if SERVER
-void function Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0 )
+void function Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0,  int extraPropertyValue = -1 )
 {
 	string currentEquip = Inventory_GetPlayerEquipment( player, equipmentSlot )
 
@@ -3498,7 +3432,10 @@ void function Inventory_SetPlayerEquipment( entity player, string itemRef, strin
 
 		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
 		{
-			player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
+			if( extraPropertyValue != -1 )
+				player.SetShieldHealthMax( extraPropertyValue )
+			else
+				player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
 			player.SetShieldHealth( propertyValue )
 		}
 	}
@@ -3803,11 +3740,9 @@ void function ReplaceOpticInMods( array<string> mods, string opticRef )
 
 int function SURVIVAL_GetPlayerShieldHealthFromArmor( entity player )
 {
-	//
 	if ( player.GetShieldHealth() <= GetPlayerSettingBaseShield( player ) )
 		return 0
 
-	//
 	return player.GetShieldHealth() - GetPlayerSettingBaseShield( player )
 }
 
@@ -3827,49 +3762,12 @@ int function SURVIVAL_GetArmorShieldCapacity( int tier )
 		case 5:
 			return 125
 		case 6:
-			return 175
+			return 150
 		case 7:
-			return 225
+			return 175
 	}
 
 	return 0
-}
-
-int function SURVIVAL_GetCharacterShieldHealthMaxForArmor( entity player, LootData data )
-{
-	int shieldMaxHealth = GetPlayerSettingBaseShield( player )
-	int tier = data.tier
-
-	switch ( tier )
-	{
-		case 0:
-			shieldMaxHealth += 0
-			break
-		case 1:
-			shieldMaxHealth += 50
-			break
-		case 2:
-			shieldMaxHealth += 75
-			break
-		case 3:
-		case 4:
-			shieldMaxHealth += 100
-			break
-		case 5:
-			shieldMaxHealth += 125
-			break
-		case 6:
-			shieldMaxHealth += 175
-			break
-		case 7:
-			shieldMaxHealth += 225
-			break
-		default:
-			Assert( 0, "Invalid armor tier" )
-			shieldMaxHealth += 0
-	}
-
-	return shieldMaxHealth
 }
 
 int function SortByPriorityThenTier( ConsumableInventoryItem a, ConsumableInventoryItem b )
@@ -4418,3 +4316,24 @@ string function GetNameOfTeammateWithVaultKey( int team )
 
 	return ""
 }
+
+#if CLIENT
+void function Flowstate_UpdateRainbowShieldExtraProperty( int propEhandle, int maxHealth )
+{
+	thread function () : ( propEhandle, maxHealth )
+	{
+		while ( !EHIHasValidScriptStruct( propEhandle ) )
+			WaitFrame()
+		
+		while( !IsValid( GetEntityFromEncodedEHandle( propEhandle ) ) )
+			WaitFrame()
+
+		entity prop = GetEntityFromEncodedEHandle( propEhandle )
+		
+		if( !IsValid( prop ) )
+			return
+
+		prop.e.extraSurvivalProperty = maxHealth
+	}()
+}
+#endif
