@@ -399,9 +399,8 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
 		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 
-	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
-	if(GameRules_GetGameMode() == SURVIVAL)
-		TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+	// if( GameRules_GetGameMode() == SURVIVAL )
+	TakeAllPassives( player )
 }
 
 void function GiveLoadoutRelatedWeapons( entity player )
@@ -417,8 +416,15 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tactical ), OFFHAND_TACTICAL, [] )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimate ), OFFHAND_ULTIMATE, [] )
 	
-	if(GameRules_GetGameMode() == SURVIVAL)
-		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+	// if(GameRules_GetGameMode() == SURVIVAL)
+	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	if( ItemFlavor_GetHumanReadableRef( character ) == "character_caustic" || ItemFlavor_GetHumanReadableRef( character ) == "character_gibraltar" )
+	{
+		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
+			GivePassive( player, ePassives.PAS_FORTIFIED )
+	}
 	
 	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
 	string meleePrimary = MeleeSkin_GetMainWeaponClassname( meleeSkin )

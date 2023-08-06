@@ -401,7 +401,7 @@ void function EnablePlayerSelfRes( entity player )
 		//if (  !IsPlayerGettingFirstAid( player ) )
 		//	MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
 
-		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) )
+		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) && player.IsOnGround() )
 		{
 		//	MessageToPlayer( player, eEventNotifications.Clear )
 			waitthread PlayerAttemptRes( player, player )
