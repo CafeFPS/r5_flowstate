@@ -53,6 +53,14 @@ void function SpawnMultipleLootTicksForMap()
 		printt( "spawned tick at " + lzEnt.GetOrigin() )
 		#endif
     }
+	
+	// int j = 0
+	foreach( infoTarget in tickSpawns )
+	{
+		infoTarget.Destroy()
+		// printt( "destroyed unused info target ent for lootticks, count: " + j )
+		// j++
+	}
 }
 
 entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpool = ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
@@ -91,6 +99,10 @@ entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpo
 		// lootTick.SetCollisionAllowed( true )
 		// lootTick.SetCollisionDetailHigh()
     }
+
+	lootTick.EnableNPCFlag( NPC_IGNORE_ALL )
+	lootTick.SetNoTarget( true )
+	lootTick.EnableNPCFlag( NPC_DISABLE_SENSING )    // don't do traces to look for enemies or players
 
     thread PlayAnim( lootTick, "sd_closed_to_open" )
     thread LootTickParticleThink( lootTick )

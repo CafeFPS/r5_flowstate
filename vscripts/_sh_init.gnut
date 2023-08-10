@@ -325,6 +325,7 @@ void function Server_Init()
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
+	ObjectiveResourceSystem_ServerInit()
 
     // ReMap Live
     if ( GetCurrentPlaylistName() == "survival_dev" )
