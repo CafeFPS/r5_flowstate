@@ -102,9 +102,9 @@ WeaponData
 
 	"looping_sounds"								"1"
 
-    "fire_sound_1_player_1p"						"weapon_hemloksmg_secondshot_1p"
-    "fire_sound_1_player_3p"						"weapon_hemloksmg_secondshot_3p"
-    "fire_sound_1_npc"								"weapon_hemloksmg_secondshot_3p"
+    // "fire_sound_1_player_1p"						"weapon_hemloksmg_secondshot_1p"
+    // "fire_sound_1_player_3p"						"weapon_hemloksmg_secondshot_3p"
+    // "fire_sound_1_npc"							"weapon_hemloksmg_secondshot_3p"
 
 	"fire_sound_2_player_1p" 						""
 	"fire_sound_2_player_3p" 						""
