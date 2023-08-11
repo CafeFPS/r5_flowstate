@@ -186,17 +186,10 @@ entity function CreateEntity( string name )
 //	if ( name == "info_particle_system" )
 //	{
 //		printl( " " )
-//		DumpStack(3)
+		// DumpStack(3)
 //	}
-
-//working on this. Colombia
-	entity idk
-	// try{
-		idk = Entities_CreateByClassname( name )
-	// }catch(e420)
-	// {
-	// }
-	return idk
+	
+	return Entities_CreateByClassname( name )
 }
 
 // used from the console to quick-test fields
@@ -4506,16 +4499,40 @@ void function SetOutOfBoundsTimeLimit( float maxtime )
 	//stub
 }
 
-array<entity> function GetEntityChainOfType( entity endNodes )
+array<entity> function GetEntityChainOfType( entity endNode )
 {
-	array<entity> temp
-	return temp
+	Assert( IsValid( endNode ) )
+	array<entity> nodes
+	nodes.append( endNode )
+	// while ( true )
+	// {
+		array<entity> nextNodes = nodes[nodes.len() - 1].GetLinkEntArray()
+		
+		foreach( node in nextNodes )
+		{
+			if ( !IsValid( node ) )
+				break
+			nodes.append( node )
+
+			foreach( node2 in node.GetLinkEntArray() )
+			{
+				if ( !IsValid( node2 ) )
+					break
+
+				if ( node2.GetClassName() == "info_target" )
+					continue
+
+				nodes.append( node2 )
+			}
+		}
+	// }
+	return nodes
 }
 
-entity function GetLastLinkedEntOfType( entity endNodes )
+entity function GetLastLinkedEntOfType( entity endNode )
 {
-	entity temp
-	return temp
+	array<entity> chain = GetEntityChainOfType( endNode )
+	return chain[chain.len() - 1]
 }
 
 // Screen cover transition functions
