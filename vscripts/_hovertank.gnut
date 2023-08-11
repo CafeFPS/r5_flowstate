@@ -11,7 +11,7 @@ global function HoverTankCanFlyPath
 global function GetHoverTankByInstance
 
 #if DEVELOPER
-global function Dev_PlayAnimOnHoverTank
+// global function Dev_PlayAnimOnHoverTank
 #endif
 
 global const HOVER_TANK_RADIUS = 0
@@ -556,61 +556,61 @@ entity function GetHoverTankByInstance( string instanceOg )
 }
 
 #if DEVELOPER
-void function Dev_PlayAnimOnHoverTank( int animIndex )
-{
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_back.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_forward.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_left.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_right.rseq
-// [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/test.rseq
-	asset anim
-	switch( animIndex )
-	{
-		case 0: 
-			anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq"
-		break
+// void function Dev_PlayAnimOnHoverTank( int animIndex )
+// {
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_back.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_forward.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_left.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_right.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/test.rseq
+	// asset anim
+	// switch( animIndex )
+	// {
+		// case 0: 
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq"
+		// break
 		
-		case 1:
-			anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq"
-		break
+		// case 1:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq"
+		// break
 		
-		case 2:
-			anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq"
-		break
+		// case 2:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq"
+		// break
 		
-		case 3:
-			anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq"
-		break
+		// case 3:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq"
+		// break
 
-		case 4:
-			anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq"
-		break
+		// case 4:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq"
+		// break
 
-		case 5:
-			anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq"
-		break
+		// case 5:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq"
+		// break
 		
-		case 6:
-			anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq"
-		break
+		// case 6:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq"
+		// break
 
-		case 7:
-			anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq"
-		break
+		// case 7:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq"
+		// break
 
-		case 8:
-			anim = $"animseq/vehicle/hovership/hovership_platform/test.rseq"
-		break
-	}
+		// case 8:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/test.rseq"
+		// break
+	// }
 	
-	thread PlayAnim( file.hoverTanksIntro[0].flightMover, anim ) //, file.hoverTanksIntro[0].interiorModel )
-}
+	// thread PlayAnim( file.hoverTanksIntro[0].flightMover, anim ) //, file.hoverTanksIntro[0].interiorModel )
+// }
 #endif
