@@ -1574,7 +1574,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	entity weaponToDrop
 	int weaponSlot = WEAPON_INVENTORY_SLOT_ANY
 
-	if ( dropCurrentWeapon && oldEquipData.ref != "" )
+	if ( IsValid( activeWeapon ) && dropCurrentWeapon && oldEquipData.ref != "" )
 	{
 		array<string> activeMods = activeWeapon.GetMods()
 
@@ -1601,18 +1601,14 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 					continue // There is already an installed attachment, don't install a second one
 				
 				try{
-				activeWeapon.RemoveMod( wepMod )
+					if( activeWeapon.HasMod( wepMod ) )
+						activeWeapon.RemoveMod( wepMod )
 				}catch(e420)
 				{
 					
 				}
-				
-								try{
+
 				mods.append( wepMod )
-						}catch(e421)
-				{
-					
-				}
 			}
 		}
 
@@ -1716,7 +1712,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		{
 			weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
 		}
-		player.EnableWeaponWithSlowDeploy()
+		player.DeployWeapon()
 		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
 
 		if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
@@ -1735,6 +1731,18 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
 		} else if( weapon.UsesClipsForAmmo() )
 			weapon.SetWeaponPrimaryClipCount( ammoToGive )
+
+		if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
+		{
+			string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+			int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+			int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+			int requiredAmmo = maxAmmo - currentAmmo
+			int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+
+			player.AmmoPool_SetCapacity( 65535 )
+			player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+		}
 
 		if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
 			weapon.SetLegendaryModelIndex(RandomInt(4))

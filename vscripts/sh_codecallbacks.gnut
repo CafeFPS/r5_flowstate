@@ -388,6 +388,20 @@ void function CodeCallback_OnWeaponReload( entity weapon )
 		if ( NPC_GruntChatterSPEnabled( weaponOwner ) )
 			GruntChatter_TryPlayerPilotReloading( weaponOwner )
 	#endif
+
+	if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
+	{
+		int maxClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int requiredAmmo = maxAmmo - currentAmmo
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( weaponOwner, ammoRef )
+
+		weaponOwner.AmmoPool_SetCapacity( 65535 )
+		weaponOwner.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+	}
 }
 
 void function SetCallback_OnPlayerReload( void functionref( entity ) rules )
