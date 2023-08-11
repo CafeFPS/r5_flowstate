@@ -1382,26 +1382,26 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 
 	if ( modToRemove != "" && mods.contains( modToRemove ) )
 	{
-		#if DEVELOPER
-		printt("removing mod in weapon: " + weapon, modToRemove )
-		#endif
+		// #if DEVELOPER
+		// printt("removing mod in weapon: " + weapon, modToRemove )
+		// #endif
 		weapon.RemoveMod( modToRemove )
 		mods.fastremovebyvalue( modToRemove )
 		VerifyToggleMods( mods )
 
 		int stowedWeaponSlot = SURVIVAL_GetStowedWeaponSlot( player )
 		entity stowedWeaponEnt = player.GetNormalWeapon( stowedWeaponSlot )
-		#if DEVELOPER
-		printt( "STOWED WEAPON ENT: " + stowedWeaponEnt )
-		#endif
+		// #if DEVELOPER
+		// printt( "STOWED WEAPON ENT: " + stowedWeaponEnt )
+		// #endif
 		LootData modToRemoveData = SURVIVAL_Loot_GetLootDataByRef( modToRemove )
 		
 		//By @CafeFPS
 		if ( attachRemovedModToStowedIfBetter && IsValid( stowedWeaponEnt ) && stowedWeaponEnt != weapon && !stowedWeaponEnt.IsDiscarding() && !stowedWeaponEnt.IsWeaponOffhand() && CanAttachToWeapon( modToRemoveData.ref, stowedWeaponEnt.GetWeaponClassName() ) && IsAttachmentAnUpgrade( player, modToRemoveData, eLootAction.ATTACH_TO_STOWED ) )
 		{
-			#if DEVELOPER
-			printt( "entering first debug Attachments zone ")
-			#endif
+			// #if DEVELOPER
+			// printt( "entering first debug Attachments zone ")
+			// #endif
 			string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( stowedWeaponEnt ), modToRemoveData.ref )
 			string installed = GetInstalledWeaponAttachmentForPoint( stowedWeaponEnt, attachPoint )
 			LootData attachedData
@@ -1435,15 +1435,15 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 			{
 				printt( "DEBUG THIS - Failed to attach attachment on stowed weapon ", player.GetPlayerName(), "item", item, "modToRemove", modToRemove )
 			}
-			#if DEVELOPER
-			foreach( weirdBug in stowedWeaponEnt.GetMods() )
-				printt( " DEBUGGING MODS ON STOWED WEAPON " + weirdBug )
-			#endif
+			// #if DEVELOPER
+			// foreach( weirdBug in stowedWeaponEnt.GetMods() )
+				// printt( " DEBUGGING MODS ON STOWED WEAPON " + weirdBug )
+			// #endif
 		} else if ( returnToInventory )
 		{
-			#if DEVELOPER
-			printt( "return to inventory debug part")
-			#endif
+			// #if DEVELOPER
+			// printt( "return to inventory debug part")
+			// #endif
 			if ( IsValid( deathBox ) )
 			{
 				entity modLoot = SpawnGenericLoot( modToRemove, deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
@@ -1458,9 +1458,9 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		}
 		else
 		{
-			#if DEVELOPER
-			printt( "this should be at least executing debug")
-			#endif
+			// #if DEVELOPER
+			// printt( "this should be at least executing debug")
+			// #endif
 			PlayerThrowLoot( player, modToRemove )
 		}
 	}
@@ -1476,10 +1476,10 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		mods.append( item )
 		VerifyToggleMods( mods )
 		
-		#if DEVELOPER
-		foreach( weirdBug in weapon.GetMods() )
-			printt( " DEBUGGING MODS ON WEAPON " + weirdBug ) 
-		#endif
+		// #if DEVELOPER
+		// foreach( weirdBug in weapon.GetMods() )
+			// printt( " DEBUGGING MODS ON WEAPON " + weirdBug ) 
+		// #endif
 		try{
 			weapon.AddMod( item )
 		}catch(e420)
@@ -1547,8 +1547,8 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	if( !IsValid( pickup ) )
 		return
 
-	//if( !IsValid( activeWeapon ) )
-	//	return
+	if( !IsValid( activeWeapon ) )
+		return
 
 	if ( !IsWeaponInPrimarySlot( player, activeWeapon ) )
 	{
@@ -1612,7 +1612,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			}
 		}
 
-		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) )
+		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "main_weapon" + GetSlotForWeapon( player, activeWeapon ) )
 
 		// Create tracking event for players with tracking passive.
 		if ( es.trackingVisionExchangePOI != -1 )
@@ -1639,10 +1639,6 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		{
 			vector origin = GetThrowOrigin( player )
 			vector fwd    = AnglesToForward( player.EyeAngles() )
-			
-			weaponSlot = es.weaponSlot
-			if ( weaponSlot == -1 )
-				weaponToDrop = player.GetNormalWeapon( weaponSlot )
 
 			if ( es.specialCaseDropFunc != null )
 				es.specialCaseDropFunc( player, es.ref, origin, fwd )
@@ -1650,9 +1646,6 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 				SURVIVAL_DropMainWeapon( player, es.ref, origin, fwd )
 		}
 	}
-
-	// if ( !InfiniteAmmoEnabled() )
-		// mods.append( "survival_finite_ammo" )
 
 	foreach ( possibleHopupMod in newEquipData.baseMods )
 		ApplyDefaultToggledMods( newEquipData.baseWeapon, possibleHopupMod, mods )
@@ -1702,13 +1695,15 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	}
 
 	thread function () : ( player, newEquipData, mods, pickup, dropCurrentWeapon, weaponSlot ) 
-	{
+	{		
 		int clipCount = pickup.GetClipCount()
 		int lastAmmo = pickup.e.crateWeaponLastAmmo
+		
+		player.AmmoPool_SetCapacity( 65535 )
 
 		entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
 
-		if(IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
+		if( IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
 		{
 			weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
 		}
@@ -1740,7 +1735,6 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			int requiredAmmo = maxAmmo - currentAmmo
 			int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
 
-			player.AmmoPool_SetCapacity( 65535 )
 			player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
 		}
 

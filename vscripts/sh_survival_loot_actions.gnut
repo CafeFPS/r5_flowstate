@@ -185,7 +185,7 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 			pickedUp = PickupOrdnanceItem( pickup, player, pickupFlags, deathBox, desiredCount )
 			break
 		case eLootType.AMMO:
-			pickedUp = PickupAmmo( pickup, player, pickupFlags, deathBox, desiredCount )
+			pickedUp = PickupAmmo( pickup, player, pickupFlags, deathBox )
 			break
 		case eLootType.DATAKNIFE:
 			pickedUp = DataKnifePickUp_Use( pickup, player, pickupFlags )
@@ -354,50 +354,50 @@ bool function PickupResource( entity pickup, entity player, int pickupFlags, ent
 	return false
 }
 
-
-bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags, entity deathBox, int ornull desiredCount )
+bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( ammoPickup.GetSurvivalInt() )
 
-	int pickupCount = ammoPickup.GetClipCount()
-	int numToPickup = pickupCount
-
-	bool isAutoPickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
-	if ( isAutoPickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
-		return false
-
-	if ( desiredCount != null )
-		numToPickup = minint( numToPickup, expect int(desiredCount) )
-
-	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )                                   
-
 	int ammoType  = AmmoType_GetTypeFromRef( data.ref )
-	int poolMax   = player.AmmoPool_GetCapacity()
 	int poolCount = player.AmmoPool_GetCount( ammoType )
 
-	if ( !GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) )
-		numToPickup = minint( numToPickup, poolMax - poolCount )
+	bool autopickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
 
+	if ( autopickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
+		return false
+
+	int numToPickup = ammoPickup.GetClipCount()
+
+	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )
+	
 	if ( numToPickup == 0 )
 		return false
 
-	int numPickedUp = numToPickup
-
 	#if SERVER
 	player.AmmoPool_SetCapacity(65535)
-	player.AmmoPool_SetCount( ammoType, poolCount + numPickedUp )
+	#endif
+
+	int poolMax = player.AmmoPool_GetCapacity()
+	numToPickup = minint( numToPickup, poolMax - poolCount )
+
+	#if SERVER
+	player.AmmoPool_SetCount( ammoType, poolCount + numToPickup )
 	PlayPickupSound( player, data.ref, pickupFlags )
-	ammoPickup.SetClipCount( numPickedUp - numToPickup )
-	SURVIVAL_AddToPlayerInventory( player, data.ref, numPickedUp, true )
+	#endif
+
+	int clipCount = ammoPickup.GetClipCount()
+
+	#if SERVER
+	ammoPickup.SetClipCount( clipCount - numToPickup )
+
+	SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
 
 	//Create tracking event for players with tracking passive.
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
 	#endif
 
-	Assert( numPickedUp <= pickupCount )
-	return numPickedUp == pickupCount
+	return ( clipCount <= numToPickup )
 }
-
 
 bool function PickupOrdnanceItem( entity ammoPickup, entity player, int pickupFlags, entity deathBox, int ornull desiredCount )
 {

@@ -1576,63 +1576,78 @@ int function SURVIVAL_GetCountToFillStack( entity player, string ref )
 }
 
 
-int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count = 1, bool reallyAdd = true )
+int function SURVIVAL_AddToInventory( array<ConsumableInventoryItem> inventory, int inventoryLimit, LootData itemLootFlav, int itemCount, int itemSlotCount, bool doSorting )
 {
-	PerfStart( PerfIndexServer.AddToInventory )
-
-	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	int type = data.index
-
-	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-
-	int numToAdd = count
+	int numToAdd = itemCount
 	int numAdded = 0
-	int inventoryLimit = SURVIVAL_GetInventoryLimit( player )
-	int slotCount = SURVIVAL_GetInventorySlotCountForPlayer( player, data )
-
-	//printt("SURVIVAL_AddToPlayerInventory", numToAdd, inventoryLimit)
-	foreach ( invItem in playerInventory )
+	foreach ( invItem in inventory )
 	{
-		if ( invItem.type != type )
+		if ( invItem.type != itemLootFlav.index )
 			continue
 
-		if ( invItem.count >= slotCount )
+		if ( invItem.count >= itemSlotCount )
 			continue
 
-		int diff = slotCount - invItem.count
-		int add = minint( numToAdd, diff )
+		int diff = itemSlotCount - invItem.count
+		int add  = minint( numToAdd, diff )
 		invItem.count += add
 		numToAdd -= add
 		numAdded += add
 	}
 
-	while ( numToAdd > 0 && playerInventory.len() < inventoryLimit )
+	while ( numToAdd > 0 && inventory.len() < inventoryLimit )
 	{
 		ConsumableInventoryItem item
-		item.slot = playerInventory.len()
-		item.type = type
+		item.slot = inventory.len()
+		item.type = itemLootFlav.index
 
-		int add = minint( numToAdd, slotCount )
+		int add = minint( numToAdd, itemSlotCount )
 		item.count = add
 		numToAdd -= add
 		numAdded += add
 
-		int insertPoint = playerInventory.len()
-		#if SERVER
-			// only the server cares about the positioning
-			for ( int i=0; i<playerInventory.len(); i++ )
+		int insertPoint = inventory.len()
+		if ( doSorting )
+		{
+			for ( int i = 0; i < inventory.len(); i++ )
 			{
-				int compare = SortByPriorityThenTier( item, playerInventory[i] )
+				int compare = SortByPriorityThenTier( item, inventory[i] )
 				if ( compare <= 0 )
 				{
 					insertPoint = i
 					break
 				}
 			}
-		#endif
+		}
 
-		playerInventory.insert( insertPoint, item )
+		inventory.insert( insertPoint, item )
 	}
+
+	return numAdded
+}
+
+
+int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count = 1, bool reallyAdd = true )
+{
+	                                                                                                 
+	if ( !SURVIVAL_Loot_IsRefValid (ref) )                             
+	{
+		Warning( "Trying to add non-valid loot to player inventory" )
+		return 0                                                                                                                                                     
+	}
+
+	PerfStart( PerfIndexServer.AddToInventory )
+
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+	LootData data      = SURVIVAL_Loot_GetLootDataByRef( ref )
+	int inventoryLimit = SURVIVAL_GetInventoryLimit( player )
+	int itemSlotCount  = SURVIVAL_GetInventorySlotCountForPlayer( player, data )
+
+	                                              
+	bool doSorting = SERVER
+
+	int numAdded = SURVIVAL_AddToInventory( playerInventory, inventoryLimit, data, count, itemSlotCount, doSorting )
 
 	#if SERVER
 		if ( reallyAdd )
@@ -1655,7 +1670,6 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 
 	return numAdded
 }
-
 
 void function SURVIVAL_RemoveFromPlayerInventory( entity player, string ref, int count = 1 )
 {

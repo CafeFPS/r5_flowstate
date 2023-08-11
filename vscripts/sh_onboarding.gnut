@@ -472,6 +472,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	// ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	// CharacterSkin_Apply( player, playerCharacterSkin )
+	player.AmmoPool_SetCapacity( 65535 )
 
 	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor_deprecated")
 		GiveLoadoutRelatedWeapons( player )
