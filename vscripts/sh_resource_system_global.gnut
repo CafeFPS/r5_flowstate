@@ -18,9 +18,20 @@ global const string CLASSNAME_INFANTRYSPAWN =	"resource_infantryspawn"
 global const string CLASSNAME_SNIPERNEST =		"resource_snipernest"
 global const string CLASSNAME_PATROL_NODE =		"resource_patrol_node"
 
+//new?
+global const string CLASSNAME_DOOR = "resource_door"
+global const string CLASSNAME_NEGATION_ZONE = "negation_zone_target"
+
+global const string CLASSNAME_FR_FOLDINGTARGET = "shooting_range_folding_target"
+global const string CLASSNAME_FR_ROTATINGTARGET = "shooting_range_rotating_target"
+global const string CLASSNAME_FR_RACKS = "weapon_racks"
+global const string CLASSNAME_FR_ATTACHMENTS = "attachments"
+global const string CLASSNAME_PVE_START = "pve_start_spawn_zone"
+global const string CLASSNAME_PVE_SPAWN = "pve_spawn"
+
 void function SpawnCallback_JustDeleteMeNow( entity spawnEnt )
 {
-	//printf( "zzzz: %s", string( spawnEnt ) )
+	// printf( "zzzz: %s", string( spawnEnt ) )
 	spawnEnt.Destroy()
 }
 
@@ -33,6 +44,12 @@ void function SetupResourceSpawnCallback( string className )
 	// #endif
 }
 
+void function SetupResourceSpawnCallback_ScriptName( string scriptName )
+{
+	AddSpawnCallback_ScriptName( scriptName, SpawnCallback_JustDeleteMeNow )
+}
+
+
 void function ObjectiveResourceSystem_ServerInit()
 {
 	SetupResourceSpawnCallback( CLASSNAME_RESOURCEGROUP )
@@ -40,7 +57,16 @@ void function ObjectiveResourceSystem_ServerInit()
 	SetupResourceSpawnCallback( CLASSNAME_INFANTRYSPAWN )
 	SetupResourceSpawnCallback( CLASSNAME_SNIPERNEST )
 	SetupResourceSpawnCallback( CLASSNAME_PATROL_NODE )
-
+	
+	//custom
+	SetupResourceSpawnCallback( CLASSNAME_DOOR )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_NEGATION_ZONE )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_FOLDINGTARGET )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ROTATINGTARGET )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_RACKS )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ATTACHMENTS )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_PVE_START )
+	SetupResourceSpawnCallback_ScriptName( CLASSNAME_PVE_SPAWN )
 	// #if RESOURCE_SYSTEM_ENABLED
 	// ObjectiveResourceSystem_ServerInitInternal()
 	// #endif // RESOURCE_SYSTEM_ENABLED

@@ -599,18 +599,23 @@ bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args 
 
 void function SURVIVAL_PlaceGroundItems()
 {
-	array<entity> itemEnts = GetEntArrayByClass_Expensive( "script_ref" )
+	array<entity> itemEnts
+	entity startLootEnt = Entities_FindByClassname( null, "script_ref" )
+
+	while( IsValid( startLootEnt ) )
+	{
+		itemEnts.append( startLootEnt )
+		startLootEnt = Entities_FindByClassname( startLootEnt, "script_ref" )
+	}
 
 	if ( GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
-	{
-		foreach ( ent in itemEnts )
+		foreach( ent in itemEnts )
 		{
-			if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
+			if( GetEditorClass( ent ) != "info_survival_weapon_location" )
 				continue
 
 			OnGroundLootSpawned( ent )
 		}
-	}
 
 	FlagSet( "Survival_LootSpawned" )
 }
@@ -649,17 +654,22 @@ void function OnGroundLootSpawned( entity ent )
 {
 	string zoneRef = LootZones_GetRefForOrigin( ent.GetOrigin() )
 	string itemRef
-	
-	
+
 	string instance = ""
 	if ( ent.HasKey( "instance_name" ) )
 		instance = expect string( ent.kv.instance_name )
+	
+	vector origin = ent.GetOrigin()
+
+	//save edicts
+	if( IsValid( ent ) )
+		ent.Destroy()
 
 	bool isHoverTankLoot = instance == "HoverTank_1" || instance == "HoverTank_2"
 
 	if(zoneRef == "data_knife_vault")
 	{
-		vector zoneOrigin = LootZones_GetParentForOrigin(ent.GetOrigin())
+		vector zoneOrigin = LootZones_GetParentForOrigin( origin )
 		array<string> alreadySpawnedLoot
 		if(zoneOrigin in file.vaultLootSpawned)
 			alreadySpawnedLoot = file.vaultLootSpawned[zoneOrigin]
@@ -684,7 +694,7 @@ void function OnGroundLootSpawned( entity ent )
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
 	LootTypeData lt = GetLootTypeData( itemData.lootType)
 
-	vector spawnOrigin = OriginToGround( ent.GetOrigin() )
+	vector spawnOrigin = OriginToGround( origin )
 
 	spawnOrigin.z += 1.5
 
@@ -723,10 +733,6 @@ void function OnGroundLootSpawned( entity ent )
 			//parentPoint.SetParent( GetHoverTankByInstance( instance ) )
 		}
 	}
-	
-	//save edicts
-	if( IsValid( ent ) )
-		ent.Destroy()
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
