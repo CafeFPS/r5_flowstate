@@ -374,8 +374,9 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags, ent
 	int ammoType  = AmmoType_GetTypeFromRef( data.ref )
 	int poolMax   = player.AmmoPool_GetCapacity()
 	int poolCount = player.AmmoPool_GetCount( ammoType )
-	// if ( !IsInfiniteAmmoEnabled() )
-		// numToPickup = minint( numToPickup, poolMax - poolCount )
+
+	if ( !GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) )
+		numToPickup = minint( numToPickup, poolMax - poolCount )
 
 	if ( numToPickup == 0 )
 		return false
