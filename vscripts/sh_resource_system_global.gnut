@@ -61,10 +61,13 @@ void function ObjectiveResourceSystem_ServerInit()
 	//custom
 	SetupResourceSpawnCallback( CLASSNAME_DOOR )
 	SetupResourceSpawnCallback_ScriptName( CLASSNAME_NEGATION_ZONE )
-	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_FOLDINGTARGET )
-	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ROTATINGTARGET )
-	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_RACKS )
-	SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ATTACHMENTS )
+	if( GetMapName() == "mp_rr_canyonlands_64k_x_64k" )
+	{
+		SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_FOLDINGTARGET )
+		SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ROTATINGTARGET )
+		SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_RACKS )
+		SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_ATTACHMENTS )
+	}
 	SetupResourceSpawnCallback_ScriptName( CLASSNAME_PVE_START )
 	SetupResourceSpawnCallback_ScriptName( CLASSNAME_PVE_SPAWN )
 	// #if RESOURCE_SYSTEM_ENABLED
