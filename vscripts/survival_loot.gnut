@@ -649,8 +649,14 @@ void function OnGroundLootSpawned( entity ent )
 {
 	string zoneRef = LootZones_GetRefForOrigin( ent.GetOrigin() )
 	string itemRef
+	
+	
+	string instance = ""
+	if ( ent.HasKey( "instance_name" ) )
+		instance = expect string( ent.kv.instance_name )
 
-	//
+	bool isHoverTankLoot = instance == "HoverTank_1" || instance == "HoverTank_2"
+
 	if(zoneRef == "data_knife_vault")
 	{
 		vector zoneOrigin = LootZones_GetParentForOrigin(ent.GetOrigin())
@@ -699,7 +705,28 @@ void function OnGroundLootSpawned( entity ent )
 
 	int angleZ = 0
 
-	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+	entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+	
+	if( isHoverTankLoot )
+	{
+		printt("detected hovertank loot" )
+		entity parentPoint = CreateEntity( "script_mover_lightweight" )
+		{
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( loot.GetOrigin() )
+			parentPoint.SetAngles( loot.GetAngles() )
+			DispatchSpawn( parentPoint )
+			parentPoint.Hide()
+			loot.SetParent(parentPoint)
+			//parentPoint.SetParent( GetHoverTankByInstance( instance ) )
+		}
+	}
+	
+	//save edicts
+	if( IsValid( ent ) )
+		ent.Destroy()
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
