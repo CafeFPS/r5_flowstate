@@ -104,30 +104,28 @@ void function LootRollers_OnDamaged(entity ent, var damageInfo)
 		// LootDrone_Panic( droneData )
 	
 	// Handle damage, props get destroyed on death, we don't want that.
-	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	if( nextHealth > 0 )
+	float nextHealth = max( 0, ent.GetHealth() - DamageInfo_GetDamage( damageInfo ) ) 
+	if( !IsValid( ent.GetParent() ) && !ent.e.applyNewHealthOneTime )
 	{
-		ent.SetHealth(nextHealth)
-		return
-	}
-
-	if( ent.e.applyNewHealthOneTime )
-	{
-		ent.SetHealth( 0 )
-		return
-	}
-
-	if( !ent.e.applyNewHealthOneTime )
-	{
-		ent.SetHealth( 35 )
+		ent.SetMaxHealth( 30 )
+		ent.SetHealth( 30 )
 		ent.e.applyNewHealthOneTime = true
+		return
 	}
 
-	//Kill the drone, not the roller
-	if( !IsValid( droneData.model ) ) return
+	if( nextHealth <= 0 )
+	{
+		if( IsValid( droneData.model ) )
+		{
+			droneData.model.TakeDamage( LOOT_DRONE_HEALTH_MAX, attacker, null, DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+			droneData.model.SetTakeDamageType( DAMAGE_NO )
+		}
+	}
 
-	droneData.model.TakeDamage( LOOT_DRONE_HEALTH_MAX, attacker, null, DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
-	droneData.model.SetTakeDamageType( DAMAGE_NO )
+	if( !ent.e.applyNewHealthOneTime && nextHealth <= 0 )
+		return
+
+	ent.SetHealth(nextHealth)
 }
 
 void function LootDrone_Panic( LootDroneData data )
