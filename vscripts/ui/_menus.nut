@@ -1177,7 +1177,7 @@ bool function TryDialogFlowPersistenceQuery( string persistenceVar )
 void function DialogFlow()
 {
 	bool persistenceAvailable   = IsPersistenceAvailable()
-	string earliestRankedPeriod = Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
+	string earliestRankedPeriod = ""//Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
 
 	if ( DisplayQueuedRewardsGiven() )
 	{
