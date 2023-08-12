@@ -878,7 +878,7 @@ array<LootData> function SURVIVAL_Loot_GetByType( int lootType )
 }
 
 
-array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
+array<LootData> function SURVIVAL_Loot_GetByTier( int tier, bool addWeapons = true )
 {
 	array<LootData> lootOfTier = []
 	foreach ( string lootRef, LootData lootData in file.lootData )
@@ -888,7 +888,9 @@ array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
 
 		if ( SURVIVAL_Loot_IsRefDisabled( lootData.ref ) )
 			continue
-
+		
+		if( !addWeapons && lootData.lootType == eLootType.MAINWEAPON )
+			continue
 		//printt( lootData.ref )
 
 		lootOfTier.append( lootData )
@@ -896,7 +898,6 @@ array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
 
 	return lootOfTier
 }
-
 
 int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 {

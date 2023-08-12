@@ -106,9 +106,9 @@ void function LootRollerSpawned( entity ent )
 	#endif
 }
 
-const int WHITE_LOOT_TO_SPAWN = 4
-const int BLUE_LOOT_TO_SPAWN = 3
-const int PURPLE_LOOT_TO_SPAWN = 2
+const int WHITE_LOOT_TO_SPAWN = 2
+const int BLUE_LOOT_TO_SPAWN = 2
+const int PURPLE_LOOT_TO_SPAWN = 1
 const int YELLOW_LOOT_TO_SPAWN = 1
 
 void function Flowstate_BuildLootForDrone( entity roller )
@@ -138,7 +138,7 @@ void function Flowstate_BuildLootForDrone( entity roller )
 		
 		for(int j = 0; j < lootToSpawn; j++)
 		{
-			file.allLootRollers[ roller ][ i ].append( SURVIVAL_Loot_GetByTier(i)[RandomIntRangeInclusive(0,SURVIVAL_Loot_GetByTier(i).len()-1)].ref )
+			file.allLootRollers[ roller ][ i ].append( SURVIVAL_Loot_GetByTier( i, false )[RandomIntRangeInclusive(0,SURVIVAL_Loot_GetByTier( i, false ).len()-1)].ref )
 		}
 	}
 	
@@ -169,7 +169,7 @@ void function Flowstate_StartRollerLootLoop( entity roller )
 				timeToWait = 2
 			break
 			case 4:
-				timeToWait = 1
+				timeToWait = 0.5
 			break
 		}
 		
