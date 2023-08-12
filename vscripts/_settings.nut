@@ -622,6 +622,20 @@ void function Settings_Init()
 		MAX_TEAM_PLAYERS = GetMaxTeamPlayers()
 		printl( "MAX_TEAM_PLAYERS: " + MAX_TEAM_PLAYERS )
 
+		// if server attempts to start a playlist with a gamemode that is not registered
+		// or if client attempts to join a server running a gamemode that is not registered
+		if ( !GameMode_IsDefined( GAMETYPE ) )
+		{
+			// display a different message for cl/sv
+			#if CLIENT || UI
+			ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the server.", GAMETYPE)
+			#elseif SERVER
+			ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the playlist.", GAMETYPE)
+			#endif
+
+			return
+		}
+
 		GAMEDESC_CURRENT = GAMETYPE_DESC[GAMETYPE]
 
 		Assert( GAMETYPE in GAMETYPE_TEXT, "Unsupported gamemode: " + GameRules_GetGameMode() + " is not a valid game mode." )
