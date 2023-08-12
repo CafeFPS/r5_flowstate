@@ -225,6 +225,17 @@ LootDroneData function ReturnDroneDataFromRoller( entity roller )
 	unreachable
 }
 
+LootDroneData function ReturnDroneDataFromDrone( entity drone ) 
+{
+	foreach ( entity model, LootDroneData data in file.droneData )
+	{
+		if( drone != null && data.model == drone )
+			return data
+	}
+	
+	unreachable
+}
+
 void function LootDroneState( LootDroneData data )
 {
 	Assert( IsNewThread(), "Must be threaded off" )
@@ -396,6 +407,8 @@ void function LootDrones_OnDamaged(entity ent, var damageInfo)
 		DamageInfo_GetDistFromAttackOrigin( damageInfo )
 	)
 
+	LootDroneData data = ReturnDroneDataFromDrone( ent )
+	
 	// Handle damage, props get destroyed on death, we don't want that.
 	// Not really needed since it has 1 HP, but we do it anyway.
 	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
@@ -430,6 +443,14 @@ void function LootDrones_OnDamaged(entity ent, var damageInfo)
 	EntFireByHandle( effect, "Kill", "", 2, null, null )
 
 	ent.Signal("OnDeath")
+
+	entity roller = data.roller
+	if( IsValid( data.roller ) && !roller.e.applyNewHealthOneTime )
+	{
+		roller.SetMaxHealth( 30 )
+		roller.SetHealth( 30 )
+		roller.e.applyNewHealthOneTime = true
+	}
 }
 
 #if DEVELOPER

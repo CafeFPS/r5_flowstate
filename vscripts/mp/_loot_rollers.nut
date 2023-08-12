@@ -73,7 +73,7 @@ void function LootRollers_OnDamaged(entity ent, var damageInfo)
 {
 	if( !IsValid( ent ) )
 		return
-
+	
     // Don't get damaged by the drone crashing on it
     if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == LOOT_DRONE_EXPLOSION_DAMAGEID )
         return
@@ -105,13 +105,7 @@ void function LootRollers_OnDamaged(entity ent, var damageInfo)
 	
 	// Handle damage, props get destroyed on death, we don't want that.
 	float nextHealth = max( 0, ent.GetHealth() - DamageInfo_GetDamage( damageInfo ) ) 
-	if( !IsValid( ent.GetParent() ) && !ent.e.applyNewHealthOneTime )
-	{
-		ent.SetMaxHealth( 30 )
-		ent.SetHealth( 30 )
-		ent.e.applyNewHealthOneTime = true
-		return
-	}
+	DamageInfo_SetDamage( damageInfo, 0 )
 
 	if( nextHealth <= 0 )
 	{
@@ -119,11 +113,9 @@ void function LootRollers_OnDamaged(entity ent, var damageInfo)
 		{
 			droneData.model.TakeDamage( LOOT_DRONE_HEALTH_MAX, attacker, null, DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
 			droneData.model.SetTakeDamageType( DAMAGE_NO )
+			return
 		}
 	}
-
-	if( !ent.e.applyNewHealthOneTime && nextHealth <= 0 )
-		return
 
 	ent.SetHealth(nextHealth)
 }
