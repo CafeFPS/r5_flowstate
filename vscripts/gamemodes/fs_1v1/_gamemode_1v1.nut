@@ -1199,6 +1199,10 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		{
 			if(!IsValid(restingPlayer)) continue
 			TakeAmmoFromPlayer(restingPlayer)   //子弹设为0
+			entity checkhand = restingPlayer.GetOffhandWeapon( OFFHAND_MELEE )
+			if ( checkhand != null ){
+			restingPlayer.TakeOffhandWeapon( OFFHAND_MELEE ) //quick patch mkos
+			}
 			if(!IsAlive(restingPlayer)  )
 			{
 				thread respawnInSoloMode(restingPlayer)
