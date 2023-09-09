@@ -48,6 +48,7 @@ void function InitVideoPanel( var panel )
 	//AddMenuEventHandler( panel, eUIEvent.PANEL_NAVBACK, OnVideoMenu_NavigateBack )
 
 	var button
+
 	#if PC_PROG
 		button = Hud_GetChild( file.videoPanel, "SwchDisplayMode" )
 		SetupSettingsButton( button, "#DISPLAY_MODE", "#ADVANCED_VIDEO_MENU_DISPLAYMODE_DESC", $"rui/menu/settings/settings_video" )
@@ -56,6 +57,10 @@ void function InitVideoPanel( var panel )
 		button = Hud_GetChild( file.videoPanel, "SwchAspectRatio" )
 		SetupSettingsButton( button, "#ASPECT_RATIO", "#ADVANCED_VIDEO_MENU_ASPECT_RATIO_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, AspectRatio_Changed )
+
+		button = Hud_GetChild( file.videoPanel, "SwchReflex" )
+		SetupSettingsButton( button, "#REFLEX", "#ADVANCED_VIDEO_MENU_REFLEX_DESC", $"rui/menu/settings/settings_video" )
+		AddButtonEventHandler( button, UIE_CHANGE, NvidiaReflex_Changed )
 
 		button = Hud_GetChild( file.videoPanel, "SldAdaptiveRes" )
 		SetupSettingsSlider( button, "#ADAPTIVE_RES", "#ADAPTIVE_RES_DESC", $"rui/menu/settings/settings_video" )
@@ -330,6 +335,10 @@ void function AspectRatio_Changed( var button )
 	VideoOptions_ResetResolutionList( file.videoPanel )
 }
 
+void function NvidiaReflex_Changed( var button )
+{
+	RunClientScript("NvidiaReflex_SetValues")
+}
 
 void function AdaptiveRes_Changed( var button )
 {

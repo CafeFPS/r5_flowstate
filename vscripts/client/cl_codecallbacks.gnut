@@ -23,6 +23,7 @@ global function RemoveCallback_PingSpecificType
 global function ClientCodeCallback_UseConsumable
 global function SetCallback_UseConsumable
 global function RemoveCallback_UseConsumable
+global function NvidiaReflex_SetValues
 
 global function ServerCallback_RefreshWeaponHighlights
 
@@ -228,4 +229,31 @@ void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity play
 void function AddCallback_OnPlayerConsumableInventoryChanged( void functionref( entity ) callbackFunc )
 {
 	clGlobal.consumableInventoryChangedCallbacks.append( callbackFunc )
+}
+
+void function NvidiaReflex_SetValues()
+{
+	try{
+		printt( "Nvidia Reflex value changed: ", GetConVarInt( "settings_reflex" ) )
+	}catch(e420)
+	{
+		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	switch(GetConVarInt( "settings_reflex" ))
+	{
+	  case 0: //Off
+		SetConVarInt( "gfx_nvnUseLowLatency", 0 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 0 )
+		break
+	  case 1: //On
+		SetConVarInt( "gfx_nvnUseLowLatency", 1 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 0 )
+		break
+	  case 2: //On + Boost
+		SetConVarInt( "gfx_nvnUseLowLatency", 1 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 1 )
+		break
+	}
 }
