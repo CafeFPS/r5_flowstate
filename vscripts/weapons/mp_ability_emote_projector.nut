@@ -86,9 +86,10 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 		hitbox = hitbox
 	}
 
-	
 	bool result = PlantStickyEntityOnWorldThatBouncesOffWalls( projectile, collisionParams, 0.7 )
 	
+	printt( "collision, result: ", result )
+
 	if(result && IsValid(projectile))
 	{
 		vector GoodAngles = AnglesOnSurface(normal, -AnglesToRight(player.EyeAngles()))	

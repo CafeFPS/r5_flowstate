@@ -18,6 +18,7 @@ global function ApexScreenMasterThink
 global function ClApexScreens_DisableAllScreens
 global function ClApexScreens_EnableAllScreens
 global function ClApexScreens_IsDisabled
+global function ClApexScreens_PosInStaticBanner
 global function ServerToClient_ApexScreenKillDataChanged
 global function ServerToClient_ApexScreenRefreshAll
 //global function ClApexScreens_Lobby_SetMode
@@ -941,6 +942,22 @@ void function DEV_ToggleFloatyBitsPrototype()
 
 
 #if CLIENT
+
+bool function ClApexScreens_PosInStaticBanner( vector pos )
+{
+	foreach ( magicId, screen in file.magicIdScreenStateMap )
+	{
+		if ( !screen.visibleInPVS )
+			continue
+
+		if ( PointIsWithinBounds( pos, screen.spawnMins, screen.spawnMaxs ) )
+		{
+			return true
+		}
+	}
+	return false
+}
+
 void function UpdateScreensContent( array<ApexScreenState> screenList )
 {
 	entity localViewPlayer = GetLocalViewPlayer()

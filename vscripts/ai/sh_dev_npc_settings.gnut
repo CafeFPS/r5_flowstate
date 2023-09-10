@@ -26,6 +26,12 @@ void function SetupChangeSurvivalCharacterClass()
 				DEV_RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 			} )
 		}
+		
+		//Custom
+		SetupDevCommand( "Blisk [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 1")
+		SetupDevCommand( "Fade [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 2")
+		SetupDevCommand( "Master Chief [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 0")
+		SetupDevCommand( "Among Us Crewmate [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 3")
 	#endif
 }
 

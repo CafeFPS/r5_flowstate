@@ -811,8 +811,10 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 
 		if( info.ultimateAmount > 0 )
 			UltimatePackUse( player, info )
-
-		SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
+		
+		if( GameRules_GetGameMode() == SURVIVAL )
+			SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
+		
 		StatsHook_PlayerUsedResource( player, null, itemName )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
 	#endif

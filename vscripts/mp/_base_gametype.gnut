@@ -2196,18 +2196,58 @@ void function EntityFireDelayed( entity ent, string fire, string parm, float del
 	ent.Fire( fire, parm, delay )
 }
 
-#if MP
-void function AddOutOfBoundsTriggerWithParams( vector org, float radius = 250.0, float height = 250.0 )
+entity function AddOutOfBoundsTriggerWithParams( vector org, float radius = 250.0, float height = 700.0 )
 {
 	entity trigger = CreateEntity( "trigger_cylinder" )
 	trigger.SetRadius( radius )
 	trigger.SetAboveHeight( height ) //Still not quite a sphere, will see if close enough
-	trigger.SetBelowHeight( height )
+	trigger.SetBelowHeight( 80 )
 	trigger.SetOrigin( org )
 	DispatchSpawn( trigger )
 	SetupOutOfBoundsTrigger( trigger )
 	trigger.SetEnterCallback( OnOOBTriggerEnter )
 	trigger.SetLeaveCallback( OnOOBTriggerLeave )
+	trigger.SetPhaseShiftCanTouch( true )
+	
+	#if DEVELOPER
+	DebugDrawHemiSphere( org, Vector(0,0,0), radius, 20, 210, 255, false, 999.0 )
+	#endif
+	
+	return trigger
+}
+
+entity function AddDeathTriggerWithParams( vector org, float radius = 250.0, float below = 700.0 )
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( radius )
+	trigger.SetAboveHeight( 50 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( below )
+	trigger.SetOrigin( org )
+	DispatchSpawn( trigger )
+	trigger.SetEnterCallback( OnDeathTriggerEnter )
+	trigger.SearchForNewTouchingEntity()
+	
+	#if DEVELOPER
+	DebugDrawHemiSphere( org, Vector(0,0,0), radius, 20, 210, 255, false, 999.0 )
+	#endif
+	
+	return trigger
+}
+
+void function OnDeathTriggerEnter( entity trigger, entity ent )
+{
+	if ( !IsAlive( ent ) )
+		return
+
+	if ( ent.IsPlayer() && IsValid( ent.e.lastAttacker ) && ent.e.lastAttacker.IsPlayer() && IsAlive( ent.e.lastAttacker ) && ent.GetHealth() > 0 )
+	{
+		ent.TakeDamage( ent.GetHealth() + 1, ent.e.lastAttacker, trigger, { damageSourceId = eDamageSourceId.fall, scriptType = DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+		//ent.Die( ent.e.lastAttacker, trigger, { damageSourceId = eDamageSourceId.fall, scriptType = DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+	} else if( ent.IsPlayer() && ent.GetHealth() > 0 )
+	{
+		ent.TakeDamage( ent.GetHealth() + 1, svGlobal.worldspawn, trigger, { damageSourceId = eDamageSourceId.fall, scriptType = DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+		//ent.Die( svGlobal.worldspawn, trigger, { damageSourceId = eDamageSourceId.fall, scriptType = DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+	}
 }
 
 void function OnOOBTriggerEnter( entity trigger, entity ent )
@@ -2219,4 +2259,3 @@ void function OnOOBTriggerLeave( entity trigger, entity ent )
 {
 	EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
 }
-#endif

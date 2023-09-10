@@ -9,7 +9,7 @@ enum eAntiAfkPlayerState
 
 void function Flowstate_InitAFKThreadForPlayer(entity player)
 {
-	if ( !IsValid(player) || IsAdmin(player) )
+	if ( !IsValid(player) || IsAdmin(player) || !GetCurrentPlaylistVarBool( "flowstate_afk_kick_enable", true ) )
 		return
 
 	AfkThread_AddPlayerCallbacks( player )

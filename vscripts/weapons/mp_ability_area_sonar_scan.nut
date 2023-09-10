@@ -11,6 +11,7 @@ global function ServerCallback_SonarAreaScanTarget
 
 #if SERVER
 global function GetAreaSonarScanDuration
+global function IsHostileSonarTarget
 #endif
 
 const asset FLASHEFFECT    = $"P_sonar_bloodhound"

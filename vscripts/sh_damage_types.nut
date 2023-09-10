@@ -290,6 +290,17 @@ global enum eDamageSourceId
 	//rocketstrike
 	//orbitallaser
 	//explosion
+	
+	//custom
+	mp_weapon_haloshotgun
+	mp_weapon_halomagnum
+	mp_weapon_halobattlerifle
+	mp_weapon_haloassaultrifle
+	mp_weapon_halosniperrifle
+	mp_weapon_haloneedler
+	mp_weapon_energysword
+	mp_weapon_frag_grenade_halomod
+	mp_weapon_plasma_grenade_halomod
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.

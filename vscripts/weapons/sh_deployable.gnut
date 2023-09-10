@@ -2,6 +2,7 @@ global const DEPLOYABLE_THROW_POWER = 500.0
 
 global function ThrowDeployable
 global function OnProjectileCollision_weapon_deployable
+global function OnProjectileCollision_weapon_deployable_crypto
 
 entity function ThrowDeployable( entity weapon, WeaponPrimaryAttackParams attackParams, float throwPower, void functionref(entity) deployFunc, vector ornull angularVelocity = null )
 {
@@ -70,7 +71,7 @@ vector function GetDeployableThrowStartPos( entity player, vector baseStartPos )
 		return attackPos + ( attackDir * 50 )
 	}
 
-	vector attackPos = player.OffsetPositionFromView( baseStartPos, <15,0,0> )	// forward, right, up
+	vector attackPos = player.OffsetPositionFromView( baseStartPos, <50,0,0> )	// forward, right, up
 	return attackPos
 }
 
@@ -109,6 +110,27 @@ void function OnProjectileCollision_weapon_deployable( entity projectile, vector
 	}
 
 	bool result = PlantStickyEntityThatBouncesOffWalls( projectile, collisionParams, 0.7, <90,0,0> )
+}
+
+void function OnProjectileCollision_weapon_deployable_crypto( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	#if SERVER
+	if ( projectile.proj.isPlanted )
+		return
+
+	if ( projectile.proj.projectileBounceCount > 50 )
+		projectile.Destroy()
+	projectile.proj.projectileBounceCount++
+	#endif
+	table collisionParams =
+	{
+		pos = pos,
+		normal = normal,
+		hitEnt = hitEnt,
+		hitbox = hitbox
+	}
+
+	bool result = PlantStickyEntity( projectile, collisionParams, <0,0,0> )
 }
 
 #if SERVER

@@ -4391,6 +4391,9 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	string weaponClassName = offhandWeapon.GetWeaponClassName()
 	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
 
@@ -4407,6 +4410,9 @@ void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapo
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	if(!IsValid(player)) return
 	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
@@ -4416,6 +4422,9 @@ void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound
 
 void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	if(!IsValid(player)) return
 	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )

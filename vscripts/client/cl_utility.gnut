@@ -1556,6 +1556,9 @@ bool function ShouldShowButtonHints()
 // Set post processing vars which cannot be set through level entity files.
 void function MapConVar_Init()
 {
+	if( GetMapName() == "mp_flowstate" )
+		return
+
 	switch( GetMapName() )
 	{
 		case "mp_rr_aqueduct_night":

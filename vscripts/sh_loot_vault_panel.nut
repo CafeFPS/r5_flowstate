@@ -9,7 +9,7 @@ global function VaultPanel_GetAllMinimapObjs
 global function VaultPanel_HasPlayerDataKnife
 
 global function HACK_IsVaultDoor
-global function IsValidLootVaultDoorEnt
+global function IsVaultDoor
 global function IsVaultPanel
 global function GetVaultPanelFromDoor
 global function GetAllVaultPanelsData
@@ -81,7 +81,7 @@ void function Sh_Loot_Vault_Panel_Init()
 
 void function VaultPanelSpawned( entity panel )
 {
-	if ( !IsValidLootVaultPanelEnt( panel ) )
+	if ( !IsVaultPanel( panel ) )
 		return
 
 	LootVaultPanelData newPanel
@@ -100,7 +100,7 @@ void function VaultPanelSpawned( entity panel )
 
 void function VaultDoorSpawned( entity door )
 {
-	if ( !IsValidLootVaultDoorEnt( door ) )
+	if ( !IsVaultDoor( door ) )
 		return
 
 	#if SERVER
@@ -353,25 +353,42 @@ LootVaultPanelData function GetVaultPanelDataFromEntity( entity panel )
 	unreachable
 }
 
-bool function IsValidLootVaultPanelEnt( entity ent )
+bool function IsVaultDoor( entity ent )
 {
+	if ( !IsValid( ent ) )
+		return false
+
+	string scriptName = ent.GetScriptName()
+
+	if ( scriptName == LOOT_VAULT_DOOR_SCRIPTNAME )
+		return true
+
+	return false
+}
+
+
+bool function IsVaultPanel( entity ent )
+{
+	if ( !IsValid( ent ) )
+		return false
+
 	if ( ent.GetScriptName() == LOOT_VAULT_PANEL_SCRIPTNAME )
 		return true
 
 	return false
 }
 
-bool function IsValidLootVaultDoorEnt( entity ent )
-{
-	if ( !IsDoor( ent ) )
-		return false
+// bool function IsValidLootVaultDoorEnt( entity ent )
+// {
+	// if ( !IsDoor( ent ) )
+		// return false
 
-	string scriptName = ent.GetScriptName()
-	if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT )
-		return false
+	// string scriptName = ent.GetScriptName()
+	// if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT )
+		// return false
 
-	return true
-}
+	// return true
+// }
 
 void function SetVaultPanelUsable( entity panel )
 {
@@ -481,16 +498,16 @@ bool function HACK_IsVaultDoor( entity ent )
 	return false
 }
 
-bool function IsVaultPanel( entity ent )
-{
-	foreach ( panelData in file.vaultControlPanels )
-	{
-		if ( panelData.panel == ent )
-			return true
-	}
+// bool function IsVaultPanel( entity ent )
+// {
+	// foreach ( panelData in file.vaultControlPanels )
+	// {
+		// if ( panelData.panel == ent )
+			// return true
+	// }
 
-	return false
-}
+	// return false
+// }
 
 entity function GetVaultPanelFromDoor( entity door )
 {

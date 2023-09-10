@@ -398,11 +398,16 @@ bool function CodeCallback_IsValidMeleeAttackTarget( entity attacker, entity tar
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWeapon )
 {
+	if( !IsValid( attacker ) || !IsValid( meleeInputWeapon ) )
+		return
 
 	attacker.p.TEMP_lastMeleeInputWeapon = meleeInputWeapon
 
 	entity meleeAttackWeapon = GetPlayerMeleeAttackWeapon( attacker )
 
+	if( !IsValid( IsValid( meleeAttackWeapon ) ) )
+		return
+	
 	if ( !AttackerCanStartMelee( attacker, meleeInputWeapon, meleeAttackWeapon ) )
 		return
 	
@@ -428,8 +433,20 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 		Remote_CallFunction_NonReplay(player, "ServerCallback_LiveStatsUIAccuracyViaTotalShots", pellets)
 	}
 	#endif
-	
+
 	attacker.PlayerMelee_StartAttack( PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
+
+	if(  IsValid( attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) )
+	{
+		if( attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() == "mp_weapon_energysword" && !meleeAttackWeapon.HasMod( "energysword" ) )
+		{
+			meleeAttackWeapon.AddMod( "energysword" )	
+		}
+		else if ( attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() != "mp_weapon_energysword" )
+		{
+			meleeAttackWeapon.RemoveMod( "energysword" )
+		}
+	}
 
 	// DOOR BUSTING PROTOTYPE
 	// todo(dw): use better door detection logic
@@ -489,15 +506,51 @@ void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAt
 	if ( !movestunBlocked )
 	{
 		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
-
-		if ( IsValid( lungeTarget ) )
+		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() || IsValid( lungeTarget ) && lungeTarget.IsNPC())
 		{
-			bool lungeStartWasSuccessful = attacker.Lunge_SetTargetEntity( lungeTarget )
+			printt(meleeAttackWeapon.GetWeaponClassName(), meleeAttackWeapon.HasMod( "energysword" ), attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName())
+			bool lungeStartWasSuccessful
+			
+			if(!meleeAttackWeapon.HasMod( "energysword" ))
+			{
+				lungeStartWasSuccessful = attacker.Lunge_SetTargetEntity( lungeTarget )
+				if ( lungeStartWasSuccessful && attacker.IsOnGround() )
+				{
+					attacker.Lunge_LockPitch( true )
+				}
+			}
+			else
+			{
+				attacker.Lunge_SetTargetPosition( <lungeTarget.GetOrigin().x, lungeTarget.GetOrigin().y, lungeTarget.GetOrigin().z> +  AnglesToForward(attacker.GetAngles())*150)
+				attacker.Lunge_EnableFlying()
+				attacker.Lunge_SetMaxEndSpeed(100)
+				// if(attacker.IsOnGround())
+					// attacker.Lunge_LockPitch( true )
 
-			if ( lungeStartWasSuccessful && attacker.IsOnGround() )
-				attacker.Lunge_LockPitch( true )
+				#if SERVER
+				thread DoDamage_EnergySword(attacker, meleeAttackWeapon, lungeTarget)
+				#endif
+			}
 		}
 	}
+}	
+#endif
+
+#if SERVER
+void function DoDamage_EnergySword(entity attacker, entity meleeAttackWeapon, entity lungeTarget)
+{
+	while(attacker.Lunge_IsLungingToPosition() && Distance2D( lungeTarget.GetOrigin(), attacker.GetOrigin() ) > 100)
+	{
+		printt(Distance2D( lungeTarget.GetOrigin(), attacker.GetOrigin()))
+		WaitFrame()
+	}
+	
+	if(!IsValid(lungeTarget) || IsValid(lungeTarget) && !IsAlive(lungeTarget)) return
+	
+	string weaponName = meleeAttackWeapon.GetWeaponClassName()
+
+	int damageSourceId   = (weaponName in eDamageSourceId ? eDamageSourceId[weaponName] : eDamageSourceId.damagedef_unknownBugIt)
+	lungeTarget.TakeDamage( 420, attacker, attacker, { damageSourceId = damageSourceId })
 }
 #endif
 
@@ -525,7 +578,10 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )
 		return // (dw): see R5DEV-53886
-
+	
+	if ( attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() == "mp_weapon_energysword" )//|| attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() == "mp_weapon_lightsaber") 
+		return
+	
 	Assert( attacker.PlayerMelee_GetState() == PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
 	Assert( !attacker.PlayerMelee_GetAttackHitEntity() )
 

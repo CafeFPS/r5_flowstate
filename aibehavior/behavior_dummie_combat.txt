@@ -1,9 +1,10 @@
 Selector Common
 
-	SelectSchedule_Flinch
-	SelectSchedule_ReactSurprised
+	// SelectSchedule_Flinch
+	// SelectSchedule_ReactSurprised
+	SelectSchedule_ReactBullet
 	SelectSchedule_LayeredBehavior
-	SelectSchedule_ReactJumpedOver
+	// SelectSchedule_ReactJumpedOver
 Selector_End
 
 
@@ -13,21 +14,27 @@ Selector_End
 
 
 Selector Alert
-	SelectSchedule_Alert
+	// SelectSchedule_Alert
 Selector_End
 
 
 Selector Combat
-	SelectSchedule_MissileDodge
-	SelectSchedule_StrafeDodge
-	SelectSchedule_ForwardDodge
-	SelectSchedule_MeleeAttack
-	SelectSchedule_SpecialAttack
-	SelectSchedule_RangeAttack
-	SelectSchedule_WeaponBlocked
-	SelectSchedule_CantSeeEnemy
-	SelectSchedule_EngagementDistMax
-	SelectSchedule_CombatFace
-	SelectSchedule_EnemyTooClose
+	// SelectSchedule_MissileDodge
+	// SelectSchedule_StrafeDodge
+	// SelectSchedule_Taunt
+	// SelectSchedule_EnemyAimDodge
+	// SelectSchedule_MoveToWeaponRange
+	// SelectSchedule_Reposition
 	SelectSchedule_ChaseEnemy
+	SelectSchedule_EngagementDistMin
+	SelectSchedule_MeleeAttack
+	SelectSchedule_RangeAttack
+	// SelectSchedule_WeaponBlocked
+	// SelectSchedule_BreakEnemyLosIfOutsideEngageDist
+	// SelectSchedule_CantSeeEnemy
+	// SelectSchedule_EngagementDistMax
+	// SelectSchedule_CombatFace
+	SelectSchedule_ChaseEnemy
+	// SelectSchedule_EnemyTooClose
+	
 Selector_End

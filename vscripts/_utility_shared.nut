@@ -133,6 +133,9 @@ void function Utility_Shared_Init()
 void function InitWeaponScripts()
 {
 	SmartAmmo_Init()
+	MpWeaponNeedler_Init()
+	MpAbilityShadowPounceFree_Init()
+	MpWeaponEnergySword_Init()
 
 	// WEAPON SCRIPTS
 	ArcCannon_Init()
@@ -1905,6 +1908,15 @@ void function ArrayRemoveDead( array<entity> entArray )
 	}
 }
 
+array<entity> function GetSortedPlayers_FFA( IntFromEntityCompare compareFunc )
+{
+	array<entity> players = GetPlayerArray()
+
+	players.sort( compareFunc )
+
+	return players
+}
+
 array<entity> function GetSortedPlayers( IntFromEntityCompare compareFunc, int team )
 {
 	array<entity> players
@@ -1919,40 +1931,50 @@ array<entity> function GetSortedPlayers( IntFromEntityCompare compareFunc, int t
 	return players
 }
 
-// Sorts by kills and resolves ties in this order: fewest deaths, most titan kills, most assists
+// Sorts by kills and resolves ties in this order: kills, deaths, damage
 int function CompareKills( entity a, entity b )
 {
-	int aVal = a.GetPlayerGameStat( PGS_KILLS )
-	int bVal = b.GetPlayerGameStat( PGS_KILLS )
+	if( !IsValid( a ) || !IsValid( b ) )
+		return 0
+
+	int aVal = a.GetPlayerNetInt( "kills" )
+	int bVal = b.GetPlayerNetInt( "kills" )
 
 	if ( aVal < bVal )
 		return 1
 	else if ( aVal > bVal )
 		return -1
 
-	aVal = a.GetPlayerGameStat( PGS_DEATHS )
-	bVal = b.GetPlayerGameStat( PGS_DEATHS )
+	aVal = a.GetPlayerNetInt( "deaths" )
+	bVal = b.GetPlayerNetInt( "deaths" )
 
 	if ( aVal > bVal )
 		return 1
 	else if ( aVal < bVal )
 		return -1
 
-	aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
-	bVal = b.GetPlayerGameStat( PGS_TITAN_KILLS )
+	aVal = a.GetPlayerNetInt( "damage" )
+	bVal = b.GetPlayerNetInt( "damage" )
 
-	if ( aVal < bVal )
+	if ( aVal > bVal )
 		return 1
-	else if ( aVal > bVal )
+	else if ( aVal < bVal )
 		return -1
+	// aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
+	// bVal = b.GetPlayerGameStat( PGS_TITAN_KILLS )
 
-	aVal = a.GetPlayerGameStat( PGS_ASSISTS )
-	bVal = b.GetPlayerGameStat( PGS_ASSISTS )
+	// if ( aVal < bVal )
+		// return 1
+	// else if ( aVal > bVal )
+		// return -1
 
-	if ( aVal < bVal )
-		return 1
-	else if ( aVal > bVal )
-		return -1
+	// aVal = a.GetPlayerGameStat( PGS_ASSISTS )
+	// bVal = b.GetPlayerGameStat( PGS_ASSISTS )
+
+	// if ( aVal < bVal )
+		// return 1
+	// else if ( aVal > bVal )
+		// return -1
 
 	return 0
 }

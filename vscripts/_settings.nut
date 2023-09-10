@@ -494,7 +494,7 @@ global const FX_GRENADE_SMOKESCREEN = $"P_smkscreen_test"
 // 				TITAN HEALTH REGEN
 //--------------------------------------------------
 
-global const HEALTH_REGEN_TICK_TIME 					= 0.1
+global const HEALTH_REGEN_TICK_TIME 					= 0.3
 global const TITAN_HEALTH_REGEN_DELAY					= 7.0		// Titan must wait this long after taking damage before any regen begins
 global const TITAN_HEALTH_REGEN_TIME					= 14.0		// Time it takes a titan to regen a full health bar
 global const TITAN_DEFAULT_PERMANANT_DAMAGE_FRAC		= 0.8		// Amount of permanent damage to take relative to damage taken. 0.3 means when titan takes 100 damage, 30 of it will be permanent and non rechargeable
@@ -622,19 +622,19 @@ void function Settings_Init()
 		MAX_TEAM_PLAYERS = GetMaxTeamPlayers()
 		printl( "MAX_TEAM_PLAYERS: " + MAX_TEAM_PLAYERS )
 
-		// if server attempts to start a playlist with a gamemode that is not registered
-		// or if client attempts to join a server running a gamemode that is not registered
-		if ( !GameMode_IsDefined( GAMETYPE ) )
-		{
-			// display a different message for cl/sv
-			#if CLIENT || UI
-			ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the server.", GAMETYPE)
-			#elseif SERVER
-			ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the playlist.", GAMETYPE)
-			#endif
+		// // if server attempts to start a playlist with a gamemode that is not registered
+		// // or if client attempts to join a server running a gamemode that is not registered
+		// if ( !GameMode_IsDefined( GAMETYPE ) )
+		// {
+			// // display a different message for cl/sv
+			// #if CLIENT || UI
+			// ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the server.", GAMETYPE)
+			// #elseif SERVER
+			// ScriptError("Attempted to init invalid gamemode '%s'.\nPlease ensure that your gamemode scripts are compatible with the playlist.", GAMETYPE)
+			// #endif
 
-			return
-		}
+			// return
+		// }
 
 		GAMEDESC_CURRENT = GAMETYPE_DESC[GAMETYPE]
 

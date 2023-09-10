@@ -141,7 +141,9 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 					Highlight_SetSonarHighlightWithParam0( ent, "bloodhound_sonar", <1,0,0> )
 				else
 					Highlight_SetSonarHighlightWithParam1( ent, "bloodhound_sonar", position )
-				
+
+				Highlight_SetSonarHighlightOrigin( ent, position )
+
 				if( ent.GetClassName() == "npc_dummie" )
 				{
 					int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
@@ -157,6 +159,7 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 			{
 				UpdatePlayerHighlightsSettings( ent )
 				ent.SetCloakFlicker( 0.5, -1 )
+				Highlight_SetSonarHighlightOrigin( ent, position )
 
 				{
 					int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
@@ -169,7 +172,7 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 				}
 			}
 
-			Highlight_SetSonarHighlightOrigin( ent, position )
+			
 		}
 
 		if ( isVisible )
@@ -182,7 +185,7 @@ void function SonarStart( entity ent, vector position, int sonarTeam, entity son
 	}
 }
 
-void function SonarEnd( entity ent, int team )
+void function SonarEnd( entity ent, int team, bool isCryptDrone = false )
 {
 	if ( !IsValid( ent ) )
 		return
@@ -205,8 +208,22 @@ void function SonarEnd( entity ent, int team )
 
 		if ( ent.IsPlayer() )
 			ent.SetCloakFlicker( 0, 0 )
+		
+		if( !isCryptDrone )
+			thread Flowstate_DestroyChestfocusParticleDelayed( ent )
+		else
+		{
+			entity fx
+			
+			if ( file.entitySonarFXs[ent].len() )
+				fx = file.entitySonarFXs[ent][0]
 
-		thread Flowstate_DestroyChestfocusParticleDelayed( ent )
+			if( IsValid( ent ) && IsValid( fx ) ) 
+				file.entitySonarFXs[ent].fastremovebyvalue( fx )
+					
+			if( IsValid( fx ) )
+				fx.Destroy()
+		}
 	}
 }
 

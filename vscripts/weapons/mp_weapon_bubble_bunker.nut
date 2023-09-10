@@ -1,6 +1,8 @@
 global function MpWeaponBubbleBunker_Init
 
 global function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker
+global function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker_MasterChief
+
 global function OnWeaponAttemptOffhandSwitch_WeaponBubbleBunker
 global function OnWeaponTossPrep_WeaponBubbleBunker
 #if CLIENT
@@ -421,3 +423,295 @@ bool function GibraltarIsInDome( entity player )
 
 	return StatusEffect_GetSeverity( player, eStatusEffect.bubble_bunker ) > 0.0
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+// Master Chief ffa ltm 
+
+var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker_MasterChief( entity weapon, WeaponPrimaryAttackParams attackParams )
+{
+	int ammoReq = weapon.GetAmmoPerShot()
+	weapon.EmitWeaponSound_1p3p( GetGrenadeThrowSound_1p( weapon ), GetGrenadeThrowSound_3p( weapon ) )
+
+	entity deployable = ThrowDeployable( weapon, attackParams, BUBBLE_BUNKER_THROW_POWER, OnBubbleBunkerPlanted_MasterChief )
+	if ( deployable )
+	{
+		entity player = weapon.GetWeaponOwner()
+		PlayerUsedOffhand( player, weapon, true, deployable )
+
+		#if SERVER
+		deployable.e.isDoorBlocker = true
+		deployable.e.burnmeter_wasPreviouslyDeployed = weapon.e.burnmeter_wasPreviouslyDeployed
+
+		string projectileSound = GetGrenadeProjectileSound( weapon )
+		if ( projectileSound != "" )
+			EmitSoundOnEntity( deployable, projectileSound )
+
+		weapon.w.lastProjectileFired = deployable
+		deployable.e.burnReward = weapon.e.burnReward
+		#endif
+
+		#if BATTLECHATTER_ENABLED && SERVER
+			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
+		#endif
+	}
+
+	return ammoReq
+}
+
+void function OnBubbleBunkerPlanted_MasterChief( entity projectile )
+{
+	#if SERVER
+		Assert( IsValid( projectile ) )
+
+		entity owner = projectile.GetOwner()
+
+		if ( !IsValid( owner ) )
+		{
+			projectile.Destroy()
+			return
+		}
+
+		vector origin = projectile.GetOrigin()
+
+		vector endOrigin = origin - <0,0,32>
+		vector surfaceAngles = projectile.proj.savedAngles
+		vector oldUpDir = AnglesToUp( surfaceAngles )
+
+		TraceResults traceResult = TraceLine( origin, endOrigin, [ projectile ], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS )
+		if ( traceResult.fraction < 1.0 )
+		{
+			vector forward = AnglesToForward( projectile.proj.savedAngles )
+			surfaceAngles = AnglesOnSurface( traceResult.surfaceNormal, forward )
+
+			vector newUpDir = AnglesToUp( surfaceAngles )
+			if ( DotProduct( newUpDir, oldUpDir ) < BUBBLE_BUNKER_ANGLE_LIMIT )
+				surfaceAngles = projectile.proj.savedAngles
+		}
+
+		entity oldParent = projectile.GetParent()
+		projectile.ClearParent()
+
+		origin = projectile.GetOrigin()
+		asset model = BUBBLE_BUNKER_SHIELD_PROJECTILE// projectile.GetModelName()
+		float duration = projectile.GetProjectileWeaponSettingFloat( eWeaponVar.fire_duration )
+
+		entity newProjectile = CreatePropDynamic( model, origin, surfaceAngles )
+		newProjectile.RemoveFromAllRealms()
+		newProjectile.AddToOtherEntitysRealms( projectile )
+		projectile.Destroy()
+
+		newProjectile.SetOwner( owner )
+
+		thread TrapDestroyOnRoundEnd( owner, newProjectile )
+
+		if ( IsValid( traceResult.hitEnt ) )
+		{
+			newProjectile.SetParent( traceResult.hitEnt )
+		}
+		else if ( IsValid( oldParent ) )
+		{
+			newProjectile.SetParent( oldParent )
+		}
+
+		// collision for the bubble shield for sliding doors
+		entity bubbleCollisionProxy = CreateEntity( "script_mover_lightweight" )
+		bubbleCollisionProxy.kv.solid = SOLID_VPHYSICS
+		bubbleCollisionProxy.kv.fadedist = -1
+		bubbleCollisionProxy.SetValueForModelKey( BUBBLE_BUNKER_SHIELD_PROJECTILE )
+		bubbleCollisionProxy.kv.SpawnAsPhysicsMover = 0
+		bubbleCollisionProxy.e.isDoorBlocker = true
+
+		bubbleCollisionProxy.SetOrigin( newProjectile.GetOrigin() )
+		bubbleCollisionProxy.SetAngles( newProjectile.GetAngles() )
+		
+
+		DispatchSpawn( bubbleCollisionProxy )
+		
+		bubbleCollisionProxy.Hide()
+		
+		bubbleCollisionProxy.SetParent( newProjectile )
+		bubbleCollisionProxy.SetOwner( owner )
+
+		thread DeployBubbleBunker_MasterChief( newProjectile, duration )
+	#endif
+}
+
+#if SERVER
+void function DeployBubbleBunker_MasterChief( entity projectile, float duration )
+{
+	projectile.EndSignal( "OnDestroy" )
+
+	entity owner = projectile.GetOwner()
+
+	if ( !IsValid( owner ) )
+	{
+		projectile.Destroy()
+		return
+	}
+	int team = owner.GetTeam()
+
+	entity wp = CreateWaypoint_Ping_Location( owner, ePingType.ABILITY_DOMESHIELD, projectile, projectile.GetOrigin(), -1, false )
+	if ( IsValid( wp ) )
+	{
+		wp.SetAbsOrigin( projectile.GetOrigin() + <0, 0, 35> )
+		wp.SetParent( projectile )
+	}
+
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_BUBBLE_BUNKER, owner, projectile.GetOrigin(), owner.GetTeam(), owner )
+
+	entity mover = CreateScriptMover( projectile.GetOrigin(), projectile.GetAngles() )
+
+	entity oldParent = projectile.GetParent()
+
+	if ( IsValid( oldParent ) )
+		mover.SetParent( oldParent )
+
+	projectile.SetParent( mover )
+	waitthread PlayAnim( projectile, "prop_bubbleshield_deploy", mover )
+	thread BubbleShieldIdleAnims( projectile, mover )
+
+	int startAttachID = projectile.LookupAttachment( "fx_beam" )
+	vector beamFXOrigin = projectile.GetAttachmentOrigin( startAttachID )
+
+	owner.Signal( "DeployBubbleBunker" )
+
+	owner.EndSignal( "OnDestroy" )
+	mover.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( mover, projectile, wp, oldParent )
+		{
+			if ( IsValid( projectile ) )
+			{
+				if ( IsValid( oldParent ) )
+					projectile.SetParent( oldParent )
+				else
+					projectile.ClearParent()
+
+				thread ProjectileShutdown( projectile )
+			}
+
+			if ( IsValid( wp ) )
+			{
+				wp.Destroy()
+			}
+
+			if ( IsValid( mover ) )
+			{
+				mover.Destroy()
+			}
+		}
+	)
+
+	FriendlyEnemyFXStruct effects = CreateFriendlyEnemyFX( projectile, BUBBLE_BUNKER_BEAM_FX, beamFXOrigin, <-90,0,0>, team)
+
+	waitthread CreateBubbleShieldAroundProjectile_MasterChief( projectile, team, duration, effects )
+}
+
+void function CreateBubbleShieldAroundProjectile_MasterChief( entity projectile, int team, float duration,  FriendlyEnemyFXStruct oldEffects )
+{
+	projectile.EndSignal( "OnDestroy" )
+
+	entity owner = projectile.GetOwner()
+
+	if ( !IsValid( owner ) )
+		return
+
+	// owner.EndSignal( "CleanupPlayerPermanents" )
+	vector origin = owner.GetOrigin()
+	vector angles = owner.GetAngles() + Vector( 0, 0, 180 )
+
+	float shieldWallRadius = 150 // 90
+	float wallFOV = 360
+	float shieldWallHeight = 102
+
+	//------------------------------
+	// Vortex to block the actual bullets
+	//------------------------------
+	// entity vortexSphere = CreateEntity( "vortex_sphere" )
+
+	// vortexSphere.kv.spawnflags = SF_CENTERED_CYLINDER | SF_ABSORB_BULLETS //| SF_BLOCK_OWNER_WEAPON | SF_BLOCK_NPC_WEAPON_LOF 
+	// vortexSphere.kv.enabled = 1
+	// vortexSphere.kv.radius = shieldWallRadius
+	// vortexSphere.kv.height = shieldWallRadius * 2
+	// vortexSphere.kv.bullet_fov = wallFOV
+	// vortexSphere.kv.physics_pull_strength = 25
+	// vortexSphere.kv.physics_side_dampening = 6
+	// vortexSphere.kv.physics_fov = 360
+	// vortexSphere.kv.physics_max_mass = 2
+	// vortexSphere.kv.physics_max_size = 6
+	
+	// DebugDrawHemiSphere( projectile.GetOrigin(), <0,0,0>, shieldWallRadius, 20, 210, 255, false, 999.0 )
+	
+	// vortexSphere.SetOrigin( projectile.GetOrigin() )
+	// vortexSphere.SetAngles( <0,0,0> )
+
+	entity bubbleShield = CreateBubbleShieldWithSettings_MasterChief( owner.GetTeam(), projectile.GetOrigin(), <0,0,0>/*projectile.GetAngles()*/, owner, duration )
+	// bubbleShield.Hide()
+	
+	// bubbleShield.RemoveFromAllRealms()
+	// bubbleShield.AddToOtherEntitysRealms( projectile )
+
+	// bubbleShield.SetParent( projectile, "", true )
+	bubbleShield.SetCollisionDetailHigh()
+	
+	projectile.Destroy()
+	
+	// bubbleShield.SetModelScale( 0.65 )
+
+	// AddEntityCallback_OnPostDamaged( bubbleShield, void function( entity bubbleShield, var damageInfo ) : ( owner ) {
+		// if ( IsValid( owner ) )
+			// StatsHook_BubbleShield_OnDamageAbsorbed( owner, damageInfo )
+	// })
+
+	// OnThreadEnd(
+		// function() : ( oldEffects, bubbleShield )
+		// {
+
+			// if ( IsValid( oldEffects.friendlyColoredFX ) )
+				// EffectStop( oldEffects.friendlyColoredFX )
+			// if ( IsValid( oldEffects.enemyColoredFX ) )
+				// EffectStop( oldEffects.enemyColoredFX )
+			// if ( IsValid( bubbleShield ) )
+				// DestroyBubbleShield( bubbleShield )
+		// }
+	// )
+
+	// //Wait until we are getting close to ending the shield
+	// wait duration - BUBBLE_BUNKER_DURATION_WARNING
+
+	// if ( IsValid( oldEffects.friendlyColoredFX ) )
+		// EffectStop( oldEffects.friendlyColoredFX )
+	// if ( IsValid( oldEffects.enemyColoredFX ) )
+		// EffectStop( oldEffects.enemyColoredFX )
+
+	// int startAttachID = projectile.LookupAttachment( "fx_beam" )
+	// vector beamFXOrigin = projectile.GetAttachmentOrigin( startAttachID )
+
+	// FriendlyEnemyFXStruct effects = CreateFriendlyEnemyFX( projectile, BUBBLE_BUNKER_BEAM_END_FX, beamFXOrigin, <-90,0,0>, team)
+
+	// OnThreadEnd(
+		// function() : ( effects, projectile )
+		// {
+			// if ( IsValid( effects.friendlyColoredFX ) )
+				// EffectStop( effects.friendlyColoredFX )
+			// if ( IsValid( effects.enemyColoredFX ) )
+				// EffectStop( effects.enemyColoredFX )
+
+			// if ( IsValid( projectile ) )
+				// StopSoundOnEntity( projectile, BUBBLE_BUNKER_SOUND_ENDING )
+		// }
+	// )
+
+	// EmitSoundOnEntity( projectile, BUBBLE_BUNKER_SOUND_ENDING )
+
+	// //wait rest of shield life duration
+	// wait BUBBLE_BUNKER_DURATION_WARNING
+
+}
+#endif

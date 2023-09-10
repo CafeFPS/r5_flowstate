@@ -55,7 +55,7 @@ global function SmartAmmo_CanWeaponBeFired
 
 global function SmartAmmo_WeaponRequiresTrackedMarks
 global function SmartAmmo_GetWeaponTargets
-
+global function SmartAmmo_FireNeedler
 #if CLIENT
 //	global function ClientCodeCallback_OnPredictedEntityRemove
 #endif

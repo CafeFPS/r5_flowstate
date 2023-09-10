@@ -37,6 +37,8 @@ global function CodeCallback_WeaponDropped
 global function CodeCallback_WeaponLoadoutPickup
 global function PlayerThrowLoot
 global function SwitchingTestIdk
+global function GetNextOrdnance
+global function SwitchPlayerToOrdnance
 
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 

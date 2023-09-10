@@ -1195,7 +1195,7 @@ var function OnWeaponPrimaryAttack_GenericMissile_NPC( entity weapon, WeaponPrim
 bool function PlantStickyEntityOnWorldThatBouncesOffWalls( entity ent, table collisionParams, float bounceDot, vector angleOffset = <0, 0, 0> )
 {
 	entity hitEnt = expect entity( collisionParams.hitEnt )
-	if ( hitEnt && (hitEnt.IsWorld() || hitEnt.HasPusherAncestor()) )
+	if ( hitEnt && ( hitEnt.IsWorld() || hitEnt.HasPusherAncestor() || hitEnt.GetScriptName() == "editor_placed_prop" ) )
 	{
 		float dot = expect vector( collisionParams.normal ).Dot( <0, 0, 1> )
 

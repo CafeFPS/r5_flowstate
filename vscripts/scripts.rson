@@ -301,9 +301,13 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-	weapons/mp_weapon_clickweapon.nut
 	weapons/mp_weapon_editor.nut
-
+	
+	//CUSTOM BY COLOMBIA
+	weapons/mp_weapon_clickweapon.nut
+	weapons/mp_weapon_needler.nut
+	weapons/mp_ability_revenant_shadow_pounce_free.nut
+	weapons/mp_weapon_energysword.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -968,6 +972,8 @@ Scripts:
 	custom_maps/_custom_maps_2.nut
 	custom_maps/_custom_maps_3.nut
 	custom_maps/_custom_maps_4.nut
+	custom_maps/_custom_maps_5.nut
+	custom_maps/_custom_maps_6.nut
 	custom_maps/_custom_deafps_maps.nut
 	gamemodes/fs_movementgym/_movement_gym.nut
 	custom_maps/_custom_doormap.nut

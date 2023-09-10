@@ -79,7 +79,7 @@ WeaponData
                                               
                                   
      
-	"ammo_clip_size"   								"19"
+	"ammo_clip_size"   								"17"
 
     "ammo_stockpile_max"					        "36"
     "ammo_default_total"					        "0"
@@ -162,7 +162,8 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"4.0"
+
+	"viewkick_pitch_softScale"						"4.5" //4.0
     "viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
@@ -216,6 +217,9 @@ WeaponData
     "clip_bodygroup_show_for_milestone_1"	"0"
     "clip_bodygroup_show_for_milestone_2"	"1"
     "clip_bodygroup_show_for_milestone_3"	"1"
+
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_R99"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_R99"
 
 	Mods
 	{
@@ -337,19 +341,19 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   							"21"
+            "ammo_clip_size"   							"20" //21
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"24"
+            "ammo_clip_size"   							"23" //24
 		}
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   							"27"
+            "ammo_clip_size"   							"26" //27
 		}
         bullets_mag_l4
         {
-            "ammo_clip_size"   							"27"
+            "ammo_clip_size"   							"26" //27
         }
 
 		legendary1

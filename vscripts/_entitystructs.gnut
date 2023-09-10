@@ -452,6 +452,8 @@ global struct ServerEntityStruct
 	
 	//extra survival int property ( max shield for infinite shield )
 	int extraSurvivalProperty = -1
+	
+	bool droneRecalling = false
 }
 
 global struct MeritData
@@ -827,11 +829,6 @@ global struct ServerPlayerStruct
 	//Data request
 	float lastTimeDataRequestUsed = 0
 	
-	//Needler
-	int needles = 0
-	bool ongoingneedlesexplode = false
-	array<entity> proplist
-	entity particleonbody
 	//Super decys (mirage buff)
 	entity lastDecoy
 	
@@ -918,6 +915,18 @@ global struct ServerPlayerStruct
 	array<int> huntIds = []
 	
 	bool playerEnteredJumppadCrouching = false
+	
+	float lastTimeEnteredCryptosDrone = -1
+	
+	//Needler
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	
+	int consecutiveKills
+	bool playerHasEnergySword = false
+	string weaponThatEnergySwordReplaced = ""
 }
 
 global struct ChallengeScore
@@ -1084,6 +1093,10 @@ global struct ServerWeaponStruct
 	
 	vector portal1RefAngles
 	vector portal2RefAngles
+	bool fromWall
+	bool wasFired
+
+	bool isInAdsCustom
 }
 
 

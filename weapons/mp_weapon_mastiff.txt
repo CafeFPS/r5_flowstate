@@ -66,12 +66,7 @@ WeaponData
                        
 	"blast_pattern"									"mastiff_2"
 	"blast_pattern_default_scale"        			"1.1"
-	"blast_pattern_ads_scale"                       "0.55"  // for players, scales pattern when ADS
-     
-                                  
-                                              
-                                                                                               
-      
+    "blast_pattern_ads_scale"                       "0.6" //0.55 // for players, scales pattern when ADS
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_npc_scale"            			"0.75"  // scales on top of the default
 
@@ -279,7 +274,8 @@ WeaponData
     "clip_bodygroup_show_for_milestone_2"	"0"
     "clip_bodygroup_show_for_milestone_3"	"0"
 
-               
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_MASTIFF"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_MASTIFF"               
          
   
                               

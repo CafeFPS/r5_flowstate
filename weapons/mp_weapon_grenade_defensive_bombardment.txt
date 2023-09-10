@@ -102,57 +102,30 @@ WeaponData
 	"explosion_shake_duration"						"0.1"
 	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION"
 
+	"ammo_clip_size"   								"180"
+	"ammo_min_to_fire"								"180"
+	"ammo_per_shot"									"180"
+      
 
-
-	MP_BASE
-	{
-	"ammo_clip_size"								"270"
     "ammo_default_total"							"0"
     "ammo_display"									"count"
-    "ammo_min_to_fire"								"270"
-    "ammo_per_shot"									"270"
-        "ammo_stockpile_max"							"0"
-        "regen_ammo_refill_rate"						"1"
-        "regen_ammo_refill_start_delay"					"0.0"
-        "fire_duration"									"15.0"
-        "ammo_no_remove_from_stockpile"					"0"
+    "ammo_stockpile_max"							"0"
+    "regen_ammo_refill_rate"						"1"
+    "regen_ammo_refill_start_delay"					"0.0"
+                            
+                                                             
+         
+    "fire_duration"									"15.0"
+          
+    "ammo_no_remove_from_stockpile"					"0"
 
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-
-	//Mods
-		"explosion_damage"								"0"
-		"explosion_damage_heavy_armor"					"0"
-		"npc_explosion_damage"							"150"
-		"npc_explosion_damage_heavy_armor"				"800"
-		"explosion_inner_radius"  						"50"
-		"explosionradius" 								"210"
-		"sound_weapon_ready"							"survival_ui_ultimate_ready"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"4"
-		"ammo_default_total"							"1"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"1"
-		"ammo_per_shot"									"1"
-		"ammo_stockpile_max"							"6"
-		"regen_ammo_refill_rate"						"0"
-		"regen_ammo_refill_start_delay"					"0.0"
-		"fire_duration"									"<KEEP_DEFAULT>"
-        "ammo_no_remove_from_stockpile"					"<KEEP_DEFAULT>"
-
-		"enable_highlight_networking_on_creation"		"1"
-
-	//Mods
-		"explosion_damage"								"150"
-		"explosion_damage_heavy_armor"					"500"
-		"npc_explosion_damage"							"150"
-		"npc_explosion_damage_heavy_armor"				"500"
-		"explosion_inner_radius"  						"50"
-		"explosionradius" 								"210"
-		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
-	}
+//Mods
+	"explosion_damage"								"0"
+	"explosion_damage_heavy_armor"					"0"
+	"npc_explosion_damage"							"150"
+	"npc_explosion_damage_heavy_armor"				"800"
+	"explosion_inner_radius"  						"50"
+	"explosionradius" 								"210"
 
 	// Behavior
 	"cooldown_type"									"ammo_instant"

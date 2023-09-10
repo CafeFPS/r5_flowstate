@@ -76,7 +76,7 @@ void function DroneEMP_HandleDamageSource( entity target, var damageInfo )
 void function DroneFireEMP( entity weapon )
 {
 	entity owner = weapon.GetWeaponOwner()
-	entity camera = GetPlayerCamera( owner )
+	entity camera = CryptoDrone_GetPlayerDrone( owner )
 	
 	// Shouldn't have happened, give their ult charge back!
 	if( !IsValid( camera ) )

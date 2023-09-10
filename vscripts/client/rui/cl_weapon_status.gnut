@@ -20,6 +20,9 @@ global function NotifyReloadAttemptButNoReserveAmmo
 
 global function UpdateWeaponStatusOnBindingChange
 
+global function GetTacticalRui
+global function GetUltimateRui
+
 #if DEVELOPER
 global function DEV_TestUltimateStates
 global function GetUltimateWeaponState
@@ -1074,6 +1077,9 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 int currentUltimateState = eUltimateState.CHARGING
 void function UltimateWeaponStateSet( int ultimateWeaponState )
 {
+	if( GetCurrentPlaylistName() == "fs_haloMod" )
+		return
+
 	int lastUltimateState = currentUltimateState
 	currentUltimateState = ultimateWeaponState
 
@@ -1104,6 +1110,15 @@ int function GetUltimateWeaponState()
 	return currentUltimateState
 }
 
+var function GetTacticalRui()
+{
+	return file.ability_center_hud
+}
+
+var function GetUltimateRui()
+{
+	return file.ability_left_hud
+}
 
 void function UltimateWeaponStateCharging()
 {

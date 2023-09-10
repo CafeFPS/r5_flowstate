@@ -595,11 +595,18 @@ bool function CanSwapWeapons( entity player )
 
 void function OpenSurvivalInventory( entity player, entity deathBox = null )
 {
-	if ( !player.GetPlayerNetBool( "inventoryEnabled" ) )
+	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	{
+		if( IsAlive( player ) )
+			ScoreboardToggleFocus( player )
 		return
+	}
+
+	if ( !player.GetPlayerNetBool( "inventoryEnabled" )	)
+		return
+
 	SurvivalMenu_Internal( player, "OpenSurvivalInventoryMenu", deathBox )
 }
-
 
 void function SurvivalMenu_Internal( entity player, string uiScript, entity deathBox = null, int groundListBehavior = eGroundListBehavior.CONTENTS )
 {
@@ -626,7 +633,6 @@ void function SurvivalMenu_Internal( entity player, string uiScript, entity deat
 	}
 }
 
-
 bool function CanOpenInventory( entity player )
 {
 	if ( IsWatchingReplay() )
@@ -643,7 +649,6 @@ bool function CanOpenInventory( entity player )
 
 	return true
 }
-
 
 void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 {
@@ -674,12 +679,10 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 	}
 }
 
-
 void function OpenSurvivalGroundList( entity player, entity deathBox = null, int groundListBehavior = eGroundListBehavior.CONTENTS )
 {
 	SurvivalMenu_Internal( player, "OpenSurvivalGroundListMenu", deathBox, groundListBehavior )
 }
-
 
 void function UICallback_UpdateInventoryButton( var button, int position )
 {
@@ -749,7 +752,6 @@ void function UICallback_UpdateInventoryButton( var button, int position )
 
 	Hud_SetToolTipData( button, dt )
 }
-
 
 void function UICallback_PingInventoryItem( var button, int position )
 {

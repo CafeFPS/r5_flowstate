@@ -52,7 +52,7 @@ WeaponData
 
 		laser_sight_l3
 		{
-				"bodygroup27_set"	                "1"
+				//"bodygroup27_set"	                "1"
 				"fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
 
                 "spread_stand_hip"								"*0.40"

@@ -105,9 +105,12 @@ global function Dev_ShowVictorySequence
 global function Dev_AdjustVictorySequence
 #endif
 
+global function ChangeHUDVisibilityWhenInCryptoDrone
 global function GetCompassRui
 global function CircleAnnouncementsEnable
 global function SetDpadMenuHidden
+global function UpdateImageAndScaleOnFullmapRUI
+global function GetFullMapScale
 
 global struct NextCircleDisplayCustomData
 {
@@ -291,6 +294,8 @@ struct
 
 	asset customChampionScreenRuiAsset
 
+	table<entity, var> playerArrows
+	var fullmaprui
 } file
 
 void function ClGamemodeSurvival_Init()
@@ -396,7 +401,7 @@ void function ClGamemodeSurvival_Init()
 	AddCallback_OnBleedoutEnded( Sur_OnBleedoutEnded )
 
 	AddFirstPersonSpectateStartedCallback( OnFirstPersonSpectateStarted )
-	AddOnSpectatorTargetChangedCallback( OnSpectatorTargetChanged )
+	AddCallback_OnViewPlayerChanged( OnViewPlayerChanged )
 	AddCallback_OnPlayerConsumableInventoryChanged( UpdateDpadHud )
 
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, Survival_WaitForPlayers )
@@ -409,6 +414,7 @@ void function ClGamemodeSurvival_Init()
 	AddCallback_GameStateEnter( eGameState.Playing, SetDpadMenuVisible )
 	AddCallback_GameStateEnter( eGameState.Playing, OnGamestatePlaying )
 	AddCallback_GameStateEnter( eGameState.WinnerDetermined, Survival_ClearHints )
+	AddCallback_GameStateEnter( eGameState.Playing, OnGameStatePlaying_CheckCryptoDrone )
 
 	if ( SquadMuteIntroEnabled() )
 		AddCallback_OnSquadMuteChanged( OnSquadMuteChanged )
@@ -733,8 +739,9 @@ void function Cl_Survival_AddClient( entity player )
 	RuiTrackFloat( rui, "zoomFactor", null, RUI_TRACK_BIG_MAP_ZOOM_SCALE )
 	RuiSetImage( rui, "mapImage", mapImage )
 	RuiSetImage( rui, "mapBgTileImage", GetMinimapBackgroundTileImage() )
-	RuiSetBool( rui, "hudVersion", true )
-
+	RuiSetBool( rui, "hudVersion", false )
+	
+	file.fullmaprui = rui
 	Fullmap_AddRui( rui )
 
 	file.dpadMenuRui = CreateCockpitPostFXRui( SURVIVAL_HUD_DPAD_RUI, HUD_Z_BASE )
@@ -823,7 +830,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if(GameRules_GetGameMode() != SURVIVAL )
+	if( GameRules_GetGameMode() != SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )
@@ -1912,11 +1919,6 @@ void function Sur_OnScoreboardHide()
 {
 	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 
-	#if(false)
-
-
-#endif //
-
 	HideMapRui()
 
 	if ( file.mapContextPushed )
@@ -2143,7 +2145,7 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 void function AddInWorldMinimapObjectiveInternal( entity ent, var screen )
 {
-	if ( !IsValid( ent ) )
+	if ( !IsValid( ent ) || GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_haloMod" )
 		return
 
 	int customState    = ent.Minimap_GetCustomState()
@@ -2284,15 +2286,30 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	//
+	if ( ent.IsPlayer() && GameRules_GetGameMode() == "flowstate_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistName() == "fs_haloMod" ) //add enabled var and refresh funct so if we change location to a map one it works
+	{
+		foreach(player, savedRui in file.playerArrows)
+		{
+			if(ent == player)
+				return
+		}
+		
+		file.playerArrows[ent] <- rui
 
+		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
+		file.mapCornerX = 0
+		file.mapCornerY = 0
+	} else if( GameRules_GetGameMode() != "flowstate_snd" ) //&& GetCurrentPlaylistName() != "fs_haloMod" )
+	{
+		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
+		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
+	}
+	
 	RuiSetFloat3( rui, "mapCorner", <file.mapCornerX, file.mapCornerY, 0.0> )
 	RuiSetFloat( rui, "mapScale", file.mapScale )
 	RuiTrackFloat2( rui, "zoomPos", null, RUI_TRACK_BIG_MAP_ZOOM_ANCHOR )
 	RuiTrackFloat( rui, "zoomFactor", null, RUI_TRACK_BIG_MAP_ZOOM_SCALE )
-
-	RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
-	RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
+	
 	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
 	RuiSetFloat( rui, "displayDist", max( file.threatMaxDist, 2200 ) )
@@ -2301,15 +2318,8 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 	RuiSetFloat2( rui, "iconScale", ent.IsTitan() ? <1.5, 1.5, 0.0> : <2.0, 2.0, 0.0> )
 	RuiSetBool( rui, "hudVersion", screen == file.mapTopo )
 
-#if(true)
 	if ( ent.IsPlayer() )
 		RuiTrackInt( rui, "teamMemberIndex", ent, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-#endif
-
-	#if(false)
-
-
-#endif //
 
 	if ( isLocalPlayer )
 	{
@@ -2361,6 +2371,28 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 	}
 }
 
+void function UpdateImageAndScaleOnFullmapRUI(asset image, float mapscale)
+{
+	try{
+		if(file.fullmaprui != null)
+		{
+			file.mapScale = mapscale
+			RuiSetImage( file.fullmaprui, "mapImage", image )
+			RuiSetFloat( file.fullmaprui, "mapScale", file.mapScale )
+			
+			foreach(player, savedRui in file.playerArrows)
+			{
+				
+				RuiSetFloat( savedRui, "mapScale", file.mapScale )
+			}
+		}
+	}catch(e420){}
+}
+
+float function GetFullMapScale()
+{
+	return file.mapScale
+}
 
 void function MinimapPackage_PlayerInit( entity ent, var rui )
 {
@@ -2376,6 +2408,9 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 
 void function AddMinimapLabel( string title, float xPos, float yPos, float width = 200, float scale = 1.0 )
 {
+	if( GetCurrentPlaylistName() == "fs_haloMod" )
+		return
+
 	foreach ( topo in file.minimapTopos )
 	{
 		int drawType = RUI_DRAW_WORLD
@@ -3075,11 +3110,12 @@ bool function GetWaitingForPlayersOverlayEnabled( entity player )
 		return false
 	if ( GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
 		return false
-	if(GameRules_GetGameMode() != SURVIVAL)
-		return false
+	// if( GameRules_GetGameMode() != SURVIVAL )
+		// return false
 	
 	return true
 }
+
 
 var s_overlayRui = null
 void function WaitingForPlayersOverlay_Setup( entity player )
@@ -3145,11 +3181,15 @@ void function WaitingForPlayers_CreateCustomCameras()
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
 	
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), true)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
+
+	if( GameRules_GetGameMode() == SURVIVAL )
+	{
+		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
+		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
+		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), true)
+		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
+		Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
+	}
 	
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_GamemodeFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/gamemode")
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_MapFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/map")
@@ -3350,6 +3390,34 @@ void function SetDpadMenuHidden()
 	RuiSetBool( file.dpadMenuRui, "isVisible", false )
 }
 
+void function ChangeHUDVisibilityWhenInCryptoDrone( bool isInCryptoDrone = false )
+{
+	
+	//if ( IsAlive( GetLocalClientPlayer() ) )
+	//{
+	//	
+	//	var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
+	//
+	//	if ( cryptoAnimatedTacticalRui != null )
+	//	{
+	//		
+	//		RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+	//	}
+	//}
+	//
+	//RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+}
+
+void function OnGameStatePlaying_CheckCryptoDrone()
+{
+	entity player = GetLocalClientPlayer()
+
+	
+	if (PlayerHasPassive( player, ePassives.PAS_CRYPTO ))
+	{
+		ChangeHUDVisibilityWhenInCryptoDrone(IsPlayerInCryptoDroneCameraView(player))
+	}
+}
 
 void function Survival_ClearHints()
 {
@@ -3384,7 +3452,7 @@ void function ServerCallback_PlayerBootsOnGround()
 
 	DoF_LerpFarDepthToDefault( 0.5 )
 	DoF_LerpNearDepthToDefault( 0.5 )
-	//SetConVarFloat( "dof_variable_blur", 0.0 )
+	SetConVarFloat( "dof_variable_blur", 0.0 )
 }
 
 
@@ -4700,13 +4768,16 @@ void function OnFirstPersonSpectateStarted( entity player, entity currentTarget 
 	Minimap_SetSizeScale( MINIMAP_SCALE_SPECTATE )
 }
 
-
-void function OnSpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
+void function OnViewPlayerChanged( entity newViewPlayer )
 {
-	if ( IsValid( currentTarget ) && currentTarget.IsPlayer() )
+	if ( IsValid( newViewPlayer ) && newViewPlayer.IsPlayer() )
 	{
-		thread InitSurvivalHealthBar()
-		ScorebarInitTracking( currentTarget, ClGameState_GetRui() )
+		bool isReady = ToEHI( newViewPlayer ) != EHI_null && IsLocalClientEHIValid();
+		if ( isReady )
+		{
+			thread InitSurvivalHealthBar()
+			ScorebarInitTracking( newViewPlayer, ClGameState_GetRui() )
+		}
 	}
 }
 

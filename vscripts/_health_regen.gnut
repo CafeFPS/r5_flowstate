@@ -196,7 +196,10 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
 		DamageInfo_SetDamage( damageInfo, permanentDamage )	
 		
 		if(IsValid(attacker))
-			attacker.p.playerDamageDealt += shieldHealth 
+		{
+			attacker.p.playerDamageDealt += shieldHealth
+			attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldHealth )
+		}
 	}
 	
     return min( shieldHealth, damage )

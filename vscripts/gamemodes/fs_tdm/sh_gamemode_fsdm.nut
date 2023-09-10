@@ -409,6 +409,18 @@ void function Sh_CustomTDM_Init()
 	case "mp_rr_canyonlands_mu1":
 		Shared_RegisterLocation(
             NewLocationSettings(
+                "Skull Town",
+                [
+                    NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
+                    NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
+                    NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
+                    NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
+                ],
+                <0, 0, 3000>,$"rui/flowstatelocations/skulltown"
+            )
+        )
+		Shared_RegisterLocation(
+            NewLocationSettings(
                 "Hillside Outspot",
                 [
                     NewLocPair(<-19300, 4678, 3230>, <0, -100, 0>),
@@ -418,18 +430,6 @@ void function Sh_CustomTDM_Init()
 					NewLocPair(<-19026, 3749, 4460>, <0, 2, 0>)
                 ],
                 <0, 0, 3000>,$"rui/flowstatelocations/hillside"
-            )
-        )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Skull Town",
-                [
-                    NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-                    NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-                    NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-                    NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-                ],
-                <0, 0, 3000>,$"rui/flowstatelocations/skulltown"
             )
         )
 		Shared_RegisterLocation(
@@ -631,7 +631,7 @@ void function Sh_CustomTDM_Init()
 		
         Shared_RegisterLocation(
             NewLocationSettings(
-                "The Pit",
+                "The Pit KC",
                 [
                     NewLocPair(<-18558, 13823, 3605>, <0, 20, 0>),
                     NewLocPair(<-16514, 16184, 3772>, <0, -77, 0>),
@@ -657,7 +657,19 @@ void function Sh_CustomTDM_Init()
 
 	break
 	case "mp_rr_canyonlands_64k_x_64k":
-		
+		Shared_RegisterLocation(
+				NewLocationSettings(
+					"Skull Town",
+					[
+						NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
+						NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
+						NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
+						NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
+					],
+					<0, 0, 3000>,$"rui/flowstatelocations/skulltown"
+				)
+			)
+
 		Shared_RegisterLocation(
 				NewLocationSettings(
 					"Relay",
@@ -741,7 +753,7 @@ void function Sh_CustomTDM_Init()
 			)
 		Shared_RegisterLocation(
 				NewLocationSettings(
-					"The Pit",
+					"The Pit KC",
 					[
 						NewLocPair(<-18558, 13823, 3605>, <0, 20, 0>),
 						NewLocPair(<-16514, 16184, 3772>, <0, -77, 0>),
@@ -795,18 +807,6 @@ void function Sh_CustomTDM_Init()
 						NewLocPair(<32654, -1552, 3500>, <0, -90, 0>)
 					],
 					<0, 0, 3000>,$"rui/flowstatelocations/swamps"
-				)
-			)
-		Shared_RegisterLocation(
-				NewLocationSettings(
-					"Skull Town",
-					[
-						NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
-						NewLocPair(<-7544, -13240, 3161>, <0, -115, 0>),
-						NewLocPair(<-10250, -18320, 3323>, <0, 100, 0>),
-						NewLocPair(<-13261, -18100, 3337>, <0, 20, 0>)
-					],
-					<0, 0, 3000>,$"rui/flowstatelocations/skulltown"
 				)
 			)
 		Shared_RegisterLocation(
@@ -929,6 +929,56 @@ void function Sh_CustomTDM_Init()
             )
         )
         //break
+		case "mp_flowstate":
+		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		{
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"The Pit",
+					[
+						NewLocPair( <40595.6406, -9405.83203, -19682.0371> , <0, 168.875229, 0> ),
+						NewLocPair( <40457.9844, -10337.167, -19928.1563> , <0, -128.833832, 0> ),
+						NewLocPair( <40228.3242, -11431.1162, -19776.1563> , <0, 0.608541489, 0> ),
+						NewLocPair( <41253.0508, -11386.7236, -19756.6738> , <0, 170.002029, 0> ),
+						NewLocPair( <41500.2109, -9852.54004, -19775.1563> , <0, -38.9899902, 0> )						
+						NewLocPair( <42007.3086, -10576.4512, -19726.1563> , <0, -0.443716526, 0> ),
+						NewLocPair( <42778.3945, -11427.3486, -19773.918> , <0, -3.03944969, 0> ),
+						NewLocPair( <43738.7305, -11488.7549, -19776.1563> , <0, 176.17157, 0> ),
+						NewLocPair( <43547.082, -10703.1445, -19928.1563> , <0, 57.0178871, 0> ),
+						NewLocPair( <43632.8711, -9161.77832, -19775.8379> , <0, 178.778931, 0> )
+						NewLocPair( <42038, -8746.55273, -20156.1563> , <0, -94.6983109, 0> ),
+						NewLocPair( <42025.793, -8780.33887, -19852.9375> , <0, 93.6029053, 0> )
+					],
+					<0, 0, 3000>, $"rui/flowstatelocations/halomod_thepit"
+				)
+			)
+
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"Lockout",
+					[
+						NewLocPair(<41543.8711, -9008.27539, -20890.7383> , <0, -35.8867874, 0>),
+						NewLocPair(<41369.6289, -8793.39746, -20764.0371> , <0, -62.614399, 0>),
+						NewLocPair(<41649.9414, -9338.88477, -20592.8379> , <0, -87.7791977, 0>),
+						NewLocPair(<41318.5234, -11336.6641, -20704.9375> , <0, 44.4568977, 0>),
+						NewLocPair(<41974.5977, -10676.3115, -20795.6367> , <0, -141.929703, 0>),
+						NewLocPair(<42184.8945, -11325.4092, -20704.9375> , <0, 110.566208, 0>),
+						NewLocPair(<41919.082, -11060.9668, -20528.5371> , <0, 129.327072, 0>),
+						NewLocPair(<41910.6367, -9918.69629, -21009.1367> , <0, 122.589836, 0>),
+						NewLocPair(<42701.9297, -9711.44824, -21169.2617> , <0, -61.6680984, 0>),
+						NewLocPair(<41733.707, -9838.34668, -21368.4609> , <0, 1.02161503, 0>),
+						NewLocPair(<43069.2578, -9967.16016, -20763.8594> , <0, 89.3030472, 0>),
+						NewLocPair(<41170.4883, -10825.1191, -21136.7383> , <0, 39.0051041, 0>),
+						NewLocPair(<41951.875, -10721.0967, -21030.5371> , <0, -147.949905, 0>),
+						NewLocPair(<41230.1133, -10046.1729, -20795.8379> , <0, -91.0725632, 0>),
+						NewLocPair(<41946.5195, -9054.60156, -20763.9609> , <0, -179.685928, 0>)
+					],
+					<0, 0, 3000>//,$"rui/flowstatelocations/ttvbuilding"
+				)
+			)
+			// return
+		}
+		break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 		    
@@ -946,7 +996,68 @@ void function Sh_CustomTDM_Init()
 			
 			return
 		}
-		    
+
+		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		{
+			// Shared_RegisterLocation(
+			// NewLocationSettings(
+				// "The Pit",
+				// [
+					// NewLocPair( <-1387.23572, 573.816162, 9217.96289> , <0, 90.3908691, 0>),
+					// NewLocPair( <28.406599, 1248.40747, 8744.56348> , <0, -161.202087, 0>),
+					// NewLocPair( <-18.7795467, 558.193726, 8886.84375> , <0, -142.754303, 0>),
+					// NewLocPair( <-294.337677, 1494.04565, 9047.0625> , <0, -95.2782059, 0>),
+					// NewLocPair( <391.038208, 1471.55896, 9047.0625> , <0, -89.6804504, 0>),
+					// NewLocPair( <1435.99146, 609.908203, 8891.46289> , <0, 179.127838, 0>),
+					// NewLocPair( <1424.07715, 535.575745, 9217.94043> , <0, -1.64277804, 0>),
+					// NewLocPair( <1518.7373, -705.215332, 8971.84375> , <0, 30.3283234, 0>),
+					// NewLocPair( <1770.68811, -1422.21228, 9123.84375> , <0, 178.391342, 0>),
+					// NewLocPair( <713.098572, -1419.72253, 9138.79688> , <0, 0.0227274895, 0>),
+					// NewLocPair( <-888.857422, -1404.15234, 9123.84375> , <0, 169.393967, 0>),
+					// NewLocPair( <-1903.92554, -1325.01111, 9123.84375> , <0, 89.6589813, 0>),
+					// NewLocPair( <-1537.51953, -318.782684, 8971.84375> , <0, -153.07106, 0>)
+					
+				// ],
+				// <0, 0, 3000>, $"rui/flowstatelocations/halomod_thepit"
+				// )
+			// )
+
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"TTV Building",
+					[
+							NewLocPair(<11360, 6151, -4079>, <0, 102, 0>),
+							NewLocPair(<11407, 6778, -4295>, <0, 88, 0>),
+							NewLocPair(<11973, 4158, -4220>, <0, 82, 0>),
+							NewLocPair(<9956, 3435, -4239>, <0, 0, 0>),
+							NewLocPair(<9038, 3800, -4120>, <0, -88, 0>),
+							NewLocPair(<7933, 6692, -4250>, <0, 76, 0>),
+							NewLocPair(<8990, 5380, -4250>, <0, 145, 0>),
+							NewLocPair(<8200, 5463, -3815>, <0, 0, 0>),
+							NewLocPair(<9789, 5363, -3480>, <0, 174, 0>),
+							NewLocPair(<9448, 5804, -4000>, <0, 0, 0>),
+							NewLocPair(<8135, 4087, -4233>, <0, 90, 0>),
+							NewLocPair(<9761, 5980, -4250>, <0, 135, 0>)
+							NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
+							NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
+							NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
+							NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
+							NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
+							NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
+							NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
+							NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
+							NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
+							NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
+							NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
+							NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
+							NewLocPair(<9012, 5386, -4242>, <0, 90, 0>)
+					],
+					<0, 0, 3000>,$"rui/flowstatelocations/ttvbuilding"
+				)
+			)
+			// return
+		}
+		
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
 		{
 			Shared_RegisterLocation(

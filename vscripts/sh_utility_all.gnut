@@ -2316,12 +2316,12 @@ int function GetCurrentEliteStreak( entity player )
 {
 	int currentStreak = 0
 
-	#if UI
-	//if ( !IsFullyConnected() )
-		return 0
-	#endif
+	// #if UI
+	// //if ( !IsFullyConnected() )
+		// return 0
+	// #endif
 
-	currentStreak = player.GetPersistentVarAsInt( "currentEliteStreak" )
+	// currentStreak = player.GetPersistentVarAsInt( "currentEliteStreak" )
 
 	return currentStreak
 }

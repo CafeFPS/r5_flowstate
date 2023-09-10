@@ -102,8 +102,10 @@ void function CodeCallbacksShared_Init()
 	#if CLIENT
 		RegisterConCommandTriggeredCallback( "-useAndReload", CancelDisembark )
 		RegisterConCommandTriggeredCallback( "-use", CancelDisembark )
-	if(GameRules_GetGameMode() == SURVIVAL)
-		RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
+		if(GameRules_GetGameMode() == SURVIVAL)
+			RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
+	
+		AddCallback_OnYouDied( FS_ForceDestroyCustomAdsOverlay_Callback )
 	#endif
 
 	#if SERVER
@@ -342,7 +344,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		//player.ForceShadowVisible( newClass == "titan" )
 
 		UpdatePlayerStatusCounts()
-		MapConVar_Init()
+		//MapConVar_Init()
 
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/

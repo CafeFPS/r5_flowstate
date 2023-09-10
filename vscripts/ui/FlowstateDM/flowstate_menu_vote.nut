@@ -105,7 +105,7 @@ void function Open_FSDM_VotingPhase()
 			break
 
 			default:
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE SCRIPTS" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 		}

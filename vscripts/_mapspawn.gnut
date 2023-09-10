@@ -270,6 +270,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//Weapons
 
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
+	PrecacheWeapon( $"mp_weapon_melee_halo" )
+	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )
+
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
 	PrecacheWeapon( $"mp_weapon_bubble_bunker" )
@@ -368,8 +371,66 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
 	//PrecacheWeapon( $"mp_weapon_sentinel" )
 
+	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
+
+	PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_blue.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_blue.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_orange.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_orange.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_red.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_red.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_yellow.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_yellow.rmdl" )
+
+	PrecacheModel( $"mdl/Humans/pilots/w_master_chief_white.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
+	PrecacheWeapon( $"melee_vctblue" )
+	PrecacheWeapon( $"mp_ability_grapple_master_chief" )
+	//PrecacheWeapon( $"mp_weapon_deployable_cover_master_chief" )
+	PrecacheWeapon( $"mp_weapon_bubble_bunker_master_chief" )
+
+	// PrecacheWeapon( $"mp_weapon_frag_grenade_halomod" )
+	// PrecacheWeapon( $"mp_weapon_plasma_grenade_halomod" )
+	
+	#if DEVELOPER
+	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" || GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_rr_canyonlands_staging" )
+	{
+		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
+		RegisterSignal( "FS_ForceDestroyAllLifts" )
+		SpawnLockout()
+		// SpawnCyberdyne()
+	}
+	#endif
+	
+	PrecacheModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
+
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
+
+	PrecacheParticleSystem( $"P_snow_atmo_512" )
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )

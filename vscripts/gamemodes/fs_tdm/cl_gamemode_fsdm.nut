@@ -23,6 +23,17 @@ global function FSDM_CloseVotingPhase
 
 //Ui callbacks
 global function UI_To_Client_VoteForMap_FSDM
+global function Flowstate_ShowRoundEndTimeUI
+
+//networked vars callbacks
+global function CL_FSDM_RegisterNetworkFunctions
+
+//custom minimap
+global function HACK_TrackPlayerPositionOnScript
+global function RefreshImageAndScaleOnMinimapAndFullmap
+global function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap
+
+global function FSHaloMod_CreateKillStreakAnnouncement
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -37,6 +48,12 @@ struct {
 	bool forceShowSelectedLocation = false
 
 	var activeQuickHint
+	var countdownRui
+
+	float currentX_Offset = 0
+	float currentY_Offset = 0
+	asset currentMapImage
+	float mapscale
 } file
 
 struct VictoryCameraPackage
@@ -56,11 +73,149 @@ array<entity> cleanupEnts
 void function Cl_CustomTDM_Init()
 {
     AddCallback_EntitiesDidLoad( NotifyRingTimer )
+
 	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
 	
 	RegisterSignal("ChallengeStartRemoveCameras")
 	RegisterSignal("ChangeCameraToSelectedLocation")
+	RegisterSignal("FSDM_EndTimer")
+	RegisterSignal("NewKillChangeRui")
+}
+
+void function CL_FSDM_RegisterNetworkFunctions()
+{
+	if ( IsLobby() )
+		return
+	
+	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
+}
+
+void function Flowstate_RoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+
+	thread Flowstate_ShowRoundEndTimeUI( new )
+}
+
+void function Flowstate_StartTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+
+	thread Flowstate_PlayStartRoundSounds( )
+}
+
+void function Flowstate_ShowRoundEndTimeUI( float new )
+{
+	if( new == -1 )
+	{
+		//force to hide
+		Signal( GetLocalClientPlayer(), "FSDM_EndTimer")
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), false )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), false )
+		return
+	}
+
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame" ) ), "basicImage", $"rui/flowstate_custom/dm_countdown" )
+	
+	thread Flowstate_DMTimer_Thread( new )
+
+	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
+}
+	
+void function Flowstate_DMTimer_Thread( float endtime )
+{
+	entity player = GetLocalClientPlayer()
+	EndSignal( player, "FSDM_EndTimer")
+	
+	OnThreadEnd(
+		function() : ()
+		{
+			Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), false )
+			Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), false )
+		}
+	)
+	
+	while ( Time() <= endtime )
+	{
+        int elapsedtime = int(endtime) - Time().tointeger()
+
+		DisplayTime dt = SecondsToDHMS( elapsedtime )
+		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
+		
+		wait 1
+	}
+}
+
+void function Flowstate_PlayStartRoundSounds()
+{
+	//ui
+	{
+		if ( file.countdownRui != null )
+		{
+			RuiDestroyIfAlive( file.countdownRui )
+			file.countdownRui = null
+		}
+
+		file.countdownRui = CreateFullscreenRui( $"ui/generic_timer.rpak" )
+		
+		RuiSetString( file.countdownRui, "messageText", " Starting Deathmatch in " )
+		RuiSetGameTime( file.countdownRui, "startTime", Time() )
+		RuiSetGameTime( file.countdownRui, "endTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
+		RuiSetColorAlpha( file.countdownRui, "timerColor", SrgbToLinear( <255,233,0> / 255.0 ), 1.0 )
+		
+		// cool timer in world
+		// file.countdownRui = CreateFullscreenRui( $"ui/titanfall_timer.rpak" ) // RuiCreate( $"ui/titanfall_timer.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+		// RuiTrackFloat3( file.countdownRui, "playerPos", GetLocalClientPlayer(), RUI_TRACK_ABSORIGIN_FOLLOW )
+		// RuiSetFloat3( file.countdownRui, "pos", GetLocalClientPlayer().GetOrigin() )
+		// RuiSetGameTime( file.countdownRui, "impactTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
+		
+		// file.countdownRui = CreateFullscreenRui( $"ui/plane_doors_open_timer.rpak" )
+		// RuiSetString( file.countdownRui, "text", "Starting in" )
+		// RuiSetGameTime( file.countdownRui, "endTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
+		// RuiSetFloat( file.countdownRui, "progressTime", Time() )
+	}
+	
+	//sounds
+	entity player = GetLocalViewPlayer()
+
+	float doorsOpenTime = GetGlobalNetTime( "flowstate_DMStartTime" )
+	float threeSecondWarningTime = doorsOpenTime - 3.0
+
+	while( GetGlobalNetTime( "flowstate_DMStartTime" ) < 0 )
+		WaitFrame()
+
+	if ( Time() > GetGlobalNetTime( "flowstate_DMStartTime" ) )
+		return
+
+	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	{
+		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v0.99 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+	}
+
+	while( Time() < ( GetGlobalNetTime( "flowstate_DMStartTime" ) - 3.0 ) )
+	{
+		EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_10Seconds" )
+		wait 1.0
+	}
+
+	while( Time() < GetGlobalNetTime( "flowstate_DMStartTime" ) - 0.5 )
+	{
+		EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_3Seconds" )
+		wait 1.0
+	}
+
+	while( Time() < GetGlobalNetTime( "flowstate_DMStartTime" ) )
+		WaitFrame()
+
+	EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_Finish" )
 }
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
@@ -162,6 +317,8 @@ void function CoolCamera()
 		break
 	}
 
+	if( cutsceneSpawns.len() == 0 )
+		return
 
     //EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
 
@@ -315,45 +472,47 @@ LocPair function GetUbicacionMasLejana(LocPair random)
 
 void function NotifyRingTimer()
 {
-    if( GetGlobalNetTime( "nextCircleStartTime" ) < Time() )
+    if( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) < Time() || GetGameState() != eGameState.Playing || GetGlobalNetTime( "flowstate_DMRoundEndTime" ) == -1 )
         return
-    
-    UpdateFullmapRuiTracks()
 
-    float new = GetGlobalNetTime( "nextCircleStartTime" )
+    Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
 
-    var gamestateRui = ClGameState_GetRui()
-	array<var> ruis = [gamestateRui]
-	var cameraRui = GetCameraCircleStatusRui()
-	if ( IsValid( cameraRui ) )
-		ruis.append( cameraRui )
+    // UpdateFullmapRuiTracks()
 
-	int roundNumber = (SURVIVAL_GetCurrentDeathFieldStage() + 1)
-	string roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING", roundNumber )
-	if ( SURVIVAL_IsFinalDeathFieldStage() )
-		roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING_FINAL" )
-	DeathFieldStageData data = GetDeathFieldStage( SURVIVAL_GetCurrentDeathFieldStage() )
-	float currentRadius      = SURVIVAL_GetDeathFieldCurrentRadius()
-	float endRadius          = data.endRadius
+    // float new = GetGlobalNetTime( "nextCircleStartTime" )
 
-	foreach( rui in ruis )
-	{
-		RuiSetGameTime( rui, "circleStartTime", new )
-		RuiSetInt( rui, "roundNumber", roundNumber )
-		RuiSetString( rui, "roundClosingString", roundString )
+    // var gamestateRui = ClGameState_GetRui()
+	// array<var> ruis = [gamestateRui]
+	// var cameraRui = GetCameraCircleStatusRui()
+	// if ( IsValid( cameraRui ) )
+		// ruis.append( cameraRui )
 
-		entity localViewPlayer = GetLocalViewPlayer()
-		if ( IsValid( localViewPlayer ) )
-		{
-			RuiSetFloat( rui, "deathfieldStartRadius", currentRadius )
-			RuiSetFloat( rui, "deathfieldEndRadius", endRadius )
-			RuiTrackFloat3( rui, "playerOrigin", localViewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+	// int roundNumber = ( minint( SURVIVAL_GetCurrentDeathFieldStage() + 1, 6 ) )
+	// string roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING", roundNumber )
+	// if ( SURVIVAL_IsFinalDeathFieldStage() )
+		// roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING_FINAL" )
+	// DeathFieldStageData data = GetDeathFieldStage( SURVIVAL_GetCurrentDeathFieldStage() )
+	// float currentRadius      = SURVIVAL_GetDeathFieldCurrentRadius()
+	// float endRadius          = data.endRadius
 
-			#if(true)
-				RuiTrackInt( rui, "teamMemberIndex", localViewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-			#endif
-		}
-	}
+	// foreach( rui in ruis )
+	// {
+		// RuiSetGameTime( rui, "circleStartTime", new )
+		// RuiSetInt( rui, "roundNumber", roundNumber )
+		// RuiSetString( rui, "roundClosingString", roundString )
+
+		// entity localViewPlayer = GetLocalViewPlayer()
+		// if ( IsValid( localViewPlayer ) )
+		// {
+			// RuiSetFloat( rui, "deathfieldStartRadius", currentRadius )
+			// RuiSetFloat( rui, "deathfieldEndRadius", endRadius )
+			// RuiTrackFloat3( rui, "playerOrigin", localViewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+
+			// #if(true)
+				// RuiTrackInt( rui, "teamMemberIndex", localViewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
+			// #endif
+		// }
+	// }
 
     // if ( SURVIVAL_IsFinalDeathFieldStage() )
         // roundString = "#SURVIVAL_CIRCLE_ROUND_FINAL"
@@ -1000,11 +1159,8 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 1:
-		if(file.activeQuickHint != null)
-		{
-			RuiDestroyIfAlive( file.activeQuickHint )
-			file.activeQuickHint = null
-		}
+		DM_QuickHint( "One more kill to get Energy Sword.", true, 3)
+		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_InGame_FD_SliderExit" )
 		break
 	}
 }
@@ -1029,3 +1185,165 @@ void function DM_QuickHint( string hintText, bool blueText = false, float durati
 }
 
 array<void functionref( entity, ItemFlavor, int )> s_callbacks_OnVictoryCharacterModelSpawned
+
+void function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap(asset image, float mapscale, float xoffset, float yoffset)
+{
+	file.currentMapImage = image 
+	file.mapscale = mapscale
+	
+	UpdateImageAndScaleOnFullmapRUI( image, mapscale ) //fullmap
+	UpdateImageAndScaleOnMinimapRUI( image, mapscale ) //minimap
+	
+	file.currentY_Offset = yoffset * mapscale
+	file.currentX_Offset = xoffset * mapscale
+}
+
+void function RefreshImageAndScaleOnMinimapAndFullmap()
+{
+	UpdateImageAndScaleOnFullmapRUI( file.currentMapImage, file.mapscale ) //fullmap
+	UpdateImageAndScaleOnMinimapRUI( file.currentMapImage, file.mapscale ) //minimap
+}
+
+void function HACK_TrackPlayerPositionOnScript(var rui, entity player, bool isFullmap)
+//used by fullmap and minimap to show player arrows on them without using RuiTrack so we can add offsets and use it with custom prop maps placed anywhere in the sky. Colombia
+{
+	if( !IsValid(player) ) return
+	
+	//EndSignal( player, "OnDeath" )
+
+	string ruiname1
+	string ruiname2
+	
+	if(isFullmap)
+	{
+		ruiname1 = "objectPos"
+		ruiname2 = "objectAngles"
+	} else 
+	{
+		ruiname1 = "playerPos"
+		ruiname2 = "playerAngles"
+	}
+	
+	while(IsValid(player))
+	{
+		RuiSetFloat3( rui, ruiname1, Vector( player.GetOrigin().x + file.currentX_Offset, player.GetOrigin().y + file.currentY_Offset, 0 ) )
+		RuiSetFloat3( rui, ruiname2, Vector( player.CameraAngles().x, player.CameraAngles().y, 0 ) )
+		
+		WaitFrame()
+	}
+}
+
+array< string > SurvivorQuoteCatalog = [ //this is so bad maybe change it to datatable?
+	"",
+	"",
+	"Double Kill!",
+	"Triple Kill!",
+	"Overkill!",
+	"Killtacular!",
+	"Killtrocity!",
+	"Killamanjaro!",
+	"Killtastrophe!",
+	"Killpocalypse!",
+	"Killionaire!"
+]
+
+array< asset > SurvivorAssetCatalog = [ //this is so bad maybe change it to datatable?
+	$"",
+	$"",
+	$"rui/flowstate_custom/halomod_badges/2",
+	$"rui/flowstate_custom/halomod_badges/3",
+	$"rui/flowstate_custom/halomod_badges/4",
+	$"rui/flowstate_custom/halomod_badges/5",
+	$"rui/flowstate_custom/halomod_badges/6",
+	$"rui/flowstate_custom/halomod_badges/7",
+	$"rui/flowstate_custom/halomod_badges/8",
+	$"rui/flowstate_custom/halomod_badges/9",
+	$"rui/flowstate_custom/halomod_badges/10"
+]
+
+void function FSHaloMod_CreateKillStreakAnnouncement( int index )
+{
+	thread function () : ( index )
+	{
+		array< string > quotesCatalogToUse
+
+		asset badge = SurvivorAssetCatalog[index]
+		string quote = SurvivorQuoteCatalog[index]
+		float duration = 3.5
+		
+		if( badge == $"" ) return
+		
+		Signal(GetLocalClientPlayer(), "NewKillChangeRui")
+		EndSignal(GetLocalClientPlayer(), "NewKillChangeRui")
+
+		var KillStreakRuiBadge = HudElement( "KillStreakBadge1")
+		var KillStreakRuiText = HudElement( "KillStreakText1")
+		
+		OnThreadEnd(
+			function() : ( KillStreakRuiBadge, KillStreakRuiText )
+			{
+				Hud_SetEnabled( KillStreakRuiBadge, false )
+				Hud_SetVisible( KillStreakRuiBadge, false )
+				
+				Hud_SetEnabled( KillStreakRuiText, false )
+				Hud_SetVisible( KillStreakRuiText, false )
+			}
+		)
+		
+		RuiSetImage( Hud_GetRui( KillStreakRuiBadge ), "basicImage", badge )
+		
+		Hud_ReturnToBasePos(KillStreakRuiBadge)
+		Hud_ReturnToBasePos(KillStreakRuiText)
+
+		Hud_SetText( KillStreakRuiText, quote )
+
+		Hud_SetSize( KillStreakRuiBadge, 0, 0 )
+		Hud_ScaleOverTime( KillStreakRuiBadge, 1.6, 1.6, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+		// Hud_SetSize( KillStreakRuiText, 0, 0 )
+		// Hud_ScaleOverTime( KillStreakRuiText, 1, 1, 0.15, INTERPOLATOR_ACCEL)
+		
+		Hud_SetAlpha( KillStreakRuiBadge, 255 )
+		Hud_SetAlpha( KillStreakRuiText, 255 )
+
+		Hud_SetEnabled( KillStreakRuiBadge, true )
+		Hud_SetVisible( KillStreakRuiBadge, true )
+		
+		Hud_SetEnabled( KillStreakRuiText, true )
+		Hud_SetVisible( KillStreakRuiText, true )
+		
+		wait 0.20
+		
+		Hud_ScaleOverTime( KillStreakRuiBadge, 1, 1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+		
+		wait 0.20 + duration
+		
+		waitthread FSHaloMod_KillStreak_FadeOut(KillStreakRuiBadge, KillStreakRuiText)
+	}()
+}
+
+void function FSHaloMod_KillStreak_FadeOut( var label, var label2, int xOffset = 200, int yOffset = 0, float duration = 0.3 )
+{
+	EndSignal(GetLocalClientPlayer(), "NewKillChangeRui")
+	
+	UIPos currentPos = REPLACEHud_GetPos( label )
+	UIPos currentPos2 = REPLACEHud_GetPos( label2 )
+
+	OnThreadEnd(
+		function() : ( label, label2, currentPos, xOffset, yOffset )
+		{
+			Hud_SetEnabled( label, false )
+			Hud_SetVisible( label, false )
+			
+			Hud_SetEnabled( label2, false )
+			Hud_SetVisible( label2, false )
+		}
+	)
+
+	Hud_FadeOverTime( label, 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_FadeOverTime( label2, 0, duration/2, INTERPOLATOR_ACCEL )
+
+	Hud_MoveOverTime( label, currentPos.x + xOffset, currentPos.y + yOffset, duration )
+	
+	wait duration
+}

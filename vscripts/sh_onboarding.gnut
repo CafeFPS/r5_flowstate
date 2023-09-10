@@ -142,11 +142,26 @@ void function Sequence_WaitingForPlayers()
 	UpdateSequencedTimePoints( Time() )
 
 	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
-
-	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
-		
-	if(GameRules_GetGameMode() != SURVIVAL) 
-	{	
+	
+	if(GameRules_GetGameMode() != SURVIVAL)
+		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime()) - 1
+	else
+		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
+	
+	if(GameRules_GetGameMode() != SURVIVAL)
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			ScreenCoverTransition_Player(player, Time() + 2)
+		}
+	}
+	
+	if(GameRules_GetGameMode() != SURVIVAL)
+	{
+		wait 1
 		SetGameState( eGameState.Playing )
 		return	
 	}
@@ -661,18 +676,23 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	UpdatePlayerCounts()
 		
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )
+	{
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+	}
 
 	if( GameRules_GetGameMode() == SURVIVAL )
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
-	victim.FreezeControlsOnServer()
+	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1 )
+	victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
 	
-	if(GameRules_GetGameMode() == "flowstate_snd") 
+	victim.FreezeControlsOnServer()
+
+	victim.SetPredictionEnabled( false )
+	
+	if( GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_haloMod" ) 
 		return
 	
-	victim.SetPredictionEnabled( false )
-
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 	if( GetCurrentPlaylistVarBool( "use_r2_deathcam", false ) && ShouldSetObserverTarget( attacker ) )
 		victim.SetObserverTarget( attacker )

@@ -596,7 +596,7 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 void function PilotBlood_Passive_Body( entity player )
 {
 	float healthRegenStartDelay = 5.0
-	float healthRegenRate = 1.0
+	float healthRegenRate = 0.6
 	EndSignal( player, "EndPilotBloodThread" )
 	
 	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
@@ -621,7 +621,8 @@ void function PilotBlood_Passive_Body( entity player )
 			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
 
 		}
-		else if(player.GetShieldHealth() != player.GetShieldHealthMax())
+		else 
+		if(player.GetShieldHealth() != player.GetShieldHealthMax())
 		{
 			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
 		}

@@ -1,6 +1,7 @@
 global function ShWeaponInspect_Init
 #if CLIENT
 global function SCB_WeaponInspectHint
+global function WeaponInspectHideHudElements
 #endif
 
 const float GLADIATOR_CARD_INSPECT_SHOW_TIME = 5.0
@@ -70,14 +71,17 @@ void function WatchWeaponInspectState( entity player, entity weapon )
 {
 	// TODO: need a better way to hide the "HUD"
 	// TODO: also need this to be properly stateful/context aware; e.g. we wouldn't want to show the minimap after the match ended because this thread ended later in the frame.
-	Minimap_DisableDraw()
+	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+		Minimap_DisableDraw()
 	Crosshair_SetState( CROSSHAIR_STATE_HIDE_ALL )
 	WeaponInspectHideHudElements( true )
 
 	OnThreadEnd(
 		function() : ()
 		{
-			Minimap_EnableDraw()
+			if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+				Minimap_EnableDraw()
+
 			Crosshair_SetState( CROSSHAIR_STATE_SHOW_ALL )
 			WeaponInspectHideHudElements( false )
 
@@ -104,6 +108,8 @@ void function WatchWeaponInspectState( entity player, entity weapon )
 
 void function WeaponInspectHideHudElements( bool hide )
 {
+	printt( "changing hud visibility ", hide )
+
 	if ( hide )
 		file.weaponInspectHideHudCount++
 	else

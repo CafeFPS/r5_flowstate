@@ -68,8 +68,8 @@ WeaponData
 
 	"looping_sounds"								"1"
 
-	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
-	"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+	"fire_sound_1_player_1p"						""
+	"fire_sound_1_player_3p"						""
 	"fire_sound_2_player_1p"						"Weapon_Alternator_SecondShot_1P"
 	"fire_sound_2_player_3p"						""
 	"fire_sound_2_npc"								"Weapon_Alternator_SecondShot_NPC"
@@ -238,6 +238,9 @@ WeaponData
 
 	"viewmodel_offset_ads"				"0 0 0.02"  // HACK should not have to offset the default ADS anim alignment
 
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_ALTERNATOR"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_ALTERNATOR"
+
 	Mods
 	{
         gold
@@ -256,7 +259,7 @@ WeaponData
 
 		hopup_shield_breaker
 		{
-		"damage_shield_scale"                       "1.55"
+		"damage_shield_scale"                       "1.20"
 		"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
 		"impact_effect_table" 				        "shield_breaker_bullet"
 

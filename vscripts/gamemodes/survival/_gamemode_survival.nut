@@ -61,6 +61,10 @@ void function GamemodeSurvival_Init()
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
+	
+	#if DEVELOPER
+	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+	#endif
 
 	FillSkyWithClouds()
 	
@@ -74,6 +78,54 @@ void function GamemodeSurvival_Init()
 
 	thread SURVIVAL_RunArenaDeathField()
 }
+
+#if DEVELOPER
+bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAlive( player) || args.len() != 1 )
+		return false
+
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives(player)
+
+	switch( args[0] )
+	{
+		case "0":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+		break
+		
+		case "1":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+		break
+		
+		case "2":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+		break
+		
+		case "3":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+		player.SetArmsModelOverride( $"mmdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+	}
+
+	player.TakeOffhandWeapon(OFFHAND_MELEE)
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
+
+	return true
+}
+#endif
 
 void function Survival_SetCallback_Leviathan_ConsiderLookAtEnt( void functionref( entity, float, float ) callback )
 {

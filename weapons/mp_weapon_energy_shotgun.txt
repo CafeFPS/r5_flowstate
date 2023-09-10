@@ -310,14 +310,11 @@ WeaponData
 	    {
 	    }
 
-		survival_finite_ammo
+		hopup_shield_breaker
         {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"18"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+            "damage_shield_scale"                       "1.25"
+			"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
+			"impact_effect_table" 				        "shield_breaker_bullet"
         }
 
         hopup_energy_choke

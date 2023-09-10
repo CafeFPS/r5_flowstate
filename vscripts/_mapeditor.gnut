@@ -253,6 +253,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
 
 entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false )
 {
+	//printt( a )
     entity e = CreatePropDynamic( a, pos, ang, SOLID_VPHYSICS, fade )
     e.kv.fadedist = fade
     e.kv.rendermode = 0
@@ -277,7 +278,12 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
 		
 		if( a == $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
 			a.SetScriptName( "map_editor_jumppad" )
-
+		
+		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		{
+            if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
+                thread HaloMod_Cyberdyne_CreateFanPusher( e.GetOrigin() + Vector( -60, 0, 15 ), e.GetAngles() )
+		}
         if( GameRules_GetGameMode() == "fs_duckhunt" )
         {
             if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid( e ) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid( e ) )

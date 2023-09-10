@@ -40,6 +40,8 @@ global function ScoreboardSelectNextPlayer
 //global function SetScoreboardUpdateCallback
 global function AddScoreboardCallback_OnShowing
 global function AddScoreboardCallback_OnHiding
+global function ScoreboardToggleFocus
+global function ForceScoreboardLoseFocus
 
 struct {
 	bool hasFocus = false
@@ -50,7 +52,10 @@ struct {
 	var scoreboardBg
 	var scoreboard
 	var background
-
+	var backgroundCustom
+	var titleCustom
+	var hintCustom
+	
 	array<var> scoreboardOverlays
 	array<var> scoreboardElems
 
@@ -88,6 +93,16 @@ void function ClScoreboardMp_Init()
 
 	// RegisterConCommandTriggeredCallback( "+scriptCommand4", ScoreboardToggleFocus )
 	RegisterConCommandTriggeredCallback( "scoreboard_toggle_focus", ScoreboardToggleFocus )
+	RegisterSignal( "ShutDownScoreboardRefresh" )
+	
+	AddClientCallback_OnResolutionChanged( ReInitScoreboard )
+}
+
+void function ReInitScoreboard( )
+{
+	file.hasFocus = false
+	thread clGlobal.hideScoreboardFunc()
+	clGlobal.initScoreboardFunc()
 }
 
 void function ScoreboardFocus( entity player )
@@ -97,6 +112,12 @@ void function ScoreboardFocus( entity player )
 }
 
 void function ScoreboardLoseFocus( entity player )
+{
+	thread HideScoreboardMP()
+	file.hasFocus = false
+}
+
+void function ForceScoreboardLoseFocus( )
 {
 	thread HideScoreboardMP()
 	file.hasFocus = false
@@ -121,7 +142,7 @@ int function GetNumPlayersToDisplayAsATeam()
 		return GetMaxTeamPlayers()
 
 	if ( UseSingleTeamScoreboard() )
-		return 18
+		return 12
 
 	return GetCurrentPlaylistVarInt( "max_players", MAX_TEAM_SLOTS ) / GetCurrentPlaylistVarInt( "max_teams", MAX_TEAM_SLOTS )
 }
@@ -144,16 +165,27 @@ void function InitScoreboardMP()
 	var scoreboard = HudElement( "Scoreboard" )
 	file.scoreboard = scoreboard
 
+	file.backgroundCustom = HudElement( "FS_DMScoreboard_Frame" )
+	file.titleCustom = HudElement( "FS_DMScoreboard_Title" )
+	file.hintCustom = HudElement( "FS_DMScoreboard_Hint" )
+
+	Hud_SetVisible( file.backgroundCustom, false )
+	Hud_SetVisible( file.titleCustom, false )
+	Hud_SetVisible( file.hintCustom, false )
+
+	RuiSetImage( Hud_GetRui( file.backgroundCustom ), "basicImage", $"rui/flowstate_custom/scoreboard_bg" )
+
 	file.header.gametypeAndMap = HudElement( "ScoreboardGametypeAndMap", scoreboard )
-	RuiSetString( Hud_GetRui( file.header.gametypeAndMap ), "gameType", GAMETYPE_TEXT[ GAMETYPE ] )
-	RuiSetString( Hud_GetRui( file.header.gametypeAndMap ), "mapName", mapName )
+	RuiSetString( Hud_GetRui( file.header.gametypeAndMap ), "gameType", "" )
+	RuiSetString( Hud_GetRui( file.header.gametypeAndMap ), "mapName", "" )
 	file.header.gametypeDesc = HudElement( "ScoreboardHeaderGametypeDesc", scoreboard )
 	RuiSetString( Hud_GetRui( file.header.gametypeDesc ), "desc", "" )
 	file.header.scoreHeader = HudElement( "ScoreboardScoreHeader", scoreboard )
 
 	file.footer = HudElement( "ScoreboardGamepadFooter", scoreboard )
 	file.pingText = HudElement( "ScoreboardPingText", scoreboard )
-
+	
+	file.scoreboardElems.clear()
 	file.scoreboardElems.append( file.header.gametypeAndMap )
 	file.scoreboardElems.append( file.header.gametypeDesc )
 	file.scoreboardElems.append( file.header.scoreHeader )
@@ -222,6 +254,7 @@ void function InitScoreboardMP()
 			{
 				table rowElementTable
 				rowElementTable.background <- HudElement( "ScoreboardOpponent" + teamNumberPrefix + "Background" + string( elem ), scoreboard )
+
 				rowElementTable.background.Show()
 
 				file.scoreboardElems.append( rowElementTable.background )
@@ -232,8 +265,8 @@ void function InitScoreboardMP()
 	}
 
 	{
-		file.header.gametypeAndMap.Show()
-		file.header.gametypeDesc.Show()
+		file.header.gametypeAndMap.Hide()
+		file.header.gametypeDesc.Hide()
 	}
 
 	if ( UseOnlyMyTeamScoreboard() )
@@ -310,6 +343,9 @@ void function ScoreboardFadeOut()
 
 void function ShowScoreboardMP()
 {
+	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
+	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
+	
 	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
 		
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
@@ -318,8 +354,12 @@ void function ShowScoreboardMP()
 		callbackFunc()
 
 	entity localPlayer = GetLocalClientPlayer()
-
-	file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	
+	Hud_SetVisible( file.backgroundCustom, true )
+	Hud_SetVisible( file.titleCustom, true )
+	Hud_SetVisible( file.hintCustom, true )
+	
+	//file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
 	int myTeam = localPlayer.GetTeam()
@@ -330,7 +370,7 @@ void function ShowScoreboardMP()
 	RuiSetString( Hud_GetRui( file.footer ), "footerText", Localize( "#RIGHT_SCOREBOARD_FOCUS" ) )
 
 
-	EndSignal( clGlobal.signalDummy, "OnHideScoreboard" )
+	// EndSignal( clGlobal.signalDummy, "OnHideScoreboard" )
 
 	UISize screenSize = GetScreenSize()
 	float resMultX = screenSize.width / 1920.0
@@ -350,7 +390,7 @@ void function ShowScoreboardMP()
 	//printt( "team height: " + teamHeight + ", scoreboardHeight: " + scoreboardHeight )
 	int scoreboardYOffset = -int( ( ( 1080 - scoreboardHeight ) / 2 - 48 ) * resMultY )
 	if ( UseSingleTeamScoreboard() )
-		scoreboardYOffset -= int( 325 * resMultY )
+		scoreboardYOffset += int( 85 * resMultY )
 
 	int winningTeamYOffset = int( ( SCOREBOARD_SUBTITLE_HEIGHT + SCOREBOARD_TEAM_LOGO_OFFSET ) * resMultY )
 	int teamHeightMultiplied = int( teamHeight * resMultY )
@@ -385,7 +425,7 @@ void function ShowScoreboardMP()
 	int maxPlayerDisplaySlots = GetNumPlayersToDisplayAsATeam()
 	bool firstUpdate = true
 
-	for ( int a = 0; a < 10; a++)
+	while( true )
 	{
 		localPlayer = GetLocalClientPlayer()
 
@@ -402,7 +442,7 @@ void function ShowScoreboardMP()
 		}
 		else if ( UseSingleTeamScoreboard() )
 		{
-			teamPlayers[myTeam] = GetSortedPlayers( compareFunc, 0 )
+			teamPlayers[myTeam] = GetSortedPlayers_FFA( compareFunc )
 			foreach ( enemyTeam in enemyTeams )
 			{
 				teamPlayers[enemyTeam] = []
@@ -436,7 +476,7 @@ void function ShowScoreboardMP()
 
 		if ( UseOnlyMyTeamScoreboard() || UseSingleTeamScoreboard() )
 		{
-			file.header.gametypeAndMap.SetY( scoreboardYOffset + 300 )
+			file.header.gametypeAndMap.SetY( scoreboardYOffset )
 			file.teamElems[winningTeam].logo.SetY( winningTeamYOffset )
 			file.footer.SetY( footerYOffset )
 		}
@@ -473,8 +513,9 @@ void function ShowScoreboardMP()
 					continue
 
 				elemTable = file.playerElems[team][index]
-
+				// Hud_SetWidth( elemTable.background, Hud_GetBaseWidth( elemTable.background ) * 1.25 )
 				var rui = Hud_GetRui( elemTable.background )
+
 				if ( player == file.selectedPlayer )
 				{
 					RuiSetFloat3( rui, "bgColor", IsFriendlyTeam( player.GetTeam(), myTeam ) ? SCOREBOARD_FRIENDLY_SELECTED_COLOR : SCOREBOARD_ENEMY_SELECTED_COLOR )
@@ -501,7 +542,7 @@ void function ShowScoreboardMP()
 					name = "* " + name
 
 				RuiSetString( rui, "playerName", name )
-
+				
 				ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				asset classIcon      = CharacterClass_GetGalleryPortrait( character )
 				RuiSetImage( rui, "playerCard", classIcon )
@@ -569,6 +610,7 @@ void function ShowScoreboardMP()
 			while ( index < maxPlayerDisplaySlots )
 			{
 				elemTable = file.playerElems[team][index]
+				//Hud_SetWidth( elemTable.background, Hud_GetBaseWidth( elemTable.background ) * 1.25 )
 
 				var rui = Hud_GetRui( elemTable.background )
 				RuiSetString( rui, "playerName", "" )
@@ -607,7 +649,8 @@ void function ShowScoreboardMP()
 		}
 
 		firstUpdate = false
-		WaitFrame()
+		
+		wait 0.1
 	}
 }
 
@@ -649,7 +692,7 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore3Header = headers[ 2 ]
 			if (IsValid( player ))
 			{
-				playerScore3 = player.GetPlayerGameStat( playerGameStats[ 2 ] )
+				playerScore3 = player.GetPlayerNetInt( "damage" )
 			}
 			playerScore3NumDigits = numDigits[ 2 ]
 
@@ -657,7 +700,7 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore2Header = headers[ 1 ]
 			if (IsValid( player ))
 			{
-				playerScore2 = player.GetPlayerNetInt( "assists" )
+				playerScore2 = player.GetPlayerNetInt( "deaths" )
 			}
 			playerScore2NumDigits = numDigits[ 1 ]
 
@@ -692,14 +735,22 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 
 void function HideScoreboardMP()
 {
+	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
+
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnHiding )
 		callbackFunc()
 
 	//if ( file.hasFocus )
 		//HudInput_PopContext()
+	
+	Hud_SetVisible( file.backgroundCustom, false )
+	Hud_SetVisible( file.titleCustom, false )
+	Hud_SetVisible( file.hintCustom, false )
 
 	ScoreboardFadeOut()
-	wait( 0.1 )
+	
+	WaitFrame()
+
 	file.hasFocus = false
 	file.selectedPlayer = null
 

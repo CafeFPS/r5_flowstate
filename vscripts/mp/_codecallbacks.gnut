@@ -415,7 +415,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
 			
 			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
+			}
 			
 			DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
 		} else
@@ -424,7 +427,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
 
 			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
+			}
 		}
 
 		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && !ent.IsPlayer() )
@@ -455,8 +461,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 			}
-			
-			EvoCurrentShieldToNextTier( damageInfo, attacker )
+
+			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
+				EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
 
@@ -505,6 +512,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				attacker.p.currentTargetPlayerOrSoul_Ent = ent
 				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
 				attacker.p.playerDamageDealt += savedDamage
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + savedDamage )
 			}
 		}
 	}
@@ -863,7 +871,7 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 		attackerOrigin = attacker.GetOrigin()
 		
 		//Fake evo shields
-		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
 		{
 			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}

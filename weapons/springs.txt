@@ -1265,38 +1265,38 @@ WeaponSprings
                         
 
                               
-                 
-  
-                                       
-                                  
-                                     
-                                
-                                         
-                                 
+burstenergyar_vkp
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
 
-                                     
-                               
-                                  
-                             
-                                      
-                              
-  
-                      
-  
-                                       
-                                  
-                                     
-                                
-                                         
-                                 
+		"ADS_pitch_springConstant"		"115.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	burstenergyar_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
 
-                                   
-                               
-                                 
-                             
-                                    
-                              
-  
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"60.0"
+		"ADS_yaw_springConstant"		"15.0"
+		"ADS_yaw_damping"				"40.0"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20.0"
+	}
       
 
 	shotgun

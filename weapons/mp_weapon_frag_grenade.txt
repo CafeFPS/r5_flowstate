@@ -128,8 +128,8 @@ WeaponData
 
 	"explosion_damage"								"100"
 	"explosion_damage_heavy_armor"					"100"
-	"explosion_inner_radius"						"96"
-	"explosionradius"								"320"
+	"explosion_inner_radius"						"125"
+	"explosionradius"								"350"
 
 	"impulse_force"									"500"
 	"impulse_force_explosions"						"50000"

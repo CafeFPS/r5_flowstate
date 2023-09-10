@@ -27,7 +27,7 @@ WeaponData
 	"leveled_pickup"								"1"
 
 	//"damage_flags"									"DF_BULLET | DF_DISMEMBERMENT"
-	"damage_headshot_scale"							"1.5"
+
 	"damage_leg_scale"                              "0.8"
 
 	"critical_hit"									"1"

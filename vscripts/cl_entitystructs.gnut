@@ -238,6 +238,10 @@ global struct ClientWeaponStruct
 	entity translocate_predictedRedirectedProjectile = null
 	table ornull translocate_impactRumbleObj = null
 	bool   translocate_isADSForced = false
+	bool fromWall
+	bool wasFired
+	
+	bool isInAdsCustom = false
 }
 
 

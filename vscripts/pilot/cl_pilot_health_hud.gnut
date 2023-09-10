@@ -307,7 +307,7 @@ void function HealthHUD_Update( entity player )
 
 void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayerChanged = false )
 {
-	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing )
+	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing || GetCurrentPlaylistName() == "fs_haloMod" )
 		return
 
 	if( viewPlayerChanged && GetLocalClientPlayer() != GetLocalViewPlayer() && !file.changedViewPlayer )

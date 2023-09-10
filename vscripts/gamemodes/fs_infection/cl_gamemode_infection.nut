@@ -14,6 +14,7 @@ global function SignalToDestroyDropshipCamera
 global function Infection_AddMinimapIcon
 global function Infection_AddFullmapIcon
 global function ShowInfectedNearUI
+global function FlowstateInfection_CreateKillStreakAnnouncement
 
 struct
 {
@@ -292,73 +293,76 @@ void function INFECTION_QuickHint(int index, bool isInfectedPlayer, int eHandle)
 	
 	if(index < 0) return
 	//Si el index deseado no está en el switch case anterior, crear Kill Streak RUI
-	thread FlowstateInfection_CreateKillStreakAnnouncement( index, isInfectedPlayer )
+	FlowstateInfection_CreateKillStreakAnnouncement( index, isInfectedPlayer )
 }
 
 void function FlowstateInfection_CreateKillStreakAnnouncement( int index, bool isInfectedPlayer )
 {
-	array< string > quotesCatalogToUse
-	
-	if(isInfectedPlayer) quotesCatalogToUse = InfectedQuoteCatalog
-	else quotesCatalogToUse = SurvivorQuoteCatalog
-
-	array< asset > assetsCatalogToUse
-	
-	if(isInfectedPlayer) assetsCatalogToUse = InfectedAssetCatalog
-	else assetsCatalogToUse = SurvivorAssetCatalog
+	thread function () : ( index, isInfectedPlayer )
+	{
+		array< string > quotesCatalogToUse
 		
-	asset badge = assetsCatalogToUse[index]
-	string quote = quotesCatalogToUse[index]
-	int duration = 2
-	
-	if( badge == $"" ) return
-	
-	Signal(GetLocalClientPlayer(), "NewKillChangeRui")
-	EndSignal(GetLocalClientPlayer(), "NewKillChangeRui")
+		if(isInfectedPlayer) quotesCatalogToUse = InfectedQuoteCatalog
+		else quotesCatalogToUse = SurvivorQuoteCatalog
 
-	var KillStreakRuiBadge = HudElement( "KillStreakBadge1")
-	var KillStreakRuiText = HudElement( "KillStreakText1")
-	
-	OnThreadEnd(
-		function() : ( KillStreakRuiBadge, KillStreakRuiText )
-		{
-			Hud_SetEnabled( KillStreakRuiBadge, false )
-			Hud_SetVisible( KillStreakRuiBadge, false )
+		array< asset > assetsCatalogToUse
+		
+		if(isInfectedPlayer) assetsCatalogToUse = InfectedAssetCatalog
+		else assetsCatalogToUse = SurvivorAssetCatalog
 			
-			Hud_SetEnabled( KillStreakRuiText, false )
-			Hud_SetVisible( KillStreakRuiText, false )
-		}
-	)
-	
-	RuiSetImage( Hud_GetRui( KillStreakRuiBadge ), "basicImage", badge )
-	
-	Hud_ReturnToBasePos(KillStreakRuiBadge)
-	Hud_ReturnToBasePos(KillStreakRuiText)
+		asset badge = assetsCatalogToUse[index]
+		string quote = quotesCatalogToUse[index]
+		int duration = 2
+		
+		if( badge == $"" ) return
+		
+		Signal(GetLocalClientPlayer(), "NewKillChangeRui")
+		EndSignal(GetLocalClientPlayer(), "NewKillChangeRui")
 
-	Hud_SetText( KillStreakRuiText, quote )
+		var KillStreakRuiBadge = HudElement( "KillStreakBadge1")
+		var KillStreakRuiText = HudElement( "KillStreakText1")
+		
+		OnThreadEnd(
+			function() : ( KillStreakRuiBadge, KillStreakRuiText )
+			{
+				Hud_SetEnabled( KillStreakRuiBadge, false )
+				Hud_SetVisible( KillStreakRuiBadge, false )
+				
+				Hud_SetEnabled( KillStreakRuiText, false )
+				Hud_SetVisible( KillStreakRuiText, false )
+			}
+		)
+		
+		RuiSetImage( Hud_GetRui( KillStreakRuiBadge ), "basicImage", badge )
+		
+		Hud_ReturnToBasePos(KillStreakRuiBadge)
+		Hud_ReturnToBasePos(KillStreakRuiText)
 
-	Hud_SetSize( KillStreakRuiBadge, 0, 0 )
-	Hud_ScaleOverTime( KillStreakRuiBadge, 1.3, 1.3, 0.2, INTERPOLATOR_SIMPLESPLINE)
+		Hud_SetText( KillStreakRuiText, quote )
 
-	Hud_SetSize( KillStreakRuiText, 0, 0 )
-	Hud_ScaleOverTime( KillStreakRuiText, 1, 1, 0.15, INTERPOLATOR_ACCEL)
-	
-	Hud_SetAlpha( KillStreakRuiBadge, 255 )
-	Hud_SetAlpha( KillStreakRuiText, 255 )
+		Hud_SetSize( KillStreakRuiBadge, 0, 0 )
+		Hud_ScaleOverTime( KillStreakRuiBadge, 1.3, 1.3, 0.2, INTERPOLATOR_SIMPLESPLINE)
 
-	Hud_SetEnabled( KillStreakRuiBadge, true )
-	Hud_SetVisible( KillStreakRuiBadge, true )
-	
-	Hud_SetEnabled( KillStreakRuiText, true )
-	Hud_SetVisible( KillStreakRuiText, true )
-	
-	wait 0.2
-	
-	Hud_ScaleOverTime( KillStreakRuiBadge, 1, 1, 0.25, INTERPOLATOR_SIMPLESPLINE)
-	
-	wait 3.5
-	
-	waitthread FlowstateInfectionKillStreak_FadeOut(KillStreakRuiBadge, KillStreakRuiText)
+		Hud_SetSize( KillStreakRuiText, 0, 0 )
+		Hud_ScaleOverTime( KillStreakRuiText, 1, 1, 0.15, INTERPOLATOR_ACCEL)
+		
+		Hud_SetAlpha( KillStreakRuiBadge, 255 )
+		Hud_SetAlpha( KillStreakRuiText, 255 )
+
+		Hud_SetEnabled( KillStreakRuiBadge, true )
+		Hud_SetVisible( KillStreakRuiBadge, true )
+		
+		Hud_SetEnabled( KillStreakRuiText, true )
+		Hud_SetVisible( KillStreakRuiText, true )
+		
+		wait 0.2
+		
+		Hud_ScaleOverTime( KillStreakRuiBadge, 1, 1, 0.25, INTERPOLATOR_SIMPLESPLINE)
+		
+		wait 3.5
+		
+		waitthread FlowstateInfectionKillStreak_FadeOut(KillStreakRuiBadge, KillStreakRuiText)
+	}()
 }
 
 void function FlowstateInfectionKillStreak_FadeOut( var label, var label2, int xOffset = 200, int yOffset = 0, float duration = 0.3 )

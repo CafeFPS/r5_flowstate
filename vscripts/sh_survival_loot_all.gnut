@@ -231,6 +231,8 @@ void function SURVIVAL_Loot_All_InitShared()
 	file.disabledRefs = split( GetCurrentPlaylistVarString( "survival_disabled_loot", " " ), " " )
 
 	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new.rpak" ) )
+	
+	//RegisterCustomWeapons()
 
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
@@ -275,7 +277,8 @@ bool function IsNewLootEnabled( string ref )
 		// case "energy_mag_l4":
 		// case "sniper_mag_l4":
 		// case "shotgun_bolt_l4":
-		case "hopup_selectfire":
+		//case "hopup_selectfire":
+		case "hopup_double_tap":
 		case "mp_ability_void_ring":
 		case "mp_ability_mobile_respawn_beacon":
 		case "mp_ability_redeploy_balloon":

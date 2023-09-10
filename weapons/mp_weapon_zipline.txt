@@ -144,11 +144,11 @@ WeaponData
 	"critical_hit"									"0"
 
 	// Ammo
-	"ammo_clip_size"								"120"
+	"ammo_clip_size"								"180"
     "ammo_default_total"							"0"
     "ammo_display"									"count"
-    "ammo_min_to_fire"								"120"
-    "ammo_per_shot"									"120"
+    "ammo_min_to_fire"								"180"
+    "ammo_per_shot"									"180"
     "ammo_stockpile_max"							"0"
     "regen_ammo_refill_rate"						"1"
     "regen_ammo_refill_start_delay"					"0.1"
