@@ -601,7 +601,7 @@ void function PilotBlood_Passive_Body( entity player )
 	
 	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
 	{
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection")
+		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection" || GetCurrentPlaylistName() == "fs_haloMod" )
 			wait( 0.05 )
 		else
 			wait( HEALTH_REGEN_TICK_TIME )
@@ -613,7 +613,7 @@ void function PilotBlood_Passive_Body( entity player )
 		}
 		
 		healthRegenRate = 1.0
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection")
+		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection" ) // || GetCurrentPlaylistName() == "fs_haloMod" )
 			healthRegenRate = 2.0
 		
 		if ( player.GetHealth() != player.GetMaxHealth() )
