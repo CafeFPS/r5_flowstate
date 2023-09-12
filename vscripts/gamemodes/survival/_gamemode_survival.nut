@@ -62,9 +62,9 @@ void function GamemodeSurvival_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 	
-	#if DEVELOPER
+	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
-	#endif
+	// #endif
 
 	FillSkyWithClouds()
 	
@@ -79,10 +79,13 @@ void function GamemodeSurvival_Init()
 	thread SURVIVAL_RunArenaDeathField()
 }
 
-#if DEVELOPER
+// #if DEVELOPER
 bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity player, array<string> args)
 {
 	if( !IsValid(player) || !IsAlive( player) || args.len() != 1 )
+		return false
+
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return false
 
 	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
@@ -125,7 +128,7 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 
 	return true
 }
-#endif
+// #endif
 
 void function Survival_SetCallback_Leviathan_ConsiderLookAtEnt( void functionref( entity, float, float ) callback )
 {
