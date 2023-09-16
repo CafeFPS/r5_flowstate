@@ -39,39 +39,38 @@ void function JumpPad_GiveDoubleJump( entity player )
 	player.EndSignal( "JumpPad_GiveDoubleJump" )
 
 	wait 0.05
-	
-	if(!IsValid(player)) return
-	
-	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
-			
+
+	string doubleJump = "enable_doublejump"
+
+	if( !IsValid( player ) )
+		return
+
 	if ( !player.IsOnGround() )
 	{
-		int health = player.GetHealth() //old health
-		int shield = player.GetShieldHealth() //old shieldhealth
-		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) //for some reason this set health to 100 (new character set file apparently)
-		if( GameRules_GetGameMode() == SURVIVAL )
-			GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-		
-		if(!IsAlive(player)) return
-		player.SetHealth(health) //set old health
-		player.SetShieldHealth(shield) //set old shieldhealth
+		// Store player settings, add double jump and apply mod
+		player.p.storedPlayerSettings = player.GetPlayerSettings()
+		player.p.storedPlayerSettingsMods = player.GetPlayerSettingsMods()
+		player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+		array< string > newMods = player.p.storedPlayerSettingsMods.slice( 0, player.p.storedPlayerSettingsMods.len() ) // To copy array
+		newMods.append( doubleJump )
+
+		if( IsAlive( player ) )
+		{
+			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, newMods )
+			player.SetHealth( player.p.storedPlayerHealth[0] )
+			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
+		}
 	}
 
-	OnThreadEnd( function() : ( player, characterSetFile, passive )
+	OnThreadEnd( function() : ( player )
 	{
-		if ( IsValid( player ) )
+		if ( IsAlive( player ) )
 		{
-			int health = player.GetHealth() //old health
-			int shield = player.GetShieldHealth() //old shieldhealth
-			player.SetPlayerSettingsWithMods( characterSetFile, [] ) //for some reason this set health to 100 (new character set file apparently)
-			if( GameRules_GetGameMode() == SURVIVAL )
-				GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-			
-			if(!IsAlive(player)) return
-			player.SetHealth(health) //set old health
-			player.SetShieldHealth(shield) //set old shieldhealth
+			player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+			// Restore player settings
+			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
+			player.SetHealth( player.p.storedPlayerHealth[0] )
+			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
 		}
 	})
 
@@ -114,7 +113,7 @@ entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 	trigger.kv.triggerFilterNonCharacter = "0"
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( OnJumpPadAreaEnter )
-    
+
   //Need to set parent so the jump trigger is destroyed with the pad entity
   trigger.SetParent( jumpPad )
 
@@ -144,14 +143,14 @@ void function JumpPadsWeaponJumppad_CreatedCallback( entity jumpPad )
 	trigger.kv.triggerFilterNonCharacter = "0"
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( OnJumpPadAreaEnter )
-    
+
 	//Need to set parent so the jump trigger is destroyed with the pad entity
 	trigger.SetParent( jumpPad )
 }
 
 void function JumpPad_OnDeath( entity ent, var damageInfo )
 {
-  //todo: Explosion and sound 
+  //todo: Explosion and sound
   EmitSoundOnEntity( ent, "JumpPad_Explo")
   PlayImpactFXTable( ent.GetOrigin(), ent, "titan_exp_ground" )
 }
@@ -171,7 +170,7 @@ void function JumpPad_PlayAnims( entity jumpPad, entity mover )
 {
   EmitSoundOnEntity( jumpPad, "JumpPad_Deploy_Unpack" )
   PlayAnim( jumpPad, "prop_octane_jump_pad_deploy", mover )
-  PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )   
+  PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )
 }
 
 void function JumpPad_PlayLaunchAnim( entity trigger )
@@ -238,7 +237,7 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 				{
 					thread JumpPad_GiveDoubleJump( ent )
 				}
-				
+
 				int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
 				StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 			}
