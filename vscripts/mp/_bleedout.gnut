@@ -758,8 +758,13 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 
 	if( !Bleedout_AreThereAlivingMates( team, player ) )
 		foreach( targetPlayer in GetPlayerArrayOfTeam_Alive( team ) )
+		{
 			if( targetPlayer != excludePlayer )
+			{
+				wait 0.2
 				PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
+			}
+		}
 }
 
 bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = null )
