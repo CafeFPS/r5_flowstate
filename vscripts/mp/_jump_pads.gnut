@@ -51,7 +51,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 		player.p.storedPlayerSettings = player.GetPlayerSettings()
 		player.p.storedPlayerSettingsMods = player.GetPlayerSettingsMods()
 		player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
-		array< string > newMods = player.p.storedPlayerSettingsMods.slice( 0, player.p.storedPlayerSettingsMods.len() ) // To copy array
+		array< string > newMods = clone player.p.storedPlayerSettingsMods
 		newMods.append( doubleJump )
 
 		if( IsAlive( player ) )
