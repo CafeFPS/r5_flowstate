@@ -235,15 +235,17 @@ void function AddCallback_OnPlayerConsumableInventoryChanged( void functionref( 
 
 void function NvidiaReflex_SetValues()
 {
+	bool settingsReflex
+
 	try{
-		printt( "Nvidia Reflex value changed: ", GetConVarInt( "settings_reflex" ) )
+		settingsReflex = GetConVarInt( "settings_reflex" )
 	}catch(e420)
 	{
 		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
 		return
 	}
 
-	switch(GetConVarInt( "settings_reflex" ))
+	switch( settingsReflex )
 	{
 	  case 0: //Off
 		SetConVarInt( "gfx_nvnUseLowLatency", 0 )
