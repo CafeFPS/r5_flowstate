@@ -235,7 +235,7 @@ void function AddCallback_OnPlayerConsumableInventoryChanged( void functionref( 
 
 void function NvidiaReflex_SetValues()
 {
-	bool settingsReflex
+	int settingsReflex
 
 	try{
 		settingsReflex = GetConVarInt( "settings_reflex" )
