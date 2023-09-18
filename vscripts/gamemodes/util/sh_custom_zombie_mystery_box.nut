@@ -129,8 +129,8 @@ global enum eWeaponZombieIdx
 	P2020,
 	ENERGYSWORD,
 	// RE45,
-	WINGMAN,
-	NEMESIS
+	WINGMAN
+	//NEMESIS
 
 	//COUNT
 }
@@ -165,8 +165,8 @@ global table< int, asset > eWeaponZombieModel =
 	[ eWeaponZombieIdx.ENERGYSWORD ] = $"mdl/Weapons/w_energy_sword/w_energy_sword.rmdl",
 	
 	// [ eWeaponZombieIdx.RE45 ] = $"mdl/weapons/p2011_auto/w_p2011_auto.rmdl",
-	[ eWeaponZombieIdx.WINGMAN ] = $"mdl/weapons/b3wing/w_b3wing.rmdl",
-	[ eWeaponZombieIdx.NEMESIS ] = $"mdl/Weapons/nemesis/w_nemesis.rmdl"
+	[ eWeaponZombieIdx.WINGMAN ] = $"mdl/weapons/b3wing/w_b3wing.rmdl"
+	//[ eWeaponZombieIdx.NEMESIS ] = $"mdl/Weapons/nemesis/w_nemesis.rmdl"
 }
 
 // Global weapon name
@@ -198,8 +198,8 @@ global table< int, array< string > > eWeaponZombieName =
 	[ eWeaponZombieIdx.P2020 ] = [ "mp_weapon_semipistol", "P2020" ],
 	[ eWeaponZombieIdx.ENERGYSWORD ] = [ "mp_weapon_energysword", "Energy Sword" ],
 	// [ eWeaponZombieIdx.RE45 ] = [ "mp_weapon_autopistol", "RE-45" ],
-	[ eWeaponZombieIdx.WINGMAN ] = [ "mp_weapon_wingman", "Wingman" ],
-	[ eWeaponZombieIdx.NEMESIS ] = [ "mp_weapon_nemesis", "Nemesis" ]
+	[ eWeaponZombieIdx.WINGMAN ] = [ "mp_weapon_wingman", "Wingman" ]
+	//[ eWeaponZombieIdx.NEMESIS ] = [ "mp_weapon_nemesis", "Nemesis" ]
 }
 
 // Init
