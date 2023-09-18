@@ -3,6 +3,9 @@ untyped
 globalize_all_functions
 
 bool kmh
+bool speedoMeterEnabled = true
+bool overlayEnabled = true
+bool styleeMeterEnabled = false
 float speedometer_hz
 string time = ""
 bool s4lighting
@@ -26,10 +29,46 @@ void function Cl_MovementGym_Init()
 	RegisterSignal("StopStylemeter")
 	RegisterSignal("StopS4")
 	
-	// Hud 
-	MG_Speedometer_toggle(true)
-	MG_MovementOverlay_toggle(true)
-	MG_Ultrakill_styleemeter_toggle(false)
+	ResetHUDs()
+
+	AddClientCallback_OnResolutionChanged( ResetHUDs )
+}
+
+bool hudInited = false
+void function ResetHUDs()
+{
+	// Hud
+	if( hudInited )
+	{
+		if( speedoMeterEnabled )
+		{
+			MG_Speedometer_toggle( false )
+			speedoMeterEnabled = true
+		}
+
+		if( overlayEnabled )
+		{
+			MG_MovementOverlay_toggle( false )
+			overlayEnabled = true
+		}
+
+		if( styleeMeterEnabled )
+		{
+			MG_Ultrakill_styleemeter_toggle( false )
+			styleeMeterEnabled = true
+		}
+	}
+
+	if( speedoMeterEnabled )
+		MG_Speedometer_toggle( true )
+
+	if( overlayEnabled )
+		MG_MovementOverlay_toggle( true )
+
+	if( styleeMeterEnabled )
+		MG_Ultrakill_styleemeter_toggle( true )
+
+	hudInited = true
 }
 
 void function MG_Settings_listener(){
@@ -150,6 +189,8 @@ void function MG_StopWatch_destroy(){
 
 // Speedometer
 void function MG_Speedometer_toggle(bool visible){
+	speedoMeterEnabled = visible
+
 	if(visible == true)
 		thread MG_Speedometer()	
 	else
@@ -299,6 +340,8 @@ void function MG_ForceLighting(){
 
 //Movement WASD overlay
 void function MG_MovementOverlay_toggle(bool visible){
+	overlayEnabled = visible
+
 	if(visible == true){
 		Hud_SetVisible(HudElement( "MG_MO_W" ), true)
 		Hud_SetVisible(HudElement( "MG_MO_A" ), true)
@@ -405,6 +448,8 @@ void function MG_MovementOverlay_SPACE_Released(var button){
 
 //Ultrakill stylemeter
 void function MG_Ultrakill_styleemeter_toggle(bool visible){
+	styleeMeterEnabled = visible
+
 	if(visible == true){
 		thread MG_Ultrakill_styleemeter()
 	} else {
