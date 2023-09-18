@@ -23,7 +23,9 @@ global function RemoveCallback_PingSpecificType
 global function ClientCodeCallback_UseConsumable
 global function SetCallback_UseConsumable
 global function RemoveCallback_UseConsumable
+
 global function NvidiaReflex_SetValues
+global function NvidiaReflex_SetSettingsValue
 
 global function ServerCallback_RefreshWeaponHighlights
 
@@ -255,5 +257,31 @@ void function NvidiaReflex_SetValues()
 		SetConVarInt( "gfx_nvnUseLowLatency", 1 )
 		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 1 )
 		break
+	}
+}
+
+void function NvidiaReflex_SetSettingsValue()
+{
+	bool lowLatency
+	bool lowLatencyBoost
+
+	try{
+		lowLatency = GetConVarBool( "gfx_nvnUseLowLatency" )
+		lowLatencyBoost = GetConVarBool( "gfx_nvnUseLowLatencyBoost" )
+	}catch(e420)
+	{
+		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	if( !lowLatency && !lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 0 )
+	} else if( lowLatency && !lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 1 )
+	} else if( lowLatency && lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 2 )
 	}
 }

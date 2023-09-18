@@ -180,6 +180,8 @@ void function OnVideoPanel_Show( var panel )
 		Hud_ClearToolTipData( resolutionButton )
 	}
 #endif
+	
+	NvidiaReflex_SetSettingsValue()
 }
 
 
@@ -338,6 +340,11 @@ void function AspectRatio_Changed( var button )
 void function NvidiaReflex_Changed( var button )
 {
 	RunClientScript("NvidiaReflex_SetValues")
+}
+
+void function NvidiaReflex_SetSettingsValue()
+{
+	RunClientScript("NvidiaReflex_SetSettingsValue")
 }
 
 void function AdaptiveRes_Changed( var button )
