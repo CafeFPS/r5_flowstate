@@ -106,48 +106,40 @@ WeaponData
     "OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
     "OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
 
-    // Crosshair Spread
-                         
-    "spread_stand_hip"								"2.0"
-    "spread_stand_hip_run"							"3.0"
-    "spread_stand_hip_sprint"                       "5.0"
-    "spread_crouch_hip"   							"1.6"
-    "spread_air_hip"  								"7.0"
-     
-                                   
-                                      
-                                                         
-                                      
-                                   
-      
+    // Hipfire Spread
+    "spread_stand_hip"								"0"
+    "spread_stand_hip_run"							"0"
+    "spread_stand_hip_sprint"                       "0"
+    "spread_crouch_hip"   							"0"
+    "spread_air_hip"  								"0"
 
-	"spread_stand_ads"								"0.35"
-	"spread_crouch_ads"   							"0.25"
-	"spread_air_ads"  								"5.0"
+    "spread_moving_increase_rate" 					"0"
+    "spread_moving_decay_rate" 						"0"
 
-	// movement based crosshair bloom
-	"spread_moving_increase_rate" 					"3.0"
-	"spread_moving_decay_rate" 						"10.5"
+    "spread_kick_on_fire_stand_hip"   				"0"
+    "spread_kick_on_fire_crouch_hip"  				"0"
+    "spread_kick_on_fire_air_hip" 					"0"
 
-	// firing based crosshair bloom
-	"spread_decay_delay"  							"0.15"
-	"spread_decay_rate"   							"12"
+    "spread_max_kick_stand_hip"   					"0.5"
+    "spread_max_kick_crouch_hip"  					"0.5"
+    "spread_max_kick_air_hip" 						"0.5"
 
-   "spread_kick_on_fire_stand_hip"   				"0.18"
-   "spread_kick_on_fire_crouch_hip"  				"0.18"
-   "spread_kick_on_fire_air_hip" 					"0.18"
+    "spread_decay_delay"  							"0.1"
+    "spread_decay_rate"   							"200"
 
-   "spread_max_kick_stand_hip"   					"2.0"
-   "spread_max_kick_crouch_hip"  					"1.5"
-   "spread_max_kick_air_hip" 						"3.0"
+    "spread_stand_ads"								"0"
+    "spread_crouch_ads"   							"0"
+    "spread_air_ads"  								"1.0"
 
-	"spread_kick_on_fire_stand_ads"   				"0.0"
-	"spread_kick_on_fire_crouch_ads"  				"0.0"
-	"spread_kick_on_fire_air_ads" 					"0.0"
+    "spread_kick_on_fire_stand_ads"   				"0"
+    "spread_kick_on_fire_crouch_ads"  				"0"
+    "spread_kick_on_fire_air_ads" 					"0"
 
-	"spread_max_kick_stand_ads"   					"0.0"
-	"spread_max_kick_crouch_ads"  					"0.0"
-	"spread_max_kick_air_ads" 						"0.0"
+    "spread_max_kick_stand_ads"   					"0"
+    "spread_max_kick_crouch_ads"  					"0"
+    "spread_max_kick_air_ads" 						"0"
+
+    "spread_wallhanging"  							"0.0"
 
 	// Projectile - General
     "projectilemodel" 								"mdl/dev/empty_model.rmdl"

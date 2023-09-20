@@ -2,7 +2,7 @@
 // Fork of the custom_tdm gamemode made by sal#3261
 
 // Credits:
-// CaféDeColombiaFPS (Retículo Endoplasmático#5955) -- owner/main dev
+// CafeFPS - main dev
 // AyeZee#6969 -- Ctf voting phase to work off & droppods
 // Zer0Bytes#4428 -- Weapons randomizer rewrite
 // makimakima#5561 -- TDM Saved Weapon List, 1v1 gamemode
@@ -287,6 +287,33 @@ void function __OnEntitiesDidLoad()
 		case "mp_flowstate":
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
 			file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
+		break
+		
+		case "mp_rr_canyonlands_64k_x_64k":
+
+		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		{
+			MapEditor_CreateRespawnableWeaponRack( <-10998.3535, -14660.9482, 3679.9812> , <0, 140, 0>, "mp_weapon_haloneedler", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-8932.25488, -15722.7363, 3679.9812> , <0, 43.8712006, 0>, "mp_weapon_halobattlerifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-10471.415, -16120.9883, 3679.9812> , <0, -135.00322, 0>, "mp_weapon_haloshotgun", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-9103.41895, -15764.1025, 3111.98145> , <0, -44.5195236, 0>, "mp_weapon_halosniperrifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-10305.9121, -16081.4854, 3111.98145> , <0, 123.199768, 0>, "mp_weapon_halosniperrifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-10954.4912, -14820.9619, 3111.98145> , <0, 48.7156754, 0>, "mp_weapon_halosniperrifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-9130.16797, -17664.502, 3106.05249> , <0, 22.4780464, 0>, "mp_weapon_halobattlerifle", 0.5 )
+		}
+		break
+		
+		case "mp_rr_desertlands_64k_x_64k":
+
+		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		{
+			MapEditor_CreateRespawnableWeaponRack( <11976.0313, 6755.27295, -4351.96875> , <0, 0, 0>, "mp_weapon_haloneedler", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <11427.2051, 6091.21631, -4351.96875> , <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <9623.96094, 5478.40088, -4295.96875> , <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <9341.77539, 5247.96094, -3895.96875> , <0, -90, 0>, "mp_weapon_halobattlerifle", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <9344.03906, 5790.82031, -3695.96875> , <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 )
+			MapEditor_CreateRespawnableWeaponRack( <-10954.4912, -14820.9619, 3111.98145> , <0, 45, 0>, "mp_weapon_halobattlerifle", 0.5 )
+		}
 		break
     }
 }
@@ -836,6 +863,13 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				
 				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 				Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+
+				entity weapon = victim.GetActiveWeapon( eActiveInventorySlot.mainHand )
+				
+				if( IsValid( weapon ) && weapon.w.isInAdsCustom )
+				{
+					weapon.w.isInAdsCustom = false
+				}
 
 				wait DEATHCAM_TIME_SHORT
 				
@@ -2968,6 +3002,15 @@ void function SimpleChampionUI()
 				continue
 
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+
+			entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			
+			if( IsValid( weapon ) && weapon.w.isInAdsCustom )
+			{
+				weapon.w.isInAdsCustom = false
+			}
+
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
@@ -5135,22 +5178,13 @@ void function SpawnLockout() //Halo 2 Encerrona
 			Remote_CallFunction_Replay( player, "FS_ForceAdjustSunFlareParticleOnClient", 0 ) //lockout
 		}
 		
-		array<string> weapons = [ "mp_weapon_haloassaultrifle", "mp_weapon_halobattlerifle", "mp_weapon_halosniperrifle", "mp_weapon_halomagnum", "mp_weapon_haloneedler", "mp_weapon_haloshotgun" ]
-		// weapons.randomize()
-		
 		//Add weapon racks.
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -303.7, 275.4, -1105.8 > + startingpos, < 0, 0, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -986, -724.5, -892.6 > + startingpos, < 0, 0, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
-		file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( < -316.4, -937.6, -628.8 > + startingpos, < 0, 0, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -346.2, 731.8, -693.4 > + startingpos, < 0, -90, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -519.2, 947.1, -1088.1 > + startingpos, < 0, 0, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -377.4, 475.6, -894 > + startingpos, < 0, -45, 0 >, weapons[ weapons.len() - 1 ], 0.5 ) )
-		weapons.fastremovebyvalue( weapons[ weapons.len() - 1 ] )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -303.7, 275.4, -1105.8 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -986, -724.5, -892.6 > + startingpos, < 0, 0, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( < -316.4, -937.6, -628.8 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -346.2, 731.8, -693.4 > + startingpos, < 0, -90, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -519.2, 947.1, -1088.1 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloneedler", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -377.4, 475.6, -894 > + startingpos, < 0, -45, 0 >, "mp_weapon_halosniperrifle", 0.5 ) )
 		// MapEditor_CreateRespawnableWeaponRack( < 1041.7, 159.4, -1375.3 > + startingpos, < 0, -180, 0 >, "mp_weapon_r97", 0.5 )
 		// MapEditor_CreateRespawnableWeaponRack( < 14.9, -833.7, -1130.6 > + startingpos, < 0, -180, 0 >, "mp_weapon_r97", 0.5 )
 	

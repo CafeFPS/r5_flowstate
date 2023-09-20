@@ -40,7 +40,7 @@ WeaponData
 	//SMART AMMO
 	
 	"is_smart_pistol"								"1"
-	"smart_ammo_search_angle" 						"7"
+	"smart_ammo_search_angle" 						"8"
 	"smart_ammo_search_npcs"						"1"
 	"smart_ammo_search_players"						"1"
 	"smart_ammo_search_projectiles"					"0"
@@ -66,14 +66,14 @@ WeaponData
 	"smart_ammo_tracker_status_effects"				"0"
 	"smart_ammo_tracked_targets_check_visibility"	"1"
 	
-	"smart_ammo_search_distance"  					"300"
+	"smart_ammo_search_distance"  					"550"
 	"smart_ammo_max_targeted_burst"					"1"
 	"smart_ammo_targeting_time_min"					"0"//"0.37"
 	"smart_ammo_targeting_time_max"					"0"//"0.65"
 	"smart_ammo_targeting_time_min_npc"				"0"
 	"smart_ammo_targeting_time_max_npc"				"0"
 
-	"red_crosshair_range" 							"300"
+	"red_crosshair_range" 							"550"
 
 	"smart_ammo_allow_search_while_firing"			"1"
 	"smart_ammo_allow_ads_lock"						"1" // "0" is default
@@ -807,8 +807,8 @@ WeaponData
 
 		Crosshair_1
 		{
-			"ui"						"ui/crosshair_test"
-			"base_spread"				"0.0"
+			"ui"						"ui/crosshair_alternator"
+			"base_spread"				"3.0"
 			Args
 			{
 				isLocked				smartammo_locked

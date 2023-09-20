@@ -244,6 +244,8 @@ WeaponData
    	// // NOTE: requires viewmodel_offset_ads Y to be pushed farther AWAY from the camera (usually we bring it closer)
    	"zoom_fov_viewmodel" 	"47"
 	
+	"zoom_effects"									"0"
+	
 	Mods
 	{
 		ammoCounter_der0

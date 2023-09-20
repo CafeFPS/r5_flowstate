@@ -1,5 +1,5 @@
 //custom
-global string FLOWSTATE_VERSION = "v3.92"
+global string FLOWSTATE_VERSION = "v4.0"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
 global const int BOOSTZONE_ALIVE_TIME = 15
 

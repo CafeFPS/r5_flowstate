@@ -1061,15 +1061,16 @@ enum eAttach
 
 void function LoadDiamond()
 {
-	printl( "----------------------------" )
+    printl( "----------------------------" )
     printl( " " )
     printl( "____ _    ____ _ _ _ ____ ___ ____ ___ ____")
     printl( "|___ |    |  | | | | [__   |  |__|  |  |___")
     printl( "|    |___ |__| |_|_| ___]  |  |  |  |  |___")
-	printl( " " )
-    printl( FLOWSTATE_VERSION + " - Mantained by @CafeFPS and collaborators" )
-	printl( " " )
-	printl( "----------------------------" )
+    printl( " " )
+    printl( "Flowstate Scripts " + FLOWSTATE_VERSION + " - Mantained by @CafeFPS and collaborators." )
+    printl( "r5sdk v2.x developed by amos1368 and collaborators." )
+    printl( " " )
+    printl( "----------------------------" )
     printl( " " )
 }
 

@@ -1,4 +1,4 @@
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+//Made by @CafeFPS
 
 untyped
 
@@ -83,9 +83,16 @@ void function OnWeaponActivate_needler( entity weapon )
 		return
 	#endif
 
-	weapon.StopWeaponEffect( $"P_wat_hand_elec_CP" , $"P_wat_hand_elec_CP" )	
-	weapon.PlayWeaponEffect( $"P_wat_hand_elec_CP" , $"P_wat_hand_elec_CP", "shell" )
-	
+	#if CLIENT
+	weapon.StopWeaponEffect( $"P_wat_hand_elec_CP" , $"P_wat_hand_elec_CP" )
+	try{
+		weapon.PlayWeaponEffect( $"P_wat_hand_elec_CP" , $"P_wat_hand_elec_CP", "shell" )
+	}catch( e420_69 )
+	{
+		printt( "!FIXME - Tried to play an effect on the viewmodel, but player's viewmodel has no model." )
+	}
+	#endif
+
 	array<string> mods = weapon.GetMods()
 	
 	try{
@@ -125,9 +132,11 @@ void function OnWeaponDeactivate_needler( entity weapon )
 	if ( !InPrediction() ) //Stopgap fix for Bug 146443
 		return
 	#endif
-	
+
+	#if CLIENT
 	weapon.StopWeaponEffect( $"P_wat_hand_elec_CP" , $"P_wat_hand_elec_CP" )
-	
+	#endif
+
 	array<string> mods = weapon.GetMods()
 	
 	try{

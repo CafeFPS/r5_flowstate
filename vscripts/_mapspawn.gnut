@@ -420,12 +420,14 @@ void function CodeCallback_MapSpawn() // original script entry point
 	{
 		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
 		RegisterSignal( "FS_ForceDestroyAllLifts" )
-		SpawnLockout()
-		// SpawnCyberdyne()
+		// SpawnLockout()
+		SpawnCyberdyne()
 	}
 	#endif
 	
-	PrecacheModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
+	//PrecacheModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
+	PrecacheModel( $"mdl/fx/ar_marker_ringwobble.rmdl" )
+	PrecacheModel( $"mdl/fx/energy_ring_core_fx.rmdl" )
 
 	SV_CL_Shared_Init()
 	ClientCommands_Init()

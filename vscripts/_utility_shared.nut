@@ -4663,20 +4663,32 @@ bool function PlayerIsInADS( entity player )
 #if SERVER
 void function GradeFlagsChange( entity ent, int gradeFlags, bool value )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( value ? (ent.GetGrade() | gradeFlags) : (ent.GetGrade() & ~gradeFlags) )
 }
 void function GradeFlagsSet( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( ent.GetGrade() | gradeFlags )
 }
 void function GradeFlagsClear( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( ent.GetGrade() & ~gradeFlags )
 }
 #endif // SERVER
 
 bool function GradeFlagsHas( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return false
+
 	return ((ent.GetGrade() & gradeFlags) != 0)
 }
 

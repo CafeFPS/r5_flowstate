@@ -43,15 +43,15 @@ WeaponData
 	"melee_anim_1p_number"							"2"
 
 	//
-	"melee_angle"									"30"
+	"melee_angle"									"20"
 	"melee_attack_animtime"							"0"
 	"melee_damage"									"115"
 	"melee_damage_heavyarmor"						"115"
-	"melee_lunge_no_target_range"					"60"
-	"melee_lunge_target_angle"						"30"
-	"melee_lunge_target_range"						"60"
+	"melee_lunge_no_target_range"					"1"
+	"melee_lunge_target_angle"						"20"
+	"melee_lunge_target_range"						"1"
 	"melee_lunge_time"								"0.35"
-	"melee_range"									"40"
+	"melee_range"									"1"
 
 	"ammo_suck_behavior"							"melee_weapons"
 	"viewkick_spring" 								"melee"

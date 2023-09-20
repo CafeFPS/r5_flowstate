@@ -353,9 +353,24 @@ void function OnWeaponZoomOut_HaloModSniper(  entity weapon )
 #if CLIENT
 void function FS_ForceDestroyCustomAdsOverlay()
 {
-	printt( "You died, removing custom overlay if possible" )
+	printt( "You died! Removing custom overlay and restoring HUD visibility." )
 	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
 	Hud_SetVisible( BRAds, false )
+
+	//Show the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", false )
+	PlayerHudSetWeaponInspect( false )
+	WeaponStatusSetWeaponInspect( false )
+	
+	entity player = GetLocalClientPlayer()
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( IsValid( weapon ) && weapon.w.isInAdsCustom )
+	{
+		weapon.ShowWeapon()
+		weapon.w.isInAdsCustom = false
+	}
 }
 
 void function FS_ForceDestroyCustomAdsOverlay_Callback( entity attacker, float healthFrac, int damageSourceId, float recentHealthDamage )
@@ -363,8 +378,23 @@ void function FS_ForceDestroyCustomAdsOverlay_Callback( entity attacker, float h
 	if( GameRules_GetGameMode() == "fs_dm" )
 		return
 
-	printt( "You died, removing custom overlay if possible - From callback" )
+	printt( "You died! Removing custom overlay and restoring HUD visibility. - From callback." )
 	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
 	Hud_SetVisible( BRAds, false )
+	
+	//Show the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", false )
+	PlayerHudSetWeaponInspect( false )
+	WeaponStatusSetWeaponInspect( false )
+
+	entity player = GetLocalClientPlayer()
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	
+	if( IsValid( weapon ) && weapon.w.isInAdsCustom )
+	{
+		weapon.ShowWeapon()
+		weapon.w.isInAdsCustom = false
+	}
 }
 #endif
