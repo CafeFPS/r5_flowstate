@@ -214,10 +214,11 @@ void function ServerWeaponWallUseSuccess( entity usableWeaponWall, entity player
 // Give a weapon to the player without swap
 entity function GiveWeaponToPlayer( entity player, string weaponName, int inventorySlot )
 {
-	entity weapon
-	entity pickup
+	entity weapon = player.GiveWeapon( weaponName, inventorySlot, [] )
 	
-	weapon = player.GiveWeapon( weaponName, inventorySlot )
+	SetupInfiniteAmmoForWeapon( player, weapon )
+	
+	player.DeployWeapon()
 
 	return weapon
 }

@@ -9,8 +9,7 @@ global function _GamemodeInfection_Init
 global function _RegisterLocationINFECTION
 global function FlowstateInfection_CallEvac
 
-bool colombiaDebug = false
-
+bool colombiaDebug = true
 global const float SURVIVOR_STREAK_ANNOUNCE_TIME = 5
 global const int ADD_ALPHA_EVERY_X_PLAYERS = 10
 
@@ -1068,14 +1067,17 @@ void function SpawnAsSurvivor(entity player)
 	
 	TakeLoadoutRelatedWeapons(player)
 	
-	player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_boxing_ring", OFFHAND_MELEE, [] )
-	//player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_0 ) //give random weapon here
-	player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	// player.GiveOffhandWeapon("mp_weapon_bubble_bunker", OFFHAND_TACTICAL)
+	player.GiveWeapon( "mp_weapon_melee_halo", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded_halo", OFFHAND_MELEE, [] )
+
+	entity startWeapon = player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [], false )
 	
-	//GiveRandomTac(player)
-	//GiveRandomUlt(player)
+	SetupInfiniteAmmoForWeapon( player, startWeapon )
+	
+	player.DeployWeapon()
+
+	GiveRandomTac(player)
+	GiveRandomUlt(player)
 	
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	DeployAndEnableWeapons(player)
@@ -2097,7 +2099,7 @@ void function GiveRandomTac(entity player)
     array<string> Weapons = [
 		//"mp_ability_grapple",
 		"mp_ability_phase_walk",
-		//"mp_ability_heal",
+		"mp_ability_heal",
 		//"mp_weapon_bubble_bunker",
 		"mp_weapon_grenade_bangalore",
 		// "mp_ability_area_sonar_scan",
@@ -2120,7 +2122,7 @@ void function GiveRandomUlt(entity player )
     array<string> Weapons = [
 		//"mp_weapon_grenade_gas",
 		"mp_weapon_jump_pad",
-		//"mp_weapon_phase_tunnel",
+		"mp_weapon_phase_tunnel"
 		//"mp_ability_3dash",
 		//"mp_ability_hunt_mode",
 		//"mp_weapon_grenade_creeping_bombardment",

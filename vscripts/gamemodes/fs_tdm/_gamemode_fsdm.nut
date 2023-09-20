@@ -49,6 +49,7 @@ global function SpawnLockout
 
 global function HaloMod_Cyberdyne_CreateFanPusher
 global function HisWattsons_HaloModFFA_KillStreakAnnounce
+global function SetupInfiniteAmmoForWeapon
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -1662,8 +1663,14 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 		int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
 		int requiredAmmo = maxAmmo - currentAmmo
 		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
+		
+		player.AmmoPool_SetCapacity( 65535 )
 		player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+	} else if( IsValid( weapon ) )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 65535 )
 	}
 }
 
