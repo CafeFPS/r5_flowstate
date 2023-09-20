@@ -243,9 +243,9 @@ void function GameModes_Init()
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 
-	gameMode = flowstate_infection
+	gameMode = fs_infected
 	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "flowstate_infection" )
+	GameMode_SetName( gameMode, "fs_infected" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )

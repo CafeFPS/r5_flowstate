@@ -346,7 +346,7 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/sndgamemode"
 		break
 		
-		// case "flowstate_infection":
+		// case "fs_infected":
 		// emblemImage = $"rui/flowstatecustom/infection"
 		// break
 	}

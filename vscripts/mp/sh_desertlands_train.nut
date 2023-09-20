@@ -234,7 +234,7 @@ void function Train_OnPlayerConnected( entity player )
 
 void function Flowstate_Train_SetupBinsAtStation()
 {
-	if( GameRules_GetGameMode() == "flowstate_infection" )
+	if( GameRules_GetGameMode() == "fs_infected" )
 		return
 	
 	entity funcBrush

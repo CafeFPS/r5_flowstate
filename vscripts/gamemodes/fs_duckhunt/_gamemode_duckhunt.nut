@@ -1057,7 +1057,7 @@ void function CreateFanPusher(vector origin, vector angles2)
 	entity fx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), origin, angles2 )
 	fx2.SetParent(rotator)
 
-	if(GameRules_GetGameMode() == "flowstate_infection") return
+	if(GameRules_GetGameMode() == "fs_infected") return
 
 	thread function() : (rotator, origin, angles2)
 	{

@@ -480,7 +480,7 @@ entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin 
 {
     entity lootbin = CreateEntity( "prop_dynamic" )
 
-	if( GameRules_GetGameMode() == "flowstate_infection" )
+	if( GameRules_GetGameMode() == "fs_infected" )
 		lootbin.SetScriptName( MYSTERY_BOX_SCRIPT_NAME )
 	else
 		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )

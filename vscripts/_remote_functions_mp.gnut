@@ -152,7 +152,7 @@ void function RemoteFunctions_Init_Begin()
 			// Remote_RegisterUIFunction("SND_Disable_IMCButton")
 			// Remote_RegisterUIFunction("SND_Disable_MILITIAButton")
 			// break
-		case flowstate_infection:
+		case fs_infected:
 			Remote_RegisterClientFunction("ApplyInfectedHUD")
 			Remote_RegisterClientFunction("CleanUpInfectedClientEffects")
 			Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)

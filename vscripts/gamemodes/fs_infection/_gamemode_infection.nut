@@ -1784,7 +1784,7 @@ void function FlowstateInfection_CallEvac(vector origin)
 {
 	EndSignal( svGlobal.levelEnt, "MatchEndedEarlyDontCallEvac" )
 	
-	float waitArrival = GameRules_GetGameMode() == "flowstate_infection" ? DEFAULT_TIME_UNTIL_SHIP_ARRIVES : 10.0
+	float waitArrival = GameRules_GetGameMode() == "fs_infected" ? DEFAULT_TIME_UNTIL_SHIP_ARRIVES : 10.0
 	
 	SetGlobalNetTime("countdownTimerStart", Time())
 	SetGlobalNetTime("countdownTimerEnd", Time() + waitArrival)
@@ -1864,7 +1864,7 @@ void function FlowstateInfection_HandleEvac( entity evac, entity fx, vector orig
 		
 	thread PlayAnim( evac, EVAC_IDLE, origin, angles )
 
-	float waitDepartTime = GameRules_GetGameMode() == "flowstate_infection" ? DEFAULT_TIME_UNTIL_SHIP_DEPARTS : 5.0
+	float waitDepartTime = GameRules_GetGameMode() == "fs_infected" ? DEFAULT_TIME_UNTIL_SHIP_DEPARTS : 5.0
 	thread FlowstateInfection_HandleEvacTrigger( FS_INFECTION.CoolEvac, origin - <0,0,200>, waitDepartTime )
 	
 	SetGlobalNetTime("countdownTimerStart", Time())

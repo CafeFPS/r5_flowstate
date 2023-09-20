@@ -818,7 +818,7 @@ void function UpdatePlayerCounts()
 	
 	switch(currGameMode)
 	{
-		case "flowstate_infection":
+		case "fs_infected":
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() )
 		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )
 		SetGlobalNetInt( "squadsRemainingCount", 2 )

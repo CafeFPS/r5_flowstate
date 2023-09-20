@@ -147,7 +147,7 @@ void function SetCommonScoreRUIVars( var rui )
 {
 	switch( GameRules_GetGameMode() )
 	{
-		case "flowstate_infection":
+		case "fs_infected":
 			RuiSetString( rui, "gameModeString", "FS INFECTION" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )

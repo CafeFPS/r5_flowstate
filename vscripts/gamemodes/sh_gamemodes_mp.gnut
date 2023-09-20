@@ -198,7 +198,7 @@ void function GameModes_Init_SV_CL()
 	//FLOWSTATE INFECTION
 	//
 	
-	gameMode = flowstate_infection
+	gameMode = fs_infected
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_GamemodeInfection_Init)
 		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )

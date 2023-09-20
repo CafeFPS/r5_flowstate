@@ -156,7 +156,7 @@ struct
 
 void function ShGameModeShadowSquad_Init()
 {
-	if ( !IsFallLTM() || GameRules_GetGameMode() == "flowstate_infection")
+	if ( !IsFallLTM() || GameRules_GetGameMode() == "fs_infected")
 		return
 
 	SurvivalCommentary_SetHost( eSurvivalHostType.NOC )
@@ -275,7 +275,7 @@ void function ServerCallback_PlaySpectatorAudio( bool playRespawnMusic )
 
 	if ( playRespawnMusic )
 	{
-		if(GameRules_GetGameMode() != "flowstate_infection")
+		if(GameRules_GetGameMode() != "fs_infected")
 			thread SkydiveRespawnCleanup( clientPlayer )
 
 		array <string> dialogueChoices
@@ -304,7 +304,7 @@ void function ServerCallback_PlaySpectatorAudio( bool playRespawnMusic )
 	}
 	else
 	{
-		if(GameRules_GetGameMode() != "flowstate_infection")
+		if(GameRules_GetGameMode() != "fs_infected")
 			ServerCallback_PlayMatchEndMusic()
 
 		array <string> dialogueChoices
@@ -989,7 +989,7 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 		
 		case eShadowSquadMessage.RESPAWNING_AS_SHADOW:
 			
-			if(GameRules_GetGameMode() == "flowstate_infection")
+			if(GameRules_GetGameMode() == "fs_infected")
 			{
 				if(GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() == 1)
 					subText = "Infect the last Survivor"
@@ -1087,7 +1087,7 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			messageText = "#SHADOW_SQUAD_END_SHADOWS_WIN"
 			subText = "#SHADOW_SQUAD_END_SHADOWS_WIN_SUB_ELIM"
 			soundAlias = ""
-			if(GameRules_GetGameMode() == "flowstate_infection")
+			if(GameRules_GetGameMode() == "fs_infected")
 			{
 				messageText = "INFECTED WIN"			
 			}

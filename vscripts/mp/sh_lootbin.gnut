@@ -113,7 +113,7 @@ void function EntitiesDidLoad()
 
 void function InitLootBinFromMap( entity lootbin )
 {
-	if(GameRules_GetGameMode() == "flowstate_infection")
+	if(GameRules_GetGameMode() == "fs_infected")
 	{
 		if ( file.lootBinList.contains( lootbin ) )
 			return
@@ -622,7 +622,7 @@ bool function LootBin_IsBusy( entity lootbin )
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
 {
-	if(GameRules_GetGameMode() == "flowstate_infection")
+	if(GameRules_GetGameMode() == "fs_infected")
 	{
 		AddMysteryBox( lootbin )
 		SetMysteryBoxUsable( lootbin )		

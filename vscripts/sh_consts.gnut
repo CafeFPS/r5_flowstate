@@ -117,7 +117,7 @@ global const fs_dm               = "fs_dm"
 global const fs_aimtrainer		= "fs_aimtrainer"
 global const fs_prophunt				= "fs_prophunt"
 global const fs_duckhunt				= "fs_duckhunt"
-global const flowstate_infection			= "flowstate_infection"
+global const fs_infected			= "fs_infected"
 //global const flowstate_snd			= "flowstate_snd"
 //global const flowstate_pkknockback			= "flowstate_pkknockback"
 
