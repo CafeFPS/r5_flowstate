@@ -1,4 +1,4 @@
-//APEX INFECTION
+//APEX INFECTED
 //Made by @CafeFPS (Retículo Endoplasmático#5955)
 
 // Julefox - Mystery box scripts
