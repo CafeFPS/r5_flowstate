@@ -3267,11 +3267,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
 	}
-	
-	if(GameRules_GetGameMode() == fs_aimtrainer)
-	{
-		thread PlayAnimsOnGiveWeapon(weaponent, player)
-	}
 
 	int weaponSkin = -1
 	int weaponModelIndex = -1
@@ -3338,15 +3333,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	// printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
 
 	return true
-}
-
-void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
-{
-	if (IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_RELOADEMPTY" ) )
-	{
-		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
-		weaponent.StartCustomActivity("ACT_VM_RELOADEMPTY", 0)
-	}
 }
 
 void function SetupPlayer( entity player )
