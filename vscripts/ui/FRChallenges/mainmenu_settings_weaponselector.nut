@@ -27,6 +27,7 @@ void function OpenFRChallengesSettingsWpnSelector()
 	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), true )
 	Hud_SetSelected( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), false )
 	RunClientScript("SetWeaponSlot", 1)	
+	SetWeaponSwitcherVisible( true )
 }
 
 void function CloseFRChallengesSettingsWpnSelector()
