@@ -1067,8 +1067,8 @@ void function SpawnAsSurvivor(entity player)
 	
 	TakeLoadoutRelatedWeapons(player)
 	
-	player.GiveWeapon( "mp_weapon_melee_halo", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded_halo", OFFHAND_MELEE, [] )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
 	entity startWeapon = player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [], false )
 	
