@@ -3222,16 +3222,16 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	else
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", false)
 	
-	weaponent = player.GiveWeapon( weapon, actualslot, finalargs)
-	
+	weaponent = player.GiveWeapon_NoDeploy( weapon, actualslot, finalargs, false )
+
 	if(!IsValid(actualweapon)) player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, actualslot )
+
+	if(!IsValid(weaponent)) return true
 		
 	if( shouldPutLaser )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponent)
 	else
 		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
-
-	if(!IsValid(weaponent)) return true
 	
 	if( IsAlive( player ) ) // This is for TDM
 	{
@@ -3269,7 +3269,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	}
 	
 	if(GameRules_GetGameMode() == fs_aimtrainer)
+	{
 		thread PlayAnimsOnGiveWeapon(weaponent, player)
+	}
 
 	int weaponSkin = -1
 	int weaponModelIndex = -1
@@ -3344,10 +3346,7 @@ void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
 	{
 		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
 		weaponent.StartCustomActivity("ACT_VM_RELOADEMPTY", 0)
-		wait duration			
 	}
-	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )
-		weaponent.StartCustomActivity("ACT_VM_WEAPON_INSPECT", 0)
 }
 
 void function SetupPlayer( entity player )
@@ -3360,9 +3359,10 @@ void function SetupPlayer( entity player )
 
 	TakeAllWeapons( player )
 	
-	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	entity weapon = player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	entity weapon = player.GiveWeapon_NoDeploy( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+	SetupInfiniteAmmoForWeapon( player, weapon )
 
 	if( player.p.weaponModelIndex > -1 )
 		weapon.SetLegendaryModelIndex( player.p.weaponModelIndex )
@@ -3372,13 +3372,13 @@ void function SetupPlayer( entity player )
 	
 	if(player.p.weapon2 == "") 
 	{
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		DeployAndEnableWeapons( player )
 		player.ClearFirstDeployForAllWeapons()
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		return
 	}
 	
-	entity weapon2 = player.GiveWeapon( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
+	entity weapon2 = player.GiveWeapon_NoDeploy( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
+	SetupInfiniteAmmoForWeapon( player, weapon2 )
 
 	if( player.p.weaponModelIndex2 > -1 )
 		weapon2.SetLegendaryModelIndex( player.p.weaponModelIndex2 )
@@ -3386,9 +3386,8 @@ void function SetupPlayer( entity player )
 	if( player.p.weaponSkin2 > -1 )
 		weapon2.SetSkin( player.p.weaponSkin2 )
 
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	DeployAndEnableWeapons( player )
 	player.ClearFirstDeployForAllWeapons()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 }
 
 bool function CC_Weapon_Selector_Open( entity player, array<string> args )
