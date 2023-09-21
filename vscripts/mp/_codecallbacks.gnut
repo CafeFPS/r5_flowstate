@@ -375,7 +375,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	if ( entIsNPC && attackerIsPlayer || entIsPlayer && attackerIsNPC )
 	{
-		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CafeFPS)
 		if(ent.GetShieldHealth() > 0)
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )

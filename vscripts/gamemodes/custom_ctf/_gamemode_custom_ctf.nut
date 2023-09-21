@@ -2,7 +2,7 @@
 // AyeZee#6969 -- ctf gamemode and ui
 // Rexx and IcePixelx -- Help with code improvments
 // sal#3261 -- base custom_tdm mode to work off
-// CaféDeColombiaFPS -- ctf sounds, custom ring implementation
+// CafeFPS -- ctf sounds, custom ring implementation
 // everyone else -- advice
 
 global function _CustomCTF_Init

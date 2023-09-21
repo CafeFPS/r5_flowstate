@@ -205,7 +205,7 @@ void function OnWeaponBulletHit_needler( entity weapon, WeaponBulletHitParams hi
 }
 
 void function OnProjectileCollision_needler( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+//By Retículo Endoplasmático#5955 (CafeFPS)
 {
 	#if SERVER
 	if(hitEnt.IsNPC()){
@@ -284,7 +284,7 @@ void function OnWeaponReload_Needler( entity weapon, int milestoneIndex )
 }
 
 void function delayeddamage( entity weapon, entity hitEnt)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+//By Retículo Endoplasmático#5955 (CafeFPS)
 {
 	float damagetodeal
 

@@ -1,5 +1,5 @@
 /*
-Flowstate Aim Trainer v1.0 - Made by CaféDeColombiaFPS (server, client, ui)
+Flowstate Aim Trainer v1.0 - Made by CafeFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Support me: https://ko-fi.com/r5r_colombia
 

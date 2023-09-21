@@ -81,7 +81,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		return 0.0
 	}
 	
-	//Helmets fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+	//Helmets fix By Retículo Endoplasmático#5955 (CafeFPS)
 	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
 		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier

@@ -2272,7 +2272,7 @@ void function KillStreakAnnouncer(entity player, bool died) {
     }
 }
 
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
 	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
@@ -2284,7 +2284,7 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	}
 }
 
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 void function GiveGungameWeapon(entity player) 
 {
 	// int WeaponIndex = player.GetPlayerNetInt( "kills" )
@@ -2360,7 +2360,7 @@ void function GiveGungameWeapon(entity player)
 // ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
 //  ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
 
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
@@ -2383,7 +2383,7 @@ void function RunTDM()
     WaitForever()
 }
 
-/////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
+/////////////Retículo Endoplasmático#5955 CafeFPS///////////////////
 void function SimpleChampionUI()
 {
 	//printt("Flowstate DEBUG - Game is starting.")
@@ -3301,7 +3301,7 @@ void function ResetMapVotes()
 //       ██ ██   ██ ██ ██   ████  ██████  ██
 // Purpose: Create The RingBoundary
 entity function CreateRingBoundary(LocationSettings location)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
     array<LocPair> spawns = location.spawns
 
@@ -3397,7 +3397,7 @@ entity function CreateRingBoundary(LocationSettings location)
 }
 
 void function AudioThread(entity circle, entity player, float radius)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	EndSignal(player, "OnDestroy")
 	entity audio
@@ -3430,7 +3430,7 @@ void function AudioThread(entity circle, entity player, float radius)
 }
 
 void function RingDamage( entity circle, float currentRadius)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	WaitFrame()
 	const float DAMAGE_CHECK_STEP_TIME = 1.5
@@ -3491,7 +3491,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 void function CharSelect( entity player)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	//Give master chief skin and assign a color
 	if( GetCurrentPlaylistName() == "fs_haloMod" )
@@ -3613,7 +3613,7 @@ void function AssignCharacter( entity player, int index )
 // ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	if( !IsValid( player ) || !player.p.isConnected )
 		return
@@ -3662,7 +3662,7 @@ int function GetDamageOfPlayerWithMostDamage()
     return bestDamage
 }
 
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+//By Retículo Endoplasmático#5955 (CafeFPS)
 string function PlayerWithMostDamageName()
 {
 	entity player = PlayerWithMostDamage()
@@ -3706,7 +3706,7 @@ int function GetBestPlayerScore()
     return bestScore
 }
 
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 string function GetBestPlayerName()
 {
 	entity player = GetBestPlayer()
@@ -3872,7 +3872,7 @@ array<PlayerInfo> spectators = []
 }
 
 string function LatencyBoard()
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 array<PlayerInfo> playersInfo = []
         foreach(player in GetPlayerArray())

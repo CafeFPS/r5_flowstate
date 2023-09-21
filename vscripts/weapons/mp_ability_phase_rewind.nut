@@ -1,4 +1,4 @@
-//Implemented by Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+//Implemented by Retículo Endoplasmático#5955 (CafeFPS)
 global function OnWeaponPrimaryAttack_ability_phase_rewind
 
 #if SERVER

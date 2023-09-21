@@ -243,7 +243,7 @@ void function ShowNoChallengesPlayed(bool show)
 void function PrintToConsole(var button)
 {
 	DevTextBufferClear()
-	DevTextBufferWrite("=== Aim Trainer v1.0 CSV Results Dump - Made by CaféDeColombiaFPS @CafeFPS === \n\n")
+	DevTextBufferWrite("=== Aim Trainer v1.0 CSV Results Dump - Made by CafeFPS @CafeFPS === \n\n")
 	DevTextBufferWrite("ChallengeName, ShotsHit, Kills, Weapon, Accuracy, Damage, CriticalShots, TotalShots, Roundtime \n")
 
 	foreach(challenge in ChallengesHistory)

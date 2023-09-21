@@ -600,7 +600,7 @@ entity function SpawnBigTrainingTarget(vector pos, vector ang, void functionref(
 
 #if SERVER
 void function RespawnItem(entity item, string ref, int amount = 1, int wait_time=6)
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS. Tomado del firing range.
+//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
 
 {
 	vector pos = item.GetOrigin()
@@ -615,7 +615,7 @@ void function RespawnItem(entity item, string ref, int amount = 1, int wait_time
 
 #if SERVER
 void function FillLootTable()
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS. Adaptado del firing range.
+//By Retículo Endoplasmático#5955 CafeFPS. Adaptado del firing range.
 {
 	file.ordnance.extend(SURVIVAL_Loot_GetByType( eLootType.ORDNANCE ))
 	file.weapons.extend(SURVIVAL_Loot_GetByType( eLootType.MAINWEAPON ))

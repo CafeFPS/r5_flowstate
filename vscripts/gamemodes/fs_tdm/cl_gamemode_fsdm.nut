@@ -788,7 +788,7 @@ string function GetWinningTeamText(int team)
 
 array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter_ChampionScreen(ItemFlavor character)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 /////////////////////////////////////////////////////// 
 //Don't try this at home
 {

@@ -148,7 +148,7 @@ void function PROPHUNT_StartGameThread()
 }
 
 void function PROPHUNT_CharSelect( entity player)
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	if(FlowState_ForceCharacter())
 	{

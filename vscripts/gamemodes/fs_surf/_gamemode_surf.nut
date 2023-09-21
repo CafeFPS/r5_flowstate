@@ -164,7 +164,7 @@ void function DestroyPlayerPropsSURF()
 
 void function ActualSURFLobby()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	printt("Flowstate DEBUG - Starting Lobby")
@@ -232,7 +232,7 @@ WaitFrame()
 
 void function ActualSURFGameLoop()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 printt("Flowstate DEBUG - Surf map and game started.")
