@@ -3335,7 +3335,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	return true
 }
 
-void function SetupPlayer( entity player )
+void function SetupPlayer( entity player, bool fromSelector = false )
 {
 	DecideRespawnPlayer( player, false )
 
@@ -3348,7 +3348,19 @@ void function SetupPlayer( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 	entity weapon = player.GiveWeapon_NoDeploy( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
-	SetupInfiniteAmmoForWeapon( player, weapon )
+
+	if( !fromSelector )
+	{
+		SetupInfiniteAmmoForWeapon( player, weapon )
+
+		if(weapon.UsesClipsForAmmo())
+			weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+	} else
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 0 )
+	}
 
 	if( player.p.weaponModelIndex > -1 )
 		weapon.SetLegendaryModelIndex( player.p.weaponModelIndex )
@@ -3364,7 +3376,19 @@ void function SetupPlayer( entity player )
 	}
 	
 	entity weapon2 = player.GiveWeapon_NoDeploy( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
-	SetupInfiniteAmmoForWeapon( player, weapon2 )
+
+	if( !fromSelector )
+	{
+		SetupInfiniteAmmoForWeapon( player, weapon2 )
+
+		if(weapon2.UsesClipsForAmmo())
+			weapon2.SetWeaponPrimaryClipCount( weapon2.GetWeaponPrimaryClipCountMax() )
+	} else
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 0 )
+	}
 
 	if( player.p.weaponModelIndex2 > -1 )
 		weapon2.SetLegendaryModelIndex( player.p.weaponModelIndex2 )
@@ -3378,7 +3402,7 @@ void function SetupPlayer( entity player )
 
 bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 {
-	SetupPlayer( player )
+	SetupPlayer( player, true )
 
 	player.SetOrigin(AimTrainer_startPos)
 	player.SetAngles(AimTrainer_startAngs)
@@ -3386,6 +3410,7 @@ bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 }
 bool function CC_Weapon_Selector_Close( entity player, array<string> args )
 {
+	TakeAllWeapons( player )
 	return false
 }
 
