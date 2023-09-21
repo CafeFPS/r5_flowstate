@@ -148,6 +148,9 @@ void function Sequence_WaitingForPlayers()
 	else
 		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
 	
+	if( GameRules_GetGameMode() == "fs_aimtrainer" )
+		return
+
 	if(GameRules_GetGameMode() != SURVIVAL)
 	{
 		foreach( player in GetPlayerArray() )
