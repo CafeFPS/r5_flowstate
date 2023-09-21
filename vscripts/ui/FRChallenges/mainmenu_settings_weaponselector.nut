@@ -173,6 +173,9 @@ string function GetWeaponNameForUI(string weapon)
         case "mp_weapon_shotgun":
             weaponname = "EVA-8"
             break
+        case "mp_weapon_pdw":
+            weaponname = "Prowler"
+            break
         case "mp_weapon_mastiff":
             weaponname = "Mastiff"
             break
