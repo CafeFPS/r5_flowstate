@@ -871,7 +871,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Dummies color"
+				labelText				"Dummies color (!FIXME)"
 				visible                 0
 				zpos 0
 				tall					60

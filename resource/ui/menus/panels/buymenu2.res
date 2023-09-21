@@ -466,53 +466,6 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-		RampageButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          R301Button
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		Rampage
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          RampageButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		Rampage_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"Rampage"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					95
-			fontHeight				35
-			pin_to_sibling          Rampage
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
 		//attachments box
 	
 

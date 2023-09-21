@@ -183,13 +183,7 @@ void function InitArenasBuyPanel3( var panel )
 	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICK, BuyTripleTake )	
 	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "TripleTakeButton" ))
-	
-	var repeater = Hud_GetChild( menu, "repeater" )
-	RuiSetImage( Hud_GetRui( repeater ), "basicImage", $"rui/weapon_icons/r5/weapon_3030repeater" )
-	AddEventHandlerToButton( menu, "RepeaterButton", UIE_CLICK, Buy3030 )	
-	AddEventHandlerToButton( menu, "RepeaterButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "RepeaterButton" ))
-	
+
 	var chargerifle = Hud_GetChild( menu, "ChargeRifle" )
 	RuiSetImage( Hud_GetRui( chargerifle ), "basicImage", $"rui/weapon_icons/r5/weapon_charge_rifle" )
 	AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICK, BuyChargeRifle )	
