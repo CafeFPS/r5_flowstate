@@ -433,6 +433,7 @@ global struct ServerEntityStruct
 	
 	//crate weapon ammo count
 	int crateWeaponLastAmmo = -1
+	int crateWeaponLastAmmoClip = -1
 	string crateWeaponCustomSight = "-1"
 	
 	//cargobots

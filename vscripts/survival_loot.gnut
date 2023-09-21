@@ -1700,7 +1700,8 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{		
 		int clipCount = pickup.GetClipCount()
 		int lastAmmo = pickup.e.crateWeaponLastAmmo
-		
+		int lastClip = pickup.e.crateWeaponLastAmmoClip
+
 		player.AmmoPool_SetCapacity( 65535 )
 
 		entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
@@ -1726,6 +1727,11 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
 			else
 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
+			
+			if( weapon.UsesClipsForAmmo() && lastClip != -1 )
+			{
+				weapon.SetWeaponPrimaryClipCount( lastClip )
+			}
 		} else if( weapon.UsesClipsForAmmo() )
 			weapon.SetWeaponPrimaryClipCount( ammoToGive )
 
@@ -2121,6 +2127,7 @@ array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity play
 	if( dropWeaponData.baseMods.contains( "crate" ) )
 	{
 		droppedWeapon.e.crateWeaponLastAmmo = weaponToDrop.GetWeaponPrimaryAmmoCount( weaponToDrop.GetActiveAmmoSource() )
+		droppedWeapon.e.crateWeaponLastAmmoClip = weaponToDrop.GetWeaponPrimaryClipCount()
 	}
 	
 	if( dropWeaponData.baseMods.contains( "crate" ) || dropWeaponData.baseMods.contains( "gold" ) )
