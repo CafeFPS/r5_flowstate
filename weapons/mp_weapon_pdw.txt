@@ -88,11 +88,11 @@ WeaponData
                                                  
                                      
      
-	"ammo_clip_size"   								"20"
-    "ammo_default_total"							"0"
-    "ammo_stockpile_max"							"36"
-    "ammo_no_remove_from_stockpile"					"1"
-    "uses_ammo_pool"								"1"
+	"ammo_clip_size"   								"35"
+    "ammo_default_total"							"210"
+    "ammo_stockpile_max"							"210"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"0"
     "ammo_pool_type"								"highcal"
       
 
