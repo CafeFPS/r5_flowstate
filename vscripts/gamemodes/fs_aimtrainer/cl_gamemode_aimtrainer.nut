@@ -120,7 +120,8 @@ void function Cl_ChallengesByColombia_Init()
 {
 	//Increase client command limit to 60
 	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-	
+	SetConVarInt("net_processTimeBudget", 2000)
+
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
@@ -1159,20 +1160,40 @@ void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desire
 			optic = "optic_cq_hcog_bruiser"
 			break
 	}
-	
-	switch(desiredbarrel){
-		case 0:
-			barrel = "none"
-			break
-		case 1:
-			barrel = "barrel_stabilizer_l1"
-			break
-		case 2:
-			barrel = "barrel_stabilizer_l2"
-			break
-		case 3:
-			barrel = "barrel_stabilizer_l3"
-			break
+
+	if( weapontype == "smg" || weapon == "mp_weapon_autopistol" )
+	{
+		switch(desiredbarrel){
+			case 0:
+				barrel = "none"
+				break
+			case 1:
+				barrel = "laser_sight_l1"
+				break
+			case 2:
+				barrel = "laser_sight_l2"
+				break
+			case 3:
+				barrel = "laser_sight_l3"
+				break
+		}
+	}
+	else
+	{
+		switch(desiredbarrel){
+			case 0:
+				barrel = "none"
+				break
+			case 1:
+				barrel = "barrel_stabilizer_l1"
+				break
+			case 2:
+				barrel = "barrel_stabilizer_l2"
+				break
+			case 3:
+				barrel = "barrel_stabilizer_l3"
+				break
+		}
 	}
 
 	switch(desiredstock){
@@ -1298,6 +1319,8 @@ void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desire
 					mag = "highcal_mag_l1"
 				else if(ammotype == "special")
 					mag = "energy_mag_l1"
+				else if(ammotype == "sniper")
+					mag = "sniper_mag_l1"
 				break
 			case 2:
 				if(ammotype == "bullet")
@@ -1306,6 +1329,8 @@ void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desire
 					mag = "highcal_mag_l2"
 				else if(ammotype == "special")
 					mag = "energy_mag_l2"
+				else if(ammotype == "sniper")
+					mag = "sniper_mag_l2"
 				break
 			case 3:
 				if(ammotype == "bullet")
@@ -1314,6 +1339,8 @@ void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desire
 					mag = "highcal_mag_l3"
 				else if(ammotype == "special")
 					mag = "energy_mag_l3"
+				else if(ammotype == "sniper")
+					mag = "sniper_mag_l3"
 				break
 		}
 	
