@@ -3535,9 +3535,6 @@ void function SetupPlayer( entity player, bool fromSelector = false )
 	if( !fromSelector )
 	{
 		SetupInfiniteAmmoForWeapon( player, weapon )
-
-		if(weapon.UsesClipsForAmmo())
-			weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
 	} else
 	{
 		int ammoType = weapon.GetWeaponAmmoPoolType()

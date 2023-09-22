@@ -1,8 +1,5 @@
 #base "_base_handgun.txt"
 #base "_base_mags_sniper.txt"
-                  
-                            
-      
 
 WeaponData
 {

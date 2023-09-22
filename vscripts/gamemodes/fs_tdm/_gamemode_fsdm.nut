@@ -667,7 +667,7 @@ void function _OnPlayerConnected(entity player)
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.2")
+			Message(player,"Flowstate 1V1 v1.3", "Made by makimakima#5561\nMantained by @CafeFPS")
 			HolsterAndDisableWeapons(player)
 			wait 9
 			if ( !IsValid( player ) ) return
@@ -1323,7 +1323,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 	}
 	
-	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && GetCurrentPlaylistName() != "fs_1v1" )
 		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
 	//allow healing items to be used	
@@ -1337,14 +1337,17 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] )
 
-	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")		
-	array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
-		foreach(item in loot)
-			SURVIVAL_AddToPlayerInventory(player, item)
-	
-	SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")	
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+	{
+		array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
+			foreach(item in loot)
+				SURVIVAL_AddToPlayerInventory(player, item)
+
+		SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	}
 
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	
@@ -1584,8 +1587,14 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 	}
 	
 	try{
+		entity weaponNew
 		if(IsValid(player))
-			player.GiveWeapon( weaponclass , slot, Mods, false )
+		{
+			weaponNew = player.GiveWeapon( weaponclass , slot, Mods, false )
+			
+			SetupInfiniteAmmoForWeapon( player, weaponNew )
+			player.DeployWeapon()
+		}
 		else if(IsValid(player) && isGungame)
 		{
 			player.ReplaceActiveWeapon(slot, weaponclass, Mods)
@@ -1602,9 +1611,7 @@ void function GiveRandomPrimaryWeaponHalo(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
-		// "mp_weapon_haloshotgun",
-		"mp_weapon_halomagnum",
-		// "mp_weapon_halosniperrifle"
+		"mp_weapon_halomagnum"
 	]
 
 	foreach(weapon in Weapons)
@@ -1616,22 +1623,15 @@ void function GiveRandomPrimaryWeaponHalo(entity player)
 	}
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
-
-	entity weapon = player.GetNormalWeapon( slot )
-	
-	SetupInfiniteAmmoForWeapon( player, weapon )
 }
 
 void function GiveRandomSecondaryWeaponHalo(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
-	// int letsDoNeedler = RandomIntRangeInclusive( 1, 10 )
-
     array<string> Weapons = [
 		"mp_weapon_haloassaultrifle",
-		"mp_weapon_halobattlerifle",
-		// "mp_weapon_haloneedler"
+		"mp_weapon_halobattlerifle"
 	]
 
 	foreach(weapon in Weapons)
@@ -1641,15 +1641,8 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 		if(file.blacklistedWeapons.find(weaponName) != -1)
 				Weapons.removebyvalue(weapon)
 	}
-	
-	// if( letsDoNeedler != 1 )
-		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() - 1 ) )
-	// else
-		// __GiveWeapon( player, Weapons, slot, Weapons.len() - 1 )
 
-	entity weapon = player.GetNormalWeapon( slot )
-	
-	SetupInfiniteAmmoForWeapon( player, weapon )
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
 
 void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
@@ -1666,6 +1659,8 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 		
 		player.AmmoPool_SetCapacity( 65535 )
 		player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+
+		weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
 	} else if( IsValid( weapon ) )
 	{
 		int ammoType = weapon.GetWeaponAmmoPoolType()
@@ -1680,29 +1675,11 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_r97 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_volt_smg optic_cq_hcog_classic energy_mag_l2  stock_tactical_l1",
-		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
-		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
-		"mp_weapon_mastiff",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
 	]
 
 	foreach(weapon in Weapons)
@@ -1721,18 +1698,10 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
-		// "mp_weapon_rspn101 optic_cq_hcog_bruiser barrel_stabilizer_l4_flash_hider stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l1 highcal_mag_l1",
-		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
-		"mp_weapon_rspn101 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l1",
-		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
-		"mp_weapon_rspn101 optic_cq_hcog_classic  stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l1 highcal_mag_l1",
-		//"mp_weapon_esaw optic_cq_hcog_bruiser energy_mag_l1 hopup_turbocharger",
-		"mp_weapon_energy_ar optic_cq_hcog_classic  energy_mag_l1 hopup_turbocharger",
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 hopup_turbocharger"
 	]
 
 	foreach(weapon in Weapons)
@@ -2552,8 +2521,9 @@ void function SimpleChampionUI()
 	
 	if( file.currentRound > 1 )
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
-
-	SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
+	
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
 
     foreach( entity player in GetPlayerArray() )
     {
@@ -2579,8 +2549,9 @@ void function SimpleChampionUI()
 				player.FreezeControlsOnServer()
 				
 				// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
-
-				wait Flowstate_StartTimeDelay
+				
+				if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+					wait Flowstate_StartTimeDelay
 
 				if( !IsValid( player ) || !IsAlive( player ) )
 					return
@@ -2727,7 +2698,8 @@ void function SimpleChampionUI()
 		}
 	}
 	
-	wait Flowstate_StartTimeDelay
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+		wait Flowstate_StartTimeDelay
 	
 	SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()

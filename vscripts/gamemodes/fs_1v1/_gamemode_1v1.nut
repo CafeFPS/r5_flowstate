@@ -61,7 +61,7 @@ entity function getTimeOutPlayer()
 }
 void function soloModeWaitingPrompt(entity player)
 {
-	wait 1
+	wait 0.2
 	if(!IsValid(player)) return
 	foreach (eachplayerStruct in soloPlayersWaiting)
 	{
@@ -226,7 +226,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 		}
 
 		thread respawnInSoloMode(player)
-
+		TakeAllWeapons( player )
 	}
 
 	return true
@@ -293,6 +293,7 @@ void function soloModePlayerToWaitingList(entity player)
 	if(!IsAlreadyExist) //如果waiting list里没有这个玩家
 	{
 		soloPlayersWaiting.append(playerStruct)
+		TakeAllWeapons( player )
 	}
 	else //如果waiting list里有这个玩家
 	{
@@ -564,6 +565,7 @@ void function forbiddenZone_leave(entity trigger , entity ent)
 void function maki_tp_player(entity player,LocPair data)
 {
 	if(!IsValid(player)) return
+	player.SetVelocity( Vector( 0,0,0 ) )
 	player.SetAngles(data.angles)
 	player.SetOrigin(data.origin)
 }
@@ -1026,22 +1028,13 @@ void function _soloModeInit(string mapName)
 	}
 	
 	string buttonText2
-	string Text3
-	string Text4
-	string Text5
 	
 	if(IS_CHINESE_SERVER)
 	{
-		Text3 = "您已取消绑定"
-		Text4 = "您已绑定您的对手"
-		Text5 = "您的对手已断开连接"
 		buttonText2 = "%&use% 不再更换对手"
 	}
 	else
 	{
-		Text3 = "Your opponent will change now"
-		Text4 = "Your opponent won't change"
-		Text5 = "Your opponent has disconnected!"
 		buttonText2 = "%&use% Never change your opponent"
 	}
 	
@@ -1053,6 +1046,18 @@ void function _soloModeInit(string mapName)
 		soloLocations[index].Panel = panel
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
 		{
+			string Text3
+			string Text4
+			if(IS_CHINESE_SERVER)
+			{
+				Text3 = "您已取消绑定"
+				Text4 = "您已绑定您的对手"
+			}
+			else
+			{
+				Text3 = "Your opponent will change now"
+				Text4 = "Your opponent won't change"
+			}
 			soloGroupStruct group = returnSoloGroupOfPlayer(user)
 			// if (!IsValid(group.player1) || !IsValid(group.player2)) return
 			if(!isGroupVaild(group)) return //Is this group is available
@@ -1065,8 +1070,8 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"您已绑定您的对手\nYour opponent won't change")
-					Message(group.player2,"您已绑定您的对手\nYour opponent won't change")
+					Message(group.player1, Text4)
+					Message(group.player2, Text4)
 				}
 				catch (error)
 				{}
@@ -1080,8 +1085,8 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"您已取消绑定\nYour opponent will change now")
-					Message(group.player2,"您已取消绑定\nYour opponent will change now")
+					Message(group.player1, Text3)
+					Message(group.player2, Text3)
 				}
 				catch (error)
 				{}
@@ -1099,6 +1104,16 @@ void function soloModeThread(LocPair waitingRoomLocation)
 {
 	printt("solo mode thread start!")
 
+	string Text5
+
+	if(IS_CHINESE_SERVER)
+	{
+		Text5 = "您的对手已断开连接"
+	}
+	else
+	{
+		Text5 = "Your opponent has disconnected!"
+	}
 	wait 8
 	while(true)
 	{
@@ -1163,13 +1178,13 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				if(IsValid(eachGroup.player1))
 				{
 					soloModePlayerToWaitingList(eachGroup.player1) //back to wating list
-					Message(eachGroup.player1,"您的对手已断开连接\nYour opponent has disconnected!")
+					Message(eachGroup.player1, Text5)
 				}
 
 				if(IsValid(eachGroup.player2))
 				{
 					soloModePlayerToWaitingList(eachGroup.player2) //back to wating list
-					Message(eachGroup.player2,"您的对手已断开连接\nYour opponent has disconnected!")
+					Message(eachGroup.player2, Text5)
 				}
 				continue
 			}
@@ -1198,13 +1213,13 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		foreach (restingPlayer in soloPlayersResting )
 		{
 			if(!IsValid(restingPlayer)) continue
-			TakeAmmoFromPlayer(restingPlayer)   //子弹设为0
+
+			TakeAllWeapons( restingPlayer )
+
 			if(!IsAlive(restingPlayer)  )
 			{
 				thread respawnInSoloMode(restingPlayer)
 			}
-
-
 		}
 
 
