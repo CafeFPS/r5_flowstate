@@ -39,8 +39,6 @@ global function ServerCallback_LiveStatsUIDamageViaDummieDamaged
 global function ServerCallback_LiveStatsUIHeadshot
 global function ServerCallback_ResetLiveStatsUI
 global function ServerCallback_CoolCameraOnMenu
-global function ServerCallback_SetLaserSightsOnSMGWeapon
-global function ServerCallback_StopLaserSightsOnSMGWeapon
 global function ServerCallback_RestartChallenge
 global function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies
 global function ServerCallback_ToggleDotForHitscanWeapons
@@ -202,39 +200,6 @@ void function AimTrainer_OnEntitiesDidLoad()
 void function ServerCallback_SetDefaultMenuSettings()
 {
 	thread ActuallyPutDefaultSettings()
-}
-
-void function ServerCallback_SetLaserSightsOnSMGWeapon(entity weapon)
-{
-	if(!IsValid(weapon)) return
-	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
-	weapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )
-	thread DisableLaserInADS()
-}
-
-void function ServerCallback_StopLaserSightsOnSMGWeapon(entity weapon)
-{
-	if(!IsValid(weapon)) return
-	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
-}
-	
-void function DisableLaserInADS()
-{
-	entity player = GetLocalClientPlayer()
-	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-	while(IsValid(activeWeapon)){
-		if(activeWeapon.IsWeaponAdsButtonPressed()){
-			activeWeapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )			
-			while(IsValid(activeWeapon)){
-				if(!activeWeapon.IsWeaponAdsButtonPressed()){
-					activeWeapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )					
-					break
-				}
-				WaitFrame()
-			}
-		}
-		WaitFrame()
-	}
 }
 
 void function ActuallyPutDefaultSettings()

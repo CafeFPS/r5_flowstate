@@ -3130,7 +3130,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		player.TakeWeaponByEntNow( actualweapon )
 
 	entity weaponent
-	bool shouldPutLaser = false
 	array<string> finalargs
 	if (args.len() > 2) //from attachments buy box
 		{
@@ -3352,26 +3351,15 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 			{
 				case "smg":
 					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") 
-					{
-						finalargs.append(barrel)						
-						if(barrel == "barrel_stabilizer_l1" || barrel == "barrel_stabilizer_l2" || barrel == "barrel_stabilizer_l3" )
-							shouldPutLaser = true
-					}
+					if(barrel != "none") finalargs.append(barrel)
 					if(stock != "none") finalargs.append(stock)
 					if(mag != "none") finalargs.append(mag)	
 					
 					break
 				case "pistol":
 					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") 
-					{
-						finalargs.append(barrel)						
-						if(weapon == "mp_weapon_autopistol")
-							shouldPutLaser = true
-					}
+					if(barrel != "none") finalargs.append(barrel)
 					if(mag != "none") finalargs.append(mag)
-					
 					break
 				case "pistol2":
 					if(optic != "none") finalargs.append(optic)
@@ -3425,8 +3413,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 					break
 			}
 		}
-	else
-		shouldPutLaser = false
 
 	if ( weapon == "mp_weapon_clickweapon" || weapon == "mp_weapon_clickweaponauto" )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", true)
@@ -3438,12 +3424,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	if(!IsValid(actualweapon)) player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, actualslot )
 
 	if(!IsValid(weaponent)) return true
-		
-	if( shouldPutLaser )
-		Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponent)
-	else
-		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
-	
+
 	if( IsAlive( player ) ) // This is for TDM
 	{
 		string weapon1
