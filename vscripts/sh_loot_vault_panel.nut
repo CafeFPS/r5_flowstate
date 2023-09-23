@@ -9,7 +9,6 @@ global function VaultPanel_GetAllMinimapObjs
 global function VaultPanel_HasPlayerDataKnife
 
 global function HACK_IsVaultDoor
-global function IsVaultDoor
 global function IsVaultPanel
 global function GetVaultPanelFromDoor
 global function GetAllVaultPanelsData
@@ -100,7 +99,7 @@ void function VaultPanelSpawned( entity panel )
 
 void function VaultDoorSpawned( entity door )
 {
-	if ( !IsVaultDoor( door ) )
+	if ( !IsValidLootVaultDoorEnt( door ) )
 		return
 
 	#if SERVER
@@ -353,20 +352,6 @@ LootVaultPanelData function GetVaultPanelDataFromEntity( entity panel )
 	unreachable
 }
 
-bool function IsVaultDoor( entity ent )
-{
-	if ( !IsValid( ent ) )
-		return false
-
-	string scriptName = ent.GetScriptName()
-
-	if ( scriptName == LOOT_VAULT_DOOR_SCRIPTNAME )
-		return true
-
-	return false
-}
-
-
 bool function IsVaultPanel( entity ent )
 {
 	if ( !IsValid( ent ) )
@@ -378,17 +363,17 @@ bool function IsVaultPanel( entity ent )
 	return false
 }
 
-// bool function IsValidLootVaultDoorEnt( entity ent )
-// {
-	// if ( !IsDoor( ent ) )
-		// return false
+bool function IsValidLootVaultDoorEnt( entity ent )
+{
+	if ( !IsDoor( ent ) )
+		return false
 
-	// string scriptName = ent.GetScriptName()
-	// if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT )
-		// return false
+	string scriptName = ent.GetScriptName()
+	if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT )
+		return false
 
-	// return true
-// }
+	return true
+}
 
 void function SetVaultPanelUsable( entity panel )
 {
@@ -498,17 +483,6 @@ bool function HACK_IsVaultDoor( entity ent )
 	return false
 }
 
-// bool function IsVaultPanel( entity ent )
-// {
-	// foreach ( panelData in file.vaultControlPanels )
-	// {
-		// if ( panelData.panel == ent )
-			// return true
-	// }
-
-	// return false
-// }
-
 entity function GetVaultPanelFromDoor( entity door )
 {
 	foreach ( panelData in file.vaultControlPanels )
@@ -591,7 +565,7 @@ bool function VaultPanel_HasPlayerDataKnife(entity player)
 
 	foreach ( invItem in playerInventory )
 	{
-		if(invItem.type == 122)
+		if(invItem.type == 136)
 			return true
 	}
 	return false
