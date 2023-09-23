@@ -68,8 +68,8 @@ void function ClientCodeCallback_MapInit()
 
 void function SharedInit()
 {
-	//ShPrecacheShadowSquadAssets()
-	//ShPrecacheEvacShipAssets()
+	ShPrecacheShadowSquadAssets()
+	ShPrecacheEvacShipAssets()
 	//ShLootCreeps_Init()
 
 }
