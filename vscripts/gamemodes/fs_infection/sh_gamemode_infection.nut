@@ -54,27 +54,7 @@ void function Sh_GamemodeInfection_Init()
 	
     switch(GetMapName())
     {
-		case "mp_rr_thepit":
-		
-		RegisterLocationINFECTION(
-            NewLocationSettings(
-                "The Pit",
-                [
-                    NewLocPair(<2432.56958, -1120.47546, 72.187767>, <0, 139.587921, 0>),
-					NewLocPair(<2473.50366, -243.166061, 71.8443527>, <0, -144.914307, 0>),
-					NewLocPair(<2284.58374, 627.512024, 334.209839>, <0, 173.749969, 0>),
-					NewLocPair(<2043.74219, 2309.58789, 73.2790489>, <0, -123.414268, 0>),
-					NewLocPair(<-33.427124, 2266.61621, 60.3370705>, <0, 40.8194275, 0>),
-					NewLocPair(<-759.884888, 2780.9375, 360.507843>, <0, -90.1154633, 0>),
-					NewLocPair(<-2751.56763, 2830.6875, 463.748962>, <0, -49.2946548, 0>),
-					NewLocPair(<-2762.73096, -1650.9657, 483.744232>, <0, 55.6308022, 0>),
-					NewLocPair(<-891.99585, -1554.02271, 362.862549>, <0, 90.1609116, 0>),
-					NewLocPair(<-320.644562, 610.985474, 494.83606>, <0, -177.766098, 0>)
-                ],
-                <0, 0, 3000>,$""
-            )
-        )
-		break
+		case "mp_rr_canyonlands_mu1_night":
 	    case "mp_rr_canyonlands_mu1":		
 		RegisterLocationINFECTION(
             NewLocationSettings(
@@ -151,24 +131,7 @@ void function Sh_GamemodeInfection_Init()
                 // <0, 0, 4000>,$"rui/flowstatelocations/gaunlet"
             // )
         // )
-		
-		RegisterLocationINFECTION(
-            NewLocationSettings(
-                "Market",
-                [
-                    NewLocPair(<-110, -9977, 2987>, <0, 0, 0>),
-                    NewLocPair(<-1605, -10300, 3053>, <0, -100, 0>),
-                    NewLocPair(<4600, -11450, 2950>, <0, 180, 0>),
-                    NewLocPair(<3150, -11153, 3053>, <0, 100, 0>),
-					NewLocPair(<1526.54724, -9814.23926, 3382.51367>,<0, -96.077919, 0>),
-					NewLocPair(<2527.8833, -10010.7725, 3347.18506>,<0, -82.0662231, 0>),
-					NewLocPair(<3474.97314, -10081.4277, 3329.40747>,<0, -111.653938, 0>),
-					NewLocPair(<3384.8772, -10686.1895, 2976.70996>,<0, -179.954941, 0>),
-					NewLocPair(<1665.42896, -10973.292, 3325.89233>,<0, 87.6322632, 0>)
-                ],
-                <0, 0, 3000>,$"rui/flowstatelocations/market"
-            )
-        )
+
 		RegisterLocationINFECTION(
             NewLocationSettings(
                 "Labs",

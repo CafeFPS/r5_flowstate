@@ -158,7 +158,7 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 				{
 					Infection_KillStreakAnnounce(attacker)
 					attacker.p.infectionRoundKills++
-					thread PerksSystem(attacker)
+					// thread PerksSystem(attacker)
 				}
 
 				int deaths = victim.GetPlayerGameStat( PGS_DEATHS )
@@ -743,37 +743,7 @@ void function Infection_GameLoop()
 	}
 	
 	SetGameState(eGameState.Playing)
-	
-	array<entity> allPlayers = GetPlayerArrayOfTeam_Alive( TEAM_IMC )
-	
-	foreach(player in allPlayers)
-	{
-		if(player.GetPlayerName() == "HisWattson2222")
-		{
-			//AssignCharacter(player, 1)
-			
-			player.SetBodyModelOverride($"mdl/Humans/pilots/w_master_chief.rmdl")
-			player.SetArmsModelOverride($"mdl/Humans/pilots/ptpov_master_chief.rmdl")			
-		} 
-	}
-	
-	foreach(player in allPlayers)
-		if( player.GetPlayerName() == "HisWattson2222" )
-			allPlayers.removebyvalue(player)
-	
-	entity randomPlayerToBeBlisk 
-	
-	if( allPlayers.len() > 0 ) 
-		randomPlayerToBeBlisk  = allPlayers.getrandom()
-	
-	if( IsValid(randomPlayerToBeBlisk) )
-	{
-		//AssignCharacter(randomPlayerToBeBlisk, 1)
-		randomPlayerToBeBlisk.SetBodyModelOverride($"mdl/Humans/pilots/w_blisk.rmdl")
-		randomPlayerToBeBlisk.SetArmsModelOverride($"mdl/Humans/pilots/pov_blisk.rmdl")	
-	}
 
-	
 	thread function() : () //Choose first infected
 	{
 		foreach(player in GetPlayerArray_Alive())
@@ -1151,10 +1121,6 @@ void function BecomeInfected(entity player)
 
     player.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
     player.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE )
-	
-	player.GiveWeapon( "mp_weapon_energysword", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	
 	SetPlayerInventory( player, [] )
 	Inventory_SetPlayerEquipment(player, "", "armor")
 	player.SetShieldHealthMax( 0 )

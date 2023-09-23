@@ -166,15 +166,11 @@ void function ServerWeaponWallUseSuccess( entity usableWeaponWall, entity player
 	int activeWeaponInt = SURVIVAL_GetActiveWeaponSlot( player )
 	entity activeWeapon = player.GetNormalWeapon( activeWeaponInt )
 
-	if  ( primary == null || !player.p.hasSecondaryWeaponPerk) 
+	if  ( !IsValid( primary ) )
 	{
-		if(IsValid(primary && !player.p.hasSecondaryWeaponPerk))
-		{
-			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		}
 		weapon = GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	}
-	else if ( secondary == null && player.p.hasSecondaryWeaponPerk) 
+	else if ( !IsValid( secondary ) )
 	{
 		weapon = GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	}
@@ -182,8 +178,6 @@ void function ServerWeaponWallUseSuccess( entity usableWeaponWall, entity player
 	{
 		weapon = SwapWeaponToPlayer( player, activeWeapon, weaponName, activeWeaponInt )
 	}
-
-	// if ( weapon != null ) weapon.AddMod( "survival_finite_ammo" )
 
 	if ( PlayerHasWeapon( player, weaponName ) ) player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, weaponName )
 
