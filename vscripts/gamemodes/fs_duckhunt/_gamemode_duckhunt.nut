@@ -216,6 +216,7 @@ void function _OnEntitiesDidLoad()
 	AddSpawnCallback("zipline_end", _OnPropDynamicSpawned)
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 	AddSpawnCallback("script_mover_lightweight", _OnPropDynamicSpawned)
+	AddSpawnCallback("prop_script", _OnPropDynamicSpawned)
 
 	PrecacheMapsProps()
 }
@@ -626,7 +627,6 @@ void function DUCKHUNT_Lobby()
 	Signal(svGlobal.levelEnt, "EndScriptedPropsThread")
 	WaitFrame()
 	DestroyServerProps()
-
 	bool enteredwaitingidk = false
 
 	if(GetPlayerArray().len() < 2)
@@ -656,21 +656,21 @@ void function DUCKHUNT_Lobby()
 			Message(player, "DUCKHUNT", "STARTING", 3, "")
 		}
 
-		wait 5
+		wait 3
 	}
 
 	// if(IsOdd(FS_DUCKHUNT.currentRound))
 	// {
 		FS_DUCKHUNT.spawnedmap = 0
-		thread SpawnDuckHuntMap()
+		SpawnDuckHuntMap()
 	// }
 	// else
-	// {
+	// {	
 		// FS_DUCKHUNT.spawnedmap = 1
-		// thread SpawnDuckHuntMap2()
+		// SpawnDuckHuntMap2()
 	// }
 
-	wait 15
+	wait 3
 	printt( "Handling team for players" )
 	_HandleTeamForAllPlayers()
 }
@@ -1141,8 +1141,6 @@ void function SpawnKillerWalls(vector origin)
 
 void function SpawnMovingPlatform(vector origin)
 {
-	EndSignal(svGlobal.levelEnt, "EndScriptedPropsThread")
-
 	vector angles1 = Vector(0,0,0)
 
 	for(int i = 0; i < 7; i++)
@@ -1205,8 +1203,6 @@ void function SpawnMovingPlatform(vector origin)
 
 void function SpawnMovingPlatformWithFanPusher(vector origin)
 {
-	EndSignal(svGlobal.levelEnt, "EndScriptedPropsThread")
-
 	entity platform = CreateEntity( "prop_dynamic" )
 	{
 		platform.kv.solid = SOLID_VPHYSICS
@@ -1259,5 +1255,4 @@ void function SpawnMovingPlatformWithFanPusher(vector origin)
 		DispatchSpawn(circle)
 		circle.SetParent(platform)
 	}
-
 }
