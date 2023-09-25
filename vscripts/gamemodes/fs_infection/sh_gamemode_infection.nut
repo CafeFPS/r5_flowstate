@@ -263,7 +263,7 @@ void function Sh_GamemodeInfection_Init()
 		
 		RegisterLocationINFECTION(
             NewLocationSettings(
-                "Aeonopolis",
+                "The Farm",
                 [
                     NewLocPair(<11242, 8591, 4830>, <0, 0, 0>),
                     NewLocPair(<6657, 12189, 5066>, <0, -90, 0>),
@@ -409,7 +409,7 @@ void function Sh_GamemodeInfection_Init()
 
 		RegisterLocationINFECTION(
                 NewLocationSettings(
-                    "Hammies Hideout",
+                    "Little Town",
                     [
                         NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
                         NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
@@ -434,7 +434,7 @@ void function Sh_GamemodeInfection_Init()
 
 		RegisterLocationINFECTION(
                 NewLocationSettings(
-                    "Armag Town",
+                    "Little Town 2",
                     [
                         NewLocPair(<-27219, -24393, -4497>, <0, 87, 0>),
                         NewLocPair(<-26483, -28042, -4209>, <0, 122, 0>),
