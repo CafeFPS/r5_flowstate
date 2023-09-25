@@ -145,7 +145,8 @@ void function SpawnDuckHuntMap()
     MapEditor_CreateRespawnableWeaponRack( < 450, 3401, 1000 >, < 0, 90, 0 >, "mp_weapon_defender",0.5 )
     MapEditor_CreateRespawnableWeaponRack( < 300, 3401, 1000 >, < 0, 90, 0 >, "mp_weapon_sniper",0.5 )
     MapEditor_CreateRespawnableWeaponRack( < 390, 3401, 999.9999 >, < 0, 90, 0 >, "mp_weapon_dmr",0.5 )
-
+	MapEditor_CreateRespawnableWeaponRack( < -68.4000, 2104.6000, 1662.2000 >, < 0, 0, 0 >, "mp_weapon_sniper", 0 )
+	
     //NonVerticalZipLines 
     MapEditor_CreateZiplineFromUnity( < -1060.5000, 5561.2000, 590.1000 >, < 0, 0, -90 >, < -488.4000, 5747.1000, 528.4000 >, < 0, 0, -90 >, false, -1, 1, 2, 1, 1, 0, 1, 150, 150, false, 0, false, 0, 0, [ ], [ ], [ ], 32, 60, 0 )
     MapEditor_CreateZiplineFromUnity( < 386, 5666.6000, 2047.8000 >, < 0, 90, 0 >, < 974.7000, 5644.1000, 1777.3000 >, < 0, 90, 0 >, false, -1, 1, 2, 1, 1, 0, 1, 150, 150, false, 0, false, 0, 0, [ ], [ ], [ ], 32, 60, 0 )
