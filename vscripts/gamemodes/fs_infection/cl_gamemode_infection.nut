@@ -181,7 +181,7 @@ void function INFECTION_QuickHint(int index, bool isInfectedPlayer, int eHandle)
 	switch(index)
 	{
 		case -1:
-		Obituary_Print_Localized( "Made with love by @CafeFPS", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS.", BURN_COLOR, BURN_COLOR )
 		break
 
 		case -2:
