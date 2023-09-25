@@ -2046,7 +2046,6 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	//printt( "SpawnWeaponAndAmmo", ref, origin )
 	entity ent
 
-	//Also spawn 2 ammo containers with coinflip (based on retail)
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 	string ammoType = itemData.ammoType
 	
@@ -2059,42 +2058,53 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	}
 	
 	circlePositions.randomize()
-
+	
+	//Add two ammo stacks per weapon
 	if ( SURVIVAL_Loot_IsRefValid( ammoType ) )
 	{
 		itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
 
-		foreach( ammo in file.spawnedAmmoStacks )
-		{
-			foreach( possiblePos in circlePositions )
-			{
-				if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
-					circlePositions.fastremovebyvalue( possiblePos )
-			}
-		}
-	
-		if( circlePositions.len() == 0 )
-		{
-			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			return ent
-		}
-		
 		vector nextOrigin = circlePositions.getrandom()
-		
+		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		circlePositions.fastremovebyvalue( nextOrigin )
+
+		nextOrigin = circlePositions.getrandom()
 		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
 		circlePositions.fastremovebyvalue( nextOrigin )
 		
-		if( circlePositions.len() == 0 )
-		{
-			ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			return ent
-		}
+		//This will add sometimes two, sometimes one ammo stack
 
-		if( CoinFlip() )
-		{
-			nextOrigin = circlePositions.getrandom()
-			file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		}
+		// foreach( ammo in file.spawnedAmmoStacks )
+		// {
+			// foreach( possiblePos in circlePositions )
+			// {
+				// if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
+					// circlePositions.fastremovebyvalue( possiblePos )
+			// }
+		// }
+	
+		// if( circlePositions.len() == 0 )
+		// {
+			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			// return ent
+		// }
+		
+		// vector nextOrigin = circlePositions.getrandom()
+		
+		// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		// circlePositions.fastremovebyvalue( nextOrigin )
+		
+		// if( circlePositions.len() == 0 )
+		// {
+			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+			// return ent
+		// }
+
+		// if( CoinFlip() )
+		// {
+			// nextOrigin = circlePositions.getrandom()
+			// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
+		// }
 	}
 
 	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
@@ -2171,7 +2181,9 @@ void function SwitchingTestIdk( entity player )
 {
 	while( true )
 	{
-		printt( player.IsSwitching( SURVIVAL_GetActiveWeaponSlot( player ) ) )
+		printt( "switching debug 1: " + player.IsSwitching( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) )
+		printt( "switching debug 2: " + player.IsSwitching( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) )
+		printt( "-----" )
 		WaitFrame()
 	}
 }

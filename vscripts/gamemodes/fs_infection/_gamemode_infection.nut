@@ -411,7 +411,7 @@ void function Infection_Lobby()
 		SetTeam(player, TEAM_IMC)
 	}
 	
-	if(GetMapName() != "mp_rr_thepit")
+	if( !colombiaDebug )
 	{
 		ResetMapVotes()
 

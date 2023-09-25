@@ -117,7 +117,7 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		
 		case "3":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
-		player.SetArmsModelOverride( $"mmdl/Humans/pilots/ptpov_amogino.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 	}
 

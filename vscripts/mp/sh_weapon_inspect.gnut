@@ -108,7 +108,7 @@ void function WatchWeaponInspectState( entity player, entity weapon )
 
 void function WeaponInspectHideHudElements( bool hide )
 {
-	printt( "changing hud visibility ", hide )
+	//printt( "changing hud visibility ", hide )
 
 	if ( hide )
 		file.weaponInspectHideHudCount++
