@@ -68,7 +68,7 @@ void function CheckAfkKickThread(entity player)
 				break
 
 			case eAntiAfkPlayerState.AFK:
-				KickPlayerById( player.GetPlatformUID(), "You were AFK for too long." )
+				KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )
 				break
 		}
     }

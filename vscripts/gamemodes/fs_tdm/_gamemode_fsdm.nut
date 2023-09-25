@@ -734,7 +734,7 @@ void function __HighPingCheck(entity player)
 
 		if ( !IsValid( player ) ) return
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
-		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit." )
+		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit" )
 		UpdatePlayerCounts()
 	} else if( GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistName() != "fs_haloMod" ){
 		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
