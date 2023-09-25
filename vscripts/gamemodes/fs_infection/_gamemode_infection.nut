@@ -1349,7 +1349,7 @@ entity function CreateRingBoundary_Infection(LocationSettings location)
 	circle.kv.fadedist = -1
 	circle.kv.modelscale = ringRadius
 	circle.kv.renderamt = 255
-	circle.kv.rendercolor = FlowState_RingColor()
+	circle.kv.rendercolor = "111, 66, 245"
 	circle.kv.solid = 0
 	circle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	circle.SetOrigin( ringCenter )
