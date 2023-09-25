@@ -173,7 +173,6 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	
 	PROPHUNT_CharSelect(player)
 
-	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	UpdatePlayerCounts()
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
@@ -426,6 +425,8 @@ void function _HandleRespawnPROPHUNT(entity player)
 	player.AllowMantle()
 	player.SetMoveSpeedScale(1)
 	TakeAllWeapons(player)
+	TakeAllPassives(player)
+	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 }
 
 bool function returnPropBool()
