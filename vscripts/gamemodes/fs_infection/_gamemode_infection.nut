@@ -161,10 +161,6 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 					// thread PerksSystem(attacker)
 				}
 
-				int deaths = victim.GetPlayerGameStat( PGS_DEATHS )
-				deaths++
-				victim.SetPlayerGameStat( PGS_DEATHS, deaths)
-				
 				if(victim.GetTeam() == TEAM_IMC)
 				{
 					array<string> laughs = [

@@ -136,7 +136,7 @@ void function _OnPlayerConnected(entity player)
     {
 		case eGameState.WaitingForPlayers:
 		case eGameState.MapVoting:
-			Message(player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647. Game is starting.", 4)
+			Message(player, "APEX DUCK HUNT", "Game is starting.", 4)
 
 			_HandleRespawn(player)
 			Survival_SetInventoryEnabled( player, false )
@@ -169,7 +169,7 @@ void function _OnPlayerConnected(entity player)
 		default:
 			break
 	}
-
+	TakeAllPassives(player)
 	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 	UpdatePlayerCounts()
 }
@@ -213,7 +213,10 @@ void function SetupTeamPlayer(entity player)
 void function _OnEntitiesDidLoad()
 {
 	AddSpawnCallback("zipline", _OnPropDynamicSpawned)
+	AddSpawnCallback("zipline_end", _OnPropDynamicSpawned)
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+	AddSpawnCallback("script_mover_lightweight", _OnPropDynamicSpawned)
+
 	PrecacheMapsProps()
 }
 
@@ -337,14 +340,6 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 
 			thread function() : (victim, attacker, damageInfo)
 			{
-				if( victim.GetPlayerGameStat( PGS_DEATHS ) < DUCKHUNT_MAX_LIFES_FOR_DUCKS && victim.GetTeam() == TEAM_MILITIA ) //IsWorldSpawn( attacker )
-				{
-					printt(victim.GetPlayerGameStat( PGS_DEATHS ))
-					int deaths = victim.GetPlayerGameStat( PGS_DEATHS )
-					deaths++
-					victim.SetPlayerGameStat( PGS_DEATHS, deaths)
-				}
-
 				if(victim.GetTeam() == TEAM_IMC && GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() == 0)
 				{
 					FS_DUCKHUNT.winnerTeam = TEAM_MILITIA
@@ -601,10 +596,10 @@ void function DUCKHUNT_Lobby()
 
 		if(FS_DUCKHUNT.winnerTeam != 0)
 		{
-			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "DUCKS WIN" : "HUNTERS WIN", "Made by @CafeFPS & Darkes#8647.", 6)
+			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "DUCKS WIN" : "HUNTERS WIN", "", 6)
 		} else
 		{
-			Message( player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647", 4 )
+			Message( player, "APEX DUCK HUNT", "", 4 )
 		}
 
 		_HandleRespawn(player)
@@ -664,18 +659,19 @@ void function DUCKHUNT_Lobby()
 		wait 5
 	}
 
-	if(IsOdd(FS_DUCKHUNT.currentRound))
-	{
+	// if(IsOdd(FS_DUCKHUNT.currentRound))
+	// {
 		FS_DUCKHUNT.spawnedmap = 0
 		thread SpawnDuckHuntMap()
-	}else
-	{
-		FS_DUCKHUNT.spawnedmap = 1
-		thread SpawnDuckHuntMap2()
-	}
+	// }
+	// else
+	// {
+		// FS_DUCKHUNT.spawnedmap = 1
+		// thread SpawnDuckHuntMap2()
+	// }
 
 	wait 15
-
+	printt( "Handling team for players" )
 	_HandleTeamForAllPlayers()
 }
 

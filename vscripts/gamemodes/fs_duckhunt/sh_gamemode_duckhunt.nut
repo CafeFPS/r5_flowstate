@@ -133,7 +133,8 @@ void function PrecacheMapsProps()
 
 void function SpawnDuckHuntMap()
 {
-     //Weapon Racks 
+	printt( "Loading duckhunt map 1" )
+    //Weapon Racks 
     MapEditor_CreateRespawnableWeaponRack( < 420, 3401, 1000 >, < 0, 90, 0 >, "mp_weapon_wingman",0.5 )
     MapEditor_CreateRespawnableWeaponRack( < -270, 3401, 1000 >, < 0, 90, 0 >, "mp_weapon_rspn101",0.5 )
     MapEditor_CreateRespawnableWeaponRack( < 330, 3401, 999.9999 >, < 0, 90, 0 >, "mp_weapon_dmr",0.5 )
@@ -795,6 +796,7 @@ void function SpawnDuckHuntMap()
 
 void function SpawnDuckHuntMap2()
 {
+	printt( "Loading duckhunt map 2" )
     //Jumppads 
     JumpPad_CreatedCallback( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 2194.0010, 5667.7450, 1239.2830 >, < 0, -179.9398, 0 >, true, 50000, -1, 1 ) )
     JumpPad_CreatedCallback( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 2848, 5668.7450, 1400.2830 >, < 0, 0.0602, 180 >, true, 50000, -1, 1 ) )
