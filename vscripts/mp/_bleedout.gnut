@@ -762,7 +762,8 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 			if( targetPlayer != excludePlayer )
 			{
 				wait 0.2
-				PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
+				if( IsValid( targetPlayer ) )
+					PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
 			}
 		}
 }
