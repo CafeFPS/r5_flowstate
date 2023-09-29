@@ -485,12 +485,6 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 void function UICodeCallback_LevelInit( string levelname )
 {
 	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
-	
-	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
-	{	
-		if ( RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
-			SetCustomLoadScreen( $"loadscreens/custom/loadscreen_r5r_community_01" )
-	}
 }
 
 
@@ -1563,13 +1557,13 @@ void function InitMenus()
 	//AIM TRAINER
 	//Main Menu
 	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu", InitFRChallengesMainMenu )
-	
+
 	//Settings
 	AddMenu( "FRChallengesSettings", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu", InitFRChallengesSettings )
-	
+
 	//History
 	AddMenu( "FRChallengesHistory", $"scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu", InitChallengesHistory )
-	
+
 	//Weapon Selector
 	var weaponselector = AddMenu( "FRChallengesSettingsWpnSelector", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu", InitFRChallengesSettingsWpnSelector )
 	AddPanel( weaponselector, "BuyMenu1", InitArenasBuyPanel1 )
@@ -1580,7 +1574,7 @@ void function InitMenus()
 
 	//results
 	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/challenges_results.menu", InitFRChallengesResultsMenu ) //results
-	
+
 	//Custom KillReplayHud
 	var killreplayhud = AddMenu( "KillReplayHud", $"scripts/resource/ui/menus/KillReplay/replayhud.menu", InitKillReplayHud )
 	///////
@@ -1594,7 +1588,7 @@ void function InitMenus()
 	//Custom Weapon Mods Menu
 	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
 	///////
-	
+
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )
 	AddPanel( lobbyMenu, "CharactersPanel", InitCharactersPanel )
@@ -2564,7 +2558,7 @@ void function OpenDevMenu( var button )
 }
 
 void function OpenModelMenu (string equipped) {
-	
+
 	SetTopLevelCustomizeContext(GetAllWeaponCategories()[0])
 	CustomizeModelMenus_Equip(equipped)
 	AdvanceMenu( GetMenu( "CustomizeModelMenu" ) )

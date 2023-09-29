@@ -186,6 +186,12 @@ void function Loadscreen_SetCustomLoadscreen( ItemFlavor flavor )
 		}
 	}
 
+	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) && RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
+	{
+		SetCustomLoadScreen( $"loadscreens/custom/loadscreen_r5r_community_01" )
+		return
+	}
+
 	if ( ItemFlavor_IsTheDefault( flavor ) )
 	{
 		SetCustomLoadScreen( $"" )
