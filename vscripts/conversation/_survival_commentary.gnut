@@ -94,10 +94,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	thread function() : ( victim, attacker, damageInfo )
 	{
 		wait DELAY_COMMENTARY
-		
+
 		if ( !IsValid( victim ) || !IsValid( attacker ) )
 			return
-		
+
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
 		{
 			if ( victim == file.currentKillLeader && victim != GetChampion() )
@@ -115,12 +115,12 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 				file.currentKillLeader = attacker
 
 				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 0.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
-				
+
 				foreach ( player in GetPlayerArray() )
 					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", attacker, attackerKills )
 			}
 		}
-		
+
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
 		{
 			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
@@ -132,7 +132,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
 			}
 		}
-		
+
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
 		{
 			if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
@@ -184,7 +184,7 @@ void function AddSurvivalCommentaryEvent( int event, entity attacker = null, ent
 {
 	#if DEVELOPER
 	string enumString = GetEnumString( "eSurvivalEventType", event )
-	
+
 	printt( FUNC_NAME(), "eSurvivalEventType:", enumString, event )
 	#endif
 
@@ -271,25 +271,28 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 	{
 		if( !IsValid( player ) )
 			continue
-		
+
 		string responseName
 		int insideNextCircleMates = 0
 		foreach( squadMates in GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
 		{
 			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
 				continue
-			
+
 			insideNextCircleMates++
 		}
-		
-		if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
-			responseName = "bc_newCircle_wholeSquadNotInCircle"
-		else if ( SURVIVAL_IsFinalDeathFieldStage() )
-			responseName = "bc_circleTimerStartFinal"
-		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
-			responseName = "bc_nextCircleFar"
-		else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
-			responseName = "bc_insideNextCircle"
+
+		if( RandomInt( 100 ) <= CHANCE_FOR_CIRCLE_TIMER_CHANT || SURVIVAL_IsFinalDeathFieldStage() )
+		{
+			if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+				responseName = "bc_newCircle_wholeSquadNotInCircle"
+			else if ( SURVIVAL_IsFinalDeathFieldStage() && RandomInt( 100 ) <= CHANCE_FOR_END_CIRCLE_CHANTING )
+				responseName = "bc_circleTimerStartFinal"
+			else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
+				responseName = "bc_nextCircleFar"
+			else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+				responseName = "bc_insideNextCircle"
+		}
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
@@ -310,14 +313,17 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 		{
 			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
 				continue
-			
+
 			insideNextCircleMates++
 		}
-		
-		if( SURVIVAL_IsFinalDeathFieldStage() )
-			responseName = "bc_circleClosingFinal"
-		else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
-			responseName = "bc_circleMoving_allOutside"
+
+		if( RandomInt( 100 ) <= CHANCE_FOR_CIRCLE_TIMER_CHANT )
+		{
+			if( SURVIVAL_IsFinalDeathFieldStage() )
+				responseName = "bc_circleClosingFinal"
+			else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
+				responseName = "bc_circleMoving_allOutside"
+		}
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
@@ -328,7 +334,7 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 {
 	if( !IsValid( killer ) )
 		killer = null
-	
+
 	foreach( player in GetPlayerArray_Alive() )
 	{
 		if( !IsValid( player ) )
