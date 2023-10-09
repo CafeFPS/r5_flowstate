@@ -816,12 +816,12 @@ void function Infection_GameLoop()
 	FS_INFECTION.forceLegendsWin = false
 	FS_INFECTION.wonByAllLegendsKilled = false
 	
-	FS_INFECTION.endTime = Time() + 400
+	FS_INFECTION.endTime = Time() + GetCurrentPlaylistVarFloat("Infection_Round_LimitTime", 300 )
 	FS_INFECTION.ringBoundary = CreateRingBoundary_Infection(FS_INFECTION.selectedLocation)
 	
 	while( Time() <= FS_INFECTION.endTime )
 	{
-		if(Time() == FS_INFECTION.endTime-GetCurrentPlaylistVarFloat("Infection_Round_LimitTime", 300 )/2 && !FS_INFECTION.moreThanHalfRound)
+		if(Time() == FS_INFECTION.endTime - GetCurrentPlaylistVarFloat("Infection_Round_LimitTime", 300 )/2 && !FS_INFECTION.moreThanHalfRound)
 		{
 			FS_INFECTION.moreThanHalfRound = true
 		}
