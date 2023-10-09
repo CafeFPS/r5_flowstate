@@ -166,67 +166,57 @@ void function ServerWeaponWallUseSuccess( entity usableWeaponWall, entity player
 	int activeWeaponInt = SURVIVAL_GetActiveWeaponSlot( player )
 	entity activeWeapon = player.GetNormalWeapon( activeWeaponInt )
 
-	if  ( !IsValid( primary ) )
+	if( !IsValid( primary ) )
 	{
-		weapon = GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	}
-	else if ( !IsValid( secondary ) )
+	else if( !IsValid( secondary ) )
 	{
-		weapon = GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		GiveWeaponToPlayer( player, weaponName, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	}
-	else if ( IsValid( activeWeapon ) )
+	else if( IsValid( activeWeapon ) )
 	{
-		weapon = SwapWeaponToPlayer( player, activeWeapon, weaponName, activeWeaponInt )
+		SwapWeaponToPlayer( player, activeWeapon, weaponName, activeWeaponInt )
 	}
-
-	if ( PlayerHasWeapon( player, weaponName ) ) player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, weaponName )
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
 	
 	if(IsValid(usableWeaponWall))
 		usableWeaponWall.Destroy()
-	
-	if( IsValid(weapon) && player.p.hasQuickReloadPerk )
-	{
-		array<string> mods = weapon.GetMods()
-		mods.append( "infectionPerkQuickReload" )
-		try{weapon.SetMods( mods )} catch(e42069){printt(weapon.GetWeaponClassName() + " failed to put quick reload mod.")}
-	}
-	
-	if( IsValid(weapon) && player.p.hasBetterMagsPerk )
-	{
-		array<string> mods = weapon.GetMods()
-		foreach(mag in InfectionMags)
-		{
-			if( CanAttachToWeapon( mag, weapon.GetWeaponClassName() ) )
-				mods.append( mag )
-		}
-		try{weapon.SetMods( mods )} catch(e42069){printt(weapon.GetWeaponClassName() + " failed to put mag mod.")}
-	}
 }
 
 // Give a weapon to the player without swap
-entity function GiveWeaponToPlayer( entity player, string weaponName, int inventorySlot )
+void function GiveWeaponToPlayer( entity player, string weaponName, int inventorySlot )
 {
-	entity weapon = player.GiveWeapon( weaponName, inventorySlot, [], false )
-	
-	SetupInfiniteAmmoForWeapon( player, weapon )
-	
-	player.DeployWeapon()
+	player.AmmoPool_SetCapacity( 0 )
+	entity weapon = player.GiveWeapon( weaponName, inventorySlot )
 
-	return weapon
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+	player.AmmoPool_SetCapacity( 65535 )
+	player.AmmoPool_SetCount( ammoType, 65535 )
+	weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
 }
 
 
 // Give a weapon to the player with swap
-entity function SwapWeaponToPlayer( entity player, entity weaponSwap, string weaponName, int inventorySlot )
-{
-	entity weapon
+void function SwapWeaponToPlayer( entity player, entity weaponSwap, string weaponName, int inventorySlot )
+{	
+	player.DropWeapon( weaponSwap )
+	weaponSwap.Destroy()
+	player.DisableWeapon()
 
-	player.TakeWeaponByEntNow( weaponSwap )
-	weapon = player.GiveWeapon( weaponName, inventorySlot )
+	entity weapon = player.GiveWeapon( weaponName, inventorySlot, [], true )
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+	weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
+	
+	player.EnableWeaponWithSlowDeploy()
+	player.DeployWeapon()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, inventorySlot )
 
-	return weapon
+	player.AmmoPool_SetCapacity( 65535 )
+	player.AmmoPool_SetCount( ammoType, 65535 )
 }
 #endif // SERVER
 
