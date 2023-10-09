@@ -288,7 +288,12 @@ void function INFECTION_QuickHint(int index, bool isInfectedPlayer, int eHandle)
 		case -22:
 		QuickHint("", "You got Satchel Ability Perk", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
-		break			
+		break
+
+		case -23:
+		QuickHint("", "Choosing Alpha Infected in 5 seconds.", false, 3)
+		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
+		break		
 	}
 	
 	if(index < 0) return

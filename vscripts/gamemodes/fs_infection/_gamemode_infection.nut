@@ -748,7 +748,12 @@ void function Infection_GameLoop()
 		foreach(player in GetPlayerArray_Alive())
 			Remote_CallFunction_NonReplay( player, "ServerCallback_ModeShadowSquad_AnnouncementSplash", eShadowSquadMessage.INFECTION_HAS_STARTED, 6 )
 			
-		wait 35
+		wait 20
+		
+		foreach(player in GetPlayerArray_Alive())
+			Remote_CallFunction_NonReplay( player, "INFECTION_QuickHint", -23, false, 0)
+
+		wait 5
 		
 		if(GetGameState() == eGameState.MapVoting) return
 		

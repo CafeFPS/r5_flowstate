@@ -1025,6 +1025,10 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 		case eShadowSquadMessage.INFECTION_HAS_STARTED:
 			messageText = "AN INFECTION IS EMERGING"
 			subText = "Remain as survivor to win"
+			
+			if( GameRules_GetGameMode() == "fs_infected" )
+				subText = "              Choosing Alpha Infected.\nSurvive and take the EVAC ship to win."
+
 			leftIcon = ANNOUNCEMENT_SHADOW_ICON
 			rightIcon = ANNOUNCEMENT_SHADOW_ICON
 			break
