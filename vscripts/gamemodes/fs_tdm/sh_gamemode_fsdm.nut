@@ -945,6 +945,24 @@ void function Sh_CustomTDM_Init()
 		case "mp_flowstate":
 		if( GetCurrentPlaylistName() == "fs_haloMod" )
 		{
+
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"Narrows",
+					[
+						//a
+						NewLocPair(<44283.6914, -10554.7461, -20494.6563> , <0, 180, 0>)
+						NewLocPair(<44034.75, -9440.18555, -20431.0566> , <0, 180, 0>)
+						
+						//b
+						NewLocPair(<39965.9688, -9465.57813, -20431.0566> , <0, 0, 0>)
+						NewLocPair(<39809.4609, -10554.8604, -20494.6563> , <0, 0, 0>)
+
+					],
+					<0, 0, 3000>
+				)
+			)		
+		
 			Shared_RegisterLocation(
 				NewLocationSettings(
 					"The Pit",
@@ -966,6 +984,7 @@ void function Sh_CustomTDM_Init()
 				)
 			)
 
+
 			Shared_RegisterLocation(
 				NewLocationSettings(
 					"Lockout",
@@ -986,9 +1005,10 @@ void function Sh_CustomTDM_Init()
 						NewLocPair(<41230.1133, -10046.1729, -20795.8379> , <0, -91.0725632, 0>),
 						NewLocPair(<41946.5195, -9054.60156, -20763.9609> , <0, -179.685928, 0>)
 					],
-					<0, 0, 3000>//,$"rui/flowstatelocations/ttvbuilding"
+					<0, 0, 3000>
 				)
 			)
+
 			// return
 		}
 		break

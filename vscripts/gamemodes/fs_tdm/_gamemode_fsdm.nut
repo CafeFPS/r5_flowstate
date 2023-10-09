@@ -44,8 +44,13 @@ global function SendScoreboardToClient
 global function GetMainRingBoundary
 global function GetScoreboardShowingState
 global function is1v1EnabledAndAllowed
+global function ForceSaveOgSkyboxOrigin
+
+//cool stuff
 global function SpawnCyberdyne
 global function SpawnLockout
+global function SpawnChill
+
 
 global function HaloMod_Cyberdyne_CreateFanPusher
 global function HisWattsons_HaloModFFA_KillStreakAnnounce
@@ -160,6 +165,7 @@ void function _CustomTDM_Init()
 	{
 		PrecacheCyberdyne()
 		PrecacheLockout()
+		PrecacheChill()
 		if( GetMapName() == "fs_haloMod" )
 		{
 			VOTING_PHASE_ENABLE = false
@@ -645,6 +651,9 @@ void function _OnPlayerConnected(entity player)
 					} else if( file.selectedLocation.name == "The Pit" )
 					{
 						Remote_CallFunction_Replay(player, "FS_ForceAdjustSunFlareParticleOnClient", 1 )
+					} else if( file.selectedLocation.name == "Narrows" )
+					{
+						Remote_CallFunction_Replay(player, "FS_ForceAdjustSunFlareParticleOnClient", 2 )
 					}
 					
 					if( GetMapName() == "mp_flowstate" )
@@ -1630,6 +1639,7 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
+		"mp_weapon_halosmg",
 		"mp_weapon_haloassaultrifle",
 		"mp_weapon_halobattlerifle"
 	]
@@ -2517,6 +2527,10 @@ void function SimpleChampionUI()
 		case "Lockout":
 		thread SpawnLockout()
 		break
+		
+		case "Narrows":
+		thread SpawnChill()
+		break
 	}
 	
 	if( file.currentRound > 1 )
@@ -2552,6 +2566,8 @@ void function SimpleChampionUI()
 				
 				if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
 					wait Flowstate_StartTimeDelay
+				
+				Message( player, file.selectedLocation.name, "", 5, "" )
 
 				if( !IsValid( player ) || !IsAlive( player ) )
 					return
@@ -2589,7 +2605,10 @@ void function SimpleChampionUI()
 	if( file.selectedLocation.name == "Lockout" )
 	{
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
-	}
+	} else if( file.selectedLocation.name == "Narrows" )
+	{
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
+	} 
 
 	string subtext = ""
 	// if( GetCurrentPlaylistName() != "fs_haloMod" )
@@ -2603,7 +2622,7 @@ void function SimpleChampionUI()
 
 	foreach( player in GetPlayerArray() )
 	{
-		//Message( player, file.selectedLocation.name, subtext, 5, "" )
+		// Message( player, file.selectedLocation.name, "", 5, "" )
 		file.previousChampion = GetBestPlayer()
 		file.previousChallenger = PlayerWithMostDamage()
 		GameRules_SetTeamScore( player.GetTeam(), 0 )
@@ -3322,7 +3341,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Movement Gym" )
         ringRadius = 99999
 
-    if ( file.selectedLocation.name == "The Pit" || file.selectedLocation.name == "Lockout"  )
+    if ( file.selectedLocation.name == "The Pit" || file.selectedLocation.name == "Lockout"  || file.selectedLocation.name == "Narrows" )
         ringRadius = 99999
 
     if( is1v1EnabledAndAllowed() ) //we dont need rings in 1v1 mode
@@ -4953,7 +4972,7 @@ bool function GetScoreboardShowingState()
 
 void function SetCommonLinesForMapProp( entity chunk, float scale )
 {
-    chunk.kv.fadedist = -1
+    chunk.kv.fadedist = 999999
     chunk.kv.rendermode = 0
     chunk.kv.renderamt = 1
     chunk.kv.solid = 0
@@ -5048,6 +5067,8 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 	{
 		#if DEVELOPER
 		FlagWait( "EntitiesDidLoad" ) //for when I load the map via _mapspawn
+
+		ForceSaveOgSkyboxOrigin()
 		#endif
 		
 		if( GetMapName() == "mp_flowstate" )
@@ -5121,6 +5142,8 @@ void function SpawnLockout() //Halo 2 Encerrona
 	{
 		#if DEVELOPER
 		FlagWait( "EntitiesDidLoad" ) //for when I load the map via _mapspawn
+		
+		ForceSaveOgSkyboxOrigin()
 		#endif
 
 		//Spawn Lift.
@@ -5191,6 +5214,128 @@ void function SpawnLockout() //Halo 2 Encerrona
 	
 }
 
+void function SpawnChill()
+{
+	if( GetMapName() != "mp_flowstate" )
+		return
+
+	vector startingpos = Vector(42000, -10000, -26000) //Vector( 0,0,2000 ) // 
+	vector startingang = Vector(0,-90,0)
+	float scale = 300
+
+	//anillo
+	entity anillo = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( anillo, scale/10 )
+	DispatchSpawn( anillo )
+
+	//seccion1
+	entity seccion1 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion1, scale )
+	DispatchSpawn( seccion1 )
+
+	//seccion2
+	entity seccion2 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion2, scale )
+	DispatchSpawn( seccion2 )
+	
+	//seccion3
+	entity seccion3 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion3, scale )
+	DispatchSpawn( seccion3 )
+	
+	//seccion4
+	entity seccion4 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion4, scale )
+	DispatchSpawn( seccion4 )
+	
+	//secccion5
+	entity seccion5 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion5, scale )
+	DispatchSpawn( seccion5 )
+
+	//seccion6
+	entity seccion6 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion6, scale )
+	DispatchSpawn( seccion6 )
+	
+	//seccion7
+	entity seccion7 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion7, scale )
+	DispatchSpawn( seccion7 )
+	
+	//seccion8
+	entity seccion8 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion8, scale )
+	DispatchSpawn( seccion8 )
+	
+	//seccion9
+	entity seccion9 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion9, scale )
+	DispatchSpawn( seccion9 )
+	
+	//seccion10
+	entity seccion10 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion10, scale )
+	DispatchSpawn( seccion10 )
+	
+	//collision
+	array < entity > collisionModel
+	collisionModel.extend( Chill_Load1( startingpos ) )
+	collisionModel.extend( Chill_Load2( startingpos ) )
+
+	
+	thread function () : ( startingpos )
+	{
+		#if DEVELOPER
+		FlagWait( "EntitiesDidLoad" ) //for when I load the map via _mapspawn
+		
+		ForceSaveOgSkyboxOrigin()
+		#endif
+		//Lightning.
+		FS_ResetMapLightning()
+		WaitFrame()
+
+		SetConVarFloat( "jump_graceperiod", 0 )
+		SetConVarFloat( "mat_envmap_scale", 0.12 )
+
+		SetConVarFloat( "mat_autoexposure_max", 1.0 )
+		SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
+		SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
+		SetConVarFloat( "mat_autoexposure_min", 1.7 )
+
+		SetConVarFloat( "mat_sky_scale", 0.01 )
+		SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
+		SetConVarFloat( "mat_sun_scale", 1 )
+		SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
+	
+		//cannons
+		file.playerSpawnedProps.append( FSCannon_Create( <40676.5586, -10610.1416, -20472.6426>, 48, <1.0, 0.0, 1.0>) )
+		file.playerSpawnedProps.append( FSCannon_Create( <43311.0898, -10610.4277, -20470.5313>, 48, <-1.0, 0.0, 1.0>) )
+	
+		//Wind column effect, two so we complete a cylinder-like shape
+		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <40676.5586, -10610.1416, -20435>, Vector( -30, 0, 0 ) ) )
+		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <43311.0898, -10610.4277, -20435>, Vector( -30, -180, 0 ) ) )
+		
+		//Adjust sun flare for rotated skybox.
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			Remote_CallFunction_Replay( player, "FS_ForceAdjustSunFlareParticleOnClient", 2 ) //chill 
+		}
+
+		if( GetMapName() == "mp_flowstate" )
+		{
+			//Rotate skybox for Chill map.
+			entity skyboxCamera = GetEnt( "skybox_cam_level" )
+			skyboxCamera.SetOrigin( file.ogSkyboxOrigin + <0, 0, 85> )
+			skyboxCamera.SetAngles( <0, 67, 0> ) //Chill
+		}
+	}()
+}
+
 void function FS_ResetMapLightning()
 {
 	SetConVarToDefault( "mat_sun_color" )
@@ -5201,4 +5346,13 @@ void function FS_ResetMapLightning()
 	SetConVarToDefault( "mat_autoexposure_min" )
 	SetConVarToDefault( "mat_autoexposure_max_multiplier" )
 	SetConVarToDefault( "mat_autoexposure_max" )
+	SetConVarToDefault( "mat_bloom_max_lighting_value" )
+	SetConVarToDefault( "jump_graceperiod" )
+	SetConVarToDefault( "mat_envmap_scale" )
+}
+
+void function ForceSaveOgSkyboxOrigin()
+{
+	entity skyboxCamera = GetEnt( "skybox_cam_level" )
+	file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
 }

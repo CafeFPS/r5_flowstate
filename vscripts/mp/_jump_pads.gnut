@@ -4,6 +4,9 @@
 global function JumpPad_Init
 global function JumpPad_CreatedCallback
 
+//custom cannon
+global function FSCannon_Create
+
 const float JUMP_PAD_PUSH_RADIUS = 45.0
 const float JUMP_PAD_PUSH_PROJECTILE_RADIUS = 32.0//98.0
 
@@ -24,6 +27,9 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 void function JumpPad_Init()
 {
 	RegisterSignal("JumpPadStart")
+	PrecacheParticleSystem( TEAM_JUMPJET_DBL )
+	PrecacheParticleSystem( ENEMY_JUMPJET_DBL )
+	PrecacheParticleSystem( $"P_s2s_flap_wind" )
   	AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
 }
 
@@ -358,6 +364,193 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 }
 
 bool function JumpPad_ShouldPushPlayerOrNPC( entity target )
+{
+	if ( target.IsTitan() )
+		return false
+
+	if ( IsSuperSpectre( target ) )
+		return false
+
+	if ( IsTurret( target ) )
+		return false
+
+	if ( IsDropship( target ) )
+		return false
+
+	return true
+}
+
+
+
+//Cannon
+
+entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
+{
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )	
+	trigger.SetRadius( pushRadius )
+	trigger.SetAboveHeight( 32 )
+	trigger.SetBelowHeight( 16 ) //need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
+	trigger.SetOrigin( origin )
+	trigger.SetAngles( <0,0,0> )
+	trigger.SetTriggerType( TT_JUMP_PAD )
+	trigger.SetLaunchScaleValues( 870, 1.7 )
+	// trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
+	trigger.SetLaunchDir( dir )
+	trigger.UsePointCollision()
+	trigger.kv.triggerFilterNonCharacter = "0"
+	DispatchSpawn( trigger )
+	trigger.SetEnterCallback( OnFSCannonAreaEnter )
+	
+	EmitSoundOnEntity( trigger, "HoverTank_Emit_EdgeWind")
+	
+	return trigger
+	// #if DEVELOPER
+	// DrawAngledBox( trigger.GetOrigin(), Vector( 0,0,0 ), <pushRadius,pushRadius,pushRadius>, <pushRadius,pushRadius,pushRadius>, 255, 0, 0, true, 15 )
+	// #endif
+
+	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_UNASSIGNED, JUMP_PAD_TARGETNAME )
+	// traceBlocker.SetBox( cannon.GetBoundingMins(), cannon.GetBoundingMaxs())
+	// traceBlocker.SetParent( trigger )
+}
+
+void function OnFSCannonAreaEnter( entity trigger, entity ent )
+{
+	if( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+
+	ent.kv.gravity = 0.45 //seems to be a thing in retail
+	DisableOffhandWeapons( ent) 
+
+	FSCannonPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
+}
+
+void function FSCannonAirborne( entity player ) 
+{
+	if ( !IsValid( player ) || !player.IsPlayer() )
+		return
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	//1p sound playing in cl_jump_pads
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_Ascent_Windrush" )
+	
+	EmitSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+	
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.kv.gravity = 1
+				StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+				StopSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
+			}
+		}
+	)
+	
+	WaitFrame()
+	
+	while( IsValid(player) && !player.IsOnGround() )
+	{
+		WaitFrame()
+	}
+}
+
+void function FSCannon_JumpJetsWhileAirborne( entity player )
+{
+	if ( !IsPilot( player ) )
+		return
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.Signal( "JumpPadStart" )
+	player.EndSignal( "JumpPadStart" )
+	player.EnableSlowMo()
+
+	player.DisableMantle()
+	player.MovementDisable()
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
+
+	array<entity> jumpJetFXs
+	array<string> attachments = [ "vent_left", "vent_right" ]
+	int team                  = player.GetTeam()
+	foreach ( attachment in attachments )
+	{
+		int friendlyID    = GetParticleSystemIndex( TEAM_JUMPJET_DBL )
+		entity friendlyFX = StartParticleEffectOnEntity_ReturnEntity( player, friendlyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		friendlyFX.SetOwner( player )
+		SetTeam( friendlyFX, team )
+		friendlyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+		jumpJetFXs.append( friendlyFX )
+
+		int enemyID    = GetParticleSystemIndex( ENEMY_JUMPJET_DBL )
+		entity enemyFX = StartParticleEffectOnEntity_ReturnEntity( player, enemyID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		SetTeam( enemyFX, team )
+		enemyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
+		jumpJetFXs.append( enemyFX )
+	}
+
+	OnThreadEnd(
+		function() : ( jumpJetFXs, player )
+		{
+			foreach ( fx in jumpJetFXs )
+			{
+				if ( IsValid( fx ) )
+					fx.Destroy()
+			}
+
+			if ( IsValid( player ) )
+			{
+				player.kv.gravity = 1
+				EnableOffhandWeapons( player )
+				player.DisableSlowMo()
+				player.EnableMantle()
+				player.MovementEnable()
+				StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+			}
+		}
+	)
+
+	wait 0.1
+
+	while( IsValid( player ) && !player.IsOnGround() )
+	{
+		WaitFrame()
+	}
+
+}
+
+void function FSCannonPushEnt( entity trigger, entity ent, vector origin, vector angles )
+{
+	if ( FSCannon_ShouldPushPlayerOrNPC( ent ) )
+	{
+		if ( ent.IsPlayer() )
+		{
+			// entity jumpPad = trigger.GetOwner()
+			// if ( IsValid( jumpPad ) )
+			// {
+				// if ( !Bleedout_IsBleedingOut( ent ) && GameRules_GetGameMode() != "fs_duckhunt")
+				// {
+					// thread JumpPad_GiveDoubleJump( ent )
+				// }
+				
+				// int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
+				// StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+			// }
+			thread FSCannonAirborne( ent )
+			thread FSCannon_JumpJetsWhileAirborne( ent )
+		}
+		else
+		{
+			EmitSoundOnEntity( ent, "JumpPad_LaunchPlayer_3p" )
+			EmitSoundOnEntity( ent, "JumpPad_AirborneMvmt_3p" )
+		}
+	}
+}
+
+bool function FSCannon_ShouldPushPlayerOrNPC( entity target )
 {
 	if ( target.IsTitan() )
 		return false

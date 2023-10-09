@@ -294,6 +294,7 @@ global enum eDamageSourceId
 	//custom
 	mp_weapon_raygun
 	mp_weapon_haloshotgun
+	mp_weapon_halosmg
 	mp_weapon_halomagnum
 	mp_weapon_halobattlerifle
 	mp_weapon_haloassaultrifle

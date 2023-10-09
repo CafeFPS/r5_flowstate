@@ -142,7 +142,7 @@ void function Train_StartTrainMovement()
 	file.lastStationCrossed = file.trainStations.getrandom()
 	#endif
 	
-	printt("TRAIN SPAWNING AT: " + file.lastStationCrossed.kv.script_noteworthy + " - Train server script by @CafeFPS. ( WIP )")
+	printt("TRAIN SPAWNING AT: " + file.lastStationCrossed.kv.script_noteworthy ) // + " - Train server script by @CafeFPS. ( WIP )")
 
 	// Get all cars, don't add trainhead
 	array<entity> cars = []

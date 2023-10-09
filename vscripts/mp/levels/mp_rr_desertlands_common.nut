@@ -8,6 +8,7 @@ global function Desertlands_MU1_MapInit_Common
 global function Desertlands_MU1_EntitiesLoaded_Common
 global function Desertlands_MU1_UpdraftInit_Common
 global function Desertlands_SetTrainEnabled
+global function	Geyser_JumpJetsWhileAirborne
 #endif
 
 

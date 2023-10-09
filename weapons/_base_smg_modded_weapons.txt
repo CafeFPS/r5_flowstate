@@ -120,9 +120,9 @@ WeaponData
     "spread_kick_on_fire_crouch_hip"  				"0"
     "spread_kick_on_fire_air_hip" 					"0"
 
-    "spread_max_kick_stand_hip"   					"0.5"
-    "spread_max_kick_crouch_hip"  					"0.5"
-    "spread_max_kick_air_hip" 						"0.5"
+    "spread_max_kick_stand_hip"   					"0.1"
+    "spread_max_kick_crouch_hip"  					"0.1"
+    "spread_max_kick_air_hip" 						"0.1"
 
     "spread_decay_delay"  							"0.1"
     "spread_decay_rate"   							"200"
