@@ -416,14 +416,27 @@ void function CodeCallback_MapSpawn() // original script entry point
 	// PrecacheWeapon( $"mp_weapon_plasma_grenade_halomod" )
 	
 	#if DEVELOPER
-	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" || GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_rr_canyonlands_staging" )
+	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" )
 	{
 		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
 		RegisterSignal( "FS_ForceDestroyAllLifts" )
 		// SpawnLockout()
-		SpawnCyberdyne()
+		// SpawnCyberdyne()
+		SpawnChill()
 	}
 	#endif
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl" )
 	
 	//PrecacheModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
 	PrecacheModel( $"mdl/fx/ar_marker_ringwobble.rmdl" )

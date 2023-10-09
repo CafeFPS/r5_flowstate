@@ -1,5 +1,5 @@
 //custom
-global string FLOWSTATE_VERSION = "v4.0"
+global string FLOWSTATE_VERSION = "v4.0 indev"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
 global const int BOOSTZONE_ALIVE_TIME = 15
 
@@ -723,6 +723,7 @@ global const DLIGHT_WHITE  = < 1, 1, 1 >
 global const DLIGHT_RED    = < 1, 0, 0 >
 global const DLIGHT_GREEN  = < 0, 1, 0 >
 global const DLIGHT_BLUE   = < 0, 0, 1 >
+global const DLIGHT_LIGHTBLUE   = < 2.6, 7.23, 11 >
 global const DLIGHT_YELLOW = < 1, 1, 0 >
 global const DLIGHT_PURPLE = < 1, 0, 1 >
 

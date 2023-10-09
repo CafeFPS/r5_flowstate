@@ -282,14 +282,17 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 			insideNextCircleMates++
 		}
 		
-		if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
-			responseName = "bc_newCircle_wholeSquadNotInCircle"
-		else if ( SURVIVAL_IsFinalDeathFieldStage() )
-			responseName = "bc_circleTimerStartFinal"
-		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
-			responseName = "bc_nextCircleFar"
-		else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
-			responseName = "bc_insideNextCircle"
+		if( RandomInt( 100 ) <= CHANCE_FOR_CIRCLE_TIMER_CHANT || SURVIVAL_IsFinalDeathFieldStage() )
+		{
+			if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+				responseName = "bc_newCircle_wholeSquadNotInCircle"
+			else if ( SURVIVAL_IsFinalDeathFieldStage() && RandomInt( 100 ) <= CHANCE_FOR_END_CIRCLE_CHANTING )
+				responseName = "bc_circleTimerStartFinal"
+			else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
+				responseName = "bc_nextCircleFar"
+			else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+				responseName = "bc_insideNextCircle"
+		}
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
@@ -314,11 +317,13 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 			insideNextCircleMates++
 		}
 		
-		if( SURVIVAL_IsFinalDeathFieldStage() )
-			responseName = "bc_circleClosingFinal"
-		else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
-			responseName = "bc_circleMoving_allOutside"
-
+		if( RandomInt( 100 ) <= CHANCE_FOR_CIRCLE_TIMER_CHANT )
+		{
+			if( SURVIVAL_IsFinalDeathFieldStage() )
+				responseName = "bc_circleClosingFinal"
+			else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
+				responseName = "bc_circleMoving_allOutside"
+		}
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
