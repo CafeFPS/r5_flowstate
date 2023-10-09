@@ -498,7 +498,7 @@ void function SetHighlightForMysteryBoxWeapon( entity prop, string weaponname )
 
 	string highlight = SURVIVAL_GetHighlightForTier( lootTier )
 	
-	printt("Debug LootData: " + weaponname + ref + lootType + lootTier)
+	//printt("Debug LootData: " + weaponname + ref + lootType + lootTier)
 	
 	SetSurvivalPropHighlight( prop, highlight, false )
 }
