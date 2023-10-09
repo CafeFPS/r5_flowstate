@@ -95,7 +95,7 @@ void function Open_FSDM_VotingPhase()
 			break
 						
 			case "fs_infected":
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS INFECTION" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS INFECTED" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS" )
 			break
 			

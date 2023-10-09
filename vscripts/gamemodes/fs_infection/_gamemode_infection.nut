@@ -9,7 +9,7 @@ global function _GamemodeInfection_Init
 global function _RegisterLocationINFECTION
 global function FlowstateInfection_CallEvac
 
-bool colombiaDebug = true
+bool colombiaDebug = false
 global const float SURVIVOR_STREAK_ANNOUNCE_TIME = 5
 global const int ADD_ALPHA_EVERY_X_PLAYERS = 10
 bool VOTING_PHASE_ENABLE_INFECTED = true

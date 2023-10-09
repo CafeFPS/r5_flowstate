@@ -525,16 +525,16 @@ void function StartShadowFx( entity player )
 		if ( player.LookupAttachment( attachName ) > 0 )
 		{
 			eyeFX = StartParticleEffectOnEntity_ReturnEntity( player, PrecacheParticleSystem( $"P_BShadow_eye" ), FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachName ) )
-			//player.p.shadowAttachedEntities.append(eyeFX)
-			// eyeFX.SetOwner( player )
-			// eyeFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // Don't show the effects to owner
+			player.p.shadowAttachedEntities.append(eyeFX)
+			eyeFX.SetOwner( player )
+			eyeFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // Don't show the effects to owner
 		}
 	}
 
 	bodyFX = StartParticleEffectOnEntity_ReturnEntity( player, PrecacheParticleSystem( $"P_Bshadow_body" ), FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( "CHESTFOCUS" ) )
-	// player.p.shadowAttachedEntities.append(bodyFX)
-	// bodyFX.SetOwner( player )
-	// bodyFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // Don't show the effects to owner
+	player.p.shadowAttachedEntities.append(bodyFX)
+	bodyFX.SetOwner( player )
+	bodyFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // Don't show the effects to owner
 	
 	//Find a way to disable ragdolls and death anims on shadows
 }
