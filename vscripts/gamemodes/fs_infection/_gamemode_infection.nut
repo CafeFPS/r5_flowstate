@@ -12,6 +12,7 @@ global function FlowstateInfection_CallEvac
 bool colombiaDebug = true
 global const float SURVIVOR_STREAK_ANNOUNCE_TIME = 5
 global const int ADD_ALPHA_EVERY_X_PLAYERS = 10
+bool VOTING_PHASE_ENABLE_INFECTED = true
 
 struct{
 	bool isAlphaMoment = false
@@ -353,7 +354,7 @@ void function Infection_Lobby()
 		if( !IsAlive( player ) )
 		{
 			player.kv.jumpHeight = 100
-			DoRespawnPlayer(player, null)
+			//DoRespawnPlayer(player, null)
 		}
 		
 		StopSoundOnEntity(player, "ShadowLegend_Shadow_Loop_3P")
@@ -405,70 +406,62 @@ void function Infection_Lobby()
 		Remote_CallFunction_NonReplay(player, "Infection_DestroyEvacCountdown")
 		
 		SetTeam(player, TEAM_IMC)
+		
+		if( IsAlive( player ) )
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 	}
-	
-	if( !colombiaDebug )
+
+	if( !VOTING_PHASE_ENABLE_INFECTED )
+	{
+		WaitFrame()
+	} else{
+			thread function() : ()
+			{
+				if(FS_INFECTION.locationSettings.len() < NUMBER_OF_MAP_SLOTS_FSDM) 
+				{
+					VOTING_PHASE_ENABLE_INFECTED = false
+					return
+				}
+
+				for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
+				{
+					while( true )
+					{
+						// Get a random location id from the available locations
+						int randomId = RandomIntRange(0, FS_INFECTION.locationSettings.len())
+
+						// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
+						if( !FS_INFECTION.mapIds.contains( randomId ) )
+						{
+							FS_INFECTION.mapIds.append( randomId )
+							break
+						}
+					}
+				}
+			}()
+			
+	}
+
+	if( VOTING_PHASE_ENABLE_INFECTED ) //&& !colombiaDebug )
 	{
 		ResetMapVotes()
 
-		foreach( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) )
-				continue
-			
-			//reset votes
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateMapVotesClient", FS_INFECTION.mapVotes[0], FS_INFECTION.mapVotes[1], FS_INFECTION.mapVotes[2], FS_INFECTION.mapVotes[3])
-			
-			//launch champion screen + voting phase
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_ChampionScreenHandle", true, FS_INFECTION.winnerTeam, 0)
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.WinnerScreen, FS_INFECTION.winnerTeam, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-		}
-
-		thread function() : ()
-		{
-			for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
-			{
-				while( true )
-				{
-					// Get a random location id from the available locations
-					int randomId = RandomIntRange(0, FS_INFECTION.locationSettings.len())
-
-					// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
-					if( !FS_INFECTION.mapIds.contains( randomId ) )
-					{
-						FS_INFECTION.mapIds.append( randomId )
-						break
-					}
-				}
-			}
-		}()
-		
-		// wait 7
-
-		// foreach( player in GetPlayerArray() )
-		// {
-			// if( !IsValid( player ) )
-				// continue
-			
-			// Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
-			// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, FS_INFECTION.winnerTeam, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
-			// EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
-		// }
-		
-		// wait 7
-		
+		// Set voting to be allowed
 		FS_INFECTION.votingtime = true
-
+		float endtimeVotingTime = Time() + 16
+		
 		// For each player, set voting screen and update maps that are picked for voting
 		foreach( player in GetPlayerArray() )
 		{
 			if( !IsValid( player ) )
 				continue
-
+			
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateMapVotesClient", FS_INFECTION.mapVotes[0], FS_INFECTION.mapVotes[1], FS_INFECTION.mapVotes[2], FS_INFECTION.mapVotes[3])
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_INFECTION.mapIds[0], FS_INFECTION.mapIds[1], FS_INFECTION.mapIds[2], FS_INFECTION.mapIds[3])
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, endtimeVotingTime, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
+			
 		}
 
 		wait 16
@@ -585,7 +578,7 @@ void function Infection_Lobby()
 		printt("Next location center: " + FS_INFECTION.chosenRingCircle + " - Colombia")
 		
 		//wait for timing
-		wait 7
+		wait 5
 
 		// Close the votemenu for each player
 		foreach( player in GetPlayerArray() )
@@ -593,13 +586,18 @@ void function Infection_Lobby()
 			if( !IsValid( player ) )
 				continue
 			
-			ScreenCoverTransition_Player(player, Time() + 1)
+			ScreenCoverTransition_Player(player, Time() + 2)
+		}
+		
+		wait 1
+
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
 		}
-
-		wait 0.5
-		
-		
 		// Clear players the voted for next voting
 		FS_INFECTION.votedPlayers.clear()
 
@@ -723,12 +721,17 @@ void function Infection_GameLoop()
 		MapEditor_SpawnDoor( < 1472.3000, 1888.3000, 15.8000 >, < 0, -90, 0 >, eMapEditorDoorType.Vertical )
 	}
 	
-	foreach(player in GetPlayerArray())
+	if( !VOTING_PHASE_ENABLE_INFECTED )
 	{
-		if(!IsValid(player)) continue
+		foreach(player in GetPlayerArray())
+		{
+			if(!IsValid(player)) continue
+			
+			ScreenCoverTransition_Player(player, Time() + 2)
+		}	
 		
-		ScreenCoverTransition_Player(player, Time() + 1)
-	}	
+		wait 1
+	}
 	
 	foreach( player in GetPlayerArray() ) //tpin all players to selected location
 	{

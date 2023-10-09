@@ -62,7 +62,7 @@ const string PURPLE_SHIELD = "armor_pickup_lv3"
 
 const int Flowstate_StartTimeDelay = 10
 
-global bool VOTING_PHASE_ENABLE = true
+bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
 
 //TDM Saved Weapon List
