@@ -2,10 +2,6 @@ untyped
 
 globalize_all_functions
 
-    //
-    // USE script thread door_map_init() IN CONSOLE TO LOAD THE MAP
-    //
-
 void
 function door_map_precache() {
 
@@ -49,92 +45,97 @@ file
 
 void
 function door_map_init() {
-    #if SERVER
-    AddClientCommandCallback("runrestart", ClientCommand_runrestart)
-    #endif
-
-    thread door_map_precache()
-    wait 2
-    thread door_map()
-    wait 1
-    thread lootbins()
-    thread lootbins_buttons()
-    thread doors()
-    SpawnInfoText()
-    wait 5
-    TeleportPlayers()
+    // AddClientCommandCallback("runrestart", ClientCommand_runrestart)
+	AddCallback_OnClientConnected( TeleportPlayer )
+	AddCallback_EntitiesDidLoad( DoorMapEntitiesDidLoad )
+	door_map_precache()
 }
 
-void function TeleportPlayers()
+void function DoorMapEntitiesDidLoad( )
 {
-    foreach (player in GetPlayerArray()) {
-        player.SetOrigin(file.first_cp)
-    }
+	thread door_map()
+	thread lootbins()
+	thread lootbins_buttons()
+	thread doors()
 }
 
-bool function ClientCommand_runrestart(entity player, array<string> args)
+void function TeleportPlayer( entity player )
 {
-    Message(player, "run restarted!")
-    player.SetPersistentVar("gen", 0)
-    player.SetOrigin(file.first_cp)
-    ResetDoors()
-    destroy_lootbins()
+	if( !IsValid( player ) )
+		return
 
-    return true
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives( player )
+	player.SetOrigin(file.first_cp)
+	Message(player, "Welcome to the Door Map!")
+	SpawnInfoText( player )
 }
+
+// bool function ClientCommand_runrestart(entity player, array<string> args)
+// {
+	// if( !IsValid( player ) )
+		// return
+
+    // Message(player, "run restarted!")
+    // player.SetPersistentVar("gen", 0)
+    // player.SetOrigin(file.first_cp)
+    // ResetDoors()
+    // destroy_lootbins()
+
+    // return true
+// }
 
 
 void
-function SpawnInfoText() {
-    foreach (player in GetPlayerArray()) {
+function SpawnInfoText( entity player ) {
 
-        CreatePanelText(player, "1", "forward", < 0.23, 359.44, 15038.53 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "2", "right", < 1.7361, 1296.582, 15037.6 >, < 0, 89.6289, 0 >, false, 1)
-        CreatePanelText(player, "3", "left", < 809.8999, 1462.2, 15033 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "4", "up", < 1146.9, 2158.5, 15031.6 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "5", "up", < 695.3042, 2158.8, 15158.9 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "6", "left", < 1146.704, 2153.5, 15299.5 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "7", "right", < 678.6013, 2203.906, 15440 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "8", "forward", < 1391.3, 2499.7, 15584.1 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "9", "right", < 2312.2, 2502.1, 15584.1 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "10", "right", < 2557.3, 1768, 15694 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "11", "right", < 2329.9, 2231.1, 15840.1 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "12", "forward", < 2557.3, 1768, 15982 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "13", "forward", < 2508.9, 805.1036, 15982.89 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "14", "forward", < 2511.8, 130.1001, 15980.24 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "15", "left", < 2511.399, -509.1964, 15980.24 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "16", "right", < 2998.8, -914.4966, 15976.5 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "17", "up", < 2583.516, -1340.868, 15983.97 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "18", "forward", < 1685.2, -1187.218, 16096.22 >, < 0, -180, 20 >, false, 1)
-        CreatePanelText(player, "19", "forward", < 757.1541, -1267.28, 16100.17 >, < 0, -180, -15 >, false, 1)
-        CreatePanelText(player, "20", "forward", < -130.1465, -1232.896, 15970.39 >, < 20, -180, 0 >, false, 1)
-        CreatePanelText(player, "21", "forward", < -1373.523, -1192.61, 16034.23 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "22", "up", < -1946.399, -1234.21, 16158.97 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "23", "forward", < -2008.553, -1234.21, 16556.62 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "24", "up", < -3030.099, -1234.21, 16526.93 >, < 0, -180, 0 >, false, 1)
-        CreatePanelText(player, "25", "forward", < -2711.399, -358.8946, 17086.04 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "26", "forward", < -2828.199, 635.2054, 17225.34 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "27", "left", < -2831.899, 1633.906, 17380.26 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "28", "right", < -3031.799, 2445.006, 17519.66 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "29", "left", < -2307.202, 2780.404, 17561.71 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "30", "left", < -2192.393, 3687.328, 17561.71 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "31", "forward", < -2185.993, 4860.828, 17712.3 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "32", "left", < -1441.793, 4762.328, 17712.3 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "33", "up", < -926.0934, 3991.628, 17579.41 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "34", "forward", < -926.095, 3674.026, 17946.8 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "35", "left", < -926.0933, 2880.628, 18294.15 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "36", "forward", < 137.6069, 2358.228, 17994.05 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "37", "forward", < 1174.307, 2358.525, 18285.61 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "38", "left", < 1930.58, 2357.525, 18625.11 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "39", "left", < 1930.584, 2703.522, 18836.21 >, < 0, 0, 0 >, false, 1)
-        CreatePanelText(player, "40", "left", < 1737.381, 3049.821, 19047.61 >, < 0, 180, 0 >, false, 1)
-        CreatePanelText(player, "41", "left", < 1737.379, 2703.821, 19258.71 >, < 0, 180, 0 >, false, 1)
-        CreatePanelText(player, "42", "left", < 1737.38, 2358.223, 19469.21 >, < 0, 180, 0 >, false, 1)
-        CreatePanelText(player, "43", "up", < 1837.904, 1928.428, 19637.9 >, < 0, -90.0002, 0 >, false, 1)
-        CreatePanelText(player, "44", "forward", < 1837.905, 739.2283, 19695.3 >, < 0, -90.0001, 0 >, false, 1)
-        CreatePanelText(player, "Loy and Treeree", "Made by", < 116.8301, 273.84, 15029.93 >, < 0, 0, 0 >, true, 1)
-        CreatePanelText(player, "youtube.com/Treeree", "For map walkthrough!", < -107.8701, 273.84, 15029.93 >, < 0, -180, 0 >, true, 1)
-    }
+	CreatePanelText(player, "1", "forward", < 0.23, 359.44, 15038.53 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "2", "right", < 1.7361, 1296.582, 15037.6 >, < 0, 89.6289, 0 >, false, 1)
+	CreatePanelText(player, "3", "left", < 809.8999, 1462.2, 15033 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "4", "up", < 1146.9, 2158.5, 15031.6 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "5", "up", < 695.3042, 2158.8, 15158.9 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "6", "left", < 1146.704, 2153.5, 15299.5 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "7", "right", < 678.6013, 2203.906, 15440 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "8", "forward", < 1391.3, 2499.7, 15584.1 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "9", "right", < 2312.2, 2502.1, 15584.1 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "10", "right", < 2557.3, 1768, 15694 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "11", "right", < 2329.9, 2231.1, 15840.1 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "12", "forward", < 2557.3, 1768, 15982 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "13", "forward", < 2508.9, 805.1036, 15982.89 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "14", "forward", < 2511.8, 130.1001, 15980.24 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "15", "left", < 2511.399, -509.1964, 15980.24 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "16", "right", < 2998.8, -914.4966, 15976.5 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "17", "up", < 2583.516, -1340.868, 15983.97 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "18", "forward", < 1685.2, -1187.218, 16096.22 >, < 0, -180, 20 >, false, 1)
+	CreatePanelText(player, "19", "forward", < 757.1541, -1267.28, 16100.17 >, < 0, -180, -15 >, false, 1)
+	CreatePanelText(player, "20", "forward", < -130.1465, -1232.896, 15970.39 >, < 20, -180, 0 >, false, 1)
+	CreatePanelText(player, "21", "forward", < -1373.523, -1192.61, 16034.23 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "22", "up", < -1946.399, -1234.21, 16158.97 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "23", "forward", < -2008.553, -1234.21, 16556.62 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "24", "up", < -3030.099, -1234.21, 16526.93 >, < 0, -180, 0 >, false, 1)
+	CreatePanelText(player, "25", "forward", < -2711.399, -358.8946, 17086.04 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "26", "forward", < -2828.199, 635.2054, 17225.34 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "27", "left", < -2831.899, 1633.906, 17380.26 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "28", "right", < -3031.799, 2445.006, 17519.66 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "29", "left", < -2307.202, 2780.404, 17561.71 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "30", "left", < -2192.393, 3687.328, 17561.71 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "31", "forward", < -2185.993, 4860.828, 17712.3 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "32", "left", < -1441.793, 4762.328, 17712.3 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "33", "up", < -926.0934, 3991.628, 17579.41 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "34", "forward", < -926.095, 3674.026, 17946.8 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "35", "left", < -926.0933, 2880.628, 18294.15 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "36", "forward", < 137.6069, 2358.228, 17994.05 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "37", "forward", < 1174.307, 2358.525, 18285.61 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "38", "left", < 1930.58, 2357.525, 18625.11 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "39", "left", < 1930.584, 2703.522, 18836.21 >, < 0, 0, 0 >, false, 1)
+	CreatePanelText(player, "40", "left", < 1737.381, 3049.821, 19047.61 >, < 0, 180, 0 >, false, 1)
+	CreatePanelText(player, "41", "left", < 1737.379, 2703.821, 19258.71 >, < 0, 180, 0 >, false, 1)
+	CreatePanelText(player, "42", "left", < 1737.38, 2358.223, 19469.21 >, < 0, 180, 0 >, false, 1)
+	CreatePanelText(player, "43", "up", < 1837.904, 1928.428, 19637.9 >, < 0, -90.0002, 0 >, false, 1)
+	CreatePanelText(player, "44", "forward", < 1837.905, 739.2283, 19695.3 >, < 0, -90.0001, 0 >, false, 1)
+	CreatePanelText(player, "Loy and Treeree", "Made by", < 116.8301, 273.84, 15029.93 >, < 0, 0, 0 >, true, 1)
+	CreatePanelText(player, "youtube.com/Treeree", "For map walkthrough!", < -107.8701, 273.84, 15029.93 >, < 0, -180, 0 >, true, 1)
 
 }
 

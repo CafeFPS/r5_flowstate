@@ -205,9 +205,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	ReMap_Init()
 	LootTicks_Init()
 
-	if( GetCurrentPlaylistName() == "fs_fallingforever" )
-		InitFallingForever()
-
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
 	RegisterSignal( "MirageSpotted" )
 	RegisterSignal( "forever" )
@@ -447,7 +444,27 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheParticleSystem( $"P_snow_atmo_512" )
 
 	SV_CL_Shared_Init()
-	ClientCommands_Init()	
+	ClientCommands_Init()
+	
+	switch( GetCurrentPlaylistName() )
+	{
+		case "fs_fallingforever":
+		InitFallingForever()
+		break
+		
+		case "fs_doormovementpractice":
+		door_map_init()
+		break
+		
+		case "fs_grapplemovementpractice":
+		grapplemap_init()
+		break
+		
+		case "fs_matlejumppractice":
+		mantlejumpmap_init()
+		break
+	}
+
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )

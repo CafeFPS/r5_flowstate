@@ -2,7 +2,6 @@ untyped
 globalize_all_functions
 
 // Made by Loy and Treeree. 
-// Type 'script thread mantlejumpmap_init()' in Worlds Edge to load the map
 
 void function mantlemap_precache() {
     PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_02.rmdl" )
@@ -49,58 +48,55 @@ struct {
 file
 
 void function mantlejumpmap_init() {
-  thread mantlemap_precache()
-  wait 1
-  thread mantlemap_load()
-  wait 1
-  thread mantlemap_player_setup()
-  wait 1
-  thread mantlemap_SpawnInfoText()
-  wait 1
-  thread mantlemap_reset_doors()
+  AddCallback_OnClientConnected( mantlemap_player_setup )
+  AddCallback_EntitiesDidLoad( MantleJumpMapEntitiesDidLoad )
+  mantlemap_precache()
 }
 
-void function mantlemap_SpawnInfoText() {
-    foreach (player in GetPlayerArray()) {
-        CreatePanelText(player, "12", "", < 2808.018, -28037.01, 23739.73 >, < 0, -179.9997, 0 >, false, 1 )
-        CreatePanelText(player, "11", "", < 1471.772, 10931.9, 24457.32 >, < 0, 89.986, 0 >, false, 1 )
-        CreatePanelText(player, "9", "", < 1936.201, -26709.17, 21599.13 >, < 0, 0, 0 >, false, 1 )
-        CreatePanelText(player, "17", "", < 1937.939, 12683.44, 30704.32 >, < 0, -89.9993, 0 >, false, 1 )
-        CreatePanelText(player, "Hard", "Course", < 2089.4, -7017.9, 18365.4 >, < -15, -90.0001, 0 >, false, 1 )
-        CreatePanelText(player, "14", "", < 1255.536, 12189.64, 27790.52 >, < 0, 90, 0 >, false, 1 )
-        CreatePanelText(player, "12", "", < 1254.773, 11273.9, 25557.85 >, < 0, 89.986, 0 >, false, 1 )
-        CreatePanelText(player, "Loy and Treeree", "Made by:", < 2216, -6772.2, 18288.4 >, < 0, -0.0001, 0 >, false, 1 )
-        CreatePanelText(player, "8", "", < 1968.266, -25003.8, 21001.33 >, < 0, 0, 0 >, false, 1 )
-        CreatePanelText(player, "2", "", < 3090.481, 11751.27, 15211.33 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "18", "", < 1979.999, 13474.49, 31602 >, < 0, 89.986, 0 >, false, 1 )
-        CreatePanelText(player, "10", "", < 1262.772, 10591.9, 23353.32 >, < 0, 89.986, 0 >, false, 1 )
-        CreatePanelText(player, "1", "", < 3088.958, 12428.77, 14204.52 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "6", "", < 1513.766, 10177.18, 19229.32 >, < 0, 179.998, 0 >, false, 1 )
-        CreatePanelText(player, "7", "", < 1603.318, 9425.265, 20230.32 >, < 0, -90.0021, 0 >, false, 1 )
-        CreatePanelText(player, "13", "", < 1255.536, 11566.54, 26758.52 >, < 0, 90, 0 >, false, 1 )
-        CreatePanelText(player, "10", "", < 3058.363, -27627.1, 22115.23 >, < 0.0001, -90.0066, 0 >, false, 1 )
-        CreatePanelText(player, "16", "", < 1937.937, 12864.44, 29869.52 >, < 0, 90, 0 >, false, 1 )
-        CreatePanelText(player, "14", "", < 5490.953, -28042.9, 25540.73 >, < 0, 0.0004, 0 >, false, 1 )
-        CreatePanelText(player, "3", "", < 919.191, -19924.7, 17935.63 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "4", "", < 2453.969, 10792.12, 17230.32 >, < 0, 179.9999, 0 >, false, 1 )
-        CreatePanelText(player, "15", "", < 1768.841, 12357.96, 28827.62 >, < 0, 0, 0 >, false, 1 )
-        CreatePanelText(player, "7", "", < 1609.794, -24807.92, 19455.93 >, < 0, -90.0001, 0 >, false, 1 )
-        CreatePanelText(player, "13", "", < 3511.953, -28098.9, 25309.73 >, < 0, 0.0004, 0 >, false, 1 )
-        CreatePanelText(player, "5", "", < 2266.317, 10082.27, 18228.32 >, < 0, -90.002, 0 >, false, 1 )
-        CreatePanelText(player, "6", "", < 1608.996, -23639.72, 19372.13 >, < 0, -90.0001, 0 >, false, 1 )
-        CreatePanelText(player, "2", "", < 924.0396, -19279.3, 16767.73 >, < 0, 90, 0 >, false, 1 )
-        CreatePanelText(player, "15", "", < 5313.953, -29838.89, 27516.73 >, < 0, -89.9996, 0 >, false, 1 )
-        CreatePanelText(player, "4", "", < 922, -22078.9, 17974.53 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "19", "", < 1920.812, 15773.8, 31816.7 >, < 0, 89.986, 0 >, false, 1 )
-        CreatePanelText(player, "9", "", < 1462.706, 10455.62, 22277.32 >, < 0, 179.9838, 0 >, false, 1 )
-        CreatePanelText(player, "8", "", < 1599.416, 10266.69, 21202.32 >, < 0, 90.0198, 0 >, false, 1 )
-        CreatePanelText(player, "1", "", < 417.5096, -19512.2, 15237 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "Easy", "Course", < 1993.801, -6364.4, 18217.2 >, < 0, 89.9999, 0 >, false, 1 )
-        CreatePanelText(player, "3", "", < 3090.481, 11049.27, 16217.35 >, < 0, -90, 0 >, false, 1 )
-        CreatePanelText(player, "11", "", < 4172.018, -27979.01, 23481.73 >, < 0, -179.9997, 0 >, false, 1 )
-        CreatePanelText(player, "5", "", < 1609.001, -22377.32, 19372.23 >, < 0, -90.0001, 0 >, false, 1 )
-    }
+void function MantleJumpMapEntitiesDidLoad()
+{
+	thread mantlemap_load()
+	thread mantlemap_reset_doors()
+}
 
+void function mantlemap_SpawnInfoText( entity player ) {
+	CreatePanelText(player, "12", "", < 2808.018, -28037.01, 23739.73 >, < 0, -179.9997, 0 >, false, 1 )
+	CreatePanelText(player, "11", "", < 1471.772, 10931.9, 24457.32 >, < 0, 89.986, 0 >, false, 1 )
+	CreatePanelText(player, "9", "", < 1936.201, -26709.17, 21599.13 >, < 0, 0, 0 >, false, 1 )
+	CreatePanelText(player, "17", "", < 1937.939, 12683.44, 30704.32 >, < 0, -89.9993, 0 >, false, 1 )
+	CreatePanelText(player, "Hard", "Course", < 2089.4, -7017.9, 18365.4 >, < -15, -90.0001, 0 >, false, 1 )
+	CreatePanelText(player, "14", "", < 1255.536, 12189.64, 27790.52 >, < 0, 90, 0 >, false, 1 )
+	CreatePanelText(player, "12", "", < 1254.773, 11273.9, 25557.85 >, < 0, 89.986, 0 >, false, 1 )
+	CreatePanelText(player, "Loy and Treeree", "Made by:", < 2216, -6772.2, 18288.4 >, < 0, -0.0001, 0 >, false, 1 )
+	CreatePanelText(player, "8", "", < 1968.266, -25003.8, 21001.33 >, < 0, 0, 0 >, false, 1 )
+	CreatePanelText(player, "2", "", < 3090.481, 11751.27, 15211.33 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "18", "", < 1979.999, 13474.49, 31602 >, < 0, 89.986, 0 >, false, 1 )
+	CreatePanelText(player, "10", "", < 1262.772, 10591.9, 23353.32 >, < 0, 89.986, 0 >, false, 1 )
+	CreatePanelText(player, "1", "", < 3088.958, 12428.77, 14204.52 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "6", "", < 1513.766, 10177.18, 19229.32 >, < 0, 179.998, 0 >, false, 1 )
+	CreatePanelText(player, "7", "", < 1603.318, 9425.265, 20230.32 >, < 0, -90.0021, 0 >, false, 1 )
+	CreatePanelText(player, "13", "", < 1255.536, 11566.54, 26758.52 >, < 0, 90, 0 >, false, 1 )
+	CreatePanelText(player, "10", "", < 3058.363, -27627.1, 22115.23 >, < 0.0001, -90.0066, 0 >, false, 1 )
+	CreatePanelText(player, "16", "", < 1937.937, 12864.44, 29869.52 >, < 0, 90, 0 >, false, 1 )
+	CreatePanelText(player, "14", "", < 5490.953, -28042.9, 25540.73 >, < 0, 0.0004, 0 >, false, 1 )
+	CreatePanelText(player, "3", "", < 919.191, -19924.7, 17935.63 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "4", "", < 2453.969, 10792.12, 17230.32 >, < 0, 179.9999, 0 >, false, 1 )
+	CreatePanelText(player, "15", "", < 1768.841, 12357.96, 28827.62 >, < 0, 0, 0 >, false, 1 )
+	CreatePanelText(player, "7", "", < 1609.794, -24807.92, 19455.93 >, < 0, -90.0001, 0 >, false, 1 )
+	CreatePanelText(player, "13", "", < 3511.953, -28098.9, 25309.73 >, < 0, 0.0004, 0 >, false, 1 )
+	CreatePanelText(player, "5", "", < 2266.317, 10082.27, 18228.32 >, < 0, -90.002, 0 >, false, 1 )
+	CreatePanelText(player, "6", "", < 1608.996, -23639.72, 19372.13 >, < 0, -90.0001, 0 >, false, 1 )
+	CreatePanelText(player, "2", "", < 924.0396, -19279.3, 16767.73 >, < 0, 90, 0 >, false, 1 )
+	CreatePanelText(player, "15", "", < 5313.953, -29838.89, 27516.73 >, < 0, -89.9996, 0 >, false, 1 )
+	CreatePanelText(player, "4", "", < 922, -22078.9, 17974.53 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "19", "", < 1920.812, 15773.8, 31816.7 >, < 0, 89.986, 0 >, false, 1 )
+	CreatePanelText(player, "9", "", < 1462.706, 10455.62, 22277.32 >, < 0, 179.9838, 0 >, false, 1 )
+	CreatePanelText(player, "8", "", < 1599.416, 10266.69, 21202.32 >, < 0, 90.0198, 0 >, false, 1 )
+	CreatePanelText(player, "1", "", < 417.5096, -19512.2, 15237 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "Easy", "Course", < 1993.801, -6364.4, 18217.2 >, < 0, 89.9999, 0 >, false, 1 )
+	CreatePanelText(player, "3", "", < 3090.481, 11049.27, 16217.35 >, < 0, -90, 0 >, false, 1 )
+	CreatePanelText(player, "11", "", < 4172.018, -27979.01, 23481.73 >, < 0, -179.9997, 0 >, false, 1 )
+	CreatePanelText(player, "5", "", < 1609.001, -22377.32, 19372.23 >, < 0, -90.0001, 0 >, false, 1 )
 }
 
 void function mantlemap_doors() {
@@ -125,18 +121,17 @@ void function mantlemap_reset_doors()
 }
 
 
-void function mantlemap_player_setup()
+void function mantlemap_player_setup( entity player )
 {
     array<ItemFlavor> characters = GetAllCharacters()
-    foreach (player in GetPlayerArray()) {
-        player.SetOrigin(file.first_cp)
-        CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
-        player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-        player.SetAngles(< 0, 0, 0 >)
-        player.SetPersistentVar("gen", 0)
-        Message(player, "Welcome to the Mantle Map!")
-    }
+	player.SetOrigin(file.first_cp)
+	CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	player.SetAngles(< 0, 0, 0 >)
+	player.SetPersistentVar("gen", 0)
+	Message(player, "Welcome to the Mantle Map!")
+	mantlemap_SpawnInfoText( player )
 }
 
 void function mantlemap_load() {    // Props Array
