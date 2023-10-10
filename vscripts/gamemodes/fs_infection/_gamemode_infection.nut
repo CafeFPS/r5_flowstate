@@ -61,7 +61,7 @@ void function _GamemodeInfection_Init()
 	
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundINFECTION)
+	// AddClientCommandCallback("next_round", ClientCommand_NextRoundINFECTION)
 	// AddClientCommandCallback("sethunter", ClientCommand_AskForHunterTemp)
 	// AddClientCommandCallback("kickplayer", ClientCommand_DuckHuntKick)
 	AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)

@@ -1,5 +1,5 @@
 //APEX DUCKHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS
 
 // Darkes#8647 - duckhunt maps
 // everyone else - advice
@@ -136,7 +136,7 @@ void function _OnPlayerConnected(entity player)
     {
 		case eGameState.WaitingForPlayers:
 		case eGameState.MapVoting:
-			Message(player, "APEX DUCK HUNT", "Game is starting.", 4)
+			// Message(player, "APEX DUCK HUNT", "Game is starting.", 4)
 
 			_HandleRespawn(player)
 			Survival_SetInventoryEnabled( player, false )
@@ -659,16 +659,16 @@ void function DUCKHUNT_Lobby()
 		wait 3
 	}
 
-	// if(IsOdd(FS_DUCKHUNT.currentRound))
-	// {
+	if(IsOdd(FS_DUCKHUNT.currentRound))
+	{
 		FS_DUCKHUNT.spawnedmap = 0
 		SpawnDuckHuntMap()
-	// }
-	// else
-	// {	
-		// FS_DUCKHUNT.spawnedmap = 1
-		// SpawnDuckHuntMap2()
-	// }
+	}
+	else
+	{	
+		FS_DUCKHUNT.spawnedmap = 1
+		SpawnDuckHuntMap2()
+	}
 
 	wait 3
 	printt( "Handling team for players" )

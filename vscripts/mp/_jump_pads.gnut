@@ -181,11 +181,14 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 	trigger.SetEnterCallback( OnJumpPadAreaEnter )
 	trigger.SetParent( jumpPad )
 
+	if( jumpPad.GetScriptName() == "map_editor_jumppad" )
+		return
+
 	entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_UNASSIGNED, JUMP_PAD_TARGETNAME )
 	traceBlocker.SetBox( jumpPad.GetBoundingMins(), jumpPad.GetBoundingMaxs())
 	traceBlocker.SetParent( trigger )
 	
-	if( GetEditorClass( jumpPad) == "script_survival_jumppad" || jumpPad.GetScriptName() == "map_editor_jumppad" )
+	if( GetEditorClass( jumpPad) == "script_survival_jumppad" )
 		return
 	
 	// #if DEVELOPER

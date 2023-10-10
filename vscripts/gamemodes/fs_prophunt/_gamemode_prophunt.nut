@@ -97,7 +97,7 @@ void function _GamemodeProphunt_Init()
 	
 	AddCallback_EntitiesDidLoad( _OnEntitiesDidLoadPROPHUNT )
 	
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
+	//AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap_PROPHUNT)
