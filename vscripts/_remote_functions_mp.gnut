@@ -33,6 +33,10 @@ void function RemoteFunctions_Init_Begin()
 	//Fake Version Gate
 	Remote_RegisterClientFunction("Flowstate_YouNeedToUpdate")
 	
+	// Falling Forever Custom Timer
+	if( GetCurrentPlaylistName() == "fs_fallingforever" )
+		Remote_RegisterClientFunction("ServerCallback_SetTimer", "int", 0, INT_MAX)
+
 	//Custom gamemodes
 	switch ( GameRules_GetGameMode() )
 	{

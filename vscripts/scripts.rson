@@ -977,10 +977,14 @@ Scripts:
 	custom_maps/_custom_maps_6.nut
 	custom_maps/_custom_maps_7.nut
 	custom_maps/_custom_deafps_maps.nut
+
 	gamemodes/fs_movementgym/_movement_gym.nut
+
 	custom_maps/_custom_doormap.nut
 	custom_maps/_custom_grapplemap.nut
 	custom_maps/_custom_mantlejumpmap.nut
+	custom_maps/_custom_falling_forever.nut
+
 	//map editor props
 	_place_map_editor_props_here.nut
 
@@ -1001,6 +1005,7 @@ Scripts:
 	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
 	gamemodes/fs_infection/cl_gamemode_infection.nut	
 	lobby/lobbyvm/cl_lobbyvm.nut
+	custom_maps/cl_custom_falling_forever.nut
 ]
 
 

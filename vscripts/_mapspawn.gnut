@@ -205,6 +205,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	ReMap_Init()
 	LootTicks_Init()
 
+	if( GetCurrentPlaylistName() == "fs_fallingforever" )
+		InitFallingForever()
+
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
 	RegisterSignal( "MirageSpotted" )
 	RegisterSignal( "forever" )
