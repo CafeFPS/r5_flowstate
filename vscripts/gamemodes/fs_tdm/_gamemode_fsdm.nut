@@ -4584,7 +4584,7 @@ string function modChecker( string weaponMods )
 	array<string> weaponMod = split(weaponMods , " ")
 	array<string> rifles = ["mp_weapon_energy_ar","mp_weapon_esaw","mp_weapon_rspn101","mp_weapon_vinson","mp_weapon_lmg","mp_weapon_g2","mp_weapon_hemlok"]
 	array<string> smgs = ["mp_weapon_r97","mp_weapon_volt_smg","mp_weapon_pdw","mp_weapon_car"]
-	if (weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
+	if ( weaponMod.len() > 0 && weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
 	{
 		for (int i = 1; i < weaponMod.len(); i++)
 		{
@@ -4593,12 +4593,13 @@ string function modChecker( string weaponMods )
 		}
 	}
 
-	if ( rifles.contains(weaponMod[0]))//this weapon is rifle
+	if ( weaponMod.len() > 0 && rifles.contains(weaponMod[0]))//this weapon is rifle
 	{
 		for (int i = 1; i < weaponMod.len(); i++)
 		{
-			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
-				weaponMod.remove(i)
+			if( i >= weaponMod.len() )
+				continue
+
 			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
 				weaponMod[i] = "stock_tactical_l1"
 			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
@@ -4607,15 +4608,18 @@ string function modChecker( string weaponMods )
 				weaponMod[i] = "highcal_mag_l1"
 			if ("energy_mag_l3" == weaponMod[i] || "energy_mag_l2" == weaponMod[i]  )//force player using energy_mag_l1
 				weaponMod[i] = "energy_mag_l1"
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
+				weaponMod.remove(i)
 		}
 	}
 
-	if ( smgs.contains(weaponMod[0]))//this weapon is smg
+	if ( weaponMod.len() > 0 && smgs.contains(weaponMod[0]))//this weapon is smg
 	{
 		for (int i = 1; i < weaponMod.len(); i++)
 		{
-			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
-				weaponMod.remove(i)
+			if( i >= weaponMod.len() )
+				continue
+
 			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
 				weaponMod[i] = "stock_tactical_l1"
 			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
@@ -4624,6 +4628,8 @@ string function modChecker( string weaponMods )
 				weaponMod[i] = "highcal_mag_l2"
 			if ("energy_mag_l3" == weaponMod[i]   )//force player using energy_mag_l2
 				weaponMod[i] = "energy_mag_l2"
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
+				weaponMod.remove(i)
 		}
 	}
 
