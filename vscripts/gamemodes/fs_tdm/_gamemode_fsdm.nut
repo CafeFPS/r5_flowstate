@@ -2589,7 +2589,7 @@ void function SimpleChampionUI()
 							Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
 					}()
 				}
-				else
+				else if( !is1v1EnabledAndAllowed() )
 					Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
 
 				if( !IsValid( player ) || !IsAlive( player ) )
