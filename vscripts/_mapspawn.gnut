@@ -373,12 +373,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//PrecacheWeapon( $"mp_weapon_sentinel" ) //sights don't work, it's bad
 	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
 
-	// PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
-	// PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
-	// PrecacheModel( $"mdl/Humans/pilots/w_phantom.rmdl" )
-	// PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
-	// PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
-	// PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
