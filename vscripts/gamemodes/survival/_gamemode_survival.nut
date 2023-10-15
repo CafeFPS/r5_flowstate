@@ -121,10 +121,10 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		break
 	}
 
-	player.TakeOffhandWeapon(OFFHAND_MELEE)
-	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
+	// player.TakeOffhandWeapon(OFFHAND_MELEE)
+	// player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	// player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	// player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
 
 	return true
 }

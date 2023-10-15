@@ -685,7 +685,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	victim.SetPredictionEnabled( false )
 	
-	if( GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_haloMod" ) 
+	if( GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) 
 		return
 	
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )

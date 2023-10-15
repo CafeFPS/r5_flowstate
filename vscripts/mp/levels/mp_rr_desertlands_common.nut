@@ -8,7 +8,6 @@ global function Desertlands_MU1_MapInit_Common
 global function Desertlands_MU1_EntitiesLoaded_Common
 global function Desertlands_MU1_UpdraftInit_Common
 global function Desertlands_SetTrainEnabled
-global function	Geyser_JumpJetsWhileAirborne
 #endif
 
 
@@ -446,7 +445,7 @@ void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity pla
 #if SERVER
 void function AddTrainToMinimap( entity mover )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )

@@ -232,6 +232,9 @@ void function SURVIVAL_Loot_All_InitShared()
 
 	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new.rpak" ) )
 	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new_halomod.rpak" ) )
+
 	//RegisterCustomWeapons()
 
 	#if(UI)

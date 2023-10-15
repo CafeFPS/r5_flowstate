@@ -1080,7 +1080,7 @@ string function SURVIVAL_Loot_GetGeneralTypeStringFromType( int lootType )
 		case eLootType.ATTACHMENT:
 			return "#SURVIVAL_ATTACHMENT"
 		case eLootType.CUSTOMPICKUP:
-			return "Nope"
+			return ""
 		case eLootType.DATAKNIFE:
 			return "#SURVIVAL_SPECIAL"
 		case eLootType.RESOURCE:
@@ -2597,6 +2597,8 @@ bool function PlayerInValidState( entity player )
 {
 	#if SERVER
 	//printt("PlayerInValidState NOT - ", !IsAlive( player ), player.ContextAction_IsActive(), Bleedout_IsBleedingOut( player ), SURVIVAL_IsPlayerCarryingLoot( player ))
+	if( GetCurrentPlaylistName() == "fs_haloMod_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_dm_oddball" && GetBallCarrier() == player )
+		return false
 	#endif
 	if ( !IsAlive( player ) )
 		return false
@@ -4323,7 +4325,7 @@ string function GetNameOfTeammateWithVaultKey( int team )
 
 		foreach ( invItem in playerInventory )
 		{
-			if(invItem.type == 122)
+			if(invItem.type == 127)
 				return player.GetPlayerName()
 		}
 	}

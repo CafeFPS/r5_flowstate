@@ -134,6 +134,7 @@ void function InitWeaponScripts()
 {
 	SmartAmmo_Init()
 	MpWeaponNeedler_Init()
+	MpWeaponRayGun_Init()
 	MpAbilityShadowPounceFree_Init()
 	MpWeaponEnergySword_Init()
 
@@ -191,7 +192,10 @@ void function InitWeaponScripts()
 	MpWeaponGrenadeCreepingBombardment_Init()
 	MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 	MpAbilityMirageUltimate_Init()
-	MpAbilityCryptoDrone_Init()
+
+	if( GetCurrentPlaylistName() != "fs_dm_oddball" && GetCurrentPlaylistName() != "fs_haloMod_oddball" )
+		MpAbilityCryptoDrone_Init()
+
 	MpAbilityCryptoDroneEMP_Init()
 	MpWeaponPhaseTunnel_Init()
 	MpWeaponTeslaTrap_Init()
@@ -1936,9 +1940,20 @@ int function CompareKills( entity a, entity b )
 {
 	if( !IsValid( a ) || !IsValid( b ) )
 		return 0
+	
+	int aVal
+	int bVal
 
-	int aVal = a.GetPlayerNetInt( "kills" )
-	int bVal = b.GetPlayerNetInt( "kills" )
+	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	{
+		aVal = a.GetPlayerNetInt( "oddball_ballHeldTime" )
+		bVal = b.GetPlayerNetInt( "oddball_ballHeldTime" )
+	}
+	else
+	{
+		aVal = a.GetPlayerNetInt( "kills" )
+		bVal = b.GetPlayerNetInt( "kills" )
+	}
 
 	if ( aVal < bVal )
 		return 1
@@ -1953,8 +1968,16 @@ int function CompareKills( entity a, entity b )
 	else if ( aVal < bVal )
 		return -1
 
-	aVal = a.GetPlayerNetInt( "damage" )
-	bVal = b.GetPlayerNetInt( "damage" )
+	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	{
+		aVal = a.GetPlayerNetInt( "kills" )
+		bVal = b.GetPlayerNetInt( "kills" )
+	}
+	else
+	{
+		aVal = a.GetPlayerNetInt( "damage" )
+		bVal = b.GetPlayerNetInt( "damage" )
+	}
 
 	if ( aVal > bVal )
 		return 1

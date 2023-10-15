@@ -721,7 +721,7 @@ void function OnGroundLootSpawned( entity ent )
 	
 	if( isHoverTankLoot )
 	{
-		printt("detected hovertank loot" )
+		// printt("detected hovertank loot" )
 		entity parentPoint = CreateEntity( "script_mover_lightweight" )
 		{
 			parentPoint.kv.solid = 0
@@ -1296,6 +1296,41 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 
 	pickup.Signal( "OnItemPickup", { player = player } )
 
+	// if( pickupData.ref == "snd_bomb" && GameRules_GetGameMode() == "flowstate_snd" && GetGameState() == eGameState.Playing )
+	// {
+		// player.p.playerHasBomb = true
+		// SetBombState(bombState.CARRIED)
+		// SetBombEntity(null)
+		
+		// printt("new bomb carrier " + player + player.p.playerHasBomb)
+		
+		// thread SND_ThreadThatChecksIfPlayerDisconnects(player)
+		
+		// foreach(sPlayer in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ))
+		// {
+			// if(!IsValid(sPlayer)) continue
+			
+			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 0, player) //a player have the bomb
+		// }
+	// }
+	
+	if( pickupData.ref == "fs_ball" && GetGameState() == eGameState.Playing )
+	{
+		// player.p.playerHasBomb = true
+		SetBallCarrier( player )
+		SetBallEntity( null )
+
+		printt("New ball carrier " + player)
+
+		//thread SND_ThreadThatChecksIfPlayerDisconnects(player)
+
+		// foreach(sPlayer in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ))
+		// {
+			// if(!IsValid(sPlayer)) continue
+			
+			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 0, player) //a player have the bomb
+		// }
+	}
 	if (!shouldKeepAlive)
 	{
 		pickup.Destroy()
@@ -1310,7 +1345,45 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	if( CoinFlip() )
 		fwd    = ( AnglesToForward( player.EyeAngles() ) * RandomIntRange( 80, 300 ) ) - ( AnglesToRight( player.EyeAngles() ) * RandomInt( 250 ) ) // This is ass Please fix. Colombia
 
-	entity loot = SpawnGenericLoot( ref, origin, angles, count )
+	entity loot
+	
+	if( ref == "snd_bomb" )
+	{
+		printt("bomb dropped by " + player)
+		// player.p.playerHasBomb = false
+		// Signal(player, "ForceEndBombCheckThread")
+		
+		// if(IsValid(GetBombEntity())) 
+			// GetBombEntity().Destroy()
+		
+		// loot = SpawnGenericLoot( ref, origin, angles, count )
+		
+		// SetBombEntity(loot)
+
+		// SetBombState(bombState.ONGROUND_IDLE)
+		// loot.SetOrigin(player.GetOrigin())
+		
+		// foreach( sPlayer in GetPlayerArrayOfTeam(Sh_GetAttackerTeam()) )
+		// {
+			// if(!IsValid(sPlayer)) continue
+			
+			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 2, player) //a player dropped the bomb
+		// }
+	} else if( ref == "fs_ball" )
+	{
+		printt("Ball dropped by " + player)
+
+		if( IsValid( GetBallEntity() ) ) 
+			GetBallEntity().Destroy()
+
+		ClearBallCarrierPlayerSetup( player )
+		
+		loot = SpawnGenericLoot( ref, origin, angles, count )
+		SetBallEntity( loot )
+		// loot.SetOrigin( player.GetOrigin() )
+	}
+	else
+		loot = SpawnGenericLoot( ref, origin, angles, count )
 
 	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 	
@@ -1954,13 +2027,18 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	prop_physics.Hide()
 	prop_physics.NotSolid()
 	prop_physics.SetVelocity( playerVelocity )
+	
+	thread Flowstate_CheckForPhysicsMemoryLeak( deathbox, prop_physics )
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
 {
 	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
 	vector velocity = forward * 1000
-	
+
+	// physics.PhysicsSetFriction( 50 )
+	// physics.PhysicsSetDamping( 50, 50 )
+
 	if( isCargoBot )
 		velocity = forward * RandomIntRange(100, 300)
 	
@@ -1968,35 +2046,62 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 	physics.Hide()
 
-	drop.NotSolid()
-	physics.NotSolid()
+	// drop.NotSolid()
+	// physics.NotSolid()
 
 	physics.SetVelocity( forward )
-	
-	// //add backpack loot type check
-	// thread function (): ( player, drop, physics )
-	// {
-		// vector vel = physics.GetVelocity()
-		// while( vel.Length() > 0 )
-		// {
-			// WaitFrame()
-		// }
-		// spawn stored items from backpack limit here
-	// }()
-	
-    if(DestroyTimer < 0)
-	    return
-	
-	thread function () : ( drop, physics , DestroyTimer)
+
+	thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
+	// physics sometimes will stuck even if item seems to be static already
+
+}
+
+void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
+{
+	EndSignal( drop, "OnDestroy" )
+	EndSignal( physics, "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( drop, physics )
+		{
+			if ( !IsValid( drop ) && IsValid( physics ) )
+				physics.Destroy()
+		}
+	)
+
+	vector velVector = physics.GetVelocity()
+	float vel = velVector.Length()
+	float lastVel = vel
+	float numTicksSameSpeed
+
+	while( IsValid( physics ) && vel > 0 )
 	{
-		wait DestroyTimer
+		
+		velVector = physics.GetVelocity()
+		vel = velVector.Length()
+		printt( vel )
 
-		if ( IsValid( drop ) )
-			drop.ClearParent()
+		if( vel == lastVel )
+		{
+			numTicksSameSpeed++
+			
+			if( numTicksSameSpeed >= 25 )
+			{
+				break
+			}
+		}
+		else
+			numTicksSameSpeed = 0
 
-		if ( IsValid( physics ) )
-			physics.Destroy()
-	}()
+		lastVel = vel
+		WaitFrame()
+	}
+
+	if ( IsValid( drop ) )
+		drop.ClearParent()
+
+	if ( IsValid( physics ) )
+		physics.Destroy()
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value, int extravalue = -1)

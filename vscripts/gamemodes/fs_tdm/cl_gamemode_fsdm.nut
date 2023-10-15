@@ -81,6 +81,9 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("ChangeCameraToSelectedLocation")
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
+	
+	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+		Cl_FsOddballInit()
 }
 
 void function CL_FSDM_RegisterNetworkFunctions()
@@ -165,6 +168,8 @@ void function Flowstate_PlayStartRoundSounds()
 		file.countdownRui = CreateFullscreenRui( $"ui/generic_timer.rpak" )
 		
 		RuiSetString( file.countdownRui, "messageText", " Starting Deathmatch in " )
+		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+			RuiSetString( file.countdownRui, "messageText", " Starting Oddball in " )
 		RuiSetGameTime( file.countdownRui, "startTime", Time() )
 		RuiSetGameTime( file.countdownRui, "endTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
 		RuiSetColorAlpha( file.countdownRui, "timerColor", SrgbToLinear( <255,233,0> / 255.0 ), 1.0 )
@@ -193,7 +198,7 @@ void function Flowstate_PlayStartRoundSounds()
 	if ( Time() > GetGlobalNetTime( "flowstate_DMStartTime" ) )
 		return
 
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
@@ -1161,6 +1166,19 @@ void function DM_HintCatalog(int index, int eHandle)
 		case 1:
 		DM_QuickHint( "One more kill to get Energy Sword.", true, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_InGame_FD_SliderExit" )
+		break
+
+		case 2:
+		DM_QuickHint( "Keep the ball to score points.\nGet " + ODDBALL_POINTS_TO_WIN + " points to win the round.", true, 5)
+		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_InGame_FD_SliderExit" )
+		break
+		
+		case -1:
+		if(file.activeQuickHint != null)
+		{
+			RuiDestroyIfAlive( file.activeQuickHint )
+			file.activeQuickHint = null
+		}
 		break
 	}
 }

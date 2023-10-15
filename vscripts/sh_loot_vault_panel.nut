@@ -565,7 +565,7 @@ bool function VaultPanel_HasPlayerDataKnife(entity player)
 
 	foreach ( invItem in playerInventory )
 	{
-		if(invItem.type == 136)
+		if(invItem.type == 127)
 			return true
 	}
 	return false

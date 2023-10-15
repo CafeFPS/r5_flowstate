@@ -2145,7 +2145,7 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 void function AddInWorldMinimapObjectiveInternal( entity ent, var screen )
 {
-	if ( !IsValid( ent ) || GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_haloMod" )
+	if ( !IsValid( ent ) || GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	int customState    = ent.Minimap_GetCustomState()
@@ -2286,7 +2286,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	if ( ent.IsPlayer() && GameRules_GetGameMode() == "flowstate_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistName() == "fs_haloMod" ) //add enabled var and refresh funct so if we change location to a map one it works
+	if ( ent.IsPlayer() && GameRules_GetGameMode() == "flowstate_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
 	{
 		foreach(player, savedRui in file.playerArrows)
 		{
@@ -2299,7 +2299,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
 		file.mapCornerX = 0
 		file.mapCornerY = 0
-	} else if( GameRules_GetGameMode() != "flowstate_snd" ) //&& GetCurrentPlaylistName() != "fs_haloMod" )
+	} else if( GameRules_GetGameMode() != "flowstate_snd" ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
@@ -2408,7 +2408,7 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 
 void function AddMinimapLabel( string title, float xPos, float yPos, float width = 200, float scale = 1.0 )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	foreach ( topo in file.minimapTopos )

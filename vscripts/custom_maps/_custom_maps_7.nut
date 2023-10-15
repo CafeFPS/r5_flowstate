@@ -14,6 +14,18 @@ void function PrecacheChill()
 	PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x32_01.rmdl" )
 	PrecacheModel( $"mdl/domestic/magazine_single_01.rmdl" )
+
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl" )
 }
 
 array < entity > function Chill_Load1( vector startingorg )

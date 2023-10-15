@@ -766,7 +766,7 @@ void function SetRankedIcon( int score, int ladderPos )
 
 	if ( rui == null )
 	{
-		printt( "SetRankedIcon failed - gamestate rui not ready" )
+		//printt( "SetRankedIcon failed - gamestate rui not ready" )
 		return
 	}
 

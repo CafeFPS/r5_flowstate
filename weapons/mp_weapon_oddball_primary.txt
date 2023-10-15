@@ -1,0 +1,31 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Oddball"
+	"shortprintname"								"Oddball"
+	"description" 									"Oddball"
+	"longdesc"										"Oddball"
+
+	"weapon_type_flags"								"WPT_MELEE"
+	
+	// UI/HUD
+	"menu_icon"										"rui/flowstate_custom/oddball_white"
+	"hud_icon"										"rui/flowstate_custom/oddball_white"
+
+	// Models
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_oddball.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_oddball.rmdl"
+	
+	//"OnWeaponActivate"							"OnWeaponActivate_vctblue"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_Oddball_primary"
+	
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"0.5"
+	
+	"viewmodel_offset_hip" 					"0 -2 3"
+}

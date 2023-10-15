@@ -71,7 +71,7 @@ void function WatchWeaponInspectState( entity player, entity weapon )
 {
 	// TODO: need a better way to hide the "HUD"
 	// TODO: also need this to be properly stateful/context aware; e.g. we wouldn't want to show the minimap after the match ended because this thread ended later in the frame.
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 		Minimap_DisableDraw()
 	Crosshair_SetState( CROSSHAIR_STATE_HIDE_ALL )
 	WeaponInspectHideHudElements( true )
@@ -79,7 +79,7 @@ void function WatchWeaponInspectState( entity player, entity weapon )
 	OnThreadEnd(
 		function() : ()
 		{
-			if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+			if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 				Minimap_EnableDraw()
 
 			Crosshair_SetState( CROSSHAIR_STATE_SHOW_ALL )

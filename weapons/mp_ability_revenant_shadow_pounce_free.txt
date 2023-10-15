@@ -24,7 +24,7 @@ WeaponData
 
     // Models
     "viewmodel"   									"mdl/Weapons/ptpov_revenant_grenade/ptpov_revenant_grenade.rmdl"
-    "playermodel" 									"mdl/weapons/empty_hands/ptpov_empty_hands.rmdl"  //spawning whistle mdl from animSeq because of offHand/althand
+    "playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
     //"projectilemodel" 							//"mdl/dev/empty_model.rmdl"
     "leveled_pickup"								"1"
     "bone_merge_world_model"						"1"

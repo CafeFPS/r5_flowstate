@@ -323,7 +323,7 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "Toggle NoClip", "noclip" )
 
 		SetupDevCommand( "Recharge Abilities", "recharge" )
-		SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
+		// SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
 
 		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
@@ -369,7 +369,7 @@ void function SetupDefaultDevCommandsMP()
 
 		SetupDevCommand( "Melee: Equip Bolo Sword", "script thread SetupHeirloom()" )
 		SetupDevCommand( "Melee: Equip Shadow Hands", "script thread SetupShadowHands()" )
-		SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
+		// SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
 		
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )

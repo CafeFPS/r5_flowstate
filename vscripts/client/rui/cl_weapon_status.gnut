@@ -1077,7 +1077,7 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 int currentUltimateState = eUltimateState.CHARGING
 void function UltimateWeaponStateSet( int ultimateWeaponState )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	int lastUltimateState = currentUltimateState

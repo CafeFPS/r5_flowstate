@@ -7,6 +7,8 @@ global const NO_CHOICES = 2
 global const HACKERS_VS_PRO_MAX_KILLS = 15
 global const int NUMBER_OF_MAP_SLOTS_FSDM = 4
 
+global const ODDBALL_POINTS_TO_WIN = 150
+
 global enum eTDMAnnounce
 {
 	NONE = 0
@@ -15,6 +17,12 @@ global enum eTDMAnnounce
 	VOTING_PHASE = 3
 	MAP_FLYOVER = 4
 	IN_PROGRESS = 5
+}
+
+global enum eTDMState
+{
+	IN_PROGRESS = 0
+	NEXT_ROUND_NOW = 1
 }
 
 global struct LocPair
@@ -943,7 +951,7 @@ void function Sh_CustomTDM_Init()
         )
         //break
 		case "mp_flowstate":
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 
 			Shared_RegisterLocation(
@@ -1030,7 +1038,7 @@ void function Sh_CustomTDM_Init()
 			return
 		}
 
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			// Shared_RegisterLocation(
 			// NewLocationSettings(

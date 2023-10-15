@@ -2389,13 +2389,13 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 
 	if ( interpolate )
 	{
-		printt( "Interpolating menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
+		//printt( "Interpolating menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
 		//DoF_LerpNearDepth( dofNearStart, dofNearEnd, TRANSITION_DURATION )
 		//DoF_LerpFarDepth( dofFarStart, dofFarEnd, TRANSITION_DURATION )
 	}
 	else
 	{
-		printt( "Snapping menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
+		//printt( "Snapping menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
 		//DoF_SetNearDepth( dofNearStart, dofNearEnd )
 		//DoF_SetFarDepth( dofFarStart, dofFarEnd )
 	}

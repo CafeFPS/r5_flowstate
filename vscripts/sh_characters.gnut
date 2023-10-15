@@ -323,7 +323,7 @@ vector function CharacterClass_GetGalleryModelOffset( ItemFlavor flavor )
 
 asset function CharacterClass_GetGalleryPortrait( ItemFlavor flavor )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return $"rui/portrait/masterchief_test"
 	
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
@@ -334,7 +334,7 @@ asset function CharacterClass_GetGalleryPortrait( ItemFlavor flavor )
 
 asset function CharacterClass_GetGalleryPortraitBackground( ItemFlavor flavor )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return $"rui/portrait/masterchief_test"
 
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )

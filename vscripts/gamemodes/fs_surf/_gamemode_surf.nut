@@ -4,12 +4,6 @@ globalize_all_functions
 #endif
 globalize_all_functions
 
-enum eTDMState
-{
-	IN_PROGRESS = 0
-	NEXT_ROUND_NOW = 1
-}
-
 struct {
 int tdmState = eTDMState.IN_PROGRESS
 array<entity> playerSpawnedProps

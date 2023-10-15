@@ -175,7 +175,14 @@ void function GameModes_Init()
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+
+	#if !UI
+		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+			GameMode_AddScoreboardColumnData( gameMode, "Oddball Score", PGS_ASSISTS, 5 )
+		else
+			GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+	#endif
+
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
 	gameMode = CUSTOM_CTF

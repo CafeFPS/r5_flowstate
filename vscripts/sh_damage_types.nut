@@ -303,6 +303,8 @@ global enum eDamageSourceId
 	mp_weapon_energysword
 	mp_weapon_frag_grenade_halomod
 	mp_weapon_plasma_grenade_halomod
+	mp_weapon_oddball_primary
+	melee_oddball
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -485,6 +487,8 @@ void function DamageTypes_Init()
 	//file.damageSourceIDToImage[eDamageSourceId.mp_weapon_mobile_hmg]		<- $"rui/weapon_icons/r5/weapon_rampart_turret"
 	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_smart_pistol]		<- $"rui/weapon_icons/r5/weapon_smart_pistol"
 	file.damageSourceIDToImage[eDamageSourceId.snd_bomb]					<- $"rui/flowstatecustom/bombicon"
+	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_oddball_primary]					<- $"rui/flowstate_custom/oddball_white"
+	file.damageSourceIDToImage[eDamageSourceId.melee_oddball]					<- $"rui/flowstate_custom/oddball_white"
 	//file.damageSourceIDToImage[eDamageSourceId.sp_weapon_arc_tool]			<- $"r2_ui/menus/loadout_icons/primary_weapon/primary_arc_tool"
 
 	file.damageSourceIDToName =
@@ -636,7 +640,9 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_smart_pistol ] 	 				= "Smart Pistol",
 		[ eDamageSourceId.mp_weapon_grenade_electric_smoke ] 	 	= "Electric Smoke",
 		[ eDamageSourceId.mp_weapon_grenade_gravity ] 	 			= "Gravity Star",
-		[ eDamageSourceId.snd_bomb ] 	 							= "Bomb"
+		[ eDamageSourceId.snd_bomb ] 	 							= "Bomb",
+		[ eDamageSourceId.mp_weapon_oddball_primary ] 	 			= "Ball",
+		[ eDamageSourceId.melee_oddball ] 	 						= "Ball" 
 		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
 		//[ eDamageSourceId.sp_weapon_arc_tool] 	 					= "Arc Tool"
 	}

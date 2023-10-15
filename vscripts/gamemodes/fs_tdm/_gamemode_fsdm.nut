@@ -55,6 +55,7 @@ global function SpawnChill
 global function HaloMod_Cyberdyne_CreateFanPusher
 global function HisWattsons_HaloModFFA_KillStreakAnnounce
 global function SetupInfiniteAmmoForWeapon
+global function FSDM_GetSelectedLocation
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -76,11 +77,6 @@ table playersInfo
 
 //solo mode
 global function CheckForObservedTarget
-enum eTDMState
-{
-	IN_PROGRESS = 0
-	NEXT_ROUND_NOW = 1
-}
 
 struct {
 	string scriptversion = ""
@@ -161,12 +157,12 @@ void function _CustomTDM_Init()
 	PrecacheCustomMapsProps()
 	PrecacheZeesMapProps()
 	
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		PrecacheCyberdyne()
 		PrecacheLockout()
 		PrecacheChill()
-		if( GetMapName() == "fs_haloMod" )
+		if( GetMapName() == "mp_flowstate" )
 		{
 			VOTING_PHASE_ENABLE = false
 		}
@@ -199,8 +195,9 @@ void function _CustomTDM_Init()
 
         UpdatePlayerCounts()
     })
-
-    AddSpawnCallback( "prop_survival", DissolveItem )
+	
+	if( GetCurrentPlaylistName() != "fs_dm_oddball" && GetCurrentPlaylistName() != "fs_haloMod_oddball" )
+		AddSpawnCallback( "prop_survival", DissolveItem )
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
         if (FlowState_SURF())
@@ -276,6 +273,11 @@ void function _CustomTDM_Init()
 		thread RunSURF()
 	}else {
 		thread RunTDM()}
+		
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		FsOddballInit()
+	}
 }
 
 void function __OnEntitiesDidLoad()
@@ -298,7 +300,7 @@ void function __OnEntitiesDidLoad()
 		
 		case "mp_rr_canyonlands_64k_x_64k":
 
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			MapEditor_CreateRespawnableWeaponRack( <-10998.3535, -14660.9482, 3679.9812> , <0, 140, 0>, "mp_weapon_haloneedler", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <-8932.25488, -15722.7363, 3679.9812> , <0, 43.8712006, 0>, "mp_weapon_halobattlerifle", 0.5 )
@@ -312,7 +314,7 @@ void function __OnEntitiesDidLoad()
 		
 		case "mp_rr_desertlands_64k_x_64k":
 
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			MapEditor_CreateRespawnableWeaponRack( <11976.0313, 6755.27295, -4351.96875> , <0, 0, 0>, "mp_weapon_haloneedler", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <11427.2051, 6091.21631, -4351.96875> , <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 )
@@ -375,6 +377,16 @@ int function GetTDMState(){
 	return file.tdmState
 }
 
+void function SetTdmStateToNextRound(){
+	file.tdmState = eTDMState.NEXT_ROUND_NOW
+	SetGlobalNetInt( "FSDM_GameState", file.tdmState )
+}
+
+void function SetTdmStateToInProgress(){
+	file.tdmState = eTDMState.IN_PROGRESS
+	SetGlobalNetInt( "FSDM_GameState", file.tdmState )
+}
+
 void function Flowstate_ServerSaveChat()
 {
 	if(file.allChatLines.len() == 0) return
@@ -394,14 +406,6 @@ void function Flowstate_ServerSaveChat()
 	
 	file.allChatLines.clear()
 	Warning("[!] CHAT WAS SAVED in /r5reloaded/platform/, CHAT LINES: " + i)
-}
-
-void function SetTdmStateToNextRound(){
-	file.tdmState = eTDMState.NEXT_ROUND_NOW
-}
-
-void function SetTdmStateToInProgress(){
-	file.tdmState = eTDMState.IN_PROGRESS
 }
 
 void function SetFallTriggersStatus(bool status){
@@ -514,7 +518,7 @@ void function DissolveItem(entity prop)
 	    if( !IsValid(prop) )
 	    	return
 
-		if( GetCurrentPlaylistName() != "fs_haloMod" )
+		if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			wait 4
 		} else
@@ -745,7 +749,7 @@ void function __HighPingCheck(entity player)
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
 		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit" )
 		UpdatePlayerCounts()
-	} else if( GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistName() != "fs_haloMod" ){
+	} else if( GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ){
 		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	}
 }
@@ -949,7 +953,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			    //KillStreakAnnouncer(attacker, false)
 	    			}
 					
-					// if( GetCurrentPlaylistName() == "fs_haloMod" && !attacker.p.playerHasEnergySword )
+					// if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !attacker.p.playerHasEnergySword )
 						// attacker.p.consecutiveKills++
 					
 	    			WpnAutoReloadOnKill(attacker)
@@ -964,10 +968,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					if( attacker == file.previousChallenger )
 						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
 					
-					if( GetCurrentPlaylistName() == "fs_haloMod" )
+					if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 						HisWattsons_HaloModFFA_KillStreakAnnounce( attacker )
 
-					// if( GetCurrentPlaylistName() == "fs_haloMod" && attacker.p.consecutiveKills == 3 && !attacker.p.playerHasEnergySword )
+					// if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 3 && !attacker.p.playerHasEnergySword )
 					// {
 						// entity activeWeapon = attacker.GetActiveWeapon( eActiveInventorySlot.mainHand )
 						// if( IsValid( activeWeapon ) )
@@ -994,7 +998,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 						// }
-					// } else if( GetCurrentPlaylistName() == "fs_haloMod" && attacker.p.consecutiveKills == 3 && attacker.p.playerHasEnergySword )
+					// } else if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 3 && attacker.p.playerHasEnergySword )
 					// {
 							// entity newWeapon1
 							// try{
@@ -1012,7 +1016,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 							// attacker.p.consecutiveKills = 0
 
 							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-					// } else if ( GetCurrentPlaylistName() == "fs_haloMod" && attacker.p.consecutiveKills == 2 && !attacker.p.playerHasEnergySword )
+					// } else if ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 2 && !attacker.p.playerHasEnergySword )
 					// {
 						// Remote_CallFunction_NonReplay( attacker, "DM_HintCatalog", 1, 0)
 					// }
@@ -1035,7 +1039,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 void function PlayerKillStreakAnnounce( entity attacker, string doubleKill, string tripleKill )
 {
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	if( Time() == attacker.p.lastDownedEnemyTime )
@@ -1124,7 +1128,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 		
-	if( GetCurrentPlaylistVarBool( "flowstateForceCharacter", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || GetCurrentPlaylistName() == "fs_haloMod" && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+	if( GetCurrentPlaylistVarBool( "flowstateForceCharacter", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 	{
 		CharSelect(player)
 		player.SetPlayerNetBool( "hasLockedInCharacter", true )
@@ -1219,7 +1223,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 			// player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 			
-			if( GetCurrentPlaylistName() == "fs_haloMod" )
+			if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 			{
 				player.GiveWeapon( "mp_weapon_melee_halo", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded_halo", OFFHAND_MELEE, [] )
@@ -1242,7 +1246,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		}
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_haloMod" && IsValid( player ))
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && IsValid( player ))
 	{
 		try{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -1348,7 +1352,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")	
 
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
 			foreach(item in loot)
@@ -1360,7 +1364,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	
-	if( GetCurrentPlaylistName() != "fs_haloMod" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		WpnPulloutOnRespawn(player, 0)
 		thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
@@ -2343,6 +2347,7 @@ void function GiveGungameWeapon(entity player)
 void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
+	SetTdmStateToNextRound()
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 
 	if(!Flowstate_DoorsEnabled()){
@@ -2536,7 +2541,7 @@ void function SimpleChampionUI()
 	if( file.currentRound > 1 )
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
 	
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
 
     foreach( entity player in GetPlayerArray() )
@@ -2564,10 +2569,28 @@ void function SimpleChampionUI()
 				
 				// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 				
-				if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+				if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 					wait Flowstate_StartTimeDelay
 				
-				Message( player, file.selectedLocation.name, "", 5, "" )
+				if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+				{
+					Message( player, "Oddball", file.selectedLocation.name, 5, "" )
+					// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
+					thread function ( ) : ( player )
+					{
+						wait 6
+
+						if( GetGameState() != eGameState.Playing )
+							return
+
+						thread ResetBallInBallSpawner()
+
+						foreach( player in GetPlayerArray() )
+							Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
+					}()
+				}
+				else
+					Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
 
 				if( !IsValid( player ) || !IsAlive( player ) )
 					return
@@ -2611,7 +2634,7 @@ void function SimpleChampionUI()
 	} 
 
 	string subtext = ""
-	// if( GetCurrentPlaylistName() != "fs_haloMod" )
+	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	// {
 		// if( GetBestPlayer() == PlayerWithMostDamage() && GetBestPlayerName() != "-still nobody-" )
 			// subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
@@ -2637,7 +2660,10 @@ void function SimpleChampionUI()
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid(player) ) continue
-		
+
+		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+			Oddball_RestorePlayerStats( player )
+
 		player.p.playerDamageDealt = 0.0
 		player.SetPlayerNetInt( "damage", 0 )
 		if ( FlowState_ResetKillsEachRound() || is1v1EnabledAndAllowed() )
@@ -2716,12 +2742,17 @@ void function SimpleChampionUI()
 			// i++
 		}
 	}
-	
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_haloMod" )
+
+	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		wait Flowstate_StartTimeDelay
 	
 	SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
+
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		SpawnBallSpawnerAtMapLocation( file.selectedLocation.name )
+	}
 
 	float endTime = Time() + FlowState_RoundTime()
 
@@ -2772,7 +2803,6 @@ void function SimpleChampionUI()
 		
 		while( Time() <= endTime )
 		{
-			//printt("test")
 			if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
 			{
 				foreach(player in GetPlayerArray())
@@ -2786,46 +2816,36 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-			// if( Time() == endTime - 900 )
-			// {
-				// foreach( player in GetPlayerArray() )
-				// {
-					// if( IsValid(player) )
-					// {
-						// Message(player,"15 MINUTES REMAINING!","", 5)
-					// }
-				// }
-			// }
-			// if( Time() == endTime - 600 )
-			// {
-				// foreach( player in GetPlayerArray() )
-				// {
-					// if( IsValid(player) )
-					// {
-						// Message(player,"10 MINUTES REMAINING!","", 5)
-					// }
-				// }
-			// }
-			// if(Time() == endTime-300)
-			// {
-				// foreach( player in GetPlayerArray() )
-				// {
-					// if( IsValid(player) )
-					// {
-						// Message(player,"5 MINUTES REMAINING!","", 5)
-					// }
-				// }
-			// }
-			// if(Time() == endTime - 120)
-			// {
-				// foreach( player in GetPlayerArray() )
-				// {
-					// if( IsValid(player) )
-					// {
-						// Message(player,"2 MINUTES REMAINING!","", 5)
-					// }
-				// }
-			// }
+			
+			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+			{
+				table< int,int > totalTeamsScore
+				
+				foreach(player in GetPlayerArray())
+				{
+					if ( !IsValid( player ) ) continue
+
+					if( !( player.GetTeam() in totalTeamsScore ) )
+					{
+						totalTeamsScore[ player.GetTeam() ] <- player.GetPlayerNetInt( "oddball_ballHeldTime" )
+					} else
+					{
+						totalTeamsScore[ player.GetTeam() ] += player.GetPlayerNetInt( "oddball_ballHeldTime" )
+					}
+				}
+				
+				foreach( team, score in totalTeamsScore )
+				{
+					if( score >= ODDBALL_POINTS_TO_WIN )
+					{
+						//set team as winner, show ui screen
+
+						SetTdmStateToNextRound()
+						break
+					}
+				}
+			}
+
 			if(Time() == endTime - 60)
 			{
 				// foreach( player in GetPlayerArray() )
@@ -2834,6 +2854,7 @@ void function SimpleChampionUI()
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
+
 			if(Time() == endTime - 30)
 			{
 				// foreach( player in GetPlayerArray() )
@@ -2842,6 +2863,7 @@ void function SimpleChampionUI()
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
+
 			if(Time() == endTime - 10)
 			{
 				// foreach( player in GetPlayerArray() )
@@ -2850,11 +2872,10 @@ void function SimpleChampionUI()
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
+
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
-			{
-				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
 				break
-			}
+
 			WaitFrame()
 		}
 	}
@@ -2871,6 +2892,13 @@ void function SimpleChampionUI()
 		}
 	}
 	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
+	{
+		ClearBallCarrierPlayerSetup( GetBallCarrier() )
+		SetEmptyBallInBallSpawner()
+		SetBallCarrier( null )
+	}
+
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	SetTdmStateToNextRound()
 		
@@ -3485,7 +3513,7 @@ void function CharSelect( entity player)
 //By Retículo Endoplasmático#5955 (CafeFPS)//
 {
 	//Give master chief skin and assign a color
-	if( GetCurrentPlaylistName() == "fs_haloMod" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
 
@@ -5361,4 +5389,9 @@ void function ForceSaveOgSkyboxOrigin()
 {
 	entity skyboxCamera = GetEnt( "skybox_cam_level" )
 	file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
+}
+
+LocationSettings function FSDM_GetSelectedLocation()
+{
+	return file.selectedLocation
 }

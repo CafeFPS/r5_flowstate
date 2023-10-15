@@ -910,7 +910,7 @@ global struct ServerPlayerStruct
 	
 	//wattson ultimate
 	entity lastTrophy
-	
+
 	float huntEndTime
 	bool huntEnable = false
 	array<int> huntIds = []
@@ -928,6 +928,11 @@ global struct ServerPlayerStruct
 	int consecutiveKills
 	bool playerHasEnergySword = false
 	string weaponThatEnergySwordReplaced = ""
+	
+	//Oddball
+	entity oddballCarrierFx
+	//float oddballLastTimeCarried = 0
+	// int oddballTimesCarried = 0
 }
 
 global struct ChallengeScore

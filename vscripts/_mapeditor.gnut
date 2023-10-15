@@ -273,12 +273,12 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
     e.SetModelScale( scale )
 
     #if IS_FLOWSTATE_SCRIPT
-        e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
+        e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP
 		
 		if( a == $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
 			e.SetScriptName( "map_editor_jumppad" )
 		
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
             if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
                 thread HaloMod_Cyberdyne_CreateFanPusher( e.GetOrigin() + Vector( -60, 0, 15 ), e.GetAngles() )

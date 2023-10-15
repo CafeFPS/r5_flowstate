@@ -211,6 +211,13 @@ void function SV_CL_Init()
 	Dev_RemoteFunctions_Init()
 	#endif
 	
+	#if CLIENT
+	if( GameRules_GetGameMode() == "fs_dm" )
+		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )
+	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+		RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
+	#endif
 	RemoteFunctions_Init_Finish()
 }
 

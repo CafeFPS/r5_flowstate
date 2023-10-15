@@ -235,6 +235,19 @@ void function SmartAmmo_LockedOntoWarningHUD_Update()
 			//SrgbToLinear( <255,237,76> / 255.0 ) // can't get the ultimate highlight color from bakery becase it takes way too long to do every frame.
 			RuiSetFloat3( file.lockon_hud, "borderColor", <1, 0.846873462, 0.0722718611> )
 		}
+		else if ( StatusEffect_GetSeverity( player, eStatusEffect.player_carrying_oddball ) > 0.0 )
+		{
+			RuiSetString( file.lockon_hud, "lockMessage", "POSITION REVEALED" ) // BALL HELD FOR " + player.GetPlayerNetInt( "oddball_ballHeldTime" ) + "s" )
+			RuiSetGameTime( file.lockon_hud, "lockEndTime", Time() + 999 )
+			RuiSetBool( file.lockon_hud, "isVisible", true )
+			RuiSetBool( file.lockon_hud, "northLock", false )
+			RuiSetBool( file.lockon_hud, "southLock", false )
+			RuiSetBool( file.lockon_hud, "westLock", false )
+			RuiSetBool( file.lockon_hud, "eastLock", false )
+
+			//SrgbToLinear( <255,237,76> / 255.0 ) // can't get the ultimate highlight color from bakery becase it takes way too long to do every frame.
+			RuiSetFloat3( file.lockon_hud, "borderColor", SrgbToLinear( < 255, 120, 32 > / 255.0 ) )
+		}
 		else if ( StatusEffect_GetSeverity( player, eStatusEffect.device_blocked ) )
 		{
 			float blockWeight = StatusEffect_GetSeverity( player, eStatusEffect.device_blocked )

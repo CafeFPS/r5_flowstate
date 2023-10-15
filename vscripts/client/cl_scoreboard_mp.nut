@@ -692,7 +692,10 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore3Header = headers[ 2 ]
 			if (IsValid( player ))
 			{
-				playerScore3 = player.GetPlayerNetInt( "damage" )
+				if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+					playerScore3 = player.GetPlayerNetInt( "oddball_ballHeldTime" )
+				else
+					playerScore3 = player.GetPlayerNetInt( "damage" )
 			}
 			playerScore3NumDigits = numDigits[ 2 ]
 

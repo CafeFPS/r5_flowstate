@@ -501,7 +501,8 @@ void function CheckForAccelerants( entity player )
 
 		foreach ( invItem in playerInventory )
 		{	
-			if(invItem.type == 49)
+		printt( invItem.type )
+			if(invItem.type == 51)
 			{
 				Consumable_UseItemByType(player, 5)
 				SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)

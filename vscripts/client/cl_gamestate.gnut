@@ -211,8 +211,8 @@ void function SetCommonScoreRUIVars( var rui )
 		else if( GetCurrentPlaylistName() == "fs_survival_solos" )
 			RuiSetString( rui, "gameModeString", "APEX SOLO" )
 		
-		if( GetCurrentPlaylistName() == "fs_haloMod" )
-			RuiSetString( rui, "gameModeString", "HALO MOD FFA" )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+			RuiSetString( rui, "gameModeString", "HALO MOD" )
 
 		if(GameRules_GetGameMode() == "flowstate_pkknockback")
 		{

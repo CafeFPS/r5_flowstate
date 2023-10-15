@@ -55,7 +55,7 @@ void function OnWeaponActivate_HaloAR( entity weapon )
 void function OnWeaponDeactivate_HaloAR( entity weapon )
 {
 	#if CLIENT
- 	if( GetCurrentPlaylistName() != "fs_haloMod" )
+ 	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		Minimap_EnableDraw()
 	}
@@ -193,7 +193,7 @@ void function OnWeaponZoomIn_HaloModBattleRifle( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_DisableDraw()
 	}
@@ -221,7 +221,7 @@ void function OnWeaponZoomOut_HaloModBattleRifle( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_EnableDraw()
 	}
@@ -250,7 +250,7 @@ void function OnWeaponZoomIn_HaloModMagnum( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_DisableDraw()
 	}
@@ -278,7 +278,7 @@ void function OnWeaponZoomOut_HaloModMagnum( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_EnableDraw()
 	}
@@ -307,7 +307,7 @@ void function OnWeaponZoomIn_HaloModSniper(  entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_DisableDraw()
 	}
@@ -335,7 +335,7 @@ void function OnWeaponZoomOut_HaloModSniper(  entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( GetCurrentPlaylistName() != "fs_haloMod" && GetMapName() == "mp_flowstate" )
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	{
 		Minimap_EnableDraw()
 	}

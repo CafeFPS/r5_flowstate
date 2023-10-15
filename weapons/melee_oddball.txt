@@ -1,0 +1,27 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/flowstate_custom/oddball_white"
+	"hud_icon"									"rui/flowstate_custom/oddball_white"
+
+	"weapon_type_flags"							"WPT_MELEE"
+	
+	// Models
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_oddball.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_oddball.rmdl"
+	
+	//"OnWeaponActivate"							"OnWeaponActivate_vctblue"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword"
+
+	// FX
+	"impact_effect_table"							"melee_bolo"
+}
+
