@@ -1156,13 +1156,9 @@ void function BecomeInfected(entity player)
 	if( player.p.amIAlphaZombie ) //alpha zombie died
 	{
 		player.SetMoveSpeedScale(1.4)
-		
-		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-		player.SetShieldHealthMax( 25 )
-		player.SetShieldHealth( 25 )
-		
-		player.SetMaxHealth( 20 )
-		player.SetHealth( 20 )
+
+		player.SetMaxHealth( 70 )
+		player.SetHealth( 70 )
 		
 		player.kv.airSpeed = 90
 		player.kv.airAcceleration = 900
