@@ -2079,7 +2079,7 @@ void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
 		
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
-		printt( vel )
+		// printt( vel )
 
 		if( vel == lastVel )
 		{
