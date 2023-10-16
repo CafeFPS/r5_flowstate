@@ -2046,8 +2046,8 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 	physics.Hide()
 
-	// drop.NotSolid()
-	// physics.NotSolid()
+	drop.NotSolid()
+	physics.NotSolid()
 
 	physics.SetVelocity( forward )
 
