@@ -442,6 +442,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 		//	SpawnCyberdyne()
 		SpawnChill()
 	}
+	
+	#if LISTEN_SERVER
+	SetConVarInt( "sv_onlineAuthEnable", 0 )
+	#endif
+	SetConVarInt( "sv_allowClientSideCfgExec", 1 )
 	#endif
 
 	SV_CL_Shared_Init()
