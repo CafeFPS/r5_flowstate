@@ -225,8 +225,9 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 						StopSoundOnEntity(victim, "ShadowLegend_Shadow_Loop_3P")
 						StartParticleEffectOnEntity_ReturnEntity( victim, PrecacheParticleSystem( $"P_Bshadow_death" ), FX_PATTACH_POINT_FOLLOW, victim.LookupAttachment( "CHESTFOCUS" ) )
 						
-						MakeInvincible( victim ) //double kill bug fix?
-						
+						MakeInvincible( victim )
+						victim.Hide()
+
 						WaitFrame() //guarantee player killed callback is completed so we can spawn properly + don't show ragdoll for shadows
 
 						if(!IsValid(victim)) return
@@ -250,7 +251,7 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 
 						victim.SetOrigin(bestspawn.origin)
 						victim.SetAngles(bestspawn.angles)		
-						
+
 						//victim.SetOrigin(FS_INFECTION.selectedLocation.spawns[0].origin)
 						
 						ClearInvincible(victim)
@@ -260,6 +261,7 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 						TakeLoadoutRelatedWeapons(victim)
 						
 						ClearInvincible(victim)
+						victim.Show()
 						victim.SetThirdPersonShoulderModeOff()
 
 						Survival_SetInventoryEnabled( victim, false )
@@ -1181,12 +1183,8 @@ void function BecomeInfected(entity player)
 		
 		player.SetMoveSpeedScale(1.4)
 		
-		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-		player.SetShieldHealthMax( 25 )
-		player.SetShieldHealth( 25 )
-		
-		player.SetMaxHealth( 20 )
-		player.SetHealth( 20 )
+		player.SetMaxHealth( 70 )
+		player.SetHealth( 70 )
 		player.kv.airSpeed = 90
 		player.kv.airAcceleration = 900
 		AlphaInfectedTrail(player, true)
