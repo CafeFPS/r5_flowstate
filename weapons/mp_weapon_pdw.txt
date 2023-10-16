@@ -44,7 +44,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	//Sounds
 	"fire_sound_1_player_1p" 						"weapon_prowler_burst_secondshot_1p"

@@ -1,4 +1,5 @@
 //custom
+global string SDK_VERSION = "v2.3"
 global string FLOWSTATE_VERSION = "v4.0"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
 global const int BOOSTZONE_ALIVE_TIME = 15

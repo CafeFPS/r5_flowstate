@@ -55,12 +55,12 @@ WeaponData
 	// NOTE: Alternator has a special muzzle flash to look good with two barrels
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// NOTE: specifies muzzle flash for the second barrel
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_1"
 
 
 	// Sound
@@ -68,8 +68,8 @@ WeaponData
 
 	"looping_sounds"								"1"
 
-	"fire_sound_1_player_1p"						""
-	"fire_sound_1_player_3p"						""
+	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
+	"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
 	"fire_sound_2_player_1p"						"Weapon_Alternator_SecondShot_1P"
 	"fire_sound_2_player_3p"						""
 	"fire_sound_2_npc"								"Weapon_Alternator_SecondShot_NPC"
@@ -319,50 +319,50 @@ WeaponData
             "ammo_clip_size"   						"27"
         }
 
-		// NOTE: override barrel FX for both Alternator barrels
-		barrel_stabilizer_l1
-		{
-			"viewkick_yaw_base" 				"*0.85"
-			"viewkick_yaw_random"   			"*0.8"
+		// // NOTE: override barrel FX for both Alternator barrels
+		// barrel_stabilizer_l1
+		// {
+			// "viewkick_yaw_base" 				"*0.85"
+			// "viewkick_yaw_random"   			"*0.8"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l2
-		{
-			"viewkick_yaw_base" 				"*0.8"
-			"viewkick_yaw_random"   			"*0.75"
+		// barrel_stabilizer_l2
+		// {
+			// "viewkick_yaw_base" 				"*0.8"
+			// "viewkick_yaw_random"   			"*0.75"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l3
-		{
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.75"
-			"viewkick_yaw_random"   			"*0.7"
+		// barrel_stabilizer_l3
+		// {
+			// "viewkick_pitch_base" 				"*0.8"
+			// "viewkick_pitch_random"   			"*0.65"
+			// "viewkick_yaw_base" 				"*0.75"
+			// "viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l4_flash_hider
-		{
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.75"
-			"viewkick_yaw_random"   			"*0.7"
+		// barrel_stabilizer_l4_flash_hider
+		// {
+			// "viewkick_pitch_base" 				"*0.8"
+			// "viewkick_pitch_random"   			"*0.65"
+			// "viewkick_yaw_base" 				"*0.75"
+			// "viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 	}
 
 	"ui1_enable"		"1"

@@ -164,7 +164,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	"viewkick_spring" 								"hemlok_vkp"
     "viewkick_spring_hot"                           "hemlok_vkp_hot"

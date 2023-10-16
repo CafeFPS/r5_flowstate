@@ -49,8 +49,7 @@ WeaponData
 	"chroma_color"									".6 1 .7"
 
     "projectilemodel" 								"mdl/dev/empty_model.rmdl"
-    "projectile_trail_effect_0_1p" 					"P_tracer_projectile_smg_blue"
-    "projectile_trail_effect_0_3p" 					"P_tracer_projectile_smg_blue"
+    "projectile_trail_effect_0" 					"P_tracer_projectile_smg_blue"
 
     "projectile_do_predict_impact_effects"			"1"
 
@@ -98,7 +97,7 @@ WeaponData
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"looping_sounds"								"1"
 

@@ -834,7 +834,7 @@ void function OnPlayerCreate( entity player )
 		RuiSetString( file.minimap_coords, "uid", " " )
 		RuiSetInt( file.minimap_coords, "uidPart1", 0 ) // int( uidPart1 )
 		RuiSetInt( file.minimap_coords, "uidPart2", 0 ) // int( uidPart2 )
-		RuiSetString( file.minimap_coords, "name", "R5Reloaded v2.x\nFlowstate Scripts " + FLOWSTATE_VERSION )
+		RuiSetString( file.minimap_coords, "name", "R5Reloaded " + SDK_VERSION + "\nFlowstate Scripts " + FLOWSTATE_VERSION )
 	}
 
 	asset mapImage       = Minimap_GetAssetForKey( "minimap" )

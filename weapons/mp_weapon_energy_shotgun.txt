@@ -123,9 +123,9 @@ WeaponData
 	//"fx_shell_eject_world"						"wpn_shelleject_shotshell"
 	//"fx_shell_eject_attach"						"shell"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"							"P_mflash_nrg_shotgun_FP"
+	"fx_muzzle_flash_world"							"P_mflash_nrg_shotgun"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"impulse_force"   								"20"
 

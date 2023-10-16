@@ -74,7 +74,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
      "ammo_clip_size"   								"18"
     "ammo_min_to_fire"								"1"
