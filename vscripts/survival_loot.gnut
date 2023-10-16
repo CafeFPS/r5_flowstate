@@ -2051,7 +2051,7 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 	physics.SetVelocity( forward )
 
-	thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
+	// thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
 	// physics sometimes will stuck even if item seems to be static already
 
 }
