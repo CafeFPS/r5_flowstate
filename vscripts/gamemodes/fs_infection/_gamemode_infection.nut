@@ -858,8 +858,8 @@ void function Infection_GameLoop()
 			if( FS_INFECTION.endTime - Time() > 60)
 				FS_INFECTION.endTime = Time() + 65 //If last man standing is decided when there are more than 60 seconds remaining, force it to be 60 seconds and start calling evac
 		}
-
-		if( Time() > ( FS_INFECTION.endTime - DEFAULT_TIME_UNTIL_SHIP_DEPARTS + 5 ) && !FS_INFECTION.CoolEvacSpawned)
+		
+		if( Time() > ( FS_INFECTION.endTime - DEFAULT_TIME_UNTIL_SHIP_ARRIVES - DEFAULT_TIME_UNTIL_SHIP_DEPARTS - 5 ) && !FS_INFECTION.CoolEvacSpawned)
 		{
 			thread FlowstateInfection_CallEvac( FS_INFECTION.EvacShipLZ )
 			FS_INFECTION.CoolEvacSpawned = true
