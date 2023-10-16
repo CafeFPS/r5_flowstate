@@ -485,9 +485,9 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 
 	droneMedic.SetMoveToPositionGround( moveToPosition, groundEnt )
 
-	DebugDrawLine( deployOrigin, deployDest, 255, 0, 0, true, 2 )
-	DebugDrawLine( deployDest, groundTraceResult.endPos, 0, 255, 0, true, 2 )
-	DrawStar( moveToPosition, 2, 5, true )
+	// DebugDrawLine( deployOrigin, deployDest, 255, 0, 0, true, 2 )
+	// DebugDrawLine( deployDest, groundTraceResult.endPos, 0, 255, 0, true, 2 )
+	// DrawStar( moveToPosition, 2, 5, true )
 
 	bool wasStuck = false
 	while( true )
