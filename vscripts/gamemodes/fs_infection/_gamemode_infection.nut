@@ -361,7 +361,13 @@ void function Infection_Lobby()
 		player.MakeVisible()
 		player.p.infectionRoundKills = 0
 		player.p.amIAlphaZombie = false
-		
+		player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
+		player.SetPlayerNetInt( "deaths", 0 ) //Reset for deaths
+		player.SetPlayerGameStat( PGS_KILLS, 0 )
+		player.SetPlayerGameStat( PGS_DEATHS, 0 )
+		player.p.playerDamageDealt = 0.0
+		player.SetPlayerNetInt( "damage", 0 )
+
 		//perks reset
 		player.p.hasSecondaryWeaponPerk = false
 		player.p.hasQuickReloadPerk = false
@@ -853,7 +859,7 @@ void function Infection_GameLoop()
 				FS_INFECTION.endTime = Time() + 65 //If last man standing is decided when there are more than 60 seconds remaining, force it to be 60 seconds and start calling evac
 		}
 
-		if( Time() > FS_INFECTION.endTime - (DEFAULT_TIME_UNTIL_SHIP_ARRIVES + DEFAULT_TIME_UNTIL_SHIP_DEPARTS + 5) && !FS_INFECTION.CoolEvacSpawned)
+		if( Time() > ( FS_INFECTION.endTime - DEFAULT_TIME_UNTIL_SHIP_DEPARTS + 5 ) && !FS_INFECTION.CoolEvacSpawned)
 		{
 			thread FlowstateInfection_CallEvac( FS_INFECTION.EvacShipLZ )
 			FS_INFECTION.CoolEvacSpawned = true
