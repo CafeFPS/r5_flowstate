@@ -1,5 +1,5 @@
 //Flowstate 1v1 gamemode
-//made by makimakima#5561
+//made by __makimakima__
 globalize_all_functions
 
 global bool IS_CHINESE_SERVER = false
@@ -155,7 +155,7 @@ bool function isPlayerInSoloMode(entity player)
 	return false
 }
 
-bool function isPlayerInWatingList(entity player)
+bool function isPlayerInWaitingList(entity player)
 {
 	foreach (eachPlayerStruct in soloPlayersWaiting)
 	{
@@ -285,7 +285,7 @@ void function soloModePlayerToWaitingList(entity player)
 	playerStruct.player = player
 	playerStruct.waitingTime = Time() + 2
 	if(IsValid(player))
-		playerStruct.kd = getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS ))
+		playerStruct.kd = getkd( player.GetPlayerNetInt( "kills" ), player.GetPlayerNetInt( "deaths" ))
 	else
 		playerStruct.kd = 0
 	playerStruct.lastOpponent = player.p.lastKiller
@@ -622,7 +622,7 @@ bool function isGroupVaild(soloGroupStruct group)
 void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复活死亡玩家和同一个sologroup的玩家
 {
 	if (!IsValid(player)) return
-	//printt("respawnInSoloMode!")
+	// printt("respawnInSoloMode!")
 	// Warning("respawn player: " + player.GetPlayerName())
 
    	if( player.p.isSpectating )
@@ -637,7 +637,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
     }//disable replay mode
-
+	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
    	if( isPlayerInRestingList(player) )
 	{
 		// Warning("resting respawn")
@@ -654,7 +654,6 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 				TakeAllWeapons(player)
 				thread LoadCustomWeapon(player)
 			}
-			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		}
 		catch (erroree)
 		{
@@ -700,6 +699,14 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	//player dont need any skills in solo mode
 	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeOffhandWeapon( OFFHAND_MELEE )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+	Survival_SetInventoryEnabled( player, false )
+	//SetPlayerInventory( player, [] )
 
 	if (IsValid(player) && !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
 	{
@@ -1376,7 +1383,7 @@ void function ForceAllRoundsToFinish_solomode()
 			}
 		}catch(e420){}
 		
-		if(isPlayerInWatingList(player))
+		if(isPlayerInWaitingList(player))
 			return
 
 		soloGroupStruct group = returnSoloGroupOfPlayer(player) 
