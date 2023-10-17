@@ -35,7 +35,6 @@ global function ClientCommand_SpectateEnemies
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
 global function	ClientCommand_ShowLatency
-global function ClientCommand_Help
 global function WpnPulloutOnRespawn
 global function WpnAutoReload
 global function ReCheckGodMode
@@ -151,7 +150,7 @@ void function _CustomTDM_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 
-	if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) )
+	if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) ) // if you want to avoid cfg abusers
 		SetConVarInt( "sv_allowClientSideCfgExec", 1 )
 	else
 		SetConVarInt( "sv_allowClientSideCfgExec", 0 )
@@ -159,8 +158,12 @@ void function _CustomTDM_Init()
 	if (GetCurrentPlaylistName() != "fs_movementgym")
 		SurvivalFreefall_Init() //Enables freefall/skydive
 	
-	PrecacheCustomMapsProps()
-	PrecacheZeesMapProps()
+	if( !is1v1EnabledAndAllowed() )
+	{
+		PrecacheCustomMapsProps()
+		PrecacheZeesMapProps()
+		PrecacheDEAFPSMapProps()
+	}
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -185,8 +188,6 @@ void function _CustomTDM_Init()
 		VOTING_PHASE_ENABLE = false
 		SCOREBOARD_ENABLE = true
 	}
-	
-	PrecacheDEAFPSMapProps()
 
     __InitAdmins()
 
@@ -210,11 +211,11 @@ void function _CustomTDM_Init()
         else thread _OnPlayerDied(victim, attacker, damageInfo)
     })
 
-	if (FlowState_SURF()){
+	if ( FlowState_SURF() )
+	{
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
-	} else{
-		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
-		
+	} else
+	{
 		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
@@ -227,15 +228,6 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 
-	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
-	
-	//AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)	
-	// AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
-	// AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot)
-	// AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector)
-
-	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
-	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("say", ClientCommand_Say)
 	AddClientCommandCallback("adminlogin", ClientCommand_adminlogin)
 	// Used for sending votes from client to server
@@ -254,10 +246,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("startcameraman", ClientCommand_setspecplayer )
 		AddClientCommandCallback("becomepro", ClientCommand_BecomePro )
 	}
-	
-	AddClientCommandCallback("controllerstate", ClientCommand_ControllerReport)
-	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
-	
+
 	if( is1v1EnabledAndAllowed() )
 	{
 		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest)
@@ -274,10 +263,12 @@ void function _CustomTDM_Init()
 		file.blacklistedAbilities.append(GetCurrentPlaylistVarString("blacklisted_ability_" + i.tostring(), "~~none~~"))
 	}
 
-	if(FlowState_SURF()){
+	if( FlowState_SURF() )
+	{
 		thread RunSURF()
 	}else {
-		thread RunTDM()}
+		thread RunTDM()
+	}
 		
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
@@ -685,7 +676,7 @@ void function _OnPlayerConnected(entity player)
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Message(player,"Flowstate 1V1 v1.3", "Made by makimakima#5561\nMantained by @CafeFPS")
+			Message(player,"Flowstate 1V1 v1.3", "Made by __makimakima__\nMantained by @CafeFPS")
 			HolsterAndDisableWeapons(player)
 			wait 9
 			if ( !IsValid( player ) ) return
@@ -858,7 +849,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	{
 		//maki script 
 		//solo mode		
-		if(isPlayerInWatingList(victim))
+		if(isPlayerInWaitingList(victim))
 			return//player who is wating for his opponent
 
 		if(IsValid(attacker) && IsValid(victim))
@@ -1192,7 +1183,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		{
 			LocPair waitingRoomLocation = getWaitingRoomLocation(GetMapName())
 			if (!IsValid(waitingRoomLocation)) return
-
+			
+			Survival_SetInventoryEnabled( player, false )
 			maki_tp_player(player, waitingRoomLocation)	
 		}
 		
@@ -1224,7 +1216,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		try{
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
-			player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 			// player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 			
@@ -1696,7 +1687,7 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
     array<string> Weapons = [
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
-		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2 hopup_shield_breaker",
 		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
 		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
 	]
@@ -1740,14 +1731,13 @@ void function GiveRandomPrimaryWeapon(entity player)
 
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
-		"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2 barrel_stabilizer_l1",
-		"mp_weapon_pdw optic_cq_threat highcal_mag_l3 stock_tactical_l3",
+		"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2",
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3",
 		"mp_weapon_vinson stock_tactical_l2 highcal_mag_l3",
 		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2 barrel_stabilizer_l2",
 		"mp_weapon_lmg barrel_stabilizer_l1 stock_tactical_l3",
         "mp_weapon_energy_ar energy_mag_l2 stock_tactical_l3",
-        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3",
         "mp_weapon_rspn101 stock_tactical_l2 bullets_mag_l2 barrel_stabilizer_l1"
 	]
 
@@ -1767,17 +1757,15 @@ void function GiveRandomSecondaryWeapon( entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3",
 		"mp_weapon_energy_shotgun shotgun_bolt_l2",
-		"mp_weapon_pdw highcal_mag_l3 stock_tactical_l2",
 		"mp_weapon_mastiff shotgun_bolt_l3",
 		"mp_weapon_autopistol bullets_mag_l2",
-		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3",
 		"mp_weapon_energy_ar energy_mag_l1 stock_tactical_l3 hopup_turbocharger",
 		"mp_weapon_doubletake optic_ranged_hcog energy_mag_l3 stock_sniper_l3",
 		"mp_weapon_vinson stock_tactical_l3 highcal_mag_l3",
 		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2"
-		"mp_weapon_car optic_cq_holosight stock_tactical_l1 bullets_mag_l3"
 		"mp_weapon_volt_smg energy_mag_l2 stock_tactical_l3"
 	]
 
@@ -1797,15 +1785,14 @@ void function GiveActualGungameWeapon(int index, entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
-		"mp_weapon_r97 optic_cq_hcog_classic barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
+		"mp_weapon_r97 optic_cq_hcog_classicstock_tactical_l3 bullets_mag_l2",
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l1",
-		"mp_weapon_rspn101 optic_cq_hcog_bruiser barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
+		"mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 bullets_mag_l2",
 		"mp_weapon_energy_shotgun shotgun_bolt_l1",
 		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3",
 		"mp_weapon_shotgun shotgun_bolt_l1",
 		"mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3 barrel_stabilizer_l4_flash_hider",
 		"mp_weapon_mastiff",
-		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3",
 		"mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l1",
 		"mp_weapon_lmg optic_cq_hcog_bruiser highcal_mag_l3 barrel_stabilizer_l3 stock_tactical_l3",
 		"mp_weapon_shotgun_pistol shotgun_bolt_l3",
@@ -1824,7 +1811,6 @@ void function GiveActualGungameWeapon(int index, entity player)
 		"mp_weapon_r97 optic_cq_threat bullets_mag_l1 barrel_stabilizer_l3 stock_tactical_l1",
 		"mp_weapon_autopistol",
 		"mp_weapon_dmr optic_cq_hcog_bruiser sniper_mag_l2 barrel_stabilizer_l2 stock_sniper_l3",
-		"mp_weapon_pdw stock_tactical_l1 highcal_mag_l1",
 		//"mp_weapon_esaw optic_cq_hcog_classic energy_mag_l1 barrel_stabilizer_l4_flash_hider",
 		"mp_weapon_alternator_smg optic_cq_hcog_classic barrel_stabilizer_l2",
 		"mp_weapon_sniper",
@@ -4054,54 +4040,6 @@ bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
 	return true
 }
 
-bool function ClientCommand_MyFFAData(entity player, array < string > args) 
-{
-	// if( Time() - player.p.lastTimeDataRequestUsed < 5 )
-	// {
-		// printt("Cooldown request: " + player.GetPlayerName())
-		// return false
-	// }
-	
-	// thread ShowPlayerKD(player, args[0])
-	
-	return true
-}
-
-void function ShowPlayerKD(entity player, string name)
-{
-	// if ( !IsValid( player ) ) 
-		// return
-	
-	// player.p.lastTimeDataRequestUsed = Time()
-	
-	// array<int> killsAndDeaths
-	// int timeOut = int(Time()) + 3
-	// string RequestIdString = GetUnixTimestamp().tostring()
-
-	// FS_DataPost( format("%s;%s",RequestIdString, name) )
-
-	// while ( killsAndDeaths.len() == 0 && timeOut > Time() && IsValid(player) )
-	// {
-		// //Requesting...
-		// killsAndDeaths = FS_DataGet(RequestIdString) //Sdk function
-		// WaitFrame()
-	// }
-	
-	// if(killsAndDeaths.len() == 0) 
-	// {
-		// printt("ERROR")
-		// return
-	// }
-
-	// float kd = getkd(killsAndDeaths[0],killsAndDeaths[1])
-	// float cRatio = getcontrollerratio(killsAndDeaths[2],killsAndDeaths[0])
-	
-	// printt("kills: " + killsAndDeaths[0] + " | deaths: " + killsAndDeaths[1] + " | kd: " + kd + " | controller kills: " + killsAndDeaths[2] + " | controller ratio: " + cRatio)
-	
-	// string tempStr = format("Your kd is %s",kd.tostring())
-	// Message(player,tempStr,"",5)	
-}
-
 float function getcontrollerratio(int count, int kills)
 //By michae\l/#1125 & Retículo Endoplasmático#5955
 {
@@ -4234,33 +4172,8 @@ string function helpMessage()
 {
 	return "\n\n           CONSOLE COMMANDS:\n\n " +
 	"1. 'kill_self': if you get stuck.\n" +
-	"2. 'scoreboard': displays scoreboard to user.\n" +
-	"3. 'latency': displays ping of all players to user.\n" +
-	"5. 'spectate': spectate enemies!\n" +
-	"6. 'controllersummary': see how many controller players are connected.\n" +
-	"7. 'commands': display this message again"
-}
-
-bool function ClientCommand_Help(entity player, array<string> args)
-{
-	if( !IsValid(player) )
-		return false
-	
-	if(FlowState_RandomGunsEverydie())
-	{
-		Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
-	else if (FlowState_Gungame())
-	{
-		Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
-
-	} else if (FlowState_SURF())
-	{
-		Message(player, "Apex SURF", "", 5)
-	} else{
-		Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
-	}
-
-	return true
+	"2. 'spectate': spectate enemies!\n" +
+	"3. 'commands': display this message again"
 }
 
 bool function ClientCommand_Say(entity player, array<string> args)
@@ -4303,10 +4216,21 @@ array<string> function GetWhiteListedAbilities()
 	return file.blacklistedAbilities
 }
 
+bool function IsForcedlyDisabledWeapon( string weapon ) 
+{
+	switch( weapon )
+	{
+		case "mp_weapon_raygun":
+		case "mp_weapon_throwingknife":
+		return true
+	}
+	
+	return false
+}
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
-	if( !IsValid(player) )
+	if( !IsValid( player ) || !IsAlive( player ) )
 		return false
 	
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
@@ -4316,6 +4240,21 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	}
 
 	if(args.len() < 2) return false
+	
+	if( is1v1EnabledAndAllowed() && isPlayerInRestingList( player ) ) 
+	{
+		Message( player, "NOT ALLOWED IN RESTING MODE" )
+		return false
+	}
+
+	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) ) 
+	{
+		Message( player, "NOT ALLOWED IN WAITING MODE" )
+		return false
+	}
+
+	if( is1v1EnabledAndAllowed() && args[0] != "p" && args[0] != "s" )
+		return false
 
     if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
 	{
@@ -4347,6 +4286,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				
 				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
 				
+				SetupInfiniteAmmoForWeapon( player, weapon )
 			break
 			case "s":
 			case "secondary":
@@ -4355,6 +4295,8 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 					player.TakeWeaponByEntNow( secondary )
 				
 				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
+
+				SetupInfiniteAmmoForWeapon( player, weapon )
 			break
 			case "t":
 			case "tactical":
@@ -4709,12 +4651,12 @@ void function LoadCustomWeapon(entity player)
 
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 
-		wait 0.3
+		// wait 0.3
 
-		if ( !IsValid( player ) ) return
+		// if ( !IsValid( player ) ) return
 
-		WpnAutoReload(player)
-		WpnPulloutOnRespawn(player, 0)
+		// WpnAutoReload(player)
+		// WpnPulloutOnRespawn(player, 0)
 	}
 }
 
