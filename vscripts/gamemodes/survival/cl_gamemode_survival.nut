@@ -784,8 +784,8 @@ void function InitSurvivalHealthBar()
 {
 	entity player = GetLocalViewPlayer()
 	
-	if( GameRules_GetGameMode() != SURVIVAL )
-		player = GetLocalClientPlayer()
+	// if( GameRules_GetGameMode() != SURVIVAL )
+		// player = GetLocalClientPlayer()
 	
 	OnThreadEnd(
 		function() : ( player )
@@ -838,11 +838,11 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	
 	if(RGB_HUD)
 		thread RGBRui(rui)
+
+	// if( GameRules_GetGameMode() != "fs_dm" ) return
 	
-	if( GameRules_GetGameMode() != "fs_dm" ) return
-	
-	if ( IsControllerModeActive() )
-		player.ClientCommand( "controllerstate true")
+	// if ( IsControllerModeActive() )
+		// player.ClientCommand( "controllerstate true")
 }
 
 void function RGBRui(var rui)
