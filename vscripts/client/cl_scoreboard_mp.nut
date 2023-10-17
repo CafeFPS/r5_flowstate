@@ -357,7 +357,10 @@ void function ShowScoreboardMP()
 	
 	Hud_SetVisible( file.backgroundCustom, true )
 	Hud_SetVisible( file.titleCustom, true )
-	Hud_SetVisible( file.hintCustom, true )
+	if( GetCurrentPlaylistName() == "fs_haloMod" || GetCurrentPlaylistName() == "fs_haloMod_oddball" || GetCurrentPlaylistName() == "fs_1v1" )
+		Hud_SetVisible( file.hintCustom, true )
+	else
+		Hud_SetVisible( file.hintCustom, false )
 	
 	//file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.scoreboardOverlays = CreateScoreboardOverlays()
@@ -538,8 +541,8 @@ void function ShowScoreboardMP()
 
 				// Update player name and color
 				string name = player.GetPlayerName()
-				if ( player.HasBadReputation() )
-					name = "* " + name
+				// if ( player.HasBadReputation() )
+					// name = "* " + name
 
 				RuiSetString( rui, "playerName", name )
 				

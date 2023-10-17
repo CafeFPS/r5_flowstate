@@ -4222,6 +4222,7 @@ bool function IsForcedlyDisabledWeapon( string weapon )
 	{
 		case "mp_weapon_raygun":
 		case "mp_weapon_throwingknife":
+		case "mp_weapon_pdw":
 		return true
 	}
 	
