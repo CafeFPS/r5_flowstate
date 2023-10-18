@@ -257,6 +257,13 @@ void function GiveBasicSurvivalItems( entity player )
 	
 	Survival_SetInventoryEnabled( player, true )
 
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	
+	if( ItemFlavor_GetHumanReadableRef( playerCharacter ) != "character_gibraltar" )
+	{
+		player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
+		player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
+	}
 	// todo: find why it's not playing fx on cockpit
 	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
 }
