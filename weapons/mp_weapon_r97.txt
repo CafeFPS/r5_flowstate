@@ -121,8 +121,8 @@ WeaponData
 	"npc_min_engage_range_heavy_armor"				"500"
 	"npc_max_engage_range_heavy_armor"				"2000"
 	
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
+	"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	"npc_min_burst"   								"4"

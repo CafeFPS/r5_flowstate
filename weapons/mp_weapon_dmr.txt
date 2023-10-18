@@ -44,6 +44,10 @@
 	//setting to "0" so it's tunable in Bakery
 	"sprintcycle_time"								"0"
 
+	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
+	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+
 	// Damage
 	//
 	"damage_near_value"                        "55"
@@ -255,8 +259,6 @@
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
-			"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
 		}
 
 		"legendary1"

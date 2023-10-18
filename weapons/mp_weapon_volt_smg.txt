@@ -95,8 +95,8 @@ WeaponData
 	"fx_shell_eject_world"							""
 	"fx_shell_eject_attach"							""
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_view"							"wpn_muzzleflash_pulse_FP"
+	"fx_muzzle_flash_world"							"wpn_muzzleflash_pulse"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"looping_sounds"								"1"
@@ -386,12 +386,6 @@ WeaponData
 	{
         gold
         {
-        }
-
-        barrel_stabilizer_l4_flash_hider
-        {
-            "fx_muzzle_flash_view"                ""
-            "fx_muzzle_flash_world"                ""
         }
 
         optic_cq_hcog_classic
