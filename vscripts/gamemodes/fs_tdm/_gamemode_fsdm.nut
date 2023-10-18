@@ -1154,7 +1154,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
                 if ( !storedWeapon.name.len() ) continue
                 if( storedWeapon.weaponType == eStoredWeaponType.main)
 					try{
-                    player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+					entity givenWeapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+					SetupInfiniteAmmoForWeapon( player, givenWeapon )
 					}catch(e420){}
                 else
 					try{
