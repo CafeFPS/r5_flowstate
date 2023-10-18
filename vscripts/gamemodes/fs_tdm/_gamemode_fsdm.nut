@@ -745,9 +745,10 @@ void function __HighPingCheck(entity player)
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
 		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit" )
 		UpdatePlayerCounts()
-	} else if( GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ){
-		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	}
+	// else if( GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ){
+		// Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
+	// }
 }
 
 void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)

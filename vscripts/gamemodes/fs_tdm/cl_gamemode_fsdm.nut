@@ -109,6 +109,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 		return
 
 	thread Flowstate_PlayStartRoundSounds( )
+	thread Flowstate_ShowStartTimeUI( new )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
@@ -155,37 +156,49 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	}
 }
 
+void function Flowstate_ShowStartTimeUI( float new )
+{
+	if( new == -1 )
+	{
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Text_Center" ), false )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame_Center" ), false )
+		return
+	}
+
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Text_Center" ), true )
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame_Center" ), true )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame_Center" ) ), "basicImage", $"rui/flowstate_custom/dm_starttimer_bg" )
+	
+	thread Flowstate_StartTime_Thread( new )
+
+	//SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap( $"rui/flowstate_custom/cyberdyne_map", 1.05, 1880, -2100 )
+}
+	
+void function Flowstate_StartTime_Thread( float endtime )
+{
+	entity player = GetLocalClientPlayer()
+
+	OnThreadEnd(
+		function() : ()
+		{
+			Hud_SetVisible( HudElement( "FS_DMCountDown_Text_Center" ), false )
+			Hud_SetVisible( HudElement( "FS_DMCountDown_Frame_Center" ), false )
+		}
+	)
+	
+	while ( Time() <= endtime )
+	{
+        int elapsedtime = int(endtime) - Time().tointeger()
+
+		DisplayTime dt = SecondsToDHMS( elapsedtime )
+		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), "Deathmatch Starting in " + dt.seconds )
+		
+		wait 1
+	}
+}
+
 void function Flowstate_PlayStartRoundSounds()
 {
-	//ui
-	{
-		if ( file.countdownRui != null )
-		{
-			RuiDestroyIfAlive( file.countdownRui )
-			file.countdownRui = null
-		}
-
-		file.countdownRui = CreateFullscreenRui( $"ui/generic_timer.rpak" )
-		
-		RuiSetString( file.countdownRui, "messageText", " Starting Deathmatch in " )
-		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
-			RuiSetString( file.countdownRui, "messageText", " Starting Oddball in " )
-		RuiSetGameTime( file.countdownRui, "startTime", Time() )
-		RuiSetGameTime( file.countdownRui, "endTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
-		RuiSetColorAlpha( file.countdownRui, "timerColor", SrgbToLinear( <255,233,0> / 255.0 ), 1.0 )
-		
-		// cool timer in world
-		// file.countdownRui = CreateFullscreenRui( $"ui/titanfall_timer.rpak" ) // RuiCreate( $"ui/titanfall_timer.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-		// RuiTrackFloat3( file.countdownRui, "playerPos", GetLocalClientPlayer(), RUI_TRACK_ABSORIGIN_FOLLOW )
-		// RuiSetFloat3( file.countdownRui, "pos", GetLocalClientPlayer().GetOrigin() )
-		// RuiSetGameTime( file.countdownRui, "impactTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
-		
-		// file.countdownRui = CreateFullscreenRui( $"ui/plane_doors_open_timer.rpak" )
-		// RuiSetString( file.countdownRui, "text", "Starting in" )
-		// RuiSetGameTime( file.countdownRui, "endTime", GetGlobalNetTime( "flowstate_DMStartTime" ) )
-		// RuiSetFloat( file.countdownRui, "progressTime", Time() )
-	}
-	
 	//sounds
 	entity player = GetLocalViewPlayer()
 
