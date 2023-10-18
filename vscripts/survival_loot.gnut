@@ -1317,8 +1317,8 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 	if( pickupData.ref == "fs_ball" && GetGameState() == eGameState.Playing )
 	{
 		// player.p.playerHasBomb = true
-		SetBallCarrier( player )
 		SetBallEntity( null )
+		SetBallCarrier( player )
 
 		printt("New ball carrier " + player)
 

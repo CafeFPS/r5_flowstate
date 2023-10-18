@@ -5331,7 +5331,7 @@ void function FS_ResetMapLightning()
 	SetConVarToDefault( "mat_autoexposure_max_multiplier" )
 	SetConVarToDefault( "mat_autoexposure_max" )
 	SetConVarToDefault( "mat_bloom_max_lighting_value" )
-	SetConVarToDefault( "jump_graceperiod" )
+	// SetConVarToDefault( "jump_graceperiod" )
 	SetConVarToDefault( "mat_envmap_scale" )
 }
 

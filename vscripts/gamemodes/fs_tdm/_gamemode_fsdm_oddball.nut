@@ -22,7 +22,8 @@ void function FsOddballInit()
 	RegisterSignal( "OnlyOneTimeThread" )
 	AddClientCommandCallback( "CC_AttemptThrowOddball", Flowstate_ClientCommand_AttemptThrowOddball )
 	//connected callback, refresh score and ball icon
-
+	
+	RegisterSignal( "StopAutoStartRuiThread" )
 	PrecacheModel( $"mdl/weapons/caber_shot/caber_shot_thrown.rmdl" )
 }
 
@@ -144,7 +145,13 @@ void function SetupBallCarrierPlayer( entity player )
 	Remote_CallFunction_NonReplay(player, "Oddball_HintCatalog", 0, 0)
 
 	//show hud
-	StatusEffect_AddEndless( player, eStatusEffect.player_carrying_oddball, 1.0 )
+	thread function () : ( player )
+	{
+		EndSignal( player, "StopAutoStartRuiThread" )
+		wait 3.55
+		if( IsValid( player ) && GetBallCarrier() == player )
+			StatusEffect_AddEndless( player, eStatusEffect.player_carrying_oddball, 1.0 )
+	}()
 	
 	//destruir trail por si las moscas, no debería pasar
 	if( IsValid( player.p.oddballCarrierFx ) )
@@ -208,7 +215,8 @@ void function ClearBallCarrierPlayerSetup( entity player )
 	//restore movement
 	StatusEffect_StopAllOfType( player, eStatusEffect.move_slow)
 	player.SetMoveSpeedScale( 1 )
-
+	
+	Signal( player, "StopAutoStartRuiThread" )
 	SetBallCarrier( null )
 	
 	RetrievePilotWeapons( player )

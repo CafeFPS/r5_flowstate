@@ -16,6 +16,7 @@ void function Cl_FsOddballInit()
 	RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptThrowOddball )
 	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
 	
+	RegisterSignal( "StopAutoDestroyRuiThread" )
 	// Muy tarde amigo
 	// RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )
 	// RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
@@ -193,6 +194,8 @@ void function Oddball_StartBuildingTeamsScoreOnHud()
 
 void function Oddball_BallOrCarrierEntityChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
 {
+	printt( "ball or carrier changed, new: " + newEnt )
+
 	entity localViewPlayer = GetLocalViewPlayer()
 
 	if ( !IsValid( localViewPlayer ) || !IsValid( newEnt ) )
@@ -205,23 +208,31 @@ void function Oddball_BallOrCarrierEntityChanged( entity player, entity oldEnt, 
 		return
 	}
 	
+	Signal( localViewPlayer, "StopAutoDestroyRuiThread" )
+
 	string msg
 	asset icon
-
-	if( newEnt.IsPlayer() && newEnt != localViewPlayer && newEnt.GetTeam() == localViewPlayer.GetTeam() )
+	
+	if( !newEnt.IsPlayer() )
 	{
-		msg = ""//"Defend"
-		icon = $"rui/flowstate_custom/oddball_blue"
-	} else if( newEnt.IsPlayer() && newEnt != localViewPlayer && newEnt.GetTeam() != localViewPlayer.GetTeam() )
-	{
-		msg = ""//"Kill"
+		msg = "Pick Up"
 		icon = $"rui/flowstate_custom/oddball_red"
-	} else if( !newEnt.IsPlayer() )
+	} else if( newEnt.IsPlayer() && newEnt.GetTeam() == localViewPlayer.GetTeam() )
 	{
-		msg = "Pick Up"//"Pick Up"
+		msg = "Defend"
+		icon = $"rui/flowstate_custom/oddball_blue"
+	} else if( newEnt.IsPlayer() && newEnt.GetTeam() != localViewPlayer.GetTeam() )
+	{
+		msg = "Enemy Scoring"
 		icon = $"rui/flowstate_custom/oddball_red"
 	}
 	
+	if( newEnt.IsPlayer() && newEnt == GetLocalViewPlayer() )
+	{
+		msg = "Ball Picked Up"
+		icon = $"rui/flowstate_custom/oddball_blue"
+	}
+
 	Oddball_CreateBallRUI( newEnt, msg, icon )
 }
 
@@ -232,23 +243,64 @@ var function Oddball_CreateBallRUI( entity ballOrCarrier, string text, asset ico
 		RuiDestroyIfAlive( file.ballRui )
 		file.ballRui = null
 		
-		if( ballOrCarrier == GetLocalViewPlayer() )
-			return
+		// if( ballOrCarrier == GetLocalViewPlayer() )
+			// return
 	}
 
     if( !IsValid( ballOrCarrier ) )
         return
 
-	var rui = CreateFullscreenRui( $"ui/overhead_icon_generic.rpak", HUD_Z_BASE - 20 )
-	RuiSetImage( rui, "icon", icon )
-	RuiSetBool( rui, "isVisible", true )
-	RuiSetBool( rui, "pinToEdge", true )
-	RuiTrackFloat3( rui, "pos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
-	RuiSetFloat2( rui, "iconSize", <30,30,0> )
-	RuiSetFloat( rui, "distanceFade", 100000 )
-	RuiSetBool( rui, "adsFade", true )
-	RuiSetString( rui, "hint", text )
+	// var rui = CreateFullscreenRui( $"ui/waypoint_hub_areaofinterest.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetCenter", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiSetImage( rui, "iconImage", icon )
+	// RuiSetString( rui, "inAreaText", text )
+
+	var rui = CreateFullscreenRui( $"ui/waypoint_basic_area.rpak", HUD_Z_BASE - 20 )
+	RuiTrackFloat3( rui, "targetCenter", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	RuiSetFloat( rui, "areaRadius2D", 15 )
+	RuiSetImage( rui, "iconImage", icon )
+	RuiSetString( rui, "outOfAreaText", text )
+	RuiSetString( rui, "inAreaText", text )
+
+	// var rui = CreateFullscreenRui( $"ui/waypoint_basic_entpos.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetPos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiSetFloat3( rui, "playerAngles", <0,0,0> )
+	// RuiSetString( rui, "promptText", text )
+	// RuiSetImage( rui, "iconImage", icon )
+	
+	// var rui = CreateFullscreenRui( $"ui/overhead_icon_generic.rpak", HUD_Z_BASE - 20 )
+	// RuiSetImage( rui, "icon", icon )
+	// RuiSetBool( rui, "isVisible", true )
+	// RuiSetBool( rui, "pinToEdge", true )
+	// RuiTrackFloat3( rui, "pos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiSetFloat2( rui, "iconSize", <30,30,0> )
+	// RuiSetFloat( rui, "distanceFade", 100000 )
+	// RuiSetBool( rui, "adsFade", true )
+	// RuiSetString( rui, "hint", text )
 	
 	file.ballRui = rui
+	
+	if( ballOrCarrier == GetLocalViewPlayer() )
+	{
+		thread function () : ( ballOrCarrier )
+		{
+			EndSignal( GetLocalViewPlayer(), "StopAutoDestroyRuiThread" )
+			float endtime = Time() + 3.5
+
+			OnThreadEnd(
+				function() : ( )
+				{
+					if( file.ballRui != null )
+					{
+						RuiDestroyIfAlive( file.ballRui )
+						file.ballRui = null
+					}
+				}
+			)
+
+			while( Time() <= endtime )
+				WaitFrame()
+		}()
+	}
     return rui
 }
