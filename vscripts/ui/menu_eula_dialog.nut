@@ -12,6 +12,8 @@ struct
 	var parentMenuPanel
 	int eulaVersion
 	bool reviewing
+
+	string eulaContents
 } file
 
 
@@ -35,8 +37,15 @@ void function InitEULADialog( var newMenuArg )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, EULADialog_OnOpen )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, EULADialog_OnClose )
+
+	thread FetchEULA_Threaded()
 }
 
+// since this executes an http request in native, this must be threaded
+void function FetchEULA_Threaded()
+{
+	file.eulaContents = GetEULAContents()
+}
 
 bool function IsReviewing()
 {
@@ -46,7 +55,7 @@ bool function IsReviewing()
 
 bool function IsEUVersion()
 {
-	return ShouldUserSeeEULAForEU()
+	return true//ShouldUserSeeEULAForEU()
 }
 
 
@@ -89,11 +98,13 @@ void function EULADialog_OnOpen()
 
 	string acknowledgementText = ""
 	if ( !IsReviewing() )
-		acknowledgementText = IsEUVersion() ? "#EULA_ACKNOWLEDGEMENT_EU" : "#EULA_ACKNOWLEDGEMENT"
+		acknowledgementText = "#EULA_ACKNOWLEDGEMENT" //IsEUVersion() ? "#EULA_ACKNOWLEDGEMENT_EU" : "#EULA_ACKNOWLEDGEMENT"
 	RuiSetArg( file.acknowledgement, "acknowledgementText", Localize( acknowledgementText ) )
 
 	int footerPanelWidth = IsReviewing() ? 200 : 422
 	Hud_SetWidth( file.footersPanel, ContentScaledXAsInt( footerPanelWidth ) )
+
+	Hud_SetText(file.agreement, file.eulaContents)
 }
 
 
