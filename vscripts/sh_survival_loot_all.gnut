@@ -272,6 +272,7 @@ bool function IsNewLootEnabled( string ref )
 		case "armor_pickup_lv3_evolving":
 		case "armor_pickup_lv5_evolving":
 		case "mp_weapon_throwingknife":
+		case "mp_weapon_raygun":
 		// case "laser_sight_l1":
 		// case "laser_sight_l2": 
 		// case "laser_sight_l3":
