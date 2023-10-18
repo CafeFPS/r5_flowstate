@@ -42,6 +42,7 @@ global function AddScoreboardCallback_OnShowing
 global function AddScoreboardCallback_OnHiding
 global function ScoreboardToggleFocus
 global function ForceScoreboardLoseFocus
+global function ForceScoreboardFocus
 
 struct {
 	bool hasFocus = false
@@ -117,10 +118,16 @@ void function ScoreboardLoseFocus( entity player )
 	file.hasFocus = false
 }
 
-void function ForceScoreboardLoseFocus( )
+void function ForceScoreboardLoseFocus()
 {
 	thread HideScoreboardMP()
 	file.hasFocus = false
+}
+
+void function ForceScoreboardFocus()
+{
+	thread ShowScoreboardMP()
+	file.hasFocus = true
 }
 
 void function ScoreboardToggleFocus( entity player )
@@ -168,6 +175,20 @@ void function InitScoreboardMP()
 	file.backgroundCustom = HudElement( "FS_DMScoreboard_Frame" )
 	file.titleCustom = HudElement( "FS_DMScoreboard_Title" )
 	file.hintCustom = HudElement( "FS_DMScoreboard_Hint" )
+	
+	string title
+
+	switch( GetCurrentPlaylistName() )
+	{
+		case "fs_1v1":
+		title = "SCOREBOARD"
+		break
+		
+		default:
+		title = "SCOREBOARD"
+	}
+	
+	Hud_SetText( file.titleCustom, title)
 
 	Hud_SetVisible( file.backgroundCustom, false )
 	Hud_SetVisible( file.titleCustom, false )
@@ -357,8 +378,10 @@ void function ShowScoreboardMP()
 	
 	Hud_SetVisible( file.backgroundCustom, true )
 	Hud_SetVisible( file.titleCustom, true )
-	if( GetCurrentPlaylistName() == "fs_haloMod" || GetCurrentPlaylistName() == "fs_haloMod_oddball" || GetCurrentPlaylistName() == "fs_1v1" )
+	if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" )
+	{
 		Hud_SetVisible( file.hintCustom, true )
+	}
 	else
 		Hud_SetVisible( file.hintCustom, false )
 	
@@ -433,6 +456,13 @@ void function ShowScoreboardMP()
 		localPlayer = GetLocalClientPlayer()
 
 		Assert( clGlobal.isScoreboardShown )
+
+		if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" )
+		{
+			Hud_SetVisible( file.hintCustom, true )
+		}
+		else
+			Hud_SetVisible( file.hintCustom, false )
 
 		if ( UseOnlyMyTeamScoreboard() )
 		{
@@ -687,7 +717,7 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore4Header = headers[ 3 ]
 			if (IsValid( player ))
 			{
-				playerScore4 = player.GetPlayerGameStat( playerGameStats[ 3 ] )
+				playerScore4 = player.GetPlayerNetInt( "latency" )
 			}
 			playerScore4NumDigits = numDigits[ 3 ]
 

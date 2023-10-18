@@ -64,6 +64,7 @@ void function RemoteFunctions_Init_Begin()
 			
 			Remote_RegisterClientFunction( "FS_ForceDestroyCustomAdsOverlay" )
 			Remote_RegisterClientFunction( "ForceScoreboardLoseFocus" )
+			Remote_RegisterClientFunction( "ForceScoreboardFocus" )
 			Remote_RegisterClientFunction( "FS_ForceAdjustSunFlareParticleOnClient", "int", 0, 50 ) 
 			Remote_RegisterClientFunction( "FSHaloMod_CreateKillStreakAnnouncement", "int", 0, 50 ) 
 			Remote_RegisterClientFunction( "RefreshImageAndScaleOnMinimapAndFullmap" )
@@ -428,6 +429,7 @@ void function RemoteFunctions_Init_Begin()
 
 	RegisterNetworkedVariable( "kills", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 	RegisterNetworkedVariable( "deaths", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
+	RegisterNetworkedVariable( "latency", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 	RegisterNetworkedVariable( "damage", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0 )
 
 	RegisterNetworkedVariable( "assists", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )

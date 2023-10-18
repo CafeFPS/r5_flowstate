@@ -283,7 +283,7 @@ void function soloModePlayerToWaitingList(entity player)
 
 	soloPlayerStruct playerStruct
 	playerStruct.player = player
-	playerStruct.waitingTime = Time() + 2
+	playerStruct.waitingTime = Time() + 4
 	if(IsValid(player))
 		playerStruct.kd = getkd( player.GetPlayerNetInt( "kills" ), player.GetPlayerNetInt( "deaths" ))
 	else
@@ -294,6 +294,11 @@ void function soloModePlayerToWaitingList(entity player)
 	{
 		soloPlayersWaiting.append(playerStruct)
 		TakeAllWeapons( player )
+
+		//set realms for resting player
+		setRealms_1v1(player,64)//more than 63 means AddToAllRealms
+		
+		Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 	}
 	else //如果waiting list里有这个玩家
 	{
@@ -637,7 +642,9 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
     }//disable replay mode
+
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+
    	if( isPlayerInRestingList(player) )
 	{
 		// Warning("resting respawn")
@@ -1141,11 +1148,10 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			if(Distance2D(playerInWatingSctruct.player.GetOrigin(),waitingRoomLocation.origin)>500) //waiting player should be in waiting room,not battle area
 			{
-				thread soloModeWaitingPrompt(playerInWatingSctruct.player)
+				// thread soloModeWaitingPrompt(playerInWatingSctruct.player)
 				maki_tp_player(playerInWatingSctruct.player,waitingRoomLocation) //waiting player should be in waiting room,not battle area
 				HolsterAndDisableWeapons(playerInWatingSctruct.player)
 			}
-
 
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
@@ -1222,6 +1228,12 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			if(!IsValid(restingPlayer)) continue
 
 			TakeAllWeapons( restingPlayer )
+
+			if(Distance2D( restingPlayer.GetOrigin(),waitingRoomLocation.origin)>500) //waiting player should be in waiting room,not battle area
+			{
+				maki_tp_player( restingPlayer,waitingRoomLocation) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( restingPlayer )
+			}
 
 			if(!IsAlive(restingPlayer)  )
 			{
@@ -1338,14 +1350,14 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			thread respawnInSoloMode(eachPlayer, index)
 		}
-		try{
-			newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
+		// try{
+			// newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
 			
-			if(IsValid(GetMainRingBoundary()))
-				newGroup.ring.SetParent(GetMainRingBoundary())
-		}catch(e420){}
+			// if(IsValid(GetMainRingBoundary()))
+				// newGroup.ring.SetParent(GetMainRingBoundary())
+		// }catch(e420){}
 		
-		setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
+		// setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
 		//realms = 0 means visible for everyone,so it should be more than 1
 		setRealms_1v1(newGroup.player1,newGroup.slotIndex+1) //to ensure realms is more than 0
 		setRealms_1v1(newGroup.player2,newGroup.slotIndex+1) //to ensure realms is more than 0

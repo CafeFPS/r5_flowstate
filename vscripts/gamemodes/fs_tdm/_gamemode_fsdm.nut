@@ -676,7 +676,7 @@ void function _OnPlayerConnected(entity player)
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Message(player,"Flowstate 1V1 v1.3", "Made by __makimakima__\nMantained by @CafeFPS")
+			Message(player,"Flowstate 1V1 v1.31", "Made by __makimakima__\nMantained by @CafeFPS")
 			HolsterAndDisableWeapons(player)
 			wait 9
 			if ( !IsValid( player ) ) return

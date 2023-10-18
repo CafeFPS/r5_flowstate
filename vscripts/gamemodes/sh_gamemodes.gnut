@@ -181,6 +181,8 @@ void function GameModes_Init()
 			GameMode_AddScoreboardColumnData( gameMode, "Oddball Score", PGS_ASSISTS, 5 )
 		else
 			GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+		
+		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 3 )
 	#endif
 
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )

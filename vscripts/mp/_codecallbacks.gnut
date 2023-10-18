@@ -60,9 +60,33 @@ void function OnClientConnected( entity player )
 	
 	//Phase Rewind Record Positions. Colombia
 	thread RecordPositions(player)
+	
+	//Record a networked Latency int for scoreboard
+	thread NetworkedIntLatencyThingy(player)	
 
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
+}
+
+void function NetworkedIntLatencyThingy( entity player )
+{
+	int latency
+	while ( IsValid(player) )
+	{
+		latency = int( player.GetLatency() * 1000 ) - 45
+		if( latency >= 500 )
+		{
+			player.SetPlayerNetInt( "latency", 500 )
+		} else if( latency < 0 )
+		{
+			player.SetPlayerNetInt( "latency", -1 )
+		} else
+		{
+			player.SetPlayerNetInt( "latency", latency )
+		}
+
+		wait 0.1
+	}
 }
 
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.

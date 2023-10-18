@@ -170,7 +170,7 @@ void function RecordPositions( entity player )
 			if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() > maxSaves )
 				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.remove( 0 )
 		}
-		WaitFrame()
+		wait 0.05
 	}
 }
 
