@@ -382,7 +382,7 @@ void function ResetBallInBallSpawner( bool actualReset = false )
 
 void function BallSpawnerTrigger( entity trigger , entity player )
 {
-	if( !IsValid(player) || IsValid(player) && !player.IsPlayer() || GetGameState() != eGameState.Playing ) 
+	if( !IsValid(player) || IsValid(player) && !player.IsPlayer() || GetTDMState() != eTDMState.IN_PROGRESS ) 
 		return
 	
 	SetEmptyBallInBallSpawner()

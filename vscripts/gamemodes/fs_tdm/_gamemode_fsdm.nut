@@ -117,6 +117,7 @@ struct {
 	string authkey = "1234"
 	bool isLoadingCustomMap = false
 	vector ogSkyboxOrigin
+	int winnerTeam
 } file
 
 struct
@@ -174,6 +175,12 @@ void function _CustomTDM_Init()
 		{
 			VOTING_PHASE_ENABLE = false
 		}
+	}
+
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		VOTING_PHASE_ENABLE = false
+		SCOREBOARD_ENABLE = false
 	}
 
 	if (GetCurrentPlaylistName() == "fs_movementgym")
@@ -596,6 +603,9 @@ void function _OnPlayerConnected(entity player)
 			case eGameState.Playing:
 				{
 					player.UnfreezeControlsOnServer()
+					
+					if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+						break
 
 					_HandleRespawn(player)
 
@@ -883,8 +893,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				}
 
 				wait DEATHCAM_TIME_SHORT
-				
-				if(!IsValid(victim) || !IsValid(attacker)) return
+
+				if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+					return
+
+				if(!IsValid(victim) || !IsValid(attacker))
+					return
 
 				if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
 					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
@@ -2681,6 +2695,7 @@ void function SimpleChampionUI()
 	}
 	ResetAllPlayerStats()
 	ResetMapVotes()
+	file.winnerTeam = -1
 	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
@@ -2826,14 +2841,22 @@ void function SimpleChampionUI()
 						totalTeamsScore[ player.GetTeam() ] += player.GetPlayerNetInt( "oddball_ballHeldTime" )
 					}
 				}
-				
+
 				foreach( team, score in totalTeamsScore )
 				{
 					if( score >= ODDBALL_POINTS_TO_WIN )
 					{
 						//set team as winner, show ui screen
+						if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
+						{
+							ClearBallCarrierPlayerSetup( GetBallCarrier() )
+							SetEmptyBallInBallSpawner()
+							SetBallCarrier( null )
+						}
 
 						SetTdmStateToNextRound()
+
+						file.winnerTeam = team
 						break
 					}
 				}
@@ -2867,7 +2890,9 @@ void function SimpleChampionUI()
 			}
 
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+			{
 				break
+			}
 
 			WaitFrame()
 		}
@@ -2884,17 +2909,67 @@ void function SimpleChampionUI()
 			WaitFrame()
 		}
 	}
-	
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
+
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && file.winnerTeam == -1 )
 	{
-		ClearBallCarrierPlayerSetup( GetBallCarrier() )
-		SetEmptyBallInBallSpawner()
-		SetBallCarrier( null )
+		table< int,int > totalTeamsScore
+		
+		foreach(player in GetPlayerArray())
+		{
+			if ( !IsValid( player ) ) continue
+
+			if( !( player.GetTeam() in totalTeamsScore ) )
+			{
+				totalTeamsScore[ player.GetTeam() ] <- player.GetPlayerNetInt( "oddball_ballHeldTime" )
+			} else
+			{
+				totalTeamsScore[ player.GetTeam() ] += player.GetPlayerNetInt( "oddball_ballHeldTime" )
+			}
+		}
+		
+		int winnerTeam = -1
+		int lastScore = 0
+		bool isTie = false
+
+		foreach( team, score in totalTeamsScore )
+		{
+			if( score > lastScore )
+			{
+				winnerTeam = team
+				lastScore = score
+			}
+		}
+
+		foreach( team, score in totalTeamsScore )
+		{
+			if( team == winnerTeam )
+				continue
+			
+			if( lastScore == score )
+			{
+				isTie = true
+			}
+		}
+
+		if( isTie )
+			winnerTeam = -2
+
+		file.winnerTeam = winnerTeam
+
+		if( IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
+		{
+			ClearBallCarrierPlayerSetup( GetBallCarrier() )
+			SetEmptyBallInBallSpawner()
+			SetBallCarrier( null )
+		}
 	}
 
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	SetTdmStateToNextRound()
-		
+
+	if( GetBestPlayer() != null )
+		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
+	
 	wait 1
 
 	foreach(player in GetPlayerArray())
@@ -2918,12 +2993,26 @@ void function SimpleChampionUI()
 			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
+			
+			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false )  )
+			{
+				AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+
+				if( file.winnerTeam >= -1 )
+				{
+					Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 0 )
+				} else if( file.winnerTeam < -1 )
+				{
+					Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 1 )
+				}
+				
+				SetBallEntity( null )
+			}
 		}
-	
 	if( SCOREBOARD_ENABLE )
 		thread SendScoreboardToClient()
 	
-	wait 3
+	wait 8
 	
 	if(GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
 		if(GetCurrentPlaylistVarBool("flowstateBattleLog_Linux", false ))
@@ -2933,9 +3022,6 @@ void function SimpleChampionUI()
 			
 	if(GetCurrentPlaylistVarBool("flowstateChatLogEnable", false ))
 		Flowstate_ServerSaveChat()
-	
-	if( GetBestPlayer() != null )
-		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
 
 	// foreach( player in GetPlayerArray() )
 	// {

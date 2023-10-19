@@ -5,6 +5,8 @@ global function Cl_FsOddballInit
 global function SetBallPosesionIconOnHud
 global function FSDM_GameStateChanged
 global function Oddball_BallOrCarrierEntityChanged
+//Custom Winner Screen
+global function FSDM_CustomWinnerScreen_Start
 
 struct {
 	var activeQuickHint
@@ -17,6 +19,7 @@ void function Cl_FsOddballInit()
 	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
 	
 	RegisterSignal( "StopAutoDestroyRuiThread" )
+	RegisterSignal( "StartNewWinnerScreen" )
 	// Muy tarde amigo
 	// RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )
 	// RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
@@ -229,7 +232,7 @@ void function Oddball_BallOrCarrierEntityChanged( entity player, entity oldEnt, 
 	
 	if( newEnt.IsPlayer() && newEnt == GetLocalViewPlayer() )
 	{
-		msg = "Ball Picked Up"
+		msg = "Ball Picked Up!"
 		icon = $"rui/flowstate_custom/oddball_blue"
 	}
 
@@ -303,4 +306,131 @@ var function Oddball_CreateBallRUI( entity ballOrCarrier, string text, asset ico
 		}()
 	}
     return rui
+}
+
+void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
+{
+	thread function() : (winnerTeam, reason)
+	{
+		printt( "Starting custom winner screen: Winner: " + winnerTeam, reason )
+		entity player = GetLocalClientPlayer()
+		
+		// if( player != GetLocalViewPlayer() ) return
+		
+		Signal(player, "StartNewWinnerScreen")
+		// Signal(player, "NewKillChangeRui")
+		// Signal(player, "OnChargeEnd")
+		// Signal(player, "SND_EndTimer")
+		
+		EndSignal(player, "StartNewWinnerScreen")
+		
+		EmitSoundOnEntity(player, "UI_InGame_Top5_Streak_1X")
+		
+		var LTMLogo = HudElement( "SkullLogo")
+		var RoundWinOrLoseText = HudElement( "WinOrLoseText")
+		var WinOrLoseReason = HudElement( "WinOrLoseReason")
+		var LTMBoxMsg = HudElement( "LTMBoxMsg")
+		
+		bool localPlayerIsWinner = player.GetTeam() == winnerTeam
+		
+		if( localPlayerIsWinner )
+			RuiSetImage( Hud_GetRui( LTMLogo ), "basicImage", $"rui/flowstatecustom/ltm_logo" )
+		else
+			RuiSetImage( Hud_GetRui( LTMLogo ), "basicImage", $"rui/flowstatecustom/ltm_logo_red" )
+		
+		
+		if( localPlayerIsWinner )
+			RuiSetImage( Hud_GetRui( LTMBoxMsg ), "basicImage", $"rui/flowstatecustom/ltm_box_msg" )
+		else
+			RuiSetImage( Hud_GetRui( LTMBoxMsg ), "basicImage", $"rui/flowstatecustom/ltm_box_msg_red" )
+		
+		string roundText = localPlayerIsWinner ? "ROUND WIN" : "ROUND LOSS"
+
+		string reasonText
+		string teamText
+
+		switch(reason)
+		{
+			case 0:
+				if( localPlayerIsWinner )
+					reasonText = "YOUR TEAM DOMINATED THE BALL"
+				else
+					reasonText = "THE ENEMY TEAM HELD THE BALL THE LONGEST"
+			break
+
+			case 1:
+				roundText = "TIE"
+				reasonText = "TIME RAN OUT, AND BOTH TEAMS HAD THE SAME SCORE"
+			break
+		}
+		
+		Hud_SetText( RoundWinOrLoseText, roundText )
+		Hud_SetText( WinOrLoseReason, reasonText )
+		
+		wait 1.2
+		
+		Hud_SetEnabled( LTMLogo, true )
+		Hud_SetVisible( LTMLogo, true )
+		
+		Hud_SetEnabled( RoundWinOrLoseText, true )
+		Hud_SetVisible( RoundWinOrLoseText, true )
+		
+		Hud_SetEnabled( WinOrLoseReason, true )
+		Hud_SetVisible( WinOrLoseReason, true )
+		
+		Hud_SetEnabled( LTMBoxMsg, true )
+		Hud_SetVisible( LTMBoxMsg, true )
+		
+		Hud_SetSize( LTMLogo, 0, 0 )
+		Hud_SetSize( LTMBoxMsg, 0, 0 )
+		Hud_SetSize( RoundWinOrLoseText, 0, 0 )
+		Hud_SetSize( WinOrLoseReason, 0, 0 )
+
+		Hud_ScaleOverTime( LTMLogo, 1.2, 1.2, 0.4, INTERPOLATOR_ACCEL )
+		
+		wait 0.4
+		
+		Hud_ScaleOverTime( LTMLogo, 1, 1, 0.15, INTERPOLATOR_LINEAR )
+		
+		wait 0.35
+		
+		Hud_ScaleOverTime( RoundWinOrLoseText, 1, 1, 0.35, INTERPOLATOR_SIMPLESPLINE )
+		Hud_ScaleOverTime( LTMBoxMsg, 1, 1, 0.3, INTERPOLATOR_SIMPLESPLINE )
+		Hud_ScaleOverTime( WinOrLoseReason, 1, 1, 0.35, INTERPOLATOR_SIMPLESPLINE )
+		
+		wait 6.5
+		
+		Hud_ScaleOverTime( LTMLogo, 1.3, 0.05, 0.15, INTERPOLATOR_ACCEL )
+		
+		Hud_ScaleOverTime( RoundWinOrLoseText, 1.3, 0.05, 0.15, INTERPOLATOR_ACCEL )
+		Hud_ScaleOverTime( LTMBoxMsg, 1.3, 0.05, 0.15, INTERPOLATOR_ACCEL )
+		Hud_ScaleOverTime( WinOrLoseReason, 1.3, 0.05, 0.15, INTERPOLATOR_ACCEL )
+		
+		wait 0.15
+		
+		Hud_ScaleOverTime( LTMLogo, 0, 0, 0.1, INTERPOLATOR_LINEAR )
+		Hud_ScaleOverTime( RoundWinOrLoseText, 0, 0, 0.1, INTERPOLATOR_LINEAR )
+		Hud_ScaleOverTime( LTMBoxMsg, 0, 0, 0.1, INTERPOLATOR_LINEAR )
+		Hud_ScaleOverTime( WinOrLoseReason, 0, 0, 0.1, INTERPOLATOR_LINEAR )
+		
+		if(IsValid(GetLocalViewPlayer()))
+			EmitSoundOnEntity(GetLocalViewPlayer(), "HUD_MP_Match_End_WinLoss_UI_Sweep_1P")
+		
+		wait 1.15
+		
+		Hud_SetEnabled( LTMLogo, false )
+		Hud_SetVisible( LTMLogo, false )
+		
+		Hud_SetEnabled( RoundWinOrLoseText, false )
+		Hud_SetVisible( RoundWinOrLoseText, false )
+		
+		Hud_SetEnabled( WinOrLoseReason, false )
+		Hud_SetVisible( WinOrLoseReason, false )
+		
+		Hud_SetEnabled( LTMBoxMsg, false )
+		Hud_SetVisible( LTMBoxMsg, false )
+		
+		Hud_SetSize( LTMLogo, 1, 1 )
+		Hud_SetSize( RoundWinOrLoseText, 1, 1 )
+	}()
 }
