@@ -82,7 +82,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
 	
-	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
 }
 
@@ -186,12 +186,17 @@ void function Flowstate_StartTime_Thread( float endtime )
 		}
 	)
 	
+	string msg = "Deathmatch Starting in "
+	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+		msg = "Oddball Starting in "
+	
 	while ( Time() <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
-		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), "Deathmatch Starting in " + dt.seconds )
+		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), msg + dt.seconds )
 		
 		wait 1
 	}
