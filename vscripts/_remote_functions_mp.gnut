@@ -264,19 +264,19 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction( "ServerCallback_CTF_OpenCTFRespawnMenu", "vector", -32000.0, 32000.0, 32, "int", 0, 255, "int", 0, 255, "entity", "int", 0, 255)
 			Remote_RegisterClientFunction( "ServerCallback_CTF_SetObjectiveText", "int", 0, 255)
 			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_ResetFlagIcons" )
-			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_PointCaptured" )
-			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_TeamText" )
-			Remote_RegisterClientFunction( "ServerCallback_CTF_SetCorrectTime", "int", 0, 255)
 			Remote_RegisterClientFunction( "ServerCallback_CTF_UpdatePlayerStats", "int", 0, 255)
 			Remote_RegisterClientFunction( "ServerCallback_CTF_CheckUpdatePlayerLegend")
 			Remote_RegisterClientFunction( "ServerCallback_CTF_HideCustomUI" )
-			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_PrintClientMessage" )
-			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_BuildClientMessage" )
 			Remote_RegisterClientFunction("ServerCallback_CTF_SetScreen", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
 			Remote_RegisterClientFunction("ServerCallback_CTF_SetVoteMenuOpen", "bool", "int", 0, 255)
 			Remote_RegisterClientFunction("ServerCallback_CTF_UpdateVotingMaps", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
 			Remote_RegisterClientFunction("ServerCallback_CTF_UpdateMapVotesClient", "int", 0, 255, "int", 0, 255, "int", 0, 255, "int", 0, 255)
 			Remote_RegisterUIFunction( "CloseCTFRespawnMenu" )
+
+			RegisterNetworkedVariable( "FSDM_GameState", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "flowstate_DMStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+			RegisterNetworkedVariable( "flowstate_DMRoundEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+			Remote_RegisterClientFunction( "ForceScoreboardLoseFocus" )
 			break
 	}
 	
@@ -522,9 +522,15 @@ void function RemoteFunctions_Init_Begin()
 		CLSurvival_RegisterNetworkFunctions()
 		ShEliteStreak_RegisterNetworkFunctions()
 
-		if( GameRules_GetGameMode() == "fs_dm" )
+		switch ( GameRules_GetGameMode() )
 		{
-			CL_FSDM_RegisterNetworkFunctions()	
+			case "fs_dm":
+				CL_FSDM_RegisterNetworkFunctions()
+			break
+			
+			case "custom_ctf":
+				CL_FSCTF_RegisterNetworkFunctions()
+			break
 		}
 		
 		RegisterNetworkedVariableChangeCallback_bool( "playerInPlane", PlayerPlaneStatusChanged )

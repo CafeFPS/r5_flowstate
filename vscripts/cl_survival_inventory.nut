@@ -595,7 +595,7 @@ bool function CanSwapWeapons( entity player )
 
 void function OpenSurvivalInventory( entity player, entity deathBox = null )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || GameRules_GetGameMode() == "custom_ctf" )
 	{
 		if( IsAlive( player ) )
 			ScoreboardToggleFocus( player )

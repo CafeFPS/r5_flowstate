@@ -198,6 +198,10 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	#if !UI
+		GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 3 )
+	#endif
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
 	gameMode = map_editor_deprecated

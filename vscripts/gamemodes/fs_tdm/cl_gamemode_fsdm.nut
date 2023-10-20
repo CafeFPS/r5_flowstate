@@ -23,7 +23,6 @@ global function FSDM_CloseVotingPhase
 
 //Ui callbacks
 global function UI_To_Client_VoteForMap_FSDM
-global function Flowstate_ShowRoundEndTimeUI
 
 //networked vars callbacks
 global function CL_FSDM_RegisterNetworkFunctions
@@ -34,6 +33,10 @@ global function RefreshImageAndScaleOnMinimapAndFullmap
 global function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap
 
 global function FSHaloMod_CreateKillStreakAnnouncement
+
+global function Flowstate_ShowRoundEndTimeUI
+global function Flowstate_PlayStartRoundSounds
+global function Flowstate_ShowStartTimeUI
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -73,6 +76,7 @@ array<entity> cleanupEnts
 void function Cl_CustomTDM_Init()
 {
     AddCallback_EntitiesDidLoad( NotifyRingTimer )
+	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
 
 	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
@@ -95,12 +99,24 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
 }
 
+void function Cl_OnResolutionChanged()
+{
+	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
+	{
+		Flowstate_ShowRoundEndTimeUI( -1 )
+		return
+	}
+	
+	Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
+}
+
 void function Flowstate_RoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
 	if ( !actuallyChanged  )
 		return
 
 	thread Flowstate_ShowRoundEndTimeUI( new )
+	
 }
 
 void function Flowstate_StartTimeChanged( entity player, float old, float new, bool actuallyChanged )
@@ -114,6 +130,9 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
+	#if DEVELOPER
+	printt( "show round end time ui ", new, " - current time: " + Time() )
+	#endif
 	if( new == -1 )
 	{
 		//force to hide
@@ -123,8 +142,6 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 		return
 	}
 
-	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
-	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_DMCountDown_Frame" ) ), "basicImage", $"rui/flowstate_custom/dm_countdown" )
 	
 	thread Flowstate_DMTimer_Thread( new )
@@ -135,6 +152,7 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 void function Flowstate_DMTimer_Thread( float endtime )
 {
 	entity player = GetLocalClientPlayer()
+	Signal( player, "FSDM_EndTimer")
 	EndSignal( player, "FSDM_EndTimer")
 	
 	OnThreadEnd(
@@ -144,14 +162,19 @@ void function Flowstate_DMTimer_Thread( float endtime )
 			Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), false )
 		}
 	)
+
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), true )
+	Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), true )
+
+	float startTime = GetGlobalNetTime( "flowstate_DMStartTime" )
 	
-	while ( Time() <= endtime )
+	while ( startTime <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
 		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
-		
+		startTime++
 		wait 1
 	}
 }
@@ -190,7 +213,9 @@ void function Flowstate_StartTime_Thread( float endtime )
 	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		msg = "Oddball Starting in "
-	
+	else if( GameRules_GetGameMode() == "custom_ctf" )
+		msg = "CTF Starting in "
+
 	while ( Time() <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
@@ -221,6 +246,11 @@ void function Flowstate_PlayStartRoundSounds()
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+	}
+	
+	if( GameRules_GetGameMode() == "custom_ctf" )
+	{
+		Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 
 	while( Time() < ( GetGlobalNetTime( "flowstate_DMStartTime" ) - 3.0 ) )

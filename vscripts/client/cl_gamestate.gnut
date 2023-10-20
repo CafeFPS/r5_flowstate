@@ -179,8 +179,24 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
 			RuiSetVisible(rui, true)	
 			return
+		case "custom_ctf":
+			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+			return
 	}
-
+	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		RuiSetString( rui, "gameModeString", "ODDBALL" )
+		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+		RuiSetVisible(rui, true)
+		return
+	}
 	//Legacy, clean up this later ?
 	
 	if ( IsFallLTM() )
@@ -212,7 +228,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "gameModeString", "APEX SOLO" )
 		
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
-			RuiSetString( rui, "gameModeString", "HALO MOD" )
+			RuiSetString( rui, "gameModeString", "HALO DM" )
 
 		if(GameRules_GetGameMode() == "flowstate_pkknockback")
 		{

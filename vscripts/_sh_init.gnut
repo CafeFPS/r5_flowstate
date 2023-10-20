@@ -218,6 +218,11 @@ void function SV_CL_Init()
 		if( GameRules_GetGameMode() == "fs_dm" )
 			RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )		
 	}
+	
+	if( GameRules_GetGameMode() == "custom_ctf" )
+	{
+		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSCTF_GameStateChanged )
+	}
 	#endif
 	RemoteFunctions_Init_Finish()
 }

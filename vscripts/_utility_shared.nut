@@ -194,8 +194,7 @@ void function InitWeaponScripts()
 	MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 	MpAbilityMirageUltimate_Init()
 
-	if( GetCurrentPlaylistName() != "fs_dm_oddball" && GetCurrentPlaylistName() != "fs_haloMod_oddball" )
-		MpAbilityCryptoDrone_Init()
+	MpAbilityCryptoDrone_Init()
 
 	MpAbilityCryptoDroneEMP_Init()
 	MpWeaponPhaseTunnel_Init()

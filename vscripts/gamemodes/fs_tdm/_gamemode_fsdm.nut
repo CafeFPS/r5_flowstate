@@ -55,6 +55,7 @@ global function HaloMod_Cyberdyne_CreateFanPusher
 global function HisWattsons_HaloModFFA_KillStreakAnnounce
 global function SetupInfiniteAmmoForWeapon
 global function FSDM_GetSelectedLocation
+global function Flowstate_GrantSpawnImmunity
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"

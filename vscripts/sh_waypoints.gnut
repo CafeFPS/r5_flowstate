@@ -1248,10 +1248,11 @@ void function InstanceLocationPing( entity wp )
 	vector lineColor    = SrgbToLinear( Ping_LineColorForPing_Hud( pingType ) )
 	bool isSameTeam     = (owner.GetTeam() == viewPlayer.GetTeam())
 	int sortKeyAdd      = Ping_GetSortModifier( pingType, isSameTeam )
-
+	
+	printt( "Ping assets debug: " + ruiAsset, hudIcon, iconScale, prompt, shortPrompt, lineColor, isSameTeam, sortKeyAdd )
 	var rui = CreateWaypointRui( ruiAsset, 200 + sortKeyAdd )
 	RuiKeepSortKeyUpdated( rui, true, "targetPos" )
-
+	
 	RuiTrackInt( rui, "viewPlayerTeamMemberIndex", viewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	RuiTrackBool( rui, "hasFocus", wp, RUI_TRACK_WAYPOINT_FOCUS_ENT_IS_FOCUSED )
 	RuiTrackFloat3( rui, "targetPos", wp, RUI_TRACK_ABSORIGIN_FOLLOW )
@@ -1576,9 +1577,9 @@ void function InstanceLootPing( entity wp )
 
 	RuiSetString( rui, "promptText", lootData.pickupString )
 	RuiSetString( rui, "shortPromptText", lootData.pickupString )
-	printt( "promptText", lootData.pickupString )
-	printt( "iconImage", lootData.pickupString )
-	printt( "lootTier", lootData.tier )
+	// printt( "promptText", lootData.pickupString )
+	// printt( "iconImage", lootData.pickupString )
+	// printt( "lootTier", lootData.tier )
 
 	vector mins = lootItem.GetBoundingMins()
 	vector maxs = lootItem.GetBoundingMaxs()
