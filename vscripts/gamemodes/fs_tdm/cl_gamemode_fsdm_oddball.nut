@@ -17,7 +17,7 @@ void function Cl_FsOddballInit()
 {
 	RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptThrowOddball )
 	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
-	
+	AddCallback_EntitiesDidLoad( OddballNotifyRingTimer )
 	RegisterSignal( "StopAutoDestroyRuiThread" )
 	RegisterSignal( "StartNewWinnerScreen" )
 	// Muy tarde amigo
@@ -47,7 +47,20 @@ void function Cl_OnResolutionChanged()
 		Oddball_ToggleScoreboardVisibility( false )
 		return
 	}
-	
+
+	Oddball_ToggleScoreboardVisibility( true )
+}
+
+void function OddballNotifyRingTimer()
+{
+    if( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) < Time() || GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS || GetGlobalNetTime( "flowstate_DMRoundEndTime" ) == -1 )
+	{
+		Oddball_ToggleScoreboardVisibility( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
+        return
+	}
+
+    Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
 	Oddball_ToggleScoreboardVisibility( true )
 }
 
@@ -72,7 +85,7 @@ void function Oddball_HintCatalog( int index, int eHandle )
 	switch(index)
 	{
 		case 0:
-		Oddball_PermaHint( "%scriptCommand5% Throw Ball", true, 9999)
+		Oddball_PermaHint( "Press %scriptCommand5% to drop the ball", true, 9999)
 		break
 		
 		case -1:
@@ -270,7 +283,64 @@ var function Oddball_CreateBallRUI( entity ballOrCarrier, string text, asset ico
 	// RuiSetFloat3( rui, "playerAngles", <0,0,0> )
 	// RuiSetString( rui, "promptText", text )
 	// RuiSetImage( rui, "iconImage", icon )
+
+	// var rui = CreateFullscreenRui( $"ui/waypoint_ping_entpos.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetPos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiTrackInt( rui, "viewPlayerTeamMemberIndex", GetLocalViewPlayer(), RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
+	// RuiTrackBool( rui, "hasFocus", ballOrCarrier, RUI_TRACK_WAYPOINT_FOCUS_ENT_IS_FOCUSED )
+	// RuiSetInt( rui, "confirmationCount", 1 )
+	// RuiTrackFloat3( rui, "playerAngles", GetLocalViewPlayer(), RUI_TRACK_CAMANGLES_FOLLOW )
+	// RuiSetFloat( rui, "pingOpacity", GetConVarFloat( "hud_setting_pingAlpha" ) )
+	// RuiSetImage( rui, "iconImage", icon )
+	// RuiSetString( rui, "promptText", text )
+	// RuiSetString( rui, "shortPromptText", text )
+	// RuiSetFloat( rui, "iconSize", 80.0 )
+	// RuiSetFloat2( rui, "iconScale", <1,1,0> )
+	// RuiSetFloat( rui, "iconSizePinned", 100.0 )
+	// RuiSetImage( rui, "innerIcon", icon )
+	// RuiSetImage( rui, "innerShadowIcon", icon )
+	// RuiSetImage( rui, "outerIcon", icon )
+	// RuiSetImage( rui, "shadowIcon", icon )
+	// RuiSetBool( rui, "drawHeightLine", false )
+	// RuiSetImage( rui, "animIcon", $"rui/hud/unitframes/frame_status_fill" )
+	// RuiSetBool( rui, "additive", true )
+	// RuiSetFloat( rui, "iconSize", 120.0 )
+	// RuiSetFloat( rui, "iconSizePinned", 120.0 )
+	// RuiSetFloat3( rui, "iconColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
+	// RuiSetBool( rui, "completeADSFade", true )
+	// RuiSetString( rui, "ownerPlayerName", text )
 	
+	// var rui = CreateFullscreenRui( $"ui/waypoint_generic_pve.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetPos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiTrackInt( rui, "viewPlayerTeamMemberIndex", GetLocalViewPlayer(), RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
+	// RuiTrackBool( rui, "hasFocus", ballOrCarrier, RUI_TRACK_WAYPOINT_FOCUS_ENT_IS_FOCUSED )
+	// RuiSetInt( rui, "confirmationCount", 1 )
+	// RuiSetFloat( rui, "pingOpacity", GetConVarFloat( "hud_setting_pingAlpha" ) )
+	// RuiSetImage( rui, "iconImage", icon )
+	// RuiSetString( rui, "promptText", text )
+	// RuiSetString( rui, "shortPromptText", text )
+	// RuiSetFloat3( rui, "iconColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
+	
+	// var rui = CreateFullscreenRui( $"ui/waypoint_loot_entpos.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetPos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiSetBool( rui, "hasFocus", true )
+	// RuiSetInt( rui, "lootTier", 5 )
+	// RuiSetString( rui, "promptText", text )
+	// RuiSetString( rui, "shortPromptText", text )
+	// RuiSetImage( rui, "iconImage", icon )
+	// RuiSetFloat2( rui, "iconScale", <1.0, 1.0, 0.0> )
+	// RuiSetImage( rui, "innerIcon", $"" ) //rui/hud/ping/icon_ping_loot_inner
+	// RuiSetImage( rui, "innerShadowIcon", $"" ) //rui/hud/ping/icon_ping_loot_inner_shadow
+	// RuiSetImage( rui, "outerIcon", $"" )
+	// RuiSetImage( rui, "shadowIcon", $"" )
+	// RuiSetImage( rui, "animIcon", $"" ) //rui/hud/ping/icon_ping_loot_outline
+	// RuiSetBool( rui, "isImportant", true )
+	// RuiSetFloat( rui, "iconSize", 64.0 )
+	// RuiSetFloat( rui, "iconSizePinned", 64.0 )
+	// RuiSetString( rui, "pingPrompt", text )
+	// RuiSetString( rui, "pingPromptForOwner", text )
+	// RuiSetBool( rui, "viewPlayerHasConfirmed", false )
+
 	// var rui = CreateFullscreenRui( $"ui/overhead_icon_generic.rpak", HUD_Z_BASE - 20 )
 	// RuiSetImage( rui, "icon", icon )
 	// RuiSetBool( rui, "isVisible", true )
