@@ -403,10 +403,6 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 
     if(pickedup)
     {
-        UISize screenSize = GetScreenSize()
-        var screenAlignmentTopo = RuiTopology_CreatePlane( <float( screenSize.width ) * 0.25, 0, 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ) + 100, 0>, false )
-        file.dropflagrui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-
 		file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
 		RuiSetGameTime( file.dropflagrui, "startTime", Time() )
 		RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
