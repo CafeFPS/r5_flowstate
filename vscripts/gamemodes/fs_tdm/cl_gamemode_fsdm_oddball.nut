@@ -36,6 +36,7 @@ void function FSDM_GameStateChanged( entity player, int old, int new, bool actua
 	} else if( new == eTDMState.NEXT_ROUND_NOW )
 	{
 		Oddball_ToggleScoreboardVisibility( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
 		Oddball_HintCatalog( -1, 0 )
 	}
 }

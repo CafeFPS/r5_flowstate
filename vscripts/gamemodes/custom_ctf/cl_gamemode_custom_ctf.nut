@@ -153,6 +153,7 @@ void function FSCTF_GameStateChanged( entity player, int old, int new, bool actu
 	} else if( new == 1 )
 	{
 		ShowScoreRUI( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
 	}
 }
 
@@ -241,19 +242,24 @@ void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float 
     {
         if (FlagRUI.FlagReturnRUI != null)
         {
-            try { RuiDestroy(FlagRUI.FlagReturnRUI) } catch (pe1){ }
-            FlagRUI.FlagReturnRUI = null
+			RuiDestroyIfAlive( FlagRUI.FlagReturnRUI )
+			FlagRUI.FlagReturnRUI = null
         }
     }
 }
 
 void function ServerCallback_CTF_ResetFlagIcons()
 {
-    try { RuiDestroy(FlagRUI.IMCpointicon) } catch (pe1){  }
-    try { RuiDestroy(FlagRUI.MILITIApointicon) } catch (pe2){ }
-
-    FlagRUI.IMCpointicon = null
-    FlagRUI.MILITIApointicon = null
+	if( FlagRUI.IMCpointicon != null)
+	{
+		RuiDestroyIfAlive( FlagRUI.IMCpointicon )
+		FlagRUI.IMCpointicon = null
+	}
+	if( FlagRUI.MILITIApointicon != null)
+	{
+		RuiDestroyIfAlive( FlagRUI.MILITIApointicon )
+		FlagRUI.MILITIApointicon = null
+	}
 }
 
 void function ServerCallback_CTF_AddPointIcon(entity imcflag, entity milflag, int team)
@@ -348,8 +354,10 @@ void function AddCaptureIconThread( entity prop, var rui )
 	OnThreadEnd(
 		function() : ( prop, rui )
 		{
-            if ( IsValid( rui ) )
-                try { RuiDestroy( rui ) } catch (pe3){ }
+			if( rui != null)
+			{
+				RuiDestroyIfAlive( rui )
+			}
 
 			if ( IsValid( prop ) )
 				prop.e.overheadRui = null
@@ -414,11 +422,17 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
     }
     else
     {
-        if(IsValid( file.dropflagrui ))
-            RuiDestroy( file.dropflagrui )
+		if( file.dropflagrui != null)
+		{
+			RuiDestroyIfAlive( file.dropflagrui )
+			file.dropflagrui = null
+		}
 
-        if(IsValid( file.baseicon ))
-            RuiDestroy( file.baseicon )
+		if( file.baseicon != null)
+		{
+			RuiDestroyIfAlive( file.baseicon )
+			file.baseicon = null
+		}
 
         if(IsValid( file.baseiconmdl ))
             file.baseiconmdl.Destroy()
