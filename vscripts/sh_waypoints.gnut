@@ -1249,7 +1249,7 @@ void function InstanceLocationPing( entity wp )
 	bool isSameTeam     = (owner.GetTeam() == viewPlayer.GetTeam())
 	int sortKeyAdd      = Ping_GetSortModifier( pingType, isSameTeam )
 	
-	printt( "Ping assets debug: " + ruiAsset, hudIcon, iconScale, prompt, shortPrompt, lineColor, isSameTeam, sortKeyAdd )
+	// printt( "Ping assets debug: " + ruiAsset, hudIcon, iconScale, prompt, shortPrompt, lineColor, isSameTeam, sortKeyAdd )
 	var rui = CreateWaypointRui( ruiAsset, 200 + sortKeyAdd )
 	RuiKeepSortKeyUpdated( rui, true, "targetPos" )
 	
