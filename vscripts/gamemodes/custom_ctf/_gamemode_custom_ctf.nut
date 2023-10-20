@@ -1601,9 +1601,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
             if (!CTF.votingtime)
             {
-                // Add a death to the victim
-                victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
-
                 Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
 
                 wait 4 // so we dont go straight to respawn menu
