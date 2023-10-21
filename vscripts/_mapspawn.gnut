@@ -466,7 +466,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		grapplemap_init()
 		break
 		
-		case "fs_matlejumppractice":
+		case "fs_mantlejumppractice":
 		mantlejumpmap_init()
 		break
 	}
