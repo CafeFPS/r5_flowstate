@@ -87,7 +87,6 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_ClearScoreboardOnClient")
 			Remote_RegisterClientFunction("ServerCallback_FSDM_CoolCamera")
 
-			Remote_RegisterClientFunction("DM_HintCatalog", "int", -100, 100, "int", INT_MIN, INT_MAX)
 			Remote_RegisterClientFunction("FSDM_CustomWinnerScreen_Start", "int", INT_MIN, INT_MAX, "int", 0, 10)
 			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 			{
