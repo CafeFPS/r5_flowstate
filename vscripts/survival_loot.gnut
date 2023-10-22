@@ -1128,8 +1128,15 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	}
 
 	weaponFrom.RemoveMod( ref )
-	weaponTo.AddMod( ref )
 	
+	try {
+		weaponTo.AddMod( ref )
+	}
+	catch( e420 ) {
+		printt( "Invalid mod. - ", ref )
+		weaponTo.RemoveMod( ref )
+	}
+
 	if ( toAttachPointAttachmentRef != "" )
 	{
 		if ( !CanAttachToWeapon( toAttachPointAttachmentRef, GetWeaponClassName( weaponFrom ) ) )
@@ -1140,7 +1147,13 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 				PlayerThrowLoot( player, toAttachPointAttachmentRef )
 		} else
 		{
-			weaponFrom.AddMod( toAttachPointAttachmentRef )
+			try {
+				weaponFrom.AddMod( toAttachPointAttachmentRef )
+			}
+			catch( e421 ) {
+				printt( "Invalid mod. - ", toAttachPointAttachmentRef )
+				weaponFrom.RemoveMod( toAttachPointAttachmentRef )
+			}
 		}
 	}
 	
@@ -1504,11 +1517,13 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 					PlayerThrowLoot( player, installed )
 			}
 
-			try{
+			try {
 				stowedWeaponEnt.AddMod( modToRemove )
-			}catch(e420)
-			{
+			}
+			catch( e420 ) {
 				printt( "DEBUG THIS - Failed to attach attachment on stowed weapon ", player.GetPlayerName(), "item", item, "modToRemove", modToRemove )
+				printt( "Invalid mod. - ", modToRemove )
+				stowedWeaponEnt.RemoveMod( modToRemove )
 			}
 			// #if DEVELOPER
 			// foreach( weirdBug in stowedWeaponEnt.GetMods() )
@@ -1555,13 +1570,15 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		// foreach( weirdBug in weapon.GetMods() )
 			// printt( " DEBUGGING MODS ON WEAPON " + weirdBug ) 
 		// #endif
-		try{
-			weapon.AddMod( item )
-		}catch(e420)
-		{
-			printt( "DEBUG THIS - Failed to attach attachment debug part 1", player.GetPlayerName(), "item", item, "modToRemove", modToRemove )
-		}
 
+		try {
+			weapon.AddMod( item )
+		}
+		catch( e420 ) {
+			printt( "DEBUG THIS - Failed to attach attachment debug part 1", player.GetPlayerName(), "item", item, "modToRemove", modToRemove )
+			printt( "Invalid mod. - ", item )
+			weapon.RemoveMod( item )
+		}
 		PlayPickupSound( player, item )
 	}
 
