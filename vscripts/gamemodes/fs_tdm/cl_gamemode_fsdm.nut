@@ -133,7 +133,7 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 	#if DEVELOPER
 	printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
-	if( new == -1 )
+	if( new == -1 || GetCurrentPlaylistName() == "fs_movementgym" )
 	{
 		//force to hide
 		Signal( GetLocalClientPlayer(), "FSDM_EndTimer")
