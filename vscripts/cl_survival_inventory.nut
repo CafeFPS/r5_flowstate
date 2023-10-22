@@ -595,15 +595,10 @@ bool function CanSwapWeapons( entity player )
 
 void function OpenSurvivalInventory( entity player, entity deathBox = null )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || GameRules_GetGameMode() == "custom_ctf" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || GameRules_GetGameMode() == "custom_ctf" || GetCurrentPlaylistName() == "fs_1v1" )
 	{
 		if( IsAlive( player ) )
 			ScoreboardToggleFocus( player )
-		return
-	} else if( GetCurrentPlaylistName() == "fs_1v1" )
-	{
-		if( IsAlive( player ) )
-			ForceScoreboardLoseFocus()
 		return
 	}
 
