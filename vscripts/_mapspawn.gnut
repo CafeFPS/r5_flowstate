@@ -329,7 +329,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"melee_shadowsquad_hands" )
 	PrecacheWeapon( $"mp_weapon_shadow_squad_hands_primary" )	
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
-	PrecacheWeapon( $"mp_weapon_frag_drone" )
+	// PrecacheWeapon( $"mp_weapon_frag_drone" )
 	PrecacheWeapon( $"npc_weapon_energy_shotgun" )
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
