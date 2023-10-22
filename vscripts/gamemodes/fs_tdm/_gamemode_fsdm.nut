@@ -4346,6 +4346,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 	if( is1v1EnabledAndAllowed() && args[0] != "p" && args[0] != "s" )
 		return false
+	
+	if( !SURVIVAL_Loot_IsRefValid( args[1] ) || IsForcedlyDisabledWeapon( args[1] ) )
+	{
+		Message( player, "WEAPON NOT ALLOWED :(" )
+		return false
+	}
 
     if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
 	{
@@ -4371,6 +4377,11 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		{
 			case "p":
 			case "primary":
+				
+				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
+				if ( data.lootType != eLootType.MAINWEAPON )
+					return false
+
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				if( IsValid( primary ) )
 					player.TakeWeaponByEntNow( primary )
@@ -4381,6 +4392,11 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 			break
 			case "s":
 			case "secondary":
+				
+				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
+				if ( data.lootType != eLootType.MAINWEAPON )
+					return false
+
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 				if( IsValid( secondary ) ) 
 					player.TakeWeaponByEntNow( secondary )
@@ -4410,14 +4426,38 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
             printt("Invalid weapon name for tgive command.")
         }
 
-    if( args.len() > 2 )
+    if( IsValid(weapon) && !weapon.IsWeaponOffhand() && args.len() > 2 )
     {
-        try {
-            weapon.SetMods(args.slice(2, args.len()))
-        }
-        catch( e2 ) {
-            printt("Invalid mod.")
-        }
+		for(int i = 2; i < args.len(); i++)
+		{
+			if( !IsValidAttachment( args[i] ) )
+				continue
+			
+			if( !SURVIVAL_Loot_IsRefValid( args[i] ) )
+				continue
+
+			string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapon ), args[i] )
+			
+			if( attachPoint == "" )
+				continue
+
+			string installed = GetInstalledWeaponAttachmentForPoint( weapon, attachPoint )
+			LootData attachedData
+
+			// revisar si hay un attachment en el puesto donde va a estar modToRemove ( que en este caso es el mod a agregar )
+			if ( SURVIVAL_Loot_IsRefValid( installed ) )
+			{
+				weapon.RemoveMod( installed )
+			}
+
+			try {
+				weapon.AddMod(args[i])
+			}
+			catch( e2 ) {
+				printt( "Invalid mod. - ", args[i] )
+				weapon.RemoveMod( args[i] )
+			}
+		}
     }
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() )
 	{
