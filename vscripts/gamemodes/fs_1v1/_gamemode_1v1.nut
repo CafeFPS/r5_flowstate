@@ -192,7 +192,13 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
 	if( !IsValid(player) ) //|| !IsAlive(player) )
 		return false
-	
+
+	if( Time() < player.p.lastRestUsedTime + 3 )
+	{
+		Message(player, "REST COOLDOWN")
+		return false
+	}
+
 	if(soloPlayersResting.contains(player))
 	{
 		if(IS_CHINESE_SERVER)
@@ -228,6 +234,8 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 		thread respawnInSoloMode(player)
 		TakeAllWeapons( player )
 	}
+	
+	player.p.lastRestUsedTime = Time()
 
 	return true
 }

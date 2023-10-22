@@ -555,6 +555,7 @@ void function _OnPlayerConnected(entity player)
 	}
 
 	player.p.lastTgiveUsedTime = Time()
+	player.p.lastRestUsedTime = Time()
 	
 	// if(FlowState_RandomGunsEverydie())
 	    // Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)

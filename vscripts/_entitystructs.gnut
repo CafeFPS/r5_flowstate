@@ -901,7 +901,8 @@ global struct ServerPlayerStruct
 	float lastTimeAppliedEMPByTeslaTrap
   
 	float lastTgiveUsedTime
-	
+	float lastRestUsedTime
+
 	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
 	
