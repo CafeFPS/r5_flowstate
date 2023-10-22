@@ -28,9 +28,9 @@ WeaponData
 	"stat_accuracy"   								"44"
 	"stat_rof"										"69"
 	
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 	// Models
 	"viewmodel"   									"mdl/weapons/p2011_auto/ptpov_p2011_auto.rmdl"
 	"playermodel" 									"mdl/weapons/p2011_auto/w_p2011_auto.rmdl"

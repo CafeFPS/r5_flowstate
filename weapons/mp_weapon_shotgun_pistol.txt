@@ -71,8 +71,8 @@ WeaponData
 	"fx_shell_eject_world"							""
 	"fx_shell_eject_attach"							""
 
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"damage_flags"									"DF_SHOTGUN | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"

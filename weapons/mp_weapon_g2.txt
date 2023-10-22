@@ -204,8 +204,8 @@
 	"sound_trigger_pull"                       "assault_rifle_dryfire"
 	"sound_trigger_release"                    "assault_rifle_dryfire"
 	
-	"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// NPC

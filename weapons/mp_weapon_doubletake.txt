@@ -302,8 +302,8 @@
 	"projectile_trail_effect_0"                    "P_tracer_proj_sniper_blue"
 
 	// FX
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pulse_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pulse"
+	"fx_muzzle_flash_view"                         "P_wpn_mflash_dbltake_FP"
+	"fx_muzzle_flash_world"                        "P_wpn_mflash_dbltake"
 
 	"fx_shell_eject_attach"                    "shell"
     "fx_muzzle_flash_attach_scoped"            "muzzle_flash_scoped"

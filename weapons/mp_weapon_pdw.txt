@@ -42,8 +42,8 @@ WeaponData
 
     "projectile_launch_speed"						"18000"
 	
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	//Sounds

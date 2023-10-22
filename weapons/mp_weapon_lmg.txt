@@ -83,8 +83,8 @@ WeaponData
 	"vortex_absorb_sound_1P_VS_3P"					"Vortex_Shield_AbsorbBulletSmall_1P_VS_3P"
 	"projectile_adjust_to_gun_barrel"				"1"
 
-	"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"chroma_color"									".6 1 .6"

@@ -56,8 +56,8 @@ WeaponData
 	"fx_shell_eject_world"							"wpn_shelleject_pistol"
 	"fx_shell_eject_attach"							"shell"
 
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
+	"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_FP"
+	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"fire_sound_1_player_1p"						"Weapon_SmartPistol_Fire_1P"
