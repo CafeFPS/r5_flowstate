@@ -690,7 +690,7 @@ void function OnGroundLootSpawned( entity ent )
 		itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
 	}
 
-	if(itemRef == "blank")
+	if(itemRef == "blank" || itemRef == "mp_weapon_raygun")
 		return
 
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
