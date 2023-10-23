@@ -469,8 +469,36 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "fs_mantlejumppractice":
 		mantlejumpmap_init()
 		break
+	
+		case "fs_1v1":
+		thread FS_TrackPlayersPositionInScoreboard()
+		break
 	}
+}
 
+void function FS_TrackPlayersPositionInScoreboard()
+{
+	array<entity> players
+
+	while( true )
+	{
+		players = GetPlayerArray()
+		players.sort( CompareKills )
+
+		int i = 1
+		foreach( sPlayer in players )
+		{
+			if( !IsValid( sPlayer ) )
+				continue
+			
+			if( i != sPlayer.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ) )
+				sPlayer.SetPlayerNetInt( "FSDM_1v1_PositionInScoreboard", i )
+
+			i++
+		}
+		
+		wait 0.25
+	}
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )

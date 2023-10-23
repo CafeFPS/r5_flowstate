@@ -1196,7 +1196,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 /*global function GetSkyDiveTrailPackageForPlayerWithOverrides
 SkyDiveTrailPackage function GetSkyDiveTrailPackageForPlayerWithOverrides( entity player ) //
 {
-	int index = player.GetPlayerNetInt( "skyDiveTrailOverrideIndex" )
+	int index = -1 // player.GetPlayerNetInt( "skyDiveTrailOverrideIndex" )
 	printt( "player " + player + ", index : " + index )
 	if ( index == -1  )
 	{

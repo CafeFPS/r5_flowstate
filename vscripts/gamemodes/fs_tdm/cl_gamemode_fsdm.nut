@@ -124,26 +124,43 @@ void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity ne
 void function FS_1v1_ToggleUIVisibility( bool toggle, entity newEnt )
 {
 	entity player = GetLocalClientPlayer()
+	
 	Signal( player, "StopCurrentEnemyThread" )
 
 	Hud_SetVisible( HudElement( "FS_1v1_UI_BG"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyName"), toggle )
+
+	// Hud_SetVisible( HudElement( "FS_1v1_UI_KillLeader"), toggle )
+	// RuiSetImage( Hud_GetRui( HudElement( "FS_1v1_UI_KillLeader") ), "basicImage", $"rui/hud/gamestate/player_kills_leader_icon" )
+	
 	if( IsValid( newEnt ) )
 	{
+		//añadir check para el largo del nombre
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyName"), newEnt.GetPlayerName() ) 
+		thread function() : ( player, toggle )
+		{
+			Hud_ReturnToBasePos( HudElement( "FS_1v1_UI_EnemyName") )
+			Hud_SetSize( HudElement( "FS_1v1_UI_EnemyName"), 0, 0 )
+			Hud_ScaleOverTime( HudElement( "FS_1v1_UI_EnemyName"), 1.3, 1.3, 0.05, INTERPOLATOR_ACCEL)
+			wait 0.05
+			Hud_ScaleOverTime( HudElement( "FS_1v1_UI_EnemyName"), 1, 1, 0.1, INTERPOLATOR_SIMPLESPLINE)
+		}()
 	}
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyKills"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyDeaths"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyDamage"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyLatency"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyPosition"), toggle )
 
 	Hud_SetVisible( HudElement( "FS_1v1_UI_Name"), toggle )
+	//añadir check para el largo del nombre
 	Hud_SetText( HudElement( "FS_1v1_UI_Name"), GetLocalClientPlayer().GetPlayerName() ) 
 
 	Hud_SetVisible( HudElement( "FS_1v1_UI_Kills"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_Deaths"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_Damage"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_Latency"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Position"), toggle )
 
 	RuiSetImage( Hud_GetRui( HudElement( "FS_1v1_UI_BG") ), "basicImage", $"rui/flowstate_custom/1v1_bg" )
 	
@@ -165,12 +182,14 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyKills"), newEnt.GetPlayerNetInt( "kills" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDeaths"), newEnt.GetPlayerNetInt( "deaths" ) .tostring()) 
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDamage"), newEnt.GetPlayerNetInt( "damage" ).tostring() ) 
-		Hud_SetText( HudElement( "FS_1v1_UI_EnemyLatency"), newEnt.GetPlayerNetInt( "latency" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyLatency"), newEnt.GetPlayerNetInt( "latency" ).tostring() )
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyPosition"), newEnt.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ).tostring() ) 
 		
 		Hud_SetText( HudElement( "FS_1v1_UI_Kills"), player.GetPlayerNetInt( "kills" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_Deaths"), player.GetPlayerNetInt( "deaths" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_Damage"), player.GetPlayerNetInt( "damage" ).tostring() ) 
-		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() )
+		Hud_SetText( HudElement( "FS_1v1_UI_Position"), player.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ).tostring() ) 
 		wait 0.1
 	}
 }
