@@ -1696,6 +1696,8 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
+		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2 hopup_shield_breaker"
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
 		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2 hopup_shield_breaker",
@@ -1720,9 +1722,12 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
-		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
+		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
 	]
 
 	foreach(weapon in Weapons)
@@ -4306,6 +4311,8 @@ bool function IsForcedlyDisabledWeapon( string weapon )
 		case "mp_weapon_raygun":
 		case "mp_weapon_throwingknife":
 		case "mp_weapon_pdw":
+		case "mp_weapon_lstar":
+		case "mp_weapon_sniper":
 		return true
 	}
 	
