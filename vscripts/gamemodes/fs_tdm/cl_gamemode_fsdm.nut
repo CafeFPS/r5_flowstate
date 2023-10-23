@@ -203,6 +203,13 @@ void function Cl_OnResolutionChanged()
 	}
 	
 	Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
+	
+	entity player = GetLocalClientPlayer()
+
+	if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
+	{
+		FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+	}
 }
 
 void function Flowstate_RoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
