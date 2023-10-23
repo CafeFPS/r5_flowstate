@@ -58,6 +58,8 @@ void function GrappleMapEntitiesDidLoad()
 }
 
 void function grapplemap_SpawnInfoText( entity player ) {
+	FlagWait( "EntitiesDidLoad" )
+	wait 1
 	CreatePanelText(player, "1", "Hint: over the bubble, slide jump in the ring", < -6.1387, -58.8598, 20134.77 >, < 0, -89.9999, 0 >, false, 1)
 	CreatePanelText(player, "2", "Hint: over the wall and forward", < 2927.562, -46.2098, 19912.18 >, < 0, -89.9999, 0 >, false, 1)
 	CreatePanelText(player, "3", "Hint: over the wall and forward", < 5188.162, -46.2098, 20924.24 >, < 0, -89.9999, 0 >, false, 1)
@@ -90,7 +92,8 @@ void function grapplemap_player_setup( entity player )
 	player.SetAngles(< 0, -90, 0 >)
 	player.SetPersistentVar("gen", 0)
 	Message(player, "Welcome to the Grapple Map!", "Made by LoyTakian.")
-	grapplemap_SpawnInfoText( player )
+
+	thread grapplemap_SpawnInfoText( player )
 }
 
 
