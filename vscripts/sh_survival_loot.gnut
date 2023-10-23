@@ -4325,7 +4325,7 @@ string function GetNameOfTeammateWithVaultKey( int team )
 
 		foreach ( invItem in playerInventory )
 		{
-			if(invItem.type == 127)
+			if(invItem.type == 128)
 				return player.GetPlayerName()
 		}
 	}
