@@ -38,6 +38,7 @@ global function Flowstate_ShowRoundEndTimeUI
 global function Flowstate_PlayStartRoundSounds
 global function Flowstate_ShowStartTimeUI
 global function FS_1v1_ToggleUIVisibility
+global function Toggle1v1Scoreboard
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -57,6 +58,7 @@ struct {
 	float currentY_Offset = 0
 	asset currentMapImage
 	float mapscale
+	bool show1v1Scoreboard = true
 } file
 
 struct VictoryCameraPackage
@@ -126,6 +128,9 @@ void function FS_1v1_ToggleUIVisibility( bool toggle, entity newEnt )
 	entity player = GetLocalClientPlayer()
 	
 	Signal( player, "StopCurrentEnemyThread" )
+	
+	if( !file.show1v1Scoreboard )
+		toggle = false
 
 	Hud_SetVisible( HudElement( "FS_1v1_UI_BG"), toggle )
 	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyName"), toggle )
@@ -177,7 +182,7 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 	Signal( player, "StopCurrentEnemyThread" )
 	EndSignal( player, "StopCurrentEnemyThread" )
 	
-	while( true )
+	while( file.show1v1Scoreboard )
 	{
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyKills"), newEnt.GetPlayerNetInt( "kills" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDeaths"), newEnt.GetPlayerNetInt( "deaths" ) .tostring()) 
@@ -191,6 +196,27 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() )
 		Hud_SetText( HudElement( "FS_1v1_UI_Position"), player.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ).tostring() ) 
 		wait 0.1
+	}
+}
+
+void function Toggle1v1Scoreboard() 
+{
+	entity player = GetLocalClientPlayer()
+
+	if( file.show1v1Scoreboard )
+	{
+		file.show1v1Scoreboard = false
+		Signal( player, "StopCurrentEnemyThread" )
+		FS_1v1_ToggleUIVisibility( false, null )
+	}
+	else
+	{
+		file.show1v1Scoreboard = true
+		
+		if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
+		{
+			FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		}
 	}
 }
 

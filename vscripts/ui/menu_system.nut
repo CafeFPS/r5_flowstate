@@ -39,6 +39,7 @@ struct
 	table<var, ButtonData > invisButtonData
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
+	table<var, ButtonData > Toggle1v1ScoreboardFocus
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
 } file
@@ -141,6 +142,7 @@ void function InitSystemPanel( var panel )
 	file.TDM_ChangeWeapons[ panel ] <- clone data
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
+	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -196,6 +198,9 @@ void function InitSystemPanel( var panel )
 	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE 1V1 SCOREBOARD"
+	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
+
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -236,7 +241,12 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
-		
+
+		if( GetCurrentPlaylistName() == "fs_1v1" )
+		{
+			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+		}
+
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
@@ -381,6 +391,11 @@ void function RunSpectateCommand()
 void function ShowScoreboard_System()
 {
 	ClientCommand( "scoreboard_toggle_focus" )
+}
+
+void function Toggle1v1Scoreboard_System()
+{
+	RunClientScript( "Toggle1v1Scoreboard" )
 }
 
 void function RunKillSelf()
