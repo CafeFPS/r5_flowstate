@@ -56,7 +56,7 @@ struct
 	bool searching = false
 	bool foundserver = false
 	bool noservers = false
-	bool usercancled = false
+	bool searchCancelled = false
 	bool firststart = false
 	bool navInputCallbacksRegistered = false
 	
@@ -77,22 +77,9 @@ struct
 	bool HasPages = false
 } promo
 
-global table<int, string> SearchStages = {
-	[ 0 ] = "Searching.",
-	[ 1 ] = "Searching..",
-	[ 2 ] = "Searching..."
-}
-
-global table<int, string> CreatingStages = {
-	[ 0 ] = "Creating.",
-	[ 1 ] = "Creating..",
-	[ 2 ] = "Creating..."
-}
-
-global table<int, string> ConnectingStages = {
-	[ 0 ] = "Connecting.",
-	[ 1 ] = "Connecting..",
-	[ 2 ] = "Connecting..."
+string function GetProgressText(string v, int n = 0)
+{
+	return v + RepeatString( ".", (n % 3) + 1 )
 }
 
 void function InitHomePanel( var panel )
@@ -274,7 +261,7 @@ void function SetSearchingText(string text)
 void function ReadyButton_OnActivate(var button)
 {
 	if(file.searching) {
-		file.usercancled = true
+		file.searchCancelled = true
 		file.searching = false
 		return;
 	}
@@ -285,34 +272,38 @@ void function ReadyButton_OnActivate(var button)
 
 	GamemodeButtonSetSearching(true)
 
-	switch(quickplay.quickPlayType)
+	switch( quickplay.quickPlayType )
 	{
 		case JoinType.TopServerJoin:
-			thread JoinMatch(button, ConnectingStages)
+			thread JoinMatch( button, "Connecting" )
 			break;
 		case JoinType.QuickServerJoin:
-			thread FindMatch( button )
+			thread FindMatch( button, "Searching" )
 			break;
 		case JoinType.QuickPlay:
-			thread JoinMatch(button, CreatingStages)
+			thread JoinMatch( button, "Creating" )
+			break;
+		default:
+			printt("ReadyButton: Unimplemented join type")
 			break;
 	}
+
 }
 
-void function JoinMatch(var button, table<int, string> StringStages)
+void function JoinMatch( var button, string v )
 {
 	HudElem_SetRuiArg(button, "buttonText", Localize("#CANCEL"))
 
 	for (int i = 0; i < 6; i++)
 	{
-		if(file.usercancled)
+		if(file.searchCancelled)
 			break;
 		
-		SetSearchingText(StringStages[i % 3])
+		SetSearchingText( GetProgressText( v, i ) )
 		wait 0.5
 	}
 
-	if (!file.usercancled)
+	if (!file.searchCancelled)
 	{
 		EmitUISound("UI_Menu_Apex_Launch")
 		switch(quickplay.quickPlayType)
@@ -333,10 +324,10 @@ void function JoinMatch(var button, table<int, string> StringStages)
 		}
 	}
 
-	if(file.usercancled)
+	if(file.searchCancelled)
 		EmitUISound("UI_Menu_Deny")
 	
-	file.usercancled = false
+	file.searchCancelled = false
 	file.searching = false;
 	RuiSetBool(Hud_GetRui(Hud_GetChild(file.panel, "SelfButton")), "isReady", false)
 	HudElem_SetRuiArg(button, "buttonText", Localize("#READY"))
@@ -344,29 +335,24 @@ void function JoinMatch(var button, table<int, string> StringStages)
 	GamemodeButtonSetSearching(false)
 }
 
-void function FindMatch(var button)
+void function FindMatch(var button, string v)
 {
 	HudElem_SetRuiArg( button, "buttonText", Localize( "#CANCEL" ) )
 
 	thread FindServer()
 
 	int i = 0;
-	while(!file.foundserver)
+	while(!file.foundserver && !file.searchCancelled)
 	{
-		if(file.usercancled) {
-			file.foundserver = true
-			file.noservers = true
-			continue
-		}
+		wait 0.5
 
-		SetSearchingText(SearchStages[i])
+		SetSearchingText( GetProgressText( v, i ) )
 
 		i++
-		if(i > 2)
-			i = 0
-		
-		wait 0.5
 	}
+
+	if(file.searchCancelled)
+		file.noservers = true
 	
 	UpdateQuickJoinButtons(button)
 }
@@ -375,7 +361,7 @@ void function UpdateQuickJoinButtons(var button)
 {
 	float waittime = 2
 
-	if(file.usercancled)
+	if(file.searchCancelled)
 	{
 		EmitUISound( "UI_Menu_Deny" )
 		file.noservers = true
@@ -395,9 +381,8 @@ void function UpdateQuickJoinButtons(var button)
 
 	wait waittime
 
-	if(!file.noservers) {
+	if(!file.noservers)
 		ConnectToListedServer(file.m_vSelectedServer.svServerID)
-	}
 
 	HudElem_SetRuiArg( button, "buttonText", Localize( "#READY" ) )
 	RuiSetBool( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "isReady", false )
@@ -407,7 +392,7 @@ void function UpdateQuickJoinButtons(var button)
 	file.searching = false
 	file.noservers = false
 	file.foundserver = false
-	file.usercancled = false
+	file.searchCancelled = false
 }
 
 void function FindServer(bool refresh = false)
