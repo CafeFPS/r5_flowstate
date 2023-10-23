@@ -900,16 +900,24 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 					return
 
-				if(!IsValid(victim) || !IsValid(attacker))
+				if( !IsValid(victim) )
 					return
 
 				if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
 					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
 				
-	    		if(victim == attacker)
+	    		if( victim == attacker || !IsValid(attacker))
 				{
-					_HandleRespawn( victim )
-					ClearInvincible(victim)
+					thread function () : ( victim )
+					{
+						wait Deathmatch_GetRespawnDelay()
+						
+						if(file.tdmState != eTDMState.IN_PROGRESS)
+							return
+
+						_HandleRespawn( victim )
+						ClearInvincible(victim)
+					}()
 					return
 				}
 
