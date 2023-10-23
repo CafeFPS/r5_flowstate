@@ -37,9 +37,9 @@ global function FSHaloMod_CreateKillStreakAnnouncement
 global function Flowstate_ShowRoundEndTimeUI
 global function Flowstate_PlayStartRoundSounds
 global function Flowstate_ShowStartTimeUI
+global function FS_1v1_ToggleUIVisibility
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
-
 
 struct {
     LocationSettings &selectedLocation
@@ -85,7 +85,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("ChangeCameraToSelectedLocation")
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
-	
+	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
 }
@@ -97,6 +97,82 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
+	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
+}
+
+void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
+{
+	if( GetCurrentPlaylistName() != "fs_1v1" )
+		return
+	
+	entity localPlayer = GetLocalClientPlayer()
+	
+	if( player != localPlayer )
+		return
+	
+	printt( "1v1 enemy changed " + player, oldEnt, newEnt, actuallyChanged )
+	
+	if ( !IsValid( localPlayer ) || !IsValid( newEnt ) || !newEnt.IsPlayer() || localPlayer != GetLocalViewPlayer() )
+	{
+		FS_1v1_ToggleUIVisibility( false, null )
+		return
+	}
+	
+	FS_1v1_ToggleUIVisibility( true, newEnt )
+}
+
+void function FS_1v1_ToggleUIVisibility( bool toggle, entity newEnt )
+{
+	entity player = GetLocalClientPlayer()
+	Signal( player, "StopCurrentEnemyThread" )
+
+	Hud_SetVisible( HudElement( "FS_1v1_UI_BG"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyName"), toggle )
+	if( IsValid( newEnt ) )
+	{
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyName"), newEnt.GetPlayerName() ) 
+	}
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyKills"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyDeaths"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyDamage"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_EnemyLatency"), toggle )
+
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Name"), toggle )
+	Hud_SetText( HudElement( "FS_1v1_UI_Name"), GetLocalClientPlayer().GetPlayerName() ) 
+
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Kills"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Deaths"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Damage"), toggle )
+	Hud_SetVisible( HudElement( "FS_1v1_UI_Latency"), toggle )
+
+	RuiSetImage( Hud_GetRui( HudElement( "FS_1v1_UI_BG") ), "basicImage", $"rui/flowstate_custom/1v1_bg" )
+	
+	if( !toggle ) 
+		return
+	
+	thread FS_1v1_StartUpdatingValues( newEnt )
+}
+
+void function FS_1v1_StartUpdatingValues( entity newEnt )
+{
+	entity player = GetLocalClientPlayer()
+	
+	Signal( player, "StopCurrentEnemyThread" )
+	EndSignal( player, "StopCurrentEnemyThread" )
+	
+	while( true )
+	{
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyKills"), newEnt.GetPlayerNetInt( "kills" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDeaths"), newEnt.GetPlayerNetInt( "deaths" ) .tostring()) 
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDamage"), newEnt.GetPlayerNetInt( "damage" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_EnemyLatency"), newEnt.GetPlayerNetInt( "latency" ).tostring() ) 
+		
+		Hud_SetText( HudElement( "FS_1v1_UI_Kills"), player.GetPlayerNetInt( "kills" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_Deaths"), player.GetPlayerNetInt( "deaths" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_Damage"), player.GetPlayerNetInt( "damage" ).tostring() ) 
+		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() ) 
+		wait 0.1
+	}
 }
 
 void function Cl_OnResolutionChanged()

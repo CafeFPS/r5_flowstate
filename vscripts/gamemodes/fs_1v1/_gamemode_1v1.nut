@@ -277,6 +277,7 @@ void function soloModePlayerToWaitingList(entity player)
 {
 	if(!IsValid(player)) return
 	// Warning("Try to add a player to wating list: " + player.GetPlayerName())
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
 	//检查waiting list是否有该玩家
 	bool IsAlreadyExist = false
@@ -348,8 +349,12 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	if(player == opponent)
 	{
 		// Warning("Try to add same players to InProgress list:" + player.GetPlayerName())
+		player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 		return result
 	}
+	
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", opponent )
+	opponent.SetPlayerNetEnt( "FSDM_1v1_Enemy", player )
 
 	//检查InProgress是否存在该玩家
 	bool IsAlreadyExist = false
@@ -409,7 +414,8 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 void function soloModePlayerToRestingList(entity player)
 {
 	if(!IsValid(player)) return
-
+	
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 	deleteWaitingPlayer(player)
 
 

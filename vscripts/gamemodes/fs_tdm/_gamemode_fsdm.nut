@@ -861,7 +861,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if( is1v1EnabledAndAllowed() )
 	{
 		//maki script 
-		//solo mode		
+		//solo mode	
+		victim.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
+
 		if(isPlayerInWaitingList(victim))
 			return//player who is wating for his opponent
 
