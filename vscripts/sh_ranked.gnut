@@ -353,8 +353,8 @@ void function Ranked_AllItemFlavorsRegistered()
 #if CLIENT
 void function ShRanked_RegisterNetworkFunctions()
 {
-	RegisterNetworkedVariableChangeCallback_int( "currentRankedScore", OnRankedScoreChanged )
-	RegisterNetworkedVariableChangeCallback_int( "currentRankedLadderPosition", OnRankedLadderPositionChanged )
+	//RegisterNetworkedVariableChangeCallback_int( "currentRankedScore", OnRankedScoreChanged )
+	//RegisterNetworkedVariableChangeCallback_int( "currentRankedLadderPosition", OnRankedLadderPositionChanged )
 }
 #endif
 

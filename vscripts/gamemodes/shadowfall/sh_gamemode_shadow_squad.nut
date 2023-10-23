@@ -686,6 +686,9 @@ bool function IsPlayerShadowSquad( entity player )
 
 	if ( !player.IsPlayer() )
 		return false
+	
+	if( GameRules_GetGameMode() != "fs_infected" )
+		return false
 
 	return player.GetPlayerNetBool( "isPlayerShadowForm" )
 }
