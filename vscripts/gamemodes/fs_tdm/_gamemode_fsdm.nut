@@ -36,7 +36,6 @@ global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
 global function	ClientCommand_ShowLatency
 global function WpnPulloutOnRespawn
-global function WpnAutoReload
 global function ReCheckGodMode
 global function GetBestPlayer
 global function SendScoreboardToClient
@@ -1205,9 +1204,11 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			if (!IsValid(waitingRoomLocation)) return
 			
 			Survival_SetInventoryEnabled( player, false )
-			maki_tp_player(player, waitingRoomLocation)	
+			maki_tp_player(player, waitingRoomLocation)
+			player.UnfreezeControlsOnServer()
+			return
 		}
-		
+
 		player.UnfreezeControlsOnServer()
 
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
@@ -1531,24 +1532,6 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	player.ClearFirstDeployForAllWeapons()
-	//maki script
-	// HolsterAndDisableWeapons(player)
-	// wait duration-0.2
-}
-
-void function WpnAutoReload( entity player )
-{	
-	if ( !IsValid( player ) ) return
-
-	entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-	
-	if(IsValid(primary))
-		primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
-	
-	if(IsValid(sec))
-		sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
 }
 
 void function WpnAutoReloadOnKill( entity player )
@@ -4783,13 +4766,6 @@ void function LoadCustomWeapon(entity player)
 		}
 
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-
-		// wait 0.3
-
-		// if ( !IsValid( player ) ) return
-
-		// WpnAutoReload(player)
-		// WpnPulloutOnRespawn(player, 0)
 	}
 }
 

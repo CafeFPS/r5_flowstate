@@ -732,20 +732,38 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	if (IsValid(player) && !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
 	{
 		giveWeaponInRandomWeaponPool( player )
-
 		WpnPulloutOnRespawn(player,0)
-
-		wait 0.3
-		if(IsValid(player))
-			WpnAutoReload(player)
 	}
 
 	thread LoadCustomWeapon(player)
+
+	{
+		player.ClearFirstDeployForAllWeapons()
+
+		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+		if(IsValid(secondary) && secondary.UsesClipsForAmmo())
+		{
+			//secondary.DeployInstant()
+			secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+			
+		}
+		
+		if(IsValid(primary) && primary.UsesClipsForAmmo())
+		{
+			//primary.DeployInstant()
+			primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		}
+	}
 
 	thread ReCheckGodMode(player)
 
 	//set realms for two players
 	setRealms_1v1(player,group.slotIndex+1)
+	
+
 }
 
 void function _soloModeInit(string mapName)
@@ -997,9 +1015,17 @@ void function _soloModeInit(string mapName)
 		buttonText = "%&use% 开始观战"
 	else
 		buttonText = "%&use% Start spectating"
+
+	string buttonText3
 	
-	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, buttonText )
+	if(IS_CHINESE_SERVER)
+		buttonText3 = "%&use% 开始休息"
+	else
+		buttonText3 = "%&use% Toggle Rest"
 	
+	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin + AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText )
+	entity restingRoomPanel_RestButton = CreateFRButton( waitingRoomPanelLocation.origin - AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText3 )
+
 	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
 	{
 		if(!IsValid(user)) return
@@ -1041,6 +1067,12 @@ void function _soloModeInit(string mapName)
 	    AddButtonPressedPlayerInputCallback( user, IN_JUMP,endSpectate  )
 	})
 
+	AddCallback_OnUseEntity( restingRoomPanel_RestButton, void function(entity panel, entity user, int input)
+	{
+		if(!IsValid(user)) return
+		
+		ClientCommand_Maki_SoloModeRest( user, [] )
+	})
 
 
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
