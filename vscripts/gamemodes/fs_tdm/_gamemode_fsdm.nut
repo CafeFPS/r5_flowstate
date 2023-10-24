@@ -1152,7 +1152,12 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		player.StopObserverMode()
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
-		
+
+	if( GetMapName() == "mp_flowstate" )
+		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	else
+		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+	
 	if( GetCurrentPlaylistVarBool( "flowstateForceCharacter", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 	{
 		CharSelect(player)
