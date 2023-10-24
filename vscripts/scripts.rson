@@ -998,6 +998,7 @@ Scripts:
 When: "CLIENT"
 Scripts:
 [
+	gamemodes/fs_movementgym/cl_movement_gym_personalbest.nut
 	gamemodes/fs_movementgym/cl_movement_gym.nut
 	gamemodes/fs_tdm/cl_gamemode_fsdm.nut
 	gamemodes/fs_tdm/cl_gamemode_fsdm_oddball.nut

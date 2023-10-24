@@ -3490,7 +3490,7 @@ entity function CreateRingBoundary(LocationSettings location)
 	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
 
 	//Audio thread for ring
-	if( ringRadius != 99999 ){
+	if( ringRadius != 99999 && GetCurrentPlaylistName() != "fs_movementgym" ){
 		foreach(sPlayer in GetPlayerArray())
 			thread AudioThread(circle, sPlayer, ringRadius)
 	}

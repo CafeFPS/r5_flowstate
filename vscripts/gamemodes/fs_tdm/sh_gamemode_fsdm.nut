@@ -1750,6 +1750,10 @@ bool function FlowState_EnableEncoreNuketownByAyeZee()                          
 bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
 bool function FlowState_EnableMovementGymLogs()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym_Logs", false ) }
 
+bool function Flowstate_MovementGym_ClassicMovement() 				{return GetCurrentPlaylistVarBool("flowstate_MovementGym_ClassicMovement", false) }
+int function Flowstate_MovementGym_ClassicMovement_Type()			{return GetCurrentPlaylistVarInt("flowstate_MovementGym_ClassicMovement_Type", 0) }
+bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP() 			{return GetCurrentPlaylistVarBool("flowstate_MovementGym_ClassicMovement_AutoBHOP", false) }
+
 #if SERVER   
 
 
