@@ -1377,6 +1377,14 @@ void function GiveWeaponsToGroup( array<entity> players )
 {
 	thread function () : ( players )
 	{
+		foreach( player in players )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			TakeAllWeapons(player)
+		}
+
 		wait 0.2
 
 		string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
@@ -1391,11 +1399,9 @@ void function GiveWeaponsToGroup( array<entity> players )
 			{
 				try
 				{
-					EnableOffhandWeapons( player )
 					DeployAndEnableWeapons( player )
-
 					TakeAllWeapons(player)
-					
+
 					GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 					GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
