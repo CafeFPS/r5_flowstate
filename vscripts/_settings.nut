@@ -613,13 +613,10 @@ void function Settings_Init()
 		GAMETYPE = GameRules_GetGameMode()
 		printl( "GAME_TYPE: " + GAMETYPE )
 
-		MAX_TEAMS = GetCurrentPlaylistVarInt( "max_teams", 2 )
-		printl( "MAX_TEAMS: " + MAX_TEAMS )
-
 		MAX_PLAYERS = GetCurrentPlaylistVarInt( "max_players", 12 )
 		printl( "MAX_PLAYERS: " + MAX_PLAYERS )
 
-		MAX_TEAM_PLAYERS = GetMaxTeamPlayers()
+		MAX_TEAM_PLAYERS = GetCurrentPlaylistVarInt( "max_team_size", 1 )
 		printl( "MAX_TEAM_PLAYERS: " + MAX_TEAM_PLAYERS )
 
 		// // if server attempts to start a playlist with a gamemode that is not registered

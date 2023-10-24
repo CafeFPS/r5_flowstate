@@ -92,7 +92,7 @@ int ornull function GetCurrentPlaylistVarTimestamp( string varName, int defaultV
 #if CLIENT || UI
 int function GetMaxTeamSizeForPlaylist( PlaylistName playlistName )
 {
-	int maxTeamSize = GetPlaylistVarInt( playlistName, "max_team_size", 0 )
+	int maxTeamSize = GetPlaylistVarInt( playlistName, "max_team_size", 1 )
 	if ( maxTeamSize > 0 )
 		return maxTeamSize
 

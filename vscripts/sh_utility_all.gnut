@@ -457,7 +457,7 @@ bool function IsFFAGame()
 
 bool function IsSingleTeamMode()
 {
-	return ( 1 == GetCurrentPlaylistVarInt( "max_teams", 2 ) )
+	return ( 1 == GetCurrentPlaylistVarInt( "max_team_size", 1 ) )
 }
 
 bool function IsMultiTeamMission()
@@ -472,12 +472,12 @@ bool function IsShotgunsAndSnipersMode()
 
 int function GetExpectedSquadSize( entity player )
 {
-	return int ( GetCurrentPlaylistVarFloat( "max_players", 60 ) / GetCurrentPlaylistVarFloat( "max_teams", 20 ) )
+	return GetCurrentPlaylistVarInt( "max_team_size", 1 )
 }
 
 bool function IsDuoMode()
 {
-	return (GetCurrentPlaylistVarFloat( "max_players", 60 ) / GetCurrentPlaylistVarFloat( "max_teams", 20 ) == 2.0)
+	return (GetCurrentPlaylistVarInt( "max_team_size", 1 ) == 2.0)
 }
 
 bool function IsSoloMode()

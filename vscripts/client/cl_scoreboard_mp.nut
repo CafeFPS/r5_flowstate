@@ -146,12 +146,12 @@ int function GetEnemyScoreboardTeam()
 int function GetNumPlayersToDisplayAsATeam()
 {
 	if ( UseOnlyMyTeamScoreboard() )
-		return GetMaxTeamPlayers()
+		return GetCurrentPlaylistVarInt( "max_team_size", 1 )
 
 	if ( UseSingleTeamScoreboard() )
 		return 12
 
-	return GetCurrentPlaylistVarInt( "max_players", MAX_TEAM_SLOTS ) / GetCurrentPlaylistVarInt( "max_teams", MAX_TEAM_SLOTS )
+	return GetCurrentPlaylistVarInt( "max_team_size", 1 )
 }
 
 bool function ScoreboardEnabled()

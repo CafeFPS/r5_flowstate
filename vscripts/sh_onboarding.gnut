@@ -720,6 +720,24 @@ void function OnClientConnected( entity player )
 	// Min players logic end
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, ResetZiplineUseCountOnMantle )
 	UpdatePlayerCounts()
+	
+	int maxTeamSize = GetCurrentPlaylistVarInt( "max_team_size", 1 )
+	int numTeams = GetCurrentPlaylistVarInt( "max_players", 0 ) / GetCurrentPlaylistVarInt( "max_team_size", 1 )
+
+	array<entity> allplayers = GetPlayerArray()
+
+	foreach (p in allplayers)
+	{
+		if (!IsValid(p)) continue
+
+		int teamSize = GetPlayerArrayOfTeam( p.GetTeam() ).len()
+
+		if( teamSize < maxTeamSize )
+		{
+			SetTeam( player, p.GetTeam() )
+			break
+		}
+	}
 
 	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
 	int teamMemberIndex = playerTeam.len() - 1
