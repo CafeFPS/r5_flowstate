@@ -7,6 +7,9 @@ global function KillReplayHud_Deactivate
 global function ServerCallback_KillReplayHud_Activate
 global function ServerCallback_KillReplayHud_Deactivate
 
+global function RoundWinningKillReplayClientHud_Activate
+global function GetPlayerIsWatchingReplay
+
 struct
 {
 	var killReplayOverlayRui
@@ -219,13 +222,12 @@ void function Custom_KillReplayHud_Activate()
 	if ( IsReplayRoundWinning() )
 		return
 
-	asset image
-	int armorTier
-	string attackerName
-	bool islocalclient = false
+	string attackerName = ""
 
 	//Set is watching replay
 	file.IsWatchingReplay = true
+	
+	Minimap_DisableDraw_Internal()
 
 	//Get the attackers entity
 	entity observerTarget = GetLocalClientPlayer().GetObserverTarget()
@@ -234,29 +236,26 @@ void function Custom_KillReplayHud_Activate()
 	if(!IsValid(observerTarget))
 		observerTarget = GetLocalClientPlayer()
 
-	//Causes issues when the observer is the local client
 	if(observerTarget != GetLocalClientPlayer() && observerTarget.IsPlayer())
 	{
-		thread UpdatePlayerHealthAndSheild(observerTarget)
-
-		//Gets attackers legend image
-		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( observerTarget ), Loadout_CharacterClass() )
-		image = CharacterClass_GetGalleryPortrait( character )
-		//Get armor tier
-		armorTier = EquipmentSlot_GetEquipmentTier( observerTarget, "armor" )
-		//Get attacker name
 		attackerName = observerTarget.GetPlayerName()
 	}
-	else
-	{
-		image = $""
-		armorTier = 0
-		attackerName = ""
-		islocalclient = true
-	}
 
-	//Open Kill Replay Hud
-	RunUIScript("OpenKillReplayHud", image, attackerName, armorTier, islocalclient, GameRules_GetGameMode() == "fs_prophunt" )
+	if ( file.killReplayOverlayRui != null )
+	{
+		RuiDestroyIfAlive( file.killReplayOverlayRui )
+		file.killReplayOverlayRui = null
+	}
+	var rui = RuiCreate( $"ui/kill_replay_overlay.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 900 )
+	file.killReplayOverlayRui = rui
+
+	string announcementText = "Kill Replay"
+
+	RuiSetString( file.killReplayOverlayRui, "killReplayTitleText", announcementText )
+
+	RuiSetBool( file.killReplayOverlayRui, "showKillerInfo", true )
+	RuiSetBool( file.killReplayOverlayRui, "showKillerWeaponInfo", true )
+	RuiSetString( file.killReplayOverlayRui, "killerName", attackerName )
 }
 
 void function Custom_KillReplayHud_Deactivate()
@@ -267,48 +266,14 @@ void function Custom_KillReplayHud_Deactivate()
 	if ( IsReplayRoundWinning() )
 		return
 	
-	bool isProphunt = false
-	
-	if(GameRules_GetGameMode() == "fs_prophunt")
-		isProphunt = true
-	
-	//Close the replay menu
-	RunUIScript("CloseKillReplayHud", isProphunt)
-
-	GetLocalClientPlayer().Signal( "DeactivateKillReplayHud" )
+	if ( file.killReplayOverlayRui != null )
+	{
+		RuiDestroyIfAlive( file.killReplayOverlayRui )
+		file.killReplayOverlayRui = null
+	}
 }
 
-void function UpdatePlayerHealthAndSheild(entity attacker)
+bool function GetPlayerIsWatchingReplay()
 {
-	//Gets armor Tier
-	int armorTier = EquipmentSlot_GetEquipmentTier( attacker, "armor" )
-	
-	entity observerTarget = attacker
-	
-	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( attacker ), Loadout_CharacterClass() )
-	asset image = CharacterClass_GetGalleryPortrait( character )
-	
-	//Update health and sheild while they are watching the replay
-    while(file.IsWatchingReplay)
-    {
-		observerTarget = GetLocalClientPlayer().GetObserverTarget()
-		
-		if( IsValid(observerTarget) && observerTarget.IsPlayer() && observerTarget != attacker )
-		{
-			attacker = observerTarget // so we can update name too
-			armorTier = EquipmentSlot_GetEquipmentTier( attacker, "armor" ) //update armor tier for new spectator targets
-			character = LoadoutSlot_WaitForItemFlavor( ToEHI( attacker ), Loadout_CharacterClass() )
-			image = CharacterClass_GetGalleryPortrait( character )
-		}
-		
-		if(!IsValid(attacker)) {
-			attacker = GetLocalClientPlayer().GetObserverTarget()
-			WaitFrame()
-			continue
-		}
-		
-		RunUIScript("ReplayHud_UpdatePlayerData", GetHealthFrac( attacker ), GetShieldHealthFrac( attacker ), armorTier, attacker.GetPlayerName(), image)
-
-		WaitFrame()
-    }
+	return file.IsWatchingReplay
 }

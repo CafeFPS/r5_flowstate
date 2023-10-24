@@ -299,10 +299,14 @@ void function Flowstate_DMTimer_Thread( float endtime )
 	while ( startTime <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
-
+			
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
 		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
+
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !GetPlayerIsWatchingReplay() )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !GetPlayerIsWatchingReplay() )
+			
 		wait 1
 	}
 }
