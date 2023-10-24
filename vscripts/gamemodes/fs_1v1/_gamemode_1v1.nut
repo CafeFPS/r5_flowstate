@@ -707,15 +707,6 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 	PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 
-	//player dont need any skills in solo mode
-	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-
-	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.TakeOffhandWeapon( OFFHAND_MELEE )
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-
 	Survival_SetInventoryEnabled( player, false )
 	//SetPlayerInventory( player, [] )
 	thread ReCheckGodMode(player)
@@ -1384,36 +1375,43 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 void function GiveWeaponsToGroup( array<entity> players )
 {
-	string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
-	string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
-
-	foreach( player in players )
+	thread function () : ( players )
 	{
-		if( !IsValid( player ) )
-			continue
+		wait 0.2
 
-		if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
+		string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+		string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+
+		foreach( player in players )
 		{
-			try
+			if( !IsValid( player ) )
+				continue
+
+			if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
 			{
-				EnableOffhandWeapons( player )
-				DeployAndEnableWeapons( player )
+				try
+				{
+					EnableOffhandWeapons( player )
+					DeployAndEnableWeapons( player )
 
-				TakeAllWeapons(player)
-				
-				GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-				GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					TakeAllWeapons(player)
+					
+					GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				if(!isPlayerInRestingList(player))
+					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+					player.TakeOffhandWeapon( OFFHAND_MELEE )
+					player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 					player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-			}
-			catch (e)
-			{}
-		}
 
-		thread LoadCustomWeapon(player)
-	}
+				}
+				catch (e)
+				{}
+			}
+
+			thread LoadCustomWeapon(player)
+		}
+	}()
 }
 
 void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )
