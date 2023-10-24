@@ -2196,17 +2196,17 @@ void function PROPHUNT_GiveRandomPrimaryWeapon(entity player)
 
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
-		"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 stock_tactical_l2 barrel_stabilizer_l1",
+		"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 stock_tactical_l2 laser_sight_l3",
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3",
 		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l3",
-		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2 barrel_stabilizer_l2",
+		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
 		"mp_weapon_lmg optic_cq_hcog_bruiser barrel_stabilizer_l1 stock_tactical_l3",
-        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3 laser_sight_l3",
         "mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2 barrel_stabilizer_l2",
-		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3 laser_sight_l3",
 		"mp_weapon_energy_shotgun shotgun_bolt_l2",
 		"mp_weapon_autopistol bullets_mag_l2",
-		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3 laser_sight_l3",
 		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l3 stock_tactical_l3 hopup_turbocharger"
 	]
 	
