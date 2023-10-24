@@ -297,6 +297,12 @@ void function BottomEnterCallback( entity trigger, entity ent )
 {
 	if ( !ent.IsPlayer() )
 		return
+	
+	ent.SetVelocity( Vector( 0,0,0 ) )
+	ent.Zipline_Stop()
+	ent.GrappleDetach()
+	ent.ClearTraverse()
+
 	//maki script
 	if(!( doubleCheck.contains(ent)))
 		doubleCheck.append(ent)
@@ -575,7 +581,7 @@ void function PlayerOnLiftMovement(entity bottom, entity player)
 			
 		newVelocity.z = UPVELOCITY
 		player.SetVelocity( newVelocity )
-		printt(player.GetVelocity().z)
+		// printt(player.GetVelocity().z)
 		WaitFrame()
 	}
 	
@@ -620,7 +626,7 @@ void function LockoutPlayerOnLiftMovement(entity bottom, entity player)
 			
 		newVelocity.z = UPVELOCITY
 		player.SetVelocity( newVelocity )
-		printt(player.GetVelocity().z)
+		// printt(player.GetVelocity().z)
 		WaitFrame()
 	}
 	
