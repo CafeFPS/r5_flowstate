@@ -494,7 +494,7 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 	//DebugDrawCylinder( pos, Vector(-90,0,0), 70, 1200, 100, 0, 0, true, SPACEELEVATOR_TUNING_LIFETIME)
 
 	OnThreadEnd(
-		function() : ( bottom, top, visuals )
+		function() : ( bottom, visuals )
 		{
 			foreach(ent in bottom.GetTouchingEntities())
 				{
@@ -532,7 +532,6 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 					}
 			}
 			if(IsValid(bottom)) bottom.Destroy()
-			if(IsValid(top)) top.Destroy()
 		}
 	)
 	
