@@ -23,6 +23,8 @@ const float SPACEELEVATOR_TUNING_TO_CENTER_SPEED = 50
 const float SPACEELEVATOR_TUNING_MAX_EJECT_TIME = 0.5
 const float SPACEELEVATOR_TUNING_AWAY_FROM_CENTER_DIST = 40
 
+const float SPACEELEVATOR_AIRSPEED = 80
+const float SPACEELEVATOR_AIRACCEL = 800
 //unused, implement at some point when we figure what they do lol
 const float SPACEELEVATOR_TUNING_HORIZ_ACCEL = 2000
 const float SPACEELEVATOR_TUNING_TO_CENTER_ACCEL = 0
@@ -204,7 +206,8 @@ void function CreateLiftAtOrigin( vector pos, entity projectile = null, bool nev
 	bottom.SetBelowHeight( 0 )
 	bottom.SetOrigin( pos )
 	bottom.SetEnterCallback( BottomEnterCallback )
-	bottom.SetLeaveCallback( BottomLeaveCallback )	
+	bottom.SetLeaveCallback( BottomLeaveCallback )
+
 	DispatchSpawn( bottom )
 	bottom.SearchForNewTouchingEntity()
 
@@ -491,7 +494,7 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 	//DebugDrawCylinder( pos, Vector(-90,0,0), 70, 1200, 100, 0, 0, true, SPACEELEVATOR_TUNING_LIFETIME)
 
 	OnThreadEnd(
-		function() : ( bottom, visuals )
+		function() : ( bottom, top, visuals )
 		{
 			foreach(ent in bottom.GetTouchingEntities())
 				{
@@ -518,8 +521,8 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 					{
 						if(!IsValid(player)) continue
 						player.kv.gravity = 1.0
-						player.kv.airSpeed = 80 //horizon value
-						player.kv.airAcceleration = 800 //horizon value
+						player.kv.airSpeed = SPACEELEVATOR_AIRSPEED //horizon value
+						player.kv.airAcceleration = SPACEELEVATOR_AIRACCEL //horizon value
 						RemovePlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 						AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 						player.p.ForceEject = false
@@ -529,6 +532,7 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 					}
 			}
 			if(IsValid(bottom)) bottom.Destroy()
+			if(IsValid(top)) top.Destroy()
 		}
 	)
 	
@@ -651,8 +655,8 @@ void function FallTempAirControl( entity player )
 	StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
 	player.kv.gravity = 1.0
-	player.kv.airSpeed = 80 //horizon value
-	player.kv.airAcceleration = 800 //horizon value
+	player.kv.airSpeed = SPACEELEVATOR_AIRSPEED //horizon value
+	player.kv.airAcceleration = SPACEELEVATOR_AIRACCEL //horizon value
 	RemovePlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 	player.kv.landslowdownduration = 0//doesn't work
