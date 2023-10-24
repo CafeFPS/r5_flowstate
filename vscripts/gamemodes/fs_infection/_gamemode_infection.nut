@@ -157,7 +157,7 @@ void function _OnPlayerKilledInfection(entity victim, entity attacker, var damag
 			{
 				if( attacker.IsPlayer() && attacker.GetTeam() == TEAM_IMC )
 				{
-					Infection_KillStreakAnnounce(attacker)
+					// Infection_KillStreakAnnounce(attacker)
 					attacker.p.infectionRoundKills++
 					// thread PerksSystem(attacker)
 				}
