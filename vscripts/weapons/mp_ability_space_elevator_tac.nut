@@ -49,6 +49,7 @@ void function MpSpaceElevatorAbility_Init()
 	PrecacheParticleSystem( $"P_wpn_BBunker_beam_end" )
 	
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
+	RegisterSignal( "FS_EndGoingUpThreadForcedly" )
 }
 
 var function Lift_OnWeaponTossRelease( entity weapon, WeaponPrimaryAttackParams attackParams )
@@ -297,7 +298,7 @@ void function BottomEnterCallback( entity trigger, entity ent )
 {
 	if ( !ent.IsPlayer() )
 		return
-	
+
 	ent.SetVelocity( Vector( 0,0,0 ) )
 	ent.Zipline_Stop()
 	ent.GrappleDetach()
@@ -329,6 +330,8 @@ void function BottomLeaveCallback( entity trigger, entity ent )
 {
 	if ( !IsValid(ent) || !ent.IsPlayer() || ent.p.ForceEject )
 		return
+
+	Signal( ent, "FS_EndGoingUpThreadForcedly" )
 
 	entity weapon = ent.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	if(IsValid(weapon))
@@ -554,9 +557,20 @@ void function LockoutLiftWatcher( entity bottom, vector pos, bool neverDies = fa
 
 void function PlayerOnLiftMovement(entity bottom, entity player)
 {
-	EndSignal(player, "OnDeath")
-	EndSignal(bottom, "OnDestroy")
-	
+	EndSignal( player, "OnDeath" )
+	EndSignal( bottom, "OnDestroy")
+	EndSignal( player, "FS_EndGoingUpThreadForcedly" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			IsValid( player )
+			{
+				player.kv.gravity = 1
+			}
+		}
+	)
+
 	while( IsValid(bottom) && IsValid(player) && bottom.IsTouching(player)  )
 	{
 		player.kv.gravity = 0.00001
@@ -581,7 +595,7 @@ void function PlayerOnLiftMovement(entity bottom, entity player)
 			
 		newVelocity.z = UPVELOCITY
 		player.SetVelocity( newVelocity )
-		// printt(player.GetVelocity().z)
+		printt( "player going up" )
 		WaitFrame()
 	}
 	
@@ -626,7 +640,7 @@ void function LockoutPlayerOnLiftMovement(entity bottom, entity player)
 			
 		newVelocity.z = UPVELOCITY
 		player.SetVelocity( newVelocity )
-		// printt(player.GetVelocity().z)
+		
 		WaitFrame()
 	}
 	
