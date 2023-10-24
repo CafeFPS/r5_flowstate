@@ -1394,30 +1394,24 @@ void function GiveWeaponsToGroup( array<entity> players )
 		{
 			if( !IsValid( player ) )
 				continue
+			
+			DeployAndEnableWeapons( player )
 
 			if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
 			{
-				DeployAndEnableWeapons( player )
 				TakeAllWeapons(player)
 
 				GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 			} else
 			{
-				DeployAndEnableWeapons( player )
-
 				thread LoadCustomWeapon(player)
-
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 			}
+
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.TakeOffhandWeapon( OFFHAND_MELEE )
+			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 		}
 	}()
 }
