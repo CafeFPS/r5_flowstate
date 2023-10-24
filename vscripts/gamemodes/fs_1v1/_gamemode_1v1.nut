@@ -1438,6 +1438,9 @@ void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )
 
 	if( weaponNew.UsesClipsForAmmo() )
 		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax())
+
+	if( weaponNew.LookupAttachment( "CHARM" ) != 0 )
+		weaponNew.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
 }
 
 string function ReturnRandomPrimaryMetagame_1v1()
