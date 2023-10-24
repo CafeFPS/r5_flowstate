@@ -1349,6 +1349,10 @@ void function DM_HintCatalog(int index, int eHandle)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_InGame_FD_SliderExit" )
 		break
 		
+		case 3:
+		Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Made by __makimakima__ - Mantained in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		break
+
 		case -1:
 		if(file.activeQuickHint != null)
 		{

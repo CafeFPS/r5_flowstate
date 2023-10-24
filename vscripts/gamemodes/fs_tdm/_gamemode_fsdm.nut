@@ -55,6 +55,7 @@ global function HisWattsons_HaloModFFA_KillStreakAnnounce
 global function SetupInfiniteAmmoForWeapon
 global function FSDM_GetSelectedLocation
 global function Flowstate_GrantSpawnImmunity
+global function GetBlackListedWeapons
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -687,7 +688,9 @@ void function _OnPlayerConnected(entity player)
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Message(player,"Flowstate 1V1 v1.31", "Made by __makimakima__\nMantained by @CafeFPS")
+			Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 3, 0)
+			wait 1
+			TakeAllWeapons( player )
 			HolsterAndDisableWeapons(player)
 			wait 9
 			if ( !IsValid( player ) ) return
@@ -1689,7 +1692,6 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 		player.AmmoPool_SetCount( ammoType, 65535 )
 	}
 }
-
 
 void function GiveRandomPrimaryWeaponMetagame(entity player)
 {
@@ -5465,4 +5467,9 @@ void function ForceSaveOgSkyboxOrigin()
 LocationSettings function FSDM_GetSelectedLocation()
 {
 	return file.selectedLocation
+}
+
+array<string> function GetBlackListedWeapons()
+{
+	return file.blacklistedWeapons
 }

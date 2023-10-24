@@ -292,7 +292,7 @@ void function soloModePlayerToWaitingList(entity player)
 
 	soloPlayerStruct playerStruct
 	playerStruct.player = player
-	playerStruct.waitingTime = Time() + 4
+	playerStruct.waitingTime = Time() + 2
 	if(IsValid(player))
 		playerStruct.kd = getkd( player.GetPlayerNetInt( "kills" ), player.GetPlayerNetInt( "deaths" ))
 	else
@@ -665,16 +665,6 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 		try
 		{
 			DecideRespawnPlayer(player, true)
-
-			if(!(player.GetPlayerName() in weaponlist))
-			{
-				giveWeaponInRandomWeaponPool( player )
-			}
-			else
-			{
-				TakeAllWeapons(player)
-				thread LoadCustomWeapon(player)
-			}
 		}
 		catch (erroree)
 		{
@@ -728,42 +718,10 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 
 	Survival_SetInventoryEnabled( player, false )
 	//SetPlayerInventory( player, [] )
-
-	if (IsValid(player) && !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
-	{
-		giveWeaponInRandomWeaponPool( player )
-		WpnPulloutOnRespawn(player,0)
-	}
-
-	thread LoadCustomWeapon(player)
-
-	{
-		player.ClearFirstDeployForAllWeapons()
-
-		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-
-		if(IsValid(secondary) && secondary.UsesClipsForAmmo())
-		{
-			//secondary.DeployInstant()
-			secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
-			
-		}
-		
-		if(IsValid(primary) && primary.UsesClipsForAmmo())
-		{
-			//primary.DeployInstant()
-			primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
-			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-		}
-	}
-
 	thread ReCheckGodMode(player)
 
 	//set realms for two players
 	setRealms_1v1(player,group.slotIndex+1)
-	
-
 }
 
 void function _soloModeInit(string mapName)
@@ -1228,6 +1186,8 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 					//printt("respawn and tp player2")
 					thread respawnInSoloMode(eachGroup.player2, 1)
+					
+					GiveWeaponsToGroup( [eachGroup.player1, eachGroup.player2] )
 				}//player in keeped group is died, respawn them
 			}
 
@@ -1396,6 +1356,8 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			thread respawnInSoloMode(eachPlayer, index)
 		}
+		
+		GiveWeaponsToGroup( players )
 		// try{
 			// newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
 			
@@ -1419,6 +1381,110 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	)
 
 }//thread
+
+void function GiveWeaponsToGroup( array<entity> players )
+{
+	string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+	string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+
+	foreach( player in players )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
+		{
+			try
+			{
+				EnableOffhandWeapons( player )
+				DeployAndEnableWeapons( player )
+
+				TakeAllWeapons(player)
+				
+				GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				if(!isPlayerInRestingList(player))
+					player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+			}
+			catch (e)
+			{}
+		}
+
+		thread LoadCustomWeapon(player)
+	}
+}
+
+void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )
+{
+	array<string> Data = split(weapon, " ")
+	string weaponclass = Data[0]
+	
+	if(weaponclass == "tgive") return
+	
+	array<string> Mods
+	foreach(string mod in Data)
+	{
+		if(strip(mod) != "" && strip(mod) != weaponclass)
+		    Mods.append( strip(mod) )
+	}
+
+	entity weaponNew = player.GiveWeapon( weaponclass , slot, Mods, false )
+
+	SetupInfiniteAmmoForWeapon( player, weaponNew )
+	player.ClearFirstDeployForAllWeapons()
+	player.DeployWeapon()
+
+	if( weaponNew.UsesClipsForAmmo() )
+		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax())
+}
+
+string function ReturnRandomPrimaryMetagame_1v1()
+{
+    array<string> Weapons = [
+		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(GetBlackListedWeapons().find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
+	return Weapons.getrandom()
+}
+
+string function ReturnRandomSecondaryMetagame_1v1()
+{
+    array<string> Weapons = [
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
+		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(GetBlackListedWeapons().find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
+	return Weapons.getrandom()
+}
 
 void function ForceAllRoundsToFinish_solomode()
 {

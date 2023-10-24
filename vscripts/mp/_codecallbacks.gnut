@@ -53,6 +53,9 @@ void function CodeCallback_Init()
 
 void function OnClientConnected( entity player )
 {
+	if( !IsValid( player ) )
+		return
+
 	printt( "[+] New player connected! ", player )
 
 	//Wraith Q fix. Colombia
