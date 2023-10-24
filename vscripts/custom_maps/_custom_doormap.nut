@@ -63,11 +63,17 @@ void function TeleportPlayer( entity player )
 {
 	if( !IsValid( player ) )
 		return
+    array<ItemFlavor> characters = GetAllCharacters()
 
-	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-	TakeAllPassives( player )
 	player.SetOrigin(file.first_cp)
+	CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
+
+	TakeAllPassives( player )
+	TakeAllWeapons( player )
+	player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+	player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+	player.SetPlayerNetBool("pingEnabled", false)
+
 	Message(player, "Welcome to the Door Map!")
 	SpawnInfoText( player )
 }

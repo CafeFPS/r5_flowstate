@@ -122,9 +122,14 @@ void function InitPlayerFallingForever( entity player ) {
     AddButtonPressedPlayerInputCallback( player, IN_USE, RemoveAndRestore )
     AddButtonPressedPlayerInputCallback( player, IN_RELOAD, RestoreToStart )
 
-    player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+    array<ItemFlavor> characters = GetAllCharacters()
+	CharacterSelect_AssignCharacter(ToEHI(player), characters[8])
+
 	TakeAllPassives( player )
+	TakeAllWeapons( player )
+	player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+	player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+	player.SetPlayerNetBool("pingEnabled", false)
 
     // Track player movements
     thread TrackPlayerFallingForever( player )

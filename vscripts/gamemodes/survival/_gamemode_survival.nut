@@ -1006,17 +1006,20 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
-	} else if ( GetCurrentPlaylistName() == "survival_dev" )
+	} else if ( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 	{
 		vector origin
 		if( GetPlayerArray_Alive().len() > 0 )
 			origin = GetPlayerArray_Alive()[0].GetOrigin()
 		
-		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL ) 
-		Flowstate_AssignUniqueCharacterForPlayer(player, true)
+		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+		if( !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+		{
+			Flowstate_AssignUniqueCharacterForPlayer(player, true)
+			player.SetOrigin( origin )
+		}
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
-		player.SetOrigin( origin )
 		return		
 	}
 

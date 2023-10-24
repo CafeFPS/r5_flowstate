@@ -84,8 +84,13 @@ void function grapplemap_player_setup( entity player )
 
 	player.SetOrigin(file.first_cp)
 	CharacterSelect_AssignCharacter(ToEHI(player), characters[7])
-	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+
+	TakeAllPassives( player )
+	TakeAllWeapons( player )
+	player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+	player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+	player.SetPlayerNetBool("pingEnabled", false)
+
 	player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
 	player.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
 	player.SetSuitGrapplePower(100)
