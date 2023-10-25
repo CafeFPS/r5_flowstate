@@ -201,6 +201,17 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 
 	if(soloPlayersResting.contains(player))
 	{
+		if( player.IsObserver() || IsValid( player.GetObserverTarget() ) )
+		{
+			player.SetSpecReplayDelay( 0 )
+			player.SetObserverTarget( null )
+			player.StopObserverMode()
+			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			player.MakeVisible()
+			player.ClearInvulnerable()
+			player.SetTakeDamageType( DAMAGE_YES )
+		}
+
 		if(IS_CHINESE_SERVER)
 			Message(player,"匹配中")
 		else
