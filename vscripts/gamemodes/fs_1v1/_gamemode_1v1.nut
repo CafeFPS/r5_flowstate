@@ -1321,7 +1321,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 					if(playerSelf == eachOpponent || !IsValid(eachOpponent))//过滤非法对手
 						continue
 
-					if(fabs(selfKd - opponentKd) > 1.5) //过滤kd差值
+					if(fabs(selfKd - opponentKd) > 3.0) //过滤kd差值
 						continue
 					properOpponentTable[eachOpponent] <- fabs(selfKd - opponentKd)
 				}
