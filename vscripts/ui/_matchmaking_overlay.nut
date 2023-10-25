@@ -33,8 +33,8 @@ void function InitMatchmakingOverlay()
 	RegisterUIVarChangeCallback( "gameStartTime", GameStartTime_Changed )
 
 	file.matchStatusRuis = GetElementsByClassnameForMenus( "MatchmakingStatusRui", uiGlobal.allMenus )
-	foreach ( var el in file.matchStatusRuis )
-		printt( "matchStatusRuis ", GetParentMenu( el ).GetHudName() )
+	//foreach ( var el in file.matchStatusRuis )
+		//printt( "matchStatusRuis ", GetParentMenu( el ).GetHudName() )
 
 	RegisterSignal( "UpdateMatchmakingStatus" )
 	RegisterSignal( "BypassWaitBeforeRestartingMatchmaking" )
