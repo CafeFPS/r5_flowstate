@@ -868,7 +868,18 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		victim.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
 		if(isPlayerInWaitingList(victim))
+		{
+			LocPair waitingRoomLocation = getWaitingRoomLocation( GetMapName() )
+			if (!IsValid(waitingRoomLocation)) return
+
+			DecideRespawnPlayer(player, false)
+			ClearInvincible(victim)
+			maki_tp_player(player, waitingRoomLocation)
+			
+			if(IsValid(attacker) && IsValid(victim))
+				victim.p.lastKiller = attacker
 			return//player who is wating for his opponent
+		}
 
 		if(IsValid(attacker) && IsValid(victim))
 			victim.p.lastKiller = attacker
