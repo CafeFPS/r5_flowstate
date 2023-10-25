@@ -2316,42 +2316,19 @@ array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
 {
 	array<ConsumableInventoryItem> final = []
 	array<string> newRefs
-	
-	bool shouldcontinue = false
-	for(int i = 0; i < 5; i++)
-	{
-		shouldcontinue = false
-		string newPossibleItem = SURVIVAL_GetWeightedItemFromGroup( "data_knife_vault" )
-		
-		if( newPossibleItem == "armor_pickup_lv4_all_fast" || newPossibleItem == "armor_pickup_lv3" )
-		{
-			i--
-			continue
-		}
-		
-		foreach(ref in newRefs)
-		{
-			if(ref == newPossibleItem)
-			{
-				i--
-				shouldcontinue = true
-				continue
-			}
-		}
-		if(shouldcontinue)
-			continue
-		
-		newRefs.append(newPossibleItem)
-	}
+
 	array<string> swaps =
 	[
 		"armor_pickup_lv4_all_fast",
 		"armor_pickup_lv3", 
 		"armor_pickup_lv2"
 	]
-	
+
 	newRefs.append("mp_weapon_wingman")
 	newRefs.append("mp_weapon_r97")
+	newRefs.append("helmet_pickup_lv1")
+	newRefs.append("incapshield_pickup_lv1")
+	newRefs.append("backpack_pickup_lv1")
 	newRefs.append( swaps.getrandom() )
 	
 	foreach(ref in newRefs)
@@ -2365,24 +2342,7 @@ array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
 
 		final.append( fsItem )
 	}
-	
-	array<string> alotofitems = SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 20 )
-	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Low", 20 ) )
-	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Low", 20 ) )
-	alotofitems.extend( SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_Medium", 20 ) )
-	
-	foreach( item in alotofitems )
-	{
-		LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( item )
 
-		ConsumableInventoryItem fsItem
-
-		fsItem.type = attachmentData.index
-		fsItem.count = 1
-
-		final.append( fsItem )
-	}
-	
 	return final
 }
 
