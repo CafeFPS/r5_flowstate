@@ -875,7 +875,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			if( !IsAlive( victim ) )
 				DecideRespawnPlayer(victim, false)
 			ClearInvincible(victim)
-			maki_tp_player(player, waitingRoomLocation)
+			maki_tp_player(victim, waitingRoomLocation)
 			
 			if(IsValid(attacker) && IsValid(victim))
 				victim.p.lastKiller = attacker
