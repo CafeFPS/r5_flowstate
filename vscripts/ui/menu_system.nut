@@ -198,7 +198,7 @@ void function InitSystemPanel( var panel )
 	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
-	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE 1V1 SCOREBOARD"
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
