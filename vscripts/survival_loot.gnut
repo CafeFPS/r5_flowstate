@@ -451,7 +451,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 		{
 			thread function() : (deathBox)
 			{
-				wait 1
+				WaitFrame()
 				if(IsValid(deathBox))
 					deathBox.Destroy()
 			}()
