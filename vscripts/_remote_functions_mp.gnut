@@ -63,10 +63,7 @@ void function RemoteFunctions_Init_Begin()
 				Remote_RegisterClientFunction("Cl_MovementGym_Init")
 				Remote_RegisterClientFunction("MG_StopWatch_toggle", "bool")
 				Remote_RegisterClientFunction("MG_StopWatch_Obituary", "int", 0, 9999, "entity", "int", 0, 9999)
-				Remote_RegisterClientFunction("MG_Speedometer_toggle", "bool")
 				Remote_RegisterClientFunction("MG_Checkpoint_Msg")
-				Remote_RegisterClientFunction("MG_MovementOverlay_toggle", "bool")
-				Remote_RegisterClientFunction("MG_Ultrakill_styleemeter_toggle", "bool")	
 				break
 			}
 			

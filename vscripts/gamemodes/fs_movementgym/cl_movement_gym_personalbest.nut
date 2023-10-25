@@ -13,4 +13,4 @@ global const int MG_SAVED_LT_M4 = 0
 global const bool MG_SAVED_ISKEYSON = true
 global const bool MG_SAVED_ISSPEEDOON = true
 global const bool MG_SAVED_ISSTYLEON = true
-global const bool MG_SAVED_ISINTROON = true
+global const bool MG_SAVED_ISINTROON = false

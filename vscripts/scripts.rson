@@ -820,7 +820,8 @@ Scripts:
 	ui/FRChallenges/panel_buymenu3.nut
 	ui/FRChallenges/panel_buymenu4.nut
 	ui/FRChallenges/panel_buymenu5.nut
-
+	//Movement Gym
+	ui/MovementGym/movementgym_settings.nut
 	//KillReplay
 	ui/KillReplay/menu_killreplay.nut
 	

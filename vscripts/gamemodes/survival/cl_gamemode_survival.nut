@@ -792,6 +792,9 @@ void function InitSurvivalHealthBar()
 		{
 			if(IsValid(player))
 				SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
+			
+			if( GetCurrentPlaylistName() == "fs_movementgym" )
+					MG_CustomPilotRUI( player, file.pilotRui )
 		}
 	)
 	

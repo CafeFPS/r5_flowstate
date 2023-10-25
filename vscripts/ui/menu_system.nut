@@ -36,7 +36,7 @@ struct
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
 	table<var, ButtonData > hubButtonData
-	table<var, ButtonData > invisButtonData
+	table<var, ButtonData > MGsettingsButtonData
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
 	table<var, ButtonData > Toggle1v1ScoreboardFocus
@@ -138,7 +138,7 @@ void function InitSystemPanel( var panel )
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
 	file.hubButtonData[ panel ] <- clone data
-	file.invisButtonData[ panel ] <- clone data
+	file.MGsettingsButtonData[ panel ] <- clone data
 	file.TDM_ChangeWeapons[ panel ] <- clone data
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
@@ -185,10 +185,10 @@ void function InitSystemPanel( var panel )
 	
 	file.hubButtonData[ panel ].label = "HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
-	
-	file.invisButtonData[ panel ].label = "Toggle Hide Players"
-	file.invisButtonData[ panel ].activateFunc = RunInvis
-	
+
+	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
+	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
+
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
 	
@@ -275,7 +275,7 @@ void function UpdateSystemPanel( var panel )
 		}
 		if( GetCurrentPlaylistName() == "fs_movementgym" )
 		{
-			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
 
@@ -408,9 +408,9 @@ void function RunHub()
 	ClientCommand( "hub" )
 }
 
-void function RunInvis()
+void function RunMGsettings()
 {
-	ClientCommand( "invis" )
+	RunClientScript("MG_Settings_UI")
 }
 
 #if CONSOLE_PROG

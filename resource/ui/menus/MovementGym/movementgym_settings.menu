@@ -1,0 +1,1029 @@
+scripts/resource/ui/menus/MovementGym/movementgym_settings.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%60
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+		}	
+
+		Background
+		{
+			ControlName				RuiPanel
+			wide					%100
+			xpos                    0
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+			ruiArgs
+			{
+				basicImageAlpha     1
+				basicImage "rui/flowstatecustom/dea/mg_settings_bg"
+			}
+		}
+		
+				
+		MadeBy
+		{
+			ControlName				Label
+			xpos                    -40
+			ypos					-60
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"v1.1 | Made by @DEAFPS_"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			Background
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		MadeBy2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					20
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"Powered by R5Reloaded - ©Respawn Entertainment"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			MadeBy
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		//General---------------------------------------------------------------------
+		General
+		{
+			ControlName				Label
+			xpos                    195
+			ypos					335
+			auto_wide_tocontents	1
+			tall					25
+			visible					0
+			fontHeight				25
+			labelText				""
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			TOP_LEFT
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		ButtonC1_1
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					30
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Speedometer"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          General
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_1_On
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "On"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	-60
+			ypos                     40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_1
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_1_Off
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Off"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_1
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+
+		ButtonC1_1DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC1_1
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC1_2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					125
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Stylemeter"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          General
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_2_On
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "On"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	-60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_2
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_2_Off
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Off"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_2
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+
+		ButtonC1_2DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC1_2
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC1_3
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					220
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Key Overlay"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          General
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_3_On
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "On"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	-60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_3
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_3_Off
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Off"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_3
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+
+		ButtonC1_3DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC1_3
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC1_4
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					315
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Invisible"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          General
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_4_Toggle
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Toggle"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_4
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC1_4DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC1_4
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC1_5
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					410
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"SHOW INTRO"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          General
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_5_On
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "On"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	-60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_5
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC1_5_Off
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Off"
+			}
+			wide					115
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	60
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC1_5
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+
+		ButtonC1_5DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC1_5
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		//PETS---------------------------------------------------------------------
+		Pets
+		{
+			ControlName				Label
+			xpos                    585
+			ypos					335
+			auto_wide_tocontents	1
+			tall					25
+			visible					0
+			fontHeight				25
+			labelText				""
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			TOP_LEFT
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		ButtonC2_1
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					30
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Nessy"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Pets
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC2_1_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Summon"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC2_1
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC2_1DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC2_1
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC2_2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					125
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Corgi"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Pets
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC2_2_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Summon"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC2_2
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC2_2DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC2_2
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC2_3
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					220
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"A Controller Player"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Pets
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC2_3_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Summon"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC2_3
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC2_3DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC2_3
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC2_4
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					315
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Corgi"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Pets
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC2_4_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Summon"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC2_4
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC2_4DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC2_4
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		//Misc---------------------------------------------------------------------
+		Misc
+		{
+			ControlName				Label
+			xpos                    975
+			ypos					335
+			auto_wide_tocontents	1
+			tall					25
+			visible					0
+			fontHeight				25
+			labelText				""
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			TOP_LEFT
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		ButtonC3_1
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					30
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"Spectate"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Misc
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC3_1_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText ">>>"
+			}
+			wide					77
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	77
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC3_1
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC3_1DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC3_1
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		SpecTargetName
+		{
+			ControlName				TextEntry
+			zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+			wide					153
+			tall					50
+			xpos					-40
+			ypos					40
+			zpos					70
+			allowRightClickMenu			0
+			allowSpecialCharacters			0
+			unicode					0
+			
+			keyboardTitle			"Enter Player Name"
+			keyboardDescription		"Enter Player Name"
+			
+			visible					1
+			enabled					1
+			textHidden				0
+			editable				1
+			maxchars				100
+			textAlignment				"center"
+			ruiFont                 		TitleRegularFont
+			ruiFontHeight           		22
+			ruiMinFontHeight        		16
+			bgcolor_override			"30 30 30 200"
+	
+			pin_to_sibling ButtonC3_1
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC3_2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					125
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"FREE CAM"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Misc
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC3_2_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Enter"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC3_2
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC3_2DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC3_2
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+		ButtonC3_3
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					220
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				40
+			labelText				"LEADERBOARDS"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 0 255"
+			pin_to_sibling          Misc
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		ButtonC3_3_Btn
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			ruiArgs
+			{
+				buttonText "Open"
+			}
+			wide					233
+			tall					50
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	0
+			ypos                    40
+			zpos                    3
+			visible 1
+
+			pin_to_sibling          ButtonC3_3
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+
+		ButtonC3_3DialogFrame
+		{
+			ControlName		ImagePanel
+			wide					233
+			tall					50
+			xpos                    0
+			ypos                    40
+			zpos                    1
+			visible			1
+			scaleImage		1
+			fillColor		"30 30 30 200"
+			drawColor		"30 30 30 200"
+
+			pin_to_sibling			ButtonC3_3
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	
+	}
+}
