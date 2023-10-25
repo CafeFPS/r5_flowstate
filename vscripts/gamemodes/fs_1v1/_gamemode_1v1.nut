@@ -1166,13 +1166,6 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				continue
 			}
 
-			if(Distance2D(playerInWatingSctruct.player.GetOrigin(),waitingRoomLocation.origin)>500) //waiting player should be in waiting room,not battle area
-			{
-				// thread soloModeWaitingPrompt(playerInWatingSctruct.player)
-				maki_tp_player(playerInWatingSctruct.player,waitingRoomLocation) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons(playerInWatingSctruct.player)
-			}
-
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
 			{
@@ -1242,8 +1235,6 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		}//foreach
 
 
-
-
 		//遍历休息队列
 		foreach (restingPlayer in soloPlayersResting )
 		{
@@ -1251,18 +1242,26 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			TakeAllWeapons( restingPlayer )
 
-			if(Distance2D( restingPlayer.GetOrigin(),waitingRoomLocation.origin)>500) //waiting player should be in waiting room,not battle area
-			{
-				maki_tp_player( restingPlayer,waitingRoomLocation) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons( restingPlayer )
-			}
-
 			if(!IsAlive(restingPlayer)  )
 			{
 				thread respawnInSoloMode(restingPlayer)
 			}
 		}
 
+		foreach ( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) ) 
+				continue
+			
+			if( isPlayerInSoloMode( player ) )
+				continue
+
+			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > 450 ) //waiting player should be in waiting room,not battle area
+			{
+				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( player )
+			}
+		}
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
