@@ -304,14 +304,22 @@ function _MG_OnPlayerConnected(entity player) {
 	player.AddToRealm(1)
 	StatusEffect_StopAllOfType(player, eStatusEffect.stim_visual_effect)
 	StatusEffect_StopAllOfType(player, eStatusEffect.speed_boost)
-	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllWeapons( player )
+	TakeAllPassives( player )
 	player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
 	player.PhaseShiftCancel()
 	Remote_CallFunction_NonReplay( player, "Cl_MovementGym_Init")
 	
 	if(Flowstate_MovementGym_ClassicMovement() && Flowstate_MovementGym_ClassicMovement_Type() == 3)
 		thread _Classic_Movement_ABH(player)
+	
+    player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+    player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+	EnableOffhandWeapons( player )
+	DeployAndEnableWeapons( player )
+	player.UnfreezeControlsOnServer()
+	thread Flowstate_InitAFKThreadForPlayer(player)
 }
 
 //hub command

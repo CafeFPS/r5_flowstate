@@ -280,6 +280,9 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 {
 	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" )
 		return true
+	
+	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+		return false
 
 	if ( attacker == target )
 		return false

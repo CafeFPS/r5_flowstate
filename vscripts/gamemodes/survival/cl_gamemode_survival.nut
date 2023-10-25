@@ -3107,6 +3107,9 @@ void function OnToggleMute( var button )
 
 bool function GetWaitingForPlayersOverlayEnabled( entity player )
 {
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
+		return false
+
 	if ( IsTestMap() )
 		return false
 	if ( player.GetTeam() == TEAM_SPECTATOR )

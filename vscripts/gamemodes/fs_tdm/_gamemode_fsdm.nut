@@ -233,7 +233,9 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("god", ClientCommand_God)
 		AddClientCommandCallback("ungod", ClientCommand_UnGod)
 		AddClientCommandCallback("next_round", ClientCommand_NextRound)
-		AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
+
+		if( GetCurrentPlaylistName() != "fs_movementgym" )
+			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 
 	AddClientCommandCallback("say", ClientCommand_Say)
@@ -241,7 +243,7 @@ void function _CustomTDM_Init()
 	// Used for sending votes from client to server
     AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
 	
-	if(!FlowState_AdminTgive())
+	if( !FlowState_AdminTgive() && GetCurrentPlaylistName() != "fs_movementgym" )
 	{
 		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
 		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
@@ -563,10 +565,9 @@ void function _OnPlayerConnected(entity player)
 	    // Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
 	// else 
 	if (FlowState_EnableMovementGym()){
-	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
-	    player.SetPlayerNetBool( "pingEnabled", false )
-	    player.AddToRealm(1)
-	    Remote_CallFunction_NonReplay( player, "Cl_MovementGym_Init")
+	    _MG_OnPlayerConnected( player )
+		_HandleRespawn(player)
+		return
 	} 
 	// else
 	    // Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
@@ -2557,86 +2558,120 @@ void function SimpleChampionUI()
 	
 	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
-
-    foreach( entity player in GetPlayerArray() )
-    {
-		if( !IsValid(player) ) return
-        try 
+	
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	{
+		foreach( entity player in GetPlayerArray() )
 		{
-			RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-			player.SetThirdPersonShoulderModeOff()
-			_HandleRespawn(player)
-			player.UnforceStand()
-			HolsterAndDisableWeapons( player )
-			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
-			ClearInvincible(player)
-			thread function () : ( player )
+			if( !IsValid(player) ) return
+			try 
 			{
-				
-				if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ) )
-					player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-
-				player.MovementDisable()
-				player.DeployWeapon()
-				player.LockWeaponChange()
-				player.FreezeControlsOnServer()
-				
-				// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
-				
-				if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
-					wait Flowstate_StartTimeDelay
-				
-				if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
-				{
-					Message( player, "Oddball", file.selectedLocation.name, 5, "" )
-					// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
-					thread function ( ) : ( player )
-					{
-						wait 6
-
-						if( GetGameState() != eGameState.Playing )
-							return
-
-						thread ResetBallInBallSpawner()
-
-						foreach( player in GetPlayerArray() )
-							Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
-					}()
-				}
-				else if( !is1v1EnabledAndAllowed() )
-					Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
-
-				if( !IsValid( player ) || !IsAlive( player ) )
-					return
-				
-				if( GetMapName() == "mp_flowstate" )
-					Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
-				else //if( GetMapName() != "mp_flowstate" )
-					Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
-
+				RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+				player.SetThirdPersonShoulderModeOff()
+				_HandleRespawn(player)
 				player.MovementEnable()
-				player.UnlockWeaponChange()
-				EnableOffhandWeapons( player )
+				DeployAndEnableWeapons( player )
 				player.UnfreezeControlsOnServer()
-				//DeployAndEnableWeapons(player)
-				EnableOffhandWeapons( player )
+				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+				Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+				MakeInvincible( player )
 
-				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-				entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-				entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+				player.SetPlayerNetBool( "pingEnabled", false )
+				player.AddToRealm(1)
+				StatusEffect_StopAllOfType(player, eStatusEffect.stim_visual_effect)
+				StatusEffect_StopAllOfType(player, eStatusEffect.speed_boost)
+				TakeAllWeapons( player )
+				TakeAllPassives( player )
+				player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+				player.PhaseShiftCancel()
+				
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-				if(IsValid(primary) && primary.UsesClipsForAmmo())
-					primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
-				if(IsValid(secondary) && secondary.UsesClipsForAmmo())
-					secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
-				if(IsValid(tactical) && tactical.UsesClipsForAmmo())
-					tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
-				if(IsValid(ultimate) && ultimate.UsesClipsForAmmo())
-					ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
-			}()
+			} catch(e3){}
+		}
+	}
+	else
+	{
+		foreach( entity player in GetPlayerArray() )
+		{
+			if( !IsValid(player) ) return
+			try 
+			{
+				RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+				player.SetThirdPersonShoulderModeOff()
+				_HandleRespawn(player)
+				player.UnforceStand()
+				HolsterAndDisableWeapons( player )
+				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
+				ClearInvincible(player)
+				thread function () : ( player )
+				{
+					
+					if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ) )
+						player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
-		} catch(e3){}
+					player.MovementDisable()
+					player.DeployWeapon()
+					player.LockWeaponChange()
+					player.FreezeControlsOnServer()
+					
+					// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+					
+					if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+						wait Flowstate_StartTimeDelay
+					
+					if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+					{
+						Message( player, "Oddball", file.selectedLocation.name, 5, "" )
+						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
+						thread function ( ) : ( player )
+						{
+							wait 6
+
+							if( GetGameState() != eGameState.Playing )
+								return
+
+							thread ResetBallInBallSpawner()
+
+							foreach( player in GetPlayerArray() )
+								Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
+						}()
+					}
+					else if( !is1v1EnabledAndAllowed() )
+						Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
+
+					if( !IsValid( player ) || !IsAlive( player ) )
+						return
+					
+					if( GetMapName() == "mp_flowstate" )
+						Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+					else //if( GetMapName() != "mp_flowstate" )
+						Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+
+					player.MovementEnable()
+					player.UnlockWeaponChange()
+					EnableOffhandWeapons( player )
+					player.UnfreezeControlsOnServer()
+					//DeployAndEnableWeapons(player)
+
+					entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+					entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+
+					if(IsValid(primary) && primary.UsesClipsForAmmo())
+						primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+					if(IsValid(secondary) && secondary.UsesClipsForAmmo())
+						secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+					if(IsValid(tactical) && tactical.UsesClipsForAmmo())
+						tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+					if(IsValid(ultimate) && ultimate.UsesClipsForAmmo())
+						ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+				}()
+
+			} catch(e3){}
+		}
 	}
 	
 	if( file.selectedLocation.name == "Lockout" )
