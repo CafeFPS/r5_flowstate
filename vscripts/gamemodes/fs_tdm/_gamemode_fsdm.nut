@@ -1439,6 +1439,28 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 		}
 	}
+	
+		
+	if( FlowState_ChosenCharacter() > 10 )
+	{
+		switch( FlowState_ChosenCharacter() )
+		{				
+			case 11:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+			break
+			
+			case 12:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+			break
+			
+			case 13:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+		}
+	}
 }
 
 void function ReCheckGodMode(entity player)
@@ -3728,7 +3750,12 @@ void function CharSelect( entity player)
 		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
 	} else
 	{
-		ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
+		int chosen = FlowState_ChosenCharacter()
+		
+		if( FlowState_ChosenCharacter() > 10 )
+			chosen = 5
+		
+		ItemFlavor PersonajeEscogido = file.characters[ chosen ]
 		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
 	}
 

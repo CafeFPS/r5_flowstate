@@ -672,7 +672,8 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		}
 		LocPair waitingRoomLocation = getWaitingRoomLocation(GetMapName())
 		if (!IsValid(waitingRoomLocation)) return
-
+		
+		GivePlayerCustomPlayerModel( player )
 		maki_tp_player(player, waitingRoomLocation)
 		player.MakeVisible()
 		player.ClearInvulnerable()
@@ -697,7 +698,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	{
 		// Warning("fail to respawn")
 	}
-
+	GivePlayerCustomPlayerModel( player )
 	maki_tp_player(player,soloLocations[group.slotIndex].respawnLocations[respawnSlotIndex])
 
 	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
@@ -713,6 +714,30 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 
 	//set realms for two players
 	setRealms_1v1(player,group.slotIndex+1)
+}
+
+void function GivePlayerCustomPlayerModel( entity ent )
+{
+	if( FlowState_ChosenCharacter() > 10 )
+	{
+		switch( FlowState_ChosenCharacter() )
+		{			
+			case 11:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+			break
+			
+			case 12:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+			break
+			
+			case 13:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+		}
+	}
 }
 
 void function _soloModeInit(string mapName)
