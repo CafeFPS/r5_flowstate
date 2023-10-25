@@ -872,7 +872,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			LocPair waitingRoomLocation = getWaitingRoomLocation( GetMapName() )
 			if (!IsValid(waitingRoomLocation)) return
 			
-			if( !IsAlive(player) )
+			if( !IsAlive( victim ) )
 				DecideRespawnPlayer(victim, false)
 			ClearInvincible(victim)
 			maki_tp_player(player, waitingRoomLocation)
