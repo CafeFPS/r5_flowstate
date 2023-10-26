@@ -691,6 +691,7 @@ void function _OnPlayerConnected(entity player)
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
 			Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 3, 0)
 			wait 1
+			if ( !IsValid( player ) ) return
 			TakeAllWeapons( player )
 			HolsterAndDisableWeapons(player)
 			wait 9
