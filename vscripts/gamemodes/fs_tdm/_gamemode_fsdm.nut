@@ -2833,6 +2833,15 @@ void function SimpleChampionUI()
 	
 	SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
+	
+	foreach( player in GetPlayerArray() )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		if( !IsAlive( player ) )
+			_HandleRespawn( player )
+	}
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
