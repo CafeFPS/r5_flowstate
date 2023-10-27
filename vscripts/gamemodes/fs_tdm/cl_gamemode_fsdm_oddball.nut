@@ -126,8 +126,8 @@ void function Oddball_ToggleScoreboardVisibility(bool show)
     Hud_SetVisible( HudElement( "FS_Oddball_EnemyTeamScore" ), show )
     Hud_SetVisible( HudElement( "FS_Oddball_EnemyHas" ), false )
 
-	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", $"rui/flowstate_custom/oddball_red" )
-	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", $"rui/flowstate_custom/oddball_blue" )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", $"rui/hud/gametype_icons/ctf/ctf_foreground" )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", $"rui/hud/gametype_icons/ctf/ctf_foreground" )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_Scoreboard_Frame" ) ), "basicImage", $"rui/flowstate_custom/scoreboard_bg_oddball" )
 	
 	Hud_SetVisible( HudElement( "FS_Oddball_Scoreboard_Frame" ), show )
@@ -233,21 +233,21 @@ void function Oddball_BallOrCarrierEntityChanged( entity player, entity oldEnt, 
 	if( !newEnt.IsPlayer() )
 	{
 		msg = "Pick Up"
-		icon = $"rui/flowstate_custom/oddball_red"
+		icon = $"rui/hud/gametype_icons/ctf/ctf_foreground"
 	} else if( newEnt.IsPlayer() && newEnt.GetTeam() == localViewPlayer.GetTeam() )
 	{
 		msg = "Defend"
-		icon = $"rui/flowstate_custom/oddball_blue"
+		icon = $"rui/hud/gametype_icons/ctf/ctf_foreground"
 	} else if( newEnt.IsPlayer() && newEnt.GetTeam() != localViewPlayer.GetTeam() )
 	{
 		msg = "Enemy Scoring"
-		icon = $"rui/flowstate_custom/oddball_red"
+		icon = $"rui/hud/gametype_icons/ctf/ctf_foreground"
 	}
 	
 	if( newEnt.IsPlayer() && newEnt == GetLocalViewPlayer() )
 	{
 		msg = "Ball Picked Up!"
-		icon = $"rui/flowstate_custom/oddball_blue"
+		icon = $"rui/hud/gametype_icons/ctf/ctf_foreground"
 	}
 
 	Oddball_CreateBallRUI( newEnt, msg, icon )
@@ -272,12 +272,33 @@ var function Oddball_CreateBallRUI( entity ballOrCarrier, string text, asset ico
 	// RuiSetImage( rui, "iconImage", icon )
 	// RuiSetString( rui, "inAreaText", text )
 
-	var rui = CreateFullscreenRui( $"ui/waypoint_basic_area.rpak", HUD_Z_BASE - 20 )
-	RuiTrackFloat3( rui, "targetCenter", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
-	RuiSetFloat( rui, "areaRadius2D", 15 )
-	RuiSetImage( rui, "iconImage", icon )
-	RuiSetString( rui, "outOfAreaText", text )
-	RuiSetString( rui, "inAreaText", text )
+	// var rui = CreateFullscreenRui( $"ui/waypoint_basic_area.rpak", HUD_Z_BASE - 20 )
+	// RuiTrackFloat3( rui, "targetCenter", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	// RuiSetFloat( rui, "areaRadius2D", 15 )
+	// RuiSetImage( rui, "iconImage", icon )
+	// RuiSetString( rui, "outOfAreaText", text )
+	// RuiSetString( rui, "inAreaText", text )
+	
+	var rui = CreateCockpitRui( $"ui/ctf_flag_marker.rpak", 200 )
+	RuiSetBool( rui, "isVisible", true )
+	RuiTrackFloat3( rui, "pos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
+	
+	if( ballOrCarrier.IsPlayer() )
+	{
+		if( GetLocalViewPlayer() != ballOrCarrier )
+			RuiTrackInt( rui, "teamRelation", ballOrCarrier, RUI_TRACK_TEAM_RELATION_VIEWPLAYER )
+		else 
+			RuiSetInt( rui, "teamRelation", 1 )
+		RuiSetInt( rui, "flagStateFlags", -1 )
+	}
+	else 
+	{
+		//pick up
+		RuiSetInt( rui, "teamRelation", 0 ) //pickup with enemy logo
+		RuiSetInt( rui, "flagStateFlags", 1 ) //pick up
+	}
+
+	RuiSetBool( rui, "playerIsCarrying", ballOrCarrier.IsPlayer() && GetLocalViewPlayer() == ballOrCarrier )
 
 	// var rui = CreateFullscreenRui( $"ui/waypoint_basic_entpos.rpak", HUD_Z_BASE - 20 )
 	// RuiTrackFloat3( rui, "targetPos", ballOrCarrier, RUI_TRACK_OVERHEAD_FOLLOW )
