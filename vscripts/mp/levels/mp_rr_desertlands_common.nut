@@ -111,7 +111,7 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() != "fs_dm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
+	if(GameRules_GetGameMode() == SURVIVAL && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
 	{
 		thread function () : ()
 		{
