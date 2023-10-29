@@ -511,11 +511,13 @@ entity function SetNodeRopeProperties( entity rope )
     return rope
 }
 
-void function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
+entity function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
 {
     JumpPad_CreatedCallback(jumpPad)
 
     if( addToArray ) MapEditorEnts.append( jumpPad )
+
+    return jumpPad
 }
 
 void function MapEditor_CreateButton( entity ent, void functionref( entity, entity, int ) callbackFunc, bool addToArray = false )
