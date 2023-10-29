@@ -3973,7 +3973,16 @@ void function SetPlayerCooldowns( entity player, array<int> offhandIndices = [ O
 						float regenRefillRate  = weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate )
 
 						if ( regenRefillRate == 0 )
+						{
+							if( weapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+							{
+								weapon.SetWeaponPrimaryClipCount( 0 )
+								if( weapon.HasMod( "grapple_regen_stop" ) )
+									weapon.RemoveMod( "grapple_regen_stop" )
+								weapon.RegenerateAmmoReset()
+							}
 							continue
+						}
 
 						int startingClipCount = int( lastClipFrac * maxAmmo )
 						int ammoToRestore     = maxAmmo - startingClipCount
