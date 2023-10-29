@@ -237,6 +237,8 @@ void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float 
         RuiSetFloat( FlagRUI.FlagReturnRUI, "chargeTime", 0 )
         RuiSetImage( FlagRUI.FlagReturnRUI, "hudIcon", icon )
         RuiSetInt( FlagRUI.FlagReturnRUI, "consumableType", 3 ) //0 = red, 1 = dark blue, 2 = dark purple, 3 = white
+		RuiSetString( FlagRUI.FlagReturnRUI, "hintController", "" )
+		RuiSetString( FlagRUI.FlagReturnRUI, "hintKeyboardMouse", "" )
     }
     else
     {
