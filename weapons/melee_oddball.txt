@@ -13,6 +13,11 @@ WeaponData
 	"hud_icon"									"rui/flowstate_custom/oddball_white"
 
 	"weapon_type_flags"							"WPT_MELEE"
+
+	"melee_angle"									"20"
+	"melee_attack_animtime"							"0"
+	"melee_damage"									"250"
+	"melee_damage_heavyarmor"						"250"
 	
 	// Models
 	"viewmodel"   									"mdl/flowstate_custom/ptpov_oddball.rmdl"
