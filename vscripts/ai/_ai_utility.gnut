@@ -1237,7 +1237,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	angles1.x = 0
 
 	entity dummy = CreateDummy( 99, origin, angles1 )
-	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 	else
 		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
@@ -1282,7 +1282,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.SetAngles(angles1)
 	dummy.SetEfficientMode( false )
 	
-	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		thread PlayAnimOnTrainingDummy(dummy)
 
     array<string> weapons = ["npc_weapon_hemlok", "npc_weapon_energy_shotgun", "npc_weapon_lstar"]
@@ -1422,7 +1422,7 @@ void function DEV_SpawnLegendAtCrosshair()
 
 	entity dummy
 
-	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		dummy = CreateLegend_ai( 99, origin, angles1 )
 	else
 	{
