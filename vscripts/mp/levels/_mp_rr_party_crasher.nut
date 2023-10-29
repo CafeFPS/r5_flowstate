@@ -1,7 +1,7 @@
 global function CodeCallback_MapInit
 
 //Party Crasher Reloaded
-//By CaféDeColombiaFPS & AyeZee
+//By CafeFPS & AyeZee
 
 struct {
 	entity button1

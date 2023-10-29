@@ -282,7 +282,7 @@ void function CodeCallback_OnSpawned( entity ent )
 	}
 
 	int teamNum = int( expect string( ent.kv.teamnumber ) )
-	if ( teamNum != 0 )
+	if ( teamNum != 0 && !ent.IsPlayer() )
 		SetTeam( ent, teamNum )
 
 	SetModelSkinFromLeveled( ent )

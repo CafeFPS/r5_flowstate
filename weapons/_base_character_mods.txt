@@ -2,6 +2,22 @@ WeaponData
 {
 	Mods
 	{
+		auto_loader
+		{
+		    "reload_time"						"*0.60"
+            "reload_time_late1"					"*0.60"
+            "reload_time_late2"					"*0.60"
+            "reload_time_late3"					"*0.60"
+            "reload_time_late4"					"*0.60"
+            "reload_time_late5"					"*0.60"
+            "reloadempty_time"					"*0.60"
+            "reloadempty_time_late1"			"*0.60"
+            "reloadempty_time_late2"			"*0.60"
+            "reloadempty_time_late3"			"*0.60"
+            "reloadempty_time_late4"			"*0.60"
+            "reloadempty_time_late5"			"*0.60"
+            "move_speed_modifier"				"*1.15"
+		}
                
                  
    

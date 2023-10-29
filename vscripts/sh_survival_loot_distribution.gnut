@@ -9,11 +9,16 @@ struct LootDistro
     float chance
 }
 
+struct {
+	array<string> armedAndDangerousWeapons = [ "mp_weapon_shotgun_pistol", "mp_weapon_shotgun", "mp_weapon_wingman", "mp_weapon_dmr", "mp_weapon_energy_shotgun", "mp_weapon_mastiff", "mp_weapon_defender" ]
+	array<string> armedAndDangerousAmmo = ["sniper", "shotgun"]
+} file
+
 table< string, array<LootDistro> > LootDistribution //groupRef : array of EntryRef
 
 void function SURVIVAL_LootDistribution_InitShared()
 {
-    var dt = GetDataTable( $"datatable/survival_loot_groups_new.rpak" )
+    var dt = GetDataTable( $"datatable/flowstate_all_new_groups.rpak" )
     int numRows = GetDatatableRowCount( dt )
     string currentGroupRef
     array<LootDistro> distributions
@@ -34,16 +39,17 @@ void function SURVIVAL_LootDistribution_InitShared()
 				continue
 			}
 		}
-        
+
+		
         float entryDistribution = GetDataTableFloat( dt, i, GetDataTableColumnByName( dt, "entryDistribution" ) )
         int groupTier = GetDataTableInt( dt, i, GetDataTableColumnByName( dt, "groupTier" ) )
         
-        if(groupRef == "") //This is not a group header, this is content of a group
+        if(groupRef == "" && IsNewLootEnabled( entryRef )) //This is not a group header, this is content of a group
         {
             LootDistro ld = NewLootDistro(entryRef, entryDistribution)
             distributions.push(ld)
         }
-        if(groupRef != "") //Found a group header, accumulate anything so far into the previous group 
+        if(groupRef != "" ) //Found a group header, accumulate anything so far into the previous group 
         {
             // Checks if the group has already been overriden by AddCustomItemToLootPool.
             // If so, extend the group instead of replacing it.
@@ -93,40 +99,120 @@ string function SURVIVAL_GetWeightedItemFromGroup(string groupRef)
     //Get the loot ref that was rolled
     float accumulate = 0
     string theRef = ""
-   
-    foreach(LootDistro distro in groupDistro)
-    {
-        if(accumulate <= lootRoll && accumulate + distro.chance > lootRoll)
-        {
-            if(!IsPackedGroup(distro.ref))
-                theRef = distro.ref
-            else
-                theRef = SURVIVAL_GetWeightedItemFromGroup(distro.ref)  
-            break
-        }
-        else
-            accumulate += distro.chance
-    }
+
+	foreach(LootDistro distro in groupDistro)
+	{
+		if(accumulate <= lootRoll && accumulate + distro.chance > lootRoll)
+		{
+			if(!IsPackedGroup(distro.ref))
+				theRef = distro.ref
+			else
+				theRef = SURVIVAL_GetWeightedItemFromGroup(distro.ref)  
+			break
+		}
+		else
+			accumulate += distro.chance
+	}
+
+	if( theRef != "" && GetCurrentPlaylistVarBool( "flowstate_armed_and_dangerous_ltm", false ) )
+	{
+		LootData data = SURVIVAL_Loot_GetLootDataByRef( theRef )
+
+		switch( data.lootType )
+		{
+			case eLootType.MAINWEAPON:
+				theRef = file.armedAndDangerousWeapons.getrandom()
+			break
+			case eLootType.ARMOR:
+				theRef = "blank"
+			break
+			case eLootType.HELMET:
+				theRef = "blank"
+			break
+			
+			case eLootType.AMMO:
+				theRef = file.armedAndDangerousAmmo.getrandom()
+			break
+			
+			case eLootType.ATTACHMENT:
+			
+			bool isCompatibleWithLtmWeapons = false
+			array<string> attachPoints = GetAttachPointsForAttachment( theRef )
+
+			foreach( weapon in file.armedAndDangerousWeapons )
+			{
+				if( isCompatibleWithLtmWeapons )
+					continue
+
+				LootData dataWeapons = SURVIVAL_Loot_GetLootDataByRef( weapon )
+
+				foreach ( string weaponAttachPoint in dataWeapons.supportedAttachments )
+				{
+					if( isCompatibleWithLtmWeapons )
+						continue
+
+					if ( attachPoints.contains( weaponAttachPoint ) && CanAttachToWeapon( theRef, weapon ) )
+					{
+						isCompatibleWithLtmWeapons = true
+						// printt( weapon, " is compatible with ", theRef )
+						continue
+					}
+				}
+			}
+			
+			if( theRef != "" && split(theRef, "_")[0] == "laser" )
+			{
+				theRef = "blank"
+				isCompatibleWithLtmWeapons = false
+			}
+			
+			if( !isCompatibleWithLtmWeapons )
+			{
+				// printt( "removed no compatible attachement with sniper and shotguns", theRef )
+				theRef = "blank"
+			}
+
+			break
+		}
+	}
     return theRef
 }
 
 array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )
 {
 	array<string> group
-    int numBlank = 0;
+    int numBlank = 0
+	int tries
     for(int i = 0; i < numLootItems; i++)
     {
-        string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup);
-        group.append(ref)
-        if(ref == "blank")
-            numBlank++
+		string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
+		if(ref == "blank" || ref == "")
+		{
+			tries = 0
+			for(int j = 0; j < 1; j++)
+			{
+				ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup)
+				if(ref == "blank" && tries < 15 || ref == "" && tries < 15 )
+				{
+					j--
+					tries++
+				}
+			}
+		}
+		group.append(ref)
     }
-    if(numBlank == numLootItems) //If all are blank, always return at least one item.
-        return SURVIVAL_GetMultipleWeightedItemsFromGroup( lootGroup, 1)
-    else
-        return group
 
-    unreachable
+	// if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+		// foreach( itemRef in group )
+		// {
+			// if( itemRef == "armor_pickup_lv2" || itemRef == "armor_pickup_lv3" || itemRef == "armor_pickup_lv4" || itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
+			// {
+				// printt( "lootbin armor replaced with white armor, was " + itemRef )
+				// itemRef = "armor_pickup_lv1"
+			// }
+		// }
+
+    return group
 }
 
 

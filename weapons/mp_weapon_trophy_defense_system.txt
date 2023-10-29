@@ -17,6 +17,8 @@ WeaponData
 	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
+	"offhand_cancelled_by_melee"					"1"
+	"is_semi_auto"									"1"
 	"is_toss_weapon"								"0"
 	"offhand_default_inventory_slot"				"4"
 	"minimap_reveal_distance"						"32000"
@@ -110,9 +112,10 @@ WeaponData
 	"grenade_inherit_owner_velocity"				"1"
 	"cooldown_type"									"ammo_timed"
 	"toss_pullout_time"								"0.1"
-	"toss_time"										"0.2"
-	"toss_overhead_time"							"0.2"
+	//"toss_time"									"0.2"
+	//"toss_overhead_time"							"0.2"
 	"offhand_hybrid_switch_on_lower"				"1"
+	"offhand_allow_swap_to_on_zipline"              "0"
 
 
 	"grenade_bounce_vel_frac_shallow"				"0.5"

@@ -8,31 +8,180 @@ global function HoverTankSetCustomFlySpeed
 global function HoverTankEngineBoost
 global function HoverTankFlyToNode
 global function HoverTankCanFlyPath
+global function GetHoverTankByInstance
+
+#if DEVELOPER
+// global function Dev_PlayAnimOnHoverTank
+#endif
 
 global const HOVER_TANK_RADIUS = 0
-global const HOVER_TANK_DURATION = 120
+global const HOVER_TANK_DURATION = 20
+
+	// Line  399: P_hovertank_fire_engine
+	// Line 2951: P_wpn_hovertank_aim
+	// Line 2953: P_veh_hovertank_jet_main
+	// Line 2955: P_veh_hovertank_afterburn
+	
+struct
+{
+	float currentHoverTankSpeed_1
+	float currentHoverTankSpeed_2
+	// array<HoverTank> spawnedHoverTanks
+} file
 
 void function HoverTank_Init()
 {
+	AddCallback_EntitiesDidLoad( HoverTanks_EntitiesDidLoad )
+	//AddSpawnCallbackEditorClass( "info_target", "info_hover_tank_node", OnAllHoverTankNodesSpawned )
 
+	PrecacheParticleSystem( $"P_veh_hovertank_jet_main" )
+	PrecacheParticleSystem( $"P_hovertank_fire_engine" )
+	PrecacheParticleSystem( $"P_veh_hovertank_afterburn" )
+	PrecacheModel( $"mdl/vehicle/hovership/hovership_turret.rmdl" )
+}
+
+void function OnAllHoverTankNodesSpawned( entity node )
+{
+	DebugDrawSphere( node.GetOrigin(), 100, 255, 0, 255, true, 100 )
+}
+
+void function HoverTanks_EntitiesDidLoad()
+{
+	array<entity> alarms = GetEntArrayByScriptName( "_hover_tank_alarm" )
+
+	foreach( alarm in alarms )
+		alarm.Hide()
+	
+	thread function () : ()
+	{
+		WaitFrame()
+
+		array<entity> itemEnts
+		entity startLootEnt = Entities_FindByClassname( null, "info_target" )
+
+		while( IsValid( startLootEnt ) )
+		{
+			itemEnts.append( startLootEnt )
+			startLootEnt = Entities_FindByClassname( startLootEnt, "info_target" )
+		}
+
+		foreach( ent in itemEnts )
+		{
+			if( ent.GetScriptName() == "negation_zone_target" )
+				ent.Destroy()
+		}
+	}()
 }
 
 bool function IsPointWithinAnyHoverTank( vector pos )
 {
+	
     return false
 }
 
 HoverTank function SpawnHoverTank_Cheap( string spawnerName )
 {
     HoverTank hoverTank
+	
+	array<entity> hovertanks = GetEntArrayByScriptName( "_hover_tank_mover" )
 
-    entity ent = GetEntArrayByScriptName( "_hover_tank_mover" )[0] // bad
+	foreach( hovertank in hovertanks )
+	{
+		string instance = ""
+		if ( hovertank.HasKey( "instance_name" ) )
+			instance = expect string( hovertank.kv.instance_name )
+		
+		if( instance == spawnerName )
+		{
+			hoverTank.flightMover = hovertank
+			SetHoverTankMover( hoverTank.flightMover, true )
+			hoverTank.hoverTankOrigin = hovertank.GetOrigin()
+			continue
+		}
+	}
 
-    
-    hoverTank.interiorModel = ent
-    hoverTank.flightMover = ent
-    
+	array<entity> hovertanksInteriors = GetEntArrayByScriptName( "_hover_tank_interior" )
+
+	foreach( hovertank in hovertanksInteriors )
+	{
+		string instance = ""
+		if ( hovertank.HasKey( "instance_name" ) )
+			instance = expect string( hovertank.kv.instance_name )
+		
+		if( instance == spawnerName )
+		{
+			hoverTank.interiorModel = hovertank
+			hoverTank.interiorModel.SetParent( hoverTank.flightMover )
+			continue
+		}
+	}
+	
+	array<entity> hovertanksTurretClip = GetEntArrayByScriptName( "_hover_tank_turret_clip" )
+
+	foreach( hovertank in hovertanksTurretClip )
+	{
+		string instance = ""
+		if ( hovertank.HasKey( "instance_name" ) )
+			instance = expect string( hovertank.kv.instance_name )
+		
+		if( instance == spawnerName )
+		{
+			hoverTank.turretBarrelClip = hovertank
+			continue
+		}
+	}
+
+	hoverTank.turret = CreateExpensiveScriptMover( hoverTank.flightMover.GetOrigin(), hoverTank.flightMover.GetAngles(), 6 )
+	hoverTank.turret.SetModel( $"mdl/vehicle/hovership/hovership_turret.rmdl" )
+	hoverTank.turret.SetParent( hoverTank.flightMover, "REMOTE_TURRET_ATTACH" )
+	
+	array<entity> hovertanksTriggerVolume = GetEntArrayByScriptName( "_hover_tank_volume" )
+
+	foreach( hovertank in hovertanksTriggerVolume )
+	{
+		string instance = ""
+		if ( hovertank.HasKey( "instance_name" ) )
+			instance = expect string( hovertank.kv.instance_name )
+		
+		if( instance == spawnerName )
+		{
+			hoverTank.triggerVolume = hovertank
+			continue
+		}
+	}
+	hoverTank.linkedEnts = hoverTank.flightMover.GetLinkEntArray()
+	
+	#if DEVELOPER
+	foreach( linkedEnt in hoverTank.linkedEnts )
+		printt( "linked ent for hovertank " + linkedEnt )
+	#endif
+
+	hoverTank.playerRiding = false
+	
+	HoverTankAddMainFX( hoverTank )
+
     return hoverTank
+}
+
+void function HoverTankAddMainFX( HoverTank hoverTank )
+{
+	array<int> enginesOrigins
+	entity flightMover = hoverTank.flightMover
+
+	int engine_lf 	= flightMover.LookupAttachment( "ENGINE_LF" )
+	int engine_lb 	= flightMover.LookupAttachment( "ENGINE_LB" )
+	int engine_rf 	= flightMover.LookupAttachment( "ENGINE_RF" )
+	int engine_rb 	= flightMover.LookupAttachment( "ENGINE_RB" )
+	enginesOrigins.append( engine_lf )
+	enginesOrigins.append( engine_lb )
+	enginesOrigins.append( engine_rf )
+	enginesOrigins.append( engine_rb )
+	
+	foreach( engine in enginesOrigins )
+	{
+		StartParticleEffectOnEntity( flightMover, GetParticleSystemIndex( $"P_hovertank_fire_engine" ), FX_PATTACH_POINT_FOLLOW, engine )
+	}
+
 }
 
 void function HoverTankTeleportToPosition( HoverTank hoverTank, vector origin, vector angles )
@@ -46,24 +195,422 @@ void function HoverTankTeleportToPosition( HoverTank hoverTank, vector origin, v
 
 void function HoverTankSetCustomFlySpeed( HoverTank hoverTank, float speed )
 {
+	entity hovertank = hoverTank.flightMover
 
+	string instance = ""
+	if ( hovertank.HasKey( "instance_name" ) )
+		instance = expect string( hovertank.kv.instance_name )
+	
+	if( instance != "" && instance == "HoverTank_1" )
+	{
+		file.currentHoverTankSpeed_1 = speed
+	}
+	else if( instance != "" && instance == "HoverTank_2" )
+	{
+		file.currentHoverTankSpeed_2 = speed
+	}
 }
 
-void function HoverTankEngineBoost( HoverTank hovertank )
+void function HoverTankEngineBoost( HoverTank hoverTank )
 {
-
+	//it plays engine boost fxs
 }
 
 void function HoverTankFlyToNode( HoverTank hoverTank, entity node )
 {
     // HoverTankTeleportToPosition( hoverTank, node.GetOrigin(), node.GetAngles() )
+	// HoverTank_PlayAnim( hoverTank, 1 )
+	// hoverTank.flightMover.NonPhysicsMoveTo( node.GetOrigin(), HOVER_TANK_DURATION, 0, 0 ) //10, 10)
+	// hoverTank.flightMover.NonPhysicsRotateTo( node.GetAngles(), HOVER_TANK_DURATION, 0, 0 )
+	
+	// thread MoverThink( hoverTank.flightMover, nodes )
+	// waitthread HoverTank_MovementIdk( hoverTank, nodes )
+	// wait HOVER_TANK_DURATION
 
-    hoverTank.flightMover.NonPhysicsMoveTo( node.GetOrigin(), HOVER_TANK_DURATION, 10, 10)
-    wait HOVER_TANK_DURATION
+	// cuando está easing out, empieza a rotar
+	// los paths están seleccionados de tal forma que se demoren 1 min en empezar a descender, o sea en 1 min ya deben estar allá, al parecer el start node se selecciona con base a la distancia 
 
+	entity mover = hoverTank.flightMover
+
+	string instance = ""
+	float pathSpeed
+	if ( mover.HasKey( "instance_name" ) )
+		instance = expect string( mover.kv.instance_name )
+	
+	if( instance != "" && instance == "HoverTank_1" )
+	{
+		pathSpeed = file.currentHoverTankSpeed_1
+	}
+	else if( instance != "" && instance == "HoverTank_2" )
+	{
+		pathSpeed = file.currentHoverTankSpeed_2
+	}
+	float dist = Distance( node.GetOrigin(), mover.GetOrigin() )
+	float speed = dist / pathSpeed
+
+	while( dist > 0 && speed > 0 )
+	{
+
+		mover.NonPhysicsMoveTo( node.GetOrigin(), speed, 0, 0 ) //10, 10)
+		mover.NonPhysicsRotateTo( node.GetAngles(), speed, 0, 0 )
+
+		wait 0.01
+
+		//Update the speed
+		if ( mover.HasKey( "instance_name" ) )
+			instance = expect string( mover.kv.instance_name )
+		
+		if( instance != "" && instance == "HoverTank_1" )
+		{
+			pathSpeed = file.currentHoverTankSpeed_1
+		}
+		else if( instance != "" && instance == "HoverTank_2" )
+		{
+			pathSpeed = file.currentHoverTankSpeed_2
+		}
+		
+		dist = Distance( node.GetOrigin(), mover.GetOrigin() )
+		speed = dist / pathSpeed
+		
+	}
+	
+
+}
+
+void function HoverTank_MovementIdk( HoverTank hoverTank, array<entity> nodes)
+{
+	entity mover = hoverTank.flightMover
+	EndSignal( mover, "OnDestroy" )
+
+	if ( mover.GetModelName() == $"models/dev/editor_ref.mdl" )
+		mover.Hide()
+
+	array<entity> pathNodes
+
+    pathNodes = nodes
+	entity hovertank = hoverTank.flightMover
+
+	string instance = ""
+	float pathSpeed
+	if ( hovertank.HasKey( "instance_name" ) )
+		instance = expect string( hovertank.kv.instance_name )
+	
+	if( instance != "" && instance == "HoverTank_1" )
+	{
+		pathSpeed = file.currentHoverTankSpeed_1
+	}
+	else if( instance != "" && instance == "HoverTank_2" )
+	{
+		pathSpeed = file.currentHoverTankSpeed_2
+	}
+	 // = 100//float( mover.kv.path_speed )
+	bool easeIn
+	bool easeOut
+
+	if ( pathNodes.len() == 0 )
+		return
+
+	entity pathNode = pathNodes.getrandom()
+	entity lastNode
+
+	easeOut = false //pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+
+	bool isMoving = false
+
+	while( IsValid( pathNode ) )
+	{
+		// bool teleport = false
+		// if ( pathNode.HasKey( "teleport_to_node" ) )
+			// teleport = pathNode.GetValueForKey( "teleport_to_node" ) == "1"
+
+		// bool perfectRotation = false
+		// if ( IsValid( lastNode ) && lastNode.HasKey( "perfect_circular_rotation" ) )
+			// perfectRotation = lastNode.GetValueForKey( "perfect_circular_rotation" ) == "1"
+
+		float rotationTime = 0.0
+		// if ( IsValid( lastNode ) && lastNode.HasKey( "circular_rotation_time" ) )
+			// rotationTime = float( lastNode.GetValueForKey( "circular_rotation_time" ) )
+
+		float dist = Distance( pathNode.GetOrigin(), mover.GetOrigin() )
+
+		// if ( !isMoving )
+			// MoverPath_StartSound( mover, pathNode )
+
+		if ( dist > 0.0 )
+		{
+			easeIn = false //pathNode.HasKey( "ease_to_node" ) && pathNode.GetValueForKey( "ease_to_node" ) == "1"
+			float moveTime = dist / pathSpeed
+			float easeLeaving = easeOut ? moveTime * 0.5 : 0.0
+			float easeArriving = easeIn ? moveTime * 0.5 : 0.0
+			float angleChange = IsValid( lastNode ) ? MoverPath_GetAngleChange( lastNode, pathNode ) : 0.0
+
+			if ( angleChange != 0 )
+			{
+				string rotationSoundEvent = ""
+				if ( mover.HasKey( "sound_circular_rotation" ) )
+					rotationSoundEvent = mover.GetValueForKey( "sound_circular_rotation" )
+				if ( rotationSoundEvent != "" )
+					EmitSoundOnEntity( mover, rotationSoundEvent )
+
+				vector turnAnchorPos = MoverPath_GetAngleAnchor( lastNode, pathNode )
+
+				// Create a new mover because as far as I know I can't get all the children of the mover and clearparent and reparent.
+				entity curveMover = CreateScriptMover( turnAnchorPos, lastNode.GetAngles() )
+				curveMover.SetPusher( mover.GetPusher() )
+				mover.SetParent( curveMover, "", true )
+
+				// Find the circumference of the turn so we can calculate the rotation time based on the distance traveled around the bend
+				float c = 2 * PI * Length(turnAnchorPos - lastNode.GetOrigin())
+				float frac = fabs(angleChange) / 360.0
+				moveTime = (c * frac) / pathSpeed
+
+				isMoving = true
+				curveMover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, 0.0, 0.0 )
+
+				wait moveTime - 0.01
+
+				mover.ClearParent()
+				curveMover.Destroy()
+
+				if ( rotationSoundEvent != "" )
+					StopSoundOnEntity( mover, rotationSoundEvent )
+			}
+			else
+			{
+				// Linear move/rotate
+				isMoving = true
+				
+				mover.NonPhysicsMoveTo( pathNode.GetOrigin(), moveTime, easeLeaving, easeArriving )
+				mover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, easeLeaving, easeArriving )
+				wait moveTime - 0.01
+			}
+		}
+		else if ( dist == 0.0 && rotationTime > 0.0 )
+		{
+			// Rotation in place
+			string rotationSoundEvent = ""
+			if ( mover.HasKey( "sound_rotation" ) )
+				rotationSoundEvent = mover.GetValueForKey( "sound_rotation" )
+			if ( rotationSoundEvent != "" )
+				EmitSoundOnEntity( mover, rotationSoundEvent )
+
+			isMoving = false
+			// MoverPath_StopMoveSound( mover )
+			// MoverPath_StopSound( mover, pathNode )
+			float easeInF = easeOut ? rotationTime * 0.5 : 0.0
+			float easeOutF = easeIn ? rotationTime * 0.5 : 0.0
+			mover.NonPhysicsRotateTo( pathNode.GetAngles(), rotationTime, easeInF, easeOutF )
+			wait rotationTime - 0.01
+
+			if ( rotationSoundEvent != "" )
+				StopSoundOnEntity( mover, rotationSoundEvent )
+		}
+		else
+		{
+			mover.SetOrigin( pathNode.GetOrigin() )
+			mover.SetAngles( pathNode.GetAngles() )
+		}
+
+		// easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+
+		// if ( pathNode.HasKey( "scr_flag_set" ) )
+			// FlagSet( pathNode.GetValueForKey( "scr_flag_set" ) )
+
+		// if ( pathNode.HasKey( "scr_flag_clear" ) )
+			// FlagClear( pathNode.GetValueForKey( "scr_flag_clear" ) )
+
+		// if ( pathNode.HasKey( "scr_flag_wait" ) )
+		// {
+			// string flag = pathNode.GetValueForKey( "scr_flag_wait" )
+			// if ( !Flag( flag ) )
+			// {
+				// isMoving = false
+				// MoverPath_StopMoveSound( mover )
+				// MoverPath_StopSound( mover, pathNode )
+				// FlagWait( flag )
+			// }
+		// }
+
+		// if ( pathNode.HasKey( "scr_flag_wait_clear" ) )
+		// {
+			// string flag = pathNode.GetValueForKey( "scr_flag_wait_clear" )
+			// if ( Flag( flag ) )
+			// {
+				// isMoving = false
+				// MoverPath_StopMoveSound( mover )
+				// MoverPath_StopSound( mover, pathNode )
+				// FlagWaitClear( flag )
+			// }
+		// }
+
+		// if ( pathNode.HasKey( "path_wait" ) )
+		// {
+			// float time = float( pathNode.GetValueForKey( "path_wait" ) )
+			// if ( time > 0.0 )
+			// {
+				// isMoving = false
+				// MoverPath_StopMoveSound( mover )
+				// MoverPath_StopSound( mover, pathNode )
+				// wait time
+			// }
+		// }
+
+		// pathNodes = GetNextMoverPathNodes( pathNode )
+		// if ( pathNodes.len() == 0 )
+		// {
+			// MoverPath_StopMoveSound( mover )
+			// MoverPath_StopSound( mover, pathNode )
+			// break
+		// }
+
+		// // Update speed based on the node
+		// if ( pathNode.HasKey( "path_speed" ) )
+			// pathSpeed = float( pathNode.GetValueForKey( "path_speed" ) )
+		if( instance != "" && instance == "HoverTank_1" )
+		{
+			pathSpeed = file.currentHoverTankSpeed_1
+		}
+		else if( instance != "" && instance == "HoverTank_2" )
+		{
+			pathSpeed = file.currentHoverTankSpeed_2
+		}
+		
+		lastNode = pathNode
+		pathNode = pathNodes.getrandom()
+	}	
+}
+
+float function MoverPath_GetAngleChange( entity node1, entity node2 )
+{
+	vector vec1 = node1.GetForwardVector()
+	vector vec2 = node2.GetForwardVector()
+	float angle = acos( DotProduct( vec1, vec2 ) ) * 180 / PI
+	return angle
+}
+
+vector function MoverPath_GetAngleAnchor( entity node1, entity node2 )
+{
+	vector node1Origin = node1.GetOrigin()
+	vector node2Origin = node2.GetOrigin()
+	vector node1Angles = node1.GetAngles()
+	vector node2Angles = node2.GetAngles()
+	vector node1SideVec
+	vector node2SideVec
+
+	if ( node1Origin.z != node2Origin.z )
+	{
+		// vertical turn
+		node1SideVec = AnglesToUp( node1Angles )
+		node2SideVec = AnglesToUp( node2Angles )
+	}
+	else
+	{
+		// horizontal turn
+		node1SideVec = AnglesToRight( node1Angles )
+		node2SideVec = AnglesToRight( node2Angles )
+	}
+
+	float angleChange = MoverPath_GetAngleChange( node1, node2 )
+	Assert( angleChange != 0 )
+	if ( angleChange > 0 )
+	{
+		node1SideVec *= -1
+		node2SideVec *= -1
+	}
+	float d = Distance( node1Origin, node2Origin )
+	vector intersect = GetClosestPointToLineSegments( node1Origin, node1Origin + node1SideVec * d, node2Origin, node2Origin + node2SideVec * d )
+
+	//DebugDrawLine( intersect, node1Origin, 255, 255, 0, true, 5.0 )
+	//DebugDrawLine( intersect, node2Origin, 0, 255, 255, true, 5.0 )
+	//DebugDrawLine( node1Origin, node1Origin + node1SideVec * 250, 100, 100, 100, true, 5.0 )
+	//DebugDrawLine( node2Origin, node2Origin + node2SideVec * 250, 100, 100, 100, true, 5.0 )
+	//DebugDrawLine( intersect, intersect - <0,0,128>, 100, 0, 0, true, 5.0 )
+	//DebugDrawText( intersect, angleChange.tostring(), true, 5.0 )
+
+	return intersect
 }
 
 bool function HoverTankCanFlyPath( vector currentStartNode, entity currentEndNode )
 {
     return true
 }
+
+entity function GetHoverTankByInstance( string instanceOg )
+{
+	array<entity> hovertanks = GetEntArrayByScriptName( "_hover_tank_mover" )
+	entity hoverTank
+
+	foreach( hovertank in hovertanks )
+	{
+		string instance = ""
+		if ( hovertank.HasKey( "instance_name" ) )
+			instance = expect string( hovertank.kv.instance_name )
+		
+		if( instance != "" && instance == instanceOg )
+		{
+			hoverTank = hovertank
+			continue
+		}
+	}
+	return hoverTank
+}
+
+#if DEVELOPER
+// void function Dev_PlayAnimOnHoverTank( int animIndex )
+// {
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_back.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_forward.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_left.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/pose_strafe_right.rseq
+// // [12:16:18] [I] -> animseq/vehicle/hovership/hovership_platform/test.rseq
+	// asset anim
+	// switch( animIndex )
+	// {
+		// case 0: 
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_1.rseq"
+		// break
+		
+		// case 1:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_2.rseq"
+		// break
+		
+		// case 2:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_3.rseq"
+		// break
+		
+		// case 3:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/CC_tank_4.rseq"
+		// break
+
+		// case 4:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA.rseq"
+		// break
+
+		// case 5:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankA_pose.rseq"
+		// break
+		
+		// case 6:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB.rseq"
+		// break
+
+		// case 7:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/ht_cc_tank_intro_TankB_pose.rseq"
+		// break
+
+		// case 8:
+			// anim = $"animseq/vehicle/hovership/hovership_platform/test.rseq"
+		// break
+	// }
+	
+	// thread PlayAnim( file.hoverTanksIntro[0].flightMover, anim ) //, file.hoverTanksIntro[0].interiorModel )
+// }
+#endif

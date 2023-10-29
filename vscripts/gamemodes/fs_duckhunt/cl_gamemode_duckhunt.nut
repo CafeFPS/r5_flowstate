@@ -87,7 +87,7 @@ void function DUCKHUNT_CustomHint(int index, int eHandle)
 		break
 		
 		case 5:
-		Obituary_Print_Localized( "Made with love by @CafeFPS & Darkes#8647", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		break
 	}
 }

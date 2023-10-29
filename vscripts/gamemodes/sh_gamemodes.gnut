@@ -175,7 +175,16 @@ void function GameModes_Init()
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+
+	#if !UI
+		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+			GameMode_AddScoreboardColumnData( gameMode, "Oddball Score", PGS_ASSISTS, 5 )
+		else
+			GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+		
+		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 3 )
+	#endif
+
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
 	gameMode = CUSTOM_CTF
@@ -189,6 +198,10 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	#if !UI
+		GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
+		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 3 )
+	#endif
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 	
 	gameMode = map_editor_deprecated
@@ -233,6 +246,19 @@ void function GameModes_Init()
 	gameMode = fs_duckhunt
 	GameMode_Create( gameMode )
 	GameMode_SetName( gameMode, "fs_duckhunt" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
+	gameMode = fs_infected
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "fs_infected" )
 	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )

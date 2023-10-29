@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 untyped
 
@@ -21,7 +21,7 @@ array< entity > cagedFlyers
 
 void function ShFlyers_Init()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	PrecacheModel( FLYER_MODEL )
@@ -42,7 +42,7 @@ void function ShFlyers_Init()
 #if SERVER
 void function CagedFlyerAnimation(entity flyer) //idle
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	float idleLength = flyer.GetSequenceDuration( "fl_perched_idle" )
@@ -61,7 +61,7 @@ void function CagedFlyerAnimation(entity flyer) //idle
 
 void function CagedFlyerAudios(entity flyer)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	if(IsValid(flyer)){
@@ -89,7 +89,7 @@ void function CagedFlyerAudios(entity flyer)
 
 void function CreateCagedFlyerTrigger(entity flyer)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	entity trigger = CreateEntity( "trigger_cylinder" )
@@ -117,7 +117,7 @@ void function CreateCagedFlyerTrigger(entity flyer)
 }
 void function SVCagedFlyerCreationCallback( entity flyer )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 		if(IsValid(flyer)) flyer.Destroy()
@@ -137,7 +137,7 @@ void function SVCagedFlyerCreationCallback( entity flyer )
 }
 void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
@@ -168,7 +168,7 @@ void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
 
 void function PlayDyingFlyerAnim(entity flyer)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	float deathLength = flyer.GetSequenceDuration( "fl_perched_death" )
@@ -185,7 +185,7 @@ void function PlayDyingFlyerAnim(entity flyer)
 
 void function SVFlyerCreationCallback( entity flyer )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	flyer.Destroy() //Removes t-posing flyers on all maps (except caged ones)
@@ -194,7 +194,7 @@ void function SVFlyerCreationCallback( entity flyer )
 
 bool function IsCagedFlyer( entity ent )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 /////////////////////////////////////////////////////// hack!
 {
 	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() )

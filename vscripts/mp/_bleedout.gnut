@@ -99,11 +99,20 @@ void function Bleedout_OnClientConnected( entity player )
 
 void function Bleedout_OnClientDisconnected( entity player )
 {
-	delete file.isBleeding[ player ]
-	delete file.hasSelfRes[ player ]
-	delete file.IsGettingFirstAidFrom[ player ]
-	delete file.IsGivingFirstAidTo[ player ]
-	delete file.lastAttacker[ player ]
+	if( player in file.isBleeding )
+		delete file.isBleeding[ player ]
+	
+	if( player in file.hasSelfRes )
+		delete file.hasSelfRes[ player ]
+	
+	if( player in file.IsGettingFirstAidFrom )
+		delete file.IsGettingFirstAidFrom[ player ]
+	
+	if( player in file.IsGivingFirstAidTo )
+		delete file.IsGivingFirstAidTo[ player ]
+	
+	if( player in file.lastAttacker )
+		delete file.lastAttacker[ player ]
 }
 
 void function Bleedout_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -135,11 +144,14 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	file.lastAttacker[ player ] = attacker
 	
 	thread Bleedout_DeathProtection( player )
+
+	//for reference
+	// const float BLEEDOUT_TIME_LV1 = 90.0
+	// const float BLEEDOUT_TIME_LV2 = 60.0
+	// const float BLEEDOUT_TIME_LV3 = 30.0
+	// const float BLEEDOUT_TIME_LV4 = 15.0
 	
-	if(GameRules_GetGameMode() != "fs_duckhunt")
-		SetPlayerEliminated( player )
-		
-	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
+	player.SetPlayerNetInt( "bleedoutType",  EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) // 0 is BLEEDOUT_TIME_LV1. how many times have player died? why was EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ?? it doesn't make sense of you having better incap shield and you're dying quickly
 	player.SetHealth( 100 )
 	
 	if( IsValid( attacker ) && attacker.IsPlayer() )
@@ -311,7 +323,7 @@ void function PlayerDying( entity player )
 		if ( teamPlayer == player )
 			continue
 
-		Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_ShowWoundedMarker", woundedPlayerEHandle, Time(), Time() + bleedoutTime )
+		Remote_CallFunction_NonReplay( teamPlayer, "ServerCallback_BLEEDOUT_ShowWoundedMarker", woundedPlayerEHandle, Time(), bleedoutEndTime )
 	}
 
 	if ( bleedoutTime > 0 )
@@ -389,7 +401,7 @@ void function EnablePlayerSelfRes( entity player )
 		//if (  !IsPlayerGettingFirstAid( player ) )
 		//	MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
 
-		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) )
+		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) && player.IsOnGround() )
 		{
 		//	MessageToPlayer( player, eEventNotifications.Clear )
 			waitthread PlayerAttemptRes( player, player )
@@ -707,6 +719,10 @@ void function BloodTrail( entity player )
 
 void function PlayerDiesFromBleedout( entity player, entity attacker )
 {
+	if( IsValid( player ) && GameRules_GetGameMode() != "fs_duckhunt")
+		SetPlayerEliminated( player )
+
+
 	if ( IsValid( attacker ) )
 	{
 		try{
@@ -743,7 +759,12 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 	if( !Bleedout_AreThereAlivingMates( team, player ) )
 		foreach( targetPlayer in GetPlayerArrayOfTeam_Alive( team ) )
 			if( targetPlayer != excludePlayer )
-				PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
+			{
+				wait 0.2
+
+				if( IsValid( targetPlayer ) )
+					PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
+			}
 }
 
 bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = null )

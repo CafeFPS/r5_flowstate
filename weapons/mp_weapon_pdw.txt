@@ -33,6 +33,7 @@ WeaponData
 	// Models
 	"viewmodel"   									"mdl/weapons/prowler_smg/ptpov_prowler_smg.rmdl"
 	"playermodel" 									"mdl/weapons/prowler_smg/w_prowler_smg.rmdl"
+	"holster_offset"								"8 0 0"
 
 	"chroma_color"									".2 1 .6"
 
@@ -43,14 +44,14 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	//Sounds
 	"fire_sound_1_player_1p" 						"weapon_prowler_burst_secondshot_1p"
 	"fire_sound_1_player_3p" 						""
 
-	"fire_sound_2_player_1p"						"Weapon_bulletCasings.Bounce"
-	"fire_sound_2_player_3p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_2_player_1p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_2_player_3p"						"Weapon_bulletCasings.Bounce"
 
 	"sound_zoom_in"									"Weapon_Car_ADS_In"
 	"sound_zoom_out"								"Weapon_Car_ADS_Out"
@@ -72,38 +73,39 @@ WeaponData
 	"low_ammo_sound_name_1"							"car_LowAmmo_Shot1"
 
 	"damage_type" 									"bullet"
+	"damage_near_value"   							"15"
+    "damage_far_value"								"15"
+    "damage_very_far_value"							"15"
+    "damage_near_value_titanarmor"					"15"
+    "damage_far_value_titanarmor" 					"15"
+    "damage_very_far_value_titanarmor" 				"15"
+    "damage_rodeo" 									"110"
 
-	"ammo_clip_size"   								"20"
-
-
-	"ammo_clip_size"   								"20"
-    "ammo_default_total"							"100"
-    "ammo_stockpile_max"							"36"
-    "ammo_no_remove_from_stockpile"					"1"
-   
+                     
+                                
+                                          
+                                                                                                                   
+                                                 
+                                     
+     
+	"ammo_clip_size"   								"35"
+    "ammo_default_total"							"210"
+    "ammo_stockpile_max"							"210"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"0"
+    "ammo_pool_type"								"highcal"
+      
 
     "ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.2"
-	
 
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    // Damage - When Used by NPCs
+    "npc_damage_near_value"   						"9"
+    "npc_damage_far_value"							"7"
+    "npc_damage_near_value_titanarmor"				"0"
+    "npc_damage_far_value_titanarmor" 				"0"
+    "npc_max_range"   								"2000"
 
-		"damage_near_value"   							"14"
-		"damage_far_value"								"14"
-   	 	"damage_very_far_value"							"14"
-		"damage_near_value_titanarmor"					"14"
-		"damage_far_value_titanarmor" 					"14"
-		"damage_very_far_value_titanarmor" 				"14"
-		"damage_rodeo" 									"110"
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"9"
-		"npc_damage_far_value"							"7"
-		"npc_damage_near_value_titanarmor"				"0"
-		"npc_damage_far_value_titanarmor" 				"0"
-
-		"npc_max_range"   								"2000"
 
 	// NPC
 	"npc_min_engage_range"							"0"
@@ -229,37 +231,82 @@ WeaponData
     "clip_bodygroup_show_for_milestone_1"	"0"
     "clip_bodygroup_show_for_milestone_2"	"1"
     "clip_bodygroup_show_for_milestone_3"	"1"
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_PDW"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_PDW"
 
 	Mods
 	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"36"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.2"
-
-	   		"uses_ammo_pool"								"1"
-        }
-
+		crate
+		{
+		}
         hopup_selectfire
+       {
+        // This mod is only used to indicate that the hop-up is active
+        // When player changes fire modes, we activate "altfire_selectfire"
+       }
+
+       // autofire
+       altfire_selectfire
+       {
+            "mod_activity_modifier"							"fire_select"
+
+	        "fire_rate"   									"13.25"
+
+	        "is_semi_auto"									"0"
+	        "burst_fire_count"								"0"  // also have to do this to disable burstfire
+
+	        "viewkick_pattern"                              "pdw_auto_2"
+
+	        "viewkick_spring_hot"                           "pdw_auto_vkp_hot"
+	        "viewkick_spring_cooldown_holdtime"             "0.08"
+	        "viewkick_spring_cooldown_fadetime"             "0.05"
+
+	        "viewmodel_spring_jolt"                          "autofire_viewmodel_jolt"
+	        "viewmodel_jolt_scale"                           "1.0"
+	        "viewmodel_jolt_backwardPerShot"                 "-0.4"
+	        "viewmodel_jolt_roll"                            "0 2.3 0.0"
+	        "viewmodel_jolt_side"                            "0 0.045 0"
+
+	        "viewkick_pitch_softScale"						"1.5"   //"1.2
+	        "viewkick_pitch_hardScale"						"0.3"
+
+	        "viewkick_yaw_softScale"  						"1.65"   //"1.5"
+	        "viewkick_yaw_hardScale"  						"0.315" //"0.3"
+
+	        "viewkick_roll_base"  							"1.0"
+	        "viewkick_roll_randomMin" 						"-0.3"
+	        "viewkick_roll_randomMax" 						"0.3"
+	        "viewkick_roll_softScale" 						"0.8"
+	        "viewkick_roll_hardScale" 						"0.2"
+
+	        "viewkick_scale_valueDecayDelay"  				"0.1"  // for autofire, match to fire rate
+	        "viewkick_scale_valueDecayRate"   				"55"
+
+	           // Audio
+	        "fire_sound_1_player_1p"						"weapon_prowler_secondshot_1p"
+	        "fire_sound_1_player_3p"						""
+
+	        //"fire_sound_2_player_1p"						"Weapon_bulletCasings.Bounce"
+	        //"fire_sound_2_player_3p"						"Weapon_bulletCasings.Bounce"
+
+	        "looping_sounds"								"1"
+
+	        "burst_or_looping_fire_sound_start_1p"			"weapon_prowler_firstshot_1p"
+	        "burst_or_looping_fire_sound_middle_1p"			"weapon_prowler_loop_1p"
+	        "burst_or_looping_fire_sound_end_1p"			""
+
+	        "burst_or_looping_fire_sound_start_3p"			""
+	        "burst_or_looping_fire_sound_middle_3p"			"weapon_prowler_loop_3p"
+	        "burst_or_looping_fire_sound_end_3p"			"weapon_prowler_loopend_3p"
+
+	        "burst_or_looping_fire_sound_start_npc"			""
+	        "burst_or_looping_fire_sound_middle_npc"		"weapon_prowler_loop_3p"
+	        "burst_or_looping_fire_sound_end_npc"			""
+       }
+
+        gold
         {
-        	// This mod is only used to indicate that the hop-up is active
-        	// When player changes fire modes, we activate "altfire"
         }
-
-        // autofire
-        altfire
-        {
-		
-        }
-
-
 		optic_cq_hcog_classic
 		{
 			"bodygroup2_set"	       						"0"
@@ -323,6 +370,10 @@ WeaponData
 		{
 			"ammo_clip_size"   							"35"
 		}
+        highcal_mag_l4
+        {
+            "ammo_clip_size"   							"35"
+        }
 
                
                                                                                                      

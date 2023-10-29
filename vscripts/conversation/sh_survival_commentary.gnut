@@ -692,6 +692,9 @@ bool function ShouldPlayBattleChatter( string conversationType, entity listening
 
 void function PlayBattleChatterToSelfOnClientAndTeamOnServer( entity speaker, string chatterLine )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 #if SERVER
 	PlayBattleChatterLineToTeamButNotSpeaker( speaker, chatterLine )
 #endif

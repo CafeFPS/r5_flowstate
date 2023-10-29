@@ -67,43 +67,19 @@ WeaponData
 	"damage_far_distance" 							"0"
 	"damage_near_value"   							"0"
 	"damage_far_value"								"0"
-
-	MP_BASE
-	{
-		"ammo_display"									"bar"
-        "ammo_stockpile_max"							"250"
-        "ammo_clip_size"   								"250"
-        "ammo_default_total"							"250"
-        "ammo_per_shot"									"250"
-        "ammo_min_to_fire"								"250"
-
+	
+    "ammo_display"									"bar"
+    "ammo_stockpile_max"							"250"
+    "ammo_clip_size"   								"250"
+    "ammo_default_total"							"250"
+    "ammo_per_shot"									"250"
+    "ammo_min_to_fire"								"250"
+    
     // Regen Ammo
     "regen_ammo_refill_rate"						"10"
     "regen_ammo_refill_start_delay"					"0.0"
 
-        "enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-
-	//Mods
-		"sound_weapon_ready"							"survival_ui_tactical_ready"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"4"
-		"ammo_default_total"							"1"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"1"
-		"ammo_per_shot"									"1"
-		"ammo_stockpile_max"							"6"
-		"regen_ammo_refill_rate"						"0"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-
-	//Mods
-		"sound_weapon_ready"							"survival_ui_tactical_ready"
-	}
-
+    "enable_highlight_networking_on_creation"		"0"
 	// Behavior
 	"fire_rate"   									"1.25"
     "fire_anim_rate"								"1.0"

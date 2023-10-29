@@ -2,7 +2,6 @@ global function InitKillReplayHud
 global function OpenKillReplayHud
 global function CloseKillReplayHud
 global function ReplayHud_UpdatePlayerData
-global function UI_FlowstateCustomSetSpectateTargetCount
 
 struct
 {
@@ -142,43 +141,15 @@ void function InitKillReplayHud( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, On_NavigateBack )
 }
 
-void function UI_FlowstateCustomSetSpectateTargetCount( int targetCount, bool reverse )
-{
-	file.ObserverReverse = reverse
-	file.spectateTargetCount = targetCount
-}
-
-bool function FlowstateCustomCanChangeSpectateTarget()
-{
-	return file.spectateTargetCount	> 1
-}
-
 void function SpecNext( var panel )
 {
-	printt("trying to change spectate target. Max Targets " + file.spectateTargetCount + " | Target Count " + file.currentSpectateTarget )
-	
-	// if( FlowstateCustomCanChangeSpectateTarget() && file.currentSpectateTarget < file.spectateTargetCount)
-	// {
-		// if(file.ObserverReverse)
-			// ClientCommand( "spec_prev" )
-		// else
-			ClientCommand( "spec_next" )
-		
-		// file.currentSpectateTarget++
-	// }
+
+	ClientCommand( "spec_next" )
 }
 
 void function SpecPrev( var panel )
 {
-	// if( FlowstateCustomCanChangeSpectateTarget() && file.currentSpectateTarget > 1)
-	// {
-		// if(file.ObserverReverse)
-			ClientCommand( "spec_next" )
-		// else
-			// ClientCommand( "spec_prev" )
-		
-		// file.currentSpectateTarget--
-	// }
+	ClientCommand( "spec_prev" )
 }
 
 void function FocusChat( var panel )

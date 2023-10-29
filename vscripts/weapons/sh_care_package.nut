@@ -81,17 +81,10 @@ void function MpAbilityCarePackage_ClientConnected( entity player )
 
 void function CreateCarePackageAirdrop( vector origin, vector angles, array<string> contents, entity fxToStop = null, string animationName = "droppod_loot_drop", entity owner = null, string sourceWeaponClassName = "" )
 {
-	int skin = 0
-
 	if( animationName == "droppod_loot_drop_lifeline" )
-	{
-		skin = 1
-	} else {
-		// this is literal garbage please fix
-		skin = GetSkinForCarePackageModel( owner )
-	}
-
-	thread AirdropItems( origin, angles, contents, fxToStop, animationName, owner, skin, sourceWeaponClassName )
+		thread AirdropItems_Lifeline( origin, angles, contents, fxToStop, animationName, owner, 1, sourceWeaponClassName )
+	else
+		thread AirdropItems( origin, angles, contents, fxToStop, animationName, owner, GetSkinForCarePackageModel( owner ), sourceWeaponClassName )
 }
 #endif // SERVER
 

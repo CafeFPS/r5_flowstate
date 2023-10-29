@@ -55,12 +55,12 @@ WeaponData
 	// NOTE: Alternator has a special muzzle flash to look good with two barrels
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// NOTE: specifies muzzle flash for the second barrel
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_1"
 
 
 	// Sound
@@ -99,13 +99,16 @@ WeaponData
 
 	// Ammo
 	"ammo_clip_size"   								"19"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"24"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
+      
 
-	"ammo_default_total"							"100"
-	"ammo_stockpile_max"							"100"
-	"ammo_no_remove_from_stockpile"					"1"
-	"ammo_min_to_fire"								"1"
+    "ammo_min_to_fire"								"1"
 
 	"damage_type" 									"bullet"
+	"low_ammo_fraction" 							"0.3"
 
     // Damage - When Used by Players
     "damage_near_value"   							"16"
@@ -235,12 +238,14 @@ WeaponData
 
 	"viewmodel_offset_ads"				"0 0 0.02"  // HACK should not have to offset the default ADS anim alignment
 
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_ALTERNATOR"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_ALTERNATOR"
+
 	Mods
 	{
-		gold
-		{
-		}
-
+        gold
+        {
+        }
 		survival_finite_ammo
 		{
 			"ammo_default_total"							"0"
@@ -254,7 +259,7 @@ WeaponData
 
 		hopup_shield_breaker
 		{
-		"damage_shield_scale"                       "1.55"
+		"damage_shield_scale"                       "1.20"
 		"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
 		"impact_effect_table" 				        "shield_breaker_bullet"
 
@@ -309,51 +314,55 @@ WeaponData
 			//Extended Ammo
 			"ammo_clip_size"   						"27"
 		}
+        bullets_mag_l4
+        {
+            "ammo_clip_size"   						"27"
+        }
 
-		// NOTE: override barrel FX for both Alternator barrels
-		barrel_stabilizer_l1
-		{
-			"viewkick_yaw_base" 				"*0.85"
-			"viewkick_yaw_random"   			"*0.8"
+		// // NOTE: override barrel FX for both Alternator barrels
+		// barrel_stabilizer_l1
+		// {
+			// "viewkick_yaw_base" 				"*0.85"
+			// "viewkick_yaw_random"   			"*0.8"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l2
-		{
-			"viewkick_yaw_base" 				"*0.8"
-			"viewkick_yaw_random"   			"*0.75"
+		// barrel_stabilizer_l2
+		// {
+			// "viewkick_yaw_base" 				"*0.8"
+			// "viewkick_yaw_random"   			"*0.75"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l3
-		{
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.75"
-			"viewkick_yaw_random"   			"*0.7"
+		// barrel_stabilizer_l3
+		// {
+			// "viewkick_pitch_base" 				"*0.8"
+			// "viewkick_pitch_random"   			"*0.65"
+			// "viewkick_yaw_base" 				"*0.75"
+			// "viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 
-		barrel_stabilizer_l4_flash_hider
-		{
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.75"
-			"viewkick_yaw_random"   			"*0.7"
+		// barrel_stabilizer_l4_flash_hider
+		// {
+			// "viewkick_pitch_base" 				"*0.8"
+			// "viewkick_pitch_random"   			"*0.65"
+			// "viewkick_yaw_base" 				"*0.75"
+			// "viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
+			// "fx_muzzle_flash_view"							""
+			// "fx_muzzle_flash_world"							""
+			// "fx_muzzle_flash_attach"						""
+		// }
 	}
 
 	"ui1_enable"		"1"

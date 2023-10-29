@@ -236,7 +236,10 @@ void function SetPathfinder_HandUSB( entity player, bool showUSB = false )
 	if ( showUSB )
 	{
 		wait 1
-
+		
+		if( !IsValid(player) ) 
+			return
+		
 		int usbIndex = firstPersonProxy.FindBodygroup( "l_hand_usb" )
 		// show the usb
 		if ( firstPersonProxy.GetBodygroupModelIndex( usbIndex ) == 0 )
@@ -245,7 +248,10 @@ void function SetPathfinder_HandUSB( entity player, bool showUSB = false )
 	else
 	{
 		wait 1
-
+		
+		if( !IsValid(player) ) 
+			return
+		
 		int usbIndex = firstPersonProxy.FindBodygroup( "l_hand_usb" )
 		// hide the usb
 		if ( firstPersonProxy.GetBodygroupModelIndex( usbIndex ) != 0 )
@@ -379,6 +385,9 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	// need to wait here so that the panel script can start waiting for the PanelReprogrammed signal.
 	WaitFrame()
+	
+	if( !IsValid( player ) || !IsAlive( player ) )
+		return
 	
 	thread SetPathfinder_HandUSB( player, true )
 
@@ -571,7 +580,7 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	if ( e.success )
 	{
-		thread DataKnifeSuccessSounds( player )
+		thread PathfinderBeaconSuccessSounds( player )
 		Pathfinder_SurveySuccess( panel, player )
 		thread SetPathfinder_HandUSB( player )
 	}

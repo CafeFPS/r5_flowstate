@@ -20,6 +20,7 @@ WeaponData
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
 	"offhand_default_inventory_slot"				"0"
 	"show_grenade_indicator"						"1"
+	"show_grenade_indicator_to_owner"				"1"
 	"projectile_ignores_vortex"						"fall"
     "does_not_interrupt_cloak"						"1"
     "ads_dof_disable"								"1"
@@ -121,14 +122,14 @@ WeaponData
 	"damage_near_value_titanarmor"					"0"
 	"damage_far_value_titanarmor"					"0"
 
-	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION | DF_DISMEMBERMENT"
+	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION | DF_DISMEMBERMENT | DF_GIB"
 
 	"critical_hit"									"0"
 
 	"explosion_damage"								"100"
 	"explosion_damage_heavy_armor"					"100"
-	"explosion_inner_radius"						"96"
-	"explosionradius"								"320"
+	"explosion_inner_radius"						"125"
+	"explosionradius"								"350"
 
 	"impulse_force"									"500"
 	"impulse_force_explosions"						"50000"

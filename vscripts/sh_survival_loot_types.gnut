@@ -3,12 +3,17 @@ global function SURVIVAL_LootTypes_InitShared
 global function IsLootTypeValid
 global function GetLootTypeData
 
+global function RegisterCustomItemGroundAction
+
 global const bool AUTOEQUIP_ATTACHMENTS = true
 
 global struct LootTypeData
 {
+	int index
+
 	int equipmentAction = eLootAction.NONE
 	int equipmentAltAction = eLootAction.DROP
+	int functionref( entity player ) equipmentCharacterActionFunc
 
 	int backpackAction = eLootAction.NONE
 	int backpackAltAction = eLootAction.DROP
@@ -25,6 +30,8 @@ global struct LootTypeData
 
 	string equipmentSlot
 }
+
+global typedef CustomItemGroundActionCB_t LootActionStruct functionref( entity player, LootRef lootRef )
 
 struct
 {
@@ -132,11 +139,18 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.backpackAction = eLootAction.NONE
 	lt.groundActionFunc = GroundAction_ForResource
 	lt.groundAltActionFunc = GroundAltAction_None
+	
+	lt = RegisterLootType( eLootType.GADGET )
+	lt.equipmentSlot = "gadgetslot"
+	lt.equipmentAction = eLootAction.EQUIP
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
 }
 
 LootTypeData function RegisterLootType( int lootType )
 {
 	LootTypeData lt
+	lt.index = lootType
 
 	file.lootTypeData[ lootType ] <- lt
 
@@ -152,6 +166,22 @@ LootTypeData function GetLootTypeData( int lootType )
 {
 	return file.lootTypeData[ lootType ]
 }
+
+table<string, CustomItemGroundActionCB_t> s_customItemGroundActionCallbacks
+void function RegisterCustomItemGroundAction( string lootRef, CustomItemGroundActionCB_t func )
+{
+	Assert( !(lootRef in s_customItemGroundActionCallbacks) )
+	s_customItemGroundActionCallbacks[lootRef] <- func
+}
+
+LootActionStruct function GroundAction_ForCustomItem( entity player, LootRef lootRef )
+{
+	if ( lootRef.lootData.ref in s_customItemGroundActionCallbacks )
+		return s_customItemGroundActionCallbacks[lootRef.lootData.ref]( player, lootRef )
+
+	return GroundAction_ForBackpackItem( player, lootRef )
+}
+
 
 LootActionStruct function GroundAction_ForBackpackItem( entity player, LootRef lootRef )
 {
@@ -213,7 +243,55 @@ LootActionStruct function GroundAction_ForEquipment( entity player, LootRef loot
 	{
 		as.action = eLootAction.EQUIP
 	}
-	if ( lootData.tier > tier || (lootData.ref != equippedData.ref && lootData.tier == tier && hasPerk) )
+
+                  
+                                                                                                                          
+  
+                              
+  
+           
+      
+	        if  ( lootData.lootType == eLootType.GADGET )
+	{
+		if ( tier == 0 )                         
+		{
+			as.action = eLootAction.EQUIP
+		}
+		else if ( lootData.ref != equippedData.ref )                         
+		{
+			as.action = eLootAction.SWAP
+		}
+		else                                           
+		{
+			                                                                              
+			                                                                                                                                              
+			                                                                                                                                                                                 
+			#if CLIENT
+			if ( player != GetLocalClientPlayer() )
+			{
+				as.action = eLootAction.NONE
+				return as
+			}
+			#endif
+
+			// entity gadgetWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_GADGET )
+			// if( IsValid( gadgetWeapon ) )
+			// {
+				// int ammo = gadgetWeapon.GetWeaponPrimaryClipCount()
+				// int maxAmmo = gadgetWeapon.GetWeaponPrimaryClipCountMax()
+				// if( ammo == 0 )                 
+				// {
+					// as.action = eLootAction.NONE
+					// return as
+				// }
+				// if( ammo < maxAmmo )            
+				// {
+					// as.action = eLootAction.PICKUP
+				// }
+			// }
+		}
+	}
+	else if ( lootData.tier > tier || (lootData.ref != equippedData.ref && lootData.tier == tier && hasPerk) )
 	{
 		as.action = eLootAction.EQUIP
 	}
@@ -279,7 +357,7 @@ LootActionStruct function GroundLongAction_ForWeapons( entity player, LootRef lo
 	as.displayString = ""
 
 	int action
-	if ( SURVIVAL_AltUseSwapsWeapon() && SURVIVAL_CountPrimaryWeapons( player ) > 1 )
+	if ( SURVIVAL_CountPrimaryWeapons( player ) > 1 )
 	{
 		action = eLootAction.SWAP
 
@@ -357,18 +435,35 @@ LootActionStruct function GroundAltAction_ForWeapons( entity player, LootRef loo
 	as.displayString = ""
 
 	int action
-	if ( SURVIVAL_AltUseSwapsWeapon() && SURVIVAL_CountPrimaryWeapons( player ) == 0 )
-	{
-		action = eLootAction.NONE
-	}
-	else
-	{
-		action = eLootAction.DISMANTLE
-	}
+                  
+                                                               
+   
+                                           
+                                       
+       
+                                      
+   
+      
+       
+		{
+			action = eLootAction.NONE
+		}
+
 
 	as.action = action
 	return as
 }
+
+int function EquipmentCharacterAction_ForWeapons( entity player )
+{
+                  
+                                           
+                                    
+       
+
+	return eLootAction.NONE
+}
+
 
 LootActionStruct function GroundAltAction_ForAmmo( entity player, LootRef lootRef )
 {

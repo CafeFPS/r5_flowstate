@@ -506,7 +506,15 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	bool isShieldBreak             = (damageType & DF_SHIELD_BREAK) ? true : false
 	bool isShadowShot              = (damageType & DF_SHADOW_DAMAGE) ? true : false
 	bool isOvershieldShot		   = (damageType & DF_OVERSHIELD ) ? true : false
-
+	
+	// if( victim.IsPlayer() )
+	// {
+		// LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
+		
+		// if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
+			// isOvershieldShot = true
+	// }
+	
 	bool playKillSound = isKillShot
 
 	if ( !attacker.IsTitan() )
@@ -562,10 +570,18 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	}
 	else if ( isOvershieldShot )
 	{
-		PlayShieldHitEffect( params, OVERSHIELD_COLOR )
+		vector armorColor = OVERSHIELD_COLOR
+		int armorTier = -1
+		if( victim.IsPlayer() )
+		{
+			armorTier = EquipmentSlot_GetEquipmentTier( victim, "armor" )
+			armorColor = GetFXRarityColorForTier( armorTier )
+		}	
+		
+		//PlayShieldHitEffect( params, armorColor, armorTier )
 		showCrosshairHitIndicator = true
 	}
-	else if ( isArmorShot )
+	else if ( isArmorShot || isShieldShot )
 	{
 		int armorTier = 0
 		if ( damageFlags & DAMAGEFLAG_ARMOR1 )
@@ -579,24 +595,9 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 
 		vector armorColor = GetFXRarityColorForTier( armorTier )
 
-		PlayShieldHitEffect( params, armorColor )
-	}
-	else if ( isShieldShot )
-	{
-		int armorTier = 0
-		if ( damageFlags & DAMAGEFLAG_ARMOR1 )
-			armorTier = 1
-		else if ( damageFlags & DAMAGEFLAG_ARMOR2 )
-			armorTier = 2
-		else if ( damageFlags & DAMAGEFLAG_ARMOR3 )
-			armorTier = 3
-		else if ( damageFlags & DAMAGEFLAG_ARMOR4 )
-			armorTier = 4
-
-		vector armorColor = GetFXRarityColorForTier( armorTier )
-
-		PlayShieldHitEffect( params, armorColor )
-		showCrosshairHitIndicator = true
+		//PlayShieldHitEffect( params, armorColor )
+		if ( isShieldShot )
+			showCrosshairHitIndicator = true
 	}
 	else if ( damageAmount <= 0 )
 	{
@@ -1654,7 +1655,7 @@ void function PlayIt( entity victim )
 }
 
 
-void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldColorOverride = < -1, -1, -1 > )
+void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldColorOverride = < -1, -1, -1 >, int tier = -1)
 {
 	entity player = GetLocalViewPlayer()
 	entity victim = params.victim
@@ -1700,6 +1701,18 @@ void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldCo
 		color = shieldColorOverride
 
 	EffectSetControlPointVector( shieldFXHandle, 1, color )
+
+	if( tier == 7 )
+	{
+		thread function () : ( shieldFXHandle ) 
+		{
+			while( EffectDoesExist( shieldFXHandle ) )
+			{
+				EffectSetControlPointVector( shieldFXHandle, 1, Vector(RandomInt(255), RandomInt(255), RandomInt(255)) )
+				wait 0.05
+			}
+		}()
+	}
 }
 
 const vector SHIELD_COLOR_CHARGE_FULL = <115,247,255> // blue

@@ -1,4 +1,5 @@
 global function ClEntityCreationFunctions_Init
+global function FS_ForceAdjustSunFlareParticleOnClient
 
 void function ClEntityCreationFunctions_Init()
 {
@@ -9,7 +10,7 @@ void function ClEntityCreationFunctions_Init()
 
 void function DisableSunFlare()
 {
-	if ( GetCurrentPlaylistVarInt( "enable_sun_flare_" + GetMapName(), 1 ) != 0 )
+	if ( GetCurrentPlaylistVarInt( "enable_sun_flare_" + GetMapName(), 1 ) )
 		return
 
 	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
@@ -20,4 +21,85 @@ void function DisableSunFlare()
 
 		fxEnt.Destroy()
 	}
+}
+
+void function FS_ForceAdjustSunFlareParticleOnClient( int map )
+{
+	switch( map )
+	{
+		case 0:
+			FS_ResetMapLightning()
+
+			SetConVarFloat( "mat_autoexposure_max", 1.0 )
+			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.3 )
+			SetConVarFloat( "mat_autoexposure_min", 0.7 )
+			SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+
+			SetConVarFloat( "mat_sky_scale", 1.0 )
+			SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+			SetConVarFloat( "mat_sun_scale", 3.0 )
+			SetConVarString( "mat_sun_color", "1.0 1.5 2.0 1.0" )
+		break
+		case 1:
+			FS_ResetMapLightning()
+
+			SetConVarFloat( "mat_sky_scale", 1.5 )
+			SetConVarFloat( "mat_sun_scale", 1.5 )
+		break
+		
+		case 2:
+			FS_ResetMapLightning()
+
+			SetConVarFloat( "mat_envmap_scale", 0.12 )
+
+			SetConVarFloat( "mat_autoexposure_max", 1.0 )
+			SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
+			SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
+			SetConVarFloat( "mat_autoexposure_min", 1.7 )
+
+			SetConVarFloat( "mat_sky_scale", 0.01 )
+			SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
+			SetConVarFloat( "mat_sun_scale", 1 )
+			SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+			SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
+		break
+	}
+
+	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
+
+	foreach ( fxEnt in fxEnts )
+	{
+		if ( fxEnt.HasKey( "in_skybox" ) && fxEnt.GetValueForKey("in_skybox") != "1" )
+			continue
+		
+		switch( map )
+		{
+			case 0:
+				fxEnt.SetOrigin( <11131.6, 29370, -25563.6> + <0, 0, 110> )
+			break
+
+			case 1:
+				fxEnt.SetOrigin( <10500, 28400, -25563.6> + <0, 0, 85>  )
+			break
+
+			case 2:
+				fxEnt.SetOrigin( fxEnt.GetOrigin() + <0,1000,0>  )
+			break
+		}
+	}
+}
+
+void function FS_ResetMapLightning()
+{
+	SetConVarToDefault( "mat_sun_color" )
+	SetConVarToDefault( "mat_sun_scale" )
+	SetConVarToDefault( "mat_sky_color" )
+	SetConVarToDefault( "mat_sky_scale" )
+	SetConVarToDefault( "mat_autoexposure_min_multiplier" )
+	SetConVarToDefault( "mat_autoexposure_min" )
+	SetConVarToDefault( "mat_autoexposure_max_multiplier" )
+	SetConVarToDefault( "mat_autoexposure_max" )
+	SetConVarToDefault( "mat_bloom_max_lighting_value" )
+	//SetConVarToDefault( "jump_graceperiod" )
+	SetConVarToDefault( "mat_envmap_scale" )
 }

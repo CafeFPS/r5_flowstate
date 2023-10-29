@@ -97,6 +97,9 @@ global struct ClientEntityStruct
 	float lastGrappleTime
 	bool firsttime = true
 	int shieldTier
+	
+	//extra survival int property ( max shield for infinite shield )
+	int extraSurvivalProperty = -1
 }
 
 
@@ -194,6 +197,7 @@ global struct ClientPlayerStruct
 	bool insideBubbleMokey = false
 	
 	string snd_knifecolor = "255, 255, 255"
+	int holosprayChoice
 }
 
 
@@ -234,6 +238,10 @@ global struct ClientWeaponStruct
 	entity translocate_predictedRedirectedProjectile = null
 	table ornull translocate_impactRumbleObj = null
 	bool   translocate_isADSForced = false
+	bool fromWall
+	bool wasFired
+	
+	bool isInAdsCustom = false
 }
 
 

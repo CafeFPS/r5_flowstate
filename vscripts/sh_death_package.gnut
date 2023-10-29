@@ -42,6 +42,7 @@ const TITAN_EXPLOSION_GROUNDWASH_HEIGHT = 250
 
 global const GRENADE_INDICATOR_ARROW_MODEL = $"mdl/hud/grenade_indicator/grenade_indicator_arrow.rmdl"
 global const GRENADE_INDICATOR_FRAG_MODEL = $"mdl/hud/grenade_indicator/grenade_indicator_frag.rmdl"
+global const GRENADE_INDICATOR_EMP_MODEL = $"mdl/hud/grenade_indicator/grenade_indicator_shuriken.rmdl"
 global const GRENADE_INDICATOR_SONAR_MODEL = $"mdl/hud/grenade_indicator/grenade_indicator_sonar.rmdl"
 global const GRENADE_INDICATOR_BOMB = $"mdl/hud/grenade_indicator/grenade_indicator_bomb.rmdl"
 global const GRENADE_INDICATOR_GENERIC = $"mdl/hud/grenade_indicator/bang_indicator.rmdl"
@@ -153,7 +154,7 @@ void function Death_Package_Init()
 		PrecacheModel( GRENADE_INDICATOR_TICK_MODEL )
 		PrecacheModel( GRENADE_INDICATOR_BOMB )
 		PrecacheModel( GRENADE_INDICATOR_GENERIC )
-
+		PrecacheModel( GRENADE_INDICATOR_EMP_MODEL )
 		PrecacheModel( GRENADE_INDICATOR_STALKER_MODEL )
 
 		PrecacheModel( DAMAGEARROW_MODEL )

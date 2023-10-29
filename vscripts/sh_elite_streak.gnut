@@ -53,7 +53,7 @@ void function ShEliteStreak_Init()
 #if CLIENT
 void function ShEliteStreak_RegisterNetworkFunctions()
 {
-	RegisterNetworkedVariableChangeCallback_int( "currentEliteStreak", OnCurrentEliteStreakChanged )
+	//RegisterNetworkedVariableChangeCallback_int( "currentEliteStreak", OnCurrentEliteStreakChanged )
 	RegisterNetworkedVariableChangeCallback_int( "squadsRemainingCount", OnSquadsRemainingCountChanged )
 }
 #endif

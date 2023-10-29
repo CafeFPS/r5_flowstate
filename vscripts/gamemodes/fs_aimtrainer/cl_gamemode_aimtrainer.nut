@@ -1,5 +1,5 @@
 /*
-Flowstate Aim Trainer v1.0 - Made by CaféDeColombiaFPS (server, client, ui)
+Flowstate Aim Trainer v1.0 - Made by CafeFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Support me: https://ko-fi.com/r5r_colombia
 
@@ -39,8 +39,6 @@ global function ServerCallback_LiveStatsUIDamageViaDummieDamaged
 global function ServerCallback_LiveStatsUIHeadshot
 global function ServerCallback_ResetLiveStatsUI
 global function ServerCallback_CoolCameraOnMenu
-global function ServerCallback_SetLaserSightsOnSMGWeapon
-global function ServerCallback_StopLaserSightsOnSMGWeapon
 global function ServerCallback_RestartChallenge
 global function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies
 global function ServerCallback_ToggleDotForHitscanWeapons
@@ -120,7 +118,8 @@ void function Cl_ChallengesByColombia_Init()
 {
 	//Increase client command limit to 60
 	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-	
+	SetConVarInt("net_processTimeBudget", 2000)
+
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
@@ -201,39 +200,6 @@ void function AimTrainer_OnEntitiesDidLoad()
 void function ServerCallback_SetDefaultMenuSettings()
 {
 	thread ActuallyPutDefaultSettings()
-}
-
-void function ServerCallback_SetLaserSightsOnSMGWeapon(entity weapon)
-{
-	if(!IsValid(weapon)) return
-	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
-	weapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )
-	thread DisableLaserInADS()
-}
-
-void function ServerCallback_StopLaserSightsOnSMGWeapon(entity weapon)
-{
-	if(!IsValid(weapon)) return
-	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
-}
-	
-void function DisableLaserInADS()
-{
-	entity player = GetLocalClientPlayer()
-	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-	while(IsValid(activeWeapon)){
-		if(activeWeapon.IsWeaponAdsButtonPressed()){
-			activeWeapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )			
-			while(IsValid(activeWeapon)){
-				if(!activeWeapon.IsWeaponAdsButtonPressed()){
-					activeWeapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )					
-					break
-				}
-				WaitFrame()
-			}
-		}
-		WaitFrame()
-	}
 }
 
 void function ActuallyPutDefaultSettings()
@@ -1131,193 +1097,10 @@ void function UIToClient_MenuGiveWeapon(string weapon)
 void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desiredoptic, int desiredbarrel, int desiredstock, int desiredshotgunbolt, string weapontype, int desiredMag, string ammotype)
 {
 	entity player = GetLocalClientPlayer()
-	string optic = "none"
-	string barrel = "none"
-	string stock = "none"
-	string shotgunbolt = "none"
-	string mag = "none"
 
-	printt("DEBUG: desiredOptic: " + desiredoptic, " desiredBarrel: " + desiredbarrel, " desiredStock: " + desiredstock)
+	// printt("DEBUG: desiredOptic: " + desiredoptic, " desiredBarrel: " + desiredbarrel, " desiredStock: " + desiredstock)
 
-	switch(desiredoptic){
-		case 0:
-			optic = "none"
-			break
-		case 1:
-			optic = "optic_cq_hcog_classic"
-			break
-		case 2:
-			optic = "optic_cq_holosight"
-			break
-		case 3:
-			optic = "optic_cq_threat"
-			break
-		case 4:
-			optic = "optic_cq_holosight_variable"
-			break
-		case 5:	
-			optic = "optic_cq_hcog_bruiser"
-			break
-	}
-	
-	switch(desiredbarrel){
-		case 0:
-			barrel = "none"
-			break
-		case 1:
-			barrel = "barrel_stabilizer_l1"
-			break
-		case 2:
-			barrel = "barrel_stabilizer_l2"
-			break
-		case 3:
-			barrel = "barrel_stabilizer_l3"
-			break
-	}
-
-	switch(desiredstock){
-			case 0:
-				stock = "none"
-				break
-			case 1:
-				stock = "stock_tactical_l1"
-				break
-			case 2:
-				stock = "stock_tactical_l2"
-				break
-			case 3:
-				stock = "stock_tactical_l3"
-				break
-		}
-	
-	if( weapontype == "sniper" || weapontype == "sniper2" || weapontype == "marksman" || weapontype == "marksman2")
-		switch(desiredstock){
-			case 0:
-				stock = "none"
-				break
-			case 1:
-				stock = "stock_sniper_l1"
-				break
-			case 2:
-				stock = "stock_sniper_l2"
-				break
-			case 3:
-				stock = "stock_sniper_l3"
-				break
-		}		
-	
-	switch(desiredshotgunbolt){
-			case 0:
-				shotgunbolt = "none"
-				break
-			case 1:
-				shotgunbolt = "shotgun_bolt_l1"
-				break
-			case 2:
-				shotgunbolt = "shotgun_bolt_l2"
-				break
-			case 3:
-				shotgunbolt = "shotgun_bolt_l3"
-				break
-		}
-		
-	if(weapon == "mp_weapon_energy_ar" || weapon == "mp_weapon_esaw")
-	{
-		switch(desiredshotgunbolt){
-			case 0:
-				shotgunbolt = "."
-				break
-			case 1:
-				shotgunbolt = "hopup_turbocharger"
-				break
-		}
-	}else if(weapon == "mp_weapon_g2")
-	{
-		switch(desiredshotgunbolt){
-			case 0:
-				shotgunbolt = "."
-				break
-			case 1:
-				shotgunbolt = "hopup_double_tap"
-				break
-		}	
-	}else if(weapon == "mp_weapon_doubletake")
-	{
-		switch(desiredshotgunbolt){
-			case 0:
-				shotgunbolt = "."
-				break
-			case 1:
-				shotgunbolt = "hopup_energy_choke"
-				break
-		}			
-	}
-	
-	if(weapontype == "ar" || weapontype == "ar2" || weapontype == "lmg" || weapontype == "lmg2" || weapontype == "sniper" || weapontype == "sniper2" || weapontype == "marksman" || weapontype == "marksman2")
-	switch(desiredoptic){
-		case 0:
-			optic = "none"
-			break
-		case 1:
-			optic = "optic_cq_hcog_classic"
-			break
-		case 2:
-			optic = "optic_cq_holosight"
-			break
-		case 3:
-			optic = "optic_cq_holosight_variable"
-			break
-		case 4:
-			optic = "optic_cq_hcog_bruiser"
-			break
-		case 5:	
-			optic = "optic_ranged_hcog"
-			break
-		case 6:	
-			optic = "optic_ranged_aog_variable"
-			break
-		case 7:	
-			optic = "optic_sniper"
-			break
-		case 8:	
-			optic = "optic_sniper_variable"
-			break
-		case 9:	
-			optic = "optic_sniper_threat"
-			break
-	}
-	
-	switch(desiredMag){
-			case 0:
-				mag = "none"
-				break
-			case 1:
-				if(ammotype == "bullet")
-					mag = "bullets_mag_l1"
-				else if(ammotype == "highcal")
-					mag = "highcal_mag_l1"
-				else if(ammotype == "special")
-					mag = "energy_mag_l1"
-				break
-			case 2:
-				if(ammotype == "bullet")
-					mag = "bullets_mag_l2"
-				else if(ammotype == "highcal")
-					mag = "highcal_mag_l2"
-				else if(ammotype == "special")
-					mag = "energy_mag_l2"
-				break
-			case 3:
-				if(ammotype == "bullet")
-					mag = "bullets_mag_l3"
-				else if(ammotype == "highcal")
-					mag = "highcal_mag_l3"
-				else if(ammotype == "special")
-					mag = "energy_mag_l3"
-				break
-		}
-	
-    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot + " " + optic + " " + barrel + " " + stock + " " + shotgunbolt + " " + weapontype + " " + mag)
+    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot + " " + desiredoptic + " " + desiredbarrel + " " + desiredstock + " " + desiredshotgunbolt + " " + weapontype + " " + desiredMag + " " + ammotype )
 }
 
 void function OpenFRChallengesSettingsWpnSelector()

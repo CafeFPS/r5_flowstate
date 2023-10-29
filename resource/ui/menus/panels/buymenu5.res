@@ -228,7 +228,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-		CarButton
+		AlternatorButton
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -246,7 +246,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_to_sibling_corner   TOP_RIGHT
 		}
 		
-		Car
+		Alternator
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -255,23 +255,23 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          CarButton
+			pin_to_sibling          AlternatorButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		Car_Name
+		Alternator_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"Car"
+			labelText				"Alternator"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					120
+			xpos					95
 			fontHeight				35
-			pin_to_sibling          Car
+			pin_to_sibling          Alternator
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
@@ -324,104 +324,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-		AlternatorButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          ProwlerButton
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		Alternator
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          AlternatorButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
 
-		Alternator_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"Alternator"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					90
-			fontHeight				35
-			pin_to_sibling          Alternator
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		// RE45Button
-		// {
-			// "ControlName"				"RuiButton"
-			// "rui"						"ui/generic_friend_button.rpak"
-			// wide					200
-			// tall					150
-			// "visible"					"1"
-			// "sound_accept"				"ui_rankedsummary_circletick_reached"
-			// "sound_focus"				"UI_Menu_Focus_Small"
-			// xpos                    0
-			// ypos                    60
-			// zpos                    5
-			// pin_to_sibling          P2020
-			// pin_corner_to_sibling   TOP
-			// pin_to_sibling_corner   BOTTOM
-			// visible                 0
-		// }
-		
-		// RE45
-		// {
-			// ControlName 				 RuiPanel 
-			// rui 						 ui/basic_image.rpak 
-			// wide 						 160 
-			// tall 						 75 
-			// xpos                    0
-			// ypos                    -10
-			// zpos                    9
-			// pin_to_sibling          RE45Button
-			// pin_corner_to_sibling   CENTER
-			// pin_to_sibling_corner   CENTER
-			
-			// visible                 0
-		// }
-
-		// RE45_Name
-		// {
-			// ControlName				Label
-			// wide                    224
-			// labelText				"RE45"
-			// visible                 1
-			// zpos 9
-			// fgcolor_override		"2 252 240 255"
-			// ypos                                       20
-			// xpos					100
-			// fontHeight				35
-			// pin_to_sibling          RE45
-			// pin_corner_to_sibling   BOTTOM_RIGHT
-			// pin_to_sibling_corner   BOTTOM_RIGHT
-			
-			// visible                 0
-		// }
 //attachments box
 	
 

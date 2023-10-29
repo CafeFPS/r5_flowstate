@@ -54,8 +54,7 @@ global struct SmokescreenStruct
 
 vector function GetFXCenterFromSmokescreen( SmokescreenStruct smokescreen )
 {
-	vector origin = <0, 0, 0>
-	return origin
+	return smokescreen.origin
 }
 
 struct SmokescreenFXStruct
@@ -108,8 +107,8 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 
 	entity traceBlocker
 
-	if ( smokescreen.blockLOS )
-		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+	// if ( smokescreen.blockLOS )
+		// traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
 
 #if DEVELOPER
 	if ( SMOKESCREEN_DEBUG )

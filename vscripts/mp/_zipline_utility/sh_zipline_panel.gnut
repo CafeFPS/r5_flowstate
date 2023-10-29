@@ -156,7 +156,7 @@
                 if ( IsValid( panels_ ) )
                 {
                     panels_.UnsetUsable()
-                    panels_.SetSkin( ePanelState.DISABLE )
+                    panels_.SetSkin( eZiplinePanelState.DISABLE )
                     EmitSoundOnEntity( panels_, ZIPLINE_PANEL_LOCKED )
                 }
             }
@@ -208,7 +208,7 @@
     }
 
 
-    void function ChangePanelState( entity panel, bool forceUsable = false )
+    void function ChangeZiplinePanelState( entity panel, bool forceUsable = false )
     {
         ZiplineUtility zipline = GZFEP( panel ) ; string prompt ; float waitPanelState ; float travelTime
 
@@ -236,24 +236,24 @@
         if ( state.error )
         {
             if ( IsValid( panel ) ) panel.UnsetUsable()
-            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
+            if ( IsValid( panel ) ) panel.SetSkin( eZiplinePanelState.DISABLE )
         }
         else if ( forceUsable )
         {
             wait travelTime
 
             if ( IsValid( panel ) ) panel.SetUsable()
-            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
+            if ( IsValid( panel ) ) panel.SetSkin( eZiplinePanelState.ENABLE )
         }
         else
         {
             if ( IsValid( panel ) ) panel.UnsetUsable()
-            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
+            if ( IsValid( panel ) ) panel.SetSkin( eZiplinePanelState.DISABLE )
 
                 wait waitPanelState + travelTime
 
             if ( IsValid( panel ) ) panel.SetUsable()
-            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
+            if ( IsValid( panel ) ) panel.SetSkin( eZiplinePanelState.ENABLE )
         }
     }
 
@@ -298,7 +298,7 @@
     void function ChangeAllPanelState( ZiplineUtility zipline, bool forceUsable = false )
     {
         foreach ( panels in GetZiplinePanelArray( zipline ) )
-            thread ChangePanelState( panels, forceUsable )
+            thread ChangeZiplinePanelState( panels, forceUsable )
     }
 
 

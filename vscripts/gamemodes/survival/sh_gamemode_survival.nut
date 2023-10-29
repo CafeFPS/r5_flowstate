@@ -637,6 +637,9 @@ bool function CanWeaponInspect( entity player, int activity )
 	if ( Bleedout_IsBleedingOut( player ) )
 		return false
 
+	if( player.ContextAction_IsZipline() )
+		return false
+	
 	return GetCurrentPlaylistVarBool( "enable_weapon_inspect", true )
 }
 

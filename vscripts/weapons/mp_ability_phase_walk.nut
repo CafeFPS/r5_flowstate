@@ -5,6 +5,9 @@ global function OnWeaponPrimaryAttack_ability_phase_walk
 global function OnWeaponChargeBegin_ability_phase_walk
 global function OnWeaponChargeEnd_ability_phase_walk
 
+const string SOUND_ACTIVATE_1P = "pilot_phaseshift_firstarmraise_1p"                                                                                                                                                                                   
+const string SOUND_ACTIVATE_3P = "pilot_phaseshift_firstarmraise_3p"                                                                                                                
+
 const float PHASE_WALK_PRE_TELL_TIME = 1.5
 const asset PHASE_WALK_APPEAR_PRE_FX = $"P_phase_dash_pre_end_mdl"
 
@@ -15,21 +18,32 @@ void function MpAbilityPhaseWalk_Init()
 
 void function OnWeaponActivate_ability_phase_walk( entity weapon )
 {
+	entity player = weapon.GetWeaponOwner()
+	float deploy_time = weapon.GetWeaponSettingFloat( eWeaponVar.deploy_time )
+	
 	#if SERVER
-		entity player = weapon.GetWeaponOwner()
-		EmitSoundOnEntityExceptToPlayer( player, player, "pilot_phaseshift_armraise_3p" )
-		float deploy_time = weapon.GetWeaponSettingFloat( eWeaponVar.deploy_time )
-		
-		if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
-			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
-		
-			if ( !weapon.HasMod( "ult_active" ) )
-			{
-		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.2, deploy_time, deploy_time )
-	}
-		
-		
+	EmitSoundOnEntityExceptToPlayer( player, player, SOUND_ACTIVATE_3P )
+
+	if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
 	#endif
+	
+	if ( !weapon.HasMod( "ult_active" ) )
+	{
+		#if SERVER
+			                                                                    
+		#endif
+
+		#if CLIENT
+			if ( !InPrediction() )
+				return
+
+			EmitSoundOnEntity( player, SOUND_ACTIVATE_1P )
+		#endif
+
+		float amount = GetCurrentPlaylistVarFloat( "wraith_phase_walk_slow_amount", 0.2 )
+		StatusEffect_AddTimed( player, eStatusEffect.move_slow, amount, deploy_time, deploy_time )	
+	}
 }
 
 var function OnWeaponPrimaryAttack_ability_phase_walk( entity weapon, WeaponPrimaryAttackParams attackParams )
@@ -42,18 +56,27 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 {
 	entity player = weapon.GetWeaponOwner()
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
-	float amount = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_amount", 0.3 )
-	float easeOut = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_easeOutFrac", 0.3 )
-			
-	#if SERVER
-		LockWeaponsAndMelee( player )
+		
+	{
+		bool doStatus = true
+		#if CLIENT
+			if ( !InPrediction() )
+				doStatus = false
+		#endif
 
-			weapon.w.statusEffects.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, amount, chargeTime, chargeTime*easeOut ) )
+		if ( doStatus )
+		{
+			int speedHandle = StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.3, chargeTime, chargeTime * 0.3 )
 
-		thread PhaseWalkUnphaseTell( player, chargeTime )
-		PlayerUsedOffhand( player, weapon )
-	StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )
-	#endif
+			#if SERVER
+			LockWeaponsAndMelee( player )
+			thread PhaseWalkUnphaseTell( player, chargeTime )
+			PlayerUsedOffhand( player, weapon )
+			//StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )                                         
+			#endif
+		}
+	}
+
 	PhaseShift( player, 0, chargeTime, eShiftStyle.Balance )
 	return true
 }
@@ -98,7 +121,7 @@ void function OnWeaponChargeEnd_ability_phase_walk( entity weapon )
 		{
 			StatusEffect_Stop( player, effect )
 		}
-		if ( player.IsMantling() || player.IsWallRunning() || player.p.isSkydiving )
-			weapon.SetWeaponPrimaryClipCount( 0 ) //Defensive fix for the fact that primary fire isn't triggered when climbing.
+		
+		weapon.SetWeaponPrimaryClipCount( 0 )
 	#endif
 }

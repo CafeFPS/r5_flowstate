@@ -76,7 +76,7 @@ void function DroneEMP_HandleDamageSource( entity target, var damageInfo )
 void function DroneFireEMP( entity weapon )
 {
 	entity owner = weapon.GetWeaponOwner()
-	entity camera = GetPlayerCamera( owner )
+	entity camera = CryptoDrone_GetPlayerDrone( owner )
 	
 	// Shouldn't have happened, give their ult charge back!
 	if( !IsValid( camera ) )
@@ -198,7 +198,7 @@ void function DroneFireEMP_Thread( entity weapon, entity camera, array<entity> t
 		if (target.GetScriptName() == "jump_pad")
 			target.Signal("OnDestroy")
 
-		if (target.GetScriptName() == "pylon" || target.GetScriptName() == "fence_node")
+		if (target.GetScriptName() == TROPHY_SYSTEM_NAME || target.GetScriptName() == "fence_node")
 			target.TakeDamage( target.GetMaxHealth() + 1, owner, weapon, { damageSourceId=eDamageSourceId.mp_ability_crypto_drone_emp } )
 	}
 
@@ -229,7 +229,7 @@ array<entity> function GetTargets(vector origin, float radius){
 		if( target.IsPlayer() || target.IsNPC() || target.IsPlayerDecoy() || target.GetScriptName() == "crypto_camera")
 			continue
 
-		if (target.GetScriptName() == "pylon" || target.GetScriptName() == "fence_node" || target.GetScriptName() == "gas_trap")
+		if (target.GetScriptName() == TROPHY_SYSTEM_NAME || target.GetScriptName() == "fence_node" || target.GetTargetName() == DIRTY_BOMB_TARGETNAME)
 			validTargets.append( target )
 
 		if ( target.GetScriptName() == "jump_pad" || target.GetScriptName() == "jump_pad_p" || target.GetScriptName() == "domeOfProtection" || target.GetScriptName() == "deployable_medic" )

@@ -11,6 +11,7 @@ global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
 global function SURVIVAL_SetMapCenter
 global function SURVIVAL_SetMapDelta
+global function GiveBasicSurvivalItems
 #if DEVELOPER
 global function GetDropshipClearance
 #endif
@@ -162,75 +163,109 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 
 void function Survival_DropPlayerFromPlane_UseCallback( entity player )
 {
-	Survival_DropPlayerFromPlane( player, true )
+	Survival_DropPlayerFromPlane( player )
 }
 
-bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback = false )
+bool function Survival_DropPlayerFromPlane( entity player )
 {
+	if( !IsValid( player ) )
+		return false
+	
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 	{
-		if ( fromUseCallback )
-		{
-			int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-			if ( funcPos != -1 )
-				RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-		}
-
+		RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 		return false
 	}
 
-	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) )
+	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) ) //Shouldn't happen, but just in case.
 		return false
-
-	// Why is this required?	
-	player.SetAngles( player.CameraAngles() )
-
-	vector driverViewVector = player.GetViewVector()
-
-	array<entity> squadPlayers = [ player ]
-	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
-		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	
-	if ( fromUseCallback )
-	{
-		int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-		if ( funcPos != -1 )
-			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-	}
-
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
-		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
-
-	foreach ( squadPlayer in squadPlayers )
 	{
-		if ( squadPlayer != player )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
+		
+		array<entity> squad = [ player ]
+		
+		foreach ( squadPlayer in GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
 		{
-			squadPlayer.ClearParent()
-			if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
+			if ( IsValid( squadPlayer ) && squadPlayer != player )
 			{
-				squadPlayers.fastremovebyvalue( squadPlayer )
-				continue
+				if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
+				{
+					squad.fastremovebyvalue( squadPlayer )
+				}
+				else
+					squad.append( squadPlayer )
 			}
 		}
-
-		squadPlayer.ClearParent()
-		squadPlayer.UnforceCrouch()
-
-		TakeAllWeapons( squadPlayer )
-		DecideRespawnPlayer( squadPlayer )
-
-		squadPlayer.Show()
-		squadPlayer.Solid()
-		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
-		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
-
-		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
-			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
-
-		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
+		
+		foreach ( squadPlayer in squad )
+		{
+			CommonPlayerDropLines( squadPlayer )
+			thread PlayerSkyDive( squadPlayer, player.GetViewVector(), squad, player )
+			
+			if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+				Message( squadPlayer, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
+		}
+	} else if ( !player.GetPlayerNetBool( "isJumpmaster" ) && !player.GetPlayerNetBool( "isJumpingWithSquad" ) ) //Dropping solo
+	{
+		CommonPlayerDropLines( player )
+		thread PlayerSkyDive( player, player.GetViewVector(), [player], player )
+		
+		if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+			Message( player, "Mortal Overshields", "Kill players to upgrade your shield up to seven tiers." )
 	}
-
 	return true
+}
+
+void function CommonPlayerDropLines(entity player)
+{
+	player.ClearParent()
+	RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+	player.SetAngles( player.CameraAngles() )
+	player.UnforceCrouch()
+	
+	ResetPlayerInventory( player )
+	DecideRespawnPlayer( player )
+	
+	player.Show()
+	player.Solid()
+	player.SetPlayerNetBool( "playerInPlane", false )
+	player.SetPlayerNetBool( "freefallIsFromPlane", true )
+	if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
+		player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
+	
+	GiveBasicSurvivalItems( player )
+}
+
+void function GiveBasicSurvivalItems( entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	//add white shield, white knockdown shield, white helmet, two syringes and two cells
+	Inventory_SetPlayerEquipment( player, "armor_pickup_lv1", "armor")
+	Inventory_SetPlayerEquipment( player, "helmet_pickup_lv1", "helmet")
+	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv1", "incapshield")
+	
+	array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+	foreach(item in loot)
+		SURVIVAL_AddToPlayerInventory(player, item, 2)
+			
+	player.SetShieldHealthMax(50)
+	player.SetShieldHealth(50)
+	
+	Survival_SetInventoryEnabled( player, true )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	
+	if( ItemFlavor_GetHumanReadableRef( playerCharacter ) != "character_gibraltar" )
+	{
+		player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
+		player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
+	}
+	// todo: find why it's not playing fx on cockpit
+	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
 }
 
 bool function Survival_HasPlayerJumpedOutOfPlane( entity player )

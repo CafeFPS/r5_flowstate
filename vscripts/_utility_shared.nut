@@ -97,6 +97,23 @@ global enum eGradeFlags
 	IS_LOCKED = (1 << 3),
 }
 
+struct RefEntAreaData
+{
+	vector areaMin
+	vector areaMax
+}
+
+struct
+{
+	array<entity>                 invalidEntsForPlacingPermanentsOnto
+	table<entity, RefEntAreaData> invalidAreasRelativeToEntForPlacingPermanentsOnto
+	//int functionref()            getNumTeamsRemainingCallback
+	//float functionref()			 getDeathCamTimeOverride
+	//float functionref()			 getDeathCamSpectateTimeOverride
+	array<string>				 nonInstalledModsTracked
+
+	//UpdraftTriggerSettings&      updraftSettings = { ... }
+} file
 
 void function Utility_Shared_Init()
 {
@@ -116,6 +133,10 @@ void function Utility_Shared_Init()
 void function InitWeaponScripts()
 {
 	SmartAmmo_Init()
+	MpWeaponNeedler_Init()
+	MpWeaponRayGun_Init()
+	MpAbilityShadowPounceFree_Init()
+	MpWeaponEnergySword_Init()
 
 	// WEAPON SCRIPTS
 	ArcCannon_Init()
@@ -126,7 +147,8 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "grenade_frag" )
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
-	
+	if( GetCurrentPlaylistName() != "fs_1v1" )
+		MpWeaponEmoteProjector_Init()
 	MpWeaponDoubletake_Init()
 	//MpWeaponGrenadeGravity_Init()
 	MpSpaceElevatorAbility_Init()
@@ -171,7 +193,9 @@ void function InitWeaponScripts()
 	MpWeaponGrenadeCreepingBombardment_Init()
 	MpWeaponGrenadeCreepingBombardmentWeapon_Init()
 	MpAbilityMirageUltimate_Init()
+
 	MpAbilityCryptoDrone_Init()
+
 	MpAbilityCryptoDroneEMP_Init()
 	MpWeaponPhaseTunnel_Init()
 	MpWeaponTeslaTrap_Init()
@@ -1888,6 +1912,15 @@ void function ArrayRemoveDead( array<entity> entArray )
 	}
 }
 
+array<entity> function GetSortedPlayers_FFA( IntFromEntityCompare compareFunc )
+{
+	array<entity> players = GetPlayerArray()
+
+	players.sort( compareFunc )
+
+	return players
+}
+
 array<entity> function GetSortedPlayers( IntFromEntityCompare compareFunc, int team )
 {
 	array<entity> players
@@ -1902,40 +1935,69 @@ array<entity> function GetSortedPlayers( IntFromEntityCompare compareFunc, int t
 	return players
 }
 
-// Sorts by kills and resolves ties in this order: fewest deaths, most titan kills, most assists
+// Sorts by kills and resolves ties in this order: kills, deaths, damage
 int function CompareKills( entity a, entity b )
 {
-	int aVal = a.GetPlayerGameStat( PGS_KILLS )
-	int bVal = b.GetPlayerGameStat( PGS_KILLS )
+	if( !IsValid( a ) || !IsValid( b ) )
+		return 0
+	
+	int aVal
+	int bVal
+
+	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	{
+		aVal = a.GetPlayerNetInt( "oddball_ballHeldTime" )
+		bVal = b.GetPlayerNetInt( "oddball_ballHeldTime" )
+	}
+	else
+	{
+		aVal = a.GetPlayerNetInt( "kills" )
+		bVal = b.GetPlayerNetInt( "kills" )
+	}
 
 	if ( aVal < bVal )
 		return 1
 	else if ( aVal > bVal )
 		return -1
 
-	aVal = a.GetPlayerGameStat( PGS_DEATHS )
-	bVal = b.GetPlayerGameStat( PGS_DEATHS )
+	aVal = a.GetPlayerNetInt( "deaths" )
+	bVal = b.GetPlayerNetInt( "deaths" )
 
 	if ( aVal > bVal )
 		return 1
 	else if ( aVal < bVal )
 		return -1
 
-	aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
-	bVal = b.GetPlayerGameStat( PGS_TITAN_KILLS )
+	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	{
+		aVal = a.GetPlayerNetInt( "kills" )
+		bVal = b.GetPlayerNetInt( "kills" )
+	}
+	else
+	{
+		aVal = a.GetPlayerNetInt( "damage" )
+		bVal = b.GetPlayerNetInt( "damage" )
+	}
 
-	if ( aVal < bVal )
+	if ( aVal > bVal )
 		return 1
-	else if ( aVal > bVal )
+	else if ( aVal < bVal )
 		return -1
+	// aVal = a.GetPlayerGameStat( PGS_TITAN_KILLS )
+	// bVal = b.GetPlayerGameStat( PGS_TITAN_KILLS )
 
-	aVal = a.GetPlayerGameStat( PGS_ASSISTS )
-	bVal = b.GetPlayerGameStat( PGS_ASSISTS )
+	// if ( aVal < bVal )
+		// return 1
+	// else if ( aVal > bVal )
+		// return -1
 
-	if ( aVal < bVal )
-		return 1
-	else if ( aVal > bVal )
-		return -1
+	// aVal = a.GetPlayerGameStat( PGS_ASSISTS )
+	// bVal = b.GetPlayerGameStat( PGS_ASSISTS )
+
+	// if ( aVal < bVal )
+		// return 1
+	// else if ( aVal > bVal )
+		// return -1
 
 	return 0
 }
@@ -3071,7 +3133,7 @@ bool function HasBitMask( int bitsExisting, int bitsToCheck )
 	return bitsCommon == bitsToCheck
 }
 
-float function GetDeathCamLength( entity player )
+float function GetDeathCamLength( )
 {
 	if ( GetGameState() < eGameState.Playing )
 		return DEATHCAM_TIME_SHORT
@@ -3496,6 +3558,9 @@ void function SetTeam( entity ent, int team )
 		else
 		{
 			ent.Code_SetTeam( team )
+			
+			if( ent.IsPlayer() && IsAlive(ent) && ent.p.isConnected )
+				Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
 		}
 	#endif
 }
@@ -4621,20 +4686,32 @@ bool function PlayerIsInADS( entity player )
 #if SERVER
 void function GradeFlagsChange( entity ent, int gradeFlags, bool value )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( value ? (ent.GetGrade() | gradeFlags) : (ent.GetGrade() & ~gradeFlags) )
 }
 void function GradeFlagsSet( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( ent.GetGrade() | gradeFlags )
 }
 void function GradeFlagsClear( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return
+
 	ent.SetGrade( ent.GetGrade() & ~gradeFlags )
 }
 #endif // SERVER
 
 bool function GradeFlagsHas( entity ent, int gradeFlags )
 {
+	if( !IsValid( ent ) )
+		return false
+
 	return ((ent.GetGrade() & gradeFlags) != 0)
 }
 
@@ -4656,6 +4733,27 @@ bool function GradeFlagsHas( entity ent, int gradeFlags )
 //
 //	return ""
 //}
+array<string> function GetValidLootModsInstalled( entity weapon )
+{
+	string weaponName = GetWeaponClassName( weapon )
+
+	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return []
+
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
+		return []
+
+	array<string> mods = GetWeaponMods( weapon )
+	array<string> validMods
+
+	foreach ( mod in mods )
+	{
+		if ( SURVIVAL_Loot_IsRefValid( mod ) )                                         
+			validMods.append( mod )
+	}
+
+	return validMods
+}
 
 array<string> function GetValidModsInstalled( entity weapon )
 {
@@ -4700,14 +4798,30 @@ array<string> function GetNonInstallableWeaponMods( entity weapon )
 			installedMods.append( mod )
 	}
 
-	foreach ( mod in installedMods )
-	{
-		VerifyToggleMods( mod, foundMods )
-	}
+	VerifyToggleMods( foundMods )
 
 	return foundMods
 }
+array<string> function GetNonInstallableTrackableWeaponMods( entity weapon )
+{
+	string weaponName = GetWeaponClassName( weapon )
 
+	if ( weapon.GetNetworkedClassName() != "prop_survival" && !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return weapon.GetMods()
+
+	bool isAttachmentLocked = SURVIVAL_Weapon_IsAttachmentLocked( weaponName )
+
+	array<string> mods = GetWeaponMods( weapon )
+	array<string> trackedMods
+
+	foreach ( mod in mods )
+	{
+		if ( ( !CanAttachToWeapon( mod, weaponName ) || isAttachmentLocked ) && file.nonInstalledModsTracked.contains( mod ) )
+			trackedMods.append( mod )
+	}
+
+	return trackedMods
+}
 string function GetWeaponClassName( entity weaponOrProp )
 {
 	string weaponName
@@ -4858,12 +4972,33 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 
 	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
 		return false
-
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
+	
+	string refAttachPointOg = GetAttachPointForAttachmentOnWeapon( weaponName, attachment )
+	
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg != "sight" )
 		return false
-
+	
 	AttachmentData aData = GetAttachmentData( attachment )
+	array<string> splitRef = split(weaponName, "_")
+	
+	if( splitRef[splitRef.len() - 1] == "gold" )
+		splitRef.fastremovebyvalue(splitRef[splitRef.len() - 1])
+	
+	string weaponNameBase
+	
+	for( int i = 0; i < splitRef.len(); i++ )
+	{
+		if( i != 0 )
+			weaponNameBase += "_"+splitRef[i]
+		else
+			weaponNameBase += splitRef[i]
+	}
 
+	// printt("debug final str " + weaponNameBase )
+	
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg == "sight" && aData.compatibleWeapons.contains( weaponNameBase ) )
+		return true
+	
 	// this is now pre-computed when building AttachmentData
 	//if ( !AttachmentPointSupported( aData.attachPoint, weaponName ) )
 	//	return false
@@ -4890,7 +5025,7 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "grip" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, "grip" ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
@@ -4901,24 +5036,10 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 			break
 
 		case "barrel":
-			return "barrel_stabilizer"
-			break
-
-		case "mag":
-			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
-			if ( weaponData.ammoType == "bullet" )
-				return "mag_straight"
-			if ( weaponData.ammoType == "special" )
-				return "mag_energy"
-			if ( weaponData.ammoType == "shotgun" )
-				return "mag_shotgun"
-			break
-
-		case "hopup":
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "hopup" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, "barrel" ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
@@ -4926,25 +5047,76 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 
 				return attachmentData.attachmentStyle
 			}
+
+			break
+
+		case "mag":
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
+			if ( weaponData.ammoType == BULLET_AMMO )
+				return "mag_straight"
+			if ( weaponData.ammoType == SPECIAL_AMMO || weaponData.ammoType == ARROWS_AMMO )
+				return "mag_energy"
+			if ( weaponData.ammoType == SHOTGUN_AMMO )
+				return "mag_shotgun"
+			if ( weaponData.ammoType == SNIPER_AMMO )
+				return "mag_sniper"
+            if ( weaponData.ref == "mp_weapon_car" )
+                return "mag_car"
+
+			break
+
+		case "hopup":
+		case "hopupMulti_a":
+		case "hopupMulti_b":
+			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
+			string attachmentStyle = ""
+			bool moreThanOneHopup = false
+			foreach ( attachmentData in attachments )
+			{
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, attachmentPoint ) )
+					continue
+
+				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
+					continue
+
+				if ( attachmentStyle != "" && !attachmentData.lootTags.contains( "FakeHopup" ) )
+				{
+					moreThanOneHopup = true
+					break
+				}
+
+				if ( !attachmentData.lootTags.contains( "FakeHopup" ) )
+					attachmentStyle = attachmentData.attachmentStyle
+			}
+
+			if ( moreThanOneHopup )
+				return attachmentPoint
+			else if ( attachmentStyle != "" )
+				return attachmentStyle
+
 			break
 	}
 
 	return attachmentPoint
 }
-
 array<string> function GetAttachmentsForPoint( string attachmentPoint, string weaponName )
 {
 	array<string> attachmentRefs
 	switch ( attachmentPoint )
 	{
 		case "hopup":
+		case "hopupMulti_a":
+		case "hopupMulti_b":
 			array<LootData> attachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
 			foreach ( attachmentData in attachments )
 			{
-				if ( GetAttachPointForAttachment( attachmentData.ref ) != "hopup" )
+				if ( !CanAttachmentEquipToAttachPoint( attachmentData.ref, attachmentPoint ) )
 					continue
 
 				if ( !CanAttachToWeapon( attachmentData.ref, weaponName ) )
+					continue
+
+				if ( attachmentData.lootTags.contains ( "FakeHopup" ) )
 					continue
 
 				attachmentRefs.append( attachmentData.ref )
@@ -4952,7 +5124,7 @@ array<string> function GetAttachmentsForPoint( string attachmentPoint, string we
 			break
 
 		default:
-			Assert( 0, "attachmentPoint " + attachmentPoint + " is not supported, but could be." )
+			Assert( false, "attachmentPoint " + attachmentPoint + " is not supported, but could be." )
 	}
 
 	return attachmentRefs
@@ -5055,8 +5227,9 @@ array<entity> function GetFriendlySquadArrayForPlayer_AliveConnected( entity pla
 	{
 		if ( !IsAlive( player ) )
 			return []
+
 		#if SERVER
-		
+
 		// if (teamsWithPlayersAlive.len() == 0)
 		// {
 		// 	teamsWithPlayersAlive.append( team )
@@ -5069,7 +5242,7 @@ array<entity> function GetFriendlySquadArrayForPlayer_AliveConnected( entity pla
 		// 		teamFound = true
 		// }
 
-	#endif
+		#endif
 		return [player]
 	}
 
@@ -5402,4 +5575,67 @@ void function WaitForGameState(int state) {
 	{
 		WaitFrame()
 	}
+}
+
+void function AddEntToInvalidEntsForPlacingPermanentsOnto( entity ent )
+{
+	Assert( !file.invalidEntsForPlacingPermanentsOnto.contains( ent ) )
+	file.invalidEntsForPlacingPermanentsOnto.append( ent )
+}
+
+
+void function RemoveEntFromInvalidEntsForPlacingPermanentsOnto( entity ent )
+{
+	Assert( file.invalidEntsForPlacingPermanentsOnto.contains( ent ) )
+	file.invalidEntsForPlacingPermanentsOnto.removebyvalue( ent )
+}
+
+
+bool function IsEntInvalidForPlacingPermanentOnto( entity ent )
+{
+	return file.invalidEntsForPlacingPermanentsOnto.contains( ent )
+}
+
+
+void function AddRefEntAreaToInvalidOriginsForPlacingPermanentsOnto( entity refEnt, vector areaMin, vector areaMax )
+{
+	Assert( !(refEnt in file.invalidAreasRelativeToEntForPlacingPermanentsOnto) )
+
+	RefEntAreaData data
+	data.areaMin = areaMin
+	data.areaMax = areaMax
+
+	file.invalidAreasRelativeToEntForPlacingPermanentsOnto[refEnt] <- data
+}
+
+
+void function RemoveRefEntAreaFromInvalidOriginsForPlacingPermanentsOnto( entity refEnt )
+{
+	if ( refEnt in file.invalidAreasRelativeToEntForPlacingPermanentsOnto )
+	{
+		delete file.invalidAreasRelativeToEntForPlacingPermanentsOnto[ refEnt ]
+	}
+	else
+	{
+		Assert( false, "Ref ent is not in table of ref ent areas." )
+	}
+}
+
+
+bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
+{
+	foreach ( entity refEnt, RefEntAreaData data in file.invalidAreasRelativeToEntForPlacingPermanentsOnto )
+	{
+		if ( !IsValid( refEnt ) )
+			continue
+
+		vector localPos = WorldPosToLocalPos_NoEnt( origin, refEnt.GetOrigin(), refEnt.GetAngles() )
+
+		if ( localPos.x > data.areaMin.x && localPos.x < data.areaMax.x
+		&& localPos.y > data.areaMin.y && localPos.y < data.areaMax.y
+		&& localPos.z > data.areaMin.z && localPos.z < data.areaMax.z )
+			return true
+	}
+
+	return false
 }

@@ -92,7 +92,7 @@ int ornull function GetCurrentPlaylistVarTimestamp( string varName, int defaultV
 #if CLIENT || UI
 int function GetMaxTeamSizeForPlaylist( PlaylistName playlistName )
 {
-	int maxTeamSize = GetPlaylistVarInt( playlistName, "max_team_size", 0 )
+	int maxTeamSize = GetPlaylistVarInt( playlistName, "max_team_size", 1 )
 	if ( maxTeamSize > 0 )
 		return maxTeamSize
 
@@ -313,16 +313,16 @@ string function Playlist_GetLTMSlotPlaylist()
 
 asset function GetModeEmblemImage( string playlistName )
 {
-	string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
+	// string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
 	asset emblemImage = $""
 
-	if ( emblemKey != "" )
-	{
-		if ( emblemKey in GAMEMODE_EMBLEM_MAP )
-			emblemImage = GAMEMODE_EMBLEM_MAP[emblemKey]
-		else
-			Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
-	}
+	// if ( emblemKey != "" )
+	// {
+		// if ( emblemKey in GAMEMODE_EMBLEM_MAP )
+			// emblemImage = GAMEMODE_EMBLEM_MAP[emblemKey]
+		// else
+			// Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
+	// }
 	#if CLIENT
 	switch(GameRules_GetGameMode())
 	{
@@ -346,20 +346,32 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/sndgamemode"
 		break
 		
-		// case "flowstate_infection":
+		// case "fs_infected":
 		// emblemImage = $"rui/flowstatecustom/infection"
 		// break
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	switch( GetCurrentPlaylistName() )
 	{
+		case "fs_movementgym":
 		emblemImage = $"rui/flowstatecustom/movementgym"
+		break
+		
+		case "fs_1v1":
+		emblemImage = $"rui/flowstatecustom/1v1"
+		break
+		
+		case "fs_survival_duos":
+		emblemImage = $"rui/menu/gamemode_emblem/duos"
+		break
+		
+		case "fs_survival_solos":
+		emblemImage = $"rui/flowstatecustom/generic_ltm"
+		break
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_1v1" )
-	{
-		emblemImage = $"rui/flowstatecustom/1v1"
-	}
+	if( GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+		emblemImage = $"rui/flowstatecustom/hiswattson_ltms"
 	#endif
 		
 	return emblemImage

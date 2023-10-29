@@ -1,0 +1,250 @@
+//Server made by @CafeFPS
+
+global function ShPassiveAdrenaline_Init
+
+#if CLIENT
+const asset SMOKE_SCREEN_FX = $"P_adrenaline_screen_CP"
+const string ADRENALINE_SOUND_START 	= "Bangalore_DoubleTime_Activate"
+#endif
+
+struct
+{
+	#if CLIENT
+	int colorCorrection
+	int ScreenFxId
+	#endif
+} file
+
+void function ShPassiveAdrenaline_Init()
+{
+	#if CLIENT
+	file.ScreenFxId = PrecacheParticleSystem( SMOKE_SCREEN_FX )
+	RegisterSignal( "PassiveAdrenaline_StopColorCorrection" )
+	file.colorCorrection = ColorCorrection_Register( "materials/correction/adrenaline_passive.raw_hdr" )
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.adrenaline_visuals, PassiveAdrenaline_StartVisualEffect )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.adrenaline_visuals, PassiveAdrenaline_StopVisualEffect )
+	#endif
+	
+	#if SERVER
+	AddCallback_OnPassiveChanged( ePassives.PAS_ADRENALINE, PassiveAdrenaline_OnPassiveChanged )
+	#endif
+}
+
+#if SERVER
+void function PassiveAdrenaline_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( didHave && IsValid(player.p.vortexTriggerDoubleTime) )
+		player.p.vortexTriggerDoubleTime.Destroy()
+
+	if ( nowHas )
+	{
+		#if DEVELOPER
+		printt("adrenaline started")
+		#endif
+		thread Flowstate_GrantAdrenaline( player )
+	}
+}
+
+const float ADRENALINE_DURATION = 2
+const float ADRENALINE_STRENGHT = 0.3
+const float ADRENALINE_RADIUS = 128 // ??
+
+void function Flowstate_GrantAdrenaline( entity player )
+{
+	if(!IsValid(player) || !player.IsPlayer() || !player.HasPassive( ePassives.PAS_ADRENALINE ) || GameRules_GetGameMode() != SURVIVAL ) 
+		return
+
+	entity vortexSphere = CreateEntity( "vortex_sphere" )
+	int spawnFlags = SF_ABSORB_CYLINDER | SF_BLOCK_OWNER_WEAPON //SF_ABSORB_BULLETS | SF_BLOCK_NPC_WEAPON_LOF |
+	vortexSphere.kv.height = ADRENALINE_RADIUS * 2
+	vortexSphere.kv.spawnflags = spawnFlags
+	vortexSphere.kv.enabled = 1
+	vortexSphere.kv.radius = ADRENALINE_RADIUS
+	vortexSphere.kv.bullet_fov = 180
+	vortexSphere.kv.physics_pull_strength = 25
+	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.physics_fov = 360
+	vortexSphere.kv.physics_max_mass = 2
+	vortexSphere.kv.physics_max_size = 6
+	
+	player.p.vortexTriggerDoubleTime = vortexSphere
+	
+	//vortex trigger (pog)
+	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Adrenaline_OnProjectilesTriggerTouch ) //normal bullets + grenades
+	SetCallback_VortexSphereTriggerOnBulletHit( vortexSphere, Adrenaline_OnBulletTriggerTouch ) // hitscans etc
+	SetTargetName( vortexSphere, VORTEX_TRIGGER_AREA )
+	
+	DispatchSpawn( vortexSphere )
+
+	vortexSphere.SetOwner( player )
+	vortexSphere.SetOrigin( player.GetOrigin() )
+	vortexSphere.SetParent( player )
+	vortexSphere.SetAbsAngles( <0,0,0> ) //Setting local angles on a parented object is not supported
+}
+
+void function Adrenaline_OnBulletTriggerTouch( entity vortexSphere, entity vortexTrigger, var damageInfo )
+{
+	if( !IsValid(vortexTrigger) )
+		return
+	
+	#if DEVELOPER
+	printt("hitscan entered bang passive area")
+	#endif
+	
+	entity player = vortexTrigger.GetOwner()
+
+	if ( !IsValid(player) || !IsAlive(player) ||  !player.IsSprinting() || DamageInfo_GetAttacker(damageInfo).GetTeam() == player.GetTeam() || StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 || StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 )
+		return
+	
+	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
+	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, ADRENALINE_STRENGHT, ADRENALINE_DURATION, ADRENALINE_DURATION )
+}
+
+void function Adrenaline_OnProjectilesTriggerTouch( entity vortexSphere, entity vortexTrigger, entity attacker, entity projectile, vector aPosition )
+{
+	if( !IsValid(vortexTrigger) )
+		return
+	
+	#if DEVELOPER
+	printt(projectile + "entered bang passive area")
+	#endif
+	
+	entity player = vortexTrigger.GetOwner()
+
+	if ( !IsValid(player) || !IsAlive(player) ||  !player.IsSprinting() || projectile.GetTeam() == player.GetTeam() || !DoubleTime_IsValidProjectileForTrigger(projectile) || StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 || StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 )
+		return
+	
+	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
+	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, ADRENALINE_STRENGHT, ADRENALINE_DURATION, ADRENALINE_DURATION )
+}
+
+bool function DoubleTime_IsValidProjectileForTrigger( entity projectile )
+{
+	switch ( projectile.GetClassName() )
+	{
+		case "crossbow_bolt":
+			return true
+			break
+		case "grenade":
+			return true
+			break
+		case "rpg_missile":
+			return true
+			break
+		default:
+			return false
+			break
+	}
+
+	unreachable
+}
+
+#endif
+
+#if CLIENT
+void function PassiveAdrenaline_StartVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	entity viewPlayer = ent
+
+	EmitSoundOnEntity( viewPlayer, ADRENALINE_SOUND_START )
+
+	CreatePassiveAdrenalineRUI()
+	thread PassiveAdrenaline_UpdatePlayerScreenColorCorrection( viewPlayer )
+
+	int fxHandle = StartParticleEffectOnEntityWithPos( viewPlayer, file.ScreenFxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, viewPlayer.EyePosition(), <0,0,0> )
+	EffectSetIsWithCockpit( fxHandle, true )
+
+	thread PassiveAdreneline_ScreenEffectThread( viewPlayer, fxHandle, statusEffect )
+
+}
+
+void function PassiveAdrenaline_StopVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	ent.Signal( "PassiveAdrenaline_StopColorCorrection" )
+}
+
+void function CreatePassiveAdrenalineRUI()
+{
+	// this rui will self destruct once it's done animating
+	var rui = CreateTransientCockpitRui( $"ui/passive_bangalore_triggered.rpak", HUD_Z_BASE )
+}
+
+void function PassiveAdrenaline_UpdatePlayerScreenColorCorrection( entity player )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	Assert ( player == GetLocalViewPlayer() )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "PassiveAdrenaline_StopColorCorrection" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			//if ( IsValid( player ) )
+			//	player.SetFOVScale( 1.0, 1 )
+
+			ColorCorrection_SetWeight( file.colorCorrection, 0.0 )
+			ColorCorrection_SetExclusive( file.colorCorrection, false )
+		}
+	)
+
+	ColorCorrection_SetExclusive( file.colorCorrection, true )
+	ColorCorrection_SetWeight( file.colorCorrection, 1.0 )
+
+	const LERP_IN_TIME = 0.0125	// hack! because statusEffect doesn't seem to have a lerp in feature?
+	float startTime = Time()
+
+	while ( true )
+	{
+		//printt( "Running Color Correction Update" )
+		float weight = StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals )
+		//printt( weight )
+		weight = GraphCapped( Time() - startTime, 0, LERP_IN_TIME, 0, weight )
+		ColorCorrection_SetWeight( file.colorCorrection, weight )
+
+		WaitFrame()
+	}
+}
+
+
+void function PassiveAdreneline_ScreenEffectThread( entity viewPlayer, int fxHandle, int statusEffect )
+{
+	EndSignal( viewPlayer, "OnDeath" )
+	EndSignal( viewPlayer, "PassiveAdrenaline_StopColorCorrection" )
+
+	OnThreadEnd(
+		function() : ( fxHandle )
+		{
+			if ( !EffectDoesExist( fxHandle ) )
+				return
+
+			EffectStop( fxHandle, false, true )
+		}
+	)
+
+	while( true )
+	{
+		float severity = StatusEffect_GetSeverity( viewPlayer, statusEffect )
+		//DebugScreenText( 0.47, 0.68, "severity: " + severity )
+
+		if ( !EffectDoesExist( fxHandle ) )
+			break
+
+		EffectSetControlPointVector( fxHandle, 1, <severity,999,0> )
+		WaitFrame()
+	}
+}
+#endif

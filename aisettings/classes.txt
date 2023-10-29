@@ -6,12 +6,6 @@ classes
 	import npc_frag_drone_treasure_tick.txt
 	import npc_training_dummy.txt
 	import npc_dummie_combat.txt
-	import npc_dummie_mirage.txt
-	import npc_dummie_caustic.txt
-	import npc_dummie_loba.txt
-	import npc_dummie_mirage_training.txt
-	import npc_dummie_caustic_training.txt
-	import npc_dummie_loba_training.txt
 	import npc_frag_drone_throwable.txt
 	import npc_dummie_combat_trainer.txt
 	import npc_training_dummy_trainer.txt
@@ -19,4 +13,7 @@ classes
 	import npc_soldier_infected.txt
 	import npc_marvin.txt
 	import npc_prowler.txt
+	import npc_dummie_wraith.txt
+	import npc_dummie_bangalore.txt
+	import npc_dummie_pathfinder.txt
 }

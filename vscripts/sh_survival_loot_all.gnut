@@ -12,6 +12,7 @@ global function SURVIVAL_Loot_GetByTier
 
 global function SURVIVAL_Loot_IsUniqueAmmoWeapon
 global function GetCustomHopupArray
+global function IsNewLootEnabled
 
 #if CLIENT
 global function GetRarityColor
@@ -55,36 +56,43 @@ global struct CustomHopupData
 
 global struct LootData
 {
-	string ref
-	int tier
-	int index = -1
-	int inventorySlotCount
-	int pingCommsAction
-	asset model
-	int skinOverride
-	asset hudIcon
-	asset emptyImage
-	string attachSound
-	string pickupSound_1p
-	string pickupSound_3p
-	string carrySound
-	string pickupString
-	string desc
-	string specialCaseInvalidReason
-	int countPerDrop
-	int lootType
-	string netInt
+	string        ref
+	int           tier
+	int           index = -1
+	int           inventorySlotCount
+	int           pingCommsAction
+	asset         model
+	int           skinOverride
+	asset         hudIcon
+	asset		  craftingIcon
+	asset         emptyImage
+	string        attachSound
+	string        pickupSound_1p
+	string        pickupSound_3p
+	string        carrySound
+	string        pickupString
+	string        desc
+	string        hopupPopupDesc
+	string        specialCaseInvalidReason
+	int           countPerDrop
+	int           lootType
+	string        netInt
 	array<string> supportedAttachments
+	array<string> disabledAttachments
 	array<string> lootTags
 	string        ammoType
-	float         minInWorld
+	string        secondaryAmmoType
 	bool          isActive = false
 	int           passive = -1
 	string        attachmentStyle = ""
+	int 		  attachmentType = -1
 	int           scrapValue
 	bool          droppodRotate = false
 	bool          isDynamic = false
 	bool          conditional = false
+	bool          printPickupToObituary = false
+	bool          pretendsToBeBlank = false
+	bool          noDrop = false
 
 	string baseWeapon
 	array<string> baseMods
@@ -107,27 +115,14 @@ global enum eLootType
 	BACKPACK
 	HELMET
 	BLANK
-	#if(true)
-		DATAKNIFE
-	#endif
+	DATAKNIFE
 	RESOURCE
+	GADGET
 
 	_count
 }
 
 global const int HAS_DEATHBOX_OVERRIDE_FRIEND_PROFILES_TO_SEND = 3
-
-#if(false)
-
-
-
-
-#endif
-
-#if(false)
-
-#endif
-
 
 #if(true)
 global struct OverrideDeathBoxRUI_NetworkOptimizedStruct
@@ -185,22 +180,7 @@ struct CustomGrenadeData
 	float carePackageChance
 }
 
-global struct CustomAmmoData
-{
-	string className,
-	asset icon = $"rui/hud/gametype_icons/survival/sur_ammo_bullet_large",
-	asset model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_hc.rmdl",
-	string sound = "survival_loot_pickup_HeavyAmmo",
-	string sound3p = "survival_loot_pickup_3p_HeavyAmmo",
-	string printname = "Custom Ammo",
-    string pingCommsAction = "PING_AMMO_HIGHCAL",
-	string desc = "Custom Ammo Desc",
-	int countPerDrop = 80,
-	int stackSize = 80,
-	float chance = 10.0
-}
-
-array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
+array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup", "hopupMulti_a", "hopupMulti_b"]
 
 array<CustomHopupData> function GetCustomHopupArray()
 {
@@ -249,22 +229,14 @@ void function SURVIVAL_Loot_All_InitShared()
 
 	file.disabledRefs.clear()
 	file.disabledRefs = split( GetCurrentPlaylistVarString( "survival_disabled_loot", " " ), " " )
+
+	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new.rpak" ) )
 	
-	
-	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot.rpak" ) )
-	//if(!IsLobby())
-	//	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot_sdk.rpak" ))
-	
-	#if CLIENT || SERVER
-	if(GameRules_GetGameMode() == "flowstate_snd")
-		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_custom_loot.rpak" ))
-	#endif
-	
-	RegisterCustomAmmos()
-	RegisterNewCustomAttachments()
-	RegisterNewCustomWeapons()
-	
-	RegisterCustomWeapons() //from playlist
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new_halomod.rpak" ) )
+
+	//RegisterCustomWeapons()
+
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
 		RegisterSignal( "GatheredEnoughFriendInfo" )
@@ -274,9 +246,77 @@ void function SURVIVAL_Loot_All_InitShared()
 	file.initialized = true
 }
 
+bool function IsNewLootEnabled( string ref )
+{
+	switch( ref )
+	{
+		case "armor_pickup_lv4_all_fast":
+			if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
+				return false
+			else
+				return true
+		break
+
+		case "":
+		case "mp_weapon_sentinel":
+		case "incapshield_pickup_lv0":
+		case "mp_weapon_bow":
+		case "mp_weapon_3030":
+		case "mp_weapon_nemesis":
+		case "arrows":
+		case "mp_weapon_dragon_lmg":
+		case "mp_weapon_car":
+		case "armor_pickup_lv0_evolving":
+		case "armor_pickup_lv1_evolving":
+		case "armor_pickup_lv2_evolving":
+		case "armor_pickup_lv3_evolving":
+		case "armor_pickup_lv5_evolving":
+		// case "mp_weapon_throwingknife":
+		// case "mp_weapon_raygun":
+		// case "laser_sight_l1":
+		// case "laser_sight_l2": 
+		// case "laser_sight_l3":
+		// case "bullets_mag_l4":
+		// case "highcal_mag_l4":
+		// case "energy_mag_l4":
+		// case "sniper_mag_l4":
+		// case "shotgun_bolt_l4":
+		//case "hopup_selectfire":
+		case "hopup_double_tap":
+		case "mp_ability_void_ring":
+		case "mp_ability_mobile_respawn_beacon":
+		case "mp_ability_redeploy_balloon":
+		case "hopup_smart_reload":
+		case "hopup_dual_loader":
+		//case "backpack_pickup_lv4_revive_boost":
+		
+		return false
+	}
+	
+	return true
+}
+
+bool ENABLE_DEFINED_SETS = false
+
+bool function EnableWhiteBlueAndPurplePredefinedSets( string ref )
+{
+	array<string> stripedref = split( ref, "_" )
+
+	switch( stripedref[stripedref.len()-1] )
+	{
+		case "whiteset":
+		case "blueset":
+		case "purpleset":
+		
+		return ENABLE_DEFINED_SETS
+	}
+	
+	return true
+}
+
 void function SURVIVAL_Loot_RegFromDataTable(var dt)
 {
-	var attachmentTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
+	var attachmentTable = GetDataTable( $"datatable/flowstate_weapon_mods.rpak" )
 	int numRows = GetDatatableRowCount( dt )
 	for ( int i = 0; i < numRows; i++ )
 	{
@@ -292,8 +332,8 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 
 		string pingCommsActionName = GetLootTableString( data.ref, dt, i, "pingCommsAction" )
 
-		#if SERVER || CLIENT
-		data.pingCommsAction = GetCommsActionForName( pingCommsActionName )
+		#if (SERVER || CLIENT)
+			data.pingCommsAction = GetCommsActionEnumForName( pingCommsActionName )
 		#endif
 
 		string lootType = GetLootTableString( data.ref, dt, i, "type" )
@@ -304,12 +344,14 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		{
 			data.baseWeapon = data.ref
 		}
-
+		
+		if( !IsNewLootEnabled( data.baseWeapon ) || !EnableWhiteBlueAndPurplePredefinedSets( data.ref ) )
+			continue
+		
 		data.fakeAmmoIcon = GetLootTableAsset( data.ref, dt, i, "fakeAmmoIcon" )
 		//if (data.fakeAmmoIcon != "") printt("Fake ammo icon for", data.ref, "-", data.fakeAmmoIcon)
 
 		data.baseMods = split( GetLootTableString( data.ref, dt, i, "baseMods" ), " " )
-
 		data.model = GetLootTableAsset( data.ref, dt, i, "pickupModel" )
 		data.skinOverride = GetLootTableInt( data.ref, dt, i, "skinOverride" )
 		data.hudIcon = GetLootTableAsset( data.ref, dt, i, "icon" )
@@ -321,13 +363,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		data.droppodRotate = GetLootTableBool( data.ref, dt, i, "droppodRotate" )
 		data.isDynamic = GetLootTableBool( data.ref, dt, i, "isDynamic" )
 		data.conditional = GetLootTableBool( data.ref, dt, i, "conditional" )
-
-		data.pickupString = GetLootTableString( data.ref, dt, i, "pickupString" )
-		data.desc = GetLootTableString( data.ref, dt, i, "desc" )
-
+		data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
 		data.countPerDrop = GetLootTableInt( data.ref, dt, i, "countPerDrop" )
+		data.pickupString = GetLootTableString( data.ref, dt, i, "pickupString" )
+		data.desc = GetLootTableString( data.ref, dt, i, "desc" )		
 		data.tier = GetLootTableInt( data.ref, dt, i, "tier" )
-
 		string supportedAttachmentsString  = GetLootTableString( data.ref, dt, i, "supportedAttachments" )
 		array<string> supportedAttachments = split( supportedAttachmentsString, " " )
 		supportedAttachments.sort(
@@ -350,17 +390,6 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
 		data.netInt = GetLootTableString( data.ref, dt, i, "netInt" )
-		data.inventorySlotCount = GetLootTableInt( data.ref, dt, i, "inventorySlotCount" )
-
-		#if SERVER || CLIENT
-		data.minInWorld = GetLootTableFloat( data.ref, dt, i, "minInWorld" )
-		if ( IsTestMap() )
-			data.minInWorld = max( -1, data.minInWorld )
-		//Not ideal - The minInWorld concept is unlikely the right way to do ( now ) map specific items.
-
-		if ( data.ref == "data_knife" && GetMapName() != "mp_rr_desertlands_64k_x_64k" )
-			data.minInWorld = 0.0
-		#endif
 
 		string passiveRef = GetLootTableString( data.ref, dt, i, "passive" )
 		if ( passiveRef == "" )
@@ -450,9 +479,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 				break
 		}
 
+		//Save
 		{
 			data.index = file.lootIndexToString.len()
 			file.lootIndexToString.append( data.ref )
+			
 			file.lootData[ data.ref ] <- data
 
 			#if SERVER
@@ -466,15 +497,11 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 		#endif
 	}
 
-	RegisterCustomWeapons()
-
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
 		RegisterSignal( "GatheredEnoughFriendInfo" )
 		SURVIVAL_UIInit_Override_DeathBox_RUI()
 	#endif
-
-	file.initialized = true
 }
 
 struct CustomWeaponData
@@ -618,204 +645,6 @@ array<string> function GetCustomHopupsForWeapon(string className)
 	}
 	return result
 }
-
-void function RegisterCustomAmmo(CustomAmmoData AmmoData)
-{
-	LootData data
-	data.ref = AmmoData.className
-	data.baseWeapon = AmmoData.className
-
-	data.pickupString = AmmoData.printname
-	data.desc = AmmoData.desc
-	data.hudIcon = AmmoData.icon
-	data.model = AmmoData.model
-	data.tier = 1
-	data.countPerDrop = AmmoData.countPerDrop
-	data.inventorySlotCount = AmmoData.stackSize
-	data.lootType = eLootType.AMMO
-	data.pickupSound_1p = AmmoData.sound
-	data.pickupSound_3p = AmmoData.sound3p
-
-	#if SERVER || CLIENT
-	data.pingCommsAction = GetCommsActionForName( AmmoData.pingCommsAction )
-	#endif
-
-	data.index = file.lootIndexToString.len()
-	file.lootIndexToString.append( data.ref )
-	file.lootData[ data.ref ] <- data
-
-	#if !UI
-	AddCustomItemToLootPool( data.ref, "ammo", AmmoData.chance)
-	#endif
-}
-
-void function RegisterCustomAmmos()
-{
-	CustomAmmoData SniperAmmo = {
-		className = "sniper",
-		printname = "Sniper Ammo",
-		desc = "",
-
-		icon = $"rui/hud/gametype_icons/survival/sur_ammo_sniper",
-		model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl",
-		sound = "survival_loot_pickup_HeavyAmmo",
-		sound3p = "survival_loot_pickup_3p_HeavyAmmo",
-		pingCommsAction = "BLANK",
-		countPerDrop = 15,
-		stackSize = 30,
-		chance = 10.0
-	}
-
-	// CustomAmmoData ExplosiveAmmo = {
-		// printname = "Explosive Ammo",
-		// className = "explosive",
-
-		// desc = "",
-		// icon = $"rui/hud/gametype_icons/survival/sur_ammo_explosive",
-		// model = $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl",
-		// sound = "survival_loot_pickup_titan_ammo",
-		// sound3p = "survival_loot_pickup_3p_titan_ammo",
-		// pingCommsAction = "BLANK",
-		// countPerDrop = 5,
-		// stackSize = 10,
-		// chance = 10.0
-	// }
-
-	RegisterCustomAmmo(SniperAmmo)
-	// RegisterCustomAmmo(ExplosiveAmmo)
-}
-
-void function RegisterNewCustomAttachments()
-{
-	CustomHopupData sniper_mag_l1
-	sniper_mag_l1.className = "sniper_mag_l1"
-	sniper_mag_l1.displayName = "Sniper Mag level 1"
-	sniper_mag_l1.desc = "Sniper Mag level 1"
-	sniper_mag_l1.tier = 1
-	#if !UI
-	sniper_mag_l1.icon = $"rui/flowstatecustom/sniper_mag"
-	sniper_mag_l1.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
-	#endif
-	sniper_mag_l1.lowWeight = 5.0
-	sniper_mag_l1.medWeight = 10.0
-	sniper_mag_l1.highWeight = 25.0
-	sniper_mag_l1.attachmentSlot = "mag"
-	
-	CustomHopupData sniper_mag_l2
-	sniper_mag_l2.className = "sniper_mag_l2"
-	sniper_mag_l2.displayName = "Sniper Mag level 2"
-	sniper_mag_l2.desc = "Sniper Mag level 2"
-	sniper_mag_l2.tier = 2
-	#if !UI
-	sniper_mag_l2.icon = $"rui/flowstatecustom/sniper_mag"
-	sniper_mag_l2.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
-	#endif
-	sniper_mag_l2.lowWeight = 5.0
-	sniper_mag_l2.medWeight = 10.0
-	sniper_mag_l2.highWeight = 25.0
-	sniper_mag_l2.attachmentSlot = "mag"	
-	
-	CustomHopupData sniper_mag_l3
-	sniper_mag_l3.className = "sniper_mag_l3"
-	sniper_mag_l3.displayName = "Sniper Mag level 3"
-	sniper_mag_l3.desc = "Sniper Mag level 3"
-	sniper_mag_l3.tier = 3
-	#if !UI
-	sniper_mag_l3.icon = $"rui/flowstatecustom/sniper_mag"
-	sniper_mag_l3.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl" //todo change model
-	#endif
-	sniper_mag_l3.lowWeight = 5.0
-	sniper_mag_l3.medWeight = 10.0
-	sniper_mag_l3.highWeight = 25.0
-	sniper_mag_l3.attachmentSlot = "mag"	
-
-	CustomHopupData skull_piercer
-	skull_piercer.className = "hopup_headshot_dmg"
-	skull_piercer.displayName = "Skull Piercer"
-	skull_piercer.desc = "Skull Piercer"
-	skull_piercer.tier = 4
-	#if !UI
-	skull_piercer.icon = $"rui/pilot_loadout/mods/hopup_skullpiercer"
-	skull_piercer.model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl"
-	#endif
-	skull_piercer.lowWeight = 5.0
-	skull_piercer.medWeight = 10.0
-	skull_piercer.highWeight = 25.0
-	skull_piercer.attachmentSlot = "hopup"
-	
-	CreateCustomHopup(sniper_mag_l1)
-	CreateCustomHopup(sniper_mag_l2)
-	CreateCustomHopup(sniper_mag_l3)
-	CreateCustomHopup(skull_piercer)
-}
-
-void function RegisterNewCustomWeapons()
-{
-	CustomWeaponData volt
-	volt.className = "mp_weapon_volt_smg"
-	volt.tier = 1
-	volt.baseMods = []
-	volt.supportedAttachments = ["barrel", "mag", "sight", "grip"]
-	volt.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
-	volt.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
-	volt.weaponType = "smg"
-	volt.lowWeaponChance = 5.0
-	volt.medWeaponChance = 10.0
-	volt.highWeaponChance = 25.0
-	volt.isCP = false
-	
-	CustomWeaponData sentinel
-	sentinel.className = "mp_weapon_sentinel"
-	sentinel.tier = 1
-	sentinel.baseMods = []
-	sentinel.supportedAttachments = ["mag", "sight", "grip"]
-	sentinel.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
-	sentinel.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
-	sentinel.weaponType = "sniper"
-	sentinel.lowWeaponChance = 5.0
-	sentinel.medWeaponChance = 10.0
-	sentinel.highWeaponChance = 25.0
-	sentinel.isCP = false
-
-	CustomWeaponData kraber
-	kraber.className = "mp_weapon_sniper"
-	kraber.tier = 5
-	kraber.baseMods = []
-	kraber.supportedAttachments = []
-	kraber.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
-	kraber.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
-	kraber.weaponType = "sniper"
-	kraber.lowWeaponChance = 0
-	kraber.medWeaponChance = 0
-	kraber.highWeaponChance = 0
-	kraber.isCP = true
-
-	CustomWeaponData throwingknife
-	throwingknife.className = "mp_weapon_throwingknife"
-	throwingknife.tier = 5
-	throwingknife.baseMods = []
-	throwingknife.supportedAttachments = []
-	throwingknife.pickupSound1p = "survival_loot_pickup_weapon_rspn101"
-	throwingknife.pickupSound3p = "survival_loot_pickup_3p_weapon_rspn101"
-	throwingknife.weaponType = "pistol"
-	throwingknife.lowWeaponChance = 0
-	throwingknife.medWeaponChance = 0
-	throwingknife.highWeaponChance = 0
-	throwingknife.isCP = true
-	
-	RegisterWeapon(volt)
-	RegisterCustomAttachments(GetCustomHopupsForWeapon(volt.className))	
-	
-	RegisterWeapon(sentinel)
-	RegisterCustomAttachments(GetCustomHopupsForWeapon(sentinel.className))	
-	
-	RegisterWeapon(kraber)
-	RegisterCustomAttachments(GetCustomHopupsForWeapon(kraber.className))	
-	
-	RegisterWeapon(throwingknife)
-	RegisterCustomAttachments(GetCustomHopupsForWeapon(throwingknife.className))	
-}
-
 
 void function RegisterCustomGrenade(CustomGrenadeData grenadeData) {
 	LootData data
@@ -962,8 +791,6 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 		}
 	)
 	
-
-
 	data.supportedAttachments = weaponData.supportedAttachments
 	// base mods, come with the weapon.
 	data.baseMods = weaponData.baseMods
@@ -1058,7 +885,7 @@ array<LootData> function SURVIVAL_Loot_GetByType( int lootType )
 }
 
 
-array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
+array<LootData> function SURVIVAL_Loot_GetByTier( int tier, bool addWeapons = true )
 {
 	array<LootData> lootOfTier = []
 	foreach ( string lootRef, LootData lootData in file.lootData )
@@ -1068,7 +895,9 @@ array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
 
 		if ( SURVIVAL_Loot_IsRefDisabled( lootData.ref ) )
 			continue
-
+		
+		if( !addWeapons && lootData.lootType == eLootType.MAINWEAPON )
+			continue
 		//printt( lootData.ref )
 
 		lootOfTier.append( lootData )
@@ -1076,7 +905,6 @@ array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
 
 	return lootOfTier
 }
-
 
 int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 {
@@ -1206,7 +1034,19 @@ vector function GetRarityColor( entity ent )
 	Assert( lootIndex >= 0 )
 	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
 
-	return GetKeyColor( COLORID_TEXT_LOOT_TIER0, lootData.tier )
+	switch ( lootData.tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, lootData.tier )
+	}
+	
+	unreachable
 }
 #endif
 
@@ -1253,6 +1093,15 @@ vector function GetFXRarityColorForTier( int tier )
 
 		case eLootTier.LEGENDARY:
 			return LOOT_COLOR_LEGENDARY
+			
+		case 5:
+			return LOOT_COLOR_HEIRLOOM
+			
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
 
 		default:
 			return <255, 255, 255>
@@ -1260,7 +1109,17 @@ vector function GetFXRarityColorForTier( int tier )
 #endif
 
 #if !SERVER
-	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier )
+	switch ( tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, tier )
+	}
 #endif
 
 	unreachable
@@ -1290,6 +1149,12 @@ vector function GetFXRarityColorForUnlockable( int tier )
 
 			case eLootTier.HEIRLOOM:
 				return LOOT_COLOR_HEIRLOOM
+			
+			case 6:
+				return <36, 194, 25>
+				
+			case 7:
+				return <191, 25, 194>
 
 			default:
 				return <255, 255, 255>
@@ -1297,7 +1162,17 @@ vector function GetFXRarityColorForUnlockable( int tier )
 #endif
 
 #if !SERVER
-	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier + 1 )
+	switch ( tier )
+	{
+		case 6:
+			return <36, 194, 25>
+			
+		case 7:
+			return <191, 25, 194>
+
+		default:
+			return GetKeyColor( COLORID_FX_LOOT_TIER0, tier + 1 )
+	}
 #endif
 
 	unreachable

@@ -1,0 +1,140 @@
+#base "_base_ability.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"EMOTE PROJECTOR"
+	"shortprintname"								"EMOTE PROJECTOR"
+	"description" 									"EMOTE PROJECTOR"
+	"longdesc" 										"EMOTE PROJECTOR"
+
+	"menu_icon"										"rui/pilot_loadout/suit/hardcover"
+	"hud_icon"										"rui/pilot_loadout/mods/lift"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"is_toss_weapon"								"1"
+	"minimap_reveal_distance"						"32000"
+	"fast_swap_to"									"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+    "does_not_interrupt_cloak"						"1"
+	
+	//Callbacks
+	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_WeaponEmoteProjector"
+	"OnWeaponTossPrep"								"OnWeaponTossPrep_WeaponEmoteProjector"
+	"OnProjectileCollision"							"OnProjectileCollision_holospray"
+	"zoom_effects"                                  "0"
+
+	// Models
+	"viewmodel"   									"mdl/Weapons/holo_spray/ptpov_holo_spray.rmdl"
+	"playermodel" 									"mdl/Weapons/holo_spray/w_holo_spray.rmdl"
+	"projectilemodel" 								"mdl/Weapons/holo_spray/w_holo_spray.rmdl"
+	"offhand_default_inventory_slot"				"1"
+	"leveled_pickup"								"1"
+	"sound_weapon_ready"							"HUD_kit_meter_replenished_1P"
+
+	// Effects
+	"bounce_effect_table"							"deployable_cover_bounce_table"
+	"impact_effect_table" 							"none"
+	
+	//"vortex_absorb_effect"						"wpn_vortex_projectile_satchel_FP"
+	//"vortex_absorb_effect_third_person"			"wpn_vortex_projectile_satchel"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
+	"projectile_adjust_to_gun_barrel"				"0"
+	"projectile_adjust_to_hand"						"0"
+
+	"grenade_disc_throw"							"1"
+	"projectile_gravity_scale"						"1"
+
+	"critical_hit"									"0"
+
+	// Sounds
+	"sound_throw_1p"								"Pilot_Hardcover_Toss_1P"
+    "sound_deploy_1p"								"weapon_sentryfragdrone_pinpull_1p"
+    "sound_throw_3p"								"weapon_sentryfragdrone_throw_3p"
+    "sound_deploy_3p"								"weapon_sentryfragdrone_pinpull_3p"
+	"sound_grenade_projectile"						""
+	"sound_dryfire"									"Survival_UI_Ability_NotReady"
+
+	// Damage - When Used by Players
+	"damage_type" 									"burn"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+	"damage_near_value_titanarmor"					"0"
+	"damage_far_value_titanarmor" 					"0"
+	"explosion_damage"								"0"
+	"explosion_damage_heavy_armor"					"0"
+	"explosion_inner_radius"  						"250"
+	"explosionradius" 								"450"
+	"impulse_force"   								"0"
+	"explosion_shake_radius"						"0"
+	"explosion_shake_amplitude"						"0"
+	"explosion_shake_frequency"						"0"
+	"explosion_shake_duration"						"0.0"
+
+	"show_grenade_indicator"						"0"
+
+	// Behavior
+	"fire_rate"   									"1.43"
+	"fire_duration"									"0.0"
+	"deploy_time" 									"0.01"
+	"lower_time"  									"0.05"
+	"allow_empty_fire"								"0"
+	"no_ammo_used_on_primary_attack"				"1"
+	"reload_enabled"  								"0"
+	"allow_empty_click"   							"0"
+	"empty_reload_only"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"grenade_inherit_owner_velocity"				"1"
+	"cooldown_type"									"ammo_timed"
+	"toss_pullout_time"								"0.13"
+	"toss_time"									    "0.6"  //matches timing in Maya
+	"toss_overhead_time"							"0.6"
+
+	"grenade_orient_to_velocity"					"1"
+	"grenade_bounce_vel_frac_shallow"				"0.5"
+	"grenade_bounce_vel_frac_sharp"					"0.3"
+	"grenade_bounce_vel_frac_along_normal"			"0.1"
+	"grenade_bounce_randomness"						"0.05"
+	"grenade_bounce_extra_vertical_randomness"		"0.0"
+	"grenade_roll_vel_frac_per_second"				"0.1"
+	"grenade_radius_vertical"						"5.0"
+	"grenade_radius_horizontal"						"16.0"
+	"projectile_launch_pitch_offset"				"2"
+	"grenade_view_launch_offset"					"15.0 -8.0 -10.0"  //custom to align with left throwing hand
+
+	"projectile_inherit_owner_velocity_scale"		"0.9"  //when sprinting
+
+	// "projectile_launch_speed"						"2"
+	// "projectile_first_person_offset_fraction"		"0"
+
+
+	// Spread
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	// View Kick
+	"viewkick_spring" 								"pistol"
+	"ammo_drains_to_empty_on_fire"					"0"
+
+
+	"ammo_clip_size"   								"100"
+	"ammo_default_total"							"100"
+	"ammo_display"									"count"
+	"ammo_min_to_fire"								"1"
+	"ammo_per_shot"									"1"
+	"ammo_stockpile_max"							"100"
+	"regen_ammo_refill_rate"						"10"
+	"regen_ammo_refill_start_delay"					"0.0"
+
+	Mods
+	{
+	}
+
+}

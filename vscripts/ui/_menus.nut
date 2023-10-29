@@ -183,7 +183,7 @@ void function UICodeCallback_InboxUpdated()
 
 void function UICodeCallback_CloseAllMenus()
 {
-	printt( "UICodeCallback_CloseAllMenus" )
+	// printt( "UICodeCallback_CloseAllMenus" )
 	CloseAllMenus()
 	// This is usually followed by a call to UICodeCallback_ActivateMenus().
 }
@@ -210,7 +210,7 @@ void function UICodeCallback_ActivateMenus()
 	//New R5RMainMenu
 	var mainMenu = GetMenu( "R5RMainMenu" )
 
-	printt( "UICodeCallback_ActivateMenus:", GetActiveMenu() && Hud_GetHudName( GetActiveMenu() ) != "" )
+	// printt( "UICodeCallback_ActivateMenus:", GetActiveMenu() && Hud_GetHudName( GetActiveMenu() ) != "" )
 	if ( uiGlobal.menuStack.len() == 0 )
 		AdvanceMenu( mainMenu )
 
@@ -484,7 +484,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 void function UICodeCallback_LevelInit( string levelname )
 {
-	printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
+	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
 	
 	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
 	{	
@@ -1177,7 +1177,7 @@ bool function TryDialogFlowPersistenceQuery( string persistenceVar )
 void function DialogFlow()
 {
 	bool persistenceAvailable   = IsPersistenceAvailable()
-	string earliestRankedPeriod = Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
+	string earliestRankedPeriod = ""//Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
 
 	if ( DisplayQueuedRewardsGiven() )
 	{
@@ -1595,6 +1595,11 @@ void function InitMenus()
 	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
 	///////
 	
+	//FLOWSTATE MOVEMENT GYM
+	//Settings
+	AddMenu( "MGSettingsMenu", $"scripts/resource/ui/menus/MovementGym/movementgym_settings.menu", InitMGSettings )
+	///////
+	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )
 	AddPanel( lobbyMenu, "CharactersPanel", InitCharactersPanel )
@@ -1947,7 +1952,7 @@ void function SetPanelInputHandler( var panel, int inputID, void functionref( va
 void function OpenMenuWrapper( var menu, bool isFirstOpen )
 {
 	OpenMenu( menu )
-	printt( Hud_GetHudName( menu ), "menu opened" )
+	// printt( Hud_GetHudName( menu ), "menu opened" )
 
 	Assert( menu in uiGlobal.menuData )
 
@@ -1990,7 +1995,7 @@ void function CloseMenuWrapper( var menu )
 	bool wasVisible = Hud_IsVisible( menu )
 	CloseMenu( menu )
 	ClearMenuBlur( menu )
-	printt( Hud_GetHudName( menu ), "menu closed" )
+	// printt( Hud_GetHudName( menu ), "menu closed" )
 
 
 	ToolTips_MenuClosed( menu )
@@ -2158,7 +2163,7 @@ void function UIMusicUpdate( bool wasManualMusicPackChange = false )
 
 		uiGlobal.activeMusicContext = desiredMusicContext
 
-		printf( "Menu music update: %s (%s) -> %s (%s) (%s)", currentMusicTrack, DEV_GetEnumStringSafe( "eMenuMusicContext", currentMusicContext ), desiredMusicTrack, DEV_GetEnumStringSafe( "eMenuMusicContext", desiredMusicContext ), changeIfDesiredMusicTrackIsDifferentEvenIfContextIsUnchanged ? "T" : "F" )
+		// printf( "Menu music update: %s (%s) -> %s (%s) (%s)", currentMusicTrack, DEV_GetEnumStringSafe( "eMenuMusicContext", currentMusicContext ), desiredMusicTrack, DEV_GetEnumStringSafe( "eMenuMusicContext", desiredMusicContext ), changeIfDesiredMusicTrackIsDifferentEvenIfContextIsUnchanged ? "T" : "F" )
 
 		if ( desiredMusicTrack != currentMusicTrack )
 		{

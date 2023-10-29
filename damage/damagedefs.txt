@@ -423,7 +423,7 @@ DamageDefs
 
        	"obituary"					"#WPN_DEFENSIVE_BOMBARDMENT"
        	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
-       	"impact_effect_table"		"exp_artillery_plasma"
+       	//"impact_effect_table"		"exp_artillery_plasma"
     }
     damagedef_loot_drone_explosion
     {

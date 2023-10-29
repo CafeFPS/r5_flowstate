@@ -2,6 +2,8 @@ global function ShCommsMenu_Init
 
 #if CLIENT
 global function CommsMenu_HandleKeyInput
+global function CommsMenu_HandleViewInput
+
 global function ClientCodeCallback_OpenChatWheel
 global function SetHintTextOnHudElem
 
@@ -18,7 +20,7 @@ global function CommsMenu_OpenMenuForPingReply
 global function CommsMenu_HasValidSelection
 global function CommsMenu_ExecuteSelection
 global function CommsMenu_GetCurrentCommsMenu
-
+global function SetRuiOptionsForChatPage
 #endif
 
 #if CLIENT
@@ -102,7 +104,7 @@ struct
 // Client commands
 //---------------------
 
-const string CHAT_MENU_BIND_COMMAND = "+scriptCommand5"
+const string CHAT_MENU_BIND_COMMAND = "+scriptCommand1"
 
 void function ShCommsMenu_Init()
 {
@@ -371,7 +373,7 @@ enum eOptionType
 	SKYDIVE_EMOTE,
 	HEALTHITEM_USE,
 	ORDNANCE_EQUIP,
-
+	HOLOSPRAY,
 	EDITOR_MODE_ACTIVATE
 }
 
@@ -387,8 +389,8 @@ struct CommsMenuOptionData
 	int pingReply
 
 	int healType
-
-	ItemFlavor    ornull    emote
+	ItemFlavor ornull emote
+	asset Asset
 }
 
 CommsMenuOptionData function MakeOption_NoOp()
@@ -465,6 +467,17 @@ CommsMenuOptionData function MakeOption_EditorMode( int index )
 	return op
 }
 
+CommsMenuOptionData function MakeOption_HoloSpray( int index, asset Asset)
+{
+	CommsMenuOptionData op
+	op.optionType = eOptionType.HOLOSPRAY
+	op.emote = null
+	op.healType = index
+	op.Asset = Asset
+	
+	return op
+}
+
 array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 {
 	array<CommsMenuOptionData> results
@@ -499,6 +512,15 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 				{
 					emptyQuip = quip
 				}
+			}
+
+			//Holo sprays
+			foreach(id, emotes in GetEmotesTable())
+			{
+				if(quipsInWheel == MAX_QUIPS_EQUIPPED) break
+				
+				results.append( MakeOption_HoloSpray( id+1, emotes[0] ) ) //+1 cuz "Nice" quip, FIX ME
+				quipsInWheel++
 			}
 
 			if ( quipsInWheel == 0 && emptyQuip != null )
@@ -1053,6 +1075,11 @@ void function ShowCommsMenu( int chatPage )
 					RuiSetString( rui, ("optionCenterText" + idx), txt)
 				}
 			}
+			
+			if ( op.optionType == eOptionType.HOLOSPRAY )
+			{
+				RuiSetImage( rui, ("optionIcon" + idx), op.Asset )	
+			}
 		}
 
 
@@ -1511,7 +1538,13 @@ bool function MakeCommMenuSelection( int choice, int wheelInputType )
 			HandleQuipPick( expect ItemFlavor( op.emote ), op.healType )
 			return true
 		}
-
+		
+		case eOptionType.HOLOSPRAY:
+		{
+			HoloSpray_OnUse( choice )
+			return true
+		}
+		
 		case eOptionType.SKYDIVE_EMOTE:
 		{
 			entity player = GetLocalViewPlayer()
@@ -1603,6 +1636,15 @@ void function HandleQuipPick( ItemFlavor quip, int choice )
 #endif
 }
 
+void function HoloSpray_OnUse( int choice )
+{
+	entity player = GetLocalClientPlayer()
+	EmitSoundOnEntity( player, WHEEL_SOUND_ON_EXECUTE )
+	int actualChoice = maxint(0,choice - 1)
+	player.ClientCommand( "HoloSpray_OnUse " + actualChoice )
+	
+	ActivateOffhandWeaponByIndex( OFFHAND_EQUIPMENT )
+}
 void function HandleCommsActionPick( int commsAction, int directionIndex )
 {
 	Assert( (commsAction >= 0) && (commsAction < eCommsAction._count) )
@@ -1773,11 +1815,7 @@ bool function CommsMenu_CanUseMenu( entity player )
 	if ( IsScoreboardShown() )
 		return false
 
-	#if(false)
-
-
-#endif
-
+	
 	if ( IsCommsMenuActive() )
 		return false
 
@@ -1785,7 +1823,10 @@ bool function CommsMenu_CanUseMenu( entity player )
 		if ( IsFallLTM() && IsPlayerShadowSquad( player ) )
 			return false
 	#endif
-
+	
+	if( StatusEffect_GetSeverity( player, eStatusEffect.camera_view) > 0 )
+		return false
+	
 	return true
 }
 

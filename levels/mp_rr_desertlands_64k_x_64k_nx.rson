@@ -16,8 +16,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	//sh_evac_ship_precache.nut
-	//sh_loot_creeps.gnut
-	//gamemodes/sh_gamemode_shadow_squad_precache.nut
+	sh_evac_ship_precache.nut
+	sh_loot_creeps.gnut
 	mp/levels/mp_rr_desertlands_common.nut
 ]

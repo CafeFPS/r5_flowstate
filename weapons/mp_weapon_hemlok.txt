@@ -44,8 +44,8 @@ WeaponData
 
 	// Sound
 
-	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
-	"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
+	//"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
 
 	"fire_sound_partial_burst_player_1p"			"Weapon_Hemlok_SingleShot_1P"
 	"fire_sound_partial_burst_player_3p"			"Weapon_Hemlok_SingleShot_3P"
@@ -87,24 +87,28 @@ WeaponData
 	// Behavior
 	"deployfirst_time"								"1.25"
 
-	"ammo_clip_size"   								"30"
+
 
 	"ammo_min_to_fire"								"1"
 	"ammo_clip_random_loss_on_npc_drop_chunksize"	"3"
 
-    "ammo_default_total"							"180"
-    "ammo_stockpile_max"							"180"
+
+    "low_ammo_fraction" 							"0.4"
+
+
+    "ammo_clip_size"   								"18"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"36"
     "ammo_no_remove_from_stockpile"					"1"
+    "uses_ammo_pool"								"1"
 
-    // Damage - When Used by Players
-    "damage_near_value"   							"23"
-    "damage_far_value"								"23"
-    "damage_very_far_value"							"23"
-    "damage_near_value_titanarmor"					"23"
-    "damage_far_value_titanarmor" 					"23"
-    "damage_very_far_value_titanarmor" 				"23"
-    "damage_headshot_scale"							"1.8"
-
+   // Damage - When Used by Players
+    "damage_near_value"   							"22" //20
+    "damage_far_value"								"22" //20
+    "damage_very_far_value"							"22" //20
+    "damage_near_value_titanarmor"					"22" //20
+    "damage_far_value_titanarmor" 					"22" //20
+    "damage_very_far_value_titanarmor" 				"22" //20
     "damage_rodeo" 									"170"
 
     // Damage - When Used by NPCs
@@ -139,7 +143,8 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"15.5"
 	"burst_fire_count"								"3"
-"burst_fire_delay"								"0.28"  //"0.32"
+	"burst_fire_delay"								"0.28"  //"0.32"
+
 	"reload_time" 									"2.4"
 	"reload_time_late1"								"1.54"
 	"reloadempty_time"								"2.85"
@@ -159,7 +164,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	"viewkick_spring" 								"hemlok_vkp"
     "viewkick_spring_hot"                           "hemlok_vkp_hot"
@@ -263,16 +268,41 @@ WeaponData
     "clip_bodygroup_show_for_milestone_3"	"0"
     "clip_bodygroup_show_for_milestone_4"	"0"
 
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HEMLOK"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HEMLOK"
 	Mods
 	{
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"36"
-            "ammo_no_remove_from_stockpile"					"0"
+		gold
+		{
+		}
 
-            "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+		crate
+		{
+		}
+
+		barrel_stabilizer_l3
+		{
+			"bodygroup27_set"	                "1"
+
+			"fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+			"viewkick_pitch_base" 				"*0.8"
+			"viewkick_pitch_random"   			"*0.65"
+			"viewkick_yaw_base" 				"*0.8"
+			"viewkick_yaw_random"   			"*0.75"
+		}
+	
+		hopup_smart_reload
+        {
+        }
+
+        fast_reload_mod
+        {
+            "reload_time" 									"1.75"
+        }
+
+        overloaded_ammo
+        {
+            "ammo_clip_size"   							"++9"
         }
 
         // single shot
@@ -293,8 +323,8 @@ WeaponData
             "viewkick_pitch_softScale"						"1.9"  //"1.75"
             "viewkick_yaw_softScale"                        "0.675"  //"0.8"
 
-			"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
-			"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+			//"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
+			//"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
 
 			"fire_sound_2_player_1p"						"Weapon_Hemlok_SingleShot_1P"
 			"fire_sound_2_player_3p"						"Weapon_Hemlok_SingleShot_3P"
@@ -322,11 +352,28 @@ WeaponData
 
 		}
 
+		barrel_stabilizer_l1
+		{
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_assault_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_assault_sup"
+		}
+
+		barrel_stabilizer_l2
+		{
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_assault_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_assault_sup"
+		}
+
+		barrel_stabilizer_l3
+		{
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_assault_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_assault_sup"
+		}
+
 		barrel_stabilizer_l4_flash_hider
 		{
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""	
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_assault_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_assault_sup"
 		}
 
 		highcal_mag_l1
@@ -341,6 +388,10 @@ WeaponData
 		{
 			"ammo_clip_size"   							"++12"
 		}
+        highcal_mag_l4
+        {
+			"ammo_clip_size"   							"++12"
+        }
 
 		legendary1
 		{

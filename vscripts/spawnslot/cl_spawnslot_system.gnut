@@ -7,9 +7,47 @@ global function ServerCallback_ResetMapSettings
 global function ServerCallback_SetMapSettings
 global function ServerCallback_ToneMapping
 global function ServerCallback_LaptopFX
+global function SetEncerronaNightParams_Test
 
 global function CinematicTonemappingThread
 
+void function SetEncerronaNightParams_Test()
+{
+	// entity lightTest = GetEntByScriptName( "lockout1_test" )
+	// lightTest.SetTweakLightRealtimeShadows( true )
+	// lightTest.SetTweakLightUpdateShadowsEveryFrame( true )
+			
+	SetConVarFloat( "mat_autoexposure_max", 1.0 )
+	SetConVarFloat( "mat_autoexposure_max_multiplier", 0.3 )
+	SetConVarFloat( "mat_autoexposure_min", 0.3 )
+	SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+
+	SetConVarFloat( "mat_sky_scale", 2.0 )
+	SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+	SetConVarFloat( "mat_sun_scale", 1.0 )
+	SetConVarString( "mat_sun_color", "1.0 1.5 2.0 1.0" )
+
+	// entity clight = GetLightEnvironmentEntity()
+	// //clight.Destroy()
+	// printt( "sun origin ", clight.GetLocalOrigin() )
+	// clight.ClearParent()
+	// clight.kv.in_skybox = 0
+	// clight.SetLocalOrigin( clight.GetLocalOrigin() + Vector( 0,0,30000) )
+	// printt( "new sun origin ", clight.GetLocalOrigin() )	
+}
+
+void function SetPitLightning()
+{
+	SetConVarFloat( "mat_autoexposure_max", 2.0 )
+	SetConVarFloat( "mat_autoexposure_max_multiplier", 0.3 )
+	SetConVarFloat( "mat_autoexposure_min", 1.5 )
+	SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+
+	SetConVarFloat( "mat_sky_scale", 2.0 )
+	SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+	SetConVarFloat( "mat_sun_scale", 1.0 )
+	SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+}
 
 void function ServerCallback_ResetEntSkyScale( int handle, float time = 1.0 )
 {

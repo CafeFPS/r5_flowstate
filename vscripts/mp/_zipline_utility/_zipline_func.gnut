@@ -109,7 +109,7 @@ void function Zipline_CreatePanel( ZiplineUtility zipline, vector pos, vector an
     ZiplineState state = zipline.state ; ZiplinePanel panels = zipline.panels
 
     entity panel = CreateUsablePanel( skin, pos, ang )
-    panel.SetSkin( ePanelState.ENABLE )
+    panel.SetSkin( eZiplinePanelState.ENABLE )
 
     if ( zipline.vars.addToArray ) MapEditorEnts.append( panel )
 

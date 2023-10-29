@@ -3,6 +3,7 @@ global function MpWeaponDeployableMedic_Init
 global function OnWeaponTossReleaseAnimEvent_weapon_deployable_medic
 global function OnWeaponAttemptOffhandSwitch_weapon_deployable_medic
 global function OnWeaponTossPrep_weapon_deployable_medic
+global function GetHealDroneForHitEnt
 
 #if CLIENT
 global function CanDeployHealDrone
@@ -11,17 +12,17 @@ global function CanDeployHealDrone
 const asset DEPLOYABLE_MEDIC_DRONE_MODEL = $"mdl/props/lifeline_drone/lifeline_drone.rmdl"
 
 //Deployment Vars
-const float DEPLOYABLE_MEDIC_THROW_POWER = 25.0
+const float DEPLOYABLE_MEDIC_THROW_POWER = 40.0
 const float DEPLOYABLE_MEDIC_ICON_HEIGHT = 32.0
 
 //Heal Vars
 const int DEPLOYABLE_MEDIC_HEAL_MAX_TARGETS = 3
 const float DEPLOYABLE_MEDIC_HEAL_START_DELAY = 1.0
-const float DEPLOYABLE_MEDIC_HEAL_RADIUS = 128.0
-const int DEPLOYABLE_MEDIC_HEAL_AMOUNT = 150
+const float DEPLOYABLE_MEDIC_HEAL_RADIUS = 256.0        
+const int DEPLOYABLE_MEDIC_HEAL_AMOUNT = 9999      
 const float DEPLOYABLE_MEDIC_MAX_LIFETIME = 20
 //const float DEPLOYABLE_MEDIC_MIN_LIFETIME = 4
-const float DEPLOYABLE_MEDIC_HEAL_PER_SEC = 5
+const float DEPLOYABLE_MEDIC_HEAL_PER_SEC = 8
 
 const ROPE_LENGTH = DEPLOYABLE_MEDIC_HEAL_RADIUS + 50
 const ROPE_NODE_COUNT = 10
@@ -31,6 +32,11 @@ const ROPE_REAL_IN_TIME = 0.25
 const int DEPLOYABLE_MEDIC_RESOURCE_FULL_SKIN_INDEX = 0
 const int DEPLOYABLE_MEDIC_RESOURCE_HALF_SKIN_INDEX = 2
 const int DEPLOYABLE_MEDIC_RESOURCE_LOW_SKIN_INDEX = 1
+
+const int DRONE_MEDIC_HOVER_TRACE_MASK = TRACE_MASK_NPCSOLID
+const int DRONE_MEDIC_HOVER_COLLISION_GROUP = TRACE_COLLISION_GROUP_NPC
+
+global const string DEPLOYABLE_MEDIC_SCRIPT_NAME = "deployable_medic"
 
 global const string DEPLOYABLE_MEDIC_HOVER_SOUND		= "Lifeline_Drone_Mvmt_Hover"
 const string DEPLOYABLE_MEDIC_DEPLOY_CABLE_SOUND		= "Lifeline_Drone_Cable_Deploy_3P"
@@ -207,7 +213,8 @@ entity function ReleaseDrone( entity weapon, WeaponPrimaryAttackParams attackPar
 
 	if ( deployable )
 	{
-		deployable.SetAngles( <0, angles.y - 180, 0> )
+		float yAngle = Clamp( angles.y - 180, -360.0, 360.0 )
+		deployable.SetAngles( <0, yAngle, 0> )
 	#if SERVER
 		deployFunc( deployable )
 	#endif
@@ -302,6 +309,7 @@ void function DeployMedicCanister( entity projectile )
 	droneMedic.e.isDoorBlocker = true
 	droneMedic.SetOrigin( origin )
 	droneMedic.SetAngles( angles )
+	// droneMedic.kv.SpawnAsPhysicsMover = 0
 	DispatchSpawn( droneMedic )
 
 	droneMedic.EndSignal( "OnDestroy" )
@@ -345,8 +353,8 @@ void function DeployMedicCanister( entity projectile )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_DEPLOYABLE_MEDIC, owner, droneMedic.GetOrigin(), owner.GetTeam(), owner )
 
-	thread DroneMedicHoverThink( droneMedic, velocity )
-
+	thread DroneMedicHoverThink( droneMedic, velocity ) // requires physics mover, in retail it does not hover anymore and drone is not solid because mover does not hover (however it does have physics? cuz it has bob) todo find a solution for this
+	
 	thread DroneMedicAnims( droneMedic )
 
 	entity wp = CreateWaypoint_Ping_Location( owner, ePingType.ABILITY_DRONEMEDIC, droneMedic, droneMedic.GetOrigin(), -1, false )
@@ -402,8 +410,9 @@ void function DroneMedicAnims( entity droneMedic )
 
 	EmitSoundOnEntity( droneMedic, DEPLOYABLE_MEDIC_HOVER_SOUND )
 
-	waitthread PlayAnim( droneMedic, "lifeline_drone_arming" )
-
+	droneMedic.Anim_Play( "lifeline_drone_arming" )
+	wait droneMedic.GetSequenceDuration( "lifeline_drone_arming" )
+		
 	// still looking for a repro of this. But these lines should stop the servers from crashing.
 	Assert( droneMedic in file.deployableData )
 	if ( !( droneMedic in file.deployableData ) )
@@ -422,10 +431,10 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 	EndSignal( droneMedic, "OnDestroy" )
 
 	const DECEL_TIME = 0.5
-	const SETTLE_HEIGHT = 24
+	const SETTLE_HEIGHT = 56
 	const TRACE_HEIGHT = 128
 	const TRACE_HEIGHT_HIGH = 1024
-	const CLEAR_HOVER_DIST = 48
+	const CLEAR_HOVER_DIST = 128
 	const YAW_RATE = 2000
 	const BOB_FREQUENCY = 2
 	const BOB_SCALE = 1
@@ -460,7 +469,7 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 	vector deployOrigin = droneMedic.GetOrigin()
 	vector deployDest   = deployOrigin + (velocity * (DECEL_TIME / 2.0))
 
-	TraceResults groundTraceResult = TraceHull( deployDest, deployDest - <0, 0, traceHeight>, DRONE_MINS, DRONE_MAXS, droneMedic, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	TraceResults groundTraceResult = TraceHull( deployDest, deployDest - <0, 0, traceHeight>, DRONE_MINS, DRONE_MAXS, droneMedic, DRONE_MEDIC_HOVER_TRACE_MASK, DRONE_MEDIC_HOVER_COLLISION_GROUP )
 	entity groundEnt = groundTraceResult.hitEnt ? groundTraceResult.hitEnt.GetRootMoveParent() : null
 	droneMedic.SetGroundEntity( groundEnt ) // Setting the ground entity allows it to stay on top of moving geo
 	droneMedic.SetYawRate( YAW_RATE )
@@ -476,9 +485,9 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 
 	droneMedic.SetMoveToPositionGround( moveToPosition, groundEnt )
 
-	//DebugDrawLine( deployOrigin, deployDest, 255, 0, 0, true, 2 )
-	//DebugDrawLine( deployDest, groundTraceResult.endPos, 0, 255, 0, true, 2 )
-	//DrawStar( moveToPosition, 2, 5, true )
+	// DebugDrawLine( deployOrigin, deployDest, 255, 0, 0, true, 2 )
+	// DebugDrawLine( deployDest, groundTraceResult.endPos, 0, 255, 0, true, 2 )
+	// DrawStar( moveToPosition, 2, 5, true )
 
 	bool wasStuck = false
 	while( true )
@@ -486,7 +495,7 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 		bool isHealing = DeployableMedic_GetHealTargetCount( droneMedic ) > 0
 
 		// trace to ground
-		groundTraceResult = TraceHull( droneMedic.GetOrigin(), droneMedic.GetOrigin() - <0, 0, traceHeight>, DRONE_MINS, DRONE_MAXS, droneMedic, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		groundTraceResult = TraceHull( droneMedic.GetOrigin(), droneMedic.GetOrigin() - <0, 0, traceHeight>, DRONE_MINS, DRONE_MAXS, droneMedic, DRONE_MEDIC_HOVER_TRACE_MASK, DRONE_MEDIC_HOVER_COLLISION_GROUP )
 		vector hoverOrigin = groundTraceResult.endPos + <0, 0, SETTLE_HEIGHT>
 
 		entity newGroundEnt = groundTraceResult.hitEnt ? groundTraceResult.hitEnt.GetRootMoveParent() : null
@@ -531,7 +540,7 @@ void function DroneMedicHoverThink( entity droneMedic, vector velocity )
 		float speed = GraphCapped( distSqr, BASE_SPEED_DIST, MAX_SPEED_DIST, baseSpeed, MAX_SPEED )
 		droneMedic.SetMaxSpeed( speed )
 
-		//DrawStar( droneMedic.GetMoveToPositionWorld(), 2, 0.5, true )
+		DrawStar( droneMedic.GetMoveToPositionWorld(), 2, 0.5, true )
 		WaitFrame()
 	}
 }
@@ -564,7 +573,7 @@ vector ornull function GetClearHoverVector( entity droneMedic, vector deployOrig
 
 bool function CanDroneHoverTo( entity droneMedic, vector destOrigin )
 {
-	TraceResults result = TraceHull( droneMedic.GetOrigin(), destOrigin, DRONE_MINS, DRONE_MAXS, droneMedic, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	TraceResults result = TraceHull( droneMedic.GetOrigin(), destOrigin, DRONE_MINS, DRONE_MAXS, droneMedic, DRONE_MEDIC_HOVER_TRACE_MASK, DRONE_MEDIC_HOVER_COLLISION_GROUP )
 	//	float frac = TraceHullSimple( droneMedic.GetOrigin(), destOrigin, DRONE_MINS, DRONE_MAXS, droneMedic )
 
 	if ( result.fraction == 1.0 && !result.startSolid )
@@ -1206,6 +1215,8 @@ void function DeployableMedic_HealVisualsEnabled( entity ent, int statusEffect, 
 	EffectSetIsWithCockpit( file.healFxHandle, true )
 
 	Chroma_StartHealingDroneEffect()
+	
+	thread DeployableMedic_HealVisualsThread( player, file.healFxHandle, statusEffect )
 }
 
 void function DeployableMedic_HealVisualsDisabled( entity ent, int statusEffect, bool actuallyChanged )
@@ -1222,6 +1233,25 @@ void function DeployableMedic_HealVisualsDisabled( entity ent, int statusEffect,
 	EffectStop( file.healFxHandle, false, true )
 
 	Chroma_EndHealingDroneEffect()
+}
+
+void function DeployableMedic_HealVisualsThread( entity viewPlayer, int fxHandle, int statusEffect )
+{
+	EndSignal( viewPlayer, "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( viewPlayer, fxHandle )
+		{
+			if ( EffectDoesExist( fxHandle ) )
+				EffectStop( fxHandle, false, true )
+
+			if ( file.healFxHandle != -1 )
+				file.healFxHandle = -1
+		}
+	)
+
+	while ( StatusEffect_GetSeverity( viewPlayer, statusEffect ) > 0 )
+		WaitFrame()
 }
 
 bool function CanDeployHealDrone( entity player )
@@ -1246,3 +1276,17 @@ bool function CanDeployHealDrone( entity player )
 }
 
 #endif //CLIENT
+
+#if SERVER || CLIENT
+entity function GetHealDroneForHitEnt( entity hitEnt )
+{
+	if ( hitEnt.GetScriptName() == DEPLOYABLE_MEDIC_SCRIPT_NAME )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && parentEnt.GetScriptName() == DEPLOYABLE_MEDIC_SCRIPT_NAME )
+		return parentEnt
+
+	return null
+}
+#endif

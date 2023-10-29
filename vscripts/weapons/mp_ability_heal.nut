@@ -11,6 +11,7 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_loop_1P", "octane_stimpack_loop_3P" )
 	PlayerUsedOffhand( player, weapon )
+
 	thread StimEnd(weapon, duration)
 
 	#if SERVER
@@ -39,16 +40,13 @@ void function StimEnd( entity weapon, float duration)
 
 void function OnWeaponChargeEnd_ability_heal( entity weapon )
 {
-//	entity player = weapon.GetWeaponOwner()
+	entity player = weapon.GetWeaponOwner()
+	weapon.SetWeaponPrimaryClipCount( 0 )
 }
 
 
 var function OnWeaponPrimaryAttack_ability_heal( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-//	entity player = weapon.GetWeaponOwner()
-
-//	wait 3
-//	weapon.EmitWeaponSound_1p3p( "Octane_Stim_DeActivateWarning", "Octane_Stim_DeActivateWarning_3p" )
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 

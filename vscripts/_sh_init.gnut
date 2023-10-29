@@ -145,7 +145,6 @@ void function SV_CL_Init()
 	
 	ShWeaponRack_Init()
 
-
 	//ShGruntChatter_MP_Init()
 	//ShSpectreChatter_MP_Init()
 
@@ -162,7 +161,7 @@ void function SV_CL_Init()
 	ShCarePackage_Init()
 	ShWeaponInspect_Init()
 	Consumable_Init()
-
+	MpWeaponGreandeElectricSmoke_Init()
 	ShWarpGates_Init()
 
 	Sh_Loot_Vault_Panel_Init()
@@ -170,11 +169,11 @@ void function SV_CL_Init()
 
 	ShLootDrones_Init()
 
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
+	//if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
 	ShLootRollers_Init()
-	} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
-	ShFlyersDeathboxes_Init()
-	}	
+	//} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
+	//ShFlyersDeathboxes_Init()
+	//}	
 
 
 	CharacterSelectNewMenu_Init()
@@ -190,7 +189,8 @@ void function SV_CL_Init()
 
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
-
+	ShPassiveAdrenaline_Init()
+	
     // Zipline Utility
     #if SERVER
         ZiplineUtility_Init()
@@ -211,6 +211,19 @@ void function SV_CL_Init()
 	Dev_RemoteFunctions_Init()
 	#endif
 
+	#if CLIENT	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
+		if( GameRules_GetGameMode() == "fs_dm" )
+			RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )		
+	}
+	
+	if( GameRules_GetGameMode() == "custom_ctf" )
+	{
+		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSCTF_GameStateChanged )
+	}
+	#endif
 	RemoteFunctions_Init_Finish()
 }
 
@@ -277,6 +290,7 @@ void function Server_Init()
 	ScriptMovers_Init()
 	ScriptToys_Init()
 	TitanHotdrop_Init()
+	BubbleShield_Init()
 	Zipline_Init()
 	Leeching_Init()
 	PlayerLeeching_Init()
@@ -306,7 +320,6 @@ void function Server_Init()
 	TrackingVision_Init()
 	PassiveGasGear_Init()
 	PassiveMedic_Init()
-	PassiveAdrenaline_Init()
 	Bombardment_Init()
 	ThreatDetection_Init()
 	Staging_Area_Init()
@@ -321,11 +334,11 @@ void function Server_Init()
 	Achievements_Init()
 
 	SvDevStats_LevelInit()
-	SURVIVAL_Loot_All_InitShared() // need this to precache the weapons
-
+	
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
+	ObjectiveResourceSystem_ServerInit()
 
     // ReMap Live
     if ( GetCurrentPlaylistName() == "survival_dev" )
@@ -414,7 +427,6 @@ void function Client_Init()
 	#endif
 	ClRadialMenu_Init()
 	CLTrackingVision_Init()
-	CLPassiveAdrenaline_Init()
 	ClJumpPad_Init()
 	CLChroma_Init()
 }

@@ -222,7 +222,7 @@ void function UpdateDOFForPlayerView()
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "OnDestroy" )
 
-	player.ClientCommand( "dof_variable_blur 3" )
+	//player.ClientCommand( "dof_variable_blur 3" )
 	DoF_SetFarDepth( 10000, 150000 )
 
 	float traceDist = 100000.0

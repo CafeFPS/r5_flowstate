@@ -1,9 +1,8 @@
 #base "_base_lmg.txt"
-#base "_base_mags_heavy.txt"
+#base "_base_mags_light.txt"
 #base "_base_stocks_tactical.txt"
-#base "_base_barrels_large.txt"
 #base "_base_projectile_ricochet.txt"
-
+#base "_base_barrels_large.txt"
 WeaponData
 {
 	// General
@@ -13,7 +12,8 @@ WeaponData
 	"longdesc"										"#WPN_LMG_LONGDESC"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
-	"ammo_pool_type"								"highcal"
+
+	"ammo_pool_type"								"bullet"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_spitfire"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_spitfire"
@@ -85,7 +85,7 @@ WeaponData
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"chroma_color"									".6 1 .6"
 
@@ -130,7 +130,7 @@ WeaponData
 	"critical_hit_damage_scale"						"1.5"
 
 	// Ammo
-	"ammo_clip_size"   								"55"
+
 	"ammo_clip_random_loss_on_npc_drop"				"0.6"
 
    "titanarmor_critical_hit_required"              "1"
@@ -141,12 +141,15 @@ WeaponData
     "damage_headshot_scale"							"1.50"
 	"damage_leg_scale"                              "0.85"
 	"ammo_clip_size"   								"35"
-    "ammo_stockpile_max"					        "245"
-    "ammo_default_total"					        "300"   //for crate weapons, default total should be clip size + stockpile max
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"84"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
+      
 
-		"aimassist_adspull_weaponclass"					"none"
+	"ammo_min_to_fire"								"1"
+
+	"aimassist_adspull_weaponclass"					"none"
 
 	"damage_near_value"   							"18"
 	"damage_far_value"								"18"
@@ -156,34 +159,33 @@ WeaponData
 	"damage_very_far_value_titanarmor" 				"18"
 	"damage_rodeo" 									"200"
 
-		"damage_near_distance"							"1500"
-		"damage_far_distance" 							"2500"
-	    "damage_very_far_distance"						"4000"
+	"damage_near_distance"							"1500"
+	"damage_far_distance" 							"2500"
+    "damage_very_far_distance"						"4000"
 
-		"red_crosshair_range" 							"0"
+	"red_crosshair_range" 							"0"
 
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"2"
-		"npc_damage_far_value"							"2"
-		"npc_damage_near_value_titanarmor"				"2"
-		"npc_damage_far_value_titanarmor" 				"2"
-		"npc_damage_near_distance"						"<KEEP_DEFAULT>"
-		"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
+	// Damage - When Used by NPCs
+	"npc_damage_near_value"   						"2"
+	"npc_damage_far_value"							"2"
+	"npc_damage_near_value_titanarmor"				"2"
+	"npc_damage_far_value_titanarmor" 				"2"
+	"npc_damage_near_distance"						"<KEEP_DEFAULT>"
+	"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
 
-		"npc_min_engage_range"							"100"
-		"npc_max_engage_range"							"1500"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"3000"
-		"npc_min_range"   								"0"
-		"npc_max_range"   								"3000"
+	"npc_min_engage_range"							"100"
+	"npc_max_engage_range"							"1500"
+	"npc_min_engage_range_heavy_armor"				"500"
+	"npc_max_engage_range_heavy_armor"				"3000"
+	"npc_min_range"   								"0"
+	"npc_max_range"   								"3000"
 
-		"npc_min_burst"   								"15"
-		"npc_max_burst"   								"20"
-		"npc_rest_time_between_bursts_min"				"5.0"
-		"npc_rest_time_between_bursts_max"				"6.0"
+	"npc_min_burst"   								"15"
+	"npc_max_burst"   								"20"
+	"npc_rest_time_between_bursts_min"				"5.0"
+	"npc_rest_time_between_bursts_max"				"6.0"
 
-		"enable_highlight_networking_on_creation"		"0"
-
+	"enable_highlight_networking_on_creation"		"0"
 
     "viewmodel_offset_hip"							"0 1.4 0.4"
 	"viewmodel_offset_ads"							"0 1.3 0"
@@ -221,16 +223,11 @@ WeaponData
 
 	"ammo_suck_behavior"							"primary_weapons"
 
-                      
-                                     
-     
-	//spread
-    "spread_stand_hip"								"4.5"
-    "spread_stand_hip_run"							"6.5"
-    "spread_stand_hip_sprint"                       "7.5"
-    "spread_crouch_hip"   							"2.75"
-    "spread_air_hip"                            	"7.5"
-      
+	"spread_stand_hip"								"3.0" //"4.5"
+    "spread_stand_hip_run"							"4.2" //"6.5"
+    "spread_stand_hip_sprint"                       "4.5" //"7.5"
+    "spread_crouch_hip"   							"2.0" //"2.75"
+    "spread_air_hip"  								"6.0" //"7.5"
 
 	// View Kick
 	"viewkick_pattern"                              "lmg_2"
@@ -250,21 +247,14 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-                      
-	"viewkick_pitch_softScale"						"3.2"
-     
-                                      
-      
+	"viewkick_pitch_softScale"						"2.9" //3.2
 	"viewkick_pitch_hardScale"						"0.3"
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
 	"viewkick_yaw_random_innerexclude"				"0.12"  //"0.22"
-                      
-	"viewkick_yaw_softScale"  						"2.4"   //"2.2"
-     
-                                                
-      
+
+	"viewkick_yaw_softScale"  						"2.3"   //"2.4"
 	"viewkick_yaw_hardScale"  						"0.3"
 
 	"viewkick_roll_base"  							"-1.6"
@@ -426,8 +416,14 @@ WeaponData
 
     "low_ammo_fraction" 							"0.3"
 
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_SPITFIRE"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_SPITFIRE"
+
 	Mods
 	{
+        gold
+        {
+        }
 	    vkp
 	    {
             "spread_stand_hip"								"2.0"
@@ -444,15 +440,6 @@ WeaponData
             "spread_max_kick_crouch_hip"  					"2.0"
             "spread_max_kick_air_hip" 						"4.0"
 	    }
-
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"84"
-            "ammo_no_remove_from_stockpile"					"0"
-
-	   		"uses_ammo_pool"								"1"
-        }
 
 
 		optic_cq_hcog_classic
@@ -486,19 +473,23 @@ WeaponData
 		}
 
 
-		highcal_mag_l1
-		{
-			"ammo_clip_size"   							"40"
-		}
-		highcal_mag_l2
-		{
-			"ammo_clip_size"   							"45"
-		}
-		highcal_mag_l3
-		{
-			"ammo_clip_size"   							"50"
-		}
-
+		bullets_mag_l1
+        {
+            "ammo_clip_size"   							"40"
+        }
+        bullets_mag_l2
+        {
+            "ammo_clip_size"   							"45"
+        }
+        bullets_mag_l3
+        {
+                "ammo_clip_size"   							"50"
+        }
+        bullets_mag_l4
+        {
+                "ammo_clip_size"   							"50"
+        }
+        
 		"barrel_stabilizer_l4_flash_hider"
 		{
 			"fx_muzzle_flash_view"							""

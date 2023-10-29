@@ -11,6 +11,7 @@ global function MarvinWeaponsFree
 global function GetLeechedEnts
 global function DataKnifeSuccessSounds
 global function DataKnifeCanceledSounds
+global function PathfinderBeaconSuccessSounds
 
 global function GetTeamLeechedEnts
 
@@ -261,6 +262,11 @@ void function DataKnifeSuccessSounds( entity player )
 void function DataKnifeCanceledSounds( entity player )
 {
 	EmitDifferentSoundsOnEntityForPlayerAndWorld( "dataknife_aborted", "dataknife_aborted_3p", player, player )
+}
+
+void function PathfinderBeaconSuccessSounds( entity player )
+{
+	EmitDifferentSoundsOnEntityForPlayerAndWorld( "Pathfinder_SurveyBeacon_SuccessPulse", "Pathfinder_SurveyBeacon_SuccessPulse", player, player )
 }
 
 

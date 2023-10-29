@@ -98,7 +98,9 @@ void function OpenSelectedPanel( var button )
 
 void function StartNewGame( var button )
 {	
+	#if LISTEN_SERVER
 	CreateServer(ServerSettings.svServerName, ServerSettings.svServerDesc, ServerSettings.svMapName, ServerSettings.svPlaylist, ServerSettings.svVisibility)
+	#endif // LISTEN_SERVER
 }
 
 void function SetSelectedServerMap( string map )

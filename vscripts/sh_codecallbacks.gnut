@@ -102,8 +102,10 @@ void function CodeCallbacksShared_Init()
 	#if CLIENT
 		RegisterConCommandTriggeredCallback( "-useAndReload", CancelDisembark )
 		RegisterConCommandTriggeredCallback( "-use", CancelDisembark )
-	if(GameRules_GetGameMode() == SURVIVAL)
-		RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
+		if(GameRules_GetGameMode() == SURVIVAL)
+			RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
+	
+		AddCallback_OnYouDied( FS_ForceDestroyCustomAdsOverlay_Callback )
 	#endif
 
 	#if SERVER
@@ -342,17 +344,17 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		//player.ForceShadowVisible( newClass == "titan" )
 
 		UpdatePlayerStatusCounts()
-		MapConVar_Init()
+		//MapConVar_Init()
 
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
 	#else
-		if(IsValid( player ) ){
 		player.kv.renderColor = "255 255 255 255"
-		TakeAllPassives( player )
+		
+		if( GameRules_GetGameMode() != SURVIVAL)
+			TakeAllPassives( player )
+		
 		InitDamageStates( player )
-		if ( GameRules_GetGameMode() == "survival" )// Survey Beacon Minimap Icon
-			thread SetSurveyBaconMinimapVisibility( player )}
 	#endif
 
 	//if ( IsClient() && !player.IsTitan() )
@@ -388,6 +390,20 @@ void function CodeCallback_OnWeaponReload( entity weapon )
 		if ( NPC_GruntChatterSPEnabled( weaponOwner ) )
 			GruntChatter_TryPlayerPilotReloading( weaponOwner )
 	#endif
+
+	if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
+	{
+		int maxClipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int requiredAmmo = maxAmmo - currentAmmo
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( weaponOwner, ammoRef )
+
+		weaponOwner.AmmoPool_SetCapacity( 65535 )
+		weaponOwner.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+	}
 }
 
 void function SetCallback_OnPlayerReload( void functionref( entity ) rules )
@@ -485,7 +501,8 @@ void function CheckForAccelerants( entity player )
 
 		foreach ( invItem in playerInventory )
 		{	
-			if(invItem.type == 43)
+		printt( invItem.type )
+			if(invItem.type == 51)
 			{
 				Consumable_UseItemByType(player, 5)
 				SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)
@@ -518,18 +535,19 @@ void function CodeCallback_OnUseEnd( entity player )
 
 void function AddCallback_OnUseButtonPressed( entity player, void functionref( entity ) callbackFunc )
 {
-	Assert( player.IsPlayer() )
-	Assert( !player.e.onPlayerUseButtonPressed.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
-
+	if ( player.e.onPlayerUseButtonPressed.contains( callbackFunc ) )
+		return
+	
 	player.e.onPlayerUseButtonPressed.append( callbackFunc )
 }
 
 
 void function RemoveCallback_OnUseButtonPressed( entity player, void functionref( entity ) callbackFunc )
 {
-	int ornull funcPos = player.e.onPlayerUseButtonPressed.find( callbackFunc )
-	Assert( funcPos != null, "Cannot remove " + string( callbackFunc ) + " that was not added to entity" )
-	player.e.onPlayerUseButtonPressed.remove( expect int( funcPos ) )
+	if ( !player.e.onPlayerUseButtonPressed.contains( callbackFunc ) )
+		return
+	
+	player.e.onPlayerUseButtonPressed.fastremovebyvalue( callbackFunc )
 }
 
 

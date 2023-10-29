@@ -309,13 +309,25 @@ void function CreateSmokeTrigger( SmokescreenStruct smokescreen, entity smokeGre
 	trigger.SetEnterCallback( BangaloreSmokeGrenadeTriggerEnter )
 	trigger.SearchForNewTouchingEntity()  // set this to catch an entity in the trigger right away
 
+	entity traceBlocker = CreateTraceBlockerVolume( origin, 24.0, false, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE | CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+	traceBlocker.SetBox( <-20, -20, -16>, <200, 280, 150> )
+	traceBlocker.SetAngles( smokeGrenade.GetAngles() )
+	traceBlocker.RemoveFromAllRealms()
+	traceBlocker.AddToOtherEntitysRealms( smokeGrenade )
+	#if DEVELOPER
+	DrawAngledBox( origin, smokeGrenade.GetAngles(), <-20, -20, -16>, <200, 280, 150>, 255, 0, 0, true, 15 )
+	#endif
+
 	EndSignal( trigger, "OnDestroy" )
 
 	OnThreadEnd(
-		function () : ( trigger )
+		function () : ( trigger, traceBlocker )
 		{
 			if ( IsValid( trigger ) )
 				trigger.Destroy()
+			
+			if ( IsValid( traceBlocker ) )
+				traceBlocker.Destroy()
 		}
 	)
 

@@ -26,6 +26,7 @@ WeaponData
 	"offhand_interupts_weapon_anims"				"1"
 	"offhand_toss_activates_on_attack"				"0"
     "trophy_system_ignore"                          "1"
+    "offhand_cancelled_by_melee"					"1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_weapon_jump_pad"
 	"OnWeaponTossPrep"								"OnWeaponTossPrep_weapon_jump_pad"
@@ -142,9 +143,6 @@ WeaponData
 	"viewkick_spring" 								"pistol"
 
 	"ammo_drains_to_empty_on_fire"					"0"
-
-	MP_BASE
-	{
     "ammo_clip_size"                                "90"
     "ammo_default_total"                            "0"
     "ammo_display"                                  "count"
@@ -154,25 +152,6 @@ WeaponData
     "regen_ammo_refill_start_delay"                 "0.0"
     "ammo_no_remove_from_stockpile"                 "0"
     "regen_ammo_refill_rate"                        "1"
-
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"100"
-		"ammo_default_total"							"100"
-		"ammo_display"									"bar"
-		"ammo_min_to_fire"								"100"
-		"ammo_per_shot"									"100"
-		"ammo_stockpile_max"							"100"
-		"regen_ammo_refill_rate"						"2"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-	}
-
-	// Bob
 
 
 	// Rumble
@@ -202,14 +181,6 @@ WeaponData
 
         survival_finite_ordnance
         {
-            "ammo_clip_size"								"90"
-            "ammo_default_total"							"0"
-            "ammo_display"									"count"
-            "ammo_min_to_fire"								"90"
-            "ammo_per_shot"									"90"
-            "ammo_stockpile_max"							"0"
-            "regen_ammo_refill_start_delay"					"0.0"
-            "ammo_no_remove_from_stockpile"					"0"
         }
 	    survival_armor_cooldown_mod
 	    {

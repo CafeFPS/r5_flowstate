@@ -36,9 +36,10 @@ struct
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
 	table<var, ButtonData > hubButtonData
-	table<var, ButtonData > invisButtonData
+	table<var, ButtonData > MGsettingsButtonData
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
+	table<var, ButtonData > Toggle1v1ScoreboardFocus
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
 } file
@@ -137,10 +138,11 @@ void function InitSystemPanel( var panel )
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
 	file.hubButtonData[ panel ] <- clone data
-	file.invisButtonData[ panel ] <- clone data
+	file.MGsettingsButtonData[ panel ] <- clone data
 	file.TDM_ChangeWeapons[ panel ] <- clone data
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
+	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -183,10 +185,10 @@ void function InitSystemPanel( var panel )
 	
 	file.hubButtonData[ panel ].label = "HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
-	
-	file.invisButtonData[ panel ].label = "Toggle Hide Players"
-	file.invisButtonData[ panel ].activateFunc = RunInvis
-	
+
+	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
+	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
+
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
 	
@@ -196,6 +198,9 @@ void function InitSystemPanel( var panel )
 	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
+	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
+
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -232,11 +237,16 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1" )
+		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
-		
+
+		if( GetCurrentPlaylistName() == "fs_1v1" )
+		{
+			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+		}
+
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
@@ -265,7 +275,7 @@ void function UpdateSystemPanel( var panel )
 		}
 		if( GetCurrentPlaylistName() == "fs_movementgym" )
 		{
-			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
 
@@ -368,7 +378,9 @@ void function OpenSettingsMenu()
 
 void function HostEndMatch()
 {
+	#if LISTEN_SERVER
 	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#endif // LISTEN_SERVER
 }
 
 void function RunSpectateCommand()
@@ -381,6 +393,11 @@ void function ShowScoreboard_System()
 	ClientCommand( "scoreboard_toggle_focus" )
 }
 
+void function Toggle1v1Scoreboard_System()
+{
+	RunClientScript( "Toggle1v1Scoreboard" )
+}
+
 void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
@@ -391,9 +408,9 @@ void function RunHub()
 	ClientCommand( "hub" )
 }
 
-void function RunInvis()
+void function RunMGsettings()
 {
-	ClientCommand( "invis" )
+	RunClientScript("MG_Settings_UI")
 }
 
 #if CONSOLE_PROG

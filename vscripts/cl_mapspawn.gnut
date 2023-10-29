@@ -35,6 +35,10 @@ global var Hud = null
 
 global bool TITAN_CORE_ENABLED = true
 
+
+global function FinisherPrivateFunction
+global function FinisherTestIdk
+
 UISize function GetVirtualScreenSize( int width, int height )
 {
 	UISize virtualScreenSize
@@ -129,8 +133,8 @@ void function ClientCodeCallback_MapSpawn()
 
 	SV_CL_Shared_Init()
 	
+	//RequestPakFile( "ui_flowstate" )
 	//for custom ui/textures by @CafeFPS
-	RequestPakFile( "ui_flowstate" )
 }
 
 
@@ -319,6 +323,8 @@ void function RunClientConnectScriptsThreaded( entity player )
 	RunCallbacks_EntitiesDidLoad()
 
 	FlagSet( "EntitiesDidLoad" )
+	
+	MapConVar_Init()
 }
 
 
@@ -436,4 +442,175 @@ void function PerfInitLabels()
 
 function ClientCodeCallback_OnDropShipCinematicEventStateChanged()
 {
+}
+
+void function FinisherTestIdk(
+		vector refPoint,
+		ItemFlavor attackerCharacter, ItemFlavor attackerSkin,
+		ItemFlavor victimCharacter, ItemFlavor victimSkin,
+		ItemFlavor attackerExecution, string whichCamera = "victim" )
+{
+	entity attacker = CreateClientSidePropDynamic( refPoint, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
+	entity victim   = CreateClientSidePropDynamic( refPoint, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
+	entity camera   = null
+
+	// CharacterSkin_Apply( attacker, attackerSkin )
+	// attacker.SetModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
+	
+	attacker.SetModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	// attacker.SetModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+	//CharacterSkin_Apply( victim, victimSkin )
+	victim.SetModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
+
+	float fov = 70.0
+	switch( whichCamera )
+	{
+		case "firstpersonAttacker":
+		{
+			fov = 110
+			camera = CreateClientSidePointCamera( attacker.GetOrigin(), attacker.GetAngles(), fov )
+			camera.SetParent( attacker, "EYE_R", false, 0.0 )
+			camera.SetOrigin(camera.GetOrigin() + Normalize(camera.GetForwardVector()*5))
+			break			
+		}
+		case "firstpersonVictim":
+		{
+			fov = 110
+			camera = CreateClientSidePointCamera( victim.GetOrigin(), victim.GetAngles(), fov )
+			camera.SetParent( victim, "EYE_R", false, 0.0 )
+			camera.SetOrigin(camera.GetOrigin() + Normalize(camera.GetForwardVector()*5))
+			break			
+		}
+		case "attacker":
+		{
+			camera = CreateClientSidePointCamera( attacker.GetOrigin(), attacker.GetAngles(), fov )
+			camera.SetParent( attacker, "VDU", false, 0.0 )
+			break
+		}
+
+		case "victim":
+		{
+			camera = CreateClientSidePointCamera( victim.GetOrigin(), victim.GetAngles(), fov )
+			camera.SetParent( victim, "VDU", false, 0.0 )
+			break
+		}
+
+		case "orbit":
+		{
+			camera = CreateClientSidePointCamera( attacker.GetOrigin(), attacker.GetAngles(), fov )
+			//camera.SetParent( attacker, "ref", false, 0.0 )
+			break
+		}
+	}
+
+	OnThreadEnd( function() : ( attacker, victim, camera ) {
+		if ( IsValid( camera ) )
+		{
+			GetLocalClientPlayer().ClearMenuCameraEntity()
+			camera.Destroy()
+		}
+
+		if ( IsValid( attacker ) )
+			attacker.Destroy()
+
+		if ( IsValid( victim ) )
+			victim.Destroy()
+	} )
+
+	asset attackerPlayerSettings = CharacterClass_GetSetFile( attackerCharacter )
+	asset victimPlayerSettings   = CharacterClass_GetSetFile( victimCharacter )
+	string victimRigWeight       = GetGlobalSettingsString( victimPlayerSettings, "bodyModelRigWeight" )
+
+	string attackerAnimSeq = string(CharacterExecution_GetAttackerAnimSeq( attackerExecution ))
+	string victimAnimSeq   = string(CharacterExecution_GetVictimAnimSeq( attackerExecution, victimRigWeight ))
+
+	float attackerAnimDuration = attacker.GetSequenceDuration( attackerAnimSeq )
+	float victimAnimDuration   = victim.GetSequenceDuration( victimAnimSeq )
+
+	victim.SetParent( attacker, "ref", false, 0.0 )
+
+	if ( camera != null )
+	{
+		clGlobal.clientCamera = camera
+		GetLocalClientPlayer().SetMenuCameraEntity( camera )
+	}
+
+	if ( whichCamera == "delay" ) // lol
+		wait 2.2
+
+	attacker.Anim_PlayWithRefPoint( attackerAnimSeq, refPoint, <0, 0, 0>, 0.0 )
+	victim.Anim_Play( victimAnimSeq )
+	victim.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+
+	int attackerVDUAttachIndex = attacker.LookupAttachment( "VDU" )
+	int victimVDUAttachIndex   = victim.LookupAttachment( "VDU" )
+
+	float finishTime   = Time() + max( attackerAnimDuration, victimAnimDuration )
+	entity player      = GetLocalClientPlayer()
+	vector orbitAngles = <45, VectorToAngles( Normalize( refPoint - player.EyePosition() ) ).y, 0>
+	float prevTime     = Time()
+	while ( Time() < finishTime )
+	{
+		float deltaTime = Time() - prevTime
+		if ( whichCamera == "debuglines" )
+		{
+			vector attackerVDUOrigin = attacker.GetAttachmentOrigin( attackerVDUAttachIndex )
+			vector attackerVDUAngles = attacker.GetAttachmentAngles( attackerVDUAttachIndex )
+			DebugDrawAxis( attackerVDUOrigin, attackerVDUAngles, 0.0, 20, <255, 100, 100> )
+
+			vector victimVDUOrigin = victim.GetAttachmentOrigin( victimVDUAttachIndex )
+			vector victimVDUAngles = victim.GetAttachmentAngles( victimVDUAttachIndex )
+			DebugDrawAxis( victimVDUOrigin, victimVDUAngles, 0.0, 20, <100, 255, 200> )
+		}
+		else if ( whichCamera == "orbit" )
+		{
+			float inputForward = player.GetInputAxisForward()
+			float inputRight   = player.GetInputAxisRight()
+			float exp          = 2.0
+			orbitAngles += 175.0 * deltaTime * <signum( inputForward ) * pow( fabs( inputForward ), exp ), signum( inputRight ) * pow( fabs( inputRight ), exp ), 0>
+			camera.SetOrigin( attacker.GetOrigin() - 150 * AnglesToForward( orbitAngles ) )
+			camera.SetAngles( orbitAngles )
+		}
+		prevTime = Time()
+		WaitFrame()
+	}
+	if ( IsValid( camera ) )
+		{
+		GetLocalClientPlayer().ClearMenuCameraEntity()
+		camera.Destroy()
+		}
+
+	if ( IsValid( attacker ) )
+		attacker.Destroy()
+
+	if ( IsValid( victim ) )
+		victim.Destroy()
+	
+	wait 0.25
+}
+
+void function FinisherPrivateFunction( int attackerIndex, int victimIndex, int attackerFinisherIndex, string camera = "firstpersonAttacker" )
+{
+	entity player = GetLocalViewPlayer()
+	
+	array<ItemFlavor> characterPool = GetAllCharacters()
+	
+	if(attackerIndex > GetAllCharacters().len() || victimIndex > GetAllCharacters().len()) return
+	
+	array<ItemFlavor> AllFinishers
+	
+	ItemFlavor attacker = characterPool[attackerIndex]
+	foreach( ItemFlavor execution in GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterExecution( attacker  ) ) )
+		AllFinishers.append(execution)
+	
+	printt("Total finishers for this attacker: " + AllFinishers.len())
+	
+	if(attackerFinisherIndex > AllFinishers.len()) return
+	
+	ItemFlavor victimCharacter = characterPool[victimIndex]
+
+	ItemFlavor attackerSkin = GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterSkin( attacker  ) ).getrandom()
+	ItemFlavor victimSkin      = GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterSkin( victimCharacter ) ).getrandom()
+	
+	delaythread(0.5) FinisherTestIdk( player.GetOrigin(), attacker, attackerSkin, victimCharacter, victimSkin, AllFinishers[attackerFinisherIndex], camera)
 }

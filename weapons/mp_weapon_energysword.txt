@@ -1,0 +1,62 @@
+// Made by @CafeFPS
+
+#base "_base_melee.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Type-1 Energy Sword"
+	"shortprintname"								"Energy Sword"
+	"description" 									"Close quarters combat weapon"
+	"longdesc"										"Close quarters combat weapon"
+
+	"fast_swap_to"									"1"
+
+	 "menu_icon"									"rui/flowstate_custom/weapon/halo_energysword"
+	 "hud_icon"										"rui/flowstate_custom/weapon/halo_energysword"
+
+	"viewmodel"   									"mdl/Weapons/ptpov_energy_sword/ptpov_energy_sword.rmdl"
+	 "playermodel" 									"mdl/Weapons/w_energy_sword/w_energy_sword.rmdl"
+
+	"weaponClass" 									"human"
+	"body_type"										"battle_rifle"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
+	"minimap_reveal_distance"						"1"
+	"attack_button_presses_melee"					"1"
+	"leveled_pickup"								"1"
+	"primary_fire_does_not_block_sprint"			"1"
+
+    "OnWeaponActivate"								"OnWeaponActivate_EnergySword"
+    "OnWeaponDeactivate"							"OnWeaponDeactivate_EnergySword"
+
+	"red_crosshair_range" 							"300"
+	"zoom_effects"						"0"
+	
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			//adjustedSpread				weapon_spread
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_circle2"
+			"base_spread"				"0"
+			//Args
+			//{
+			//	isFiring				weapon_is_firing
+			//}
+		}
+	}
+}

@@ -1,5 +1,5 @@
 //Flowstate 1v1 gamemode
-//made by makimakima#5561
+//made by __makimakima__
 globalize_all_functions
 
 global bool IS_CHINESE_SERVER = false
@@ -61,7 +61,7 @@ entity function getTimeOutPlayer()
 }
 void function soloModeWaitingPrompt(entity player)
 {
-	wait 1
+	wait 0.2
 	if(!IsValid(player)) return
 	foreach (eachplayerStruct in soloPlayersWaiting)
 	{
@@ -155,7 +155,7 @@ bool function isPlayerInSoloMode(entity player)
 	return false
 }
 
-bool function isPlayerInWatingList(entity player)
+bool function isPlayerInWaitingList(entity player)
 {
 	foreach (eachPlayerStruct in soloPlayersWaiting)
 	{
@@ -192,9 +192,26 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
 	if( !IsValid(player) ) //|| !IsAlive(player) )
 		return false
-	
+
+	if( Time() < player.p.lastRestUsedTime + 3 )
+	{
+		Message(player, "REST COOLDOWN")
+		return false
+	}
+
 	if(soloPlayersResting.contains(player))
 	{
+		if( player.IsObserver() || IsValid( player.GetObserverTarget() ) )
+		{
+			player.SetSpecReplayDelay( 0 )
+			player.SetObserverTarget( null )
+			player.StopObserverMode()
+			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			player.MakeVisible()
+			player.ClearInvulnerable()
+			player.SetTakeDamageType( DAMAGE_YES )
+		}
+
 		if(IS_CHINESE_SERVER)
 			Message(player,"匹配中")
 		else
@@ -226,8 +243,10 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 		}
 
 		thread respawnInSoloMode(player)
-
+		TakeAllWeapons( player )
 	}
+	
+	player.p.lastRestUsedTime = Time()
 
 	return true
 }
@@ -269,6 +288,7 @@ void function soloModePlayerToWaitingList(entity player)
 {
 	if(!IsValid(player)) return
 	// Warning("Try to add a player to wating list: " + player.GetPlayerName())
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
 	//检查waiting list是否有该玩家
 	bool IsAlreadyExist = false
@@ -285,7 +305,7 @@ void function soloModePlayerToWaitingList(entity player)
 	playerStruct.player = player
 	playerStruct.waitingTime = Time() + 2
 	if(IsValid(player))
-		playerStruct.kd = getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS ))
+		playerStruct.kd = getkd( player.GetPlayerNetInt( "kills" ), player.GetPlayerNetInt( "deaths" ))
 	else
 		playerStruct.kd = 0
 	playerStruct.lastOpponent = player.p.lastKiller
@@ -293,6 +313,12 @@ void function soloModePlayerToWaitingList(entity player)
 	if(!IsAlreadyExist) //如果waiting list里没有这个玩家
 	{
 		soloPlayersWaiting.append(playerStruct)
+		TakeAllWeapons( player )
+
+		//set realms for resting player
+		setRealms_1v1(player,64)//more than 63 means AddToAllRealms
+		
+		Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 	}
 	else //如果waiting list里有这个玩家
 	{
@@ -334,8 +360,12 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	if(player == opponent)
 	{
 		// Warning("Try to add same players to InProgress list:" + player.GetPlayerName())
+		player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 		return result
 	}
+	
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", opponent )
+	opponent.SetPlayerNetEnt( "FSDM_1v1_Enemy", player )
 
 	//检查InProgress是否存在该玩家
 	bool IsAlreadyExist = false
@@ -395,7 +425,8 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 void function soloModePlayerToRestingList(entity player)
 {
 	if(!IsValid(player)) return
-
+	
+	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 	deleteWaitingPlayer(player)
 
 
@@ -564,6 +595,7 @@ void function forbiddenZone_leave(entity trigger , entity ent)
 void function maki_tp_player(entity player,LocPair data)
 {
 	if(!IsValid(player)) return
+	player.SetVelocity( Vector( 0,0,0 ) )
 	player.SetAngles(data.angles)
 	player.SetOrigin(data.origin)
 }
@@ -582,6 +614,9 @@ void function PlayerRestoreHP_1v1(entity player, float health, float shields)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
 	else if(shields <= 100)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+	else if(shields <= 125)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv5", "armor")
+
 	player.SetShieldHealth( shields )
 }
 
@@ -620,7 +655,7 @@ bool function isGroupVaild(soloGroupStruct group)
 void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复活死亡玩家和同一个sologroup的玩家
 {
 	if (!IsValid(player)) return
-	//printt("respawnInSoloMode!")
+	// printt("respawnInSoloMode!")
 	// Warning("respawn player: " + player.GetPlayerName())
 
    	if( player.p.isSpectating )
@@ -636,23 +671,14 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		player.SetTakeDamageType( DAMAGE_YES )
     }//disable replay mode
 
+	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+
    	if( isPlayerInRestingList(player) )
 	{
 		// Warning("resting respawn")
 		try
 		{
 			DecideRespawnPlayer(player, true)
-
-			if(!(player.GetPlayerName() in weaponlist))
-			{
-				giveWeaponInRandomWeaponPool( player )
-			}
-			else
-			{
-				TakeAllWeapons(player)
-				thread LoadCustomWeapon(player)
-			}
-			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		}
 		catch (erroree)
 		{
@@ -660,7 +686,8 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		}
 		LocPair waitingRoomLocation = getWaitingRoomLocation(GetMapName())
 		if (!IsValid(waitingRoomLocation)) return
-
+		
+		GivePlayerCustomPlayerModel( player )
 		maki_tp_player(player, waitingRoomLocation)
 		player.MakeVisible()
 		player.ClearInvulnerable()
@@ -685,7 +712,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	{
 		// Warning("fail to respawn")
 	}
-
+	GivePlayerCustomPlayerModel( player )
 	maki_tp_player(player,soloLocations[group.slotIndex].respawnLocations[respawnSlotIndex])
 
 	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
@@ -693,29 +720,38 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	if(!IsValid(player)) return
 
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-	PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
+	PlayerRestoreHP_1v1(player, 100, 125 )
 
-	//player dont need any skills in solo mode
-	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-
-	if (IsValid(player) && !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
-	{
-		giveWeaponInRandomWeaponPool( player )
-
-		WpnPulloutOnRespawn(player,0)
-
-		wait 0.3
-		if(IsValid(player))
-			WpnAutoReload(player)
-	}
-
-	thread LoadCustomWeapon(player)
-
+	Survival_SetInventoryEnabled( player, false )
+	//SetPlayerInventory( player, [] )
 	thread ReCheckGodMode(player)
 
 	//set realms for two players
 	setRealms_1v1(player,group.slotIndex+1)
+}
+
+void function GivePlayerCustomPlayerModel( entity ent )
+{
+	if( FlowState_ChosenCharacter() > 10 )
+	{
+		switch( FlowState_ChosenCharacter() )
+		{			
+			case 11:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+			break
+			
+			case 12:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+			break
+			
+			case 13:
+			ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+			ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+		}
+	}
 }
 
 void function _soloModeInit(string mapName)
@@ -967,9 +1003,17 @@ void function _soloModeInit(string mapName)
 		buttonText = "%&use% 开始观战"
 	else
 		buttonText = "%&use% Start spectating"
+
+	string buttonText3
 	
-	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, buttonText )
+	if(IS_CHINESE_SERVER)
+		buttonText3 = "%&use% 开始休息"
+	else
+		buttonText3 = "%&use% Toggle Rest"
 	
+	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin + AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText )
+	entity restingRoomPanel_RestButton = CreateFRButton( waitingRoomPanelLocation.origin - AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText3 )
+
 	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
 	{
 		if(!IsValid(user)) return
@@ -1011,6 +1055,12 @@ void function _soloModeInit(string mapName)
 	    AddButtonPressedPlayerInputCallback( user, IN_JUMP,endSpectate  )
 	})
 
+	AddCallback_OnUseEntity( restingRoomPanel_RestButton, void function(entity panel, entity user, int input)
+	{
+		if(!IsValid(user)) return
+		
+		ClientCommand_Maki_SoloModeRest( user, [] )
+	})
 
 
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
@@ -1026,22 +1076,13 @@ void function _soloModeInit(string mapName)
 	}
 	
 	string buttonText2
-	string Text3
-	string Text4
-	string Text5
 	
 	if(IS_CHINESE_SERVER)
 	{
-		Text3 = "您已取消绑定"
-		Text4 = "您已绑定您的对手"
-		Text5 = "您的对手已断开连接"
 		buttonText2 = "%&use% 不再更换对手"
 	}
 	else
 	{
-		Text3 = "Your opponent will change now"
-		Text4 = "Your opponent won't change"
-		Text5 = "Your opponent has disconnected!"
 		buttonText2 = "%&use% Never change your opponent"
 	}
 	
@@ -1053,6 +1094,18 @@ void function _soloModeInit(string mapName)
 		soloLocations[index].Panel = panel
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
 		{
+			string Text3
+			string Text4
+			if(IS_CHINESE_SERVER)
+			{
+				Text3 = "您已取消绑定"
+				Text4 = "您已绑定您的对手"
+			}
+			else
+			{
+				Text3 = "Your opponent will change now"
+				Text4 = "Your opponent won't change"
+			}
 			soloGroupStruct group = returnSoloGroupOfPlayer(user)
 			// if (!IsValid(group.player1) || !IsValid(group.player2)) return
 			if(!isGroupVaild(group)) return //Is this group is available
@@ -1065,8 +1118,8 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"您已绑定您的对手\nYour opponent won't change")
-					Message(group.player2,"您已绑定您的对手\nYour opponent won't change")
+					Message(group.player1, Text4)
+					Message(group.player2, Text4)
 				}
 				catch (error)
 				{}
@@ -1080,8 +1133,8 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"您已取消绑定\nYour opponent will change now")
-					Message(group.player2,"您已取消绑定\nYour opponent will change now")
+					Message(group.player1, Text3)
+					Message(group.player2, Text3)
 				}
 				catch (error)
 				{}
@@ -1099,6 +1152,16 @@ void function soloModeThread(LocPair waitingRoomLocation)
 {
 	printt("solo mode thread start!")
 
+	string Text5
+
+	if(IS_CHINESE_SERVER)
+	{
+		Text5 = "您的对手已断开连接"
+	}
+	else
+	{
+		Text5 = "Your opponent has disconnected!"
+	}
 	wait 8
 	while(true)
 	{
@@ -1116,14 +1179,6 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				soloPlayersWaiting.removebyvalue(playerInWatingSctruct)
 				continue
 			}
-
-			if(Distance2D(playerInWatingSctruct.player.GetOrigin(),waitingRoomLocation.origin)>500) //waiting player should be in waiting room,not battle area
-			{
-				thread soloModeWaitingPrompt(playerInWatingSctruct.player)
-				maki_tp_player(playerInWatingSctruct.player,waitingRoomLocation) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons(playerInWatingSctruct.player)
-			}
-
 
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
@@ -1154,6 +1209,8 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 					//printt("respawn and tp player2")
 					thread respawnInSoloMode(eachGroup.player2, 1)
+					
+					GiveWeaponsToGroup( [eachGroup.player1, eachGroup.player2] )
 				}//player in keeped group is died, respawn them
 			}
 
@@ -1163,13 +1220,13 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				if(IsValid(eachGroup.player1))
 				{
 					soloModePlayerToWaitingList(eachGroup.player1) //back to wating list
-					Message(eachGroup.player1,"您的对手已断开连接\nYour opponent has disconnected!")
+					Message(eachGroup.player1, Text5)
 				}
 
 				if(IsValid(eachGroup.player2))
 				{
 					soloModePlayerToWaitingList(eachGroup.player2) //back to wating list
-					Message(eachGroup.player2,"您的对手已断开连接\nYour opponent has disconnected!")
+					Message(eachGroup.player2, Text5)
 				}
 				continue
 			}
@@ -1192,21 +1249,33 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		}//foreach
 
 
-
-
 		//遍历休息队列
 		foreach (restingPlayer in soloPlayersResting )
 		{
 			if(!IsValid(restingPlayer)) continue
-			TakeAmmoFromPlayer(restingPlayer)   //子弹设为0
+
+			TakeAllWeapons( restingPlayer )
+
 			if(!IsAlive(restingPlayer)  )
 			{
 				thread respawnInSoloMode(restingPlayer)
 			}
-
-
 		}
 
+		foreach ( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) ) 
+				continue
+			
+			if( isPlayerInSoloMode( player ) )
+				continue
+
+			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > 450 ) //waiting player should be in waiting room,not battle area
+			{
+				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( player )
+			}
+		}
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1252,7 +1321,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 					if(playerSelf == eachOpponent || !IsValid(eachOpponent))//过滤非法对手
 						continue
 
-					if(fabs(selfKd - opponentKd) > 1.5) //过滤kd差值
+					if(fabs(selfKd - opponentKd) > 3.0) //过滤kd差值
 						continue
 					properOpponentTable[eachOpponent] <- fabs(selfKd - opponentKd)
 				}
@@ -1316,14 +1385,16 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			thread respawnInSoloMode(eachPlayer, index)
 		}
-		try{
-			newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
-			
-			if(IsValid(GetMainRingBoundary()))
-				newGroup.ring.SetParent(GetMainRingBoundary())
-		}catch(e420){}
 		
-		setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
+		GiveWeaponsToGroup( players )
+		// try{
+			// newGroup.ring = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center)
+			
+			// if(IsValid(GetMainRingBoundary()))
+				// newGroup.ring.SetParent(GetMainRingBoundary())
+		// }catch(e420){}
+		
+		// setRealms_1v1(newGroup.ring,newGroup.slotIndex+1)
 		//realms = 0 means visible for everyone,so it should be more than 1
 		setRealms_1v1(newGroup.player1,newGroup.slotIndex+1) //to ensure realms is more than 0
 		setRealms_1v1(newGroup.player2,newGroup.slotIndex+1) //to ensure realms is more than 0
@@ -1339,6 +1410,122 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	)
 
 }//thread
+
+void function GiveWeaponsToGroup( array<entity> players )
+{
+	thread function () : ( players )
+	{
+		foreach( player in players )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			TakeAllWeapons(player)
+		}
+
+		wait 0.2
+
+		string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+		string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+
+		foreach( player in players )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			DeployAndEnableWeapons( player )
+
+			if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns
+			{
+				TakeAllWeapons(player)
+
+				GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			} else
+			{
+				thread LoadCustomWeapon(player)
+			}
+
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.TakeOffhandWeapon( OFFHAND_MELEE )
+			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+		}
+	}()
+}
+
+void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )
+{
+	array<string> Data = split(weapon, " ")
+	string weaponclass = Data[0]
+	
+	if(weaponclass == "tgive") return
+	
+	array<string> Mods
+	foreach(string mod in Data)
+	{
+		if(strip(mod) != "" && strip(mod) != weaponclass)
+		    Mods.append( strip(mod) )
+	}
+
+	entity weaponNew = player.GiveWeapon( weaponclass , slot, Mods, false )
+
+	SetupInfiniteAmmoForWeapon( player, weaponNew )
+	player.ClearFirstDeployForAllWeapons()
+	player.DeployWeapon()
+
+	if( weaponNew.UsesClipsForAmmo() )
+		weaponNew.SetWeaponPrimaryClipCount( weaponNew.GetWeaponPrimaryClipCountMax())
+
+	if( weaponNew.LookupAttachment( "CHARM" ) != 0 )
+		weaponNew.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+}
+
+string function ReturnRandomPrimaryMetagame_1v1()
+{
+    array<string> Weapons = [
+		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(GetBlackListedWeapons().find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
+	return Weapons.getrandom()
+}
+
+string function ReturnRandomSecondaryMetagame_1v1()
+{
+    array<string> Weapons = [
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
+		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
+	]
+
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(GetBlackListedWeapons().find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
+	return Weapons.getrandom()
+}
 
 void function ForceAllRoundsToFinish_solomode()
 {
@@ -1361,7 +1548,7 @@ void function ForceAllRoundsToFinish_solomode()
 			}
 		}catch(e420){}
 		
-		if(isPlayerInWatingList(player))
+		if(isPlayerInWaitingList(player))
 			return
 
 		soloGroupStruct group = returnSoloGroupOfPlayer(player) 

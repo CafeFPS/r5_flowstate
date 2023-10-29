@@ -236,7 +236,7 @@ void function ShPlayerStatCards_Init()
 	int totalSeasonStats = file.seasonStatCard.headerStats.len() + file.seasonStatCard.bodyStats.len()
 	int totalRankedPeriodStats = file.rankedPeriodStatCard.headerStats.len() + file.rankedPeriodStatCard.bodyStats.len()
 
-	printf( "StatCardDebug: Stat Card Entry Table Completed with %i Career stats, %i Season Stats and %i Ranked Period Stats", totalCareerStats, totalSeasonStats, totalRankedPeriodStats )
+	//printf( "StatCardDebug: Stat Card Entry Table Completed with %i Career stats, %i Season Stats and %i Ranked Period Stats", totalCareerStats, totalSeasonStats, totalRankedPeriodStats )
 
 	StatCard_InitToolTipStringTables()
 }
@@ -869,8 +869,8 @@ float function CalculateStat( entity player, StatTemplate stat1, StatTemplate st
 
 	if ( calcMethod == eStatCalcMethod.MATH_DIVIDE )
 	{
-		if ( stat2Int != 0 )
-			printf( "StatMathDebug: %i / %i = %f", stat1Int, stat2Int, (float(stat1Int)/float(stat2Int)) )
+		//if ( stat2Int != 0 )
+			//printf( "StatMathDebug: %i / %i = %f", stat1Int, stat2Int, (float(stat1Int)/float(stat2Int)) )
 
 		if ( stat2Int != 0 )
 			return float( stat1Int ) / float( stat2Int )
@@ -1005,7 +1005,7 @@ void function ConstructWeaponStatStructArray( entity player )
 		string weaponRef = ItemFlavor_GetGUIDString( weapon )
 		WeaponStatStruct newWeapon
 
-		printf( "WeaponAssetName: %s", WeaponItemFlavor_GetClassname( weapon ) )
+		//printf( "WeaponAssetName: %s", WeaponItemFlavor_GetClassname( weapon ) )
 
 		newWeapon.weaponName = ItemFlavor_GetShortName( weapon )
 		newWeapon.portrait = GetWeaponHudIcon( weapon )

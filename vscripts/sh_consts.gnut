@@ -1,4 +1,9 @@
-global string FLOWSTATE_VERSION = "v3.71"
+//custom
+global string SDK_VERSION = "v2.3"
+global string FLOWSTATE_VERSION = "v4.1"
+global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
+global const int BOOSTZONE_ALIVE_TIME = 15
+
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
 global const float FLT_MAX = 3.40282e+38
@@ -19,6 +24,13 @@ global const DIFFICULTY_EASY 		= 0
 global const DIFFICULTY_NORMAL 		= 1
 global const DIFFICULTY_HARD 		= 2
 global const DIFFICULTY_MASTER 		= 3
+
+global const string BULLET_AMMO = "bullet"
+global const string HIGHCAL_AMMO = "highcal"
+global const string SHOTGUN_AMMO = "shotgun"
+global const string SPECIAL_AMMO = "special"
+global const string ARROWS_AMMO = "arrows"
+global const string SNIPER_AMMO = "sniper"
 
 #if UI
 global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
@@ -44,8 +56,8 @@ global enum eLossForgivenessReason
 global enum eDeathScreenPanel
 {
 	NONE = -1,
-	DEATH_RECAP,
 	SPECTATE,
+	DEATH_RECAP,
 	SQUAD_SUMMARY
 }
 
@@ -106,6 +118,9 @@ global const fs_dm               = "fs_dm"
 global const fs_aimtrainer		= "fs_aimtrainer"
 global const fs_prophunt				= "fs_prophunt"
 global const fs_duckhunt				= "fs_duckhunt"
+global const fs_infected			= "fs_infected"
+//global const flowstate_snd			= "flowstate_snd"
+//global const flowstate_pkknockback			= "flowstate_pkknockback"
 
 global const FREELANCE_ENABLED          = false
 
@@ -292,7 +307,7 @@ global const GRUNT_EXECUTE_GROUP_COOLDOWN_MAX			= 	31
 //default to give for connecting players.  This might have to be changed to something else as right now it's controlling the "good" intro for fracture.
 global const CONNECT_TIME_DEFAULT = 23
 
-global const OUT_OF_BOUNDS_TIME_LIMIT = 30.0
+global const OUT_OF_BOUNDS_TIME_LIMIT = 15.0
 global const OUT_OF_BOUNDS_DECAY_TIME = 15.0
 global const OUT_OF_BOUNDS_DECAY_DELAY = 1.0
 
@@ -575,7 +590,7 @@ global enum eStickState
 }
 
 //Max Time spent after death before respawning again is DEATHCAM_TIME + KILL_REPLAY_BEFORE_KILL_TIME_TITAN + KILL_REPLAY_AFTER_KILL_TIME
-global const DEATHCAM_TIME 								= 11.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
+global const DEATHCAM_TIME 								= 8.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
 global const KILL_REPLAY_BEFORE_KILL_TIME_PILOT 		= 3.5
 global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
 global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
@@ -709,6 +724,7 @@ global const DLIGHT_WHITE  = < 1, 1, 1 >
 global const DLIGHT_RED    = < 1, 0, 0 >
 global const DLIGHT_GREEN  = < 0, 1, 0 >
 global const DLIGHT_BLUE   = < 0, 0, 1 >
+global const DLIGHT_LIGHTBLUE   = < 2.6, 7.23, 11 >
 global const DLIGHT_YELLOW = < 1, 1, 0 >
 global const DLIGHT_PURPLE = < 1, 0, 1 >
 
@@ -856,7 +872,6 @@ global const TITAN_DAMAGE_STAGE_3 			= 0.25
 global const TITAN_DAMAGE_STAGE_DOOMED 		= 0.0
 global const int DOOMED_MIN_HEALTH 			= 1
 
-global const float AREA_SONAR_SCAN_RADIUS 			= 1250.0
 global const float AREA_SONAR_SCAN_PULSE_DURATION 	= 6.0
 
 global const float SONAR_GRENADE_RADIUS 			= 1250.0
@@ -1708,9 +1723,40 @@ global enum eCommsAction
 	PING_WEAPON_WINGMAN_ELITE,
 	PING_WEAPON_SMART_PISTOL,
 	PING_WEAPON_SENTINEL,
+	PING_WEAPON_BOW,
+	PING_WEAPON_3030,
+	PING_WEAPON_NEMESIS,
+	PING_AMMO_ARROWS,
+	PING_WEAPON_DRAGON,
+	PING_WEAPON_CAR,
+	PING_EQUIPMENT_ARMOR_1_EVO,
+	PING_EQUIPMENT_ARMOR_2_EVO,
+	PING_EQUIPMENT_ARMOR_3_EVO,
+	PING_EQUIPMENT_ARMOR_4_EVO,
+	PING_EQUIPMENT_ARMOR_5_EVO,
+	PING_ATTACHMENT_MAG_BULLET_4,
+	PING_ATTACHMENT_MAG_HIGHCAL_4,
+	PING_ATTACHMENT_MAG_ENERGY_4,
+	PING_ATTACHMENT_MAG_SNIPER_1,
+	PING_ATTACHMENT_MAG_SNIPER_2,
+	PING_ATTACHMENT_MAG_SNIPER_3,
+	PING_ATTACHMENT_MAG_SNIPER_4,
 	PING_WEAPON_THROWINGKNIFE,
 	PING_WEAPON_SHEILA_HMG,
-	PING_WEAPON_CAR,
+	PING_LOOT_REDEPLOY_BALLOON,
+	PING_LOOT_RESPAWN_MOBILE,
+	PING_OFFHAND_VOID_RING,
+	PING_RESPAWN_MOBILE,
+	PING_ATTACHMENT_HOPUP_DUAL_SHELL,
+	PING_ATTACHMENT_HOPUP_SMART_RELOAD,
+	PING_ATTACHMENT_HOPUP_KINETIC_FEEDER,
+	PING_ATTACHMENT_HOPUP_SHATTER_ROUNDS,
+	PING_ATTACHMENT_HOPUP_QUICKDRAW_HOLSTER,
+	PING_ATTACHMENT_LASER_SIGHT_1,
+	PING_ATTACHMENT_LASER_SIGHT_2,
+	PING_ATTACHMENT_LASER_SIGHT_3,
+	PING_ATTACHMENT_LASER_SIGHT_4,
+	
 
 	//
 	PING_OFFHAND_GRENADE_FIRESTAR,
@@ -1730,6 +1776,11 @@ global enum eCommsAction
 	PING_EQUIPMENT_ARMOR_2,
 	PING_EQUIPMENT_ARMOR_3,
 	PING_EQUIPMENT_ARMOR_4,
+
+	PING_EQUIPMENT_ARMOR_5,
+	PING_EQUIPMENT_ARMOR_6,
+	PING_EQUIPMENT_ARMOR_7,
+	
 	PING_EQUIPMENT_HELMET_1,
 	PING_EQUIPMENT_HELMET_2,
 	PING_EQUIPMENT_HELMET_3,
@@ -1958,7 +2009,14 @@ global enum eCommsAction
 	INVENTORY_NEED_ATTACHMENT_BARREL_LMG,
 	INVENTORY_NEED_ATTACHMENT_BARREL_SHOTGUN,
 	INVENTORY_NEED_ATTACHMENT_BARREL_SNIPER,
-
+	
+	INVENTORY_NEED_ATTACHMENT_LASERSIGHT_SMG,
+	INVENTORY_NEED_ATTACHMENT_LASERSIGHT_PISTOL,
+	
+	INVENTORY_NEED_ATTACHMENT_GRIP_MARKSMAN,
+	INVENTORY_NEED_ATTACHMENT_BARREL_MARKSMAN,
+	INVENTORY_NEED_ATTACHMENT_SIGHT_MARKSMAN,
+	
 	INVENTORY_NEED_WEAPONATTACHMENT_HOPUP,
 	INVENTORY_NEED_HOPUP_CHOKE,
 	INVENTORY_NEED_HOPUP_SELECTFIRE,
@@ -2252,10 +2310,10 @@ global const asset LOOT_PICKUP_HINT_COMPACT_RUI		= $"ui/loot_pickup_hint_compact
 global const asset WEAPON_PICKUP_HINT_DEFAULT_RUI	= $"ui/loot_pickup_hint_weapon.rpak"
 global const asset WEAPON_PICKUP_HINT_COMPACT_RUI	= $"ui/loot_pickup_hint_weapon_compact.rpak"
 
-global const int SURVIVAL_BACKPACK_LIMIT = 8
-global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 10
-global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 12
-global const int SURVIVAL_BACKPACK_LIMIT_MAX = 14
+global const int SURVIVAL_BACKPACK_LIMIT = 10
+global const int SURVIVAL_BACKPACK_LIMIT_SMALL = 12
+global const int SURVIVAL_BACKPACK_LIMIT_MEDIUM = 14
+global const int SURVIVAL_BACKPACK_LIMIT_MAX = 16
 
 global const int DEBUG_BULLET_DROP = 0
 

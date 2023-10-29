@@ -126,6 +126,11 @@ void function GameModes_Init_SV_CL()
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	#endif
+	
+
 	//
 	//FLOWSTATE AIMTRAINER
 	//
@@ -163,6 +168,9 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, ClGamemodeProphunt_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif	
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	#endif
 	
 	//
 	//FLOWSTATE DUCKHUNT
@@ -182,10 +190,30 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_GamemodeDuckhunt_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif	
-
-	
-	#if DEVSCRIPTS
-		Dev_GameModes_Init_SV_CL()
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
 	#endif
 
+	//
+	//FLOWSTATE INFECTION
+	//
+	
+	gameMode = fs_infected
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, Sh_GamemodeInfection_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _GamemodeInfection_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_GamemodeInfection_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif
+	
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	#endif
 }

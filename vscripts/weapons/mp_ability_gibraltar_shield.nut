@@ -403,6 +403,11 @@ void function PilotShield_OnPassiveChanged( entity player, int passive, bool did
 	}
 	if ( nowHas )
 	{
+		entity weapon = player.GetOffhandWeapon( PILOT_SHIELD_OFFHAND_INDEX )
+		
+		if( IsValid( weapon ) )
+			player.TakeOffhandWeapon( PILOT_SHIELD_OFFHAND_INDEX )
+		
 		player.GiveOffhandWeapon( "mp_ability_gibraltar_shield", PILOT_SHIELD_OFFHAND_INDEX, [] )
 	}
 }

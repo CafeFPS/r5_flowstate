@@ -44,7 +44,7 @@ void function StatsPerformancePanel_Update( var panel )
 
 void function StatsPerformancePanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	printf( "StatCardDebug: Performance Panel OnFocusChanged" )
+	//printf( "StatCardDebug: Performance Panel OnFocusChanged" )
 
 	if ( !IsValid( panel ) ) //
 		return

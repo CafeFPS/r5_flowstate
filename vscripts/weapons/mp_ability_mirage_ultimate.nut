@@ -41,6 +41,9 @@ void function CancelHint_OnDestroy( entity player, int statusEffect, bool actual
 bool function OnWeaponAttemptOffhandSwitch_ability_mirage_ultimate( entity weapon )
 {
 	entity player = weapon.GetWeaponOwner()
+	if ( !IsValid( player ) )
+		return false
+		
 	if ( player.IsPhaseShifted() )
 		return false
 
@@ -53,14 +56,7 @@ bool function OnWeaponAttemptOffhandSwitch_ability_mirage_ultimate( entity weapo
 var function OnWeaponPrimaryAttack_mirage_ultimate( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	var ammoToReturn = OnWeaponPrimaryAttack_holopilot( weapon, attackParams )
-	#if SERVER
-	float fireDuration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
-	thread HolsterAndDisableWeaponsMirageUltimate( weapon.GetWeaponOwner(), fireDuration )
-	#endif
 
-	// int ammoMax = weapon.GetWeaponPrimaryClipCountMax()
-	// weapon.SetWeaponPrimaryClipCount( ammoMax )
-	
 	return ammoToReturn
 }
 
@@ -71,16 +67,17 @@ void function MirageUltimateCancelCloak( entity player )
 
 void function OnWeaponChargeEnd_ability_mirage_ultimate( entity weapon )
 {
+	entity player = weapon.GetWeaponOwner()
+	if ( !IsValid( player ) )
+		return
+
 	if ( weapon.GetWeaponChargeFraction() < 1 )
 	{
-		entity player = weapon.GetWeaponOwner()
-		if ( IsValid( player ) )
-			MirageUltimateCancelCloak( player )
-
+		MirageUltimateCancelCloak( player )
 		return
 	}
 
-	if ( weapon.GetWeaponPrimaryClipCount() == 0 ) //
+	if ( weapon.GetWeaponPrimaryClipCount() == 0 )                                                                                                          
 		return
 
 	weapon.SetWeaponPrimaryClipCount( 0 )
@@ -89,39 +86,44 @@ void function OnWeaponChargeEnd_ability_mirage_ultimate( entity weapon )
 }
 
 #if SERVER
-void function HolsterAndDisableWeaponsMirageUltimate( entity ownerPlayer, float fireDuration )
+void function HolsterAndDisableWeaponsMirageUltimate( entity ownerPlayer )
 {
 	ownerPlayer.EndSignal( "OnDestroy" )
 	ownerPlayer.EndSignal( "OnDeath" )
 	ownerPlayer.EndSignal( "OnSyncedMelee" )
 	ownerPlayer.EndSignal( "BleedOut_OnStartDying" )
+	ownerPlayer.EndSignal( "CancelCloak" )
 
-	HolsterAndDisableWeapons( ownerPlayer )
-
+	foreach( weapon in SURVIVAL_GetPrimaryWeaponsSorted( ownerPlayer ) )
+		if( IsValid( weapon ) )
+			weapon.AllowUse( false )
+		
 	OnThreadEnd(
 	function() : ( ownerPlayer )
 		{
 			if ( IsValid( ownerPlayer ) )
 			{
-				DeployAndEnableWeapons( ownerPlayer )
+				foreach( weapon in SURVIVAL_GetPrimaryWeaponsSorted( ownerPlayer ) )
+					if( IsValid( weapon ) )
+						weapon.AllowUse( true )
 			}
 		}
 	)
 
-	wait fireDuration
+	wait 1
 }
 
-void function MirageUltCloakThink( entity ownerPlayer, float fireDuration, float flickerDuration )
+void function MirageUltCloakThink( entity ownerPlayer )
 {
 	ownerPlayer.EndSignal( "OnDestroy" )
 	ownerPlayer.EndSignal( "OnDeath" )
 	ownerPlayer.EndSignal( "OnSyncedMelee" )
 	ownerPlayer.EndSignal( "BleedOut_OnStartDying" )
+	ownerPlayer.EndSignal( "CancelCloak" )
+	
+	EnableCloak( ownerPlayer, 1 )
 
-	EnableCloak( ownerPlayer, fireDuration )
-	ownerPlayer.SetCloakFlicker( 0.5, flickerDuration )
-
-	int statusId = 	StatusEffect_AddTimed( ownerPlayer, eStatusEffect.speed_boost, 0.15, fireDuration, 0.5 )
+	int statusId = 	StatusEffect_AddTimed( ownerPlayer, eStatusEffect.speed_boost, 0.15, 1, 0.5 )
 	OnThreadEnd(
 	function() : ( ownerPlayer, statusId )
 		{
@@ -129,13 +131,13 @@ void function MirageUltCloakThink( entity ownerPlayer, float fireDuration, float
 			{
 				if ( IsCloaked( ownerPlayer ) )
 					DisableCloak( ownerPlayer, 0.0 )
-				ownerPlayer.SetCloakFlicker( 0.5, 0 )
+				
 				StatusEffect_Stop( ownerPlayer, statusId )
 			}
 		}
 	)
-
-	wait fireDuration
+	
+	wait 1
 }
 #endif
 
@@ -147,16 +149,16 @@ bool function OnWeaponChargeBegin_ability_mirage_ultimate( entity weapon )
 	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
 		return false
 
-	PlayerUsedOffhand( ownerPlayer, weapon, false )
+	PlayerUsedOffhand( ownerPlayer, weapon, true )
 	#if SERVER
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ownerPlayer ), Loadout_CharacterClass() )
 	string charRef = ItemFlavor_GetHumanReadableRef( character )
 
 	if( charRef == "character_mirage")	
 		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
-	float fireDuration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration ) + weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
-	float flickerDuration = 0.25//weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
-	thread MirageUltCloakThink( ownerPlayer, fireDuration, flickerDuration )
+	
+	thread MirageUltCloakThink( ownerPlayer )
+	thread HolsterAndDisableWeaponsMirageUltimate( weapon.GetWeaponOwner() )
 	#endif
 	return true
 }

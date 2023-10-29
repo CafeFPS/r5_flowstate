@@ -1,5 +1,5 @@
 /*
-Flowstate Aim Trainer v1.0 - Made by CaféDeColombiaFPS (server, client, ui)
+Flowstate Aim Trainer v1.0 - Made by CafeFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Support me: https://ko-fi.com/r5r_colombia
 
@@ -26,6 +26,7 @@ global function CreateMovementMapDummieFromMapLoad
 global function CC_MenuGiveAimTrainerWeapon
 global function CC_AimTrainer_SelectWeaponSlot
 global function CC_AimTrainer_CloseWeaponSelector
+global function CreateAimtrainerDeathbox
 
 vector floorLocation
 vector floorCenterForPlayer
@@ -2220,11 +2221,21 @@ void function EnableDeathboxMantleAfterSomeTime(entity deathbox)
 entity function CreateAimtrainerDeathbox( entity player, vector origin)
 {
 	entity deathBox = FlowState_CreateDeathBox( player, origin)
-
+	
+	int weaponcount
 	foreach ( invItem in AimTrainer_FillDeathbox( player ) )
 	{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-
+		
+		if( data.lootType == eLootType.MAINWEAPON && weaponcount == 2 )
+		{
+			continue
+		}
+		
+		if( data.lootType == eLootType.MAINWEAPON )
+		{
+			weaponcount++
+		}
 		entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
 		AddToDeathBox( loot, deathBox )
 	}
@@ -2249,8 +2260,8 @@ entity function FlowState_CreateDeathBox( entity player, vector origin)
 	box.Solid()
 	box.SetUsable()
 	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
-	box.SetOwner( player )
-	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+	// box.SetOwner( player )
+	// box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
 	
 	box.SetNetBool( "overrideRUI", true )
 	
@@ -2305,42 +2316,19 @@ array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
 {
 	array<ConsumableInventoryItem> final = []
 	array<string> newRefs
-	
-	bool shouldcontinue = false
-	for(int i = 0; i < 5; i++)
-	{
-		shouldcontinue = false
-		string newPossibleItem = SURVIVAL_GetWeightedItemFromGroup( "data_knife_vault" )
-		
-		if( newPossibleItem == "armor_pickup_lv4_all_fast" || newPossibleItem == "armor_pickup_lv3" )
-		{
-			i--
-			continue
-		}
-		
-		foreach(ref in newRefs)
-		{
-			if(ref == newPossibleItem)
-			{
-				i--
-				shouldcontinue = true
-				continue
-			}
-		}
-		if(shouldcontinue)
-			continue
-		
-		newRefs.append(newPossibleItem)
-	}
+
 	array<string> swaps =
 	[
 		"armor_pickup_lv4_all_fast",
 		"armor_pickup_lv3", 
 		"armor_pickup_lv2"
 	]
-	
+
 	newRefs.append("mp_weapon_wingman")
 	newRefs.append("mp_weapon_r97")
+	newRefs.append("helmet_pickup_lv1")
+	newRefs.append("incapshield_pickup_lv1")
+	newRefs.append("backpack_pickup_lv1")
 	newRefs.append( swaps.getrandom() )
 	
 	foreach(ref in newRefs)
@@ -2354,7 +2342,7 @@ array<ConsumableInventoryItem> function AimTrainer_FillDeathbox( entity player )
 
 		final.append( fsItem )
 	}
-	
+
 	return final
 }
 
@@ -3102,109 +3090,301 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		player.TakeWeaponByEntNow( actualweapon )
 
 	entity weaponent
-	bool shouldPutLaser = false
 	array<string> finalargs
 	if (args.len() > 2) //from attachments buy box
 		{
-			printt("DEBUG: " + args[2], args[3], args[4], args[5], args[6], args[7])
+			string optic = "none"
+			string barrel = "none"
+			string stock = "none"
+			string shotgunbolt = "none"
+			string mag = "none"
+
+			// printt("DEBUG BEFORE CONVERT: " + args[2], args[3], args[4], args[5], args[6], args[7])
+
+			switch( args[2] ){
+				case "0":
+					optic = "none"
+					break
+				case "1":
+					optic = "optic_cq_hcog_classic"
+					break
+				case "2":
+					optic = "optic_cq_holosight"
+					break
+				case "3":
+					optic = "optic_cq_threat"
+					break
+				case "4":
+					optic = "optic_cq_holosight_variable"
+					break
+				case "5":	
+					optic = "optic_cq_hcog_bruiser"
+					break
+			}
+
+			if( args[6] == "smg" || weapon == "mp_weapon_autopistol" )
+			{
+				switch( args[3] ){
+					case "0":
+						barrel = "none"
+						break
+					case "1":
+						barrel = "laser_sight_l1"
+						break
+					case "2":
+						barrel = "laser_sight_l2"
+						break
+					case "3":
+						barrel = "laser_sight_l3"
+						break
+				}
+			}
+			else
+			{
+				switch( args[3] ){
+					case "0":
+						barrel = "none"
+						break
+					case "1":
+						barrel = "barrel_stabilizer_l1"
+						break
+					case "2":
+						barrel = "barrel_stabilizer_l2"
+						break
+					case "3":
+						barrel = "barrel_stabilizer_l3"
+						break
+				}
+			}
+
+			switch(args[4]){
+					case "0":
+						stock = "none"
+						break
+					case "1":
+						stock = "stock_tactical_l1"
+						break
+					case "2":
+						stock = "stock_tactical_l2"
+						break
+					case "3":
+						stock = "stock_tactical_l3"
+						break
+				}
+			
+			if( args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
+				switch(args[4]){
+					case "0":
+						stock = "none"
+						break
+					case "1":
+						stock = "stock_sniper_l1"
+						break
+					case "2":
+						stock = "stock_sniper_l2"
+						break
+					case "3":
+						stock = "stock_sniper_l3"
+						break
+				}		
+			
+			switch(args[5]){
+					case "0":
+						shotgunbolt = "none"
+						break
+					case "1":
+						shotgunbolt = "shotgun_bolt_l1"
+						break
+					case "2":
+						shotgunbolt = "shotgun_bolt_l2"
+						break
+					case "3":
+						shotgunbolt = "shotgun_bolt_l3"
+						break
+				}
+				
+			if(weapon == "mp_weapon_energy_ar" || weapon == "mp_weapon_esaw")
+			{
+				switch(args[5]){
+					case "0":
+						shotgunbolt = "."
+						break
+					case "1":
+						shotgunbolt = "hopup_turbocharger"
+						break
+				}
+			}else if(weapon == "mp_weapon_g2")
+			{
+				switch(args[5]){
+					case "0":
+						shotgunbolt = "."
+						break
+					case "1":
+						shotgunbolt = "hopup_double_tap"
+						break
+				}	
+			}else if(weapon == "mp_weapon_doubletake")
+			{
+				switch(args[5]){
+					case "0":
+						shotgunbolt = "."
+						break
+					case "1":
+						shotgunbolt = "hopup_energy_choke"
+						break
+				}			
+			}
+			
+			if(args[6] == "ar" || args[6] == "ar2" || args[6] == "lmg" || args[6] == "lmg2" || args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
+			switch(args[2]){
+				case "0":
+					optic = "none"
+					break
+				case "1":
+					optic = "optic_cq_hcog_classic"
+					break
+				case "2":
+					optic = "optic_cq_holosight"
+					break
+				case "3":
+					optic = "optic_cq_holosight_variable"
+					break
+				case "4":
+					optic = "optic_cq_hcog_bruiser"
+					break
+				case "5":	
+					optic = "optic_ranged_hcog"
+					break
+				case "6":	
+					optic = "optic_ranged_aog_variable"
+					break
+				case "7":	
+					optic = "optic_sniper"
+					break
+				case "8":	
+					optic = "optic_sniper_variable"
+					break
+				case "9":	
+					optic = "optic_sniper_threat"
+					break
+			}
+
+			switch(args[7]){
+					case "0":
+						mag = "none"
+						break
+					case "1":
+						if(args[8] == "bullet")
+							mag = "bullets_mag_l1"
+						else if(args[8] == "highcal")
+							mag = "highcal_mag_l1"
+						else if(args[8] == "special")
+							mag = "energy_mag_l1"
+						else if(args[8] == "sniper")
+							mag = "sniper_mag_l1"
+						break
+					case "2":
+						if(args[8] == "bullet")
+							mag = "bullets_mag_l2"
+						else if(args[8] == "highcal")
+							mag = "highcal_mag_l2"
+						else if(args[8] == "special")
+							mag = "energy_mag_l2"
+						else if(args[8] == "sniper")
+							mag = "sniper_mag_l2"
+						break
+					case "3":
+						if(args[8] == "bullet")
+							mag = "bullets_mag_l3"
+						else if(args[8] == "highcal")
+							mag = "highcal_mag_l3"
+						else if(args[8] == "special")
+							mag = "energy_mag_l3"
+						else if(args[8] == "sniper")
+							mag = "sniper_mag_l3"
+						break
+				}
+
+			// printt( "DEBUG AFTER CONVERT: " + optic, barrel, stock, shotgunbolt, args[6], mag )
 
 			switch(args[6])
 			{
 				case "smg":
-			
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[3] != "none") 
-					{
-						finalargs.append(args[3])						
-						if(args[3] == "barrel_stabilizer_l1" || args[3] == "barrel_stabilizer_l2" || args[3] == "barrel_stabilizer_l3" )
-							shouldPutLaser = true
-					}
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[7] != "none") finalargs.append(args[7])	
+					if(optic != "none") finalargs.append(optic)
+					if(barrel != "none") finalargs.append(barrel)
+					if(stock != "none") finalargs.append(stock)
+					if(mag != "none") finalargs.append(mag)	
 					
 					break
 				case "pistol":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[3] != "none") 
-					{
-						finalargs.append(args[3])						
-						if(weapon == "mp_weapon_autopistol")
-							shouldPutLaser = true
-					}
-					if(args[7] != "none") finalargs.append(args[7])
-					
+					if(optic != "none") finalargs.append(optic)
+					if(barrel != "none") finalargs.append(barrel)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "pistol2":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[7] != "none") finalargs.append(args[7])
+					if(optic != "none") finalargs.append(optic)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "shotgun":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[5] != "none") finalargs.append(args[5])
+					if(optic != "none") finalargs.append(optic)
+					if(shotgunbolt != "none") finalargs.append(shotgunbolt)
 					break
 				case "lmg2":
 				case "ar":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[3] != "none") finalargs.append(args[3])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[5] != "." && weapon == "mp_weapon_esaw") finalargs.append(args[5])
-					if(args[7] != "none") finalargs.append(args[7])
+					if(optic != "none") finalargs.append(optic)
+					if(barrel != "none") finalargs.append(barrel)
+					if(stock != "none") finalargs.append(stock)
+					if(shotgunbolt != "." && weapon == "mp_weapon_esaw") finalargs.append(shotgunbolt)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "ar2":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[5] != "." && weapon == "mp_weapon_energy_ar") finalargs.append(args[5])
-					if(args[7] != "none") finalargs.append(args[7])				
+					if(optic != "none") finalargs.append(optic)
+					if(stock != "none") finalargs.append(stock)
+					if(shotgunbolt != "." && weapon == "mp_weapon_energy_ar") finalargs.append(shotgunbolt)
+					if(mag != "none") finalargs.append(mag)				
 					break
 				case "marksman":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[3] != "none") finalargs.append(args[3])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[5] != "." ) finalargs.append(args[5])
-					if(args[7] != "none") finalargs.append(args[7])
+					if(optic != "none") finalargs.append(optic)
+					if(barrel != "none") finalargs.append(barrel)
+					if(stock != "none") finalargs.append(stock)
+					if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "marksman2":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[5] != "." ) finalargs.append(args[5])
-					if(args[7] != "none") finalargs.append(args[7])
+					if(optic != "none") finalargs.append(optic)
+					if(stock != "none") finalargs.append(stock)
+					if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "marksman3":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[7] != "none") finalargs.append(args[7])	
+					if(optic != "none") finalargs.append(optic)
+					if(stock != "none") finalargs.append(stock)
+					if(mag != "none") finalargs.append(mag)	
 					break
 				case "sniper":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[3] != "none") finalargs.append(args[3])
-					if(args[4] != "none") finalargs.append(args[4])
-					if(args[7] != "none") finalargs.append(args[7])
+					if(optic != "none") finalargs.append(optic)
+					if(barrel != "none") finalargs.append(barrel)
+					if(stock != "none") finalargs.append(stock)
+					if(mag != "none") finalargs.append(mag)
 					break
 				case "sniper2":
-					if(args[2] != "none") finalargs.append(args[2])
-					if(args[4] != "none") finalargs.append(args[4])
+					if(optic != "none") finalargs.append(optic)
+					if(stock != "none") finalargs.append(stock)
 					break
 			}
 		}
-	else
-		shouldPutLaser = false
 
 	if ( weapon == "mp_weapon_clickweapon" || weapon == "mp_weapon_clickweaponauto" )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", true)
 	else
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", false)
-	
-	weaponent = player.GiveWeapon( weapon, actualslot, finalargs)
-	
+
+	weaponent = player.GiveWeapon_NoDeploy( weapon, actualslot, finalargs, false )
+
 	if(!IsValid(actualweapon)) player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, actualslot )
-		
-	if( shouldPutLaser )
-		Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponent)
-	else
-		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
 
 	if(!IsValid(weaponent)) return true
-	
+
 	if( IsAlive( player ) ) // This is for TDM
 	{
 		string weapon1
@@ -3239,9 +3419,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
 	}
-	
-	if(GameRules_GetGameMode() == fs_aimtrainer)
-		thread PlayAnimsOnGiveWeapon(weaponent, player)
 
 	int weaponSkin = -1
 	int weaponModelIndex = -1
@@ -3298,31 +3475,10 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		}
 	}
 
-
-	// else
-	// {
-		// if(CoinFlip())
-			// weaponent.SetLegendaryModelIndex(RandomInt(4))
-		// weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
-	// }
-	// printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
-
 	return true
 }
 
-void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
-{
-	if (IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_RELOADEMPTY" ) )
-	{
-		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
-		weaponent.StartCustomActivity("ACT_VM_RELOADEMPTY", 0)
-		wait duration			
-	}
-	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )
-		weaponent.StartCustomActivity("ACT_VM_WEAPON_INSPECT", 0)
-}
-
-void function SetupPlayer( entity player )
+void function SetupPlayer( entity player, bool fromSelector = false )
 {
 	DecideRespawnPlayer( player, false )
 
@@ -3332,9 +3488,19 @@ void function SetupPlayer( entity player )
 
 	TakeAllWeapons( player )
 	
-	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	entity weapon = player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	entity weapon = player.GiveWeapon_NoDeploy( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+
+	if( !fromSelector )
+	{
+		SetupInfiniteAmmoForWeapon( player, weapon )
+	} else
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 0 )
+	}
 
 	if( player.p.weaponModelIndex > -1 )
 		weapon.SetLegendaryModelIndex( player.p.weaponModelIndex )
@@ -3344,13 +3510,25 @@ void function SetupPlayer( entity player )
 	
 	if(player.p.weapon2 == "") 
 	{
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		DeployAndEnableWeapons( player )
 		player.ClearFirstDeployForAllWeapons()
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		return
 	}
 	
-	entity weapon2 = player.GiveWeapon( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
+	entity weapon2 = player.GiveWeapon_NoDeploy( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
+
+	if( !fromSelector )
+	{
+		SetupInfiniteAmmoForWeapon( player, weapon2 )
+
+		if(weapon2.UsesClipsForAmmo())
+			weapon2.SetWeaponPrimaryClipCount( weapon2.GetWeaponPrimaryClipCountMax() )
+	} else
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 0 )
+	}
 
 	if( player.p.weaponModelIndex2 > -1 )
 		weapon2.SetLegendaryModelIndex( player.p.weaponModelIndex2 )
@@ -3358,14 +3536,13 @@ void function SetupPlayer( entity player )
 	if( player.p.weaponSkin2 > -1 )
 		weapon2.SetSkin( player.p.weaponSkin2 )
 
-	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	DeployAndEnableWeapons( player )
 	player.ClearFirstDeployForAllWeapons()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 }
 
 bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 {
-	SetupPlayer( player )
+	SetupPlayer( player, true )
 
 	player.SetOrigin(AimTrainer_startPos)
 	player.SetAngles(AimTrainer_startAngs)
@@ -3373,6 +3550,7 @@ bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 }
 bool function CC_Weapon_Selector_Close( entity player, array<string> args )
 {
+	TakeAllWeapons( player )
 	return false
 }
 

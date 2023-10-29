@@ -26,9 +26,9 @@ global function UpdateMatchSummaryPersistentVars
 global function EnemyDownedDialogue
 global function TakingFireDialogue
 global function GetAllDroppableItems
+global function ResetDeathRecapBlock
 
-int MAXBLOCKTIME = 2
-float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 70 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
+//float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
 struct
 {
@@ -37,19 +37,37 @@ struct
 
 void function GamemodeSurvival_Init()
 {
+	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
+		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
+	else
+		SetConVarBool("sv_forceChatToTeamOnly", true)
+	
 	SurvivalFreefall_Init()
 	Sh_ArenaDeathField_Init()
 	SurvivalShip_Init()
+	
+	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 	
 	SetConVarFloat( "sv_usercmd_max_queued", 750 )
-	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 24 )
+	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 20 )
+
+	//Increase client command limit to 60
+	SetConVarInt("sv_quota_stringCmdsPerSecond", 60)
+
+	SetConVarBool( "sv_stressbots", false )
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	
+	// #if DEVELOPER
+	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+	// #endif
+
+	FillSkyWithClouds()
+	
 	AddCallback_GameStateEnter(
 		eGameState.Playing,
 		void function()
@@ -60,6 +78,57 @@ void function GamemodeSurvival_Init()
 
 	thread SURVIVAL_RunArenaDeathField()
 }
+
+// #if DEVELOPER
+bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity player, array<string> args)
+{
+	if( !IsValid(player) || !IsAlive( player) || args.len() != 1 )
+		return false
+
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	TakeAllPassives(player)
+
+	switch( args[0] )
+	{
+		case "0":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+		break
+		
+		case "1":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+		break
+		
+		case "2":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+		break
+		
+		case "3":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+	}
+
+	// player.TakeOffhandWeapon(OFFHAND_MELEE)
+	// player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	// player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	// player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
+
+	return true
+}
+// #endif
 
 void function Survival_SetCallback_Leviathan_ConsiderLookAtEnt( void functionref( entity, float, float ) callback )
 {
@@ -75,7 +144,7 @@ void function Survival_Leviathan_ConsiderLookAtEnt(entity ent)
 
 void function RespawnPlayerInDropship( entity player )
 {
-	const float POS_OFFSET = -500.0 // Offset from dropship's origin
+	const float POS_OFFSET = -525.0 // Offset from dropship's origin
 
 	entity dropship = Sur_GetPlaneEnt()
 
@@ -110,6 +179,12 @@ void function RespawnPlayerInDropship( entity player )
 		player.SetPlayerNetBool( "isJumpmaster", true )
 
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+
+	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+	{
+		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
+	}
 }
 
 void function Sequence_Playing()
@@ -135,7 +210,7 @@ void function Sequence_Playing()
 			// player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 
 			DecideRespawnPlayer( player )
-
+			GiveBasicSurvivalItems( player )
 			// i++
 		}
 
@@ -146,7 +221,7 @@ void function Sequence_Playing()
 	{
 		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
 		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
+		float DROP_TIMEOUT_TIME = 0 // GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
 
 		array<vector> foundFlightPath = Survival_GeneratePlaneFlightPath()
 
@@ -191,7 +266,7 @@ void function Sequence_Playing()
 				}
 			}
 
-			if ( !foundJumpmaster ) // No eligible jumpmasters? Shouldn't happen, but just in case
+			if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
 				jumpMaster = teamMembers.getrandom()
 
 			if ( jumpMaster != null )
@@ -218,7 +293,7 @@ void function Sequence_Playing()
 		SetGlobalNetTime( "PlaneDoorsOpenTime", referenceTime + timeDoorOpenWait )
 		SetGlobalNetTime( "PlaneDoorsCloseTime", referenceTime + timeDoorOpenWait + timeDoorCloseWait )
 
-		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, 0.0 )
+		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME, 0.0, 0.0 )
 
 		wait CharSelect_GetOutroTransitionDuration()
 
@@ -229,7 +304,7 @@ void function Sequence_Playing()
 		foreach ( player in GetPlayerArray_AliveConnected() )
 			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 
-		wait DROP_TOTAL_TIME
+		wait DROP_TOTAL_TIME - CharSelect_GetOutroTransitionDuration()
 
 		FlagClear( "PlaneDrop_Respawn_SetUseCallback" )
 
@@ -241,13 +316,21 @@ void function Sequence_Playing()
 				Survival_DropPlayerFromPlane_UseCallback( player )
 		}
 
-		wait DROP_TIMEOUT_TIME
-
 		centerEnt.Destroy()
 		minimapPlaneEnt.Destroy()
-		dropship.Destroy()
+		minimapPlaneEnt.ClearParent()
+		try{
+			ClearChildren( dropship, true )
+			dropship.Destroy()}
+		catch( e420 )
+		{
+			printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
+		}
+		
 	}
-
+	
+	FlagClear( "SpawnInDropship" )
+	
 	wait 5.0
 
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
@@ -260,7 +343,12 @@ void function Sequence_Playing()
 	{
 		if ( GetNumTeamsRemaining() <= 1 )
 		{
-			int winnerTeam = GetTeamsForPlayers( GetPlayerArray_AliveConnected() )[0]
+			int winnerTeam
+			if( GetTeamsForPlayers( GetPlayerArray_AliveConnected() ).len() > 0 )
+				winnerTeam = GetTeamsForPlayers( GetPlayerArray_AliveConnected() )[0]
+			else
+				winnerTeam = -1
+			
 			level.nv.winningTeam = winnerTeam
 
 			SetGameState( eGameState.WinnerDetermined )
@@ -328,16 +416,17 @@ void function Sequence_Epilogue()
 
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
+	
+	WaitForever()
+	// if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
+		// wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
+	// else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
+		// WaitForever()
 
-	if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
-		wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
-	else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
-		WaitForever()
-
-	if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
-		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-	else
-		ShutdownHostGame()
+	// if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
+		// GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	// else
+		// DestroyServer()
 }
 
 void function UpdateMatchSummaryPersistentVars( int team )
@@ -382,7 +471,7 @@ void function HandleSquadElimination( int team )
 void function PlayerFullyDoomed( entity player )
 {
 	player.p.respawnChanceExpiryTime = Time()
-	player.p.squadRank = Survival_GetCurrentRank( player )
+	player.p.squadRank = 0 // Survival_GetCurrentRank( player )
 
 	//StatsHook_RecordPlacementStats( player )
 }
@@ -398,7 +487,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
 		return
 	
-	HandleDeathRecapData(victim, damageInfo)
+	Flowstate_HandleDeathRecapData(victim, damageInfo)
 	
 	float damage = DamageInfo_GetDamage( damageInfo )
 
@@ -412,13 +501,18 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
 
+	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
+	{
+		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
+	}
+	
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
 	{	
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
 		thread EnemyDownedDialogue( attacker, victim )
-		
+
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 
@@ -488,14 +582,16 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	float farTime = 5
 	int attackerTeam = attacker.GetTeam()
 
-	bool inTime
+	bool inTime = false
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 	{
-		if(!IsValid(player)) continue
-		if( player.p.attackedTeam.len() < attackerTeam )
-			player.p.attackedTeam.resize( attackerTeam + 2, -returnTime )
-
-		if( Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
+		if( !IsValid(player) )
+			continue
+		
+		if( !(attackerTeam in player.p.attackedTeam) )
+			player.p.attackedTeam[ attackerTeam ] <- -returnTime
+		
+		if( attackerTeam in player.p.attackedTeam && Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
 			inTime = true
 	}
 
@@ -508,13 +604,16 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	}
 
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
-		player.p.attackedTeam[ attackerTeam ] = Time()
+	{
+		if( attackerTeam in player.p.attackedTeam )
+			player.p.attackedTeam[ attackerTeam ] = Time()
+	}
 
 	if( inTime )
 		return
 
 	int attackerTotalTeam = 0
-	foreach( time in victim.p.attackedTeam )
+	foreach( team, time in victim.p.attackedTeam )
 		if( Time() - time < returnTime )
 			attackerTotalTeam++
 	
@@ -527,24 +626,62 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 			PlayBattleChatterLineToSpeakerAndTeam( victim, "bc_takingFire" )
 }
 
-void function HandleDeathRecapData(entity victim, var damageInfo)
-//By CaféDeColombiaFPS
-{	
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	if(!attacker.IsPlayer()) return //fix abilities? implement damageSourceId and scriptDamageType
-	
-	entity weapon = DamageInfo_GetWeapon( damageInfo )
-	
-	int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-	int victimEHandle = victim ? victim.GetEncodedEHandle() : -1
-	int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+void function Flowstate_HandleDeathRecapData_SpecialDamageEvent(entity victim, var damageInfo)
+{
+	if( !IsValid( victim ) )
+		return
+
+	entity attacker = ge( 0 )
+
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	int attackerEHandle = IsValid( attacker ) ? attacker.GetEncodedEHandle() : -1
+	int victimEHandle = IsValid( victim ) ? victim.GetEncodedEHandle() : -1
+	int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+	float damageInflicted = DamageInfo_GetDamage( damageInfo )
+	float shieldHealthFrac = GetShieldHealthFrac( victim )
+	float healthFrac = GetHealthFrac( victim )
+
+	if( damageInflicted == 0 )
+		return
+
+	if( attackerEHandle != -1 && victimEHandle != -1 )
+		Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, damageSourceId, scriptDamageType, damageInflicted, 1, 0, healthFrac, shieldHealthFrac, Time() )
+}
+
+void function Flowstate_HandleDeathRecapData(entity victim, var damageInfo)
+//By @CafeFPS.
+{	
+	if( !IsValid( victim ) )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	printt( attacker, inflictor) 
+
+	entity weapon = null //DamageInfo_GetWeapon( damageInfo ) // This returns null for melee. See R5DEV-28611.
+	if ( IsValid( attacker ) && attacker.IsPlayer() )
+		weapon = attacker.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	int attackerEHandle = IsValid( attacker ) ? attacker.GetEncodedEHandle() : -1
+	int victimEHandle = IsValid( victim ) ? victim.GetEncodedEHandle() : -1
+	int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
 	float damageInflicted = DamageInfo_GetDamage( damageInfo )
 	bool isValidHeadShot = IsValidHeadShot( damageInfo, victim )
 	float shieldHealthFrac = GetShieldHealthFrac( victim )
 	float healthFrac = GetHealthFrac( victim )
 
-	if ( weapon == attacker.p.DeathRecap_PreviousShotWeapon && victim == attacker.p.DeathRecap_PreviousShotEnemyPlayer ) //Time() < attacker.p.DeathRecap_BlockTime + MAXBLOCKTIME && 
+	if( damageInflicted == 0 )
+		return
+	
+	if( !attacker.IsPlayer() ) 
+	{
+		Flowstate_HandleDeathRecapData_SpecialDamageEvent( victim, damageInfo )
+		return
+	}
+	
+	//Si ya estamos creando un bloque para esta víctima con la misma arma...
+	if ( IsValid( attacker.p.DeathRecap_PreviousShotWeapon ) && weapon == attacker.p.DeathRecap_PreviousShotWeapon && IsValid( attacker.p.DeathRecap_PreviousShotEnemyPlayer ) && victim == attacker.p.DeathRecap_PreviousShotEnemyPlayer )
 	{
 		//Register Data
 		attacker.p.DeathRecap_DataToSend.attackerEHandle = attackerEHandle
@@ -552,38 +689,51 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 		attacker.p.DeathRecap_DataToSend.damageSourceID = damageSourceId
 		attacker.p.DeathRecap_DataToSend.damageType = scriptDamageType
 		attacker.p.DeathRecap_DataToSend.totalDamage += int(damageInflicted)
-		attacker.p.DeathRecap_DataToSend.hitCount++
+		
+		//Fixes shotguns pellets being count as individial hit
+		if( Time() != attacker.p.DeathRecap_DataToSend.blockTime )
+			attacker.p.DeathRecap_DataToSend.hitCount++
+
 		if(isValidHeadShot)
 			attacker.p.DeathRecap_DataToSend.headShotBits++
 		attacker.p.DeathRecap_DataToSend.healthFrac += shieldHealthFrac
 		attacker.p.DeathRecap_DataToSend.shieldFrac += healthFrac
-		attacker.p.DeathRecap_DataToSend.blockTime = attacker.p.DeathRecap_BlockTime
+		attacker.p.DeathRecap_DataToSend.blockTime = Time()
+		//printt( "DEATH RECAP DEBUG - BLOCK DATA SUM" )
 	}
 	else
 	{
-		if(weapon != attacker.p.DeathRecap_PreviousShotWeapon || victim != attacker.p.DeathRecap_PreviousShotEnemyPlayer) // || Time() >= attacker.p.DeathRecap_BlockTime + MAXBLOCKTIME )
+		//Do is valid checks so we don't reset data too early when weapon and last shot player were null starting the game.
+		if( IsValid( attacker.p.DeathRecap_PreviousShotWeapon ) && weapon != attacker.p.DeathRecap_PreviousShotWeapon || IsValid( attacker.p.DeathRecap_PreviousShotEnemyPlayer ) && victim != attacker.p.DeathRecap_PreviousShotEnemyPlayer )
 		{
-			if(victimEHandle != -1  && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+			victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+			
+			if( victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
 			{
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
 				ResetDeathRecapBlock(victim)
-			}
-			if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
-			{
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-				ResetDeathRecapBlock(attacker)		
+				//printt( "block sent victim" , victimEHandle, previousShotEnemy.GetEncodedEHandle() )
 			}
 			
+			previousShotEnemy = attacker.p.DeathRecap_PreviousShotEnemyPlayer
+			
+			//Consolidate old block if we change weapon or player target.
+			if( attackerEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
+			{
+				//printt( "block sent attacker info both " , attacker, previousShotEnemy )
+				Remote_CallFunction_NonReplay( previousShotEnemy, "ServerCallback_SendDeathRecapData", attackerEHandle, previousShotEnemy.GetEncodedEHandle(), attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, previousShotEnemy.GetEncodedEHandle(), attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock(attacker)		
+			}
 		}
 		
-		//Save weapon and player before sending data, so next shot we'll see if it's the same to create a new block
+		//Save weapon and player before sending data, so next shot we'll see if it's the same to create a new block.
 		attacker.p.DeathRecap_PreviousShotWeapon = weapon
+		attacker.p.DeathRecap_PreviousShotWeaponId = damageSourceId
 		attacker.p.DeathRecap_PreviousShotEnemyPlayer = victim
-		
-		//Restart time 
-		attacker.p.DeathRecap_BlockTime = Time()
 
-		//Register First Shot Data
+		//Register first shot of this data block.
 		attacker.p.DeathRecap_DataToSend.attackerEHandle = attackerEHandle
 		attacker.p.DeathRecap_DataToSend.victimEHandle = victimEHandle
 		attacker.p.DeathRecap_DataToSend.damageSourceID = damageSourceId
@@ -594,22 +744,45 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 			attacker.p.DeathRecap_DataToSend.headShotBits++
 		attacker.p.DeathRecap_DataToSend.healthFrac += shieldHealthFrac
 		attacker.p.DeathRecap_DataToSend.shieldFrac += healthFrac
-		attacker.p.DeathRecap_DataToSend.blockTime = attacker.p.DeathRecap_BlockTime
+		attacker.p.DeathRecap_DataToSend.blockTime = Time()
+		attacker.p.DeathRecap_PlayerIsBuildingBlock = true
+
+		//printt( "DEATH RECAP DEBUG - BLOCK CREATION FOR ATTACKER PLAYER " + attacker  )
+
+		//Todos los bloques de los jugadores que me han hecho daño deben consolidarse si yo empiezo un nuevo bloque.
+		foreach( player in GetPlayerArray() )
+		{
+			if( attacker != player && attacker == player.p.DeathRecap_PreviousShotEnemyPlayer && player.p.DeathRecap_PlayerIsBuildingBlock )
+			{
+				//printt( "DEATH RECAP DEBUG - PLAYER " + player + " SHOTED THIS PLAYER BEFORE, SENDING BLOCK TO ATTACKER WHICH WAS THEIR VICTIM BEFORE" )
+				
+				attackerEHandle = player ? player.GetEncodedEHandle() : -1
+				victimEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+				Remote_CallFunction_NonReplay( player, "ServerCallback_SendDeathRecapData", player.p.DeathRecap_DataToSend.attackerEHandle, player.p.DeathRecap_DataToSend.victimEHandle, player.p.DeathRecap_DataToSend.damageSourceID, player.p.DeathRecap_DataToSend.damageType, player.p.DeathRecap_DataToSend.totalDamage, player.p.DeathRecap_DataToSend.hitCount, player.p.DeathRecap_DataToSend.headShotBits, player.p.DeathRecap_DataToSend.healthFrac, player.p.DeathRecap_DataToSend.shieldFrac, player.p.DeathRecap_DataToSend.blockTime )
+				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, player.p.DeathRecap_DataToSend.damageSourceID, player.p.DeathRecap_DataToSend.damageType, player.p.DeathRecap_DataToSend.totalDamage, player.p.DeathRecap_DataToSend.hitCount, player.p.DeathRecap_DataToSend.headShotBits, player.p.DeathRecap_DataToSend.healthFrac, player.p.DeathRecap_DataToSend.shieldFrac, player.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock( player )
+			}
+		}
 	}
 }
 
-void function ResetDeathRecapBlock(entity attacker)
+void function ResetDeathRecapBlock(entity player)
 {
-	attacker.p.DeathRecap_DataToSend.attackerEHandle = 0
-	attacker.p.DeathRecap_DataToSend.victimEHandle = 0
-	attacker.p.DeathRecap_DataToSend.damageSourceID = 0
-	attacker.p.DeathRecap_DataToSend.damageType = 0
-	attacker.p.DeathRecap_DataToSend.totalDamage = 0
-	attacker.p.DeathRecap_DataToSend.hitCount = 0
-	attacker.p.DeathRecap_DataToSend.headShotBits = 0
-	attacker.p.DeathRecap_DataToSend.healthFrac = 0
-	attacker.p.DeathRecap_DataToSend.shieldFrac = 0
-	attacker.p.DeathRecap_DataToSend.blockTime = 0
+	player.p.DeathRecap_DataToSend.attackerEHandle = -1
+	player.p.DeathRecap_DataToSend.victimEHandle = -1
+	player.p.DeathRecap_DataToSend.damageSourceID = -1
+	player.p.DeathRecap_DataToSend.damageType = -1
+	player.p.DeathRecap_DataToSend.totalDamage = -1
+	player.p.DeathRecap_DataToSend.hitCount = 0
+	player.p.DeathRecap_DataToSend.headShotBits = 0
+	player.p.DeathRecap_DataToSend.healthFrac = 0
+	player.p.DeathRecap_DataToSend.shieldFrac = 0
+	player.p.DeathRecap_DataToSend.blockTime = -1
+
+	player.p.DeathRecap_PlayerIsBuildingBlock = false
+	player.p.DeathRecap_PreviousShotWeapon = null
+	player.p.DeathRecap_PreviousShotWeaponId = -1
+	player.p.DeathRecap_PreviousShotEnemyPlayer = null
 }
 
 array<ConsumableInventoryItem> function GetAllDroppableItems( entity player )
@@ -699,34 +872,44 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
+	int attackerEHandle = -1
+	int victimEHandle = -1
+	
 	if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
 	{
-		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-		int victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
-			
-		if(victimEHandle != -1 && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && IsValid( victim.p.DeathRecap_PreviousShotEnemyPlayer ) && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+		attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+		victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+		entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+		
+		if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
 		{
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
 			ResetDeathRecapBlock(victim)
 		}
 		if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
 		{
+			Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
 			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
 			ResetDeathRecapBlock(attacker)		
 		}
-
-		if(attackerEHandle != -1)
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)	
 		
+		Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
+	} else if( !attacker.IsPlayer() )
+	{
+		Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
 	}
+	
 	SetPlayerEliminated( victim )
 
 	if ( IsFiringRangeGameMode() )
 	{
 		thread function() : ( victim )
 		{
-			wait GetDeathCamLength( victim )
-
+			wait GetDeathCamLength()
+			
+			if( !IsValid(victim) )
+				return
+			
 			//SetRandomStagingPositionForPlayer( victim )
 			DecideRespawnPlayer( victim )
 		}()
@@ -734,8 +917,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 	}
 
-	int victimTeamNumber = victim.GetTeam()
-	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
+	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victim.GetTeam() )
 	bool teamEliminated = victimTeam.len() == 0
 	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
 
@@ -749,9 +931,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( teamEliminated )
 	{
-		thread PlayerStartSpectating( victim, attacker, true, victim.GetTeam())	
+		thread PlayerStartSpectating( victim, attacker, true, victim.GetTeam(), false, attackerEHandle)	
 	} else
-		thread PlayerStartSpectating( victim, attacker, false )	
+		thread PlayerStartSpectating( victim, attacker, false, 0, false, attackerEHandle)	
 	
 	// Restore weapons for deathbox
 	if ( victim.p.storedWeapons.len() > 0 )
@@ -811,17 +993,34 @@ void function OnClientConnected( entity player )
 	player.p.squadRank = 0
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-
+	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
+	
 	if ( IsFiringRangeGameMode() )
 	{
 		SetRandomStagingPositionForPlayer( player )
 		DecideRespawnPlayer( player )
+		GiveBasicSurvivalItems( player )
 		return
 	} else if ( IsSurvivalTraining() )
 	{
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
+	} else if ( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+	{
+		vector origin
+		if( GetPlayerArray_Alive().len() > 0 )
+			origin = GetPlayerArray_Alive()[0].GetOrigin()
+		
+		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+		if( !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+		{
+			Flowstate_AssignUniqueCharacterForPlayer(player, true)
+			player.SetOrigin( origin )
+		}
+		DecideRespawnPlayer( player )
+		GiveBasicSurvivalItems( player )
+		return		
 	}
 
 	switch ( GetGameState() )
@@ -832,13 +1031,12 @@ void function OnClientConnected( entity player )
 		case eGameState.Prematch:
 			if ( IsValid( Sur_GetPlaneEnt() ) )
 				RespawnPlayerInDropship( player )
-
+				printt( "connected prematch" )
 			break
 		case eGameState.Playing:
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			{
-				array<ItemFlavor> characters = GetAllCharacters()
-				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() )
+				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 			}
 			
 			if ( IsFiringRangeGameMode() )
@@ -848,48 +1046,21 @@ void function OnClientConnected( entity player )
 				SetRandomStagingPositionForPlayer( player )
 				DecideRespawnPlayer( player )
 			}
-			else if ( Flag( "SpawnInDropship" ) )
+			else if ( Flag( "SpawnInDropship" ) && IsValid( Sur_GetPlaneEnt() ) )
+			{
 				RespawnPlayerInDropship( player )
-			else
+				printt( "connected dropship playing" )
+			}
+			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
 			{
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
-
-				if ( IsPlayerEliminated( player ) )
-					thread PlayerStartSpectating( player, null, false, 0, true)
-				else
-				{
-					
-					array<entity> beacons
-					
-					foreach(prop in GetEntArrayByClass_Expensive( "prop_dynamic" ))
-						if(prop.GetTargetName() == RESPAWN_CHAMBER_TARGETNAME)
-							beacons.append(prop)
-		
-					foreach(beacon in beacons)
-						if(!SURVIVAL_PosInsideDeathField(beacon.GetOrigin()))
-							beacons.fastremovebyvalue(beacon)
-					
-					if(beacons.len() == 0)
-					{
-						beacons.clear()
-						beacons = GetPlayerArray_AliveConnected()
-					}
-					
-					array<entity> respawnCandidates = isAlone ? beacons : playerTeam
-					respawnCandidates.fastremovebyvalue( player )
-
-					if ( respawnCandidates.len() == 0 )
-					{
-						Message(player, "NO SPAWN POINTS :(")
-						break
-					}
-					vector origin = respawnCandidates.getrandom().GetOrigin()
-
-					DecideRespawnPlayer( player )
-
-					player.SetOrigin( origin )
-					PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,256>, origin )
-				}
+				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray_Alive().len() )
+				player.SetSpecReplayDelay( 1 )
+				player.StartObserverMode( OBS_MODE_IN_EYE )
+				player.SetObserverTarget( GetPlayerArray_Alive().getrandom() )
+				player.SetPlayerCanToggleObserverMode( false )
+				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 			}
 
 			break
@@ -1017,7 +1188,7 @@ void function SURVIVAL_CalculateAirdropPositions()
         {
             Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
 
-            if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y ))
+            if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y % 360 ))
             {
                 //force this to loop again if we didn't verify our airdropPoint
                 j--;
@@ -1025,9 +1196,9 @@ void function SURVIVAL_CalculateAirdropPositions()
             else
             {
                 previousAirdrops.push(airdropPoint.origin)
-                printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
+                //printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
                 airdropData.originArray.append(airdropPoint.origin)
-                airdropData.anglesArray.append(airdropPoint.angles)
+                airdropData.anglesArray.append( Vector(airdropPoint.angles.x % 360, airdropPoint.angles.y % 360, airdropPoint.angles.z % 360) )
 
                 //Should impl contents here.
                 airdropData.contents.append([dataArr[2], dataArr[3], dataArr[4]])
@@ -1061,4 +1232,105 @@ void function Survival_AddCallback_OnAirdropLaunched( void functionref( entity d
 void function Survival_CleanupPlayerPermanents( entity player )
 {
 
+}
+
+bool function IsValidLegendaryMagazine( string mod )
+{
+	switch( mod )
+	{
+		case "sniper_mag_l4":
+		case "highcal_mag_l4":
+		case "bullets_mag_l4":
+		case "shotgun_bolt_l4":
+		case "energy_mag_l4":
+		
+		return true
+	}
+	
+	return false
+}
+
+void function Flowstate_CheckForLv4MagazinesAndRefillAmmo( entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	entity oldActiveWeapon
+	entity activeWeapon
+
+	while( IsValid( player ) )
+	{
+		wait 0.1
+		
+		if( !IsValid( player ) )
+			break
+
+		activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if( oldActiveWeapon == activeWeapon )
+			continue
+
+		oldActiveWeapon = activeWeapon
+
+		array<entity> weapons = player.GetMainWeapons()
+
+		foreach ( weapon in weapons )
+		{
+			if( !IsValid( weapon ) )
+				continue
+				
+			if( weapon == player.GetActiveWeapon( eActiveInventorySlot.mainHand ) )
+			{
+				Signal( weapon, "Flowstate_RestartLv4MagazinesThread" )
+				continue
+			}
+
+			string weaponRef = weapon.GetWeaponClassName()
+			if ( !SURVIVAL_Loot_IsRefValid( weaponRef ) )
+				continue
+
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+			if ( weaponData.lootType != eLootType.MAINWEAPON )
+				continue
+
+			array<string> mods = clone weapon.GetMods()
+			
+			foreach( mod in mods )
+				if( IsValidLegendaryMagazine( mod ) )
+					thread Flowstate_Lv4MagazinesRefillAmmo_Thread( player, weapon )
+		}
+	}
+}
+
+void function Flowstate_Lv4MagazinesRefillAmmo_Thread( entity player, entity weapon )
+{
+	Signal( weapon, "Flowstate_RestartLv4MagazinesThread" )
+	EndSignal( weapon, "Flowstate_RestartLv4MagazinesThread" )
+	EndSignal( weapon, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+
+	wait 5
+
+	if( !IsValid( weapon ) || !IsValid( player ) || !IsAlive( player ) || weapon == player.GetActiveWeapon( eActiveInventorySlot.mainHand ) || !weapon.UsesClipsForAmmo() )
+		return
+
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+
+	if( ammoInInventory == 0 )
+		return
+
+	int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+	int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+	
+	if( currentAmmo == maxAmmo )
+		return
+
+	int requiredAmmo = maxAmmo - currentAmmo
+	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+
+	weapon.SetWeaponPrimaryClipCount( currentAmmo + ammoToRemove )
+	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+	weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_POOL, min( SURVIVAL_CountItemsInInventory( player, ammoRef ), weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_POOL ) ) )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "HUD_Boost_Card_Earned_1P" )
 }

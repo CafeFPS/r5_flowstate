@@ -86,6 +86,7 @@ global struct LootDroneData
 global struct LootDroneClientData
 {
 	entity model
+	entity ambientgeneric
 	int trailFXHandle
 	int panicFXHandle
 	int fallFXHandle
@@ -126,6 +127,7 @@ void function ShLootDrones_Init()
 	#endif
 	#if CLIENT
 	AddCreateCallback( "prop_dynamic", LootDroneSpawned )
+	AddDestroyCallback( "prop_dynamic", LootDroneDestroyed )
 	#endif
 }
 
@@ -141,15 +143,27 @@ void function LootDroneSpawned( entity droneEnt )
 		return
 
 	#if CLIENT
-		printf( "LootDroneClientDebug: Adding Drone to Client Data" )
+		//printf( "LootDroneClientDebug: Adding Drone to Client Data" )
 		AddDroneClientData( droneEnt )
 	#endif // CLIENT
 }
 
 #if CLIENT
+void function LootDroneDestroyed( entity droneEnt )
+{
+	if ( droneEnt.GetModelName().tolower() != LOOT_DRONE_MODEL.tolower() )
+		return
+
+	LootDroneClientData clientData = GetDroneClientData( droneEnt )
+	if( IsValid( clientData.ambientgeneric ) )
+	{
+		clientData.ambientgeneric.Destroy()
+	}
+}
+
 void function ServerCallback_AddDroneClientData( entity droneEnt )
 {
-	printf( "LootDroneClientDebug: ServerCallback_AddDroneClientData" )
+	//printf( "LootDroneClientDebug: ServerCallback_AddDroneClientData" )
 	AddDroneClientData( droneEnt )
 }
 
@@ -161,11 +175,14 @@ void function AddDroneClientData( entity droneEnt )
 	if ( droneEnt in file.droneToClientData )
 		return
 
-	printf( "LootDroneClientDebug: Adding Clientside Drone Data entry" )
+	//printf( "LootDroneClientDebug: Adding Clientside Drone Data entry" )
 	LootDroneClientData clientData
 	clientData.model = droneEnt
 	SetLootDroneTrailFX( clientData )
-
+	clientData.ambientgeneric = CreateClientSideAmbientGeneric( clientData.model.GetOrigin(), LOOT_DRONE_LIVING_SOUND, 0 )
+	clientData.ambientgeneric.SetSoundCodeControllerEntity( clientData.model )
+	clientData.ambientgeneric.SetParent(clientData.model)
+	
 	file.droneToClientData[ droneEnt ] <- clientData
 }
 

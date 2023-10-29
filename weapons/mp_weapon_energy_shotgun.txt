@@ -123,9 +123,9 @@ WeaponData
 	//"fx_shell_eject_world"						"wpn_shelleject_shotshell"
 	//"fx_shell_eject_attach"						"shell"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"							"P_mflash_nrg_shotgun_FP"
+	"fx_muzzle_flash_world"							"P_mflash_nrg_shotgun"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"impulse_force"   								"20"
 
@@ -143,11 +143,12 @@ WeaponData
                                
      
     "ammo_clip_size"   								"5"
-    "ammo_default_total"							"100"
+    "ammo_default_total"							"20"
     "ammo_no_remove_from_stockpile"					"1"
+    "uses_ammo_pool"								"1"
     "ammo_pool_type"								"shotgun"
       
-    "ammo_stockpile_max"							"100"
+    "ammo_stockpile_max"							"20"
     "ammo_per_shot"                                 "1"
     "ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.3"
@@ -309,14 +310,11 @@ WeaponData
 	    {
 	    }
 
-		survival_finite_ammo
+		hopup_shield_breaker
         {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"18"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+            "damage_shield_scale"                       "1.25"
+			"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
+			"impact_effect_table" 				        "shield_breaker_bullet"
         }
 
         hopup_energy_choke
@@ -392,6 +390,11 @@ WeaponData
 			"rechamber_time" 	"*0.84"
 		}
 
+		shotgun_bolt_l4
+		{
+			"fire_rate" 		"*1.0"
+			"rechamber_time" 	"*0.84"
+		}
                          
                  
    

@@ -134,16 +134,15 @@ void function LoadCommsActionsFromDatatable()
 void function RegisterCustomComs()
 {
 	// ammo
-	RegisterCustomCom( eCommsAction.PING_AMMO_SNIPER,           "ping_foundAmmoSniper")
+	RegisterCustomCom( eCommsAction.PING_AMMO_SNIPER, "ping_foundAmmoSniper")
 	RegisterCustomCom( eCommsAction.INVENTORY_NEED_AMMO_SNIPER, "ping_needAmmoSniper")
 
 	// weapons
-	RegisterCustomCom( eCommsAction.PING_WEAPON_VOLT,          "ping_foundVoltSmg")
-	RegisterCustomCom( eCommsAction.PING_WEAPON_SMART_PISTOL,  "ping_foundPistol")
-	RegisterCustomCom( eCommsAction.PING_WEAPON_SENTINEL,      "ping_foundSentinel")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_VOLT, "ping_foundVoltSmg")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_SMART_PISTOL, "ping_foundPistol")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_SENTINEL, "ping_foundSentinel")
 
     // npcs
-
 	asset icon = $"rui/hud/ping/icon_ping_enemy"
 	asset iconasset = $"settings/itemflav/ping/ping_enemy.rpak"
 	string chattext = "#PING_ENEMY_SPOTTED_GENERAL"
@@ -161,6 +160,29 @@ void function RegisterCustomComs()
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_REAPER, "ping_spotReaper", icon, iconasset, chattext, shorttext, menutext )
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_SPECTRE, "ping_spotSpectre", icon, iconasset, chattext, shorttext, menutext )
 	RegisterCustomCom( eCommsAction.PING_ENEMY_NPC_TICK, "ping_spotTick", icon, iconasset, chattext, shorttext, menutext )
+	
+	// Flowstate
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SNIPER, "ping_needAmmoMagSniper" )
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_LASERSIGHT_SMG, "ping_needLaserSight" )
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_LASERSIGHT_PISTOL, "ping_needLaserSight" )
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_MARKSMAN, "ping_needOpticMarksman" )
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_MARKSMAN, "ping_needModBarrel" )
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_MARKSMAN, "ping_needStockSniper" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_SNIPER_1, "ping_foundAmmoMagSniper" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_SNIPER_2, "ping_foundAmmoMagSniper" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_SNIPER_3, "ping_foundAmmoMagSniper" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_SNIPER_4, "ping_foundAmmoMagSniper" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_LASER_SIGHT_1, "ping_foundLaserSight" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_LASER_SIGHT_2, "ping_foundLaserSight" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_LASER_SIGHT_3, "ping_foundLaserSight" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_LASER_SIGHT_4, "ping_foundLaserSight" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_SHOTGUN_BOLT_4, "ping_foundShotgunBolt" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_ENERGY_4, "ping_foundAmmoMagEnergy" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_HIGHCAL_4, "ping_foundAmmoMagHeavy" )
+	RegisterCustomCom( eCommsAction.PING_ATTACHMENT_MAG_BULLET_4, "ping_foundAmmoMagLight" )
+	RegisterCustomCom( eCommsAction.PING_EQUIPMENT_ARMOR_5, "") 
+	RegisterCustomCom( eCommsAction.PING_EQUIPMENT_ARMOR_6, "") 
+	RegisterCustomCom( eCommsAction.PING_EQUIPMENT_ARMOR_7, "")
 }
 
 void function RegisterCustomCom( int index, string alias, asset icon = $"", asset pingAsset = $"", string chattext = "#PING_LOOT", string shorttext = "", string menutext = "")
@@ -221,7 +243,7 @@ void function Quickchat( entity player, int index, entity subject = null )
 	string add = ""
 	if ( IsValid( subject ) )
 	{
-		add = " " + eCommsFlags.NONE + " " + subject.GetEncodedEHandle()
+		add = " " + eCommsFlags.NONE + " 42069 " + subject.GetEncodedEHandle()
 	}
 
 	player.ClientCommand( "ClientCommand_Quickchat " + index + add )
@@ -666,11 +688,11 @@ void function PlaySoundForCommsAction( entity player, int commsAction, CommsOpti
 		string flavorEvent = flavorEventOverride == "" ? file.actions[commsAction].flavorEvent : flavorEventOverride
 		if ( subEvent != "" )
 		{
-			thread PlaySoundForSubActionWhenPrimaryFinishes( soundHandle, commsAction, GetCommsActionForName( subEvent ), player, opt, flavorEvent )
+			thread PlaySoundForSubActionWhenPrimaryFinishes( soundHandle, commsAction, GetCommsActionEnumForName( subEvent ), player, opt, flavorEvent )
 		}
 		else if ( flavorEvent != "" )
 		{
-			int flavorAction = GetCommsActionForName( flavorEvent )
+			int flavorAction = GetCommsActionEnumForName( flavorEvent )
 			string flavorSound = GetPlayerDialogSound( player, flavorAction, opt )
 			if ( DoesAliasExist( flavorSound ) && ShouldPlayFlavorAction( player, flavorAction ) )
 			{

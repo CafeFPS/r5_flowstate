@@ -3,7 +3,10 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
-
+	player_carrying_oddball
+	ring_immunity
+	placing_respawn_beacon
+	slowedbyCustomGrenade
 	anti_slow
 	move_slow
 	turn_slow

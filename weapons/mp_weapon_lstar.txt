@@ -1,7 +1,7 @@
 #base "_base_lmg.txt"
-#base "_base_barrels_large.txt"
-#base "_base_mags_energy.txt"
+#base "_base_barrels_medium.txt"
 #base "_base_stocks_tactical.txt"
+#base "_base_mags_energy.txt"
 
 WeaponData
 {
@@ -24,20 +24,17 @@ WeaponData
 	"leveled_pickup"								"1"
 
 	"cooldown_type"									"chargeFrac"
-    "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
+    "cooldown_time"	                                "0.16" // actually, "blowoff animation time"
     "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
-    "charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
+    "charge_cooldown_time"                          "3.63"  // controls length of overheat anim (along with delay)
     "charge_cooldown_delay"                         "0.08"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
-                     
     "projectile_launch_speed"                       "24000"
-     
-                                       
-      
+
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_gravity_scale"						"0.5"
 	"projectile_lifetime" 							"4.0"
@@ -64,15 +61,16 @@ WeaponData
 	"playermodel" 									"mdl/weapons/lstar/w_lstar.rmdl"
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"holster_type"									"rifle"
+	"holster_offset"								"8 0 0"
 
 	// Effects
 	"projectile_trail_effect_0" 					"P_projectile_lstar"
 	"impact_effect_table" 							"lstar"
 	"projectile_adjust_to_gun_barrel"				"1"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"							"P_muz_lstar_FP"
+	"fx_muzzle_flash_world"							"P_muz_lstar"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_LSTAR_Fire_1P"
@@ -128,21 +126,12 @@ WeaponData
 
 	"bolt_hitsize"									"0.0"
                      
-    "bolt_hitsize_grow1_time"						"0.03"
-	"bolt_hitsize_grow1_size"						"0.03"
-	"bolt_hitsize_grow2_time"						"0.065"
-	"bolt_hitsize_grow2_size"						"0.06"
-	"bolt_hitsize_growfinal_lerptime"				"0.14"
-	"bolt_hitsize_growfinal_size"					"1.0"
-     
-                                       
-                                     
-                                      
-                                     
-                                            
-                                        
-      
-
+	"bolt_hitsize_grow1_time"						"0.075"
+	"bolt_hitsize_grow1_size"						"1" //"5.0"
+	"bolt_hitsize_grow2_time"						"0.18"
+	"bolt_hitsize_grow2_size"						"2.5" //"7.0"
+	"bolt_hitsize_growfinal_lerptime"				"0.18"
+	"bolt_hitsize_growfinal_size"					"3.5" //"7.0"
 
 	"bolt_gravity_enabled"							"1"
 
@@ -288,7 +277,7 @@ WeaponData
 	"sprintcycle_time"								"0"
 
     // Viewkick
-    "viewkick_pattern"                              "lstar_4"
+    "viewkick_pattern"                              "lstar_3"
 
     "viewkick_spring" 								"lstar_vkp"
     "viewkick_spring_hot"                           "lstar_vkp_hot"
@@ -305,6 +294,7 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
+
 	"viewkick_pitch_softScale"						"2.6"   //"2.0"
 	"viewkick_pitch_hardScale"						"0.4"
 
@@ -336,12 +326,9 @@ WeaponData
 	"viewkick_scale_yaw_valueLerpStart"   			"5"
 	"viewkick_scale_pitch_valueLerpEnd" 			"0"
 	"viewkick_scale_yaw_valueLerpEnd" 				"5"
-                     
-	"viewkick_scale_valueDecayDelay"  				"0.55"     //"0.25"
-    "viewkick_scale_valueDecayRate"   				"160"
-     
-                                               
-                                              
+
+    "viewkick_scale_valueDecayDelay"  				"0.1"
+    "viewkick_scale_valueDecayRate"   				"60"
       
 
 
@@ -378,30 +365,30 @@ WeaponData
 	"viewdrift_ads_air_scale_yaw" 				"0.9"
 
 	// Ammo
-	"ammo_suck_behavior"							"primary_weapons"
-	"ammo_clip_size"   								"999"
-	"ammo_clip_reload_max"							"999"
+    "ammo_suck_behavior"							"primary_weapons"
+    "chance_for_bonus_last_shot_in_clip"			"0"
+    "critical_hit"									"1"
+
+	"ammo_clip_size"   								"0"
+	//"ammo_clip_reload_max"							"40"
 	"ammo_min_to_fire"								"1"
 	"ammo_per_shot"		    						"1"
-	"ammo_no_remove_from_stockpile"					"1"
-	"chance_for_bonus_last_shot_in_clip"			"0"
-	"critical_hit"									"1"
-
-    "ammo_stockpile_max"							"80"
-    "ammo_default_total"							"120"
-    "low_ammo_fraction" 							"0.005"
+	"ammo_no_remove_from_stockpile"					"0"
+    "low_ammo_fraction" 							"0.3"
+    "ammo_stockpile_max"                            "324"
+    "ammo_default_total"                            "324"    //for crate weapons, default total should be clip size + stockpile max
     "uses_ammo_pool"								"0"
 
     "reload_alt_anim"								"0"
 
     "aimassist_adspull_weaponclass"					"none"
 
-    "damage_near_value"   							"17"
-    "damage_far_value"								"17"
-    "damage_very_far_value"							"17"
-    "damage_near_value_titanarmor"					"17"
-    "damage_far_value_titanarmor" 					"17"
-    "damage_very_far_value_titanarmor" 				"17"
+    "damage_near_value"   							"16"
+    "damage_far_value"								"16"
+    "damage_very_far_value"							"16"
+    "damage_near_value_titanarmor"					"16"
+    "damage_far_value_titanarmor" 					"16"
+    "damage_very_far_value_titanarmor" 				"16"
 
     "damage_rodeo" 									"100"
     "explosion_damage"								"30"
@@ -450,12 +437,7 @@ WeaponData
 	"dof_nearDepthEnd"							    "0.0"
 
 	// Behavior
-                     
-    "fire_rate"                                     "10.0"
-     
-                              
-      
-
+	"fire_rate"   									"10.0"
 	"zoom_time_in"                                  "0.34"
 	"zoom_time_out"                                 "0.3"
 	"zoom_fov"										"55"
@@ -493,18 +475,14 @@ WeaponData
     //"clip_bodygroup_show_for_milestone_2"	"0"
     //"clip_bodygroup_show_for_milestone_3"	"0"
 
-               
-         
-  
-                                       
-                                       
-  
-      
+ 	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_LSTAR"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_LSTAR"              
 
 	Mods
 	{
 	    crate
 	    {
+	        "damage_shield_scale"      			"1.6"
 	    }
 
         survival_finite_ammo
@@ -512,61 +490,203 @@ WeaponData
             "ammo_no_remove_from_stockpile"		"0"
 	   		"uses_ammo_pool"					"0"
         }
-
-		// R2 easter egg, to keep
-		rcee
-		{
-			"ui1_enable"		"0"
-			"ui3_enable"		"1"
-			"ammo_min_to_fire"	"0"
-			"dof_zoom_nearDepthStart"						"* 0.0"
-			"dof_zoom_nearDepthEnd"							"* 0.5"
-		}
-
-        optic_cq_threat
+        energy_mag_l1
         {
-            // sight_cro
-            "zoom_fov"				"60"
+            "charge_cooldown_time"                          "*0.967"  // non-overheat
+            "charge_cooldown_delay"                         "*0.967"  //
 
-            "bodygroup1_set"		"0"
-            "bodygroup10_set"		"1"
+            "charge_time"                                   "2.6"     //26 shots
+        }
+        energy_mag_l2
+        {
+            "charge_cooldown_time"                          "*0.933"  // non-overheat
+            "charge_cooldown_delay"                         "*0.933"  //
 
-            //"ui1_enable"			"0"
-            "ui10_enable"			"1"
+            "charge_time"                                   "2.8"     //28 shots
+        }
+        energy_mag_l3
+        {
+            "charge_cooldown_time"                          "*0.9"  // non-overheat
+            "charge_cooldown_delay"                         "*0.9"  //
 
-            "mod_activity_modifier"	"optic"
+            "charge_time"                                   "3.0"   //30 shots
+        }
+        energy_mag_l4
+        {
+            "charge_cooldown_time"                          "*0.9"  // non-overheat
+            "charge_cooldown_delay"                         "*0.9"  //
 
-            "viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_CRO"
-            "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_CRO"
-            "viewmodel_offset_ads_by_centerpoint" 		"1"
+                                 
+                                                                                  
+                 
+                "charge_time"                                   "3.6"   //36 shots
+                  
+        }
+		barrel_stabilizer_l1
+        {
+            "bodygroup27_set"                   "1"
 
-            "viewmodel_offset_ads" 				        "0 10 0"
-            "dof_zoom_nearDepthStart"				    "0.5"
-            "dof_zoom_nearDepthEnd"					    "4.1"
+            "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_medium"
 
-            "threat_scope_enabled"			    "1"
-            "threat_scope_fadedist_start"       "984"  // 25m
-            "threat_scope_fadedist_end"         "2165" // 55m
-            "threat_scope_bounds_tagname1"	    "SCR_TR_CRO"
-            "threat_scope_bounds_tagname2"	    "SCR_BL_CRO"
-
-	        "zoom_time_in"                          "0.36"
-	        "zoom_time_out"                         "0.32"
-
-            "anim_alt_idleAttack"                   "1"
-            "ads_fov_zoomfrac_start"                "0.1"
-            "ads_fov_zoomfrac_end"                  "0.8"
-            "viewmodel_offset_zoom_frac_start"      "0.1"
-            "viewmodel_offset_zoom_frac_end"        "0.8"
+            "viewkick_pitch_base" 				"*0.97"
+            "viewkick_pitch_random"   			"*0.95"
+            "viewkick_yaw_base" 				"*0.97"
+            "viewkick_yaw_random"   			"*0.95"
         }
 
-               
-                                                                                                           
-                    
-         
-                                                                                          
-         
-      
+        barrel_stabilizer_l2
+        {
+            "bodygroup27_set"	                "1"
+
+            "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_medium"
+            "viewkick_pitch_base" 				"*0.94"
+            "viewkick_pitch_random"   			"*0.93"
+            "viewkick_yaw_base" 				"*0.94"
+            "viewkick_yaw_random"   			"*0.93"
+        }
+
+		barrel_stabilizer_l3
+		{
+		    "bodygroup27_set"	                "1"
+
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_medium"
+
+			"viewkick_pitch_base" 				"*0.9"
+			"viewkick_pitch_random"   			"*0.9"
+			"viewkick_yaw_base" 				"*0.9"
+			"viewkick_yaw_random"   			"*0.9"
+		}
+
+        optic_cq_hcog_classic
+        {
+            "ui1_enable"			"0"
+        }
+
+        optic_cq_hcog_bruiser
+        {
+            "ui1_enable"			"0"
+        }
+
+        optic_cq_holosight
+        {
+            "ui1_enable"			"0"
+        }
+
+        optic_cq_holosight_variable
+        {
+            "ui1_enable"			"0"
+        }
+
+        optic_ranged_hcog
+        {
+            "ui1_enable"			"0"
+        }
+
+        optic_ranged_aog_variable
+        {
+            "ui1_enable"			"0"
+        }
+	}
+
+	// THIS IS A BUNCH OF DIRTY HACKS! We can't put actual primitive values for ui args, so we have to link it to some value.
+    //  I'm using eWeaponVar.ammo_per_shot = 1 to set the showChargeFrac "bool" and to avoid divide by 0 issues with clipSize
+
+    //classic
+    UiData6
+    {
+        "ui"	"ui/hcog_classic_sights"
+        "mesh" 	"models/weapons/attachments/hcog_classic_sights"
+        Args
+        {
+            vis							player_zoomfrac
+            ammo						weapon_ammoClipCount
+            clipSize					eWeaponVar.ammo_per_shot
+            centerOffset		        weapon_ads_center_offset
+            showChargeFrac              eWeaponVar.ammo_per_shot
+            chargeFrac                  player_chargeFrac
+        }
+    }
+
+    //bruiser
+    UiData7
+    {
+        "ui"						"ui/hcog_upper"
+        "mesh"						"models/weapons/attachments/hcog2_rui_upper"
+        Args
+        {
+            vis							player_zoomfrac
+            ammo						weapon_ammoClipCount
+            clipSize					eWeaponVar.ammo_per_shot
+            centerOffset		        weapon_ads_center_offset
+            showChargeFrac              eWeaponVar.ammo_per_shot
+            chargeFrac                  player_chargeFrac
+        }
+    }
+
+    //holo
+	UiData8
+	{
+		"ui"					"ui/holo_sights"
+		"mesh"					"models/weapons/attachments/holo_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+			clipCount			eWeaponVar.ammo_per_shot
+			centerOffset		weapon_ads_center_offset
+			showChargeFrac      eWeaponVar.ammo_per_shot
+            chargeFrac          player_chargeFrac
+		}
+	}
+
+    //1x-2x
+	UiData9
+	{
+		"ui"						"ui/holo_variable_sights"
+		"mesh"						"models/weapons/attachments/holo_variable_sights"
+		Args
+		{
+			vis						player_zoomfrac
+			ammo					weapon_ammoClipCount
+			clipSize				eWeaponVar.ammo_per_shot
+			zoomFOV                 weapon_zoom_fov
+			centerOffset			weapon_ads_center_offset
+			showChargeFrac          eWeaponVar.ammo_per_shot
+			chargeFrac              player_chargeFrac
+		}
+	}
+
+    //3x
+	UiData16
+	{
+		"ui"					"ui/hcog_ranged_sights"
+		"mesh"					"models/weapons/attachments/acgs_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+			showChargeFrac      eWeaponVar.ammo_per_shot
+			chargeFrac          player_chargeFrac
+		}
+	}
+
+    //2x-4x
+	UiData17
+	{
+		"ui"	"ui/aog_variable_sights"
+		"mesh" "models/weapons/attachments/aog_variable_sights"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammoClipCount
+			clipSize			eWeaponVar.ammo_per_shot
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+		}
 	}
 
 	"ui1_enable"		"1"

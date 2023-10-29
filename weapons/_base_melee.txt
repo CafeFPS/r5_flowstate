@@ -28,6 +28,27 @@ WeaponData
 			"impulse_force"   			"20000"
 			"impact_effect_table" 		"melee_human"
 		}
+
+		energysword
+		{
+			"viewmodel"   									"mdl/Weapons/ptpov_energy_sword/ptpov_energy_sword.rmdl"
+			"playermodel" 									"mdl/Weapons/w_energy_sword/w_energy_sword.rmdl"
+			
+			"melee_angle"									"10"
+			"melee_attack_animtime"							"0.5"
+			"melee_damage"									"0"
+			"melee_damage_heavyarmor"						"0"
+			"melee_range"									"40"
+
+			"melee_lunge_no_target_range"					"0"
+			"melee_lunge_target_angle"						"13"
+			"melee_lunge_target_range"						"300"			
+			"melee_lunge_time"        						"0.5"
+
+			"impact_effect_table" 							"exp_energy_ar_charged"
+			"melee_anim_1p_number"      					"2"
+			"melee_anim_3p"		        					"ACT_GESTURE_MELEE_ATTACK3" //!FIXME
+		}
 	}
 }
 

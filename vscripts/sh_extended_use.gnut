@@ -186,10 +186,14 @@ void function ExtendedUse_TrackContinuousUse( entity player, entity useTarget, f
 
 	OnThreadEnd
 	(
-		function() : ( player, result )
+		function() : ( player, useTarget, result )
 		{
 			if ( !result.success )
 			{
+				#if SERVER
+				if( IsVaultPanel( useTarget ) )
+					SetVaultPanelState( useTarget, ePanelState.LOCKED )
+				#endif
 				player.Signal( "OnContinousUseStopped" )
 			}
 		}

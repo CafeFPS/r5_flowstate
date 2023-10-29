@@ -25,6 +25,7 @@ void function LeaveMatch()
 
 void function LoadLobbyAfterLeave()
 {
+	#if LISTEN_SERVER
 	// Wait a second for a smoother transition
 	wait 1
 
@@ -39,7 +40,7 @@ void function LoadLobbyAfterLeave()
 	{
 		// Shutdown and wait a frame so the state machine could shut the
 		// server down properly, else we crash in CClient::SendSnapshot.
-		ShutdownHostGame()
+		DestroyServer()
 		WaitFrame()
 	}
 
@@ -48,6 +49,11 @@ void function LoadLobbyAfterLeave()
 
 	// Create the lobby server
 	CreateServer("Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#else
+
+	// !TODO: attempt to connect to a lobby dedi from here???
+
+	#endif // LISTEN_SERVER
 }
 
 void function LeaveParty()

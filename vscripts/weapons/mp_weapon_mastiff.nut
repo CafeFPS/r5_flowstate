@@ -8,26 +8,15 @@ const MASTIFF_BLAST_PATTERN_LEN = 8
 
 struct {
 	float[2][MASTIFF_BLAST_PATTERN_LEN] boltOffsets = [
-		[0.0, 0.15], //
-		[0.0, 0.3], //
-		[0.0, 0.6], //
-		[0.0, 1.2], //
-		[0.0, -0.3], //
-		[0.0, -0.6], //
-		[0.0, -1.2], //
-		[0.0, -0.15], //
+		[0.0, 1.2], 
+		[0.0, 0.15], 
+		[0.0, 0.3], 
+		[0.0, 0.6], 
+		[0.0, -0.3], 
+		[0.0, -0.6], 
+		[0.0, -1.2], 
+		[0.0, -0.15], 
 	]
-
-	/*array boltOffsets = [
-		[0.0, 0.0], // center
-		[1.0, 0.0], // top
-		[0.0, 1.0], // right
-		[0.0, -1.0], // left
-		[0.5, 0.5],
-		[0.5, -0.5],
-		[-0.5, 0.5],
-		[-0.5, -0.5]
-	]*/
 } file
 
 var function OnWeaponPrimaryAttack_weapon_mastiff( entity weapon, WeaponPrimaryAttackParams attackParams )

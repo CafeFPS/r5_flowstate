@@ -24,8 +24,10 @@ const int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
 
 const string DIRTY_BOMB_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep"
 
+const int DIRTY_BOMB_HEALTH = 150
+global const float DIRTY_BOMB_CLOUD_LINGER_TIME = 2.0
 const float DIRTY_BOMB_GAS_RADIUS = 256.0
-const float DIRTY_BOMB_GAS_DURATION = 12.5
+const float DIRTY_BOMB_GAS_DURATION = 11.0
 const float DIRTY_BOMB_DETECTION_RADIUS = 140.0
 
 const float DIRTY_BOMB_THROW_POWER = 1.0
@@ -90,6 +92,7 @@ void function DirtyBombPrecache()
 		StatusEffect_RegisterDisabledCallback( eStatusEffect.placing_caustic_barrel, DirtyBomb_OnEndPlacement )
 
 		AddCreateCallback( "prop_script", DirtyBomb_OnPropScriptCreated )
+		AddCallback_MinimapEntShouldCreateCheck_Targetname( DIRTY_BOMB_TARGETNAME, Minimap_DontCreateRuisForEnemies )
 	#endif
 }
 
@@ -215,8 +218,8 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
 	//canisterProxy.kv.collisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
 	canisterProxy.DisableHibernation()
-	canisterProxy.SetMaxHealth( 100 )
-	canisterProxy.SetHealth( 100 )
+	canisterProxy.SetMaxHealth( DIRTY_BOMB_HEALTH )
+	canisterProxy.SetHealth( DIRTY_BOMB_HEALTH )
 	canisterProxy.SetDamageNotifications( false )
 	canisterProxy.SetDeathNotifications( false )
 	canisterProxy.SetArmorType( ARMOR_TYPE_HEAVY )
@@ -230,15 +233,16 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	canisterProxy.e.isBusy = false
 	canisterProxy.RemoveFromAllRealms()
 	canisterProxy.AddToOtherEntitysRealms( owner )
-//	SetTeam( canisterProxy, team )
-	canisterProxy.Minimap_SetCustomState( eMinimapObject_prop_script.DIRTY_BOMB )
-	canisterProxy.Minimap_AlwaysShow( team, null )
-	canisterProxy.Minimap_SetAlignUpright( true )
-	canisterProxy.Minimap_SetZOrder( MINIMAP_Z_OBJECT-1 )
+	// SetTeam( canisterProxy, team )
+	entity minimapObj = canisterProxy//CreatePropScript( $"mdl/dev/empty_model.rmdl", canisterProxy.GetOrigin() )
+	// minimapObj.SetParent( canisterProxy )
+	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.DIRTY_BOMB )
+	minimapObj.Minimap_AlwaysShow( team, null )
+	minimapObj.Minimap_SetAlignUpright( true )
+	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT-1 )
 	canisterProxy.SetTakeDamageType( DAMAGE_NO )
 	canisterProxy.NotSolid()
 	canisterProxy.SetPhysics( MOVETYPE_FLY ) // doesn't actually make it move, but allows pushers to interact with it
-	canisterProxy.SetScriptName("gas_trap")
 	Highlight_SetOwnedHighlight( canisterProxy, "sp_friendly_hero" )
 	Highlight_SetFriendlyHighlight( canisterProxy, "sp_friendly_hero" )
 
@@ -248,14 +252,9 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	//EmitSoundOnEntityExceptToPlayer( canisterProxy, owner, "GasTrap_Throw_3p" )
 
 	string noSpawnIdx = CreateNoSpawnArea( TEAM_INVALID, team, origin, -1.0, DIRTY_BOMB_GAS_RADIUS )
-	SetObjectCanBeMeleed( canisterProxy, false )
+	SetObjectCanBeMeleed( canisterProxy, true )
 	SetVisibleEntitiesInConeQueriableEnabled( canisterProxy, false )
-	thread TrapDestroyOnRoundEnd( owner, canisterProxy )
-
-	if ( IsValid( placementInfo.parentTo ) )
-	{
-		canisterProxy.SetParent( placementInfo.parentTo )
-	}
+	//thread TrapDestroyOnRoundEnd( owner, canisterProxy )
 
 	//make npc's fire at their own traps to cut off lanes
 	if ( owner.IsNPC() )
@@ -269,14 +268,14 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	AddSonarDetectionForPropScript( canisterProxy )
 
 	//Create a threat zone for the passive voices and store the ID so we can clean it up later.
-	int threatZoneID = ThreatDetection_CreateThreatZoneForTrap( owner, canisterProxy.GetOrigin(), team )
+	int threatZoneID = ThreatDetection_CreateThreatZone( owner, eThreatDetectionZoneType.TRAP, canisterProxy.GetOrigin(), team, 512, 128, 1, 0.1, 0)
 
 	// Landing sound handled in impact table: exp_dirty_bomb.txt
 	// EmitSoundOnEntity( canisterProxy, "GasTrap_Land_Default" )
 
 	entity mover
 
-	if ( placementInfo.parentTo != null )
+	if ( IsValid( placementInfo.parentTo ) )
 	{
 		mover = CreateScriptMover( origin, angles )
 		mover.SetParent( placementInfo.parentTo )
@@ -309,56 +308,18 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 			thread RemoveCanister( canisterProxy, mover )
 		}
 	)
-
+	
 	canisterProxy.EndSignal( "OnDestroy" )
 	canisterProxy.EndSignal( "DirtyBomb_Detonated" )
 	canisterProxy.EndSignal( "DirtyBomb_PickedUp" )
 	canisterProxy.EndSignal( "DirtyBomb_Disarmed" )
+	
+	canisterProxy.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+	AddEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged_PreArmed )
 
 	if ( placementInfo.doDeployAnim )
 		waitthread PlayAnim( canisterProxy, "prop_caustic_gastank_predeploy", mover )
 	thread PlayAnim( canisterProxy, "prop_caustic_gastank_predeploy_idle", mover )
-
-	float radius = canisterProxy.GetBoundingMaxs().x * 0.75
-
-	//entity trigger = CreateEntity( "trigger_cylinder" )
-	//trigger.SetRadius( radius )
-	//trigger.SetAboveHeight( 128 )
-	//trigger.SetBelowHeight( 32 )
-	//trigger.kv.triggerFilterUseNew = 1
-	//trigger.kv.triggerFilterPlayer = "all"
-	//trigger.kv.triggerFilterPhaseShift = "any"
-	//trigger.kv.triggerFilterNpc = "none"
-	//trigger.kv.triggerFilterNonCharacter = 0
-	//trigger.kv.triggerFilterTeamMilitia = 1
-	//trigger.kv.triggerFilterTeamIMC = 1
-	//trigger.kv.triggerFilterTeamNeutral = 1
-	//trigger.kv.triggerFilterTeamBeast = 1
-	//trigger.kv.triggerFilterTeamOther = 1 // this is key for survival
-	//trigger.RemoveFromAllRealms()
-	//trigger.AddToOtherEntitysRealms( owner )
-	//DispatchSpawn( trigger )
-	//trigger.SetOrigin( canisterProxy.GetOrigin() )
-	//trigger.SetParent( canisterProxy, "", false )
-	//
-	//OnThreadEnd(
-	//	function() : ( trigger )
-	//	{
-	//		if ( IsValid( trigger ) )
-	//		{
-	//			trigger.Destroy()
-	//		}
-	//	}
-	//)
-	//
-	//trigger.SearchForNewTouchingEntity() //JFS: trigger.GetTouchingEntities() will not return entities already in the trigger unless this is called. See bug 202843
-	//
-	//while ( trigger.GetTouchingEntities().len() > 0 )
-	//{
-	//	WaitFrame()
-	//}
-	//
-	//trigger.Destroy()
 
 	canisterProxy.Solid()
 
@@ -367,9 +328,9 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	thread WaitForCanisterPickup( canisterProxy )
 	thread CreateDirtyBombTriggerArea( canisterProxy, team )
 
+	RemoveEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged_PreArmed )
 	AddEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged )
-	canisterProxy.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
-
+	
 	owner.e.activeTraps.insert( 0, canisterProxy )
 
 	while ( owner.e.activeTraps.len() > DIRTY_BOMB_MAX_GAS_CANISTERS )
@@ -384,15 +345,67 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	WaitForever()
 }
 
+void function CausticTrap_OnDamaged_Activated(entity ent, var damageInfo)
+{
+	if( !IsValid( ent ) )
+		return
+	
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+
+	if( IsValid( inflictor ) && inflictor.GetScriptName() == "caustic_trap_gas" )
+		return
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if( attacker.IsPlayer() )
+	{
+		attacker.NotifyDidDamage
+		(
+			ent,
+			DamageInfo_GetHitBox( damageInfo ),
+			DamageInfo_GetDamagePosition( damageInfo ), 
+			DamageInfo_GetCustomDamageType( damageInfo ),
+			DamageInfo_GetDamage( damageInfo ),
+			DamageInfo_GetDamageFlags( damageInfo ), 
+			DamageInfo_GetHitGroup( damageInfo ),
+			DamageInfo_GetWeapon( damageInfo ), 
+			DamageInfo_GetDistFromAttackOrigin( damageInfo )
+		)
+	}
+	
+	// Handle damage, props get destroyed on death, we don't want that.
+	// printt( "DEBUG CANNISTER DAMAGE - Damage: " + DamageInfo_GetDamage( damageInfo ) + " Health: " + ent.GetHealth() )
+	
+	// Handle damage, props get destroyed on death, we don't want that.
+	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if( nextHealth > 0 )
+	{
+		ent.SetHealth(nextHealth)
+		return
+	}
+	
+	// "Died"
+	// Don't take damage anymore
+
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.kv.solid = 0
+	DamageInfo_SetDamage( damageInfo, 0)
+		
+	thread RemoveCanister( ent, null )
+}
+
 void function RemoveCanister( entity canisterProxy, entity mover )
 {
 	OnThreadEnd(
 		function () : (mover, canisterProxy)
 		{
-			if ( IsValid( mover ) )
-			{
-				mover.Destroy()
-			}
+			// mover is being destroyed in sh_gas.gnut now. Colombia
+			
+			// if ( IsValid( mover ) )
+			// {
+				// mover.Destroy()
+			// }
 			if ( IsValid( canisterProxy ) )
 			{
 				canisterProxy.Destroy()
@@ -403,7 +416,7 @@ void function RemoveCanister( entity canisterProxy, entity mover )
 	if ( IsValid( canisterProxy ) )
 	{
 		canisterProxy.EndSignal( "OnDestroy" )
-		canisterProxy.SetTakeDamageType( DAMAGE_NO )
+		// canisterProxy.SetTakeDamageType( DAMAGE_NO )
 		canisterProxy.NotSolid()
 
 		float duration = canisterProxy.GetSequenceDuration( "prop_caustic_gastank_destroy" )
@@ -444,12 +457,10 @@ void function CreateDirtyBombTriggerArea( entity canisterProxy, int team )
 	DispatchSpawn( trigger )
 
 	file.triggerTargets[ trigger ] <- 0
-
 	trigger.SetEnterCallback( OnDirtyBombAreaEnter )
-
 	trigger.SetOrigin( origin )
-
-	trigger.SetParent( canisterProxy, "", true, 0.0 )
+	
+	trigger.SetParent( IsValid( canisterProxy.GetParent() ) ? canisterProxy.GetParent() : canisterProxy, "", true, 0.0 )
 
 	OnThreadEnd(
 	function() : ( trigger )
@@ -562,9 +573,11 @@ void function DirtyBombProximityActivationUpdate( entity trigger )
 
 void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 {
+	// printt( "canisterProxy damaged " + canisterProxy )
+	
 	if(canisterProxy.e.isBusy)
 		return
-	
+
 	//HACK - Should use damage flags, but we might be capped?
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	switch ( damageSourceID )
@@ -575,19 +588,23 @@ void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 	}
 
 	int damageFlags = DamageInfo_GetCustomDamageType( damageInfo )
-	if ( damageFlags & DF_EXPLOSION )
+	
+	bool isMelee                   = (damageFlags & DF_MELEE) ? true : false
+	bool isExplosion               = (damageFlags & DF_EXPLOSION) ? true : false
+	
+	if ( isExplosion || isMelee )
 	{
 		thread DetonateDirtyBombCanister( canisterProxy )
 		return
 	}
 
-
 	//Check hitBoxes
 	int hitBox = DamageInfo_GetHitBox( damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	
 	if( !IsValid( attacker ) )
 		return
-	
+
 	canisterProxy.e.isBusy = true
 
 	if ( hitBox > 0 ) //Normal Hit
@@ -601,37 +618,21 @@ void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 
 }
 
-// void function CreateDirtyBombCanisterExplosion( vector origin, entity canister, entity owner )
-// {
-// 	if ( !IsValid( owner ) )
-// 		return
+void function OnDirtyBombCanisterDamaged_PreArmed( entity canisterProxy, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
 
-// 	//Explosion_DamageDefSimple( damagedef_dirty_bomb_explosion, origin, owner, owner, origin )
+	if( !IsValid( attacker ) || !attacker.IsPlayer() || attacker == canisterProxy.GetBossPlayer() )
+		return
+	
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
 
-// 	Explosion_DamageDef(
-// 	damagedef_dirty_bomb_explosion, //damageDefID
-// 	origin, 						//center
-// 	owner,							//attacker
-// 	canister, 						//inflictor
-// 	750,							//damage
-// 	2000,							//damageHeavyArmor
-// 	256, 							//innerRadius
-// 	256,							//outerRadius
-// 	origin							//projectileLaunchOrigin
-// 	)
-
-// 	int flags = 0
-// 	CreatePhysExplosion( origin, 256, PHYS_EXPLOSION_LARGE, flags )
-
-// 	entity initialExplosion = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( DIRTY_BOMB_CANISTER_EXP_FX ), origin, <0,0,0> )
-// 	EntFireByHandle( initialExplosion, "Kill", "", 3.0, null, null )
-// 	EmitSoundAtPosition( TEAM_UNASSIGNED, origin, "GasTrap_Activate" )
-// 	printt( "Playing activate sound" )
-
-// 	entity shake = CreateShake( origin, 5, 150, 1, 512 )
-// 	shake.kv.spawnflags = 4 // SF_SHAKE_INAIR
-// 	shake.Destroy()
-// }
+	if( IsValid( inflictor ) && inflictor.GetScriptName() == "caustic_trap_gas" )
+		return
+	
+	//printt( "Bomb disarmed: " + canisterProxy )
+	canisterProxy.Signal( "DirtyBomb_Disarmed" )
+}
 
 void function DetonateDirtyBombCanister( entity canisterProxy )
 {
@@ -657,7 +658,7 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	EmitSoundOnEntity( canisterProxy, "GasTrap_Activate" )
 	EmitSoundOnEntity( canisterProxy, "GasTrap_TrapLoop" ) // Sweetener for gas trap -- cloud has its own sound in sh_gas.gnut
 	entity fx = PlayLoopFXOnEntity( DIRTY_BOMB_CANISTER_FX_ALL, canisterProxy, "fx_top" )
-	canisterProxy.SetTakeDamageType( DAMAGE_NO )
+
 	Highlight_SetOwnedHighlight( canisterProxy, "caustic_gas_canister" )
 	Highlight_SetFriendlyHighlight( canisterProxy, "caustic_gas_canister" )
 
@@ -665,19 +666,31 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 
 	attacker = IsValid( attacker ) ? attacker : svGlobal.worldspawn
 
+	canisterProxy.SetHealth( DIRTY_BOMB_HEALTH )
+	// canisterProxy.SetTakeDamageType( DAMAGE_YES )
+	canisterProxy.SetDamageNotifications( true )
+	
+	RemoveEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged )
+	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged_Activated) 
+	
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, canisterProxy, canisterProxy.GetOrigin(), attacker.GetTeam(), attacker )
 	CreateGasCloudMediumAtOrigin( canisterProxy, attacker, canisterProxy.GetOrigin() + <0,0,DIRTY_BOMB_GAS_CLOUD_HEIGHT>, DIRTY_BOMB_GAS_DURATION )
 
 	wait DIRTY_BOMB_GAS_DURATION - 5.0
-
-	thread BeepSound( canisterProxy )
+	
+	if( IsValid( canisterProxy ) )
+		thread BeepSound( canisterProxy )
 
 	wait 5.0
-
+	
 	if ( IsValid( fx ) )
 		fx.Destroy()
-	StopSoundOnEntity( canisterProxy, "GasTrap_TrapLoop" )
-	canisterProxy.Signal( "DirtyBomb_Detonated" )
+	
+	if( IsValid( canisterProxy ) )
+	{
+		StopSoundOnEntity( canisterProxy, "GasTrap_TrapLoop" )
+		canisterProxy.Signal( "DirtyBomb_Detonated" )
+	}
 }
 
 void function BeepSound( entity canister )

@@ -771,7 +771,10 @@ void function PlayDialogueForPlayer( string name, entity player, entity speaker,
 
 	if ( delay > 0 )
 		wait delay
-
+	
+	if( !IsValid( player ) ) 
+		return
+	
 	if ( ! ShouldPlayDialogueIfSolo( file.registeredDialog[aliasID], speaker ) )
 	{
 		return

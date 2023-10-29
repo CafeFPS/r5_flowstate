@@ -61,7 +61,7 @@ void function ClDamageIndicator_Init()
 	PrecacheParticleSystem( $"P_wpn_grenade_frag_icon" )
 	PrecacheParticleSystem( $"P_wpn_grenade_frag_blue_icon" )
 	PrecacheParticleSystem( $"P_wpn_grenade_smoke_icon" )
-
+	
 	if ( !IsLobby() )
 		AddCallback_EntitiesDidLoad( InitDamageArrows )
 }
@@ -544,7 +544,10 @@ asset function GetIndicatorModel( entity grenade )
 
     else if ( grenade.GetTargetName() == CARE_PACKAGE_PROXY )
         return GRENADE_INDICATOR_GENERIC
-
+	
+	else if ( grenade.GetModelName() == $"mdl/weapons/shuriken/w_shuriken.rmdl" )
+		return GRENADE_INDICATOR_EMP_MODEL
+	
 	if ( grenade instanceof C_PlayerWaypoint )
 	{
 		switch( grenade.GetWaypointInt( 0 ) )

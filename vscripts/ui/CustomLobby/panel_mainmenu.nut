@@ -22,22 +22,12 @@ void function InitR5RMainMenuPanel( var panel )
 	Hud_AddEventHandler( file.launchButton, UIE_CLICK, LaunchButton_OnActivate )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_EXIT_TO_DESKTOP", "#B_BUTTON_EXIT_TO_DESKTOP", null, null )
-	AddPanelFooterOption( panel, LEFT, KEY_TAB, false, "", "#DATACENTER_DOWNLOADING", OpenDataCenterDialog, IsDataCenterFooterVisible, UpdateDataCenterFooter )
+	AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#BUTTON_REVIEW_TERMS", "#REVIEW_TERMS", OpenEULAReviewFromFooter, null )
 }
 
-void function UpdateDataCenterFooter( InputDef footerData )
+void function OpenEULAReviewFromFooter( var button )
 {
-	string label = "Data Center: ms.r5reloaded.com"
-	footerData.clickable = false
-
-	var elem = footerData.vguiElem
-	Hud_SetText( elem, label )
-	Hud_Show( elem )
-}
-
-bool function IsDataCenterFooterVisible()
-{
-	return true
+	OpenEULADialog( IsEULAAccepted() )
 }
 
 void function LaunchButton_OnActivate( var button )
@@ -53,10 +43,13 @@ void function LaunchCustomLobby()
 	file.is_working = true
 
 	ShowSpinner(true)
-
+	
+	#if LISTEN_SERVER
 	wait 1
 
 	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#endif // LISTEN_SERVER
+	
 	ShowSpinner(false)
 
 	file.is_working = false
