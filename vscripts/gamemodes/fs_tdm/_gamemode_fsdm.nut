@@ -2637,7 +2637,9 @@ void function SimpleChampionUI()
 				player.SetThirdPersonShoulderModeOff()
 				_HandleRespawn(player)
 				player.UnforceStand()
-				HolsterAndDisableWeapons( player )
+
+				player.HolsterWeapon()
+				player.Server_TurnOffhandWeaponsDisabledOn()
 				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
 				ClearInvincible(player)
 				thread function () : ( player )
@@ -2653,9 +2655,10 @@ void function SimpleChampionUI()
 					
 					// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 					
+					#if !DEVELOPER
 					if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 						wait Flowstate_StartTimeDelay
-					
+					#endif
 					if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 					{
 						Message( player, "Oddball", file.selectedLocation.name, 5, "" )
@@ -2686,9 +2689,8 @@ void function SimpleChampionUI()
 
 					player.MovementEnable()
 					player.UnlockWeaponChange()
-					EnableOffhandWeapons( player )
+					player.Server_TurnOffhandWeaponsDisabledOff()
 					player.UnfreezeControlsOnServer()
-					//DeployAndEnableWeapons(player)
 
 					entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 					entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
@@ -2827,10 +2829,10 @@ void function SimpleChampionUI()
 			// i++
 		}
 	}
-
+	#if !DEVELOPER
 	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		wait Flowstate_StartTimeDelay
-	
+	#endif
 	SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
 	
@@ -3078,7 +3080,8 @@ void function SimpleChampionUI()
 			ClientCommand( player, "-zoom" )
 			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 			player.SetThirdPersonShoulderModeOn()
-			HolsterAndDisableWeapons( player )
+			player.HolsterWeapon()
+			player.Server_TurnOffhandWeaponsDisabledOn()
 			
 			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false )  )
 			{
