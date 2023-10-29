@@ -90,9 +90,9 @@ void function Cl_Survival_LootInit()
 	RegisterConCommandTriggeredCallback( "+scriptCommand4", UseSelectedHealthPickupType )
 	RegisterConCommandTriggeredCallback( "+use_alt", TryHolsterWeapon )
 
-	RegisterConCommandTriggeredCallback( "weaponSelectPrimary0", OnPlayerSwitchesToWeapon00 )
-	RegisterConCommandTriggeredCallback( "weaponSelectPrimary1", OnPlayerSwitchesToWeapon01 )
-	RegisterConCommandTriggeredCallback( "+weaponCycle", OnPlayerSwitchesWeapons )
+	// RegisterConCommandTriggeredCallback( "weaponSelectPrimary0", OnPlayerSwitchesToWeapon00 )
+	// RegisterConCommandTriggeredCallback( "weaponSelectPrimary1", OnPlayerSwitchesToWeapon01 )
+	// RegisterConCommandTriggeredCallback( "+weaponCycle", OnPlayerSwitchesWeapons )
 
 	AddCreateTitanCockpitCallback( OnTitanCockpitCreated )
 	AddCreatePilotCockpitCallback( OnPilotCockpitCreated )
@@ -261,7 +261,7 @@ void function UseSelectedHealthPickupType( entity player )
 {
 	if ( HealthkitWheelToggleEnabled() && IsCommsMenuActive() )
 		return
-	printt("UseSelectedHealthPickupType ", WeaponDrivenConsumablesEnabled())
+	//printt("UseSelectedHealthPickupType ", WeaponDrivenConsumablesEnabled())
 
 	if ( WeaponDrivenConsumablesEnabled() )
 	{
@@ -295,12 +295,13 @@ void function UseSelectedHealthPickupType( entity player )
 
 void function Survival_UseHealthPack( entity player, string ref )
 {
+	printt( "DEBUG THIS - Add missing function Sur_UseHealthPack" )
 	//if ( Time() < file.nextHealthAllowTime )
 	//	return
 
 	//file.nextHealthAllowTime = Time() + waitTime
-	printt("!!! Sur_UseHealthPack", ref)
-	player.ClientCommand( "Sur_UseHealthPack " + ref )
+	// printt("!!! Sur_UseHealthPack", ref)
+	// player.ClientCommand( "Sur_UseHealthPack " + ref )
 }
 
 
@@ -309,13 +310,13 @@ void function ServerToClient_OnStartedUsingHealthPack( int kitType )
 	HealthPickup kitData = SURVIVAL_Loot_GetHealthKitDataFromStruct( kitType )
 	LootData lootData    = kitData.lootData
 
-	float waitScale
-	if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_FAST_HEAL ) && (kitData.healAmount > 0) )
-		waitScale = 0.5
-	else if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_MEDIC ) && (kitData.healAmount > 0) )
-		waitScale = 0.75
-	else
-		waitScale = 1.0
+	float waitScale = 1.0
+	// if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_FAST_HEAL ) && (kitData.healAmount > 0) )
+		// waitScale = 0.5
+	// else if ( PlayerHasPassive( GetLocalViewPlayer(), ePassives.PAS_MEDIC ) && (kitData.healAmount > 0) )
+		// waitScale = 0.75
+	// else
+		// waitScale = 1.0
 	float waitTime  = (kitData.interactionTime * waitScale)
 
 	RuiSetBool( file.healthUseProgressRui, "isVisible", true )
@@ -709,6 +710,7 @@ void function UpdateUseHintForEntity( entity ent, var rui = null )
 
 	LootRef lootRef = SURVIVAL_CreateLootRef( data, ent )
 	lootRef.count = ent.GetClipCount()
+	lootRef.lootExtraProperty = ent.e.extraSurvivalProperty
 	UpdateLootRuiWithData( player, rui, data, eLootContext.GROUND, lootRef, false )
 
 	entity pingWaypoint = Waypoint_GetWaypointForLootItemPingedBy( ent, player )
@@ -733,7 +735,7 @@ table<string, string> function BuildAttachmentMapForPickupPrompt( entity player,
 		{
 			if ( SURVIVAL_Loot_IsRefValid( mod ) && (SURVIVAL_Loot_GetLootDataByRef( mod ).lootType == eLootType.ATTACHMENT) )
 			{
-				string attachPoint = GetAttachPointForAttachment( mod )
+				string attachPoint = GetAttachPointForAttachmentOnWeapon(lootRef.lootData.ref, mod )
 				results[attachPoint] <- mod
 			}
 		}
@@ -763,7 +765,10 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 
 	RuiSetImage( rui, "iconImage", data.hudIcon )
 	RuiSetInt( rui, "lootTier", data.tier )
-
+	
+	// if( data.tier > 5 )
+		// RuiSetInt( rui, "lootTier", 5 )
+		
 	vector iconScale = data.lootType == eLootType.MAINWEAPON ? <2.0, 1.0, 0.0> : <1.0, 1.0, 0.0>
 	RuiSetFloat2( rui, "iconScale", iconScale )
 
@@ -834,10 +839,13 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 	}
 	else if ( data.lootType == eLootType.ARMOR )
 	{
+		int maxShield = lootRef.lootExtraProperty != -1 ? lootRef.lootExtraProperty : SURVIVAL_GetArmorShieldCapacity( data.tier )
 		if ( !isInMenu && GetLootPromptStyle() == eLootPromptStyle.COMPACT )
-			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, SURVIVAL_GetArmorShieldCapacity( data.tier ) ) )
+		{
+			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, maxShield ) )
+		}
 
-		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(SURVIVAL_GetArmorShieldCapacity( data.tier )) * 100) )
+		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(maxShield) * 100) )
 	}
 
 	if ( data.ammoType != "" )
@@ -1280,6 +1288,9 @@ void function ShowVerticalLineStruct( VerticalLineStruct lineStruct, entity ent 
 	#if LINE_COLORS
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
 		RuiSetInt( lineStruct.rui, "tier", data.tier )
+		
+		// if( data.tier > 5 )
+			// RuiSetInt( lineStruct.rui, "tier", 5 )
 	#else
 		RuiSetInt( lineStruct.rui, "tier", 1 )
 	#endif
@@ -1307,7 +1318,7 @@ bool function TryOpenQuickSwap( entity overrideItem = null )
 		entity player = GetLocalClientPlayer()
 
 		entity deathBox = player.GetUsePromptEntity()
-		if ( deathBox.GetTargetName() != DEATH_BOX_TARGETNAME )
+		if ( IsValid( deathBox ) && deathBox.GetTargetName() != DEATH_BOX_TARGETNAME )
 			deathBox = null
 
 		if ( itemToUse.GetTargetName() != DEATH_BOX_TARGETNAME )
@@ -1611,9 +1622,9 @@ void function SetupSurvivalLoot( var categories )
 	foreach( string cat in stringCats )
 		catTypes.append( SURVIVAL_Loot_GetLootTypeFromString( cat ) )
 
-	// HACK
-	if ( catTypes.contains( eLootType.ATTACHMENT ) )
-		RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
+	// // HACK
+	// if ( catTypes.contains( eLootType.ATTACHMENT ) )
+		// RunUIScript( "SetupDevCommand", "Spawn All Optics", "script SpawnAllOptics()" )
 
 	// flip thru all the loot and find the ones that match the cats we want to display
 	foreach ( ref, data in SURVIVAL_Loot_GetLootDataTable() )

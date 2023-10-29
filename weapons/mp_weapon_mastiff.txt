@@ -1,4 +1,5 @@
 #base "_base_shotgun.txt"
+#base "_base_character_mods.txt"
 #base "_base_optics_cq.txt"
 #base "_base_optics_cq_threat.txt"
 #base "_base_shotgun_bolts.txt"
@@ -41,7 +42,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	// Effects
 	"tracer_effect"   								"weapon_tracers_shotgun"
@@ -65,12 +66,7 @@ WeaponData
                        
 	"blast_pattern"									"mastiff_2"
 	"blast_pattern_default_scale"        			"1.1"
-	"blast_pattern_ads_scale"                       "0.55"  // for players, scales pattern when ADS
-     
-                                  
-                                              
-                                                                                               
-      
+    "blast_pattern_ads_scale"                       "0.6" //0.55 // for players, scales pattern when ADS
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_npc_scale"            			"0.75"  // scales on top of the default
 
@@ -95,14 +91,18 @@ WeaponData
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// Ammo
-	  "ammo_clip_size"                                "5"
-	  
-	  	"ammo_per_shot"									"1"
-
-	"ammo_no_remove_from_stockpile"					"1"
-	
-    "ammo_default_total"                            "100"
-	"ammo_stockpile_max"							"100"
+                       
+    "ammo_clip_size"                                "5"
+    "ammo_default_total"                            "0"
+    "ammo_pool_type"                                "shotgun"
+    "uses_ammo_pool"                                "1"
+     
+                                                       
+                                                        
+                                                        
+                                                    
+                                        
+      
 	"ammo_min_to_fire"								"1"
 	"reload_is_segmented"                           "1"
 	 "reload_allow_ads"                              "1"
@@ -128,7 +128,6 @@ WeaponData
 
                                     
       
-	"damage_leg_scale"                              "1.0"
 
     // NPC
     "proficiency_poor_spreadscale"					"7.0"
@@ -275,7 +274,8 @@ WeaponData
     "clip_bodygroup_show_for_milestone_2"	"0"
     "clip_bodygroup_show_for_milestone_3"	"0"
 
-               
+	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_MASTIFF"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_MASTIFF"               
          
   
                               
@@ -285,14 +285,8 @@ WeaponData
 
 	Mods
 	{
-	    crate
-	    {
-	    }
-
-        survival_finite_ammo
+        gold
         {
-            "ammo_no_remove_from_stockpile"		"0"
-	   		"uses_ammo_pool"					"0"
         }
 
                
@@ -313,7 +307,13 @@ WeaponData
         shotgun_bolt_l3
         {
             "fire_rate" 		"*1.2"
-        }                      
+        }
+
+                         
+        shotgun_bolt_l4
+        {
+            "fire_rate" 		"*1.2"
+        }                    
                                          
          
       

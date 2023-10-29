@@ -20,6 +20,9 @@ global function NotifyReloadAttemptButNoReserveAmmo
 
 global function UpdateWeaponStatusOnBindingChange
 
+global function GetTacticalRui
+global function GetUltimateRui
+
 #if DEVELOPER
 global function DEV_TestUltimateStates
 global function GetUltimateWeaponState
@@ -226,7 +229,7 @@ void function OnSelectedWeaponChanged( entity selectedWeapon )
 		RuiSetBool( file.weapon_hud_rui, "isMainWeaponSelected", false )
 		bool isOffhandUsesAmmoStatus = selectedWeapon.GetWeaponSettingBool( eWeaponVar.offhand_uses_hud_ammo_status )
 
-		if ( !isOffhandUsesAmmoStatus )
+		if ( !isOffhandUsesAmmoStatus && GetLocalClientPlayer().GetTeam() != TEAM_SPECTATOR )
 			return
 	}
 
@@ -426,8 +429,8 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			vector ammoColor  = SrgbToLinear( <0.5, 0.5, 0.5> )
 			asset ammoIcon = weaponData.fakeAmmoIcon == $"" ? $"rui/hud/gametype_icons/survival/sur_ammo_unique" : weaponData.fakeAmmoIcon
 			bool isLegendary = weaponData.tier == 4
-			bool isCPWeapon = weaponData.tier >= 5
-			if ( weaponData.ammoType != "" )
+			bool isCPWeapon = weaponData.tier == 5
+			if ( weaponData.ammoType != "" && !isCPWeapon )
 			{
 				LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( weaponData.ammoType )
 				if ( weaponData.ammoType in ammoColors && weaponData.tier < 4 )
@@ -446,8 +449,7 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			
 			if ( isCPWeapon )
 			{
-				ammoColor = SrgbToLinear( <255, 10, 10> / 255.0 )
-				ammoIcon = $""
+				ammoColor = SrgbToLinear( <216, 0, 73> / 255.0 )
 			}
 			
 			RuiSetFloat3( rui, "ammoColorTab" + tabIndex, ammoColor )
@@ -552,6 +554,13 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_SINGLE", true )
 		}
 	}
+	// else if ( weapon.HasMod( "hopup_energy_choke" ) )
+	// {
+		 // if ( weapon.HasMod( "choke" ) )
+			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_enabled", "#ENERGY_CHOKE_ENABLED", true )
+		 // else
+			 // SetWeaponToggleHUD( $"rui/hud/weapon_toggle/choke_disabled", "#ENERGY_CHOKE_DISABLED", true )
+	// }
 	else
 	{
 		if ( IsWeaponInSingleShotMode( weapon ) )
@@ -636,11 +645,12 @@ void function UpdateModsOnSurvivalWeaponRui( var rui, entity weapon )
 		{
 			RuiSetBool( rui, ruiAttachmentAllowedArgs[attachmentName], true )
 
-			string mod = GetInstalledWeaponAttachment( weapon, attachmentName )
+			string mod = GetInstalledWeaponAttachmentForPoint( weapon, attachmentName )
 			if ( SURVIVAL_Loot_IsRefValid( mod ) )
 			{
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( mod )
-				if ( isAttachmentLockedWeapon )
+				string attachmentStyle = GetAttachmentPointStyle( attachmentName, weaponRef )
+				if ( isAttachmentLockedWeapon && attachmentStyle != "sight" )
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], weaponData.tier )
 				else
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], data.tier )
@@ -676,9 +686,10 @@ void function ClearWeaponToggleHUD()
 
 bool function WeaponHasFireModeSelect( entity weapon )
 {
-	if ( DoesModExist( weapon, "hopup_selectfire" ) )
-		return IsModActive( weapon, "hopup_selectfire" )
-	else if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ))
+	if ( DoesModExist( weapon, "hopup_selectfire" ) && IsModActive( weapon, "hopup_selectfire" ) )
+		return true
+                      
+	else if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ) )
 		return true
 	else if ( DoesModExist( weapon, "hopup_double_tap" ) && IsModActive( weapon, "hopup_double_tap" ) )
 		return true
@@ -697,6 +708,9 @@ bool function WeaponIsUsingAltFireMode( entity weapon )
 		return IsModActive( weapon, "altfire_double_tap" )
 	if ( DoesModExist( weapon, "altfire" ) )
 		return IsModActive( weapon, "altfire" )
+		
+	if ( DoesModExist( weapon, "hopup_selectfire" ) && IsModActive( weapon, "hopup_selectfire" ) )
+		return IsModActive( weapon, "hopup_selectfire" )
 	return false
 }
 
@@ -728,24 +742,61 @@ void function UpdateFireSelectHint( entity player, entity weapon, string mod )
 		AnnouncementMessageRight( player, Localize( "#FIRE_MODE_COLON", Localize( message ) ), "", <1, 1, 1>, $"", 1.0 )
 }
 
+void function UpdateChokeHint( entity player, entity weapon, string mod )
+{
+	string message = ""
+	if ( weapon.HasMod( "choke" ) )
+		message = "#ENERGY_CHOKE_ENABLED"
+	else
+		message = "#ENERGY_CHOKE_DISABLED"
+
+	AnnouncementMessageRight( player, Localize( message ), "", <1, 1, 1>, $"", 1.0 )
+}
 
 void function OnPlayerAddWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
-		UpdateFireSelectHint( player, weapon, mod )
-
-	OnSelectedWeaponChanged( weapon )
+	if ( IsModAltfireMod( mod ) )
+	{
+		if ( WeaponHasFireModeSelect( weapon ) )
+			UpdateFireSelectHint( player, weapon, mod )
+	}
+	if ( mod == "choke" )
+	{
+		UpdateChokeHint( player, weapon, mod )
+	}
 }
 
 
 void function OnPlayerRemoveWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
-		UpdateFireSelectHint( player, weapon, mod )
-
-	OnSelectedWeaponChanged( weapon )
+	if ( IsModAltfireMod( mod ) )
+	{
+		if ( WeaponHasFireModeSelect( weapon ) )
+			UpdateFireSelectHint( player, weapon, mod )
+	}
+	if ( mod == "choke" )
+	{
+		UpdateChokeHint( player, weapon, mod )
+	}
 }
 
+bool function IsModAltfireMod( string mod )
+{
+	if ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" || mod == "altfire_selectfire")
+		return true
+                         
+                                         
+             
+       
+                         
+                                         
+             
+       
+	if ( mod == "shatter_rounds_mode" )
+		return true
+
+	return false
+}
 
 bool function CanShowWeaponCycleHint( entity selectedWeapon, entity weaponInSlot0, entity weaponInSlot1 )
 {
@@ -801,7 +852,8 @@ void function WeaponStatusSetWeaponInspect( bool inspect )
 void function InitWeaponRuiTracks( var rui, entity player, entity weapon )
 {
 	RuiTrackFloat( rui, "maxMagAmmo", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_MAX )
-	RuiTrackFloat( rui, "maxAmmo", weapon, RUI_TRACK_WEAPON_AMMO_MAX )
+	if ( !GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) )
+		RuiTrackFloat( rui, "maxAmmo", weapon, RUI_TRACK_WEAPON_AMMO_MAX )
 	RuiTrackFloat( rui, "clipAmmoFrac", weapon, RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION )
 	RuiTrackFloat( rui, "remainingAmmoFrac", weapon, RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION )
 	RuiTrackFloat( rui, "lifetimeShots", weapon, RUI_TRACK_WEAPON_LIFETIME_SHOTS )
@@ -1025,6 +1077,9 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 int currentUltimateState = eUltimateState.CHARGING
 void function UltimateWeaponStateSet( int ultimateWeaponState )
 {
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		return
+
 	int lastUltimateState = currentUltimateState
 	currentUltimateState = ultimateWeaponState
 
@@ -1055,6 +1110,15 @@ int function GetUltimateWeaponState()
 	return currentUltimateState
 }
 
+var function GetTacticalRui()
+{
+	return file.ability_center_hud
+}
+
+var function GetUltimateRui()
+{
+	return file.ability_left_hud
+}
 
 void function UltimateWeaponStateCharging()
 {

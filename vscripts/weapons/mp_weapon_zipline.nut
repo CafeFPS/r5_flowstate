@@ -37,7 +37,7 @@ void function MpWeaponZipline_Init()
 	PrecacheModel( ZIPLINE_TEMP_ZIPLINE_GUN_STATION_WALL_MODEL )
 	PrecacheParticleSystem( ZIPLINE_STATION_EXPLOSION )
 
-	PrecacheMaterial( $"cable/zipline" )
+	PrecacheMaterial( $"cable/zipline.vmt" )
 	PrecacheModel( $"cable/zipline.vmt" )
 }
 

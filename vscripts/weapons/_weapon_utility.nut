@@ -114,6 +114,8 @@ global function OnWeaponPrimaryAttack_GenericBoltWithDrop_NPC
 global function OnWeaponPrimaryAttack_GenericMissile_NPC
 global function EMP_DamagedPlayerOrNPC
 global function EMP_FX
+global function EMPGrenade_ArcBeam
+global function EMPGrenade_EffectsPlayer
 global function GetWeaponDPS
 global function GetTTK
 global function GetWeaponModsFromDamageInfo
@@ -307,12 +309,14 @@ void function WeaponUtility_Init()
 			AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
 			AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, EMP_DamagedPlayerOrNPC )
 		}
-		AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
-		AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
-		AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
-		AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
-		AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
+		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, EMP_DamagedPlayerOrNPC )
+		
+		//AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
+		//AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
+		//AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
+		//AddCallback_OnPlayerKilled( OnPlayerKilled )
+		//AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
+		//AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
 
 		file.activeThermiteBurnsManagedEnts = CreateScriptManagedEntArray()
 
@@ -1191,7 +1195,7 @@ var function OnWeaponPrimaryAttack_GenericMissile_NPC( entity weapon, WeaponPrim
 bool function PlantStickyEntityOnWorldThatBouncesOffWalls( entity ent, table collisionParams, float bounceDot, vector angleOffset = <0, 0, 0> )
 {
 	entity hitEnt = expect entity( collisionParams.hitEnt )
-	if ( hitEnt && (hitEnt.IsWorld() || hitEnt.HasPusherAncestor()) )
+	if ( hitEnt && ( hitEnt.IsWorld() || hitEnt.HasPusherAncestor() || hitEnt.GetScriptName() == "editor_placed_prop" ) )
 	{
 		float dot = expect vector( collisionParams.normal ).Dot( <0, 0, 1> )
 
@@ -3748,9 +3752,12 @@ void function EMPGrenade_EffectsPlayer( entity player, var damageInfo )
 	float fadeoutDuration = EMP_GRENADE_PILOT_SCREEN_EFFECTS_FADE * frac
 	float duration        = EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN + ((EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MAX - EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN) * frac) - fadeoutDuration
 	//vector origin = inflictor.GetOrigin()
-
+	
 	int dmgSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
+	
+	if( dmgSource == eDamageSourceId.mp_weapon_tesla_trap )
+		duration = 3
+	
 	if ( player.IsTitan() )
 	{
 		// Hit player should do EMP screen effects locally
@@ -3966,7 +3973,16 @@ void function SetPlayerCooldowns( entity player, array<int> offhandIndices = [ O
 						float regenRefillRate  = weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate )
 
 						if ( regenRefillRate == 0 )
+						{
+							if( weapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+							{
+								weapon.SetWeaponPrimaryClipCount( 0 )
+								if( weapon.HasMod( "grapple_regen_stop" ) )
+									weapon.RemoveMod( "grapple_regen_stop" )
+								weapon.RegenerateAmmoReset()
+							}
 							continue
+						}
 
 						int startingClipCount = int( lastClipFrac * maxAmmo )
 						int ammoToRestore     = maxAmmo - startingClipCount

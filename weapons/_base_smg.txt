@@ -30,7 +30,9 @@ WeaponData
     // Damage - General
 	"damage_flags"									"DF_BULLET | DF_DISMEMBERMENT"
     "damage_shield_scale"                           "1"
-	"damage_headshot_scale"							"1.5"
+
+	"damage_headshot_scale"							"1.25" //1.5
+
 	"damage_leg_scale"                              "0.8"
 
     "critical_hit"									"1"
@@ -61,9 +63,7 @@ WeaponData
 	"zoom_time_in"									"0.22"
 	"zoom_time_out"   								"0.2"
 	"zoom_fov"										"60"
-
-	"ads_move_speed_scale"							"0.85"
-
+	"ads_move_speed_scale"							"0.75" //0.85
 	"vortex_refire_behavior"  						"bullet"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"1"

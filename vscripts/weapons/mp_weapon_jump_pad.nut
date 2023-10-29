@@ -4,6 +4,10 @@ global function OnWeaponTossReleaseAnimEvent_weapon_jump_pad
 global function OnWeaponAttemptOffhandSwitch_weapon_jump_pad
 global function OnWeaponTossPrep_weapon_jump_pad
 
+#if CLIENT
+global function Flowstate_YouNeedToUpdate
+#endif
+
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
 
 bool function OnWeaponAttemptOffhandSwitch_weapon_jump_pad( entity weapon )
@@ -92,13 +96,11 @@ void function OnJumpPadPlanted( entity projectile )
 	//float duration = projectile.GetProjectileWeaponSettingFloat( eWeaponVar.fire_duration )
 
 	//Use NoDispatchSpawn so that we can setup the entity before spawning it in the game world
-	entity newProjectile = CreatePropDynamic_NoDispatchSpawn( model, origin, surfaceAngles, SOLID_VPHYSICS )
+	entity newProjectile = CreatePropScript_NoDispatchSpawn( model, origin, surfaceAngles, SOLID_VPHYSICS )
 
 	newProjectile.RemoveFromAllRealms()
 	newProjectile.AddToOtherEntitysRealms( projectile )
 	projectile.Destroy()
-
-	newProjectile.kv.solid = 6
 
 	if(gameMode != "fs_dm")
 	{
@@ -142,14 +144,13 @@ void function OnJumpPadPlanted( entity projectile )
 
 	jumpPadProxy.SetOrigin( newProjectile.GetOrigin() )
 	jumpPadProxy.SetAngles( newProjectile.GetAngles() )
-
+	jumpPadProxy.SetPassDamageToParent( true )
 
 	DispatchSpawn( jumpPadProxy )
 	jumpPadProxy.Hide()
 	jumpPadProxy.SetParent( newProjectile )
 	jumpPadProxy.SetOwner( owner )
 	JumpPad_CreatedCallback( newProjectile )
-	
 
 	if(gameMode == "fs_dm"){
 	thread JumpPadWatcher(newProjectile)
@@ -164,5 +165,11 @@ void function JumpPadWatcher(entity jumpPad)
 wait 15
 if(IsValid(jumpPad)){
 jumpPad.Destroy()}
+}
+#endif
+
+#if CLIENT
+void function Flowstate_YouNeedToUpdate()
+{
 }
 #endif

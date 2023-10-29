@@ -1,10 +1,13 @@
+//Updated by @CafeFPS
+
 global function OnWeaponPrimaryAttack_holopilot
 global function OnWeaponChargeLevelIncreased_holopilot
+global function OnWeaponActivate_holopilot
 global function PlayerCanUseDecoy
 
 global const int DECOY_FADE_DISTANCE = 16000 //Really just an arbitrarily large number
-global const float DECOY_DURATION = 15.0
-const float ULTIMATE_DECOY_DURATION = 5.0
+global const float DECOY_DURATION = 60
+const float ULTIMATE_DECOY_DURATION = 15.0
 
 global const vector HOLOPILOT_ANGLE_SEGMENT = <0,60,0>
 global function Decoy_Init
@@ -23,6 +26,8 @@ global function SetupDecoy_Common
 global function GetDecoyActiveCountForPlayer
 #endif // SERVER
 
+global const string DECOY_SCRIPTNAME = "controllable_decoy"
+global const string CONTROLLED_DECOY_SCRIPTNAME = "controlled_decoy"
 const DECOY_FLAG_FX = $"P_flag_fx_foe"
 const HOLO_EMITTER_CHARGE_FX_1P = $"P_mirage_holo_emitter_glow_FP"
 const HOLO_EMITTER_CHARGE_FX_3P = $"P_mirage_emitter_flash"
@@ -31,6 +36,10 @@ const asset DECOY_TRIGGERED_ICON = $"rui/hud/tactical_icons/tactical_mirage_in_w
 struct
 {
 	table<entity, int> playerToDecoysActiveTable //Mainly used to track stat for holopilot unlock
+	#if CLIENT
+	var warnRui
+	string lastHint
+	#endif
 } file
 
 
@@ -41,8 +50,12 @@ void function Decoy_Init()
 	RegisterSignal( "MirageSpotted" )
 	PrecacheParticleSystem( HOLO_EMITTER_CHARGE_FX_1P )
 	PrecacheParticleSystem( HOLO_EMITTER_CHARGE_FX_3P )
+	AddClientCommandCallback( "ToggleDecoys", ClientCommand_ToggleDecoys )
 	#else
+	RegisterSignal( "MirageTacticalHintEnd" )
 	PrecacheParticleSystem( DECOY_AR_MARKER )
+	AddCreateCallback( "player_decoy", OnDecoyCreate )
+	RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptToggleDecoys )
 	#endif
 }
 
@@ -51,6 +64,10 @@ void function CleanupExistingDecoy( entity decoy )
 {
 	if ( IsValid( decoy ) ) //This cleanup function is called from multiple places, so check that decoy is still valid before we try to clean it up again
 	{
+		entity bossPlayer = decoy.GetBossPlayer()
+		if( IsValid( bossPlayer ) && decoy == bossPlayer.p.lastDecoy )
+			bossPlayer.p.lastDecoy = null
+		
 		decoy.Decoy_Dissolve()
 		CleanupFXAndSoundsForDecoy( decoy )
 	}
@@ -84,9 +101,12 @@ void function CleanupFXAndSoundsForDecoy( entity decoy )
 
 void function OnHoloPilotDestroyed( entity decoy )
 {
-	 entity bossPlayer = decoy.GetBossPlayer()
+	entity bossPlayer = decoy.GetBossPlayer()
 	if ( IsValid( bossPlayer ) )
 	{
+		if( decoy == bossPlayer.p.lastDecoy )
+			bossPlayer.p.lastDecoy = null
+		
 		EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, decoy.GetOrigin(), bossPlayer, "Mirage_PsycheOut_Decoy_End_1P" )
 		EmitSoundAtPositionExceptToPlayer( TEAM_ANY, decoy.GetOrigin(), bossPlayer, "Mirage_PsycheOut_Decoy_End_3P" )
 	}
@@ -149,14 +169,30 @@ var function OnWeaponPrimaryAttack_holopilot( entity weapon, WeaponPrimaryAttack
 #if CLIENT
 void function CreateARIndicator( entity player )
 {
-	vector eyePos = player.EyePosition()
-	vector viewVector = player.GetViewVector()
-	TraceResults trace = TraceLine( eyePos, eyePos + (viewVector * DECOY_TRACE_DIST), player, TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
-	if ( trace.fraction < 1.0 )
+	vector decoyPos
+	bool validPos = false
+	if ( player.HasThirdPersonAttackFocus() )
 	{
-		trace = TraceLine( trace.endPos, trace.endPos + <0,0,-2000 * trace.fraction >, player, TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
-		int arID = GetParticleSystemIndex( DECOY_AR_MARKER )
-		int fxHandle = StartParticleEffectInWorldWithHandle( arID, trace.endPos, trace.surfaceNormal )
+		decoyPos = player.GetThirdPersonAttackFocus()
+		validPos = true
+	}
+	else
+	{
+		vector eyePos      = player.EyePosition()
+		vector viewVector  = player.GetViewVector()
+		TraceResults trace = TraceLine( eyePos, eyePos + (viewVector * DECOY_TRACE_DIST), player, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+		if ( trace.fraction < 1.0 )
+		{
+			decoyPos = trace.endPos
+			validPos = true
+		}
+	}
+
+	if ( validPos )
+	{
+		TraceResults trace = TraceLine( decoyPos, decoyPos + <0, 0, -2000>, player, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+		int arID           = GetParticleSystemIndex( DECOY_AR_MARKER )
+		int fxHandle       = StartParticleEffectInWorldWithHandle( arID, trace.endPos, trace.surfaceNormal )
 		EffectSetControlPointVector( fxHandle, 1, FRIENDLY_COLOR_FX )
 		thread DestroyAfterTime( fxHandle, 1.0 )
 	}
@@ -175,17 +211,111 @@ void function DestroyAfterTime( int fxHandle, float time )
 	)
 	wait( time )
 }
+
+void function AttemptToggleDecoys( entity player )
+{
+	if( !IsValid(player) ) 
+		return
+		
+	if ( player != GetLocalViewPlayer() )
+		return
+	
+	entity weapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+
+	if ( !IsValid( weapon ) )
+		return
+
+	if ( weapon.GetWeaponClassName() != "mp_ability_holopilot" )
+		return
+	
+	player.ClientCommand( "ToggleDecoys" )
+}
+
+void function OnDecoyCreate( entity decoy ) 
+{
+	if( !IsValid( decoy) )
+		return
+	
+	if( decoy.GetOwner() != GetLocalClientPlayer() )
+		return
+	
+	if( decoy.GetScriptName() == DECOY_SCRIPTNAME )
+	{
+		thread CreateDecoysHint( decoy, Localize( "#DECOY_CONTROL_HINT" ), DECOY_DURATION )
+	}
+	else  if( decoy.GetScriptName() == CONTROLLED_DECOY_SCRIPTNAME )
+	{
+		thread CreateDecoysHint( decoy, Localize( "#DECOY_RELEASE_CONTROL_HINT" ), DECOY_DURATION )
+	}
+}
+
+void function CreateDecoysHint( entity decoy, string msg, float endTime )
+{
+	Signal( GetLocalClientPlayer(), "MirageTacticalHintEnd" )
+	EndSignal( GetLocalClientPlayer(), "MirageTacticalHintEnd" )
+	EndSignal( decoy, "OnDestroy" )
+	
+	OnThreadEnd(
+		function() : ()
+		{
+			if ( file.warnRui != null )
+			{
+				RuiDestroyIfAlive( file.warnRui )
+			}
+		}
+	)
+	
+	file.lastHint = msg
+	file.warnRui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
+	RuiSetGameTime( file.warnRui, "startTime", Time() )
+	RuiSetGameTime( file.warnRui, "endTime", 999 )
+	RuiSetBool( file.warnRui, "commsMenuOpen", false )
+	RuiSetString( file.warnRui, "msg", msg )
+	
+	WaitForever()
+}
 #endif
 
 #if SERVER
-void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1, string animToPlay = "", vector offsetOrigin = <-1,-1,-1>, vector angleOverride = <-1,-1,-1> )
+bool function ClientCommand_ToggleDecoys( entity player, array<string> args )
+//By Retículo Endoplasmático#5955 (CafeFPS)//
+{
+	if ( !IsAlive( player ) )
+		return true
+
+	entity weapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+	asset modelName = $""
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	ItemFlavor skin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( character ) )
+
+	if ( !IsValid( weapon ) )
+		return true
+
+	if ( weapon.GetWeaponClassName() != "mp_ability_holopilot" )
+		return true
+	
+	if( !IsValid( player.p.lastDecoy ) ) 
+		return true
+	
+	int type
+	
+	if( player.p.lastDecoy.GetScriptName() == DECOY_SCRIPTNAME )
+		type = 1
+	if( player.p.lastDecoy.GetScriptName() == CONTROLLED_DECOY_SCRIPTNAME )
+		type = 0
+	
+	entity newDecoy = Flowstate_CreateDecoy( player.p.lastDecoy.GetOrigin(), $"", modelName, player, skin, player.p.lastDecoy.decoy.endTime - Time(), type )
+	return true
+}
+
+void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1, string animToPlay = "", vector offsetOrigin = <-1,-1,-1> )
 {
 	Assert( numberOfDecoysToMake > 0 )
 	Assert( player )
 
 	float displacementDistance = 30.0
 
-	bool setOriginAndAngles = numberOfDecoysToMake > 1 || angleOverride != <-1,-1,-1>
+	bool isUltimate = numberOfDecoysToMake > 1
 
 	asset modelName = $""
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -193,22 +323,18 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 
 	vector eyePos = player.EyePosition()
 	vector viewVector = player.GetViewVector()
+	entity decoy
+	
 	for ( int i = 0; i < numberOfDecoysToMake; ++i )
 	{
-		entity decoy
-		if ( setOriginAndAngles )
+		if( isUltimate && i == numberOfDecoysToMake - 1 ) //in retail it doesn't spawn the last one and this position is taken by the player
+			continue
+		
+		if ( isUltimate )
 		{
-			vector angleToAdd = angleOverride != <-1,-1,-1> ? angleOverride : CalculateAngleSegmentForDecoy( i, HOLOPILOT_ANGLE_SEGMENT )
-			vector normalizedAngle = player.GetAngles() +  angleToAdd
-			normalizedAngle.y = AngleNormalize( normalizedAngle.y ) //Only care about changing the yaw
-			vector forwardVector = AnglesToForward( normalizedAngle )
- 			TraceResults trace = TraceLine( eyePos, eyePos + (forwardVector * 100), player, TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
- 			decoy = CreateDecoy( trace.endPos, $"", modelName, player, skin, ULTIMATE_DECOY_DURATION )
-			decoy.SetAngles( normalizedAngle )
-			forwardVector *= displacementDistance
-			vector baseOrigin = offsetOrigin != <-1,-1,-1> ? offsetOrigin + <0,0,25> : player.GetOrigin()
-			decoy.SetOrigin( baseOrigin + forwardVector ) //Using player origin instead of decoy origin as defensive fix, see bug 223066
-			PutEntityInSafeSpot( decoy, player, null, baseOrigin, decoy.GetOrigin() )
+			float r = float(i) / float(numberOfDecoysToMake) * 2 * PI
+			vector origin2 = player.GetOrigin() + <sin( r ), cos( r ), 0.0>
+			decoy = Flowstate_CreateDecoy( origin2, $"", modelName, player, skin, ULTIMATE_DECOY_DURATION, 1, true)
 		}
 		else if ( animToPlay != "" )
 		{
@@ -217,16 +343,17 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 		}
 		else
 		{
-			//ValidDecoyDisguise vdd = SetNextDisguiseCharacter( player )
-			//modelName = CharacterSkin_GetBodyModel( vdd.skin )
-			//skin = vdd.skin
-			asset characterSetFile = $""//CharacterClass_GetSetFile( vdd.character )
+			if( IsValid( player.p.lastDecoy ) )
+			{
+				player.p.lastDecoy.Destroy()
+			}
+			//player.Signal( "CancelCloak")
+			asset characterSetFile = $""
 			TraceResults trace = TraceLine( eyePos, eyePos + (viewVector * DECOY_TRACE_DIST), player, TRACE_MASK_SOLID_BRUSHONLY, TRACE_COLLISION_GROUP_NONE )
- 			decoy = CreateDecoy( trace.endPos, characterSetFile, modelName, player, skin, DECOY_DURATION )
+ 			decoy = Flowstate_CreateDecoy( trace.endPos, characterSetFile, modelName, player, skin, DECOY_DURATION )
 		}
 
 		bool ultimateDecoy = numberOfDecoysToMake > 1
-		SetupDecoy_Common( player, decoy, ultimateDecoy )
 		if ( animToPlay != "" )
 		{
 			decoy.SetMaxHealth( 2000 )
@@ -234,8 +361,6 @@ void function CreateHoloPilotDecoys( entity player, int numberOfDecoysToMake = 1
 			SetObjectCanBeMeleed( decoy, false )
 			decoy.SetPlayerOneHits( false )
 		}
-
-		thread MonitorDecoyActiveForPlayer( decoy, player )
 	}
 }
 
@@ -256,33 +381,100 @@ void function CleanUpPassiveDecoyIfExecuted( entity decoy, entity player )
 	wait ULTIMATE_DECOY_DURATION
 }
 
-/*
-ValidDecoyDisguise function SetNextDisguiseCharacter( entity player )
+entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, asset modelName, entity player, ItemFlavor skin, float duration, int type = 0, bool isUltimate = false )
 {
-	ValidDecoyDisguise vdd
-	vdd.character = expect ItemFlavor(GetRandomGoodItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterClass() ))
-	vdd.skin = expect ItemFlavor(GetRandomGoodItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( vdd.character ) ))
-	return vdd
-}
-*/
-
-entity function CreateDecoy( vector endPosition, asset settingsName, asset modelName, entity player, ItemFlavor skin, float duration )
-{
-	entity decoy = player.CreateTargetedPlayerDecoy( endPosition, settingsName, modelName, 0, 0 )
+	entity decoy 
+	
+	if( type == 0 )
+	{
+		if( IsValid( player.p.lastDecoy ) )
+		{
+			decoy = player.CreateTargetedPlayerDecoy( player.p.lastDecoy.GetOrigin(), settingsName, modelName, 0, 0 )
+			decoy.SetScriptName( DECOY_SCRIPTNAME )
+			decoy.SetOrigin( player.p.lastDecoy.GetOrigin() )
+			decoy.SetAngles( player.p.lastDecoy.GetAngles() )
+			decoy.SetOrigin( player.p.lastDecoy.GetOrigin() )
+			player.p.lastDecoy.Destroy()
+			player.p.lastDecoy = decoy
+		} else
+		{
+			decoy = player.CreateTargetedPlayerDecoy( endPosition, settingsName, modelName, 0, 0 )
+			decoy.SetScriptName( DECOY_SCRIPTNAME )
+			player.p.lastDecoy = decoy
+		}
+	}
+	else if( type == 1  && !isUltimate )
+	{
+		if( IsValid( player.p.lastDecoy ) )
+		{
+			vector startvec = player.GetAngles()
+			vector endvec = player.p.lastDecoy.GetAngles()
+			decoy = player.CreateMimicPlayerDecoy( ShortestRotation( startvec, endvec ).y ) //retail accurate mimic decoy :) Colombia
+			decoy.SetCloakDuration( 0.25, 0, 0.25 )
+			decoy.SetScriptName( CONTROLLED_DECOY_SCRIPTNAME )
+			decoy.SetOrigin( endPosition )
+			player.p.lastDecoy.Destroy()
+			player.p.lastDecoy = decoy
+		}
+	}
+	
+	if( isUltimate )
+	{
+		vector startvec = player.GetAngles()
+		vector endvec = VectorToAngles( player.GetOrigin() - endPosition )
+		decoy = player.CreateMimicPlayerDecoy( ShortestRotation( startvec, endvec ).y ) //retail accurate ultimate mimic decoy :) Colombia
+		decoy.SetOrigin( endPosition )
+		thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
+	}
+	
 	CharacterSkin_Apply( decoy, skin )
 	decoy.SetMaxHealth( 50 )
 	decoy.SetHealth( 50 )
 	decoy.EnableAttackableByAI( 50, 0, AI_AP_FLAG_NONE )
 	SetObjectCanBeMeleed( decoy, true )
 	decoy.SetTimeout( duration )
+	if( !isUltimate )
+		decoy.decoy.endTime = Time() + duration
 	decoy.SetPlayerOneHits( true )
-
-	StatsHook_HoloPiliot_OnDecoyCreated( player )
+	decoy.decoy.owner = player
+	decoy.SetOwner( player )	
+	
+	//StatsHook_HoloPiliot_OnDecoyCreated( player )
 	AddEntityCallback_OnPostDamaged( decoy, void function( entity decoy, var damageInfo ) : ( player ) {
 		if ( IsValid( player ) )
 			HoloPiliot_OnDecoyDamaged( decoy, player, damageInfo )
 	})
+
+	SetupDecoy_Common( player, decoy )
+	thread MonitorDecoyActiveForPlayer( decoy, player )
 	return decoy
+}
+
+void function Test_ForceDecoysOnGround( entity player, entity decoy )
+{
+	// vector endpos
+	// while( IsValid( decoy ) )
+	// {
+		// endpos = OriginToGround( decoy.GetOrigin() )
+		// if( Distance( decoy.GetOrigin(), endpos ) > 150 )
+		// {
+			// entity mover = CreateScriptMover( decoy.GetOrigin() )
+			// decoy.SetParent( mover )
+			// endpos = OriginToGround( decoy.GetOrigin() )
+			// mover.NonPhysicsMoveTo( endpos, 1, 0, 0 )
+			// wait 1
+			// if( !IsValid( decoy ) )
+			// {
+				// mover.Destroy()
+				// break
+			// }
+			// decoy.ClearParent()
+			// mover.Destroy()
+			// decoy.SetOrigin( endpos ) 
+			// // decoy.SetOrigin( OriginToGround( decoy.GetOrigin() ) )
+		// }
+		// wait 0.05
+	// }
 }
 
 void function HoloPiliot_OnDecoyDamaged( entity decoy, entity owner, var damageInfo )
@@ -354,9 +546,18 @@ void function SetupDecoy_Common( entity player, entity decoy, bool ultimateDecoy
 		EmitSoundOnEntityToEnemies( decoy, "Mirage_PsycheOut_Decoy_Sustain_Enemy", friendlyTeam ) ///loopingSound
 		decoy.decoy.loopingSounds = [ "Mirage_PsycheOut_Decoy_Sustain", "Mirage_PsycheOut_Decoy_Sustain_Enemy" ]
 	}
-
-	Highlight_SetFriendlyHighlight( decoy, "friendly_player_decoy" )
-	Highlight_SetOwnedHighlight( decoy, "friendly_player_decoy" )
+	
+	if( decoy.GetScriptName() == DECOY_SCRIPTNAME )
+	{
+		Highlight_SetFriendlyHighlight( decoy, "friendly_player_decoy" )
+		Highlight_SetOwnedHighlight( decoy, "friendly_player_decoy" )
+	}
+	else if( decoy.GetScriptName() == CONTROLLED_DECOY_SCRIPTNAME )
+	{
+		Highlight_SetFriendlyHighlight( decoy, "friendly_player_decoy" )
+		Highlight_SetOwnedHighlight( decoy, "sp_objective_entity" )
+	}
+	
 	decoy.e.hasDefaultEnemyHighlight = player.e.hasDefaultEnemyHighlight
 	SetDefaultMPEnemyHighlight( decoy )
 
@@ -484,7 +685,7 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 		}
 	)
 
-	//WaitForever()
+	WaitForever()
 }
 
 int function GetDecoyActiveCountForPlayer( entity player )
@@ -502,19 +703,9 @@ bool function PlayerCanUseDecoy( entity ownerPlayer ) //For holopilot and HoloPi
 {
 	if ( !ownerPlayer.IsZiplining() )
 	{
-		if ( ownerPlayer.IsTraversing() )
-			return false
-
-		if ( ownerPlayer.ContextAction_IsActive() ) //Stops every single context action from letting decoy happen, including rodeo, melee, embarking etc
+		if ( ownerPlayer.ContextAction_IsActive() )                                                                                                     
 			return false
 	}
-
-	float angleCheckParam = GetCurrentPlaylistVarFloat( "mirageabilitycheck", 0.99 )
-
-	if ( ownerPlayer.GetViewVector().Dot( <0, 0, -1> ) > angleCheckParam )
-		return false
-
-	//Do we need to check isPhaseShifted here? Re-examine when it's possible to get both Phase and Decoy (maybe through burn cards?)
 
 	return true
 }
@@ -560,4 +751,13 @@ bool function OnWeaponChargeLevelIncreased_holopilot( entity weapon )
 	}
 
 	return true
+}
+
+void function OnWeaponActivate_holopilot( entity weapon )
+{
+	weapon.PlayWeaponEffect( HOLO_EMITTER_CHARGE_FX_1P, HOLO_EMITTER_CHARGE_FX_3P, "FX_EMITTER_L_01" )
+	weapon.PlayWeaponEffect( HOLO_EMITTER_CHARGE_FX_1P, HOLO_EMITTER_CHARGE_FX_3P, "FX_EMITTER_L_02" )
+	weapon.PlayWeaponEffect( HOLO_EMITTER_CHARGE_FX_1P, HOLO_EMITTER_CHARGE_FX_3P, "FX_EMITTER_L_03" )
+	weapon.PlayWeaponEffect( HOLO_EMITTER_CHARGE_FX_1P, HOLO_EMITTER_CHARGE_FX_3P, "FX_EMITTER_L_04" )
+	weapon.PlayWeaponEffect( HOLO_EMITTER_CHARGE_FX_1P, HOLO_EMITTER_CHARGE_FX_3P, "FX_EMITTER_L_05" )
 }

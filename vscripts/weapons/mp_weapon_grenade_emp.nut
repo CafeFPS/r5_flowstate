@@ -15,10 +15,10 @@ void function OnProjectileCollision_weapon_grenade_emp( entity projectile, vecto
 	}
 
 	bool result = PlantStickyEntity( projectile, collisionParams )
-
+	
 	if ( projectile.GrenadeHasIgnited() )
 		return
-
+	
 	projectile.GrenadeIgnite()
 
 	#if SERVER

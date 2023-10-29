@@ -35,8 +35,8 @@ global function Consumable_SetClientTypeOnly
 #if SERVER
 global function Consumable_AddCallback_OnPlayerHealingStarted
 global function Consumable_AddCallback_OnPlayerHealingEnded
-global function Consumable_IsValidModCommand
 #endif // SERVER
+global function Consumable_IsValidModCommand
 
 global enum eConsumableType
 {
@@ -65,7 +65,11 @@ global struct ConsumableInfo
 	table< int, float > healBonus = {
 		[ePassives.PAS_SYRINGE_BONUS] = 0.0,
 		[ePassives.PAS_HEALTH_BONUS_MED] = 0.0,
-		[ePassives.PAS_HEALTH_BONUS_ALL] = 0.0
+		[ePassives.PAS_HEALTH_BONUS_ALL] = 0.0,
+		[ePassives.PAS_BONUS_SMALL_HEAL] = 25.0
+	}
+	table< int, float > shieldBonus = {
+		[ePassives.PAS_BONUS_SMALL_HEAL] = 25.0
 	}
 	float               healCap = 100
 
@@ -183,9 +187,9 @@ void function Consumable_Init()
 		{
 			phoenixKit.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_full" )
 			phoenixKit.healAmount = 100.0
-			phoenixKit.shieldAmount = 100.0
+			phoenixKit.shieldAmount = 250.0
 			phoenixKit.chargeSoundName = "PhoenixKit_Charge"
-			phoenixKit.cancelSoundName = ""
+			phoenixKit.cancelSoundName = "shield_battery_failure"
 			phoenixKit.modName = "phoenix_kit"
 		}
 		file.consumableTypeToInfo[ eConsumableType.COMBO_FULL ] <- phoenixKit
@@ -197,10 +201,10 @@ void function Consumable_Init()
 		{
 			shieldLarge.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_large" )
 			shieldLarge.healAmount = 0.0
-			shieldLarge.shieldAmount = 100.0
+			shieldLarge.shieldAmount = 125.0
 			shieldLarge.healCap = 0.0
 			shieldLarge.chargeSoundName = "Shield_Battery_Charge"
-			shieldLarge.cancelSoundName = ""
+			shieldLarge.cancelSoundName = "shield_battery_failure"
 			shieldLarge.modName = "shield_large"
 		}
 		file.consumableTypeToInfo[ eConsumableType.SHIELD_LARGE ] <- shieldLarge
@@ -215,7 +219,7 @@ void function Consumable_Init()
 			shieldSmall.shieldAmount = 25.0
 			shieldSmall.healCap = 0.0
 			shieldSmall.chargeSoundName = "Shield_Battery_Charge_Short"
-			shieldSmall.cancelSoundName = ""
+			shieldSmall.cancelSoundName = "shield_battery_failure"
 			shieldSmall.modName = "shield_small"
 		}
 		file.consumableTypeToInfo[ eConsumableType.SHIELD_SMALL ] <- shieldSmall
@@ -229,7 +233,7 @@ void function Consumable_Init()
 			healthLarge.healAmount = 100.0
 			healthLarge.shieldAmount = 0.0
 			healthLarge.chargeSoundName = "Health_Syringe_Charge"
-			healthLarge.cancelSoundName = ""
+			healthLarge.cancelSoundName = "Health_Syringe_Failure"
 			healthLarge.modName = "health_large"
 		}
 		file.consumableTypeToInfo[ eConsumableType.HEALTH_LARGE ] <- healthLarge
@@ -243,7 +247,7 @@ void function Consumable_Init()
 			healthSmall.healAmount = 25.0
 			healthSmall.shieldAmount = 0.0
 			healthSmall.chargeSoundName = "Health_Syringe_Charge_Short"
-			healthSmall.cancelSoundName = ""
+			healthSmall.cancelSoundName = "Health_Syringe_Failure"
 			healthSmall.modName = "health_small"
 		}
 		file.consumableTypeToInfo[ eConsumableType.HEALTH_SMALL ] <- healthSmall
@@ -411,7 +415,7 @@ void function OnWeaponActivate_Consumable( entity weapon )
 
 		if ( GetCurrentPlaylistVarBool( "survival_healthkits_limit_movement", true ) )
 		{
-			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, GetCurrentPlaylistVarFloat( "survival_healthkits_move_speed_reduction", 0.4 ) ) )
+			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
 			useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
 		}
 
@@ -468,7 +472,14 @@ void function OnWeaponActivate_Consumable( entity weapon )
 		if ( Time() - file.playerToLastHealChatterTime[ weaponOwner ] > HEAL_CHATTER_DEBOUNCE )
 		{
 			file.playerToLastHealChatterTime[ weaponOwner ] <- Time()
-			PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healing" )
+				if(modName == "phoenix_kit")
+				{
+					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healingPhoenix" )
+				}
+				else
+				{
+					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healing" )
+				}
 		}
 	}
 	else if ( file.consumableTypeToInfo[ consumableType ].shieldAmount > 0 )
@@ -800,8 +811,10 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 
 		if( info.ultimateAmount > 0 )
 			UltimatePackUse( player, info )
-
-		SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
+		
+		if( GameRules_GetGameMode() == SURVIVAL )
+			SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
+		
 		StatsHook_PlayerUsedResource( player, null, itemName )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
 	#endif
@@ -968,10 +981,10 @@ void function SwitchSelectedConsumableIfEmptyAndPushClientSelectionToServer( ent
 
 	if ( SURVIVAL_CountItemsInInventory( player, kitInfo.lootData.ref ) == 0 )
 	{
+		// printt( "SwitchSelectedConsumableIfEmptyAndPushClientSelectionToServer" )
 		file.clientSelectedConsumableType = Consumable_GetBestConsumableTypeForPlayer( player )
+		Consumable_SetSelectedConsumableType( file.clientSelectedConsumableType )
 	}
-
-	Consumable_SetSelectedConsumableType( file.clientSelectedConsumableType )
 }
 
 void function TryUpdateCurrentSelectedConsumableToBest( entity player )
@@ -1321,6 +1334,7 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 	{
 		if ( useData.usedHealth )
 		{
+			printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
 			player.SetShieldHealth( minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ) )
 		}
 		else if ( shouldUpdateShields )
@@ -1444,7 +1458,17 @@ void function Consumable_AddCallback_OnPlayerHealingEnded( void functionref(enti
 	Assert( !file.Callbacks_OnPlayerHealingEnded.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Consumable_AddCallback_OnPlayerHealingStarted" )
 	file.Callbacks_OnPlayerHealingEnded.append( callbackFunc )
 }
+#endif // SERVER
 
+// ======================================================================================================================
+//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
+// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
+// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
+//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
+//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
+// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
+//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
+// ======================================================================================================================
 bool function Consumable_IsValidModCommand( entity player, entity weapon, string mod, bool isAdd )
 {
 	if ( weapon.GetWeaponClassName() != CONSUMABLE_WEAPON_NAME )
@@ -1461,17 +1485,6 @@ bool function Consumable_IsValidModCommand( entity player, entity weapon, string
 
 	return true
 }
-#endif // SERVER
-
-// ======================================================================================================================
-//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
-// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
-// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
-//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
-//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
-// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
-//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
-// ======================================================================================================================
 
 bool function Consumable_IsValidConsumableInfo( int consumableType )
 {

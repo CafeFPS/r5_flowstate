@@ -73,7 +73,7 @@ WeaponData
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"damage_flags"									"DF_SHOTGUN | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 	"damage_type" 									"bullet"
@@ -88,10 +88,10 @@ WeaponData
 	"ammo_clip_size"   								"6"
 	"ammo_per_shot"									"1"
 
-	"ammo_no_remove_from_stockpile"					"1"
+	"ammo_no_remove_from_stockpile"					"0"
 	"ammo_min_to_fire"								"1"
 	"low_ammo_fraction" 							"0.34"
-//    "uses_ammo_pool"                                "1"
+    "uses_ammo_pool"                                "1"
 
 	// Damage - When Used by Players
     "damage_near_value"   							"15"
@@ -106,7 +106,7 @@ WeaponData
     "damage_far_distance" 							"1000"
     "damage_very_far_distance" 						"1500"
 
-    "ammo_default_total"							"20"
+    "ammo_default_total"							"0"
     "ammo_stockpile_max"							"12"
 
 	// Damage - When Used by NPCs
@@ -266,9 +266,10 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
+        gold
+        {
+        }
+
 
         silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460
 		{
@@ -286,18 +287,6 @@ WeaponData
 			"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
 		}
 
-		// survival_finite_ammo
-        // {
-            // "ammo_default_total"							"0"
-            // "ammo_stockpile_max"							"12"
-        // }
-		
-		survival_finite_ammo
-		{
-			"ammo_default_total"             "12"
-			"ammo_no_remove_from_stockpile"  "0"
-			"uses_ammo_pool"                 "1"
-		}
 
         hopup_unshielded_dmg
         {
@@ -309,6 +298,10 @@ WeaponData
             "fire_sound_1_player_1p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_1P"
 			"fire_sound_1_player_3p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_3P"
 			"fire_sound_1_npc"								"Weapon_ShotgunPistol_Fire_NPC"
+		}
+        breacher
+        {
+            "move_speed_modifier"							"*1.15"
         }
 	}
 

@@ -7,7 +7,14 @@ global function InitLegendPanelInventory
 
 global function SurvivalGroundItem_SetGroundItemCount
 global function SurvivalGroundItem_SetGroundItemHeader
+global function SurvivalGroundItem_SetGroundItemWeapon
+global function SurvivalGroundItem_SetGroundItemAmmo
+global function SurvivalGroundItem_SetGroundHeaderIndex
+
 global function SurvivalGroundItem_IsHeader
+global function SurvivalGroundItem_IsWeapon
+global function SurvivalGroundItem_IsAmmo
+global function SurvivalGroundItem_GetHeaderIndex
 
 global function SurvivalQuickInventory_OnUpdate
 
@@ -72,6 +79,9 @@ struct
 	int 		groundItemCount = 0
 
 	array<bool>	groundItemHeaders = []
+	array<int>	presentHeaders = []
+	array<bool>	groundItemWeapons = []
+	array<bool>	groundItemAmmo = []
 
 	table< string, var > equipmentButtons = {}
 
@@ -560,7 +570,12 @@ void function SurvivalGroundItem_SetGroundItemCount( int count )
 {
 	file.groundItemCount = count
 	file.groundItemHeaders = []
+	file.groundItemWeapons = []
+	file.groundItemAmmo = []
 	file.groundItemHeaders.resize( count, false )
+	file.groundItemWeapons.resize( count, false )
+	file.groundItemAmmo.resize( count, false )
+	file.presentHeaders.resize( count, -1 )
 }
 
 int function GetGroundItemCount( var panel )
@@ -573,6 +588,22 @@ void function SurvivalGroundItem_SetGroundItemHeader( int index, bool isHeader )
 	file.groundItemHeaders[index] = isHeader
 }
 
+void function SurvivalGroundItem_SetGroundItemWeapon( int index, bool isWeapon )
+{
+	file.groundItemWeapons[index] = isWeapon
+}
+
+void function SurvivalGroundItem_SetGroundItemAmmo( int index, bool isAmmo )
+{
+	file.groundItemAmmo[index] = isAmmo
+}
+
+void function SurvivalGroundItem_SetGroundHeaderIndex( int index, int indexHeader )
+{
+	file.presentHeaders[index] = indexHeader
+}
+
+
 ListPanelListDef function GetGroundItemDef( var panel )
 {
 	ListPanelListDef def
@@ -583,6 +614,21 @@ ListPanelListDef function GetGroundItemDef( var panel )
 bool function SurvivalGroundItem_IsHeader( int index )
 {
 	return file.groundItemHeaders[index]
+}
+
+bool function SurvivalGroundItem_IsWeapon( int index )
+{
+	return file.groundItemWeapons[index]
+}
+
+bool function SurvivalGroundItem_IsAmmo( int index )
+{
+	return file.groundItemAmmo[index]
+}
+
+int function SurvivalGroundItem_GetHeaderIndex( int index )
+{
+	return file.presentHeaders[index]
 }
 
 void function SurvivalQuickInventory_SetClientUpdateLootTooltipData( var button, bool isMainWeapon )

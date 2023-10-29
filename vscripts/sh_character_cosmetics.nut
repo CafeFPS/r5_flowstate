@@ -34,7 +34,6 @@ global function CharacterKillQuip_GetVictimStingSoundEvent
 global function CharacterKillQuip_GetStingSound
 global function CharacterKillQuip_GetSortOrdinal
 global function CharacterIntroQuip_GetCharacterFlavor
-global function GetPlayerSkydiveEmote
 global function GetValidPlayerSkydiveEmotes
 global function CharacterSkydiveEmote_IsTheEmpty
 global function CharacterSkydiveEmote_GetCharacterFlavor
@@ -662,30 +661,73 @@ ItemFlavor function CharacterIntroQuip_GetCharacterFlavor( ItemFlavor flavor )
 	return fileLevel.introQuipCharacterMap[flavor]
 }
 
+array<ItemFlavor> function GetAllSkydiveEmotesForCharacter(entity player)
+{
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	array<ItemFlavor> actualEmotesForThisCharacter
+	
+	switch(ItemFlavor_GetHumanReadableRef( character )){
+			case "character_pathfinder":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01166380810" ) ) )
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00510961657" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_bangalore":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01922944413" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_bloodhound":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01949306081" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_caustic":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01927454040" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_gibraltar":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00233912705" ) ) )
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00740058780" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_lifeline":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01308548369" ) ) )
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00672493522" ) ) )
+		return actualEmotesForThisCharacter
+
+			case "character_mirage":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID02049240269" ) ) )
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00785904729" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_octane":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01706718931" ) ) )
+		return actualEmotesForThisCharacter
+		
+			case "character_wraith":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00694133724" ) ) )
+		return actualEmotesForThisCharacter
+
+			case "character_wattson":
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00042131087" ) ) )
+		actualEmotesForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01872417422" ) ) )
+		return actualEmotesForThisCharacter
+	}
+	return actualEmotesForThisCharacter
+}
+
 table<int,ItemFlavor> function GetValidPlayerSkydiveEmotes( entity player )
 {
 	table<int,ItemFlavor> emotes
-	for ( int i=0; i<MAX_SKYDIVE_EMOTES; i++ )
+	array<ItemFlavor> emotes2 = GetAllSkydiveEmotesForCharacter(player)
+	
+	for ( int i=0; i<emotes2.len(); i++ )
 	{
-		ItemFlavor flav = GetPlayerSkydiveEmote( player, i )
-		if ( !CharacterSkydiveEmote_IsTheEmpty( flav ) )
+		ItemFlavor flav = emotes2[i]
 			emotes[i] <- flav
 	}
 	return emotes
 }
 
-ItemFlavor function GetPlayerSkydiveEmote( entity player, int index )
-{
-	if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
-	{
-		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkydiveEmote( character, index ) ) )
-		{
-			return LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkydiveEmote( character, index ) )
-		}
-	}
-	return GetItemFlavorByAsset( $"settings/itemflav/skydive_emote/_empty.rpak" )
-}
 
 bool function CharacterSkydiveEmote_IsTheEmpty( ItemFlavor flavor )
 {

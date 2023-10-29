@@ -301,9 +301,13 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-	weapons/mp_weapon_clickweapon.nut
 	weapons/mp_weapon_editor.nut
-
+	
+	//CUSTOM BY COLOMBIA
+	weapons/mp_weapon_clickweapon.nut
+	weapons/mp_weapon_needler.nut
+	weapons/mp_ability_revenant_shadow_pounce_free.nut
+	weapons/mp_weapon_energysword.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -379,8 +383,8 @@ Scripts:
 
 	_ultimates.gnut
 	sh_survival_persistentdamagelayer.gnut
-	gamemodes/sh_gamemode_shadow_squad.nut
-	
+	gamemodes/shadowfall/sh_gamemode_shadow_squad.nut
+	gamemodes/shadowfall/sh_gamemode_shadow_squad_precache.nut
 ]
 
 When: "SERVER"
@@ -515,7 +519,6 @@ Scripts:
 	pilot/_pilot_tracking_vision.gnut
 	pilot/_pilot_passive_gas_gear.gnut
 	pilot/_pilot_passive_medic.gnut
-	pilot/_pilot_passive_adrenaline.gnut
 	mp/_jump_pads.gnut
 ]
 
@@ -523,7 +526,10 @@ When: "SERVER || CLIENT"
 Scripts:
 [
 	sh_sneak_peek.gnut
+	
 	pilot/sh_pilot_passive_voices.gnut
+	pilot/sh_pilot_passive_adrenaline.gnut
+	
 	mp/sh_desertlands_train.nut
 	sh_scoreboard.gnut
 ]
@@ -595,7 +601,6 @@ Scripts:
 	cl_survival_ship.gnut
 
 	pilot/cl_pilot_tracking_vision.gnut
-	pilot/cl_pilot_passive_adrenaline.gnut
 	client/cl_bleedout.gnut
 	mp/cl_jump_pads.gnut
 ]
@@ -815,7 +820,8 @@ Scripts:
 	ui/FRChallenges/panel_buymenu3.nut
 	ui/FRChallenges/panel_buymenu4.nut
 	ui/FRChallenges/panel_buymenu5.nut
-
+	//Movement Gym
+	ui/MovementGym/movementgym_settings.nut
 	//KillReplay
 	ui/KillReplay/menu_killreplay.nut
 	
@@ -884,7 +890,9 @@ Scripts:
 	weapons/mp_ability_crypto_drone.nut
 	weapons/mp_ability_crypto_drone_emp.nut
 	
-
+	weapons/mp_ability_emote_projector.nut
+	weapons/mp_weapon_raygun.nut
+	
 	sh_clientmusic.gnut
 
 	sh_waypoints.gnut
@@ -941,6 +949,9 @@ Scripts:
 	gamemodes/fs_aimtrainer/sh_gamemode_aimtrainer.nut
 	gamemodes/fs_prophunt/sh_gamemode_prophunt.nut
 	gamemodes/fs_duckhunt/sh_gamemode_duckhunt.nut
+	gamemodes/fs_infection/sh_gamemode_infection.nut	
+	gamemodes/util/sh_custom_zombie_mystery_box.nut
+	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
 ]
 
@@ -948,10 +959,12 @@ When: "SERVER"
 Scripts:
 [
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
+	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/_gamemode_prophunt.nut
+	gamemodes/fs_infection/_gamemode_infection.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
 	
@@ -962,10 +975,18 @@ Scripts:
 	custom_maps/_custom_maps_2.nut
 	custom_maps/_custom_maps_3.nut
 	custom_maps/_custom_maps_4.nut
+	custom_maps/_custom_maps_5.nut
+	custom_maps/_custom_maps_6.nut
+	custom_maps/_custom_maps_7.nut
 	custom_maps/_custom_deafps_maps.nut
+
 	gamemodes/fs_movementgym/_movement_gym.nut
+
 	custom_maps/_custom_doormap.nut
 	custom_maps/_custom_grapplemap.nut
+	custom_maps/_custom_mantlejumpmap.nut
+	custom_maps/_custom_falling_forever.nut
+
 	//map editor props
 	_place_map_editor_props_here.nut
 
@@ -978,13 +999,17 @@ Scripts:
 When: "CLIENT"
 Scripts:
 [
+	gamemodes/fs_movementgym/cl_movement_gym_personalbest.nut
 	gamemodes/fs_movementgym/cl_movement_gym.nut
 	gamemodes/fs_tdm/cl_gamemode_fsdm.nut
+	gamemodes/fs_tdm/cl_gamemode_fsdm_oddball.nut
 	gamemodes/custom_ctf/cl_gamemode_custom_ctf.nut
 	gamemodes/fs_aimtrainer/cl_gamemode_aimtrainer.nut
 	gamemodes/fs_duckhunt/cl_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
+	gamemodes/fs_infection/cl_gamemode_infection.nut	
 	lobby/lobbyvm/cl_lobbyvm.nut
+	custom_maps/cl_custom_falling_forever.nut
 ]
 
 
@@ -993,6 +1018,7 @@ When: "SERVER"
 Scripts:
 [
 	freelance/_freelance.gnut
+	mp/_movement_recorder.nut
 ]
 
 

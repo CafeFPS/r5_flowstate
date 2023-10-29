@@ -6,10 +6,10 @@ npc_dummie_combat
 	title							DUMMIE
 	useSequenceBounds				1
 
-	aiEnemy_usePriorityDist			1300
-	aiEnemy_immediateThreatDist		94
+	aiEnemy_usePriorityDist			2500
+	aiEnemy_immediateThreatDist		200
 
-	AimAngularSpeed					7
+	AimAngularSpeed					15
 
 	ArmorType						normal
 
@@ -22,8 +22,8 @@ npc_dummie_combat
 	BehaviorSelector				"behavior_dummie_combat"
 	LocationScoringCriteria			"CommonShootWithLos"
 
-	chaseStopDist					300
-	chaseStopDistHeavyArmor			800
+	chaseStopDist					50
+	chaseStopDistHeavyArmor			100
 
 	allowCower						0
 	allowUseCover					1
@@ -31,22 +31,22 @@ npc_dummie_combat
 	traverseCostFactor				2.0
 	minGoalRadius					256
 
-	DefaultModelName				"mdl/humans/class/medium/combat_dummie_medium.rmdl"
+	DefaultModelName				"mdl/Humans/class/medium/combat_dummie_medium.rmdl"
 
 	DefaultWeapon					"mp_weapon_rspn101"
 	WeaponCapacity					"PilotMainWeapons"
 
     //Precision
-    aimingPrecisionMin              0
+    aimingPrecisionMin              1
     aimingPrecisionMax              1
     aimingPrecisionIncreaseRate     0.175
     aimingPrecisionDecreaseRate     0.125
 
-	longJumpCheckMinInterval		15
-	longJumpCheckMaxInterval		30
-	longJumpMinDist					400
-	longJumpMaxDist					700
-	longJumpHeight					300
+	// longJumpCheckMinInterval		15
+	// longJumpCheckMaxInterval		30
+	// longJumpMinDist					400
+	// longJumpMaxDist					700
+	// longJumpHeight					300
 
 	//GibModel0						"mdl/robots/spectre/spectre_assault_d_gib_leg_l.rmdl"
 	//GibModel1						"mdl/robots/spectre/spectre_assault_d_gib_leg_r.rmdl"
@@ -123,15 +123,15 @@ npc_dummie_combat
 	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
 	aimassist_adspull_headshotRadius			7.0
 
-	MeleeDamageMax					25
-	MeleeDamageMin					25
+	MeleeDamageMax					35
+	MeleeDamageMin					35
 
-	Health							120
+	Health							100
 
 	PainOnHeavyDamageThreshold		9999 // 32
 	PainOnRepeatDamageThreshold		9999 // 70
 
-	MeleeDamageRadius				40
+	MeleeDamageRadius				50
 	MeleeRange						65
 
 

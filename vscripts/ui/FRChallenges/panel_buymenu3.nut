@@ -183,13 +183,7 @@ void function InitArenasBuyPanel3( var panel )
 	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICK, BuyTripleTake )	
 	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "TripleTakeButton" ))
-	
-	var repeater = Hud_GetChild( menu, "repeater" )
-	RuiSetImage( Hud_GetRui( repeater ), "basicImage", $"rui/weapon_icons/r5/weapon_3030repeater" )
-	AddEventHandlerToButton( menu, "RepeaterButton", UIE_CLICK, Buy3030 )	
-	AddEventHandlerToButton( menu, "RepeaterButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "RepeaterButton" ))
-	
+
 	var chargerifle = Hud_GetChild( menu, "ChargeRifle" )
 	RuiSetImage( Hud_GetRui( chargerifle ), "basicImage", $"rui/weapon_icons/r5/weapon_charge_rifle" )
 	AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICK, BuyChargeRifle )	
@@ -825,24 +819,35 @@ void function Mags(var button)
 	RuiSetInt( Hud_GetRui(file.Mags[3]), "lootTier", 3 )
 	file.visibleAttachmentsBoxElements.append(file.Mags[3])
 
-	if(file.desiredAmmoType == "bullet")
+	switch( file.desiredAmmoType )
 	{
+		case "bullet":
 		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag_straight" )
 		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )
 		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )
-		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )	
-	} else if (file.desiredAmmoType == "highcal")
-	{
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )
+		break
+
+		case "highcal":
 		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag" )
 		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )
 		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )
-		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )			
-	} else if (file.desiredAmmoType == "special")
-	{
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )	
+		break
+	
+		case "special":
 		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_energy_mag" )
 		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )
 		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )
-		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )			
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )	
+		break
+		
+		case "sniper":
+		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag_sniper" )
+		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/sniper_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/sniper_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/sniper_mag" )	
+		break
 	}
 }
 

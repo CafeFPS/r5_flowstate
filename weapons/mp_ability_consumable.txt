@@ -12,6 +12,7 @@ WeaponData
 	"weapon_type_flags"								"WPT_CONSUMABLE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
+	"offhand_cancelled_by_melee"					"1"
     "is_toss_weapon"                                "0"
 	"offhand_default_inventory_slot"				"2"
 	"offhand_interupts_weapon_anims"				"1"
@@ -50,6 +51,7 @@ WeaponData
     "charge_end_forces_fire"  						"1"
     "charge_require_input"							"0"
     "charge_remain_full_when_fired"					"1"
+    "charge_allow_anim_updates"                     "0"
 	"entity_color_from_charge"						"1"
 
 	// Damage
@@ -100,7 +102,33 @@ WeaponData
 
 	"cooldown_type"									"ammo_instant"	// hud display
 	"activitymodifier"								"mp_ability_consumable"
-
+	// Bob
+	"bob_cycle_time"  						"0.4"
+	"bob_vert_dist"   						"0.1" //"0.19"
+	"bob_horz_dist"   						"0.1"
+	"bob_max_speed"   						"100" //"150"
+	"bob_pitch"   							"0.75"
+	"bob_yaw" 								"-1.7"
+	"bob_roll"								"1.2"
+	// Sway - General
+	"sway_rotate_attach"                       "SWAY_ROTATE"
+	"sway_min_x"                               "-0.5"
+	"sway_min_y"                               "-0.5"
+	"sway_min_z"                               "-0.6"
+	"sway_max_x"                               "0.5"
+	"sway_max_y"                               "0.5"
+	"sway_max_z"                               "0.6"
+	"sway_min_pitch"                           "-3"
+	"sway_min_yaw"                             "-2.5"
+	"sway_min_roll"                            "-4"
+	"sway_max_pitch"                           "3"
+	"sway_max_yaw"                             "2.5"
+	"sway_max_roll"                            "4"
+	"sway_translate_gain"                      "2.5"
+	"sway_rotate_gain"                         "7"
+	
+	"viewmodel_offset_hip" 					"-4 2 -1"
+	
 	Mods
 	{
 		health_small
@@ -119,6 +147,8 @@ WeaponData
 			"fx_muzzle_flash_view"					"P_health_inj_mflash_FP"
 			"fx_muzzle_flash_world"					"P_health_inj_mflash"
 			"fx_muzzle_flash_attach"				"muzzle_flash"
+			
+			"viewmodel_offset_hip" 					"0 0 0"
 		}
 
 		health_large
@@ -126,7 +156,16 @@ WeaponData
             "viewmodel" 							"mdl/weapons/health_injector/ptpov_health_injector.rmdl"
             "playermodel" 							"mdl/Weapons/health_injector/w_health_injector.rmdl"
             "printname"                             "#SURVIVAL_PICKUP_HEALTH_LARGE"
-		    "charge_time"                           "7.0"
+
+                                
+                                                         
+                                                          
+                 
+            "charge_time"                           "7.0"
+            "charge_sound_1p"						"Health_Syringe_Charge"
+            "charge_sound_3p"						"Health_Syringe_Charge_3p"
+                  
+
 		    "hud_icon"                              "rui/hud/loot/loot_stim_health_large"
 			"activitymodifier"						"health_prop"
 
@@ -134,9 +173,21 @@ WeaponData
 			"charge_effect_1p"						"P_health_inj_charge_FP"
 			"charge_effect_3p"						"P_health_inj_charge"
 
+			"fire_sound_1_player_1p"				"Health_Syringe_Primary"
+			"fire_sound_2_player_1p"				"Health_Syringe_Holster"
+			"fire_sound_1_player_3p"				"Health_Syringe_Holster_3p"
+
 			"fx_muzzle_flash_view"					"P_health_inj_mflash_FP"
 			"fx_muzzle_flash_world"					"P_health_inj_mflash"
 			"fx_muzzle_flash_attach"				"muzzle_flash"
+			
+			// Depth of Field
+			"dof_nearDepthStart"                    "0.1"
+			"dof_nearDepthEnd"                      "1.0"
+			"dof_zoom_nearDepthStart"               "1.0"
+			"dof_zoom_nearDepthEnd"                 "12.0"
+			"viewmodel_offset_hip" 					"0 0 0"
+
 		}
 
 		shield_small
@@ -145,6 +196,10 @@ WeaponData
             "playermodel" 							"mdl/Weapons/shield_battery/w_shield_battery_small.rmdl"
             "printname"                             "#SURVIVAL_PICKUP_HEALTH_COMBO_SMALL"
             "charge_time"                           "2.0"
+            "charge_sound_1p"						"shield_battery_charge_short"
+            "charge_sound_3p"						"shield_battery_charge_short_3p"
+                  
+
             "hud_icon"                              "rui/hud/loot/loot_stim_shield_small"
 			"activitymodifier"						"shield_prop"
 
@@ -155,6 +210,10 @@ WeaponData
 			"charge_effect2_1p"						"P_shield_battery_glow_FP"
 			"charge_effect2_3p"						"P_shield_battery_glow"
 			"charge_effect2_attachment"				"muzzle_flash"
+
+			"fire_sound_1_player_1p"				"shield_battery_primary"
+			"fire_sound_2_player_1p"				"shield_battery_holster"
+			"fire_sound_1_player_3p"				"Shield_Battery_Holster_3p"
 
 			"fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
 			"fx_muzzle_flash_world"					"P_shield_battery_flash"
@@ -167,6 +226,10 @@ WeaponData
             "playermodel" 							"mdl/Weapons/shield_battery/w_shield_battery.rmdl"
             "printname"                             "#SURVIVAL_PICKUP_HEALTH_COMBO_LARGE"
             "charge_time"                           "4.0"
+            "charge_sound_1p"						"shield_battery_charge"
+            "charge_sound_3p"						"shield_battery_charge_3p"
+                  
+
             "hud_icon"                              "rui/hud/loot/loot_stim_shield_large"
 			"activitymodifier"						"shield_prop"
 
@@ -177,6 +240,10 @@ WeaponData
 			"charge_effect2_1p"						"P_shield_battery_glow_FP"
 			"charge_effect2_3p"						"P_shield_battery_glow"
 			"charge_effect2_attachment"				"muzzle_flash"
+
+			"fire_sound_1_player_1p"				"shield_battery_primary"
+			"fire_sound_2_player_1p"				"shield_battery_holster"
+			"fire_sound_1_player_3p"				"Shield_Battery_Holster_3p"
 
 			"fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
 			"fx_muzzle_flash_world"					"P_shield_battery_flash"
@@ -224,6 +291,12 @@ WeaponData
 			"charge_effect2_3p"						"P_shield_battery_glow"
 			"charge_effect2_attachment"				"muzzle_flash"
 
+			"charge_sound_1p"						"PhoenixKit_Charge"
+			"charge_sound_3p"						"PhoenixKit_Charge_3p"
+			"fire_sound_1_player_1p"				"PhoenixKit_Primary"
+			"fire_sound_2_player_1p"				"shield_battery_holster"
+			"fire_sound_1_player_3p"				"Shield_Battery_Holster_3p"
+
 			"fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
 			"fx_muzzle_flash_world"					"P_shield_battery_flash"
 			"fx_muzzle_flash_attach"				"muzzle_flash"
@@ -236,32 +309,15 @@ WeaponData
             "printname"                             "#SURVIVAL_PICKUP_HEALTH_ULTIMATE"
             "charge_time"                           "6.0"
             "hud_icon"                              "rui/hud/loot/loot_health_ultimate"
- 			"activitymodifier"						"ultimate_battery"
+ 			"activitymodifier"					"ultimate_battery"
+
+			"charge_sound_1p"						"Ult_Acc_Charge"
+			"charge_sound_3p"						"Ult_Acc_Charge_3p"
+			"fire_sound_1_player_1p"				"Ult_Acc_Primary"
+			"fire_sound_1_player_3p"				"Ult_Acc_end_3p"
 
 			// Enalbe RUI
 			"ui1_enable"							"1"
-        }
-
-		combo_heal_small
-        {
-            "viewmodel" 							"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"
-            "playermodel" 							"mdl/Weapons/shield_battery/w_shield_battery.rmdl"
-            "printname"                             "Small Pheonix"
-            "charge_time"                           "2.0"
-            "hud_icon"                              "rui/hud/loot/loot_stim_combo_full"
- 			"activitymodifier"						"shield_prop"
-
-			"charge_effect_1p"						"P_shield_battery_LRG_FP"
-			"charge_effect_3p"						""
-			"charge_effect_attachment"				"FX_CENTER"
-
-			"charge_effect2_1p"						"P_shield_battery_glow_FP"
-			"charge_effect2_3p"						"P_shield_battery_glow"
-			"charge_effect2_attachment"				"muzzle_flash"
-
-			"fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
-			"fx_muzzle_flash_world"					"P_shield_battery_flash"
-			"fx_muzzle_flash_attach"				"muzzle_flash"
         }
 
         ultimate_battery_supercharged_fx
@@ -275,15 +331,16 @@ WeaponData
         // No better way to do it for now.
         quick_heal
         {
-            "charge_time"                           "*0.75"
-            "raise_time"                            "*0.75"
-            "holster_time"                          "*0.75"
+            "charge_time"                           "*0.85"
+            "raise_time"                            "*0.85"
+            "holster_time"                          "*0.85"
         }
         fast_heal
         {
             "charge_time"                           "*0.5"
             "raise_time"                            "*0.5"
             "holster_time"                          "*0.5"
+            "activitymodifier"						"fast_charge"
         }
 
         consumable_no_weapon_interrupt

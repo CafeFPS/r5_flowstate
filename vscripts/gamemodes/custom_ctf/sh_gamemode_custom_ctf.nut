@@ -1,7 +1,7 @@
 // Credits
 // AyeZee#6969 -- ctf gamemode and ui
 // sal#3261 -- base custom_tdm mode to work off
-// CaféDeColombiaFPS -- ctf sounds, custom ring implementation
+// CafeFPS -- ctf sounds, custom ring implementation
 // everyone else -- advice
 
 global function Sh_CustomCTF_Init
@@ -18,12 +18,8 @@ global int CTF_ROUNDTIME
 global const int NUMBER_OF_MAP_SLOTS = 4
 global const int NUMBER_OF_CLASS_SLOTS = 6
 
-global bool GIVE_ALT_AFTER_CAPTURE
 global bool USE_LEGEND_ABILITYS
 global int CTF_RESPAWN_TIMER
-global bool TAKE_WEAPONS_FROM_FLAG_CARRIER
-global bool GIVE_FLAG_CARRIER_SPEED_BOOST
-global bool GLOBAL_CHAT_ENABLED
 
 // Custom Messages IDS
 global enum eCTFMessage
@@ -164,12 +160,8 @@ void function Sh_CustomCTF_Init()
     // Set Playlist Vars
     CTF_SCORE_GOAL_TO_WIN = GetCurrentPlaylistVarInt( "max_score", 5 )
     CTF_ROUNDTIME = GetCurrentPlaylistVarInt( "round_time", 1500 )
-    GIVE_ALT_AFTER_CAPTURE = GetCurrentPlaylistVarBool( "give_ult_after_capture", false )
     USE_LEGEND_ABILITYS = GetCurrentPlaylistVarBool( "use_legend_abilitys", false )
     CTF_RESPAWN_TIMER = GetCurrentPlaylistVarInt( "respawn_timer", 10 )
-    TAKE_WEAPONS_FROM_FLAG_CARRIER = GetCurrentPlaylistVarBool( "take_weapons_from_flag_carrier", false )
-    GIVE_FLAG_CARRIER_SPEED_BOOST = GetCurrentPlaylistVarBool( "give_flag_carrier_speed_boost", false )
-    GLOBAL_CHAT_ENABLED = GetCurrentPlaylistVarBool( "global_chat_enabled", false )
 
     // Round time
     int mins_to_seconds = floor( GetCurrentPlaylistVarInt( "round_time", 25 ) * 60 ).tointeger()

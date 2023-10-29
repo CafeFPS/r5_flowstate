@@ -3,8 +3,11 @@
 //=========================================================
 
 global function ShLootRollers_Init
-global function ShFlyersDeathboxes_Init
 global function IsLootRoller
+
+#if SERVER
+global function Flowstate_ReturnDroneLootForCurrentTier
+#endif
 
 #if CLIENT
 global function ServerCallback_SetLootRollerLootTierFX
@@ -39,9 +42,7 @@ struct LootRollerClientData
 
 struct
 {
-	array< entity > allLootRollers
-	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerDamaged
-	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerKilled
+	table< entity, table< int, array< string > > > allLootRollers
 	#if CLIENT
 		table<entity, LootRollerClientData> rollerToClientData
 	#endif
@@ -65,40 +66,24 @@ void function ShLootRollers_Init()
 	AddCreateCallback( "prop_dynamic", LootRollerSpawned )
 	#endif
 }
-
-void function ShFlyersDeathboxes_Init()
-{
-	#if SERVER
-	AddSpawnCallback( "prop_physics", DeathboxSpawned )
-	AddSpawnCallback( "prop_dynamic", DeathboxSpawned )
-	#endif
-}
-
 /////////////////////////
 /////////////////////////
 //// Internals       ////
 /////////////////////////
 /////////////////////////
-void function DeathboxSpawned(entity ent)
-{
-	
-}
-
 void function LootRollerSpawned( entity ent )
 {
 	if ( ent.GetModelName().tolower() != LOOT_ROLLER_MODEL.tolower() )
 		return
 
-	file.allLootRollers.append( ent )
-
-	#if SERVER
-
-	#endif
-
+	file.allLootRollers[ ent ] <- {}
+	
+	thread Flowstate_BuildLootForDrone( ent )
+	
 	#if CLIENT
 	LootRollerClientData data
 	data.rollerModel = ent
-
+	
 	int fxIdx = GetParticleSystemIndex( LOOT_ROLLER_EYE_FX )
 	for( int i; i < NUM_LOOT_ROLLER_FX_ATTACH_POINTS; i++ )
 	{
@@ -110,37 +95,132 @@ void function LootRollerSpawned( entity ent )
 		EffectSetControlPointColorById( newFx, 1, COLORID_FX_LOOT_TIER0 + data.lootTier )
 	}
 
-	if ( data.hasVaultKey && data.eyeFXEnts.len() > 0 )
-	{
-		int randEye = data.eyeFXEnts[ RandomInt( data.eyeFXEnts.len() - 1 ) ]
-		EffectSetControlPointColorById( randEye, 1, COLORID_FX_LOOT_TIER0 + 5 )
-	}
+	data.lootTier = 0
+	data.hasVaultKey = false
 
 	SetLootRollerClientData( data )
 	#endif
+	
+	#if SERVER
+	thread Flowstate_StartRollerLootLoop( ent )
+	#endif
 }
 
-void function OnLootRollerDamaged( entity roller, var damageInfo )
-{
-	int health = roller.GetHealth()
-	float damage = DamageInfo_GetDamage( damageInfo )
-	int remainingHealth = (health - int(damage))
-	if( remainingHealth <= 0 )
-	{
-		#if CLIENT
-		LootRollerClientData clientData = GetLootRollerClientDataFromEnt( roller )
+const int WHITE_LOOT_TO_SPAWN = 2
+const int BLUE_LOOT_TO_SPAWN = 2
+const int PURPLE_LOOT_TO_SPAWN = 1
+const int YELLOW_LOOT_TO_SPAWN = 1
 
-		foreach( eye in clientData.eyeFXEnts )
+void function Flowstate_BuildLootForDrone( entity roller )
+{
+	file.allLootRollers[ roller ] <- {}
+	int lootToSpawn
+
+	for(int i = 1; i < 5; i++)
+	{
+		file.allLootRollers[ roller ][ i ] <- [ ]
+		
+		switch( i )
 		{
-			EffectStop( eye, false, true )
+			case 1:
+				lootToSpawn = WHITE_LOOT_TO_SPAWN
+			break
+			case 2:
+				lootToSpawn = BLUE_LOOT_TO_SPAWN
+			break
+			case 3:
+				lootToSpawn = PURPLE_LOOT_TO_SPAWN
+			break
+			case 4:
+				lootToSpawn = YELLOW_LOOT_TO_SPAWN
+			break
 		}
-		#endif // CLIENT
+		
+		for(int j = 0; j < lootToSpawn; j++)
+		{
+			file.allLootRollers[ roller ][ i ].append( SURVIVAL_Loot_GetByTier( i, false )[RandomIntRangeInclusive(0,SURVIVAL_Loot_GetByTier( i, false ).len()-1)].ref )
+		}
+	}
+	
+	#if SERVER
+	roller.e.hasVaultKey = RandomIntRangeInclusive(1, 10) < 3
+	#endif
+}
+
+#if SERVER
+void function Flowstate_StartRollerLootLoop( entity roller )
+{
+	int tier = 2
+	int max_tier = 4
+	float timeToWait
+	
+	while ( IsValid( roller ) && IsValid( roller.GetParent() ) )
+	{
+		roller.e.currentTier = tier
+		foreach( player in GetPlayerArray() )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_SetLootRollerLootTierFX", roller.GetEncodedEHandle(), tier, roller.e.hasVaultKey )
+		
+		switch( roller.e.currentTier )
+		{
+			case 2:
+				timeToWait = 4
+			break
+			case 3:
+				timeToWait = 2
+			break
+			case 4:
+				timeToWait = 0.5
+			break
+		}
+		
+		wait timeToWait
+		
+		if( tier == 2 )
+			tier = 4
+		else if( tier == 4 )
+			tier = 3
+		else if( tier == 3 )
+			tier = 2
 	}
 }
 
+array< string > function Flowstate_ReturnDroneLootForCurrentTier( entity roller )
+{
+	array< string > accumulatedLoot
+	
+	for(int j = 1; j < roller.e.currentTier + 1; j++)
+	{
+		accumulatedLoot.extend( file.allLootRollers[ roller ][ j ] )
+	}
+	
+	if( roller.e.hasVaultKey )
+		accumulatedLoot.append( "data_knife" )
+	
+	return accumulatedLoot
+}
+
+#endif
+// void function OnLootRollerDamaged( entity roller, var damageInfo )
+// {
+	// int health = roller.GetHealth()
+	// float damage = DamageInfo_GetDamage( damageInfo )
+	// int remainingHealth = (health - int(damage))
+	// if( remainingHealth <= 0 )
+	// {
+		// #if CLIENT
+		// LootRollerClientData clientData = GetLootRollerClientDataFromEnt( roller )
+
+		// foreach( eye in clientData.eyeFXEnts )
+		// {
+			// EffectStop( eye, false, true )
+		// }
+		// #endif // CLIENT
+	// }
+// }
+
 bool function IsLootRoller( entity ent )
 {
-	return file.allLootRollers.contains( ent )
+	return (ent in file.allLootRollers)
 }
 
 #if CLIENT

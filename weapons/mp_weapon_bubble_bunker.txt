@@ -17,6 +17,7 @@ WeaponData
 	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
+	"offhand_cancelled_by_melee"					"1"
 	"is_toss_weapon"								"1"
 	"minimap_reveal_distance"						"32000"
 	"fast_swap_to"									"1"
@@ -119,7 +120,7 @@ WeaponData
 	//"toss_time"									"0.2"
 	//"toss_overhead_time"							"0.2"
 
-
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_bounce_vel_frac_shallow"				"0.5"
 	"grenade_bounce_vel_frac_sharp"					"0.3"
 	"grenade_bounce_vel_frac_along_normal"			"0.1"
@@ -129,6 +130,7 @@ WeaponData
 	"grenade_radius_vertical"						"5.0"
 	"grenade_radius_horizontal"						"16.0"
 	"projectile_launch_pitch_offset"				"2"
+	"grenade_view_launch_offset"					"15.0 0.0 0.0"
 
 	// Spread
 

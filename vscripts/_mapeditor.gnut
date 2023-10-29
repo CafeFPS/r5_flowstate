@@ -281,8 +281,16 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
     e.SetModelScale( scale )
 
     #if IS_FLOWSTATE_SCRIPT
-        e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_OCCLUDESOUND | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID
-    
+        e.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP
+		
+		if( a == $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
+			e.SetScriptName( "map_editor_jumppad" )
+		
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		{
+            if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
+                thread HaloMod_Cyberdyne_CreateFanPusher( e.GetOrigin() + Vector( -60, 0, 15 ), e.GetAngles() )
+		}
         if( GameRules_GetGameMode() == "fs_duckhunt" )
         {
             if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid( e ) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid( e ) )
@@ -478,7 +486,12 @@ void function OnPickupFromRackThread(entity item, string ref, float spawnTime, b
 entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin = 0, bool addToArray = false )
 {
     entity lootbin = CreateEntity( "prop_dynamic" )
-    lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+
+	if( GameRules_GetGameMode() == "fs_infected" )
+		lootbin.SetScriptName( MYSTERY_BOX_SCRIPT_NAME )
+	else
+		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+
     lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
     lootbin.SetOrigin( origin )
     lootbin.SetAngles( angles )

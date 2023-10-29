@@ -6,6 +6,8 @@ global function ScoreEvents_SetEnabled
 global function AddGenericQueueMessage
 global function AddScoreEventMessage
 
+global function AddCallback_ModifyDamageFlyoutForScriptName
+
 global function DEV_DamageFlyout
 
 const bool RUI_ENABLED = true
@@ -88,6 +90,8 @@ struct
 	table<entity, DamageFlyoutData> entityDamageFlyouts
 
 	var rui_hitIndicator
+
+	table< string, vector functionref( entity, vector ) > modifyDamageFlyoutForScriptNameCallbacks
 } file
 
 
@@ -95,6 +99,16 @@ void function CLHud_Init()
 {
 }
 
+void function AddCallback_ModifyDamageFlyoutForScriptName( string scriptName, vector functionref( entity, vector ) callbackFunc )
+{
+	if ( scriptName in file.modifyDamageFlyoutForScriptNameCallbacks )
+	{
+		Assert( false, "Callback for " + scriptName + " already exists in modifyDamageFlyoutForScriptNameCallbacks" )
+		return
+	}
+
+	file.modifyDamageFlyoutForScriptNameCallbacks[ scriptName ] <- callbackFunc
+}
 
 void function AddGenericQueueMessage( string messageText, float duration = 4.0 )
 {
@@ -141,7 +155,7 @@ void function QueueMessageThink()
 
 	file.pendingEventQueue.sort( SortPendingEvents )
 
-	while ( file.pendingEventQueue.len() )
+	while ( file.pendingEventQueue.len() > 0 )
 	{
 		MessageData messageData = file.pendingEventQueue[0]
 		file.pendingEventQueue.remove( 0 )
@@ -241,6 +255,14 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	bool isShadowShot    	= (damageType & DF_SHADOW_DAMAGE) ? true: false
 	bool isOvershieldShot	= (damageType & DF_OVERSHIELD) ? true : false
 
+	// if( victim.IsPlayer() )
+	// {
+		// LootData victimShieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
+		
+		// if( victimShieldData.tier > 4 && isShieldShot && victim.GetShieldHealth() > 100 )
+			// isOvershieldShot = true
+	// }
+		
 	int sortKey = (file.lastSortKey++) % 100
 
 	asset shieldIcon = $""
@@ -251,9 +273,9 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		shieldIcon = shieldData.hudIcon
 		shieldLevel = shieldData.tier//GetArmorLevelFromDamageFlags( damageFlags )
 		
-		if( victim.GetShieldHealth() > 100 ) {
-			shieldLevel = 5
-		}
+		// if( victim.GetShieldHealth() > 100 ) {
+			// shieldLevel = 5
+		// }
 	}
 	
 	if ( victim.IsPlayer() && isShadowShot )
@@ -308,7 +330,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	if ( victim.IsPlayer() && isOvershieldShot )
 	{
 		shieldIcon = GIBRALTAR_PASSIVE_ICON
-		shieldLevel = 1
+		shieldLevel = 5
 	}
 
 	if ( showHitIndicator )
@@ -363,8 +385,14 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		flyoutData.lastDamageFlyoutDamage = 0
 	}
 
-	float distance      = Distance( victim.GetOrigin(), GetLocalViewPlayer().EyePosition() )
-	damagePosition = GraphCappedVector( distance, 0, 256, victim.GetWorldSpaceCenter(), victim.GetOrigin() + <0, 0, victim.GetBoundingMaxs().z> )// + <0, 0, 8>
+	float distance = Distance( victim.GetOrigin(), GetLocalViewPlayer().EyePosition() )
+	vector damageFlyoutDisplayPosition = GraphCappedVector( distance, 0, 256, victim.GetWorldSpaceCenter(), victim.GetOrigin() + <0, 0, victim.GetBoundingMaxs().z> )
+
+	if ( victim.GetScriptName() in file.modifyDamageFlyoutForScriptNameCallbacks )
+	{
+		vector functionref( entity, vector ) func = file.modifyDamageFlyoutForScriptNameCallbacks[ victim.GetScriptName() ]
+		damageFlyoutDisplayPosition = func( victim, damageFlyoutDisplayPosition )
+	}
 
 	vector damageTextOffset = <0, -0.015, 0>
 
@@ -386,7 +414,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 			stackingRui = flyoutData.stackingDamageRui
 		}
 
-		RuiSetFloat3( stackingRui, "pos", damagePosition )
+		RuiSetFloat3( stackingRui, "pos", damageFlyoutDisplayPosition )
 		RuiSetGameTime( stackingRui, "startTime", Time() )
 		RuiSetFloat( stackingRui, "duration", FDT_DURATION )
 		RuiSetFloat( stackingRui, "damageAmount", flyoutData.lastDamageFlyoutDamage + damageAmount )
@@ -415,7 +443,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		float timeDelta = Time() - flyoutData.lastDamageFlyoutTime
 		if ( timeDelta == 0 && !initNewStackingDamageText )
 		{
-			if ( flyoutData.floatingDamageData.len() && flyoutData.floatingDamageData[0].creationTime == Time() )
+			if ( flyoutData.floatingDamageData.len() > 0 && flyoutData.floatingDamageData[0].creationTime == Time() )
 			{
 				RuiSetFloat( flyoutData.floatingDamageData[0].rui, "damageAmount", float( flyoutData.damageThisFrame ) )
 			}
@@ -428,7 +456,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 			RuiSetGameTime( floatingRui, "startTime", Time() )
 			RuiSetFloat( floatingRui, "duration", FDT_DURATION )
 			RuiSetFloat( floatingRui, "damageAmount", damageAmount )
-			RuiSetFloat3( floatingRui, "pos", damagePosition )
+			RuiSetFloat3( floatingRui, "pos", damageFlyoutDisplayPosition )
 			RuiSetFloat2( floatingRui, "offset", damageTextOffset )
 			RuiSetImage( floatingRui, "shieldIcon", shieldIcon )
 			RuiSetInt( floatingRui, "shieldTier", shieldLevel )

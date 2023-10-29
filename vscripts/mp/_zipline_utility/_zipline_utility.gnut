@@ -77,7 +77,7 @@ global struct ZiplinePanel
     int panelNumberUsed     = 1
 }
 
-global enum ePanelState
+global enum eZiplinePanelState
 {
     ENABLE, // 0
     DISABLE // 1

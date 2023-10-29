@@ -9,7 +9,11 @@ enum eAntiAfkPlayerState
 
 void function Flowstate_InitAFKThreadForPlayer(entity player)
 {
-	if ( !IsValid(player) || IsAdmin(player) )
+	#if DEVELOPER
+	return
+	#endif
+
+	if ( !IsValid(player) || IsAdmin(player) || !GetCurrentPlaylistVarBool( "flowstate_afk_kick_enable", true ) )
 		return
 
 	AfkThread_AddPlayerCallbacks( player )
@@ -43,7 +47,7 @@ void function AfkWarning( entity player )
 
 void function CheckAfkKickThread(entity player)
 {
-	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName )
+	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName() )
 	
 	while( true )
 	{
@@ -68,7 +72,7 @@ void function CheckAfkKickThread(entity player)
 				break
 
 			case eAntiAfkPlayerState.AFK:
-				KickPlayerById( player.GetPlatformUID() )
+				KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )
 				break
 		}
     }

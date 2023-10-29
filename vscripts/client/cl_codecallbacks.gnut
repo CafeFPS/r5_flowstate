@@ -24,6 +24,9 @@ global function ClientCodeCallback_UseConsumable
 global function SetCallback_UseConsumable
 global function RemoveCallback_UseConsumable
 
+global function NvidiaReflex_SetValues
+global function NvidiaReflex_SetSettingsValue
+
 global function ServerCallback_RefreshWeaponHighlights
 
 struct
@@ -213,7 +216,7 @@ void function AddCallback_OnPetTitanModeChanged( void functionref( entity ) call
 
 void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity player )
 {
-	printt( "ClientCodeCallback_OnPlayerConsumableInventoryChanged" )
+	//printt( "ClientCodeCallback_OnPlayerConsumableInventoryChanged" )
 	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
 		return
 
@@ -228,4 +231,59 @@ void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity play
 void function AddCallback_OnPlayerConsumableInventoryChanged( void functionref( entity ) callbackFunc )
 {
 	clGlobal.consumableInventoryChangedCallbacks.append( callbackFunc )
+}
+
+void function NvidiaReflex_SetValues()
+{
+	int settingsReflex
+
+	try{
+		settingsReflex = GetConVarInt( "settings_reflex" )
+	}catch(e420)
+	{
+		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	switch( settingsReflex )
+	{
+	  case 0: //Off
+		SetConVarInt( "gfx_nvnUseLowLatency", 0 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 0 )
+		break
+	  case 1: //On
+		SetConVarInt( "gfx_nvnUseLowLatency", 1 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 0 )
+		break
+	  case 2: //On + Boost
+		SetConVarInt( "gfx_nvnUseLowLatency", 1 )
+		SetConVarInt( "gfx_nvnUseLowLatencyBoost", 1 )
+		break
+	}
+}
+
+void function NvidiaReflex_SetSettingsValue()
+{
+	bool lowLatency
+	bool lowLatencyBoost
+
+	try{
+		lowLatency = GetConVarBool( "gfx_nvnUseLowLatency" )
+		lowLatencyBoost = GetConVarBool( "gfx_nvnUseLowLatencyBoost" )
+	}catch(e420)
+	{
+		printt( "Nvidia Reflex cvars not present in your current r5sdk install!" )
+		return
+	}
+
+	if( !lowLatency && !lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 0 )
+	} else if( lowLatency && !lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 1 )
+	} else if( lowLatency && lowLatencyBoost )
+	{
+		SetConVarInt( "settings_reflex", 2 )
+	}
 }

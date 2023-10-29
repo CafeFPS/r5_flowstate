@@ -39,7 +39,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	
 	//Sounds
 	"sound_dryfire"									"Weapon_Vinson_Trigger"
@@ -78,12 +78,17 @@ WeaponData
 	dof_zoom_focusArea_top							0.060
 	dof_zoom_focusArea_bottom						-0.0055
 
-    "ammo_default_total"							"200"
-    "ammo_stockpile_max"							"200"
-    "ammo_no_remove_from_stockpile"					"1"
     "ammo_min_to_fire"								"1"
 
-      "damage_near_value"   							"18"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"50"
+    "ammo_no_remove_from_stockpile"					"0"
+
+    "low_ammo_fraction" 							"0.3"
+
+    "uses_ammo_pool"								"1"
+
+    "damage_near_value"   							"18"
     "damage_far_value"								"18"
     "damage_very_far_value"							"18"
     "damage_near_value_titanarmor"					"18"
@@ -130,10 +135,10 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"10"
 	"reload_time" 									"2.4"
-	"reload_time_late1"								"0.6"
+	"reload_time_late1"								"1.2"
 	"reloadempty_time"								"3.1"
-	"reloadempty_time_late1"						"1.4"
-	"reloadempty_time_late2"						"0.5"
+	"reloadempty_time_late1"						"2.0"
+	"reloadempty_time_late2"						"1.2"
 	"vortex_refire_behavior"  						"bullet"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"1"
@@ -213,21 +218,9 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"50"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.3"
-
-	   		"uses_ammo_pool"								"1"
-        }
-
+		gold
+		{
+		}
         // single shot
 		altfire
 		{
@@ -291,6 +284,10 @@ WeaponData
 		{
 			"ammo_clip_size" 				"30"
 		}
+        highcal_mag_l4
+        {
+			"ammo_clip_size"   			  	"30"
+        }
 
                
                                                                                                      

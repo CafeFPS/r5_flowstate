@@ -997,7 +997,7 @@ void function Highlight_SetNeutralHighlight( entity ent, string assetName )
 
 void function Highlight_SetFlyerDeathboxHighlight( entity ent, string assetName )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	HighlightContext highlight = GetHighlight( assetName )
@@ -1029,8 +1029,13 @@ void function Highlight_SetSonarHighlightWithParam0( entity ent, string assetNam
 
 void function Highlight_SetSonarHighlightWithParam1( entity ent, string assetName, vector paramVec1 )
 {
+	try{
 	Highlight_SetSonarHighlight( ent, assetName )
 	ent.Highlight_SetParam( HIGHLIGHT_CONTEXT_SONAR, 1, paramVec1 )
+	}catch(e420)
+	{
+		printt( "debug at least one highlight setter etc.." ) //shouldn't crash anymore but just in case
+	}
 }
 
 

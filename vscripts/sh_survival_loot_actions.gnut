@@ -30,16 +30,20 @@ global enum eLootAction
 	_count
 }
 
+global typedef LootActionDataFuncType bool functionref( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
+
 global struct LootActionData
 {
 	int id
 	string title
-	bool functionref( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null ) func
+	LootActionDataFuncType func
 }
 
 struct
 {
 	table<int, LootActionData> lootActionData
+	table< entity, array<ThrottleData> > lastEquipData
+	bool attachSwapsOldItemToStowedIfBetter
 } file
 
 void function SURVIVAL_LootActions_InitShared()
@@ -130,25 +134,24 @@ string function SURVIVAL_GetStringForLootAction( int action )
 	#endif
 }
 
-bool function SURVIVAL_ApplyLootAction( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+
+bool function SURVIVAL_ApplyLootAction( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
-	//printt("SURVIVAL_ApplyLootAction", action)
-	LootActionData a = GetLootActionData( action )
+	LootActionData a   = GetLootActionData( action )
+	bool shouldDestroy = false
 	if ( IsValid( a.func ) )
-	{
-		return a.func( action, pickup, player, pickupFlags, deathBox )
-	}
-	return false // shouldDestroy
+		shouldDestroy = a.func( action, pickup, player, pickupFlags, deathBox, desiredCount )
+	return shouldDestroy
 }
 
-bool function TryAttachItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+bool function TryAttachItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
-	string attachment = data.ref
+	string attachment      = data.ref
 	bool isPlayerSwitching = player.IsSwitching( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-	int slot = ( action == eLootAction.ATTACH_TO_ACTIVE && !isPlayerSwitching ) ? WEAPON_INVENTORY_SLOT_PRIMARY_0 : WEAPON_INVENTORY_SLOT_PRIMARY_1
-	array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+	int slot               = (action == eLootAction.ATTACH_TO_ACTIVE && !isPlayerSwitching) ? WEAPON_INVENTORY_SLOT_PRIMARY_0 : WEAPON_INVENTORY_SLOT_PRIMARY_1
+	array<entity> weapons  = SURVIVAL_GetPrimaryWeaponsSorted( player )
 
 	entity weapon
 
@@ -159,12 +162,18 @@ bool function TryAttachItem( int action, entity pickup, entity player, int picku
 		return false
 
 	string modToRemove = SURVIVAL_GetModToRemoveForAttachment( player, weapon, attachment )
-	return AttachToWeapon( player, weapon, attachment, modToRemove, false, false, isPlayerSwitching, deathBox )
+	if ( !AttachToWeapon( player, weapon, attachment, modToRemove, false, false, isPlayerSwitching, false, deathBox, true, file.attachSwapsOldItemToStowedIfBetter ) )
+		return false
+
+	#if SERVER
+		                        
+	#endif
+	return true
 }
 
-bool function TryPickupItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+bool function TryPickupItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
-	//printt("TryPickupItem")
+	//printt( "TryPickupItem DEBUG: ", action, pickup, player, pickupFlags, deathBox, desiredCount )
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
@@ -173,16 +182,16 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 	switch ( data.lootType )
 	{
 		case eLootType.ORDNANCE:
-			pickedUp = AddRoundToOrdnance( player, pickup, data.ref )
+			pickedUp = PickupOrdnanceItem( pickup, player, pickupFlags, deathBox, desiredCount )
 			break
 		case eLootType.AMMO:
-			pickedUp = PickupAmmo( pickup, player, pickupFlags )
+			pickedUp = PickupAmmo( pickup, player, pickupFlags, deathBox )
 			break
 		case eLootType.DATAKNIFE:
 			pickedUp = DataKnifePickUp_Use( pickup, player, pickupFlags )
 			break
 		case eLootType.RESOURCE:
-			pickedUp = PickupResource( pickup, player, pickupFlags, deathBox )
+			pickedUp = PickupResource( pickup, player, pickupFlags, deathBox, desiredCount )
 			//printt("eLT AMMO", pickedUp)
 			break
 		default:
@@ -191,7 +200,7 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 	//printt("TryPickupItem", pickedUp)
 
 #if CLIENT
-	if ( !pickedUp )
+	if ( !pickedUp && (data.inventorySlotCount > 0) && data.lootType != eLootType.GADGET )
 	{
 		SURVIVAL_Loot_QuickSwap( pickup, player, pickupFlags, deathBox )
 	}
@@ -200,31 +209,58 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 	return pickedUp // shouldDestroy
 }
 
-bool function TryEquipItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+
+bool function TryEquipItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 	bool pickedUp = false
+
+	                                                                                    
+	if ( !(player in file.lastEquipData) )
+	{
+		file.lastEquipData[player] <- []
+		file.lastEquipData[player].resize( eLootType._count )
+		for ( int lootType = 0; lootType < eLootType._count; lootType++ )
+		{
+			file.lastEquipData[player][lootType] = InitThrottle( 1.0, 2 )
+		}
+	}
 
 	switch ( data.lootType )
 	{
 		case eLootType.MAINWEAPON:
 			pickedUp = PickupMainWeapon( pickup, player, pickupFlags, deathBox )
 			break
+
+		case eLootType.ARMOR:
+			if ( Throttle( file.lastEquipData[player][data.lootType] ) )
+				break
 		default:
 			pickedUp = PickupGroundEquipment( pickup, player, pickupFlags, deathBox )
 			break
 	}
 
+	if ( pickedUp )
+	{
+		#if SERVER
+			                        
+		#endif
+	}
 
 	return pickedUp
 }
 
-bool function TrySwapEquipment( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+bool function TryPrimarySwap( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
+{
+	return true
+}
+bool function TrySwapEquipment( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null, int ornull desiredCount = null )
 {
 	bool fromMenu = (pickupFlags & PICKUP_FLAG_FROM_MENU) > 0
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
+	bool pickedUp = false
 	if ( data.lootType == eLootType.MAINWEAPON )
 	{
 		if ( SURVIVAL_GetPrimaryWeapons( player ).len() > 1 )
@@ -235,7 +271,20 @@ bool function TrySwapEquipment( int action, entity pickup, entity player, int pi
 			}
 			else
 			{
-				return SwapMainWeapon( pickup, player, pickupFlags, deathBox )
+				#if SERVER
+                      
+						                                                   
+           
+				#endif
+
+				pickedUp = SwapMainWeapon( pickup, player, pickupFlags, deathBox )
+
+				#if SERVER
+                      
+						                                                                                         
+							                                        
+           
+				#endif
 			}
 		}
 	}
@@ -247,10 +296,17 @@ bool function TrySwapEquipment( int action, entity pickup, entity player, int pi
 		}
 		else
 		{
-			return PickupGroundEquipment( pickup, player, pickupFlags, deathBox )
+			pickedUp = PickupGroundEquipment( pickup, player, pickupFlags, deathBox )
 		}
 	}
 
+	if ( pickedUp )
+	{
+		#if SERVER
+			                        
+		#endif
+		return true
+	}
 	return false
 }
 
@@ -260,7 +316,7 @@ bool function TrySwapEquipment( int action, entity pickup, entity player, int pi
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool function AttachToWeapon( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory = false, bool returnToInventory = false, bool forceActive = true, entity deathBox = null )
+bool function AttachToWeapon( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory = false, bool returnToInventory = false, bool forceActive = true, bool forceDontThrow = false, entity deathBox = null, bool shouldPlayPickupSound = true, bool attachRemovedModToStowedIfBetter = false )
 {
 	if ( weapon.IsDiscarding() )
 		return false
@@ -275,7 +331,7 @@ bool function AttachToWeapon( entity player, entity weapon, string item, string 
 	if ( allowedToAdd )
 	{
 		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weapon.GetWeaponClassName() )
-		EquipAttachments_Internal( player, weapon, item, modToRemove, takeFromInventory, returnToInventory, forceActive, false, deathBox )
+		EquipAttachments_Internal( player, weapon, item, modToRemove, takeFromInventory, returnToInventory, forceActive, true, deathBox )
 	}
 #endif
 
@@ -283,7 +339,7 @@ bool function AttachToWeapon( entity player, entity weapon, string item, string 
 }
 
 
-bool function PickupResource( entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
+bool function PickupResource( entity pickup, entity player, int pickupFlags, entity deathBox, int ornull desiredCount )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
@@ -298,8 +354,6 @@ bool function PickupResource( entity pickup, entity player, int pickupFlags = 0,
 	return false
 }
 
-
-
 bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( ammoPickup.GetSurvivalInt() )
@@ -309,69 +363,65 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 
 	bool autopickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
 
-	//printt("PickupAmmo", autopickup, SURVIVAL_GetCountToFillStack( player, data.ref ), data.inventorySlotCount)
-
 	if ( autopickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
 		return false
 
-	int pickupCount = ammoPickup.GetClipCount()
-
-#if HAS_AUTOPICKUP_STACKABLE_ITEMS
-		int numToPickup = autopickup ? minint( SURVIVAL_GetCountToFillStack( player, data.ref ), ammoPickup.GetClipCount() ) : ammoPickup.GetClipCount()
-#else
-		int numToPickup = ammoPickup.GetClipCount()
-#endif
+	int numToPickup = ammoPickup.GetClipCount()
 
 	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )
-	//printt("PickupAmmo numToPickup", numToPickup, ammoPickup.GetClipCount())
+	
 	if ( numToPickup == 0 )
 		return false
 
-#if SERVER
+	#if SERVER
 	player.AmmoPool_SetCapacity(65535)
-#endif
+	#endif
+
 	int poolMax = player.AmmoPool_GetCapacity()
 	numToPickup = minint( numToPickup, poolMax - poolCount )
 
-#if SERVER
-#if DEVELOPER
-	//if ( !GetConVarBool( "sv_infinite_ammo" ) ) // Cvar does not exist in retail engine
-#endif
+	#if SERVER
 	player.AmmoPool_SetCount( ammoType, poolCount + numToPickup )
 	PlayPickupSound( player, data.ref, pickupFlags )
-#endif
+	#endif
 
 	int clipCount = ammoPickup.GetClipCount()
 
-#if SERVER
-	//printt("PickupAmmoServer")
+	#if SERVER
 	ammoPickup.SetClipCount( clipCount - numToPickup )
 
 	SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
 
 	//Create tracking event for players with tracking passive.
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
-#endif
-	//printt("PickupAmmo", clipCount, numToPickup, ammoPickup.GetClipCount(), player.AmmoPool_GetCapacity())
+	#endif
+
 	return ( clipCount <= numToPickup )
 }
 
-
-bool function AddRoundToOrdnance(entity player, entity ammoPickup, string grenadeType )
+bool function PickupOrdnanceItem( entity ammoPickup, entity player, int pickupFlags, entity deathBox, int ornull desiredCount )
 {
-	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	LootData data   = SURVIVAL_Loot_GetLootDataByIndex( ammoPickup.GetSurvivalInt() )
 
-	int clipCount = ammoPickup.GetClipCount()
-	int numPickedup = SURVIVAL_AddToPlayerInventory( player, grenadeType, ammoPickup.GetClipCount() )
+	int pickupCount = ammoPickup.GetClipCount()
+
+	int numToPickup = pickupCount
+	if ( desiredCount != null )
+		numToPickup = minint( numToPickup, expect int(desiredCount) )
+
+	int numPickedUp = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup )
+
+	if ( numPickedUp == 0 )
+		return false
+
 	#if SERVER
-	ammoPickup.SetClipCount( clipCount - numPickedup )
-	#endif
-
-	LootData data = SURVIVAL_Loot_GetLootDataByRef( grenadeType )
-
-	if ( numPickedup > 0 )
+	//printt("Player pickup ordnance " + ammoPickup )
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	ammoPickup.SetClipCount( numPickedUp - numToPickup )
+	
+	if ( numPickedUp > 0 )
 	{
-		var val = GetWeaponInfoFileKeyField_Global( grenadeType, "survival_ordnance_auto_switch_on_pickup" )
+		var val = GetWeaponInfoFileKeyField_Global( data.ref, "survival_ordnance_auto_switch_on_pickup" )
 		bool autoSwitch = val == null || val <= 0 ? false : true
 		bool conditional = true
 
@@ -381,24 +431,21 @@ bool function AddRoundToOrdnance(entity player, entity ammoPickup, string grenad
 			autoSwitch = autoSwitch && conditional
 		}
 
-		if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == grenadeType)
+		if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == data.ref)
 		{
-			#if SERVER
 			if (heldOrdnance.GetWeaponPrimaryClipCount() < heldOrdnance.GetWeaponPrimaryClipCountMax())
-				AddRoundsToWeapon( player, heldOrdnance, numPickedup )
-			PlayPickupSound( player, grenadeType )
+				AddRoundsToWeapon( player, heldOrdnance, numPickedUp )
+			PlayPickupSound( player, data.ref )
 
 			//Create tracking event for players with tracking passive.
 			TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_GRENADE, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
 
 			if ( autoSwitch )
-				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, grenadeType )
-			#endif
-			return numPickedup == clipCount
+				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, data.ref )
+			return numPickedUp == pickupCount
 		}
 		else
 		{
-			#if SERVER
 			if ( IsValid( heldOrdnance ) && ( heldOrdnance.GetWeaponPrimaryClipCount() <= 0 || autoSwitch ) )
 			{
 				player.TakeWeaponByEntNow( heldOrdnance )
@@ -407,11 +454,11 @@ bool function AddRoundToOrdnance(entity player, entity ammoPickup, string grenad
 
 			if ( heldOrdnance == null || autoSwitch )
 			{
-				player.GiveWeapon( grenadeType, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
+				player.GiveWeapon( data.ref, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
 				entity ordnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
 				if ( IsValid( ordnance ) )
 				{
-					AddRoundsToWeapon( player, ordnance, numPickedup )
+					AddRoundsToWeapon( player, ordnance, numPickedUp )
 
 					if ( SURVIVAL_GetPrimaryWeapons( player ).len() == 0 || player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == null || autoSwitch )
 					{
@@ -421,20 +468,16 @@ bool function AddRoundToOrdnance(entity player, entity ammoPickup, string grenad
 				}
 			}
 
-			PlayPickupSound( player, grenadeType )
+			PlayPickupSound( player, data.ref )
 
 			//Create tracking event for players with tracking passive.
 			TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_GRENADE, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
-			#endif
-			return numPickedup == clipCount
 		}
 	}
-	else
-	{
-		return false
-	}
+	#endif
 
-	unreachable
+	Assert( numPickedUp <= pickupCount )
+	return numPickedUp == pickupCount
 }
 
 bool function DataKnifePickUp_Use( entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
@@ -449,6 +492,18 @@ bool function DataKnifePickUp_Use( entity pickup, entity player, int pickupFlags
 		#endif
 		#if SERVER
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultKeyGot" )
+		
+		foreach( mate in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		{
+			foreach( minimapObj in VaultPanel_GetAllMinimapObjs() )
+			SetMinimapObjectVisibleToPlayer( mate, minimapObj, false )
+		}
+
+		foreach( mate in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		{
+			foreach( minimapObj in VaultPanel_GetBestMinimapObjs() )
+			SetMinimapObjectVisibleToPlayer( mate, minimapObj, true )
+		}
 		#endif
 		return true
 	}
@@ -587,6 +642,11 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 			{
 				int dropShieldHealth = player.GetShieldHealth()
 				drop.SetSurvivalProperty( dropShieldHealth )
+				drop.e.extraSurvivalProperty = player.GetShieldHealthMax()
+				
+				if( oldEquipData.ref == "armor_pickup_lv7" )
+					foreach ( sPlayer in GetPlayerArray() )
+						Remote_CallFunction_NonReplay( sPlayer, "Flowstate_UpdateRainbowShieldExtraProperty", drop.GetEncodedEHandle(), drop.e.extraSurvivalProperty )
 			}
 			else if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 4 )
 			{
@@ -613,7 +673,7 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) > 1 && GetCurrentPlaylistVarInt( "survival_shields", 1 ) < 4 )
 		propertyValue = player.GetShieldHealth()
 
-	SURVIVAL_GivePlayerEquipment( player, newEquip, propertyValue )
+	SURVIVAL_GivePlayerEquipment( player, newEquip, propertyValue, pickup.e.extraSurvivalProperty )
 #endif
 
 	return true

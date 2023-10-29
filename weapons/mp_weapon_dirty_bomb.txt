@@ -31,6 +31,7 @@ WeaponData
 //---------------------------------TOSS VERSION---------------------------------//
 	"is_toss_weapon"                                "1"
 	"fire_mode"   									"offhand"
+	"offhand_cancelled_by_melee"					"1"
 	"OnWeaponTossPrep"								"OnWeaponTossPrep_weapon_dirty_bomb"
 	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_weapon_dirty_bomb"
 	"OnProjectileCollision"							"OnProjectileCollision_weapon_deployable"
@@ -50,6 +51,9 @@ WeaponData
 	"projectile_launch_speed"						"600"
 	"projectile_launch_pitch_offset"				"2"
 	"projectile_first_person_offset_fraction"		"0"
+
+	grenade_hull_mins                   "-5.0 -5.0 -0.0"
+	grenade_hull_maxs                   "5.0 5.0 10.0"
 
 	"grenade_radius_vertical"						"5.0"
 	"grenade_radius_horizontal"						"32.0"
@@ -152,7 +156,7 @@ WeaponData
 	"toss_time"										"0.75"  //0.30
 	"toss_overhead_time"							"0.75"  //0.30
 
-
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_orient_to_velocity"					"0"
 	"grenade_bounce_vel_frac_shallow"				"0.5"
 	"grenade_bounce_vel_frac_sharp"					"0.3"
@@ -160,6 +164,7 @@ WeaponData
 	"grenade_bounce_randomness"						"0.05"
 	"grenade_bounce_extra_vertical_randomness"		"0.0"
 	"grenade_roll_vel_frac_per_second"				"0.1"
+	"grenade_view_launch_offset"					"15.0 0.0 0.0"
 
 	// Spread
 
@@ -169,35 +174,14 @@ WeaponData
 	"viewkick_spring" 								"pistol"
 
 	"ammo_drains_to_empty_on_fire"					"0"
-
-	MP_BASE
-	{
-		"ammo_clip_size"   								"300"
-		"ammo_default_total"							"300"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"100"
-		"ammo_per_shot"									"100"
-		"ammo_stockpile_max"							"100"
-		"regen_ammo_refill_rate"						"4"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"40"
-		"ammo_default_total"							"40"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"20"
-		"ammo_per_shot"									"20"
-		"ammo_stockpile_max"							"100"
-		"regen_ammo_refill_rate"						"1"
-		"regen_ammo_refill_start_delay"					"0.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-	}
-
+    "ammo_display"									"count"
+    "ammo_clip_size"   								"300"
+    "ammo_default_total"							"300"
+    "ammo_min_to_fire"								"100"
+    "ammo_per_shot"									"100"
+    "ammo_stockpile_max"							"0"
+    "regen_ammo_refill_rate"						"5"
+    "regen_ammo_refill_start_delay"					"0.0"
 	// Bob - Hip
 	"bob_cycle_time"                           "0.4"
 	"bob_max_speed"                            "150"
@@ -294,6 +278,30 @@ WeaponData
         {
 
         }
+
+        extra_tactical_charges
+        {
+            "ammo_clip_size"   								"600"
+            "ammo_default_total"							"600"
+        }
+
+                            
+                      
+         
+                                 
+                                          
+                                         
+                                       
+                                          
+         
+
+                               
+         
+                                                               
+                                                               
+                                                               
+         
+           
 	}
 
 	active_crosshair_count				"0"

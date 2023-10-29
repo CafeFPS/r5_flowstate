@@ -48,20 +48,43 @@ void function SpawnMultipleLootTicksForMap()
     for(int i = 0; i < maxTicksToSpawn; i++)
     {
         entity lzEnt = tickSpawns[i]
-        SpawnLootTick(lzEnt.GetOrigin() + <0, 0, 50>, lzEnt.GetAngles())
+        SpawnLootTick( lzEnt.GetOrigin() + <0, 0, 50>, Vector( 0, 0, 0 ) )
+		#if DEVELOPER
+		printt( "spawned tick at " + lzEnt.GetOrigin() )
+		#endif
     }
+	
+	// int j = 0
+	foreach( infoTarget in tickSpawns )
+	{
+		infoTarget.Destroy()
+		// printt( "destroyed unused info target ent for lootticks, count: " + j )
+		// j++
+	}
 }
 
 entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpool = ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
 {
     entity lootTick = CreateEntity( "npc_frag_drone" )
     {
+		origin += Vector( 0,0,-50 )
         SetSpawnOption_AISettings( lootTick, "npc_frag_drone_treasure_tick" )
         lootTick.SetOrigin( origin )
         lootTick.SetAngles( angles )
         lootTick.SetDamageNotifications( false )
         SetTeam( lootTick, TEAM_UNASSIGNED)
 
+		entity parentPoint = CreateEntity( "script_mover_lightweight" )
+		{
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( origin )
+			parentPoint.SetAngles( angles )
+			DispatchSpawn( parentPoint )
+			parentPoint.Hide()
+			lootTick.SetParent(parentPoint)
+		}
         AddEntityCallback_OnDamaged( lootTick, OnLootTickDamaged )
         AddEntityCallback_OnKilled( lootTick, OnLootTickKilled )
 
@@ -69,7 +92,17 @@ entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpo
         AddMultipleLootItemsToLootTick( lootTick, Lootpool )
 
         DispatchSpawn( lootTick )
+
+		// lootTick.SetPhysics( MOVETYPE_FLY ) // doesn't actually make it move, but allows pushers to interact with it
+		// lootTick.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_HITBOX | CONTENTS_BULLETCLIP | CONTENTS_SOLID
+		// lootTick.Solid()
+		// lootTick.SetCollisionAllowed( true )
+		// lootTick.SetCollisionDetailHigh()
     }
+
+	lootTick.EnableNPCFlag( NPC_IGNORE_ALL )
+	lootTick.SetNoTarget( true )
+	lootTick.EnableNPCFlag( NPC_DISABLE_SENSING )    // don't do traces to look for enemies or players
 
     thread PlayAnim( lootTick, "sd_closed_to_open" )
     thread LootTickParticleThink( lootTick )

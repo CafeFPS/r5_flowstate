@@ -8,8 +8,6 @@ global function Cl_CustomCTF_Init
 
 //Server Callbacks
 global function ServerCallback_CTF_DoAnnouncement
-global function ServerCallback_CTF_PointCaptured
-global function ServerCallback_CTF_TeamText
 global function ServerCallback_CTF_FlagCaptured
 global function ServerCallback_CTF_CustomMessages
 global function ServerCallback_CTF_OpenCTFRespawnMenu
@@ -19,7 +17,6 @@ global function ServerCallback_CTF_AddPointIcon
 global function ServerCallback_CTF_RecaptureFlag
 global function ServerCallback_CTF_ResetFlagIcons
 global function ServerCallback_CTF_SetPointIconHint
-global function ServerCallback_CTF_SetCorrectTime
 global function ServerCallback_CTF_UpdatePlayerStats
 global function ServerCallback_CTF_CheckUpdatePlayerLegend
 global function ServerCallback_CTF_PickedUpFlag
@@ -29,8 +26,6 @@ global function ServerCallback_CTF_SetVoteMenuOpen
 global function ServerCallback_CTF_UpdateVotingMaps
 global function ServerCallback_CTF_UpdateMapVotesClient
 global function ServerCallback_CTF_SetScreen
-global function ServerCallback_CTF_BuildClientMessage
-global function ServerCallback_CTF_PrintClientMessage
 
 //Ui callbacks
 global function UI_To_Client_VoteForMap
@@ -38,6 +33,9 @@ global function UI_To_Client_UpdateSelectedClass
 
 global function Cl_CTFRegisterLocation
 global function Cl_CTFRegisterCTFClass
+global function CL_FSCTF_RegisterNetworkFunctions
+
+global function FSCTF_GameStateChanged
 
 struct {
 
@@ -113,96 +111,80 @@ array<string> savedmessages
 
 void function Cl_CustomCTF_Init()
 {
-    if(GLOBAL_CHAT_ENABLED)
-        RegisterButtonPressedCallback(KEY_ENTER, SendChat);
+	AddClientCallback_OnResolutionChanged( Cl_CTF_OnResolutionChanged )
+	RegisterConCommandTriggeredCallback( "+scriptCommand5", SendDropFlagToServer )
+	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
+	AddCallback_EntitiesDidLoad( CTFNotifyRingTimer )
 
-    AddClientCallback_OnResolutionChanged( GetTimeFromServer )
-    RegisterConCommandTriggeredCallback( "+use_alt", SendDropFlagToServer )
-
-    //Pak is released when vm is destroyed
-    CTFRpak = RequestPakFile( "ctf_mode" )
+	CTFRpak = RequestPakFile( "ctf_mode" )
+	RegisterSignal("FSDM_EndTimer")
 }
 
-void function SendChat(var button)
+void function CL_FSCTF_RegisterNetworkFunctions()
 {
-	var chat = HudElement( "IngameTextChat" )
-	var chatTextEntry = Hud_GetChild( Hud_GetChild( chat, "ChatInputLine" ), "ChatInputTextEntry" )
+	if ( IsLobby() )
+		return
+	
+	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_CTFRoundEndTimeChanged )
+}
 
-	if(CHAT_TEXT != "" && !IsChatOverflow(CHAT_TEXT.len()))
+void function Cl_OnResolutionChanged()
+{
+	if( GetGlobalNetInt( "FSDM_GameState" ) != 0 )
 	{
-		string text = "say " + CHAT_TEXT
-		GetLocalClientPlayer().ClientCommand(text)
-	}	
+		ShowScoreRUI( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
+		return
+	}
+	
+	Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
+	ShowScoreRUI( true )
 }
 
-void function SetChatSize()
+void function FSCTF_GameStateChanged( entity player, int old, int new, bool actuallyChanged )
 {
-    var chat = HudElement( "IngameTextChat" )
-	Hud_SetHeight( chat, 300 )
-    Hud_SetWidth( chat, 800 )
+	if ( !actuallyChanged )
+		return
+
+	if( new == 0 )
+	{
+		ShowScoreRUI( true )
+	} else if( new == 1 )
+	{
+		ShowScoreRUI( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
+	}
 }
 
-bool function IsChatOverflow(int len)
+void function Flowstate_CTFStartTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
-	if(len > 126 - (int(GetLocalClientPlayer().GetPlayerName().len() * 2.5) + 1))
-		return true
-	return false
+	if ( !actuallyChanged  )
+		return
+
+	thread Flowstate_PlayStartRoundSounds( )
+	thread Flowstate_ShowStartTimeUI( new )
 }
 
-void function HideChatAfterDelay()
+void function Flowstate_CTFRoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
-    if(hidechat) {
-        hidechatcountdown = 10
+	if ( !actuallyChanged  )
+		return
+
+	thread Flowstate_ShowRoundEndTimeUI( new )
+}
+
+void function CTFNotifyRingTimer()
+{
+    if( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) < Time() || GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS || GetGlobalNetTime( "flowstate_DMRoundEndTime" ) == -1 )
+	{
+		ShowScoreRUI( false )
+		Flowstate_ShowRoundEndTimeUI( -1 )
         return
-    }
+	}
 
-    hidechatcountdown = 10
-    hidechat = true
-
-    while(hidechatcountdown > 0)
-    {
-        hidechatcountdown--
-        wait 1
-    }
-
-    var chatHistory = Hud_GetChild( HudElement( "IngameTextChat" ), "HudChatHistory")
-    Hud_SetText( chatHistory, "" )
-    hidechat = false
-}
-
-void function ServerCallback_CTF_PrintClientMessage()
-{
-    //Easier to just set the size every client message
-    SetChatSize()
-
-    //If old message array > 7 then remove the first message
-    if(savedmessages.len() > 7)
-        savedmessages.remove(0)
-
-    if(savedmessages.len() > 0)
-        savedmessages.append("\n" + client_messageString)
-    else
-        savedmessages.append(client_messageString)
-
-    string finishedtext = ""
-
-    //Add each old message to the finished string
-    foreach(string message in savedmessages) {
-        finishedtext += message
-    }
-
-    var chatHistory = Hud_GetChild( HudElement( "IngameTextChat" ), "HudChatHistory")
-    Hud_SetText( chatHistory, finishedtext )
-
-    client_messageString = ""
-
-    thread HideChatAfterDelay()
-}
-
-void function ServerCallback_CTF_BuildClientMessage( ... )
-{
-	for ( int i = 0; i < vargc; i++ )
-		client_messageString += format("%c", vargv[i] )
+    Flowstate_ShowRoundEndTimeUI( GetGlobalNetTime( "flowstate_DMRoundEndTime" ) )
+	ShowScoreRUI( true )
 }
 
 void function ServerCallback_CTF_HideCustomUI()
@@ -215,14 +197,9 @@ void function SendDropFlagToServer( entity localPlayer )
 	GetLocalClientPlayer().ClientCommand("DropFlag")
 }
 
-void function ServerCallback_CTF_SetCorrectTime(int serverseconds)
+void function Cl_CTF_OnResolutionChanged()
 {
-    clientgametimer.seconds = serverseconds
-}
-
-void function GetTimeFromServer()
-{
-    GetLocalClientPlayer().ClientCommand("GetTimeFromServer")
+	
 }
 
 void function Cl_CTFRegisterLocation(LocationSettingsCTF locationSettings)
@@ -260,31 +237,41 @@ void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float 
         RuiSetFloat( FlagRUI.FlagReturnRUI, "chargeTime", 0 )
         RuiSetImage( FlagRUI.FlagReturnRUI, "hudIcon", icon )
         RuiSetInt( FlagRUI.FlagReturnRUI, "consumableType", 3 ) //0 = red, 1 = dark blue, 2 = dark purple, 3 = white
+		RuiSetString( FlagRUI.FlagReturnRUI, "hintController", "" )
+		RuiSetString( FlagRUI.FlagReturnRUI, "hintKeyboardMouse", "" )
     }
     else
     {
         if (FlagRUI.FlagReturnRUI != null)
         {
-            try { RuiDestroy(FlagRUI.FlagReturnRUI) } catch (pe1){ }
-            FlagRUI.FlagReturnRUI = null
+			RuiDestroyIfAlive( FlagRUI.FlagReturnRUI )
+			FlagRUI.FlagReturnRUI = null
         }
     }
 }
 
 void function ServerCallback_CTF_ResetFlagIcons()
 {
-    try { RuiDestroy(FlagRUI.IMCpointicon) } catch (pe1){  }
-    try { RuiDestroy(FlagRUI.MILITIApointicon) } catch (pe2){ }
-
-    FlagRUI.IMCpointicon = null
-    FlagRUI.MILITIApointicon = null
+	if( FlagRUI.IMCpointicon != null)
+	{
+		RuiDestroyIfAlive( FlagRUI.IMCpointicon )
+		FlagRUI.IMCpointicon = null
+	}
+	if( FlagRUI.MILITIApointicon != null)
+	{
+		RuiDestroyIfAlive( FlagRUI.MILITIApointicon )
+		FlagRUI.MILITIApointicon = null
+	}
 }
 
 void function ServerCallback_CTF_AddPointIcon(entity imcflag, entity milflag, int team)
 {
     ClientCodeCallback_MinimapEntitySpawned(imcflag)
     ClientCodeCallback_MinimapEntitySpawned(milflag)
-    switch(team)
+	
+	entity player = GetLocalClientPlayer()
+
+    switch( player.GetTeam() )
     {
         case TEAM_IMC:
             if(FlagRUI.IMCpointicon == null)
@@ -369,8 +356,10 @@ void function AddCaptureIconThread( entity prop, var rui )
 	OnThreadEnd(
 		function() : ( prop, rui )
 		{
-            if ( IsValid( rui ) )
-                try { RuiDestroy( rui ) } catch (pe3){ }
+			if( rui != null)
+			{
+				RuiDestroyIfAlive( rui )
+			}
 
 			if ( IsValid( prop ) )
 				prop.e.overheadRui = null
@@ -416,14 +405,11 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 
     if(pickedup)
     {
-        UISize screenSize = GetScreenSize()
-        var screenAlignmentTopo = RuiTopology_CreatePlane( <float( screenSize.width ) * 0.25, 0, 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ) + 100, 0>, false )
-        file.dropflagrui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-
-        RuiSetGameTime( file.dropflagrui, "startTime", Time() )
-        RuiSetString( file.dropflagrui, "messageText", "Press %use_alt% to drop the flag" )
-        RuiSetFloat( file.dropflagrui, "duration", 9999999 )
-        RuiSetFloat3( file.dropflagrui, "eventColor", color )
+		file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
+		RuiSetGameTime( file.dropflagrui, "startTime", Time() )
+		RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
+		RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
+		RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
 
         file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
         file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
@@ -431,70 +417,24 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
         RuiSetFloat( file.baseicon, "distanceFade", 100000 )
         RuiSetBool( file.baseicon, "adsFade", false )
         RuiSetString( file.baseicon, "hint", "" )
-
     }
     else
     {
-        if(IsValid( file.dropflagrui ))
-            RuiDestroy( file.dropflagrui )
+		if( file.dropflagrui != null)
+		{
+			RuiDestroyIfAlive( file.dropflagrui )
+			file.dropflagrui = null
+		}
 
-        if(IsValid( file.baseicon ))
-            RuiDestroy( file.baseicon )
+		if( file.baseicon != null)
+		{
+			RuiDestroyIfAlive( file.baseicon )
+			file.baseicon = null
+		}
 
         if(IsValid( file.baseiconmdl ))
             file.baseiconmdl.Destroy()
     }
-}
-
-void function MakeScoreRUI()
-{
-    if ( file.teamRui != null)
-        return
-
-    var compass = GetCompassRui()
-    if ( IsValid( compass ) )
-        RuiDestroy( compass )
-
-    clGlobal.levelEnt.EndSignal( "CloseScoreRUI" )
-
-    UISize screenSize = GetScreenSize()
-
-    var logoTopo = RuiTopology_CreatePlane( <(screenSize.width / 2) - 25, 25, 0>, <50, 0, 0>, <0, 50, 0>, false )
-    file.teamRui = RuiCreate( $"ui/basic_image.rpak", logoTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1)
-    asset icon
-    if(GetLocalClientPlayer().GetTeam() == TEAM_IMC)
-        icon = $"rui/gamemodes/capture_the_flag/imc_logo"
-    else
-        icon = $"rui/gamemodes/capture_the_flag/mil_logo"
-
-    var screenAlignmentTopoTimer = RuiTopology_CreatePlane( <(screenSize.width / 2) - 135, -305, 0>, <200, 0, 0>, <0, 800, 0>, false )
-    teamscore.timer = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoTimer, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-
-    RuiSetGameTime( teamscore.timer, "startTime", Time() )
-    RuiSetString( teamscore.timer, "messageText", "00:00" )
-    RuiSetFloat( teamscore.timer, "duration", 9999999 )
-    RuiSetFloat3( teamscore.timer, "eventColor", SrgbToLinear( <128, 188, 255> ) )
-
-    RuiSetImage( file.teamRui, "basicImage", icon)
-
-    if(GetLocalClientPlayer().GetTeam() == TEAM_SPECTATOR)
-        RuiSetVisible( file.teamRui, false )
-
-    OnThreadEnd(
-		function() : ()
-		{
-            if ( IsValid( file.teamRui ) )
-			    try { RuiDestroy( file.teamRui ) } catch (pe4){ }
-
-            if ( IsValid( teamscore.timer ) )
-			    try { RuiDestroy( teamscore.timer ) } catch (pe4){ }
-
-            teamscore.timer = null
-            file.teamRui = null
-		}
-	)
-
-    WaitForever()
 }
 
 void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float starttime)
@@ -506,17 +446,9 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
 
         case eCTFAnnounce.ROUND_START:
         {
-            thread MakeScoreRUI();
-            //message = "Round start"
+            ShowScoreRUI( true )
             message = "Match Start"
             subtext = "Score 5 points to win!"
-
-            //Timer Stuff
-            roundover = false
-            clientgametimer.gamestarttime = starttime.tointeger()
-            clientgametimer.endingtime = clientgametimer.gamestarttime + CTF_ROUNDTIME
-            clientgametimer.seconds = 60
-            thread StartGameTimer()
             break
         }
         case eCTFAnnounce.VOTING_PHASE:
@@ -535,214 +467,58 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
 	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
 }
 
-void function StartGameTimer()
-{
-    //Filler for when time is < 10
-    string secondsfiller = ""
-    string minsfiller = ""
-
-	while (!roundover)
-	{
-        //Calculate Elapsed Time
-        int elapsedtime = clientgametimer.endingtime - Time().tointeger()
-
-        //Calculate Seconds To Minutes
-		int minutes = floor( elapsedtime / 60 ).tointeger()
-
-        //If Seconds is < 1 Set Back To 60
-        if(clientgametimer.seconds < 1)
-            clientgametimer.seconds = 60
-
-        //This isnt needed but is there to make the time left counter look nicer when the timer is < 10
-        if(clientgametimer.seconds < 10)
-            secondsfiller = "0"
-        else
-            secondsfiller = ""
-
-        //This isnt needed but is there to make the time left counter look nicer when the timer is < 10
-        if(minutes < 10)
-            minsfiller = "0"
-        else
-            minsfiller = ""
-
-        //Update the counter on the UI
-        RunUIScript("SetGameTimer", minsfiller + minutes + ":" + secondsfiller + clientgametimer.seconds)
-
-        if(IsValid(teamscore.timer))
-            RuiSetString( teamscore.timer, "messageText", minsfiller + minutes + ":" + secondsfiller + clientgametimer.seconds )
-
-		wait 1
-        clientgametimer.seconds--
-	}
-}
-
-void function ServerCallback_CTF_PointCaptured(int IMC, int MIL)
-{
-    RunUIScript("SetCTFScores", IMC, MIL, CTF_SCORE_GOAL_TO_WIN)
-
-    int startwidth = 400 / CTF_SCORE_GOAL_TO_WIN
-    int imcwidth = startwidth * IMC
-    int milwidth = startwidth * MIL
-
-    UISize screenSize = GetScreenSize()
-
-    DeleteScoreRUI(false)
-
-    //Alignment
-    var screenAlignmentTopoIMCBG = RuiTopology_CreatePlane( <(screenSize.width / 2) - 420, 100, 0>, <400, 0, 0>, <0, 10, 0>, false )
-    var screenAlignmentTopoMILBG = RuiTopology_CreatePlane( <(screenSize.width / 2) + 20, 100, 0>, <400, 0, 0>, <0, 10, 0>, false )
-    var screenAlignmentTopoIMC = RuiTopology_CreatePlane( <(screenSize.width / 2) - (imcwidth + 20), 100, 0>, <imcwidth, 0, 0>, <0, 10, 0>, false )
-    var screenAlignmentTopoMIL = RuiTopology_CreatePlane( <(screenSize.width / 2) + 20, 100, 0>, <milwidth, 0, 0>, <0, 10, 0>, false )
-    var screenAlignmentTopoMILText = RuiTopology_CreatePlane( <(screenSize.width / 2) - 200, -230, 0>, <400, 0, 0>, <0, 600, 0>, false )
-    var screenAlignmentTopoMILScore = RuiTopology_CreatePlane( <(screenSize.width / 2) + 125, -230, 0>, <400, 0, 0>, <0, 600, 0>, false )
-    var screenAlignmentTopoIMCText = RuiTopology_CreatePlane( <(screenSize.width / 2) - 269, -230, 0>, <400, 0, 0>, <0, 600, 0>, false )
-    var screenAlignmentTopoIMCScore = RuiTopology_CreatePlane( <(screenSize.width / 2) - 640, -230, 0>, <400, 0, 0>, <0, 600, 0>, false )
-
-    teamscore.imcscorebg = RuiCreate( $"ui/basic_image.rpak", screenAlignmentTopoIMCBG, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1)
-    RuiSetFloat3( teamscore.imcscorebg, "basicImageColor", SrgbToLinear( <30, 30, 30> / 255 ))
-
-    teamscore.milscorebg = RuiCreate( $"ui/basic_image.rpak", screenAlignmentTopoMILBG, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1)
-    RuiSetFloat3( teamscore.milscorebg, "basicImageColor", SrgbToLinear( <30, 30, 30> / 255 ))
-
-    teamscore.imcscorecurrentbg = RuiCreate( $"ui/basic_image.rpak", screenAlignmentTopoIMC, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1)
-    RuiSetFloat3( teamscore.imcscorecurrentbg, "basicImageColor", SrgbToLinear( <100, 100, 255> / 255 ))
-
-    teamscore.milscorecurrentbg = RuiCreate( $"ui/basic_image.rpak", screenAlignmentTopoMIL, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1)
-    RuiSetFloat3( teamscore.milscorecurrentbg, "basicImageColor", SrgbToLinear( <255, 100, 100> / 255 ))
-
-    if(!IsValid(teamscore.miltext))
-    {
-        teamscore.miltext = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoMILText, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-        RuiSetGameTime( teamscore.miltext, "startTime", Time() )
-        RuiSetString( teamscore.miltext, "messageText", "MILITIA" )
-        RuiSetFloat( teamscore.miltext, "duration", 9999999 )
-        RuiSetFloat3( teamscore.miltext, "eventColor", SrgbToLinear( <128, 188, 255> ) )
-    }
-
-    if(!IsValid(teamscore.imctext))
-    {
-        teamscore.imctext = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoIMCText, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-        RuiSetGameTime( teamscore.imctext, "startTime", Time() )
-        RuiSetString( teamscore.imctext, "messageText", "IMC" )
-        RuiSetFloat( teamscore.imctext, "duration", 9999999 )
-        RuiSetFloat3( teamscore.imctext, "eventColor", SrgbToLinear( <128, 188, 255> ) )
-    }
-
-    if(IMC > teamscore.imcscore2 || !IsValid( teamscore.imcscore ))
-    {
-        if ( IsValid( teamscore.imcscore ) )
-	        try { RuiDestroy( teamscore.imcscore ) } catch (pe4){ }
-
-        teamscore.imcscore = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoIMCScore, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-        RuiSetGameTime( teamscore.imcscore, "startTime", Time() )
-        RuiSetString( teamscore.imcscore, "messageText", "Captures: " + IMC)
-        RuiSetFloat( teamscore.imcscore, "duration", 9999999 )
-        RuiSetFloat3( teamscore.imcscore, "eventColor", SrgbToLinear( <100, 100, 255> / 255 ))
-    }
-
-    if(MIL > teamscore.milscore2 || !IsValid( teamscore.milscore ))
-    {
-        if ( IsValid( teamscore.milscore ) )
-	        try { RuiDestroy( teamscore.milscore ) } catch (pe4){ }
-
-        teamscore.milscore = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoMILScore, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
-        RuiSetGameTime( teamscore.milscore, "startTime", Time() )
-        RuiSetString( teamscore.milscore, "messageText", "Captures: " + MIL )
-        RuiSetFloat( teamscore.milscore, "duration", 9999999 )
-        RuiSetFloat3( teamscore.milscore, "eventColor", SrgbToLinear( <255, 100, 100> / 255 ))
-    }
-
-    teamscore.milscore2 = MIL
-    teamscore.imcscore2 = IMC
-}
-
 void function DeleteScoreRUI(bool newround)
 {
-    if ( IsValid(  teamscore.imcscorecurrentbg ) )
-		try { RuiDestroy(  teamscore.imcscorecurrentbg ) } catch (pe4){ }
-
-    if ( IsValid( teamscore.milscorecurrentbg ) )
-	    try { RuiDestroy( teamscore.milscorecurrentbg ) } catch (pe4){ }
-
-    if ( IsValid( teamscore.imcscorebg ) )
-		try { RuiDestroy( teamscore.imcscorebg ) } catch (pe4){ }
-
-    if ( IsValid( teamscore.milscorebg ) )
-        try { RuiDestroy( teamscore.milscorebg ) } catch (pe4){ }
-
-    teamscore.milscorebg = null
-    teamscore.imcscorebg = null
-    teamscore.milscorecurrentbg = null
-    teamscore.imcscorecurrentbg = null
-
-    if(newround)
-    {
-        if ( IsValid(  teamscore.imcscore ) )
-		    try { RuiDestroy(  teamscore.imcscore ) } catch (pe4){ }
-
-        if ( IsValid( teamscore.milscore ) )
-            try { RuiDestroy( teamscore.milscore ) } catch (pe4){ }
-
-        if ( IsValid( teamscore.miltext ) )
-            try { RuiDestroy( teamscore.miltext ) } catch (pe4){ }
-
-        if ( IsValid( teamscore.imctext ) )
-            try { RuiDestroy( teamscore.imctext ) } catch (pe4){ }
-
-        teamscore.imcscore = null
-        teamscore.milscore = null
-        teamscore.miltext = null
-        teamscore.imctext = null
-    }
+    printt( "Delete score Rui" )
 }
 
 void function ShowScoreRUI(bool show)
 {
-    if ( IsValid(  teamscore.imcscorecurrentbg ) )
-		RuiSetVisible(  teamscore.imcscorecurrentbg, show )
+    Hud_SetVisible( HudElement( "FS_Oddball_YourTeam" ), show )
+	Hud_SetVisible( HudElement( "FS_Oddball_YourTeamGoalScore" ), show )
+	Hud_SetText( HudElement( "FS_Oddball_YourTeamGoalScore"), "/" + CTF_SCORE_GOAL_TO_WIN ) 
+    Hud_SetVisible( HudElement( "FS_Oddball_YourTeamScore" ), show )
+    Hud_SetVisible( HudElement( "FS_Oddball_AllyHas" ), show )
+    Hud_SetVisible( HudElement( "FS_Oddball_EnemyTeam" ), show )
+    Hud_SetVisible( HudElement( "FS_Oddball_EnemyTeamScore" ), show )
+    Hud_SetVisible( HudElement( "FS_Oddball_EnemyHas" ), show )
 
-    if ( IsValid( teamscore.milscorecurrentbg ) )
-	    RuiSetVisible( teamscore.milscorecurrentbg, show )
-
-    if ( IsValid( teamscore.imcscorebg ) )
-		RuiSetVisible( teamscore.imcscorebg, show )
-
-    if ( IsValid( teamscore.milscorebg ) )
-		RuiSetVisible( teamscore.milscorebg, show )
-
-    if ( IsValid( teamscore.miltext ) )
-		RuiSetVisible( teamscore.miltext, show )
-
-    if ( IsValid(  teamscore.imctext ) )
-		RuiSetVisible(  teamscore.imctext, show )
-
-    if ( IsValid( teamscore.imcscore ) )
-	    RuiSetVisible( teamscore.imcscore, show )
-
-    if ( IsValid( teamscore.milscore ) )
-		RuiSetVisible( teamscore.milscore, show )
-
-    if ( IsValid( teamscore.timer ))
-        RuiSetVisible( teamscore.timer, show )
-
-    if ( IsValid( file.teamRui ))
-        RuiSetVisible( file.teamRui, show )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", $"rui/gamemodes/capture_the_flag/mil_flag" )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", $"rui/gamemodes/capture_the_flag/imc_flag" )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_Scoreboard_Frame" ) ), "basicImage", $"rui/flowstate_custom/scoreboard_bg_oddball" )
+	
+	Hud_SetVisible( HudElement( "FS_Oddball_Scoreboard_Frame" ), show )
+	
+	if( !show )
+		return
+	
+	thread CTF_StartBuildingTeamsScoreOnHud()
 }
 
-void function ServerCallback_CTF_TeamText(int team)
+void function CTF_StartBuildingTeamsScoreOnHud()
 {
-    if(file.teamRui)
-    {
-        switch(team)
-        {
-            case TEAM_IMC:
-                RuiSetImage( file.teamRui, "basicImage", $"rui/gamemodes/capture_the_flag/imc_logo")
-                break
-            case TEAM_MILITIA:
-                RuiSetImage( file.teamRui, "basicImage", $"rui/gamemodes/capture_the_flag/mil_logo")
-                break
-        }
-    }
+	entity player = GetLocalClientPlayer()
+
+	int localscore = 0
+	int enemyscore = 0
+	string str_localscore = ""
+	string str_enemyscore = ""
+	
+	while( GetGlobalNetInt( "FSDM_GameState" ) == 0 )
+	{
+		localscore = GameRules_GetTeamScore( player.GetTeam() )
+		enemyscore = GameRules_GetTeamScore( player.GetTeam() == TEAM_IMC ? TEAM_MILITIA : TEAM_IMC )
+		str_localscore = ""
+		str_enemyscore = ""
+
+		str_localscore = localscore.tostring()
+		str_enemyscore = enemyscore.tostring() + "/" + CTF_SCORE_GOAL_TO_WIN.tostring()
+		
+		Hud_SetText( HudElement( "FS_Oddball_YourTeamScore"), str_localscore ) 
+		Hud_SetText( HudElement( "FS_Oddball_EnemyTeamScore"), str_enemyscore ) 
+
+		wait 0.01
+	}
 }
 
 void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
@@ -986,7 +762,6 @@ void function CreateVotingUI()
     thread ShowCTFVictorySequence()
 
     RunUIScript( "OpenCTFVoteMenu" )
-    ShowScoreRUI(false)
 
     ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.3, 0.0, FFADE_IN | FFADE_PURGE)
 }
@@ -1003,7 +778,6 @@ void function DestroyVotingUI()
     GetLocalClientPlayer().ClearMenuCameraEntity()
 
     RunUIScript( "CloseCTFVoteMenu" )
-    ShowScoreRUI(true)
 
     foreach( rui in overHeadRuis )
 		RuiDestroyIfAlive( rui )

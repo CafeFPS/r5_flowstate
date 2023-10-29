@@ -1,0 +1,6 @@
+#base "_base_laser_sights.txt"
+
+WeaponData
+{
+    "bodygroup32_name"	"lasersight_sml"
+}

@@ -186,8 +186,9 @@ entity function CreateEntity( string name )
 //	if ( name == "info_particle_system" )
 //	{
 //		printl( " " )
-//		DumpStack(3)
+		// DumpStack(3)
 //	}
+	
 	return Entities_CreateByClassname( name )
 }
 
@@ -1060,15 +1061,16 @@ enum eAttach
 
 void function LoadDiamond()
 {
-	printl( "----------------------------" )
+    printl( "----------------------------" )
     printl( " " )
     printl( "____ _    ____ _ _ _ ____ ___ ____ ___ ____")
     printl( "|___ |    |  | | | | [__   |  |__|  |  |___")
     printl( "|    |___ |__| |_|_| ___]  |  |  |  |  |___")
-	printl( " " )
-    printl( FLOWSTATE_VERSION + " - Mantained by @CafeFPS and collaborators" )
-	printl( " " )
-	printl( "----------------------------" )
+    printl( " " )
+    printl( "Flowstate Scripts " + FLOWSTATE_VERSION + " - Maintained by @CafeFPS and collaborators." )
+    printl( "r5sdk v2.3 developed by amos1368 and collaborators." )
+    printl( " " )
+    printl( "----------------------------" )
     printl( " " )
 }
 
@@ -4390,6 +4392,9 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	string weaponClassName = offhandWeapon.GetWeaponClassName()
 	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
 
@@ -4406,6 +4411,9 @@ void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapo
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	if(!IsValid(player)) return
 	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
@@ -4415,6 +4423,9 @@ void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound
 
 void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
 {
+	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
+		return
+
 	if(!IsValid(player)) return
 	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
@@ -4466,7 +4477,9 @@ void function UnlockWeaponsAndMelee( entity player )
 void function DelayedDestroy( entity mover, float lifetime )
 {
 	wait( lifetime )
-	mover.Destroy()
+	
+	if( IsValid( mover ) )
+		mover.Destroy()
 }
 
 void function SwapToLastEquippedPrimary( entity player )
@@ -4474,10 +4487,21 @@ void function SwapToLastEquippedPrimary( entity player )
 	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, SURVIVAL_GetLastActiveWeapon( player ).GetClassName() )
 }
 
-entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
+entity function CreateTraceBlockerVolume( vector fxOrigin, float radius, bool b0, int contents, int team, string scriptname )
 {
-	entity traceBlocker
-	return traceBlocker
+	entity traceBlockerVol = CreateEntity( "trace_volume" )
+	traceBlockerVol.kv.origin = fxOrigin
+	traceBlockerVol.kv.angles = Vector(0,0,0)
+	traceBlockerVol.kv.contents = contents
+	traceBlockerVol.kv.team = team
+
+	traceBlockerVol.SetScriptName( scriptname )
+	SetTargetName( traceBlockerVol, scriptname )
+
+	DispatchSpawn( traceBlockerVol )
+	SetTeam( traceBlockerVol, team )
+
+	return traceBlockerVol
 }
 
 void function SetOutOfBoundsTimeLimit( float maxtime )
@@ -4485,16 +4509,40 @@ void function SetOutOfBoundsTimeLimit( float maxtime )
 	//stub
 }
 
-array<entity> function GetEntityChainOfType( entity endNodes )
+array<entity> function GetEntityChainOfType( entity endNode )
 {
-	array<entity> temp
-	return temp
+	Assert( IsValid( endNode ) )
+	array<entity> nodes
+	nodes.append( endNode )
+	// while ( true )
+	// {
+		array<entity> nextNodes = nodes[nodes.len() - 1].GetLinkEntArray()
+		
+		foreach( node in nextNodes )
+		{
+			if ( !IsValid( node ) )
+				break
+			nodes.append( node )
+
+			foreach( node2 in node.GetLinkEntArray() )
+			{
+				if ( !IsValid( node2 ) )
+					break
+
+				if ( node2.GetClassName() == "info_target" )
+					continue
+
+				nodes.append( node2 )
+			}
+		}
+	// }
+	return nodes
 }
 
-entity function GetLastLinkedEntOfType( entity endNodes )
+entity function GetLastLinkedEntOfType( entity endNode )
 {
-	entity temp
-	return temp
+	array<entity> chain = GetEntityChainOfType( endNode )
+	return chain[chain.len() - 1]
 }
 
 // Screen cover transition functions

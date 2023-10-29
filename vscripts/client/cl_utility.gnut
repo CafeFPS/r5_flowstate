@@ -196,7 +196,19 @@ void function AddCallback_MinimapEntSpawned( void functionref( entity ) callback
 	clGlobal.onMinimapEntSpawnedCallbacks.append( callbackFunc )
 }
 
-void function AddCallback_MinimapEntShoudCreateCheck( bool functionref( entity ) callbackFunc )
+void function AddCallback_MinimapEntShouldCreateCheck_Scriptname( string scriptname, bool functionref( entity ) callbackFunc )
+{
+	Assert( !( scriptname in clGlobal.onMinimapEntShouldCreateCallbacks_scriptname ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShouldCreateCheck_Scriptname" )
+	clGlobal.onMinimapEntShouldCreateCallbacks_scriptname[scriptname] <- callbackFunc
+}
+
+void function AddCallback_MinimapEntShouldCreateCheck_Targetname( string targetname, bool functionref( entity ) callbackFunc )
+{
+	Assert( !( targetname in clGlobal.onMinimapEntShouldCreateCallbacks_targetname ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShouldCreateCheck_Targetname" )
+	clGlobal.onMinimapEntShouldCreateCallbacks_targetname[targetname] <- callbackFunc
+}
+
+void function AddCallback_MinimapEntShouldCreateCheck( bool functionref( entity ) callbackFunc )
 {
 	Assert( !clGlobal.onMinimapEntShouldCreateCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_MinimapEntShoudCreateCheck" )
 	clGlobal.onMinimapEntShouldCreateCallbacks.append( callbackFunc )
@@ -661,10 +673,17 @@ void function Dev_PrintClientMessage( float duration )
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1")
+	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos")
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )
+		
+		if(duration == 8.420)
+		{
+			Announcement_SetDuration( announcement, 5 )
+			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+			Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+		}
 	}
 	
 	AnnouncementFromClass( player, announcement )
@@ -1537,6 +1556,9 @@ bool function ShouldShowButtonHints()
 // Set post processing vars which cannot be set through level entity files.
 void function MapConVar_Init()
 {
+	if( GetMapName() == "mp_flowstate" )
+		return
+
 	switch( GetMapName() )
 	{
 		case "mp_rr_aqueduct_night":
@@ -1574,6 +1596,43 @@ void function DynamicLight_Init()
 	vector angle = < 0, 0, 0 >
 	switch( GetMapName() )
 	{
+		case "mp_flowstate":
+			 float brightness_green = 350.0
+			 entity dlight_chill_0 = CreateClientSideDynamicLight( <39952.1602, -10605.457, -20576.3398> , <0, -178.180634, 0>, DLIGHT_LIGHTGREEN, brightness_green ).SetLightExponent( 2.0 )
+			 entity dlight_chill_1 = CreateClientSideDynamicLight( <40224.6211, -10612.4463, -20585.0781> , <0, 8.98998165, 0>, DLIGHT_LIGHTGREEN, brightness_green ).SetLightExponent( 2.0 )
+			 entity dlight_chill_2 = CreateClientSideDynamicLight( <40418.0508, -10611.7568, -20574.6074> , <0, 29.7462425, 0>, DLIGHT_LIGHTGREEN, brightness_green ).SetLightExponent( 2.0 )
+			
+			float brightness_azul_small = 150.0
+			vector blueLight = <46, 167, 255>
+			//azul small radius
+			entity dlight_chill_3 = CreateClientSideDynamicLight( <39521.0273, -10413.7168, -20400.0469> , <0, -2.23336363, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_4 = CreateClientSideDynamicLight( <39809.0859, -9327.00781, -20316.1172> , <0, -101.817078, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_5 = CreateClientSideDynamicLight( <40102.4531, -9316.64941, -20316.1172> , <0, -87.9790955, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_6 = CreateClientSideDynamicLight( <40386.0391, -9306.64063, -20316.1172> , <0, -87.9790955, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_7 = CreateClientSideDynamicLight( <40376.5664, -10773.5771, -20383.9512> , <0, 87.5749893, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_8 = CreateClientSideDynamicLight( <40092.7656, -10760.8076, -20383.9512> , <0, 87.4247742, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_9 = CreateClientSideDynamicLight( <39828.0391, -10750.7217, -20400.0313> , <0, 90.5107117, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_10 = CreateClientSideDynamicLight( <40058.9219, -10244.667, -20514.1582> , <0, 179.48056, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_11 = CreateClientSideDynamicLight( <39713.1797, -10246.3711, -20505.6387> , <0, -0.597286582, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_12 = CreateClientSideDynamicLight( <40047.4727, -9758.14453, -20518.3379> , <0, -176.21315, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_13 = CreateClientSideDynamicLight( <39723.625, -9751.27344, -20516.1953> , <0, -2.26641369, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_14 = CreateClientSideDynamicLight( <40676.7266, -10752.2803, -20390.9883> , <0, 88.5335999, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_15 = CreateClientSideDynamicLight( <41093.0313, -10348.0889, -20583.5645> , <0, -1.20828676, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_16 = CreateClientSideDynamicLight( <41083.457, -9655.99023, -20551.1504> , <0, -8.37922668, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_17 = CreateClientSideDynamicLight( <40156.0039, -10238.6133, -20506.9805> , <0, 5.27609587, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_18 = CreateClientSideDynamicLight( <40169.2305, -9756.56934, -20494.7676> , <0, 4.71007633, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_20 = CreateClientSideDynamicLight( <41201.5469, -9711.53223, -20059.9844> , <0, -69.4191284, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_21 = CreateClientSideDynamicLight( <41201.7109, -10284.1152, -20056.2441> , <0, -98.0492554, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_22 = CreateClientSideDynamicLight( <40853.957, -9742.55664, -19989.7949> , <0, -92.0691376, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+			entity dlight_chill_23 = CreateClientSideDynamicLight( <40830.332, -10228.2969, -20013.873> , <0, -75.6139603, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small ).SetLightExponent( 1.8 )
+
+			//azul grande
+			entity dlight_chill_19 = CreateClientSideDynamicLight( <40553.6523, -9467.47852, -20317.1914> , <0, -98.6362991, 0>, SrgbToLinear( blueLight / 255.0 ), brightness_azul_small*2 ).SetLightExponent( 1.8 )
+
+			 // float brightness_ash = 500.0
+			 // entity dlight_ash_0 = CreateClientSideDynamicLight(<39845.0977, -10023.2188, -20164.0566>, angle, DLIGHT_RICH_BROWN, 1000 )
+			 // dlight_ash_0.SetLightExponent( 0.5 )
+			break
 		case "mp_rr_ashs_redemption":
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// ASH'S REDEMPTION

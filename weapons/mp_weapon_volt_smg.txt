@@ -27,7 +27,7 @@ WeaponData
 	"leveled_pickup"								"1"
 
 	//"damage_flags"									"DF_BULLET | DF_DISMEMBERMENT"
-	"damage_headshot_scale"							"1.5"
+
 	"damage_leg_scale"                              "0.8"
 
 	"critical_hit"									"1"
@@ -49,8 +49,7 @@ WeaponData
 	"chroma_color"									".6 1 .7"
 
     "projectilemodel" 								"mdl/dev/empty_model.rmdl"
-    "projectile_trail_effect_0_1p" 					"P_tracer_projectile_smg_blue"
-    "projectile_trail_effect_0_3p" 					"P_tracer_projectile_smg_blue"
+    "projectile_trail_effect_0" 					"P_tracer_projectile_smg_blue"
 
     "projectile_do_predict_impact_effects"			"1"
 
@@ -98,13 +97,13 @@ WeaponData
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"looping_sounds"								"1"
 
-    "fire_sound_1_player_1p"						"weapon_hemloksmg_secondshot_1p"
-    "fire_sound_1_player_3p"						"weapon_hemloksmg_secondshot_3p"
-    "fire_sound_1_npc"								"weapon_hemloksmg_secondshot_3p"
+    // "fire_sound_1_player_1p"						"weapon_hemloksmg_secondshot_1p"
+    // "fire_sound_1_player_3p"						"weapon_hemloksmg_secondshot_3p"
+    // "fire_sound_1_npc"							"weapon_hemloksmg_secondshot_3p"
 
 	"fire_sound_2_player_1p" 						""
 	"fire_sound_2_player_3p" 						""
@@ -130,22 +129,31 @@ WeaponData
 	// Damage - When Used by Players
 	"damage_type" 									"bullet"
 
-	// Ammo
-    "ammo_clip_size"                                "19"
-    "red_crosshair_range" 							"0"
-    "ammo_min_to_fire"								"1"
+                                              
+                                                                                                                       
+                                                     
+                                         
 
-    "ammo_default_total"							"969"
-    "ammo_stockpile_max"							"969"
-    "ammo_no_remove_from_stockpile"					"1"
-    "uses_ammo_pool"								"0"
+                                               
+                                            
+                                                
+                                                     
+                                                     
+                                                         
 
-    "damage_near_value"   					        "15"
-    "damage_far_value"						        "15"
-    "damage_very_far_value"					        "15"
-    "damage_near_value_titanarmor"			        "15"
-    "damage_far_value_titanarmor" 			        "15"
-    "damage_very_far_value_titanarmor" 		        "15"
+         
+        "ammo_clip_size"                                "19"
+        "ammo_stockpile_max"							"30"
+        "ammo_default_total"							"0"
+        "ammo_no_remove_from_stockpile"					"0"
+        "uses_ammo_pool"								"1"
+
+        "damage_near_value"   					        "15"
+        "damage_far_value"						        "15"
+        "damage_very_far_value"					        "15"
+        "damage_near_value_titanarmor"			        "15"
+        "damage_far_value_titanarmor" 			        "15"
+        "damage_very_far_value_titanarmor" 		        "15"
 
        
 
@@ -233,14 +241,6 @@ WeaponData
 	"spread_stand_hip_run"							"4.875"
 	"spread_stand_hip_sprint"                       "5.25"
 	"spread_crouch_hip"   							"3.0"
-	"spread_air_hip"  								"5.625"
-     
-                                 
-                                    
-                                                      
-                                   
-                                 
-      
 
 	// movement based crosshair bloom
 	"spread_moving_increase_rate" 					"3.0"
@@ -384,19 +384,10 @@ WeaponData
 
 	Mods
 	{
-	    gold        {}
-		
-		survival_finite_ammo
-		{
-			"ammo_default_total"					"0"
-			"ammo_stockpile_max"					"36"
-			"ammo_no_remove_from_stockpile"			"0"
+        gold
+        {
+        }
 
-			"low_ammo_fraction" 					"0.3"
-
-			"uses_ammo_pool"						"1"
-		}
-		
         barrel_stabilizer_l4_flash_hider
         {
             "fx_muzzle_flash_view"                ""

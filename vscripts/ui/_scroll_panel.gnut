@@ -167,7 +167,7 @@ void function ScrollPanel_InitPanel( var panel )
 	{
 		var contentBottomElement = Hud_GetChild( data.contentPanel, "PanelBottom" )
 		UIPos uiPos = REPLACEHud_GetParentRelativePos( contentBottomElement )
-		printt( "AbsY", uiPos.x, uiPos.y )
+		// printt( "AbsY", uiPos.x, uiPos.y )
 		if ( uiPos.y > 0 )
 			Hud_SetHeight( data.contentPanel, uiPos.y )
 	}
@@ -283,7 +283,7 @@ void function OnScrollBarClick( var button )
 {
 	ScrollPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 
-	printt( "OnScrollBarClick" )
+	// printt( "OnScrollBarClick" )
 	//data.isScrollActive = true
 }
 
@@ -297,7 +297,7 @@ void function ScrollHandlePress( var button )
 
 		if ( data.isScrollActive )
 		{
-			printt( "data.isScrollActive" )
+			// printt( "data.isScrollActive" )
 			continue
 		}
 

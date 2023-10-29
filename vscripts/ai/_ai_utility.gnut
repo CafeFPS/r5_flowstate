@@ -2,9 +2,155 @@ untyped
 
 globalize_all_functions
 
-struct{
-	array<var> recordingAnims
-}file
+void function SpawnFogParticleTest()
+{
+	// StartParticleEffectInWorld( GetParticleSystemIndex( $"P_env_room_fog_512" ), gp()[0].GetOrigin(), Vector(0,0,0) )
+	// DebugDrawSphere( gp()[0].GetOrigin(), 512, 255, 0, 0, true, 99.0 )
+	
+	entity skyboxCamera = GetEnt( "skybox_cam_level" )
+
+	// file.skyboxStartingOrigin = skyboxCamera.GetOrigin()
+	// file.skyboxStartingAngles = skyboxCamera.GetAngles()
+	float SKYBOX_Z_OFFSET_STAGING_AREA = 30.0
+	vector SKYBOX_ANGLES_STAGING_AREA = <0, 60, 0>
+	skyboxCamera.SetOrigin( skyboxCamera.GetOrigin() + <0, 0, SKYBOX_Z_OFFSET_STAGING_AREA> )
+	skyboxCamera.SetAngles( SKYBOX_ANGLES_STAGING_AREA )
+}
+
+void function ForceReloadAnimTest()
+{
+	entity weapon = gp()[0].GetActiveWeapon( eActiveInventorySlot.mainHand )
+	entity vm = weapon.GetWeaponViewmodel()
+
+	try{
+	vm.Anim_Stop()
+	//vm.Anim_NonScriptedPlay("animseq/weapons/w1128/ptpov_w1128/drawfirst.rseq")
+	weapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+	vm.SetCycle( 0.1 )
+	//vm.Anim_SetPlaybackRate( 2 )
+	weapon.OverrideNextAttackTime( Time() + (weapon.GetSequenceDuration("ACT_VM_DRAWFIRST") - weapon.GetSequenceDuration("ACT_VM_DRAWFIRST")*0.1) - 1 )
+	}catch(e420){}
+}
+	
+void function Flowstate_DebugGameEntities()
+//By @CafeFPS
+{
+	entity firstEnt = Entities_First()
+	entity nextEnt = Entities_Next( firstEnt )
+	
+	table< string, int > entityClassAndCount
+
+	while( true )
+	{
+		if( !IsValid( nextEnt ) )
+			continue
+		
+		// debug ent count by classname
+		if( !(nextEnt.GetClassName() in entityClassAndCount) )
+			entityClassAndCount[ nextEnt.GetClassName() ] <- 1	
+		else
+			entityClassAndCount[ nextEnt.GetClassName() ]++
+
+		if( IsValid( Entities_Next( nextEnt ) ) )
+		{
+			nextEnt = Entities_Next( nextEnt )
+		}
+		else 
+			break
+	}
+	
+	foreach( string className, int count in entityClassAndCount )
+	{
+		printt( className, count )
+	}
+
+	// finding ents by classname
+
+	array<entity> badents
+	entity startBadEnt = Entities_FindByClassname( null, "info_target" )
+
+	while( IsValid( startBadEnt ) )
+	{
+		badents.append( startBadEnt )
+		startBadEnt = Entities_FindByClassname( startBadEnt, "info_target" )
+	}
+	
+	int i = 0
+	foreach( ent in badents )
+	{
+		if( !IsValid( ent ) || ent.IsMarkedForDeletion() )
+			continue
+
+		
+		if( ent.GetScriptName() == "" && GetEditorClass( ent ) == "" || GetEditorClass( ent ) == "info_hover_tank_node" ) // fixear desde el lado de los hovertanks, una vez calculados los puntos a usar, eliminar el resto. //|| ent.GetScriptName() == "" ) //|| GetEditorClass( ent ) == "info_hover_tank_node" || 
+		{
+			ent.Destroy()
+			i++
+		}
+	}
+	
+	printt( "[+] Removed " + i + " ents.")
+}
+void function AnimNameTest()
+{
+//By Colombia
+    entity player = gp()[0]
+
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	entity vm = weapon.GetWeaponViewmodel()
+	
+	// // // vm.SetModelScale(3.0)
+	
+
+	// try{
+	// // player.SetBodyModelOverride($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
+	// // //player.SetModel($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
+	
+	// vm.Anim_PlayOnly("animseq/weapons/revenant_grenade/ptpov_revenant_silencer/toss_hold.rseq")
+	// }catch(e420){}
+	
+	
+	// entity weapon
+	// entity vm
+    while(IsValid(player)){
+		// weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		// if(IsValid(weapon))
+		// {
+			weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			if( IsValid( weapon ) )
+			vm = weapon.GetWeaponViewmodel()
+			if( IsValid( vm ) )
+			printt("NAME: " + vm.GetCurrentSequenceName())
+		// }
+        WaitFrame()
+    }
+	
+	// entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_LL_med_drone_jet_ctr_loop" ), player.GetOrigin(), <RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
+	// trailFXHandle.SetParent(player, "CHESTFOCUS")
+	// // trailFXHandle.SetOrigin(trailFXHandle.GetOrigin() + <RandomIntRangeInclusive(-5,5), RandomIntRangeInclusive(-5,5), RandomIntRangeInclusive(-20,10)>)
+	// // trailFXHandle.SetAngles(<RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
+	// // EffectSetControlPointVector( trailFXHandle, 1, <97, 50, 168> )
+		
+	// StatusEffect_AddTimed( player , eStatusEffect.drone_healing, 1, 3, 5)
+}
+
+void function StartRunningForward(entity player)
+{
+	OnThreadEnd(
+		function() : ( player )
+		{
+			ClientCommand(player, "-speed")
+			ClientCommand(player, "-forward")
+		}
+	)
+	
+	while(IsAlive(player))
+	{
+		ClientCommand(player, "+speed")
+		ClientCommand(player, "+forward")
+		WaitFrame()
+	}
+}
 
 void function SpawnDoubleDoorAtCrosshair()
 {
@@ -31,78 +177,6 @@ void function SpawnDoubleDoorAtCrosshair()
 	ddr.LinkToEnt( ddl )
 	DispatchSpawn(ddr)
 }
-
-array<entity> dummyList;
-bool continueLoop = true;
-
-void function StartMovementRecorder(length = 10)
-{
-	//By Colombia
-	entity player = GetPlayerArray()[0]
-	vector initialpos = player.GetOrigin()
-	vector initialang = player.GetAngles()
-	player.StartRecordingAnimation(initialpos, initialang)
-	Message(player, "RECORDING MOVEMENT", "", 1.5)
-	wait length
-	file.recordingAnims.append( player.StopRecordingAnimation() )
-	var anim = file.recordingAnims[file.recordingAnims.len()-1]
-	asset playermodel = player.GetModelName()
-	WaitFrame()
-	Message(player, "PLAYING MOVEMENT", "", 1.5)
-	printt(anim) //userdata
-
-	continueLoop = true;
-	while(continueLoop)
-	{
-		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
-		dummyList.append(dummy);
-		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
-		wait GetRecordedAnimationDuration( anim )
-		if(IsValid(dummy))
-		dummy.Destroy()
-	}
-}
-
-void function DestroyDummys()
-{
-    continueLoop = false;
-
-    while (dummyList.len() > 0)
-    {
-        entity dummy = dummyList.pop();
-        if (IsValid(dummy))
-            dummy.Destroy();
-    }
-}
-
-// deprecated
-void function RecordingAnimationTest()
-{
-//By Colombia
-	entity player = GetPlayerArray()[0]
-	vector initialpos = player.GetOrigin()
-	vector initialang = player.GetAngles()
-	player.StartRecordingAnimation(initialpos, initialang)
-	Message(player, "RECORDING MOVEMENT", "", 1.5)
-	wait 5
-	file.recordingAnims.append( player.StopRecordingAnimation() )
-	var anim = file.recordingAnims[file.recordingAnims.len()-1]
-	asset playermodel = player.GetModelName()
-	WaitFrame()
-	Message(player, "PLAYING MOVEMENT", "", 1.5)
-	printt(anim) //userdata
-	while(true)
-	{
-		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
-		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
-		wait GetRecordedAnimationDuration( anim )
-		if(IsValid(dummy))
-		dummy.Destroy()
-	}
-}
-
 
 void function CreateGravitationalForce( )
 {
@@ -1163,7 +1237,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	angles1.x = 0
 
 	entity dummy = CreateDummy( 99, origin, angles1 )
-	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 	else
 		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
@@ -1203,16 +1277,22 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.SetDeathNotifications( true )
 	dummy.SetValidHealthBarTarget( true )
 	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(shieldskin)
+	// dummy.SetSkin(shieldskin)
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
-
-	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	dummy.SetEfficientMode( false )
+	
+	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		thread PlayAnimOnTrainingDummy(dummy)
 
-    array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+    array<string> weapons = ["npc_weapon_hemlok", "npc_weapon_energy_shotgun", "npc_weapon_lstar"]
     string randomWeapon = weapons[RandomInt(weapons.len())]
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+	
+	weapons.fastremovebyvalue( randomWeapon )
+
+	randomWeapon = weapons[RandomInt(weapons.len())]
+	dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
 void function DEV_SpawnFriendlyDummyAtCrosshair()
@@ -1342,7 +1422,7 @@ void function DEV_SpawnLegendAtCrosshair()
 
 	entity dummy
 
-	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		dummy = CreateLegend_ai( 99, origin, angles1 )
 	else
 	{

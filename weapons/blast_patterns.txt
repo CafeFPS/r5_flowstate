@@ -1,16 +1,27 @@
 "WeaponBlastPatterns"
 {
+    // "mastiff"
+    // {
+        // "bullet_0" "30.0 0.0 0 0"
+        // "bullet_1" "15.0 0.0 0 0"
+        // "bullet_2" "7.5 0.0 0 0"
+        // "bullet_3" "3.75 0.0 0 0"
+        // "bullet_4" "-3.75 0.0  0 0"
+        // "bullet_5" "-7.5 0.0  0 0"
+        // "bullet_6" "-15.0 0.0  0 0"
+        // "bullet_7" "-30.0 0.0  0 0"
+    // }
 
     "mastiff_2"
     {
-        "bullet_0" "30.0 0.0 0 0"
-        "bullet_1" "17.5 0.0 0 0"
+        "bullet_0" "22.0 0.0 0 0"
+        "bullet_1" "15 0.0 0 0"
         "bullet_2" "8.0 0.0 0 0"
         "bullet_3" "3.75 0.0 0 0"
         "bullet_4" "-3.75 0.0  0 0"
         "bullet_5" "-8.0 0.0  0 0"
-        "bullet_6" "-17.5 0.0  0 0"
-        "bullet_7" "-30.0 0.0  0 0"
+        "bullet_6" "-15 0.0  0 0"
+        "bullet_7" "-22.0 0.0  0 0"
     }
 
     "eva8"
@@ -39,6 +50,13 @@
         "bullet_8" "4.35 3.75 0 0"
         "bullet_9" "-4.35 -4.3 0 0"
         "bullet_10" "4.35 -4.35 0 0"
+    }
+
+    "shotgun_pistol"
+    {
+        "bullet_0" "0.0 8.0 0 0"
+        "bullet_1" "-6.0 -6.0 0 0"
+        "bullet_2" "6.0 -6.0 0 0"
     }
 
     "shotgun_pistol_2"

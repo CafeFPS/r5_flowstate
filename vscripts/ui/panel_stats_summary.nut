@@ -40,7 +40,7 @@ void function StatsSummaryPanel_Update( var panel )
 
 void function StatsSummaryPanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	printf( "StatCardDebug: Summary Panel OnFocusChanged" )
+	//printf( "StatCardDebug: Summary Panel OnFocusChanged" )
 
 	if ( !IsValid( panel ) ) //
 		return

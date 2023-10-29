@@ -151,7 +151,7 @@ void function ShSurvivalTraining_Init()
 		AddLocalPlayerFunc( Training_AddPlayer )
 		AddCallback_OnClientScriptInit( OnLocalClientConnected )
 		AddTargetNameCreateCallback( RESPAWN_CHAMBER_TARGET_NAME, RespawnChamberCreated )
-		RegisterNetworkedVariableChangeCallback_time( "TrainingEndTime", TrainingEndTimeChanged )
+		//RegisterNetworkedVariableChangeCallback_time( "TrainingEndTime", TrainingEndTimeChanged )
 		SetCommsDialogueEnabled( false )
 
 		AddCreateCallback( "prop_dynamic", TrainingDeathBoxCreated )

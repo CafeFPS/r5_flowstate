@@ -59,7 +59,7 @@ WeaponData
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// no shell ejects for this weapon
 	"fx_shell_eject_view"							""
@@ -99,9 +99,11 @@ WeaponData
 	"ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.4"
 
-	"ammo_default_total"							"180"
-	"ammo_stockpile_max"							"180"
-	"ammo_no_remove_from_stockpile"					"1"
+	"ammo_default_total"							"0"
+	"ammo_stockpile_max"							"25"
+	"ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
+
 
 	// Damage - When Used by Players
 	"damage_near_value"   							"18"
@@ -278,44 +280,20 @@ WeaponData
 
 	Mods
 	{
-	    gold
-	    {
-	    }
-
-		survival_finite_ammo
+        gold
         {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"25"
-            "ammo_no_remove_from_stockpile"					"0"
-
-            "low_ammo_fraction" 							"0.4"
-
-	   		"uses_ammo_pool"								"1"
         }
-
         hopup_turbocharger
         {
         	"charge_time" 					"0.01"
         	"charge_cooldown_time"			"0.0"
 			"charge_cooldown_delay"   		"0.0"
-		"damage_near_value"   							"17"
+			"damage_near_value"   							"17"
             "damage_far_value"								"17"
             "damage_very_far_value"							"17"
             "damage_near_value_titanarmor"					"17"
             "damage_far_value_titanarmor" 					"17"
             "damage_very_far_value_titanarmor" 				"17"
-        }
-
-        hopup_selectfire
-        {
-        	// This mod is only used to indicate that the hop-up is active
-        	// When player changes fire modes, we activate "altfire"
-        }
-
-        // charge shot
-        altfire
-        {
-			
         }
 
         optic_cq_hcog_classic
@@ -375,15 +353,24 @@ WeaponData
 		{
 			"ammo_clip_size"   					"36"
 		}
-      
+        energy_mag_l4
+        {
+            "ammo_clip_size"   		        	"36"
+        }
 
-               
-                                                                                                     
-                    
-         
-                                                                                          
-         
-      
+        amped_damage_alt
+        {
+            "damage_near_value"                             "*1.2"
+            "damage_far_value"                              "*1.2"
+            "damage_very_far_value"                         "*1.2"
+            "damage_near_value_titanarmor"                  "*1.2"
+            "damage_far_value_titanarmor"                   "*1.2"
+            "damage_very_far_value_titanarmor"              "*1.2"
+
+            "tracer_effect"   				                "P_wpn_havok_beam_amp"
+            "tracer_effect_first_person"  	                "P_wpn_havok_beam_amp"
+            "impact_effect_table" 			                "exp_energy_ar_charged_amp"
+        }
 	}
 
 	"ui1_enable"		"1"

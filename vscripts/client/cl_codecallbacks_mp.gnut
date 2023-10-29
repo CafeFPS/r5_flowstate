@@ -185,6 +185,10 @@ void function ClientCodeCallback_OnEntityCreation( entity ent )
 
 	if ( ent.IsPlayer() )
 		ShEHI_OnPlayerCreated( ent )
+	else if( ent.GetScriptName() == "flowstate_holo_spray" )
+		ShEHI_OnHoloSprayCreated( ent )
+	else if( ent.GetNetworkedClassName() == "prop_survival" )
+		ShEHI_OnPropSurvivalCreated( ent )
 
 	if ( IsLobby() )
 	{
@@ -397,12 +401,12 @@ void function ClientCodeCallback_KillReplayEnded()
 
 void function ClientCodeCallback_SpecReplayStarted()
 {
-	printl( "Spectate replay started" )
+	//printl( "Spectate replay started" )
 }
 
 void function ClientCodeCallback_SpecReplayEnded()
 {
-	printl( "Spectate replay ended" )
+	//printl( "Spectate replay ended" )
 }
 
 /*
@@ -547,6 +551,7 @@ void function ServerCallback_YouDied( entity attacker, float healthFrac, int dam
 		callbackFunc( attacker, healthFrac, damageSourceId, recentHealthDamage )
 
 	thread OnClientPlayerDying( clientPlayer )
+	Init_EvoShields_Flowstate_HUD( false )
 }
 
 void function ClientCodeCallback_SaveResumed()

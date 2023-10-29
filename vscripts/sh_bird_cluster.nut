@@ -27,7 +27,7 @@ const CLUSTER_MAX_DIST_SQR = CLUSTER_MAX_DIST * CLUSTER_MAX_DIST
 const CLUSTER_MID_DIST_SQR = CLUSTER_MID_DIST * CLUSTER_MID_DIST
 const CLUSTER_MIN_DIST_SQR = CLUSTER_MIN_DIST * CLUSTER_MIN_DIST
 const CLUSTER_NEAR_DIST_SQR = 768 * 768
-const CLUSTER_LIFETIME = 60
+const CLUSTER_LIFETIME = 90
 const CLUSTER_ITERATION_INTERVAL = 0.25
 const CLUSTER_SIZE_THRESHOLD = 5
 const CLUSTER_MAX_TAKEOFF_DELAY = 0.3
@@ -74,9 +74,9 @@ struct
 
 void function BirdClusterSharedInit()
 {
-	bool birdClusterEnabled = GetCurrentPlaylistVarBool( "bloodhound_bird_cluster", true )
-	if ( !birdClusterEnabled )
-		return
+	// bool birdClusterEnabled = GetCurrentPlaylistVarBool( "bloodhound_bird_cluster", true )
+	// if ( !birdClusterEnabled )
+		// return
 
 	#if SERVER
 		PrecacheModel( CLUSTER_BIRD_MODEL )
@@ -158,7 +158,7 @@ array<WaypointClusterInfo> function GetNewWaypointClusters( entity player, int m
 	vector playerOrigin = player.GetOrigin()
 	array<WaypointClusterInfo> clusterArray
 
-	array<WaypointClusterInfo> waypointClusterArray = GetServerWaypointClusters( playerOrigin, CLUSTER_MAX_DIST, minCount, player.GetTeam() )
+	array<WaypointClusterInfo> waypointClusterArray = GetServerWaypointClusters( playerOrigin, CLUSTER_MAX_DIST, minCount, TEAM_UNASSIGNED )
 	#if DEVELOPER
 	if ( CLUSTER_USE_FAKE )
 		waypointClusterArray = file.fakeClusters
@@ -166,6 +166,7 @@ array<WaypointClusterInfo> function GetNewWaypointClusters( entity player, int m
 
 	foreach( cluster in waypointClusterArray )
 	{
+		//printt( " cluster in waypoint cluster " + cluster.clusterPos, cluster.numPointsNear )
 		float distSqr = DistanceSqr( playerOrigin,  cluster.clusterPos )
 
 		// use this if we are using the fake stuff
@@ -183,7 +184,10 @@ array<WaypointClusterInfo> function GetNewWaypointClusters( entity player, int m
 
 		clusterArray.append( cluster )
 	}
-
+	
+	// foreach( node in clusterArray )
+		// printt( " WILL USE THIS NODE TO CREATE BIRDS " + node.clusterPos, node.numPointsNear )
+		
 	return clusterArray
 }
 
@@ -230,7 +234,15 @@ BirdCluster ornull function CreateBirdCluster( entity player, vector origin, int
 		PerfEnd( PerfIndexServer.BirdCluster_spawn )
 	}
 
-	entity trigger = CreateTriggerCylinder( origin, CLUSTER_TRIGGER_RADIUS, CLUSTER_TRIGGER_HEIGHT, CLUSTER_TRIGGER_DEPTH )
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( CLUSTER_TRIGGER_RADIUS )
+	trigger.SetAboveHeight( CLUSTER_TRIGGER_HEIGHT )
+	trigger.SetBelowHeight( CLUSTER_TRIGGER_DEPTH )
+	trigger.SetOrigin( origin )
+	trigger.SetPhaseShiftCanTouch( false )
+	DispatchSpawn( trigger )
+	trigger.RemoveFromAllRealms()
+	trigger.AddToOtherEntitysRealms( player )	
 	trigger.SetOwner( player )
 	trigger.SetEnterCallback( OnEnterBirdTrigger )
 
@@ -247,6 +259,9 @@ BirdCluster ornull function CreateBirdCluster( entity player, vector origin, int
 
 void function OnEnterBirdTrigger( entity trigger, entity player )
 {
+	if( !player.IsPlayer() )
+		return
+	
 	if ( trigger.GetOwner() != player )
 		return
 
@@ -388,7 +403,7 @@ vector function GetFlightAngles( vector perchPosition, entity player )
 		frac = result.fraction
 
 		#if DEVELOPER
-			if ( CLUSTER_DEBUG_CLUSTER && player == GP() )
+			if ( CLUSTER_DEBUG_CLUSTER && player == gp()[0]  )
 			{
 				DebugDrawText( traceOrigin, string( trace ), false, 3 )
 				DebugDrawLine( perchPosition, result.endPos, 0,255,0, true, 3 )
@@ -520,8 +535,8 @@ int function GetNumberOfBirdClustersBirds()
 #if DEVELOPER && SERVER
 void function DEV_CreateBirdCluster( entity owner = null )
 {
-	entity viewPlayer = GP()
-	owner = IsValid( owner ) ? owner : GP()
+	entity viewPlayer = gp()[0] 
+	owner = IsValid( owner ) ? owner : gp()[0] 
 	vector traceOrigin = viewPlayer.EyePosition() + viewPlayer.GetViewVector() * 5000
 
 	BirdCluster ornull birdCluster = CreateBirdCluster( owner, TraceLine( viewPlayer.EyePosition(), traceOrigin , null, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE ).endPos, 5 )
@@ -541,23 +556,25 @@ void function ClusterDebug()
 {
 	if ( !CLUSTER_DEBUG_CLUSTER )
 		return
-
-	FlagWait( "GamePlaying" )
-	//printt( "ClusterDebug" )
-
-	GP().EndSignal( "OnDestroy" )
-
+	
 	while( true )
 	{
+		if( gp().len() == 0 )
+		{
+			WaitFrame()
+			continue
+		}
+		
 		// get more or less all clusters in the map
 		array<WaypointClusterInfo> waypointClusterArray = GetServerWaypointClusters( <0,0,0>, 50000, 1, TEAM_UNASSIGNED )
 		#if DEVELOPER
 		if ( CLUSTER_USE_FAKE )
 			waypointClusterArray = file.fakeClusters
 		#endif
-
+		
 		foreach( cluster in waypointClusterArray )
 		{
+			// printt( "Detected cluster in debug" + cluster.clusterPos) 
 			bool nearCluster = IsNearPlayerCluster( null, cluster.clusterPos, CLUSTER_NEAR_DIST_SQR )
 			if ( nearCluster )
 			{
@@ -567,7 +584,7 @@ void function ClusterDebug()
 			{
 				DebugDrawCircle( cluster.clusterPos, <180,0,0>, 64, 128, 0, 255, true, 0.1 )
 			}
-			DebugDrawText( cluster.clusterPos + <0,0,-4>, format( "c:%i\nd:%i", cluster.numPointsNear, Distance(GP().GetOrigin(),cluster.clusterPos) ), false, 0.1 )
+			DebugDrawText( cluster.clusterPos + <0,0,-4>, format( "c:%i\nd:%i", cluster.numPointsNear, Distance(gp()[0] .GetOrigin(),cluster.clusterPos) ), false, 0.1 )
 		}
 
 		foreach( birdCluster in file.birdClusterArray )
@@ -578,7 +595,7 @@ void function ClusterDebug()
 				continue
 			}
 
-			if ( birdCluster.owner != GP() )
+			if ( birdCluster.owner != gp()[0]  )
 			{
 				float dist = Distance( birdCluster.owner.GetOrigin(), birdCluster.origin )
 				DebugDrawText( birdCluster.origin + <0,0,16>, format( "%.2f\n%s", Time() - birdCluster.spawnTime, birdCluster.owner.GetPlayerName() ), false, 0.1 )
@@ -604,8 +621,8 @@ void function ClusterDebug()
 
 void function AddFakeCluster()
 {
-	vector forward = GP().GetViewVector()
-	TraceResults results = TraceLine( GP().EyePosition(), GP().EyePosition() + forward * 3000, GP(), TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
+	vector forward = gp()[0] .GetViewVector()
+	TraceResults results = TraceLine( gp()[0] .EyePosition(), gp()[0] .EyePosition() + forward * 3000, gp()[0] , TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
 	if  ( results.fraction == 1 )
 		return
 
@@ -666,7 +683,7 @@ void function __BirdClusterPointSpawned( entity info_target )
 	clusterInfo.birdArray.append( bird )
 }
 
-array<entity> function GetAllBrids()
+array<entity> function GetAllBirds()
 {
 	array<entity> birds
 	foreach( cluster in file.birdClusterInfoArray )
@@ -793,7 +810,7 @@ void function fadeModelAlphaOutOverTime( entity model, float duration )
 	{
 		float alphaResult = GraphCapped( Time(), startTime, endTime, startAlpha, endAlpha )
 		model.kv.renderamt = alphaResult
-		printt ("Alpha = " + alphaResult)
+		//printt ("Alpha = " + alphaResult)
 		WaitFrame()
 	}
 }

@@ -29,7 +29,6 @@ global function PlayDeathFromTitanFallSounds
 
 global const HOTDROP_FP_WARP = $"P_warpjump_FP"
 global const HOTDROP_TRAIL_FX = $"hotdrop_hld_warp"
-global int BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX
 
 function TitanHotdrop_Init()
 {
@@ -47,9 +46,6 @@ function TitanHotdrop_Init()
 
 	PrecacheModel( $"mdl/fx/xo_shield_wall.rmdl" )
 	PrecacheModel( $"mdl/fx/xo_shield_wall.rmdl" )
-	BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX = PrecacheParticleSystem( $"P_shield_hld_0" )
-
-	BubbleShield_Init()
 }
 
 void function TitanHotDrop( entity titan, string animation, vector origin, vector angles, entity player, entity camera )

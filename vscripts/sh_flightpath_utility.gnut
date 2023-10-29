@@ -1147,11 +1147,28 @@ array<entity> function GetAirDropTraceIgnoreEntArray()
 
 Point function GetClosestEndZonePoint( vector baseOrigin )
 {
-	FlightPath flightPath = GetAnalysisForModel( CARE_PACKAGE_AIRDROP_MODEL, CARE_PACKAGE_IDLE )
+	// CARE_PACKAGE_AIRDROP_MODEL, CARE_PACKAGE_IDLE combo is not working for some reason, using droppod which is confirmed to work and adding the endzone check manually. Colombia
+	
+	// SURVIVAL_IsValidCircleLocation is a stub lol so we won't make that check for now, using DEV_SimulateFinalLocations rings seem to be good
+	
+	FlightPath flightPath = GetAnalysisForModel( DROPPOD_MODEL, AIRDROP_BASE_ANIM )
 
 	int dataIndex = GetAnalysisDataIndex( flightPath )
+	
+	// Point airdropPoint
+	
+	// for (int j = 0; j < 1; j++)
+	// {
+		// airdropPoint = GetClosestDrop_Internal( baseOrigin, dataIndex )
 
-	return GetClosestDrop_Internal( baseOrigin, dataIndex )
+		// if( !SURVIVAL_IsValidCircleLocation( airdropPoint.origin ) )
+		// {
+			// //force this to loop again if we didn't verify our end zone point
+			// j--;
+		// }
+	// }
+		
+	return GetClosestDrop_Internal( baseOrigin, dataIndex )//airdropPoint
 }
 
 Point function GetClosestAirdropPoint( vector baseOrigin )
@@ -1167,10 +1184,11 @@ Point function GetClosestDrop_Internal( vector baseOrigin, int dataIndex )
 {
 	Point closestNodePoint
 	int node = NavMeshNode_GetBestNodeForPos( baseOrigin, dataIndex, ANALYSIS_STEPS )
+
 	if( node < 0 )
 	{
-		//if ( !IsTestMap() )
-			//Warning( "AIN file does not contain any valid airdrop point, please rebuild the AIN file." )
+		if ( !IsTestMap() )
+			Warning( "AIN file does not contain any valid airdrop point, please rebuild the AIN file." )
 		closestNodePoint.origin = baseOrigin
 		return closestNodePoint
 	}

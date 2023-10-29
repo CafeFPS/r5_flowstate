@@ -1,31 +1,155 @@
+//Made by @CafeFPS
 
 global function ThreatDetection_Init
 global function ThreatDetection_StartForPlayer
-global function ThreatDetection_CreateThreatZoneForBombardment
-global function ThreatDetection_CreateThreatZoneForTrap
+global function ThreatDetection_StopForPlayer
+
+//Threat Zones
+global function ThreatDetection_CreateThreatZone
+global function ThreatDetection_UpdateThreatZonePos
 global function ThreatDetection_DestroyThreatZone
+
+//Native callbacks
+global function CodeCallback_ThreatDetection_OnSourcesCeased
+global function CodeCallback_ThreatDetection_OnStateChange
+global function CodeCallback_ThreatDetection_OnNewSource
 
 void function ThreatDetection_Init()
 {
-	
+	// ?
 }
 
 void function ThreatDetection_StartForPlayer( entity player )
 {
+	if( !IsValid( player ) ) 
+		return
 	
+	#if DEVELOPER
+	printt( "[Threat Detection] - Detection started for player: ", player )
+	#endif
+	
+	//If exclusiveThreatTypes array is empty then consider all threats, otherwise only consider the threat types in the array
+	array< int > exclusiveThreatTypes = [ 
+		eThreatDetectionZoneType.VIEW,
+		//eThreatDetectionZoneType.PROXIMITY //If you try proximity type, disable View type, some voices may not work in proximity mode
+		eThreatDetectionZoneType.TRAP,
+		//eThreatDetectionZoneType.AMBUSH, //Not implemented
+		//eThreatDetectionZoneType.PING, //Not implemented
+		//eThreatDetectionZoneType.KILLZONE, //Not implemented
+		eThreatDetectionZoneType.BOMBARDMENT
+		//eThreatDetectionZoneType.GRENADE //Not implemented
+	]
+	
+	ThreatDetection_StartMonitoringPlayer( player, exclusiveThreatTypes ) //native funct
 }
 
-void function ThreatDetection_CreateThreatZoneForBombardment( entity player, vector origin, int num0, float radius, float num1 )
+void function ThreatDetection_StopForPlayer( entity player )
 {
+	if( !IsValid( player ) ) 
+		return
 	
+	#if DEVELOPER
+	printt( "[Threat Detection] - Detection stopped for player: ", player )
+	#endif
+	
+	ThreatDetection_StopMonitoringPlayer(player) //native funct
 }
 
-int function ThreatDetection_CreateThreatZoneForTrap( entity player, vector origin, int team )
+int function ThreatDetection_CreateThreatZone( entity player, int type, vector origin, int team, float radius = 512, float height = 128, float durationUntilActive = 0.1, float decayScalar = 0.1, float lifespan = 0 )
 {
-	return 0
+	if( !IsValid( player ) ) 
+		return -1
+	
+	#if DEVELOPER
+	printt( "[Threat Detection] - Threat Zone created at " + origin)
+	#endif
+
+	return ThreatDetection_CreateThreatZoneCylinder( type, origin, height, radius, durationUntilActive, decayScalar, team, lifespan, player ) //native funct
+}
+
+
+void function ThreatDetection_UpdateThreatZonePos(int zoneID, vector origin)
+{
+	#if DEVELOPER
+	printt( "[Threat Detection] - Threat Zone " + zoneID + " origin updated to " + origin )
+	#endif
+	
+	ThreatDetection_UpdateThreatZoneOrigin( zoneID, origin) //native funct
 }
 
 void function ThreatDetection_DestroyThreatZone( int threatZoneID )
 {
+	#if DEVELOPER
+	printt( "[Threat Detection] - Threat Zone " + threatZoneID + " destroyed. " )
+	#endif
+	
+	ThreatDetection_RemoveThreatZone( threatZoneID ) //native funct
+}
 
+///////////////////
+// Native callbacks
+
+void function CodeCallback_ThreatDetection_OnSourcesCeased( entity player, int threatType, int threatFlags, int newThreatState, int oldThreatState )
+{
+	#if DEVELOPER
+	printt( "++++-------------------------------------------------------++++" )
+	printt( "[ThreatDetection] OnSourcesCeased" )
+	printt( "threatType " + threatType )
+	printt( "threatFlags " + threatFlags )
+	printt( "newThreatState " + newThreatState )
+	printt( "oldThreatState " + oldThreatState )
+	printt( "++++-------------------------------------------------------++++" )
+	#endif
+	
+	// no clue what to do here
+}
+
+void function CodeCallback_ThreatDetection_OnStateChange( entity player, int threatType, int threatFlags, int newThreatState, int oldThreatState )
+{
+	if( !IsValid(player) )
+		return
+	
+	if( Bleedout_IsBleedingOut( player ) )
+		return
+	
+	#if DEVELOPER
+	printt( "++++-------------------------------------------------------++++" )
+	printt( "[ThreatDetection] OnStateChange" )
+	printt( "threatType " + threatType )
+	printt( "threatFlags " + threatFlags )
+	printt( "newThreatState " + newThreatState )
+	printt( "oldThreatState " + oldThreatState )
+	printt( "++++-------------------------------------------------------++++" )
+	#endif
+	
+	ThreatEventCallbackData stateChanged
+	stateChanged.typeState = newThreatState
+	
+	if ( threatType in svGlobal.onThreatEventActivationCallbacks )
+		svGlobal.onThreatEventActivationCallbacks[ threatType ]( player, stateChanged )
+}
+
+void function CodeCallback_ThreatDetection_OnNewSource( entity player, int threatType, int threatFlags, int newThreatState, int oldThreatState )
+{
+	if( !IsValid(player) )
+		return
+	
+	if( Bleedout_IsBleedingOut( player ) )
+		return
+	
+	#if DEVELOPER
+	printt( "++++-------------------------------------------------------++++" )
+	printt( "[ThreatDetection] OnNewSource" )
+	printt( "threatType " + threatType )
+	printt( "threatFlags " + threatFlags )
+	printt( "newThreatState " + newThreatState )
+	printt( "oldThreatState " + oldThreatState )
+	printt( "++++-------------------------------------------------------++++" )
+	#endif
+	
+	ThreatEventCallbackData newThreatType
+	newThreatType.typeState = newThreatState
+	
+	if ( threatType in svGlobal.onThreatEventActivationCallbacks )
+		svGlobal.onThreatEventActivationCallbacks[ threatType ]( player, newThreatType )
 }

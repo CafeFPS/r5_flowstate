@@ -18,6 +18,7 @@ global function SetTitanMeterGainScale
 
 // r5 stuff
 global function SvCodeCallbacksCommon_Init
+global function EvoCurrentShieldToNextTier
 
 struct AccumulatedDamageData
 {
@@ -52,16 +53,43 @@ void function CodeCallback_Init()
 
 void function OnClientConnected( entity player )
 {
-	printt("Flowstate DEBUG - New player connected. Base codecallback OnPlayerConnected.", player)
-	printt("Flowstate DEBUG - The gamemode running is: " + GameRules_GetGameMode())
+	if( !IsValid( player ) )
+		return
+
+	printt( "[+] New player connected! ", player )
+
 	//Wraith Q fix. Colombia
 	player.SetForceVisibleInPhaseShift(true)
 	
 	//Phase Rewind Record Positions. Colombia
 	thread RecordPositions(player)
+	
+	//Record a networked Latency int for scoreboard
+	thread NetworkedIntLatencyThingy(player)	
 
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
+}
+
+void function NetworkedIntLatencyThingy( entity player )
+{
+	int latency
+	while ( IsValid(player) )
+	{
+		latency = int( player.GetLatency() * 1000 ) - 45
+		if( latency >= 500 )
+		{
+			player.SetPlayerNetInt( "latency", 500 )
+		} else if( latency < 0 )
+		{
+			player.SetPlayerNetInt( "latency", -1 )
+		} else
+		{
+			player.SetPlayerNetInt( "latency", latency )
+		}
+
+		wait 0.1
+	}
 }
 
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.
@@ -119,7 +147,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			&& inflictor.GetClassName() == "trigger_hurt"
 			&& inflictor.HasKey( "damageSourceName" ) )
 		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
-
+	
+	if( IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == 169 )
+		attackerIsNPC = true //force lava to damage shields
+	
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "CodeCallback_DamagePlayerOrNPC ent:", ent )
 		printt( "    Attacker:", DamageInfo_GetAttacker( damageInfo ) )
@@ -371,7 +402,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	if ( entIsNPC && attackerIsPlayer || entIsPlayer && attackerIsNPC )
 	{
-		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CafeFPS)
 		if(ent.GetShieldHealth() > 0)
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
@@ -411,7 +442,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
 			
 			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
+			}
 			
 			DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
 		} else
@@ -420,7 +454,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
 
 			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
+			}
 		}
 
 		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && !ent.IsPlayer() )
@@ -451,8 +488,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 			}
-			
-			UpdatePlayerCounts()
+
+			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
+				EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
 
@@ -501,6 +539,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				attacker.p.currentTargetPlayerOrSoul_Ent = ent
 				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
 				attacker.p.playerDamageDealt += savedDamage
+				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + savedDamage )
 			}
 		}
 	}
@@ -855,7 +894,15 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	vector attackerOrigin = Vector( 0, 0, 0 )
 	if ( IsValid( attacker ) )
+	{
 		attackerOrigin = attacker.GetOrigin()
+		
+		//Fake evo shields
+		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
+		{
+			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
+		}
+	}
 
 	if ( IsAlive( player ) )
 	{
@@ -877,6 +924,75 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
+}
+
+void function EvoCurrentShieldToNextTier( var damageInfo, entity attacker )
+{
+	LootData currentShield = EquipmentSlot_GetEquippedLootDataForSlot( attacker, "armor" )
+	
+	if( currentShield.tier == 4 )
+		return
+	
+	int oldshield = attacker.GetShieldHealth()
+	int newMaxShield = SURVIVAL_GetArmorShieldCapacity( currentShield.tier ) + FLOWSTATE_HWLTM_SHIELD_AMOUNT
+	
+	if( currentShield.tier == 0 )
+		newMaxShield = SURVIVAL_GetArmorShieldCapacity( 1 )
+	else if( currentShield.tier >= 7 )
+		newMaxShield = attacker.GetShieldHealthMax() + FLOWSTATE_HWLTM_SHIELD_AMOUNT
+	
+	if( newMaxShield >= SURVIVAL_GetArmorShieldCapacity( currentShield.tier ) )
+	{
+		string nextShield = returnShieldNameForCurrentShieldName( currentShield )
+		
+		if( nextShield == "" )
+		{
+			attacker.SetShieldHealthMax( newMaxShield )
+			attacker.SetShieldHealth( oldshield )
+			Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", 7 )
+			return
+		}
+
+		LootData nextShieldData = SURVIVAL_Loot_GetLootDataByRef( nextShield )
+
+		if( currentShield.ref != "" )
+			SURVIVAL_RemoveFromPlayerInventory(attacker, currentShield.ref, 1)
+
+		Inventory_SetPlayerEquipment( attacker, nextShield, "armor" )
+		Remote_CallFunction_Replay( attacker, "EvoShield_PlayFX", nextShieldData.tier )
+	}
+
+	attacker.SetShieldHealthMax( newMaxShield )
+	attacker.SetShieldHealth( oldshield )
+}
+
+string function returnShieldNameForCurrentShieldName( LootData currentShield  )
+{
+	switch( currentShield.ref )
+	{
+		case "":
+		return "armor_pickup_lv1"
+
+		case "armor_pickup_lv1":
+		return "armor_pickup_lv2"
+		
+		case "armor_pickup_lv2":
+		return "armor_pickup_lv3"
+		
+		case "armor_pickup_lv3":
+		return "armor_pickup_lv5"
+		
+		case "armor_pickup_lv5":
+		return "armor_pickup_lv6"
+
+		case "armor_pickup_lv6":
+		return "armor_pickup_lv7"
+		
+		case "armor_pickup_lv7":
+		return ""
+	}
+	
+	return ""
 }
 
 function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker, eModSourceID, int damageType, int damageSourceId, TitanDamage titanDamage )

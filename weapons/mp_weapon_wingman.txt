@@ -1,5 +1,5 @@
 #base "_base_handgun.txt"
-#base "_base_mags_heavy.txt"
+#base "_base_mags_sniper.txt"
 
 WeaponData
 {
@@ -35,7 +35,7 @@ WeaponData
     // FX - Muzzle Flash
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 
 	// FX - Shell Eject
@@ -64,10 +64,18 @@ WeaponData
 	"dof_zoom_focusArea_top"						"0.070"
 	"dof_zoom_focusArea_bottom"						"-0.011"
 
-    "ammo_default_total"							"160"
-    "ammo_stockpile_max"							"160"
-    "ammo_no_remove_from_stockpile"					"1"
     "ammo_min_to_fire"								"1"
+
+    "ammo_default_total"			"0"
+    "ammo_stockpile_max"			"20"
+    "ammo_no_remove_from_stockpile"	"0"
+
+    "low_ammo_fraction" 			"0.4"
+
+    "uses_ammo_pool"				"1"
+
+	// PS5 Adaptive Triggers
+	"r_trig_custom_str"								"1"
 
     // Damage - When Used by Players
     "damage_near_value"   							"45"
@@ -229,20 +237,8 @@ WeaponData
 	Mods
 	{
 	    gold
-	    {
-	    }
-
-		survival_finite_ammo
         {
-            "ammo_default_total"			"0"
-            "ammo_stockpile_max"			"20"
-            "ammo_no_remove_from_stockpile"	"0"
-
-            "low_ammo_fraction" 			"0.3"
-
-	   		"uses_ammo_pool"				"1"
         }
-
         hopup_headshot_dmg
         {
         	"damage_headshot_scale"			"2.25"
@@ -264,6 +260,23 @@ WeaponData
 		{
 			"ammo_clip_size"   							"9"
 		}
+        sniper_mag_l4
+        {
+            "ammo_clip_size"   							"9"
+        }
+        hopup_quickdraw_holster
+        {
+            "zoom_time_in"						"*0.7"
+            "zoom_time_out"   					"*0.7"
+
+            "deploy_time" 						"*0.7"
+            "holster_time"						"*0.7"
+            "raise_time" 						"*0.75"
+            "lower_time"						"*0.75"
+
+            "spread_stand_hip"					"*0.75"
+            "spread_stand_hip_run"				"*0.9"
+        }
 	}
 
 	"ui1_enable"		"1"

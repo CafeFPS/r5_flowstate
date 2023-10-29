@@ -1,15 +1,28 @@
 global function Cl_Passives_Init
+global function AddCallback_CreatePlayerPassiveRui
+global function AddCallback_DestroyPlayerPassiveRui
 
 struct
 {
-	var cameraCircleStatusRui
-	var cryptoTacticalRui
+	array<void functionref( entity player )> CreatePlayerPassiveRui
+	array<void functionref( entity player )> DestroyPlayerPassiveRui
 } file
 
 void function Cl_Passives_Init()
 {
 	AddCallback_OnInitWeaponStatusRuis( OnInitWeaponStatusRuis_CLPassives )
 	AddCallback_PlayerClassChanged( OnPlayerClassChanged_CLPassives )
+	AddOnSpectatorTargetChangedCallback( OnSpectatorTargetChanged )
+}
+
+void function AddCallback_CreatePlayerPassiveRui( void functionref( entity ) callbackFunc )
+{
+	file.CreatePlayerPassiveRui.append( callbackFunc )
+}
+
+void function AddCallback_DestroyPlayerPassiveRui( void functionref( entity ) callbackFunc )
+{
+	file.DestroyPlayerPassiveRui.append( callbackFunc )
 }
 
 void function OnInitWeaponStatusRuis_CLPassives( entity player )
@@ -17,10 +30,14 @@ void function OnInitWeaponStatusRuis_CLPassives( entity player )
 	if ( player != GetLocalViewPlayer() )
 		return
 
-	if ( PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
 	{
-		CreateCryptoCameraCircleRui( player )
-		CreateCryptoTacticalRui( player )
+		callbackFunc( player )
+	}
+
+	foreach ( callbackFunc in file.CreatePlayerPassiveRui )
+	{
+		callbackFunc( player )
 	}
 }
 
@@ -29,34 +46,25 @@ void function OnPlayerClassChanged_CLPassives( entity player )
 	if ( player != GetLocalViewPlayer() )
 		return
 
-	if ( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
 	{
-		if ( file.cameraCircleStatusRui != null )
-		{
-			DestroyCameraCircleStatusRui()
-			file.cameraCircleStatusRui = null
-		}
-		if ( file.cryptoTacticalRui != null )
-		{
-			DestroyCryptoAnimatedTacticalRui()
-			file.cryptoTacticalRui = null
-		}
+		callbackFunc( player )
 	}
 }
 
-
-void function CreateCryptoCameraCircleRui( entity player )
+void function OnSpectatorTargetChanged( entity observer, entity prevTarget, entity newTarget )
 {
-	if ( GetCameraCircleStatusRui() != null )
+	if ( !IsPrivateMatch() )
 		return
 
-	file.cameraCircleStatusRui = CreateCameraCircleStatusRui()
-}
-
-void function CreateCryptoTacticalRui( entity player )
-{
-	if ( GetCryptoAnimatedTacticalRui() != null )
+	if ( observer.GetTeam() != TEAM_SPECTATOR )
 		return
 
-	file.cryptoTacticalRui = CreateCryptoAnimatedTacticalRui()
+	if( !IsValid(newTarget) )
+		return
+
+	foreach ( callbackFunc in file.DestroyPlayerPassiveRui )
+	{
+		callbackFunc( newTarget )
+	}
 }

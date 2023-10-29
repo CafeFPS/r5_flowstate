@@ -43,6 +43,7 @@ void function ScriptMovers_Init()
 	AddSpawnCallbackEditorClass( "script_mover_lightweight", 	"script_rotator", 			ScriptedRotatorThink )
 	AddSpawnCallbackEditorClass( "script_mover_lightweight", 	"script_seesaw", 			SeeSawThink )
 	AddSpawnCallbackEditorClass( "prop_dynamic", 				"shootable_clasp", 			ClaspInit )
+	// AddSpawnCallbackEditorClass( "info_target", 				"script_mover_path", 			ScriptMoverPathIdk )
 
 	AddSpawnCallback_ScriptName( "FanPusher", FanPusherThink )
 
@@ -63,6 +64,15 @@ void function ScriptMovers_Init()
 	RegisterSignal( "OnDeactivate")
 	RegisterSignal( "OnActivate")
 	RegisterSignal( "StopRotating" )
+}
+
+void function ScriptMoverPathIdk(entity infotarget) 
+{
+	if( infotarget.HasKey("script_noteworthy" ))
+	{
+		printt(" info target conveyer spawned " + infotarget.kv.script_noteworthy )
+		DebugDrawHemiSphere( infotarget.GetOrigin(), infotarget.GetAngles(), 25.0, 20, 210, 255, false, 999.0 )
+	}
 }
 
 void function FlagControlsDoor( entity door, string flag )
@@ -626,6 +636,7 @@ void function PressurePlateWaitSignal( entity trigger, string waitSignal )
 
 void function ScriptedRotatorThink( entity rotator )
 {
+	if( rotator.GetScriptName() == "conveyor_rotator_mover" ) return
 	rotator.Hide()
 
 	if ( rotator.HasKey( "use_local_rotation" ) && rotator.kv.use_local_rotation == "1" )
@@ -794,6 +805,9 @@ void function ScriptedRotatorRotate( vector baseAngles, entity rotator )
 
 void function MoverInit( entity mover )
 {
+	if( mover.GetScriptName() == "conveyor_rotator_mover" )
+		return
+	
 	if ( !mover.HasKey( "leveledplaced" ) || mover.kv.leveledplaced != "1" )
 		return
 
@@ -804,7 +818,9 @@ void function MoverInit( entity mover )
 		foreach( entity ent in linkedEnts )
 		{
 			if ( GetEditorClass( ent ) != "script_mover_path" )
+			{
 				ent.SetParent( mover, "", true )
+			}
 		}
 	}
 

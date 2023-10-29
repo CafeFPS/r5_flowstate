@@ -1,7 +1,7 @@
 #base "_base_sniper.txt"
 #base "_base_sniper_optics.txt"
 #base "_base_barrels_large.txt"
-#base "_base_mags_heavy.txt"
+#base "_base_mags_sniper.txt"
 #base "_base_stocks_sniper.txt"
 
 "WeaponData"
@@ -80,21 +80,20 @@
 	//
 	"ammo_pool_type"                           "sniper"
 	"ammo_clip_size"                           "6"
-	"ammo_stockpile_max"                       "60"
-	"ammo_default_total"                       "60"
 	"ammo_min_to_fire"                         "1"
-	"ammo_no_remove_from_stockpile"            "1"
+	"ammo_stockpile_max"             "5"
+    "ammo_default_total"             "0"
+    "ammo_no_remove_from_stockpile"  "0"
+    "uses_ammo_pool"                 "1"
+    "low_ammo_fraction"              "0.3"
+
 	"reload_enabled"                           "1"
 	"reload_time"                              "2.66"
 	"reload_time_late1"                        "1.23"
 	"reloadempty_time"                         "3.66"
 	"reloadempty_time_late1"                   "2.25"
 	"reloadempty_time_late2"                   "1.26"
-	
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
-	
+
 	// Viewkick Spring
 	//
 	"viewkick_spring"                          "dmr"
@@ -238,23 +237,26 @@
 		}
 
 		sniper_mag_l1
-		{
-			"ammo_clip_size"   							"8"
-		}
-		sniper_mag_l2
-		{
-			"ammo_clip_size"   							"10"
-		}
-		sniper_mag_l3
-		{
-			"ammo_clip_size"   							"12"
-		}
+        {
+            "ammo_clip_size"							"8"
+        }
+        sniper_mag_l2
+        {
+            "ammo_clip_size"   							"10"
+        }
+        sniper_mag_l3
+        {
+            "ammo_clip_size"   							"12"
+        }
+        sniper_mag_l4
+        {
+            "ammo_clip_size"   		        			"12"
+        }
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
 		}
 
 		"legendary1"

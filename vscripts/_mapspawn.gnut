@@ -43,6 +43,12 @@ global struct spawnCallbackEditorClassFuncArray
 
 global typedef pilotEliminationDialogueCallbackType void functionref( int, array<entity>, int, array<entity> )
 
+//ThreatEventCallbackData needs to be registered before svGlobal
+global struct ThreatEventCallbackData
+{
+	int typeState
+}
+
 global struct SvGlobals
 {
 	entity worldspawn
@@ -168,6 +174,13 @@ global struct SvGlobals
 	array< void functionref( entity, entity, string, int, vector, vector ) > onWeaponAttackCallbacks
 	array< void functionref( entity ) > onPreClientDisconnectedCallbacks
 	array< void functionref( entity, entity, int ) > onDeathBoxSpawnedCallbacks
+	
+	// next spectator target handling
+	array< entity functionref( entity, bool ) > onGetBestObserverTargetCallbacks
+	
+	// voices passive
+	table< int, void functionref( entity, ThreatEventCallbackData ) > onThreatEventActivationCallbacks
+	table< int, void functionref( entity, ThreatEventCallbackData ) > onThreatEventStateChangeCallbacks
 }
 
 global SvGlobals svGlobal
@@ -237,7 +250,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/props/charm/charm_nessy_ghost.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_clown.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_witch.rmdl" )
-
+	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl" )
+	
+	PrecacheParticleSystem( $"train_far_beam_far_blink" )
+	
 	//Lobby Models
 
 	PrecacheModel( $"mdl/robots/drone_frag/drone_frag.rmdl" )
@@ -252,6 +270,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//Weapons
 
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
+	PrecacheWeapon( $"mp_weapon_melee_halo" )
+	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )
+
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
 	PrecacheWeapon( $"mp_weapon_bubble_bunker" )
@@ -282,7 +303,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_consumable" )
 	PrecacheWeapon( $"mp_weapon_g2" )
 	PrecacheWeapon( $"mp_weapon_grenade_bangalore" )
-	PrecacheWeapon( $"mp_weapon_car" )
+	// PrecacheWeapon( $"mp_weapon_car" )
 	PrecacheWeapon( $"mp_weapon_incap_shield" )
 	PrecacheWeapon( $"mp_ability_care_package" )
 	PrecacheWeapon( $"mp_ability_hunt_mode" )
@@ -299,8 +320,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
-	PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
-	PrecacheWeapon( $"melee_boxing_ring")
+	// PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
+	// PrecacheWeapon( $"melee_boxing_ring")
 	PrecacheWeapon( $"mp_weapon_throwingknife" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"melee_bolo_sword" )
@@ -308,10 +329,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"melee_shadowsquad_hands" )
 	PrecacheWeapon( $"mp_weapon_shadow_squad_hands_primary" )	
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
-	PrecacheWeapon( $"mp_weapon_frag_drone" )
+	// PrecacheWeapon( $"mp_weapon_frag_drone" )
 	PrecacheWeapon( $"npc_weapon_energy_shotgun" )
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
+	PrecacheWeapon( $"mp_ability_emote_projector" )
 
 	switch(GameRules_GetGameMode())
 	{
@@ -326,43 +348,169 @@ void function CodeCallback_MapSpawn() // original script entry point
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break
 		case "map_editor_deprecated":
-			PrecacheWeapon( $"mp_weapon_editor" )
-			if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
-				_CheckPoints_Init()
+			PrecacheWeapon( $"mp_weapon_editor" )	
 		default:
 			LoadModelsFromEditor()
-			if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
-				LoadMovementMap()
+
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			//PrecacheWeapon( $"mp_weapon_grenade_gravity" )			
 			break
 	}
 	
+	if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
+	{
+		_CheckPoints_Init()
+		LoadMovementMap()
+	}
+
 	if(GameRules_GetGameMode() == "map_editor_deprecated" )
 		PutLoadedPropsIntoSaveArray() //needs to be called after the props were loaded
 	
 	PrecacheWeapon( $"mp_ability_cloak" )
-	PrecacheWeapon( $"mp_weapon_dragon_lmg" )
-	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
-	PrecacheWeapon( $"mp_ability_space_elevator_tac" ) //needs more testing
-	PrecacheWeapon( $"mp_weapon_sentinel" )
+	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
+	//PrecacheWeapon( $"mp_weapon_sentinel" ) //sights don't work, it's bad
+	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
+
+	PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		PrecacheWeapon( $"mp_weapon_oddball_primary" )
+		PrecacheWeapon( $"melee_oddball" )
+	}
+
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		PrecacheParticleSystem( $"P_snow_atmo_512" )
+		PrecacheWeapon( $"mp_ability_grapple_master_chief" )
+		PrecacheWeapon( $"mp_weapon_bubble_bunker_master_chief" )
+	
+		//tried to move this to skins logic but it has a lot of textures, uvs would need to be redone to reduce the amount of materials on each model. Colombia
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_blue.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_blue.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_orange.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_orange.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_red.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_red.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
+		
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_yellow.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_yellow.rmdl" )
+
+		PrecacheModel( $"mdl/Humans/pilots/w_master_chief_white.rmdl" )
+		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
+	}
+
+	#if DEVELOPER
+	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" )
+	{
+		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl" )
+		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl" )
+		
+		RegisterSignal( "FS_ForceDestroyAllLifts" )
+		//	SpawnLockout()
+		//	SpawnCyberdyne()
+		SpawnChill()
+	}
+	
+	#if LISTEN_SERVER
+	SetConVarInt( "sv_onlineAuthEnable", 0 )
+	#endif
+	SetConVarInt( "sv_allowClientSideCfgExec", 1 )
+	#endif
 
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
+	
+	switch( GetCurrentPlaylistName() )
+	{
+		case "fs_fallingforever":
+		InitFallingForever()
+		break
+		
+		case "fs_doormovementpractice":
+		door_map_init()
+		break
+		
+		case "fs_grapplemovementpractice":
+		grapplemap_init()
+		break
+		
+		case "fs_mantlejumppractice":
+		mantlejumpmap_init()
+		break
+	
+		case "fs_1v1":
+		thread FS_TrackPlayersPositionInScoreboard()
+		break
+	}
+}
+
+void function FS_TrackPlayersPositionInScoreboard()
+{
+	array<entity> players
+
+	while( true )
+	{
+		players = GetPlayerArray()
+		players.sort( CompareKills )
+
+		int i = 1
+		foreach( sPlayer in players )
+		{
+			if( !IsValid( sPlayer ) )
+				continue
+			
+			if( i != sPlayer.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ) )
+				sPlayer.SetPlayerNetInt( "FSDM_1v1_PositionInScoreboard", i )
+
+			i++
+		}
+		
+		wait 0.25
+	}
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "VModEnable" || args[0] == "vban" || args[0] == "AllDialogueFinished" || args[0] == "DialogueFinishedForID") return
+	if(args[0] == "VModEnable" || args[0] == "vban" ) return
 	
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
 		foreach( key, value in args )
 			printl( key + " : " + value )
-		printl( "############ ClientCommand Code Callback" )
+		printl( "############ ClientCommand End" )
 
 	string commandString = args.remove( 0 )
 

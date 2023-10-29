@@ -78,10 +78,10 @@ WeaponData
 	"damage_type" 									"burn"
 	"damage_near_distance"							"1000"
 	"damage_far_distance" 							"3000"
-	"damage_near_value"   							"30"
-	"damage_far_value"								"30"
-	"damage_near_value_titanarmor"					"30"
-	"damage_far_value_titanarmor" 					"30"
+	"damage_near_value"   							"10"
+	"damage_far_value"								"10"
+	"damage_near_value_titanarmor"					"10"
+	"damage_far_value_titanarmor" 					"10"
 	"impulse_force"   								"3000"
 	"explosion_shake_radius"						"500"
 	"explosion_shake_amplitude"						"20"
@@ -89,14 +89,14 @@ WeaponData
 	"explosion_shake_duration"						"0.25"
 	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION | DF_ELECTRICAL"
 
-	"explosion_damage"								"70"
-	"explosion_damage_heavy_armor"					"70"
+	"explosion_damage"								"75"
+	"explosion_damage_heavy_armor"					"75"
 	"explosion_inner_radius"  						"72"
 	"explosionradius" 								"350"
 
 	"projectile_killreplay_enabled"					"1"
 
-	"damage_shield_scale"                           "3"
+	"damage_shield_scale"                           "1"
 
 	MP_BASE
 	{
@@ -172,6 +172,7 @@ WeaponData
 	"grenade_bounce_extra_vertical_randomness"		"0.2"
 	"grenade_roll_vel_frac_per_second"				"0.1"
 	"grenade_touch_triggers_on_impact"				"1"
+	"grenade_ignore_planted_grenades"               "1"
 
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"

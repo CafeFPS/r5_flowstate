@@ -1,0 +1,154 @@
+#base "_base_ability_tactical.txt"
+
+WeaponData
+{
+    // General
+    "printname"   									"#ABL_SHADOW_POUNCE"
+    "shortprintname"   								"#ABL_SHADOW_POUNCE_SHORT"
+    "description" 									"#ABL_SHADOW_POUNCE_DESC"
+    "longdesc"										"#ABL_SHADOW_POUNCE_LONGDESC"
+
+    "hud_icon"										"rui/hud/tactical_icons/tactical_revenant_rework"
+
+    "OnWeaponDeactivate"                            "OnWeaponDeactivate_shadow_pounce_free"
+    "OnWeaponTossPrep"                              "OnWeaponTossPrep_shadow_pounce_free"
+    "OnWeaponTossCancel"                            "OnWeaponTossCancel_shadow_pounce_free"
+    "OnWeaponToss"                                  "OnWeaponToss_shadow_pounce_free"
+    "OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_shadow_pounce_free"
+    "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+    "OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_shadow_pounce_free"
+    "OnWeaponOwnerChanged"					        "OnWeaponOwnerChanged_shadow_pounce_free"
+
+	//"OnClientAnimEvent"                             "OnClientAnimEvent_shadow_pounce"
+    "zoom_effects"                                  "0"
+
+    // Models
+    "viewmodel"   									"mdl/Weapons/ptpov_revenant_grenade/ptpov_revenant_grenade.rmdl"
+    "playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+    //"projectilemodel" 							//"mdl/dev/empty_model.rmdl"
+    "leveled_pickup"								"1"
+    "bone_merge_world_model"						"1"
+
+	// Behavior - Animation
+	"play_offhand_charging_anim"  					"0"
+    "play_offhand_start_end_anim"					"0"
+    "fast_swap_from"								"1"
+    "is_toss_weapon"								"1"
+    "toss_has_post_loop"							"1"
+    "instant_swap_to"								"1"
+
+    "fire_rate"   									"1.5"
+    "fire_anim_rate"								"1.5"
+    "holster_time"									"0.4"
+    "deploy_time" 								    "0"
+    "lower_time"  									"0.4"
+    "raise_time"  									"0"
+
+    "toss_pullout_time"								"0.9" // 0.9
+    "toss_time"										"1"
+    "toss_overhead_time"							"0"
+
+    "reload_enabled"								"0"
+    "empty_reload_only"   							"0"
+    "allow_empty_click"   							"0"
+    "breaks_cloak"									"0"
+    "primary_fire_does_not_block_sprint"			"1"
+    "aimassist_disable_hipfire"						"1"
+    "aimassist_disable_ads"							"1"
+
+	// Behavior - Firing
+	"cooldown_type"									"ammo_instant"
+	"fire_mode"   									"offhand"
+    "offhand_cancelled_by_melee"					"1"
+    "offhand_default_inventory_slot"				"1"
+    "offhand_toss_hold_is_resumable"                "0"
+    "offhand_keep_primary_in_hand"					"0"
+    "offhand_holster_primary"						"1"
+    "hide_holstered_sidearm_when_active"			"1"
+    "offhand_interrupt_climbing"                    "1"
+
+    // CHARGE
+    //"charge_time" 									"0.6"
+    //"charge_cooldown_time"							"0.1"//"0.65"
+    //"charge_cooldown_delay"   						"0.0" //0.1
+    //"charge_attack_min_charge_required"             "0.0"
+    //"charge_require_input"							"1"
+    //"charge_allow_hold_when_full"                   "1"
+    //"charge_end_forces_fire"						"0"
+    //"charge_remain_full_when_fired"					"0"
+    //"charge_maintained_until_fired"					"0"
+
+    //Grenade Arc
+    //"grenade_arc_indicator_show_from_hip"			"1"
+    //"grenade_arc_indicator_bounce_count"			"1"
+    //"grenade_arc_indicator_ignore_base_velocity"	"1"
+    //"grenade_arc_indicator_effect"					"P_arc_light_blue_bounce"
+    //"grenade_arc_indicator_effect_first"			"P_arc_light_blue"
+    //"grenade_arc_impact_indicator_effect"			"P_van_tac_echo_AR_ping_ground"
+
+    "ammo_suck_behavior"							"offhand_weapons"
+
+    "ammo_display"									"count"
+
+    "ammo_clip_size"   								"25"
+    "ammo_default_total"							"25"
+    "ammo_min_to_fire"								"25"
+    "ammo_per_shot"									"25"
+    "ammo_stockpile_max"							"25"
+
+    "regen_ammo_refill_rate"						"1"
+
+    // Regen Ammo
+    "regen_ammo_refill_start_delay"					"0.0"
+
+    // Damage
+    "damage_type" 									"none"
+    "explosion_damage_heavy_armor"					"0"
+    "damage_near_distance"							"0"
+    "damage_far_distance" 							"0"
+    "damage_near_value"   							"0"
+    "damage_far_value"								"0"
+
+    // Sounds
+    //"fire_sound_1_player_1p"						"Mirage_PsycheOut_Activate_1P"
+    //"fire_sound_1_player_3p"						"Mirage_PsycheOut_Activate_3P"
+
+    // Rumble
+    "rumble"  										"-1"
+
+    Mods
+    {
+        survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+        shadow_form_active
+        {
+            regen_ammo_refill_rate                 2
+        }
+
+                               
+
+                               
+         
+                                                               
+                                                               
+                                                               
+         
+              
+
+        survival_finite_ordnance
+        {
+
+        }
+
+        // shadow_pounce_target_indicator
+        // {
+            // "grenade_arc_indicator_show_from_hip"			"1"
+            // "grenade_arc_indicator_effect"					"P_arc_light_blue_bounce"
+            // "grenade_arc_impact_indicator_effect"			"P_van_tac_echo_AR_ping_ground"
+            // "grenade_arc_indicator_show_floor_impact"       "0"
+        // }
+    }
+}

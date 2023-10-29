@@ -65,11 +65,14 @@ WeaponData
 	"ammo_drains_to_empty_on_fire"					"0"
 	"ammo_no_remove_from_clip"						"0"
 
+    "deploy_time"   								"1.25"
+
     "ammo_clip_size"   								"250"
 	"ammo_default_total"							"250"
 	"ammo_min_to_fire"								"250"
 	"ammo_per_shot"									"250"
 	"ammo_stockpile_max"							"250"
+	"no_ammo_used_on_primary_attack"	            "1"
 
 	"charge_time"									"4.0"
 
@@ -89,27 +92,13 @@ WeaponData
 	"regen_ammo_refill_rate"						"10"
 	"regen_ammo_refill_start_delay"					"0.0"
 
-	MP_BASE
-	{
-		// Damage - When Used by Players
-		"damage_near_distance"							"800"
-		"damage_far_distance" 							"1200"
-		"damage_near_value"   							"900"
-		"damage_far_value"								"900"
-		"explosion_damage"								"100"
-		"explosion_damage_heavy_armor"					"250"
-	}
-
-	SP_BASE
-	{
-		// Damage - When Used by Players
-		"damage_near_distance"							"800"
-		"damage_far_distance" 							"1200"
-		"damage_near_value"   							"900"
-		"damage_far_value"								"900"
-		"explosion_damage"								"100"
-		"explosion_damage_heavy_armor"					"250"
-	}
+    // Damage - When Used by Players
+    "damage_near_distance"							"800"
+    "damage_far_distance" 							"1200"
+    "damage_near_value"   							"900"
+    "damage_far_value"								"900"
+    "explosion_damage"								"100"
+    "explosion_damage_heavy_armor"					"250"
 
 	// Behavior
 	"fire_rate"   									"1.0"
@@ -117,10 +106,10 @@ WeaponData
 	"zoom_time_out"   								"0.01"
 	"zoom_fov"										"50"
 	"reload_time" 									"0"
-    	"holster_time"									"0.15"
-	"deploy_time" 								"1.25"  //want to be driven by animation
+    
 	"lower_time"  									"0.5"
 	"raise_time"  									"0.5"
+	"holster_time"									"0.15"
 	"vortex_refire_behavior"  						"rocket"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"0"
@@ -263,6 +252,16 @@ WeaponData
 		{
 			"offhand_active_slot"       "altHand"
 			"deploy_time"   			"0.4"
+			"activitymodifier"		"ult_active"
+        }
+       
+        extra_tactical_charges
+        {
+            "ammo_clip_size"   								"750"
+            "ammo_default_total"							"750"
+            "ammo_min_to_fire"								"350"
+            "ammo_per_shot"									"350"
+            "ammo_stockpile_max"							"750"
         }
 	}
 }

@@ -1,0 +1,163 @@
+#base "_base_handgun.txt"
+#base "_base_mags_heavy.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Portable Beacon"
+	"shortprintname"								"Portable Respawn Beacon"
+	"description" 									"#WPN_WINGMAN_DESC"
+	"longdesc" 										"#WPN_WINGMAN_LONGDESC"
+
+	"ammo_pool_type"								"highcal"
+
+	"menu_icon"										"rui/weapon_icons/r5/weapon_wingman"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_wingman"
+
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
+
+	"weapon_type_flags"								"WPT_PRIMARY"
+	"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+
+	// Menu
+	"menu_category"                                 "pistol"
+	"menu_anim_class"                               "small"
+	"stat_damage" 									"88"
+	"stat_range"  									"40"
+	"stat_accuracy"   								"36"
+	"stat_rof"										"27"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/clacker_detonator/ptpov_proximity_detonator.rmdl"
+	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
+
+    "OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_beacon"
+    "OnWeaponActivate"							    "OnWeaponActivate_beacon"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_beacon"
+
+
+	"chroma_color"									".3 1 .7"
+
+
+	"damage_type" 									"bullet"
+
+	"ammo_clip_size"   								"40"
+
+	"dof_zoom_focusArea_horizontal"					"0.06"
+	"dof_zoom_focusArea_top"						"0.070"
+	"dof_zoom_focusArea_bottom"						"-0.011"
+
+    "ammo_default_total"							"160"
+    "ammo_stockpile_max"							"160"
+    "ammo_no_remove_from_stockpile"					"1"
+    "ammo_min_to_fire"								"1"
+
+
+
+
+    // Damage
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	Mods
+	{
+	    gold
+	    {
+	    }
+
+		survival_finite_ammo
+        {
+            "ammo_default_total"			"0"
+            "ammo_stockpile_max"			"20"
+            "ammo_no_remove_from_stockpile"	"0"
+
+            "low_ammo_fraction" 			"0.3"
+
+	   		"uses_ammo_pool"				"1"
+        }
+
+        hopup_headshot_dmg
+        {
+        	"damage_headshot_scale"			"2.25"
+        	"projectile_trail_effect_0"     "P_tracer_proj_sniper_piercer"
+        	"fire_sound_1_player_1p"		"weapon_wingman_fire_skull_1p"
+			"fire_sound_1_player_3p"		"weapon_wingman_fire_skull_3p"
+			"fire_sound_1_npc"				"weapon_wingman_fire_skull_3p"
+        }
+
+        highcal_mag_l1
+		{
+			"ammo_clip_size"   							"6"
+		}
+		highcal_mag_l2
+		{
+			"ammo_clip_size"   							"8"
+		}
+		highcal_mag_l3
+		{
+			"ammo_clip_size"   							"10"
+		}
+	}
+
+	"ui1_enable"		"1"
+	"ui1_draw_cloaked"	"1"
+	UiData1
+	{
+		"ui"							"ui/wingman_rui_upper"
+		"mesh"							"models/weapons/attachments/re45_rui_upper"
+		Args
+		{
+			vis							player_zoomfrac
+		}
+	}
+
+	"ui2_enable"		"1"
+	"ui2_draw_cloaked"	"1"
+	UiData2
+	{
+		"ui"							"ui/wingman_rui_lower"
+		"mesh"							"models/weapons/attachments/b3wing_rui_lower"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+		}
+	}
+
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_plus"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+	}
+}
+
+
+

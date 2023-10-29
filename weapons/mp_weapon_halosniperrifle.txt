@@ -1,0 +1,252 @@
+//Made by @CafeFPS
+
+#base "_base_sniper_modded_weapons.txt"
+
+"WeaponData"
+{
+
+	// General
+	//
+	"printname"                                "SRS99-AM Sniper Rifle"
+	"shortprintname"                           "SRS99 Sniper Rifle"
+	"description"                              "#WPN_DMR_DESC"
+	"longdesc"                                 "#WPN_DMR_LONGDESC"
+	
+	"weapon_type_flags"							"WPT_PRIMARY"
+
+	"OnWeaponStartZoomIn"                    		"OnWeaponZoomIn_HaloModSniper"
+	"OnWeaponStartZoomOut"                   		"OnWeaponZoomOut_HaloModSniper"
+
+	// UI - HUD
+	"hud_icon"                                 "rui/flowstate_custom/weapon/halo_sniper_rifle"
+	"chroma_color"                             "1 1 .3"
+
+	// UI - Menu
+	"menu_icon"                                "rui/flowstate_custom/weapon/halo_sniper_rifle"
+	"stat_damage"                              "90"
+	"stat_accuracy"                            "84"
+	"stat_range"                               "100"
+	"stat_rof"                                 "30"
+
+	// Models
+	"viewmodel"                                "mdl/flowstate_custom/ptpov_halosniperrifle.rmdl"
+	"playermodel"                              "mdl/flowstate_custom/w_halosniperrifle.rmdl"
+
+	// Script - Callbacks
+	"OnClientAnimEvent"                        "OnClientAnimEvent_weapon_dmr"
+
+
+	// Behavior - Firing
+	//
+	"fire_rate"                                "1"
+
+	// Behavior - Animation
+	"deployfirst_time"                         "1.6"
+	//setting to "0" so it's tunable in Bakery
+	"sprintcycle_time"								"0"
+
+	// Damage
+	"damage_near_value"                        "115"
+	"damage_far_value"                         "115"
+	"damage_very_far_value"                    "115"
+	"damage_near_value_titanarmor"             "115"
+	"damage_far_value_titanarmor"              "115"
+	"damage_very_far_value_titanarmor"         "115"
+
+	"damage_rodeo"                             "400"
+
+	"damage_headshot_scale"			           "2.5"
+
+	//"damage_leg_scale"                         "0.8"
+
+	// Viewmodel
+	"viewmodel_shake_forward"                  "0.07"
+	"viewmodel_shake_up"                       "0.05"
+	"viewmodel_shake_right"                    "0.01"
+
+	// Projectile
+	"projectile_launch_speed"                  "30500"
+	
+	"bolt_hitsize"								"1.5"
+    // "bolt_hitsize_grow1_time"				    "0.129"  //~100m
+    // "bolt_hitsize_grow1_size"				    "0.33"
+    // "bolt_hitsize_grow2_time"				    "0.258"  //~200m
+    // "bolt_hitsize_grow2_size"				    "1.25"
+    // "bolt_hitsize_growfinal_lerptime"		    "0.387"  //~300m
+    // "bolt_hitsize_growfinal_size"               "2.0"
+
+	// Ammo
+	//
+	"ammo_pool_type"                           "sniper"
+	"ammo_clip_size"                           "4"
+	"ammo_min_to_fire"                         "1"
+	"ammo_stockpile_max"             "5"
+    "ammo_default_total"             "0"
+    "ammo_no_remove_from_stockpile"  "0"
+    "uses_ammo_pool"                 "1"
+    "low_ammo_fraction"              "0.3"
+
+	"reload_enabled"                           "1"
+	"reload_time"                              "2.66"
+	"reload_time_late1"                        "1.23"
+	"reloadempty_time"                         "3.66"
+	"reloadempty_time_late1"                   "2.25"
+	"reloadempty_time_late2"                   "1.26"
+
+	// Viewkick Spring
+	//
+	"viewkick_spring"                          "dmr"
+
+	// Viewkick - Pitch
+	"viewkick_pitch_base"                      "-1.06"
+	"viewkick_pitch_random"                    "0.5"
+	"viewkick_pitch_softScale"                 "1.0"
+	"viewkick_pitch_hardScale"                 "0.9"
+
+	// Viewkick - Yaw
+	"viewkick_yaw_base"                        "-0.55"
+	"viewkick_yaw_random"                      "0.35"
+	"viewkick_yaw_softScale"                   "1.0"
+	"viewkick_yaw_hardScale"                   "0.5"
+
+	// Viewkick - Roll
+	"viewkick_roll_base"                       "0.1"
+	"viewkick_roll_randomMin"                  "0.5"
+	"viewkick_roll_randomMax"                  "0.5"
+	"viewkick_roll_softScale"                  "0.2"
+	"viewkick_roll_hardScale"                  "1.75"
+
+	// Viewkick - Fractions
+	"viewkick_hipfire_weaponFraction"          "0.2"
+	"viewkick_hipfire_weaponFraction_vmScale"  "0.8"
+	"viewkick_ads_weaponFraction"              "0.0"
+	"viewkick_ads_weaponFraction_vmScale"      "1.0"
+
+	// Viewkick - Scale
+	"viewkick_scale_min_hipfire" 				"1.0"
+	"viewkick_scale_max_hipfire"             	"1.5"
+	"viewkick_scale_min_ads" 					"1.0"
+	"viewkick_scale_max_ads" 					"1.5"
+
+	// Sound - Firing
+	//
+	"fire_sound_1_npc"                         "Weapon_DMR_Fire_NPC"
+	"fire_sound_1_player_1p"                   "Weapon_DMR_Fire_1P"
+	"fire_sound_1_player_3p"                   "Weapon_DMR_Fire_3P"
+
+	// Sound - Low Ammo
+	"low_ammo_sound_name_1"                    "DMR_LowAmmo_Shot1"
+	"low_ammo_sound_name_2"                    "DMR_LowAmmo_Shot2"
+	"low_ammo_sound_name_3"                    "DMR_LowAmmo_Shot3"
+	"low_ammo_sound_name_4"                    "DMR_LowAmmo_Shot4"
+	"low_ammo_sound_name_5"                    "DMR_LowAmmo_Shot5"
+
+	// Sound - Misc
+	"sound_zoom_in"                            "Weapon_DMR_ADS_In"
+	"sound_zoom_out"                           "Weapon_DMR_ADS_Out"
+
+
+	// NPC
+	//
+	"npc_min_burst"                            "1"
+	"npc_max_burst"                            "1"
+	"npc_suppress_lsp_allowed"                 "0"
+	"npc_rest_time_between_bursts_min"         "2.0"
+	"npc_rest_time_between_bursts_max"         "3.0"
+	"npc_min_range"                            "0"
+	"npc_max_range"                            "8000"
+
+	// NPC - Damage
+	"npc_damage_near_value"                    "50"
+	"npc_damage_near_value_titanarmor"         "50"
+	"npc_damage_far_value"                     "50"
+	"npc_damage_far_value_titanarmor"          "50"
+	"npc_min_engage_range"                     "500"
+	"npc_max_engage_range"                     "8000"
+	"npc_min_engage_range_heavy_armor"         "500"
+	"npc_max_engage_range_heavy_armor"         "8000"
+	"npc_accuracy_multiplier_pilot"            "1.0"
+
+	// NPC - Proficiency
+	"proficiency_poor_spreadscale"             "3.0"
+	"proficiency_average_spreadscale"          "2.2"
+	"proficiency_good_spreadscale"             "2.0"
+	"proficiency_very_good_spreadscale"        "1.5"
+
+	"dof_zoom_nearDepthStart"                  "1.0"
+	"dof_zoom_nearDepthEnd"                    "3.85"
+
+	// Bodygroup - Clip
+	"clip_bodygroup"                           "clip"
+	"clip_bodygroup_index_shown"               "0"
+	"clip_bodygroup_index_hidden"              "1"
+	"clip_bodygroup_show_for_milestone_0"      "1"
+	"clip_bodygroup_show_for_milestone_1"      "0"
+	"clip_bodygroup_show_for_milestone_2"      "1"
+	"clip_bodygroup_show_for_milestone_3"      "1"
+
+	"projectile_gravity_scale_time_2"				"1.0"//"0.1"
+	"projectile_gravity_scale_2"					"3.0"
+	"projectile_gravity_scale_time_final"			"0.2"
+	"projectile_gravity_scale_final"				"6.0"
+
+	"projectile_drag_coefficient"					"0.0"
+	
+	"viewmodel_offset_hip"							"1 0 -1"
+
+	// Damage - Behavior
+	"damage_flags"                             "DF_SNIPER | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+	"pass_through_depth"                       "64"
+	"pass_through_damage_preserved_scale"      "0.8"
+
+	"zoom_time_in"                              "0.34"
+	"zoom_time_out"                             "0.31"
+    "zoom_fov"				    "26.2756" // 3x @ 70
+	"zoom_toggle_fov"           "8.01071" // 10x @ 70
+	"zoom_toggle_lerp_time"     "0.04"  // super fast lerp to simulate digital zoom snappiness
+	
+	"red_crosshair_range" 							"5000"
+	
+    zoomed_convar_sensitivity_index         3
+    zoomed_convar_toggle_sensitivity_index  6
+
+	"Mods"
+	{
+        // sniper_mag_l4
+        // {
+            // "ammo_clip_size"   		        			"12"
+        // }
+	}
+
+	// UI - Crosshair
+	"rui_crosshair_index"                      "0"
+	"active_crosshair_count"                   "1"
+
+	"RUI_CrosshairData"
+	{
+
+		"DefaultArgs"
+		{
+			//"adjustedSpread"      "weapon_spread"
+			//"adsFrac"             "player_zoomFrac"
+			//"isSprinting"         "player_is_sprinting"
+			"isReloading"         "weapon_is_reloading"
+			"teamColor"           "crosshair_team_color"
+			"isAmped"             "weapon_is_amped"
+			//"crosshairMovementX"  "crosshair_movement_x"
+			//"crosshairMovementY"  "crosshair_movement_y"
+		}
+
+		"Crosshair_1"
+		{
+			"ui"           "ui/crosshair_circle2"
+			"base_spread"  "0"
+
+			"Args"
+			{
+				"isFiring"  "weapon_is_firing"
+			}
+		}
+	}
+}
+

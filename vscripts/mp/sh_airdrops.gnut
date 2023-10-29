@@ -5,6 +5,8 @@ global function AirdropSpawnThink
 global function AirdropForRound
 #endif
 
+global function GetAirdropForHitEnt
+
 const bool DEBUG_DROP_POINTS = false
 
 const string SOUND_CARE_PACKAGE_MARKER = "Survival_LootPod_Beacon_Marker"
@@ -167,6 +169,18 @@ void function SignalOpenAirdrop( entity ent, entity player, ExtendedUseSettings 
 #if SERVER
 
 #endif
+}
+
+entity function GetAirdropForHitEnt( entity hitEnt )
+{
+	if ( hitEnt.GetScriptName() == CARE_PACKAGE_SCRIPTNAME )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && parentEnt.GetScriptName() == CARE_PACKAGE_SCRIPTNAME )
+		return parentEnt
+
+	return null
 }
 
 #if SERVER

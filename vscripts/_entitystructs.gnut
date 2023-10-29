@@ -99,21 +99,6 @@ global struct LootZone
     string ref
 }
 
-global struct ThreatEventCallbackData
-{
-	int typeState
-}
-
-global enum eThreatDetectionZoneType
-{
-	TRAP,
-	AMBUSH,
-	PING,
-	KILLZONE,
-	BOMBARDMENT,
-	GRENADE
-}
-
 global enum eStatUpdateTime
 {
 	DISTANCE,
@@ -440,6 +425,36 @@ global struct ServerEntityStruct
 	
 	//Idk
 	bool testOpen = false
+	
+	//wattson q
+	bool isLinked = false
+	array<entity> attachedTriggersToPole
+	float teslaTrapTriggerCreationTime
+	
+	//crate weapon ammo count
+	int crateWeaponLastAmmo = -1
+	int crateWeaponLastAmmoClip = -1
+	string crateWeaponCustomSight = "-1"
+	
+	//cargobots
+	int currentTier = 1
+	bool hasVaultKey = false
+	
+	//pylon
+	entity reminderFx
+	float shieldAmountCount
+	
+	//backpack limit
+	array<string> lootToAttachToBackpack
+	bool itemReachedGround = false
+	
+	//cargobot thing
+	bool applyNewHealthOneTime = false
+	
+	//extra survival int property ( max shield for infinite shield )
+	int extraSurvivalProperty = -1
+	
+	bool droneRecalling = false
 }
 
 global struct MeritData
@@ -600,6 +615,7 @@ global struct ServerPlayerStruct
 	float lastFullHealthTime
 
 	bool isDisconnected = false
+	bool isConnected = false
 	array<int> empStatusEffectsToClearForPhaseShift //Not great, done to avoid needing code work to get a separate empSlow/empSTurnEffects
 
 	float stats_wallrunTime = 0
@@ -708,7 +724,7 @@ global struct ServerPlayerStruct
 	int respawnsGiven
 	int revivesGiven
 
-	array<float> attackedTeam
+	table<int, float> attackedTeam
 
 	int killedEnemy
 	float lastDownedEnemyTime
@@ -747,7 +763,9 @@ global struct ServerPlayerStruct
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null
+	int DeathRecap_PreviousShotWeaponId = -1
 	entity DeathRecap_PreviousShotEnemyPlayer = null
+	bool DeathRecap_PlayerIsBuildingBlock = false
 	float DeathRecap_BlockTime = 0
 	
 	//Flyers Easteregg by Colombia
@@ -812,11 +830,6 @@ global struct ServerPlayerStruct
 	//Data request
 	float lastTimeDataRequestUsed = 0
 	
-	//Needler
-	int needles = 0
-	bool ongoingneedlesexplode = false
-	array<entity> proplist
-	entity particleonbody
 	//Super decys (mirage buff)
 	entity lastDecoy
 	
@@ -882,6 +895,45 @@ global struct ServerPlayerStruct
 	bool insideBubbleMokey = false
 	
 	string snd_knifecolor = "255, 255, 255"
+	
+	//wattson q
+	float lastTimeDamagedByTeslaTrap
+	float lastTimeAppliedEMPByTeslaTrap
+  
+	float lastTgiveUsedTime
+	float lastRestUsedTime
+
+	//bullet slow
+	float lastTimeShotSlowApplied_Global = 0
+	
+	//bangalore's passive
+	entity vortexTriggerDoubleTime
+	
+	//wattson ultimate
+	entity lastTrophy
+
+	float huntEndTime
+	bool huntEnable = false
+	array<int> huntIds = []
+	
+	bool playerEnteredJumppadCrouching = false
+	
+	float lastTimeEnteredCryptosDrone = -1
+	
+	//Needler
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	
+	int consecutiveKills
+	bool playerHasEnergySword = false
+	string weaponThatEnergySwordReplaced = ""
+	
+	//Oddball
+	entity oddballCarrierFx
+	//float oddballLastTimeCarried = 0
+	// int oddballTimesCarried = 0
 }
 
 global struct ChallengeScore
@@ -1048,6 +1100,10 @@ global struct ServerWeaponStruct
 	
 	vector portal1RefAngles
 	vector portal2RefAngles
+	bool fromWall
+	bool wasFired
+
+	bool isInAdsCustom
 }
 
 
@@ -1140,6 +1196,7 @@ global struct ServerPlayerDecoyStruct
 {
 	array< entity > fxHandles
 	array< string > loopingSounds
+	float endTime
 	asset characterSetFile 
 	asset modelName
 	bool F_or_B_CoinFlip

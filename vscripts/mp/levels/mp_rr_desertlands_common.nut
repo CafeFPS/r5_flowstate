@@ -63,6 +63,7 @@ void function Desertlands_MapInit_Common()
 	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_desertlands_64k_x_64k.rpak" )
 
 	FlagInit( "PlayConveyerStartFX", true )
+	FlagInit( "PlayConveyerEndFX", true )
 
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
@@ -79,6 +80,8 @@ void function Desertlands_MapInit_Common()
 		//	DesertlandsTrain_Precaches()
 
 		AddSpawnCallback_ScriptName( "desertlands_train_mover_0", AddTrainToMinimap )
+		RegisterSignal( "ReachedPathEnd" )
+		//AddSpawnCallback_ScriptName( "conveyor_rotator_mover", OnSpawnConveyorRotatorMover )
 	#endif
 
 	#if CLIENT
@@ -96,7 +99,6 @@ void function Desertlands_MapInit_Common()
 #if SERVER
 void function EntitiesDidLoad()
 {
-	
 	if( GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
 		return
 
@@ -109,31 +111,15 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() != "fs_dm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
+	if(GameRules_GetGameMode() == SURVIVAL && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
 	{
-		//InitLootDrones()
-		//InitLootRollers()
-		//InitLootDronePaths()
-		//SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 20 ))
-	}
-	else{
-		SpawnFlowstateLobbyProps()
-		if(GameRules_GetGameMode() != "fs_prophunt" && !GetCurrentPlaylistVarBool("flowstateGrenadesDisabled", false ))
+		thread function () : ()
 		{
-			//Granadas-Grenades
-			SpawnGrenades(<19010,33300,-810>, <0, 0, 0>, 6, ["thermite", "frag", "arc"], 3)
-			SpawnGrenades(<18882,29908,-810>,<0, -90, 0>, 6, ["thermite", "frag", "arc"], 3)
-			SpawnGrenades(<15346,30084,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
-			SpawnGrenades(<15346,33540,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
-
-			SpawnGrenades(<12099, 6976,-4330>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-			SpawnGrenades(<11238, 4238,-4283>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-			SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
-			SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-		}
-		CreateWeaponRackSkillTrainer(<17250,32500,2220>, <0,-90,0>, "mp_weapon_sniper")
-		CreateWeaponRackSkillTrainer(<17500,32500,2220>, <0,-90,0>, "mp_weapon_mastiff")
-		CreateWeaponRackSkillTrainer(<17750,32500,2220>, <0,-90,0>, "mp_weapon_lstar")
+			InitLootDrones()
+			InitLootDronePaths()
+			InitLootRollers()
+			SpawnLootDrones( 12 )
+		}()
 	}
 }
 #endif
@@ -185,6 +171,7 @@ void function ConveyorRotatorMoverThink( entity mover )
 	mover.EndSignal( "OnDestroy" )
 
 	entity rotator = GetEntByScriptName( "conveyor_rotator" )
+	printt( "spawned mover at " + mover ) 
 	entity startNode
 	entity endNode
 
@@ -206,13 +193,13 @@ void function ConveyorRotatorMoverThink( entity mover )
 	float waitTime     = fabs( angleDiff ) / rotatorSpeed
 
 	Assert( IsValid( endNode ) )
-
+	
 	while ( 1 )
 	{
 		mover.WaitSignal( "ReachedPathEnd" )
-
+		DebugDrawLine( mover.GetOrigin(), endNode.GetOrigin(), 255, 150, 0, true, 999 )
 		mover.SetParent( rotator, "", true )
-
+		printt( "wait time for this mover" + waitTime ) //Fix wait time and other things
 		wait waitTime
 
 		mover.ClearParent()
@@ -272,8 +259,8 @@ void function GeyersJumpTriggerArea( entity jumpPad )
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( Geyser_OnJumpPadAreaEnter )
 
-	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, GEYSER_PING_SCRIPT_NAME )
-	// traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
+	entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_UNASSIGNED, GEYSER_PING_SCRIPT_NAME )
+	traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
 
 	//DebugDrawCylinder( origin, < -90, 0, 0 >, JUMP_PAD_PUSH_RADIUS, trigger.GetAboveHeight(), 255, 0, 255, true, 9999.9 )
 	//DebugDrawCylinder( origin, < -90, 0, 0 >, JUMP_PAD_PUSH_RADIUS, -trigger.GetBelowHeight(), 255, 0, 255, true, 9999.9 )
@@ -368,11 +355,9 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 		}
 	)
 
-	WaitFrame()
-
 	wait 0.1
-	//thread PlayerSkydiveFromCurrentPosition( player )
-	while( !player.IsOnGround() )
+
+	while( IsValid( player ) && !player.IsOnGround() )
 	{
 		WaitFrame()
 	}
@@ -460,6 +445,9 @@ void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity pla
 #if SERVER
 void function AddTrainToMinimap( entity mover )
 {
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		return
+
 	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )
 	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.TRAIN )
 	minimapObj.SetParent( mover )
@@ -612,7 +600,7 @@ entity function SpawnBigTrainingTarget(vector pos, vector ang, void functionref(
 
 #if SERVER
 void function RespawnItem(entity item, string ref, int amount = 1, int wait_time=6)
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS. Tomado del firing range.
+//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
 
 {
 	vector pos = item.GetOrigin()
@@ -627,7 +615,7 @@ void function RespawnItem(entity item, string ref, int amount = 1, int wait_time
 
 #if SERVER
 void function FillLootTable()
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS. Adaptado del firing range.
+//By Retículo Endoplasmático#5955 CafeFPS. Adaptado del firing range.
 {
 	file.ordnance.extend(SURVIVAL_Loot_GetByType( eLootType.ORDNANCE ))
 	file.weapons.extend(SURVIVAL_Loot_GetByType( eLootType.MAINWEAPON ))

@@ -758,6 +758,11 @@ void function CodeCallback_ZiplineMount( entity player, entity zipline )
 void function CodeCallback_ZiplineStart( entity player, entity zipline )
 {
 	#if SERVER
+		if( !IsValid( player) )
+			return
+		
+		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_ZIPLINE_START, player, player.GetOrigin(), player.GetTeam(), player )
+		
 		CreateZiplineJetEffects( player )
 		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_loop", "3p_zipline_loop", player, player )		
 		foreach ( callback in _ZiplineStartCallbacks )
@@ -787,6 +792,11 @@ void function CodeCallback_ZiplineMove( entity player, entity zipline )
 void function CodeCallback_ZiplineStop( entity player )
 {
 	#if SERVER
+		if( !IsValid( player) )
+			return
+		
+		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_ZIPLINE_STOP, player, player.GetOrigin(), player.GetTeam(), player )
+	
 		foreach( effect in player.s.ziplineEffects )
 		{
 			IsValid( effect )

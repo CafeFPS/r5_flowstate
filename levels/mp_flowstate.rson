@@ -1,0 +1,13 @@
+When: "SERVER"
+Scripts:
+[
+]
+When: "CLIENT"
+Scripts:
+[
+]
+When: "SERVER || CLIENT"
+Scripts:
+[
+	custom_maps/sh_mp_flowstate.nut
+]

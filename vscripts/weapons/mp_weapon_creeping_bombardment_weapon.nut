@@ -7,7 +7,7 @@ const asset CREEPING_BOMBARDMENT_SMOKE_FX = $"P_bBomb_smoke"
 
 const float CREEPING_BOMBARDMENT_WEAPON_SMOKESCREEN_DURATION = 15.0
 
-const float CREEPING_BOMBARDMENT_WEAPON_DETONATION_DELAY = 8.0
+const float CREEPING_BOMBARDMENT_WEAPON_DETONATION_DELAY = 6.0
 
 const asset CREEPING_BOMBARDMENT_WEAPON_BOMB_MODEL = $"mdl/weapons_r5/misc_bangalore_rockets/bangalore_rockets_projectile.rmdl"
 

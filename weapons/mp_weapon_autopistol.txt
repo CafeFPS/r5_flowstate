@@ -1,6 +1,6 @@
 #base "_base_handgun.txt"
 #base "_base_mags_light.txt"
-#base "_base_laser_sights.txt"
+#base "_base_laser_sights_small.txt"
 
 WeaponData
 {
@@ -66,36 +66,28 @@ WeaponData
 
 	"low_ammo_sound_name_1"							"RE45Auto_LowAmmo_Shot1"
 
-	"ammo_clip_size"   								"25"
-    "ammo_default_total"							"200"
-    "ammo_stockpile_max"							"200"
-    "ammo_no_remove_from_stockpile"					"1"
-"low_ammo_fraction" 							"0.3"
-    "ammo_min_to_fire"								"1"
+	"ammo_clip_size"   								"16"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"20"
+    "ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
+
+	"low_ammo_fraction" 							"0.3"
+	"ammo_min_to_fire"								"1"
 
     "projectile_launch_speed"						"19500"
 
 	"damage_type" 									"bullet"
 
-                   
-	    "damage_near_value"   							"14"        //"11"
-	    "damage_far_value"								"14"        //"11"
-	    "damage_very_far_value"							"14"        //"11"
-	    "damage_near_value_titanarmor"					"14"        //"11"
-	    "damage_far_value_titanarmor" 					"14"        //"11"
-	    "damage_very_far_value_titanarmor" 				"14"        //"11"
-         
-                                    
-                                                    
-                                                 
-                                                     
-                                                          
-                                                          
-                                                              
-       
+    // Damage - When Used by Players
+    "damage_near_value"   							"12"        //"11"
+    "damage_far_value"								"12"        //"11"
+    "damage_very_far_value"							"12"        //"11"
+    "damage_near_value_titanarmor"					"12"        //"11"
+    "damage_far_value_titanarmor" 					"12"        //"11"
+    "damage_very_far_value_titanarmor" 				"12"        //"11"
 
     "damage_rodeo" 									"110"
-
     "damage_unshielded_scale"              			"1.0"
 
     // Damage - When Used by NPCs
@@ -206,23 +198,11 @@ WeaponData
     "viewkick_scale_valueDecayRate"   				"40"
 
     // Hipfire Spread
-
-
-                         
     "spread_stand_hip"								"3.0"
     "spread_stand_hip_run"							"3.6"
     "spread_stand_hip_sprint"                       "5.0"
     "spread_crouch_hip"   							"1.6"
     "spread_air_hip"  								"7.0"
-     
-                                   
-                                      
-                                                         
-                                      
-                                   
-      
-
-
 
     "spread_kick_on_fire_stand_hip"   				"0.3"
     "spread_kick_on_fire_crouch_hip"  				"0.3"
@@ -252,9 +232,6 @@ WeaponData
 
 	"damage_shield_scale"      			"1.3"
 
-	"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
-	"impact_effect_table" 				        "shield_breaker_bullet"
-
 	"burst_or_looping_fire_sound_start_1p"		"Weapon_Alternator_FirstShot_1P"
 	"burst_or_looping_fire_sound_middle_1p"		"Weapon_Alternator_Loop_ShieldBreaker_1P"
 	"burst_or_looping_fire_sound_end_1p"		"Weapon_Alternator_LoopEnd_ShieldBreaker_1P"
@@ -268,10 +245,9 @@ WeaponData
 	"burst_or_looping_fire_sound_end_npc"		"Weapon_Alternator_LoopEnd_NPC"
 	Mods
 	{
-	    gold
-	    {
-	    }
-
+        gold
+        {
+        }
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
@@ -285,7 +261,7 @@ WeaponData
 
         hopup_shield_breaker
         {
-            "damage_shield_scale"      			"1.3"
+            "damage_shield_scale"      			"1.15"
             "projectile_trail_effect_0"			"P_tracer_proj_smg_shield_breaker"
             "impact_effect_table"				"shield_breaker_bullet"
 
@@ -302,6 +278,25 @@ WeaponData
 			"burst_or_looping_fire_sound_end_npc"			""
         }
 
+        hopup_unshielded_dmg
+        {
+            "damage_unshielded_scale"      					"1.35"
+
+            "projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
+            "impact_effect_table" 							"hammer_point_bullet"
+
+        	"burst_or_looping_fire_sound_start_1p"			"Weapon_RE45Auto_FirstShot_1P"
+			"burst_or_looping_fire_sound_middle_1p"			"weapon_re45auto_fireloop_unshieldeddmg_1p"
+			"burst_or_looping_fire_sound_end_1p"			"weapon_re45auto_loopend_1p"
+
+			"burst_or_looping_fire_sound_start_3p"			""
+			"burst_or_looping_fire_sound_middle_3p"			"weapon_re45auto_fireloop_unshieldeddmg_3p"
+			"burst_or_looping_fire_sound_end_3p"			"weapon_re45auto_loopend_3p"
+
+			"burst_or_looping_fire_sound_start_npc"			""
+			"burst_or_looping_fire_sound_middle_npc"		"Weapon_RE45Auto_Loop_3P_NPC_A"
+			"burst_or_looping_fire_sound_end_npc"			""
+        }
         optic_cq_threat
         {
             "viewmodel_offset_ads"                  "0 15 0"
@@ -322,6 +317,10 @@ WeaponData
 		{
 			"ammo_clip_size"   					"25"
 		}
+        bullets_mag_l4
+        {
+            "ammo_clip_size"   	    			"25"
+        }
 	}
 
 		// UI
