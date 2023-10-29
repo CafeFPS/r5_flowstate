@@ -1,4 +1,4 @@
-#base "melee_pilot_emptyhanded.txt"
+#base "melee_pilot_emptyhanded_halo.txt"
 
 WeaponData
 {
