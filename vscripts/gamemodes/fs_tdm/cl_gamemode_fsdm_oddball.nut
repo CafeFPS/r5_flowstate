@@ -436,7 +436,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		else
 			RuiSetImage( Hud_GetRui( LTMBoxMsg ), "basicImage", $"rui/flowstatecustom/ltm_box_msg_red" )
 		
-		string roundText = localPlayerIsWinner ? "ROUND WIN" : "ROUND LOSS"
+		string roundText = localPlayerIsWinner ? "MATCH WIN" : "MATCH LOSS"
 
 		string reasonText
 		string teamText
