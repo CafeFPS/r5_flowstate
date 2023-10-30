@@ -40,7 +40,7 @@ return ziplineUtility.zipline[ziplineName] }
 
 ZiplineUtility function MapEditor_CreateZiplineFromUnity( vector originStart, vector anglesStart, vector originEnd, vector anglesEnd, bool isVertical, float fadeDistance, float scale, float width, float speedScale,
 float lengthScale, int preserveVelocity, int dropToBottom, float startAutoDetachDistance, float endAutoDetachDistance, bool restPoint, int pushOffInDirectionX, bool isMoving, int detachEndOnSpawn, int detachEndOnUse,
-array< vector > optionalPanelsOrigin = [], array< vector > optionalPanelsAngles = [], array< asset > optionalPanelsSkin = [], float panelTimerMin = 32.0, float panelTimerMax = 60.0, int panelMaxUse = 0, bool addToArray = false )
+array< vector > optionalPanelsOrigin = [], array< vector > optionalPanelsAngles = [], array< asset > optionalPanelsSkin = [], float panelTimerMin = 32.0, float panelTimerMax = 60, int panelMaxUse = 0, bool addToArray = false )
 {
     ZiplineUtility zipline
 
@@ -201,8 +201,8 @@ array< entity > function Zipline_InitZipline( ZiplineUtility zipline )
 
     if ( vars.restPoint && !vars.isMoving )
     {
-        startEntityZiplinePoint.kv._zipline_rest_point_0    = startZiplinePos.x + " " + startZiplinePos.y  + " " + startZiplinePos.z
-        startEntityZiplinePoint.kv._zipline_rest_point_1    = endZiplinePos.x   + " " + endZiplinePos.y    + " " + endZiplinePos.z
+        startEntityZiplinePoint.kv._zipline_rest_point_0    = VectorToString( startZiplinePos )
+        startEntityZiplinePoint.kv._zipline_rest_point_1    = VectorToString( endZiplinePos )
     }
 
     startEntityZiplinePoint.SetAngles( startZiplineAng )

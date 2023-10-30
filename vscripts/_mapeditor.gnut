@@ -17,6 +17,7 @@ global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
 global function ReMapCreateRespawnableHeal
 global function ReMapCreateSpeedBoost
+global function ReMapCreateCamera
 
 global function External_ReMapSetOrigin
 global function External_ReMapSetAngles
@@ -79,6 +80,10 @@ const asset BOOST_MDL = $"mdl/fx/plasma_sphere_01.rmdl"
 const asset BOOST_CIRCLE = $"mdl/fx/ar_edge_sphere_512.rmdl"
 const asset BOOST_SPRINT_FP = $"P_sprint_FP"
 
+// Animated Camera
+const asset CAMERA_BASE_MDL = $"mdl/IMC_base/camera_imc_base_01.rmdl"
+const asset CAMERA_MDL = $"mdl/IMC_base/camera_imc_01.rmdl"
+
 const bool IS_FLOWSTATE_SCRIPT = true
 
 
@@ -104,6 +109,9 @@ void function ReMap_Init()
     PrecacheModel( BOOST_MDL )
     PrecacheModel( BOOST_CIRCLE )
     PrecacheParticleSystem( BOOST_SPRINT_FP )
+
+    PrecacheModel( CAMERA_BASE_MDL )
+    PrecacheModel( CAMERA_MDL )
 
     MapTriggers_Init()
     AddCallback_EntitiesDidLoad( ReMapDidLoad )
@@ -158,7 +166,7 @@ void function MapTriggers_Init()
 
 void function ReMapDidLoad()
 {
-
+    
 }
 
 entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float height = 2000, bool debugdraw = false)
@@ -516,11 +524,13 @@ entity function SetNodeRopeProperties( entity rope )
     return rope
 }
 
-void function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
+entity function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
 {
     JumpPad_CreatedCallback(jumpPad)
 
     if( addToArray ) MapEditorEnts.append( jumpPad )
+
+    return jumpPad
 }
 
 void function MapEditor_CreateButton( entity ent, void functionref( entity, entity, int ) callbackFunc, bool addToArray = false )
@@ -1110,7 +1120,7 @@ void function ReMapCreateSpeedBoost( vector spawnPos, vector color, float respaw
         boost.kv.solid = 0
         boost.SetValueForModelKey( BOOST_MDL )
         boost.SetModelScale( 0.5 )
-        boost.kv.rendercolor = instance.color.x + " " + instance.color.y + " " + instance.color.z
+        boost.kv.rendercolor = VectorToString( instance.color )
         boost.kv.fadedist = 20000
 
         boost.SetOrigin( instance.spawnPos + < 0, 0, 50 > )
@@ -1129,7 +1139,7 @@ void function ReMapCreateSpeedBoost( vector spawnPos, vector color, float respaw
     circle.SetModelScale( 0.1 )
     circle.SetValueForModelKey( BOOST_CIRCLE )
     circle.SetOrigin( instance.spawnPos )
-    circle.kv.rendercolor = instance.color.x + " " + instance.color.y + " " + instance.color.z
+    circle.kv.rendercolor = VectorToString( instance.color )
     circle.kv.fadedist = 20000
     DispatchSpawn( circle )
 
@@ -1191,6 +1201,41 @@ void function PlayFxOnPlayer( entity player, float time )
     if ( IsValid( fx ) ) fx.Destroy()
 }
 
+
+// Animated Camera
+entity function ReMapCreateCamera( vector origin, vector angles, float angleOffset, float maxLeft, float maxRight, float rotationTime, float transitionTime, bool addToArray = false )
+{
+    entity script_mover = CreateScriptMover( origin, ZERO_VECTOR )
+    entity camera_base = MapEditor_CreateProp( CAMERA_BASE_MDL, origin, ZERO_VECTOR )
+    entity camera_mover = CreateScriptMoverModel( CAMERA_MDL, origin + < 16, 0, 8 >, ZERO_VECTOR + < angleOffset, 0, 0 >, 6 )
+
+    camera_base.SetParent( script_mover )
+    camera_mover.SetParent( script_mover )
+    script_mover.SetAngles( angles )
+
+    thread MoveCamera( camera_mover, maxLeft, maxRight, rotationTime, transitionTime )
+
+    if ( addToArray ) MapEditorEnts.append( script_mover )
+
+    return script_mover
+}
+
+void function MoveCamera( entity camera_mover, float maxLeft, float maxRight, float rotationTime, float transitionTime )
+{
+    vector base_angles = camera_mover.GetAngles()
+    float rotationTimeMiddle = floor( rotationTime / 2 )
+
+    while ( IsValid( camera_mover ) )
+    {
+        if ( IsValid( camera_mover ) ) camera_mover.NonPhysicsRotateTo( base_angles + < 0, maxLeft, 0 >, rotationTime, rotationTimeMiddle, rotationTimeMiddle )
+
+            wait rotationTime + transitionTime
+
+        if ( IsValid( camera_mover ) ) camera_mover.NonPhysicsRotateTo( base_angles - < 0, maxRight, 0 >, rotationTime, rotationTimeMiddle, rotationTimeMiddle )
+
+        wait rotationTime + transitionTime
+    }
+}
 
 //  ██╗   ██╗███╗   ██╗██╗████████╗██╗   ██╗    ██████╗ ███████╗███╗   ███╗ ██████╗ ████████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗
 //  ██║   ██║████╗  ██║██║╚══██╔══╝╚██╗ ██╔╝    ██╔══██╗██╔════╝████╗ ████║██╔═══██╗╚══██╔══╝██╔════╝    ██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║

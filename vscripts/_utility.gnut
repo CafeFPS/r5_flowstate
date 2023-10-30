@@ -4801,3 +4801,8 @@ array<entity> function ArrayEntSphere(vector origin, float radius) {
     }
     return entities
 }
+
+string function VectorToString( vector vec )
+{
+    return vec.x + " " + vec.y + " " + vec.z
+}
