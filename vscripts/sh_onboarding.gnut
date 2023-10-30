@@ -192,7 +192,8 @@ void function Sequence_PickLoadout()
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
 			
-			Flowstate_AssignUniqueCharacterForPlayer(player, true)
+			if( GameRules_GetGameMode() == SURVIVAL && !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 		}
 
 		thread Sequence_Prematch() 
