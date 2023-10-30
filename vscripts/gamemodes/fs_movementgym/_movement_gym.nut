@@ -524,6 +524,9 @@ function _MG_Spectate_by_name(entity player, string name){
 					while(true){
 						if(!IsValid(target) || !target.IsInRealm(1))
 						{
+							if( !IsValid( player ) )
+								break
+
 							player.p.isSpectating = false
 							player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 							player.SetObserverTarget( null )
