@@ -901,9 +901,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-				
-				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
-				Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+
+				if( GetCurrentPlaylistName() != "fs_movementgym" )
+				{
+					Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
+					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+				}
 
 				entity weapon = victim.GetActiveWeapon( eActiveInventorySlot.mainHand )
 				
@@ -3194,9 +3197,12 @@ void function SimpleChampionUI()
 		{
 			if( !IsValid( player ) )
 				continue
-
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+			
+			if( GetCurrentPlaylistName() != "fs_movementgym" )
+			{ 
+				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+			}
 
 			entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 			
