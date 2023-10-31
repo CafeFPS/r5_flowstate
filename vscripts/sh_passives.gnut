@@ -596,33 +596,33 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 void function PilotBlood_Passive_Body( entity player )
 {
 	float healthRegenStartDelay = 5.0
-	float healthRegenRate = 0.6
+	float healthRegenRate = 1.0
+	float tickTime = HEALTH_REGEN_TICK_TIME
+
 	EndSignal( player, "EndPilotBloodThread" )
 	
+	if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+		tickTime = 0.05
+	
+	if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" || GetCurrentPlaylistName() == "fs_movementgym" )
+		healthRegenRate = 2.0
+
 	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
 	{
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
-			wait( 0.05 )
-		else
-			wait( HEALTH_REGEN_TICK_TIME )
+		wait tickTime
 		
 		if ( !IsAlive( player ) || Bleedout_IsBleedingOut(player) || Time() - player.p.lastDamageTime < healthRegenStartDelay || player.IsPhaseShifted())
 		{
 			WaitFrame()
 			continue
 		}
-		
-		healthRegenRate = 1.0
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" ) // || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
-			healthRegenRate = 2.0
-		
+
 		if ( player.GetHealth() != player.GetMaxHealth() )
 		{
 			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
 
 		}
-		else 
-		if(player.GetShieldHealth() != player.GetShieldHealthMax())
+		else if( player.GetShieldHealth() != player.GetShieldHealthMax() )
 		{
 			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
 		}
