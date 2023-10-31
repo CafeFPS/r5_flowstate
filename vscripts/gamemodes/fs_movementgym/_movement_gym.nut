@@ -316,6 +316,9 @@ function _MG_OnPlayerConnected(entity player) {
     player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
     player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
+	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+
 	EnableOffhandWeapons( player )
 	DeployAndEnableWeapons( player )
 	player.UnfreezeControlsOnServer()
@@ -782,6 +785,10 @@ function MovementGym_Hub() {
           ent.SetPlayerNetBool("pingEnabled", false)
           SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
 
+		TakeAllPassives( ent )
+		if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+			GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
+
           //Start Checkpoint
           ent.p.allowCheckpoint = false
           ent.p.currentCheckpoint = 0
@@ -818,6 +825,10 @@ function MovementGym_Hub() {
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
           SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+
+		TakeAllPassives( ent )
+		if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+			GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
 
           //Start Checkpoint
           ent.p.allowCheckpoint = false
@@ -926,6 +937,10 @@ function MovementGym_Hub_Buttons() {
         user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 
+		TakeAllPassives( user )
+		if( !user.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+			GivePassive(user, ePassives.PAS_PILOT_BLOOD)
+
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
     })
@@ -965,6 +980,10 @@ function MovementGym_Map2_Button(){
         TakeAllWeapons(user)
         user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
         user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+
+		TakeAllPassives( user )
+		if( !user.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+			GivePassive(user, ePassives.PAS_PILOT_BLOOD)
 	
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 2 by DEAFPS")
@@ -1026,7 +1045,11 @@ function MovementGym_Map3_Button(){
       TakeAllWeapons(user)
       user.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
       user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
-	
+
+	TakeAllPassives( user )
+	if( !user.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+		GivePassive(user, ePassives.PAS_PILOT_BLOOD)	
+
       user.SetPlayerNetBool("pingEnabled", false)
       Message(user, "Map 3 by LoyTakian")
       //Start Checkpoint
