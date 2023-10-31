@@ -46,25 +46,34 @@ void function JumpPad_GiveDoubleJump( entity player )
 
 	if(!IsValid(player)) return
 	
-	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
+	string doubleJump = "enable_doublejump"
 
 	if ( !player.IsOnGround() )
 	{
-		int health = player.GetHealth()
-		int shield = player.GetShieldHealth()
-		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) // I hate this. Colombia
-		if( GameRules_GetGameMode() == SURVIVAL )
-			GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-		
-		if(!IsAlive(player)) return
-		player.SetHealth(health)
-		player.SetShieldHealth(shield) //set old shieldhealth
+		// Store player settings, add double jump and apply mod
+		player.p.storedPlayerSettings = player.GetPlayerSettings()
+		player.p.storedPlayerSettingsMods = player.GetPlayerSettingsMods()
+		player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+		player.p.storedPlayerPassives = GetAllPassivesForPlayer( player )
+		array< string > newMods = clone player.p.storedPlayerSettingsMods
+		newMods.append( doubleJump )
+
+		if( IsAlive( player ) )
+		{
+			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, newMods )
+			player.SetHealth( player.p.storedPlayerHealth[0] )
+			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
+			
+			foreach( passive in player.p.storedPlayerPassives )
+			{
+				if( !player.HasPassive( passive ) )
+					GivePassive( player, passive )
+			}
+		}
 	}
 	AddButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
 	
-	OnThreadEnd( function() : ( player, characterSetFile, passive )
+	OnThreadEnd( function() : ( player )
 	{
 		if ( !IsValid( player ) )
 			return
@@ -80,17 +89,20 @@ void function JumpPad_GiveDoubleJump( entity player )
 			if( mod == "enable_doublejump" )
 				stillHasDoubleJumpMod = true
 
-		if ( IsValid( player ) && stillHasDoubleJumpMod )
+		if ( IsValid( player ) && IsAlive( player ) && stillHasDoubleJumpMod )
 		{
-			int health = player.GetHealth()
-			int shield = player.GetShieldHealth()
-			player.SetPlayerSettingsWithMods( characterSetFile, [] ) // I hate this. Colombia
-			if( GameRules_GetGameMode() == SURVIVAL )
-				GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-			
-			if(!IsAlive(player)) return
-			player.SetHealth(health)
-			player.SetShieldHealth(shield)
+			player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+			// Restore player settings
+			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
+			player.SetHealth( player.p.storedPlayerHealth[0] )
+			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
+
+			foreach( passive in player.p.storedPlayerPassives )
+			{
+				if( !player.HasPassive( passive ) )
+					GivePassive( player, passive )
+			}
+
 			RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
 		}
 	})
@@ -117,23 +129,24 @@ void function JumpPad_consumeDoubleJump( entity player )
 
 	player.ConsumeDoubleJump()
 	player.p.playerEnteredJumppadCrouching = false
-	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
-	
-	int health = player.GetHealth()
-	int shield = player.GetShieldHealth()
-	player.SetPlayerSettingsWithMods( characterSetFile, [] )
-	if( GameRules_GetGameMode() == SURVIVAL )
-		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-			
+
 	if(!IsAlive(player)) return
 
-	player.SetHealth(health)
-	player.SetShieldHealth(shield)
+	player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+	// Restore player settings
+	player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
+	player.SetHealth( player.p.storedPlayerHealth[0] )
+	player.SetShieldHealth( player.p.storedPlayerHealth[1] )
+
+	foreach( passive in player.p.storedPlayerPassives )
+	{
+		if( !player.HasPassive( passive ) )
+			GivePassive( player, passive )
+	}
+
 	EmitSoundOnEntityOnlyToPlayer( player, player, "jumpjet_jet_body_1p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "jumpjet_jet_body_3p_enemy" )
-	
+
 	RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
 }
 
@@ -331,7 +344,7 @@ void function JumpPadAirborne( entity player )
 	)
 	
 	WaitFrame()
-	
+	wait 0.1
 	while( IsValid(player) && !player.IsOnGround() )
 	{
 		WaitFrame()
@@ -397,7 +410,6 @@ entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 	trigger.SetAngles( <0,0,0> )
 	trigger.SetTriggerType( TT_JUMP_PAD )
 	trigger.SetLaunchScaleValues( 870, 1.7 )
-	// trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
 	trigger.SetLaunchDir( dir )
 	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"
@@ -407,13 +419,6 @@ entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 	EmitSoundOnEntity( trigger, "HoverTank_Emit_EdgeWind")
 	
 	return trigger
-	// #if DEVELOPER
-	// DrawAngledBox( trigger.GetOrigin(), Vector( 0,0,0 ), <pushRadius,pushRadius,pushRadius>, <pushRadius,pushRadius,pushRadius>, 255, 0, 0, true, 15 )
-	// #endif
-
-	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_UNASSIGNED, JUMP_PAD_TARGETNAME )
-	// traceBlocker.SetBox( cannon.GetBoundingMins(), cannon.GetBoundingMaxs())
-	// traceBlocker.SetParent( trigger )
 }
 
 void function OnFSCannonAreaEnter( entity trigger, entity ent )

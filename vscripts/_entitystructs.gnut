@@ -932,8 +932,12 @@ global struct ServerPlayerStruct
 	
 	//Oddball
 	entity oddballCarrierFx
-	//float oddballLastTimeCarried = 0
-	// int oddballTimesCarried = 0
+	
+	// Jumppad double jump
+	asset storedPlayerSettings
+	array< string > storedPlayerSettingsMods
+	array< int > storedPlayerHealth // { health, shieldHealth }
+	array< int > storedPlayerPassives
 }
 
 global struct ChallengeScore

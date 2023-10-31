@@ -16,6 +16,8 @@ global function RemoveCallback_OnPassiveChanged
 global function GivePassive
 global function TakePassive
 global function TakeAllPassives
+
+global function GetAllPassivesForPlayer
 #endif
 
 #if (SERVER || CLIENT) && DEVELOPER
@@ -223,10 +225,7 @@ void function GivePassive( entity player, int passive )
 	foreach( void functionref( entity, int, bool, bool ) callback in file.passiveChangedCallbackListMap[passive] )
 		callback( player, passive, didHavePassive, true )
 }
-#endif
 
-
-#if SERVER
 void function TakePassive( entity player, int passive )
 {
 	bool didHavePassive = player.HasPassive( passive )
@@ -240,10 +239,7 @@ void function TakePassive( entity player, int passive )
 	foreach( void functionref( entity, int, bool, bool ) callback in file.passiveChangedCallbackListMap[passive] )
 		callback( player, passive, didHavePassive, false )
 }
-#endif
 
-
-#if SERVER
 void function TakeAllPassives( entity player )
 {
 	for ( int passiveIdx = 0; passiveIdx < ePassives._count; passiveIdx++ )
@@ -251,6 +247,20 @@ void function TakeAllPassives( entity player )
 		if ( player.HasPassive( passiveIdx ) )
 			TakePassive( player, passiveIdx )
 	}
+}
+
+array<int> function GetAllPassivesForPlayer( entity player )
+{
+	array<int> passives
+	for( int i = 0; i < ePassives._count; i++ )
+	{
+		if( player.HasPassive( i ) )
+		{
+			// printt(" player has passive ", i )
+			passives.append( i )
+		}
+	}
+	return passives
 }
 #endif
 
@@ -263,18 +273,12 @@ bool function PlayerHasPassive( entity player, int passive )
 	
 	return player.HasPassive( passive )
 }
-#endif
 
-
-#if SERVER || CLIENT
 bool function PlayerHasStealthMovement( entity player )
 {
 	return false
 }
-#endif
 
-
-#if SERVER || CLIENT
 void function AddCallback_OnPassiveChanged( int passive, void functionref( entity, int, bool, bool ) callback )
 {
 	Assert( !file.passiveChangedCallbackListMap[ passive ].contains( callback ), "Tried to add a callback that was already added" )
@@ -341,10 +345,7 @@ void function Passives_OnPlayerKilled( entity victim, entity attacker, var damag
 		return
 
 }
-#endif
 
-
-#if SERVER
 void function Passives_OnPlayerAssist( entity assister, entity victim )
 {
 	if ( !IsAlive( assister ) )
@@ -357,10 +358,7 @@ void function Passives_OnPlayerAssist( entity assister, entity victim )
 		return
 
 }
-#endif
 
-
-#if SERVER
 void function Passives_OnPlayerStartBleedout( entity player, entity attacker, var damageInfo )
 {
 	if ( PlayerHasPassive( player, ePassives.PAS_MIRAGE ) )
@@ -374,10 +372,7 @@ void function Passives_OnPlayerStartBleedout( entity player, entity attacker, va
 		EnableCloak( player, 5.0 )
 	}
 }
-#endif
 
-
-#if SERVER
 void function AttemptDecoyDrop( entity player )
 {
 	if ( player.p.skydiveDecoysFired < 2 )
@@ -388,10 +383,7 @@ void function AttemptDecoyDrop( entity player )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_Mirage_DecoysDeployed", true )
 	}
 }
-#endif
 
-
-#if SERVER
 void function DecoyDropThink( entity player )
 {
 	player.EndSignal( "OnDestroy" )
