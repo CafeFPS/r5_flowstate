@@ -3202,8 +3202,8 @@ void function SimpleChampionUI()
 			if( !IsValid( player ) )
 				continue
 			
-			if( GetCurrentPlaylistName() != "fs_movementgym" )
-			{ 
+			if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+			{
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 			}
