@@ -103,12 +103,12 @@ WeaponData
     "uses_ammo_pool"								"1"
 
    // Damage - When Used by Players
-    "damage_near_value"   							"22" //20
-    "damage_far_value"								"22" //20
-    "damage_very_far_value"							"22" //20
-    "damage_near_value_titanarmor"					"22" //20
-    "damage_far_value_titanarmor" 					"22" //20
-    "damage_very_far_value_titanarmor" 				"22" //20
+    "damage_near_value"   							"21" //20
+    "damage_far_value"								"21" //20
+    "damage_very_far_value"							"21" //20
+    "damage_near_value_titanarmor"					"21" //20
+    "damage_far_value_titanarmor" 					"21" //20
+    "damage_very_far_value_titanarmor" 				"21" //20
     "damage_rodeo" 									"170"
 
     // Damage - When Used by NPCs

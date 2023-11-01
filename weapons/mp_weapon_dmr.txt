@@ -72,9 +72,9 @@
     "bolt_hitsize_grow1_time"				    "0.129"  //~100m
     "bolt_hitsize_grow1_size"				    "0.33"
     "bolt_hitsize_grow2_time"				    "0.258"  //~200m
-    "bolt_hitsize_grow2_size"				    "1.25"
+    "bolt_hitsize_grow2_size"				    "1.5"
     "bolt_hitsize_growfinal_lerptime"		    "0.387"  //~300m
-    "bolt_hitsize_growfinal_size"               "2.0"
+    "bolt_hitsize_growfinal_size"               "2.25"
 
 	// Ammo
 	//

@@ -65,8 +65,9 @@ WeaponData
 	"critical_hit"									"1"
 
 
-	"projectile_launch_speed"						"33501" //I am the best -PMcD
-	"projectile_gravity_scale"						"1.0"
+	"projectile_launch_speed"						"33501"
+	"projectile_gravity_scale"						"1.4"
+    "projectile_drag_coefficient" 			        "0.00001" //0.00001 makes it show up in debug
 
 	// Ammo
 	"uses_ammo_pool"								"1"
@@ -136,13 +137,12 @@ WeaponData
 	"spread_crouch_ads"   							"0.0"
 	"spread_air_ads"  								"3.75"
 
-	"bolt_hitsize"								    "0.5"
-    "bolt_hitsize_grow1_time"				        "0.175"
-    "bolt_hitsize_grow1_size"				        "1.25"
-    "bolt_hitsize_grow2_time"				        "0.28"
-    "bolt_hitsize_grow2_size"				        "2.0"
-    "bolt_hitsize_growfinal_lerptime"		        "0.45"
-    "bolt_hitsize_growfinal_size"                   "3.0"
+    "bolt_hitsize_grow1_time"				        "0.118" //100m
+    "bolt_hitsize_grow1_size"				        "1.9"
+    "bolt_hitsize_grow2_time"				        "0.235" //200m
+    "bolt_hitsize_grow2_size"				        "2.75"
+    "bolt_hitsize_growfinal_lerptime"		        "0.353" //300m
+    "bolt_hitsize_growfinal_size"                   "3.5"
 
     // Damage - When Used by Players
     "damage_near_value"   							"75"
