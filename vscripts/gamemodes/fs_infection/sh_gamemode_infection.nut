@@ -54,8 +54,24 @@ void function Sh_GamemodeInfection_Init()
 	
     switch(GetMapName())
     {
-		case "mp_rr_canyonlands_mu1_night":
-	    case "mp_rr_canyonlands_mu1":		
+		case "mp_rr_canyonlands_mu1":
+		RegisterLocationINFECTION(
+            NewLocationSettings(
+                "Labs",
+                [
+                    NewLocPair(<27576, 8062, 2910>, <0, -115, 0>),
+					NewLocPair(<24545, 2387, 4100>, <0, -7, 0>),
+                    NewLocPair(<25924, 2161, 3848>, <0, -9, 0>),
+                    NewLocPair(<28818, 2590, 3798>, <0, 117, 0>),
+					NewLocPair(<26160.0293, 3163.60229, 3240.58228>,<0, 17.6068058, 0>),
+					NewLocPair(<28126.6699, 2991.92944, 3438.99878>,<0, 112.35788, 0>),
+					NewLocPair(<27356.709, 4449.24316, 3697.13477>,<0, -94.8291779, 0>)
+                ],
+                <0, 0, 3000>,$"rui/flowstatelocations/labs"
+            )
+        )
+
+	    case "mp_rr_canyonlands_mu1_night":
 		RegisterLocationINFECTION(
             NewLocationSettings(
                 "Hillside Outspot",
@@ -132,21 +148,6 @@ void function Sh_GamemodeInfection_Init()
             // )
         // )
 
-		RegisterLocationINFECTION(
-            NewLocationSettings(
-                "Labs",
-                [
-                    NewLocPair(<27576, 8062, 2910>, <0, -115, 0>),
-					NewLocPair(<24545, 2387, 4100>, <0, -7, 0>),
-                    NewLocPair(<25924, 2161, 3848>, <0, -9, 0>),
-                    NewLocPair(<28818, 2590, 3798>, <0, 117, 0>),
-					NewLocPair(<26160.0293, 3163.60229, 3240.58228>,<0, 17.6068058, 0>),
-					NewLocPair(<28126.6699, 2991.92944, 3438.99878>,<0, 112.35788, 0>),
-					NewLocPair(<27356.709, 4449.24316, 3697.13477>,<0, -94.8291779, 0>)
-                ],
-                <0, 0, 3000>,$"rui/flowstatelocations/labs"
-            )
-        )
 		RegisterLocationINFECTION(
             NewLocationSettings(
                 "Repulsor",
