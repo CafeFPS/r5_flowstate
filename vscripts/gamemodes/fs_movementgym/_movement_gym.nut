@@ -119,7 +119,12 @@ function MovementGym() {
 //Precache props
 void
 function PrecacheMovementGymProps() {
-	
+
+  PrecacheModel($"mdl/beacon/construction_scaff_post_256_01.rmdl")
+	PrecacheModel($"mdl/barriers/concrete/concrete_barrier_01.rmdl")
+  PrecacheModel($"mdl/homestead/homestead_floor_panel_01.rmdl")
+  PrecacheModel($"mdl/utilities/wall_Waterpipe.rmdl")
+
 	PrecacheModel($"mdl/domestic/nessy_doll.rmdl")
 	PrecacheModel($"mdl/domestic/corgi_doll.rmdl")
 	PrecacheModel( $"mdl/garbage/garbage_bag_plastic_a.rmdl" )
@@ -3929,23 +3934,17 @@ function MovementGym_Map3() {
     MapEditor_CreateProp( $"mdl/lamps/desertlands_lootbin_light_01.rmdl", < 5527, 25697, 24401 > + startingorg, < 0, -180, 180 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < -5638.7, 27191, 23640.3 > + startingorg, < -15.0001, -0.0002, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < -5762.3, 27191, 23607.2 > + startingorg, < -15.0001, -0.0002, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2797.8, 26858.6, 23431.1 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_ceiling_096x048_01.rmdl", < 5462.48, 21688.9, 24856.8 > + startingorg, < -89.972, 89.9995, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_ceiling_096x048_01.rmdl", < -4974.2, 27015.5, 23697 > + startingorg, < -90, 90.0002, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_ceiling_096x048_01.rmdl", < -4974.201, 27016.83, 23697 > + startingorg, < -90, -89.9995, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2797.8, 27214.9, 23281.1 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2797.8, 26858.6, 23281.1 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -2979, 27367.2, 23374 > + startingorg, < 0, 44.9999, 0 >, true, 5000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2797.8, 27214.9, 23431.1 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < -5515.352, 27191, 23673.35 > + startingorg, < -15.0001, -0.0002, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_ceiling_096x048_01.rmdl", < -2100.9, 27017.38, 23532.9 > + startingorg, < -90, -180, 0 >, true, 5000, -1, 1 )
-    ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 2807.097, 27141.77, 24069.05 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1.477 ) )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6357.521, 21199, 23777.5 > + startingorg, < 89.9802, -180, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6491.521, 21199, 23933.8 > + startingorg, < 89.9802, -180, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6355.794, 21199, 24133.6 > + startingorg, < 89.9802, -180, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6298.521, 21344, 24225.6 > + startingorg, < 90, -90, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6298.519, 21847, 24002 > + startingorg, < 90, -90, 0 >, true, 5000, -1, 1 )
-    ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 2712.998, 27141.77, 24069.05 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1.477 ) )
     MapEditor_CreateProp( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl", < -776.999, 27704, 23415.16 > + startingorg, < 0, 140.0065, 0 >, true, 5000, -1, 0.58 )
     MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -810.7983, 27717.7, 23506.66 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/foliage/icelandic_moss_grass_01.rmdl", < -753.7988, 27650.7, 23506.66 > + startingorg, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
@@ -4050,6 +4049,25 @@ function MovementGym_Map3() {
     MapEditor_CreateProp( $"mdl/colony/farmland_ceiling_096x048_01.rmdl", < 5269.281, 21884.57, 24856.8 > + startingorg, < -90, -0.0001, 0 >, true, 5000, -1, 1 )
     ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl", < 5392.501, 26465.02, 23990 > + startingorg, < 0, -179.9998, 179.9998 >, true, 5000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/colony/farmland_crate_md_80x64x72_02.rmdl", < -6286.794, 21199, 24133.6 > + startingorg, < 89.9802, -180, 0 >, true, 5000, -1, 1 )
+
+    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_256_01.rmdl", < -6299, 20369.4, 23704 >, < -90, 89.9999, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/barriers/concrete/concrete_barrier_01.rmdl", < -4953, 27016, 23675.4 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2924.774, 27211, 23357.04 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2818.707, 27211, 23463.11 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2712.742, 27211, 23568.99 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2818.707, 26862, 23463.11 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2924.774, 26862, 23357.04 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < -2712.742, 26862, 23568.99 >, < 44.9999, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/homestead/homestead_floor_panel_01.rmdl", < -1619, 26984.9, 23371 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_64.rmdl", < -2114, 27016, 23509.4 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_corner_in.rmdl", < 3597.3, 26624, 23873.5 >, < 0, -90, 90 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_corner_in.rmdl", < 4363, 26624, 23873.5 >, < 0, -90, 90 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_corner_in.rmdl", < 3597.3, 27377, 23873.5 >, < 90, -180, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/ola/sewer_railing_01_corner_in.rmdl", < 4363, 27377, 23873.5 >, < 90, -180, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4116.301, 20480.1, 24891.9 >, < 0, -45, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4223.4, 20587.2, 24891.9 >, < 0, -45, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4076.2, 20520.2, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4183.3, 20627.3, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
 
     foreach ( entity ent in ClipArray )
     {
