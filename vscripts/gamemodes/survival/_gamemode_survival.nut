@@ -210,7 +210,7 @@ void function Sequence_Playing()
 			// player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 
 			DecideRespawnPlayer( player )
-			GiveBasicSurvivalItems( player )
+			// GiveBasicSurvivalItems( player )
 			// i++
 		}
 
