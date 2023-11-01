@@ -385,12 +385,16 @@ int function GetTDMState(){
 
 void function SetTdmStateToNextRound(){
 	file.tdmState = eTDMState.NEXT_ROUND_NOW
-	SetGlobalNetInt( "FSDM_GameState", file.tdmState )
+
+	if( GameRules_GetGameMode() != "fs_prophunt" )
+		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
 void function SetTdmStateToInProgress(){
 	file.tdmState = eTDMState.IN_PROGRESS
-	SetGlobalNetInt( "FSDM_GameState", file.tdmState )
+	
+	if( GameRules_GetGameMode() != "fs_prophunt" )
+		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
 void function Flowstate_ServerSaveChat()
