@@ -906,7 +906,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
 
-				if( GetCurrentPlaylistName() != "fs_movementgym" )
+				if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 				{
 					Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
