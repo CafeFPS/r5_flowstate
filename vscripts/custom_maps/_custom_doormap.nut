@@ -73,6 +73,7 @@ void function TeleportPlayer( entity player )
 	player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
 	player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 	player.SetPlayerNetBool("pingEnabled", false)
+    player.SetPersistentVar("gen", 0)
 
 	Message(player, "Welcome to the Door Map!")
 	SpawnInfoText( player )
