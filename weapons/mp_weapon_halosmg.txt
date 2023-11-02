@@ -207,12 +207,12 @@ WeaponData
     "viewmodel_jolt_backwardPerShot"                 "-0.225"
     "viewmodel_jolt_roll"                            "0 2.75 0.0"
     "viewmodel_jolt_side"                            "0 0.05 0"
-	"viewkick_pitch_base" 							"1.0"
+	"viewkick_pitch_base" 							"0.6"
     "viewkick_pitch_random"   						"1.0"
     "viewkick_pitch_softScale"						"3.525"
     "viewkick_pitch_hardScale"						"0.39"
-    "viewkick_yaw_base"   							"1.0"
-    "viewkick_yaw_random" 							"1.0"
+    "viewkick_yaw_base"   							"0.6"
+    "viewkick_yaw_random" 							"0.5"
     "viewkick_yaw_random_innerexclude"				"0.05"   //0
     "viewkick_yaw_softScale"  						"1.525"  //.65
     "viewkick_yaw_hardScale"  						"0.37"
@@ -282,7 +282,8 @@ WeaponData
 	"clip_bodygroup_show_for_milestone_1"	"0"
 	"clip_bodygroup_show_for_milestone_2"	"1"
 	"clip_bodygroup_show_for_milestone_3"	"1"
-
+	
+	"zoom_effects" "0"
 	Mods
 	{
 	}
