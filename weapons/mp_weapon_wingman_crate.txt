@@ -1,0 +1,47 @@
+#base "mp_weapon_wingman.txt"
+
+WeaponData
+{
+	"weaponBaseClass"                              "mp_weapon_wingman"
+
+    "ammo_clip_size"   								"9"
+    "ammo_default_total"							"119"
+    "ammo_stockpile_max"							"110"
+    "uses_ammo_pool"								"0"
+
+    "bolt_hitsize"									"0.4"
+	"bolt_hitsize_grow1_time"						"0.02"
+	"bolt_hitsize_grow1_size"						"0.6"
+	"bolt_hitsize_grow2_time"						"0.08"
+	"bolt_hitsize_grow2_size"						"1"
+	"bolt_hitsize_growfinal_lerptime"				"0.15"
+	"bolt_hitsize_growfinal_size"					"1"
+
+    "damage_near_value"   							"50"
+    "damage_far_value"								"50"
+    "damage_very_far_value"							"50"
+    "damage_near_value_titanarmor"					"50"
+    "damage_far_value_titanarmor" 					"50"
+    "damage_very_far_value_titanarmor" 				"50"
+
+    //"skullpiercer_elite_damage"                                   "95.0"
+
+	Mods
+	{
+	    crate { }
+
+        sniper_mag_l4
+        {
+            "ammo_clip_size"   							"9"
+        }
+
+        hopup_headshot_dmg_elite
+        {
+            "projectile_trail_effect_0_1p"      "P_tracer_proj_sniper_piercer"
+            "projectile_trail_effect_0_3p"      "P_tracer_proj_sniper_piercer"
+            "fire_sound_2_player_1p"		    "weapon_wingman_fire_skull_1p"
+            "fire_sound_2_player_3p"		    "weapon_wingman_fire_skull_3p"
+            "fire_sound_2_npc"				    "weapon_wingman_fire_skull_3p"
+        }
+    }
+}
