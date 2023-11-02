@@ -48,7 +48,9 @@ global function ForceSaveOgSkyboxOrigin
 global function SpawnCyberdyne
 global function SpawnLockout
 global function SpawnChill
-
+global function GiveRandomPrimaryWeaponHalo
+global function GiveRandomSecondaryWeaponHalo
+global function GetServerPropsInDmFile
 
 global function HaloMod_Cyberdyne_CreateFanPusher
 global function HisWattsons_HaloModFFA_KillStreakAnnounce
@@ -377,6 +379,11 @@ LocPair function _GetVotingLocation()
 void function _OnPropDynamicSpawned(entity prop)
 {
     file.playerSpawnedProps.append(prop)
+}
+
+array<entity> function GetServerPropsInDmFile()
+{
+	return file.playerSpawnedProps
 }
 
 int function GetTDMState(){

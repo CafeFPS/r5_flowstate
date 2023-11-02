@@ -186,6 +186,38 @@ void function Sh_CustomCTF_Init()
     // Map locations, flag spawns, team spawns, deathcam, victory pos, and undermap Z
     switch(GetMapName())
     {
+        case "mp_flowstate":
+            Shared_RegisterLocationCTF(
+                NewCTFLocationSettings(
+                    "Narrows",
+                    [ // ringspots
+                        NewCTFLocPair(<0,0,0>, <0,0,0>),
+                        NewCTFLocPair(<0,0,0>, <0,0,0>),
+                        NewCTFLocPair(<0,0,0>, <0,0,0>),
+                        NewCTFLocPair(<0,0,0>, <0,0,0>),
+                        NewCTFLocPair(<0,0,0>, <0,0,0>)
+                    ],
+                    <44466.7773, -9996.7627, -20430.7383>, // imc flag spawn
+                    <39525.0586, -10000.9443, -20430.7383>, // mil flag spawn
+                    [ // imc spawns
+                        NewCTFLocPair(<44283.6914, -10554.7461, -20494.6563> , <0, 180, 0>),
+                        NewCTFLocPair(<44283.6914, -10554.7461, -20494.6563> , <0, 180, 0>),
+                        NewCTFLocPair(<44034.75, -9440.18555, -20431.0566> , <0, 180, 0>),
+                        NewCTFLocPair(<44034.75, -9440.18555, -20431.0566> , <0, 180, 0>)
+                    ],
+                    [ // mil spawns
+                        NewCTFLocPair(<39965.9688, -9465.57813, -20431.0566> , <0, 0, 0>),
+                        NewCTFLocPair(<39965.9688, -9465.57813, -20431.0566> , <0, 0, 0>),
+                        NewCTFLocPair(<39809.4609, -10554.8604, -20494.6563> , <0, 0, 0>),
+                        NewCTFLocPair(<39809.4609, -10554.8604, -20494.6563> , <0, 0, 0>)
+                    ],
+                    NewCTFLocPair(<0,0,5000>, <90,180,0>), // deathcam angle and height
+                    NewCTFLocPair(<32575,-5068, -28845>, <0, 0, 0>), // Victory Pos
+                    -21000 // Undermap Z
+                )
+            )
+            break
+
         case "mp_rr_canyonlands_staging":
             Shared_RegisterLocationCTF(
                 NewCTFLocationSettings(

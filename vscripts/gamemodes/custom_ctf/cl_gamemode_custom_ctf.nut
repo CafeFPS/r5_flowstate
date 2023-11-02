@@ -1,7 +1,7 @@
 // Credits
 // AyeZee#6969 -- ctf gamemode and ui
 // sal#3261 -- base custom_tdm mode to work off
-// Retículo Endoplasmático#5955 -- giving me the ctf sound names
+// CafeFPS -- ctf sounds, little rework
 // everyone else -- advice
 
 global function Cl_CustomCTF_Init
@@ -266,26 +266,26 @@ void function ServerCallback_CTF_ResetFlagIcons()
 
 void function ServerCallback_CTF_AddPointIcon(entity imcflag, entity milflag, int team)
 {
-    ClientCodeCallback_MinimapEntitySpawned(imcflag)
-    ClientCodeCallback_MinimapEntitySpawned(milflag)
+    // ClientCodeCallback_MinimapEntitySpawned(imcflag)
+    // ClientCodeCallback_MinimapEntitySpawned(milflag)
 	
-	entity player = GetLocalClientPlayer()
+	// entity player = GetLocalClientPlayer()
 
-    switch( player.GetTeam() )
-    {
-        case TEAM_IMC:
-            if(FlagRUI.IMCpointicon == null)
-                FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Defend", $"rui/gamemodes/capture_the_flag/imc_flag")
-            if(FlagRUI.MILITIApointicon == null)
-                FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Capture", $"rui/gamemodes/capture_the_flag/mil_flag")
-            break
-        case TEAM_MILITIA:
-            if(FlagRUI.IMCpointicon == null)
-                FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Capture", $"rui/gamemodes/capture_the_flag/imc_flag")
-            if(FlagRUI.MILITIApointicon == null)
-                FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Defend", $"rui/gamemodes/capture_the_flag/mil_flag")
-            break
-    }
+    // switch( player.GetTeam() )
+    // {
+        // case TEAM_IMC:
+            // if(FlagRUI.IMCpointicon == null)
+                // FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Defend", $"rui/gamemodes/capture_the_flag/imc_flag")
+            // if(FlagRUI.MILITIApointicon == null)
+                // FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Capture", $"rui/gamemodes/capture_the_flag/mil_flag")
+            // break
+        // case TEAM_MILITIA:
+            // if(FlagRUI.IMCpointicon == null)
+                // FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Capture", $"rui/gamemodes/capture_the_flag/imc_flag")
+            // if(FlagRUI.MILITIApointicon == null)
+                // FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Defend", $"rui/gamemodes/capture_the_flag/mil_flag")
+            // break
+    // }
 }
 
 var function AddPointIconRUI(var rui, entity flag, string text, asset icon)
@@ -306,33 +306,33 @@ var function AddPointIconRUI(var rui, entity flag, string text, asset icon)
 
 void function ServerCallback_CTF_SetPointIconHint(int teamflag, int messageid)
 {
-    try {
-        var selected
+    // try {
+        // var selected
 
-        if(teamflag == TEAM_IMC)
-            selected = FlagRUI.IMCpointicon
-        else
-            selected = FlagRUI.MILITIApointicon
+        // if(teamflag == TEAM_IMC)
+            // selected = FlagRUI.IMCpointicon
+        // else
+            // selected = FlagRUI.MILITIApointicon
 
-        switch(messageid)
-        {
-        case eCTFFlag.Defend:
-            RuiSetString( selected, "hint", "Defend" )
-            break
-        case eCTFFlag.Capture:
-            RuiSetString( selected, "hint", "Capture" )
-            break
-        case eCTFFlag.Attack:
-            RuiSetString( selected, "hint", "Attack" )
-            break
-        case eCTFFlag.Escort:
-            RuiSetString( selected, "hint", "Escort" )
-            break
-        case eCTFFlag.Return:
-            RuiSetString( selected, "hint", "Return" )
-            break
-        }
-    } catch (pe3){ }
+        // switch(messageid)
+        // {
+        // case eCTFFlag.Defend:
+            // RuiSetString( selected, "hint", "Defend" )
+            // break
+        // case eCTFFlag.Capture:
+            // RuiSetString( selected, "hint", "Capture" )
+            // break
+        // case eCTFFlag.Attack:
+            // RuiSetString( selected, "hint", "Attack" )
+            // break
+        // case eCTFFlag.Escort:
+            // RuiSetString( selected, "hint", "Escort" )
+            // break
+        // case eCTFFlag.Return:
+            // RuiSetString( selected, "hint", "Return" )
+            // break
+        // }
+    // } catch (pe3){ }
 }
 
 var function AddCaptureIcon( entity prop, asset icon, bool pinToEdge = true, asset ruiFile = $"ui/overhead_icon_generic.rpak" )
@@ -371,70 +371,88 @@ void function AddCaptureIconThread( entity prop, var rui )
 
 void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 {
-    asset icon = $"rui/gamemodes/capture_the_flag/arrow"
-    vector emptymdlloc
-    vector color
+	// #if DEVELOPER
+	// printt( "debug, ServerCallback_CTF_PickedUpFlag:", player, pickedup )
+	// #endif
+    // asset icon = $"rui/gamemodes/capture_the_flag/arrow"
+    // vector emptymdlloc
+    // vector color
 
-    switch(player.GetTeam())
-    {
-        case TEAM_IMC:
-            if(FlagRUI.IMCpointicon == null)
-                break
+    // switch(player.GetTeam())
+    // {
+        // case TEAM_IMC:
+            // if( !IsValid( FlagRUI.MILITIApointicon ) )
+                // break
 
-            emptymdlloc = file.selectedLocation.imcflagspawn
-            color = SrgbToLinear( <100,100,255> / 255 )
+            // emptymdlloc = file.selectedLocation.imcflagspawn
+            // color = SrgbToLinear( <100,100,255> / 255 )
 
-            if(pickedup)
-                RuiSetVisible( FlagRUI.MILITIApointicon, false )
-            else
-                RuiSetVisible( FlagRUI.MILITIApointicon, true )
-            break
-        case TEAM_MILITIA:
-            if(FlagRUI.MILITIApointicon == null)
-                break
+            // if(pickedup)
+                // RuiSetVisible( FlagRUI.MILITIApointicon, false )
+            // else
+                // RuiSetVisible( FlagRUI.MILITIApointicon, true )
+            // break
+        // case TEAM_MILITIA:
+            // if( !IsValid( FlagRUI.IMCpointicon ) )
+                // break
 
-            emptymdlloc = file.selectedLocation.milflagspawn
-            color = SrgbToLinear( <255,100,100> / 255 )
+            // emptymdlloc = file.selectedLocation.milflagspawn
+            // color = SrgbToLinear( <255,100,100> / 255 )
 
-            if(pickedup)
-                RuiSetVisible( FlagRUI.IMCpointicon, false )
-            else
-                RuiSetVisible( FlagRUI.IMCpointicon, true )
-            break
-    }
+            // if(pickedup)
+                // RuiSetVisible( FlagRUI.IMCpointicon, false )
+            // else
+                // RuiSetVisible( FlagRUI.IMCpointicon, true )
+            // break
+    // }
 
-    if(pickedup)
-    {
-		file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
-		RuiSetGameTime( file.dropflagrui, "startTime", Time() )
-		RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
-		RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
-		RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
+    // if(pickedup)
+    // {
+		// if( file.dropflagrui != null)
+		// {
+			// RuiDestroyIfAlive( file.dropflagrui )
+			// file.dropflagrui = null
+		// }
 
-        file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
-        file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
-        RuiSetFloat2( file.baseicon, "iconSize", <25,25,0> )
-        RuiSetFloat( file.baseicon, "distanceFade", 100000 )
-        RuiSetBool( file.baseicon, "adsFade", false )
-        RuiSetString( file.baseicon, "hint", "" )
-    }
-    else
-    {
-		if( file.dropflagrui != null)
-		{
-			RuiDestroyIfAlive( file.dropflagrui )
-			file.dropflagrui = null
-		}
+		// file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
+		// RuiSetGameTime( file.dropflagrui, "startTime", Time() )
+		// RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
+		// RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
+		// RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
 
-		if( file.baseicon != null)
-		{
-			RuiDestroyIfAlive( file.baseicon )
-			file.baseicon = null
-		}
+		// if( file.baseicon != null)
+		// {
+			// RuiDestroyIfAlive( file.baseicon )
+			// file.baseicon = null
+		// }
 
-        if(IsValid( file.baseiconmdl ))
-            file.baseiconmdl.Destroy()
-    }
+        // if(IsValid( file.baseiconmdl ))
+            // file.baseiconmdl.Destroy()
+
+        // file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
+        // file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
+        // RuiSetFloat2( file.baseicon, "iconSize", <25,25,0> )
+        // RuiSetFloat( file.baseicon, "distanceFade", 100000 )
+        // RuiSetBool( file.baseicon, "adsFade", false )
+        // RuiSetString( file.baseicon, "hint", "" )
+    // }
+    // else
+    // {
+		// if( file.dropflagrui != null)
+		// {
+			// RuiDestroyIfAlive( file.dropflagrui )
+			// file.dropflagrui = null
+		// }
+
+		// if( file.baseicon != null)
+		// {
+			// RuiDestroyIfAlive( file.baseicon )
+			// file.baseicon = null
+		// }
+
+        // if(IsValid( file.baseiconmdl ))
+            // file.baseiconmdl.Destroy()
+    // }
 }
 
 void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float starttime)
@@ -771,9 +789,6 @@ void function DestroyVotingUI()
     isvoting = false
     
     FadeOutSoundOnEntity( GetLocalClientPlayer(), "Music_CharacterSelect_Wattson", 0.2 )
-    ScreenCoverTransition( Time() + 0.2 )
-
-    wait 1;
 
     GetLocalClientPlayer().ClearMenuCameraEntity()
 

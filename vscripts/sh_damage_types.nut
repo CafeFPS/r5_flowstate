@@ -296,6 +296,7 @@ global enum eDamageSourceId
 	mp_weapon_haloshotgun
 	mp_weapon_halosmg
 	mp_weapon_halomagnum
+	mp_weapon_halodmr
 	mp_weapon_halobattlerifle
 	mp_weapon_haloassaultrifle
 	mp_weapon_halosniperrifle
@@ -305,6 +306,9 @@ global enum eDamageSourceId
 	mp_weapon_plasma_grenade_halomod
 	mp_weapon_oddball_primary
 	melee_oddball
+	
+	mp_weapon_flagpole_primary
+	melee_flagpole
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -489,6 +493,8 @@ void function DamageTypes_Init()
 	file.damageSourceIDToImage[eDamageSourceId.snd_bomb]					<- $"rui/flowstatecustom/bombicon"
 	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_oddball_primary]					<- $"rui/flowstate_custom/oddball_white"
 	file.damageSourceIDToImage[eDamageSourceId.melee_oddball]					<- $"rui/flowstate_custom/oddball_white"
+	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_flagpole_primary]					<- $"rui/gamemodes/capture_the_flag/mil_flag"
+	file.damageSourceIDToImage[eDamageSourceId.melee_flagpole]					<- $"rui/gamemodes/capture_the_flag/mil_flag"
 	//file.damageSourceIDToImage[eDamageSourceId.sp_weapon_arc_tool]			<- $"r2_ui/menus/loadout_icons/primary_weapon/primary_arc_tool"
 
 	file.damageSourceIDToName =
@@ -642,7 +648,9 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_grenade_gravity ] 	 			= "Gravity Star",
 		[ eDamageSourceId.snd_bomb ] 	 							= "Bomb",
 		[ eDamageSourceId.mp_weapon_oddball_primary ] 	 			= "Ball",
-		[ eDamageSourceId.melee_oddball ] 	 						= "Ball" 
+		[ eDamageSourceId.melee_oddball ] 	 						= "Ball",
+		[ eDamageSourceId.mp_weapon_flagpole_primary ] 	 			= "Ball",
+		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball" 
 		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
 		//[ eDamageSourceId.sp_weapon_arc_tool] 	 					= "Arc Tool"
 	}

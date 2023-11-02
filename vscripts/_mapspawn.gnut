@@ -335,6 +335,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"npc_weapon_lstar" )
 	PrecacheWeapon( $"mp_ability_emote_projector" )
 
+	PrecacheWeapon( $"melee_flagpole" )
+	PrecacheWeapon( $"mp_weapon_flagpole_primary" )
+
 	switch(GameRules_GetGameMode())
 	{
 		case "fs_prophunt":
