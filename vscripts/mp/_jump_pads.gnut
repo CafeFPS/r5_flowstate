@@ -41,8 +41,9 @@ void function JumpPad_GiveDoubleJump( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	
-	while( IsValid( player ) && player.IsOnGround() )
-		WaitFrame()
+	// while( IsValid( player ) && player.IsOnGround() )
+		// WaitFrame()
+	wait 0.1
 
 	if(!IsValid(player)) return
 	
