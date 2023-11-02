@@ -124,9 +124,8 @@ function PrecacheMovementGymProps() {
 	PrecacheModel($"mdl/barriers/concrete/concrete_barrier_01.rmdl")
   PrecacheModel($"mdl/homestead/homestead_floor_panel_01.rmdl")
   PrecacheModel($"mdl/utilities/wall_Waterpipe.rmdl")
-
-	PrecacheModel($"mdl/domestic/nessy_doll.rmdl")
-	PrecacheModel($"mdl/domestic/corgi_doll.rmdl")
+	PrecacheModel($"mdl/props/charm/charm_nessy.rmdl")
+	PrecacheModel($"mdl/vehicle/hovership/hovership_platform_mp.rmdl")
 	PrecacheModel( $"mdl/garbage/garbage_bag_plastic_a.rmdl" )
 	PrecacheModel( $"mdl/angel_city/vending_machine.rmdl" )
 	PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
@@ -720,6 +719,8 @@ vector tpoffset = < 0, 0, -20000 >
 //Init Hub
 void
 function MovementGym_Hub() {
+    MapEditor_CreateProp( $"mdl/hud/grenade_indicator/bang_indicator.rmdl", < 10940.9, 9829.7, -4192.7 >, < 0, 0, 0 >, true, 50000, -1, 15 )
+
     // Props Array
     array < entity > NoClimbArray; array < entity > NoCollisionArray; 
 

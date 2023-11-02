@@ -126,7 +126,7 @@ void function ButtonC2_1_Btn(var button)
 	CloseAllMenus()
 	EmitUISound("UI_Menu_SelectMode_Close")
 	RunClientScript("MG_Pet_Destroy")
-	RunClientScript("MG_Pet_setActive", "error")
+	RunClientScript("MG_Pet_setActive", "nessy")
 	RunClientScript("MG_Pet_Summoner")
 }
 

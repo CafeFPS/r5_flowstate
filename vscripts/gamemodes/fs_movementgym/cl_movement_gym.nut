@@ -3,7 +3,7 @@ untyped
 globalize_all_functions
 
 //  +-++-+-  -+-++-++-+++++-+  +-+- -+-+
-//  ¦¦¦¦ ¦++++¦¦ ¦¦¦¦¦ ¦¦¦ ¦   ¦ -+-+¦¦¦
+//  ï¿½ï¿½ï¿½ï¿½ ï¿½++++ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½   ï¿½ -+-+ï¿½ï¿½ï¿½
 //  - -+-+ ++ +-+- -+-++++ -   +-+ - - -
 //  
 //  Client Script
@@ -11,7 +11,7 @@ globalize_all_functions
 //  Made by DEAFPS
 //
 //  With help from:
-//  CaféFPS - General help
+//  Cafï¿½FPS - General help
 //  
  
 
@@ -83,7 +83,7 @@ float PBGhostDurationTime
 
 
 //  -+++-+-+-+-++-++-+
-//  ¦¦¦¦¦ ¦ ¦+-¦ ¦ +¦ 
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½+-ï¿½ ï¿½ +ï¿½ 
 //  -+++- - -- - - +-+
 void function Cl_MovementGym_Init()
 {
@@ -160,7 +160,7 @@ void function MG_ServerCallback_Invis(){
 }
 
 //  +-++-++-++-+- -+-++-++-+- -
-//  +-+ ¦ ¦ ¦+-+¦¦¦+-¦ ¦ ¦  +-¦
+//  +-+ ï¿½ ï¿½ ï¿½+-+ï¿½ï¿½ï¿½+-ï¿½ ï¿½ ï¿½  +-ï¿½
 //  +-+ - +-+-  +-+- - - +-+- -
 void function MG_StopWatch_toggle(bool visible){
 	if(visible == true){
@@ -296,7 +296,7 @@ void function MG_StopWatch_destroy(){
 
 
 //  +-++-++-++-++-++-++-++-++-++-+--+
-//  +-++-++¦ +¦  ¦¦¦ ¦¦¦¦+¦  ¦ +¦ +-+
+//  +-++-++ï¿½ +ï¿½  ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½+ï¿½  ï¿½ +ï¿½ +-+
 //  +-+-  +-++-+--++-+- -+-+ - +-+-+-
 void function MG_Speedometer_toggle(bool visible){
 	if(visible == true){
@@ -420,7 +420,7 @@ void function MG_Speedometer_destroy(){
 
 
 //  +-++-+++++-+  +-+- -+-++-+-+-+-++-+-++++-+  +-++-++-++-++-++-++-+
-//  +-++¦ ¦¦¦ ¦¦  ¦  +-¦+¦ ¦  +-++-+¦ ¦¦¦¦¦ ¦   ¦¦¦+¦ +-++-++-¦¦ -+¦ 
+//  +-++ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½  ï¿½  +-ï¿½+ï¿½ ï¿½  +-++-+ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½   ï¿½ï¿½ï¿½+ï¿½ +-++-++-ï¿½ï¿½ -+ï¿½ 
 //  +-++-++++--+  +-+- -+-++-+- --  +-+-+++ -   - -+-++-++-+- -+-++-+
 void function MG_Checkpoint_Msg(){
 	
@@ -459,7 +459,7 @@ void function MG_ForceLighting(){
 
 
 //  +-++-+-  -+-++-++-+++++-+  - -+-++-++-+  +-+-  -+-+--+-  +-+- -
-//  ¦¦¦¦ ¦+++++¦ ¦¦¦+¦ ¦¦¦ ¦   ¦¦¦¦-¦+-+ ¦¦  ¦ ¦+++++¦ +-+¦  +-¦+-+
+//  ï¿½ï¿½ï¿½ï¿½ ï¿½+++++ï¿½ ï¿½ï¿½ï¿½+ï¿½ ï¿½ï¿½ï¿½ ï¿½   ï¿½ï¿½ï¿½ï¿½-ï¿½+-+ ï¿½ï¿½  ï¿½ ï¿½+++++ï¿½ +-+ï¿½  +-ï¿½+-+
 //  - -+-+ ++ +-+- -+-++++ -   +-+- -+-+--+  +-+ ++ +-+-+---+- - - 
 void function MG_MovementOverlay_toggle(bool visible){
 	
@@ -588,7 +588,7 @@ void function MG_MovementOverlay_SPACE_Released(var button){
 
 
 //  - -- +-+--++-+-+---  -    +-++-+- --  +-++-++-++-++-+--+
-//  ¦ ¦¦  ¦ +-++-¦+-+¦¦  ¦    +-+ ¦ +-+¦  +¦ ¦¦¦+¦  ¦ +¦ +-+
+//  ï¿½ ï¿½ï¿½  ï¿½ +-++-ï¿½+-+ï¿½ï¿½  ï¿½    +-+ ï¿½ +-+ï¿½  +ï¿½ ï¿½ï¿½ï¿½+ï¿½  ï¿½ +ï¿½ +-+
 //  +-+--+- -+-- -- ----+--+  +-+ -  - --++-+- -+-+ - +-+-+-
 void function MG_Ultrakill_styleemeter_toggle(bool visible){
 	if(visible == true){
@@ -851,15 +851,20 @@ void function MG_Pet_Summoner(){
 void function MG_Pet_Follower(){
     entity player = GetLocalClientPlayer()
     vector petOffsetAngle = <0, 0, 0>
+	vector petOffsetOrigin = <0, 0, 0>
     EndSignal(player, "StopPet")
     
     switch(activePet){
 	case "nessy":
-		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/domestic/nessy_doll.rmdl")
-		petOffsetAngle = <0, -90, 0>
+		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/props/charm/charm_nessy.rmdl")
+		petOffsetAngle = <0, 180, -30>
+		petOffsetOrigin = <0, 0, 12>
+		pet.SetModelScale(10)
 		break
 	case "corgi":
-		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/domestic/corgi_doll.rmdl")
+		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/vehicle/hovership/hovership_platform_mp.rmdl")
+		petOffsetOrigin = <0, 0, 40>
+		pet.SetModelScale(0.01)
 		break
 	case "controllerplayer":
 		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/garbage/garbage_bag_plastic_a.rmdl")
@@ -868,13 +873,13 @@ void function MG_Pet_Follower(){
 		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/error.rmdl")
 		break
 	default:
-		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/domestic/nessy_doll.rmdl")
-		petOffsetAngle = <0, -90, 0>
+		pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/props/charm/charm_nessy.rmdl")
+		petOffsetAngle = <0, 180, -30>
+		petOffsetOrigin = <0, 0, 12>
+		pet.SetModelScale(10)
 		break
     }
     
-    
-    //pet = CreateClientSidePropDynamic(player.GetLocalOrigin(), player.GetLocalAngles(), $"mdl/domestic/nessy_doll.rmdl")
     float yaw
     float pitch
     array<vector> positions
@@ -897,7 +902,7 @@ void function MG_Pet_Follower(){
 		vector targetPosition = positions[positions.len() - 10]
 		vector direction = playerPosition - targetPosition
 
-		petMover.NonPhysicsMoveTo(targetPosition, petHz, 0, 0)
+		petMover.NonPhysicsMoveTo(targetPosition + petOffsetOrigin, petHz, 0, 0)
 		
 		yaw = atan2(direction.y, direction.x) * (180.0 / 3.1415)
 		pitch = atan2(direction.z, sqrt(direction.x * direction.x + direction.y * direction.y)) * (180.0 / 3.1415)
@@ -924,7 +929,7 @@ void function MG_Pet_setActive(string petname){
 }
 
 //  -  -+-+--+- -  +-++-++-+-    -++++-+--++-+  +-++-++-++-+--++-+
-//  +++++¦ +-++-+  ¦  ¦ ¦¦ ¦¦    ¦¦¦¦ ¦ +-+¦ ¦  ¦  +-¦¦¦¦+¦ +-++-¦
+//  +++++ï¿½ +-++-+  ï¿½  ï¿½ ï¿½ï¿½ ï¿½ï¿½    ï¿½ï¿½ï¿½ï¿½ ï¿½ +-+ï¿½ ï¿½  ï¿½  +-ï¿½ï¿½ï¿½ï¿½+ï¿½ +-++-ï¿½
 //   ++ +-+-+- -   +-++-++-+--+  -+++ - -+-+-+  +-+- -- -+-+-+-- -
 void function MG_CoolCamera(){
 	
@@ -1304,7 +1309,7 @@ void function MG_SpecCam_Destroy()
 
 
 //  +-++-++-+- -+++  +-+++   +-+-+-++-+--++-+
-//  +-++-++-¦¦¦¦¦¦¦  ¦-+¦-+   ¦ ¦¦¦¦+¦ +-++-+
+//  +-++-++-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½-+ï¿½-+   ï¿½ ï¿½ï¿½ï¿½ï¿½+ï¿½ +-++-+
 //  +-+-  - -+-++++  -  +-+   - -- -+-+-+-+-+
 void function MG_Spawn_PB_Timers()
 {
@@ -1345,7 +1350,7 @@ void function MG_ButtonImgs()
 }
 
 //  +-++-+-  -+-+  +-++-+   +++- -+-+
-//  +-++-¦+++++¦    ¦ ¦ ¦   ¦¦¦¦ ¦ ¦ 
+//  +-++-ï¿½+++++ï¿½    ï¿½ ï¿½ ï¿½   ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ 
 //  +-+- - ++ +-+   - +-+  o++++-+ - 
 void
 function MovementGymSavePBToFile() {
@@ -1550,7 +1555,7 @@ void function MG_CustomPilotRUI( entity player, var rui ) {
 }
 
 //  +-+-  +-++-++-+-+-+  +-++-+-  -+-++-++-+++++-+
-//  ¦  ¦  +-¦+-++-+¦¦    ¦¦¦¦ ¦+++++¦ ¦¦¦+¦ ¦¦¦ ¦ 
+//  ï¿½  ï¿½  +-ï¿½+-++-+ï¿½ï¿½    ï¿½ï¿½ï¿½ï¿½ ï¿½+++++ï¿½ ï¿½ï¿½ï¿½+ï¿½ ï¿½ï¿½ï¿½ ï¿½ 
 //  +-+--+- -+-++-+-+-+  - -+-+ ++ +-+- -+-++++ - 
 void function Cl_Classic_Movement(){
 	

@@ -605,7 +605,7 @@ scripts/resource/ui/menus/MovementGym/movementgym_settings.menu
 			tall					40
 			visible					1
 			fontHeight				40
-			labelText				"Corgi"
+			labelText				"Hovership"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 0 255"
@@ -731,7 +731,7 @@ scripts/resource/ui/menus/MovementGym/movementgym_settings.menu
 			tall					40
 			visible					1
 			fontHeight				40
-			labelText				"Corgi"
+			labelText				"Error"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 0 255"
