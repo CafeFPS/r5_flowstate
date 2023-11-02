@@ -122,11 +122,60 @@ void function Cl_CustomCTF_Init()
 
 void function CL_FSCTF_RegisterNetworkFunctions()
 {
-	if ( IsLobby() )
-		return
-	
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_CTFRoundEndTimeChanged )
+	RegisterNetworkedVariableChangeCallback_ent( "imcFlag", CTF_FlagEntChangedImc )
+	RegisterNetworkedVariableChangeCallback_ent( "milFlag", CTF_FlagEntChangedMil )
+}
+
+void function CTF_FlagEntChangedImc( entity player, entity oldFlag, entity newFlag, bool actuallyChanged )
+{
+	CTF_FlagEntChanged( TEAM_IMC, newFlag )
+}
+
+void function CTF_FlagEntChangedMil( entity player, entity oldFlag, entity newFlag, bool actuallyChanged )
+{
+	CTF_FlagEntChanged( TEAM_MILITIA, newFlag )
+}
+
+void function CTF_FlagEntChanged( int team, entity newFlag )
+{
+	printt( "CTF_FlagEntChanged", newFlag, team )
+
+	if ( !IsValid( newFlag ) )
+	{
+		// RuiSetBool( rui, "isVisible", false )
+		return
+	}
+
+	entity player = GetLocalViewPlayer()
+
+    ClientCodeCallback_MinimapEntitySpawned( newFlag )
+
+	string msg = player.GetTeam() == team ? "Defend" : "Capture"
+	
+	if( newFlag.IsPlayer() )
+		msg = player.GetTeam() == newFlag.GetTeam() ? "Escort" : "Attack"
+
+	asset Icon = player.GetTeam() == team ? $"rui/gamemodes/capture_the_flag/imc_flag" : $"rui/gamemodes/capture_the_flag/mil_flag"
+
+	if( team == TEAM_IMC )
+	{
+		if( FlagRUI.IMCpointicon != null )
+		{
+			RuiDestroyIfAlive( FlagRUI.IMCpointicon )
+			FlagRUI.IMCpointicon = null
+		}
+		FlagRUI.IMCpointicon = AddPointIconRUI( newFlag, msg, Icon)
+	} else if( team == TEAM_MILITIA )
+	{
+		if( FlagRUI.MILITIApointicon != null )
+		{
+			RuiDestroyIfAlive( FlagRUI.MILITIApointicon )
+			FlagRUI.MILITIApointicon = null
+		}
+		FlagRUI.MILITIApointicon = AddPointIconRUI( newFlag, msg, Icon)
+	}
 }
 
 void function Cl_OnResolutionChanged()
@@ -288,7 +337,7 @@ void function ServerCallback_CTF_AddPointIcon(entity imcflag, entity milflag, in
     // }
 }
 
-var function AddPointIconRUI(var rui, entity flag, string text, asset icon)
+var function AddPointIconRUI( entity flag, string text, asset icon)
 {
     if(!IsValid(flag))
         return
@@ -296,7 +345,7 @@ var function AddPointIconRUI(var rui, entity flag, string text, asset icon)
     bool pinToEdge = true
     asset ruiFile = $"ui/overhead_icon_generic.rpak"
 
-    rui = AddCaptureIcon( flag, icon, pinToEdge, ruiFile)
+    var rui = AddCaptureIcon( flag, icon, pinToEdge, ruiFile )
 	RuiSetFloat2( rui, "iconSize", <40,40,0> )
 	RuiSetFloat( rui, "distanceFade", 100000 )
 	RuiSetBool( rui, "adsFade", false )
@@ -343,116 +392,81 @@ var function AddCaptureIcon( entity prop, asset icon, bool pinToEdge = true, ass
 	RuiSetBool( rui, "pinToEdge", pinToEdge )
 	RuiTrackFloat3( rui, "pos", prop, RUI_TRACK_OVERHEAD_FOLLOW )
 
-    thread AddCaptureIconThread( prop, rui )
 	return rui
-}
-
-void function AddCaptureIconThread( entity prop, var rui )
-{
-	prop.EndSignal( "OnDestroy" )
-
-	prop.e.overheadRui = rui
-
-	OnThreadEnd(
-		function() : ( prop, rui )
-		{
-			if( rui != null)
-			{
-				RuiDestroyIfAlive( rui )
-			}
-
-			if ( IsValid( prop ) )
-				prop.e.overheadRui = null
-		}
-	)
-
-	WaitForever()
 }
 
 void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 {
-	// #if DEVELOPER
-	// printt( "debug, ServerCallback_CTF_PickedUpFlag:", player, pickedup )
-	// #endif
-    // asset icon = $"rui/gamemodes/capture_the_flag/arrow"
-    // vector emptymdlloc
-    // vector color
+	#if DEVELOPER
+	printt( "debug, ServerCallback_CTF_PickedUpFlag:", player, pickedup )
+	#endif
+    asset icon = $"rui/gamemodes/capture_the_flag/arrow"
+    vector emptymdlloc
+    vector color
 
-    // switch(player.GetTeam())
-    // {
-        // case TEAM_IMC:
-            // if( !IsValid( FlagRUI.MILITIApointicon ) )
-                // break
+    switch(player.GetTeam())
+    {
+        case TEAM_IMC:
 
-            // emptymdlloc = file.selectedLocation.imcflagspawn
-            // color = SrgbToLinear( <100,100,255> / 255 )
+            emptymdlloc = file.selectedLocation.imcflagspawn
+            color = SrgbToLinear( <100,100,255> / 255 )
 
-            // if(pickedup)
-                // RuiSetVisible( FlagRUI.MILITIApointicon, false )
-            // else
-                // RuiSetVisible( FlagRUI.MILITIApointicon, true )
-            // break
-        // case TEAM_MILITIA:
-            // if( !IsValid( FlagRUI.IMCpointicon ) )
-                // break
+            break
+        case TEAM_MILITIA:
 
-            // emptymdlloc = file.selectedLocation.milflagspawn
-            // color = SrgbToLinear( <255,100,100> / 255 )
+            emptymdlloc = file.selectedLocation.milflagspawn
+            color = SrgbToLinear( <255,100,100> / 255 )
 
-            // if(pickedup)
-                // RuiSetVisible( FlagRUI.IMCpointicon, false )
-            // else
-                // RuiSetVisible( FlagRUI.IMCpointicon, true )
-            // break
-    // }
+            break
+    }
 
-    // if(pickedup)
-    // {
-		// if( file.dropflagrui != null)
-		// {
-			// RuiDestroyIfAlive( file.dropflagrui )
-			// file.dropflagrui = null
-		// }
+    if(pickedup)
+    {
+		if( file.dropflagrui != null)
+		{
+			RuiDestroyIfAlive( file.dropflagrui )
+			file.dropflagrui = null
+		}
 
-		// file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
-		// RuiSetGameTime( file.dropflagrui, "startTime", Time() )
-		// RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
-		// RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
-		// RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
+		file.dropflagrui = CreateFullscreenRui( $"ui/wraith_comms_hint.rpak" )
+		RuiSetGameTime( file.dropflagrui, "startTime", Time() )
+		RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
+		RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
+		RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
 
-		// if( file.baseicon != null)
-		// {
-			// RuiDestroyIfAlive( file.baseicon )
-			// file.baseicon = null
-		// }
+		if( file.baseicon != null)
+		{
+			RuiDestroyIfAlive( file.baseicon )
+			file.baseicon = null
+		}
 
-        // if(IsValid( file.baseiconmdl ))
-            // file.baseiconmdl.Destroy()
+        if(IsValid( file.baseiconmdl ))
+            file.baseiconmdl.Destroy()
 
-        // file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
-        // file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
-        // RuiSetFloat2( file.baseicon, "iconSize", <25,25,0> )
-        // RuiSetFloat( file.baseicon, "distanceFade", 100000 )
-        // RuiSetBool( file.baseicon, "adsFade", false )
-        // RuiSetString( file.baseicon, "hint", "" )
-    // }
-    // else
-    // {
-		// if( file.dropflagrui != null)
-		// {
-			// RuiDestroyIfAlive( file.dropflagrui )
-			// file.dropflagrui = null
-		// }
+        file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
+        file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
+        RuiSetFloat2( file.baseicon, "iconSize", <25,25,0> )
+        RuiSetFloat( file.baseicon, "distanceFade", 100000 )
+        RuiSetBool( file.baseicon, "adsFade", false )
+        RuiSetString( file.baseicon, "hint", "" )
+    }
+    else
+    {
+		if( file.dropflagrui != null)
+		{
+			RuiDestroyIfAlive( file.dropflagrui )
+			file.dropflagrui = null
+		}
 
-		// if( file.baseicon != null)
-		// {
-			// RuiDestroyIfAlive( file.baseicon )
-			// file.baseicon = null
-		// }
+		if( file.baseicon != null)
+		{
+			RuiDestroyIfAlive( file.baseicon )
+			file.baseicon = null
+		}
 
-        // if(IsValid( file.baseiconmdl ))
-            // file.baseiconmdl.Destroy()
-    // }
+        if(IsValid( file.baseiconmdl ))
+            file.baseiconmdl.Destroy()
+    }
 }
 
 void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float starttime)

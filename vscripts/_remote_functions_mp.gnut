@@ -284,6 +284,8 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "flowstate_DMRoundEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			Remote_RegisterClientFunction( "ForceScoreboardLoseFocus" )
 			Remote_RegisterClientFunction( "ForceScoreboardFocus" )
+			RegisterNetworkedVariable( "imcFlag", SNDC_GLOBAL, SNVT_ENTITY )
+			RegisterNetworkedVariable( "milFlag", SNDC_GLOBAL, SNVT_ENTITY )
 			break
 	}
 	

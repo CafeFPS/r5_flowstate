@@ -900,6 +900,8 @@ void function SpawnCTFPoints()
 	IMCPoint.pickedup = false
     IMCPoint.flagatbase = true
 
+	SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
+
     // Point 2
     MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
     MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
@@ -929,14 +931,8 @@ void function SpawnCTFPoints()
 
 	MILITIAPoint.pickedup = false
     MILITIAPoint.flagatbase = true
-
-    foreach( player in GetPlayerArray() )
-    {
-        if( !IsValid( player ) )
-            continue
-
-        Remote_CallFunction_Replay( player, "ServerCallback_CTF_AddPointIcon", IMCPoint.pole, MILITIAPoint.pole, player.GetTeam() )
-    }
+	
+	SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
 }
 
 void function CustomHighlight(entity e, int r, int g, int b)
@@ -1032,6 +1028,11 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 	printt(" player trying to pickup flag" )
 	if( !IsValid( ent ) )
 		return
+	
+	if( team == TEAM_IMC )
+		SetGlobalNetEnt( "milFlag", ent )
+	else if( team == TEAM_MILITIA )
+		SetGlobalNetEnt( "imcFlag", ent )
 
     int enemyteam = GetCTFEnemyTeam(team)
 	
@@ -1048,14 +1049,14 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 
     PlayerPickedUpFlag(ent)
 
-    array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-    foreach ( player in teamplayers )
-    {
-        if( !IsValid( player ) )
-            continue
+    // array<entity> teamplayers = GetPlayerArrayOfTeam( team )
+    // foreach ( player in teamplayers )
+    // {
+        // if( !IsValid( player ) )
+            // continue
 
-        Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Escort)
-    }
+        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Escort)
+    // }
 
     array<entity> enemyplayers = GetPlayerArrayOfTeam( enemyteam )
     foreach ( player in enemyplayers )
@@ -1064,7 +1065,7 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
             continue
 
         Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
-        Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Attack)
+        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Attack)
     }
 
     EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", team)
@@ -1104,7 +1105,7 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
         if( !IsValid( player ) )
             continue
 
-        Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Capture)
+        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Capture)
         Remote_CallFunction_Replay(player, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.PickedUpFlag)
     }
 
@@ -1114,7 +1115,7 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
         if( !IsValid( player ) )
             continue
 
-        Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Defend)
+        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", enemyteam, eCTFFlag.Defend)
         Remote_CallFunction_Replay(player, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.EnemyPickedUpFlag)
     }
 
@@ -1126,6 +1127,12 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 	{
 		teamflagpoint.pole.ClearParent()
 		teamflagpoint.pole.SetOrigin(teamflagpoint.spawn)
+
+		if( team == TEAM_IMC )
+			SetGlobalNetEnt( "milFlag", teamflagpoint.pole )
+		else if( team == TEAM_MILITIA )
+			SetGlobalNetEnt( "imcFlag", teamflagpoint.pole )
+
 		teamflagpoint.pole.MakeVisible()
 		thread PlayAnim( teamflagpoint.pole, "prop_fence_expand", teamflagpoint.pole.GetOrigin(), teamflagpoint.pole.GetAngles() )
 		teamflagpoint.pole.SetCycle( 1.0 )
@@ -1233,13 +1240,13 @@ void function GiveBackWeapons(entity player)
     // Needs to check and set legend change before taking weapons
     Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_CheckUpdatePlayerLegend")
 
+	TakeAllWeapons(player)
+
     wait 0.5
 
     //Needed another check after the wait just incase they leave within that wait time
-    if( !IsValid( player ) )
+    if( !IsValid( player ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
-
-    TakeAllWeapons(player)
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -1319,10 +1326,7 @@ void function _OnPlayerConnected(entity player)
     case eGameState.Playing:
         player.UnfreezeControlsOnServer();
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_DoAnnouncement", 5, eCTFAnnounce.ROUND_START, CTF.roundstarttime)
-        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_AddPointIcon", IMCPoint.pole, MILITIAPoint.pole, player.GetTeam())
-        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_TeamText", player.GetTeam())
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_SetSelectedLocation", CTF.mappicked)
-        // Remote_CallFunction_Replay(player, "ServerCallback_CTF_PointCaptured", CTF.IMCPoints, CTF.MILITIAPoints)
         break
     default:
         break
@@ -1374,6 +1378,8 @@ void function ResetFlagOnDisconnect(int num)
         IMCPoint.pickedup = false
         IMCPoint.dropped = false
         IMCPoint.flagatbase = true
+		
+		SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
     }
     else if(num == 1)
     {
@@ -1396,14 +1402,8 @@ void function ResetFlagOnDisconnect(int num)
         MILITIAPoint.pickedup = false
         MILITIAPoint.dropped = false
         MILITIAPoint.flagatbase = true
-    }
-
-    foreach( player in GetPlayerArray() )
-    {
-        if( !IsValid( player ) )
-            continue
-
-        Remote_CallFunction_Replay( player, "ServerCallback_CTF_AddPointIcon", IMCPoint.pole, MILITIAPoint.pole, player.GetTeam() )
+		
+		SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
     }
 }
 
@@ -1424,6 +1424,8 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
             MILITIAPoint.pole.SetParent(ent)
             MILITIAPoint.pole.SetOrigin(ent.GetOrigin())
             MILITIAPoint.pole.MakeInvisible()
+
+			SetGlobalNetEnt( "milFlag", ent )
 
             PlayerPickedUpFlag(ent)
 
@@ -1485,20 +1487,22 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
             IMCPoint.pole.SetOrigin(ent.GetOrigin())
             IMCPoint.pole.MakeInvisible()
 
+			SetGlobalNetEnt( "imcFlag", ent )
+
             PlayerPickedUpFlag(ent)
 
             IMCPoint.holdingplayer = ent
             IMCPoint.pickedup = true
             IMCPoint.dropped = false
 
-            array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
-            foreach ( player in teamplayers )
-            {
-                if( !IsValid( player ) )
-                    continue
+            // array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
+            // foreach ( player in teamplayers )
+            // {
+                // if( !IsValid( player ) )
+                    // continue
 
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Escort)
-            }
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Escort)
+            // }
 
             array<entity> enemyplayers = GetPlayerArrayOfTeam( TEAM_IMC )
             foreach ( player in enemyplayers )
@@ -1507,7 +1511,7 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
                     continue
 
                 Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Attack)
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Attack)
             }
 
             EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", TEAM_MILITIA)
@@ -1659,6 +1663,11 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
 	{
 		teamflagpoint.pole.MakeVisible()
 		teamflagpoint.pole.SetOrigin( OriginToGroundCTF( teamflagpoint.pole.GetOrigin() ) )
+
+		if( team == TEAM_MILITIA )
+			SetGlobalNetEnt( "milFlag", teamflagpoint.pole )
+		else if( team == TEAM_IMC )
+			SetGlobalNetEnt( "imcFlag", teamflagpoint.pole )
 	}
 
     array<entity> enemyplayers = GetPlayerArrayOfTeam( enemyteam )
@@ -1852,24 +1861,6 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 
     TpPlayerToSpawnPoint(player)
     thread Flowstate_GrantSpawnImmunity(player, 2.5)
-
-    // Point icons disappear on death, so this fixes that.
-    // Remote_CallFunction_Replay(player, "ServerCallback_CTF_ResetFlagIcons")
-
-    foreach( players in GetPlayerArray() )
-    {
-        if( IsValid( players ) && IsValid( IMCPoint.pole ) && IsValid( MILITIAPoint.pole ) )
-        {
-            if (players.GetTeam() == TEAM_IMC)
-            {
-                Remote_CallFunction_Replay(players, "ServerCallback_CTF_AddPointIcon", IMCPoint.pole, MILITIAPoint.pole, TEAM_IMC)
-            }
-            else if (players.GetTeam() == TEAM_MILITIA)
-            {
-                Remote_CallFunction_Replay(players, "ServerCallback_CTF_AddPointIcon", IMCPoint.pole, MILITIAPoint.pole, TEAM_MILITIA)
-            }
-        }
-    }
 
     player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	Survival_SetInventoryEnabled( player, false )
