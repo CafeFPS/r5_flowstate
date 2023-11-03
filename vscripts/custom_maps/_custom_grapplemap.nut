@@ -4,6 +4,7 @@ globalize_all_functions
 // Made by Loy. 
 
 void function grapplemap_precache() {
+    PrecacheModel( $"mdl/desertlands/desertlands_cafeteria_table_02.rmdl" )
     PrecacheModel( $"mdl/desertlands/construction_bldg_platform_01.rmdl" )
     PrecacheModel( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_pillar_64.rmdl" )
     PrecacheModel( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_corner_Lshape.rmdl" )
@@ -30,7 +31,6 @@ void function grapplemap_precache() {
     PrecacheModel( $"mdl/desertlands/desertlands_train_station_interior_light_04.rmdl" )
     PrecacheModel( $"mdl/beacon/construction_scaff_segment_128_64.rmdl" )
     PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
-    PrecacheModel( $"mdl/vehicles_r5/air/dropship_goblin/veh_air_dship_goblin_prk_opn_v1_static.rmdl" )
     PrecacheModel( $"mdl/industrial/zipline_arm.rmdl" )
     PrecacheModel( $"mdl/industrial/security_fence_post.rmdl" )
     PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
@@ -726,7 +726,6 @@ void function grapplemap_load() {
     MapEditor_CreateProp( $"mdl/industrial/security_fence_post.rmdl", < 19953.7, -9669, 17685 >, < 0, -180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 19954.7, -9669.8, 17885 >, < 0, 90, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_01.rmdl", < 19224.7, -16165.5, 18236 >, < 0, -90, 0 >, true, 50000, -1, 1 )
-    NoGrappleArray.append( MapEditor_CreateProp( $"mdl/vehicles_r5/air/dropship_goblin/veh_air_dship_goblin_prk_opn_v1_static.rmdl", < 19043, -17883, 17895 >, < 0, -90, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/beacon/construction_scaff_segment_128_64.rmdl", < 19127.4, -16156.1, 18232.7 >, < 0, 0.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/beacon/construction_scaff_128_64_64.rmdl", < 18906.7, -15992.6, 18229.9 >, < 0, 0, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 18899.4, -15877.3, 18235.7 >, < 0, 0, 0 >, true, 50000, -1, 1 )
@@ -847,6 +846,10 @@ void function grapplemap_load() {
     NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl", < 19522.5, -2244.35, 17803.83 >, < 0, 0, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/barriers/guard_rail_01_128.rmdl", < 19816.8, -2895.188, 17810.9 >, < 0, -180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/barriers/guard_rail_01_256.rmdl", < 19492, -2685, 17810 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/desertlands_cafeteria_table_02.rmdl", < 19038.9, -17656.8, 17871.9 >, < 0, -180, 30 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < 19041.8, -17850.3, 17928.7 >, < 0, 90, 90.0001 >, true, 50000, -1, 1 )
+
+
 
     foreach ( entity ent in InvisibleArray ) ent.MakeInvisible()
     foreach ( entity ent in NoGrappleArray ) ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
@@ -880,7 +883,7 @@ if (user.GetPersistentVar("gen") == 0) {
 }
     })
 
-    AddCallback_OnUseEntity( CreateFRButton(< 19042.76, -17991.25, 17932.54 >, < 0, 180, 0 >, "%use% Finish Run"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 19042.76, -17991.25, 17932.54 >, < 0, 180, 0 >, "%use% Finish"), void function(entity panel, entity user, int input)
     {
 int reset = 0
 file.cp_table[user] <- file.first_cp
@@ -897,6 +900,9 @@ if (user.GetPersistentVarAsInt("gen") != reset) {
         Message(user, "Your Final Time: " + seconds + " seconds")
         user.SetPersistentVar("gen", reset)
     }
+} else {
+    Message(user, "Congratulations!", "You finished the map!")
+    user.SetOrigin(file.first_cp)
 }
     })
 
