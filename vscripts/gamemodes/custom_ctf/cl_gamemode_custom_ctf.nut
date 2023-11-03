@@ -142,9 +142,23 @@ void function CTF_FlagEntChanged( int team, entity newFlag )
 {
 	printt( "CTF_FlagEntChanged", newFlag, team )
 
-	if ( !IsValid( newFlag ) )
+	if ( !IsValid( newFlag ) || newFlag.IsPlayer() && newFlag == GetLocalClientPlayer() )
 	{
-		// RuiSetBool( rui, "isVisible", false )
+		if( team == TEAM_IMC )
+		{
+			if( FlagRUI.IMCpointicon != null )
+			{
+				RuiDestroyIfAlive( FlagRUI.IMCpointicon )
+				FlagRUI.IMCpointicon = null
+			}
+		} else if( team == TEAM_MILITIA )
+		{
+			if( FlagRUI.MILITIApointicon != null )
+			{
+				RuiDestroyIfAlive( FlagRUI.MILITIApointicon )
+				FlagRUI.MILITIApointicon = null
+			}
+		}
 		return
 	}
 
@@ -578,7 +592,7 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 {
     string message
-    vector color = <0,0,0>
+    vector color = SrgbToLinear( <255,100,100> / 255 )
     switch(messageid)
     {
         case eCTFMessage.PickedUpFlag:
@@ -589,15 +603,6 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
             break
         case eCTFMessage.TeamReturnedFlag:
             message = "Your teams flag has been returned to base"
-    }
-
-    switch(GetLocalClientPlayer().GetTeam())
-    {
-        case TEAM_IMC:
-            color = SrgbToLinear( <100,100,255> / 255 )
-            break
-        case TEAM_MILITIA:
-            color = SrgbToLinear( <255,100,100> / 255 )
     }
 
     AnnouncementData announcement = CreateAnnouncementMessageQuick( player, message, "", color, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )
