@@ -329,26 +329,7 @@ void function ServerCallback_CTF_ResetFlagIcons()
 
 void function ServerCallback_CTF_AddPointIcon(entity imcflag, entity milflag, int team)
 {
-    // ClientCodeCallback_MinimapEntitySpawned(imcflag)
-    // ClientCodeCallback_MinimapEntitySpawned(milflag)
-	
-	// entity player = GetLocalClientPlayer()
 
-    // switch( player.GetTeam() )
-    // {
-        // case TEAM_IMC:
-            // if(FlagRUI.IMCpointicon == null)
-                // FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Defend", $"rui/gamemodes/capture_the_flag/imc_flag")
-            // if(FlagRUI.MILITIApointicon == null)
-                // FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Capture", $"rui/gamemodes/capture_the_flag/mil_flag")
-            // break
-        // case TEAM_MILITIA:
-            // if(FlagRUI.IMCpointicon == null)
-                // FlagRUI.IMCpointicon = AddPointIconRUI(FlagRUI.IMCpointicon, imcflag, "Capture", $"rui/gamemodes/capture_the_flag/imc_flag")
-            // if(FlagRUI.MILITIApointicon == null)
-                // FlagRUI.MILITIApointicon = AddPointIconRUI(FlagRUI.MILITIApointicon, milflag, "Defend", $"rui/gamemodes/capture_the_flag/mil_flag")
-            // break
-    // }
 }
 
 var function AddPointIconRUI( entity flag, string text, asset icon)
@@ -369,33 +350,33 @@ var function AddPointIconRUI( entity flag, string text, asset icon)
 
 void function ServerCallback_CTF_SetPointIconHint(int teamflag, int messageid)
 {
-    // try {
-        // var selected
+    try {
+        var selected
 
-        // if(teamflag == TEAM_IMC)
-            // selected = FlagRUI.IMCpointicon
-        // else
-            // selected = FlagRUI.MILITIApointicon
+        if(teamflag == TEAM_IMC)
+            selected = FlagRUI.IMCpointicon
+        else
+            selected = FlagRUI.MILITIApointicon
 
-        // switch(messageid)
-        // {
-        // case eCTFFlag.Defend:
-            // RuiSetString( selected, "hint", "Defend" )
-            // break
-        // case eCTFFlag.Capture:
-            // RuiSetString( selected, "hint", "Capture" )
-            // break
-        // case eCTFFlag.Attack:
-            // RuiSetString( selected, "hint", "Attack" )
-            // break
-        // case eCTFFlag.Escort:
-            // RuiSetString( selected, "hint", "Escort" )
-            // break
-        // case eCTFFlag.Return:
-            // RuiSetString( selected, "hint", "Return" )
-            // break
-        // }
-    // } catch (pe3){ }
+        switch(messageid)
+        {
+        case eCTFFlag.Defend:
+            RuiSetString( selected, "hint", "Defend" )
+            break
+        case eCTFFlag.Capture:
+            RuiSetString( selected, "hint", "Capture" )
+            break
+        case eCTFFlag.Attack:
+            RuiSetString( selected, "hint", "Attack" )
+            break
+        case eCTFFlag.Escort:
+            RuiSetString( selected, "hint", "Escort" )
+            break
+        case eCTFFlag.Return:
+            RuiSetString( selected, "hint", "Return" )
+            break
+        }
+    } catch (pe3){ }
 }
 
 var function AddCaptureIcon( entity prop, asset icon, bool pinToEdge = true, asset ruiFile = $"ui/overhead_icon_generic.rpak" )
