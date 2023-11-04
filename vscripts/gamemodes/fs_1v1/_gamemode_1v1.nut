@@ -1450,6 +1450,12 @@ void function GiveWeaponsToGroup( array<entity> players )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 			player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+			
+			if( !GetCurrentPlaylistVarBool( "flostate1v1MatchLoadout", true ) )
+			{
+				primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+				secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+			}
 		}
 	}()
 }
