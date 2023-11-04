@@ -873,6 +873,11 @@ void function ResetIMCFlag()
 
 	DestroyFlagAndRemanents( TEAM_IMC )
 
+	IMCPoint.holdingplayer = null
+	IMCPoint.pickedup = false
+	IMCPoint.dropped = false
+	IMCPoint.flagatbase = true
+	
 	wait 0.5
 
 	IMCPoint.spawn = file.selectedLocation.imcflagspawn
@@ -898,8 +903,6 @@ void function ResetIMCFlag()
 	IMCPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
 	IMCPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
 	IMCPoint.teamnum = TEAM_IMC
-	IMCPoint.pickedup = false
-	IMCPoint.flagatbase = true
 
 	SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
 }
@@ -909,6 +912,11 @@ void function ResetMILITIAFlag()
 	printt( "Trying to reset MILITIA flag", MILITIAPoint.spawn )
 
 	DestroyFlagAndRemanents( TEAM_MILITIA )
+
+	MILITIAPoint.holdingplayer = null
+	MILITIAPoint.pickedup = false
+	MILITIAPoint.dropped = false
+	MILITIAPoint.flagatbase = true
 
 	wait 0.5
 
@@ -935,9 +943,7 @@ void function ResetMILITIAFlag()
 	MILITIAPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
 	MILITIAPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
 	MILITIAPoint.teamnum = TEAM_MILITIA
-	MILITIAPoint.pickedup = false
-	MILITIAPoint.flagatbase = true
-	
+
 	SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
 }
 
@@ -1073,18 +1079,8 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 
 	PlayerDroppedFlag(ent)
 
-	wait 0.2
-
 	if( IsValid( ent ) )
 		Remote_CallFunction_NonReplay(ent, "ServerCallback_CTF_UpdatePlayerStats", eCTFStats.Captures)
-
-	foreach(player in GetPlayerArray())
-	{
-		if( !IsValid( player ) )
-			continue
-
-		// Remote_CallFunction_Replay(player, "ServerCallback_CTF_PointCaptured", CTF.IMCPoints, CTF.MILITIAPoints)
-	}
 
 	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
 	foreach ( player in teamplayers )
@@ -1104,28 +1100,13 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 		Remote_CallFunction_Replay(player, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.EnemyPickedUpFlag)
 	}
 
-	teamflagpoint.holdingplayer = null
-	teamflagpoint.pickedup = false
-	teamflagpoint.dropped = false
-	teamflagpoint.flagatbase = true
-	if( IsValid( teamflagpoint.pole ) )
-	{
-		teamflagpoint.pole.ClearParent()
-		teamflagpoint.pole.SetOrigin(teamflagpoint.spawn)
-
-		if( team == TEAM_IMC )
-			SetGlobalNetEnt( "milFlag", teamflagpoint.pole )
-		else if( team == TEAM_MILITIA )
-			SetGlobalNetEnt( "imcFlag", teamflagpoint.pole )
-
-		teamflagpoint.pole.MakeVisible()
-		teamflagpoint.pole.Anim_Play( "prop_fence_expand" )
-		teamflagpoint.pole.SetCycle( 1.0 )
-	}
+	if( team == TEAM_IMC )
+		thread ResetMILITIAFlag()
+	else if( team == TEAM_MILITIA )
+		thread ResetIMCFlag()
 
 	EmitSoundToTeamPlayers("ui_ctf_enemy_score", enemyteam)
 	EmitSoundToTeamPlayers("ui_ctf_team_score", team)
-	
 
 	if( GameRules_GetTeamScore( TEAM_IMC ) >= CTF_SCORE_GOAL_TO_WIN || GameRules_GetTeamScore( TEAM_MILITIA ) >= CTF_SCORE_GOAL_TO_WIN)
 	{
@@ -1431,6 +1412,8 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	bool foundSafeSpot = false
 
 	PlayerDroppedFlag(victim)
+	
+	WaitFrame()
 
 	// Clear parent and set the flag to current death location
 	teamflagpoint.holdingplayer = null
