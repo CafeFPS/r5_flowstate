@@ -449,7 +449,13 @@ void function StartRound()
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_SetObjectiveText", CTF_SCORE_GOAL_TO_WIN)
         // Remote_CallFunction_Replay(player, "ServerCallback_CTF_TeamText", player.GetTeam())
     }
-
+	if( file.selectedLocation.name == "Lockout" )
+	{
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
+	} else if( file.selectedLocation.name == "Narrows" )
+	{
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
+	}
     //EffectSetControlPointVector( CTF.ringfx, 1, <CTF.ringRadius, 0, 0> )
 
     float endTime = Time() + CTF_ROUNDTIME
@@ -934,7 +940,7 @@ void function SpawnCTFPoints()
     MILITIAPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
     MILITIAPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
 
-    DrawBox( IMCPoint.spawn, <-32,-32,-32>, <32,32,32>, 255, 0, 0, true, 0.2 )
+    // DrawBox( IMCPoint.spawn, <-32,-32,-32>, <32,32,32>, 255, 0, 0, true, 0.2 )
 
     MILITIAPoint.teamnum = TEAM_IMC
 
@@ -1382,7 +1388,6 @@ void function ResetFlagOnDisconnect(int num)
         if( IsValid( MILITIAPoint.trailfx ) )
             MILITIAPoint.trailfx.Destroy()
 
-        MILITIAPoint.spawn = OriginToGroundCTF( file.selectedLocation.milflagspawn )
         MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
         MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
         MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
@@ -1683,13 +1688,24 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
 		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
 		{
 			foundSafeSpot = true
+
+			vector endOrigin = teamflagpoint.pole.GetOrigin() - < 0, 0, 200 >
+			TraceResults traceResult = TraceLine( teamflagpoint.pole.GetOrigin(), endOrigin, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+			
+			if( traceResult.fraction == 1.0 )
+			{
+				foundSafeSpot = false
+				teamflagpoint.flagatbase = true
+				teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
+			}
+			
 		}
 		else if( teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
 		{
 			if( Distance( teamflagpoint.pole.GetOrigin(), CTF.ringCenter ) > CTF.ringRadius )
 			{
 				teamflagpoint.flagatbase = true
-				teamflagpoint.pole.SetOrigin(OriginToGroundCTF( teamflagpoint.spawn ))
+				teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
 			}
 			else
 			{
@@ -1699,7 +1715,7 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
 		else
 		{
 			teamflagpoint.flagatbase = true
-			teamflagpoint.pole.SetOrigin( OriginToGroundCTF( teamflagpoint.spawn ) )
+			teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
 		}
 
 		// Play expand anim
