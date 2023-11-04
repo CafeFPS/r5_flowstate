@@ -340,30 +340,6 @@ void function StartServerRoundTimer()
     }
 }
 
-// purpose: Check IMC pole entity to make sure its not null or not valid and remakes it if it is.
-void function StartIMCFlagChecking()
-{
-    while(ServerTimer.roundover == false)
-    {
-        if(IMCPoint.pole == null || !IsValid(IMCPoint.pole))
-            ResetFlagOnDisconnect(0)
-
-        WaitFrame()
-    }
-}
-
-// purpose: Check MIL pole entity to make sure its not null or not valid and remakes it if it is.
-void function StartMILFlagChecking()
-{
-    while(ServerTimer.roundover == false)
-    {
-        if(MILITIAPoint.pole == null || !IsValid(MILITIAPoint.pole))
-            ResetFlagOnDisconnect(1)
-
-        WaitFrame()
-    }
-}
-
 // purpose: handle the start of a new round for players and props
 void function StartRound()
 {
@@ -383,11 +359,8 @@ void function StartRound()
     // reset map votes
     ResetMapVotes()
 
-    // spawn CTF flags based on location
-    SpawnCTFPoints()
-
-    thread StartIMCFlagChecking()
-    thread StartMILFlagChecking()
+    ResetMILITIAFlag()
+	ResetIMCFlag()
 
 	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 10 )
 
@@ -847,55 +820,61 @@ void function RandomizeTiedLocations(array<int> maps)
     CTF.mappicked = maps[selectedamp]
 }
 
-void function DestroyFlagAndRemanents()
+void function DestroyFlagAndRemanents( int team )
 {
 	// Destroy old flags, triggers, and fx
-	if( IsValid( IMCPoint.pole ) )
-		IMCPoint.pole.Destroy()
+	if( team == TEAM_IMC )
+	{
+		if( IsValid( IMCPoint.pole ) )
+			IMCPoint.pole.Destroy()
 
-	if( IsValid( IMCPoint.trigger ) )
-		IMCPoint.trigger.Destroy()
+		if( IsValid( IMCPoint.trigger ) )
+			IMCPoint.trigger.Destroy()
 
-	if( IsValid( IMCPoint.pointfx ) )
-		IMCPoint.pointfx.Destroy()
+		if( IsValid( IMCPoint.pointfx ) )
+			IMCPoint.pointfx.Destroy()
 
-	if( IsValid( IMCPoint.beamfx ) )
-		IMCPoint.beamfx.Destroy()
+		if( IsValid( IMCPoint.beamfx ) )
+			IMCPoint.beamfx.Destroy()
 
-	if( IsValid( MILITIAPoint.pole ) )
-		MILITIAPoint.pole.Destroy()
-
-	if( IsValid( MILITIAPoint.trigger ) )
-		MILITIAPoint.trigger.Destroy()
-
-	if( IsValid( MILITIAPoint.pointfx ) )
-		MILITIAPoint.pointfx.Destroy()
-
-	if( IsValid( MILITIAPoint.beamfx ) )
-		MILITIAPoint.beamfx.Destroy()
+		if( IsValid( IMCPoint.returntrigger ) )
+			IMCPoint.returntrigger.Destroy()
 	
-	if( IsValid( MILITIAPoint.returntrigger ) )
-		IMCPoint.returntrigger.Destroy()
+		if( IsValid( IMCPoint.trailfx ) )
+			IMCPoint.trailfx.Destroy()
+	} else if( team == TEAM_MILITIA )
+	{
+		if( IsValid( MILITIAPoint.pole ) )
+			MILITIAPoint.pole.Destroy()
 
-	if( IsValid( IMCPoint.returntrigger ) )
-		IMCPoint.returntrigger.Destroy()
+		if( IsValid( MILITIAPoint.trigger ) )
+			MILITIAPoint.trigger.Destroy()
+
+		if( IsValid( MILITIAPoint.pointfx ) )
+			MILITIAPoint.pointfx.Destroy()
+
+		if( IsValid( MILITIAPoint.beamfx ) )
+			MILITIAPoint.beamfx.Destroy()
+
+		if( IsValid( MILITIAPoint.returntrigger ) )
+			MILITIAPoint.returntrigger.Destroy()
+
+		if( IsValid( MILITIAPoint.trailfx ) )
+			MILITIAPoint.trailfx.Destroy()
+	}
 }
 
-void function SpawnCTFPoints()
+void function ResetIMCFlag()
 {
-	DestroyFlagAndRemanents()
+	DestroyFlagAndRemanents( TEAM_IMC )
+	IMCPoint.spawn = file.selectedLocation.imcflagspawn
 
-    // Get ground pos below spawn points
-    IMCPoint.spawn = OriginToGroundCTF( file.selectedLocation.imcflagspawn )
-    MILITIAPoint.spawn = OriginToGroundCTF( file.selectedLocation.milflagspawn )
-
-    // Point 1
     IMCPoint.pole = CreateEntity( "prop_dynamic" )
     IMCPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
-    IMCPoint.pole.SetOrigin(IMCPoint.spawn)
     SetTargetName( IMCPoint.pole, "ctf_flag_imc" )
 	SetTeam( IMCPoint.pole, TEAM_IMC )
     DispatchSpawn( IMCPoint.pole )
+	IMCPoint.pole.SetOrigin(IMCPoint.spawn)
 
     thread PlayAnim( IMCPoint.pole, "prop_fence_expand", IMCPoint.pole.GetOrigin(), IMCPoint.pole.GetAngles() )
 	IMCPoint.pole.SetCycle( 1.0 )
@@ -906,25 +885,29 @@ void function SpawnCTFPoints()
     IMCPoint.trigger.SetBelowHeight( 0 )
     IMCPoint.trigger.SetOrigin( IMCPoint.spawn )
     IMCPoint.trigger.SetEnterCallback( IMCPoint_Trigger )
+	IMCPoint.trigger.SetParent( IMCPoint.pole )
     DispatchSpawn( IMCPoint.trigger )
 
     IMCPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
     IMCPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
-
     IMCPoint.teamnum = TEAM_IMC
-	
 	IMCPoint.pickedup = false
     IMCPoint.flagatbase = true
 
 	SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
+}
 
-    // Point 2
+void function ResetMILITIAFlag()
+{
+	DestroyFlagAndRemanents( TEAM_MILITIA )
+    MILITIAPoint.spawn = file.selectedLocation.milflagspawn
+
     MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
     MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
-    MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
     SetTargetName( MILITIAPoint.pole, "ctf_flag_mil" )
 	SetTeam( MILITIAPoint.pole, TEAM_MILITIA )
     DispatchSpawn( MILITIAPoint.pole )
+	MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
 
     thread PlayAnim( MILITIAPoint.pole, "prop_fence_expand", MILITIAPoint.pole.GetOrigin(), MILITIAPoint.pole.GetAngles() )
 	MILITIAPoint.pole.SetCycle( 1.0 )
@@ -935,15 +918,12 @@ void function SpawnCTFPoints()
     MILITIAPoint.trigger.SetBelowHeight( 0 )
     MILITIAPoint.trigger.SetOrigin( MILITIAPoint.spawn )
     MILITIAPoint.trigger.SetEnterCallback( MILITIA_Point_Trigger )
+	MILITIAPoint.trigger.SetParent( MILITIAPoint.pole )
     DispatchSpawn( MILITIAPoint.trigger )
 
     MILITIAPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
     MILITIAPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
-
-    // DrawBox( IMCPoint.spawn, <-32,-32,-32>, <32,32,32>, 255, 0, 0, true, 0.2 )
-
-    MILITIAPoint.teamnum = TEAM_IMC
-
+    MILITIAPoint.teamnum = TEAM_MILITIA
 	MILITIAPoint.pickedup = false
     MILITIAPoint.flagatbase = true
 	
@@ -978,7 +958,15 @@ void function PlayerPickedUpFlag(entity ent)
     }
 
     StorePilotWeapons( ent )
-	TakeWeaponsForFlagCarrier( ent)
+
+	//ball carrier can't run
+	StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.1)
+	ent.SetMoveSpeedScale( 1.11 )
+
+    ent.GiveWeapon( "mp_weapon_flagpole_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+    ent.GiveOffhandWeapon( "melee_flagpole", OFFHAND_MELEE )
+    ent.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
+
     Remote_CallFunction_Replay(ent, "ServerCallback_CTF_PickedUpFlag", ent, true)
     Remote_CallFunction_Replay(ent, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.PickedUpFlag)
 }
@@ -1155,9 +1143,10 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 
 void function IMCPoint_Trigger( entity trigger, entity ent )
 {
-	printt( "player entered imc point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
-    if(!IsValid(ent) || file.ctfState != eCTFState.IN_PROGRESS )
+    if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
+
+	printt( "player entered imc point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
 
     if ( ent.IsPlayer() )
     {
@@ -1184,10 +1173,11 @@ void function IMCPoint_Trigger( entity trigger, entity ent )
 
 void function MILITIA_Point_Trigger( entity trigger, entity ent )
 {
-	printt( "player entered militia point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
-    if(!IsValid(ent) || file.ctfState != eCTFState.IN_PROGRESS )
+    if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
-        
+
+	printt( "player entered militia point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
+
     if( ent.IsPlayer() )
     {
         if( ent.GetTeam() != TEAM_MILITIA )
@@ -1209,23 +1199,6 @@ void function MILITIA_Point_Trigger( entity trigger, entity ent )
             }
         }
     }
-}
-
-// purpose: Take weapons from player and give ctf flag melee
-void function TakeWeaponsForFlagCarrier(entity player)
-{
-    if( !IsValid( player ) )
-        return
-
-    TakeAllWeapons(player)
-	
-	//ball carrier can't run
-	StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-	player.SetMoveSpeedScale( 1.11 )
-
-    player.GiveWeapon( "mp_weapon_flagpole_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-    player.GiveOffhandWeapon( "melee_flagpole", OFFHAND_MELEE )
-    player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
 }
 
 // purpose: Give player their weapons back
@@ -1333,125 +1306,63 @@ void function _OnPlayerConnected(entity player)
     }
 }
 
-// purpose: OnPlayerDisconnected Callback
 void function _OnPlayerDisconnected(entity player)
 {
-    // Only if the flag is picked up
-    if ( IMCPoint.pickedup )
-    {
-        if( IMCPoint.holdingplayer == player )
-        {
-            ResetFlagOnDisconnect(0)
-        }
-    }
+	if( GetGlobalNetEnt( "imcFlag" ) == player )
+		ResetIMCFlag()
 
-    // Only if the flag is picked up
-    if ( MILITIAPoint.pickedup )
-    {
-        if( MILITIAPoint.holdingplayer == player )
-        {
-            ResetFlagOnDisconnect(1)
-        }
-    }
-}
-
-void function ResetFlagOnDisconnect(int num)
-{
-    if(num == 0)
-    {
-        if( IsValid( IMCPoint.pole ) )
-            IMCPoint.pole.Destroy()
-
-        if( IsValid( IMCPoint.trailfx ) )
-            IMCPoint.trailfx.Destroy()
-
-        // Point 1
-        IMCPoint.pole = CreateEntity( "prop_dynamic" )
-        IMCPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
-        IMCPoint.pole.SetOrigin(IMCPoint.spawn)
-		SetTeam( IMCPoint.pole, TEAM_IMC )
-        DispatchSpawn( IMCPoint.pole )
-
-        thread PlayAnim( IMCPoint.pole, "prop_fence_expand", IMCPoint.pole.GetOrigin(), IMCPoint.pole.GetAngles() )
-
-        IMCPoint.pickedup = false
-        IMCPoint.dropped = false
-        IMCPoint.flagatbase = true
-		
-		SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
-    }
-    else if(num == 1)
-    {
-        if( IsValid( MILITIAPoint.pole ) )
-            MILITIAPoint.pole.Destroy()
-
-        if( IsValid( MILITIAPoint.trailfx ) )
-            MILITIAPoint.trailfx.Destroy()
-
-        MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
-        MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
-        MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
-		SetTeam( MILITIAPoint.pole, TEAM_MILITIA )
-        DispatchSpawn( MILITIAPoint.pole )
-		
-        thread PlayAnim( MILITIAPoint.pole, "prop_fence_expand", MILITIAPoint.pole.GetOrigin(), MILITIAPoint.pole.GetAngles() )
-
-        MILITIAPoint.pickedup = false
-        MILITIAPoint.dropped = false
-        MILITIAPoint.flagatbase = true
-		
-		SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
-    }
+	if( GetGlobalNetEnt( "milFlag" ) == player )
+		ResetMILITIAFlag()
 }
 
 void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 {
 	printt( "player entered return trigger: ", ent )
-    if(!IsValid(ent) || file.ctfState != eCTFState.IN_PROGRESS )
+    if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
 
     if ( ent.IsPlayer() )
     {
-        // If is on team IMC pick back up
-        if ( ent.GetTeam() == TEAM_IMC )
-        {
-            if(IsValid(MILITIAPoint.returntrigger))
-                MILITIAPoint.returntrigger.Destroy()
+        // // If is on team IMC pick back up
+        // if ( ent.GetTeam() == TEAM_IMC )
+        // {
+            // if(IsValid(MILITIAPoint.returntrigger))
+                // MILITIAPoint.returntrigger.Destroy()
 
-            MILITIAPoint.pole.SetParent(ent)
-            MILITIAPoint.pole.SetOrigin(ent.GetOrigin())
-            MILITIAPoint.pole.MakeInvisible()
+            // MILITIAPoint.pole.SetParent(ent)
+            // MILITIAPoint.pole.SetOrigin(ent.GetOrigin())
+            // MILITIAPoint.pole.MakeInvisible()
 
-			SetGlobalNetEnt( "milFlag", ent )
+			// SetGlobalNetEnt( "milFlag", ent )
 
-            PlayerPickedUpFlag(ent)
+            // PlayerPickedUpFlag(ent)
 
-            MILITIAPoint.holdingplayer = ent
-            MILITIAPoint.pickedup = true
-            MILITIAPoint.dropped = false
+            // MILITIAPoint.holdingplayer = ent
+            // MILITIAPoint.pickedup = true
+            // MILITIAPoint.dropped = false
 
-            array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_IMC )
-            foreach ( player in teamplayers )
-            {
-                if( !IsValid( player ) )
-                    continue
+            // array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_IMC )
+            // foreach ( player in teamplayers )
+            // {
+                // if( !IsValid( player ) )
+                    // continue
 
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_MILITIA, eCTFFlag.Escort)
-            }
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_MILITIA, eCTFFlag.Escort)
+            // }
 
-            array<entity> enemyplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
-            foreach ( player in enemyplayers )
-            {
-                if( !IsValid( player ) )
-                    continue
+            // array<entity> enemyplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
+            // foreach ( player in enemyplayers )
+            // {
+                // if( !IsValid( player ) )
+                    // continue
 
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_MILITIA, eCTFFlag.Attack)
-            }
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_MILITIA, eCTFFlag.Attack)
+            // }
 
-            EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", TEAM_IMC)
-            EmitSoundToTeamPlayers("UI_CTF_3P_EnemyGrabFlag", TEAM_MILITIA)
-        }
+            // EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", TEAM_IMC)
+            // EmitSoundToTeamPlayers("UI_CTF_3P_EnemyGrabFlag", TEAM_MILITIA)
+        // }
 
         // If is on team MIL start return countdown
         if ( ent.GetTeam() == TEAM_MILITIA )
@@ -1469,51 +1380,51 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 {	
 	printt( "player entered return trigger: ", ent )
-    if(!IsValid(ent) || file.ctfState != eCTFState.IN_PROGRESS )
+    if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
 
     if ( ent.IsPlayer() )
     {
         // If is on team MILITIA pick back up
-        if ( ent.GetTeam() == TEAM_MILITIA )
-        {
-            if(IsValid(IMCPoint.returntrigger))
-                IMCPoint.returntrigger.Destroy()
+        // if ( ent.GetTeam() == TEAM_MILITIA )
+        // {
+            // if(IsValid(IMCPoint.returntrigger))
+                // IMCPoint.returntrigger.Destroy()
 
-            IMCPoint.pole.SetParent(ent)
-            IMCPoint.pole.SetOrigin(ent.GetOrigin())
-            IMCPoint.pole.MakeInvisible()
+            // IMCPoint.pole.SetParent(ent)
+            // IMCPoint.pole.SetOrigin(ent.GetOrigin())
+            // IMCPoint.pole.MakeInvisible()
 
-			SetGlobalNetEnt( "imcFlag", ent )
+			// SetGlobalNetEnt( "imcFlag", ent )
 
-            PlayerPickedUpFlag(ent)
+            // PlayerPickedUpFlag(ent)
 
-            IMCPoint.holdingplayer = ent
-            IMCPoint.pickedup = true
-            IMCPoint.dropped = false
+            // IMCPoint.holdingplayer = ent
+            // IMCPoint.pickedup = true
+            // IMCPoint.dropped = false
 
-            // array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
-            // foreach ( player in teamplayers )
+            // // array<entity> teamplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
+            // // foreach ( player in teamplayers )
+            // // {
+                // // if( !IsValid( player ) )
+                    // // continue
+
+                // // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Escort)
+            // // }
+
+            // array<entity> enemyplayers = GetPlayerArrayOfTeam( TEAM_IMC )
+            // foreach ( player in enemyplayers )
             // {
                 // if( !IsValid( player ) )
                     // continue
 
-                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Escort)
+                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
+                // // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Attack)
             // }
 
-            array<entity> enemyplayers = GetPlayerArrayOfTeam( TEAM_IMC )
-            foreach ( player in enemyplayers )
-            {
-                if( !IsValid( player ) )
-                    continue
-
-                Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
-                // Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", TEAM_IMC, eCTFFlag.Attack)
-            }
-
-            EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", TEAM_MILITIA)
-            EmitSoundToTeamPlayers("UI_CTF_3P_EnemyGrabFlag", TEAM_IMC)
-        }
+            // EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", TEAM_MILITIA)
+            // EmitSoundToTeamPlayers("UI_CTF_3P_EnemyGrabFlag", TEAM_IMC)
+        // }
 
         // If is on team IMC start return countdown
         if ( ent.GetTeam() == TEAM_IMC )
@@ -1643,9 +1554,9 @@ void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
     }
 }
 
-void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint)
+void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 {
-	printt("player died with flag!" )
+	printt("Player throw flag!" )
     int enemyteam = GetCTFEnemyTeam(team)
 	
 	if( IsValid( teamflagpoint.pole ) )
@@ -1722,13 +1633,14 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
 		thread PlayAnim( teamflagpoint.pole, "prop_fence_expand", teamflagpoint.pole.GetOrigin(), teamflagpoint.pole.GetAngles() )
 		teamflagpoint.pole.SetCycle( 1.0 )
 	}
+
+    teamflagpoint.pickedup = false
+    teamflagpoint.dropped = true
+
     wait 1.2
 	
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
-
-    teamflagpoint.pickedup = false
-    teamflagpoint.dropped = true
 
     if ( foundSafeSpot )
     {
@@ -1744,32 +1656,17 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
             teamflagpoint.returntrigger.SetEnterCallback( IMC_PoleReturn_Trigger )
         else
             teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
-
+		teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
         DispatchSpawn( teamflagpoint.returntrigger )
     }
 }
 
 void function CheckPlayerForFlag(entity victim)
 {
-    // Only if the flag is picked up
-    if ( IMCPoint.pickedup )
-    {
-        // Only if the flag is held by said player
-        if( IMCPoint.holdingplayer == victim )
-        {
-            thread PlayerDiedWithFlag(victim, TEAM_IMC, IMCPoint)
-        }
-    }
-
-    // Only if the flag is picked up
-    if ( MILITIAPoint.pickedup )
-    {
-        // Only if the flag is held by said player
-        if( MILITIAPoint.holdingplayer == victim )
-        {
-            thread PlayerDiedWithFlag(victim, TEAM_MILITIA, MILITIAPoint)
-        }
-    }
+	if( GetGlobalNetEnt( "imcFlag" ) == victim )
+		thread PlayerThrowFlag(victim, TEAM_IMC, IMCPoint)
+	else if( GetGlobalNetEnt( "milFlag" ) == victim )
+		thread PlayerThrowFlag(victim, TEAM_MILITIA, MILITIAPoint)
 }
 
 // Purpose: OnPlayerDied Callback
