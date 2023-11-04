@@ -720,7 +720,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	if(!IsValid(player)) return
 
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-	PlayerRestoreHP_1v1(player, 100, 125 )
+	PlayerRestoreHP_1v1(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 125) )
 
 	Survival_SetInventoryEnabled( player, false )
 	//SetPlayerInventory( player, [] )
