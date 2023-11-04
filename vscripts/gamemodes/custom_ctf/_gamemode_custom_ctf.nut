@@ -463,7 +463,8 @@ void function StartRound()
         if( Time() > endTime - 1 )
 		{
             file.ctfState = eCTFState.WINNER_DECIDED
-			SetGlobalNetInt( "FSDM_GameState", file.ctfState )
+			if( GetGlobalNetInt( "FSDM_GameState" ) != eCTFState.WINNER_DECIDED )
+				SetGlobalNetInt( "FSDM_GameState", file.ctfState )
 		}
 
         if( file.ctfState == eCTFState.WINNER_DECIDED )
