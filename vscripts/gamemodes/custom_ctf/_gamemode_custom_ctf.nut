@@ -888,13 +888,14 @@ void function SpawnCTFPoints()
     IMCPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
     IMCPoint.pole.SetOrigin(IMCPoint.spawn)
     SetTargetName( IMCPoint.pole, "ctf_flag_imc" )
+	SetTeam( IMCPoint.pole, TEAM_IMC )
     DispatchSpawn( IMCPoint.pole )
 
     thread PlayAnim( IMCPoint.pole, "prop_fence_expand", IMCPoint.pole.GetOrigin(), IMCPoint.pole.GetAngles() )
 	IMCPoint.pole.SetCycle( 1.0 )
 
     IMCPoint.trigger = CreateEntity( "trigger_cylinder" )
-    IMCPoint.trigger.SetRadius( 75 )
+    IMCPoint.trigger.SetRadius( 35 )
     IMCPoint.trigger.SetAboveHeight( 100 ) // Still not quite a sphere, will see if close enough
     IMCPoint.trigger.SetBelowHeight( 0 )
     IMCPoint.trigger.SetOrigin( IMCPoint.spawn )
@@ -903,8 +904,6 @@ void function SpawnCTFPoints()
 
     IMCPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
     IMCPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
-
-    CustomHighlight(IMCPoint.pole, 0, 0, 1)
 
     IMCPoint.teamnum = TEAM_IMC
 	
@@ -918,13 +917,14 @@ void function SpawnCTFPoints()
     MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
     MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
     SetTargetName( MILITIAPoint.pole, "ctf_flag_mil" )
+	SetTeam( MILITIAPoint.pole, TEAM_MILITIA )
     DispatchSpawn( MILITIAPoint.pole )
 
     thread PlayAnim( MILITIAPoint.pole, "prop_fence_expand", MILITIAPoint.pole.GetOrigin(), MILITIAPoint.pole.GetAngles() )
 	MILITIAPoint.pole.SetCycle( 1.0 )
 
     MILITIAPoint.trigger = CreateEntity( "trigger_cylinder" )
-    MILITIAPoint.trigger.SetRadius( 75 )
+    MILITIAPoint.trigger.SetRadius( 35 )
     MILITIAPoint.trigger.SetAboveHeight( 100 ) // Still not quite a sphere, will see if close enough
     MILITIAPoint.trigger.SetBelowHeight( 0 )
     MILITIAPoint.trigger.SetOrigin( MILITIAPoint.spawn )
@@ -936,8 +936,6 @@ void function SpawnCTFPoints()
 
     DrawBox( IMCPoint.spawn, <-32,-32,-32>, <32,32,32>, 255, 0, 0, true, 0.2 )
 
-    CustomHighlight(MILITIAPoint.pole, 1, 0, 0)
-
     MILITIAPoint.teamnum = TEAM_IMC
 
 	MILITIAPoint.pickedup = false
@@ -946,24 +944,10 @@ void function SpawnCTFPoints()
 	SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
 }
 
-void function CustomHighlight(entity e, int r, int g, int b)
-{
-    e.Highlight_ShowInside( 1.0 )
-    e.Highlight_ShowOutline( 1.0 )
-    e.Highlight_SetFunctions( 0, 114, true, 125, 2.0, 2, false )
-    e.Highlight_SetParam( 0, 0, <r, g, b> )
-}
-
-void function ClearCustomHighlight(entity e)
-{
-    e.Highlight_SetFunctions( 0, 0, true, 0, 2, 0, false )
-}
-
 void function PlayerPickedUpFlag(entity ent)
 {
     if( ent.GetTeam() == TEAM_IMC )
     {
-        CustomHighlight(ent, 0, 0, 1)
         Highlight_SetEnemyHighlightWithParam0( ent, "bloodhound_sonar", <0,0,1> )
         int AttachID = ent.LookupAttachment( "CHESTFOCUS" )
         IMCPoint.trailfx = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_ar_holopilot_trail" ), FX_PATTACH_ABSORIGIN_FOLLOW, AttachID )
@@ -976,7 +960,6 @@ void function PlayerPickedUpFlag(entity ent)
     }
     else
     {
-        CustomHighlight(ent, 1, 0, 0)
         Highlight_SetEnemyHighlightWithParam0( ent, "bloodhound_sonar", <1,0,0> )
         int AttachID = ent.LookupAttachment( "CHESTFOCUS" )
         MILITIAPoint.trailfx = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_ar_holopilot_trail" ), FX_PATTACH_ABSORIGIN_FOLLOW, AttachID )
@@ -996,9 +979,6 @@ void function PlayerPickedUpFlag(entity ent)
 
 void function PlayerDroppedFlag(entity ent)
 {
-    ClearCustomHighlight( ent )
-    Highlight_ClearEnemyHighlight( ent )
-
     RetrievePilotWeapons( ent )
 
 	//restore movement
@@ -1383,11 +1363,10 @@ void function ResetFlagOnDisconnect(int num)
         IMCPoint.pole = CreateEntity( "prop_dynamic" )
         IMCPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
         IMCPoint.pole.SetOrigin(IMCPoint.spawn)
+		SetTeam( IMCPoint.pole, TEAM_IMC )
         DispatchSpawn( IMCPoint.pole )
 
         thread PlayAnim( IMCPoint.pole, "prop_fence_expand", IMCPoint.pole.GetOrigin(), IMCPoint.pole.GetAngles() )
-
-        CustomHighlight(IMCPoint.pole, 0, 0, 1)
 
         IMCPoint.pickedup = false
         IMCPoint.dropped = false
@@ -1407,11 +1386,10 @@ void function ResetFlagOnDisconnect(int num)
         MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
         MILITIAPoint.pole.SetValueForModelKey( $"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl" )
         MILITIAPoint.pole.SetOrigin(MILITIAPoint.spawn)
+		SetTeam( MILITIAPoint.pole, TEAM_MILITIA )
         DispatchSpawn( MILITIAPoint.pole )
-
+		
         thread PlayAnim( MILITIAPoint.pole, "prop_fence_expand", MILITIAPoint.pole.GetOrigin(), MILITIAPoint.pole.GetAngles() )
-
-        CustomHighlight(MILITIAPoint.pole, 1, 0, 0)
 
         MILITIAPoint.pickedup = false
         MILITIAPoint.dropped = false
@@ -1740,7 +1718,7 @@ void function PlayerDiedWithFlag(entity victim, int team, CTFPoint teamflagpoint
     {
         // Create the recapture trigger
         teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
-        teamflagpoint.returntrigger.SetRadius( 100 )
+        teamflagpoint.returntrigger.SetRadius( 35 )
         teamflagpoint.returntrigger.SetAboveHeight( 200 )
         teamflagpoint.returntrigger.SetBelowHeight( 200 )
 		if( IsValid( teamflagpoint.pole ) )
