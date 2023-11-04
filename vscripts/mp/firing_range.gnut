@@ -544,10 +544,10 @@ void function SpawnAttachments()
 	{
 		foreach(string ammoType2, array<string> refs in file.attachmentsPerAmmoType)
 		{
-			if(ammoType != ammoType2)
+			if(ammoType != ammoType2 || ammoType == "sniper")
 				continue
 
-			entity r = file.rackSpawns[ammoIndex - 1].point
+			entity r = file.rackSpawns[ammoIndex].point
 			vector firstPos = r.GetOrigin() - r.GetRightVector()*cornerOffset
 
 			int row = 0
