@@ -1,7 +1,7 @@
 // Credits
 // AyeZee#6969 -- ctf gamemode and ui
+// CafeFPS -- Rework and code fixes
 // sal#3261 -- base custom_tdm mode to work off
-// CafeFPS -- ctf sounds, little rework
 // everyone else -- advice
 
 global function Cl_CustomCTF_Init

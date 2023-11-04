@@ -1,8 +1,8 @@
 // Credits
 // AyeZee#6969 -- ctf gamemode and ui
+// CafeFPS -- Rework and code fixes
 // Rexx and IcePixelx -- Help with code improvments
 // sal#3261 -- base custom_tdm mode to work off
-// CafeFPS -- ctf sounds, little rework
 // everyone else -- advice
 
 global function _CustomCTF_Init
@@ -87,10 +87,13 @@ void function _CustomCTF_Init()
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
 	#endif
 
-    // Used for sending votes from client to server
-    AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
-    // Used for setting players class
-    AddClientCommandCallback("SetPlayerClass", ClientCommand_SetPlayerClass)
+    if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+    {
+        // Used for sending votes from client to server
+        AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
+        // Used for setting players class
+        AddClientCommandCallback("SetPlayerClass", ClientCommand_SetPlayerClass)
+    }
     // Used for telling the server the player wants to drop the flag
     AddClientCommandCallback("DropFlag", ClientCommand_DropFlag)
 
@@ -1241,12 +1244,14 @@ void function GiveBackWeapons(entity player)
     Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_CheckUpdatePlayerLegend")
 
 	TakeAllWeapons(player)
-
+	
     wait 0.5
 
     //Needed another check after the wait just incase they leave within that wait time
     if( !IsValid( player ) || file.ctfState != eCTFState.IN_PROGRESS )
         return
+	
+	TakeAllWeapons(player)
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -1312,9 +1317,6 @@ void function _OnPlayerConnected(entity player)
 
     player.p.CTFClassID = SavedPlayerClass
 
-    if( !IsAlive(player) )
-        _HandleRespawn(player)
-	
 	thread Flowstate_InitAFKThreadForPlayer(player)
 	
     switch ( GetGameState() )
@@ -1324,6 +1326,10 @@ void function _OnPlayerConnected(entity player)
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_DoAnnouncement", 2, eCTFAnnounce.VOTING_PHASE, CTF.roundstarttime)
         break
     case eGameState.Playing:
+
+		if( !IsAlive(player) )
+			_HandleRespawn(player)
+		
         player.UnfreezeControlsOnServer();
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_DoAnnouncement", 5, eCTFAnnounce.ROUND_START, CTF.roundstarttime)
         Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_SetSelectedLocation", CTF.mappicked)
