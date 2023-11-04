@@ -912,19 +912,22 @@ void function ServerCallback_CTF_SetScreen(int screen, int team, int mapid, int 
 
 string function GetWinningTeamText(int team)
 {
+	entity player = GetLocalClientPlayer()
+
+	if( team == 69 )
+	{
+		return "Winner couldn't be decided"
+	}
+
     string teamwon = ""
-    switch(team)
-    {
-        case TEAM_IMC:
-            teamwon = "IMC has won"
-            break
-        case TEAM_MILITIA:
-            teamwon = "MILITIA has won"
-            break
-        case 69:
-            teamwon = "Winner couldn't be decided"
-            break
-    }
+
+	if( team != player.GetTeam() )
+	{
+		teamwon = "The Enemey Team has won"
+	} else
+	{
+		teamwon = "Your Team has won"
+	}
 
     return teamwon
 }

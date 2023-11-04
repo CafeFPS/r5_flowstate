@@ -497,6 +497,9 @@ void function StartRound()
                 }
             }
 
+			SetGlobalNetEnt( "milFlag", null )
+			SetGlobalNetEnt( "imcFlag", null )
+
             // remove trail fx from players
             if( IsValid( IMCPoint.trailfx ) )
                 IMCPoint.trailfx.Destroy()
@@ -523,7 +526,13 @@ void function StartRound()
 
                 // if player is dead, respawn
                 if( !IsAlive( player ) )
-                    _HandleRespawn(player)
+                    _HandleRespawn( player )
+				else
+					TpPlayerToSpawnPoint( player )
+
+				player.HolsterWeapon()
+				player.Server_TurnOffhandWeaponsDisabledOn()
+				player.FreezeControlsOnServer()
 
                 // round is over so make the player invinvible
                 MakeInvincible(player)
@@ -693,9 +702,7 @@ void function StartRound()
                 {
                     if( !IsValid( player ) )
                         continue
-					
-					player.HolsterWeapon()
-					player.Server_TurnOffhandWeaponsDisabledOn()
+
 					if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 					{
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
@@ -720,7 +727,7 @@ void function StartRound()
                 }
 
                 // Just a wait for timing
-                wait 5
+                wait 3
 
                 // Close the votemenu for each player
                 foreach( player in GetPlayerArray() )
@@ -1249,7 +1256,7 @@ void function GiveBackWeapons(entity player)
     wait 0.5
 
     //Needed another check after the wait just incase they leave within that wait time
-    if( !IsValid( player ) || file.ctfState != eCTFState.IN_PROGRESS )
+    if( !IsValid( player ) ) // || file.ctfState != eCTFState.IN_PROGRESS )
         return
 	
 	TakeAllWeapons(player)
