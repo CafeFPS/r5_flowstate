@@ -1317,7 +1317,7 @@ void function _OnPlayerDisconnected(entity player)
 
 void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 {
-	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
+	if( !IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
 	printt( "player entered mil return trigger: ", ent )
@@ -1325,7 +1325,7 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 	if ( ent.IsPlayer() )
 	{
 		// If is on team IMC pick back up
-		if ( ent.GetTeam() == TEAM_IMC )
+		if ( ent.GetTeam() == TEAM_IMC && !MILITIAPoint.isbeingreturned )
 		{
 			PickUpFlag(ent, TEAM_IMC, MILITIAPoint)
 
@@ -1333,21 +1333,18 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 				MILITIAPoint.returntrigger.Destroy()
 		}
 		// If is on team MIL start return countdown
-		else if ( ent.GetTeam() == TEAM_MILITIA )
+		else if ( ent.GetTeam() == TEAM_MILITIA && !MILITIAPoint.isbeingreturned)
 		{
-			if( !IMCPoint.isbeingreturned )
-			{
-				MILITIAPoint.isbeingreturned = true
-				MILITIAPoint.beingreturnedby = ent
-				thread StartFlagReturn(ent, TEAM_MILITIA, MILITIAPoint)
-			}
+			MILITIAPoint.isbeingreturned = true
+			MILITIAPoint.beingreturnedby = ent
+			thread StartFlagReturn(ent, TEAM_MILITIA, MILITIAPoint)
 		}
 	}
 }
 
 void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 {	
-	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
+	if( !IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 	
 	printt( "player entered imc return trigger: ", ent )
@@ -1355,7 +1352,7 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 	if ( ent.IsPlayer() )
 	{
 		// If is on team MILITIA pick back up
-		if ( ent.GetTeam() == TEAM_MILITIA )
+		if ( ent.GetTeam() == TEAM_MILITIA && !IMCPoint.isbeingreturned )
 		{
 			PickUpFlag(ent, TEAM_MILITIA, IMCPoint)
 
@@ -1363,131 +1360,70 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 				IMCPoint.returntrigger.Destroy()
 		}
 		// If is on team IMC start return countdown
-		else if ( ent.GetTeam() == TEAM_IMC )
+		else if ( ent.GetTeam() == TEAM_IMC && !IMCPoint.isbeingreturned )
 		{
-			if( !IMCPoint.isbeingreturned )
-			{
-				IMCPoint.isbeingreturned = true
-				IMCPoint.beingreturnedby = ent
-				thread StartFlagReturn(ent, TEAM_IMC, IMCPoint)
-			}
+			IMCPoint.isbeingreturned = true
+			IMCPoint.beingreturnedby = ent
+			thread StartFlagReturn(ent, TEAM_IMC, IMCPoint)
 		}
 	}
+}
+
+void function OnPlayerExitsFlagReturnTrigger( entity trigger, entity player )
+{
+	if ( !IsValid( player ) || !player.IsPlayer()  || player.GetTeam() != trigger.GetTeam() )
+		return
+	
+	player.Signal( "FlagReturnEnded" )
 }
 
 void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
 {
-	int enemyteam = GetCTFEnemyTeam(team)
-
-	bool returnsuccess = false
-	bool playerpickedupflag = false
-	bool playerleftarea = false
-
 	float starttime = Time()
 	float endtime = Time() + 5
 	Remote_CallFunction_Replay(player, "ServerCallback_CTF_RecaptureFlag", team, starttime, endtime, true)
+	entity flag = teamflagpoint.pole
 
-	try
-	{
-		while( IsValid( player ) && IsValid( teamflagpoint.pole ) && Distance( player.GetOrigin(), teamflagpoint.pole.GetOrigin() ) < 75 && IsAlive( player ) && returnsuccess == false || playerpickedupflag || playerleftarea )
-		{
-			if( Time() >= endtime )
-			{
-				returnsuccess = true
-				teamflagpoint.isbeingreturned = false
-			}
-
-			if( !teamflagpoint.dropped )
-				playerpickedupflag = true
-
-			if( Distance( player.GetOrigin(), teamflagpoint.pole.GetOrigin() ) > 75 )
-				playerleftarea = true
-
-			WaitFrame()
-		}
-	} catch(e42) {
-		playerleftarea = true
-	}
-
-	if( playerpickedupflag )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "UI_CTF_1P_FlagReturnMeter" )
+	
+	OnThreadEnd( function() : ( teamflagpoint, player )
 	{
 		teamflagpoint.isbeingreturned = false
 		teamflagpoint.beingreturnedby = null
+		// cleanup
+		Remote_CallFunction_Replay(player, "ServerCallback_CTF_RecaptureFlag", 0, 0, 0, false)
+		StopSoundOnEntity( player, "UI_CTF_1P_FlagReturnMeter" )
+	})
+	
+	player.EndSignal( "FlagReturnEnded" )
+	flag.EndSignal( "FlagReturnEnded" ) // avoid multiple players to return one flag at once
+	player.EndSignal( "OnDeath" )
+	
+	wait 5
+	
+	printt("Player:", player, " - Returned flag to base!" )
 
-		if(IsValid(player))
-			Remote_CallFunction_Replay(player, "ServerCallback_CTF_RecaptureFlag", 0, 0, 0, false)
-
-		if(IsValid(teamflagpoint.returntrigger))
-			teamflagpoint.returntrigger.Destroy()
-
-		return
-	}
-
-	if( playerleftarea )
+	// flag return succeeded
+	if( team == TEAM_IMC )
+		thread ResetIMCFlag()
+	else if( team == TEAM_MILITIA )
+		thread ResetMILITIAFlag()
+	
+	flag = teamflagpoint.pole
+	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
+	foreach ( players in teamplayers )
 	{
-		teamflagpoint.isbeingreturned = false
-		teamflagpoint.beingreturnedby = null
+		if( !IsValid( players ) )
+			continue
 
-		if(IsValid(player))
-			Remote_CallFunction_Replay(player, "ServerCallback_CTF_RecaptureFlag", 0, 0, 0, false)
-
-		try { teamflagpoint.returntrigger.SearchForNewTouchingEntity() } catch(stop) {}
-		return
+		Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", players, eCTFMessage.TeamReturnedFlag)
 	}
-
-	if( returnsuccess )
-	{
-		if( IsValid( teamflagpoint.pole ) )
-			teamflagpoint.pole.ClearParent()
-
-		teamflagpoint.dropped = false
-		teamflagpoint.holdingplayer = null
-		teamflagpoint.pickedup = false
-		teamflagpoint.flagatbase = true
-
-		if(IsValid(teamflagpoint.pole))
-			teamflagpoint.pole.SetOrigin(teamflagpoint.spawn)
-
-		if(IsValid(teamflagpoint.returntrigger))
-			teamflagpoint.returntrigger.Destroy()
-
-		if( team == TEAM_IMC )
-			SetGlobalNetEnt( "milFlag", teamflagpoint.pole )
-		else if( team == TEAM_MILITIA )
-			SetGlobalNetEnt( "imcFlag", teamflagpoint.pole )
-
-		if(IsValid(teamflagpoint.pole))
-		{
-			teamflagpoint.pole.Anim_Play( "prop_fence_expand" )
-			teamflagpoint.pole.SetCycle( 1.0 )
-		}
-
-		try { teamflagpoint.returntrigger.SearchForNewTouchingEntity() } catch(stop) {}
-
-		array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-		foreach ( players in teamplayers )
-		{
-			if( !IsValid( players ) )
-				continue
-
-			Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", players, eCTFMessage.TeamReturnedFlag)
-		}
-	}
-	else
-	{
-		teamflagpoint.isbeingreturned = false
-		teamflagpoint.beingreturnedby = null
-
-		if( IsValid( player ) )
-			Remote_CallFunction_Replay(player, "ServerCallback_CTF_RecaptureFlag", 0, 0, 0, false)
-
-		try { teamflagpoint.returntrigger.SearchForNewTouchingEntity() } catch(stop) {}
-	}
+	flag.Signal( "FlagReturnEnded" )
 }
 
 void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 {
-	printt("Player throw flag!" )
+	printt("Player: ", victim, " - Threw flag!" )
 	int enemyteam = GetCTFEnemyTeam(team)
 	
 	if( IsValid( teamflagpoint.pole ) )
@@ -1589,13 +1525,19 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 		teamflagpoint.returntrigger.SetRadius( 75 )
 		teamflagpoint.returntrigger.SetAboveHeight( 200 )
 		teamflagpoint.returntrigger.SetBelowHeight( 200 )
+		SetTeam( teamflagpoint.returntrigger, teamflagpoint.pole.GetTeam() )
 		if( IsValid( teamflagpoint.pole ) )
 			teamflagpoint.returntrigger.SetOrigin( teamflagpoint.pole.GetOrigin() )
 
 		if( team == TEAM_IMC )
+		{
 			teamflagpoint.returntrigger.SetEnterCallback( IMC_PoleReturn_Trigger )
+		}
 		else if( team == TEAM_MILITIA )
+		{
 			teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
+		}
+		teamflagpoint.returntrigger.SetLeaveCallback( OnPlayerExitsFlagReturnTrigger )
 		teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
 		DispatchSpawn( teamflagpoint.returntrigger )
 	}

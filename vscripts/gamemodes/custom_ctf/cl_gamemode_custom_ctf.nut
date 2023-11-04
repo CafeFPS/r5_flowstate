@@ -284,12 +284,7 @@ void function ServerCallback_CTF_SetSelectedLocation(int sel)
 
 void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float endtime, bool start)
 {
-	asset icon
-
-	if(team == TEAM_IMC)
-		icon = $"rui/gamemodes/capture_the_flag/imc_flag"
-	else
-		icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+	asset icon = $"rui/gamemodes/capture_the_flag/imc_flag"
 
 	if(start)
 	{
