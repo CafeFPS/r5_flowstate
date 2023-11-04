@@ -8,7 +8,8 @@
 global function _CustomCTF_Init
 global function _CTFRegisterLocation
 global function _CTFRegisterCTFClass
-
+global function ResetIMCFlag
+global function ResetMILITIAFlag
 enum eCTFState
 {
 	IN_PROGRESS = 0
@@ -78,6 +79,8 @@ void function _CustomCTF_Init()
 	PrecacheParticleSystem($"P_survival_radius_CP_1x100")
 	PrecacheModel($"mdl/props/pathfinder_zipline/pathfinder_zipline.rmdl")
 	RegisterSignal( "FS_WaitForBlackScreen" )
+	RegisterSignal( "FlagReturnEnded" )
+	RegisterSignal( "ResetDropTimeout" )
 
 	AddCallback_OnClientConnected( void function(entity player) { thread _OnPlayerConnected(player) } )
 	AddCallback_OnClientDisconnected( void function(entity player) { thread _OnPlayerDisconnected(player) } )
@@ -359,8 +362,8 @@ void function StartRound()
 	// reset map votes
 	ResetMapVotes()
 
-	ResetMILITIAFlag()
-	ResetIMCFlag()
+	thread ResetMILITIAFlag()
+	thread ResetIMCFlag()
 
 	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 10 )
 
@@ -866,7 +869,12 @@ void function DestroyFlagAndRemanents( int team )
 
 void function ResetIMCFlag()
 {
+	printt( "Trying to reset IMC flag", IMCPoint.spawn )
+
 	DestroyFlagAndRemanents( TEAM_IMC )
+
+	wait 0.5
+
 	IMCPoint.spawn = file.selectedLocation.imcflagspawn
 
 	IMCPoint.pole = CreateEntity( "prop_dynamic" )
@@ -898,7 +906,12 @@ void function ResetIMCFlag()
 
 void function ResetMILITIAFlag()
 {
+	printt( "Trying to reset MILITIA flag", MILITIAPoint.spawn )
+
 	DestroyFlagAndRemanents( TEAM_MILITIA )
+
+	wait 0.5
+
 	MILITIAPoint.spawn = file.selectedLocation.milflagspawn
 
 	MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
@@ -1021,6 +1034,7 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 	
 	if( IsValid( teamflagpoint.pole ) )
 	{
+		Signal( teamflagpoint.pole, "ResetDropTimeout" )
 		teamflagpoint.pole.SetParent(ent)
 		teamflagpoint.pole.SetOrigin(ent.GetOrigin())
 		teamflagpoint.pole.MakeInvisible()
@@ -1295,17 +1309,18 @@ void function _OnPlayerConnected(entity player)
 void function _OnPlayerDisconnected(entity player)
 {
 	if( GetGlobalNetEnt( "imcFlag" ) == player )
-		ResetIMCFlag()
+		thread ResetIMCFlag()
 
 	if( GetGlobalNetEnt( "milFlag" ) == player )
-		ResetMILITIAFlag()
+		thread ResetMILITIAFlag()
 }
 
 void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 {
-	printt( "player entered return trigger: ", ent )
 	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
+
+	printt( "player entered mil return trigger: ", ent )
 
 	if ( ent.IsPlayer() )
 	{
@@ -1332,9 +1347,10 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 
 void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 {	
-	printt( "player entered return trigger: ", ent )
 	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
+	
+	printt( "player entered imc return trigger: ", ent )
 
 	if ( ent.IsPlayer() )
 	{
@@ -1558,6 +1574,8 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 
 	teamflagpoint.pickedup = false
 	teamflagpoint.dropped = true
+	
+	thread TrackFlagDropTimeout( team, teamflagpoint )
 
 	wait 1.2
 	
@@ -1568,7 +1586,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	{
 		// Create the recapture trigger
 		teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
-		teamflagpoint.returntrigger.SetRadius( 35 )
+		teamflagpoint.returntrigger.SetRadius( 75 )
 		teamflagpoint.returntrigger.SetAboveHeight( 200 )
 		teamflagpoint.returntrigger.SetBelowHeight( 200 )
 		if( IsValid( teamflagpoint.pole ) )
@@ -1576,10 +1594,38 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 
 		if( team == TEAM_IMC )
 			teamflagpoint.returntrigger.SetEnterCallback( IMC_PoleReturn_Trigger )
-		else
+		else if( team == TEAM_MILITIA )
 			teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
 		teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
 		DispatchSpawn( teamflagpoint.returntrigger )
+	}
+}
+
+void function TrackFlagDropTimeout( int team, CTFPoint teamflagpoint )
+{
+	if( !IsValid( teamflagpoint.pole ) )
+		return
+
+	teamflagpoint.pole.EndSignal( "ResetDropTimeout" )
+	teamflagpoint.pole.EndSignal( "OnDestroy" )
+	
+	wait 20
+
+	if( file.ctfState != eCTFState.IN_PROGRESS )
+		return
+	
+	if( team == TEAM_IMC )
+		thread ResetIMCFlag()
+	else if( team == TEAM_MILITIA )
+		thread ResetMILITIAFlag()
+
+	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
+	foreach ( players in teamplayers )
+	{
+		if( !IsValid( players ) )
+			continue
+
+		Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", players, eCTFMessage.TeamReturnedFlag)
 	}
 }
 
