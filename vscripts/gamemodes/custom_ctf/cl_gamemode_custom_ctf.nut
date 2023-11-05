@@ -118,6 +118,8 @@ void function Cl_CustomCTF_Init()
 
 	CTFRpak = RequestPakFile( "ctf_mode" )
 	RegisterSignal("FSDM_EndTimer")
+	RegisterSignal("NewKillChangeRui")
+
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SetCommsDialogueEnabled( false )

@@ -1614,6 +1614,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		void functionref() attackerHandleFunc = void function() : (victim, attacker, damageInfo)  {
 			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
 			{
+				if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+					HisWattsons_HaloModFFA_KillStreakAnnounce( attacker )
+
 				Remote_CallFunction_NonReplay(attacker, "ServerCallback_CTF_UpdatePlayerStats", eCTFStats.Kills)
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 
