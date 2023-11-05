@@ -118,6 +118,9 @@ void function Cl_CustomCTF_Init()
 
 	CTFRpak = RequestPakFile( "ctf_mode" )
 	RegisterSignal("FSDM_EndTimer")
+	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		SetCommsDialogueEnabled( false )
 }
 
 void function CL_FSCTF_RegisterNetworkFunctions()
