@@ -5532,6 +5532,23 @@ void function SpawnChill()
 		//Wind column effect, two so we complete a cylinder-like shape
 		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <40676.5586, -10610.1416, -20435>, Vector( -30, 0, 0 ) ) )
 		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <43311.0898, -10610.4277, -20435>, Vector( -30, -180, 0 ) ) )
+
+		//Add weapon racks.
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43266.2695, -9999.79004, -20494.6563>, <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40727.457, -9998.79199, -20494.6563>, <0, 0, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
+		file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <40859.6367, -10779.4385, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43127.5742, -10779.4648, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
+		
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43896.0391, -10764.7637, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40098.2461, -10769.7568, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0664, -9757.24805, -20464.0566>, <0, 180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0586, -10243.4219, -20464.0566>, <0, -180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <43987.5313, -10241.0508, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43986.7383, -9755.34863, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43902.8867, -9319.55664, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40100.6602, -9312.33887, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42050.5703, -9994.34082, -20213.0469>, <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41947.1797, -9995.0625, -20212.5527>, <0, -180, 0>, "mp_weapon_haloshotgun", 0.5 ) )
 		
 		//Adjust sun flare for rotated skybox.
 		foreach( player in GetPlayerArray() )
