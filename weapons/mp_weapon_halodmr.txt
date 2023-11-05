@@ -32,7 +32,7 @@
 
 	// Models
 	"viewmodel"                                "mdl/flowstate_custom/ptpov_dmr.rmdl"
-	"playermodel"                              "mdl/weapons/g2/w_g2a4.rmdl"
+	"playermodel"                              "mdl/flowstate_custom/w_dmr.rmdl"
 
 	"chroma_color"								"1 .8 .3"
 
@@ -70,12 +70,12 @@
                                                    
                                                   
      
-	"damage_near_value"                        "34"
-	"damage_far_value"                         "34"
-	"damage_very_far_value"                    "34"
-	"damage_near_value_titanarmor"             "34"
-	"damage_far_value_titanarmor"              "34"
-	"damage_very_far_value_titanarmor"         "34"
+	"damage_near_value"                        "40"
+	"damage_far_value"                         "40"
+	"damage_very_far_value"                    "40"
+	"damage_near_value_titanarmor"             "40"
+	"damage_far_value_titanarmor"              "40"
+	"damage_very_far_value_titanarmor"         "40"
       
 
     "damage_leg_scale"                         "0.75"
