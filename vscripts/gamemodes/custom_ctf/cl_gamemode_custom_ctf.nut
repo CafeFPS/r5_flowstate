@@ -572,13 +572,23 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
-			message = "You picked up the flag"
+			message = "You picked up the flag!"
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
-			message = "Enemy team picked up your flag"
+			message = "Enemy team picked up your flag!"
 			break
 		case eCTFMessage.TeamReturnedFlag:
-			message = "Your teams flag has been returned to base"
+			message = "Flag returned!"
+			break
+		case eCTFMessage.YourTeamFlagHasBeenReset:
+			message = "Your teams flag has been reset"
+			break
+		case eCTFMessage.EnemyTeamsFlagHasBeenReset:
+			message = "The enemy flag has been reset"
+			break
+		case eCTFMessage.FlagNeedsToBeAtBase:
+			message = "Your teams flag is not at base"
+			break
 	}
 
 	AnnouncementData announcement = CreateAnnouncementMessageQuick( player, message, "", color, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )

@@ -877,8 +877,10 @@ void function ResetIMCFlag()
 	IMCPoint.pickedup = false
 	IMCPoint.dropped = false
 	IMCPoint.flagatbase = true
+	IMCPoint.isbeingreturned = false
+	IMCPoint.beingreturnedby = null
 	
-	wait 0.5
+	wait 0.1
 
 	IMCPoint.spawn = file.selectedLocation.imcflagspawn
 
@@ -917,8 +919,10 @@ void function ResetMILITIAFlag()
 	MILITIAPoint.pickedup = false
 	MILITIAPoint.dropped = false
 	MILITIAPoint.flagatbase = true
+	MILITIAPoint.isbeingreturned = false
+	MILITIAPoint.beingreturnedby = null
 
-	wait 0.5
+	wait 0.1
 
 	MILITIAPoint.spawn = file.selectedLocation.milflagspawn
 
@@ -1048,6 +1052,7 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 
 	teamflagpoint.holdingplayer = ent
 	teamflagpoint.pickedup = true
+	teamflagpoint.dropped = false
 	teamflagpoint.flagatbase = false
 
 	PlayerPickedUpFlag(ent)
@@ -1131,9 +1136,9 @@ void function IMCPoint_Trigger( entity trigger, entity ent )
 
 	if ( ent.IsPlayer() )
 	{
-		if ( ent.GetTeam() != TEAM_IMC )
+		if ( ent.GetTeam() == TEAM_MILITIA )
 		{
-			if ( !IMCPoint.pickedup )
+			if ( !IMCPoint.pickedup && IMCPoint.flagatbase )
 			{
 				PickUpFlag(ent, TEAM_MILITIA, IMCPoint)
 			}
@@ -1146,6 +1151,9 @@ void function IMCPoint_Trigger( entity trigger, entity ent )
 				if ( IMCPoint.flagatbase )
 				{
 					thread CaptureFlag(ent, TEAM_IMC, MILITIAPoint)
+				} else
+				{
+					Remote_CallFunction_Replay( ent, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.FlagNeedsToBeAtBase)
 				}
 			}
 		}
@@ -1161,9 +1169,9 @@ void function MILITIA_Point_Trigger( entity trigger, entity ent )
 
 	if( ent.IsPlayer() )
 	{
-		if( ent.GetTeam() != TEAM_MILITIA )
+		if( ent.GetTeam() == TEAM_IMC )
 		{
-			if (!MILITIAPoint.pickedup)
+			if ( !MILITIAPoint.pickedup && MILITIAPoint.flagatbase )
 			{
 				PickUpFlag(ent, TEAM_IMC, MILITIAPoint)
 			}
@@ -1176,6 +1184,9 @@ void function MILITIA_Point_Trigger( entity trigger, entity ent )
 				if (MILITIAPoint.flagatbase)
 				{
 					thread CaptureFlag(ent, TEAM_MILITIA, IMCPoint)
+				} else
+				{
+					Remote_CallFunction_Replay( ent, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.FlagNeedsToBeAtBase)
 				}
 			}
 		}
@@ -1303,10 +1314,10 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 
 	printt( "player entered mil return trigger: ", ent )
 
-	if ( ent.IsPlayer() )
+	if ( ent.IsPlayer() && !MILITIAPoint.flagatbase && !MILITIAPoint.pickedup && !MILITIAPoint.isbeingreturned )
 	{
 		// If is on team IMC pick back up
-		if ( ent.GetTeam() == TEAM_IMC && !MILITIAPoint.isbeingreturned )
+		if ( ent.GetTeam() == TEAM_IMC )
 		{
 			PickUpFlag(ent, TEAM_IMC, MILITIAPoint)
 
@@ -1314,7 +1325,7 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 				MILITIAPoint.returntrigger.Destroy()
 		}
 		// If is on team MIL start return countdown
-		else if ( ent.GetTeam() == TEAM_MILITIA && !MILITIAPoint.isbeingreturned)
+		else if ( ent.GetTeam() == TEAM_MILITIA )
 		{
 			MILITIAPoint.isbeingreturned = true
 			MILITIAPoint.beingreturnedby = ent
@@ -1330,10 +1341,10 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 	
 	printt( "player entered imc return trigger: ", ent )
 
-	if ( ent.IsPlayer() )
+	if ( ent.IsPlayer() && !IMCPoint.flagatbase && !IMCPoint.pickedup && !IMCPoint.isbeingreturned )
 	{
 		// If is on team MILITIA pick back up
-		if ( ent.GetTeam() == TEAM_MILITIA && !IMCPoint.isbeingreturned )
+		if ( ent.GetTeam() == TEAM_MILITIA )
 		{
 			PickUpFlag(ent, TEAM_MILITIA, IMCPoint)
 
@@ -1341,7 +1352,7 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 				IMCPoint.returntrigger.Destroy()
 		}
 		// If is on team IMC start return countdown
-		else if ( ent.GetTeam() == TEAM_IMC && !IMCPoint.isbeingreturned )
+		else if ( ent.GetTeam() == TEAM_IMC )
 		{
 			IMCPoint.isbeingreturned = true
 			IMCPoint.beingreturnedby = ent
@@ -1412,8 +1423,6 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	bool foundSafeSpot = false
 
 	PlayerDroppedFlag(victim)
-	
-	WaitFrame()
 
 	// Clear parent and set the flag to current death location
 	teamflagpoint.holdingplayer = null
@@ -1538,20 +1547,22 @@ void function TrackFlagDropTimeout( int team, CTFPoint teamflagpoint )
 
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
+
+	foreach ( player in GetPlayerArray() )
+	{
+		if( !IsValid( player ) )
+			continue
+		
+		if( player.GetTeam() == team )
+			Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.YourTeamFlagHasBeenReset)
+		else
+			Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyTeamsFlagHasBeenReset)
+	}
 	
 	if( team == TEAM_IMC )
 		thread ResetIMCFlag()
 	else if( team == TEAM_MILITIA )
-		thread ResetMILITIAFlag()
-
-	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-	foreach ( players in teamplayers )
-	{
-		if( !IsValid( players ) )
-			continue
-
-		Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", players, eCTFMessage.TeamReturnedFlag)
-	}
+		thread ResetMILITIAFlag()	
 }
 
 void function CheckPlayerForFlag(entity victim)

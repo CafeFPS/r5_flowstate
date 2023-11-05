@@ -29,6 +29,7 @@ global enum eCTFMessage
 	TeamReturnedFlag = 2
 	YourTeamFlagHasBeenReset = 3
 	EnemyTeamsFlagHasBeenReset = 4
+	FlagNeedsToBeAtBase = 5
 }
 
 // PointHint IDS
