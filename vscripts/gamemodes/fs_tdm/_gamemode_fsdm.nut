@@ -1708,9 +1708,7 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_halosmg",
-		"mp_weapon_haloassaultrifle",
-		"mp_weapon_halobattlerifle"
+		"mp_weapon_haloassaultrifle"
 	]
 
 	foreach(weapon in Weapons)
@@ -5305,32 +5303,22 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 		}
 		//Lightning.
 		FS_ResetMapLightning()
-		// SetConVarFloat( "mat_autoexposure_max", 2.0 )
-		// SetConVarFloat( "mat_autoexposure_max_multiplier", 1.0 )
-		// SetConVarFloat( "mat_autoexposure_min", 1.0 )
-		// SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
-
 		SetConVarFloat( "mat_sky_scale", 1.5 )
-		// SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
 		SetConVarFloat( "mat_sun_scale", 1.5 )
-		// SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
 
-		// array<string> weapons = [ , , "mp_weapon_halosniperrifle", , "mp_weapon_haloneedler", "mp_weapon_haloshotgun", "mp_weapon_halobattlerifle" ]
-		// weapons.randomize()
-		
 		//Add weapon racks.
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < 3402.5, 7035.9, 124.2 > + startingpos + Vector(-3400,-6623,0) , < 0, 90, 0 >, "mp_weapon_haloneedler", 0.5 ) )
-		//file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < 3425.5, 7722.8, 46.8 > + startingpos + Vector(-3400,-6623,0) , < 0, 90, 0 >, "mp_weapon_haloneedler", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < 1932.3, 7304.9, -108.5 > + startingpos + Vector(-3400,-6623,0) , < 0, 0, 0 >, "mp_weapon_halosniperrifle", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < 4890, 7244.6, -108.5 > + startingpos + Vector(-3400,-6623,0) , < 0, -180, 0 >, "mp_weapon_halosniperrifle", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40277.7734, -11311.5322, -19776.1563>, < 0, -135, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43670.707, -11374.5322, -19776.1563>, < 0, -45, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41593.3945, -11011, -19726.1758>, < 0, 180, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42367.168, -11011, -19726.1563>, < 0, 0, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
-		
-		// MapEditor_CreateRespawnableWeaponRack( < 1704.3, 5915.5, -28.3 > + startingpos, < 0, 90, 0 >, "mp_weapon_r97 (6)", 0.5 )
-		// MapEditor_CreateRespawnableWeaponRack( < 3370.2, 5275.9, 172.5 > + startingpos, < 0, 90, 0 >, "mp_weapon_r97 (7)", 0.5 )
-		// MapEditor_CreateRespawnableWeaponRack( < 3386.1, 5981.6, 173.4 > + startingpos, < 0, 90, 0 >, "mp_weapon_sniper", 0.5 )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41296.8711, -10499.9189, -19726.2383> , <0, 0, 0>, "mp_weapon_halosmg", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42694.0391, -10514.124, -19726.2383> , <0, 180, 0>, "mp_weapon_halosmg", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43614.4766, -10339.4316, -19928.1563> , <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40391.9219, -10283.1338, -19928.1563> , <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+
 	}()
 }
 
@@ -5397,8 +5385,8 @@ void function SpawnLockout() //Halo 2 Encerrona
 		}
 		
 		//Add weapon racks.
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -303.7, 275.4, -1105.8 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
-		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -986, -724.5, -892.6 > + startingpos, < 0, 0, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -303.7, 275.4, -1105.8 > + startingpos, < 0, 0, 0 >, "mp_weapon_halosmg", 0.5 ) )
+		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -986, -724.5, -892.6 > + startingpos, < 0, 0, 0 >, "mp_weapon_halodmr", 0.5 ) )
 		file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( < -316.4, -937.6, -628.8 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloshotgun", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -346.2, 731.8, -693.4 > + startingpos, < 0, -90, 0 >, "mp_weapon_halobattlerifle", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( < -519.2, 947.1, -1088.1 > + startingpos, < 0, 0, 0 >, "mp_weapon_haloneedler", 0.5 ) )
