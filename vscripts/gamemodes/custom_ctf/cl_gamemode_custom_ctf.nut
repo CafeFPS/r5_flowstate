@@ -119,7 +119,7 @@ void function Cl_CustomCTF_Init()
 	CTFRpak = RequestPakFile( "ctf_mode" )
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
-
+	RegisterSignal( "StartNewWinnerScreen" )
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SetCommsDialogueEnabled( false )
@@ -914,7 +914,7 @@ string function GetWinningTeamText(int team)
 
 	if( team != player.GetTeam() )
 	{
-		teamwon = "The Enemey Team has won"
+		teamwon = "The Enemy Team has won"
 	} else
 	{
 		teamwon = "Your Team has won"
