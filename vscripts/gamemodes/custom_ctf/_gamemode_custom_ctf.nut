@@ -404,7 +404,7 @@ void function StartRound()
 		player.UnlockWeaponChange()
 		EnableOffhandWeapons( player )
 		player.UnfreezeControlsOnServer()
-
+		ClearInvincible(player)
 		player.Server_TurnOffhandWeaponsDisabledOff()
 
 		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -735,17 +735,7 @@ void function StartRound()
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	file.ctfState = eCTFState.WINNER_DECIDED
 	SetGlobalNetInt( "FSDM_GameState", file.ctfState )
-	
-	// Reset flag icons for each player
-	foreach( player in GetPlayerArray() )
-	{
-		if( !IsValid( player ) )
-			continue
 
-		// ClearInvincible(player)
-		// Remote_CallFunction_Replay(player, "ServerCallback_CTF_ResetFlagIcons")
-	}
-	
 	file.currentRound++
 }
 
