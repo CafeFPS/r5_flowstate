@@ -25,6 +25,7 @@ struct {
 	array<entity> playerSpawnedProps
 	int currentRound = 1
 	array< int > haloModAvailableColors = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+	int winnerTeam
 } file;
 
 struct CTFPoint
@@ -361,20 +362,22 @@ void function StartRound()
 
 	// reset map votes
 	ResetMapVotes()
+	file.winnerTeam = -1
 
 	thread ResetMILITIAFlag()
 	thread ResetIMCFlag()
-
+	
 	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 10 )
 
 	foreach(player in GetPlayerArray())
 	{
 		if( !IsValid( player ) )
 			continue
-
+		
+		// RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		if( !IsAlive( player ) )
 			_HandleRespawn(player)
-
+		
 		ClearInvincible(player)
 		player.DeployWeapon()
 		player.Server_TurnOffhandWeaponsDisabledOff()
@@ -501,6 +504,11 @@ void function StartRound()
 			else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 				TeamWon = TEAM_MILITIA
 
+			file.winnerTeam = TeamWon
+
+			if( TeamWon == 69 )
+				file.winnerTeam = -1
+
 			foreach( player in GetPlayerArray() )
 			{
 				if( !IsValid( player ) )
@@ -519,11 +527,9 @@ void function StartRound()
 				// round is over so make the player invinvible
 				MakeInvincible(player)
 			}
-			
-			wait 2
 
 			// Only do voting for maps with multi locations
-			if ( file.locationSettings.len() >= NUMBER_OF_MAP_SLOTS )
+			if ( file.locationSettings.len() >= NUMBER_OF_MAP_SLOTS && !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 			{
 				for( int i = 0; i < NUMBER_OF_MAP_SLOTS; ++i )
 				{
@@ -690,35 +696,22 @@ void function StartRound()
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 						Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 					}
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetVoteMenuOpen", true, TeamWon)
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetScreen", eCTFScreen.WinnerScreen, TeamWon, eCTFScreen.NotUsed, eCTFScreen.NotUsed)
+
+					// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+
+					if( file.winnerTeam > -1 )
+					{
+						Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 0 )
+					} else if( file.winnerTeam <= -1 )
+					{
+						Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 1 )
+					}
 				}
 
 				ServerTimer.roundover = true
 
 				// Wait 10 seconds so the winning team can be shown
 				wait 10
-
-				// Set the votemenu screen to show next round text
-				foreach( player in GetPlayerArray() )
-				{
-					if( !IsValid( player ) )
-						continue
-
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetScreen", eCTFScreen.NextRoundScreen, eCTFScreen.NotUsed, eCTFScreen.NotUsed, eCTFScreen.NotUsed)
-				}
-
-				// Just a wait for timing
-				wait 3
-
-				// Close the votemenu for each player
-				foreach( player in GetPlayerArray() )
-				{
-					if( !IsValid( player ) )
-						continue
-
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetVoteMenuOpen", false, TeamWon)
-				}
 			}
 
 			// Clear players the voted for next voting
@@ -1103,7 +1096,7 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 	EmitSoundToTeamPlayers("ui_ctf_enemy_score", enemyteam)
 	EmitSoundToTeamPlayers("ui_ctf_team_score", team)
 
-	if( GameRules_GetTeamScore( TEAM_IMC ) >= CTF_SCORE_GOAL_TO_WIN || GameRules_GetTeamScore( TEAM_MILITIA ) >= CTF_SCORE_GOAL_TO_WIN)
+	if( GameRules_GetTeamScore( TEAM_IMC ) >= CTF_SCORE_GOAL_TO_WIN )
 	{
 		foreach( entity player in GetPlayerArray() )
 		{
@@ -1114,6 +1107,19 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 		}
 		file.ctfState = eCTFState.WINNER_DECIDED
 		SetGlobalNetInt( "FSDM_GameState", file.ctfState )
+		file.winnerTeam = TEAM_IMC
+	} else if( GameRules_GetTeamScore( TEAM_MILITIA ) >= CTF_SCORE_GOAL_TO_WIN )
+	{
+		foreach( entity player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_winnerFound" )
+		}
+		file.ctfState = eCTFState.WINNER_DECIDED
+		SetGlobalNetInt( "FSDM_GameState", file.ctfState )
+		file.winnerTeam = TEAM_MILITIA
 	}
 }
 
