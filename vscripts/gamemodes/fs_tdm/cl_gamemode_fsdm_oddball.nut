@@ -415,9 +415,9 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		// Signal(player, "SND_EndTimer")
 		
 		EndSignal(player, "StartNewWinnerScreen")
-		
-		EmitSoundOnEntity(player, "UI_InGame_Top5_Streak_1X")
-		
+
+		EmitSoundOnEntity( player, "Music_CharacterSelect_Wattson" )
+
 		var LTMLogo = HudElement( "SkullLogo")
 		var RoundWinOrLoseText = HudElement( "WinOrLoseText")
 		var WinOrLoseReason = HudElement( "WinOrLoseReason")
@@ -441,26 +441,48 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		string reasonText
 		string teamText
 
-		switch(reason)
+		if( GetCurrentPlaylistName() == "fs_haloMod_oddball" )
 		{
-			case 0:
-				if( localPlayerIsWinner )
-					reasonText = "YOUR TEAM DOMINATED THE BALL"
-				else
-					reasonText = "THE ENEMY TEAM HELD THE BALL THE LONGEST"
-			break
+			switch(reason)
+			{
+				case 0:
+					if( localPlayerIsWinner )
+						reasonText = "YOUR TEAM DOMINATED THE BALL"
+					else
+						reasonText = "THE ENEMY TEAM HELD THE BALL THE LONGEST"
+				break
 
-			case 1:
-				roundText = "TIE"
-				reasonText = "TIME RAN OUT, AND BOTH TEAMS HAD THE SAME SCORE"
-			break
+				case 1:
+					roundText = "TIE"
+					reasonText = "TIME RAN OUT, AND BOTH TEAMS HAD THE SAME SCORE"
+				break
+			}
+		} else if( GetCurrentPlaylistName() == "fs_haloMod_ctf" )
+		{
+			switch(reason)
+			{
+				case 0:
+					if( localPlayerIsWinner )
+						reasonText = "YOUR TEAM HAS WON"
+					else
+						reasonText = "THE ENEMY TEAM HAS WON"
+				break
+
+				case 1:
+					roundText = "TIE"
+					reasonText = "TIME RAN OUT, AND BOTH TEAMS HAD THE SAME SCORE"
+				break
+			}
 		}
 		
 		Hud_SetText( RoundWinOrLoseText, roundText )
 		Hud_SetText( WinOrLoseReason, reasonText )
 		
-		wait 1.2
+		wait 2
 		
+		EmitSoundOnEntity(player, "UI_InGame_Top5_Streak_1X")
+		wait 0.7
+
 		Hud_SetEnabled( LTMLogo, true )
 		Hud_SetVisible( LTMLogo, true )
 		
@@ -478,9 +500,9 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		Hud_SetSize( RoundWinOrLoseText, 0, 0 )
 		Hud_SetSize( WinOrLoseReason, 0, 0 )
 
-		Hud_ScaleOverTime( LTMLogo, 1.2, 1.2, 0.4, INTERPOLATOR_ACCEL )
-		
-		wait 0.4
+		Hud_ScaleOverTime( LTMLogo, 1.2, 1.2, 0.6, INTERPOLATOR_ACCEL )
+
+		wait 0.6
 		
 		Hud_ScaleOverTime( LTMLogo, 1, 1, 0.15, INTERPOLATOR_LINEAR )
 		
@@ -490,7 +512,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		Hud_ScaleOverTime( LTMBoxMsg, 1, 1, 0.3, INTERPOLATOR_SIMPLESPLINE )
 		Hud_ScaleOverTime( WinOrLoseReason, 1, 1, 0.35, INTERPOLATOR_SIMPLESPLINE )
 		
-		wait 6.5
+		wait 5
 		
 		Hud_ScaleOverTime( LTMLogo, 1.3, 0.05, 0.15, INTERPOLATOR_ACCEL )
 		
@@ -524,5 +546,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		
 		Hud_SetSize( LTMLogo, 1, 1 )
 		Hud_SetSize( RoundWinOrLoseText, 1, 1 )
+		
+		FadeOutSoundOnEntity( GetLocalClientPlayer(), "Music_CharacterSelect_Wattson", 0.2 )
 	}()
 }
