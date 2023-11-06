@@ -474,8 +474,8 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
 		case eCTFAnnounce.ROUND_START:
 		{
 			ShowScoreRUI( true )
-			message = "Match Start"
-			subtext = "Score 5 points to win!"
+			message = "CAPTURE THE FLAG"
+			subtext = "Capture the enemy flag, defend your own."
 			break
 		}
 		case eCTFAnnounce.VOTING_PHASE:
