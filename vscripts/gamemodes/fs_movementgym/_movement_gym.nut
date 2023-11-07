@@ -474,24 +474,42 @@ function ClientCommand_invis(entity user, array < string > args) {
 
 bool
 function _MG_Spectate(entity player, array < string > name){
+	
+	if( !IsValid(player) )
+		return false
 
-	thread _MG_Spectate_by_name(player, name[0])
+	if( name.len() == 0 )
+	{
+		Message(player, "Incorrect Username", "")
+		return false
+	}
+
+	bool doesNameExist = false
+	foreach( sPlayer in GetPlayerArray() )
+	{
+		if( sPlayer.GetPlayerName() == name[0] )
+		{
+			doesNameExist = true
+			break
+		}
+	}
+	
+	if( !doesNameExist )
+	{
+		Message(player, "Incorrect Username", "")
+		return false
+	}
+
+	thread _MG_Spectate_by_name(player, name[0] )
 	return true
 }
 
 void
 function _MG_Spectate_by_name(entity player, string name){
-	if( !IsValid(player) ) return
-	
 	//if( !IsAdmin(player) ){
 	//	Message(player, "Admin Only", "try logging in if you are a admin")
 	//	return false
 	//}
-	
-	if( name.len() == 0){
-		Message(player, "Incorrect Username", "")
-		return
-	}
 	
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
 	{
