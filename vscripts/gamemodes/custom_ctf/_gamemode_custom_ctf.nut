@@ -328,8 +328,9 @@ void function VotingPhase()
 		player.ForceStand()
 		TpPlayerToSpawnPoint(player)
 		player.UnfreezeControlsOnServer()
-		player.SetPlayerNetInt("kills", 0) // Reset for kills
-		player.SetPlayerNetInt("deaths", 0) // Reset for deaths
+		player.SetPlayerNetInt("kills", 0)
+		player.SetPlayerNetInt("captures", 0)
+		player.SetPlayerNetInt("returns", 0)
 	}
 }
 
@@ -1079,13 +1080,15 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 {
 	printt(" player trying to capture flag" )
 	int enemyteam = GetCTFEnemyTeam(team)
+	
+	PlayerDroppedFlag(ent)
 
 	if( team == TEAM_IMC )
 		GameRules_SetTeamScore( TEAM_IMC, GameRules_GetTeamScore( TEAM_IMC ) + 1 )
 	else
 		GameRules_SetTeamScore( TEAM_MILITIA, GameRules_GetTeamScore( TEAM_MILITIA ) + 1 )
-
-	PlayerDroppedFlag(ent)
+	
+	ent.SetPlayerNetInt( "captures", ent.GetPlayerNetInt( "captures" ) + 1 )
 
 	if( IsValid( ent ) )
 		Remote_CallFunction_NonReplay(ent, "ServerCallback_CTF_UpdatePlayerStats", eCTFStats.Captures)
@@ -1412,6 +1415,8 @@ void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
 	printt("Player:", player, " - Returned flag to base!" )
 
 	// flag return succeeded
+	player.SetPlayerNetInt( "returns", player.GetPlayerNetInt( "returns" ) + 1 )
+
 	if( team == TEAM_IMC )
 		thread ResetIMCFlag()
 	else if( team == TEAM_MILITIA )
@@ -1526,7 +1531,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	if ( foundSafeSpot )
 		thread TrackFlagDropTimeout( team, teamflagpoint )
 
-	wait 1.2
+	wait 1.5
 	
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return

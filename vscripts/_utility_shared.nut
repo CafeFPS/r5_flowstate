@@ -1943,6 +1943,26 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
+	if( GameRules_GetGameMode() == "custom_ctf" )
+	{
+		aVal = a.GetPlayerNetInt( "captures" )
+		bVal = b.GetPlayerNetInt( "captures" )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+
+		aVal = a.GetPlayerNetInt( "returns" )
+		bVal = b.GetPlayerNetInt( "returns" )
+
+		if ( aVal > bVal )
+			return 1
+		else if ( aVal < bVal )
+			return -1
+		
+		return 0
+	}
 
 	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
 	{

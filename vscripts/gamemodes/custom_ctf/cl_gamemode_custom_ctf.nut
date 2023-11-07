@@ -296,7 +296,7 @@ void function ServerCallback_CTF_RecaptureFlag(int team, float starttime, float 
 		FlagRUI.FlagReturnRUI = CreateFullscreenRui( $"ui/consumable_progress.rpak")
 		RuiSetGameTime( FlagRUI.FlagReturnRUI, "healStartTime", starttime )
 		RuiSetString( FlagRUI.FlagReturnRUI, "consumableName", "Returning Flag To Base" )
-		RuiSetFloat( FlagRUI.FlagReturnRUI, "raiseTime", 5.0 )
+		RuiSetFloat( FlagRUI.FlagReturnRUI, "raiseTime", endtime - starttime )
 		RuiSetFloat( FlagRUI.FlagReturnRUI, "chargeTime", 0 )
 		RuiSetImage( FlagRUI.FlagReturnRUI, "hudIcon", icon )
 		RuiSetInt( FlagRUI.FlagReturnRUI, "consumableType", 3 ) //0 = red, 1 = dark blue, 2 = dark purple, 3 = white
