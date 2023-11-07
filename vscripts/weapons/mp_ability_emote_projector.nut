@@ -98,7 +98,7 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 		#if SERVER
 		entity prop = CreatePropScript_NoDispatchSpawn( HOLO_SPRAY_BASE, origin, GoodAngles, 6 )
 
-		if( projectile.GetParent() ) // Parent to moving ents like train
+		if( projectile.GetParent() && projectile.GetParent().GetScriptName() != "editor_placed_prop" ) // Parent to moving ents like train
 		{
 			#if DEVELOPER
 			printt( "Holo spray parented to moving ent" )
