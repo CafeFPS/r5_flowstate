@@ -1535,7 +1535,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	{
 		// Create the recapture trigger
 		teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
-		teamflagpoint.returntrigger.SetRadius( 75 )
+		teamflagpoint.returntrigger.SetRadius( 45 )
 		teamflagpoint.returntrigger.SetAboveHeight( 200 )
 		teamflagpoint.returntrigger.SetBelowHeight( 200 )
 		SetTeam( teamflagpoint.returntrigger, teamflagpoint.pole.GetTeam() )
