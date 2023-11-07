@@ -736,7 +736,7 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore2Header = headers[ 1 ]
 			if (IsValid( player ))
 			{
-				if( GetCurrentPlaylistName() == "fs_haloMod_ctf" )
+				if( GameRules_GetGameMode() == "custom_ctf" )
 					playerScore2 = player.GetPlayerNetInt( "returns" )
 				else
 					playerScore2 = player.GetPlayerNetInt( "deaths" )
@@ -747,7 +747,7 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore1Header = headers[ 0 ]
 			if (IsValid( player ))
 			{
-				if( GetCurrentPlaylistName() == "fs_haloMod_ctf" )
+				if( GameRules_GetGameMode() == "custom_ctf" )
 					playerScore1 = player.GetPlayerNetInt( "captures" )
 				else
 					playerScore1 = player.GetPlayerNetInt( "kills" )
