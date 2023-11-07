@@ -16,7 +16,7 @@ WeaponData
 
 	// Models
 	"viewmodel"   									"mdl/flowstate_custom/ptpov_flagpole.rmdl"
-	"playermodel" 									"mdl/props/wattson_electric_fence/wattson_electric_fence.rmdl"
+	"playermodel" 									"mdl/signs/flag_base_pole_ctf_red.rmdl"
 	
 	//"OnWeaponActivate"							"OnWeaponActivate_vctblue"
 	//"OnWeaponDeactivate"							"OnWeaponDeactivate_melee_Oddball_primary"

@@ -63,8 +63,9 @@ global const float THIRD_PERSON_KILL_REPLAY_PROJECTILES_MINTIME = 0.3
 // CTF
 //------------------------------------------------------
 
-//global const CTF_FLAG_MODEL = $"mdl/signs/flag_base_pole_ctf.rmdl"
-//global const CTF_FLAG_BASE_MODEL = $"mdl/communication/flag_base.rmdl"
+global const CTF_FLAG_MODEL = $"mdl/signs/flag_base_pole_ctf.rmdl"
+global const CTF_FLAG_MODEL_RED = $"mdl/signs/flag_base_pole_ctf_red.rmdl"
+global const CTF_FLAG_BASE_MODEL = $"mdl/communication/flag_base.rmdl"
 
 //------------------------------------------------------
 // Survivor
