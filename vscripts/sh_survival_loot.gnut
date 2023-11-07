@@ -2597,7 +2597,7 @@ bool function PlayerInValidState( entity player )
 {
 	#if SERVER
 	//printt("PlayerInValidState NOT - ", !IsAlive( player ), player.ContextAction_IsActive(), Bleedout_IsBleedingOut( player ), SURVIVAL_IsPlayerCarryingLoot( player ))
-	if( GetCurrentPlaylistName() == "fs_haloMod_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_dm_oddball" && GetBallCarrier() == player )
+	if( GetCurrentPlaylistName() == "fs_haloMod_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_dm_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_haloMod_ctf" && GetGlobalNetEnt( "milFlag" ) == player || GetCurrentPlaylistName() == "fs_haloMod_ctf" && GetGlobalNetEnt( "imcFlag" ) == player )
 		return false
 	#endif
 	if ( !IsAlive( player ) )
