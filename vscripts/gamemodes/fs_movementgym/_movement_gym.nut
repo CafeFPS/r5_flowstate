@@ -534,10 +534,14 @@ function _MG_Spectate_by_name(entity player, string name){
 		}
 	}
 	
-	if(name != "stop" && player.GetPlayerName() != name && !player.p.isSpectating ){
-		foreach(target in GetPlayerArray_Alive()) {
+	if(name != "stop" && player.GetPlayerName() != name && !player.p.isSpectating )
+	{
+		foreach(target in GetPlayerArray_Alive())
+		{
+			if ( !IsValid( target ) || !IsValid( player ) ) 
+				continue
+
 			if( target.GetPlayerName() == name ){
-				if(IsValid(target)){
 					player.p.isSpectating = true
 					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 					player.SetPlayerNetInt( "spectatorTargetCount", 1 )
@@ -546,12 +550,10 @@ function _MG_Spectate_by_name(entity player, string name){
 					player.StartObserverMode( OBS_MODE_IN_EYE )
 					player.p.lastTimeSpectateUsed = Time()
 					
-					while(true){
+					while( IsValid( player ) )
+					{
 						if(!IsValid(target) || !target.IsInRealm(1))
 						{
-							if( !IsValid( player ) )
-								break
-
 							player.p.isSpectating = false
 							player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 							player.SetObserverTarget( null )
@@ -566,16 +568,8 @@ function _MG_Spectate_by_name(entity player, string name){
 							player.PhaseShiftCancel()
 							return
 						}
-					WaitFrame()
+						WaitFrame()
 					}
-				} else {
-					Message(player, "Invalid Target", "")
-					return 
-				}
-				
-			} else {
-				Message(player, "Invalid Player Name", "or player are already spectating someone")
-				return 
 			}	
 		}	
 	} else {
