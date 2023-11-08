@@ -538,8 +538,11 @@ function _MG_Spectate_by_name(entity player, string name){
 	{
 		foreach(target in GetPlayerArray_Alive())
 		{
-			if ( !IsValid( target ) || !IsValid( player ) ) 
+			if ( !IsValid( target ) ) 
 				continue
+			
+			if( !IsValid( player ) )
+				return
 
 			if( target.GetPlayerName() == name ){
 					player.p.isSpectating = true
