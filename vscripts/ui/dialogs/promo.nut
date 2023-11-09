@@ -220,7 +220,7 @@ array<PromoDialogPageData> function TEMP_InitPages()
 	PromoDialogPageData newPage
 	newPage.image = $"rui/flowstate_custom/skypadgiveaway"
 	newPage.title = "SkyPAD GIVEAWAY"
-	newPage.desc = "Join the tournament on Saturday (November 11, 3PM EST), and win a SkyPAD glass mouse pad!"
+	newPage.desc = "Join the tournament on Saturday (November 11, 3PM EST), and get a chance to win a SkyPAD glass mouse pad!"
 	pages.append( newPage )
 
 	return pages
