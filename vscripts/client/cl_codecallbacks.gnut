@@ -28,6 +28,7 @@ global function NvidiaReflex_SetValues
 global function NvidiaReflex_SetSettingsValue
 
 global function ServerCallback_RefreshWeaponHighlights
+global function Promo_SetVersion
 
 struct
 {
@@ -231,6 +232,21 @@ void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity play
 void function AddCallback_OnPlayerConsumableInventoryChanged( void functionref( entity ) callbackFunc )
 {
 	clGlobal.consumableInventoryChangedCallbacks.append( callbackFunc )
+}
+
+void function Promo_SetVersion( int version )
+{
+	int promo_version_accepted
+
+	try{
+		promo_version_accepted = GetConVarInt( "promo_version_accepted" )
+	}catch(e420)
+	{
+		printt( "Promo version cvar not present in your current r5sdk install!" )
+		return
+	}
+
+	SetConVarInt( "promo_version_accepted", version )
 }
 
 void function NvidiaReflex_SetValues()

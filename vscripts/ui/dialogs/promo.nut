@@ -73,22 +73,33 @@ void function OpenPromoDialogIfNewAfterPakLoad()
 
 bool function IsPromoDialogNew()
 {
-	UpdatePromoData()
+	TEMP_UpdatePromoData()
 
 	entity player = GetUIPlayer()
 	if ( player == null || !IsPromoDialogAllowed() )
 		return false
 
-	int promoVersion = GetPromoDataVersion()
-	if ( file.promoVersionSeen_PREDICTED == -1 )
-		file.promoVersionSeen_PREDICTED = player.GetPersistentVarAsInt( "promoVersionSeen" )
+	return Promo_GetVersion() != TEMP_GetPromoDataVersion()
+}
 
-	return promoVersion != 0 && promoVersion != file.promoVersionSeen_PREDICTED
+int function Promo_GetVersion()
+{
+	return GetConVarInt( "promo_version_accepted" )
+}
+
+int function TEMP_GetPromoDataVersion()
+{
+	if( GetUnixTimestamp() < 1699732800 )
+		return 1
+	else
+		return 0
+	
+	unreachable
 }
 
 bool function IsPromoDialogAllowed()
 {
-	return (IsPromoDataProtocolValid() && IsLobby() && IsFullyConnected() && GetActiveMenu() == GetMenu( "LobbyMenu" ) && IsTabPanelActive( GetPanel( "PlayPanel" ) ))
+	return (IsPromoDataProtocolValid() && IsLobby() && IsFullyConnected() && GetActiveMenu() == GetMenu( "R5RLobbyMenu" ) )
 }
 
 
@@ -128,7 +139,7 @@ void function PromoDialog_OpenHijacked( string content )
 
 void function PromoDialog_OnOpen()
 {
-	file.pages = InitPages()
+	file.pages = TEMP_InitPages() //InitPages()
 	file.activePageIndex = 0
 
 	UpdatePageRui( file.activePageRui, 0 )
@@ -157,8 +168,7 @@ void function PromoDialog_OnNavigateBack()
 {
 	if ( GetUIPlayer() != null && IsFullyConnected() && file.hijackContent == null )
 	{
-		file.promoVersionSeen_PREDICTED = GetPromoDataVersion()
-		ClientCommand( format( "SetPromoVersionSeen %d", file.promoVersionSeen_PREDICTED ) )
+		RunClientScript( "Promo_SetVersion", TEMP_GetPromoDataVersion() )
 	}
 
 	CloseActiveMenu()
@@ -201,6 +211,20 @@ array<PromoDialogPageData> function InitPages()
 	return pages
 }
 
+
+array<PromoDialogPageData> function TEMP_InitPages()
+{
+	array<PromoDialogPageData> pages
+
+	// Temp
+	PromoDialogPageData newPage
+	newPage.image = $"rui/flowstate_custom/skypadgiveaway"
+	newPage.title = "SkyPAD GIVEAWAY"
+	newPage.desc = "Join the tournament on Saturday (November 11, 3PM EST), and win a SkyPAD glass mouse pad!"
+	pages.append( newPage )
+
+	return pages
+}
 
 void function RegisterPageChangeInput()
 {
