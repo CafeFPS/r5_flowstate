@@ -10,6 +10,7 @@ global function NewCTFLocPair
 
 global function CTF_Equipment_GetDefaultShieldHP
 global function CTF_GetOOBDamagePercent
+global function FSIntro_GetVictorySquadFormationPosition
 
 global int CTF_SCORE_GOAL_TO_WIN
 global int CTF_ROUNDTIME
@@ -18,6 +19,7 @@ global int CTF_ROUNDTIME
 global const int NUMBER_OF_MAP_SLOTS = 4
 global const int NUMBER_OF_CLASS_SLOTS = 6
 
+global const float FSINTRO_TIMEPERPLAYER = 3.5
 global bool USE_LEGEND_ABILITYS
 global int CTF_RESPAWN_TIMER
 
@@ -190,6 +192,35 @@ void function Sh_CustomCTF_Init()
 	switch(GetMapName())
 	{
 		case "mp_flowstate":
+
+			Shared_RegisterLocationCTF(
+				NewCTFLocationSettings(
+					"The Pit",
+					[ // ringspots
+						NewCTFLocPair(<0,0,0>, <0,0,0>),
+						NewCTFLocPair(<0,0,0>, <0,0,0>),
+						NewCTFLocPair(<0,0,0>, <0,0,0>),
+						NewCTFLocPair(<0,0,0>, <0,0,0>),
+						NewCTFLocPair(<0,0,0>, <0,0,0>)
+					],
+					<43846.9258, -10528.1387, -19928.1563>, // imc flag spawn
+					<40144.1875, -10484.1914, -19928.1563>, // mil flag spawn
+					[ // imc spawns
+						NewCTFLocPair(<43744.4063, -11417.9092, -19776.1563> , <0, -179.263229, 0>),
+						NewCTFLocPair(<43809.1797, -10693.9688, -19928.1563> , <0, 127.732773, 0>),
+						NewCTFLocPair(<43393.8945, -9495.96387, -19682.0391> , <0, 85.6177597, 0>)
+					],
+					[ // mil spawns
+						NewCTFLocPair(<40148.1484, -10618.4873, -19928.1563> , <0, 47.8334274, 0>),
+						NewCTFLocPair(<40583.9453, -9414.48828, -19682.0371> , <0, 84.4184952, 0>),
+						NewCTFLocPair(<40204.5703, -11342.1201, -19776.1563> , <0, -4.65609407, 0>)
+					],
+					NewCTFLocPair(<0,0,0>, <0, 0, 0>), // deathcam angle and height
+					NewCTFLocPair(<0,0,0>, <0, 0, 0>), // Victory Pos
+					-20500 // Undermap Z
+				)
+			)
+	
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Narrows",
@@ -860,3 +891,31 @@ bool function CTFShouldShowDeathFieldEffects( entity player )
 	return shouldShow
 }
 #endif
+
+vector function FSIntro_GetVictorySquadFormationPosition( vector mainPosition, vector angles, int index )
+{
+	index += 1
+
+	float internalGroupOffsetSide = 45.0																						   
+	float internalGroupOffsetBack = -40.0																			  
+
+	//fix me
+	if( index == 1 || index == 2 )
+	{
+		internalGroupOffsetSide = 23
+		internalGroupOffsetBack = 0
+	} else
+	{
+		internalGroupOffsetSide *= ceil( float( index ) / 2 )
+		internalGroupOffsetBack *= ceil( float( index ) / 2 )
+	}
+
+	float finalOffsetSide = internalGroupOffsetSide * ( index % 2 == 0 ? 1 : -1 )
+	float finalOffsetBack = internalGroupOffsetBack
+
+	// file.charactersModels.append( finalOffsetSide )
+
+	printt( "building position for player in victory screen:", mainPosition, index, finalOffsetSide, finalOffsetBack )
+	vector offset = < finalOffsetSide, finalOffsetBack, -8 >
+	return OffsetPointRelativeToVector( mainPosition, offset, AnglesToForward( angles ) )
+}

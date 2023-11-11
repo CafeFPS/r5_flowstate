@@ -288,6 +288,11 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "milFlag", SNDC_GLOBAL, SNVT_ENTITY )
 			
 			Remote_RegisterClientFunction("FSDM_CustomWinnerScreen_Start", "int", INT_MIN, INT_MAX, "int", 0, 10)
+			
+			Remote_RegisterClientFunction("FS_CreateIntroScreen")
+			Remote_RegisterClientFunction("FSIntro_ForceEnd")
+			RegisterNetworkedVariable( "FSIntro_StartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+			RegisterNetworkedVariable( "FSIntro_EndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			break
 	}
 	

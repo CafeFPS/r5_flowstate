@@ -10,6 +10,8 @@ global function _CTFRegisterLocation
 global function _CTFRegisterCTFClass
 global function ResetIMCFlag
 global function ResetMILITIAFlag
+global function FS_StartIntroScreen
+
 enum eCTFState
 {
 	IN_PROGRESS = 0
@@ -86,11 +88,12 @@ void function _CustomCTF_Init()
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FlagReturnEnded" )
 	RegisterSignal( "ResetDropTimeout" )
-
+	RegisterSignal( "EndScriptedPropsThread" )
 	AddCallback_OnClientConnected( void function(entity player) { thread _OnPlayerConnected(player) } )
 	AddCallback_OnClientDisconnected( void function(entity player) { thread _OnPlayerDisconnected(player) } )
 	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread _OnPlayerDied(victim, attacker, damageInfo)})
-
+    AddCallback_EntitiesDidLoad( DM__OnEntitiesDidLoad )
+	AddSpawnCallback( "prop_survival", DissolveItem )
 	#if DEVELOPER
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
 	#endif
@@ -288,16 +291,16 @@ void function VotingPhase()
 			{
 				thread function () : ( player ) 
 				{
-					ScreenFade( player, 0, 0, 0, 255, 0, 5, FFADE_IN | FFADE_PURGE ) //let's do this before destroy player props so it looks good in custom maps
+					ScreenFade( player, 0, 0, 0, 255, 0, 0, FFADE_OUT | FFADE_STAYOUT ) //let's do this before destroy player props so it looks good in custom maps
 				}()
 			}
 		}
 
-		thread function () : ()
-		{
-			wait 4
-			Signal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
-		}()
+		// thread function () : ()
+		// {
+			// wait 4
+			// Signal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
+		// }()
 	}
 
 	if( file.playerSpawnedProps.len() > 0 || GetServerPropsInDmFile().len() > 0 )
@@ -311,26 +314,33 @@ void function VotingPhase()
 		case "Narrows":
 		thread SpawnChill()
 		break
+		case "The Pit":
+		thread SpawnCyberdyne()
+		break
 	}
 
-	if( file.currentRound > 1 )
-		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
+	if( file.selectedLocation.name == "Lockout" )
+	{
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
+	} else if( file.selectedLocation.name == "Narrows" )
+	{
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
+	}
+	
+	// SetTeam(player, 99 )
 
-	// Voting phase so disable weapons and make invincible
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) )
 			continue
 
-		MakeInvincible(player)
-		player.HolsterWeapon()
-		player.Server_TurnOffhandWeaponsDisabledOn()
-		player.ForceStand()
-		TpPlayerToSpawnPoint(player)
-		player.UnfreezeControlsOnServer()
-		player.SetPlayerNetInt("kills", 0)
-		player.SetPlayerNetInt("captures", 0)
-		player.SetPlayerNetInt("returns", 0)
+		int maxplayers = GetPlayerArray().len()
+		int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
+
+		if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
+			SetTeam(player, TEAM_MILITIA )
+		else
+			SetTeam(player, TEAM_IMC )
 	}
 }
 
@@ -367,39 +377,139 @@ void function StartRound()
 	DispatchSpawn( home2 )
 	home2.SetOrigin( IMCPoint.spawn )
 
-	thread ResetMILITIAFlag()
-	thread ResetIMCFlag()
-	
-	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 10 )
+	ResetMILITIAFlag()
+	ResetIMCFlag()
 
+	int milCount
+	int imcCount
 	foreach(player in GetPlayerArray())
 	{
 		if( !IsValid( player ) )
 			continue
-		
+
 		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		if( !IsAlive( player ) )
-			_HandleRespawn(player)
+			DecideRespawnPlayer(player)
 		
-		ClearInvincible(player)
-		player.DeployWeapon()
-		player.Server_TurnOffhandWeaponsDisabledOff()
-		player.UnforceStand()
-		player.UnfreezeControlsOnServer()
-		TpPlayerToSpawnPoint(player)
-		GiveBackWeapons(player)
+		MakeInvincible(player)
+		player.HolsterWeapon()
+		player.Server_TurnOffhandWeaponsDisabledOn()
+		player.ForceStand()
+		player.FreezeControlsOnServer()
+
+		player.SetPlayerNetInt("kills", 0)
+		player.SetPlayerNetInt("captures", 0)
+		player.SetPlayerNetInt("returns", 0)
+
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		{
+			if( player.GetTeam() == TEAM_IMC )
+			{
+				player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+				player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
+			} else if( player.GetTeam() == TEAM_MILITIA )
+			{
+				player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+				player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
+			}
+		}
+			
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		{
+			vector angles
+			if( player.GetTeam() == TEAM_IMC )
+			{
+				switch( file.selectedLocation.name )
+				{
+					case "Narrows":
+					angles = <0, 180, 0>
+					break
+					
+					case "The Pit":
+					angles = <0, 180, 0>
+					break
+					
+					case "Lockout":
+					
+					break
+				}
+				vector startingpoint = OffsetPointRelativeToVector( GetGlobalNetEnt( "imcFlag" ).GetOrigin(), <0, 115, 8>, AnglesToForward( angles ) )
+				player.SetOrigin( FSIntro_GetVictorySquadFormationPosition( startingpoint, angles, imcCount ) )
+				player.SetAngles( angles )
+				imcCount++
+			} else if( player.GetTeam() == TEAM_MILITIA )
+			{
+				switch( file.selectedLocation.name )
+				{
+					case "Narrows":
+					angles = <0, 0, 0>
+					break
+					
+					case "The Pit":
+					angles = <0, 0, 0>
+					break
+					
+					case "Lockout":
+					
+					break
+				}
+				vector startingpoint = OffsetPointRelativeToVector( GetGlobalNetEnt( "milFlag" ).GetOrigin(), <0, 115, 8>, AnglesToForward( angles ) )
+				player.SetOrigin( FSIntro_GetVictorySquadFormationPosition( startingpoint, angles, milCount ) )
+				player.SetAngles( angles )
+				milCount++
+			}
+		} else
+		{
+			TpPlayerToSpawnPoint(player)
+		}
+		
+		player.MakeInvisible()
+		player.MovementDisable()
+		TakeAllWeapons( player )
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		{
+			TakeAllPassives( player )
+		}
+
+		// Give passive regen (pilot blood)
+		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+
+		// SetPlayerSettings(player, CTF_PLAYER_SETTINGS)
+		PlayerRestoreHP(player, 100, CTF_Equipment_GetDefaultShieldHP())
+		// array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
+			// foreach(item in loot)
+				// SURVIVAL_AddToPlayerInventory(player, item)
+
+		// SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		Survival_SetInventoryEnabled( player, false )
+		
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
+	}
+
+	SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+	SetGlobalNetTime( "FSIntro_EndTime", Time() + 8 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+
+	while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+		WaitFrame()
+
+	foreach(player in GetPlayerArray())
+	{
+		Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+	}
+	
+	wait 1
+	
+	foreach(player in GetPlayerArray())
+	{	
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
+		thread GiveBackWeapons(player)
+		thread Flowstate_GrantSpawnImmunity(player, 2.5)
 		
 		if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ) )
 			player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
-		player.MovementDisable()
-		player.LockWeaponChange()
-		player.FreezeControlsOnServer()
-		
-		#if !DEVELOPER
-		wait 10
-		#endif
-		
 		if( !IsValid( player ) || !IsAlive( player ) )
 			return
 		
@@ -408,6 +518,8 @@ void function StartRound()
 		else
 			Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 
+		player.MakeVisible()
+		player.UnforceStand()
 		player.MovementEnable()
 		player.UnlockWeaponChange()
 		EnableOffhandWeapons( player )
@@ -433,13 +545,7 @@ void function StartRound()
 		Remote_CallFunction_NonReplay(player, "ServerCallback_CTF_SetObjectiveText", CTF_SCORE_GOAL_TO_WIN)
 		// Remote_CallFunction_Replay(player, "ServerCallback_CTF_TeamText", player.GetTeam())
 	}
-	if( file.selectedLocation.name == "Lockout" )
-	{
-		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
-	} else if( file.selectedLocation.name == "Narrows" )
-	{
-		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
-	}
+
 	//EffectSetControlPointVector( CTF.ringfx, 1, <CTF.ringRadius, 0, 0> )
 
 	float endTime = Time() + CTF_ROUNDTIME
@@ -983,7 +1089,7 @@ void function PlayerPickedUpFlag(entity ent)
 
 	//ball carrier can't run
 	StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.1)
-	ent.SetMoveSpeedScale( 1.11 )
+	ent.SetMoveSpeedScale( 1.25 )
 
 	ent.GiveWeapon( "mp_weapon_flagpole_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	ent.GiveOffhandWeapon( "melee_flagpole", OFFHAND_MELEE )
@@ -1278,6 +1384,8 @@ void function GiveBackWeapons(entity player)
 	//restore movement
 	StatusEffect_StopAllOfType( player, eStatusEffect.move_slow)
 	player.SetMoveSpeedScale( 1 )
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
 // purpose: OnPlayerConnected Callback
@@ -1698,13 +1806,34 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	PlayerRestoreHP(player, 100, CTF_Equipment_GetDefaultShieldHP())
 
 	TpPlayerToSpawnPoint(player)
+	array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
+		foreach(item in loot)
+			SURVIVAL_AddToPlayerInventory(player, item)
+
+	SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	Survival_SetInventoryEnabled( player, false )
+	
+	
+
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && player.GetTeam() == TEAM_IMC )
+	{
+		TakeAllPassives( player )
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
+	} else if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && player.GetTeam() == TEAM_MILITIA )
+	{
+		TakeAllPassives( player )
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
+	}
 
 	// Give passive regen (pilot blood)
 	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+
 }
 
 // Purpose: Create The RingBoundary
@@ -1794,7 +1923,7 @@ void function TpPlayerToSpawnPoint(entity player)
 	case eGameState.WaitingForPlayers:
 		break
 	case eGameState.Playing:
-		int ri = RandomIntRange( 0, 4 )
+		int ri = RandomIntRange( 0, 3 )
 
 		switch (player.GetTeam())
 		{
@@ -1822,4 +1951,13 @@ vector function OriginToGroundCTF( vector origin )
 	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
 
 	return traceResult.endPos
+}
+
+void function FS_StartIntroScreen()
+{
+	foreach( player in GetPlayerArray() )
+	{
+		player.MakeInvisible()
+		Remote_CallFunction_NonReplay(player, "FS_CreateIntroScreen")
+	}
 }

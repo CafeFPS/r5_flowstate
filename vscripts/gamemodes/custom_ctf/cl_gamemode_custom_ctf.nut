@@ -37,6 +37,9 @@ global function CL_FSCTF_RegisterNetworkFunctions
 
 global function FSCTF_GameStateChanged
 
+global function FS_CreateIntroScreen
+global function FSIntro_ForceEnd
+
 struct {
 
 	LocationSettingsCTF &selectedLocation
@@ -58,7 +61,14 @@ struct {
 	int teamwon
 
 	int ClassID = 0
-} file;
+	table<int, entity> charactersModels
+
+	entity FSIntro_Localmodel
+	entity FSIntro_Camera
+	entity FSIntro_CameraMover
+
+	array<entity> FSIntro_localSquadEnts
+} file
 
 struct {
 	var imcscorebg
@@ -73,31 +83,31 @@ struct {
 
 	int milscore2
 	int imcscore2
-} teamscore;
+} teamscore
 
 struct {
 	var IMCpointicon = null
 	var MILITIApointicon = null
 	var FlagReturnRUI = null
-} FlagRUI;
+} FlagRUI
 
 struct {
 	int gamestarttime
 	int endingtime
 	int seconds
-} clientgametimer;
+} clientgametimer
 
 struct {
 	entity e
 	entity m
-} deathcam;
+} deathcam
 
-bool hasvoted = false;
-bool isvoting = false;
+bool hasvoted = false
+bool isvoting = false
 bool roundover = false
 
-bool hidechat = false;
-int hidechatcountdown = 0;
+bool hidechat = false
+int hidechatcountdown = 0
 
 array<var> teamicons
 array<entity> cleanupEnts
@@ -127,7 +137,9 @@ void function Cl_CustomCTF_Init()
 
 void function CL_FSCTF_RegisterNetworkFunctions()
 {
-	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "FSIntro_StartTime", Flowstate_IntroTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "FSIntro_EndTime", Flowstate_IntroEndTimeChanged )
+	// RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_CTFRoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "imcFlag", CTF_FlagEntChangedImc )
 	RegisterNetworkedVariableChangeCallback_ent( "milFlag", CTF_FlagEntChangedMil )
@@ -232,6 +244,28 @@ void function Flowstate_CTFStartTimeChanged( entity player, float old, float new
 
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
+}
+
+void function Flowstate_IntroTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+
+	FS_CreateIntroScreen()
+}
+
+void function Flowstate_IntroEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+
+	// thread function () : ( new )
+	// {
+		// while( Time() < new )
+			// WaitFrame()
+		
+		
+	// }()
 }
 
 void function Flowstate_CTFRoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
@@ -1082,6 +1116,11 @@ void function AddWinningSquadData( int index, int eHandle)
 	file.winnerSquadSummaryData.squadPlacement = 1
 }
 
+void function AddIntroScreenSquadData( entity player )
+{
+	file.FSIntro_localSquadEnts.append( player )
+}
+
 void function VictorySequenceOrderLocalPlayerFirst( entity player )
 {
 	int playerEHandle = player.GetEncodedEHandle()
@@ -1131,3 +1170,355 @@ vector function GetVictorySquadFormationPosition( vector mainPosition, vector an
 }
 
 array<void functionref( entity, ItemFlavor, int )> s_callbacks_OnVictoryCharacterModelSpawned
+
+
+//Halo mod
+
+
+void function FS_CreateIntroScreen()
+{
+	thread function () : ()
+	{
+		file.FSIntro_localSquadEnts.clear()
+
+		foreach( player in GetPlayerArrayOfTeam( GetLocalClientPlayer().GetTeam() ) )
+		{
+			AddIntroScreenSquadData( player )
+		}
+
+		while( Time() < GetGlobalNetTime( "FSIntro_StartTime" ) )
+			WaitFrame()
+	
+		if( FlagRUI.IMCpointicon != null )
+		{
+			RuiSetVisible( FlagRUI.IMCpointicon, false )
+		}
+		if( FlagRUI.MILITIApointicon != null )
+		{
+			RuiSetVisible( FlagRUI.MILITIApointicon, false )
+		}
+
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.3, 0.0, FFADE_IN | FFADE_PURGE)
+
+		FSIntro_StartIntroScreen()
+	}()
+}
+
+void function FSIntro_StartIntroScreen()
+{
+	float stime = Time()
+	FSIntro_Destroy()
+	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "imcFlag" ) ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "milFlag" ) ) )
+		return
+
+	entity player = GetLocalClientPlayer()
+	
+	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
+	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
+	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		if( player.GetTeam() == TEAM_IMC )
+		{
+			file.victorySequencePosition = GetGlobalNetEnt( "imcFlag" ).GetOrigin()
+
+			switch( file.selectedLocation.name )
+			{
+				case "Narrows":
+				file.victorySequenceAngles = <0, 180, 0>
+				file.victorySequencePosition = OffsetPointRelativeToVector( file.victorySequencePosition, <0, 115, 8>, AnglesToForward( file.victorySequenceAngles ) )
+				break
+				
+				case "The Pit":
+				file.victorySequenceAngles = <0, 180, 0>
+				file.victorySequencePosition = OffsetPointRelativeToVector( file.victorySequencePosition, <0, 115, 8>, AnglesToForward( file.victorySequenceAngles ) )
+				break
+				
+				case "Lockout":
+				
+				break
+			}
+		} else if( player.GetTeam() == TEAM_MILITIA )
+		{
+			file.victorySequencePosition = GetGlobalNetEnt( "milFlag" ).GetOrigin()
+
+			switch( file.selectedLocation.name )
+			{
+				case "Narrows":
+				file.victorySequenceAngles = <0, 0, 0>
+				file.victorySequencePosition = OffsetPointRelativeToVector( file.victorySequencePosition, <0, 115, 8>, AnglesToForward( file.victorySequenceAngles ) )
+				break
+				
+				case "The Pit":
+				file.victorySequenceAngles = <0, 0, 0>
+				file.victorySequencePosition = OffsetPointRelativeToVector( file.victorySequencePosition, <0, 115, 8>, AnglesToForward( file.victorySequenceAngles ) )
+				break
+				
+				case "Lockout":
+				
+				break
+			}
+		}
+	}
+
+	asset defaultModel				= GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
+	LoadoutEntry loadoutSlotCharacter = Loadout_CharacterClass()
+	vector characterAngles			= < file.victorySequenceAngles.x / 2.0, file.victorySequenceAngles.y, file.victorySequenceAngles.z >
+
+	int maxPlayersToShow = 9
+	array<entity> charactersModels = file.FSIntro_localSquadEnts
+
+	if ( true )
+	{
+		// VictorySequenceOrderLocalPlayerFirst( player )
+		int j = 0
+		foreach( teamPlayer in file.FSIntro_localSquadEnts )
+		{
+			if( !IsValid( teamPlayer ) || !teamPlayer.IsPlayer() )
+				continue
+
+			if ( maxPlayersToShow > 0 && j > maxPlayersToShow )
+				break
+
+			string playerName = teamPlayer.GetPlayerName()
+
+			entity characterNode = CreateScriptRef( teamPlayer.GetOrigin(), teamPlayer.GetAngles() )
+
+			entity characterModel = CreateClientSidePropDynamic( teamPlayer.GetOrigin(), teamPlayer.GetAngles(), teamPlayer.GetTeam() == TEAM_IMC ? $"mdl/Humans/pilots/w_master_chief_pink.rmdl" : $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+
+			if( teamPlayer == player )
+				file.FSIntro_Localmodel = characterModel
+
+			SetForceDrawWhileParented( characterModel, true )
+			characterModel.MakeSafeForUIScriptHack()
+
+			cleanupEnts.append( characterModel )
+
+			characterModel.SetParent( characterNode, "", false )
+
+			string victoryAnim = "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq"
+			characterModel.Anim_Play( victoryAnim )
+
+			entity weapon = CreateClientSidePropDynamic( characterModel.GetOrigin(), <0, -120, 0>, $"mdl/flowstate_custom/w_haloassaultrifle.rmdl" )
+			cleanupEnts.append( weapon )
+			weapon.SetParent( characterModel, "RIFLE_HOLSTER" )
+
+			j++
+		}
+
+		DoF_SetFarDepth( 500, 1000 )
+		DoF_LerpFarDepth( 100, 150, 0.5 )
+	
+		//Setup camera pos and angles
+		vector camera_start_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 250
+		vector camera_end_pos   = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 100 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
+		vector camera_focus_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) - AnglesToRight( charactersModels[0].GetAngles() ) * 17 - AnglesToUp( charactersModels[0].GetAngles() ) * 10
+		vector camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
+		vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
+
+		//Create camera and mover
+		file.FSIntro_CameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
+		file.FSIntro_Camera	  = CreateClientSidePointCamera( camera_start_pos, camera_start_angles, 40 )
+		entity cameraMover = file.FSIntro_CameraMover
+		entity camera = file.FSIntro_Camera
+
+		camera.SetTargetFOV( 40, true, EASING_CUBIC_INOUT, 0.0 )
+		camera.SetParent( cameraMover, "", false )
+		
+		player.SetMenuCameraEntityWithAudio( camera )
+
+		cleanupEnts.append( camera )
+		cleanupEnts.append( cameraMover )
+		
+		charactersModels = ArrayClosest( charactersModels, charactersModels[ charactersModels.len() - 1 ].GetOrigin() )
+		charactersModels.reverse()
+		
+		int i = 1
+		int divide = int( ceil ( float( charactersModels.len() ) / 2 ) )
+		
+		foreach( entity model in charactersModels )
+		{
+			camera_start_pos = camera.GetOrigin()
+			camera_end_pos   = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToForward( model.GetAngles() ) * 80 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
+			camera_focus_pos = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToRight( model.GetAngles() ) * 13 * ( i > divide ? 1 : -1 ) - AnglesToUp( model.GetAngles() ) * 10
+			camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
+			camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
+
+			thread FSIntro_StartPlayerDataSmallUI( model, i > divide ? 0 : 1 )
+
+			//Move camera to end pos
+			cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
+			cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
+			
+			i++
+			wait 1
+			
+			//cool human like camera shake by cafefps - idk what i did
+			waitthread function() : ( cameraMover, model, camera_end_pos, camera, camera_focus_pos )
+			{
+				EndSignal( camera, "OnDestroy" )
+				EndSignal( cameraMover, "OnDestroy" )
+
+				float endtime = Time() + FSINTRO_TIMEPERPLAYER - 1
+				while( Time() <= endtime )
+				{
+					float waittime = RandomFloatRange( 0.25, 0.5 )
+					cameraMover.NonPhysicsRotateTo( VectorToAngles( camera_focus_pos + AnglesToRight( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) - AnglesToUp( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) -  camera.GetOrigin() ), waittime, 0, 0 )
+					float actualtimetowait = RandomFloatRange( 0.25, waittime )
+					wait min( actualtimetowait, Time() + actualtimetowait - endtime )
+				}
+			}()
+		}
+
+		cameraMover.NonPhysicsMoveTo( OffsetPointRelativeToVector( file.victorySequencePosition, <0, 325, 70>, AnglesToForward( file.victorySequenceAngles ) ), 3, 0, 3 )
+		cameraMover.NonPhysicsRotateTo( VectorToAngles( (file.victorySequencePosition + AnglesToUp( file.victorySequenceAngles ) * 35) - OffsetPointRelativeToVector( file.victorySequencePosition, <0, 350, 88>, AnglesToForward( file.victorySequenceAngles ) ) ), 2, 1, 1 )	
+		DoF_LerpFarDepth( 700, 10000, 0.5 )
+		
+		wait 2.9
+	}
+	printt(  "intro lasted: ", ( Time() - stime ).tostring() )
+}
+
+void function FSIntro_ForceEnd()
+{
+	thread function() : ()
+	{
+		float stime = Time()
+		entity localmodel = file.FSIntro_Localmodel
+		entity cameraMover = file.FSIntro_CameraMover
+		entity camera = file.FSIntro_Camera
+		
+		if( !IsValid( camera ) || !IsValid( localmodel ) || !IsValid( cameraMover ) )
+			return
+
+		cameraMover.NonPhysicsMoveTo( localmodel.GetAttachmentOrigin( localmodel.LookupAttachment("HEADFOCUS") ) + AnglesToForward( GetLocalClientPlayer().CameraAngles() ) * 10, 1.25, 0, 1.25 )
+		cameraMover.NonPhysicsRotateTo( GetLocalClientPlayer().CameraAngles(), 1.25, 0, 1.25 )
+		camera.SetTargetFOV( GetLocalClientPlayer().GetFOV(), true, EASING_CUBIC_INOUT, 1.5 )
+		wait 0.75
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.75, 0, FFADE_OUT | FFADE_PURGE )
+		
+		//destroy from server
+		//did this finish for all players before destroying from server? set this as finished from client
+		wait 0.75
+		FSIntro_Destroy()	
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.5, 0, FFADE_IN | FFADE_PURGE )
+		printt(  "intro end lasted: ", ( Time() - stime ).tostring() )
+
+
+		if( FlagRUI.IMCpointicon != null )
+		{
+			RuiSetVisible( FlagRUI.IMCpointicon, true )
+		}
+		if( FlagRUI.MILITIApointicon != null )
+		{
+			RuiSetVisible( FlagRUI.MILITIApointicon, true )
+		}
+
+		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "Welcome to FS Halo Mod CTF v0.9 Beta - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+	}()
+}
+
+void function FSIntro_Destroy()
+{
+	FadeOutSoundOnEntity( GetLocalClientPlayer(), "Music_CharacterSelect_Wattson", 0.2 )
+
+	GetLocalClientPlayer().ClearMenuCameraEntity()
+
+	foreach( rui in overHeadRuis )
+		RuiDestroyIfAlive( rui )
+
+	foreach( entity ent in cleanupEnts )
+	{
+		if( IsValid( ent ) )
+			ent.Destroy()
+	}
+
+	overHeadRuis.clear()
+	cleanupEnts.clear()
+
+	DoF_SetNearDepthToDefault()
+	DoF_SetFarDepthToDefault()
+}
+
+void function FSIntro_StartPlayerDataSmallUI( entity player, int side, float duration = 3 )
+{
+	if( !IsValid( player ) )
+		return
+
+	if( side == 0 )
+	{
+		Hud_SetText( HudElement( "FSIntro_NameText_Left"), player.GetPlayerName() )
+		
+		RuiSetImage( Hud_GetRui( HudElement( "FSIntro_NameBackground_Left") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
+
+		Hud_ReturnToBasePos( HudElement( "FSIntro_NameBackground_Left" ) )
+		Hud_SetSize( HudElement( "FSIntro_NameBackground_Left" ), 0, 0 )
+
+		Hud_SetVisible( HudElement( "FSIntro_NameBackground_Left" ), true )
+		Hud_SetVisible( HudElement( "FSIntro_NameText_Left" ), true )
+
+		Hud_ScaleOverTime( HudElement( "FSIntro_NameBackground_Left" ), 1.35, 1.35, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	} else if( side == 1 )
+	{
+		Hud_SetText( HudElement( "FSIntro_NameText_Right"), player.GetPlayerName() )
+		
+		RuiSetImage( Hud_GetRui( HudElement( "FSIntro_NameBackground_Right") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
+		
+		Hud_ReturnToBasePos( HudElement( "FSIntro_NameBackground_Right" ) )
+		Hud_SetSize( HudElement( "FSIntro_NameBackground_Right" ), 0, 0 )
+
+		Hud_SetVisible( HudElement( "FSIntro_NameBackground_Right" ), true )
+		Hud_SetVisible( HudElement( "FSIntro_NameText_Right" ), true )
+		
+		Hud_ScaleOverTime( HudElement( "FSIntro_NameBackground_Right" ), 1.1, 1.1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+	}
+		
+	wait 0.15
+
+	if( side == 0 )
+	{
+		Hud_ScaleOverTime( HudElement( "FSIntro_NameBackground_Left" ), 1, 1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	} else if( side == 1 )
+	{
+		Hud_ScaleOverTime( HudElement( "FSIntro_NameBackground_Right" ), 1, 1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+	}		
+
+	wait duration - 0.6
+
+	if( side == 0 )
+	{
+		UIPos currentPos = REPLACEHud_GetPos( HudElement( "FSIntro_NameBackground_Left" ) )
+		UIPos currentPos2 = REPLACEHud_GetPos( HudElement( "FSIntro_NameText_Left" ) )
+
+		Hud_FadeOverTime( HudElement( "FSIntro_NameBackground_Left" ), 0, duration/2, INTERPOLATOR_ACCEL )
+		Hud_FadeOverTime( HudElement( "FSIntro_NameText_Left" ), 0, duration/2, INTERPOLATOR_ACCEL )
+
+		Hud_MoveOverTime( HudElement( "FSIntro_NameBackground_Left" ), currentPos.x + 1000, currentPos.y + 0, 0.15 )
+	} else if( side == 1 )
+	{
+		UIPos currentPos = REPLACEHud_GetPos( HudElement( "FSIntro_NameBackground_Right" ) )
+		UIPos currentPos2 = REPLACEHud_GetPos( HudElement( "FSIntro_NameText_Right" ) )
+
+		Hud_FadeOverTime( HudElement( "FSIntro_NameBackground_Right" ), 0, 0.3, INTERPOLATOR_ACCEL )
+		Hud_FadeOverTime( HudElement( "FSIntro_NameText_Right" ), 0, 0.3, INTERPOLATOR_ACCEL )
+
+		Hud_MoveOverTime( HudElement( "FSIntro_NameBackground_Right" ), currentPos.x + 1000, currentPos.y + 0, 0.15 )
+	}
+
+	wait 0.24
+
+	Hud_SetVisible( HudElement( "FSIntro_NameBackground_Left" ), false )
+	Hud_SetVisible( HudElement( "FSIntro_NameText_Left" ), false )
+	Hud_SetVisible( HudElement( "FSIntro_NameBackground_Right" ), false )
+	Hud_SetVisible( HudElement( "FSIntro_NameText_Right" ), false )
+
+	Hud_SetText( HudElement( "FSIntro_NameText_Left" ), "" )
+	Hud_SetText( HudElement( "FSIntro_NameText_Right" ), "" )
+	Hud_SetAlpha( HudElement( "FSIntro_NameText_Left" ), 255 )
+	Hud_SetAlpha( HudElement( "FSIntro_NameText_Right" ), 255 )
+}

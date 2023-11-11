@@ -2,6 +2,15 @@ untyped
 
 globalize_all_functions
 
+void function printtalloffhands()
+{
+	for(int i=0;i<6;i++) //offhand range is [0,5]
+	{
+		if( IsValid( gp()[0].GetOffhandWeapon(i) ) )
+		printt(gp()[0].GetOffhandWeapon(i).GetWeaponClassName())
+	else printt( "null in ", i )
+	}
+}
 void function SpawnFogParticleTest()
 {
 	// StartParticleEffectInWorld( GetParticleSystemIndex( $"P_env_room_fog_512" ), gp()[0].GetOrigin(), Vector(0,0,0) )
@@ -116,11 +125,11 @@ void function AnimNameTest()
 		// weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 		// if(IsValid(weapon))
 		// {
-			weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-			if( IsValid( weapon ) )
-			vm = weapon.GetWeaponViewmodel()
-			if( IsValid( vm ) )
-			printt("NAME: " + vm.GetCurrentSequenceName())
+			// weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			// if( IsValid( weapon ) )
+			// vm = weapon.GetWeaponViewmodel()
+			// if( IsValid( vm ) )
+			printt("NAME: " + player.GetCurrentSequenceName())
 		// }
         WaitFrame()
     }

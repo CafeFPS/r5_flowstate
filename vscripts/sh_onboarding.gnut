@@ -158,7 +158,13 @@ void function Sequence_WaitingForPlayers()
 			if( !IsValid( player ) )
 				continue
 			
-			ScreenCoverTransition_Player(player, Time() + 2)
+			if( GameRules_GetGameMode() != "custom_ctf" )
+			{
+				ScreenCoverTransition_Player(player, Time() + 2)
+			} else
+			{
+				ScreenFade( player, 0, 0, 0, 255, 1, 0, FFADE_OUT | FFADE_STAYOUT )
+			}
 		}
 	}
 	

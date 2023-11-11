@@ -58,6 +58,8 @@ global function SetupInfiniteAmmoForWeapon
 global function FSDM_GetSelectedLocation
 global function Flowstate_GrantSpawnImmunity
 global function GetBlackListedWeapons
+global function DM__OnEntitiesDidLoad
+global function DissolveItem
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -201,7 +203,7 @@ void function _CustomTDM_Init()
 
     __InitAdmins()
 
-    AddCallback_EntitiesDidLoad( __OnEntitiesDidLoad )
+    AddCallback_EntitiesDidLoad( DM__OnEntitiesDidLoad )
 
     AddCallback_OnClientConnected( void function(entity player) {
         if (FlowState_SURF())
@@ -288,8 +290,25 @@ void function _CustomTDM_Init()
 	}
 }
 
-void function __OnEntitiesDidLoad()
+void function __OnEntitiesDidLoadCTF()
 {
+	switch(GetMapName())
+    {	
+		case "mp_flowstate":
+			entity skyboxCamera = GetEnt( "skybox_cam_level" )
+			file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
+		break
+	}
+}
+
+void function DM__OnEntitiesDidLoad()
+{
+	if( GameRules_GetGameMode() == "custom_ctf" && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		__OnEntitiesDidLoadCTF()
+		return
+	}
+
 	switch(GetMapName())
     {
     	case "mp_rr_canyonlands_staging": SpawnMapPropsFR(); break
@@ -2760,8 +2779,24 @@ void function SimpleChampionUI()
 		if( !IsValid(player) ) continue
 
 		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+		{
 			Oddball_RestorePlayerStats( player )
+		}
+		if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+		{
 
+				if( !IsValid( player ) )
+					continue
+
+				int maxplayers = GetPlayerArray().len()
+				int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
+
+				if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
+					SetTeam(player, TEAM_MILITIA )
+				else
+					SetTeam(player, TEAM_IMC )
+
+		}
 		player.p.playerDamageDealt = 0.0
 		player.SetPlayerNetInt( "damage", 0 )
 		if ( FlowState_ResetKillsEachRound() || is1v1EnabledAndAllowed() )
@@ -2855,6 +2890,7 @@ void function SimpleChampionUI()
 
 		if( !IsAlive( player ) )
 			_HandleRespawn( player )
+
 	}
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
