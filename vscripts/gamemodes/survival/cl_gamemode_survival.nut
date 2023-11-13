@@ -305,7 +305,7 @@ void function ClGamemodeSurvival_Init()
 
 	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
 		SetConVarInt( "colorblind_mode", 0 )
-	
+
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
 	#if(false)
@@ -444,19 +444,19 @@ void function ClGamemodeSurvival_Init()
 void function Survival_EntitiesDidLoad()
 {
 	//SetConVarInt( "fps_max", 190 ) //remove me when 190 fps fix arrives
-	
+
 	InitInWorldScreens()
 
 	foreach ( data in file.minimapLabels )
 	{
 		AddMinimapLabel( data.name, data.pos.x, data.pos.y, data.width, data.scale )
 	}
-	
+
 	thread Flowstate_CheckForLaserSightsAndApplyEffect()
-	
-	// Hud_SetVisible(HudElement( "Overshields_TestFrame" ), true)	
+
+	// Hud_SetVisible(HudElement( "Overshields_TestFrame" ), true)
 	// RuiSetImage( Hud_GetRui( HudElement( "Overshields_TestFrame" ) ), "basicImage", $"rui/flowstatecustom/overshield_info_box")
-	
+
 	file.toposInitialized = true
 }
 
@@ -465,9 +465,9 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 {
 	Signal( clGlobal.signalDummy, "RestartLaserSightThread" )
 	EndSignal( clGlobal.signalDummy, "RestartLaserSightThread" )
-	
+
 	entity player = GetLocalViewPlayer()
-	
+
 	entity weapon
 	entity weapon2
 	entity activeWeapon
@@ -481,7 +481,7 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 	while ( true )
 	{
 		WaitFrame()
-		
+
 		if( !IsValid( player ) )
 			break
 
@@ -493,18 +493,18 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 
 		if( IsValid( activeWeapon ) )
 			mods = clone activeWeapon.GetMods()
-		
+
 		exitCheck = false
 		hasLaser = false
-		
+
 		foreach ( mod in mods )
-		{			
+		{
 			if( exitCheck )
 				continue
-			
+
 			if( !SURVIVAL_Loot_IsRefValid( mod ) )
 				continue
-			
+
 			if ( mod != "laser_sight_l1" && mod != "laser_sight_l2" && mod != "laser_sight_l3" && mod != "laser_sight_l4" )
 			{
 				hasLaser = false
@@ -515,19 +515,19 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 				continue
 			}
 		}
-		
+
 		// #if DEVELOPER
 		// printt("DEBUG LASER - ID: " + e["fxHandle"] + " - hasLaser: " + hasLaser + "\n Current active weapon: " + activeWeapon )
 		// #endif
-		
-		if( !IsAlive( player ) || 
-			!IsValid( weapon ) && !IsValid( weapon2 ) || 
-			!IsValid( activeWeapon ) || 
-			activeWeapon.IsWeaponAdsButtonPressed() || 
-			activeWeapon != weapon && activeWeapon != weapon2 || 
-			activeWeapon.GetWeaponClassName().find("melee") > 0 || 
-			activeWeapon.IsDiscarding() || 
-			!hasLaser || 
+
+		if( !IsAlive( player ) ||
+			!IsValid( weapon ) && !IsValid( weapon2 ) ||
+			!IsValid( activeWeapon ) ||
+			activeWeapon.IsWeaponAdsButtonPressed() ||
+			activeWeapon != weapon && activeWeapon != weapon2 ||
+			activeWeapon.GetWeaponClassName().find("melee") > 0 ||
+			activeWeapon.IsDiscarding() ||
+			!hasLaser ||
 			player.Player_IsFreefalling() ||
 			player != GetLocalViewPlayer() ||
 			player.IsThirdPersonShoulderModeOn() ||
@@ -540,7 +540,7 @@ void function Flowstate_CheckForLaserSightsAndApplyEffect()
 			}
 			continue
 		}
-		
+
 		if ( hasLaser && e["fxHandle"] == -1 )
 		{
 			e["fxHandle"] = activeWeapon.PlayWeaponEffectReturnViewEffectHandle( $"P_wpn_lasercannon_aim", $"", "muzzle_flash" )
@@ -740,7 +740,7 @@ void function Cl_Survival_AddClient( entity player )
 	RuiSetImage( rui, "mapImage", mapImage )
 	RuiSetImage( rui, "mapBgTileImage", GetMinimapBackgroundTileImage() )
 	RuiSetBool( rui, "hudVersion", false )
-	
+
 	file.fullmaprui = rui
 	Fullmap_AddRui( rui )
 
@@ -768,11 +768,11 @@ void function Cl_Survival_AddClient( entity player )
 
 	if ( GetCurrentPlaylistVarBool( "pc_force_pushtotalk", false ) )
 		player.ClientCommand( "+pushtotalk" )
-	
+
 	//SetConVarFloat( "dof_variable_blur", 0.0 )
 
 	WaitingForPlayersOverlay_Setup( player )
-	
+
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 	{
 		RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, 0 )
@@ -783,21 +783,21 @@ void function Cl_Survival_AddClient( entity player )
 void function InitSurvivalHealthBar()
 {
 	entity player = GetLocalViewPlayer()
-	
+
 	// if( GameRules_GetGameMode() != SURVIVAL )
 		// player = GetLocalClientPlayer()
-	
+
 	OnThreadEnd(
 		function() : ( player )
 		{
 			if(IsValid(player))
 				SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
-			
+
 			if( GetCurrentPlaylistName() == "fs_movementgym" )
 					MG_CustomPilotRUI( player, file.pilotRui )
 		}
 	)
-	
+
 	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
 		WaitFrame()
 }
@@ -832,18 +832,18 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	RuiTrackFloat( rui, "playerTargetHealthFracTemp", player, RUI_TRACK_HEAL_TARGET )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
-	
+
 	if( GameRules_GetGameMode() != SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )
 	}
-	
+
 	if(RGB_HUD)
 		thread RGBRui(rui)
 
 	// if( GameRules_GetGameMode() != "fs_dm" ) return
-	
+
 	// if ( IsControllerModeActive() )
 		// player.ClientCommand( "controllerstate true")
 }
@@ -853,7 +853,7 @@ void function RGBRui(var rui)
 	entity player = GetLocalClientPlayer()
 	while(RGB_HUD)
 	{
-		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <RandomInt(255), RandomInt(255) , RandomInt(255)> / 255.0 ), 1.0 )	
+		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <RandomInt(255), RandomInt(255) , RandomInt(255)> / 255.0 ), 1.0 )
 		wait 0.1
 	}
 }
@@ -899,7 +899,7 @@ void function ClearCustomPlayerInfoCharacterIcon(entity player)
 		delete file.customCharacterIcon[player]
 		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 		asset classIcon      = CharacterClass_GetGalleryPortrait( character )
-		RuiSetImage( file.pilotRui, "playerIcon", classIcon )	
+		RuiSetImage( file.pilotRui, "playerIcon", classIcon )
 	}
 }
 
@@ -1142,13 +1142,13 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackFloat( statusRui, "deathfieldDistance", player, RUI_TRACK_DEATHFIELD_DISTANCE )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
-	
+
 	if(GameRules_GetGameMode() != "flowstate_snd")
 	{
 		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
 	}
-	
+
 	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true || GameRules_GetGameMode() == "fs_infected")
 	{
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
@@ -1166,7 +1166,7 @@ void function OnHealthPickupTypeChanged( entity player, int oldKitType, int kitT
 
 	if ( !IsLocalViewPlayer( player ) )
 		return
-	
+
 	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		UpdateDpadHud( player )
 }
@@ -1514,7 +1514,7 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 	{
 		// if( tier > 5 )
 			// tier = 5
-		
+
 		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
 		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
 		UpdateActiveLootPings()
@@ -1655,7 +1655,7 @@ void function ToggleFireSelect( entity player )
 		WeaponModCommand_Toggle( "altfire" )
 		return
 	}
-	
+
 	if( DoesModExist( weapon, "choke" ) )
 	{
 		WeaponModCommand_Toggle( "choke" )
@@ -2296,7 +2296,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 			if(ent == player)
 				return
 		}
-		
+
 		file.playerArrows[ent] <- rui
 
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
@@ -2307,12 +2307,12 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
 	}
-	
+
 	RuiSetFloat3( rui, "mapCorner", <file.mapCornerX, file.mapCornerY, 0.0> )
 	RuiSetFloat( rui, "mapScale", file.mapScale )
 	RuiTrackFloat2( rui, "zoomPos", null, RUI_TRACK_BIG_MAP_ZOOM_ANCHOR )
 	RuiTrackFloat( rui, "zoomFactor", null, RUI_TRACK_BIG_MAP_ZOOM_SCALE )
-	
+
 	RuiTrackInt( rui, "objectFlags", ent, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( rui, "customState", ent, RUI_TRACK_MINIMAP_CUSTOM_STATE )
 	RuiSetFloat( rui, "displayDist", max( file.threatMaxDist, 2200 ) )
@@ -2382,10 +2382,10 @@ void function UpdateImageAndScaleOnFullmapRUI(asset image, float mapscale)
 			file.mapScale = mapscale
 			RuiSetImage( file.fullmaprui, "mapImage", image )
 			RuiSetFloat( file.fullmaprui, "mapScale", file.mapScale )
-			
+
 			foreach(player, savedRui in file.playerArrows)
 			{
-				
+
 				RuiSetFloat( savedRui, "mapScale", file.mapScale )
 			}
 		}
@@ -2567,7 +2567,7 @@ void function Survival_OnPlayerClassChanged( entity player )
 	foreach( mod in player.GetPlayerSettingsMods() )
 		if( mod == "enable_doublejump" )
 			doublejumpTest = true
-	
+
 	if( doublejumpTest )
 	{
 		if( !player.IsOnGround() )
@@ -2575,29 +2575,29 @@ void function Survival_OnPlayerClassChanged( entity player )
 			thread function () : ( player )
 			{
 				EndSignal( player, "OnDeath" )
-				
+
 				AddPlayerHint( 5.0, 0.25, $"", "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
-				
+
 				OnThreadEnd(
 					function () : ( player )
 					{
 						HidePlayerHint( "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
 					}
 				)
-				
+
 				bool stillHasDoubleJumpMod
-				
+
 				while( !player.IsOnGround() )
 				{
 					stillHasDoubleJumpMod = false
-					
+
 					foreach( mod in player.GetPlayerSettingsMods() )
 						if( mod == "enable_doublejump" )
 							stillHasDoubleJumpMod = true
-						
+
 					if( !stillHasDoubleJumpMod )
 						break
-					
+
 					WaitFrame()
 				}
 			}()
@@ -3086,7 +3086,7 @@ void function EnableToggleMuteKeys()
 void function DisableToggleMuteKeys()
 {
 	DisableCustomMapAndGamemodeNameFrames()
-	
+
 	if ( !SquadMuteIntroEnabled() )
 		return
 
@@ -3118,7 +3118,7 @@ bool function GetWaitingForPlayersOverlayEnabled( entity player )
 		return false
 	// if( GameRules_GetGameMode() != SURVIVAL )
 		// return false
-	
+
 	return true
 }
 
@@ -3133,12 +3133,12 @@ void function WaitingForPlayersOverlay_Setup( entity player )
 	RuiSetResolutionToScreenSize( s_overlayRui )
 
 	UpdateWaitingForPlayersMuteHint()
-	
+
 	if( GetCamerasForMap( GetMapName() ).len() > 0 )
 	{
 		RuiSetBool( s_overlayRui, "isOpaque", false )
 		WaitingForPlayers_CreateCustomCameras()
-	} else 
+	} else
 	{
 		RuiSetBool( s_overlayRui, "isOpaque", PreGame_GetWaitingForPlayersHasBlackScreen() && !CircularHudEnabled() )
 	}
@@ -3147,7 +3147,7 @@ void function WaitingForPlayersOverlay_Setup( entity player )
 void function WaitingForPlayersOverlay_Destroy()
 {
 	WaitingForPlayers_RemoveCustomCameras()
-	
+
 	if ( s_overlayRui == null )
 		return
 
@@ -3173,19 +3173,19 @@ void function WaitingForPlayers_CreateCustomCameras()
 		RuiSetBool( s_overlayRui, "isOpaque", true )
 		return
 	}
-	
+
 	entity player = GetLocalClientPlayer()
-	
+
 	WaitingForPlayersCameraLocPair waitingForPlayersCamera = ReturnCameraForThisTime()
-	
+
 	vector origin = waitingForPlayersCamera.origin
 	origin.z += 100
-	
+
 	entity camera = CreateClientSidePointCamera( origin, waitingForPlayersCamera.angles, 70 )
 	player.ClearMenuCameraEntity()
     player.SetMenuCameraEntityWithAudio( camera )
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
-	
+
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 
 	if( GameRules_GetGameMode() == SURVIVAL )
@@ -3196,10 +3196,10 @@ void function WaitingForPlayers_CreateCustomCameras()
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
 	}
-	
+
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_GamemodeFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/gamemode")
 	RuiSetImage( Hud_GetRui( HudElement( "WaitingForPlayers_MapFrame" ) ), "basicImage", $"rui/gamemodes/survival/waitingforplayers/map")
-	
+
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeName" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), true)
@@ -3219,20 +3219,20 @@ void function DisableCustomMapAndGamemodeNameFrames()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), false)
-	
+
 }
 
 void function WaitingForPlayers_RemoveCustomCameras()
 {
 	entity player = GetLocalClientPlayer()
-	
+
 	player.ClearMenuCameraEntity()
 	SetMapSetting_FogEnabled( true )
 	DisableCustomMapAndGamemodeNameFrames()
-	
+
 	if( GetCurrentPlaylistName() != "fs_survival" && GetCurrentPlaylistName() != "fs_survival_duos" && GetCurrentPlaylistName() != "fs_survival_solos" )
 		return
-		
+
 	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
 	entity camera = CreateClientSidePointCamera( targetCamera.GetOrigin(), targetCamera.GetAngles(), 35.5 )
 	player.SetMenuCameraEntity( camera )
@@ -3255,7 +3255,7 @@ WaitingForPlayersCameraLocPair function ReturnCameraForThisTime()
 array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 {
 	array<WaitingForPlayersCameraLocPair> cutsceneSpawns
-	
+
 	switch(map)
 	{
 		case "mp_rr_desertlands_64k_x_64k":
@@ -3268,7 +3268,7 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 			cutsceneSpawns.append(NewCameraPair( <-1528.49048, -7687.84863, -4087.68896>, <0, -7.29582596, 0> ))
 			cutsceneSpawns.append(NewCameraPair( <4207.39697, -21928.7891, -3208.28174>, <0, -16.8694267, 0> ))
 		break
-		
+
 		case "mp_rr_canyonlands_64k_x_64k":
 		case "mp_rr_canyonlands_mu1":
 		case "mp_rr_canyonlands_mu1_night":
@@ -3278,14 +3278,14 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 			cutsceneSpawns.append(NewCameraPair( <28823.8867, 4136.58398, 4171.0459>, <0, -135.179871, 0> ))
 		break
 	}
-	
-	return cutsceneSpawns	
+
+	return cutsceneSpawns
 }
 
 void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
-	
+
 	if( GetCurrentPlaylistName() == "fs_survival" || GetCurrentPlaylistName() == "fs_survival_duos" || GetCurrentPlaylistName() == "fs_survival_solos" )
 		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
@@ -3398,15 +3398,15 @@ void function SetDpadMenuHidden()
 
 void function ChangeHUDVisibilityWhenInCryptoDrone( bool isInCryptoDrone = false )
 {
-	
+
 	//if ( IsAlive( GetLocalClientPlayer() ) )
 	//{
-	//	
+	//
 	//	var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
 	//
 	//	if ( cryptoAnimatedTacticalRui != null )
 	//	{
-	//		
+	//
 	//		RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
 	//	}
 	//}
@@ -3418,7 +3418,7 @@ void function OnGameStatePlaying_CheckCryptoDrone()
 {
 	entity player = GetLocalClientPlayer()
 
-	
+
 	if (PlayerHasPassive( player, ePassives.PAS_CRYPTO ))
 	{
 		ChangeHUDVisibilityWhenInCryptoDrone(IsPlayerInCryptoDroneCameraView(player))
@@ -3951,7 +3951,7 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 	Assert( IsValid( clientPlayer ) )
 
 	bool isPureSpectator = clientPlayer.GetTeam() == TEAM_SPECTATOR
-	
+
 	if ( clientPlayer.GetTeam() == winningTeam || IsAlive( clientPlayer ) || isPureSpectator )
 		ShowChampionVictoryScreen( winningTeam )
 }
@@ -3959,9 +3959,9 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 void function ServerCallback_DestroyEndAnnouncement()
 {
 	entity clientPlayer = GetLocalClientPlayer()
-	
+
 	if(!IsValid(clientPlayer)) return
-	
+
 	ForceDestroyBlackBarRui()
 	ForceDestroyChampionScreenRui()
 }
@@ -4964,11 +4964,11 @@ void function ServerCallback_NessyMessage( int state )
 		case 0:
 			Obituary_Print_Localized( Localize( "#NESSY_APPEARS" ) )
 		break
-		
+
 		case 1:
 			Obituary_Print_Localized( Localize( "#NESSY_SURFACES" ) )
 		break
-		
+
 		case 40:
 		//printt("Mantling, zipline use count reset.")
 		entity player = GetLocalClientPlayer()
@@ -5029,7 +5029,7 @@ bool function IsSquadMuted()
 
 bool function SquadMuteIntroEnabled()
 {
-	return GetCurrentPlaylistVarBool( "squad_mute_intro_enable", true )
+	return IsFiringRangeGameMode() ? false : GetCurrentPlaylistVarBool( "squad_mute_intro_enable", true )
 }
 
 
@@ -5081,6 +5081,6 @@ void function AddCallback_ShouldRunCharacterSelection( bool functionref() func )
 
 void function DEV_SendCheatsStateToUI()
 {
-	bool cheatsState = GetConVarBool( "sv_cheats" )	
+	bool cheatsState = GetConVarBool( "sv_cheats" )
 	RunUIScript("UpdateCheatsState", cheatsState)
 }
