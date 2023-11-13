@@ -1062,7 +1062,6 @@ void function PlayerPickedUpFlag(entity ent)
 {
 	if( ent.GetTeam() == TEAM_IMC )
 	{
-		Highlight_SetEnemyHighlightWithParam0( ent, "bloodhound_sonar", <0,0,1> )
 		int AttachID = ent.LookupAttachment( "CHESTFOCUS" )
 		IMCPoint.trailfx = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_ar_holopilot_trail" ), FX_PATTACH_ABSORIGIN_FOLLOW, AttachID )
 
@@ -1074,7 +1073,6 @@ void function PlayerPickedUpFlag(entity ent)
 	}
 	else
 	{
-		Highlight_SetEnemyHighlightWithParam0( ent, "bloodhound_sonar", <1,0,0> )
 		int AttachID = ent.LookupAttachment( "CHESTFOCUS" )
 		MILITIAPoint.trailfx = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_ar_holopilot_trail" ), FX_PATTACH_ABSORIGIN_FOLLOW, AttachID )
 
