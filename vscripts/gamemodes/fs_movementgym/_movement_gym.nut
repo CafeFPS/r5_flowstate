@@ -4084,7 +4084,7 @@ function MovementGym_Map3() {
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4223.4, 20587.2, 24891.9 >, < 0, -45, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4076.2, 20520.2, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4183.3, 20627.3, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < -6299, 22782, 23704 >, < 0, 179.9998, -90 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < -6132.1, 25783.2, 23042.5 >, < 0, 0, 90 >, true, 50000, -1, 1 )
 
     foreach ( entity ent in ClipArray )
     {
