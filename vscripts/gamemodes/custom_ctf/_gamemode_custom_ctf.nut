@@ -1082,7 +1082,11 @@ void function PlayerPickedUpFlag(entity ent)
 			MILITIAPoint.trailfx.kv.VisibilityFlags = ( ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY ) //owner cant see
 		}
 	}
-
+	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+	}
 	StorePilotWeapons( ent )
 
 	//ball carrier can't run
