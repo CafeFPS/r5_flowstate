@@ -1085,7 +1085,7 @@ void function PlayerPickedUpFlag(entity ent)
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
-		Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+		Remote_CallFunction_NonReplay( ent, "FS_ForceDestroyCustomAdsOverlay" )
 	}
 	StorePilotWeapons( ent )
 
