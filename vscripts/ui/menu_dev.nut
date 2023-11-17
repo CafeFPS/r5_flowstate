@@ -186,7 +186,7 @@ void function ClearCodeDevMenu()
 void function UpdateDevMenuButtons()
 {
 	file.devCommands.clear()
-	
+
 	if ( file.initializingCodeDevMenu )
 		return
 
@@ -272,10 +272,10 @@ void function SetupDefaultDevCommandsMP()
 {
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
-	
+
 	if(GetCurrentPlaylistName() == "map_editor_deprecated")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
-	
+
 	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1")
 	{
 		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
@@ -285,18 +285,18 @@ void function SetupDefaultDevCommandsMP()
 	}
 
 	if(GetCheatsState()){
-		
+
 		SetupDevMenu( "Abilities", SetDevMenu_Abilities )
 		SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
 		//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
-		
+
 		if ( IsSurvivalMenuEnabled() )
 		{
 			SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
 			SetupDevMenu( "Survival", SetDevMenu_Survival )
 			SetupDevMenu( "Custom: Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
-			SetupDevMenu( "Custom: Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )			
+			SetupDevMenu( "Custom: Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )
 			SetupDevMenu( "Survival: Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
 			SetupDevMenu( "Survival: Attachments", SetDevMenu_SurvivalLoot, "attachment" )
 			SetupDevMenu( "Survival: Helmets", SetDevMenu_SurvivalLoot, "helmet" )
@@ -369,8 +369,8 @@ void function SetupDefaultDevCommandsMP()
 
 		SetupDevCommand( "Melee: Equip Bolo Sword", "script thread SetupHeirloom()" )
 		SetupDevCommand( "Melee: Equip Shadow Hands", "script thread SetupShadowHands()" )
-		// SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
-		
+		// SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )
+
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
 		//SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
@@ -434,20 +434,20 @@ void function SetDevMenu_Weapons( var _ )
 }
 void function SetDevMenu_TDMPrimaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMPrimaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMPrimaryWeapons )
 }
 void function SetDevMenu_TDMSecondaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMSecondaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMSecondaryWeapons )
 }
 void function SetDevMenu_SurvivalCharacter( var _ )
 {
 	thread ChangeToThisMenu( SetupChangeSurvivalCharacterClass )
 }
 
-void function SetDevMenu_Editor( var _ ) 
+void function SetDevMenu_Editor( var _ )
 {
-	thread ChangeToThisMenu( SetupEditor ) 
+	thread ChangeToThisMenu( SetupEditor )
 }
 
 void function DEV_InitLoadoutDevSubMenu()
@@ -732,7 +732,7 @@ void function SetupRespawnPlayersDevMenu()
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
 }
-void function SetupTDMPrimaryWeapsons()
+void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -765,7 +765,7 @@ void function SetupTDMPrimaryWeapsons()
 	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 sniper_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
 	//SetupDevCommand( "Kraber", "tgive p mp_weapon_sniper" )
-	
+
 
 	//foreach ( player in gp() )
 	//{
@@ -773,7 +773,7 @@ void function SetupTDMPrimaryWeapsons()
 	//}
 }
 
-void function SetupTDMSecondaryWeapsons()
+void function SetupTDMSecondaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -806,7 +806,7 @@ void function SetupTDMSecondaryWeapsons()
 	SetupDevCommand( "Longbow", "tgive s mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive s mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
 	//SetupDevCommand( "Kraber", "tgive s mp_weapon_sniper" )
-	
+
 
 	//foreach ( player in gp() )
 	//{
