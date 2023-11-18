@@ -847,6 +847,7 @@ Scripts:
 	//Statistics
 	ui/FlowstateDM/flowstate_statistics.nut
 	ui/FlowstateDM/flowstate_menu_vote.nut
+	ui/FlowstateDM/flowstate_menu_voteteam.nut
 	
 	ui/menu_weaponmods.nut
 ]

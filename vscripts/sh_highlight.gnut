@@ -104,8 +104,8 @@ global const HIGHLIGHT_OUTLINE_INTERACT_BUTTON = 105 // outline_interact_button
 global const HIGHLIGHT_FILL_INTERACT_BUTTON = 103 // inside_interact_button
 global const HIGHLIGHT_OUTLINE_OBJECTIVE = 125 // outline_objective
 
-const HIGHLIGHT_OUTLINE_VM_CUSTOM_COLOR = 114
-const HIGHLIGHT_FILL_VM_CUSTOM_COLOR = 114
+global const HIGHLIGHT_OUTLINE_VM_CUSTOM_COLOR = 114
+global const HIGHLIGHT_FILL_VM_CUSTOM_COLOR = 114
 
 const HIGHLIGHT_FILL_NONE = 0
 const HIGHLIGHT_FILL_CUSTOM_COLOR = 101 // inside_custom_color

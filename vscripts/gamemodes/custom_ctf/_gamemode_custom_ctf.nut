@@ -28,6 +28,9 @@ struct {
 	int currentRound = 1
 	array< int > haloModAvailableColors = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
 	int winnerTeam
+	
+	bool VoteTeamEnabled = false
+	
 } file;
 
 struct CTFPoint
@@ -104,6 +107,9 @@ void function _CustomCTF_Init()
 		AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
 		// Used for setting players class
 		AddClientCommandCallback("SetPlayerClass", ClientCommand_SetPlayerClass)
+	} else
+	{
+		AddClientCommandCallback("VoteTeam_AskForTeam", ClientCommand_AskForTeam)
 	}
 	// Used for telling the server the player wants to drop the flag
 	AddClientCommandCallback("DropFlag", ClientCommand_DropFlag)
@@ -326,21 +332,65 @@ void function VotingPhase()
 	{
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
 	}
-	
-	// SetTeam(player, 99 )
 
+	//Open Vote for Team Menu ( Halo Mod Only )
+	
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		file.VoteTeamEnabled = true
+		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
+		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + 5 )
+
+		foreach( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
+		}
+
+		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
+			WaitFrame()
+
+		file.VoteTeamEnabled = false
+	}
+
+	int maxplayers = GetPlayerArray().len()
+	int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
+	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+	
+	//Assign desired team
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) )
 			continue
 
-		int maxplayers = GetPlayerArray().len()
-		int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
+		if(player.p.teamasked != -1)
+		{
+			printt( "poner jugador en equipo solicitado", player )
+			switch(player.p.teamasked)
+			{
+				case 0:
+					SetTeam(player, TEAM_MILITIA )
+					break
+				case 1:
+					SetTeam(player, TEAM_IMC )
+					break
+				default:
+					break
+			}
+		} else
+		{
+			printt( "poner jugador en equipo que tenga espacio ya que no voto", player )
+			if( GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia )
+				SetTeam(player, TEAM_MILITIA )
+			else
+				SetTeam(player, TEAM_IMC )
+		}
+		
+		printt( maxplayers, idealMilitia, GetPlayerArrayOfTeam(TEAM_MILITIA).len(), GetPlayerArrayOfTeam(TEAM_IMC).len())
 
-		if(GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia)
-			SetTeam(player, TEAM_MILITIA )
-		else
-			SetTeam(player, TEAM_IMC )
+		array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+		int teamMemberIndex = playerTeam.len() - 1
+		player.SetTeamMemberIndex( teamMemberIndex )
 	}
 }
 
@@ -378,7 +428,9 @@ void function StartRound()
 	home2.SetOrigin( IMCPoint.spawn )
 
 	ResetMILITIAFlag()
-	ResetIMCFlag()
+	thread ResetIMCFlag()
+	
+	wait 1
 
 	int milCount
 	int imcCount
@@ -1962,4 +2014,40 @@ void function FS_StartIntroScreen()
 		player.MakeInvisible()
 		Remote_CallFunction_NonReplay(player, "FS_CreateIntroScreen")
 	}
+}
+
+bool function ClientCommand_AskForTeam(entity player, array < string > args) 
+{	
+	if( !IsValid(player) || args.len() != 1 || !file.VoteTeamEnabled ) return false //player.p.teamasked != -1 
+
+	switch(args[0])
+	{
+		case "0":
+			player.p.teamasked = 0
+			foreach(entity sPlayer in GetPlayerArray())
+			{
+				if ( !IsValid( player ) ) continue
+
+				Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_AddClientThatVotedToTeam", player.GetEncodedEHandle(), 0 )
+				Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_RemoveClientThatVotedFromTeam", player.GetEncodedEHandle(), 1 )
+			}			
+		break
+		
+		case "1":
+			player.p.teamasked = 1
+			foreach(entity sPlayer in GetPlayerArray())
+			{
+				if ( !IsValid( player ) ) continue
+
+				Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_AddClientThatVotedToTeam", player.GetEncodedEHandle(), 1 )
+				Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_RemoveClientThatVotedFromTeam", player.GetEncodedEHandle(), 0 )
+			}			
+		break
+		
+		default:
+			player.p.teamasked = -1
+		break
+	}	
+	
+	return true
 }

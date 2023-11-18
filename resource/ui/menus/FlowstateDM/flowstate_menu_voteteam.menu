@@ -1,0 +1,399 @@
+"scripts/resource/ui/menus/FlowstateDM/flowstate_menu_voteteam.menu"
+{
+	"menu"
+	{
+		"ControlName"						"Frame"
+		"xpos"								"0"
+		"ypos"								"0"
+		"zpos"								"3"
+		"wide"								"f0"
+		"tall"								"f0"
+		"autoResize"						"0"
+		"pinCorner"							"0"
+		"visible"							"1"
+		"enabled"							"1"
+		"tabPosition"						"0"
+		"PaintBackgroundType"				"0"
+		"infocus_bgcolor_override"			"0 0 0 0"
+		"outoffocus_bgcolor_override"		"0 0 0 0"
+		"modal"								"1"
+		//select team buttons
+		// "SelectTeamText"
+		// {
+			// ControlName				Label
+			// xpos                    0
+			// ypos					25
+			// zpos 20
+			// auto_wide_tocontents	1
+			// tall					50
+			// visible					1
+			// fontHeight				25
+			// labelText				"Players left to select team"
+			// font					"TitleBoldFont"
+			// allcaps					1
+			// fgcolor_override		"255 255 255 255"
+			// pin_to_sibling			"SelectTeamFrame"
+			// pin_corner_to_sibling	CENTER
+			// pin_to_sibling_corner	CENTER
+		// }
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/invisible.rpak"
+			visible					1
+			drawColor				"0 0 0 0"
+		}
+		// "TeamCondorFrame"
+		// {
+			// ControlName				RuiPanel
+			// rui                     "ui/basic_border_box.rpak"
+			// drawColor				"0 0 0 50"
+			// "wide"						"300"
+			// "tall"						"290"
+			// "xpos"						"0"
+			// "ypos"						"-10"
+			// "zpos"	"19"
+			// "visible"					"1"
+			// "scaleImage"				"1"
+			// "pin_to_sibling"			TeamCondorList
+			// "pin_corner_to_sibling"		CENTER
+			// "pin_to_sibling_corner"		CENTER
+		// }		
+		"TeamPropsButton"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/invisible.rpak"//"ui/settings_choice_button.rpak"//
+			wide					%25
+			tall					%80
+			"visible"					"0"
+			"enabled"					"0"
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "TEAM CONDOR"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			
+			textAlignment			center
+			xpos                    -250
+			ypos                    50
+			zpos                    15
+
+			pin_to_sibling          ScreenBlur
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+
+		TeamCondorList
+		{
+			ControlName				GridButtonListPanel
+			xpos                    230
+			ypos                    50
+			zpos 20
+			columns                 1
+			rows                    4
+			buttonSpacing           2
+			scrollbarSpacing        1
+			scrollbarOnLeft         0
+			setUnusedScrollbarInvisible 1
+			visible					1
+			tabPosition             1
+			selectOnDpadNav         1
+
+			ButtonSettings
+			{
+				rui                     "ui/generic_popup_button.rpak"
+				clipRui                 1
+				wide					235
+				tall					45
+				cursorVelocityModifier  0.7
+				zpos 21
+				rightClickEvents		0
+				doubleClickEvents       0
+				sound_focus             ""
+				sound_accept            ""
+				sound_deny              ""
+			}
+
+			pin_to_sibling				TeamPropsButton
+			pin_corner_to_sibling		LEFT
+			pin_to_sibling_corner		LEFT
+		}
+		"TeamCondorListText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					3
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				28
+			labelText				"There are no players on the Team Condor"
+			font					"DefaultBold_62_DropShadow"
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamTeamCondorTextFrame"
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		"TeamTeamCondorTextFrame"
+		{
+			ControlName				RuiPanel
+			rui                     "ui/basic_border_box.rpak"
+			drawColor				"0 0 0 50"
+			"wide"						"325"
+			"tall"						"35"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"zpos"	"19"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			TeamPropsButton
+			"pin_corner_to_sibling"		BOTTOM
+			"pin_to_sibling_corner"		BOTTOM
+		}
+		"TeamSeekersButton"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/invisible.rpak"//"ui/settings_choice_button.rpak"//
+			wide					%25
+			tall					%80
+			"visible"					"0"
+			"enabled"					"0"
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "TEAM ORCHID"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    250
+			ypos                    50
+			zpos                    15
+
+			pin_to_sibling          ScreenBlur
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		// "TeamOrchidFrame"
+		// {
+			// ControlName				RuiPanel
+			// rui                     "ui/basic_border_box.rpak"
+			// drawColor				"0 0 0 50"
+			// "wide"						"300"
+			// "tall"						"290"
+			// "xpos"						"0"
+			// "ypos"						"-10"
+			// "zpos"	"19"
+			// "visible"					"1"
+			// "scaleImage"				"1"
+			// "pin_to_sibling"			TeamOrchidList	
+			// "pin_corner_to_sibling"		CENTER
+			// "pin_to_sibling_corner"		CENTER
+		// }
+		"TeamOrchidListText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					3
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				28
+			labelText				"There are no players on the Team Orchid"
+			font					"DefaultBold_62_DropShadow"
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamTeamOrchidTextFrame"
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		"TeamTeamOrchidTextFrame"
+		{
+			ControlName				RuiPanel
+			rui                     "ui/basic_border_box.rpak"
+			drawColor				"0 0 0 50"
+			"wide"						"325"
+			"tall"						"35"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"zpos"	"19"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			TeamSeekersButton
+			"pin_corner_to_sibling"		BOTTOM
+			"pin_to_sibling_corner"		BOTTOM
+		}
+
+		TeamOrchidList
+		{
+			ControlName				GridButtonListPanel
+			xpos                    230
+			ypos                    50
+			zpos 20
+			columns                 1
+			rows                    4
+			buttonSpacing           2
+			scrollbarSpacing        1
+			scrollbarOnLeft         1
+			setUnusedScrollbarInvisible 1
+			visible					1
+			tabPosition             1
+			selectOnDpadNav         1
+
+			ButtonSettings
+			{
+				rui                     "ui/generic_popup_button.rpak"
+				clipRui                 1
+				wide					235
+				tall					50
+				cursorVelocityModifier  0.7
+				zpos 21
+				rightClickEvents		0
+				doubleClickEvents       0
+				sound_focus             ""
+				sound_accept            ""
+				sound_deny              ""
+			}
+
+			pin_to_sibling				TeamSeekersButton
+			pin_corner_to_sibling		RIGHT
+			pin_to_sibling_corner		RIGHT
+		}
+		
+		"DarkenBackground"
+		{
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"%100"
+			"tall"					"%100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 20"
+			"visible"				"1"
+			"paintbackground"		"1"
+		}
+		
+		"ScoreboardText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-45"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"50"
+			"labelText"					"CHOOSE A TEAM"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 155"
+			"pin_to_sibling"			"TimerFrame"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		"TimerFrame"
+		{
+			ControlName				RuiPanel
+			rui                     "ui/tabs_background.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+			"wide"						"f0"
+			"tall"						"125"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+
+		"TextCredits2"
+		{
+			"ControlName"				"Label"
+			"xpos"						"-30"
+			"ypos"						"-40"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"30"
+			"visible"					"1"
+			"fontHeight"				"35"
+			labelText					"FLOWSTATE"
+			font						"TitleBoldFont"
+			allcaps						1
+			fgcolor_override			"255 0 119 255"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
+		}
+		
+		"TextCredits"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"32"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"22"
+			"labelText"					"Made by @CafeFPS - ©Respawn Entertainment"
+			"font"						"DefaultBold_62_DropShadow"
+			"allcaps"					"0"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"TextCredits2"
+			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
+			"pin_to_sibling_corner"		"BOTTOM_RIGHT"
+		}
+
+		VotingPhaseChatBox
+		{
+			ControlName             CBaseHudChat
+			InheritProperties       ChatBox
+
+			bgcolor_override        "0 0 0 80"
+			chatBorderThickness     1
+			chatHistoryBgColor      "24 27 30 120"
+			chatEntryBgColor        "24 27 30 120"
+			chatEntryBgColorFocused "24 27 30 120"
+
+			destination				    "global"
+			hideInputBox			0
+			visible                    1
+			teamChat                   0
+			stopMessageModeOnFocusLoss 0
+			menuModeWithFade           0
+			messageModeAlwaysOn		1
+
+			xpos					-260
+			ypos					%-30
+			zpos                    200
+
+			tall 					200
+			wide					650
+
+			pin_to_sibling			"DarkenBackground"
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+	
+	}
+}

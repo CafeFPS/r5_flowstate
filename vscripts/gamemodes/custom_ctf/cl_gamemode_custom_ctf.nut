@@ -40,6 +40,14 @@ global function FSCTF_GameStateChanged
 global function FS_CreateIntroScreen
 global function FSIntro_ForceEnd
 
+global function ServerCallback_FS_OpenVoteTeamMenu
+global function FS_InWorldPic
+global function HoverTeamButton
+global function VoteTeam_EndFocusModel
+global function VoteTeam_ClientAskedForTeam
+
+global function ServerCallback_AddClientThatVotedToTeam
+global function ServerCallback_RemoveClientThatVotedFromTeam
 struct {
 
 	LocationSettingsCTF &selectedLocation
@@ -68,6 +76,14 @@ struct {
 	entity FSIntro_CameraMover
 
 	array<entity> FSIntro_localSquadEnts
+	
+	entity VoteTeam_Camera
+	entity VoteTeam_orchidPlayerModel
+	vector VoteTeam_orchidPlayerModel_OgOrigin
+	entity VoteTeam_condorPlayerModel
+	vector VoteTeam_condorPlayerModel_OgOrigin
+
+	int VoteTeam_selectedTeam = -1
 } file
 
 struct {
@@ -130,6 +146,8 @@ void function Cl_CustomCTF_Init()
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
 	RegisterSignal( "StartNewWinnerScreen" )
+	RegisterSignal( "ChangeCameraToSelectedLocation" )
+	RegisterSignal( "VoteTeam_EndModelFocus" )
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SetCommsDialogueEnabled( false )
@@ -139,6 +157,8 @@ void function CL_FSCTF_RegisterNetworkFunctions()
 {
 	RegisterNetworkedVariableChangeCallback_time( "FSIntro_StartTime", Flowstate_IntroTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "FSIntro_EndTime", Flowstate_IntroEndTimeChanged )
+	// RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_StartTime", Flowstate_VoteTeamTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_EndTime", Flowstate_VoteTeamEndTimeChanged )
 	// RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_CTFRoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "imcFlag", CTF_FlagEntChangedImc )
@@ -258,14 +278,28 @@ void function Flowstate_IntroEndTimeChanged( entity player, float old, float new
 {
 	if ( !actuallyChanged  )
 		return
+}
 
-	// thread function () : ( new )
-	// {
-		// while( Time() < new )
-			// WaitFrame()
-		
-		
-	// }()
+void function Flowstate_VoteTeamTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+
+	// ServerCallback_FS_OpenVoteTeamMenu( true )
+}
+
+void function Flowstate_VoteTeamEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( !actuallyChanged  )
+		return
+	
+	thread function () : ()
+	{
+		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
+			WaitFrame()
+
+		ServerCallback_FS_OpenVoteTeamMenu( false )
+	}()
 }
 
 void function Flowstate_CTFRoundEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
@@ -1299,6 +1333,11 @@ void function FSIntro_StartIntroScreen()
 
 			string victoryAnim = "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq"
 			characterModel.Anim_Play( victoryAnim )
+			characterModel.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+
+			float duration = characterModel.GetSequenceDuration( victoryAnim )
+			float initialTime = RandomFloatRange( 0, duration )
+			characterModel.Anim_SetInitialTime( initialTime )
 
 			entity weapon = CreateClientSidePropDynamic( characterModel.GetOrigin(), <0, -120, 0>, $"mdl/flowstate_custom/w_haloassaultrifle.rmdl" )
 			cleanupEnts.append( weapon )
@@ -1521,4 +1560,333 @@ void function FSIntro_StartPlayerDataSmallUI( entity player, int side, float dur
 	Hud_SetText( HudElement( "FSIntro_NameText_Right" ), "" )
 	Hud_SetAlpha( HudElement( "FSIntro_NameText_Left" ), 255 )
 	Hud_SetAlpha( HudElement( "FSIntro_NameText_Right" ), 255 )
+}
+
+
+void function ServerCallback_FS_OpenVoteTeamMenu( bool shouldOpen )
+{
+	if(shouldOpen)
+	{
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.3, 0.0, FFADE_IN | FFADE_PURGE)
+		thread CoolCamera_VoteTeam()
+		RunUIScript( "Open_FS_VoteTeam" )
+	}
+	else
+	{
+		ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, 0, 0, FFADE_OUT | FFADE_STAYOUT )
+		GetLocalClientPlayer().Signal("ChangeCameraToSelectedLocation")
+		RunUIScript( "Close_FS_VoteTeam" )
+	}
+	
+}
+LocPair function NewCameraPair(vector origin, vector angles)
+{
+    LocPair locPair
+    locPair.origin = origin
+    locPair.angles = angles
+
+    return locPair
+}
+
+
+
+void function CoolCamera_VoteTeam()
+{
+    entity player = GetLocalClientPlayer()
+	player.Signal("ChangeCameraToSelectedLocation")
+	player.EndSignal("ChangeCameraToSelectedLocation")
+	array<LocPair> cutsceneSpawns
+	array<entity> cleanupEnts
+	array<var> cleanupRui
+
+    if(!IsValid(player)) return
+	
+	switch( file.selectedLocation.name )
+	{
+		case "Narrows":
+		cutsceneSpawns.append( NewCameraPair( <1489.99255, -6570.93262, 4041.996887>, <0, 133.833832, 0> ) ) 
+		break
+
+		case "The Pit":
+		cutsceneSpawns.append( NewCameraPair( <43176.4219, -8202.27832, -20011.8652>, <0,-133, 0> ) )//<2.34243202, 31.4227657, 0> ) ) 
+		break
+
+		case "Lockout":
+		cutsceneSpawns.append( NewCameraPair( <1489.99255, -6570.93262, 4041.996887>, <0, 133.833832, 0> ) ) 
+		break
+	}
+
+	if( cutsceneSpawns.len() == 0 )
+		return
+
+    EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
+
+	cutsceneSpawns.randomize()
+	vector randomcameraPos = cutsceneSpawns[0].origin
+	vector randomcameraAng = cutsceneSpawns[0].angles
+
+	entity model1 = CreateClientSidePropDynamic( randomcameraPos + AnglesToForward( randomcameraAng ) * 65 + AnglesToRight( randomcameraAng ) * 35, <0, 0 ,0>, $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+	model1.MakeSafeForUIScriptHack()
+	model1.Anim_Play( "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq" )
+	model1.SetAngles( <0,VectorToAngles( randomcameraPos - model1.GetOrigin()).y,0> )
+	model1.Anim_SetInitialTime( RandomFloatRange( 0, model1.GetSequenceDuration( "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq" ) ) )
+	model1.Highlight_Enable()
+	
+	file.VoteTeam_orchidPlayerModel_OgOrigin = model1.GetOrigin()
+	file.VoteTeam_orchidPlayerModel = model1
+
+	entity light1 = CreateClientSideDynamicLight( <0, 0, 0>, <0, 0, 0>, <1, 1, 1>, 175.0 )
+	light1.SetLightExponent( 3.1 )
+	light1.SetParent( model1, "CHESTFOCUS", false )
+	light1.SetLocalOrigin( <30, 13, 41> )
+	
+	var rui1 = FS_InWorldPic( model1.GetOrigin() + <0, 0, 15> + AnglesToForward( model1.GetAngles() ) * 12, randomcameraAng, "rui/flowstate_custom/team_orchid", true, 28, 28, 1)
+	// FS_InWorldText( "Test 0 Test", model1.GetOrigin() + <0, 0, 50>, randomcameraAng )
+
+	entity model2 = CreateClientSidePropDynamic( randomcameraPos + AnglesToForward( randomcameraAng ) * 65 - AnglesToRight( randomcameraAng ) * 35, <0, 0 ,0>, $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+	model2.MakeSafeForUIScriptHack()
+	model2.Anim_Play( "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq" )
+	model2.SetAngles(  <0,VectorToAngles( randomcameraPos - model2.GetOrigin() ).y,0> )
+	model2.Anim_SetInitialTime( RandomFloatRange( 0, model2.GetSequenceDuration( "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq" ) ) )
+	model2.Highlight_Enable()
+
+	file.VoteTeam_condorPlayerModel_OgOrigin = model2.GetOrigin()
+	file.VoteTeam_condorPlayerModel = model2
+
+	entity light2 = CreateClientSideDynamicLight( <0, 0, 0>, <0, 0, 0>, <1, 1, 1>, 175.0 )
+	light2.SetLightExponent( 3.1 )
+	light2.SetParent( model2, "CHESTFOCUS", false )
+	light2.SetLocalOrigin( <30, 13, 41> )
+	
+	var rui2 = FS_InWorldPic( model2.GetOrigin() + <0, 0, 15> + AnglesToForward( model2.GetAngles() ) * 15, randomcameraAng, "rui/flowstate_custom/team_condor", true, 28, 28, 1)
+	// FS_InWorldText( "Test 2 Test", model2.GetOrigin() + <0, 0, 50>, randomcameraAng )
+
+	randomcameraPos += <0,0,40>
+
+    entity camera = CreateClientSidePointCamera(randomcameraPos, randomcameraAng, 17)
+	file.VoteTeam_Camera = camera
+    camera.SetFOV(110)
+
+	cleanupEnts.append( camera )
+	cleanupEnts.append( light2 )
+	cleanupEnts.append( light1 )
+	cleanupEnts.append( model2 )
+	cleanupEnts.append( model1 )
+	cleanupRui.append( rui1 )
+	cleanupRui.append( rui2 )
+
+	GetLocalClientPlayer().SetMenuCameraEntityWithAudio( camera )
+	GetLocalClientPlayer().SetMenuCameraEntity( camera )
+
+	DoF_SetFarDepth( 350, 4000 )
+	
+	OnThreadEnd(
+		function() : ( player, camera, cleanupRui, cleanupEnts ) //cutsceneMover
+		{
+					GetLocalClientPlayer().ClearMenuCameraEntity()
+
+					if(IsValid(player))
+					{
+						FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
+					}
+
+					foreach( ent in cleanupEnts )
+					{
+						if( IsValid( ent ) )
+							ent.Destroy()
+					}
+
+					foreach( rui in cleanupRui )
+					{
+						if ( rui != null )
+						{
+							RuiDestroyIfAlive( rui )
+						}
+					}
+
+					DoF_SetNearDepthToDefault()
+					DoF_SetFarDepthToDefault()
+		}
+	)
+	WaitForever()
+}
+
+var function FS_InWorldPic(vector origin, vector angles, string imgpath, bool useImgpath, float width, float height, float opacity, vector rgb = < 0, 0, 0 >) {
+	
+	// origin += (AnglesToUp( angles )*-1) * (height*0.5)
+	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+	
+	var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, RUI_SORT_SCREENFADE + 1 )
+	
+	RuiSetFloat( rui, "basicImageAlpha", opacity)
+	
+	if(useImgpath)
+		RuiSetString( rui, "basicImage", imgpath)
+	
+	if(!useImgpath)
+		RuiSetFloat3( rui, "basicImageColor", SrgbToLinear( rgb / 255 ))
+	
+	return rui
+}
+
+var function FS_InWorldText( string text, vector origin, vector angles )
+{
+	float width = 250
+	float height = 250
+
+
+	origin += (AnglesToUp( angles )*-1) * (height*0.5)
+	origin.z += 165
+	origin -= AnglesToRight( angles ) * 30
+	
+	printt( origin )
+	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+	
+	var rui = RuiCreate( $"ui/announcement_quick_right.rpak", topo, RUI_DRAW_WORLD, 32767 )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetFloat( rui, "duration", 99999999 )
+	RuiSetString( rui, "messageText", text)
+	
+	return rui
+}
+
+void function HoverTeamButton( int model, bool forceFx = false )
+{
+	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) )
+	{
+		vector color = <128, 52, 235>
+		float fillIntensityScalar    = 10
+		float outlineIntensityScalar = 300
+		float fadeInTime             = 0.25
+		float fadeOutTime            = 0.25
+		float lifeTime               = 5
+		float ditherDelay            = 0.15
+		float ditherDuration         = 0.2
+
+		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
+			return
+		printt( "starting new effect for condor menu model", file.VoteTeam_selectedTeam, model )
+		thread Custom_HighlightTest( file.VoteTeam_condorPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration, false )
+	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) )
+	{
+		vector color = <204, 14, 157>
+		float fillIntensityScalar    = 10
+		float outlineIntensityScalar = 300
+		float fadeInTime             = 0.25
+		float fadeOutTime            = 0.25
+		float lifeTime               = 5
+		float ditherDelay            = 0.15
+		float ditherDuration         = 0.2
+		
+		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
+			return
+		printt( "starting new effect for orchid menu model", file.VoteTeam_selectedTeam, model )
+		thread Custom_HighlightTest( file.VoteTeam_orchidPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration, false )
+	}
+}
+
+void function Custom_HighlightTest( entity model, vector color, float fillIntensityScalar, float outlineIntensityScalar, float fadeInTime, float fadeOutTime, float lifeTime, float ditherDelay, float ditherDuration, bool ignoreChildren )
+{
+	if ( !IsValid( model ) )
+		return
+
+	const float HIGHLIGHT_RADIUS = 2
+	Signal( model, "VoteTeam_EndModelFocus" )
+	EndSignal( model, "VoteTeam_EndModelFocus" )
+	
+	vector ogPos
+
+	if( model == file.VoteTeam_condorPlayerModel )
+		ogPos = file.VoteTeam_condorPlayerModel_OgOrigin
+	else if( model == file.VoteTeam_orchidPlayerModel )
+		ogPos = file.VoteTeam_orchidPlayerModel_OgOrigin
+
+	entity Mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", model.GetOrigin(), model.GetAngles() )
+	model.SetParent( Mover )
+	Mover.NonPhysicsMoveTo( ogPos + <AnglesToForward( VectorToAngles( file.VoteTeam_Camera.GetOrigin() - ogPos ) ).x, AnglesToForward( VectorToAngles( file.VoteTeam_Camera.GetOrigin() - ogPos ) ).y, 0> * 15, 0.1, 0, 0.1 )
+
+	OnThreadEnd(
+		function() : ( Mover, ogPos )
+		{
+			thread function() : ( Mover, ogPos )
+			{
+				Mover.NonPhysicsMoveTo( ogPos, 0.1, 0.1, 0 )
+				wait 0.1
+				if( IsValid( Mover ) )
+					Mover.Destroy()
+			}()
+		}
+	)
+
+	while( IsValid( model ) )
+	{
+		// model.Highlight_ResetFlags()
+		model.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
+		model.Highlight_SetCurrentContext( HIGHLIGHT_CONTEXT_NEUTRAL )
+		int highlightId = model.Highlight_GetState( HIGHLIGHT_CONTEXT_NEUTRAL )
+		model.Highlight_SetFunctions( HIGHLIGHT_CONTEXT_NEUTRAL, HIGHLIGHT_FILL_VM_CUSTOM_COLOR, true, HIGHLIGHT_OUTLINE_VM_CUSTOM_COLOR, HIGHLIGHT_RADIUS, highlightId, false )
+		model.Highlight_SetParam( HIGHLIGHT_CONTEXT_NEUTRAL, 0, color )
+		// model.Highlight_SetParam( HIGHLIGHT_CONTEXT_NEUTRAL, 1, <fillIntensityScalar, outlineIntensityScalar, 0> )
+		model.Highlight_SetFadeInTime( fadeInTime )
+		model.Highlight_SetFadeOutTime( fadeOutTime )
+		model.Highlight_StartOn()
+		model.Highlight_SetLifeTime( lifeTime )
+		wait 0.1
+	}
+}
+
+void function VoteTeam_EndFocusModel( int model )
+{
+	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) && file.VoteTeam_selectedTeam != model)
+	{
+		Signal( file.VoteTeam_condorPlayerModel, "VoteTeam_EndModelFocus" )
+	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) && file.VoteTeam_selectedTeam != model)
+	{
+		Signal( file.VoteTeam_orchidPlayerModel, "VoteTeam_EndModelFocus" )
+	}
+}
+
+void function VoteTeam_ClientAskedForTeam( int index )
+{
+	entity player = GetLocalClientPlayer()
+	
+	switch(index)
+	{
+		case 0:
+		file.VoteTeam_selectedTeam = 0
+		HoverTeamButton( 0, true )
+		if( IsValid( file.VoteTeam_orchidPlayerModel ) )
+			Signal( file.VoteTeam_orchidPlayerModel, "VoteTeam_EndModelFocus" )
+		player.ClientCommand("VoteTeam_AskForTeam 0")
+		break
+		
+		case 1:
+		file.VoteTeam_selectedTeam = 1
+		HoverTeamButton( 1, true )
+		if( IsValid( file.VoteTeam_condorPlayerModel ) )
+			Signal( file.VoteTeam_condorPlayerModel, "VoteTeam_EndModelFocus" )
+		player.ClientCommand("VoteTeam_AskForTeam 1")
+		break
+		
+		default:
+		file.VoteTeam_selectedTeam = -1
+		break
+	}
+	printt("changed selected team for menu model: " , index, file.VoteTeam_selectedTeam)
+}
+
+void function ServerCallback_AddClientThatVotedToTeam( int eHandle, int team )
+{
+	if ( !EHIHasValidScriptStruct( eHandle ) ) 
+		return
+	
+	RunUIScript( "AddPlayerNameToTeamArray", team, EHI_GetName(eHandle) )
+}
+
+void function ServerCallback_RemoveClientThatVotedFromTeam( int eHandle, int team )
+{
+	if ( !EHIHasValidScriptStruct( eHandle ) ) 
+		return
+	
+	RunUIScript( "RemovePlayerNameFromTeamArray", team, EHI_GetName(eHandle) )
 }
