@@ -343,6 +343,7 @@ void function VotingPhase()
 
 		foreach( player in GetPlayerArray() )
 		{
+			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
 		}
 
@@ -392,6 +393,7 @@ void function VotingPhase()
 		int teamMemberIndex = playerTeam.len() - 1
 		player.SetTeamMemberIndex( teamMemberIndex )
 	}
+	wait 0.5
 }
 
 // purpose: handle the start of a new round for players and props
@@ -541,7 +543,7 @@ void function StartRound()
 	}
 
 	SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-	SetGlobalNetTime( "FSIntro_EndTime", Time() + 8 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+	SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
 
 	while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
 		WaitFrame()

@@ -1250,12 +1250,14 @@ void function FSIntro_StartIntroScreen()
 	
 	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
-	
+
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		if( player.GetTeam() == TEAM_IMC )
 		{
 			file.victorySequencePosition = GetGlobalNetEnt( "imcFlag" ).GetOrigin()
+			
+			// rui = FS_InWorldPic( file.victorySequencePosition + <0, 0, 15>, file.victorySequenceAngles, "rui/flowstate_custom/flowstatepresents", true, 500, 282, 1)
 
 			switch( file.selectedLocation.name )
 			{
@@ -1277,6 +1279,8 @@ void function FSIntro_StartIntroScreen()
 		{
 			file.victorySequencePosition = GetGlobalNetEnt( "milFlag" ).GetOrigin()
 
+			// rui = FS_InWorldPic( file.victorySequencePosition + <0, 0, 15>, file.victorySequenceAngles, "rui/flowstate_custom/flowstatepresents", true, 500, 282, 1)
+	
 			switch( file.selectedLocation.name )
 			{
 				case "Narrows":
@@ -1303,119 +1307,128 @@ void function FSIntro_StartIntroScreen()
 	int maxPlayersToShow = 9
 	array<entity> charactersModels = file.FSIntro_localSquadEnts
 
-	if ( true )
+	// VictorySequenceOrderLocalPlayerFirst( player )
+	int j = 0
+	foreach( teamPlayer in file.FSIntro_localSquadEnts )
 	{
-		// VictorySequenceOrderLocalPlayerFirst( player )
-		int j = 0
-		foreach( teamPlayer in file.FSIntro_localSquadEnts )
-		{
-			if( !IsValid( teamPlayer ) || !teamPlayer.IsPlayer() )
-				continue
+		if( !IsValid( teamPlayer ) || !teamPlayer.IsPlayer() )
+			continue
 
-			if ( maxPlayersToShow > 0 && j > maxPlayersToShow )
-				break
+		if ( maxPlayersToShow > 0 && j > maxPlayersToShow )
+			break
 
-			string playerName = teamPlayer.GetPlayerName()
+		string playerName = teamPlayer.GetPlayerName()
 
-			entity characterNode = CreateScriptRef( teamPlayer.GetOrigin(), teamPlayer.GetAngles() )
+		entity characterNode = CreateScriptRef( teamPlayer.GetOrigin(), teamPlayer.GetAngles() )
 
-			entity characterModel = CreateClientSidePropDynamic( teamPlayer.GetOrigin(), teamPlayer.GetAngles(), teamPlayer.GetTeam() == TEAM_IMC ? $"mdl/Humans/pilots/w_master_chief_pink.rmdl" : $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+		entity characterModel = CreateClientSidePropDynamic( teamPlayer.GetOrigin(), teamPlayer.GetAngles(), teamPlayer.GetTeam() == TEAM_IMC ? $"mdl/Humans/pilots/w_master_chief_pink.rmdl" : $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
 
-			if( teamPlayer == player )
-				file.FSIntro_Localmodel = characterModel
+		if( teamPlayer == player )
+			file.FSIntro_Localmodel = characterModel
 
-			SetForceDrawWhileParented( characterModel, true )
-			characterModel.MakeSafeForUIScriptHack()
+		SetForceDrawWhileParented( characterModel, true )
+		characterModel.MakeSafeForUIScriptHack()
 
-			cleanupEnts.append( characterModel )
+		cleanupEnts.append( characterModel )
 
-			characterModel.SetParent( characterNode, "", false )
+		characterModel.SetParent( characterNode, "", false )
 
-			string victoryAnim = "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq"
-			characterModel.Anim_Play( victoryAnim )
-			characterModel.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+		string victoryAnim = "animseq/humans/class/medium/pilot_medium_bloodhound/bloodhound_idle_UA.rseq"
+		characterModel.Anim_Play( victoryAnim )
+		characterModel.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
 
-			float duration = characterModel.GetSequenceDuration( victoryAnim )
-			float initialTime = RandomFloatRange( 0, duration )
-			characterModel.Anim_SetInitialTime( initialTime )
+		float duration = characterModel.GetSequenceDuration( victoryAnim )
+		float initialTime = RandomFloatRange( 0, duration )
+		characterModel.Anim_SetInitialTime( initialTime )
 
-			entity weapon = CreateClientSidePropDynamic( characterModel.GetOrigin(), <0, -120, 0>, $"mdl/flowstate_custom/w_haloassaultrifle.rmdl" )
-			cleanupEnts.append( weapon )
-			weapon.SetParent( characterModel, "RIFLE_HOLSTER" )
+		entity weapon = CreateClientSidePropDynamic( characterModel.GetOrigin(), <0, -120, 0>, $"mdl/flowstate_custom/w_haloassaultrifle.rmdl" )
+		cleanupEnts.append( weapon )
+		weapon.SetParent( characterModel, "RIFLE_HOLSTER" )
 
-			j++
-		}
-
-		DoF_SetFarDepth( 500, 1000 )
-		DoF_LerpFarDepth( 100, 150, 0.5 )
-	
-		//Setup camera pos and angles
-		vector camera_start_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 250
-		vector camera_end_pos   = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 100 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
-		vector camera_focus_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) - AnglesToRight( charactersModels[0].GetAngles() ) * 17 - AnglesToUp( charactersModels[0].GetAngles() ) * 10
-		vector camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
-		vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
-
-		//Create camera and mover
-		file.FSIntro_CameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
-		file.FSIntro_Camera	  = CreateClientSidePointCamera( camera_start_pos, camera_start_angles, 40 )
-		entity cameraMover = file.FSIntro_CameraMover
-		entity camera = file.FSIntro_Camera
-
-		camera.SetTargetFOV( 40, true, EASING_CUBIC_INOUT, 0.0 )
-		camera.SetParent( cameraMover, "", false )
-		
-		player.SetMenuCameraEntityWithAudio( camera )
-
-		cleanupEnts.append( camera )
-		cleanupEnts.append( cameraMover )
-		
-		charactersModels = ArrayClosest( charactersModels, charactersModels[ charactersModels.len() - 1 ].GetOrigin() )
-		charactersModels.reverse()
-		
-		int i = 1
-		int divide = int( ceil ( float( charactersModels.len() ) / 2 ) )
-		
-		foreach( entity model in charactersModels )
-		{
-			camera_start_pos = camera.GetOrigin()
-			camera_end_pos   = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToForward( model.GetAngles() ) * 80 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
-			camera_focus_pos = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToRight( model.GetAngles() ) * 13 * ( i > divide ? 1 : -1 ) - AnglesToUp( model.GetAngles() ) * 10
-			camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
-			camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
-
-			thread FSIntro_StartPlayerDataSmallUI( model, i > divide ? 0 : 1 )
-
-			//Move camera to end pos
-			cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
-			cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
-			
-			i++
-			wait 1
-			
-			//cool human like camera shake by cafefps - idk what i did
-			waitthread function() : ( cameraMover, model, camera_end_pos, camera, camera_focus_pos )
-			{
-				EndSignal( camera, "OnDestroy" )
-				EndSignal( cameraMover, "OnDestroy" )
-
-				float endtime = Time() + FSINTRO_TIMEPERPLAYER - 1
-				while( Time() <= endtime )
-				{
-					float waittime = RandomFloatRange( 0.25, 0.5 )
-					cameraMover.NonPhysicsRotateTo( VectorToAngles( camera_focus_pos + AnglesToRight( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) - AnglesToUp( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) -  camera.GetOrigin() ), waittime, 0, 0 )
-					float actualtimetowait = RandomFloatRange( 0.25, waittime )
-					wait min( actualtimetowait, Time() + actualtimetowait - endtime )
-				}
-			}()
-		}
-
-		cameraMover.NonPhysicsMoveTo( OffsetPointRelativeToVector( file.victorySequencePosition, <0, 325, 70>, AnglesToForward( file.victorySequenceAngles ) ), 3, 0, 3 )
-		cameraMover.NonPhysicsRotateTo( VectorToAngles( (file.victorySequencePosition + AnglesToUp( file.victorySequenceAngles ) * 35) - OffsetPointRelativeToVector( file.victorySequencePosition, <0, 350, 88>, AnglesToForward( file.victorySequenceAngles ) ) ), 2, 1, 1 )	
-		DoF_LerpFarDepth( 700, 10000, 0.5 )
-		
-		wait 2.9
+		j++
 	}
+
+	DoF_SetFarDepth( 500, 1000 )
+	DoF_LerpFarDepth( 100, 150, 0.5 )
+	
+	if( charactersModels.len() == 0 )
+		return
+
+	//Setup camera pos and angles
+	vector camera_start_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 250
+	vector camera_end_pos   = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) + AnglesToForward( charactersModels[0].GetAngles() ) * 100 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
+	vector camera_focus_pos = charactersModels[0].GetAttachmentOrigin( charactersModels[0].LookupAttachment("HEADFOCUS") ) - AnglesToRight( charactersModels[0].GetAngles() ) * 17 - AnglesToUp( charactersModels[0].GetAngles() ) * 10
+	vector camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
+	vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
+
+	//Create camera and mover
+	file.FSIntro_CameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
+	file.FSIntro_Camera	  = CreateClientSidePointCamera( camera_start_pos, camera_start_angles, 40 )
+	entity cameraMover = file.FSIntro_CameraMover
+	entity camera = file.FSIntro_Camera
+
+	camera.SetTargetFOV( 40, true, EASING_CUBIC_INOUT, 0.0 )
+	camera.SetParent( cameraMover, "", false )
+
+	player.SetMenuCameraEntityWithAudio( camera )
+	
+	vector polePos = player.GetTeam() == TEAM_IMC ? GetGlobalNetEnt( "imcFlag" ).GetOrigin() : GetGlobalNetEnt( "milFlag" ).GetOrigin()
+
+	cleanupEnts.append( camera )
+	cleanupEnts.append( cameraMover )
+	
+	charactersModels = ArrayClosest( charactersModels, charactersModels[ charactersModels.len() - 1 ].GetOrigin() )
+	charactersModels.reverse()
+	
+	int i = 1
+	int divide = int( ceil ( float( charactersModels.len() ) / 2 ) )
+	
+	foreach( entity model in charactersModels )
+	{
+		camera_start_pos = camera.GetOrigin()
+		camera_end_pos   = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToForward( model.GetAngles() ) * 80 //+ OffsetPointRelativeToVector( model.GetOrigin(), <0, 0, 0>, AnglesToForward( model.GetAngles() ) )
+		camera_focus_pos = model.GetAttachmentOrigin( model.LookupAttachment("HEADFOCUS") ) + AnglesToRight( model.GetAngles() ) * 13 * ( i > divide ? 1 : -1 ) - AnglesToUp( model.GetAngles() ) * 10
+		camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
+		camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
+
+		thread FSIntro_StartPlayerDataSmallUI( model, i > divide ? 0 : 1 )
+
+		//Move camera to end pos
+		cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
+		cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
+
+		wait 1
+
+		if( i == charactersModels.len() )
+		{
+			FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1)
+			FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) 
+		}
+
+		i++
+		//cool human like camera shake by cafefps - idk what i did
+		waitthread function() : ( cameraMover, model, camera_end_pos, camera, camera_focus_pos )
+		{
+			EndSignal( camera, "OnDestroy" )
+			EndSignal( cameraMover, "OnDestroy" )
+
+			float endtime = Time() + FSINTRO_TIMEPERPLAYER - 1
+			while( Time() <= endtime )
+			{
+				float waittime = RandomFloatRange( 0.25, 0.5 )
+				cameraMover.NonPhysicsRotateTo( VectorToAngles( camera_focus_pos + AnglesToRight( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) - AnglesToUp( model.GetAngles() ) * RandomFloatRange( 0.3, 1.5 ) -  camera.GetOrigin() ), waittime, 0, 0 )
+				float actualtimetowait = RandomFloatRange( 0.25, waittime )
+				wait min( actualtimetowait, Time() + actualtimetowait - endtime )
+			}
+		}()
+	}
+
+	cameraMover.NonPhysicsMoveTo( OffsetPointRelativeToVector( file.victorySequencePosition, <0, 325, 70>, AnglesToForward( file.victorySequenceAngles ) ), 3, 0, 3 )
+	cameraMover.NonPhysicsRotateTo( VectorToAngles( (file.victorySequencePosition + AnglesToUp( file.victorySequenceAngles ) * 35) - OffsetPointRelativeToVector( file.victorySequencePosition, <0, 350, 88>, AnglesToForward( file.victorySequenceAngles ) ) ), 2, 1, 1 )	
+	DoF_LerpFarDepth( 700, 10000, 0.5 )
+
+	wait 2.9
+
 	printt(  "intro lasted: ", ( Time() - stime ).tostring() )
 }
 

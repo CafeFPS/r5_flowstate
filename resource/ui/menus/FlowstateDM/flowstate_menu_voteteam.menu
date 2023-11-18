@@ -336,7 +336,7 @@
 			"tall"						"30"
 			"visible"					"1"
 			"fontHeight"				"35"
-			labelText					"FLOWSTATE"
+			labelText					"Vote Team Prototype"
 			font						"TitleBoldFont"
 			allcaps						1
 			fgcolor_override			"255 0 119 255"
