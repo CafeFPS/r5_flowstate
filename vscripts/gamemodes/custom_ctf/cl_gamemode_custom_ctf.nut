@@ -310,7 +310,7 @@ void function VoteTeamUpdateUIVoteTimer( float endtime)
 	thread function() : (endtime)
 	{
 		int time = int ( endtime - Time() )
-		while( time > 0 )
+		while( time > -1 )
 		{
 			if( time != 0 )
 				RunUIScript( "VoteTeamTimerSetText", "%$rui/menu/store/feature_timer% " + time )
