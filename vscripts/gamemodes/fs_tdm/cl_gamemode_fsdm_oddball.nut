@@ -477,7 +477,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		
 		Hud_SetText( RoundWinOrLoseText, roundText )
 		Hud_SetText( WinOrLoseReason, reasonText )
-		
+		DoF_SetFarDepth( 2, 10 )
 		wait 2
 		
 		EmitSoundOnEntity(player, "UI_InGame_Top5_Streak_1X")

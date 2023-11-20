@@ -443,7 +443,7 @@ void function StartRound()
 		if( !IsValid( player ) )
 			continue
 
-		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD )
+		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_HIDE_PERMANENT_HUD )
 		if( !IsAlive( player ) )
 			DecideRespawnPlayer(player)
 		
@@ -866,7 +866,7 @@ void function StartRound()
 						Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 					}
 
-					AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+					AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_HIDE_PERMANENT_HUD )
 
 					if( file.winnerTeam > -1 )
 					{
