@@ -339,14 +339,15 @@ void function VotingPhase()
 	{
 		file.VoteTeamEnabled = true
 		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
-		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + 5 )
+		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + 30 )
 
 		foreach( player in GetPlayerArray() )
 		{
 			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
 		}
-
+		
+		// WaitForever()
 		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
 			WaitFrame()
 

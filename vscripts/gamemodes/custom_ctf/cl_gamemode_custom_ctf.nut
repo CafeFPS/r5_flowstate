@@ -293,12 +293,36 @@ void function Flowstate_VoteTeamEndTimeChanged( entity player, float old, float 
 	if ( !actuallyChanged  )
 		return
 	
-	thread function () : ()
+	thread function () : ( new )
 	{
+		thread VoteTeamUpdateUIVoteTimer( new )
+
 		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
 			WaitFrame()
 
 		ServerCallback_FS_OpenVoteTeamMenu( false )
+	}()
+}
+
+void function VoteTeamUpdateUIVoteTimer( float endtime)
+{
+	thread function() : (endtime)
+	{
+		int time = int ( endtime - Time() )
+		while(time > -1)
+		{
+			RunUIScript( "VoteTeamTimerSetText", "%$rui/menu/store/feature_timer% " + time )
+
+			if (time <= 5 && time != 0)
+				EmitSoundOnEntity( GetLocalClientPlayer(), "ui_ingame_markedfordeath_countdowntomarked" )
+
+			if (time == 0)
+				EmitSoundOnEntity( GetLocalClientPlayer(), "ui_ingame_markedfordeath_countdowntoyouaremarked" )
+
+			time--
+
+			wait 1
+		}
 	}()
 }
 
@@ -1250,6 +1274,7 @@ void function FSIntro_StartIntroScreen()
 	
 	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
+	array<var> cleanupRui
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -1401,8 +1426,8 @@ void function FSIntro_StartIntroScreen()
 
 		if( i == charactersModels.len() )
 		{
-			FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1)
-			FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) 
+			cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1) )
+			cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) ) 
 		}
 
 		i++
@@ -1428,7 +1453,14 @@ void function FSIntro_StartIntroScreen()
 	DoF_LerpFarDepth( 700, 10000, 0.5 )
 
 	wait 2.9
-
+	
+	foreach( rui in cleanupRui )
+	{
+		if ( rui != null )
+		{
+			RuiDestroyIfAlive( rui )
+		}
+	}
 	printt(  "intro lasted: ", ( Time() - stime ).tostring() )
 }
 
@@ -1621,7 +1653,7 @@ void function CoolCamera_VoteTeam()
 		break
 
 		case "The Pit":
-		cutsceneSpawns.append( NewCameraPair( <43176.4219, -8202.27832, -20011.8652>, <0,-133, 0> ) )//<2.34243202, 31.4227657, 0> ) ) 
+		cutsceneSpawns.append( NewCameraPair( <40785.418, -10040.1396, -19775.4375>, <0, -142.61087, 0> ) )//<2.34243202, 31.4227657, 0> ) ) 
 		break
 
 		case "Lockout":
@@ -1678,7 +1710,7 @@ void function CoolCamera_VoteTeam()
 
     entity camera = CreateClientSidePointCamera(randomcameraPos, randomcameraAng, 17)
 	file.VoteTeam_Camera = camera
-    camera.SetFOV(110)
+    camera.SetFOV(100)
 
 	cleanupEnts.append( camera )
 	cleanupEnts.append( light2 )
@@ -1691,34 +1723,34 @@ void function CoolCamera_VoteTeam()
 	GetLocalClientPlayer().SetMenuCameraEntityWithAudio( camera )
 	GetLocalClientPlayer().SetMenuCameraEntity( camera )
 
-	DoF_SetFarDepth( 350, 4000 )
+	DoF_SetFarDepth( 100, 300 )
 	
 	OnThreadEnd(
 		function() : ( player, camera, cleanupRui, cleanupEnts ) //cutsceneMover
 		{
-					GetLocalClientPlayer().ClearMenuCameraEntity()
+			GetLocalClientPlayer().ClearMenuCameraEntity()
 
-					if(IsValid(player))
-					{
-						FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
-					}
+			if(IsValid(player))
+			{
+				FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
+			}
 
-					foreach( ent in cleanupEnts )
-					{
-						if( IsValid( ent ) )
-							ent.Destroy()
-					}
+			foreach( ent in cleanupEnts )
+			{
+				if( IsValid( ent ) )
+					ent.Destroy()
+			}
 
-					foreach( rui in cleanupRui )
-					{
-						if ( rui != null )
-						{
-							RuiDestroyIfAlive( rui )
-						}
-					}
+			foreach( rui in cleanupRui )
+			{
+				if ( rui != null )
+				{
+					RuiDestroyIfAlive( rui )
+				}
+			}
 
-					DoF_SetNearDepthToDefault()
-					DoF_SetFarDepthToDefault()
+			DoF_SetNearDepthToDefault()
+			DoF_SetFarDepthToDefault()
 		}
 	)
 	WaitForever()

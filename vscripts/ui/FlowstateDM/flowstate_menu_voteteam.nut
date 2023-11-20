@@ -6,6 +6,8 @@ global function Close_FS_VoteTeam
 global function AddPlayerNameToTeamArray
 global function RemovePlayerNameFromTeamArray
 
+global function VoteTeamTimerSetText
+
 struct
 {
 	var menu
@@ -21,9 +23,14 @@ void function Open_FS_VoteTeam()
 	CloseAllMenus()
 	AdvanceMenu( file.menu )
 	
-	Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits2"), true)
-	Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits"), true)
+	// Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits2"), true)
+	// Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits"), true)
 	
+	
+	RuiSetImage( Hud_GetRui( Hud_GetChild( file.menu, "TimerFrame") ), "basicImage", $"rui/flowstate_custom/voteteam_titlebg" )
+
+	Hud_SetText( Hud_GetChild( file.menu, "ChooseTeamTimerText" ), "%$rui/menu/store/feature_timer% 30")
+
 	Hud_SetVisible( Hud_GetChild( file.menu, "VotingPhaseChatBox"), false )
 	Hud_SetAboveBlur( Hud_GetChild( file.menu, "VotingPhaseChatBox"), false )
 	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "VotingPhaseChatBox"), "ChatInputLine" ), false)
@@ -53,7 +60,7 @@ void function RefreshOrchidTeamList()
 
 	if( file.orchidTeamPlayersNames.len() == 0 )
 	{
-		Hud_SetText( Hud_GetChild( file.menu, "TeamOrchidListText" ), "There are no players on the Team Orchid")
+		Hud_SetText( Hud_GetChild( file.menu, "TeamOrchidListText" ), "0 players on the Team Orchid")
 		return
 	}
 	
@@ -73,7 +80,7 @@ void function RefreshCondorTeamList()
 	
 	if( file.condorTeamPlayersNames.len() == 0 )
 	{
-		Hud_SetText( Hud_GetChild( file.menu, "TeamCondorListText" ), "There are no players on the Team Condor")
+		Hud_SetText( Hud_GetChild( file.menu, "TeamCondorListText" ), "0 players on the Team Condor")
 		return
 	}
 	
@@ -182,4 +189,9 @@ void function SetTeam_MILITIA1(var button)
 void function On_FSDM__NavigateBack()
 {
 	// gotta have NavigateBack blank so that you cant close the menu
+}
+
+void function VoteTeamTimerSetText( string text )
+{
+	Hud_SetText( Hud_GetChild( file.menu, "ChooseTeamTimerText" ), text )
 }

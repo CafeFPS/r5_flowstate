@@ -136,7 +136,7 @@
 			tall					50
 			visible					1
 			fontHeight				28
-			labelText				"There are no players on the Team Condor"
+			labelText				"0 players on the Team Condor"
 			font					"DefaultBold_62_DropShadow"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -215,7 +215,7 @@
 			tall					50
 			visible					1
 			fontHeight				28
-			labelText				"There are no players on the Team Orchid"
+			labelText				"0 players on the Team Orchid"
 			font					"DefaultBold_62_DropShadow"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -289,6 +289,25 @@
 			"visible"				"1"
 			"paintbackground"		"1"
 		}
+
+		"ChooseTeamTimerText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"30"
+			"visible"					"1"
+			"fontHeight"				"35"
+			"labelText"					"00:00"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 155"
+			"pin_to_sibling"			"TimerFrame"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
 		
 		"ScoreboardText"
 		{
@@ -311,14 +330,14 @@
 		
 		"TimerFrame"
 		{
-			ControlName				RuiPanel
-			rui                     "ui/tabs_background.rpak"
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
 			visible					1
 			drawColor				"0 0 0 50"
-			"wide"						"f0"
-			"tall"						"125"
+			"wide"						"400"
+			"tall"						"170"
 			"xpos"						"0"
-			"ypos"						"0"
+			"ypos"						"-50"
 			"visible"					"1"
 			"scaleImage"				"1"
 			"pin_to_sibling"			"DarkenBackground"
@@ -326,43 +345,43 @@
 			"pin_to_sibling_corner"		"TOP"
 		}
 
-		"TextCredits2"
-		{
-			"ControlName"				"Label"
-			"xpos"						"-30"
-			"ypos"						"-40"
-			"zpos" 						"15"
-			"auto_wide_tocontents"		"1"
-			"tall"						"30"
-			"visible"					"1"
-			"fontHeight"				"35"
-			labelText					"Vote Team Prototype"
-			font						"TitleBoldFont"
-			allcaps						1
-			fgcolor_override			"255 0 119 255"
-			"pin_to_sibling"			"DarkenBackground"
-			"pin_corner_to_sibling"		"TOP_RIGHT"
-			"pin_to_sibling_corner"		"TOP_RIGHT"
-		}
+		// "TextCredits2"
+		// {
+			// "ControlName"				"Label"
+			// "xpos"						"-30"
+			// "ypos"						"-40"
+			// "zpos" 						"15"
+			// "auto_wide_tocontents"		"1"
+			// "tall"						"30"
+			// "visible"					"1"
+			// "fontHeight"				"35"
+			// labelText					"Vote Team Prototype"
+			// font						"TitleBoldFont"
+			// allcaps						1
+			// fgcolor_override			"255 0 119 255"
+			// "pin_to_sibling"			"DarkenBackground"
+			// "pin_corner_to_sibling"		"TOP_RIGHT"
+			// "pin_to_sibling_corner"		"TOP_RIGHT"
+		// }
 		
-		"TextCredits"
-		{
-			"ControlName"				"Label"
-			"xpos"						"0"
-			"ypos"						"32"
-			"zpos" 						"15"
-			"auto_wide_tocontents"		"1"
-			"tall"						"40"
-			"visible"					"1"
-			"fontHeight"				"22"
-			"labelText"					"Made by @CafeFPS - ©Respawn Entertainment"
-			"font"						"DefaultBold_62_DropShadow"
-			"allcaps"					"0"
-			"fgcolor_override"			"255 255 255 255"
-			"pin_to_sibling"			"TextCredits2"
-			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
-			"pin_to_sibling_corner"		"BOTTOM_RIGHT"
-		}
+		// "TextCredits"
+		// {
+			// "ControlName"				"Label"
+			// "xpos"						"0"
+			// "ypos"						"32"
+			// "zpos" 						"15"
+			// "auto_wide_tocontents"		"1"
+			// "tall"						"40"
+			// "visible"					"1"
+			// "fontHeight"				"22"
+			// "labelText"					"Made by @CafeFPS - ©Respawn Entertainment"
+			// "font"						"DefaultBold_62_DropShadow"
+			// "allcaps"					"0"
+			// "fgcolor_override"			"255 255 255 255"
+			// "pin_to_sibling"			"TextCredits2"
+			// "pin_corner_to_sibling"		"BOTTOM_RIGHT"
+			// "pin_to_sibling_corner"		"BOTTOM_RIGHT"
+		// }
 
 		VotingPhaseChatBox
 		{
