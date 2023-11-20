@@ -70,12 +70,12 @@
                                                    
                                                   
      
-	"damage_near_value"                        "50"
-	"damage_far_value"                         "50"
-	"damage_very_far_value"                    "50"
-	"damage_near_value_titanarmor"             "50"
-	"damage_far_value_titanarmor"              "50"
-	"damage_very_far_value_titanarmor"         "50"
+	"damage_near_value"                        "43"
+	"damage_far_value"                         "43"
+	"damage_very_far_value"                    "43"
+	"damage_near_value_titanarmor"             "43"
+	"damage_far_value_titanarmor"              "43"
+	"damage_very_far_value_titanarmor"         "43"
       
 
     "damage_leg_scale"                         "0.75"
