@@ -850,6 +850,12 @@ void function UpdatePlayerCounts()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
 		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
 		break
+
+		case "custom_ctf":
+		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
+		break
 		
 		case "fs_prophunt":
 		array<entity> propsAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )

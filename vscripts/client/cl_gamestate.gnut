@@ -182,8 +182,8 @@ void function SetCommonScoreRUIVars( var rui )
 		case "custom_ctf":
 			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			RuiSetVisible(rui, true)
 			return
 	}
