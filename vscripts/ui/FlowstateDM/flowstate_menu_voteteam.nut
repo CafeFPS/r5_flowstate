@@ -1,3 +1,5 @@
+//Made by @CafeFPS
+
 global function Init_FS_VoteTeamMenu
 
 global function Open_FS_VoteTeam
@@ -21,6 +23,8 @@ struct
 void function Open_FS_VoteTeam()
 {
 	CloseAllMenus()
+	file.orchidTeamPlayersNames.clear()
+	file.condorTeamPlayersNames.clear()
 	AdvanceMenu( file.menu )
 
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.menu, "TimerFrame") ), "basicImage", $"rui/flowstate_custom/voteteam_titlebg" )
@@ -36,9 +40,7 @@ void function Open_FS_VoteTeam()
 	
 	Hud_SetVisible( Hud_GetChild( file.menu, "TeamSeekersButton" ), true )
 	Hud_SetEnabled( Hud_GetChild( file.menu, "TeamSeekersButton" ), true )
-	
-	file.orchidTeamPlayersNames.clear()
-	file.condorTeamPlayersNames.clear()
+
 	RefreshOrchidTeamList()
 	RefreshCondorTeamList()
 }
@@ -115,7 +117,7 @@ void function RemovePlayerNameFromTeamArray( int team, string name )
 	}
 }
 
-// //Closes the vote menu
+//Closes the vote menu
 void function Close_FS_VoteTeam()
 {
 	CloseAllMenus()
@@ -142,30 +144,35 @@ void function Init_FS_VoteTeamMenu( var newMenuArg )
 
 void function OnIMCButtonHover( var button )
 {
+	printt( "ui imc button hover" )
 	if ( CanRunClientScript() )
 		RunClientScript( "HoverTeamButton", 1 )
 }
 
 void function OnIMCButtonUnHover( var button )
 {
+	printt( "ui imc button unhover" )
 	if ( CanRunClientScript() )
 		RunClientScript( "VoteTeam_EndFocusModel", 1 )
 }
 
 void function OnMILButtonHover( var button )
 {
+	printt( "ui mil button hover" )
 	if ( CanRunClientScript() )
 		RunClientScript( "HoverTeamButton", 0 )
 }
 
 void function OnMILButtonUnHover( var button )
 {
+	printt( "ui mil button unhover" )
 	if ( CanRunClientScript() )
 		RunClientScript( "VoteTeam_EndFocusModel", 0 )
 }
 
 void function SetTeam_IMC1(var button)
 {
+	printt( "ui mil button clicked" )
 	if ( CanRunClientScript() )
 	{
 		RunClientScript("VoteTeam_ClientAskedForTeam", 1)
@@ -175,6 +182,7 @@ void function SetTeam_IMC1(var button)
 
 void function SetTeam_MILITIA1(var button)
 {
+	printt( "ui mil button clicked" )
 	if ( CanRunClientScript() )
 	{
 		RunClientScript("VoteTeam_ClientAskedForTeam", 0)

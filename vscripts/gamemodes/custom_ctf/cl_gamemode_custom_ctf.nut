@@ -310,9 +310,10 @@ void function VoteTeamUpdateUIVoteTimer( float endtime)
 	thread function() : (endtime)
 	{
 		int time = int ( endtime - Time() )
-		while(time > -1)
+		while( time > 0 )
 		{
-			RunUIScript( "VoteTeamTimerSetText", "%$rui/menu/store/feature_timer% " + time )
+			if( time != 0 )
+				RunUIScript( "VoteTeamTimerSetText", "%$rui/menu/store/feature_timer% " + time )
 
 			if (time <= 5 && time != 0)
 				EmitSoundOnEntity( GetLocalClientPlayer(), "ui_ingame_markedfordeath_countdowntomarked" )
@@ -1614,8 +1615,9 @@ void function ServerCallback_FS_OpenVoteTeamMenu( bool shouldOpen )
 {
 	if(shouldOpen)
 	{
+		file.VoteTeam_selectedTeam = -1
 		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.3, 0.0, FFADE_IN | FFADE_PURGE)
-		thread CoolCamera_VoteTeam()
+		thread FS_VoteTeam_StartMenuModels()
 		RunUIScript( "Open_FS_VoteTeam" )
 	}
 	else
@@ -1623,6 +1625,7 @@ void function ServerCallback_FS_OpenVoteTeamMenu( bool shouldOpen )
 		ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, 0, 0, FFADE_OUT | FFADE_STAYOUT )
 		GetLocalClientPlayer().Signal("ChangeCameraToSelectedLocation")
 		RunUIScript( "Close_FS_VoteTeam" )
+		file.VoteTeam_selectedTeam = -1
 	}
 	
 }
@@ -1635,9 +1638,7 @@ LocPair function NewCameraPair(vector origin, vector angles)
     return locPair
 }
 
-
-
-void function CoolCamera_VoteTeam()
+void function FS_VoteTeam_StartMenuModels()
 {
     entity player = GetLocalClientPlayer()
 	player.Signal("ChangeCameraToSelectedLocation")
@@ -1799,45 +1800,42 @@ var function FS_InWorldText( string text, vector origin, vector angles )
 
 void function HoverTeamButton( int model, bool forceFx = false )
 {
+	printt("hover team button client call ", model, forceFx )
 	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) )
 	{
 		vector color = <128, 52, 235>
-		float fillIntensityScalar    = 10
-		float outlineIntensityScalar = 300
+		float fillIntensityScalar    = 1
+		float outlineIntensityScalar = 1
 		float fadeInTime             = 0.25
 		float fadeOutTime            = 0.25
-		float lifeTime               = 5
-		float ditherDelay            = 0.15
-		float ditherDuration         = 0.2
+		float lifeTime               = 0.5
 
 		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
 			return
 		printt( "starting new effect for condor menu model", file.VoteTeam_selectedTeam, model )
-		thread Custom_HighlightTest( file.VoteTeam_condorPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration, false )
+		thread Custom_HighlightTest( file.VoteTeam_condorPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime )
 	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) )
 	{
 		vector color = <204, 14, 157>
-		float fillIntensityScalar    = 10
-		float outlineIntensityScalar = 300
+		float fillIntensityScalar    = 1
+		float outlineIntensityScalar = 1
 		float fadeInTime             = 0.25
 		float fadeOutTime            = 0.25
-		float lifeTime               = 5
-		float ditherDelay            = 0.15
-		float ditherDuration         = 0.2
+		float lifeTime               = 0.5
 		
 		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
 			return
 		printt( "starting new effect for orchid menu model", file.VoteTeam_selectedTeam, model )
-		thread Custom_HighlightTest( file.VoteTeam_orchidPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration, false )
+		thread Custom_HighlightTest( file.VoteTeam_orchidPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime )
 	}
 }
 
-void function Custom_HighlightTest( entity model, vector color, float fillIntensityScalar, float outlineIntensityScalar, float fadeInTime, float fadeOutTime, float lifeTime, float ditherDelay, float ditherDuration, bool ignoreChildren )
+void function Custom_HighlightTest( entity model, vector color, float fillIntensityScalar, float outlineIntensityScalar, float fadeInTime, float fadeOutTime, float lifeTime)
 {
 	if ( !IsValid( model ) )
 		return
 
-	const float HIGHLIGHT_RADIUS = 2
+	const float HIGHLIGHT_RADIUS = 1
 	Signal( model, "VoteTeam_EndModelFocus" )
 	EndSignal( model, "VoteTeam_EndModelFocus" )
 	
@@ -1864,10 +1862,10 @@ void function Custom_HighlightTest( entity model, vector color, float fillIntens
 			}()
 		}
 	)
-
+	printt("started highlight thread for model: ", model)
 	while( IsValid( model ) )
 	{
-		// model.Highlight_ResetFlags()
+		model.Highlight_ResetFlags()
 		model.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
 		model.Highlight_SetCurrentContext( HIGHLIGHT_CONTEXT_NEUTRAL )
 		int highlightId = model.Highlight_GetState( HIGHLIGHT_CONTEXT_NEUTRAL )
@@ -1886,9 +1884,11 @@ void function VoteTeam_EndFocusModel( int model )
 {
 	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) && file.VoteTeam_selectedTeam != model)
 	{
+		printt("signal to end focus model 0 on client" )
 		Signal( file.VoteTeam_condorPlayerModel, "VoteTeam_EndModelFocus" )
 	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) && file.VoteTeam_selectedTeam != model)
 	{
+		printt("signal to end focus model 1 on client" )
 		Signal( file.VoteTeam_orchidPlayerModel, "VoteTeam_EndModelFocus" )
 	}
 }
