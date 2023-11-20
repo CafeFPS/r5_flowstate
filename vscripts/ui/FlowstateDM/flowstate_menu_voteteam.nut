@@ -22,11 +22,7 @@ void function Open_FS_VoteTeam()
 {
 	CloseAllMenus()
 	AdvanceMenu( file.menu )
-	
-	// Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits2"), true)
-	// Hud_SetVisible(Hud_GetChild( file.menu, "TextCredits"), true)
-	
-	
+
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.menu, "TimerFrame") ), "basicImage", $"rui/flowstate_custom/voteteam_titlebg" )
 
 	Hud_SetText( Hud_GetChild( file.menu, "ChooseTeamTimerText" ), "%$rui/menu/store/feature_timer% 30")
@@ -135,7 +131,7 @@ void function Init_FS_VoteTeamMenu( var newMenuArg )
 	AddButtonEventHandler( Hud_GetChild( menu, "TeamSeekersButton"), UIE_CLICK, SetTeam_IMC1 )
 	Hud_AddEventHandler( Hud_GetChild( menu, "TeamSeekersButton"), UIE_GET_FOCUS, OnIMCButtonHover )
 	Hud_AddEventHandler( Hud_GetChild( menu, "TeamSeekersButton"), UIE_LOSE_FOCUS, OnIMCButtonUnHover )
-		
+
 	AddButtonEventHandler( Hud_GetChild( menu, "TeamPropsButton"), UIE_CLICK, SetTeam_MILITIA1 )
 	Hud_AddEventHandler( Hud_GetChild( menu, "TeamPropsButton"), UIE_GET_FOCUS, OnMILButtonHover )
 	Hud_AddEventHandler( Hud_GetChild( menu, "TeamPropsButton"), UIE_LOSE_FOCUS, OnMILButtonUnHover )

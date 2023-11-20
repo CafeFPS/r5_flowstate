@@ -84,6 +84,7 @@ struct {
 	vector VoteTeam_condorPlayerModel_OgOrigin
 
 	int VoteTeam_selectedTeam = -1
+	array<var> FSIntro_cleanupRui
 } file
 
 struct {
@@ -290,7 +291,7 @@ void function Flowstate_VoteTeamTimeChanged( entity player, float old, float new
 
 void function Flowstate_VoteTeamEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
-	if ( !actuallyChanged  )
+	if ( !actuallyChanged  || new == -1 )
 		return
 	
 	thread function () : ( new )
@@ -1274,7 +1275,6 @@ void function FSIntro_StartIntroScreen()
 	
 	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
-	array<var> cleanupRui
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -1426,8 +1426,8 @@ void function FSIntro_StartIntroScreen()
 
 		if( i == charactersModels.len() )
 		{
-			cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1) )
-			cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) ) 
+			file.FSIntro_cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1) )
+			file.FSIntro_cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) ) 
 		}
 
 		i++
@@ -1453,14 +1453,7 @@ void function FSIntro_StartIntroScreen()
 	DoF_LerpFarDepth( 700, 10000, 0.5 )
 
 	wait 2.9
-	
-	foreach( rui in cleanupRui )
-	{
-		if ( rui != null )
-		{
-			RuiDestroyIfAlive( rui )
-		}
-	}
+
 	printt(  "intro lasted: ", ( Time() - stime ).tostring() )
 }
 
@@ -1520,6 +1513,15 @@ void function FSIntro_Destroy()
 			ent.Destroy()
 	}
 
+	foreach( rui in file.FSIntro_cleanupRui )
+	{
+		if ( rui != null )
+		{
+			RuiDestroyIfAlive( rui )
+		}
+	}
+
+	file.FSIntro_cleanupRui.clear()
 	overHeadRuis.clear()
 	cleanupEnts.clear()
 

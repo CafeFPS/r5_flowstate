@@ -352,6 +352,7 @@ void function VotingPhase()
 			WaitFrame()
 
 		file.VoteTeamEnabled = false
+		SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
 	}
 
 	int maxplayers = GetPlayerArray().len()
