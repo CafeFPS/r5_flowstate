@@ -1,6 +1,6 @@
 // Credits
 // AyeZee#6969 -- ctf gamemode and ui
-// CafeFPS -- Rework and code fixes
+// CafeFPS -- Server/client/ui Rework and multiple code fixes
 // Rexx and IcePixelx -- Help with code improvments
 // sal#3261 -- base custom_tdm mode to work off
 // everyone else -- advice
