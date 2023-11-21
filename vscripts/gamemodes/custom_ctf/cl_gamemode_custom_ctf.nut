@@ -604,8 +604,12 @@ void function ShowScoreRUI(bool show)
 	Hud_SetVisible( HudElement( "FS_Oddball_EnemyTeamScore" ), show )
 	Hud_SetVisible( HudElement( "FS_Oddball_EnemyHas" ), show )
 
-	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", $"rui/gamemodes/capture_the_flag/mil_flag" )
-	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", $"rui/gamemodes/capture_the_flag/imc_flag" )
+	entity player = GetLocalClientPlayer()
+	asset localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstate_custom/team_orchid" : $"rui/flowstate_custom/team_condor"
+	asset enemyteamIcon = localteamIcon == "rui/flowstate_custom/team_orchid" ? $"rui/flowstate_custom/team_condor" : $"rui/flowstate_custom/team_orchid"
+
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", enemyteamIcon )
+	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", localteamIcon )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_Scoreboard_Frame" ) ), "basicImage", $"rui/flowstate_custom/scoreboard_bg_oddball" )
 	
 	Hud_SetVisible( HudElement( "FS_Oddball_Scoreboard_Frame" ), show )
@@ -1428,7 +1432,7 @@ void function FSIntro_StartIntroScreen()
 		if( i == charactersModels.len() )
 		{
 			file.FSIntro_cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 100>, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), "rui/flowstate_custom/flowstatepresents", true, 250, 35, 1) )
-			file.FSIntro_cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 15> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) ) 
+			file.FSIntro_cleanupRui.append( FS_InWorldPic( polePos + <0, 0, 18> + AnglesToForward( file.victorySequenceAngles ) * 205, VectorToAngles( polePos - ( polePos + AnglesToForward( file.victorySequenceAngles ) * 50 ) ), player.GetTeam() == TEAM_IMC ? "rui/flowstate_custom/team_orchid" : "rui/flowstate_custom/team_condor", true, 35, 35, 1) ) 
 		}
 
 		i++
