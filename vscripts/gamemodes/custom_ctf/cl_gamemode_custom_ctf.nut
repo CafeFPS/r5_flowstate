@@ -85,6 +85,8 @@ struct {
 
 	int VoteTeam_selectedTeam = -1
 	array<var> FSIntro_cleanupRui
+	var activeQuickHint
+	var activeSweepHint
 } file
 
 struct {
@@ -649,6 +651,8 @@ void function CTF_StartBuildingTeamsScoreOnHud()
 void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 {
 	string message
+	bool blueText = true
+	asset icon = $"rui/gamemodes/capture_the_flag/mil_flag"
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
@@ -659,6 +663,8 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team has captured your flag!"
+			blueText = false
+			icon = $"rui/gamemodes/capture_the_flag/imc_flag"
 			break
 		case eCTFMessage.TeamReturnedFlag:
 			if( player == GetLocalViewPlayer() )
@@ -668,22 +674,19 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 			break
 		case eCTFMessage.EnemyTeamReturnedFlag:
 			message = "Enemy flag has been returned!"
+			blueText = false
+			icon = $"rui/gamemodes/capture_the_flag/imc_flag"
 			break
 	}
 
-	AnnouncementData announcement = Announcement_Create( message )
-	Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_SWEEP )
-	Announcement_SetPurge( announcement, true )
-	Announcement_SetOptionalTextArgsArray( announcement, [ "true" ] )
-	Announcement_SetPriority( announcement, 200 )
-	announcement.duration = 3
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	QuickSweepHint( message, true, 3, icon )
 }
 
 void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 {
 	string message
 	vector color = SrgbToLinear( <255,100,100> / 255 )
+	bool blueText = true
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
@@ -694,23 +697,63 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team picked up your flag!"
+			blueText = false
 			break
 		case eCTFMessage.YourTeamFlagHasBeenReset:
 			message = "Your teams flag has been reset"
 			break
 		case eCTFMessage.EnemyTeamsFlagHasBeenReset:
 			message = "The enemy flag has been reset"
+			blueText = false
 			break
 		case eCTFMessage.FlagNeedsToBeAtBase:
 			message = "Your teams flag is not at base"
+			blueText = false
 			break
 	}
 
-	AnnouncementData announcement = CreateAnnouncementMessageQuick( GetLocalViewPlayer(), message, "", color, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )
-	Announcement_SetPurge( announcement, true )
-	Announcement_SetPriority( announcement, 200 )
-	announcement.duration = 3
-	AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	QuickRightHint( message, blueText, 3 )
+}
+
+void function QuickRightHint( string hintText, bool blueText = false, int duration = 2)
+{
+	if(file.activeQuickHint != null)
+	{
+		RuiDestroyIfAlive( file.activeQuickHint )
+		file.activeQuickHint = null
+	}
+	file.activeQuickHint = CreateFullscreenRui( $"ui/announcement_quick_right.rpak" )
+
+	RuiSetGameTime( file.activeQuickHint, "startTime", Time() )
+	RuiSetString( file.activeQuickHint, "messageText", hintText )
+	RuiSetFloat( file.activeQuickHint, "duration", duration.tofloat() )
+
+	if(blueText)
+		RuiSetFloat3( file.activeQuickHint, "eventColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
+	else
+		RuiSetFloat3( file.activeQuickHint, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
+}
+
+void function QuickSweepHint( string hintText, bool blueText = false, int duration = 2, asset icon = $"")
+{
+	if(file.activeSweepHint != null)
+	{
+		RuiDestroyIfAlive( file.activeSweepHint )
+		file.activeSweepHint = null
+	}
+	file.activeSweepHint = CreateFullscreenRui( $"ui/announcement_center_sweep.rpak" )
+
+	// RuiSetFloat2( file.activeSweepHint, "iconAspect", 1 )
+	RuiSetImage( file.activeSweepHint, "leftIconImage", icon )
+	RuiSetImage( file.activeSweepHint, "rightIconImage", icon )
+	RuiSetGameTime( file.activeSweepHint, "startTime", Time() )
+	RuiSetString( file.activeSweepHint, "messageText", hintText )
+	RuiSetFloat( file.activeSweepHint, "duration", duration.tofloat() )
+
+	if(blueText)
+		RuiSetFloat3( file.activeSweepHint, "eventColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
+	else
+		RuiSetFloat3( file.activeSweepHint, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
 }
 
 void function UI_To_Client_UpdateSelectedClass(int selectedclass)
