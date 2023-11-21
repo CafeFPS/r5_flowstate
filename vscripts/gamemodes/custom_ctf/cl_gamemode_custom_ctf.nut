@@ -653,6 +653,7 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 	string message
 	bool blueText = true
 	asset icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
@@ -660,22 +661,30 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 				message = "You captured the enemy flag!"
 			else
 				message = "Your team has captured the enemy flag!"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_1P_PlayerScore" )
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team has captured your flag!"
 			blueText = false
 			icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_3P_EnemyScores" )
 			break
 		case eCTFMessage.TeamReturnedFlag:
 			if( player == GetLocalViewPlayer() )
 				message = "You returned the ally flag!"
 			else
 				message = "Your teams flag has been returned!"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_1P_ReturnsFlag" )
 			break
 		case eCTFMessage.EnemyTeamReturnedFlag:
 			message = "Enemy flag has been returned!"
 			blueText = false
 			icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_3P_EnemyReturnsFlag" )
 			break
 	}
 
@@ -686,6 +695,7 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 {
 	string message
 	bool blueText = true
+
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
@@ -693,21 +703,31 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 				message = "You have the enemy flag!"
 			else
 				message = "Your team picked up the enemy flag!"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_1P_GrabFlag" )
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team picked up your flag!"
 			blueText = false
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_CTF_3P_EnemyGrabFlag" )
 			break
 		case eCTFMessage.YourTeamFlagHasBeenReset:
 			message = "Your teams flag has been reset"
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "ui_ctf_team_flagupdate" )
 			break
 		case eCTFMessage.EnemyTeamsFlagHasBeenReset:
 			message = "The enemy flag has been reset"
 			blueText = false
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "ui_ctf_enemy_flagupdate" )
 			break
 		case eCTFMessage.FlagNeedsToBeAtBase:
 			message = "Your teams flag is not at base"
 			blueText = false
+
+			EmitSoundOnEntity( GetLocalViewPlayer(), "UI_InGame_FD_MetaUpgradeTextAppear" )
 			break
 	}
 

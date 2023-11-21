@@ -1235,9 +1235,6 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 			Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.EnemyPickedUpFlag )
 	}
 
-	EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", team)
-	EmitSoundToTeamPlayers("UI_CTF_3P_EnemyGrabFlag", enemyteam)
-
 	PlayBattleChatterLineToSpeakerAndTeam( ent, "bc_podLeaderLaunch" )
 }
 
@@ -1273,9 +1270,6 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 		thread ResetMILITIAFlag()
 	else if( team == TEAM_MILITIA )
 		thread ResetIMCFlag()
-
-	EmitSoundToTeamPlayers("ui_ctf_enemy_score", enemyteam)
-	EmitSoundToTeamPlayers("ui_ctf_team_score", team)
 
 	if( GameRules_GetTeamScore( TEAM_IMC ) >= CTF_SCORE_GOAL_TO_WIN )
 	{
