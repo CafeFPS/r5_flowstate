@@ -1154,7 +1154,6 @@ void function PlayerPickedUpFlag(entity ent)
 	ent.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
 
 	Remote_CallFunction_Replay(ent, "ServerCallback_CTF_PickedUpFlag", ent, true)
-	Remote_CallFunction_Replay(ent, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.PickedUpFlag)
 }
 
 void function PlayerDroppedFlag(entity ent)
@@ -1225,13 +1224,15 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 
 	PlayerPickedUpFlag(ent)
 
-	array<entity> enemyplayers = GetPlayerArrayOfTeam( enemyteam )
-	foreach ( player in enemyplayers )
+	foreach ( players in GetPlayerArray() )
 	{
-		if( !IsValid( player ) )
+		if( !IsValid( players ) )
 			continue
-
-		Remote_CallFunction_Replay(player, "ServerCallback_CTF_CustomMessages", player, eCTFMessage.EnemyPickedUpFlag)
+		
+		if( players.GetTeam() == team )
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.PickedUpFlag )
+		else
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", ent, eCTFMessage.EnemyPickedUpFlag )
 	}
 
 	EmitSoundToTeamPlayers("UI_CTF_3P_TeamGrabFlag", team)
@@ -1257,22 +1258,15 @@ void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 	if( IsValid( ent ) )
 		Remote_CallFunction_NonReplay(ent, "ServerCallback_CTF_UpdatePlayerStats", eCTFStats.Captures)
 
-	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-	foreach ( player in teamplayers )
+	foreach ( players in GetPlayerArray() )
 	{
-		if( !IsValid( player ) )
+		if( !IsValid( players ) )
 			continue
-
-		Remote_CallFunction_Replay(player, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.PickedUpFlag)
-	}
-
-	array<entity> enemyplayers = GetPlayerArrayOfTeam( enemyteam )
-	foreach ( player in enemyplayers )
-	{
-		if( !IsValid( player ) )
-			continue
-
-		Remote_CallFunction_Replay(player, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.EnemyPickedUpFlag)
+		
+		if( players.GetTeam() == team )
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.PickedUpFlag)
+		else
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_FlagCaptured", teamflagpoint.holdingplayer, eCTFMessage.EnemyPickedUpFlag)
 	}
 
 	if( team == TEAM_IMC )
@@ -1589,14 +1583,18 @@ void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
 		thread ResetMILITIAFlag()
 	
 	flag = teamflagpoint.pole
-	array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-	foreach ( players in teamplayers )
+
+	foreach ( players in GetPlayerArray() )
 	{
 		if( !IsValid( players ) )
 			continue
-
-		Remote_CallFunction_Replay(players, "ServerCallback_CTF_CustomMessages", players, eCTFMessage.TeamReturnedFlag)
+		
+		if( players.GetTeam() == team )
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_FlagCaptured", player, eCTFMessage.TeamReturnedFlag )
+		else
+			Remote_CallFunction_Replay(players, "ServerCallback_CTF_FlagCaptured", player, eCTFMessage.EnemyTeamReturnedFlag )
 	}
+
 	flag.Signal( "FlagReturnEnded" )
 }
 

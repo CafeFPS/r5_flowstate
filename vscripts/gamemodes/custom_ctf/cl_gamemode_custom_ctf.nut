@@ -652,10 +652,22 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
-			message = "Your team has captured the enemy flag!"
+			if( player == GetLocalViewPlayer() )
+				message = "You captured the enemy flag!"
+			else
+				message = "Your team has captured the enemy flag!"
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team has captured your flag!"
+			break
+		case eCTFMessage.TeamReturnedFlag:
+			if( player == GetLocalViewPlayer() )
+				message = "You returned the ally flag!"
+			else
+				message = "Your teams flag has been returned!"
+			break
+		case eCTFMessage.EnemyTeamReturnedFlag:
+			message = "Enemy flag has been returned!"
 			break
 	}
 
@@ -675,13 +687,13 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 	switch(messageid)
 	{
 		case eCTFMessage.PickedUpFlag:
-			message = "You picked up the flag!"
+			if( player == GetLocalViewPlayer() )
+				message = "You have the enemy flag!"
+			else
+				message = "Your team picked up the enemy flag!"
 			break
 		case eCTFMessage.EnemyPickedUpFlag:
 			message = "Enemy team picked up your flag!"
-			break
-		case eCTFMessage.TeamReturnedFlag:
-			message = "Flag returned!"
 			break
 		case eCTFMessage.YourTeamFlagHasBeenReset:
 			message = "Your teams flag has been reset"
@@ -694,7 +706,7 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 			break
 	}
 
-	AnnouncementData announcement = CreateAnnouncementMessageQuick( player, message, "", color, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )
+	AnnouncementData announcement = CreateAnnouncementMessageQuick( GetLocalViewPlayer(), message, "", color, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )
 	Announcement_SetPurge( announcement, true )
 	Announcement_SetPriority( announcement, 200 )
 	announcement.duration = 3
