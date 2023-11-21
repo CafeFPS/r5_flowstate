@@ -679,13 +679,12 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
 			break
 	}
 
-	QuickSweepHint( message, true, 3, icon )
+	QuickSweepHint( message, blueText, 3, icon )
 }
 
 void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
 {
 	string message
-	vector color = SrgbToLinear( <255,100,100> / 255 )
 	bool blueText = true
 	switch(messageid)
 	{
@@ -731,7 +730,7 @@ void function QuickRightHint( string hintText, bool blueText = false, int durati
 	if(blueText)
 		RuiSetFloat3( file.activeQuickHint, "eventColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
 	else
-		RuiSetFloat3( file.activeQuickHint, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
+		RuiSetFloat3( file.activeQuickHint, "eventColor", SrgbToLinear( <255, 0, 30> / 255.0 ) )
 }
 
 void function QuickSweepHint( string hintText, bool blueText = false, int duration = 2, asset icon = $"")
@@ -753,7 +752,7 @@ void function QuickSweepHint( string hintText, bool blueText = false, int durati
 	if(blueText)
 		RuiSetFloat3( file.activeSweepHint, "eventColor", SrgbToLinear( <48, 107, 255> / 255.0 ) )
 	else
-		RuiSetFloat3( file.activeSweepHint, "eventColor", SrgbToLinear( <255, 0, 119> / 255.0 ) )
+		RuiSetFloat3( file.activeSweepHint, "eventColor", SrgbToLinear( <255, 0, 30> / 255.0 ) )
 }
 
 void function UI_To_Client_UpdateSelectedClass(int selectedclass)
