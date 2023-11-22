@@ -101,24 +101,20 @@ void function _CustomCTF_Init()
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
 	#endif
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
-	{
-		// Used for sending votes from client to server
-		AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
-		// Used for setting players class
-		AddClientCommandCallback("SetPlayerClass", ClientCommand_SetPlayerClass)
-	} else
-	{
-		AddClientCommandCallback("VoteTeam_AskForTeam", ClientCommand_AskForTeam)
-	}
 	// Used for telling the server the player wants to drop the flag
 	AddClientCommandCallback("DropFlag", ClientCommand_DropFlag)
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
+		AddClientCommandCallback("VoteTeam_AskForTeam", ClientCommand_AskForTeam)
 		PrecacheCyberdyne()
 		PrecacheLockout()
 		PrecacheChill()
+	} else
+	{
+		AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
+		// Used for setting players class
+		AddClientCommandCallback("SetPlayerClass", ClientCommand_SetPlayerClass)
 	}
 
 	thread RUNCTF()
