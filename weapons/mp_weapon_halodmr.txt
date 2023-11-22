@@ -14,7 +14,7 @@
 	"weapon_type_flags"							"WPT_PRIMARY"
 	
 	// UI - HUD
-	"hud_icon"                                 ""
+	"hud_icon"                                 "rui/flowstate_custom/weapon/halo_dmr"
 
 	// UI - Menu
 	"menu_icon"                                ""
@@ -61,15 +61,6 @@
 	"damage_rodeo"                             "220"
 
 	// Damage - Titan
-                
-                                                
-                                                
-                                                
-                                                
-                                                   
-                                                   
-                                                  
-     
 	"damage_near_value"                        "43"
 	"damage_far_value"                         "43"
 	"damage_very_far_value"                    "43"

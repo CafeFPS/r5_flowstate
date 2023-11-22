@@ -343,6 +343,8 @@ void function VotingPhase()
 
 		foreach( player in GetPlayerArray() )
 		{
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
 		}
@@ -401,9 +403,6 @@ void function VotingPhase()
 // purpose: handle the start of a new round for players and props
 void function StartRound()
 {
-	// set
-	SetGameState(eGameState.Playing)
-
 	// create the ring based on location
 	if( GetMapName() != "mp_flowstate" )
 		file.ringBoundary = CreateRingBoundary(file.selectedLocation)
@@ -556,6 +555,8 @@ void function StartRound()
 	}
 	
 	wait 1
+	// set
+	SetGameState(eGameState.Playing)
 	
 	foreach(player in GetPlayerArray())
 	{	
@@ -859,6 +860,8 @@ void function StartRound()
 				{
 					if( !IsValid( player ) )
 						continue
+					
+					SetGameState(eGameState.MapVoting)
 
 					if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 					{

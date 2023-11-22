@@ -572,6 +572,7 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
 			ShowScoreRUI( true )
 			message = "CAPTURE THE FLAG"
 			subtext = "Capture the enemy flag, defend your own."
+			clGlobal.initScoreboardFunc()
 			break
 		}
 		case eCTFAnnounce.VOTING_PHASE:
