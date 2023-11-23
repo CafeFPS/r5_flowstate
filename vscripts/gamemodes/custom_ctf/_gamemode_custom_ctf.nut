@@ -11,6 +11,9 @@ global function _CTFRegisterCTFClass
 global function ResetIMCFlag
 global function ResetMILITIAFlag
 global function FS_StartIntroScreen
+global function ThrowFlagNewTest
+
+bool debugging = true
 
 enum eCTFState
 {
@@ -92,6 +95,7 @@ void function _CustomCTF_Init()
 	RegisterSignal( "FlagReturnEnded" )
 	RegisterSignal( "ResetDropTimeout" )
 	RegisterSignal( "EndScriptedPropsThread" )
+	RegisterSignal( "FlagPhysicsEnd" )
 	AddCallback_OnClientConnected( void function(entity player) { thread _OnPlayerConnected(player) } )
 	AddCallback_OnClientDisconnected( void function(entity player) { thread _OnPlayerDisconnected(player) } )
 	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread _OnPlayerDied(victim, attacker, damageInfo)})
@@ -100,7 +104,6 @@ void function _CustomCTF_Init()
 	#if DEVELOPER
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
 	#endif
-
 	// Used for telling the server the player wants to drop the flag
 	AddClientCommandCallback("DropFlag", ClientCommand_DropFlag)
 
@@ -331,7 +334,7 @@ void function VotingPhase()
 
 	//Open Vote for Team Menu ( Halo Mod Only )
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !debugging )
 	{
 		file.VoteTeamEnabled = true
 		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
@@ -351,7 +354,14 @@ void function VotingPhase()
 
 		file.VoteTeamEnabled = false
 		SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
+	} else
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			ScreenFade( player, 0, 0, 0, 255, 0.3, 0.0, FFADE_IN | FFADE_PURGE )
+		}
 	}
+
 
 	int maxplayers = GetPlayerArray().len()
 	int idealMilitia = int ( ceil( float( maxplayers ) /2 ) )
@@ -538,16 +548,19 @@ void function StartRound()
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
-
-	SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-	SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
-
-	while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
-		WaitFrame()
-
-	foreach(player in GetPlayerArray())
+	
+	if( !debugging )
 	{
-		Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+		SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+
+		while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+			WaitFrame()
+
+		foreach(player in GetPlayerArray())
+		{
+			Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+		}
 	}
 	
 	wait 1
@@ -1610,9 +1623,16 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	if( IsValid( teamflagpoint.pole ) )
 	{
 		teamflagpoint.pole.MakeVisible()
-		teamflagpoint.pole.SetOrigin( OriginToGroundCTF( teamflagpoint.pole.GetOrigin() ) )
 		teamflagpoint.pole2.MakeVisible()
-		teamflagpoint.pole2.SetOrigin( OriginToGroundCTF( teamflagpoint.pole.GetOrigin() ) )
+
+		vector origin = GetThrowOrigin( victim )
+		teamflagpoint.pole.SetOrigin( origin )
+		teamflagpoint.pole2.SetOrigin( origin )
+
+		FakePhysicsThrow_NewTest( victim, teamflagpoint.pole, teamflagpoint.pole2, AnglesToForward( victim.EyeAngles() ) * 300 )
+		
+		teamflagpoint.pole.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY
+		teamflagpoint.pole2.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 
 		if( team == TEAM_MILITIA )
 			SetGlobalNetEnt( "milFlag", teamflagpoint.pole )
@@ -1625,62 +1645,62 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 		Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Return)
 	}
 	
-	if( IsValid( teamflagpoint.pole ) )
-	{
-		// Check for if the flag ends up under the map
-		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
-		{
-			foundSafeSpot = true
+	// if( IsValid( teamflagpoint.pole ) )
+	// {
+		// // Check for if the flag ends up under the map
+		// if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
+		// {
+			// foundSafeSpot = true
 
-			vector endOrigin = teamflagpoint.pole.GetOrigin() - < 0, 0, 200 >
-			TraceResults traceResult = TraceLine( teamflagpoint.pole.GetOrigin(), endOrigin, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+			// vector endOrigin = teamflagpoint.pole.GetOrigin() - < 0, 0, 200 >
+			// TraceResults traceResult = TraceLine( teamflagpoint.pole.GetOrigin(), endOrigin, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
 			
-			if( traceResult.fraction == 1.0 )
-			{
-				foundSafeSpot = false
-				teamflagpoint.flagatbase = true
-				teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-				teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
+			// if( traceResult.fraction == 1.0 )
+			// {
+				// foundSafeSpot = false
+				// teamflagpoint.flagatbase = true
+				// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
+				// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
 
-				foreach ( player in GetPlayerArrayOfTeam( team ) )
-				{
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-				}
-			}
+				// foreach ( player in GetPlayerArrayOfTeam( team ) )
+				// {
+					// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
+				// }
+			// }
 			
-		}
-		else if( teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
-		{
-			if( Distance( teamflagpoint.pole.GetOrigin(), CTF.ringCenter ) > CTF.ringRadius )
-			{
-				teamflagpoint.flagatbase = true
-				teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-				teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
-				array<entity> teamplayers = GetPlayerArrayOfTeam( team )
+		// }
+		// else if( teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
+		// {
+			// if( Distance( teamflagpoint.pole.GetOrigin(), CTF.ringCenter ) > CTF.ringRadius )
+			// {
+				// teamflagpoint.flagatbase = true
+				// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
+				// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
+				// array<entity> teamplayers = GetPlayerArrayOfTeam( team )
 
-				foreach ( player in GetPlayerArrayOfTeam( team ) )
-				{
-					Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-				}
-			}
-			else
-			{
-				foundSafeSpot = true
-			}
-		}
-		else
-		{
-			teamflagpoint.flagatbase = true
-			teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-			teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
-			array<entity> teamplayers = GetPlayerArrayOfTeam( team )
+				// foreach ( player in GetPlayerArrayOfTeam( team ) )
+				// {
+					// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
+				// }
+			// }
+			// else
+			// {
+				// foundSafeSpot = true
+			// }
+		// }
+		// else
+		// {
+			// teamflagpoint.flagatbase = true
+			// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
+			// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
+			// array<entity> teamplayers = GetPlayerArrayOfTeam( team )
 
-			foreach ( player in GetPlayerArrayOfTeam( team ) )
-			{
-				Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-			}
-		}
-	}
+			// foreach ( player in GetPlayerArrayOfTeam( team ) )
+			// {
+				// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
+			// }
+		// }
+	// }
 
 	teamflagpoint.pickedup = false
 	teamflagpoint.dropped = true
@@ -1688,8 +1708,10 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	if ( foundSafeSpot )
 		thread TrackFlagDropTimeout( team, teamflagpoint )
 
-	wait 1.5
+	WaitSignal( teamflagpoint.pole, "FlagPhysicsEnd" )
 	
+	foundSafeSpot = true
+
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
@@ -2043,6 +2065,15 @@ bool function ClientCommand_AskForTeam(entity player, array < string > args)
 			player.p.teamasked = -1
 		break
 	}	
+	
+	return true
+}
+
+bool function ThrowFlagNewTest(entity player, array < string > args) 
+{
+	vector origin = GetThrowOrigin( player )
+	entity ball = SpawnGenericLoot( "bullet", origin, <0,0,0>, 1 )
+	FakePhysicsThrow( player, ball, AnglesToForward( player.EyeAngles() ) * 300 )
 	
 	return true
 }

@@ -1863,7 +1863,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.EyePosition() + AnglesToForward( player.CameraAngles() ) * 25
+	return player.EyePosition() + player.GetForwardVector() * 25
 }
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
@@ -2046,7 +2046,7 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	prop_physics.NotSolid()
 	prop_physics.SetVelocity( playerVelocity )
 	
-	thread Flowstate_CheckForPhysicsMemoryLeak( deathbox, prop_physics )
+	// thread Flowstate_CheckForPhysicsMemoryLeak( deathbox, prop_physics )
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
@@ -2074,7 +2074,7 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 }
 
-void function FakePhysicsThrow_NewTest( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
+void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
 {
 	entity prop_physics = CreateEntity( "prop_physics" )
 	prop_physics.SetValueForModelKey( drop.GetModelName() )
@@ -2093,41 +2093,44 @@ void function FakePhysicsThrow_NewTest( entity player, entity drop, vector forwa
 	entity physics = prop_physics
 	vector velocity = player.GetVelocity() * 1.25 + forward
 
-	physics.PhysicsSetFriction( 1 )
-	physics.PhysicsSetDamping( 1, 5 )
+	physics.PhysicsSetFriction( 1000 )
+	physics.PhysicsSetDamping( 1, 1000 )
 	physics.PhysicsSetAutoDisableNotifications( false )
 	physics.SetRollSoundName( "LootBall_Roll_Default" )
-	// physics.SetPhysics( MOVETYPE_FLY )
 
 	drop.SetParent( physics )
+	drop2.SetParent( physics )
 
-	// physics.Hide()
-	// drop.Hide()
+	physics.Hide()
 
 	drop.NotSolid()
 	physics.NotSolid()
 
 	physics.SetVelocity( velocity )
 
-	thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
-	// physics sometimes will stuck even if item seems to be static already
+	thread Flowstate_CheckFlagPhysics( drop, drop2, physics )
 
 }
 
-void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
+void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity physics )
 {
 	// EndSignal( drop, "OnDestroy" )
-	EndSignal( physics, "OnDestroy" )
+	// EndSignal( physics, "OnDestroy" )
 
 	OnThreadEnd(
-		function() : ( drop, physics )
+		function() : ( drop, drop2, physics )
 		{
 			ClearChildren( drop, true )
 			if ( IsValid( drop ) )
 				drop.ClearParent()
+			ClearChildren( drop2, true )
+			if ( IsValid( drop ) )
+				drop2.ClearParent()
 
-			// if ( !IsValid( drop ) && IsValid( physics ) )
-				// physics.Destroy()
+			if ( IsValid( physics ) )
+				physics.Destroy()
+			
+			Signal( drop, "FlagPhysicsEnd" )
 		}
 	)
 
@@ -2138,37 +2141,20 @@ void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
 
 	while( IsValid( physics ) && vel > 0 )
 	{
-		
+		drop.SetAngles( <0,0,0> )
+		drop2.SetAngles( <0,0,0> )
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
 		printt( vel )
 		
-		if( vel < 1 )
+		if( vel < 0.8 )
 		{
 			physics.StopPhysics()
 			break
 		}
-		// if( vel == lastVel )
-		// {
-			// numTicksSameSpeed++
-			
-			// if( numTicksSameSpeed >= 25 )
-			// {
-				// break
-			// }
-		// }
-		// else
-			// numTicksSameSpeed = 0
 
-		// lastVel = vel
 		WaitFrame()
 	}
-
-	// if ( IsValid( drop ) )
-		// drop.ClearParent()
-
-	// if ( IsValid( physics ) )
-		// physics.Destroy()
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value, int extravalue = -1)
