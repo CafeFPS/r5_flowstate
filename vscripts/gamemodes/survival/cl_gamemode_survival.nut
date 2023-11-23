@@ -3107,7 +3107,7 @@ void function OnToggleMute( var button )
 
 bool function GetWaitingForPlayersOverlayEnabled( entity player )
 {
-	if( GetCurrentPlaylistName() == "fs_movementgym" )
+	if( GetCurrentPlaylistName() == "fs_movementgym" || GetMapName() == "mp_flowstate" )
 		return false
 
 	if ( IsTestMap() )
