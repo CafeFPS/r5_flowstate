@@ -17,6 +17,7 @@ global function SetItemSpawnSource
 global function AddToDeathBox
 global function SURVIVAL_CreateDeathBox
 global function FakePhysicsThrow
+global function FakePhysicsThrow_NewTest
 global function SURVIVAL_GivePlayerEquipment
 global function SpawnWeaponAndAmmo
 global function SpawnArmor
@@ -1862,7 +1863,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.EyePosition() + player.GetForwardVector() * 12
+	return player.EyePosition() + AnglesToForward( player.CameraAngles() ) * 25
 }
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
@@ -2073,16 +2074,60 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 }
 
+void function FakePhysicsThrow_NewTest( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
+{
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( drop.GetModelName() )
+	prop_physics.kv.spawnflags = 0
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	SetTeam( prop_physics, TEAM_BOTH )	// need to have a team other then 0 or it won't take impact damage
+
+	prop_physics.SetOrigin( drop.GetOrigin() )
+	prop_physics.SetAngles( drop.GetAngles() )
+	DispatchSpawn( prop_physics )
+
+	entity physics = prop_physics
+	vector velocity = player.GetVelocity() * 1.25 + forward
+
+	physics.PhysicsSetFriction( 1 )
+	physics.PhysicsSetDamping( 1, 5 )
+	physics.PhysicsSetAutoDisableNotifications( false )
+	physics.SetRollSoundName( "LootBall_Roll_Default" )
+	// physics.SetPhysics( MOVETYPE_FLY )
+
+	drop.SetParent( physics )
+
+	// physics.Hide()
+	// drop.Hide()
+
+	drop.NotSolid()
+	physics.NotSolid()
+
+	physics.SetVelocity( velocity )
+
+	thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
+	// physics sometimes will stuck even if item seems to be static already
+
+}
+
 void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
 {
-	EndSignal( drop, "OnDestroy" )
+	// EndSignal( drop, "OnDestroy" )
 	EndSignal( physics, "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( drop, physics )
 		{
-			if ( !IsValid( drop ) && IsValid( physics ) )
-				physics.Destroy()
+			ClearChildren( drop, true )
+			if ( IsValid( drop ) )
+				drop.ClearParent()
+
+			// if ( !IsValid( drop ) && IsValid( physics ) )
+				// physics.Destroy()
 		}
 	)
 
@@ -2096,29 +2141,34 @@ void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
 		
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
-		// printt( vel )
-
-		if( vel == lastVel )
+		printt( vel )
+		
+		if( vel < 1 )
 		{
-			numTicksSameSpeed++
-			
-			if( numTicksSameSpeed >= 25 )
-			{
-				break
-			}
+			physics.StopPhysics()
+			break
 		}
-		else
-			numTicksSameSpeed = 0
+		// if( vel == lastVel )
+		// {
+			// numTicksSameSpeed++
+			
+			// if( numTicksSameSpeed >= 25 )
+			// {
+				// break
+			// }
+		// }
+		// else
+			// numTicksSameSpeed = 0
 
-		lastVel = vel
+		// lastVel = vel
 		WaitFrame()
 	}
 
-	if ( IsValid( drop ) )
-		drop.ClearParent()
+	// if ( IsValid( drop ) )
+		// drop.ClearParent()
 
-	if ( IsValid( physics ) )
-		physics.Destroy()
+	// if ( IsValid( physics ) )
+		// physics.Destroy()
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value, int extravalue = -1)
