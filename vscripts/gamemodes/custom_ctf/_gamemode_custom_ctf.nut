@@ -1158,7 +1158,7 @@ void function PlayerPickedUpFlag(entity ent)
 
 	//ball carrier can't run
 	StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.1)
-	ent.SetMoveSpeedScale( 1.25 )
+	ent.SetMoveSpeedScale( 1.11 )
 
 	ent.GiveWeapon( "mp_weapon_flagpole_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	ent.GiveOffhandWeapon( "melee_flagpole", OFFHAND_MELEE )
@@ -1658,6 +1658,14 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
+	
+	printt( teamflagpoint.pole.GetOrigin().z, GetZLimitForCurrentLocationName() )
+
+	if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
+	{
+		ResetFlagForTeam( team )
+		return
+	}
 
 	// Create the recapture trigger
 	teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
@@ -1700,7 +1708,7 @@ void function TrackFlagDropTimeoutAndWorldBounds( int team, CTFPoint teamflagpoi
 			break
 		}
 
-		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
+		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= CTF_GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
 		{
 			Signal( teamflagpoint.pole, "FlagPhysicsEnd" )
 			ResetFlagForTeam( team )
@@ -1709,6 +1717,11 @@ void function TrackFlagDropTimeoutAndWorldBounds( int team, CTFPoint teamflagpoi
 
 		WaitFrame()
 	}
+}
+
+int function CTF_GetZLimitForCurrentLocationName()
+{
+	return file.selectedLocation.undermap
 }
 
 void function ResetFlagForTeam( int team ) 
