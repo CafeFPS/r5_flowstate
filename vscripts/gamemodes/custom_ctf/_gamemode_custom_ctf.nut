@@ -1663,7 +1663,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	
 	//printt( teamflagpoint.pole.GetOrigin().z, GetZLimitForCurrentLocationName() )
 
-	if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
+	if( GetMapName() == "mp_flowstate" && flag.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && flag.GetOrigin().z >= -19500 )
 	{
 		ResetFlagForTeam( team )
 		return
@@ -1674,9 +1674,8 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	teamflagpoint.returntrigger.SetRadius( 45 )
 	teamflagpoint.returntrigger.SetAboveHeight( 200 )
 	teamflagpoint.returntrigger.SetBelowHeight( 200 )
-	SetTeam( teamflagpoint.returntrigger, teamflagpoint.pole.GetTeam() )
-	if( IsValid( teamflagpoint.pole ) )
-		teamflagpoint.returntrigger.SetOrigin( teamflagpoint.pole.GetOrigin() )
+	SetTeam( teamflagpoint.returntrigger, flag.GetTeam() )
+	teamflagpoint.returntrigger.SetOrigin( flag.GetOrigin() )
 
 	if( team == TEAM_IMC )
 	{
@@ -1687,7 +1686,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 		teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
 	}
 	teamflagpoint.returntrigger.SetLeaveCallback( OnPlayerExitsFlagReturnTrigger )
-	teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
+	teamflagpoint.returntrigger.SetParent( flag )
 	DispatchSpawn( teamflagpoint.returntrigger )
 }
 
