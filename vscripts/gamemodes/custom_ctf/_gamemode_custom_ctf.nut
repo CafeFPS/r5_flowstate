@@ -1649,6 +1649,8 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	thread TrackFlagDropTimeoutAndWorldBounds( team, teamflagpoint )
 
 	entity flag = teamflagpoint.pole
+	
+	EndSignal( flag, "OnDestroy" )
 	WaitSignal( flag, "FlagPhysicsEnd" )
 
 	wait 0.1
