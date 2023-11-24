@@ -1048,7 +1048,7 @@ void function ResetIMCFlag()
 	IMCPoint.isbeingreturned = false
 	IMCPoint.beingreturnedby = null
 	
-	wait 0.1
+	WaitFrame()
 
 	IMCPoint.pole = CreateEntity( "prop_dynamic" )
 	IMCPoint.pole.SetValueForModelKey( CTF_FLAG_MODEL )
@@ -1094,7 +1094,7 @@ void function ResetMILITIAFlag()
 	MILITIAPoint.isbeingreturned = false
 	MILITIAPoint.beingreturnedby = null
 
-	wait 0.1
+	WaitFrame()
 
 	MILITIAPoint.pole = CreateEntity( "prop_dynamic" )
 	MILITIAPoint.pole.SetValueForModelKey( CTF_FLAG_MODEL )
@@ -1614,7 +1614,6 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	
 	if( IsValid( teamflagpoint.pole2 ) )
 		teamflagpoint.pole2.ClearParent()
-	bool foundSafeSpot = false
 
 	PlayerDroppedFlag(victim)
 
@@ -1644,115 +1643,77 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	{
 		Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Return)
 	}
-	
-	// if( IsValid( teamflagpoint.pole ) )
-	// {
-		// // Check for if the flag ends up under the map
-		// if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
-		// {
-			// foundSafeSpot = true
-
-			// vector endOrigin = teamflagpoint.pole.GetOrigin() - < 0, 0, 200 >
-			// TraceResults traceResult = TraceLine( teamflagpoint.pole.GetOrigin(), endOrigin, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
-			
-			// if( traceResult.fraction == 1.0 )
-			// {
-				// foundSafeSpot = false
-				// teamflagpoint.flagatbase = true
-				// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-				// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
-
-				// foreach ( player in GetPlayerArrayOfTeam( team ) )
-				// {
-					// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-				// }
-			// }
-			
-		// }
-		// else if( teamflagpoint.pole.GetOrigin().z > file.selectedLocation.undermap )
-		// {
-			// if( Distance( teamflagpoint.pole.GetOrigin(), CTF.ringCenter ) > CTF.ringRadius )
-			// {
-				// teamflagpoint.flagatbase = true
-				// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-				// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
-				// array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-
-				// foreach ( player in GetPlayerArrayOfTeam( team ) )
-				// {
-					// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-				// }
-			// }
-			// else
-			// {
-				// foundSafeSpot = true
-			// }
-		// }
-		// else
-		// {
-			// teamflagpoint.flagatbase = true
-			// teamflagpoint.pole.SetOrigin( teamflagpoint.spawn )
-			// teamflagpoint.pole2.SetOrigin( teamflagpoint.spawn )
-			// array<entity> teamplayers = GetPlayerArrayOfTeam( team )
-
-			// foreach ( player in GetPlayerArrayOfTeam( team ) )
-			// {
-				// Remote_CallFunction_Replay(player, "ServerCallback_CTF_SetPointIconHint", team, eCTFFlag.Defend)
-			// }
-		// }
-	// }
 
 	teamflagpoint.pickedup = false
 	teamflagpoint.dropped = true
-	
-	if ( foundSafeSpot )
-		thread TrackFlagDropTimeout( team, teamflagpoint )
 
-	WaitSignal( teamflagpoint.pole, "FlagPhysicsEnd" )
-	
-	foundSafeSpot = true
+	thread TrackFlagDropTimeoutAndWorldBounds( team, teamflagpoint )
+
+	entity flag = teamflagpoint.pole
+	WaitSignal( flag, "FlagPhysicsEnd" )
+
+	wait 0.1
+
+	if( !IsValid( flag ) )
+		return
 
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
-	if ( foundSafeSpot )
-	{
-		// Create the recapture trigger
-		teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
-		teamflagpoint.returntrigger.SetRadius( 45 )
-		teamflagpoint.returntrigger.SetAboveHeight( 200 )
-		teamflagpoint.returntrigger.SetBelowHeight( 200 )
-		SetTeam( teamflagpoint.returntrigger, teamflagpoint.pole.GetTeam() )
-		if( IsValid( teamflagpoint.pole ) )
-			teamflagpoint.returntrigger.SetOrigin( teamflagpoint.pole.GetOrigin() )
+	// Create the recapture trigger
+	teamflagpoint.returntrigger = CreateEntity( "trigger_cylinder" )
+	teamflagpoint.returntrigger.SetRadius( 45 )
+	teamflagpoint.returntrigger.SetAboveHeight( 200 )
+	teamflagpoint.returntrigger.SetBelowHeight( 200 )
+	SetTeam( teamflagpoint.returntrigger, teamflagpoint.pole.GetTeam() )
+	if( IsValid( teamflagpoint.pole ) )
+		teamflagpoint.returntrigger.SetOrigin( teamflagpoint.pole.GetOrigin() )
 
-		if( team == TEAM_IMC )
-		{
-			teamflagpoint.returntrigger.SetEnterCallback( IMC_PoleReturn_Trigger )
-		}
-		else if( team == TEAM_MILITIA )
-		{
-			teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
-		}
-		teamflagpoint.returntrigger.SetLeaveCallback( OnPlayerExitsFlagReturnTrigger )
-		teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
-		DispatchSpawn( teamflagpoint.returntrigger )
+	if( team == TEAM_IMC )
+	{
+		teamflagpoint.returntrigger.SetEnterCallback( IMC_PoleReturn_Trigger )
 	}
+	else if( team == TEAM_MILITIA )
+	{
+		teamflagpoint.returntrigger.SetEnterCallback( MILITIA_PoleReturn_Trigger )
+	}
+	teamflagpoint.returntrigger.SetLeaveCallback( OnPlayerExitsFlagReturnTrigger )
+	teamflagpoint.returntrigger.SetParent( teamflagpoint.pole )
+	DispatchSpawn( teamflagpoint.returntrigger )
 }
 
-void function TrackFlagDropTimeout( int team, CTFPoint teamflagpoint )
+void function TrackFlagDropTimeoutAndWorldBounds( int team, CTFPoint teamflagpoint )
 {
 	if( !IsValid( teamflagpoint.pole ) )
 		return
 
 	teamflagpoint.pole.EndSignal( "ResetDropTimeout" )
 	teamflagpoint.pole.EndSignal( "OnDestroy" )
+
+	float timeout = Time() + 20
 	
-	wait 20
+	while( IsValid( teamflagpoint.pole ) && file.ctfState == eCTFState.IN_PROGRESS )
+	{
+		if( Time() >= timeout )
+		{
+			Signal( teamflagpoint.pole, "FlagPhysicsEnd" )
+			ResetFlagForTeam( team )
+			break
+		}
 
-	if( file.ctfState != eCTFState.IN_PROGRESS )
-		return
+		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
+		{
+			Signal( teamflagpoint.pole, "FlagPhysicsEnd" )
+			ResetFlagForTeam( team )
+			break
+		}
 
+		WaitFrame()
+	}
+}
+
+void function ResetFlagForTeam( int team ) 
+{
 	foreach ( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) )
@@ -1767,7 +1728,7 @@ void function TrackFlagDropTimeout( int team, CTFPoint teamflagpoint )
 	if( team == TEAM_IMC )
 		thread ResetIMCFlag()
 	else if( team == TEAM_MILITIA )
-		thread ResetMILITIAFlag()	
+		thread ResetMILITIAFlag()
 }
 
 void function CheckPlayerForFlag(entity victim)

@@ -2114,18 +2114,23 @@ void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2
 
 void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity physics )
 {
-	// EndSignal( drop, "OnDestroy" )
+	EndSignal( drop, "OnDestroy" )
 	// EndSignal( physics, "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( drop, drop2, physics )
 		{
-			ClearChildren( drop, true )
 			if ( IsValid( drop ) )
+			{
+				ClearChildren( drop, true )
 				drop.ClearParent()
-			ClearChildren( drop2, true )
+			}
+			
 			if ( IsValid( drop ) )
+			{
+				ClearChildren( drop2, true )
 				drop2.ClearParent()
+			}
 
 			if ( IsValid( physics ) )
 				physics.Destroy()
@@ -2139,7 +2144,7 @@ void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity phys
 	float lastVel = vel
 	float numTicksSameSpeed
 
-	while( IsValid( physics ) && vel > 0 )
+	while( IsValid( physics ) && vel > 0 && IsValid( drop ) && IsValid( drop2 ) )
 	{
 		drop.SetAngles( <0,0,0> )
 		drop2.SetAngles( <0,0,0> )
