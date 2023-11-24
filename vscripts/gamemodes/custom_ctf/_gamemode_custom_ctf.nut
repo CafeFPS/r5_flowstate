@@ -1661,7 +1661,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	if( file.ctfState != eCTFState.IN_PROGRESS )
 		return
 	
-	printt( teamflagpoint.pole.GetOrigin().z, GetZLimitForCurrentLocationName() )
+	//printt( teamflagpoint.pole.GetOrigin().z, GetZLimitForCurrentLocationName() )
 
 	if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
 	{
