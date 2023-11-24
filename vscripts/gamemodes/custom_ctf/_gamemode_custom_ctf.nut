@@ -11,7 +11,6 @@ global function _CTFRegisterCTFClass
 global function ResetIMCFlag
 global function ResetMILITIAFlag
 global function FS_StartIntroScreen
-global function ThrowFlagNewTest
 
 bool debugging = true
 
@@ -2026,15 +2025,6 @@ bool function ClientCommand_AskForTeam(entity player, array < string > args)
 			player.p.teamasked = -1
 		break
 	}	
-	
-	return true
-}
-
-bool function ThrowFlagNewTest(entity player, array < string > args) 
-{
-	vector origin = GetThrowOrigin( player )
-	entity ball = SpawnGenericLoot( "bullet", origin, <0,0,0>, 1 )
-	FakePhysicsThrow( player, ball, AnglesToForward( player.EyeAngles() ) * 300 )
 	
 	return true
 }
