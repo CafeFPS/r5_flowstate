@@ -740,7 +740,10 @@ void function GetPlayerOutOfCameraManual( entity player )
 		return
 
 	entity weapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-	weapon.SetWeaponPrimaryClipCount(weapon.GetAmmoPerShot()-10)
+	
+	if (IsValid( weapon )){
+		weapon.SetWeaponPrimaryClipCount(weapon.GetAmmoPerShot()-10)
+	}
 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_droneViewEnd" )
 	GetPlayerOutOfCamera( player )
