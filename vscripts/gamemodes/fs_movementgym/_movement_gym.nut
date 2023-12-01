@@ -204,7 +204,6 @@ function PrecacheMovementGymProps() {
 	PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
 	PrecacheModel( $"mdl/garbage/trash_can_metal_01_a.rmdl" )
 	PrecacheModel( $"mdl/garbage/trash_can_metal_02_a.rmdl" )
-	PrecacheModel( $"mdl/hud/grenade_indicator/bang_indicator.rmdl" )
 	PrecacheModel( $"mdl/hud/grenade_indicator/grenade_indicator_arrow.rmdl" )
 	PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
 	PrecacheModel( $"mdl/IMC_base/scaffold_tech_alpharail_128.rmdl" )
@@ -734,8 +733,6 @@ vector tpoffset = < 0, 0, -20000 >
 //Init Hub
 void
 function MovementGym_Hub() {
-    MapEditor_CreateProp( $"mdl/hud/grenade_indicator/bang_indicator.rmdl", < 10940.9, 9829.7, -4192.7 >, < 0, 0, 0 >, true, 50000, -1, 15 )
-
     // Props Array
     array < entity > NoClimbArray; array < entity > NoCollisionArray; 
 
