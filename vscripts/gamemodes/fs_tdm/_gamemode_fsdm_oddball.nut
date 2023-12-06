@@ -195,14 +195,6 @@ void function Oddball_GlobalHeldTimer()
 			}
 		}
 
-		//show hint when your team is ahead
-
-		//show hint to old team leader when they lost head
-		
-		//show hint when you're half way victory
-		
-		//update real time hud that shows your time
-		
 		wait 1
 	}
 }

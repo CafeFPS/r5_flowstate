@@ -46,7 +46,7 @@ void function StagingArea_MoveSkybox_Thread()
 {
 	FlagWait( "EntitiesDidLoad" )
 
-	printt( "Congrats! mp_flowstate has been loaded." )
+	printt( "Congrats! mp_flowstate by @CafeFPS has been loaded." )
 	
 	// CreatePropDynamic( $"mdl/fs_skybox1.rmdl", skyboxCamera.GetOrigin() - <0, 0, 100>, <0, 60, 0> ).SetModelScale( 1 )
 }

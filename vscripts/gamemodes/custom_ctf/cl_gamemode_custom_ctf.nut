@@ -48,6 +48,10 @@ global function VoteTeam_ClientAskedForTeam
 
 global function ServerCallback_AddClientThatVotedToTeam
 global function ServerCallback_RemoveClientThatVotedFromTeam
+global function Flowstate_IntroTimeChanged
+global function Flowstate_IntroEndTimeChanged
+global function Flowstate_VoteTeamEndTimeChanged
+
 struct {
 
 	LocationSettingsCTF &selectedLocation

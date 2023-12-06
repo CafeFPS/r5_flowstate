@@ -20,9 +20,6 @@ void function Cl_FsOddballInit()
 	AddCallback_EntitiesDidLoad( OddballNotifyRingTimer )
 	RegisterSignal( "StopAutoDestroyRuiThread" )
 	RegisterSignal( "StartNewWinnerScreen" )
-	// Muy tarde amigo
-	// RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )
-	// RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
 }
 
 void function FSDM_GameStateChanged( entity player, int old, int new, bool actuallyChanged )

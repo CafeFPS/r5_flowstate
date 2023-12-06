@@ -66,7 +66,7 @@ const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
 const int Flowstate_StartTimeDelay = 10
-
+bool debugging = true
 bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
 
@@ -175,6 +175,7 @@ void function _CustomTDM_Init()
 	{
 		PrecacheCyberdyne()
 		PrecacheLockout()
+		PrecacheBeavercreek()
 		PrecacheChill()
 		if( GetMapName() == "mp_flowstate" )
 		{
@@ -2613,9 +2614,13 @@ void function SimpleChampionUI()
 		case "Lockout":
 		thread SpawnLockout()
 		break
-		
+
 		case "Narrows":
 		thread SpawnChill()
+		break
+
+		case "Beaver Creek":
+		thread SpawnBeavercreek()
 		break
 	}
 	
@@ -2684,14 +2689,30 @@ void function SimpleChampionUI()
 					player.LockWeaponChange()
 					player.FreezeControlsOnServer()
 					
-					// Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+					Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 					
 					#if !DEVELOPER
-					if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+					if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 						wait Flowstate_StartTimeDelay
 					#endif
+
 					if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 					{
+
+						if( !debugging )
+						{
+							SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+							SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+
+							while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+								WaitFrame()
+
+							foreach(player in GetPlayerArray())
+							{
+								Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+							}
+						}
+
 						Message( player, "Oddball", file.selectedLocation.name, 5, "" )
 						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
 						thread function ( ) : ( player )
@@ -5450,8 +5471,6 @@ void function SpawnLockout() //Halo 2 Encerrona
 		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_snow_atmo_512" ), <41289.9258, -9688.5918, -20597.6895>, <0,0,0> ) )
 		file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_snow_atmo_512" ), <41856.8594, -8431.65137, -20965.791>, <0,0,0> ) )
 	}()
-	
-	
 }
 
 void function SpawnChill()
@@ -5573,6 +5592,96 @@ void function SpawnChill()
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40100.6602, -9312.33887, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42050.5703, -9994.34082, -20213.0469>, <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41947.1797, -9995.0625, -20212.5527>, <0, -180, 0>, "mp_weapon_haloshotgun", 0.5 ) )
+		
+		//Adjust sun flare for rotated skybox.
+		foreach( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) )
+				continue
+			
+			Remote_CallFunction_Replay( player, "FS_ForceAdjustSunFlareParticleOnClient", 2 ) //chill 
+		}
+
+		if( GetMapName() == "mp_flowstate" )
+		{
+			//Rotate skybox for Chill map.
+			entity skyboxCamera = GetEnt( "skybox_cam_level" )
+			skyboxCamera.SetOrigin( file.ogSkyboxOrigin + <0, 0, 85> )
+			skyboxCamera.SetAngles( <0, 67, 0> ) //Chill
+		}
+	}()
+}
+
+void function SpawnBeavercreek()
+{
+	if( GetMapName() != "mp_flowstate" )
+		return
+
+	vector startingpos = Vector(42000, -10000, -26000) //Vector( 0,0,2000 ) // 
+	vector startingang = Vector(0,-90,0)
+	float scale = 3000
+
+	//seccion1
+	entity seccion1 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_beavercreek/mp_rr_beavercreek_parte1.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion1, scale )
+	DispatchSpawn( seccion1 )
+
+	//seccion2
+	entity seccion2 = CreatePropDynamic_NoDispatchSpawn( $"mdl/custom_maps/mp_rr_beavercreek/mp_rr_beavercreek_parte2.rmdl", startingpos, startingang,  SOLID_VPHYSICS, -1 )
+	SetCommonLinesForMapProp( seccion2, scale )
+	DispatchSpawn( seccion2 )
+	
+	LoadBeavercreek1( startingpos )
+	
+	thread function () : ( startingpos )
+	{
+		#if DEVELOPER
+		FlagWait( "EntitiesDidLoad" ) //for when I load the map via _mapspawn
+		
+		ForceSaveOgSkyboxOrigin()
+		#endif
+		//Lightning.
+		FS_ResetMapLightning()
+		WaitFrame()
+
+		SetConVarFloat( "jump_graceperiod", 0 )
+		SetConVarFloat( "mat_envmap_scale", 0.12 )
+
+		SetConVarFloat( "mat_autoexposure_max", 1.0 )
+		SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
+		SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
+		SetConVarFloat( "mat_autoexposure_min", 1.7 )
+
+		SetConVarFloat( "mat_sky_scale", 0.01 )
+		SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
+		SetConVarFloat( "mat_sun_scale", 1 )
+		SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
+	
+		// //cannons
+		// file.playerSpawnedProps.append( FSCannon_Create( <40676.5586, -10610.1416, -20472.6426>, 48, <1.0, 0.0, 1.0>) )
+		// file.playerSpawnedProps.append( FSCannon_Create( <43311.0898, -10610.4277, -20470.5313>, 48, <-1.0, 0.0, 1.0>) )
+	
+		// //Wind column effect, two so we complete a cylinder-like shape
+		// file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <40676.5586, -10610.1416, -20435>, Vector( -30, 0, 0 ) ) )
+		// file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <43311.0898, -10610.4277, -20435>, Vector( -30, -180, 0 ) ) )
+
+		// //Add weapon racks.
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43266.2695, -9999.79004, -20494.6563>, <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40727.457, -9998.79199, -20494.6563>, <0, 0, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
+		// file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <40859.6367, -10779.4385, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43127.5742, -10779.4648, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
+		
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43896.0391, -10764.7637, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40098.2461, -10769.7568, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0664, -9757.24805, -20464.0566>, <0, 180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0586, -10243.4219, -20464.0566>, <0, -180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		// file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <43987.5313, -10241.0508, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43986.7383, -9755.34863, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43902.8867, -9319.55664, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40100.6602, -9312.33887, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42050.5703, -9994.34082, -20213.0469>, <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 ) )
+		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41947.1797, -9995.0625, -20212.5527>, <0, -180, 0>, "mp_weapon_haloshotgun", 0.5 ) )
 		
 		//Adjust sun flare for rotated skybox.
 		foreach( player in GetPlayerArray() )

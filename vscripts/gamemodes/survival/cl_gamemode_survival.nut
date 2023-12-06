@@ -403,7 +403,8 @@ void function ClGamemodeSurvival_Init()
 	AddFirstPersonSpectateStartedCallback( OnFirstPersonSpectateStarted )
 	AddCallback_OnViewPlayerChanged( OnViewPlayerChanged )
 	AddCallback_OnPlayerConsumableInventoryChanged( UpdateDpadHud )
-
+	
+	AddClientCallback_OnResolutionChanged( OnResolutionChanged_FixRuiSize )
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, Survival_WaitForPlayers )
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, EnableToggleMuteKeys )
 	AddCallback_GameStateEnter( eGameState.PickLoadout, Survival_RunCharacterSelection )
@@ -1240,6 +1241,11 @@ void function AddCallback_OnVictoryCharacterModelSpawned( void functionref( enti
 {
 	Assert( !s_callbacks_OnVictoryCharacterModelSpawned.contains( func ) )
 	s_callbacks_OnVictoryCharacterModelSpawned.append( func )
+}
+
+void function OnResolutionChanged_FixRuiSize()
+{
+	
 }
 
 bool s_didScorebarSetup = false

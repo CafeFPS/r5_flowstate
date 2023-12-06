@@ -457,7 +457,7 @@ void function FinisherTestIdk(
 	// CharacterSkin_Apply( attacker, attackerSkin )
 	// attacker.SetModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
 	
-	attacker.SetModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	attacker.SetModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
 	// attacker.SetModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
 	//CharacterSkin_Apply( victim, victimSkin )
 	victim.SetModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
