@@ -83,8 +83,11 @@ void function JumpPad_GiveDoubleJump( entity player )
 
 		player.kv.gravity = 1
 		player.p.playerEnteredJumppadCrouching = false
+		player.p.usingJumpPad = false
 		StopSoundOnEntity( player, "jumpjet_jet_body_1p" )
 		StopSoundOnEntity( player, "jumpjet_jet_body_3p_enemy" )
+
+		RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump )
 
 		bool stillHasDoubleJumpMod = false
 
@@ -102,8 +105,6 @@ void function JumpPad_GiveDoubleJump( entity player )
 	{
 		WaitFrame()
 	}
-
-	player.p.usingJumpPad = false
 }
 
 void function JumpPad_consumeDoubleJump( entity player )
