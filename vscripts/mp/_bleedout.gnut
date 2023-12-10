@@ -153,6 +153,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 
 	player.SetPlayerNetInt( "bleedoutType",  EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) // 0 is BLEEDOUT_TIME_LV1. how many times have player died? why was EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ?? it doesn't make sense of you having better incap shield and you're dying quickly
 	player.SetHealth( 100 )
+	player.DisableMantle()
 
 	if( IsValid( attacker ) && attacker.IsPlayer() )
 		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
@@ -289,6 +290,7 @@ void function PlayerDying( entity player )
 				player.UnforceCrouch()
 				player.SetUseDoomedAnims(false)
 				player.SetOneHandedWeaponUsageOff()
+				player.EnableMantle()
 				//Remote_CallFunction_NonReplay( player, "ServerCallback_BLEEDOUT_PlayerRevivedDOF" )
 
 				BleedoutState_SetPlayerBleedoutState( player, BS_NOT_BLEEDING_OUT )
