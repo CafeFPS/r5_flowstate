@@ -327,7 +327,7 @@ global struct ServerEntityStruct
 	string enemyHighlight = ""
 	string burnReward = ""
 	int fd_roundDeployed = -1
-	
+
 	// r5 stuff
 	EHIScriptStruct ehiss
 	bool isBusy = false
@@ -382,13 +382,13 @@ global struct ServerEntityStruct
 	float lastGrappleTime
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
-	
+
 	//Trophy Structs
 	float pylonhealth
-	
+
 	//Flyers easteregg
 	entity ParentedPlayerToFlyer
-	
+
 	//Lootbins mod
 	int lootbinusages
 
@@ -398,13 +398,13 @@ global struct ServerEntityStruct
 	//portal gun
 	bool isplayercomingfromportal1 = false
 	bool isplayercomingfromportal2 = false
-	
+
 	bool alreadyPingedUltraDecoy = false
 	bool isBeingAttackedByDroneMedic = false
-	
+
 	//HoloSprays mp
 	array<entity> holoSpraysFX
-	
+
 	//Tridents
 	string LastTridentAnim
 	entity driver = null
@@ -414,46 +414,46 @@ global struct ServerEntityStruct
 	bool isInAirborne = false
 	bool canBoost = true
 	bool canReset = true
-	
+
 	TraceResults& hoverTrace
 	vector forwardSpeed
-	
+
 	//Ring Flare
 	int currentRadius
-	
+
 	//Bomb
-	
+
 	//Idk
 	bool testOpen = false
-	
+
 	//wattson q
 	bool isLinked = false
 	array<entity> attachedTriggersToPole
 	float teslaTrapTriggerCreationTime
-	
+
 	//crate weapon ammo count
 	int crateWeaponLastAmmo = -1
 	int crateWeaponLastAmmoClip = -1
 	string crateWeaponCustomSight = "-1"
-	
+
 	//cargobots
 	int currentTier = 1
 	bool hasVaultKey = false
-	
+
 	//pylon
 	entity reminderFx
 	float shieldAmountCount
-	
+
 	//backpack limit
 	array<string> lootToAttachToBackpack
 	bool itemReachedGround = false
-	
+
 	//cargobot thing
 	bool applyNewHealthOneTime = false
-	
+
 	//extra survival int property ( max shield for infinite shield )
 	int extraSurvivalProperty = -1
-	
+
 	bool droneRecalling = false
 }
 
@@ -656,7 +656,7 @@ global struct ServerPlayerStruct
 	int turretArrayId = -1
 
 	float hotStreakTime = 0.0
-	
+
 	// extra stuff for apex
 	int skydiveDecoysFired = 0
 	bool isInExtendedUse = false
@@ -715,7 +715,7 @@ global struct ServerPlayerStruct
 	int zoneNoTouchStack
 	int currentZoneId
 	entity DEV_lastDroppedSurvivalWeaponProp
-	
+
 	int squadRank
 
 	float respawnChanceExpiryTime
@@ -729,7 +729,7 @@ global struct ServerPlayerStruct
 	int killedEnemy
 	float lastDownedEnemyTime
 	int downedEnemy
-	
+
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	float last3dashtime = 0
@@ -740,23 +740,23 @@ global struct ServerPlayerStruct
 	bool isAdmin = false
 	int ziplineUsages = 0
 	float lastmoved
-	
+
 	//MovementGym
 	bool isTimerActive = false
 	int startTime = 0
 	int currentTime = 0
 	int finalTime = 0
-	
+
 	bool allowCheckpoint = false
 	int currentCheckpoint = 0
-	
+
 	bool isPlayerInvisAllowed = true
-	
+
 	float lastInvis = 0
 	float lastHub = 0
-	
+
 	int currentMelee = 0
-	
+
 	bool speedometerVisible = true
 	bool movementOverlayVisible = true
 	bool stylemeterVisible = false
@@ -767,7 +767,7 @@ global struct ServerPlayerStruct
 	entity DeathRecap_PreviousShotEnemyPlayer = null
 	bool DeathRecap_PlayerIsBuildingBlock = false
 	float DeathRecap_BlockTime = 0
-	
+
 	//Flyers Easteregg by Colombia
 	bool isParentedToFlyer = false
 	entity ParentedFlyer
@@ -782,12 +782,12 @@ global struct ServerPlayerStruct
 	int PROPHUNT_LastModelIndex
 	int PROPHUNT_TimesSurvivedAsProp = 0
 	int PROPHUNT_SurvivalTime = 0
-	
+
 	//By Endergreen
 	// This is for Octane's ability chatter
 	float lastStimChatterTime = -30
 	float lastJumpPadChatterTime = -30
-	
+
 	//Strafer dummy challenge
 	int challengeName = 0
 	bool isChallengeActivated
@@ -804,7 +804,7 @@ global struct ServerPlayerStruct
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
 	bool ForceEject = false
-	
+
 	string weapon = "mp_weapon_wingman"
 	array<string> mods = ["optic_cq_hcog_classic"]
 	string weapon2 = ""
@@ -813,43 +813,43 @@ global struct ServerPlayerStruct
 	int weaponSkin2 = -1
 	int weaponModelIndex = -1
 	int weaponModelIndex2 = -1
-	
-	
+
+
 	//Map editor
 	PropInfo& selectedProp
 	entity currentPropEntity
 	EditorMode& selectedEditorMode
 	EditorMode ornull lastEditorMode
-	
+
 	//Rocketpod Weapon and Guided Missiles
 	vector guidedLaserPoint
-	
+
 	//Holospray
 	int holosprayChoice = 0
-	
+
 	//Data request
 	float lastTimeDataRequestUsed = 0
-	
+
 	//Super decys (mirage buff)
 	entity lastDecoy
-	
+
 	//Super doc (lifeline buff)
 	entity lastdocdrone
-	
+
 	//Asked for team, prophunt
 	int teamasked = -1
-	
+
 	//HoloSprays mp
 	array<entity> holoSpraysBase
-	
+
 	float lastRightInput = 0
 	float lastForwardInput = 0
-	
+
 	//Duckhunt
-	bool wasTeleported = false	
+	bool wasTeleported = false
 	bool lastFloorCheckPoint = false
 	bool askedForHunter = false
-	
+
 	//knockbacks
 	int roundPlayerPoints = 0
 	int ampedDamageBonus = 0
@@ -857,30 +857,30 @@ global struct ServerPlayerStruct
 	float currentPlayerSpeed = 1.0
 	int ampedFireRateBonus = 0
 	int totalpoints = 0
-	
-	//infection	
+
+	//infection
 	array<entity> shadowAttachedEntities
 	float allowedTimeForNextKill
 	bool isLastManStanding
 	bool amIAlphaZombie
 	bool hasInfectedNear
-	
+
 	//infection perks
 	int infectionRoundKills
 	int gainedPerks
-	
+
 	bool hasSecondaryWeaponPerk
 	bool hasQuickReloadPerk
 	bool hasBetterMagsPerk
 	bool hasHardenedPerk
-	
+
 	//SND
 	bool isSNDAttackerPlayer
 	bool playerHasBomb
 	bool playerIsPlantingBomb
 	bool didPlayerBuyAWeapon
 	bool survivedShouldSaveWeapons = false
-	
+
 	int grenadesBought = 0
 	int availableMoney
 	string weapon1ref = ""
@@ -890,54 +890,55 @@ global struct ServerPlayerStruct
 
 	//Hackers vs pros
 	bool enableAimbot = false
-	
+
 	//mokey
 	bool insideBubbleMokey = false
-	
+
 	string snd_knifecolor = "255, 255, 255"
-	
+
 	//wattson q
 	float lastTimeDamagedByTeslaTrap
 	float lastTimeAppliedEMPByTeslaTrap
-  
+
 	float lastTgiveUsedTime
 	float lastRestUsedTime
 
 	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
-	
+
 	//bangalore's passive
 	entity vortexTriggerDoubleTime
-	
+
 	//wattson ultimate
 	entity lastTrophy
 
 	float huntEndTime
 	bool huntEnable = false
 	array<int> huntIds = []
-	
+
 	bool playerEnteredJumppadCrouching = false
-	
+
 	float lastTimeEnteredCryptosDrone = -1
-	
+
 	//Needler
 	int needles = 0
 	bool ongoingneedlesexplode = false
 	array<entity> proplist
 	entity particleonbody
-	
+
 	int consecutiveKills
 	bool playerHasEnergySword = false
 	string weaponThatEnergySwordReplaced = ""
-	
+
 	//Oddball
 	entity oddballCarrierFx
-	
+
 	// Jumppad double jump
 	asset storedPlayerSettings
 	array< string > storedPlayerSettingsMods
 	array< int > storedPlayerHealth // { health, shieldHealth }
 	array< int > storedPlayerPassives
+	bool usingJumpPad = false
 }
 
 global struct ChallengeScore
@@ -1041,12 +1042,12 @@ global struct ServerAIStruct
 	// r5 stuff
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
-	
+
 	int needles = 0
 	bool ongoingneedlesexplode = false
 	array<entity> proplist
 	entity particleonbody
-	
+
 	entity decoyOwner
 	string lastSchedule
 	string lastAnim
@@ -1101,7 +1102,7 @@ global struct ServerWeaponStruct
 	vector portal2savedNormal
 	vector portal1savedSurfaceAngle
 	vector portal2savedSurfaceAngle
-	
+
 	vector portal1RefAngles
 	vector portal2RefAngles
 	bool fromWall
@@ -1201,7 +1202,7 @@ global struct ServerPlayerDecoyStruct
 	array< entity > fxHandles
 	array< string > loopingSounds
 	float endTime
-	asset characterSetFile 
+	asset characterSetFile
 	asset modelName
 	bool F_or_B_CoinFlip
 	entity owner
