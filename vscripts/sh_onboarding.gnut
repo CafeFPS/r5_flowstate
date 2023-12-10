@@ -106,7 +106,7 @@ void function SV_CL_Onboarding_Init()
 	╚════██║██╔══╝  ██║▄▄ ██║██║   ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝  ╚════██║
 	███████║███████╗╚██████╔╝╚██████╔╝███████╗██║ ╚████║╚██████╗███████╗███████║
 	╚══════╝╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚══════╝
-	
+
 	This part describes the onboarding sequences: threaded functions which control the onboarding.
 */
 
@@ -131,7 +131,7 @@ void function Sequence_WaitingForPlayers()
 
 		int connectedPlayerCount = GetPlayerArray().len()
 
-		// if ( shouldNotWaitForever 
+		// if ( shouldNotWaitForever
 			// && timeSpentWaitingForPlayers >= maximumTimeToSpendToWaitForPlayers
 			// && connectedPlayerCount > 0
 			// )
@@ -142,12 +142,12 @@ void function Sequence_WaitingForPlayers()
 	UpdateSequencedTimePoints( Time() )
 
 	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
-	
+
 	if(GameRules_GetGameMode() != SURVIVAL)
 		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime()) - 1
 	else
 		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
-	
+
 	if( GameRules_GetGameMode() == "fs_aimtrainer" )
 		return
 
@@ -157,16 +157,16 @@ void function Sequence_WaitingForPlayers()
 		{
 			if( !IsValid( player ) )
 				continue
-			
+
 			ScreenCoverTransition_Player(player, Time() + 2)
 		}
 	}
-	
+
 	if(GameRules_GetGameMode() != SURVIVAL)
 	{
 		wait 1
 		SetGameState( eGameState.Playing )
-		return	
+		return
 	}
 
 	// Set champion randomly from among all players
@@ -184,19 +184,19 @@ void function Sequence_WaitingForPlayers()
 
 void function Sequence_PickLoadout()
 {
-	if ( !Survival_CharacterSelectEnabled() ) 
+	if ( !Survival_CharacterSelectEnabled() )
 	{
 		foreach ( player in GetPlayerArray() )
 		{
 			ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
-			
+
 			if( GameRules_GetGameMode() == SURVIVAL && !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 		}
 
-		thread Sequence_Prematch() 
+		thread Sequence_Prematch()
 		return
 	}
 
@@ -237,16 +237,16 @@ void function Sequence_PickLoadout()
 		SetGlobalNetInt( "characterSelectLockstepIndex", pickIndex )
 		SetGlobalNetTime( "characterSelectLockstepStartTime", startTime )
 		SetGlobalNetTime( "characterSelectLockstepEndTime", endTime )
-		
+
 		//compare player pick with GetLoadoutSlotContentsIndexInternal( playerEHI, entry ) before setting a forced pick
-		// if( pickIndex == 0 ) 
+		// if( pickIndex == 0 )
 		// {
 			foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
 			{
 				Flowstate_AssignUniqueCharacterForPlayer(player, false)
 			}
 		// }
-		
+
 		wait timeSpentOnSelection
 
 		foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
@@ -286,22 +286,22 @@ void function Sequence_PickLoadout()
 void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 {
 	array< ItemFlavor > characters = clone GetAllCharacters()
-	
+
 	foreach( character in characters )
 	{
 		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( character ) )
-		
+
 		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED )
 		{
 			characters.fastremovebyvalue( character )
 			continue
 		}
-		
+
 		foreach ( squadMate in GetPlayerArrayOfTeam( player.GetTeam() ) )
 		{
 			if( squadMate == player )
 				continue
-			
+
 			ItemFlavor mateCharacter = LoadoutSlot_GetItemFlavor( ToEHI( squadMate ), Loadout_CharacterClass() )
 			if( mateCharacter == character )
 				characters.fastremovebyvalue( mateCharacter )
@@ -309,16 +309,16 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	}
 
 	ItemFlavor initialCharacter
-	
+
 	if( characters.len() == 0) //Shouldn't happen, but just in case. (Teams of more than 10 players probably)
 		initialCharacter = GetAllCharacters().getrandom()
 	else
 		initialCharacter = characters.getrandom()
-	
+
 	player.SetPlayerNetInt( "characterSelectFocusIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( Loadout_CharacterClass(), initialCharacter ) )
-	
+
 	CharacterSelect_AssignCharacter( player, initialCharacter )
-	
+
 	if( !lock || GetCurrentPlaylistName() == "survival_dev" )
 		player.SetPlayerNetBool( "hasLockedInCharacter", false )
 }
@@ -350,16 +350,16 @@ void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverr
 			break
 		case eGameState.PickLoadout:
 			float timeBeforeCharacterSelection = CharSelect_GetIntroCountdownDuration() + CharSelect_GetPickingDelayBeforeAll()
-		
+
 			float timeToSelectAllCharacters = CharSelect_GetPickingDelayOnFirst()
 			for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
 				timeToSelectAllCharacters += Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
-		
+
 			float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll() + CharSelect_GetOutroTransitionDuration()
 
 			float timeBeforeChampionPresentation = CharSelect_PlayerSquadIntroEnabled() ? CharSelect_GetOutroSquadPresentDuration() : 0.0
 			float timeAfterChampionPresentation = CharSelect_ChampionSquadIntroEnabled() ? CharSelect_GetOutroChampionPresentDuration() : 0.0
-				
+
 			SetGlobalNetTime( "squadPresentationStartTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
 			SetGlobalNetTime( "championSquadPresentationStartTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation )
 			SetGlobalNetTime( "pickLoadoutGamestateEndTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation + timeAfterChampionPresentation )
@@ -408,7 +408,7 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	// Loadout meleeskin
 	if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )))
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	
+
 	if(IsValid(player.GetOffhandWeapon( OFFHAND_MELEE )))
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 
@@ -425,12 +425,12 @@ void function TakeLoadoutRelatedWeapons( entity player )
 void function GiveLoadoutRelatedWeapons( entity player )
 {
 	TakeLoadoutRelatedWeapons(player)
-	
+
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	ItemFlavor tactical = CharacterClass_GetTacticalAbility( character )
 	ItemFlavor ultimate = CharacterClass_GetUltimateAbility( character )
 	ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
-	
+
 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tactical ), OFFHAND_TACTICAL, [] )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimate ), OFFHAND_ULTIMATE, [] )
@@ -454,7 +454,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
 	if ( !IsValid( player ) ) return;
-	
+
 	if ( IsAlive( player ) )
 	 	TakeLoadoutRelatedWeapons( player )
 
@@ -467,11 +467,11 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	foreach ( playlistVar, modName in possibleMods )
 		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
 			enabledMods.append( modName )
-		
+
 	DoRespawnPlayer( player, null )
 
 	player.p.lastRespawnTime = Time()
-	
+
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 
@@ -496,7 +496,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	player.SetHealth( player.GetMaxHealth() )
 
 	UpdatePlayerCounts()
-	
+
 	if(GameRules_GetGameMode() == "map_editor_deprecated")
 		thread (void function() : ( player )
 		{
@@ -508,11 +508,11 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 			}
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
 				player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-			
+
 			wait 1
 			Message(player, "PROP DYNAMIC MAP EDITOR", "Made by Sal, Fireproof, Pebbers & JustANormalUser. Misc fixes by CaféFPS.", 8)
 		})()
-		
+
 	if( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOn() // If you respawn in third person, it will automatically revert to first person, so turn it on again
 
@@ -529,9 +529,9 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
 {
-	// array< array< string > > emoteArrays = [ [ "skydive_emote_bangalore_backflip" ], [ "skydive_emote_bloodhound_backflip" ], [ "skydive_emote_caustic_backflip" ], [ "skydive_emote_gibraltar_backflip" , 
-								// "skydive_emote_gibraltar_surf" ], [ "skydive_emote_lifeline_backflip", "skydive_emote_lifeline_windmill" ], [ "skydive_emote_mirage_backflip", 
-								// "skydive_emote_mirage_rodeo" ], [ "skydive_emote_octane_backflip" ], [ "skydive_emote_pathfinder_backflip", "skydive_emote_pathfinder_birdattack" ], 
+	// array< array< string > > emoteArrays = [ [ "skydive_emote_bangalore_backflip" ], [ "skydive_emote_bloodhound_backflip" ], [ "skydive_emote_caustic_backflip" ], [ "skydive_emote_gibraltar_backflip" ,
+								// "skydive_emote_gibraltar_surf" ], [ "skydive_emote_lifeline_backflip", "skydive_emote_lifeline_windmill" ], [ "skydive_emote_mirage_backflip",
+								// "skydive_emote_mirage_rodeo" ], [ "skydive_emote_octane_backflip" ], [ "skydive_emote_pathfinder_backflip", "skydive_emote_pathfinder_birdattack" ],
 								// [ "skydive_emote_wattson_backflip", "skydive_emote_wattson_explorer" ], [ "skydive_emote_wraith_backflip" ] ]
 
 	// foreach( emoteArray in emoteArrays )
@@ -544,24 +544,24 @@ void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to u
 
 #if SERVER
 /*
-	███████╗██████╗ ███████╗ ██████╗████████╗ █████╗ ████████╗██╗███╗   ██╗ ██████╗ 
-	██╔════╝██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║████╗  ██║██╔════╝ 
+	███████╗██████╗ ███████╗ ██████╗████████╗ █████╗ ████████╗██╗███╗   ██╗ ██████╗
+	██╔════╝██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║████╗  ██║██╔════╝
 	███████╗██████╔╝█████╗  ██║        ██║   ███████║   ██║   ██║██╔██╗ ██║██║  ███╗
 	╚════██║██╔═══╝ ██╔══╝  ██║        ██║   ██╔══██║   ██║   ██║██║╚██╗██║██║   ██║
 	███████║██║     ███████╗╚██████╗   ██║   ██║  ██║   ██║   ██║██║ ╚████║╚██████╔╝
-	╚══════╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+	╚══════╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝
 
 	This part describes the spectator functions.
 */
 
 void function PlayerStartSpectating( entity player, entity attacker, bool squadCheck = false, int team = 0, bool FromConnectingPlayerEliminated = false, int attackerEHandle = -1)
-{	
+{
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	clientTeam.fastremovebyvalue( player )
 
 	bool isSolos = IsSoloMode()
 	bool isAloneOrSquadEliminated = clientTeam.len() == 0
-	
+
 	entity specTarget = null
 
 	if ( Spectator_GetReplayIsEnabled() || isSolos )
@@ -569,7 +569,7 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		if ( attacker == player ) return;
 		if ( attacker == null ) return;
 		if ( !IsValid( attacker ) || !IsAlive( attacker ) ) return;
-		
+
 		specTarget = attacker;
 	}
 	else if ( isAloneOrSquadEliminated )
@@ -585,9 +585,9 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		if ( clientTeam.len() > 0 )
 			specTarget = clientTeam.getrandom()
 	}
-	
+
 	if(squadCheck)
-	{		
+	{
 		RespawnBeacons_OnSquadEliminated( team ) // this sets respawnStatus too
 		//StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
 
@@ -601,20 +601,20 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		else
 			player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 
-		//Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)		
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
 	}
-		
+
 	// wait 3 //Time to send death recap updated signal
-	
+
 	// if( !IsValid( player ) )
 		// return
 
 	wait GetDeathCamLength() //- 3 // To show deathcamera
-	
+
 	if( !IsValid( player ) )
 		return
-	
+
 	if( !IsAlive( player ) && IsValid( specTarget ) && ShouldSetObserverTarget( specTarget ) )
 	{
 		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
@@ -625,10 +625,10 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 	} else if( !IsAlive( player ) && GetPlayerArray_Alive().len() > 0 )
 	{
 		specTarget = GetPlayerArray_Alive().getrandom()
-		
+
 		if( !ShouldSetObserverTarget( specTarget ) )
 			return // GG
-		
+
 		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
 		player.SetSpecReplayDelay( 1 )
 		player.StartObserverMode( OBS_MODE_IN_EYE )
@@ -661,34 +661,34 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) )
 		return
-	
+
 	if( is1v1EnabledAndAllowed() )
 	{
 		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-		
+
 		if ( sourceId == eDamageSourceId.damagedef_suicide )
 			return
 	}
 	UpdatePlayerCounts()
-		
+
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )
 	{
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 	}
 
-	if( GetCurrentPlaylistName() == "fs_survival" )
+	if( GameRules_GetGameMode() != "fs_1v1" )
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
 	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1 )
 	victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
-	
+
 	victim.FreezeControlsOnServer()
 
 	victim.SetPredictionEnabled( false )
-	
-	if( GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) 
+
+	if( GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
-	
+
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 	if( GetCurrentPlaylistVarBool( "use_r2_deathcam", false ) && ShouldSetObserverTarget( attacker ) )
 		victim.SetObserverTarget( attacker )
@@ -700,9 +700,9 @@ void function ResetZiplineUseCountOnMantle( entity player )
 {
 	if( !IsValid( player ) )
 		return
-	
+
 	//printt("Mantling, zipline use count reset.")
-	
+
 	player.p.ziplineUsages = 0
 	Remote_CallFunction_NonReplay( player, "ServerCallback_NessyMessage", 40 )
 }
@@ -715,13 +715,13 @@ void function OnClientConnected( entity player )
 	SetGlobalNetInt( "connectedPlayerCount", connectedPlayerCount )
 
 	int minPlayers = GetCurrentPlaylistVarInt( "min_players", 1 )
-	
+
 	if ( connectedPlayerCount >= minPlayers && !Flag( "MinPlayersReached" ) )
 		FlagSet( "MinPlayersReached" )
 	// Min players logic end
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, ResetZiplineUseCountOnMantle )
 	UpdatePlayerCounts()
-	
+
 	int maxTeamSize = GetCurrentPlaylistVarInt( "max_team_size", 1 )
 	int numTeams = GetCurrentPlaylistVarInt( "max_players", 0 ) / GetCurrentPlaylistVarInt( "max_team_size", 1 )
 
@@ -748,21 +748,21 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			
+
 			if( GameRules_GetGameMode() == "map_editor_deprecated")
 				DecideRespawnPlayer( player )
-			
+
 			if( GameRules_GetGameMode() != SURVIVAL ) break
 
 			switch(GetMapName())
 			{
 				case "mp_rr_canyonlands_64k_x_64k":
 				case "mp_rr_canyonlands_mu1":
-				case "mp_rr_canyonlands_mu1_night":				
+				case "mp_rr_canyonlands_mu1_night":
 					player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
 					player.SetAngles( <0, 65.3776093, 0> )
 				break
-				
+
 				case "mp_rr_desertlands_64k_x_64k":
 				case "mp_rr_desertlands_64k_x_64k_nx":
 				case "mp_rr_desertlands_64k_x_64k_tt":
@@ -770,7 +770,7 @@ void function OnClientConnected( entity player )
 					player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
 					player.SetAngles( <0, -136.298843, 0> )
 				break
-				
+
 				default:
 					entity startEnt = GetEnt( "info_player_start" )
 					player.SetOrigin( startEnt.GetOrigin() )
@@ -786,7 +786,7 @@ void function OnClientConnected( entity player )
 
 			break
 	}
-	
+
 	player.p.isConnected = true
 }
 
@@ -796,7 +796,7 @@ void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
 		return
 
 	entity player = FromEHI( playerEHI )
-	if ( IsAlive( player ) ) {	
+	if ( IsAlive( player ) ) {
 		CharacterSelect_AssignCharacter( player, flavor, false )
 		DecideRespawnPlayer( player )
 	}
@@ -829,7 +829,7 @@ void function UpdatePlayerCounts()
 {
 
 	string currGameMode = GameRules_GetGameMode()
-	
+
 	switch(currGameMode)
 	{
 		case "fs_infected":
@@ -837,39 +837,39 @@ void function UpdatePlayerCounts()
 		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )
 		SetGlobalNetInt( "squadsRemainingCount", 2 )
 		break
-		
+
 		case "fs_dm":
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
 		break
-		
+
 		case "fs_prophunt":
 		array<entity> propsAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
 		SetGlobalNetInt( "livingPlayerCount", propsAlive.len() )
-		SetGlobalNetInt( "squadsRemainingCount", propsAlive.len() )		
+		SetGlobalNetInt( "squadsRemainingCount", propsAlive.len() )
 		break
 
 		case "flowstate_pkknockback":
 		array<entity> playersAlive = GetPlayerArray_Alive()
 		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
-		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
+		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )
 		break
-		
+
 		case "fs_duckhunt":
 		array<entity> ducksAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
 		SetGlobalNetInt( "livingPlayerCount", ducksAlive.len() )
-		SetGlobalNetInt( "squadsRemainingCount", ducksAlive.len() )		
+		SetGlobalNetInt( "squadsRemainingCount", ducksAlive.len() )
 		break
-		
+
 		case "flowstate_snd":
 		foreach(player in GetPlayerArray())
 			Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
 		break
-		
+
 		default:
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )		
+		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
 		break
 	}
 
@@ -923,8 +923,8 @@ float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrent
 float function CharSelect_GetOutroTransitionDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
 
 // Spectator
-bool function Spectator_GetReplayIsEnabled()                   { return GetCurrentPlaylistVarBool( "replay_enabled", false ) } 
-float function Spectator_GetReplayDelay()                      { return GetCurrentPlaylistVarFloat( "replay_delay", 1 ) } 
+bool function Spectator_GetReplayIsEnabled()                   { return GetCurrentPlaylistVarBool( "replay_enabled", false ) }
+float function Spectator_GetReplayDelay()                      { return GetCurrentPlaylistVarFloat( "replay_delay", 1 ) }
 
 // Custom logic
 float function Survival_GetCharacterSelectDuration( int pickIndex )
