@@ -469,6 +469,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "fs_mantlejumppractice":
 		mantlejumpmap_init()
 		break
+
+		case "fs_firstmovementmappractice":
+		Firstmap_init()
+		break
 	
 		case "fs_1v1":
 		thread FS_TrackPlayersPositionInScoreboard()
