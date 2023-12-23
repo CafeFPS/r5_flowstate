@@ -53,7 +53,7 @@ file
 void function Firstmap_init() {
     AddCallback_OnClientConnected( Firstmap_player_setup )
     AddCallback_EntitiesDidLoad( FirstMapEntitiesDidLoad )
-    grapplemap_precache()
+    Firstmap_precache()
 }
 
 void function FirstMapEntitiesDidLoad()
@@ -362,18 +362,20 @@ void function Firstmap_load() {
     // Buttons
     AddCallback_OnUseEntity( CreateFRButton(< 7254.493, 6938.447, 16075.16 >, < 0, -89.9998, 0 >, "%use% Start/Stop Timer"), void function(entity panel, entity ent, int input)
     {
-      if (ent.GetPersistentVar("gen") == 0) {
-        ent.SetPersistentVar("gen", Time())
-        ent.p.isTimerActive = true
-        ent.p.startTime = floor(Time()).tointeger()
-        Message(ent, "Timer Started!")
-      } else {
-        ent.SetPersistentVar("gen", 0)
-        ent.p.isTimerActive = false
-        Message(ent, "Timer Stopped")
-      }
-      ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
-      ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+      if (IsValidPlayer(ent)) {
+            if (ent.GetPersistentVar("gen") == 0) {
+                ent.SetPersistentVar("gen", Time())
+                ent.p.isTimerActive = true
+                ent.p.startTime = floor(Time()).tointeger()
+                Message(ent, "Timer Started!")
+            } else {
+                ent.SetPersistentVar("gen", 0)
+                ent.p.isTimerActive = false
+                Message(ent, "Timer Stopped")
+            }
+            ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+            ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+        }
     })
 
     // 1
