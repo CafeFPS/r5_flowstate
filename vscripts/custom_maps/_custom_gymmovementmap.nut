@@ -127,7 +127,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/desertlands/fence_large_concrete_metal_dirty_128_01.rmdl", < 9042.719, -10672.88, 15774.35 >, < 0, 89.9999, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1461.048, -10678.16, 16841.25 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/fx/core_energy.rmdl", < 1610.718, -10766.63, 16076.51 >, < 0, -179.9998, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11342.9, -10789.7, 15568.5 >, < 0, -89.9998, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x64_05.rmdl", < -3661.146, -9887.403, 17466.3 >, < 0, 0.0003, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_320_01_open.rmdl", < 11656.91, -10551.1, 15412.03 >, < -0.0099, -179.9863, 35.7129 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 8656.468, -10737.38, 16011.95 >, < 0, 180, 0 >, true, 50000, -1, 1 )
@@ -196,7 +195,6 @@ void function Gymmovementmap_load() {
     NoCollisionArray.append( MapEditor_CreateProp( $"mdl/props/zipline_balloon/zipline_balloon.rmdl", < 11584.85, -7715.683, 15155.21 >, < 0, -90.0001, 0 >, true, 50000, -1, 0.08 ) )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_32_tjunk.rmdl", < -3487.145, -10554.52, 17837.01 >, < 90, 0.0003, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl", < -3613.144, -10558.01, 17387.96 >, < 0, 90.0003, 90 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11597.5, -10789.7, 15568.5 >, < 0, -89.9998, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 11585.12, -10028.31, 15009.6 >, < 0, 179.9999, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11738.5, -5330.51, 14679.81 >, < 90, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1442.591, -10678.16, 16960.44 >, < 0, 180, 0 >, true, 50000, -1, 1 )
@@ -211,7 +209,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 11584.81, -9772.109, 15009.6 >, < 0, 179.9999, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 5817.093, -10734.13, 15720.35 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < -27.4541, -10676.6, 16435.71 >, < 0, 180, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11598, -10681.9, 15507.6 >, < 0, 0, 59.9999 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/indust_struct_gondola_platform_fence_01.rmdl", < 720.999, -10729, 16648.15 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     NoClimbArray.append( MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < -1444.548, -10542.08, 16888.25 >, < -90, 180, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/playback/playback_bridge_panel_128x064_01.rmdl", < 11474.55, -9405.309, 14970.75 >, < 0, 0, -10.414 >, true, 50000, -1, 1 )
@@ -254,7 +251,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_corner.rmdl", < -3057.835, -10335.32, 17402.35 >, < 0, 90.0639, 180 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1326.55, -10675.59, 16657.25 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < 468.5449, -11172.6, 16435.71 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11470.4, -10789.7, 15568.5 >, < 0, -89.9998, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1461.048, -10550.16, 16841.25 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/indust_struct_gondola_platform_fence_01.rmdl", < -3056.021, -10377.15, 17645.22 >, < 0, -179.9997, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/beacon/modular_hose_yellow_corner_01.rmdl", < -808.5967, -10667.12, 16610.41 >, < 0, -179.9883, 0 >, true, 50000, -1, 1 )
@@ -268,7 +264,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 5705.093, -10845.38, 15720.35 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/desertlands_cafeteria_table_01.rmdl", < 11351.01, -3218.254, 15144.71 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < 1670.671, -10766.6, 16077.03 >, < 0, 89.9998, 90 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11605, -10217.22, 15133.81 >, < 29.9998, -90, 179.9999 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_corner.rmdl", < -3309.821, -10554.09, 17853.04 >, < 0, 0.0003, 0 >, true, 50000, -1, 1 )
     InvisibleArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -3068, -10203, 17703 >, < 90, 0, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11760, -7029.01, 14437.31 >, < 0, -90.0001, 0 >, true, 50000, -1, 1 )
@@ -333,7 +328,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_32_tjunk.rmdl", < -3054.382, -10313.68, 17868.01 >, < 90, -89.936, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_01.rmdl", < 11489, -10457, 15975 >, < 0, 0, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", < 6065.093, -11081.11, 15486.35 >, < 0, -135.0001, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11214.9, -10789.7, 15568.5 >, < 0, -89.9998, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/indust_struct_gondola_platform_fence_01.rmdl", < -3561.144, -10560.32, 17607.22 >, < 0, 89.9824, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl", < -3055.448, -9974.807, 17437.17 >, < 0, 0.064, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/beacon/modular_hose_yellow_32_01.rmdl", < -546.4736, -10667.14, 16602.25 >, < 90, 180, 0 >, true, 50000, -1, 1 )
@@ -414,7 +408,6 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 5705.048, -10789.88, 15859.34 >, < 0, -90.0001, -179.9659 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/pipes/pipe_modular_painted_grey_64.rmdl", < -3053.347, -10345, 17868.3 >, < 0, 0.0639, 90 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x128_02.rmdl", < -1447.63, -10679.59, 16425.21 >, < 0, 89.9999, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/beacon/construction_scaff_post_128_01.rmdl", < 11087.8, -10789.7, 15568.5 >, < 0, -89.9998, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_girdering_256x16_dirty_d.rmdl", < 11723, -5280.378, 15307.57 >, < -90, 180, 0 >, true, 50000, -1, 1 )
     ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_pillar_64.rmdl", < 8168.458, -10432.58, 16018.25 >, < 0, 89.9999, 0 >, true, 50000, -1, 1 ) )
     NoCollisionArray.append( MapEditor_CreateProp( $"mdl/props/zipline_balloon/zipline_balloon.rmdl", < 11584.85, -8318.683, 15155.21 >, < 0, -90.0001, 0 >, true, 50000, -1, 0.08 ) )
@@ -442,6 +435,9 @@ void function Gymmovementmap_load() {
         ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
     }
     foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
+
+    // Jumppads
+    MapEditor_CreateJumpPad( MapEditor_CreateProp( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl", < 11584.53, -10092.91, 15025.6 >, < 0, 149.9999, 0 >, true, 50000, -1, 1 ) )
 
     // VerticalZipLines
     MapEditor_CreateZiplineFromUnity( < 11585.01, -6977.008, 15405.21 >, < 0, -90, 0 >, < 11585.01, -6977.008, 14455.21 >, < 0, -90, 0 >, true, -1, 1, 2, 1, 1, 0, 1, 50, 25, false, 1, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
