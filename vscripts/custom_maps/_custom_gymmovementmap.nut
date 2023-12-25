@@ -1,7 +1,8 @@
 untyped
 globalize_all_functions
 
-// Map and code made by: loy_ (Discord). 
+// Code by: loy_ (Discord). 
+// Map by: loy_ (Discord).
 
 void function Gymmovementmap_precache() {
     PrecacheModel( $"mdl/Weapons/octane_epipen/w_octane_epipen.rmdl" )

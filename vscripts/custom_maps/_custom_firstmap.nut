@@ -2,7 +2,7 @@ untyped
 globalize_all_functions
 
 // Code by: loy_ (Discord). 
-// Map by: JayTheYggDrasil (Discord) & Treeree (Discord).
+// Map by: jaytheyggdrasil (Discord) & treeree (Discord).
 
 void function Firstmap_precache() {
     PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )

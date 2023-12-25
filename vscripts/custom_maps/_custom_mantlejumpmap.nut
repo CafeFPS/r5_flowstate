@@ -1,7 +1,8 @@
 untyped
 globalize_all_functions
 
-// Made by Loy and Treeree. 
+// Map by loy_ (Discord) and treeree (Discord).
+// Code by loy_ (Discord).
 
 void function mantlemap_precache() {
     PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_02.rmdl" )

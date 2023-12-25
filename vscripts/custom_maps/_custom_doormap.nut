@@ -1,6 +1,8 @@
 untyped
-
 globalize_all_functions
+
+// Code by: loy_ (Discord).
+// Map by: loy_ (Discord) & treeree (Discord).
 
 void
 function door_map_precache() {

@@ -1,7 +1,8 @@
 untyped
 globalize_all_functions
 
-// Made by Loy. 
+// Code by: loy_ (Discord). 
+// Map by: loy_ (Discord).
 
 void function grapplemap_precache() {
     PrecacheModel( $"mdl/desertlands/desertlands_cafeteria_table_02.rmdl" )
