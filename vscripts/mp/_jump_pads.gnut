@@ -134,9 +134,17 @@ void function JumpPad_consumeDoubleJump( entity player )
 
 void function RestorePlayerSettings( entity player )
 {
+	if( !IsValid( player ) )
+		return
+
 	player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+
 	// Restore player settings
+	if( !IsValid( player.p.storedPlayerSettings ) || player.p.storedPlayerSettings == $"" )
+		player.p.storedPlayerSettings = player.GetPlayerSettings()
+
 	player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
+
 	player.SetHealth( player.p.storedPlayerHealth[0] )
 	player.SetShieldHealth( player.p.storedPlayerHealth[1] )
 
