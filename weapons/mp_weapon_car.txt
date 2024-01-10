@@ -111,12 +111,12 @@ WeaponData
     "damage_near_distance"							"800"
     "damage_far_distance" 							"1500"
     "damage_very_far_distance"						"3500"
-    "damage_near_value"   					        "13"
-    "damage_far_value"						        "13"
-    "damage_very_far_value"					        "13"
-    "damage_near_value_titanarmor"			        "13"
-    "damage_far_value_titanarmor" 			        "13"
-    "damage_very_far_value_titanarmor" 		        "13"
+    "damage_near_value"   					        "12"
+    "damage_far_value"						        "12"
+    "damage_very_far_value"					        "12"
+    "damage_near_value_titanarmor"			        "12"
+    "damage_far_value_titanarmor" 			        "12"
+    "damage_very_far_value_titanarmor" 		        "12"
 
     // View Drift
     "viewdrift_ads_stand_scale_pitch" 				"0.7"
