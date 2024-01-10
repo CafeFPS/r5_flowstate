@@ -182,14 +182,14 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"1.1" //1.3
-	"reload_time" 									"1.03"
-	"reloadempty_time"								"1.7"
+	"reload_time" 									"0.9"
+	"reloadempty_time"								"1.6"
 	"reloadsegment_time_loop"						"0.51"
 	"reloadsegment_time_end"						"0.55"
 	"reloadsegmentempty_time_end"					"0.55"
 
 	"deployfirst_time"								"1.25"
-	"deploy_time" 									"0.8"
+	"deploy_time" 									"0.45"
 	"holster_time"									"0.4"
 	"lower_time"  									"0.25"
 	"raise_time"  									"0.3"
