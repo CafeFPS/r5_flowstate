@@ -87,8 +87,6 @@ void function SV_CL_Init()
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-		ShAssets_Init()
 
 	//#if DEVELOPER
 		ShDevUtility_Init()
@@ -190,7 +188,11 @@ void function SV_CL_Init()
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
 	ShPassiveAdrenaline_Init()
+	Clickweapon_Init()
 	
+	//R5R Sword
+	MpWeaponTitanSword_Init()
+
     // Zipline Utility
     #if SERVER
         ZiplineUtility_Init()

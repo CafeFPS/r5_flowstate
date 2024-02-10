@@ -11,7 +11,7 @@ globalize_all_functions
 //  Made by DEAFPS
 //
 //  With help from:
-//  Caf�FPS - General help
+//  CafeFPS - General help
 //  
  
 

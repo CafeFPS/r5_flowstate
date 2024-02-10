@@ -3164,7 +3164,7 @@ void function Ping_ClearMapWaypoint( entity player )
 
 void function Ping_SetMapWaypoint( entity player, vector origin )
 {
-	if ( !IsAlive( player ) || GameRules_GetGameMode() == "flowstate_snd" )
+	if ( !IsAlive( player ) || GameRules_GetGameMode() == "fs_snd" )
 		return
 
 	int ticketID = GetNewTicketID()

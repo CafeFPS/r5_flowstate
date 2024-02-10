@@ -4,10 +4,6 @@ global function OnWeaponTossReleaseAnimEvent_weapon_jump_pad
 global function OnWeaponAttemptOffhandSwitch_weapon_jump_pad
 global function OnWeaponTossPrep_weapon_jump_pad
 
-#if CLIENT
-global function Flowstate_YouNeedToUpdate
-#endif
-
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
 
 bool function OnWeaponAttemptOffhandSwitch_weapon_jump_pad( entity weapon )
@@ -165,11 +161,5 @@ void function JumpPadWatcher(entity jumpPad)
 wait 15
 if(IsValid(jumpPad)){
 jumpPad.Destroy()}
-}
-#endif
-
-#if CLIENT
-void function Flowstate_YouNeedToUpdate()
-{
 }
 #endif

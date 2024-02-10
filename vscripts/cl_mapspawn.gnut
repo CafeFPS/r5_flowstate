@@ -132,9 +132,6 @@ void function ClientCodeCallback_MapSpawn()
 	CreateHUDRuiTopologies()
 
 	SV_CL_Shared_Init()
-	
-	//RequestPakFile( "ui_flowstate" )
-	//for custom ui/textures by @CafeFPS
 }
 
 
@@ -165,6 +162,7 @@ void function PrecacheResFiles()
 	PrecacheRes( "vgui_enemy_announce" )
 	PrecacheRes( "Coop_TeamScoreEventNotification" )
 	PrecacheRes( "control_panel_generic_screen" )
+	PrecacheRes( "flowstate_health_bar" )
 
 	PrecacheRes( "vgui_callsign_menu" )
 }

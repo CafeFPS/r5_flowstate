@@ -278,7 +278,7 @@ void function CreateDecoysHint( entity decoy, string msg, float endTime )
 
 #if SERVER
 bool function ClientCommand_ToggleDecoys( entity player, array<string> args )
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	if ( !IsAlive( player ) )
 		return true

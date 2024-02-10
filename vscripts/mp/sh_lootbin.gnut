@@ -194,6 +194,8 @@ void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems
 	if ( LootBin_IsOpen( lootBin ) )
 		waitthread LootBin_PlayCloseSequence( lootBin )
 
+	if(GameRules_GetGameMode() == "fs_snd" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_pkknockback" || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
+	
 	// New refs
 	file.lootBinsLootInside[ lootBin ] = []
 	array<string> newRefs = SURVIVAL_GetMultipleWeightedItemsFromGroup( lootGroup, numLootItems )
@@ -270,8 +272,13 @@ void function InitLootBin( entity lootbin )
 	{
 		DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
 	}
+	if( GameRules_GetGameMode() == "fs_snd" )
+	{
+		//lootbin.SetSkin(2)
+		return
+	}
 	
-	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
+	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && GameRules_GetGameMode() != "fs_snd" )
 	{
 		AddMultipleLootItemsToLootBin( lootbin, SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3, 4) ) )
 	}

@@ -594,7 +594,7 @@ asset function GetEmptyEquipmentImage( string equipmentSlot )
 {
 	// printt(equipmentSlot)
 	
-	if(GameRules_GetGameMode() == "flowstate_snd")
+	if(GameRules_GetGameMode() == "fs_snd")
 	{
 		switch(equipmentSlot)
 		{

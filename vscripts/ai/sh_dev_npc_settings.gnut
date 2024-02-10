@@ -27,10 +27,17 @@ void function SetupChangeSurvivalCharacterClass()
 			} )
 		}
 		
-		//Custom
-		SetupDevCommand( "Blisk [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 1")
-		SetupDevCommand( "Fade [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 2")
-		SetupDevCommand( "Among Us Crewmate [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 3")
+		//Custom by @CafeFPS :)
+		SetupDevCommand( "TF2 Ash [Custom]", "Flowstate_AssignCustomCharacterFromMenu 6")
+		SetupDevCommand( "TF2 Blisk [Custom]", "Flowstate_AssignCustomCharacterFromMenu 1")
+		SetupDevCommand( "TF2 Jack Cooper [Custom]", "Flowstate_AssignCustomCharacterFromMenu 8")
+		SetupDevCommand( "Revenant [Custom]", "Flowstate_AssignCustomCharacterFromMenu 10")
+		SetupDevCommand( "Loba [Custom]", "Flowstate_AssignCustomCharacterFromMenu 9")
+		SetupDevCommand( "Fade [Custom]", "Flowstate_AssignCustomCharacterFromMenu 2")
+		SetupDevCommand( "Rhapsody [Custom]", "Flowstate_AssignCustomCharacterFromMenu 5")
+		SetupDevCommand( "Crewmate [Custom - 3p only]", "Flowstate_AssignCustomCharacterFromMenu 3")
+		SetupDevCommand( "Peter Griffing [Custom]", "Flowstate_AssignCustomCharacterFromMenu 4")
+		SetupDevCommand( "CJ [Custom - 3p only]", "Flowstate_AssignCustomCharacterFromMenu 7")
 	#endif
 }
 

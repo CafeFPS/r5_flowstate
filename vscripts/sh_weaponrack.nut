@@ -30,7 +30,6 @@ void function testRack()
 }
 */
 void function RespawnWeaponOnRackST(entity item, string ref, int amount = 1, int wait_time=6)
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
 {
 	vector pos = item.GetOrigin()
 	vector angles = item.GetAngles()

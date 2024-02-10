@@ -84,7 +84,7 @@ void function Open_FSDM_VotingPhase()
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
 			
-			case "flowstate_snd":
+			case "fs_snd":
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS SEARCH AND DESTROY" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
@@ -98,10 +98,15 @@ void function Open_FSDM_VotingPhase()
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS INFECTED" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
-			
+
 			case "fs_1v1":
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS 1v1" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by __makimakima__, maintained by @CafeFPS" )
+			break
+			
+			case "fs_lgduels_1v1":
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS LG DUELS" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by mkos and @CafeFPS" )
 			break
 
 			default:

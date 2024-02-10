@@ -603,11 +603,6 @@ void function InitInWorldScreens()
 
 bool function SprintFXAreEnabled()
 {
-	#if(false)
-
-
-#endif //
-
 	bool enabled = GetCurrentPlaylistVarBool( "fp_sprint_fx", false )
 	return enabled
 }
@@ -635,8 +630,48 @@ void function OnPlayerCreated( entity player )
 
 		EmitSoundOnEntity( player, desiredMusicTrack )
 	}
+	
+	if( GetCurrentPlaylistVarBool( "fs_stamina_mod", false ) && player == GetLocalClientPlayer() )
+		thread UpdateStaminaBar(player)
 }
 
+void function UpdateStaminaBar(entity player)
+{
+	Hud_SetVisible( HudElement( "StaminaBarMover" ), true )
+	Hud_SetVisible( HudElement( "StaminaBarMover2" ), false )
+	Hud_SetVisible( HudElement( "StaminaBar" ), true )
+	Hud_SetVisible( HudElement( "StaminaText" ), true )
+
+	while( true )
+	{
+		WaitFrame()
+
+		if( !IsValid( player ) || !IsAlive( player ) || GetGameState() != eGameState.Playing || player.IsObserver() )
+		{
+			Hud_SetVisible( HudElement( "StaminaBarMover" ), false )
+			Hud_SetVisible( HudElement( "StaminaBarMover2" ), false )
+			Hud_SetVisible( HudElement( "StaminaBar" ), false )
+			Hud_SetVisible( HudElement( "StaminaText" ), false )
+			continue
+		}
+		
+		Hud_SetVisible( HudElement( "StaminaBar" ), true )
+		Hud_SetVisible( HudElement( "StaminaText" ), true )
+
+		if(player.GetPlayerNetBool("playerStaminaRecovering")) {
+			Hud_SetVisible( HudElement( "StaminaBarMover" ), false )
+			Hud_SetVisible( HudElement( "StaminaBarMover2" ), true )
+		}
+		else {
+			Hud_SetVisible( HudElement( "StaminaBarMover" ), true )
+			Hud_SetVisible( HudElement( "StaminaBarMover2" ), false )
+		}
+
+		Hud_SetWidth( HudElement( "StaminaBarMover" ), (player.GetPlayerNetInt( "playerStamina" ).tofloat() - 0.0) / (100 - 0) * 300)
+		Hud_SetWidth( HudElement( "StaminaBarMover2" ), (player.GetPlayerNetInt( "playerStamina" ).tofloat() - 0.0) / (100 - 0) * 300)
+		Hud_SetWidth( HudElement( "StaminaBar" ), (100 - 0.0) / (100 - 0) * 300)
+	}
+}
 
 void function OnPlayerDestroyed( entity player )
 {
@@ -674,7 +709,7 @@ void function TrackSprint( entity player )
 
 		//
 		if ( shouldSprint )
-			player.SetFOVScale( 1.15, 2 )
+			player.SetFOVScale( 1.05, 2 )
 
 		WaitFrame()
 	}
@@ -689,17 +724,11 @@ bool function ShouldShowSprintVisuals( entity player )
 	if ( player.GetPhysics() == MOVETYPE_NOCLIP )
 		return false
 
-	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-	if ( IsValid( activeWeapon ) && activeWeapon.GetWeaponSettingFloat( eWeaponVar.move_speed_modifier ) > 1 && player.IsSprinting() )
-		return true
+	if ( GetGameState() != eGameState.Playing )
+		return false
 
-	float max = 260 //
-
-	vector fwd = player.GetViewVector()
-	float dot  = DotProduct( fwd, player.GetVelocity() )
-	float dot2 = DotProduct( fwd, Normalize( player.GetVelocity() ) )
-
-	return (dot > max * 1.01) && (dot2 > 0.85)
+	vector vel = player.GetVelocity()
+	return vel.Length() >= 221 && player.IsOnGround()
 }
 
 
@@ -979,6 +1008,10 @@ void function OverrideMinimapPackages( entity player )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTank )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK_DESTINATION, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTankDestination )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train )
+	
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SND_A, MINIMAP_OBJECT_RUI, MinimapPackage_A )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SND_B, MINIMAP_OBJECT_RUI, MinimapPackage_B )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_Bomb )
 }
 
 void function FD_NPCTitanInit( entity ent, var rui )
@@ -1036,6 +1069,38 @@ void function MinimapPackage_Train( entity ent, var rui )
 	RuiSetBool( rui, "useTeamColor", false )
 }
 
+void function MinimapPackage_Bomb( entity ent, var rui )
+{
+	RuiSetImage( rui, "defaultIcon", $"rui/flowstatecustom/bombicon" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+void function MinimapPackage_A( entity ent, var rui )
+{
+	asset icon = $""
+	
+	if(GetLocalClientPlayer().GetTeam() == Sh_GetAttackerTeam())
+		icon = $"rui/flowstatecustom/A_Attack"
+	else if(GetLocalClientPlayer().GetTeam() == Sh_GetDefenderTeam())
+		icon = $"rui/flowstatecustom/A_Defend"
+		
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+void function MinimapPackage_B( entity ent, var rui )
+{
+	asset icon = $""
+	
+	if(GetLocalClientPlayer().GetTeam() == Sh_GetAttackerTeam())
+		icon = $"rui/flowstatecustom/B_Attack"	
+	else if(GetLocalClientPlayer().GetTeam() == Sh_GetDefenderTeam())
+		icon = $"rui/flowstatecustom/B_Defend"
+		
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
 void function MinimapPackage_MarkerInit( entity ent, var rui )
 {
 	if ( ent.GetTargetName() != "worldMarker" )
@@ -1138,13 +1203,11 @@ void function CLSurvival_RegisterNetworkFunctions()
 void function ScorebarInitTracking( entity player, var statusRui )
 {
 	RuiTrackInt( statusRui, "connectedPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "connectedPlayerCount" ) )
-	RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
-	RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
 	RuiTrackFloat( statusRui, "deathfieldDistance", player, RUI_TRACK_DEATHFIELD_DISTANCE )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
 	
-	if(GameRules_GetGameMode() != "flowstate_snd")
+	if(GameRules_GetGameMode() != "fs_snd")
 	{
 		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
@@ -1635,6 +1698,9 @@ void function ToggleFireSelect( entity player )
 
 	if ( !IsValid( weapon ) )
 		return
+	
+	if( weapon.GetWeaponClassName() == "mp_weapon_titan_sword" )
+		return
 
 	if ( weapon.IsDiscarding() )
 		return
@@ -1843,7 +1909,7 @@ void function UpdateMap_THREAD()
 
 		if ( InputIsButtonDown( BUTTON_TRIGGER_LEFT ) )
 			ChangeFullMapZoomFactor( -FULLMAP_ZOOM_SPEED_CONTROLLER )
-
+		// printt( file.fullmapAimPos )
 		WaitFrame()
 	}
 }
@@ -2154,7 +2220,7 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 void function AddInWorldMinimapObjectiveInternal( entity ent, var screen )
 {
-	if ( !IsValid( ent ) || GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if ( !IsValid( ent ) || GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		return
 
 	int customState    = ent.Minimap_GetCustomState()
@@ -2295,7 +2361,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	if ( ent.IsPlayer() && GameRules_GetGameMode() == "flowstate_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
+	if ( ent.IsPlayer() && GameRules_GetGameMode() == "fs_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
 	{
 		foreach(player, savedRui in file.playerArrows)
 		{
@@ -2308,7 +2374,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
 		file.mapCornerX = 0
 		file.mapCornerY = 0
-	} else if( GameRules_GetGameMode() != "flowstate_snd" ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	} else if( GameRules_GetGameMode() != "fs_snd" ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
@@ -3124,6 +3190,9 @@ bool function GetWaitingForPlayersOverlayEnabled( entity player )
 		return false
 	// if( GameRules_GetGameMode() != SURVIVAL )
 		// return false
+
+	if( GameRules_GetGameMode() == "fs_snd" )
+		return false
 	
 	return true
 }

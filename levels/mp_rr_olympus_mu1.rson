@@ -1,0 +1,17 @@
+When: "SERVER"
+Scripts:
+[
+	mp/levels/_mp_rr_olympus_mu1.nut
+]
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_rr_olympus_mu1.nut
+]
+
+When: "SERVER || CLIENT"
+Scripts:
+[
+	mp/levels/sh_mp_rr_olympus_mu1.nut
+	mp/levels/sh_pathfinder_tt_common.nut
+]

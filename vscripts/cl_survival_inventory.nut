@@ -595,7 +595,7 @@ bool function CanSwapWeapons( entity player )
 
 void function OpenSurvivalInventory( entity player, entity deathBox = null )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
 	{
 		if( IsAlive( player ) )
 			ScoreboardToggleFocus( player )

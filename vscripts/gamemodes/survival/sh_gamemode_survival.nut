@@ -152,7 +152,7 @@ void function GamemodeSurvivalShared_Init()
 		AddCallback_PlayerCanUseZipline( Sur_CanUseZipline )
 		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 		
-		if( GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "flowstate_snd" ) return
+		if( GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_snd" ) return
 	
 		BleedoutShared_Init()
 		Sh_RespawnBeacon_Init()

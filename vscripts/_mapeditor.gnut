@@ -132,13 +132,13 @@ void function MapTriggers_Init()
             CreateWallTrigger( <774, -6394, 2067>, 1 )
             break
         }
-        case "mp_rr_arena_skygarden":
-        {
-            CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
-            CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
-            CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
-            break
-        }
+        // case "mp_rr_arena_skygarden":
+        // {
+            // CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
+            // CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
+            // CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
+            // break
+        // }
         case "mp_rr_arena_composite":
         {
             CreateWallTrigger( <5, 2587, -520>, 1, 30000)
@@ -219,7 +219,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
                 EntityOutOfBounds( trigger, ent, null, null )
             break
 
-            default:
+            default: if (GetCurrentPlaylistVarBool( "patch_for_dropoff", false )) return;
                 vector lookDir = ent.GetSmoothedVelocity()
                 vector pushBackVel = lookDir * 2.5
 

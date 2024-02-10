@@ -27,12 +27,14 @@ global function EnemyDownedDialogue
 global function TakingFireDialogue
 global function GetAllDroppableItems
 global function ResetDeathRecapBlock
+global function CreateShipPath
 
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
 struct
 {
     void functionref( entity, float, float ) leviathanConsiderLookAtEntCallback = null
+	array<vector> foundFlightPath
 } file
 
 void function GamemodeSurvival_Init()
@@ -61,13 +63,13 @@ void function GamemodeSurvival_Init()
 	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
-	
+	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
 	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
 	// #endif
 
 	FillSkyWithClouds()
-	
+
 	AddCallback_GameStateEnter(
 		eGameState.Playing,
 		void function()
@@ -79,6 +81,15 @@ void function GamemodeSurvival_Init()
 	thread SURVIVAL_RunArenaDeathField()
 }
 
+void function OnSurvivalMapEntsDidLoad()
+{
+	CreateShipPath()
+}
+
+void function CreateShipPath()
+{
+	file.foundFlightPath = Survival_GeneratePlaneFlightPath()
+}
 // #if DEVELOPER
 bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity player, array<string> args)
 {
@@ -118,6 +129,41 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		case "3":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+
+		case "4":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+		break
+		
+		case "5":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+		break
+		
+		case "6":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+		break
+		
+		case "7":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+		
+		case "8":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+		break
+
+		case "9":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+		break
+		
+		case "10":
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 		break
 	}
 
@@ -219,11 +265,11 @@ void function Sequence_Playing()
 	}
 	else
 	{
-		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
+		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
 		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
 		float DROP_TIMEOUT_TIME = 0 // GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
 
-		array<vector> foundFlightPath = Survival_GeneratePlaneFlightPath()
+		array<vector> foundFlightPath = file.foundFlightPath
 
 		vector shipStart = foundFlightPath[0]
 		vector shipEnd = foundFlightPath[1]

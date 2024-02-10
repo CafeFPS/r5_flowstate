@@ -147,8 +147,10 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "grenade_frag" )
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
-	if( GetCurrentPlaylistName() != "fs_1v1" )
+
+	if( GetCurrentPlaylistName() != "fs_1v1" || GetCurrentPlaylistName() != "fs_lgduels_1v1" )
 		MpWeaponEmoteProjector_Init()
+
 	MpWeaponDoubletake_Init()
 	//MpWeaponGrenadeGravity_Init()
 	MpSpaceElevatorAbility_Init()
@@ -202,8 +204,6 @@ void function InitWeaponScripts()
 	MpWeaponTrophy_Init()
 
 	MpWeaponBasicBolt_Init()
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-		MpWeaponEditor_Init()
 
 	#if SERVER
 		//BallLightning_Init()
@@ -1943,6 +1943,27 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
+	if( GameRules_GetGameMode() == "fs_snd" )
+	{
+		aVal = a.GetPlayerNetInt( "defused" )
+		bVal = b.GetPlayerNetInt( "defused" )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+
+		aVal = a.GetPlayerNetInt( "planted" )
+		bVal = b.GetPlayerNetInt( "planted" )
+
+		if ( aVal > bVal )
+			return 1
+		else if ( aVal < bVal )
+			return -1
+		
+		return 0
+	}
+
 	if( GameRules_GetGameMode() == "custom_ctf" )
 	{
 		aVal = a.GetPlayerNetInt( "captures" )
@@ -3537,10 +3558,6 @@ void function SetTeam( entity ent, int team )
 	#if CLIENT
 		ent.Code_SetTeam( team )
 	#else
-		//if ( ent.IsPlayer() )
-		//{
-			ent.Code_SetTeam( team )
-		//}
 		if ( ent.IsNPC() )
 		{
 			int currentTeam = ent.GetTeam()
@@ -4972,9 +4989,16 @@ vector function Get2DLineIntersection( vector A, vector B, vector C, vector D )
 
 int function GetSlotForWeapon( entity player, entity weapon )
 {
-	array<int> slots = [ WEAPON_INVENTORY_SLOT_PRIMARY_0, WEAPON_INVENTORY_SLOT_PRIMARY_1, WEAPON_INVENTORY_SLOT_ANTI_TITAN ]
+	array<int> slots = [ WEAPON_INVENTORY_SLOT_PRIMARY_0, WEAPON_INVENTORY_SLOT_PRIMARY_1, WEAPON_INVENTORY_SLOT_PRIMARY_2, WEAPON_INVENTORY_SLOT_PRIMARY_3, WEAPON_INVENTORY_SLOT_ANTI_TITAN, WEAPON_INVENTORY_SLOT_DUALPRIMARY_0, WEAPON_INVENTORY_SLOT_DUALPRIMARY_1, WEAPON_INVENTORY_SLOT_DUALPRIMARY_2, WEAPON_INVENTORY_SLOT_DUALPRIMARY_3 ]
+
 	foreach ( slot in slots )
 	{
+		#if DEVELOPER
+		entity weaponx = player.GetNormalWeapon( slot )
+		if( !IsValid( weaponx ) )
+			continue
+		// printt( "Debug weapons in slots: ", slot, weaponx.GetWeaponClassName() )
+		#endif
 		if ( player.GetNormalWeapon( slot ) == weapon )
 			return slot
 	}

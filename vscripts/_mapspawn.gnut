@@ -320,8 +320,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
-	// PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
-	// PrecacheWeapon( $"melee_boxing_ring")
 	PrecacheWeapon( $"mp_weapon_throwingknife" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"melee_bolo_sword" )
@@ -334,12 +332,18 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
 	PrecacheWeapon( $"mp_ability_emote_projector" )
-
-	PrecacheWeapon( $"melee_flagpole" )
-	PrecacheWeapon( $"mp_weapon_flagpole_primary" )
+	
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	{
+		PrecacheWeapon( $"mp_weapon_lightninggun")
+	}
 
 	switch(GameRules_GetGameMode())
 	{
+		case "custom_ctf":
+			PrecacheWeapon( $"melee_flagpole" )
+			PrecacheWeapon( $"mp_weapon_flagpole_primary" )
+			break
 		case "fs_prophunt":
 			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
 			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
@@ -350,8 +354,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break
-		case "map_editor_deprecated":
-			PrecacheWeapon( $"mp_weapon_editor" )	
 		default:
 			LoadModelsFromEditor()
 
@@ -367,9 +369,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 		LoadMovementMap()
 	}
 
-	if(GameRules_GetGameMode() == "map_editor_deprecated" )
-		PutLoadedPropsIntoSaveArray() //needs to be called after the props were loaded
-	
 	PrecacheWeapon( $"mp_ability_cloak" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
@@ -382,6 +381,20 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_cj.rmdl" )
+	//PrecacheModel( $"mdl/Humans/pilots/ptpov_cj.rmdl")
+	PrecacheModel( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
@@ -425,31 +438,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 	}
 
 	#if DEVELOPER
-	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" )
-	{
-		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl" )
-		
-		RegisterSignal( "FS_ForceDestroyAllLifts" )
-		//	SpawnLockout()
-		//	SpawnCyberdyne()
-		SpawnChill()
-	}
-	
-	#if LISTEN_SERVER
-	SetConVarInt( "sv_onlineAuthEnable", 0 )
-	#endif
-	SetConVarInt( "sv_allowClientSideCfgExec", 1 )
+		#if LISTEN_SERVER
+		SetConVarInt( "sv_onlineAuthEnable", 0 )
+		#endif
+	SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
 	#endif
 
 	SV_CL_Shared_Init()
@@ -472,13 +464,50 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "fs_mantlejumppractice":
 		mantlejumpmap_init()
 		break
-	
+		
+		case "fs_lgduels_1v1":
 		case "fs_1v1":
 		thread FS_TrackPlayersPositionInScoreboard()
 		break
 	}
+	
+	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
+	
+	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
+	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
+	PrecacheWeapon( $"melee_titan_sword" )
+	PrecacheWeapon( $"mp_weapon_titan_sword" )
 }
 
+void function FS_RestartServerAfterSomeTimeWithoutPlayers()
+{
+	int timeWithoutPlayers
+	int previousPlayerCount
+	int timeToWaitWithoutPlayers = GetCurrentPlaylistVarInt( "flowstate_seconds_to_wait_without_players_before_restarting", 3600 )
+
+	while( true )
+	{
+		int playerCount = GetPlayerArray().len()
+		
+		if( playerCount == 0 && previousPlayerCount == 0 )
+		{
+			timeWithoutPlayers++
+		} else
+		{
+			timeWithoutPlayers = 0
+		}
+		
+		if( timeWithoutPlayers >= timeToWaitWithoutPlayers )
+		{
+			Warning( "Timeout without players has been reached - Reloading server to the same map" )
+			GameRules_ChangeMap( GetMapName(), GetCurrentPlaylistName() )
+			break
+		}
+
+		previousPlayerCount = playerCount
+		wait 1
+	}
+}
 void function FS_TrackPlayersPositionInScoreboard()
 {
 	array<entity> players
@@ -500,7 +529,7 @@ void function FS_TrackPlayersPositionInScoreboard()
 			i++
 		}
 		
-		wait 0.25
+		wait 0.5
 	}
 }
 

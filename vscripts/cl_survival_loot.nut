@@ -1388,6 +1388,9 @@ const int PF_IS_KITTED					= 1 << 2
 
 void function TrackLootToPing( entity player )
 {
+	if( player == null )
+		return
+
 	player.Signal( "TrackLootToPing" )
 	player.EndSignal( "TrackLootToPing" )
 	player.EndSignal( "OnDeath" )

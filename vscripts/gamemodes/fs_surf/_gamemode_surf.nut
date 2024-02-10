@@ -158,7 +158,7 @@ void function DestroyPlayerPropsSURF()
 
 void function ActualSURFLobby()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	printt("Flowstate DEBUG - Starting Lobby")
@@ -226,7 +226,7 @@ WaitFrame()
 
 void function ActualSURFGameLoop()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 printt("Flowstate DEBUG - Surf map and game started.")
@@ -493,7 +493,7 @@ void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity play
 }
 
 //Thanks Archtux#9300
-//Modified by Retículo Endoplasmático#5955 and michae\l/#1125
+//Modified by @CafeFPS and michae\l/#1125
 bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 {
     if ( !IsValid( player ) )

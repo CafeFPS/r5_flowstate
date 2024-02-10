@@ -1,5 +1,5 @@
 //FLOWSTATE PROPHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS (@CafeFPS)
 
 // AyeZee#6969 -- Ctf voting phase to work off
 // _RitzKing#1715 -- Gamemode Icon
@@ -146,7 +146,7 @@ void function PROPHUNT_StartGameThread()
 }
 
 void function PROPHUNT_CharSelect( entity player)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	if(FlowState_ForceCharacter())
 	{

@@ -3,6 +3,11 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
+	titan_sword_fuel
+	titan_sword_dash
+	titan_sword_super
+	titan_sword_dash_sickness
+
 	player_carrying_oddball
 	ring_immunity
 	placing_respawn_beacon

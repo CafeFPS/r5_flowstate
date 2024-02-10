@@ -997,7 +997,7 @@ void function Highlight_SetNeutralHighlight( entity ent, string assetName )
 
 void function Highlight_SetFlyerDeathboxHighlight( entity ent, string assetName )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	HighlightContext highlight = GetHighlight( assetName )

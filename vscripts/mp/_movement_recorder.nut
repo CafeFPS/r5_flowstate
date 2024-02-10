@@ -94,8 +94,8 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	#endif
 	
 	continueLoop = true
-	while( IsValid(player) && continueLoop )
-	{
+	// while( IsValid(player) && continueLoop )
+	// {
 		entity dummy = CreateDummy( 99, initialpos, initialang )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
@@ -128,7 +128,7 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 			
 			dummy.Destroy()
 		}()
-	}
+	// }
 }
 
 int function ReturnShieldAmountForDesiredLevel(int shield)

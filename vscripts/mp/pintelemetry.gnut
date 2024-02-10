@@ -42,6 +42,25 @@ global struct GameSummarySquadData
 	int deaths 
 }
 
+global int fightIdCounter = 0
+global bool SHOULD_SHIP = false
+global bool hasSpecialWeaponShotBeenCountered = false;
+global bool PROCESS_THIS = true;
+global bool PIN_GameState_Start = false;
+global table PlayerSupergliding
+global table < string, bool > PlayerDidJump
+global bool afk_to_rest_enabled = true;// bool to reflect state of cc (chat command)
+global float FS_MaxHealth;
+global string DISCORD_PLAYERS_WEBHOOK;
+global string DISCORD_MATCHES_WEBHOOK;
+const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
+
+//verify struct
+
+global struct PlayerVerifyCount {
+    string playerID
+    int verifyCount
+};
 void function PIN_Init()
 {
 

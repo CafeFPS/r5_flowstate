@@ -1554,13 +1554,16 @@ void function InitMenus()
 
 	AddMenu( "R5RNews", $"scripts/resource/ui/menus/CustomLobby/news.res", InitR5RNews )
 	AddMenu( "R5RGamemodeSelectV2Dialog", $"scripts/resource/ui/menus/CustomLobby/gamemode_select.res", InitR5RGamemodeSelectDialog )
-	////////
+
+
+	//Settings
+	AddMenu( "FRLGDuelsSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu", InitLGDuelsSettings )
 
 	//CTF UI
 	var controlmenu = AddMenu( "CTFRespawnMenu", $"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu", InitCTFRespawnMenu )
 	var ctfvotemenu = AddMenu( "CTFVoteMenu", $"scripts/resource/ui/menus/CTF/ctfvotemenu.menu", InitCTFVoteMenu )
-	////////
-	//AIM TRAINER
+
+	//Flowstate Aim Trainer
 	//Main Menu
 	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu", InitFRChallengesMainMenu )
 	
@@ -1583,7 +1586,9 @@ void function InitMenus()
 	
 	//Custom KillReplayHud
 	var killreplayhud = AddMenu( "KillReplayHud", $"scripts/resource/ui/menus/KillReplay/replayhud.menu", InitKillReplayHud )
-	///////
+
+	//Custom msgs to chat box
+	AddMenu( "FS_ServerMsgs_To_ChatBox", $"scripts/resource/ui/menus/FlowstateDM/flowstate_msgs_to_chatbox.menu", InitServerMSGSToChatBox )
 
 	//FLOWSTATE DM
 	//Statistics
@@ -1596,12 +1601,15 @@ void function InitMenus()
 
 	//Custom Weapon Mods Menu
 	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
-	///////
+
 	
 	//FLOWSTATE MOVEMENT GYM
 	//Settings
 	AddMenu( "MGSettingsMenu", $"scripts/resource/ui/menus/MovementGym/movementgym_settings.menu", InitMGSettings )
-	///////
+
+	//FLOWSTATE SND
+	//Buy Menu
+	AddMenu( "FSSND_BuyMenu", $"scripts/resource/ui/menus/FlowstateSND/flowstate_snd_buy_menu.menu", Init_FSSND_BuyMenu )
 	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )

@@ -126,7 +126,7 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 					{
 						player.MovementEnable()
 					}
-					if(GameRules_GetGameMode() == "flowstate_snd")
+					if(GameRules_GetGameMode() == "fs_snd")
 					{
 						Highlight_ClearFriendlyHighlight( player )
 					}
@@ -186,14 +186,14 @@ void function ExtendedUse_TrackContinuousUse( entity player, entity useTarget, f
 
 	OnThreadEnd
 	(
-		function() : ( player, useTarget, result )
+		function() : ( player, result ) //useTarget, 
 		{
 			if ( !result.success )
 			{
-				#if SERVER
-				if( IsVaultPanel( useTarget ) )
-					SetVaultPanelState( useTarget, ePanelState.LOCKED )
-				#endif
+				//#if SERVER
+				//if( IsVaultPanel( useTarget ) )
+				//	SetVaultPanelState( useTarget, ePanelState.LOCKED )
+				//#endif
 				player.Signal( "OnContinousUseStopped" )
 			}
 		}

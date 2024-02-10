@@ -498,20 +498,22 @@ void function CheckForAccelerants( entity player )
 		//check for accelerants here
 		//printt("Flowstate DEBUG - Check for accelerants here.")
 		array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
-
+	
+		bool playerHasAccelerant
 		foreach ( invItem in playerInventory )
 		{	
-		printt( invItem.type )
-			if(invItem.type == 51)
+			LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+			if( data.ref == "health_pickup_ultimate" )
 			{
-				Consumable_UseItemByType(player, 5)
-				SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)
-				//printt("Flowstate DEBUG - Ultimate accelerant found! Recharging ultimate and removing item from inventory...")
-			} else {
-				//printt("Flowstate DEBUG - Ultimate accelerant not found!")	
+				playerHasAccelerant = true
 			}
 		}
 
+		if( playerHasAccelerant )
+		{
+			Consumable_UseItemByType(player, 5)
+			SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)
+		}
 	} else if ( ammoNow >= ammoMax )
 	{
 		printt("Flowstate DEBUG - Ultimate is ready we can't use accelerants.")

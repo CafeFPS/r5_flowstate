@@ -1,4 +1,4 @@
-// Reimplemented by @CafeFPS (Retículo Endoplasmático#5955)
+// Reimplemented by @CafeFPS (@CafeFPS)
 // everyone else -- advice
 
 // todo
@@ -2453,14 +2453,14 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 			WaitFrame()
 			continue
 		}
-		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		TraceResults hResult = TraceHull( start.GetOrigin() + Vector(0,0,50), end.GetOrigin() + Vector(0,0,50), <1,1,1>, <1,1,1>, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 		//doors
 		if( IsValid( hResult.hitEnt ) && hResult.hitEnt.GetNetworkedClassName() == "prop_door" )
 		{
 			entity door = hResult.hitEnt
 
-			TraceResults hResult2 = TraceHull( end.GetOrigin() + Vector(0,0,50), start.GetOrigin() + Vector(0,0,50), TESLA_TRAP_BOUND_MINS, TESLA_TRAP_BOUND_MAXS, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+			TraceResults hResult2 = TraceHull( end.GetOrigin() + Vector(0,0,50), start.GetOrigin() + Vector(0,0,50), <1,1,1>, <1,1,1>, ownerPlayer, TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 			entity door2
 			if( IsValid( hResult2.hitEnt ) && hResult2.hitEnt.GetNetworkedClassName() == "prop_door" )

@@ -1,5 +1,5 @@
 //APEX INFECTED
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS (@CafeFPS)
 
 // Julefox - Mystery box scripts
 // @KralRindo - Shadowfall gamemode initial implementation

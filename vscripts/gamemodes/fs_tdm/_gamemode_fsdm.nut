@@ -60,6 +60,37 @@ global function Flowstate_GrantSpawnImmunity
 global function GetBlackListedWeapons
 global function DM__OnEntitiesDidLoad
 global function DissolveItem
+//R5R.DEV Tracker
+global function GetCurrentRound 
+global function Thread_CheckInput
+global function ClientCommand_mkos_LGDuel_IBMM_wait
+global function StringToArray
+global function trim
+global function Concatenate
+global function Message_New
+global function ServerMsgToBox
+
+global bool input_monitor_running = false
+global function SetRandomCustomModelToPlayer
+
+//LGDuels
+const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
+const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
+const string HIT_2 = "NONE"
+const string HIT_3 = "menu_click"
+const string HIT_4 = "Weapon_R1_Satchel.ArmedBeep"
+const string HIT_5 = "ui_callerid_chime_friendly"
+const string HIT_6 = "Wpn_ArcTrap_Beep"
+const string HIT_7 = "UI_Menu_accept"
+const string HIT_8 = "UI_MapPing_Location_1P"
+const string HIT_9 = "UI_DownedAlert_Friendly"
+const string HIT_10 = "UI_MapPing_Item_1P"
+const string HIT_11 = "UI_MapPing_Undo_1P"
+const string HIT_12 = "UI_MapPing_Local_Confirm_1P"
+const string HIT_13 = "UI_MapPing_Acknowledge_1P"
+const string HIT_14 = "UI_Survival_Intro_PreLegendSelect_Countdown"
+const string HIT_15 = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P"
+const string HIT_16 = "jackhammer_pickup"
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -143,6 +174,546 @@ struct
 // ██   ██ ██   ██      ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
 // ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
+
+//////////////////////////////////////////////////// 
+///////////////////  R5R.DEV:  /////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////// 
+int function GetCurrentRound() { 
+    return file.currentRound;
+}
+
+
+void function INIT_LGDuels( entity player )
+{
+
+	thread AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
+	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
+	AddClientCommandCallback("HITSOUND", ClientCommand_mkos_LGDuel_hitsound )
+	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
+	player.p.hitsound = HIT_0
+	// CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
+	// CreatePanelText(player, "mkos and @CafeFPS", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+
+}
+
+
+void function Init_IBMM( entity player )
+{
+	thread notify_thread( player )
+	player.p.IBMM_grace_period = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	player.p.messagetime = 0
+	thread Thread_CheckInput( player )
+	AddButtonPressedPlayerInputCallback( player, IN_MOVELEFT, SetInput_IN_MOVELEFT )
+	AddButtonPressedPlayerInputCallback( player, IN_MOVERIGHT, SetInput_IN_MOVERIGHT )
+	AddButtonPressedPlayerInputCallback( player, IN_BACK, SetInput_IN_BACK )
+	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )
+}
+
+
+//Made by @CafeFPS - don't ask wtf is this just enjoy it
+//modified by mkos
+void function Thread_CheckInput( entity player )
+{
+	int timesCheckedForNewInput = 0
+	int previousInput = -1
+	bool isCheckerRunning
+
+    while ( true ) 
+	{
+		wait 0.2
+		
+		if( !IsValid( player ) )
+			break
+
+		int typeOfInput = GetInput( player )
+		
+		if ( !isCheckerRunning && typeOfInput == 1 )
+			player.p.movevalue = 0
+		
+		if( typeOfInput == 9 )
+			continue
+
+		if( isCheckerRunning )
+		{
+			if( typeOfInput == previousInput )
+			{
+				if( timesCheckedForNewInput >= 4 )
+				{
+					isCheckerRunning = false
+					timesCheckedForNewInput = 0
+
+					if ( InvalidInput( typeOfInput, player.p.movevalue ) ) {
+					
+                       // HandlePlayer( player ); 
+					   player.p.input = 1
+						
+                    } else {
+					
+                        //printt("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
+                        player.p.input = typeOfInput;
+						
+                    }
+					continue
+				}
+				timesCheckedForNewInput++
+				//printt( "Checking if it's a valid input change..." + typeOfInput.tostring() + previousInput.tostring() + " - Times checked: " + timesCheckedForNewInput.tostring() )
+			}
+			else
+			{
+				timesCheckedForNewInput = 0
+				isCheckerRunning = false
+				//printt( "Player did NOT change input. It was a false alarm." )
+			}
+			
+			previousInput = typeOfInput
+			continue
+		}
+
+		if( player.p.input != typeOfInput && !isCheckerRunning )
+		{
+			//printt( "Input change check triggered. " + player.p.input.tostring() + typeOfInput.tostring() + " - Did player change input?" )
+			isCheckerRunning = true
+			previousInput = typeOfInput
+			continue
+		}
+
+		/*
+		if( player.p.input == 0 )
+				printt( player.GetPlayerName() + "is mnk" )
+			else // 1
+				printt( player.GetPlayerName() + "is rolla" )
+		*/
+    }
+}
+
+bool function InvalidInput( int input_type, int movevalue ){
+
+	if ( movevalue == 0 && input_type == 0 )
+	{
+		return true
+	} 
+	
+	return false
+	
+}
+
+void function HandlePlayer( entity player ){
+	
+	string id = player.GetPlatformUID()
+	int action = GetCurrentPlaylistVarInt( "invalid_input_action", 1 )
+	string msg = GetCurrentPlaylistVarString( "invalid_input_msg", "Invalid Input Device" )
+	bool log_invalid_input = GetCurrentPlaylistVarBool( "log_invalid_input", false )
+	
+	switch (action)
+	{
+	
+		case 1:
+			printt("Action: keeping as controller")
+			player.p.input = 1;
+			break
+		case 2:
+			printt("Action: kick")
+			//KickPlayerById( id, msg )
+			break
+		case 3:
+			printt("Action: Ban")
+			//BanPlayerById( id, msg )
+			break
+	
+	}
+	
+}
+
+//Made by @CafeFPS
+int function GetInput( entity player )
+{	
+    float value = player.GetInputAxisRight() == 0 ? player.GetInputAxisForward() : player.GetInputAxisRight() 
+	
+    if( value == 0 || value == 0.5 )
+		return 9
+
+    return value.tostring().len() < 5 ? 0 : 1
+}
+
+void function SetInput_IN_MOVELEFT( entity player )
+{
+	//printt("Setting movevalue for " + player.GetPlayerName() + " to 3")
+	player.p.movevalue = 3
+}
+
+void function SetInput_IN_MOVERIGHT( entity player )
+{
+	//printt("Setting movevalue for " + player.GetPlayerName() + " to 4")
+	player.p.movevalue = 4
+}
+
+void function SetInput_IN_BACK( entity player )
+{	
+	//printt("Setting movevalue for " + player.GetPlayerName() + " to 5")
+	player.p.movevalue = 5
+}
+
+void function SetInput_IN_FORWARD( entity player )
+{	
+	//printt("Setting movevalue for " + player.GetPlayerName() + " to 6")
+	player.p.movevalue = 6
+}
+
+//LGDuel
+void function LGDuel_OnPlayerDamaged(entity victim, var damageInfo)
+{
+	
+	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
+		return
+
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) )
+	{
+		float atthealth = float( attacker.GetHealth() )
+		if ( atthealth <= attacker.GetMaxHealth() )
+		{
+			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
+		}
+
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			if( attacker.p.totalLGShots == 0 )
+				return
+
+			attacker.SetPlayerNetInt( "accuracy", int( ( float( attacker.p.totalLGHits ) / float( attacker.p.totalLGShots ) )*100 ) )
+			attacker.p.totalLGHits++
+		}
+	}
+}
+
+bool function IsNumeric(string str, int limit = 16 )
+{
+
+    if (str.len() == 0 || (str[0] < '0' || str[0] > '9') && str[0] != '-') return false;
+	
+    int num = 0;
+    try { num = str.tointeger(); } catch (outofrange) { return false; }
+	
+    return (num >= 0 && num <= limit );
+}
+
+string function IntToSound(string num)
+{
+	switch (num)
+	{
+		case "0": return HIT_0
+		case "1": return HIT_1
+		case "2": return HIT_2
+		case "3": return HIT_3
+		case "4": return HIT_4
+		case "5": return HIT_5
+		case "6": return HIT_6
+		case "7": return HIT_7
+		case "8": return HIT_8
+		case "9": return HIT_9
+		case "10": return HIT_10
+		case "11": return HIT_11
+		case "12": return HIT_12
+		case "13": return HIT_13
+		case "14": return HIT_14
+		case "15": return HIT_15
+		case "16": return HIT_16
+		default: return HIT_0;
+	}
+	
+	return HIT_0
+	
+}
+	
+	
+bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> args )
+{
+	if ( !IsValid( player ) ) return false
+	
+	string param = ""
+	
+	if (args.len() > 0){
+		param = args[0];
+	}
+	
+	
+		if (args.len() < 1){
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Hitsounds:", " Type into console: hitsound # \n replacing # with a number below\n\n\n\n 0 = Default \n  1 = CountDown \n 2 = None \n 3 = Click \n 4 = Armed \n 5 = Chime \n 6 = Beep \n 7 = Menu \n 8 = Ping \n 9 = Downed \n 10 = Ping2 \n 11 = Ping3 \n 12 = Ping4 \n 13 = Ping5  \n 14 = Countdown2 \n 15 = Shotgun \n 16 = Pickup ", 15)
+			return false
+		}				
+					
+		if ( args.len() > 0 && !IsNumeric( param ) ){
+		
+			Message( player, "Failed", "hitsound must be number 0-16.", 5)
+			return false
+
+		} 
+		
+		
+		try
+		{
+			
+			player.p.hitsound = IntToSound(param);
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+			Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
+			return true
+		
+		} catch ( hiterr ){
+				
+					Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
+					return false
+				
+				}
+				
+	return false
+					
+}
+
+bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
+{
+	if ( !IsValid( player ) ) return false
+	
+	string param = ""
+	
+	if (args.len() > 0){
+		param = args[0];
+	}
+	
+	
+		if (args.len() < 1)
+		{
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
+			return false
+		}				
+		
+		if ( param == "")
+		{
+			return false; 
+		}
+		
+		
+		switch( param )
+		{
+		
+		case "on":
+					try
+					{
+						
+						player.p.p_damage = 2;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						Message( player, "Success", "Damage and healing was set to 2.", 3);
+						return true
+					
+					} catch ( handicap_err_1 ){
+							
+								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_1 )
+								return false
+							
+					}
+		
+		case "off":
+					try
+					{
+						
+						player.p.p_damage = 3;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						Message( player, "Success", "Damage and healing was set to 3.", 3);
+						return true
+					
+					} catch ( handicap_err_2 ){
+							
+								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_2 )
+								return false
+							
+					}
+				
+		}
+		
+	return false
+					
+}
+
+bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> args )
+{
+	if ( !IsValid( player ) ) return false
+	
+	string param = "";
+	int limit = GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999);
+	
+	if (args.len() > 0){
+		param = args[0];
+	}
+	
+	
+		if (args.len() < 1){
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 0 - " + limit.tostring() + " . \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds.", 15)
+			return true
+		}				
+					
+		if ( args.len() > 0 && !IsNumeric( param, limit ) ){
+		
+			Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
+			return false
+
+		} 
+		
+		
+		try
+		{
+			
+			player.p.IBMM_grace_period = float(param);
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+			Message( player, "Success", "Your wait to match inputs was changed to " + param + " seconds", 3);
+			return true
+		
+		} catch ( hiterr ){
+				
+					Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
+					return false
+				
+				}
+	
+					
+}
+
+
+//php my beloved
+//trims leading and trialing whitespace from a string
+string function trim( string str ) 
+{
+
+    int start = 0;
+    int end = str.len() - 1;
+    string whitespace = " \t\n\r";
+
+    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	{
+        start++;
+    }
+
+    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	{
+        end--;
+    }
+
+    return str.slice(start, end + 1);
+	
+}
+
+
+//////////////////////////////////////////////////
+//												//
+//				string to array			 		//
+//												//
+//	format of:									//												
+//					"string1, also string"		//
+// 												//
+//	into an array:  							//
+//					['string1','also string']	//
+//												//
+//												//
+// CALLING FUNCTION responsible for error catch //
+//////////////////////////////////////////////////
+
+array<string> function StringToArray( string str ) 
+{	
+	
+	int item_index = 0;
+	int length_check;
+	string t_str = trim( str )
+	
+    if ( t_str == "" )
+	{
+        throw "Cannot convert empty string to array.";
+	}
+	
+    array<string> arr = split( str, "," )
+	array<string> valid = []
+	
+	/*debug
+	foreach (index, item in arr) 
+	{
+		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
+	}
+	*/
+	
+    foreach ( item in arr ) 
+	{	
+	
+		item_index++
+		item = trim( item )
+		length_check = item.len()
+	
+        if ( item == "" ) 
+		{   
+		
+            sqprint( "Empty item in the list for item # " + ( item_index ) + " removed. " )	
+			
+        } else if ( length_check >= 128 ){
+
+			sqprint( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: 128 bytes" )	
+		
+		} else {
+			
+			valid.append( item )
+			
+		}
+		
+    }
+	
+	if ( valid.len() <= 0 ) 
+	{
+        throw "Array empty after conversion";
+    }
+
+    return valid;
+}
+
+
+string function Concatenate( string str1, string str2 ) 
+{
+	
+	int str1_length = str1.len()
+	int str2_length = str2.len()
+	int dif;
+	string error;
+	
+    if ( str1 == "" && str2 == "" ) 
+	{
+        return "";
+    }
+
+    if ( str1 != "" && str1_length > 1000 ) 
+	{
+		dif = ( str1_length - 1000 )
+		throw ("Error: First string exceeds length limit of 1000 by " + dif.tostring() + " bytes");
+		return "";
+    }
+	
+    if ( str2 != "" && str2_length > 1000 ) 
+	{	
+		dif = ( str2_length - 1000 )
+        throw ("Error: Second string exceeds length limit of 1000 by " + dif.tostring() + " bytes");
+		return "";
+    }
+	
+	if ( str2 != ""  ){
+	
+		str2 = "," + str2;
+	
+	}
+	
+    return str1 + str2;
+}
+
+
+//////////////////////////////////////////////////// 
+///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////// 
+
+
 void function _CustomTDM_Init()
 {
 	file.scriptversion = FLOWSTATE_VERSION
@@ -155,11 +726,13 @@ void function _CustomTDM_Init()
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
-
+	
+	try{
 	if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) ) // if you want to avoid cfg abusers
-		SetConVarInt( "sv_allowClientSideCfgExec", 1 )
+		SetConVarInt( "sv_quota_scriptExecsPerSecond", 20 )
 	else
-		SetConVarInt( "sv_allowClientSideCfgExec", 0 )
+		SetConVarInt( "sv_quota_scriptExecsPerSecond", 1 )
+	}catch(e)
 
 	if (GetCurrentPlaylistName() != "fs_movementgym")
 		SurvivalFreefall_Init() //Enables freefall/skydive
@@ -167,6 +740,7 @@ void function _CustomTDM_Init()
 	if( !is1v1EnabledAndAllowed() )
 	{
 		PrecacheCustomMapsProps()
+		de_NCanals_precache()
 		PrecacheZeesMapProps()
 		PrecacheDEAFPSMapProps()
 	}
@@ -213,6 +787,16 @@ void function _CustomTDM_Init()
 			thread _OnPlayerConnected(player)
 
         UpdatePlayerCounts()
+		
+		if ( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			INIT_LGDuels( player )
+		}
+		
+		// init for IBMM
+		Init_IBMM ( player )
+		
+
     })
 	
 	if( GetCurrentPlaylistName() != "fs_dm_oddball" && GetCurrentPlaylistName() != "fs_haloMod_oddball" )
@@ -229,7 +813,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else
 	{
-		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" ){
+		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
 		
@@ -312,15 +896,42 @@ void function DM__OnEntitiesDidLoad()
 
 	switch(GetMapName())
     {
-    	case "mp_rr_canyonlands_staging": SpawnMapPropsFR(); break
+    	case "mp_rr_canyonlands_staging":
+    	{
+    		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+			{
+    			SpawnLGProps()
+				SpawnLGProps2()
+			}
+    		else
+    			SpawnMapPropsFR()
+    		break
+    	}
     	case "mp_rr_arena_composite":
 		{
+			// if( GetCurrentPlaylistVarBool( "patch_for_dropoff", false )  && is1v1EnabledAndAllowed() )
+			// {			
+				// Patch_Dropoff();
+			// }
+			// else if( GetCurrentPlaylistVarBool( "patch_waiting_area", false ) && is1v1EnabledAndAllowed() )
+			// {
+				if( is1v1EnabledAndAllowed() )
+					Patch_Barrier_Dropoff()
+			// } 
+
+
 			array<entity> badMovers = GetEntArrayByClass_Expensive( "script_mover" )
 			foreach(mover in badMovers)
 				if( IsValid(mover) ) mover.Destroy()
 			break
 		}
 		
+		case "mp_rr_aqueduct":
+			if( GetCurrentPlaylistVarBool( "patch_waiting_area", false ) )
+			{
+				Patch_Barrier_Overflow()
+			} 
+			break
 		case "mp_flowstate":
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
 			file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
@@ -368,8 +979,8 @@ LocPair function _GetVotingLocation()
 		case "mp_rr_aqueduct_night":
         case "mp_rr_aqueduct":
              return NewLocPair(<4885, -4076, 400>, <0, -157, 0>)
-        case "mp_rr_canyonlands_staging":
-             return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
+        //case "mp_rr_canyonlands_staging":
+        //     return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
         case "mp_rr_canyonlands_64k_x_64k":
 			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
 		case "mp_rr_ashs_redemption":
@@ -390,6 +1001,8 @@ LocPair function _GetVotingLocation()
 			return NewLocPair(<1729.17407, -3585.65137, 581.736206>, <0, 103.168709, 0>)
 		case "mp_flowstate":
 			return NewLocPair(<0,0,0>, <0, -179.447098, 0>)
+		case "mp_rr_olympus_mu1":
+			return NewLocPair( <7008.73047, 7627.40234, -4623.99805>, <0,63,0> )
         default:
 			Assert(false, "No voting location for the map!")
     }
@@ -715,7 +1328,16 @@ void function _OnPlayerConnected(entity player)
 	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
 		thread __HighPingCheck( player )
 	
-	thread Flowstate_InitAFKThreadForPlayer(player)
+	if( GetCurrentPlaylistVarBool( "enable_afk_thread", true ) )
+		thread Flowstate_InitAFKThreadForPlayer(player)
+	
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	{
+		AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
+	} else if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+	{
+		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
+	}	
 	
 	if( is1v1EnabledAndAllowed() )
 	{
@@ -753,8 +1375,10 @@ bool function is1v1EnabledAndAllowed()
 
 	switch (GetMapName())
 	{
+		case "mp_rr_canyonlands_staging":
 		case "mp_rr_arena_composite":
 		case "mp_rr_aqueduct":
+		case "mp_rr_olympus_mu1":
 		case "mp_rr_canyonlands_64k_x_64k":
 		thread isChineseServer()
 		return true
@@ -932,10 +1556,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+				
+				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 
 				if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 				{
-					Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
 
@@ -946,6 +1571,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					weapon.w.isInAdsCustom = false
 				}
 
+				if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+					victim.Gib( <0,0,100> )
+
 				wait DEATHCAM_TIME_SHORT
 
 				if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
@@ -953,17 +1581,23 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 				if( !IsValid(victim) )
 					return
-
-				if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
-					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
 				
+				if ( !GetCurrentPlaylistVarBool("lg_duel_mode_60p", false) )
+				{
+					if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
+						PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
+				}
+			
 	    		if( victim == attacker || !IsValid(attacker))
 				{
 					thread function () : ( victim )
 					{
-						wait Deathmatch_GetRespawnDelay()
+						if( GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
+							wait Deathmatch_GetRespawnDelay()
+						else
+							wait 1
 						
-						if(file.tdmState != eTDMState.IN_PROGRESS)
+						if(file.tdmState != eTDMState.IN_PROGRESS || !IsValid( victim ) )
 							return
 
 						_HandleRespawn( victim )
@@ -972,7 +1606,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					return
 				}
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer())
+	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
@@ -989,7 +1623,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		    //KillStreakAnnouncer(victim, true)
 
 	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
-	    		    wait Deathmatch_GetRespawnDelay()
+				{
+					if( GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
+						wait Deathmatch_GetRespawnDelay()
+					else
+						wait 1
+				}
 				
 				if( !IsValid( victim ) ) return
 				
@@ -1031,16 +1670,18 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
-
-					if( attacker == GetChampion() )
-						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
-					
-					if( attacker == GetKillLeader() )
-						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_killLeaderDoubleKill_01", "diag_ap_aiNotify_killLeaderTripleKill_01" )
-
-					if( attacker == file.previousChallenger )
-						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
-					
+					if ( !GetCurrentPlaylistVarBool("lg_duel_mode_60p", false) )
+					{
+						if( attacker == GetChampion() )
+							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
+						
+						if( attacker == GetKillLeader() )
+							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_killLeaderDoubleKill_01", "diag_ap_aiNotify_killLeaderTripleKill_01" )
+	
+						if( attacker == file.previousChallenger )
+							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
+						
+					}
 					if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 						HisWattsons_HaloModFFA_KillStreakAnnounce( attacker )
 
@@ -1417,7 +2058,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 	}
 	
-	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && GetCurrentPlaylistName() != "fs_1v1" )
+	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" && GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
 	//allow healing items to be used	
@@ -1476,7 +2117,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	}
 	
 		
-	if( FlowState_ChosenCharacter() > 10 )
+	if( FlowState_ChosenCharacter() > 10 && !GetCurrentPlaylistVarBool( "give_random_custom_models_toall", false ) )
 	{
 		switch( FlowState_ChosenCharacter() )
 		{				
@@ -1494,8 +2135,112 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
 			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 			break
+			
+			case 14:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+			break
+			
+			case 15:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+			break
+			
+			case 16:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+			break
+			
+			case 17:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+			
+			case 18:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+			break
+
+			case 19:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+			break
+			
+			case 20:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+			break
 		}
+	} 
+	
+	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
+	{
+		SetRandomCustomModelToPlayer( player )
 	}
+	
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+		FS_Instagib_PlayerSpawn( player )
+}
+
+void function SetRandomCustomModelToPlayer( entity player )
+{
+	switch( RandomIntRange(1,10) )
+	{
+		// case 0:
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+		// break
+		
+		case 1:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+		break
+		
+		case 2:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+		break
+		
+		case 3:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+
+		case 4:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+		break
+		
+		case 5:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+		break
+		
+		case 6:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+		break
+		
+		case 7:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_cj.rmdl" )
+		break
+		
+		case 8:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+		break
+
+		case 9:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+		break
+		
+		case 10:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+		break
+	}	
 }
 
 void function ReCheckGodMode(entity player)
@@ -1690,8 +2435,14 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 		{
 			weaponNew = player.GiveWeapon( weaponclass , slot, Mods, false )
 			
+			if( !IsValid( weaponNew ) )
+				return
+
 			SetupInfiniteAmmoForWeapon( player, weaponNew )
 			player.DeployWeapon()
+			
+			if( weaponclass == "mp_weapon_lightninggun" && GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+				weaponNew.AddMod( "noauto" )
 		}
 		else if(IsValid(player) && isGungame)
 		{
@@ -1770,8 +2521,18 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+	{
+		array<string> Weapons = [
+			"mp_weapon_lightninggun"
+		]
+		
+		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+		return
+	}
+
     array<string> Weapons = [
-		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
+		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2",
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
@@ -1794,6 +2555,16 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 void function GiveRandomSecondaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+	{
+		array<string> Weapons = [
+			"mp_weapon_lightninggun"
+		]
+		
+		__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+		return
+	}
 
     array<string> Weapons = [
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
@@ -1856,7 +2627,7 @@ void function GiveRandomSecondaryWeapon( entity player)
 		"mp_weapon_energy_ar energy_mag_l1 stock_tactical_l3 hopup_turbocharger",
 		"mp_weapon_doubletake optic_ranged_hcog energy_mag_l3 stock_sniper_l3",
 		"mp_weapon_vinson stock_tactical_l3 highcal_mag_l3",
-		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2"
+		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2",
 		"mp_weapon_volt_smg energy_mag_l2 stock_tactical_l3"
 	]
 
@@ -2337,7 +3108,7 @@ void function KillStreakAnnouncer(entity player, bool died) {
     }
 }
 
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
 	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
@@ -2349,7 +3120,7 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	}
 }
 
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 void function GiveGungameWeapon(entity player) 
 {
 	// int WeaponIndex = player.GetPlayerNetInt( "kills" )
@@ -2425,7 +3196,7 @@ void function GiveGungameWeapon(entity player)
 // ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
 //  ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
 
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
@@ -2449,7 +3220,7 @@ void function RunTDM()
     WaitForever()
 }
 
-/////////////Retículo Endoplasmático#5955 CafeFPS///////////////////
+/////////////@CafeFPS CafeFPS///////////////////
 void function SimpleChampionUI()
 {
 	//printt("Flowstate DEBUG - Game is starting.")
@@ -2600,7 +3371,7 @@ void function SimpleChampionUI()
 		break
 		
 		case "Noshahr Canals by DEAFPS":
-		thread NCanals()
+		thread de_NCanals()
 		break
 		
 		case "Movement Gym":
@@ -2826,6 +3597,13 @@ void function SimpleChampionUI()
 			player.SetPlayerNetInt( "deaths", 0 ) //Reset for kills
 			player.SetPlayerGameStat( PGS_KILLS, 0 )
 			player.SetPlayerGameStat( PGS_DEATHS, 0 )
+		}
+
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			player.SetPlayerNetInt( "accuracy", 0 )
+			player.p.totalLGHits = 0
+			player.p.totalLGHits = 0
 		}
 
 		if( FlowState_Gungame() )
@@ -3227,16 +4005,38 @@ void function SimpleChampionUI()
 	{
 		// foreach( player in GetPlayerArray() )
 			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
-
-		foreach( player in GetPlayerArray() )
-			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
 		
+		string matchEndingTitle = GetCurrentPlaylistVarString( "custom_match_ending_title", "Server clean up incoming" )
+		string matchEndingMessage = GetCurrentPlaylistVarString( "custom_match_ending_message", "Don't leave. Server is going to reload to avoid lag." )
+		
+	
+		foreach( player in GetPlayerArray() )
+			Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
+
 		wait 6.0
 		
 		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
 			MovementGymSaveTimesToFile()
 
-		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+		//cycle map /mkos
+		string to_map = "";
+		if( GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false ) && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			string rotate_map = GetMapName();
+			
+			if ( rotate_map == "mp_rr_arena_composite" )
+			{
+				to_map = "mp_rr_aqueduct";
+			}else{
+				to_map = "mp_rr_arena_composite"
+			}
+		} else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" ){
+			to_map = "mp_rr_canyonlands_staging";
+		} else {
+			to_map = GetMapName()
+		}
+
+		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
 	}
 
 	int TeamWon = 69
@@ -3264,9 +4064,9 @@ void function SimpleChampionUI()
 			if( !IsValid( player ) )
 				continue
 			
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 			if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 			{
-				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 			}
 
@@ -3560,7 +4360,7 @@ void function ResetMapVotes()
 //       ██ ██   ██ ██ ██   ████  ██████  ██
 // Purpose: Create The RingBoundary
 entity function CreateRingBoundary(LocationSettings location)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
     array<LocPair> spawns = location.spawns
 
@@ -3656,7 +4456,7 @@ entity function CreateRingBoundary(LocationSettings location)
 }
 
 void function AudioThread(entity circle, entity player, float radius)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	EndSignal(player, "OnDestroy")
 	entity audio
@@ -3689,7 +4489,7 @@ void function AudioThread(entity circle, entity player, float radius)
 }
 
 void function RingDamage( entity circle, float currentRadius)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	WaitFrame()
 	const float DAMAGE_CHECK_STEP_TIME = 1.5
@@ -3750,7 +4550,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 void function CharSelect( entity player)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	//Give master chief skin and assign a color
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
@@ -3857,6 +4657,9 @@ void function CharSelect( entity player)
 	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	
+	// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+	// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
 }
 
 void function AssignCharacter( entity player, int index )
@@ -3877,7 +4680,7 @@ void function AssignCharacter( entity player, int index )
 // ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	if( !IsValid( player ) || !player.p.isConnected )
 		return
@@ -3898,6 +4701,27 @@ void function Message( entity player, string text, string subText = "", float du
 		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 }
 
+void function Message_New( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
+//By @CafeFPS (CafeFPS)//
+{
+	if( !IsValid( player ) || !player.p.isConnected )
+		return
+	
+	string sendMessage
+	for ( int textType = 0 ; textType < 2 ; textType++ )
+	{
+		sendMessage = textType == 0 ? text : subText
+
+		for ( int i = 0; i < sendMessage.len(); i++ )
+		{
+			Remote_CallFunction_NonReplay( player, "fs_NewBoxBuildMessage", textType, sendMessage[i] )
+		}
+	}
+	Remote_CallFunction_NonReplay( player, "fs_NewBoxShowMessage", duration )
+
+	if ( sound != "" )
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
+}
 // The challenger
 entity function PlayerWithMostDamage()
 {
@@ -3926,7 +4750,7 @@ int function GetDamageOfPlayerWithMostDamage()
     return bestDamage
 }
 
-//By Retículo Endoplasmático#5955 (CafeFPS)
+//By @CafeFPS (CafeFPS)
 string function PlayerWithMostDamageName()
 {
 	entity player = PlayerWithMostDamage()
@@ -3970,7 +4794,7 @@ int function GetBestPlayerScore()
     return bestScore
 }
 
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 string function GetBestPlayerName()
 {
 	entity player = GetBestPlayer()
@@ -3980,7 +4804,7 @@ string function GetBestPlayerName()
 	return champion
 }
 
-//By michae\l/#1125 & Retículo Endoplasmático#5955
+//By michae\l/#1125 & @CafeFPS
 float function getkd(int kills, int deaths)
 {
 
@@ -4136,7 +4960,7 @@ array<PlayerInfo> spectators = []
 }
 
 string function LatencyBoard()
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 array<PlayerInfo> playersInfo = []
         foreach(player in GetPlayerArray())
@@ -4295,7 +5119,7 @@ bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
 }
 
 float function getcontrollerratio(int count, int kills)
-//By michae\l/#1125 & Retículo Endoplasmático#5955
+//By michae\l/#1125 & @CafeFPS
 {
 	float cCount
 	int floorcCount
@@ -4321,42 +5145,6 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
     return false
 }
 
-bool function ClientCommand_ControllerReport(entity player, array < string > args) 
-{
-    if ( !IsValid(player) || args.len() == 0 ) 
-		return false
-
-	switch(args[0])
-	{
-		case "false":
-			player.p.AmIController = false
-			break
-		case "true":
-			player.p.AmIController = true
-			break
-	}
-    return true
-}
-
-bool function ClientCommand_ControllerSummary(entity player, array < string > args) 
-{
-    if ( !IsValid(player) || args.len() == 0 ) 
-		return false
-	
-	int controllers = 0
-	string msg = ""
-	
-	foreach(sPlayer in GetPlayerArray())
-		if(sPlayer.p.AmIController)
-		{
-			controllers++
-			msg += sPlayer.GetPlayerName() + "\n"
-		}
-		
-	Message(player, "CONTROLLER SUMMARY", "There are " + controllers + " controller players connected. \n" + msg)
-	
-    return true
-}
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 {
@@ -5732,3 +6520,56 @@ array<string> function GetBlackListedWeapons()
 {
 	return file.blacklistedWeapons
 }
+
+//Instagib
+void function FS_Instagib_PlayerSpawn( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
+	//Force Default Player Settings
+	SetPlayerSettings(player, INSTAGIB_PLAYER_SETTINGS)
+	// player.SetMoveSpeedScale( 1 )
+	// player.SetAccelerationScale( 2 )
+	// player.SetPowerRegenRateScale( 2 )
+}
+
+void function FS_Instagib_OnPlayerDamaged(entity victim, var damageInfo)
+{
+	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( !IsAlive( attacker ) ||  !attacker.IsPlayer() )
+		return
+
+	vector origin = victim.GetWorldSpaceCenter()
+	EmitSoundAtPosition( victim.GetTeam(), origin, "ai_reaper_nukedestruct_explo_3p" )
+	PlayFX( $"P_plasma_exp_SM", origin, victim.GetAngles() )
+	
+	victim.Die( attacker, attacker, { damageSourceId = eDamageSourceId.mp_weapon_lightninggun } )
+	// DamageInfo_SetDamage( damageInfo, victim.GetHealth() + 1 )
+}
+
+void function ServerMsgToBox( entity player, string text, float Width = 600, float duration = 7.0, string sound = "", string subText = "")
+{
+	if( !IsValid( player ) || !player.p.isConnected )
+		return
+	
+	string sendMessage
+	for ( int textType = 0 ; textType < 2 ; textType++ )
+	{
+		sendMessage = textType == 0 ? text : subText
+
+		for ( int i = 0; i < sendMessage.len(); i++ )
+		{
+			Remote_CallFunction_NonReplay( player, "fs_ServerMsgsToChatBox_BuildMessage", textType, sendMessage[i] )
+		}
+	}
+	Remote_CallFunction_NonReplay( player, "fs_ServerMsgsToChatBox_ShowMessage", Width, duration )
+
+	if ( sound != "" )
+		return
+}
+	

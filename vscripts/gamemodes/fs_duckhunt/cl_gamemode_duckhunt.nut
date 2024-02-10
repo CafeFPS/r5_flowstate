@@ -1,5 +1,5 @@
 //APEX DUCKHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS (@CafeFPS)
 
 // Darkes#8647 - duckhunt maps
 // everyone else - advice

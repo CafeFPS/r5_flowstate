@@ -48,6 +48,7 @@ global function ClientPlayerClassChanged
 
 global function GetHideCrosshairHitIndicatorOverride
 global function SetHideCrosshairHitIndicatorOverride
+global function PlayerFieryDeath
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -622,8 +623,7 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	if ( victim.IsTitan() && isKillShot )
 		ClientScreenShake( 8, 10, 1, <0, 0, 0> )
 
-	if ( GameRules_GetGameMode() != "fs_prophunt" )
-		BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+	BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
 
 	if ( isShieldBreak )
 		PlayShieldBreakEffect( victim )
@@ -758,6 +758,9 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
 {
+	if ( GameRules_GetGameMode() == "fs_prophunt" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		return
+
 	if ( IsSoftenedLocale() || !Flag( "EnableBloodSprayDecals" ) )
 		return
 
@@ -1434,35 +1437,17 @@ bool function SpawnFleshGibs( entity victim, vector attackDir )
 	vector flingDir = attackDir * RandomIntRange( 80, 200 )
 
 	int fxID
-	bool isSoftenedLocale = IsSoftenedLocale()
 
-	if ( isSoftenedLocale )
+	if ( victim.GetModelName() == FLYER_MODEL )
 	{
-		if ( victim.GetModelName() == FLYER_MODEL )
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
-		else
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
+		fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 	}
 	else
 	{
-		if ( victim.GetModelName() == FLYER_MODEL )
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
-		else
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
+		fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 	}
 
 	EffectSetControlPointVector( fxID, 1, flingDir )
-
-	if ( isSoftenedLocale )
-		return true
 
 	vector angularVel = <0, 0, 0>
 	float lifeTime    = 10.0

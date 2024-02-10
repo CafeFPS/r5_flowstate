@@ -76,6 +76,11 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 		{
 			ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
 			string charRef = ItemFlavor_GetHumanReadableRef( character )
+			
+			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+			{
+				return eBodyTypes.NPC_SPECTRE 
+			}
 
 			switch( charRef )
 			{
@@ -282,6 +287,9 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 
 bool function SE_ANY( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
 {
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		return false
+
 	if(damageSourceID == eDamageSourceId.deathField) // Ring shouldn't play pain sounds
 		return false
 	

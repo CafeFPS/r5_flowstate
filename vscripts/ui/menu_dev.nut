@@ -273,10 +273,7 @@ void function SetupDefaultDevCommandsMP()
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
 	
-	if(GetCurrentPlaylistName() == "map_editor_deprecated")
-		SetupDevMenu( "Editor", SetDevMenu_Editor )
-	
-	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1")
+	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	{
 		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
 		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )

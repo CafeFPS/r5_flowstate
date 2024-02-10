@@ -342,21 +342,12 @@ void function ClMenuModels_Init()
 
 	AddCallback_OnClientScriptInit( OnClientScriptInit )
 	AddCallback_FullUpdate( OnFullUpdate )
-
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-	{
-		file.scriptEntitiesOrigins["customize_weapon_camera_target"] = GetMapPosition()
-		file.scriptEntitiesAngles["customize_weapon_camera_target"] = GetMapAngles()
-		GetAssets()
-	}
 }
 
 void function OnClientScriptInit( entity player )
 {
 	thread InitMenuEntities()
 	thread ModelRotationThread()
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-		thread ModelListRotationThread()
 }
 
 void function OnFullUpdate()
@@ -366,9 +357,6 @@ void function OnFullUpdate()
 
 bool function MenuMapEntitiesExist()
 {
-   	 if(GameRules_GetGameMode() == "map_editor_deprecated")
-	 	return true
-
 	array<string> entNames =
 	[
 		"default_camera_target",
@@ -409,17 +397,14 @@ void function ClearModelMenu() {
 
 void function ApplyEventPositioning()
 {
-    if(GameRules_GetGameMode() != "map_editor_deprecated")
-    {
-        array<entity> ents
-        ents.append( GetEntByScriptName( "play_camera_target" ) )
-        ents.append( GetEntByScriptName( "play_character_ref" ) )
-        ents.append( GetEntByScriptName( "play_teammate1_ref" ) )
-        ents.append( GetEntByScriptName( "play_teammate2_ref" ) )
+	array<entity> ents
+	ents.append( GetEntByScriptName( "play_camera_target" ) )
+	ents.append( GetEntByScriptName( "play_character_ref" ) )
+	ents.append( GetEntByScriptName( "play_teammate1_ref" ) )
+	ents.append( GetEntByScriptName( "play_teammate2_ref" ) )
 
-        foreach ( ent in ents )
-            ent.SetOrigin( ent.GetOrigin() + <0, 5120, 0> )
-    }
+	foreach ( ent in ents )
+		ent.SetOrigin( ent.GetOrigin() + <0, 5120, 0> )
 }
 
 void function InitTeammatePosition( string scriptName, string idle )
@@ -1134,82 +1119,49 @@ void function InitMenuEntities()
 			return
 	#endif
 
-    if(GameRules_GetGameMode() != "map_editor_deprecated")
-	{
-        Assert( MenuMapEntitiesExist() )
+	Assert( MenuMapEntitiesExist() )
 
-        if ( IsLobbyFallLTM() )
-        {
-            ApplyEventPositioning()
-            SpawnShadowEyeEffects()
-        }
-    }
+	if ( IsLobbyFallLTM() )
+	{
+		ApplyEventPositioning()
+		SpawnShadowEyeEffects()
+	}
 
 	InitPresentationData()
-    
-    if( GameRules_GetGameMode() != "map_editor_deprecated" ) 
-	{
-        InitTeammatePosition( "play_teammate1_ref", "ACT_MP_MENU_LOBBY_LEFT_IDLE" )
-        InitTeammatePosition( "play_teammate2_ref", "ACT_MP_MENU_LOBBY_RIGHT_IDLE" )
-    }
+
+    InitTeammatePosition( "play_teammate1_ref", "ACT_MP_MENU_LOBBY_LEFT_IDLE" )
+    InitTeammatePosition( "play_teammate2_ref", "ACT_MP_MENU_LOBBY_RIGHT_IDLE" )
 
 	file.cameraZoomData.mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
 
 	file.cameraTargets.clear()
 	file.cameraStartOriginsAngles.clear()
-    if(GameRules_GetGameMode() != "map_editor_deprecated")
-	{
-	    foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
-	    {
-		    entity targetEnt = GetEntByScriptName( scriptName )
-		    file.cameraTargets[ eNumIdx ] <- targetEnt
-		    file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
-	    }
-    } else {
-        foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
-	    {
-		    entity targetEnt = CreateClientSidePropDynamic(file.scriptEntitiesOrigins[scriptName], file.scriptEntitiesAngles[scriptName], $"mdl/dev/empty_model.rmdl")
-            targetEnt.SetScriptName(scriptName)
 
-		    file.cameraTargets[ eNumIdx ] <- targetEnt
-		    file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
-	    }
-    }
-
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
+	foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
 	{
-		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
+		entity targetEnt = GetEntByScriptName( scriptName )
+		file.cameraTargets[ eNumIdx ] <- targetEnt
+		file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
 	}
-	else 
-		clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
+
+	clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
 
 	// Wait for character class to be known
 	EHI localPlayerEHI = WaitForLocalClientEHI()
 	if ( IsDemoSpectator( GetLocalClientPlayer() ) )
 		return //
 
-	
-	if(GameRules_GetGameMode() != "map_editor_deprecated")
-	{
-    	entity localPlayer = GetLocalClientPlayer()
-    	localPlayer.SetMenuCameraEntityWithAudio( clGlobal.menuCamera ) //
-	}
+
+    entity localPlayer = GetLocalClientPlayer()
+    localPlayer.SetMenuCameraEntityWithAudio( clGlobal.menuCamera ) //
 
 	entity refEnt
 	entity model
 	float[2] baseRotationDelta
 
-	if(GameRules_GetGameMode() != "map_editor_deprecated")
-	{
-		refEnt = GetEntByScriptName( "play_character_ref" )
-		ModelData_SetBaseOrigin( file.playCharacter, refEnt.GetOrigin() )
-		ModelData_SetBaseAngles( file.playCharacter, refEnt.GetAngles() )
-	}
-	else
-	{
-		ModelData_SetBaseOrigin( file.playCharacter, <0, 523, 0>)
-		ModelData_SetBaseAngles( file.playCharacter, <0, -90, 0>)
-	}
+	refEnt = GetEntByScriptName( "play_character_ref" )
+	ModelData_SetBaseOrigin( file.playCharacter, refEnt.GetOrigin() )
+	ModelData_SetBaseAngles( file.playCharacter, refEnt.GetAngles() )
 
 	model = CreateMenuModel( file.playCharacter, $"mdl/dev/empty_model.rmdl" )
 	ItemFlavor character     = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterClass() )
@@ -1223,16 +1175,9 @@ void function InitMenuEntities()
 	entity lobbyLight2 = CreateClientSideDynamicLight( Vector(file.playCharacter.model.GetOrigin().x, file.playCharacter.model.GetOrigin().y, file.playCharacter.model.GetOrigin().z) + file.playCharacter.model.GetRightVector() * 50 + file.playCharacter.model.GetForwardVector() * 50, < 0, 0, 0 >, DLIGHT_RICH_BROWN, 200 )
 	lobbyLight2.SetLightExponent( 4 )
 		
-	if(GameRules_GetGameMode() != "map_editor_deprecated")
-	{
-		refEnt = GetEntByScriptName( "customize_character_ref" )
-		ModelData_SetBaseOrigin( file.customizeCharacter, refEnt.GetOrigin() )
-	}
-	else
-	{
-		ModelData_SetBaseOrigin( file.customizeCharacter, <3089, 78, 0> )
-	}
-	
+	refEnt = GetEntByScriptName( "customize_character_ref" )
+	ModelData_SetBaseOrigin( file.customizeCharacter, refEnt.GetOrigin() )
+
 	ModelData_SetBaseAngles( file.customizeCharacter, <0, -120, 0> )
 	baseRotationDelta[0] = 0
 	baseRotationDelta[1] = 0
@@ -1268,8 +1213,7 @@ void function InitMenuEntities()
 	//thread DrawOrg( ModelData_GetMover( file.playCharacter ) )
 	//thread DrawOrg( ModelData_GetMover( file.customizeWeapon ) )
 	
-	if(GameRules_GetGameMode() != "map_editor_deprecated")
-		InitBattlePassLights()
+	InitBattlePassLights()
 	InitLightingConfigs()
 
 	file.initializedMenuModels = true
@@ -1295,8 +1239,6 @@ entity function CreateMenuModel( MenuModelData modelData, asset modelAsset )
 	entity model = CreateClientSidePropDynamic( origin, angles, modelAsset )
 	model.SetVisibleForLocalPlayer( 0 )
 	model.MakeSafeForUIScriptHack()
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-		model.SetModelScale(1 + file.scale)
 	ModelData_SetModel( modelData, model )
 
 	return model
@@ -2349,10 +2291,6 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 		return
 	}
 
-	if (GameRules_GetGameMode() == "map_editor_deprecated") {
-		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
-	}
-
 	player.SetScriptMenuOn()
 
 	float fov = file.presentationData[ presentationType ].fov
@@ -2360,11 +2298,6 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 
 	int cameraTargetName = file.presentationData[ presentationType ].cameraTargetName
 	entity cameraTarget  = file.cameraTargets[ cameraTargetName ]
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-	{
-		cameraTarget.SetOrigin(GetMapPosition())
-		cameraTarget.SetAngles(GetMapAngles())
-	}
 	clGlobal.menuCamera.SetTarget( cameraTarget, fov, interpolate, EASING_CUBIC_INOUT, TRANSITION_DURATION )
 
 	//EASING_LINEAR
@@ -2539,11 +2472,6 @@ void function UpdateMenuMouseWheelUp()
 		return
 
 	file.mouseWheelNewValue += MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-	{
-		file.scale += SCALE_OFFSET
-		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
-	}
 }
 
 void function UpdateMenuMouseWheelDown()
@@ -2552,14 +2480,6 @@ void function UpdateMenuMouseWheelDown()
 		return
 
 	file.mouseWheelNewValue -= MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-	{
-		file.scale -= SCALE_OFFSET
-		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
-		if (file.scale < 0) {
-			file.scale = 0
-		}
-	}
 }
 
 void function ClearMenuMouseWheelValues()

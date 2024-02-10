@@ -4,6 +4,7 @@ global function MpWeaponBasicBolt_Init
 global function OnWeaponActivate_weapon_basic_bolt
 global function OnWeaponPrimaryAttack_weapon_basic_bolt
 global function OnProjectileCollision_weapon_basic_bolt
+global function OnWeaponPrimaryAttack_weapon_yeet
 
 #if CLIENT
 global function OnClientAnimEvent_weapon_basic_bolt
@@ -38,6 +39,14 @@ void function OnClientAnimEvent_weapon_basic_bolt( entity weapon, string name )
 }
 
 #endif // #if CLIENT
+var function OnWeaponPrimaryAttack_weapon_yeet( entity weapon, WeaponPrimaryAttackParams attackParams )
+{
+	gp()[0].KnockBack(gp()[0].GetViewVector()*-1000 ,0.1)
+
+	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
+
+	return FireWeaponPlayerAndNPC( weapon, attackParams, true )
+}
 
 var function OnWeaponPrimaryAttack_weapon_basic_bolt( entity weapon, WeaponPrimaryAttackParams attackParams )
 {

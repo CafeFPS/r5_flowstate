@@ -40,6 +40,8 @@ struct
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
 	table<var, ButtonData > Toggle1v1ScoreboardFocus
+	table<var, ButtonData > OpenLGDuelsSettingsFocus
+
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
 } file
@@ -143,7 +145,8 @@ void function InitSystemPanel( var panel )
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
 	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
-	
+	file.OpenLGDuelsSettingsFocus[ panel ] <- clone data
+
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
@@ -201,6 +204,9 @@ void function InitSystemPanel( var panel )
 	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
+	file.OpenLGDuelsSettingsFocus[ panel ].label = "LG DUELS SETTINGS"
+	file.OpenLGDuelsSettingsFocus[ panel ].activateFunc = OpenLGDuelsSettings_System
+
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -237,14 +243,16 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" )
+		if( GetCurrentPlaylistName() == "fs_dm" )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_1v1" )
+		if( GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+				SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsFocus[ panel ] )
 		}
 
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
@@ -396,6 +404,11 @@ void function ShowScoreboard_System()
 void function Toggle1v1Scoreboard_System()
 {
 	RunClientScript( "Toggle1v1Scoreboard" )
+}
+
+void function OpenLGDuelsSettings_System()
+{
+	OpenLGDuelsSettings()
 }
 
 void function RunKillSelf()

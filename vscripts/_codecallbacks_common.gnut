@@ -110,6 +110,12 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	// shouldn't this be called from code?
 	CodeCallback_OnClientReloadConnectionCompleted( player )
+	
+	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
+		player.p.assignedCustomModel = RandomIntRangeInclusive(1,10)
+	
+	if( GameRules_GetGameMode() == "fs_snd" )
+		_OnPlayerConnectedSND( player )
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )

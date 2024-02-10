@@ -48,4 +48,43 @@ ImpactTable
 		"8" "P_hmn_bslam_concrete"
 		"9" "P_hmn_bslam_concrete" //puddle
 	}
+
+Sound
+	{
+
+		"C" "ronin_sword_impact_concrete_3p_vs_3p"
+		"D" "ronin_sword_impact_dirt_3p_vs_3p"
+		"E" "ronin_sword_impact_titan_3p_vs_3p"
+
+		"F" "ronin_sword_impact_flesh_3p_vs_3p"
+		"G" "ronin_sword_impact_metal_3p_vs_3p"
+		"H" "titan_punch_human_impact"
+
+		"J" "ronin_sword_impact_grass_3p_vs_3p"
+		"K" "ronin_sword_impact_water_3p_vs_3p"
+		"L" "ronin_sword_impact_plastic_3p_vs_3p"
+		"M" "ronin_sword_impact_metal_3p_vs_3p"
+		"N" "titan_melee_hit_3p"
+		"O" "ronin_sword_impact_foilage_3p_vs_3p"
+		"P" "titan_punch_android_impact"
+
+		"R" "ronin_sword_impact_armor_3p_vs_3p"
+		"S" "ronin_sword_impact_water_3p_vs_3p"
+		"T" "ronin_sword_impact_tile_3p_vs_3p"
+		"U" "ronin_sword_impact_glass_3p_vs_3p"
+
+		"V" "ronin_sword_impact_metal_3p_vs_3p"
+		"W" "ronin_sword_impact_wood_3p_vs_3p"
+
+		"Y" "ronin_sword_impact_glass_3p_vs_3p"
+		"Z" "ronin_sword_impact_sand_3p_vs_3p"
+
+		"splash" "titan_melee_hit_3p_vs_3p"
+		"slime_splash" "titan_melee_hit_3p_vs_3p"
+
+		"airburst" ""
+		"shieldhit" "TitanShield.MeleeImpact_3P_vs_3P"
+	}
+
+
 }

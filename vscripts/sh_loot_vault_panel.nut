@@ -20,6 +20,10 @@ global function VaultPanel_GetTeammateWithKey
 
 global const string LOOT_VAULT_PANEL_SCRIPTNAME = "LootVaultPanel"
 global const string LOOT_VAULT_DOOR_SCRIPTNAME = "LootVaultDoor"
+
+global const string SHIP_VAULT_PANEL_SCRIPTNAME = "ShipVaultPanel"
+global const string SHIP_VAULT_DOOR_SCRIPTNAME = "ShipVaultDoor"
+
 global const string LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT = "LootVaultDoorRight"
 
 global const string LOOT_VAULT_AUDIO_OPEN = "LootVault_Open"
@@ -122,7 +126,13 @@ const float PANEL_TO_DOOR_RADIUS = 150.0
 void function EntitiesDidLoad()
 {
 	foreach( panelData in file.vaultControlPanels )
-	{		
+	{	
+		if( GetMapName() == "mp_rr_olympus_mu1" && panelData.panel.GetScriptName() == SHIP_VAULT_PANEL_SCRIPTNAME )
+		{
+			panelData.vaultDoors.append( GetEntByScriptName( SHIP_VAULT_DOOR_SCRIPTNAME ) )
+			continue
+		}
+
 		vector panelPos = panelData.panel.GetOrigin()
 
 		foreach ( door in file.vaultDoors )
@@ -302,7 +312,13 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 		
 		foreach( entity door in GetVaultPanelDataFromEntity( panel ).vaultDoors)
 		{
-			door.OpenDoor( fakeUser )
+			if( door.GetScriptName() == SHIP_VAULT_DOOR_SCRIPTNAME )
+			{
+				PlayAnimNoWait( door, "open" )
+				door.e.isOpen = true
+				GradeFlagsSet( door, eGradeFlags.IS_OPEN )
+			} else
+				door.OpenDoor( fakeUser )
 		}
 		fakeUser.Destroy()
 	}()
@@ -317,9 +333,19 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 #if CLIENT
 string function VaultPanel_TextOverride( entity panel )
 {
-//	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+	//	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+	
+	if( GetMapName() == "mp_rr_olympus_mu1" )
+	{
+		if ( !VaultPanel_HasPlayerDataKnife(GetLocalViewPlayer()) )
+			return "#HINT_BRIDGE_NEED"
+
+		return "#HINT_BRIDGE_USE"
+	}
+
 	if ( !VaultPanel_HasPlayerDataKnife(GetLocalViewPlayer()) )
 		return "#HINT_VAULT_NEED"
+
 	return "#HINT_VAULT_USE"
 }
 
@@ -360,6 +386,9 @@ bool function IsVaultPanel( entity ent )
 	if ( ent.GetScriptName() == LOOT_VAULT_PANEL_SCRIPTNAME )
 		return true
 
+	if ( ent.GetScriptName() == SHIP_VAULT_PANEL_SCRIPTNAME )
+		return true
+
 	return false
 }
 
@@ -369,7 +398,7 @@ bool function IsValidLootVaultDoorEnt( entity ent )
 		return false
 
 	string scriptName = ent.GetScriptName()
-	if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT )
+	if ( scriptName != LOOT_VAULT_DOOR_SCRIPTNAME && scriptName != LOOT_VAULT_DOOR_SCRIPTNAME_RIGHT && scriptName != SHIP_VAULT_DOOR_SCRIPTNAME )
 		return false
 
 	return true
@@ -565,8 +594,8 @@ bool function VaultPanel_HasPlayerDataKnife(entity player)
 
 	foreach ( invItem in playerInventory )
 	{
-		// printt( invItem.type )
-		if(invItem.type == 128)
+		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+		if( data.ref == "data_knife" )
 			return true
 	}
 	return false

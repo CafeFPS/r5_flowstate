@@ -741,6 +741,23 @@ global struct ServerPlayerStruct
 	int ziplineUsages = 0
 	float lastmoved
 	
+	//mkos /or/ r5r stats
+	
+	string hitsound
+	int input
+	string inputmode
+	bool notify = false
+	bool has_notify = false
+	bool destroynotify = false
+	float IBMM_grace_period = 0 // disabled default
+	float messagetime = 0
+	int movevalue = 0
+	int p_damage = 3 //for lgduel default dmg/heal 
+	int lifetime_kills = 0
+	int lifetime_deaths = 0
+	int lifetime_glides = 0
+	float last_input_time
+	
 	//MovementGym
 	bool isTimerActive = false
 	int startTime = 0
@@ -938,6 +955,25 @@ global struct ServerPlayerStruct
 	array< string > storedPlayerSettingsMods
 	array< int > storedPlayerHealth // { health, shieldHealth }
 	array< int > storedPlayerPassives
+	
+	//LGDuels
+	int totalLGShots = 0
+	int totalLGHits = 0
+	
+	//Custom models
+	int assignedCustomModel
+	
+	//R5R Sword
+	array<VisibleEntityInCone> targetsForAoeDamage
+	bool isRunningFuelThread
+	float lastFuelRemainingTime = -1
+	bool isPlayerSlamming = false
+	array<entity> slamLastInnerPlayers
+	bool isSecondaryMeleeAttack = false
+	
+	entity launcherVictim
+	bool launcherStarted
+	bool startingSuperAlready
 }
 
 global struct ChallengeScore

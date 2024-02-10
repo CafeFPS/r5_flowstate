@@ -86,6 +86,20 @@ void function Sh_CustomTDM_Init()
 
     switch(GetMapName())
     {
+	case "mp_rr_olympus_mu1":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+               "Olympus Test Location",
+                [
+                    NewLocPair(<1769.48132, 6416.47363, -5323.96875> , <0, 161.619949, 0>),
+                    NewLocPair(<944.609436, 7768.79688, -5127.98193> , <0, 26.7121983, 0>),
+                    NewLocPair(<1672.01257, 9753.1709, -5127.98438> , <0, -107.021523, 0>),
+                    NewLocPair(<3604.0752, 9955.06445, -5325.9375> , <0, 156.444427, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+	break
    case "mp_rr_aqueduct":
    case "mp_rr_aqueduct_night":
         Shared_RegisterLocation(
@@ -953,30 +967,30 @@ void function Sh_CustomTDM_Init()
 		case "mp_flowstate":
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
-
-			Shared_RegisterLocation(
-				NewLocationSettings(
-					"Beaver Creek", //Change spawns
-					[
-						NewLocPair(<41543.8711, -9008.27539, -20890.7383> , <0, -35.8867874, 0>),
-						NewLocPair(<41369.6289, -8793.39746, -20764.0371> , <0, -62.614399, 0>),
-						NewLocPair(<41649.9414, -9338.88477, -20592.8379> , <0, -87.7791977, 0>),
-						NewLocPair(<41318.5234, -11336.6641, -20704.9375> , <0, 44.4568977, 0>),
-						NewLocPair(<41974.5977, -10676.3115, -20795.6367> , <0, -141.929703, 0>),
-						NewLocPair(<42184.8945, -11325.4092, -20704.9375> , <0, 110.566208, 0>),
-						NewLocPair(<41919.082, -11060.9668, -20528.5371> , <0, 129.327072, 0>),
-						NewLocPair(<41910.6367, -9918.69629, -21009.1367> , <0, 122.589836, 0>),
-						NewLocPair(<42701.9297, -9711.44824, -21169.2617> , <0, -61.6680984, 0>),
-						NewLocPair(<41733.707, -9838.34668, -21368.4609> , <0, 1.02161503, 0>),
-						NewLocPair(<43069.2578, -9967.16016, -20763.8594> , <0, 89.3030472, 0>),
-						NewLocPair(<41170.4883, -10825.1191, -21136.7383> , <0, 39.0051041, 0>),
-						NewLocPair(<41951.875, -10721.0967, -21030.5371> , <0, -147.949905, 0>),
-						NewLocPair(<41230.1133, -10046.1729, -20795.8379> , <0, -91.0725632, 0>),
-						NewLocPair(<41946.5195, -9054.60156, -20763.9609> , <0, -179.685928, 0>)
-					],
-					<0, 0, 3000>
-				)
-			)
+			// In development
+			// Shared_RegisterLocation(
+				// NewLocationSettings(
+					// "Beaver Creek", //Change spawns
+					// [
+						// NewLocPair(<41543.8711, -9008.27539, -20890.7383> , <0, -35.8867874, 0>),
+						// NewLocPair(<41369.6289, -8793.39746, -20764.0371> , <0, -62.614399, 0>),
+						// NewLocPair(<41649.9414, -9338.88477, -20592.8379> , <0, -87.7791977, 0>),
+						// NewLocPair(<41318.5234, -11336.6641, -20704.9375> , <0, 44.4568977, 0>),
+						// NewLocPair(<41974.5977, -10676.3115, -20795.6367> , <0, -141.929703, 0>),
+						// NewLocPair(<42184.8945, -11325.4092, -20704.9375> , <0, 110.566208, 0>),
+						// NewLocPair(<41919.082, -11060.9668, -20528.5371> , <0, 129.327072, 0>),
+						// NewLocPair(<41910.6367, -9918.69629, -21009.1367> , <0, 122.589836, 0>),
+						// NewLocPair(<42701.9297, -9711.44824, -21169.2617> , <0, -61.6680984, 0>),
+						// NewLocPair(<41733.707, -9838.34668, -21368.4609> , <0, 1.02161503, 0>),
+						// NewLocPair(<43069.2578, -9967.16016, -20763.8594> , <0, 89.3030472, 0>),
+						// NewLocPair(<41170.4883, -10825.1191, -21136.7383> , <0, 39.0051041, 0>),
+						// NewLocPair(<41951.875, -10721.0967, -21030.5371> , <0, -147.949905, 0>),
+						// NewLocPair(<41230.1133, -10046.1729, -20795.8379> , <0, -91.0725632, 0>),
+						// NewLocPair(<41946.5195, -9054.60156, -20763.9609> , <0, -179.685928, 0>)
+					// ],
+					// <0, 0, 3000>
+				// )
+			// )
 
 			Shared_RegisterLocation(
 				NewLocationSettings(
@@ -1781,6 +1795,10 @@ bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP() 			{return GetCur
 
 
 bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
+string function Playlist_1v1_Primary_Array()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_primary", "" ) }
+string function Playlist_1v1_Primary_Array_continue()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_primary_continue", "" ) }
+string function Playlist_1v1_Secondary_Array()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_secondary", "" ) }
+string function Playlist_1v1_Secondary_Array_continue()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_secondary_continue", "" ) }
 
 StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
 {

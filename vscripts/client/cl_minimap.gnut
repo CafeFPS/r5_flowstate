@@ -291,7 +291,7 @@ void function ClMinimap_Init()
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
 
-	if ( GetCurrentPlaylistVarBool( "beta_watermark", false ) && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+	if ( GetCurrentPlaylistVarBool( "beta_watermark", false ) )
 	{
 		file.minimap_coords = CreateMinimapRui( MINIMAP_UID_COORDS_RUI, MINIMAP_Z_BASE + 1000 )
 	}
@@ -325,6 +325,11 @@ void function ClMinimap_Init()
 	// create unitframe ruis for the fullmap screen
 	// Taking off one of these to save memory. If we ever need to go above a 3 person team, add it back.
 	//file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
+	if(GameRules_GetGameMode() == "fs_snd")
+	{
+		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
+		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
+	}
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 	file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
@@ -900,7 +905,7 @@ void function UpdatePlayerRuiTracking( entity player )
 
 	entity viewPlayer = GetLocalViewPlayer()
 	
-	if(GameRules_GetGameMode() == "flowstate_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if(GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		thread HACK_TrackPlayerPositionOnScript( file.minimap_base, viewPlayer, false )
 	} else 

@@ -416,7 +416,7 @@ void function CharacterSkin_Apply( entity ent, ItemFlavor skin )
 	}
 
 	ent.SetSkin( skinIndex )
-	ent.SetCamo( camoIndex )
+	ent.SetCamo( -1 ) //camoIndex
 
 	#if SERVER
 		if ( ent.IsPlayer() )

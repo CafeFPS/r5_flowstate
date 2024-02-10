@@ -58,13 +58,12 @@ void function OnClientConnected( entity player )
 
 	printt( "[+] New player connected! ", player )
 
+	//CafeFPS
 	//Wraith Q fix. Colombia
 	player.SetForceVisibleInPhaseShift(true)
-	
-	//Phase Rewind Record Positions. Colombia
+	//Phase Rewind Record Positions
 	thread RecordPositions(player)
-	
-	//Record a networked Latency int for scoreboard
+	//Record a networked int for Latency to show in scoreboard
 	thread NetworkedIntLatencyThingy(player)	
 
 	// AccumulatedDamageData damageData
@@ -402,7 +401,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	if ( entIsNPC && attackerIsPlayer || entIsPlayer && attackerIsNPC )
 	{
-		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CafeFPS)
+		//AI bleedthrough fix By @CafeFPS (CafeFPS)
 		if(ent.GetShieldHealth() > 0)
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )

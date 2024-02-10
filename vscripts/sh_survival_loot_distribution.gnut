@@ -9,6 +9,7 @@ struct LootDistro
     float chance
 }
 
+//This sucks
 struct {
 	array<string> armedAndDangerousWeapons = [ "mp_weapon_shotgun_pistol", "mp_weapon_shotgun", "mp_weapon_wingman", "mp_weapon_dmr", "mp_weapon_energy_shotgun", "mp_weapon_mastiff", "mp_weapon_defender" ]
 	array<string> armedAndDangerousAmmo = ["sniper", "shotgun"]

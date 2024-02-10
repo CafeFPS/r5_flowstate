@@ -131,7 +131,11 @@ void function AirDropFireteam( vector origin, vector angles, string animationNam
 void function WaitForDropFX(entity dropPod, string animationName, vector origin, vector angles)
 { 
     float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
-	wait scaledTime
+	wait scaledTime 
+	
+	if( !IsValid( dropPod ) )
+		return
+
     DropPodOnImpactFXAndShake(dropPod, origin, angles)
 }
 

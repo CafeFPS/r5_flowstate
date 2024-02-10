@@ -1,3 +1,5 @@
+untyped
+
 global function Cl_CustomTDM_Init
 global function Cl_RegisterLocation
 global function OpenTDMWeaponSelectorUI
@@ -27,11 +29,6 @@ global function UI_To_Client_VoteForMap_FSDM
 //networked vars callbacks
 global function CL_FSDM_RegisterNetworkFunctions
 
-//custom minimap
-global function HACK_TrackPlayerPositionOnScript
-global function RefreshImageAndScaleOnMinimapAndFullmap
-global function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap
-
 global function FSHaloMod_CreateKillStreakAnnouncement
 
 global function Flowstate_ShowRoundEndTimeUI
@@ -39,6 +36,15 @@ global function Flowstate_PlayStartRoundSounds
 global function Flowstate_ShowStartTimeUI
 global function FS_1v1_ToggleUIVisibility
 global function Toggle1v1Scoreboard
+global function ForceHide1v1Scoreboard
+global function ForceShow1v1Scoreboard
+global function FS_NewBox_Msg
+
+global function fs_NewBoxBuildMessage
+global function fs_NewBoxShowMessage
+
+global function fs_ServerMsgsToChatBox_BuildMessage
+global function fs_ServerMsgsToChatBox_ShowMessage
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -59,6 +65,12 @@ struct {
 	asset currentMapImage
 	float mapscale
 	bool show1v1Scoreboard = true
+
+	string fs_newMsgBoxString        = ""
+	string fs_newMsgBoxSubString     = ""
+	
+	string fs_newServerMsgsToChatBoxString        = ""
+	string fs_newServerMsgsToChatBoxSubString     = ""
 } file
 
 struct VictoryCameraPackage
@@ -87,6 +99,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("ChangeCameraToSelectedLocation")
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
+	RegisterSignal("FS_CloseNewMsgBox")
 	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
@@ -104,7 +117,7 @@ void function CL_FSDM_RegisterNetworkFunctions()
 
 void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
 {
-	if( GetCurrentPlaylistName() != "fs_1v1" )
+	if( GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
 		return
 	
 	entity localPlayer = GetLocalClientPlayer()
@@ -182,7 +195,7 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 	Signal( player, "StopCurrentEnemyThread" )
 	EndSignal( player, "StopCurrentEnemyThread" )
 	
-	while( file.show1v1Scoreboard )
+	while( file.show1v1Scoreboard && IsValid( newEnt ) && IsValid( player ) )
 	{
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyKills"), newEnt.GetPlayerNetInt( "kills" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDeaths"), newEnt.GetPlayerNetInt( "deaths" ) .tostring()) 
@@ -211,13 +224,52 @@ void function Toggle1v1Scoreboard()
 	}
 	else
 	{
-		file.show1v1Scoreboard = true
-		
 		if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
 		{
+			file.show1v1Scoreboard = true
 			FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
 		}
 	}
+}
+
+void function ForceHide1v1Scoreboard() 
+{
+	entity player = GetLocalClientPlayer()
+
+	// if( file.show1v1Scoreboard )
+	// {
+		// file.show1v1Scoreboard = false
+		Signal( player, "StopCurrentEnemyThread" )
+		FS_1v1_ToggleUIVisibility( false, null )
+	// }
+	// else
+	// {
+		// file.show1v1Scoreboard = true
+		
+		// if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
+		// {
+			// FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		// }
+	// }
+}
+
+void function ForceShow1v1Scoreboard() 
+{
+	entity player = GetLocalClientPlayer()
+
+	// if( file.show1v1Scoreboard )
+	// {
+		// file.show1v1Scoreboard = false
+		// Signal( player, "StopCurrentEnemyThread" )
+		// FS_1v1_ToggleUIVisibility( false, null )
+	// }
+	// else
+	// {
+		if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null  && file.show1v1Scoreboard )
+		{
+			FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		}
+	// }
 }
 
 void function Cl_OnResolutionChanged()
@@ -525,7 +577,7 @@ void function CoolCamera()
 		{
 			thread function() : (player, cutsceneMover, camera, cutsceneSpawns)
 			{
-				if(GameRules_GetGameMode() == "flowstate_snd")
+				if(GameRules_GetGameMode() == "fs_snd")
 				{
 					GetLocalClientPlayer().ClearMenuCameraEntity()
 					cutsceneMover.Destroy()
@@ -973,7 +1025,7 @@ string function GetWinningTeamText(int team)
 
 array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter_ChampionScreen(ItemFlavor character)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 /////////////////////////////////////////////////////// 
 //Don't try this at home
 {
@@ -1354,8 +1406,16 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 3:
-		Obituary_Print_Localized( "Made by __makimakima__ - Maintained in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			Obituary_Print_Localized( "Made by mkos and @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+
+		} else
+		{
+			Obituary_Print_Localized( "Made by __makimakima__ - Maintained in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		}
 		break
 
 		case -1:
@@ -1388,53 +1448,6 @@ void function DM_QuickHint( string hintText, bool blueText = false, float durati
 }
 
 array<void functionref( entity, ItemFlavor, int )> s_callbacks_OnVictoryCharacterModelSpawned
-
-void function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap(asset image, float mapscale, float xoffset, float yoffset)
-{
-	file.currentMapImage = image 
-	file.mapscale = mapscale
-	
-	UpdateImageAndScaleOnFullmapRUI( image, mapscale ) //fullmap
-	UpdateImageAndScaleOnMinimapRUI( image, mapscale ) //minimap
-	
-	file.currentY_Offset = yoffset * mapscale
-	file.currentX_Offset = xoffset * mapscale
-}
-
-void function RefreshImageAndScaleOnMinimapAndFullmap()
-{
-	UpdateImageAndScaleOnFullmapRUI( file.currentMapImage, file.mapscale ) //fullmap
-	UpdateImageAndScaleOnMinimapRUI( file.currentMapImage, file.mapscale ) //minimap
-}
-
-void function HACK_TrackPlayerPositionOnScript(var rui, entity player, bool isFullmap)
-//used by fullmap and minimap to show player arrows on them without using RuiTrack so we can add offsets and use it with custom prop maps placed anywhere in the sky. Colombia
-{
-	if( !IsValid(player) ) return
-	
-	//EndSignal( player, "OnDeath" )
-
-	string ruiname1
-	string ruiname2
-	
-	if(isFullmap)
-	{
-		ruiname1 = "objectPos"
-		ruiname2 = "objectAngles"
-	} else 
-	{
-		ruiname1 = "playerPos"
-		ruiname2 = "playerAngles"
-	}
-	
-	while(IsValid(player))
-	{
-		RuiSetFloat3( rui, ruiname1, Vector( player.GetOrigin().x + file.currentX_Offset, player.GetOrigin().y + file.currentY_Offset, 0 ) )
-		RuiSetFloat3( rui, ruiname2, Vector( player.CameraAngles().x, player.CameraAngles().y, 0 ) )
-		
-		WaitFrame()
-	}
-}
 
 array< string > SurvivorQuoteCatalog = [ //this is so bad maybe change it to datatable?
 	"",
@@ -1550,3 +1563,125 @@ void function FSHaloMod_KillStreak_FadeOut( var label, var label2, int xOffset =
 	
 	wait duration
 }
+
+void function fs_ServerMsgsToChatBox_BuildMessage( Type, ... )
+{
+	// clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+	
+	if( file.fs_newServerMsgsToChatBoxString == "" )
+		file.fs_newServerMsgsToChatBoxString += "[SERVER] "
+
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newServerMsgsToChatBoxString += format("%c", vargv[i] )
+	}
+	else if ( Type == 1 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newServerMsgsToChatBoxSubString += format("%c", vargv[i] )
+	}
+}
+
+void function fs_ServerMsgsToChatBox_ShowMessage( Width, Duration, ... )
+{
+	RunUIScript( "Open_FS_MsgsChatBox" )
+
+	string toSend = file.fs_newServerMsgsToChatBoxString
+	array separateLines = split(toSend, "\n")
+	int totalLines = separateLines.len()
+	
+	int highestcharts = -1
+	foreach( line in separateLines )
+	{
+		int thislinecharacters = 0
+		foreach( character in line )
+		{
+			thislinecharacters++
+		}
+		if( thislinecharacters > highestcharts )
+			highestcharts = thislinecharacters
+	}
+
+	float height = float( 40 * totalLines )
+	float width = 7.9 * highestcharts
+	RunUIScript( "FS_MsgsChatBox_SetText", file.fs_newServerMsgsToChatBoxString, width, height )
+
+	file.fs_newServerMsgsToChatBoxString = ""
+	file.fs_newServerMsgsToChatBoxSubString = ""
+}
+
+void function fs_NewBoxBuildMessage( Type, ... )
+{
+	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newMsgBoxString += format("%c", vargv[i] )
+	}
+	else if ( Type == 1 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newMsgBoxSubString += format("%c", vargv[i] )
+	}
+}
+
+void function fs_NewBoxShowMessage( float duration )
+{
+	thread FS_NewBox_Msg( duration )
+}
+
+void function FS_NewBox_Msg( float duration = 3 )
+{
+	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+	clGlobal.levelEnt.EndSignal( "FS_CloseNewMsgBox" )
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgBg" ), false )
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgText" ), false )
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgSubText" ), false )
+
+			Hud_SetText( HudElement( "FS_IBMM_MsgText" ), "" )
+			Hud_SetText( HudElement( "FS_IBMM_MsgSubText" ), "" )
+			Hud_SetAlpha( HudElement( "FS_IBMM_MsgText" ), 255 )
+			Hud_SetAlpha( HudElement( "FS_IBMM_MsgSubText" ), 255 )
+
+			file.fs_newMsgBoxString = ""
+			file.fs_newMsgBoxSubString = ""
+		}
+	)
+	// printt( "trying to show message:", file.fs_newMsgBoxString, file.fs_newMsgBoxSubString )
+
+	Hud_SetText( HudElement( "FS_IBMM_MsgText"), file.fs_newMsgBoxString )
+	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), file.fs_newMsgBoxSubString )
+	
+	RuiSetImage( Hud_GetRui( HudElement( "FS_IBMM_MsgBg") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
+
+	Hud_ReturnToBasePos( HudElement( "FS_IBMM_MsgBg" ) )
+	Hud_SetSize( HudElement( "FS_IBMM_MsgBg" ), 0, 0 )
+
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgBg" ), true )
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgText" ), true )
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgSubText" ), true )
+
+	Hud_ScaleOverTime( HudElement( "FS_IBMM_MsgBg" ), 1.35, 1.35, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	wait 0.15
+
+	Hud_ScaleOverTime( HudElement( "FS_IBMM_MsgBg" ), 1, 1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	wait duration - 0.6
+
+	UIPos currentPos = REPLACEHud_GetPos( HudElement( "FS_IBMM_MsgBg" ) )
+
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgBg" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgText" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgSubText" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_MoveOverTime( HudElement( "FS_IBMM_MsgBg" ), currentPos.x + 1000, currentPos.y + 0, 0.15 )
+
+	wait 0.24
+}
+

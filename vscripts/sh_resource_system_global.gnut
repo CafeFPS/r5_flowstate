@@ -28,6 +28,8 @@ global const string CLASSNAME_FR_RACKS = "weapon_racks"
 global const string CLASSNAME_FR_ATTACHMENTS = "attachments"
 global const string CLASSNAME_PVE_START = "pve_start_spawn_zone"
 global const string CLASSNAME_PVE_SPAWN = "pve_spawn"
+global const string CLASSNAME_PATH_NODE =		"resource_pathnode"
+global const string CLASSNAME_PATROLROUTE =		"resource_patrolroute"
 
 void function SpawnCallback_JustDeleteMeNow( entity spawnEnt )
 {
@@ -61,6 +63,9 @@ void function ObjectiveResourceSystem_ServerInit()
 	//custom
 	SetupResourceSpawnCallback( CLASSNAME_DOOR )
 	SetupResourceSpawnCallback_ScriptName( CLASSNAME_NEGATION_ZONE )
+	SetupResourceSpawnCallback( CLASSNAME_PATH_NODE )
+	SetupResourceSpawnCallback( CLASSNAME_PATROLROUTE )
+
 	if( GetMapName() == "mp_rr_canyonlands_64k_x_64k" )
 	{
 		SetupResourceSpawnCallback_ScriptName( CLASSNAME_FR_FOLDINGTARGET )

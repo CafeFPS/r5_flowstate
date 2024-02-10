@@ -564,56 +564,58 @@ void function OnPersistentDataReady( entity player )
 	player.p.statValuesAtStart_Int.resize( fileLevel.stats_Int.len(), 0 )
 	player.p.statValues_Float.resize( fileLevel.stats_Float.len(), 0.0 )
 	player.p.statValuesAtStart_Float.resize( fileLevel.stats_Float.len(), 0.0 )
+	
+	//not required for now Colombia
 
-	#if DEVELOPER
-		//if ( GetConVarBool( "persistence_development_mode", false ) )
-		if ( DEV_ShouldIgnorePersistence() )
-			return
-	#endif
+	// #if DEVELOPER
+		// //if ( GetConVarBool( "persistence_development_mode", false ) )
+		// if ( DEV_ShouldIgnorePersistence() )
+			// return
+	// #endif
 
-	array<StatEntry> calculatedEntries = []
+	// array<StatEntry> calculatedEntries = []
 
-	foreach ( int index, StatEntry entry in fileLevel.stats_Bool )
-	{
-		if ( entry.behavior == eStatBehavior.CALCULATED )
-		{
-			calculatedEntries.append( entry )
-		}
+	// foreach ( int index, StatEntry entry in fileLevel.stats_Bool )
+	// {
+		// if ( entry.behavior == eStatBehavior.CALCULATED )
+		// {
+			// calculatedEntries.append( entry )
+		// }
 
-		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
-		{
-			player.p.statValues_Bool[index] = expect bool(player.GetPersistentVar( entry.persistenceFullKey_Current ))
-			player.p.statValuesAtStart_Bool[index] = player.p.statValues_Bool[index]
-		}
-	}
+		// if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
+		// {
+			// player.p.statValues_Bool[index] = expect bool(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+			// player.p.statValuesAtStart_Bool[index] = player.p.statValues_Bool[index]
+		// }
+	// }
 
-	foreach ( int index, StatEntry entry in fileLevel.stats_Int )
-	{
-		if ( entry.behavior == eStatBehavior.CALCULATED )
-		{
-			calculatedEntries.append( entry )
-		}
+	// foreach ( int index, StatEntry entry in fileLevel.stats_Int )
+	// {
+		// if ( entry.behavior == eStatBehavior.CALCULATED )
+		// {
+			// calculatedEntries.append( entry )
+		// }
 
-		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
-		{
-			player.p.statValues_Int[index] = expect int(player.GetPersistentVar( entry.persistenceFullKey_Current ))
-			player.p.statValuesAtStart_Int[index] = player.p.statValues_Int[index]
-		}
-	}
+		// if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
+		// {
+			// player.p.statValues_Int[index] = expect int(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+			// player.p.statValuesAtStart_Int[index] = player.p.statValues_Int[index]
+		// }
+	// }
 
-	foreach ( int index, StatEntry entry in fileLevel.stats_Float )
-	{
-		if ( entry.behavior == eStatBehavior.CALCULATED )
-		{
-			calculatedEntries.append( entry )
-		}
+	// foreach ( int index, StatEntry entry in fileLevel.stats_Float )
+	// {
+		// if ( entry.behavior == eStatBehavior.CALCULATED )
+		// {
+			// calculatedEntries.append( entry )
+		// }
 
-		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
-		{
-			player.p.statValues_Float[index] = expect float(player.GetPersistentVar( entry.persistenceFullKey_Current ))
-			player.p.statValuesAtStart_Float[index] = player.p.statValues_Float[index]
-		}
-	}
+		// if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
+		// {
+			// player.p.statValues_Float[index] = expect float(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+			// player.p.statValuesAtStart_Float[index] = player.p.statValues_Float[index]
+		// }
+	// }
 }
 #endif
 

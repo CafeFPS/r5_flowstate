@@ -37,6 +37,8 @@ void function AddOptionalButtonPressedPlayerInputCallback( entity player, int bu
 
 void function CodeCallback_OnPlayerInputCommandChanged( entity player, int cmdsHeld, int cmdsPressed, int cmdsReleased )
 {
+	//printt( "COMMAND INPUT CHANGED: ", player, cmdsHeld, cmdsPressed, cmdsReleased )
+
 	foreach( callbackStruct in player.p.playerInputEventCallbacks )
 	{
 		if ( PlayerInputsMatchCallbackInputs( cmdsHeld, cmdsPressed, cmdsReleased, callbackStruct )  )
@@ -61,13 +63,32 @@ void function CodeCallback_OnPlayerInputCommandChanged( entity player, int cmdsH
 
 void function CodeCallback_OnPlayerInputAxisChanged( entity player, float horizAxis, float vertAxis )
 {
+	//printt( "AXIS CHANGED: ", player, horizAxis, vertAxis )
 	//printt( "Axis Changed: X: " + horizAxis + " Y: " + vertAxis )
 
+	if (!IsValid(player)) 
+			return
+
+    float timenow = Time()
+    float lastinput = player.p.last_input_time;
+
+    if ( timenow - lastinput >= 1.0) 
+	{
+        
+        player.p.last_input_time = timenow;
+		
+        AfkThread_PlayerMoved( player )
+        //sqprint("Axis Changed: X: " + horizAxis + " Y: " + vertAxis);
+	}
+		
+	
+	/*
 	foreach( callbackStruct in player.p.playerInputAxisEventCallbacks )
 	{
 		if ( ShouldRunPlayerInputAxisCallbackFunc( horizAxis, vertAxis, callbackStruct )  )
 			RunPlayerInputAxisCallbackFunc( player, callbackStruct )
 	}
+	*/
 }
 
 void function AddPlayerInputEventCallback_Internal( entity player, PlayerInputEventCallbackStruct inputCallbackStruct ) //Not really meant to be used directly unless you know what you're doing! Use utility functions like AddButtonPressedPlayerInputCallback instead

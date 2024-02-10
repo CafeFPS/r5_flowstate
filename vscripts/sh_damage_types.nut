@@ -131,8 +131,6 @@ global enum eDamageSourceId
 	melee_titan_punch_stealth
 	melee_titan_punch_rocket
 	melee_titan_punch_drone
-	melee_titan_sword
-	melee_titan_sword_aoe
 
 	melee_boxing_ring
 	mp_weapon_melee_boxing_ring
@@ -309,6 +307,12 @@ global enum eDamageSourceId
 	
 	mp_weapon_flagpole_primary
 	melee_flagpole
+	
+	mp_weapon_lightninggun
+
+	mp_weapon_titan_sword
+	mp_weapon_titan_sword_slam
+	melee_titan_sword
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -495,7 +499,11 @@ void function DamageTypes_Init()
 	file.damageSourceIDToImage[eDamageSourceId.melee_oddball]					<- $"rui/flowstate_custom/oddball_white"
 	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_flagpole_primary]					<- $"rui/gamemodes/capture_the_flag/mil_flag"
 	file.damageSourceIDToImage[eDamageSourceId.melee_flagpole]					<- $"rui/gamemodes/capture_the_flag/mil_flag"
-	//file.damageSourceIDToImage[eDamageSourceId.sp_weapon_arc_tool]			<- $"r2_ui/menus/loadout_icons/primary_weapon/primary_arc_tool"
+
+	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_titan_sword]						<- $"rui/gamemodes/shadow_squad/legend_icon"
+	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_titan_sword_slam]						<- $"rui/gamemodes/shadow_squad/legend_icon"
+	file.damageSourceIDToImage[eDamageSourceId.melee_titan_sword]					<- $"rui/gamemodes/shadow_squad/legend_icon"
+	// file.damageSourceIDToImage[eDamageSourceId.sp_weapon_arc_tool]			<- $"r2_ui/menus/loadout_icons/primary_weapon/primary_arc_tool"
 
 	file.damageSourceIDToName =
 	{
@@ -606,8 +614,6 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_punch_stealth ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_punch_rocket ] 				= "#DEATH_TITAN_MELEE",
 		[ eDamageSourceId.melee_titan_punch_drone ] 				= "#DEATH_TITAN_MELEE",
-		[ eDamageSourceId.melee_titan_sword ]						= "#DEATH_TITAN_SWORD",
-		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
 		[ eDamageSourceId.mp_weapon_volt_smg ] 						= "#WPN_VOLT_SMG",
 		[ eDamageSourceId.mp_ability_octane_stim ] 					= "#WPN_OCTANE_STIM_SHORT",		
 		[ eDamageSourceId.mp_weapon_tesla_trap ] 					= "#DEATH_TESLA_TRAP",
@@ -650,9 +656,12 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_oddball_primary ] 	 			= "Ball",
 		[ eDamageSourceId.melee_oddball ] 	 						= "Ball",
 		[ eDamageSourceId.mp_weapon_flagpole_primary ] 	 			= "Ball",
-		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball" 
+		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball", 
 		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
 		//[ eDamageSourceId.sp_weapon_arc_tool] 	 					= "Arc Tool"
+		[ eDamageSourceId.mp_weapon_titan_sword ] 	 						= "Sword", 
+		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 						= "Sword",
+		[ eDamageSourceId.melee_titan_sword ] 	 						= "Sword"
 	}
 
 	#if DEVELOPER

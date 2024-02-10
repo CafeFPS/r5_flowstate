@@ -444,7 +444,6 @@ void function InitZoneTrigger( entity trigger )
 	zd.zoneName = GetZoneNameForZoneId( zoneId )
 
 	zd.boundsArea2D = GetZoneBoundsArea2D( trigger )
-
 	foreach( entity neighborEnt in trigger.GetLinkEntArray() )
 	{
 		if ( GetEditorClass( neighborEnt ) != EDITOR_CLASSNAME_ZONE_TRIGGER )
@@ -503,7 +502,7 @@ void function MapZones_ForceRetouchForPlayer( entity player )
 	}
 }
 
-void function ZoneTrigger_OnStartTouch( entity self, entity activator, entity caller, var value )
+void function ZoneTrigger_OnStartTouch( entity self, entity activator, entity caller, var value ) 	
 {
 	entity triggeringEnt = activator
 	entity trigger       = self

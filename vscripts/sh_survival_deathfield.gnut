@@ -65,11 +65,11 @@ const string COLOR_CORRECTION = "materials/correction/outside_ring.raw_hdr"
 const string DESIGNER_PLACED_CIRCLE_END_SCRIPT_NAME = "circle_end_location_override"
 const string DESIGNER_PLACED_CIRCLE_END_RADIUS_NAME = "selection_radius"
 
-global const float REALBIG_CIRCLE_END_RADIUS = 45000
+global const float REALBIG_CIRCLE_END_RADIUS = 85000
 global const float REALBIG_CIRCLE_END_RADIUS_SQ = REALBIG_CIRCLE_END_RADIUS * REALBIG_CIRCLE_END_RADIUS
 
-global const float REALBIG_CIRCLE_END_RADIUS_SMALL_INNER = 15000
-global const float REALBIG_CIRCLE_END_RADIUS_SMALL_OUTER = 20000
+global const float REALBIG_CIRCLE_END_RADIUS_SMALL_INNER = 30000
+global const float REALBIG_CIRCLE_END_RADIUS_SMALL_OUTER = 40000
 
 global const string FINAL_ROUND_ALIAS_SUFFIX = "Final"
 
@@ -851,6 +851,16 @@ void function DeathFieldCreatePositions()
 	HeatMapStat( null, "Sur_CircleEndPoint", < finalLocation.x, finalLocation.y, 0 > )
 }
 
+vector function FS_ClampToWorldSpace( vector origin )
+{
+	// temp solution for start positions that are outside the world bounds
+	origin.x = clamp( origin.x, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.y = clamp( origin.y, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.z = clamp( origin.z, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+
+	return origin
+}
+
 vector function GetFinalDeathFieldLocation()
 {
 	FlagClear( "DoneCreatingDeathFieldPosition" )
@@ -933,6 +943,8 @@ vector function GetFinalDeathFieldLocation()
             
             if(invalidEndZones.len() == 0)
                 break
+			
+			endPoint = FS_ClampToWorldSpace( endPoint )
 
             TraceResults trace = TraceHull( <endPoint.x, endPoint.y, 10000>, <endPoint.x, endPoint.y, -512>, <-80,-80,0>, <80,80,256>, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
             if ( trace.fraction == 1 )

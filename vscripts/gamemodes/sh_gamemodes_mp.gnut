@@ -85,27 +85,6 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_CustomCTF_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
-	
-	////////////////////////////
-	//                        //
-	//       MAP Editor       //
-	//                        //
-	////////////////////////////
-
-	gameMode = map_editor_deprecated
-	#if SERVER || CLIENT
-		GameMode_AddSharedInit(gameMode, Sh_MapEditor_Init)
-		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
-	#endif
-	#if SERVER
-	GameMode_AddServerInit(gameMode, _MapEditor_Init)
-	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
-	GameMode_SetEvacEnabled( gameMode, false )
-	#elseif CLIENT
-	GameMode_AddClientInit(gameMode, Cl_MapEditor_Init)
-	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
-	#endif
 
 	//
 	//FLOWSTATE DM
@@ -215,5 +194,24 @@ void function GameModes_Init_SV_CL()
 	
 	#if !UI
 		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+	#endif
+	
+	//
+	//FLOWSTATE SND
+	//
+	
+	gameMode = fs_snd
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, Sh_GamemodeSND_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _GamemodeSND_Init)
+	//GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	//GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_GamemodeSND_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 }

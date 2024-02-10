@@ -1,3 +1,46 @@
+global const vector COLOR_RED 			= <255,   0,   0>
+global const vector COLOR_DARK_RED		= <139,   0,   0>
+global const vector COLOR_LIGHT_RED		= <255, 127, 127>
+global const vector COLOR_PINK			= <255, 105, 180>
+global const vector COLOR_LIGHT_PINK	= <255, 182, 193>
+global const vector COLOR_DARK_PINK		= <255,  20, 147>
+global const vector COLOR_SALMON		= <250, 128, 114>
+global const vector COLOR_MAROON		= <128,   0,   0>
+global const vector COLOR_BROWN			= <165,  42,  42>
+
+global const vector COLOR_YELLOW		= <255, 255,   0>
+global const vector COLOR_LIGHT_YELLOW	= <255, 255, 153>
+global const vector COLOR_DARK_YELLOW	= <153, 153,   0>
+
+global const vector COLOR_GOLDEN_ROD	= <218, 165,  32>
+global const vector COLOR_CORAL			= <255, 128,  80>
+global const vector COLOR_ORANGE		= <255, 165,   0>
+
+global const vector COLOR_BLUE			= <  0,   0, 255>
+global const vector COLOR_DARK_BLUE		= <  0,   0, 139>
+global const vector COLOR_LIGHT_BLUE	= <135, 206, 250>
+global const vector COLOR_NAVY			= <  0,   0, 128>
+global const vector COLOR_AQUA			= <176, 224, 230>
+global const vector COLOR_CYAN			= <  0, 255, 255>
+global const vector COLOR_DARK_CYAN		= <  0, 139, 139>
+
+global const vector COLOR_GREEN			= <  0, 255,   0>
+global const vector COLOR_DARK_GREEN	= <  0, 128,   0>
+global const vector COLOR_LIGHT_GREEN	= <100, 255, 170>
+
+global const vector COLOR_OLIVE			= <128, 128,   0>
+global const vector COLOR_DARK_OLIVE	= < 85, 107,  47>
+
+global const vector COLOR_MAGENTA		= <255,   0, 255>
+global const vector COLOR_PURPLE		= <128,   0, 128>
+global const vector COLOR_INDIGO		= < 75,   0, 130>
+global const vector COLOR_LAVENDER		= <230, 230, 250>
+
+global const vector COLOR_BLACK			= <105, 105, 105>
+global const vector COLOR_DARK_GRAY		= <128, 128, 128>
+global const vector COLOR_GRAY			= <192, 192, 192>
+
+global const vector COLOR_WHITE			= <255, 255, 255>
 
 globalize_all_functions
 

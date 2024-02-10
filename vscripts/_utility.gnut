@@ -72,6 +72,11 @@ void function Utility_Init()
 	#endif
 }
 
+void function sqprint( string msg )
+{
+	printt( msg )
+}
+
 void function GiveAllTitans()
 {
 

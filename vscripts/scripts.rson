@@ -301,13 +301,15 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-	weapons/mp_weapon_editor.nut
 	
 	//CUSTOM BY COLOMBIA
 	weapons/mp_weapon_clickweapon.nut
 	weapons/mp_weapon_needler.nut
 	weapons/mp_ability_revenant_shadow_pounce_free.nut
 	weapons/mp_weapon_energysword.nut
+	weapons/mp_weapon_plasmapistol.nut
+	weapons/mp_weapon_heatwave.nut
+	weapons/mp_weapon_guidedmissile.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -820,6 +822,8 @@ Scripts:
 	ui/FRChallenges/panel_buymenu3.nut
 	ui/FRChallenges/panel_buymenu4.nut
 	ui/FRChallenges/panel_buymenu5.nut
+	
+	ui/FRChallenges/flowstate_lgduels_settings.nut
 	//Movement Gym
 	ui/MovementGym/movementgym_settings.nut
 	//KillReplay
@@ -848,8 +852,11 @@ Scripts:
 	ui/FlowstateDM/flowstate_statistics.nut
 	ui/FlowstateDM/flowstate_menu_vote.nut
 	ui/FlowstateDM/flowstate_menu_voteteam.nut
-	
+	ui/FlowstateDM/flowstate_server_msgs_to_chatbox.nut
 	ui/menu_weaponmods.nut
+
+	//Snd Buy menu
+	ui/FlowstateSND/flowstate_snd_buy_menu.nut
 ]
 
 When: "SERVER || UI "
@@ -905,6 +912,13 @@ Scripts:
 
 	mp/sh_weapon_inspect.gnut
 	weapons/mp_weapon_throwingknife.nut
+	weapons/mp_weapon_titan_sword.nut
+	weapons/mp_weapon_titan_sword_heavy.nut
+	weapons/mp_weapon_titan_sword_block.nut
+	weapons/mp_weapon_titan_sword_dash.nut
+	weapons/mp_weapon_titan_sword_slam.nut
+	weapons/mp_weapon_titan_sword_launcher.nut
+	weapons/mp_weapon_titan_sword_super.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -951,6 +965,7 @@ Scripts:
 	gamemodes/fs_prophunt/sh_gamemode_prophunt.nut
 	gamemodes/fs_duckhunt/sh_gamemode_duckhunt.nut
 	gamemodes/fs_infection/sh_gamemode_infection.nut	
+	gamemodes/fs_snd/sh_gamemode_snd.nut
 	gamemodes/util/sh_custom_zombie_mystery_box.nut
 	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
@@ -966,11 +981,14 @@ Scripts:
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/_gamemode_prophunt.nut
 	gamemodes/fs_infection/_gamemode_infection.nut
+	gamemodes/fs_snd/_gamemode_snd.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
+	mp/_movement_recorder.nut
 	
 	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut
+
 	//maps
 	custom_maps/_custom_maps_1.nut
 	custom_maps/_custom_maps_2.nut
@@ -981,6 +999,10 @@ Scripts:
 	custom_maps/_custom_maps_7.nut
 	custom_maps/_custom_maps_8.nut
 	custom_maps/_custom_deafps_maps.nut
+	
+	//mkos LG & dropoff location patches
+	custom_maps/_LG_Duel.nut
+	custom_maps/dropoff_patch.nut
 
 	gamemodes/fs_movementgym/_movement_gym.nut
 
@@ -988,10 +1010,10 @@ Scripts:
 	custom_maps/_custom_grapplemap.nut
 	custom_maps/_custom_mantlejumpmap.nut
 	custom_maps/_custom_falling_forever.nut
-
+	custom_maps/_custom_deafps_defuse_maps.nut
+	
 	//map editor props
 	_place_map_editor_props_here.nut
-
 	_mapeditor.gnut
 
     // ReMap Live
@@ -1010,6 +1032,7 @@ Scripts:
 	gamemodes/fs_duckhunt/cl_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/cl_gamemode_prophunt.nut
 	gamemodes/fs_infection/cl_gamemode_infection.nut	
+	gamemodes/fs_snd/cl_gamemode_snd.nut
 	lobby/lobbyvm/cl_lobbyvm.nut
 	custom_maps/cl_custom_falling_forever.nut
 ]
@@ -1020,7 +1043,6 @@ When: "SERVER"
 Scripts:
 [
 	freelance/_freelance.gnut
-	mp/_movement_recorder.nut
 ]
 
 
@@ -1039,12 +1061,3 @@ Scripts:
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
 ]
-
-// SalEditor
-When: "SERVER || CLIENT"
-Scripts:
-[
-	weapons/editor_modes/editor_mode_place.nut
-	weapons/editor_modes/editor_mode_delete.nut
-	weapons/editor_modes/editor_mode_toys.nut
-] 

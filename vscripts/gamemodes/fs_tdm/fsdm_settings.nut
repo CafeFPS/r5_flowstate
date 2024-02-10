@@ -55,3 +55,7 @@ global const table PROPHUNT_SETTINGS = {
     ["slidedecel"]=50,
     ["slidevelocitydecay"]=0.7
 }
+
+global const table INSTAGIB_PLAYER_SETTINGS = {
+	["airacceleration"] = 3000
+}

@@ -172,8 +172,8 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)	
 			return
 			
-		case "flowstate_snd":
-			RuiSetString( rui, "gameModeString", "FS SEARCH AND DESTROY" )
+		case "fs_snd":
+			RuiSetString( rui, "gameModeString", "SEARCH AND DESTROY" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
@@ -187,16 +187,26 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)
 			return
 	}
-	
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+
+	switch( GetCurrentPlaylistName() )
 	{
-		RuiSetString( rui, "gameModeString", "ODDBALL" )
-		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
-		RuiSetVisible(rui, true)
+		case "fs_haloMod_oddball":	
+			RuiSetString( rui, "gameModeString", "ODDBALL" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+		return
+		
+		case "fs_dm_fast_instagib":
+			RuiSetString( rui, "gameModeString", "LG INSTAGIB" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
 		return
 	}
+
 	//Legacy, clean up this later ?
 	
 	if ( IsFallLTM() )
@@ -216,15 +226,20 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
 		
-		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
+		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
 			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
-		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1")
+		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
 			RuiSetString( rui, "gameModeString", "HACKERS VS PROS" )
 		else if(GetCurrentPlaylistName() == "fs_movementgym")
 			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
 		else if(GetCurrentPlaylistName() == "fs_1v1")
 		{
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+		} else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			RuiSetString( rui, "gameModeString", "FS LG DUELS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 		}

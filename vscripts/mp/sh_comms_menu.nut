@@ -41,13 +41,11 @@ global enum eCommsMenuStyle
 	ORDNANCE_MENU,
 	SKYDIVE_EMOTE_MENU,
 
-	EDITOR_MODES_MENU,
-
 	_assertion_marker,
 
 	_count
 }
-Assert( eCommsMenuStyle._assertion_marker == 7 )    //
+Assert( eCommsMenuStyle._assertion_marker == 6 )    //
 
 global enum eChatPage
 {
@@ -72,7 +70,7 @@ global enum eChatPage
 
 	SKYDIVE_EMOTES,
 
-	EDITOR_MODES,
+	SND_BUY_MENU,
 
 	_count
 }
@@ -125,8 +123,11 @@ void function ShCommsMenu_Init()
 
 		AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
 
-		RegisterConCommandTriggeredCallback( CHAT_MENU_BIND_COMMAND, ChatMenuButton_Down )
-		RegisterConCommandTriggeredCallback( "-" + CHAT_MENU_BIND_COMMAND.slice( 1 ), ChatMenuButton_Up )
+		if(GameRules_GetGameMode() != "fs_snd")
+		{
+			RegisterConCommandTriggeredCallback( CHAT_MENU_BIND_COMMAND, ChatMenuButton_Down )
+			RegisterConCommandTriggeredCallback( "-" + CHAT_MENU_BIND_COMMAND.slice( 1 ), ChatMenuButton_Up )
+		}
 	#endif // CLIENT
 }
 
@@ -373,8 +374,7 @@ enum eOptionType
 	SKYDIVE_EMOTE,
 	HEALTHITEM_USE,
 	ORDNANCE_EQUIP,
-	HOLOSPRAY,
-	EDITOR_MODE_ACTIVATE
+	HOLOSPRAY
 }
 
 struct CommsMenuOptionData
@@ -455,15 +455,6 @@ CommsMenuOptionData function MakeOption_Ping( int pingType )
 	CommsMenuOptionData op
 	op.optionType = eOptionType.NEW_PING
 	op.pingType = pingType
-	return op
-}
-
-CommsMenuOptionData function MakeOption_EditorMode( int index )
-{
-	CommsMenuOptionData op
-	op.optionType = eOptionType.EDITOR_MODE_ACTIVATE
-	op.healType = index
-
 	return op
 }
 
@@ -590,6 +581,9 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 			if ( GetCurrentPlaylistVarBool( "auto_heal_option", false ) )
 				results.append( MakeOption_UseHealItem( WHEEL_HEAL_AUTO ) )
 			{
+				if(player.GetTeam() == Sh_GetAttackerTeam() && GameRules_GetGameMode() == "fs_snd" )
+					results.append( MakeOption_UseHealItem( eHealthPickupType.SND_BOMB ) )
+				
 				results.append( MakeOption_UseHealItem( eHealthPickupType.COMBO_FULL ) )
 				results.append( MakeOption_UseHealItem( eHealthPickupType.SHIELD_SMALL ) )
 				results.append( MakeOption_UseHealItem( eHealthPickupType.SHIELD_LARGE ) )
@@ -643,14 +637,7 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 			}
 		}
 
-		case eChatPage.EDITOR_MODES:
-		{
-			foreach(idx, mode in GetEditorModes())
-			{
-				results.append( MakeOption_EditorMode( idx ) )
-			}
-		}
-			break
+		break
 	}
 
 	return results
@@ -710,13 +697,6 @@ string[2] function GetPromptsForMenuOption( int index )
 				promptTexts[0] = data.pickupString
 				promptTexts[1] = data.desc
 			}
-			break
-		}
-		case eOptionType.EDITOR_MODE_ACTIVATE:
-		{
-			EditorMode mode = GetEditorModes()[op.healType]
-			promptTexts[0] = mode.displayName
-			promptTexts[1] = mode.description
 			break
 		}
 	}
@@ -783,11 +763,6 @@ asset function GetIconForMenuOption( int index )
 
 			LootData data = SURVIVAL_Loot_GetLootDataByIndex( op.healType )
 			return data.hudIcon
-		}
-
-		case eOptionType.EDITOR_MODE_ACTIVATE:
-		{
-			return $"rui/hud/tactical_icons/tactical_crypto"
 		}
 	}
 
@@ -938,7 +913,6 @@ bool function MenuStyleIsFastFadeIn( int menuStyle )
 	{
 		case eCommsMenuStyle.CHAT_MENU:
 		case eCommsMenuStyle.INVENTORY_HEALTH_MENU:
-		case eCommsMenuStyle.EDITOR_MODES_MENU:
 			return true
 	}
 	return false
@@ -1121,22 +1095,6 @@ void function ShowCommsMenu( int chatPage )
 						tier = 0
 					RuiSetInt( rui, ("optionTier" + idx), tier )
 					RuiSetBool( rui, ("optionEnabled" + idx), itemCount > 0 )
-				}
-			}
-		}
-		else if (chatPage == eChatPage.EDITOR_MODES)
-		{
-			if ( idx < s_currentMenuOptions.len() )
-			{
-				int index = options[idx].healType
-
-				if ( index != -1 )
-				{
-					EditorMode mode = GetEditorModes()[index]
-					
-					RuiSetString( rui, ("optionText" + idx), mode.displayName )
-					RuiSetInt( rui, ("optionTier" + idx), index % 5 + 1 )
-					RuiSetBool( rui, ("optionEnabled" + idx), true )
 				}
 			}
 		}
@@ -1604,12 +1562,6 @@ bool function MakeCommMenuSelection( int choice, int wheelInputType )
 		case eOptionType.ORDNANCE_EQUIP:
 		{
 			HandleOrdnanceSelection( op.healType )
-			return true
-		}
-
-		case eOptionType.EDITOR_MODE_ACTIVATE:
-		{
-			HandleEditorModeSelection( op.healType )
 			return true
 		}
 	}

@@ -44,6 +44,7 @@ function Wallrun_EnforceWeaponDefaults( player )
 
 function Wallrun_OnPlayerSpawn( player )
 {
+	printt( "ClassWallrun - OnPlayerSpawn" )
 }
 
 
@@ -68,7 +69,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.4, 0.25, 0.25 )
 		player.p.lastTimeShotSlowApplied_Global = Time()
 	}
-	
+
 	//Super dumb headshots gamemode
 	if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
 	{
@@ -80,8 +81,8 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		DamageInfo_SetDamage( damageInfo, 0.0)
 		return 0.0
 	}
-	
-	//Helmets fix By Retículo Endoplasmático#5955 (CafeFPS)
+
+	//Helmets fix By @CafeFPS (CafeFPS)
 	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
 		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
@@ -101,7 +102,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 				break
 		}
 	}
-	
+
 	if ( player.GetShieldHealthMax() > 0 && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 	{
 		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )

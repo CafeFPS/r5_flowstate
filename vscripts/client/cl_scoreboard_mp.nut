@@ -176,18 +176,8 @@ void function InitScoreboardMP()
 	file.titleCustom = HudElement( "FS_DMScoreboard_Title" )
 	file.hintCustom = HudElement( "FS_DMScoreboard_Hint" )
 	
-	string title
+	string title = "SCOREBOARD"
 
-	switch( GetCurrentPlaylistName() )
-	{
-		case "fs_1v1":
-		title = "SCOREBOARD"
-		break
-		
-		default:
-		title = "SCOREBOARD"
-	}
-	
 	Hud_SetText( file.titleCustom, title)
 
 	Hud_SetVisible( file.backgroundCustom, false )
@@ -378,7 +368,7 @@ void function ShowScoreboardMP()
 	
 	Hud_SetVisible( file.backgroundCustom, true )
 	Hud_SetVisible( file.titleCustom, true )
-	if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" )
+	if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	{
 		Hud_SetVisible( file.hintCustom, true )
 	}
@@ -457,7 +447,7 @@ void function ShowScoreboardMP()
 
 		Assert( clGlobal.isScoreboardShown )
 
-		if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" )
+		if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		{
 			Hud_SetVisible( file.hintCustom, true )
 		}
@@ -727,6 +717,8 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			{
 				if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
 					playerScore3 = player.GetPlayerNetInt( "oddball_ballHeldTime" )
+				else if( GameRules_GetGameMode() == "fs_snd" ) 
+					playerScore3 = player.GetPlayerNetInt( "defused" )
 				else
 					playerScore3 = player.GetPlayerNetInt( "damage" )
 			}
@@ -738,6 +730,10 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			{
 				if( GameRules_GetGameMode() == "custom_ctf" )
 					playerScore2 = player.GetPlayerNetInt( "returns" )
+				else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+					playerScore2 = player.GetPlayerNetInt( "accuracy" )
+				else if( GameRules_GetGameMode() == "fs_snd" ) 
+					playerScore2 = player.GetPlayerNetInt( "planted" )
 				else
 					playerScore2 = player.GetPlayerNetInt( "deaths" )
 			}
@@ -749,8 +745,6 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			{
 				if( GameRules_GetGameMode() == "custom_ctf" )
 					playerScore1 = player.GetPlayerNetInt( "captures" )
-				else
-					playerScore1 = player.GetPlayerNetInt( "kills" )
 			}
 			playerScore1NumDigits = numDigits[ 0 ]
 	}

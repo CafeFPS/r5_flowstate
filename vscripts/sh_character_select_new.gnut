@@ -2678,7 +2678,7 @@ void function SetChromaCharacter( ItemFlavor character )
 
 void function UpdatePlayerModel( ItemFlavor character )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
@@ -2794,7 +2794,7 @@ void function UpdatePlayerModel( ItemFlavor character )
 
 array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter(ItemFlavor character)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 /////////////////////////////////////////////////////// 
 //Don't try this at home
 {
@@ -2896,7 +2896,7 @@ array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter(ItemFl
 
 void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 /////////////////////////////////////////////////////// 
 {
 	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){

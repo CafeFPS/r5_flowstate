@@ -18,6 +18,7 @@ struct
 {
 	PilotLoadoutDef& playbackBotLoadout
 	array<entity> outOfBoundsTriggers = []
+	array<entity> allTriggers = []
 	array<entity> hurtTriggers = []
 	bool functionref( entity, entity, var ) isProtectedFromFriendlyFire
 	table< entity, OutOfBoundsDataStruct > outOfBoundsTable
@@ -82,11 +83,33 @@ function BaseGametype_Init()
 
 void function BaseGametypeEntitiesDidLoad()
 {
-	TriggerHurtSetup()
-	
-	if(GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" ) return
+	Flowstate_CheckForMapTriggers()
 
+	TriggerHurtSetup()
 	OutOfBoundsSetup()
+}
+
+void function Flowstate_CheckForMapTriggers()
+{
+	file.allTriggers.extend( GetEntArrayByClass_Expensive( "trigger_out_of_bounds" ) )
+	file.allTriggers.extend( GetEntArrayByClass_Expensive( "trigger_hurt" ) )
+	file.allTriggers.extend( GetEntArrayByClass_Expensive( "trigger_slip" ) )
+	file.allTriggers.extend( GetEntArrayByClass_Expensive( "trigger_no_zipline" ) )
+	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_Killzone" ) )
+	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_oob_timer" ) )
+
+	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) || GetMapName() == "mp_rr_arena_skygarden" && GameRules_GetGameMode() == "fs_dm" )
+	{
+		int i = 0
+		foreach( trigger in file.allTriggers )
+			if( IsValid( trigger ) )
+			{
+				trigger.Destroy()
+				i++
+			}
+			
+		printt( "[FS All Triggers Disabled] Removed ", i, " map triggers" )
+	}
 }
 
 function CreateTeamColorControlPoints()
@@ -176,6 +199,9 @@ void function CodeCallback_OnPrecache()
 
 function AddFlinch( entity attackedEnt, damageInfo )
 {
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		return
+
 	Assert( IsValid_ThisFrame( attackedEnt ) )
 
 	//if ( !( "nextFlinchTime" in attackedEnt.s ) )
@@ -435,6 +461,9 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 
 void function HandlePainSounds( entity ent, var damageInfo )
 {
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		return
+
 	//exit if the thing is dead
 	if ( ent.GetHealth() < DamageInfo_GetDamage( damageInfo ) )
 		return
@@ -552,6 +581,9 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 
 function PlayerDamageFeedback( entity ent, damageInfo, int num )
 {
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+		return
+
 //	printt( "player damage feedback for " + ent )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	Assert( attacker.IsPlayer() )
@@ -1557,6 +1589,10 @@ int function CodeCallback_GetWeaponDamageSourceId( entity weapon )
 function TriggerHurtSetup()
 {
 	file.hurtTriggers.extend( GetEntArrayByClass_Expensive( "trigger_hurt" ) )
+	
+	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+		return
+
 	foreach( trigger in file.hurtTriggers )
 	{
 		trigger.ConnectOutput( "OnStartTouch", TriggerHurtEnter )
@@ -1582,6 +1618,10 @@ void function SetupOutOfBoundsTrigger( entity trigger )
 function OutOfBoundsSetup()
 {
 	file.outOfBoundsTriggers.extend( GetEntArrayByClass_Expensive( "trigger_out_of_bounds" ) )
+
+	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+		return
+
 	foreach( trigger in file.outOfBoundsTriggers )
 	{
 		#if MP

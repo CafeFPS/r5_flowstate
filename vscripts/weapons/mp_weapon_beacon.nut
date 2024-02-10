@@ -1,4 +1,4 @@
-// By (--__GimmYnkia__--)#2995 and Retículo Endoplasmático#5955
+// By (--__GimmYnkia__--)#2995 and @CafeFPS
 
 global function MpPortableBeacon_Init
 

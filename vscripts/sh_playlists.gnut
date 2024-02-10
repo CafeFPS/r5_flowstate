@@ -342,7 +342,7 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/pkpushback2"
 		break
 		
-		case "flowstate_snd":
+		case "fs_snd":
 		emblemImage = $"rui/flowstatecustom/sndgamemode"
 		break
 		
@@ -361,6 +361,10 @@ asset function GetModeEmblemImage( string playlistName )
 		emblemImage = $"rui/flowstatecustom/1v1"
 		break
 		
+		case "fs_lgduels_1v1":
+		emblemImage = $"rui/flowstatecustom/1v1"
+		break
+
 		case "fs_survival_duos":
 		emblemImage = $"rui/menu/gamemode_emblem/duos"
 		break
