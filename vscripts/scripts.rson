@@ -1011,6 +1011,8 @@ Scripts:
 	custom_maps/_custom_mantlejumpmap.nut
 	custom_maps/_custom_falling_forever.nut
 	custom_maps/_custom_deafps_defuse_maps.nut
+	custom_maps/_custom_firstmap.nut
+	custom_maps/_custom_gymmovementmap.nut
 	
 	//map editor props
 	_place_map_editor_props_here.nut

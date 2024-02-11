@@ -1385,7 +1385,7 @@ void function CreateCharacterSelectClientEnts()
 		vector cameraAngles
 		entity targetPilot
 
-			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_olympus_mu1" )
 			{
 				targetCamera = GetEntByScriptName( CAMERA_ENT_NAME )
 				fileLevel.camera = CreateClientSidePointCamera( <1958, 26647, 14422>, <47, -65, 0>, 100 )
@@ -1434,7 +1434,7 @@ void function CreateCharacterSelectClientEnts()
 			Chroma_BeginCharacterSelect()
 			vector r5reloadedOrigin
 			
-			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"  || GetMapName() == "mp_rr_olympus_mu1" )
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 + fileLevel.camera.GetRightVector() * 40
 			}
@@ -2912,7 +2912,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		EndSignal( fileLevel.signalDummy, "UpdatingAnim" )
 		EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
 
-		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_olympus_mu1" )
 				{
 					fileLevel.characterModel.SetLocalOrigin( <-70, 0, 0> )
 				}
@@ -2937,7 +2937,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
 			fileLevel.camera.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin() + <60, -10, 10>)
 		}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging" )
+		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging"  || GetMapName() == "mp_rr_olympus_mu1" )
 		{
 			if(GetMapName() == "mp_rr_canyonlands_staging")
 				fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL_KC )

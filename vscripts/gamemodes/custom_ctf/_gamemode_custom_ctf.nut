@@ -12,7 +12,7 @@ global function ResetIMCFlag
 global function ResetMILITIAFlag
 global function FS_StartIntroScreen
 
-bool debugging = true
+bool debugging = false
 
 enum eCTFState
 {
@@ -438,7 +438,7 @@ void function StartRound()
 	ResetMILITIAFlag()
 	thread ResetIMCFlag()
 	
-	wait 1
+	// wait 1
 
 	int milCount
 	int imcCount
@@ -548,7 +548,7 @@ void function StartRound()
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
 	
-	if( !debugging )
+	if( !debugging && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
 		SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
@@ -562,7 +562,7 @@ void function StartRound()
 		}
 	}
 	
-	wait 1
+	// wait 1
 	// set
 	SetGameState(eGameState.Playing)
 	
@@ -590,6 +590,7 @@ void function StartRound()
 		EnableOffhandWeapons( player )
 		player.UnfreezeControlsOnServer()
 		ClearInvincible(player)
+		player.DeployWeapon()
 		player.Server_TurnOffhandWeaponsDisabledOff()
 
 		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -1160,6 +1161,8 @@ void function PlayerPickedUpFlag(entity ent)
 	StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.1)
 	ent.SetMoveSpeedScale( 1.11 )
 
+	ent.TakeOffhandWeapon(OFFHAND_MELEE)
+	ent.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	ent.GiveWeapon( "mp_weapon_flagpole_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	ent.GiveOffhandWeapon( "melee_flagpole", OFFHAND_MELEE )
 	ent.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
@@ -1430,8 +1433,9 @@ void function GiveBackWeapons(entity player)
 	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 
 	//give flowstate holo sprays
@@ -1448,6 +1452,7 @@ void function GiveBackWeapons(entity player)
 // purpose: OnPlayerConnected Callback
 void function _OnPlayerConnected(entity player)
 {
+	printt( "_OnPlayerConnected CTF - ", player )
 	if( !IsValid( player ) )
 		return
 
@@ -1960,31 +1965,33 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 
 void function TpPlayerToSpawnPoint(entity player)
 {
+	printt( "tried to tp player to spawn point" )
 	if( !IsValid( player ) )
 		return
 
 	switch( GetGameState() )
 	{
-	case eGameState.WaitingForPlayers:
-		break
-	case eGameState.Playing:
-		int ri = RandomIntRange( 0, 3 )
-
-		switch (player.GetTeam())
-		{
-		case TEAM_IMC:
-			player.SetOrigin(file.selectedLocation.imcspawns[ri].origin)
-			player.SetAngles(file.selectedLocation.imcspawns[ri].angles)
+		case eGameState.WaitingForPlayers:
 			break
-		case TEAM_MILITIA:
-			player.SetOrigin(file.selectedLocation.milspawns[ri].origin)
-			player.SetAngles(file.selectedLocation.milspawns[ri].angles)
-			break
-		}
+		case eGameState.MapVoting:
+		case eGameState.Playing:
+			int ri = RandomIntRange( 0, 3 )
 
-		break
-	default:
-		break
+			switch (player.GetTeam())
+			{
+				case TEAM_IMC:
+					player.SetOrigin(file.selectedLocation.imcspawns[ri].origin)
+					player.SetAngles(file.selectedLocation.imcspawns[ri].angles)
+					break
+				case TEAM_MILITIA:
+					player.SetOrigin(file.selectedLocation.milspawns[ri].origin)
+					player.SetAngles(file.selectedLocation.milspawns[ri].angles)
+					break
+			}
+
+			break
+		default:
+			break
 	}
 
 	PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,128>, player.GetOrigin() )

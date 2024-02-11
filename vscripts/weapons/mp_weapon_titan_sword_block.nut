@@ -141,7 +141,7 @@ float function HandleBlockingAndCalcDamageScaleForHit( entity blockingEnt, var d
 	entity weapon = blockingEnt.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	if ( !IsValid( weapon ) )
 	{
-		printt( "swordblock: no valid activeweapon" )
+		// printt( "swordblock: no valid activeweapon" )
 		return 1.0
 	}
 

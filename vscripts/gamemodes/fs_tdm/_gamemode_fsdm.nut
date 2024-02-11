@@ -1379,6 +1379,7 @@ bool function is1v1EnabledAndAllowed()
 		case "mp_rr_arena_composite":
 		case "mp_rr_aqueduct":
 		case "mp_rr_olympus_mu1":
+		case "mp_rr_arena_phase_runner":
 		case "mp_rr_canyonlands_64k_x_64k":
 		thread isChineseServer()
 		return true

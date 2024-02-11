@@ -205,7 +205,7 @@ float function GetDamageScaleForOwner( entity player, var damageInfo )
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	if ( !IsValid( weapon ) || weapon.GetWeaponClassName() != "melee_titan_sword" && weapon.GetWeaponClassName() != "mp_weapon_titan_sword" )
 	{
-		printt( "swordblock: no valid activeweapon" )
+		// printt( "swordblock: no valid activeweapon" )
 		return 1.0
 	}
 	
@@ -702,40 +702,7 @@ void function FS_MeleeSecondaryKey_Pressed( entity player )
 	
 	player.p.isSecondaryMeleeAttack = true
 
-	// #if SERVER
-	// entity melee = GetPlayerMeleeOffhandWeapon( player )
-	// entity main = TitanSword_GetMainWeapon( player )
-	
-	// if( IsValid( melee ) && melee.GetWeaponClassName() == "melee_titan_sword" && IsValid( main ) )
-	// {
-		// main.RemoveMod( "heavy_melee" )
-		// main.RemoveMod( "super_melee" )
-		// main.RemoveMod( "launcher" )
-
-		// melee.RemoveMod( "heavy_melee" )
-		// melee.RemoveMod( "super_melee" )
-		// melee.RemoveMod( "launcher" )
-	// }
-	// #endif
-
 	#if CLIENT
-	// // if ( InPrediction() )
-	// // {
-		// // entity melee = GetPlayerMeleeOffhandWeapon( player )
-		// // entity main = TitanSword_GetMainWeapon( player )
-
-		// // if( IsValid( melee ) && IsValid( main ) )
-		// // {
-			// // main.RemoveMod( "heavy_melee" )
-			// // main.RemoveMod( "super_melee" )
-			// // main.RemoveMod( "launcher" )
-
-			// // melee.RemoveMod( "heavy_melee" )
-			// // melee.RemoveMod( "super_melee" )
-			// // melee.RemoveMod( "launcher" )
-		// // }
-	// // }
-
 	player.ClientCommand( "+melee" )
 	player.ClientCommand( "-melee" )
 	#endif

@@ -131,6 +131,7 @@ void function Sv_EntitiesDidLoad()
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 		case "mp_flowstate":
+		case "mp_rr_arena_phase_runner":
 		case "mp_rr_arena_composite":
 			entity startEnt = GetEnt( "info_player_start" )
 			
@@ -2082,15 +2083,12 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 
 	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
-		//Message(victim,"DEBUG", invItem.type.tostring(), 10)
-		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 )// || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 )
+		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+
+		if( ShouldntAddItemToDeathbox( data.ref ) )
 		    continue
-		else{
-		    LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-			
-			if(data.ref == "snd_bomb") 
-				continue
-			
+		else
+		{
 		    entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
 		    AddToDeathBox( loot, deathBox )
 		}
@@ -2102,6 +2100,21 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 		func( deathBox, attacker, damageInfo != null ? DamageInfo_GetDamageSourceIdentifier( damageInfo ) : 0 )
 }
 
+bool function ShouldntAddItemToDeathbox( string ref )
+{
+	switch( ref )
+	{
+		case "snd_bomb":
+		case "health_pickup_combo_small":
+		case "health_pickup_combo_large":
+		case "health_pickup_health_small":
+		case "health_pickup_health_large":
+		
+		return true
+	}
+	
+	return false
+}
 
 entity function FlowState_CreateDeathBox( entity player, bool hasCard )
 {
