@@ -1012,6 +1012,8 @@ void function OverrideMinimapPackages( entity player )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SND_A, MINIMAP_OBJECT_RUI, MinimapPackage_A )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SND_B, MINIMAP_OBJECT_RUI, MinimapPackage_B )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_Bomb )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FLAG_MIL, MINIMAP_OBJECT_RUI, MinimapPackage_FlagMIL )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FLAG_IMC, MINIMAP_OBJECT_RUI, MinimapPackage_FlagIMC )
 }
 
 void function FD_NPCTitanInit( entity ent, var rui )
@@ -1075,6 +1077,35 @@ void function MinimapPackage_Bomb( entity ent, var rui )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
+
+void function MinimapPackage_FlagIMC( entity ent, var rui )
+{
+	asset icon = $""
+	
+	if(GetLocalClientPlayer().GetTeam() == TEAM_IMC )
+		icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+	else if(GetLocalClientPlayer().GetTeam() == TEAM_MILITIA )
+		icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+		
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+void function MinimapPackage_FlagMIL( entity ent, var rui )
+{
+	asset icon = $""
+
+	if(GetLocalClientPlayer().GetTeam() == TEAM_MILITIA )
+		icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+	else if(GetLocalClientPlayer().GetTeam() == TEAM_IMC )
+		icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+	
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
 void function MinimapPackage_A( entity ent, var rui )
 {
 	asset icon = $""
@@ -2125,11 +2156,11 @@ void function AddInWorldMinimapObject_WhenValid( entity ent )
 				thread AddInWorldMinimapTeslaTrap( ent, file.mapTopo )
 			return
 		case "ctf_flag_mil":
-				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"rui/gamemodes/capture_the_flag/mil_flag", $"rui/gamemodes/capture_the_flag/mil_flag" )
+				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"ctf_flag_mil", $"ctf_flag_mil" )
 			return
 
 		case "ctf_flag_imc":
-				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"rui/gamemodes/capture_the_flag/imc_flag", $"rui/gamemodes/capture_the_flag/imc_flag" )
+				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"ctf_flag_imc", $"ctf_flag_imc" )
 			return
 	}
 
@@ -2410,8 +2441,33 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		}
 		else
 		{
-			RuiSetImage( rui, "defaultIcon", defaultIcon )
-			RuiSetImage( rui, "clampedDefaultIcon", clampedDefaultIcon )
+			if( defaultIcon == $"ctf_flag_mil" )
+			{
+				asset icon = $""
+
+				if(GetLocalClientPlayer().GetTeam() == TEAM_MILITIA )
+					icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+				else if(GetLocalClientPlayer().GetTeam() == TEAM_IMC )
+					icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+				clampedDefaultIcon = icon
+				RuiSetImage( rui, "defaultIcon", icon )
+				RuiSetImage( rui, "clampedDefaultIcon", clampedDefaultIcon )
+			} else if( defaultIcon == $"ctf_flag_imc" )
+			{
+				asset icon = $""
+
+				if(GetLocalClientPlayer().GetTeam() == TEAM_IMC )
+					icon = $"rui/gamemodes/capture_the_flag/imc_flag"
+				else if(GetLocalClientPlayer().GetTeam() == TEAM_MILITIA )
+					icon = $"rui/gamemodes/capture_the_flag/mil_flag"
+				clampedDefaultIcon = icon
+				RuiSetImage( rui, "defaultIcon", icon )
+				RuiSetImage( rui, "clampedDefaultIcon", clampedDefaultIcon )
+			} else
+			{
+				RuiSetImage( rui, "defaultIcon", defaultIcon )
+				RuiSetImage( rui, "clampedDefaultIcon", clampedDefaultIcon )
+			}
 			RuiSetFloat2( rui, "iconScale", iconScale )
 			RuiSetFloat3( rui, "iconColor", iconColor )
 		}

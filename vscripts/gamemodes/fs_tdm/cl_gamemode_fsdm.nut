@@ -1413,7 +1413,7 @@ void function DM_HintCatalog(int index, int eHandle)
 
 		} else
 		{
-			Obituary_Print_Localized( "Made by __makimakima__ - Maintained in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		}
 		break

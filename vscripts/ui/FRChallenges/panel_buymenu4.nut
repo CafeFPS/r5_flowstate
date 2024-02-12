@@ -55,14 +55,14 @@ void function BuyClickWeapon(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweapon" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_clickweapon")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lightninggun" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_lightninggun")
 }
 
 void function BuyClickWeaponAuto(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweaponauto" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_clickweaponauto")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lightninggun_auto" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_lightninggun_auto")
 }

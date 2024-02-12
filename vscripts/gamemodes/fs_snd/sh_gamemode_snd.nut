@@ -285,10 +285,15 @@ void function Sh_SetAttackingLocations(int map)
 			thisMapPlantingLocations.B = <2090.76758, 12572.7256, -3336.95386>
 		break
 		
-		case "mp_flowstate":
+		case "mp_rr_olympus_mu1":
+			thisMapSides.Defenders = <-4899.18506, 23100.4492, -5939.96875>
+			thisMapSides.Attackers = <-8529.28125, 19642.5215, -5937.96875>
+
+			thisMapPlantingLocations.A = <-7066.11768, 22861.2363, -6043.96875>
+			thisMapPlantingLocations.B = <-5436.7666, 19734.5449, -5889.96875>
+			
+		break
 		case "mp_rr_arena_empty":
-		case "mp_rr_party_crasher_new":
-					
 			if(file.currentLocation != map)
 			{
 				switch(map)

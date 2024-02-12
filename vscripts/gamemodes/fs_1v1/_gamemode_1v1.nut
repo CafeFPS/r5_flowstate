@@ -1449,7 +1449,7 @@ void function _soloModeInit(string mapName)
 		panelLocations = [
 
 		]
-	} else if( mapName == "mp_rr_arena_phase_runner" )
+	} else if( mapName == "mp_rr_arena_phase_runner" ) 
 	{
 		waitingRoomPanelLocation = NewLocPair( <30381.043, 18302.0391, -895.965271> , <0, -45.1068459, 0> ) //休息区观战面板
 

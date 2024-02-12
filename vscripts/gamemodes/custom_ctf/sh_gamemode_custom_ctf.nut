@@ -381,6 +381,34 @@ void function Sh_CustomCTF_Init()
 		case "mp_rr_canyonlands_64k_x_64k":
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
+					"Relay",
+					[ // ringspots
+						NewCTFLocPair(<29625, 25371, 4216>, <0, 90, 0>),
+						NewCTFLocPair(<22958, 22128, 3914>, <0, 18, 0>),
+						NewCTFLocPair(<26825, 30767, 4790>, <0, 180, 0>)
+					],
+					<23258, 22476, 3914>, // imc flag spawn
+					<30139, 25359, 4216>, // mil flag spawn
+					[ // imc spawns
+						NewCTFLocPair(<24272, 21828, 3914>, <0, 40, 0>),
+						NewCTFLocPair(<23815, 23703, 4058>, <0, 35, 0>),
+						NewCTFLocPair(<22419, 23489, 4251>, <0, 180, 0>),
+						NewCTFLocPair(<21577, 22943, 4256>, <0, -15, 0>)
+					],
+					[ // mil spawns
+						NewCTFLocPair(<30000, 26381, 4216>, <0, -135, 0>),
+						NewCTFLocPair(<29036, 24253, 4216>, <0, 90, 0>),
+						NewCTFLocPair(<27698, 28291, 4102>, <0, -160, 0>),
+						NewCTFLocPair(<27628, 25640, 4370>, <0, 160, 0>)
+					],
+					NewCTFLocPair(<0,0,6000>, <90,-70,0>), // deathcam angle and height
+					NewCTFLocPair(<29665, 26180, 4206>, <0, -90, 0>), // Victory Pos
+					3330 // Undermap Z
+				)
+			)
+
+			Shared_RegisterLocationCTF(
+				NewCTFLocationSettings(
 					"Artillery",
 					[ // ringspots
 						NewCTFLocPair(<9614, 30792, 4868>, <0, 90, 0>),
@@ -433,34 +461,6 @@ void function Sh_CustomCTF_Init()
 					NewCTFLocPair(<0,0,5000>, <90,0,0>), // deathcam angle and height
 					NewCTFLocPair(<-29300, -4209, 2540>, <0, 100, 0>), // Victory Pos
 					2183 // Undermap Z
-				)
-			)
-
-			Shared_RegisterLocationCTF(
-				NewCTFLocationSettings(
-					"Relay",
-					[ // ringspots
-						NewCTFLocPair(<29625, 25371, 4216>, <0, 90, 0>),
-						NewCTFLocPair(<22958, 22128, 3914>, <0, 18, 0>),
-						NewCTFLocPair(<26825, 30767, 4790>, <0, 180, 0>)
-					],
-					<23258, 22476, 3914>, // imc flag spawn
-					<30139, 25359, 4216>, // mil flag spawn
-					[ // imc spawns
-						NewCTFLocPair(<24272, 21828, 3914>, <0, 40, 0>),
-						NewCTFLocPair(<23815, 23703, 4058>, <0, 35, 0>),
-						NewCTFLocPair(<22419, 23489, 4251>, <0, 180, 0>),
-						NewCTFLocPair(<21577, 22943, 4256>, <0, -15, 0>)
-					],
-					[ // mil spawns
-						NewCTFLocPair(<30000, 26381, 4216>, <0, -135, 0>),
-						NewCTFLocPair(<29036, 24253, 4216>, <0, 90, 0>),
-						NewCTFLocPair(<27698, 28291, 4102>, <0, -160, 0>),
-						NewCTFLocPair(<27628, 25640, 4370>, <0, 160, 0>)
-					],
-					NewCTFLocPair(<0,0,6000>, <90,-70,0>), // deathcam angle and height
-					NewCTFLocPair(<29665, 26180, 4206>, <0, -90, 0>), // Victory Pos
-					3330 // Undermap Z
 				)
 			)
 
@@ -603,7 +603,65 @@ void function Sh_CustomCTF_Init()
 			)
 
 			break
+		case "mp_rr_olympus_mu1":
+			Shared_RegisterLocationCTF(
+				NewCTFLocationSettings(
+					"Gardens",
+					[ // ringspots
+						NewCTFLocPair(<16279.9443, 13022.3496, -3591.96875>, <0, -93.9162674, 0>),
+						NewCTFLocPair(<15700.4648, 4015.26831, -3591.96875>, <0, 88.1664734, 0>),
+						NewCTFLocPair(<19953.1934, 8301.0957, -3028.84399>, <0, 172.557816, 0>)
+					],
+					<16232.7793, 12178.1436, -3591.96875>, // imc flag spawn
+					<15827.2217, 4953.29297, -3591.96875>, // mil flag spawn
+					[ // imc spawns
+						NewCTFLocPair(<17395.084, 12189.5537, -3591.96875>, <0, -94.7524567, 0>),
+						NewCTFLocPair(<15127.5156, 12389.5801, -3579.75586>, <0, -91.9276581, 0>),
+						NewCTFLocPair(<14703.4482, 11041.8711, -3487.39014>, <0, -98.3109512, 0>),
+						NewCTFLocPair(<17430.2402, 11183.5928, -3487.39014>, <0, -84.2348175, 0>)
+					],
+					[ // mil spawns
+						NewCTFLocPair(<14670.6592, 4912.80273, -3591.96875>, <0, 87.3093185, 0>),
+						NewCTFLocPair(<17030.5293, 4793.00488, -3591.96875>, <0, 87.364563, 0>),
+						NewCTFLocPair(<14473.1006, 5982.35059, -3487.39014>, <0, 81.9205856, 0>),
+						NewCTFLocPair(<17525.3906, 6092.90088, -3487.39014>, <0, 84.3147583, 0>)
+					],
+					NewCTFLocPair(<16137.8916, 8448.7793, 1112.35474>, <0, 174.990341, 0>), // deathcam angle and height //<-11968.6592, 10692.5781, 3963.90991> <0, -77.5005569, 0>
 
+					NewCTFLocPair(<14500.2412, 5929.81494, -3487.39014>, <0, 23.6395264, 0>), // Victory Pos
+					-3780 // Undermap Z
+				)
+			)
+
+			Shared_RegisterLocationCTF(
+				NewCTFLocationSettings(
+					"Turbine",
+					[ // ringspots
+						NewCTFLocPair(<-10178.1816, 7338.68408, -5887.62793>, <0, 120.838982, 0>),
+						NewCTFLocPair(<-15231.8418, 12333.5508, -6399.63477>, <0, -32.3907623, 0>),
+						NewCTFLocPair(<-8425.39941, 12467.876, -5877.44678>, <0, -157.88298, 0>)
+					],
+					<-14124.1426, 9829.75488, -6543.95068>, // imc flag spawn
+					<-9459.69336, 11944.6963, -6049.47266>, // mil flag spawn
+					[ // imc spawns
+						NewCTFLocPair(<-14633.3203, 11222.1494, -6559.63477>, <0, -58.4951973, 0>),
+						NewCTFLocPair(<-13012.0166, 8264.48926, -6224.89355>, <0, 7.37708473, 0>),
+						NewCTFLocPair(<-15519.1943, 9790.82129, -6399.84082>, <0, 1.22403598, 0>),
+						NewCTFLocPair(<-14893.6074, 8657.10059, -6399.96875>, <0, 22.6704369, 0>)
+					],
+					[ // mil spawns
+						NewCTFLocPair(<-10170.4111, 11851.2695, -6175.61865>, <0, -67.3220367, 0>),
+						NewCTFLocPair(<-8362.85742, 12449.0439, -5877.44678>, <0, -156.566605, 0>),
+						NewCTFLocPair(<-9218.04688, 10373.4824, -6150.27051>, <0, 152.563736, 0>),
+						NewCTFLocPair(<-10959.998, 13389.7871, -6175.61963>, <0, -115.083687, 0>)
+					],
+					NewCTFLocPair(<-11968.6592, 10692.5781, 3963.90991>, <0, -77.5005569, 0>), // deathcam angle and height //<-11968.6592, 10692.5781, 3963.90991> <0, -77.5005569, 0>
+
+					NewCTFLocPair(<-17077.5449, 8725.19434, -6402.74561>, <0,71,0>), // Victory Pos
+					-6800 // Undermap Z
+				)
+			)
+			break
 		case "mp_rr_desertlands_64k_x_64k":
 		case "mp_rr_desertlands_64k_x_64k_nx":
 			Shared_RegisterLocationCTF(

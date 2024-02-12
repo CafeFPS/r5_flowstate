@@ -271,7 +271,8 @@ void function OnEnterBirdTrigger( entity trigger, entity player )
 		return
 
 	foreach( index, pointEnt in birdCluster.pointArray )
-		pointEnt.Destroy()
+		if( IsValid( pointEnt ) )
+			pointEnt.Destroy()
 
 	birdCluster.pointArray.clear()
 	birdCluster.triggered = true
@@ -490,12 +491,14 @@ void function RemoveBirdCluster( BirdCluster birdCluster )
 {
 	if ( birdCluster.blocker == false )
 	{
-		birdCluster.trigger.Destroy()
+		if( IsValid( birdCluster.trigger ) )
+			birdCluster.trigger.Destroy()
 
 		if ( !birdCluster.triggered )
 		{
 			foreach( point in birdCluster.pointArray )
-				point.Destroy()
+				if( IsValid( point ) )
+					point.Destroy()
 		}
 	}
 

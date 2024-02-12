@@ -166,7 +166,7 @@ void function CL_FSCTF_RegisterNetworkFunctions()
 	RegisterNetworkedVariableChangeCallback_time( "FSIntro_EndTime", Flowstate_IntroEndTimeChanged )
 	// RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_StartTime", Flowstate_VoteTeamTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_EndTime", Flowstate_VoteTeamEndTimeChanged )
-	// RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
+	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_CTFStartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_CTFRoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "imcFlag", CTF_FlagEntChangedImc )
 	RegisterNetworkedVariableChangeCallback_ent( "milFlag", CTF_FlagEntChangedMil )
@@ -208,7 +208,7 @@ void function CTF_FlagEntChanged( int team, entity newFlag )
 
 	entity player = GetLocalViewPlayer()
 
-	ClientCodeCallback_MinimapEntitySpawned( newFlag )
+	// ClientCodeCallback_MinimapEntitySpawned( newFlag )
 
 	string msg = player.GetTeam() == team ? "Defend" : "Capture"
 	
@@ -269,8 +269,8 @@ void function Flowstate_CTFStartTimeChanged( entity player, float old, float new
 	if ( !actuallyChanged  )
 		return
 
-	thread Flowstate_PlayStartRoundSounds( )
-	thread Flowstate_ShowStartTimeUI( new )
+	Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LaunchCountDown_Finish" )
 }
 
 void function Flowstate_IntroTimeChanged( entity player, float old, float new, bool actuallyChanged )
@@ -611,9 +611,20 @@ void function ShowScoreRUI(bool show)
 	Hud_SetVisible( HudElement( "FS_Oddball_EnemyTeamScore" ), show )
 	Hud_SetVisible( HudElement( "FS_Oddball_EnemyHas" ), show )
 
+	asset localteamIcon
+	asset enemyteamIcon
+
 	entity player = GetLocalClientPlayer()
-	asset localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstate_custom/team_orchid" : $"rui/flowstate_custom/team_condor"
-	asset enemyteamIcon = localteamIcon == "rui/flowstate_custom/team_orchid" ? $"rui/flowstate_custom/team_condor" : $"rui/flowstate_custom/team_orchid"
+
+	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	{
+		localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstatecustom/imc" : $"rui/flowstatecustom/militia"
+		enemyteamIcon = localteamIcon == "rui/flowstatecustom/imc" ? $"rui/flowstatecustom/militia" : $"rui/flowstatecustom/imc"
+	} else
+	{
+		localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstate_custom/team_orchid" : $"rui/flowstate_custom/team_condor"
+		enemyteamIcon = localteamIcon == "rui/flowstate_custom/team_orchid" ? $"rui/flowstate_custom/team_condor" : $"rui/flowstate_custom/team_orchid"
+	}
 
 	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_EnemyHas" ) ), "basicImage", enemyteamIcon )
 	RuiSetImage( Hud_GetRui( HudElement( "FS_Oddball_AllyHas" ) ), "basicImage", localteamIcon )
@@ -1967,11 +1978,11 @@ void function VoteTeam_EndFocusModel( int model )
 {
 	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) && file.VoteTeam_selectedTeam != model)
 	{
-		printt("signal to end focus model 0 on client" )
+		// printt("signal to end focus model 0 on client" )
 		Signal( file.VoteTeam_condorPlayerModel, "VoteTeam_EndModelFocus" )
 	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) && file.VoteTeam_selectedTeam != model)
 	{
-		printt("signal to end focus model 1 on client" )
+		// printt("signal to end focus model 1 on client" )
 		Signal( file.VoteTeam_orchidPlayerModel, "VoteTeam_EndModelFocus" )
 	}
 }

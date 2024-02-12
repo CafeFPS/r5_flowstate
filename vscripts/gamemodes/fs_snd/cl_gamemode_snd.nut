@@ -321,7 +321,8 @@ void function SetCameraStartPointForMap()
 			file.cameraStart = <499.259277, 2014.12402, 3020.03125>
 			file.cameraAnglesStart = <0, -122.591728, 0>
 		break
-
+		
+		case "mp_rr_olympus_mu1":
 		case "mp_rr_arena_empty":
 		case "mp_rr_party_crasher_new":
 			file.cameraStart = <238.288742, 94.6433334, 11841.7451>

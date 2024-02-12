@@ -410,8 +410,17 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		// Signal(player, "NewKillChangeRui")
 		// Signal(player, "OnChargeEnd")
 		// Signal(player, "SND_EndTimer")
-		
+
+		DoF_SetFarDepth( 50, 1000 )
 		EndSignal(player, "StartNewWinnerScreen")
+
+		OnThreadEnd(
+			function() : ( )
+			{
+				DoF_SetNearDepthToDefault()
+				DoF_SetFarDepthToDefault()
+			}
+		)
 
 		EmitSoundOnEntity( player, "Music_CharacterSelect_Wattson" )
 

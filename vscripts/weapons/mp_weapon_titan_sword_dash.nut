@@ -252,7 +252,7 @@ void function OnPlayerCreated( entity player )
 
 void function TrackDashSprintFx( entity player )
 {
-	printt( "TrackDashSprintFx restarted" )
+	// printt( "TrackDashSprintFx restarted" )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnDeath" )
 

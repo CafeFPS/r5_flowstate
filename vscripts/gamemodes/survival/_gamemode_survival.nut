@@ -1203,6 +1203,8 @@ void function SURVIVAL_CalculateAirdropPositions()
     array<vector> previousAirdrops
 
     array<DeathFieldStageData> deathFieldData = SURVIVAL_GetDeathFieldStages()
+	
+	float timeOut = Time() + 10
 
     for ( int i = deathFieldData.len() - 1; i >= 0; i-- )
     {
@@ -1233,6 +1235,9 @@ void function SURVIVAL_CalculateAirdropPositions()
         for (int j = 0; j < numAirdropsForThisRound; j++)
         {
             Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
+			
+			if( Time() > timeOut )
+				return
 
             if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y % 360 ))
             {

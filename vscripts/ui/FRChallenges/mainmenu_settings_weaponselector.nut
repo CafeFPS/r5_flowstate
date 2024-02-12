@@ -224,10 +224,10 @@ string function GetWeaponNameForUI(string weapon)
 		case "mp_weapon_car":
 			weaponname = "Car"
 			break
-		case "mp_weapon_clickweapon":
+		case "mp_weapon_lightninggun":
 			weaponname = "Hitscan"
 			break
-		case "mp_weapon_clickweaponauto":
+		case "mp_weapon_lightninggun_auto":
 			weaponname = "Hitscan Auto"
 			break
 		default:

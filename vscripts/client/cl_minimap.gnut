@@ -579,7 +579,7 @@ var function CreateFullmapRuiForEnt( entity ent, entity viewPlayer )
 	Fullmap_RunInitFunction( ent, rui )
 
 	Fullmap_AddRui( rui )
-
+	// printt( "Created Fullmap Rui for Ent ", ent )
 	return rui
 }
 
@@ -607,7 +607,8 @@ var function CreateMinimapRuiForEnt( entity ent, entity viewPlayer, asset minima
 	file.minimapOtherRuis.append( rui )
 
 	RuiSetVisible( rui, file.minimapEnabled )
-
+	
+	// printt( "Created Minimap Rui for Ent ", ent )
 	return rui
 }
 

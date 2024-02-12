@@ -50,12 +50,10 @@ struct{
 
 void function Clickweapon_Init()
 {
-	if( GameRules_GetGameMode() != "fs_dm" )
-		return
-
 	RegisterSignal( "EndLaser" )
 	RegisterSignal( "EndNoAutoThread" )
 	RegisterSignal( "PlayerStartShotingLightningGun" )
+
 	#if CLIENT
 	AddCreateCallback( "player", FS_LG_OnPlayerCreated )
 	AddDestroyCallback( "player", FS_LG_OnPlayerDestroyed )
@@ -66,7 +64,6 @@ void function Clickweapon_Init()
 	SetConVarInt( "net_minimumPacketLossDC", DesiredG )
 	SetConVarInt( "net_wifi", DesiredB )
 	chosenEnemyColor = < DesiredEnemyR, DesiredEnemyG, DesiredEnemyB >
-	
 	#endif
 	
 	#if SERVER
@@ -85,7 +82,7 @@ void function OnWeaponActivate_Clickweapon( entity weapon )
 	if( !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
 		return
 	
-	bool isAuto = weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
+	bool isAuto = !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
 
 	thread function () : ( weapon, sPlayer, isAuto ) 
 	{

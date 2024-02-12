@@ -2718,7 +2718,7 @@ void function OnDummyKilled(entity ent, var damageInfo)
 
 void function OnWeaponAttackChallenges( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
 {
-	if(weapon.GetWeaponClassName() == "mp_weapon_clickweapon") return
+	if(weapon.GetWeaponClassName() == "mp_weapon_lightninggun") return
 	if(!player.p.isChallengeActivated) return
 	int basedamage = weapon.GetWeaponSettingInt( eWeaponVar.damage_near_value )
 	int ornull projectilespershot = weapon.GetWeaponSettingInt( eWeaponVar.projectiles_per_shot )
@@ -3164,295 +3164,307 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	entity weaponent
 	array<string> finalargs
-	if (args.len() > 2) //from attachments buy box
+	if (args.len() > 2 && weapon != "mp_weapon_lightninggun" ) //from attachments buy box
+	{
+		string optic = "none"
+		string barrel = "none"
+		string stock = "none"
+		string shotgunbolt = "none"
+		string mag = "none"
+
+		// printt("DEBUG BEFORE CONVERT: " + args[2], args[3], args[4], args[5], args[6], args[7])
+
+		switch( args[2] ){
+			case "0":
+				optic = "none"
+				break
+			case "1":
+				optic = "optic_cq_hcog_classic"
+				break
+			case "2":
+				optic = "optic_cq_holosight"
+				break
+			case "3":
+				optic = "optic_cq_threat"
+				break
+			case "4":
+				optic = "optic_cq_holosight_variable"
+				break
+			case "5":	
+				optic = "optic_cq_hcog_bruiser"
+				break
+		}
+
+		if( args[6] == "smg" || weapon == "mp_weapon_autopistol" )
 		{
-			string optic = "none"
-			string barrel = "none"
-			string stock = "none"
-			string shotgunbolt = "none"
-			string mag = "none"
-
-			// printt("DEBUG BEFORE CONVERT: " + args[2], args[3], args[4], args[5], args[6], args[7])
-
-			switch( args[2] ){
+			switch( args[3] ){
 				case "0":
-					optic = "none"
+					barrel = "none"
 					break
 				case "1":
-					optic = "optic_cq_hcog_classic"
+					barrel = "laser_sight_l1"
 					break
 				case "2":
-					optic = "optic_cq_holosight"
+					barrel = "laser_sight_l2"
 					break
 				case "3":
-					optic = "optic_cq_threat"
-					break
-				case "4":
-					optic = "optic_cq_holosight_variable"
-					break
-				case "5":	
-					optic = "optic_cq_hcog_bruiser"
+					barrel = "laser_sight_l3"
 					break
 			}
-
-			if( args[6] == "smg" || weapon == "mp_weapon_autopistol" )
-			{
-				switch( args[3] ){
-					case "0":
-						barrel = "none"
-						break
-					case "1":
-						barrel = "laser_sight_l1"
-						break
-					case "2":
-						barrel = "laser_sight_l2"
-						break
-					case "3":
-						barrel = "laser_sight_l3"
-						break
-				}
-			}
-			else
-			{
-				switch( args[3] ){
-					case "0":
-						barrel = "none"
-						break
-					case "1":
-						barrel = "barrel_stabilizer_l1"
-						break
-					case "2":
-						barrel = "barrel_stabilizer_l2"
-						break
-					case "3":
-						barrel = "barrel_stabilizer_l3"
-						break
-				}
-			}
-
-			switch(args[4]){
-					case "0":
-						stock = "none"
-						break
-					case "1":
-						stock = "stock_tactical_l1"
-						break
-					case "2":
-						stock = "stock_tactical_l2"
-						break
-					case "3":
-						stock = "stock_tactical_l3"
-						break
-				}
-			
-			if( args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
-				switch(args[4]){
-					case "0":
-						stock = "none"
-						break
-					case "1":
-						stock = "stock_sniper_l1"
-						break
-					case "2":
-						stock = "stock_sniper_l2"
-						break
-					case "3":
-						stock = "stock_sniper_l3"
-						break
-				}		
-			
-			switch(args[5]){
-					case "0":
-						shotgunbolt = "none"
-						break
-					case "1":
-						shotgunbolt = "shotgun_bolt_l1"
-						break
-					case "2":
-						shotgunbolt = "shotgun_bolt_l2"
-						break
-					case "3":
-						shotgunbolt = "shotgun_bolt_l3"
-						break
-				}
-				
-			if(weapon == "mp_weapon_energy_ar" || weapon == "mp_weapon_esaw")
-			{
-				switch(args[5]){
-					case "0":
-						shotgunbolt = "."
-						break
-					case "1":
-						shotgunbolt = "hopup_turbocharger"
-						break
-				}
-			}else if(weapon == "mp_weapon_g2")
-			{
-				switch(args[5]){
-					case "0":
-						shotgunbolt = "."
-						break
-					case "1":
-						shotgunbolt = "hopup_double_tap"
-						break
-				}	
-			}else if(weapon == "mp_weapon_doubletake")
-			{
-				switch(args[5]){
-					case "0":
-						shotgunbolt = "."
-						break
-					case "1":
-						shotgunbolt = "hopup_energy_choke"
-						break
-				}			
-			}
-			
-			if(args[6] == "ar" || args[6] == "ar2" || args[6] == "lmg" || args[6] == "lmg2" || args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
-			switch(args[2]){
+		}
+		else
+		{
+			switch( args[3] ){
 				case "0":
-					optic = "none"
+					barrel = "none"
 					break
 				case "1":
-					optic = "optic_cq_hcog_classic"
+					barrel = "barrel_stabilizer_l1"
 					break
 				case "2":
-					optic = "optic_cq_holosight"
+					barrel = "barrel_stabilizer_l2"
 					break
 				case "3":
-					optic = "optic_cq_holosight_variable"
-					break
-				case "4":
-					optic = "optic_cq_hcog_bruiser"
-					break
-				case "5":	
-					optic = "optic_ranged_hcog"
-					break
-				case "6":	
-					optic = "optic_ranged_aog_variable"
-					break
-				case "7":	
-					optic = "optic_sniper"
-					break
-				case "8":	
-					optic = "optic_sniper_variable"
-					break
-				case "9":	
-					optic = "optic_sniper_threat"
-					break
-			}
-
-			switch(args[7]){
-					case "0":
-						mag = "none"
-						break
-					case "1":
-						if(args[8] == "bullet")
-							mag = "bullets_mag_l1"
-						else if(args[8] == "highcal")
-							mag = "highcal_mag_l1"
-						else if(args[8] == "special")
-							mag = "energy_mag_l1"
-						else if(args[8] == "sniper")
-							mag = "sniper_mag_l1"
-						break
-					case "2":
-						if(args[8] == "bullet")
-							mag = "bullets_mag_l2"
-						else if(args[8] == "highcal")
-							mag = "highcal_mag_l2"
-						else if(args[8] == "special")
-							mag = "energy_mag_l2"
-						else if(args[8] == "sniper")
-							mag = "sniper_mag_l2"
-						break
-					case "3":
-						if(args[8] == "bullet")
-							mag = "bullets_mag_l3"
-						else if(args[8] == "highcal")
-							mag = "highcal_mag_l3"
-						else if(args[8] == "special")
-							mag = "energy_mag_l3"
-						else if(args[8] == "sniper")
-							mag = "sniper_mag_l3"
-						break
-				}
-
-			// printt( "DEBUG AFTER CONVERT: " + optic, barrel, stock, shotgunbolt, args[6], mag )
-
-			switch(args[6])
-			{
-				case "smg":
-					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") finalargs.append(barrel)
-					if(stock != "none") finalargs.append(stock)
-					if(mag != "none") finalargs.append(mag)	
-					
-					break
-				case "pistol":
-					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") finalargs.append(barrel)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "pistol2":
-					if(optic != "none") finalargs.append(optic)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "shotgun":
-					if(optic != "none") finalargs.append(optic)
-					if(shotgunbolt != "none") finalargs.append(shotgunbolt)
-					break
-				case "lmg2":
-				case "ar":
-					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") finalargs.append(barrel)
-					if(stock != "none") finalargs.append(stock)
-					if(shotgunbolt != "." && weapon == "mp_weapon_esaw") finalargs.append(shotgunbolt)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "ar2":
-					if(optic != "none") finalargs.append(optic)
-					if(stock != "none") finalargs.append(stock)
-					if(shotgunbolt != "." && weapon == "mp_weapon_energy_ar") finalargs.append(shotgunbolt)
-					if(mag != "none") finalargs.append(mag)				
-					break
-				case "marksman":
-					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") finalargs.append(barrel)
-					if(stock != "none") finalargs.append(stock)
-					if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "marksman2":
-					if(optic != "none") finalargs.append(optic)
-					if(stock != "none") finalargs.append(stock)
-					if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "marksman3":
-					if(optic != "none") finalargs.append(optic)
-					if(stock != "none") finalargs.append(stock)
-					if(mag != "none") finalargs.append(mag)	
-					break
-				case "sniper":
-					if(optic != "none") finalargs.append(optic)
-					if(barrel != "none") finalargs.append(barrel)
-					if(stock != "none") finalargs.append(stock)
-					if(mag != "none") finalargs.append(mag)
-					break
-				case "sniper2":
-					if(optic != "none") finalargs.append(optic)
-					if(stock != "none") finalargs.append(stock)
+					barrel = "barrel_stabilizer_l3"
 					break
 			}
 		}
 
-	if ( weapon == "mp_weapon_clickweapon" || weapon == "mp_weapon_clickweaponauto" )
-		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", true)
-	else
-		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", false)
+		switch(args[4]){
+				case "0":
+					stock = "none"
+					break
+				case "1":
+					stock = "stock_tactical_l1"
+					break
+				case "2":
+					stock = "stock_tactical_l2"
+					break
+				case "3":
+					stock = "stock_tactical_l3"
+					break
+			}
+		
+		if( args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
+			switch(args[4]){
+				case "0":
+					stock = "none"
+					break
+				case "1":
+					stock = "stock_sniper_l1"
+					break
+				case "2":
+					stock = "stock_sniper_l2"
+					break
+				case "3":
+					stock = "stock_sniper_l3"
+					break
+			}		
+		
+		switch(args[5]){
+				case "0":
+					shotgunbolt = "none"
+					break
+				case "1":
+					shotgunbolt = "shotgun_bolt_l1"
+					break
+				case "2":
+					shotgunbolt = "shotgun_bolt_l2"
+					break
+				case "3":
+					shotgunbolt = "shotgun_bolt_l3"
+					break
+			}
+			
+		if(weapon == "mp_weapon_energy_ar" || weapon == "mp_weapon_esaw")
+		{
+			switch(args[5]){
+				case "0":
+					shotgunbolt = "."
+					break
+				case "1":
+					shotgunbolt = "hopup_turbocharger"
+					break
+			}
+		}else if(weapon == "mp_weapon_g2")
+		{
+			switch(args[5]){
+				case "0":
+					shotgunbolt = "."
+					break
+				case "1":
+					shotgunbolt = "hopup_double_tap"
+					break
+			}	
+		}else if(weapon == "mp_weapon_doubletake")
+		{
+			switch(args[5]){
+				case "0":
+					shotgunbolt = "."
+					break
+				case "1":
+					shotgunbolt = "hopup_energy_choke"
+					break
+			}			
+		}
+		
+		if(args[6] == "ar" || args[6] == "ar2" || args[6] == "lmg" || args[6] == "lmg2" || args[6] == "sniper" || args[6] == "sniper2" || args[6] == "marksman" || args[6] == "marksman2")
+		switch(args[2]){
+			case "0":
+				optic = "none"
+				break
+			case "1":
+				optic = "optic_cq_hcog_classic"
+				break
+			case "2":
+				optic = "optic_cq_holosight"
+				break
+			case "3":
+				optic = "optic_cq_holosight_variable"
+				break
+			case "4":
+				optic = "optic_cq_hcog_bruiser"
+				break
+			case "5":	
+				optic = "optic_ranged_hcog"
+				break
+			case "6":	
+				optic = "optic_ranged_aog_variable"
+				break
+			case "7":	
+				optic = "optic_sniper"
+				break
+			case "8":	
+				optic = "optic_sniper_variable"
+				break
+			case "9":	
+				optic = "optic_sniper_threat"
+				break
+		}
+
+		switch(args[7]){
+				case "0":
+					mag = "none"
+					break
+				case "1":
+					if(args[8] == "bullet")
+						mag = "bullets_mag_l1"
+					else if(args[8] == "highcal")
+						mag = "highcal_mag_l1"
+					else if(args[8] == "special")
+						mag = "energy_mag_l1"
+					else if(args[8] == "sniper")
+						mag = "sniper_mag_l1"
+					break
+				case "2":
+					if(args[8] == "bullet")
+						mag = "bullets_mag_l2"
+					else if(args[8] == "highcal")
+						mag = "highcal_mag_l2"
+					else if(args[8] == "special")
+						mag = "energy_mag_l2"
+					else if(args[8] == "sniper")
+						mag = "sniper_mag_l2"
+					break
+				case "3":
+					if(args[8] == "bullet")
+						mag = "bullets_mag_l3"
+					else if(args[8] == "highcal")
+						mag = "highcal_mag_l3"
+					else if(args[8] == "special")
+						mag = "energy_mag_l3"
+					else if(args[8] == "sniper")
+						mag = "sniper_mag_l3"
+					break
+			}
+
+		// printt( "DEBUG AFTER CONVERT: " + optic, barrel, stock, shotgunbolt, args[6], mag )
+
+		switch(args[6])
+		{
+			case "smg":
+				if(optic != "none") finalargs.append(optic)
+				if(barrel != "none") finalargs.append(barrel)
+				if(stock != "none") finalargs.append(stock)
+				if(mag != "none") finalargs.append(mag)	
+				
+				break
+			case "pistol":
+				if(optic != "none") finalargs.append(optic)
+				if(barrel != "none") finalargs.append(barrel)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "pistol2":
+				if(optic != "none") finalargs.append(optic)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "shotgun":
+				if(optic != "none") finalargs.append(optic)
+				if(shotgunbolt != "none") finalargs.append(shotgunbolt)
+				break
+			case "lmg2":
+			case "ar":
+				if(optic != "none") finalargs.append(optic)
+				if(barrel != "none") finalargs.append(barrel)
+				if(stock != "none") finalargs.append(stock)
+				if(shotgunbolt != "." && weapon == "mp_weapon_esaw") finalargs.append(shotgunbolt)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "ar2":
+				if(optic != "none") finalargs.append(optic)
+				if(stock != "none") finalargs.append(stock)
+				if(shotgunbolt != "." && weapon == "mp_weapon_energy_ar") finalargs.append(shotgunbolt)
+				if(mag != "none") finalargs.append(mag)				
+				break
+			case "marksman":
+				if(optic != "none") finalargs.append(optic)
+				if(barrel != "none") finalargs.append(barrel)
+				if(stock != "none") finalargs.append(stock)
+				if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "marksman2":
+				if(optic != "none") finalargs.append(optic)
+				if(stock != "none") finalargs.append(stock)
+				if(shotgunbolt != "." ) finalargs.append(shotgunbolt)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "marksman3":
+				if(optic != "none") finalargs.append(optic)
+				if(stock != "none") finalargs.append(stock)
+				if(mag != "none") finalargs.append(mag)	
+				break
+			case "sniper":
+				if(optic != "none") finalargs.append(optic)
+				if(barrel != "none") finalargs.append(barrel)
+				if(stock != "none") finalargs.append(stock)
+				if(mag != "none") finalargs.append(mag)
+				break
+			case "sniper2":
+				if(optic != "none") finalargs.append(optic)
+				if(stock != "none") finalargs.append(stock)
+				break
+		}
+	}
+
+	bool autonoauto = false
+	if( weapon == "mp_weapon_lightninggun" )
+	{
+		autonoauto = true
+	} else if( weapon == "mp_weapon_lightninggun_auto" )
+	{
+		weapon = "mp_weapon_lightninggun"
+		autonoauto = false
+	}
 
 	weaponent = player.GiveWeapon_NoDeploy( weapon, actualslot, finalargs, false )
+
+	if( weapon == "mp_weapon_lightninggun" && autonoauto )
+	{
+		weaponent.AddMod( "noauto" )
+		finalargs.append( "noauto" )
+		printt( "lightning gun - added no auto mod" )
+	}
 
 	if(!IsValid(actualweapon)) player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, actualslot )
 

@@ -310,7 +310,8 @@ void function VotingPhase()
 	if( file.playerSpawnedProps.len() > 0 || GetServerPropsInDmFile().len() > 0 )
 	{
 		DestroyPlayerProps()
-		wait 1
+		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false )  )
+			wait 1
 	}
 
 	switch(file.selectedLocation.name)
@@ -402,7 +403,8 @@ void function VotingPhase()
 		int teamMemberIndex = playerTeam.len() - 1
 		player.SetTeamMemberIndex( teamMemberIndex )
 	}
-	wait 0.5
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false )  )
+		wait 0.5
 }
 
 // purpose: handle the start of a new round for players and props
@@ -420,8 +422,8 @@ void function StartRound()
 	ResetMapVotes()
 	file.winnerTeam = -1
 	
-	IMCPoint.spawn = file.selectedLocation.imcflagspawn
-	MILITIAPoint.spawn = file.selectedLocation.milflagspawn
+	IMCPoint.spawn = OriginToGroundCTF( file.selectedLocation.imcflagspawn )
+	MILITIAPoint.spawn = OriginToGroundCTF( file.selectedLocation.milflagspawn )
 
 	entity home = CreateEntity( "prop_dynamic" )
 	home.SetValueForModelKey( CTF_FLAG_BASE_MODEL )
@@ -565,7 +567,8 @@ void function StartRound()
 	// wait 1
 	// set
 	SetGameState(eGameState.Playing)
-	
+	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 3 )
+
 	foreach(player in GetPlayerArray())
 	{	
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
@@ -1078,6 +1081,7 @@ void function ResetIMCFlag()
 	IMCPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), IMCPoint.pole.GetOrigin(), <0, 0, 0> )
 	IMCPoint.teamnum = TEAM_IMC
 
+	AddIMCFlagToMinimap( IMCPoint.pole )
 	SetGlobalNetEnt( "imcFlag", IMCPoint.pole )
 }
 
@@ -1122,7 +1126,8 @@ void function ResetMILITIAFlag()
 	// MILITIAPoint.pointfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
 	MILITIAPoint.beamfx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_ar_loot_drop_point_far" ), MILITIAPoint.pole.GetOrigin(), <0, 0, 0> )
 	MILITIAPoint.teamnum = TEAM_MILITIA
-
+	
+	AddMILFlagToMinimap( MILITIAPoint.pole )
 	SetGlobalNetEnt( "milFlag", MILITIAPoint.pole )
 }
 
@@ -2048,4 +2053,28 @@ bool function ClientCommand_AskForTeam(entity player, array < string > args)
 	}	
 	
 	return true
+}
+
+void function AddMILFlagToMinimap( entity mover )
+{
+	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )
+	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.FLAG_MIL )
+	minimapObj.SetParent( mover )
+	SetTargetName( minimapObj, "ctf_flag_mil" )
+	foreach ( player in GetPlayerArray() )
+	{
+		minimapObj.Minimap_AlwaysShow( 0, player )
+	}
+}
+
+void function AddIMCFlagToMinimap( entity mover )
+{
+	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )
+	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.FLAG_IMC )
+	minimapObj.SetParent( mover )
+	SetTargetName( minimapObj, "ctf_flag_imc" )
+	foreach ( player in GetPlayerArray() )
+	{
+		minimapObj.Minimap_AlwaysShow( 0, player )
+	}
 }

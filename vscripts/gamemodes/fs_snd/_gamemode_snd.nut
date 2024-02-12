@@ -127,6 +127,13 @@ void function Sv_EntitiesDidLoad()
 {
 	switch(GetMapName())
 	{
+		case "mp_rr_olympus_mu1":
+			FS_SND.lobbyLocation = <-6940.96924, 21153.9219, -6147.95166>
+			FS_SND.lobbyAngles = <0, -101.100929, 0>
+			
+			SpawnVotePhaseCustomMaps()
+			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+			break
 		case "mp_rr_arena_empty":
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
@@ -266,7 +273,7 @@ void function _OnPlayerConnectedSND(entity player)
 
 	SetTeam( player, 99 )
 	Remote_CallFunction_Replay( player, "Sh_SetAttackingLocations", FS_SND.currentLocation)
-	Remote_CallFunction_Replay( player, "SetCustomLightning", FS_SND.currentLocation)
+	// Remote_CallFunction_Replay( player, "SetCustomLightning", FS_SND.currentLocation)
 	Remote_CallFunction_Replay( player, "Sh_SetAttackerTeam", Sh_GetAttackerTeam(), FS_SND.currentRound)
 	Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 	
@@ -647,32 +654,35 @@ void function SND_Lobby()
 		SND_DestroyCircleFXEntity()
 		
 		//add check for map
-		switch(FS_SND.currentLocation)
+		if( GetMapName() == "mp_rr_arena_empty" )
 		{
-			case 0:
-				dust2part1()
-				dust2part2()		
-			break
-			
-			case 1:
-				Shoothouse()
-			break
-			
-			case 2:
-				de_cache_Start()
-			break
-			
-			case 3:
-				nuketown()
-			break
-			
-			case 4:
-				de_NCanals_init()
-			break
-			
-			case 5:
-				Killyard()
-			break
+			switch(FS_SND.currentLocation)
+			{
+				case 0:
+					dust2part1()
+					dust2part2()		
+				break
+				
+				case 1:
+					Shoothouse()
+				break
+				
+				case 2:
+					de_cache_Start()
+				break
+				
+				case 3:
+					nuketown()
+				break
+				
+				case 4:
+					de_NCanals_init()
+				break
+				
+				case 5:
+					Killyard()
+				break
+			}
 		}
 		
 		SND_SUDDEN_DEATH_ROUND = false
@@ -983,9 +993,8 @@ void function SND_GameLoop()
 	foreach(entity player in GetPlayerArray())
 	{
 		if(!IsValid(player)) continue
-		
-		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-		RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
+
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 		Remote_CallFunction_NonReplay(player, "FlowstateSND_CustomBuyMenu_Stop")
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleBombUIVisibility", true)
 		
@@ -997,13 +1006,13 @@ void function SND_GameLoop()
 	ToggleBuyMenuBackgroundProps(false)
 	
 	SetGameState(eGameState.Playing)
-	SetCustomLightning(FS_SND.currentLocation)
+	// SetCustomLightning(FS_SND.currentLocation)
 	
 	foreach(player in GetPlayerArray())
 	{
 		if(!IsValid(player)) continue
 		
-		Remote_CallFunction_NonReplay(player, "SetCustomLightning", FS_SND.currentLocation)
+		// Remote_CallFunction_NonReplay(player, "SetCustomLightning", FS_SND.currentLocation)
 		player.MovementEnable()
 		// player.UnfreezeControlsOnServer()
 		player.DeployWeapon()
@@ -1282,6 +1291,8 @@ void function SND_GameLoop()
 			
 			foreach( player in GetPlayerArray() )
 			{
+				AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_HIDE_PERMANENT_HUD )
+
 				Remote_CallFunction_NonReplay(player, "FlowstateSND_CustomWinnerScreen_Start", FS_SND.winnerTeam, 3)	
 			}
 			

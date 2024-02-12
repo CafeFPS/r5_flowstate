@@ -332,11 +332,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
 	PrecacheWeapon( $"mp_ability_emote_projector" )
-	
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	{
-		PrecacheWeapon( $"mp_weapon_lightninggun")
-	}
 
 	switch(GameRules_GetGameMode())
 	{
@@ -351,14 +346,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "fs_dm":
 			break
 		case fs_aimtrainer:
-			PrecacheWeapon( $"mp_weapon_clickweapon")
-			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break
 		default:
 			LoadModelsFromEditor()
 
-			PrecacheWeapon( $"mp_weapon_clickweapon")
-			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			//PrecacheWeapon( $"mp_weapon_grenade_gravity" )			
 			break
 	}
