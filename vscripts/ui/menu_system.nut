@@ -226,6 +226,7 @@ void function OnSystemMenu_Open()
 
 void function UpdateSystemPanel( var panel )
 {
+	entity player = GetLocalClientPlayer()
 	//temp workaround, not the best place for this tbh
 	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
@@ -248,12 +249,13 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		if( GetCurrentPlaylistName() == "fs_1v1" )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
-			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-				SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsFocus[ panel ] )
 		}
+
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsFocus[ panel ] )
 
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
