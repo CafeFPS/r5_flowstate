@@ -26,7 +26,7 @@ WeaponData
 	"stat_accuracy"   								"50"
 	"stat_rof"										"60"
 
-	"projectile_launch_speed"						"19500"
+    "projectile_launch_speed"						"19000"
 
 	// Models
 	"viewmodel"   									"mdl/weapons/alternator_smg/ptpov_alternator_smg.rmdl"

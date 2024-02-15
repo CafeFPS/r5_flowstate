@@ -57,7 +57,9 @@ WeaponData
     "projectile_ricochet_max_count"					"0"
     "pass_through_depth"							"0"
     "pass_through_damage_preserved_scale"			"1"
-    "projectile_launch_speed"						"18500"
+
+    "projectile_launch_speed"						"18000"
+
 	"sound_dryfire"									"assault_rifle_dryfire"
 	"sound_pickup"									"wpn_pickup_SMG_1P"
 	"sound_trigger_pull"							"Weapon_Hemlok_Trigger"
@@ -111,12 +113,12 @@ WeaponData
     "damage_near_distance"							"800"
     "damage_far_distance" 							"1500"
     "damage_very_far_distance"						"3500"
-    "damage_near_value"   					        "12"
-    "damage_far_value"						        "12"
-    "damage_very_far_value"					        "12"
-    "damage_near_value_titanarmor"			        "12"
-    "damage_far_value_titanarmor" 			        "12"
-    "damage_very_far_value_titanarmor" 		        "12"
+    "damage_near_value"   					        "13"
+    "damage_far_value"						        "13"
+    "damage_very_far_value"					        "13"
+    "damage_near_value_titanarmor"			        "13"
+    "damage_far_value_titanarmor" 			        "13"
+    "damage_very_far_value_titanarmor" 		        "13"
 
     // View Drift
     "viewdrift_ads_stand_scale_pitch" 				"0.7"

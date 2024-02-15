@@ -81,18 +81,22 @@ WeaponData
     "damage_very_far_value_titanarmor" 				"15"
     "damage_rodeo" 									"110"
 
-                     
+   	"ammo_clip_size"   								"20"
+    "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"36"
+    "ammo_no_remove_from_stockpile"					"1"
+    "uses_ammo_pool"								"1"                  
                                 
                                           
                                                                                                                    
                                                  
                                      
      
-	"ammo_clip_size"   								"35"
-    "ammo_default_total"							"210"
-    "ammo_stockpile_max"							"210"
-    "ammo_no_remove_from_stockpile"					"0"
-    "uses_ammo_pool"								"0"
+	//"ammo_clip_size"   								"35"
+    //"ammo_default_total"							"210"
+    //"ammo_stockpile_max"							"210"
+    //"ammo_no_remove_from_stockpile"					"0"
+    //"uses_ammo_pool"								"0"
     "ammo_pool_type"								"highcal"
       
 
@@ -137,7 +141,7 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"21"
 	"burst_fire_count"								"5"
-	"burst_fire_delay"								"0.24"
+	"burst_fire_delay"								"0.28"
 
 	"reload_time" 									"2.0"
 	"reload_time_late1"								"1.67"
@@ -203,12 +207,14 @@ WeaponData
 	"viewkick_scale_pitch_valueLerpEnd" 			"10"
 	"viewkick_scale_yaw_valueLerpStart"   			"0"
 	"viewkick_scale_yaw_valueLerpEnd" 				"10"
-	"viewkick_scale_valueDecayDelay"  				"0.25"  // for burstfire, match to burst delay + fire rate (0.05 + 0.2)
+	"viewkick_scale_valueDecayDelay"  				"0.33"  // for burstfire, match to burst delay + fire rate (0.05 + 0.2)
     "viewkick_scale_valueDecayRate"   				"45"
 
 	"viewmodel_shake_forward"						"0.0"
 	"viewmodel_shake_up"							"0.0"
 	"viewmodel_shake_right"							"0.0"
+
+	"spread_decay_delay"  							"0.28"
 
 
 
