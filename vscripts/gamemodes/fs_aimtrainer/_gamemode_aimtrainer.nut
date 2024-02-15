@@ -1954,6 +1954,9 @@ void function StartSkyDiveChallenge(entity player)
 			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
+			dummy.EnableNPCFlag( NPC_IGNORE_ALL )
+			dummy.SetNoTarget( true )
+			dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
 			ChallengesEntities.dummies.append(dummy)
 			array<string> attachments = [ "vent_left", "vent_right" ]
 			

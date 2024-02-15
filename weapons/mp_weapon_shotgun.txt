@@ -103,10 +103,10 @@ WeaponData
 	"blast_pattern_npc_scale"            			"1.0"  // scales on top of the default scale
 
 	// Damage - When Used by Players
-	"damage_near_value"   							"7"
-	"damage_far_value"								"7"
-	"damage_near_value_titanarmor"					"7"
-	"damage_far_value_titanarmor" 					"7"
+	"damage_near_value"   							"6"
+    "damage_far_value"								"6"
+    "damage_near_value_titanarmor"					"6"
+    "damage_far_value_titanarmor" 					"6"
 	"damage_rodeo" 									"550"
 	"damage_near_distance"							"250"
 	"damage_far_distance" 							"850"
@@ -121,16 +121,16 @@ WeaponData
 	// Spread
 
 	// NOTE for projectile shotguns, set this to the size of the spread pattern at the intended engagement range
-	"spread_stand_hip"								"1.3"
-	"spread_stand_hip_run"							"1.3"
-	"spread_stand_hip_sprint"                       "1.3"
-	"spread_crouch_hip"   							"1.3"
-	"spread_air_hip"  								"1.3"
-	"spread_stand_ads"								"1.3"
-	"spread_crouch_ads"   							"1.3"
-	"spread_air_ads"  								"1.3"
-	"spread_wallrunning"  							"1.3"
-	"spread_wallhanging"  							"1.3"
+	"spread_stand_hip"								"1.5"
+	"spread_stand_hip_run"							"1.5"
+	"spread_stand_hip_sprint"                       "1.5"
+	"spread_crouch_hip"   							"1.5"
+	"spread_air_hip"  								"1.5"
+	"spread_stand_ads"								"1.5"
+	"spread_crouch_ads"   							"1.5"
+	"spread_air_ads"  								"1.5"
+	"spread_wallrunning"  							"1.5"
+	"spread_wallhanging"  							"1.5"
 
 	"spread_decay_rate"   							"500"
 	"spread_decay_delay"  							"0"
@@ -168,11 +168,7 @@ WeaponData
 	"dof_nearDepthEnd"								"0.0"
 
 	// Behavior
-                      
-	"fire_rate"   									"2.3"
-     
-                             
-      
+	"fire_rate"   									"3"
 	"reload_time" 									"2.75"
 	"reload_time_late1"								"1.45"
 	"reload_time_late2"								"0.25"
@@ -256,22 +252,22 @@ WeaponData
         }       
     	shotgun_bolt_l1
 		{
-		    "fire_rate" 	"*1.1"
+		    "fire_rate" 	"*1.08333"
 		}
 
 		shotgun_bolt_l2
 		{
-		    "fire_rate" 	"*1.2"
+		    "fire_rate" 	"*1.15"
 		}
 
 		shotgun_bolt_l3
 		{
-		    "fire_rate" 	"*1.3"
-		}  
+		    "fire_rate" 	"*1.24583"
+		}
 
 		shotgun_bolt_l4
         {
-            "fire_rate" 	"*1.3"
+            "fire_rate" 	"*1.24583"
         }
                                                             
          
@@ -320,24 +316,24 @@ WeaponData
 
         shotgun_bolt_l1_double_tap
         {
-            "fire_rate"             "*0.909091"     // 1/1.1 to cancel out bolt fire_rate bonus
+            "fire_rate"             "*0.9230797"     // 1/1.1 to cancel out bolt fire_rate bonus
             "burst_fire_delay"      "*0.95"
         }
 
         shotgun_bolt_l2_double_tap
         {
-            "fire_rate"             "*0.8333333"          // 1/1.2 to cancel out bolt fire_rate bonus
+            "fire_rate"             "*0.869565"          // 1/1.2 to cancel out bolt fire_rate bonus
             "burst_fire_delay"      "*0.9"
         }
 
         shotgun_bolt_l3_double_tap
         {
-            "fire_rate"             "*0.7692307"     // 1/1.3 to cancel out bolt fire_rate bonus
+            "fire_rate"             "*0.802677"     // 1/1.3 to cancel out bolt fire_rate bonus
             "burst_fire_delay"      "*0.85"
         }
         shotgun_bolt_l4_double_tap
         {
-            "fire_rate"             "*0.7692307"     // 1/1.3 to cancel out bolt fire_rate bonus
+            "fire_rate"             "*0.802677"     // 1/1.3 to cancel out bolt fire_rate bonus
             "burst_fire_delay"      "*0.85"
         }
 // end HAS_DOUBLE_TAP

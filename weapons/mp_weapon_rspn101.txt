@@ -227,6 +227,14 @@ WeaponData
 	dof_zoom_focusArea_top							0.064
 	dof_zoom_focusArea_bottom						-0.016
 
+    // Hipfire Spread
+    "spread_stand_hip"								"3.0" //"2.5"
+    "spread_stand_hip_run"							"6.6" //"5.5"
+    "spread_stand_hip_sprint"                       "8.4" //"7.0"
+    "spread_crouch_hip"   							"2.4" //"2.0"
+    "spread_air_hip"  								"8.4" //"7.0"
+    "spread_moving_decay_rate" 						"30"
+
 	Mods
 	{
 	    gold

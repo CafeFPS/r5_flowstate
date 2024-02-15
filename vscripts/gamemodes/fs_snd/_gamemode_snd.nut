@@ -661,7 +661,7 @@ void function SND_Lobby()
 				case 0:
 					dust2part1()
 					dust2part2()		
-				break
+				break	
 				
 				case 1:
 					Shoothouse()

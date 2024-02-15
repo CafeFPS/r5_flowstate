@@ -12,12 +12,12 @@ WeaponData
 	"menu_icon"									"rui/hud/common/melee_icon"
 	"hud_icon"									"rui/hud/common/melee_icon"
 	
-	"viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
-	"playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
+	// "viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
+	// "playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
 	
 	// Models
-	// "viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
-	// "playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
 
 	"OnWeaponActivate"							"OnWeaponActivate_weapon_titan_sword"
     "OnWeaponDeactivate"						"OnWeaponDeactivate_weapon_titan_sword"

@@ -29,12 +29,12 @@ WeaponData
 	"stat_range"  									"65"
 	"stat_accuracy"   								"80"
 	"stat_rof"										"80"
-	"viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
-	"playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
+	// "viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
+	// "playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
 	
 	// Models
-	// "viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
-	// "playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
 
 	"holster_type"									"rifle"
 	"holster_offset"						    	"2 0 2"//"-8 0 8"

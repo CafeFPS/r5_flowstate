@@ -30,7 +30,7 @@ WeaponData
 	dof_zoom_focusArea_top							0.08
 	dof_zoom_focusArea_bottom						-0.026
 
-    "projectile_launch_speed"						"21000"
+    "projectile_launch_speed"						"19000"
 
 	// Models
 	"viewmodel"   									"mdl/weapons/r97/ptpov_r97.rmdl"
@@ -160,14 +160,14 @@ WeaponData
     "viewmodel_jolt_roll"                            "0 2.5 0.0"
     "viewmodel_jolt_side"                            "0 0.0525 0"
 
-	"viewkick_pitch_base" 							"1.0"
-	"viewkick_pitch_random"   						"1.0"
+	"viewkick_pitch_base" 							"1.3"
+	"viewkick_pitch_random"   						"1.4"
 
 	"viewkick_pitch_softScale"						"4.5" //4.0
     "viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
-	"viewkick_yaw_random" 							"1.0"
+	"viewkick_yaw_random" 							"1.4"
 	"viewkick_yaw_random_innerexclude"				"0.05"
     "viewkick_yaw_softScale"						"2.0"
     "viewkick_yaw_hardScale"						"0.4"
