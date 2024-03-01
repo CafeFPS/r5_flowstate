@@ -487,8 +487,10 @@ bool function DataKnifePickUp_Use( entity pickup, entity player, int pickupFlags
 	if ( SURVIVAL_AddToPlayerInventory( player, data.ref, 1 ) > 0 )
 	{
 		#if CLIENT
-		if( player == GetLocalViewPlayer() )
+		if( player == GetLocalViewPlayer() && GetMapName() == "mp_rr_olympus_mu1" )
 			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_VAULT_REVEAL" )
+		else if( player == GetLocalViewPlayer() )
+			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_BRIDGE_REVEAL" )
 		#endif
 		#if SERVER
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultKeyGot" )
@@ -560,6 +562,16 @@ bool function PickupBackpackItem( entity pickup, entity player, int pickupFlags 
 
 bool function PickupMainWeapon( entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
+	#if SERVER || CLIENT
+	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
+	// if( data.ref == "mp_weapon_titan_sword" ) //quick patch this should go more deep into the checks. Cafe
+	// {
+		// #if SERVER
+		// GiveSword( player )
+		// #endif
+		// return true
+	// }
+	#endif
 	array<entity> primaryWeapons = SURVIVAL_GetPrimaryWeapons( player )
 	bool doDropCurrentWeapon = (pickupFlags & PICKUP_FLAG_FROM_MENU) > 0 && primaryWeapons.len() > 1
 

@@ -235,7 +235,7 @@ void function SURVIVAL_Loot_All_InitShared()
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new_halomod.rpak" ) )
 
-	//RegisterCustomWeapons()
+	RegisterCustomWeapons()
 
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
@@ -258,10 +258,10 @@ bool function IsNewLootEnabled( string ref )
 		break
 
 		case "":
-		case "mp_weapon_sentinel":
+		// case "mp_weapon_sentinel":
 		case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
-		case "mp_weapon_3030":
+		//case "mp_weapon_3030":
 		case "mp_weapon_nemesis":
 		case "arrows":
 		case "mp_weapon_dragon_lmg":

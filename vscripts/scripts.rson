@@ -308,6 +308,9 @@ Scripts:
 	weapons/mp_weapon_needler.nut
 	weapons/mp_ability_revenant_shadow_pounce_free.nut
 	weapons/mp_weapon_energysword.nut
+	weapons/mp_weapon_plasmapistol.nut
+	weapons/mp_weapon_heatwave.nut
+	weapons/mp_weapon_guidedmissile.nut
 ]
 
 When: "SERVER || CLIENT"

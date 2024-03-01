@@ -3,6 +3,7 @@ global function MpWeaponThermiteGrenade_Init
 global function OnProjectileCollision_weapon_thermite_grenade
 global function OnWeaponActivate_ThermiteGrenade
 global function OnWeaponDeactivate_ThermiteGrenade
+global function OnProjectileCollision_weapon_thermite_gun
 
 const asset PREBURN_EFFECT_ASSET = $"mWall_CH_smoke_light"
 const asset BURN_EFFECT_ASSET = $"P_wpn_meteor_wall"
@@ -142,6 +143,103 @@ void function OnProjectileCollision_weapon_thermite_grenade( entity projectile, 
 #endif // SERVER
 }
 
+void function OnProjectileCollision_weapon_thermite_gun( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	entity player = projectile.GetOwner()
+	if ( hitEnt == player )
+		return
+	/*
+	projectile.proj.projectileBounceCount++
+	//printt( "bounceCount:", projectile.proj.projectileBounceCount )
+
+	int maxBounceCount = projectile.GetProjectileWeaponSettingInt( eWeaponVar.projectile_ricochet_max_count )
+
+	bool forceExplode = false
+	if ( projectile.proj.projectileBounceCount > maxBounceCount )
+	{
+		//printt( "max bounceCount hit, forcing explosion" )
+		forceExplode = true
+	}*/
+
+	//bool projectileIsOnGround = normal.Dot( <0,0,1> ) > 0.75
+	//if ( !projectileIsOnGround )
+	//	return
+
+	//if ( !forceExplode )
+	//	printt( "projectileIsOnGround with Dot:", normal.Dot( <0,0,1> ) )
+
+	table collisionParams =
+	{
+		pos = pos,
+		normal = normal,
+		hitEnt = hitEnt,
+		hitbox = hitbox
+	}
+
+	vector dir = normal
+	dir.z = 0
+	dir = Normalize( dir )
+
+	if ( !PlantStickyEntity( projectile, collisionParams ) )
+		return
+
+	//projectile.SetDoesExplode( false )
+
+#if SERVER
+	// should be false anyways on a gun bullet
+	//projectile.proj.onlyAllowSmartPistolDamage = false
+
+	if ( !IsValid( player ) )
+	{
+		projectile.Destroy()
+		return
+	}
+	bool shouldFlipDir = true
+	array<string> mods = projectile.ProjectileGetMods()
+	foreach ( mod in mods )
+	{
+		if ( mod == "vertical_firestar" )
+			shouldFlipDir = false
+	}
+
+	if ( shouldFlipDir )
+		dir = CrossProduct( dir, normal )
+
+	BurnDamageSettings burnSettings
+	burnSettings.damageSourceID 		= projectile.ProjectileGetDamageSourceID()
+	burnSettings.preburnDuration 		= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "preburn_duration" ) )
+	burnSettings.burnDuration 			= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_duration" ) )
+	burnSettings.burnDamage 			= expect int( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_damage" ) )
+	burnSettings.burnTime 				= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_time" ) )
+	burnSettings.burnTickRate 			= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_tick_rate" ) )
+	burnSettings.burnDamageRadius 		= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_segment_radius" ) )
+	burnSettings.burnDamageHeight 		= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_segment_height" ) )
+	burnSettings.soundBurnSegmentStart 	= expect string( projectile.ProjectileGetWeaponInfoFileKeyField( "sound_burn_segment_start" ) )
+	burnSettings.soundBurnSegmentMiddle = expect string( projectile.ProjectileGetWeaponInfoFileKeyField( "sound_burn_segment_middle" ) )
+	burnSettings.soundBurnSegmentEnd 	= expect string( projectile.ProjectileGetWeaponInfoFileKeyField( "sound_burn_segment_end" ) )
+	burnSettings.soundBurnDamageTick_1P = expect string( projectile.ProjectileGetWeaponInfoFileKeyField( "sound_burn_damage_tick_1p" ) )
+	burnSettings.burnStackDebounce 		= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_stack_debounce" ) )
+	burnSettings.burnStacksMax 			= expect int( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_stacks_max" ) )
+	burnSettings.segmentSpacingDist 	= expect float( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_segment_spacing_dist" ) )
+
+	int numSegments = expect int( projectile.ProjectileGetWeaponInfoFileKeyField( "burn_segments" ) )
+
+	entity owner = projectile.GetOwner()
+	entity inflictor = CreateOncePerTickDamageInflictorHelper( burnSettings.burnDuration )
+
+	if ( shouldFlipDir )
+	{
+		thread BeginFire( owner, inflictor, projectile.GetOrigin(), dir, numSegments, false, burnSettings )
+		thread BeginFire( owner, inflictor, projectile.GetOrigin(), -1 * dir, numSegments, true, burnSettings )
+	}
+	else
+	{
+		thread BeginFire( owner, inflictor, projectile.GetOrigin(), dir, numSegments * 2, false, burnSettings )
+	}
+
+	//projectile.GrenadeExplode( normal )
+#endif // SERVER
+}
 
 void function FadeModelIntensityOverTime( entity model, float duration, int startColor = 255, int endColor = 0 )
 {
