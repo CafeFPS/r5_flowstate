@@ -446,7 +446,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	#if LISTEN_SERVER
 	SetConVarInt( "sv_onlineAuthEnable", 0 )
 	#endif
-	SetConVarInt( "sv_allowClientSideCfgExec", 1 )
+	try{
+		SetConVarInt( "sv_allowClientSideCfgExec", 1 )
+	}catch(e420)
+	{
+		printt( "r5sdk ver no compatible" )
+	}
 	#endif
 
 	SV_CL_Shared_Init()
