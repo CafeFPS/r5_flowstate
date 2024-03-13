@@ -65,6 +65,7 @@ void function Gymmovementmap_precache() {
     PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_128_01.rmdl" )
     PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x128_02.rmdl" )
     PrecacheModel( $"mdl/slum_city/slumcity_girdering_256x16_dirty_d.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_staircase_96_double.rmdl" )
 }
 
 struct {
@@ -424,6 +425,7 @@ void function Gymmovementmap_load() {
     MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_128x72_dirty.rmdl", < -1442.591, -10550.16, 16960.44 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 9417.719, -10737.38, 15631.15 >, < 0, 180, 0 >, true, 50000, -1, 1 )
     ClipInvisibleNoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_corner_Lshape.rmdl", < 8267, -10550.04, 16461.38 >, < 0, 180, 180 >, true, 50000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/ola/sewer_staircase_96_double.rmdl", < -1195.599, -10675.59, 16661.4 >, < 0, 0, 0 >, true, 50000, -1, 1 )
 
     foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
     foreach ( entity ent in InvisibleArray ) ent.MakeInvisible()
@@ -965,12 +967,12 @@ void function Gymmovementmap_load() {
     }
     })
     DispatchSpawn( trigger_24 )
-    entity trigger_25 = MapEditor_CreateTrigger( < 2774.999, -10731.4, 16758 >, < 0, -179.9898, 0 >, 533.5, 900, false )
+    entity trigger_25 = MapEditor_CreateTrigger( < 3172.001, -10731.4, 16758 >, < 0, -179.9898, 0 >, 156.7, 900, false )
     trigger_25.SetEnterCallback( void function(entity trigger , entity ent)
     {
         if (IsValidPlayer(ent)) {
         file.cp_table[ent] <- < 3198.999, -10731.38, 15914 >
-        file.cp_angle[ent] <- < 0, -179.9898, 0 >
+        file.cp_angle[ent] <- < 0, -180, 0 >
         int gen = ent.GetPersistentVarAsInt("gen")
 
         if (gen != 0) {
@@ -1165,4 +1167,20 @@ void function Gymmovementmap_load() {
     }
     })
     DispatchSpawn( trigger_34 )
+    entity trigger_35 = MapEditor_CreateTrigger( < 2921, -11259, 16601 >, < 0, -179.9898, 0 >, 533.5, 1200, false )
+    trigger_35.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValidPlayer(ent)) {
+            ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+    })
+    DispatchSpawn( trigger_35 )
+    entity trigger_36 = MapEditor_CreateTrigger( < 2921.001, -10216.02, 16587 >, < 0, -179.9898, 0 >, 533.5, 1200, false )
+    trigger_36.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValidPlayer(ent)) {
+            ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+        }
+    })
+    DispatchSpawn( trigger_36 )
 }
