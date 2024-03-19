@@ -438,7 +438,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( GetCurrentPlaylistName() == "fs_1v1" )
+	if( GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_prophunt" || !GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false ) )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )

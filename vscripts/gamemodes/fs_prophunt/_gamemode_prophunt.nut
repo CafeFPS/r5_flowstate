@@ -646,7 +646,7 @@ void function PROPHUNT_GiveAndManageProp(entity player, bool giveOldProp = false
 		return
 	}
 
-	entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), player.GetAngles(), 6, -1)
+	entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), <0,0,0>, 6, -1)
 	player.p.PROPHUNT_LastPropEntity = prop
 	prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 	prop.kv.solid = 6
@@ -1956,7 +1956,7 @@ void function ClientCommand_ChangeProp(entity player)
 
 void function ClientCommand_MatchSlope(entity player)
 {
-	if(!IsValid(player) || IsValid(player) && player.GetTeam() != TEAM_MILITIA || GetGameState() != eGameState.Playing) return
+	if(!IsValid(player) || IsValid(player) && player.GetTeam() != TEAM_MILITIA || GetGameState() != eGameState.Playing || !player.IsOnGround() ) return
 
 	vector testOrg = player.GetOrigin()
 	vector mins = player.GetPlayerMins()

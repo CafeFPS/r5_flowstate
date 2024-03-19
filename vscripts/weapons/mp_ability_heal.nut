@@ -41,6 +41,15 @@ void function StimEnd( entity weapon, float duration)
 void function OnWeaponChargeEnd_ability_heal( entity weapon )
 {
 	entity player = weapon.GetWeaponOwner()
+	
+	#if CLIENT
+	if( player != GetLocalClientPlayer() )
+		return
+	#endif
+
+	if( !IsValid( player ) )
+		return
+
 	weapon.SetWeaponPrimaryClipCount( 0 )
 }
 
