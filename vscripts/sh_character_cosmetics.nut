@@ -403,7 +403,10 @@ void function CharacterSkin_Apply( entity ent, ItemFlavor skin )
 	asset bodyModel = CharacterSkin_GetBodyModel( skin )
 	asset armsModel = CharacterSkin_GetArmsModel( skin )
 
+	int savedCamo = ent.GetCamo()
+	
 	ent.SetSkin( 0 ) // Lame that we need this, but this avoids invalid skin errors when the model changes and the currently shown skin index doesn't exist for the new model
+	
 	ent.SetModel( bodyModel )
 
 	int skinIndex = ent.GetSkinIndexByName( CharacterSkin_GetSkinName( skin ) )
@@ -412,11 +415,18 @@ void function CharacterSkin_Apply( entity ent, ItemFlavor skin )
 	if ( skinIndex == -1 )
 	{
 		skinIndex = 0
-		camoIndex = 0
+		camoIndex = savedCamo
 	}
-
-	ent.SetSkin( skinIndex )
-	ent.SetCamo( camoIndex )
+	
+	try 
+	{
+		ent.SetSkin( skinIndex )
+		ent.SetCamo( camoIndex )
+	} 
+	catch(skinerror)
+	{
+		//sqerror("(catch: skinerror) SKIN ERROR: " + skinerror)
+	}
 
 	#if SERVER
 		if ( ent.IsPlayer() )
