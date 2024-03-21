@@ -3604,7 +3604,7 @@ void function DeployViewModelAndEnableWeapons( entity player )
 //Investigate: This might be getting called without enableoffhandweapons being called. If so,  Server_TurnOffhandWeaponsDisabledOn() should be used instead of this stack system.
 void function DisableOffhandWeapons( entity player )
 {
-	if(player.IsPlayer()) 
+	if(!player.IsPlayer()) 
 		return 
 		
 	player.Server_TurnOffhandWeaponsDisabledOn()
