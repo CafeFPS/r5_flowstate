@@ -151,17 +151,6 @@ void function _CustomTDM_Init()
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
-	
-	try{
-		if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) ) // if you want to avoid cfg abusers
-			SetConVarInt( "sv_allowClientSideCfgExec", 1 )
-		else
-			SetConVarInt( "sv_allowClientSideCfgExec", 0 )
-	}catch(e420)
-	{
-			printt( "r5sdk ver no compatible" )
-	}
-		
 
 	if (GetCurrentPlaylistName() != "fs_movementgym")
 		SurvivalFreefall_Init() //Enables freefall/skydive
