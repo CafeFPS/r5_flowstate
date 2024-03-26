@@ -864,7 +864,7 @@ bool function ShouldGatherStats( entity player )
 {
 	Assert( IsValid( player ) )
 
-	return false
+	return true
 }
 #endif
 
