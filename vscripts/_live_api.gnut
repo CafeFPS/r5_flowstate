@@ -211,6 +211,11 @@ void function LiveAPI_OnWeaponAttack( entity player, entity weapon, string weapo
 	if( !IsValid( player ) )
 		return
 
+	ItemFlavor ornull weaponFlavorOrNull = GetWeaponItemFlavorByClass( weaponName )
+
+	if ( !weaponFlavorOrNull )
+		return // Not a weapon we should track
+
 	int newCount = weapon.GetWeaponPrimaryClipCount( )
 	int oldCount = newCount + ammoUsed
 
