@@ -1784,7 +1784,7 @@ entity function CreateRingBoundary(LocationSettingsCTF location)
 	CTF.ringfx = StartParticleEffectOnEntity_ReturnEntity(circle, GetParticleSystemIndex( $"P_survival_radius_CP_1x100" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	CTF.ringfx.SetParent(circle)
 
-    //StatsHook_SetSafeZone( CTF.ringCenter, CTF.ringRadius )
+    StatsHook_SetSafeZone( CTF.ringCenter, CTF.ringRadius )
 	
 	//Audio thread for ring
 	foreach(sPlayer in GetPlayerArray())

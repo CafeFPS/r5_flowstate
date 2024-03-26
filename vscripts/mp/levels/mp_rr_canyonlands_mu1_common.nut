@@ -266,7 +266,7 @@ void function CreateOctaneTTRingOfFireStatsTrigger()
 		if ( !IsAlive( ent ) )
 			return // (dw): To handle if the player is killed while in the ring of fire (quite easy to do if you stand on the flaming bottom part).
 
-		//StatsHook_PlayerUsedMapFeature( ent, "octanett_ringoffire" )
+		StatsHook_PlayerUsedMapFeature( ent, "octanett_ringoffire" )
 	} )
 }
 

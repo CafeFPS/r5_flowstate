@@ -442,7 +442,7 @@ void function LootCreepDeathSetup( entity creep, array<string> lootToSpawn )
 			if ( !markedForDeath )
 				return
 
-			//StatsHook_LootCreepKilled( creep, attacker )
+			StatsHook_LootCreepKilled( creep, attacker )
 
 			creep.e.isDisabled = true
 

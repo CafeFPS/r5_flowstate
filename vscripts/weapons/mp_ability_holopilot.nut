@@ -278,7 +278,7 @@ void function CreateDecoysHint( entity decoy, string msg, float endTime )
 
 #if SERVER
 bool function ClientCommand_ToggleDecoys( entity player, array<string> args )
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By Retï¿½culo Endoplasmï¿½tico#5955 (CafeFPS)//
 {
 	if ( !IsAlive( player ) )
 		return true
@@ -439,7 +439,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 	decoy.decoy.owner = player
 	decoy.SetOwner( player )	
 	
-	//StatsHook_HoloPiliot_OnDecoyCreated( player )
+	StatsHook_HoloPiliot_OnDecoyCreated( player )
 	AddEntityCallback_OnPostDamaged( decoy, void function( entity decoy, var damageInfo ) : ( player ) {
 		if ( IsValid( player ) )
 			HoloPiliot_OnDecoyDamaged( decoy, player, damageInfo )

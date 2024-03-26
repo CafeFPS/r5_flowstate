@@ -1128,7 +1128,7 @@ void function Survival_PlayerRespawnedTeammate( entity playerWhoRespawned, entit
 	respawnedPlayer.p.respawnChanceExpiryTime = 0.0
 	ClearPlayerEliminated( respawnedPlayer )
 
-	//StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
+	StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
 }
 
 void function UpdateDeathBoxHighlight( entity box )

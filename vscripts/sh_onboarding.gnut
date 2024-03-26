@@ -589,7 +589,7 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 	if(squadCheck)
 	{
 		RespawnBeacons_OnSquadEliminated( team ) // this sets respawnStatus too
-		//StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
+		StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
 
 		UpdateMatchSummaryPersistentVars( team )
 		foreach ( sPlayer in GetPlayerArray() )
