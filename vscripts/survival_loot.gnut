@@ -2324,12 +2324,18 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 		return false
 	
 	array<entity> lootToDrop = CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, origin )
+	array<string> mods = GetWeaponMods( weaponToDrop )
 
 	foreach ( loot in lootToDrop )
 	{
 		SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 		FakePhysicsThrow( player, loot, velocity * 100 )
 	}
+
+	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.inventoryDrop,
+		[ LiveAPI_GetPlayerIdentityTable( player ), weaponToDrop.GetWeaponClassName(), mods.len() + 1, mods],
+		[ 3/*player*/,                              4/*item*/,                         5/*quantity*/,  6/*extraData*/ ]
+	)
 
 	return true
 }
@@ -2389,6 +2395,11 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, b
 		}	
 		
 	}
+
+	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.inventoryDrop,
+		[ LiveAPI_GetPlayerIdentityTable( player ), ref,       count],
+		[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
+	)
 	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }

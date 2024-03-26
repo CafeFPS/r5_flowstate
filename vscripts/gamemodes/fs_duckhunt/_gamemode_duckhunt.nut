@@ -307,7 +307,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 			TakePassive(victim, ePassives.PAS_PILOT_BLOOD)
 
 		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, attacker )
+		Bleedout_StartPlayerBleedout( victim, attacker, damageInfo )
 
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))

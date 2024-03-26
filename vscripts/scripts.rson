@@ -417,6 +417,7 @@ Scripts:
 	_viewcone.gnut
 	_pain_death_sounds.gnut
 	_threat_tracker.gnut
+	_live_api.gnut
 	ai/_ai_chatter.gnut
 	ai/_ai_goliath.gnut
 	ai/_ai_stationary_firing_positions.gnut // DEVSCRIPTS remove

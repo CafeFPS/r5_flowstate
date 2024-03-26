@@ -130,7 +130,7 @@ void function Bleedout_AddCallback_OnPlayerGiveFirstAid( void functionref(entity
 	file.Callback_OnPlayerGiveFirstAid = callback
 }
 
-void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
+void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var damageInfo )
 {
 	if(!IsValid(player) || !IsValid(attacker)) return
 
@@ -163,7 +163,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
 
 	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
-		file.Callback_OnPlayerStartBleedout( player, attacker, null )
+		file.Callback_OnPlayerStartBleedout( player, attacker, damageInfo )
 
 	// thread BloodTrail( player )
 	thread PlayerDying( player )

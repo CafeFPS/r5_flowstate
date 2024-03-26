@@ -781,7 +781,6 @@ void function OnWeaponChargeEnd_Consumable( entity weapon )
 
 var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	printt("OnWeaponPrimaryAttack_Consumable")
 	entity player = weapon.GetOwner()
 
 	if ( weapon.GetWeaponChargeFraction() < 1.0 )
@@ -813,7 +812,15 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 			UltimatePackUse( player, info )
 		
 		if( GameRules_GetGameMode() == SURVIVAL )
-			SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
+		{
+			int dropAmount = 1
+			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
+
+			LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.inventoryUse,
+				[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  dropAmount ],
+				[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
+			)
+		}
 		
 		StatsHook_PlayerUsedResource( player, null, itemName )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )

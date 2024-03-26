@@ -46,6 +46,8 @@ void function SetGameState( int newState )
 	{
 		callbackFunc()
 	}
+
+	LiveAPI_OnGameStateChanged( newState )
 }
 
 void function GameState_EntitiesDidLoad()

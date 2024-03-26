@@ -340,6 +340,8 @@ void function Server_Init()
 	JumpPad_Init()
 	ObjectiveResourceSystem_ServerInit()
 
+	LiveAPI_Init()
+
     // ReMap Live
     if ( GetCurrentPlaylistName() == "survival_dev" )
         ReMapLive_Init()
