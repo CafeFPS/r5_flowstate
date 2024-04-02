@@ -966,7 +966,7 @@ void function PhaseTunnel_PhaseEntity( entity ent, entity tunnelEnt, entity trig
 	file.phaseTime[ tunnelEnt ] = Time() + PHASE_TUNNEL_TELEPORT_DBOUNCE
 
 	StatsHook_PhaseTunnel_EntTraversed( ent, tunnelEnt, entHasUsedTunnelBefore )
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.wraithPortal, 
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.wraithPortal, 
 		[ LiveAPI_GetPlayerIdentityTable( ent ) ], 
 		[ 3/*player*/ ]
 	)

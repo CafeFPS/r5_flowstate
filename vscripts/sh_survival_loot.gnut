@@ -4268,7 +4268,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 
 		PIN_ItemPickup( player, pickup, lootRef.lootData.ref, unitsPickedUp )
 
-		LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.inventoryPickUp,
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryPickUp,
 			[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  countPerDrop ],
 			[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
 		)

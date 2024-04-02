@@ -2,7 +2,7 @@
 //	_live_api.gnut
 //=========================================================
 global function LiveAPI_Init
-global function LiveAPI_WriteLogUsingCustomFields
+global function LiveAPI_WriteLogUsingDefinedFields
 
 global function LiveAPI_GetPlayerIdentity
 global function LiveAPI_GetPlayerIdentityTable
@@ -136,7 +136,7 @@ table< int, var > function LiveAPI_GetPlayerIdentityTable( entity player )
 	return { [ 0 ]/*name*/ = expect string( player.GetNetworkedClassName() ) }
 }
 
-void function LiveAPI_WriteLogUsingCustomFields( int eventEnum, array< var > data, array< int > fieldEnums = [] )
+void function LiveAPI_WriteLogUsingDefinedFields( int eventEnum, array< var > data, array< int > fieldEnums = [] )
 {
 	table< int, var > writableData = LiveAPI_GetWritableData( eventEnum, data, fieldEnums )
 	LiveAPI_WriteLog( eventEnum, writableData )
@@ -155,7 +155,7 @@ void function LiveAPI_WriteLog( int category, table< int, var > data )
 void function LiveAPI_OnInit()
 {
 	LiveAPI_StartLogging()
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.init, [ 0 ], [ 0 ] )
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.init, [ 0 ], [ 0 ] )
 }
 
 void function LiveAPI_OnGameStateChanged( int newVal )
@@ -175,7 +175,7 @@ void function LiveAPI_OnGameStateChanged( int newVal )
 			winners.append( LiveAPI_GetPlayerIdentityTable( listedPlayer ) )
 		}
 
-		LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.matchStateEnd,
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.matchStateEnd,
 			[ GetEnumString( "eGameState", GetGameState() ), winners ],
 			[ 3/*state*/,                                    4/*winners*/ ]
 		)
@@ -183,7 +183,7 @@ void function LiveAPI_OnGameStateChanged( int newVal )
 		return
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.gameStateChanged, 
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.gameStateChanged, 
 		[ GetEnumString( "eGameState", GetGameState() ) ], 
 		[ 3/*state*/ ]
 	)
@@ -191,7 +191,7 @@ void function LiveAPI_OnGameStateChanged( int newVal )
 
 void function LiveAPI_OnClientConnected( entity player )
 {
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.playerConnected, 
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerConnected, 
 		[ LiveAPI_GetPlayerIdentityTable( player ) ], 
 		[ 3/*player*/ ]
 	)
@@ -200,7 +200,7 @@ void function LiveAPI_OnClientConnected( entity player )
 void function LiveAPI_OnClientDisconnected( entity player )
 {
 	// NOTE: when reconnect becomes a thing in our game build, adjust it here too !!!
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.playerDisconnected, 
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerDisconnected, 
 		[ LiveAPI_GetPlayerIdentityTable( player ), false,             IsAlive( player ) ], 
 		[ 3/*player*/,                              4/*canReconnect*/, 5/*isAlive*/ ]
 	)
@@ -225,7 +225,7 @@ void function LiveAPI_OnWeaponAttack( entity player, entity weapon, string weapo
 	int poolType = weapon.GetWeaponAmmoPoolType()
 	string ammoType = AmmoType_GetRefFromIndex( poolType )
 
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.ammoUsed,
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.ammoUsed,
 		[ LiveAPI_GetPlayerIdentityTable( player ), ammoType,      ammoUsed,        oldCount,          newCount ],
 		[ 3/*player*/,                              4/*ammoType*/, 5/*amountUsed*/, 6/*oldAmmoCount*/, 7/*newAmmoCount*/ ]
 	)
@@ -270,7 +270,7 @@ void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker
 		fieldNums.append( 6/*damageInflicted*/ )
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eventType, fieldData, fieldNums )
+	LiveAPI_WriteLogUsingDefinedFields( eventType, fieldData, fieldNums )
 }
 
 void function LiveAPI_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -294,7 +294,7 @@ void function LiveAPI_OnPlayerDamaged( entity victim, var damageInfo )
 
 void function LiveAPI_OnPlayerGotFirstAid( entity injured, entity healer )
 {
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.playerRevive,
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerRevive,
 		[ LiveAPI_GetPlayerIdentityTable( healer ), LiveAPI_GetPlayerIdentityTable( injured ) ],
 		[ 3/*player*/,                              4/*revived*/ ]
 	)
@@ -302,7 +302,7 @@ void function LiveAPI_OnPlayerGotFirstAid( entity injured, entity healer )
 
 void function LiveAPI_LinkedEntityLog( entity player, entity linkedEntity, int eventType )
 {
-	LiveAPI_WriteLogUsingCustomFields( eventType,
+	LiveAPI_WriteLogUsingDefinedFields( eventType,
 		[ LiveAPI_GetPlayerIdentityTable( player ), string( linkedEntity ) ],
 		[ 3/*player*/,                              4/*linkedEntity*/ ]
 	)
@@ -343,7 +343,7 @@ void function LiveAPI_OnPlayerWeaponSwitched( entity player, entity newWeapon, e
 		fieldNums.append( 5/*oldWeapon*/ )
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.weaponSwitched, data, fieldNums )
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.weaponSwitched, data, fieldNums )
 }
 
 void function LiveAPI_OnRespawnTeamPlayers( entity respawner, array< entity > playersRespawned )
@@ -360,7 +360,7 @@ void function LiveAPI_OnRespawnTeamPlayers( entity respawner, array< entity > pl
 		respawnedData.append( LiveAPI_GetPlayerIdentityTable( listedPlayer ) )
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.playerRespawnTeam,
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerRespawnTeam,
 		[ LiveAPI_GetPlayerIdentityTable( respawner ), respawnedData ],
 		[ 3/*player*/,                                 4/*respawned*/ ]
 	)
@@ -389,7 +389,7 @@ void function LiveAPI_OnPlayerStatChanged( entity player, string statName, var n
 			break;
 	}
 
-	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.playerStatChanged,
+	LiveAPI_WriteLogUsingDefinedFields(eLiveAPI_EventTypes.playerStatChanged,
 		[ LiveAPI_GetPlayerIdentityTable( player ),	statName, 	   newVal ],
 		[ 3/*player*/,                              4/*statName*/, oneofFieldNum/*newValue*/ ]
 	)
@@ -409,7 +409,7 @@ void function LiveAPI_OnDeathFieldStartResize( DeathFieldData data, int eventTyp
 		logNums.append( 6/*endRadius*/ )
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eventType, logData, logNums )
+	LiveAPI_WriteLogUsingDefinedFields( eventType, logData, logNums )
 }
 
 void function LiveAPI_OnDeathFieldStartShrink( DeathFieldData data )
@@ -424,7 +424,7 @@ void function LiveAPI_OnDeathFieldStopShrink( DeathFieldData data )
 
 void function LiveAPI_OnMatchSetup()
 {
-	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.matchSetup,
+	LiveAPI_WriteLogUsingDefinedFields(eLiveAPI_EventTypes.matchSetup,
 		[ GetMapName(),	GetCurrentPlaylistName(), GetCurrentPlaylistVarString( "description", "" ), GetDatacenterName(), !GetCurrentPlaylistVarBool( "aimassist_adspull_disabled", false ), false, ""/*TODO: GetServerID()*/, loadoutConfiguration ],
 		[ 3/*map*/,     4/*playlistName*/,        5/*playlistDesc*/,                              6/*dataCenter*/,     7/*aimAssistOn*/,                                                  8/*anonymousMode*/, 9, 10 ]
 	)

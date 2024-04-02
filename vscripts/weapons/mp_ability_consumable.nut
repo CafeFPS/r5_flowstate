@@ -816,7 +816,7 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 			int dropAmount = 1
 			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
 
-			LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.inventoryUse,
+			LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryUse,
 				[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  dropAmount ],
 				[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
 			)

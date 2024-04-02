@@ -474,7 +474,7 @@ void function HandleSquadElimination( int team )
 		squadData.append( LiveAPI_GetPlayerIdentityTable( squadPlayer ) )
 	}
 
-	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.squadEliminated,
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.squadEliminated,
 		[ squadData ], [ 3/*players*/ ]
 	)
 }

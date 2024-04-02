@@ -1073,7 +1073,7 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 
 		PlayBattleChatterLineToSpeakerAndTeam( playerUser, "bc_gotFriendlyBanner" )
 
-		LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.bannerCollected,
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.bannerCollected,
 			[ LiveAPI_GetPlayerIdentityTable( playerUser ), LiveAPI_GetPlayerIdentityTable( owner ) ],
 			[ 3/*player*/,                                  4/*collected*/ ]
 		)
