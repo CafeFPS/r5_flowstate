@@ -14,9 +14,7 @@ global function LiveAPI_GrenadeThrown
 global function LiveAPI_PlayerAbilityUsed
 
 global function LiveAPI_OnPlayerDamaged
-global function LiveAPI_OnPlayerIntStatChanged
-global function LiveAPI_OnPlayerFloatStatChanged
-global function LiveAPI_OnPlayerBoolStatChanged
+global function LiveAPI_OnPlayerStatChanged
 
 ////////////////////////
 ////////////////////////
@@ -42,6 +40,7 @@ void function LiveAPI_Init()
 	//AddCallback_OnPlayerWeaponSwitched( LiveAPI_OnPlayerWeaponSwitched ) TODO: CodeCallback_OnPlayerWeaponActivated()
 
 	LiveAPI_OnInit()
+	LiveAPI_OnMatchSetup()
 }
 
 /////////////////////////
@@ -155,6 +154,7 @@ void function LiveAPI_WriteLog( int category, table< int, var > data )
 /////////////////////////
 void function LiveAPI_OnInit()
 {
+	LiveAPI_StartLogging()
 	LiveAPI_WriteLogUsingCustomFields( eLiveAPI_EventTypes.init, [ 0 ], [ 0 ] )
 }
 
@@ -366,7 +366,7 @@ void function LiveAPI_OnRespawnTeamPlayers( entity respawner, array< entity > pl
 	)
 }
 
-void function LiveAPI_OnPlayerIntStatChanged( entity player, string statName, int newVal )
+void function LiveAPI_OnPlayerStatChanged( entity player, string statName, var newVal )
 {
 	if( !LiveAPI_IsValidToRun() )
 		return
@@ -374,37 +374,24 @@ void function LiveAPI_OnPlayerIntStatChanged( entity player, string statName, in
 	if( !IsValid(player) )
 		return
 
-	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.playerStatChanged,
-		[ LiveAPI_GetPlayerIdentityTable( player ),	statName, 	   newVal ],
-		[ 3/*player*/,                              4/*statName*/, 5/*intValue*/ ]
-	)
-}
+	int oneofFieldNum = -1 // will error if an unsupported type is passed in
 
-void function LiveAPI_OnPlayerFloatStatChanged( entity player, string statName, float newVal )
-{
-	if( !LiveAPI_IsValidToRun() )
-		return
-
-	if( !IsValid(player) )
-		return
-
-	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.playerStatChanged,
-		[ LiveAPI_GetPlayerIdentityTable( player ),	statName, 	   newVal ],
-		[ 3/*player*/,                              4/*statName*/, 6/*floatValue*/ ]
-	)
-}
-
-void function LiveAPI_OnPlayerBoolStatChanged( entity player, string statName, bool newVal )
-{
-	if( !LiveAPI_IsValidToRun() )
-		return
-
-	if( !IsValid(player) )
-		return
+	switch( type( newVal ) )
+	{
+		case "int":
+			oneofFieldNum = 5
+			break;
+		case "float":
+			oneofFieldNum = 6
+			break;
+		case "bool":
+			oneofFieldNum = 7
+			break;
+	}
 
 	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.playerStatChanged,
 		[ LiveAPI_GetPlayerIdentityTable( player ),	statName, 	   newVal ],
-		[ 3/*player*/,                              4/*statName*/, 7/*boolValue*/ ]
+		[ 3/*player*/,                              4/*statName*/, oneofFieldNum/*newValue*/ ]
 	)
 }
 
@@ -433,4 +420,12 @@ void function LiveAPI_OnDeathFieldStartShrink( DeathFieldData data )
 void function LiveAPI_OnDeathFieldStopShrink( DeathFieldData data )
 {
 	LiveAPI_OnDeathFieldStartResize( data, eLiveAPI_EventTypes.ringFinishedClosing )
+}
+
+void function LiveAPI_OnMatchSetup()
+{
+	LiveAPI_WriteLogUsingCustomFields(eLiveAPI_EventTypes.matchSetup,
+		[ GetMapName(),	GetCurrentPlaylistName(), GetCurrentPlaylistVarString( "description", "" ), GetDatacenterName(), !GetCurrentPlaylistVarBool( "aimassist_adspull_disabled", false ), false, ""/*TODO: GetServerID()*/, loadoutConfiguration ],
+		[ 3/*map*/,     4/*playlistName*/,        5/*playlistDesc*/,                              6/*dataCenter*/,     7/*aimAssistOn*/,                                                  8/*anonymousMode*/, 9, 10 ]
+	)
 }

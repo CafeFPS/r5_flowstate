@@ -904,7 +904,7 @@ void function OnDependentStatDependencyChanged( entity player, StatEntry depende
 				cb( player, oldValue, newValue )
 		}
 
-		LiveAPI_OnPlayerBoolStatChanged( player, dependent.persistenceFullKey_Current, newValue )
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 	else if ( dependent.type == eStatType.INT )
 	{
@@ -917,7 +917,7 @@ void function OnDependentStatDependencyChanged( entity player, StatEntry depende
 				cb( player, oldValue, newValue )
 		}
 
-		LiveAPI_OnPlayerIntStatChanged( player, dependent.persistenceFullKey_Current, newValue )
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 	else if ( dependent.type == eStatType.FLOAT )
 	{
@@ -930,7 +930,7 @@ void function OnDependentStatDependencyChanged( entity player, StatEntry depende
 				cb( player, oldValue, newValue )
 		}
 
-		LiveAPI_OnPlayerFloatStatChanged( player, dependent.persistenceFullKey_Current, newValue )
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 }
 #endif
