@@ -1482,6 +1482,7 @@ void function FSIntro_StartIntroScreen()
 	vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
 
 	//Create camera and mover
+	GetLocalClientPlayer().ClearMenuCameraEntity()
 	file.FSIntro_CameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
 	file.FSIntro_Camera	  = CreateClientSidePointCamera( camera_start_pos, camera_start_angles, 40 )
 	entity cameraMover = file.FSIntro_CameraMover
@@ -1516,7 +1517,7 @@ void function FSIntro_StartIntroScreen()
 		//Move camera to end pos
 		cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
 		cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
-
+		printt( "Moving camera" )
 		wait 1
 
 		if( i == charactersModels.len() )

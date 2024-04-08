@@ -18,6 +18,9 @@ global function OnWeaponZoomOut_HaloModMagnum
 global function OnWeaponZoomIn_HaloModSniper
 global function OnWeaponZoomOut_HaloModSniper
 
+global function OnWeaponZoomIn_ModdedPistol
+global function OnWeaponZoomOut_ModdedPistol
+
 #if CLIENT
 global function FS_ForceDestroyCustomAdsOverlay
 global function FS_ForceDestroyCustomAdsOverlay_Callback
@@ -339,6 +342,74 @@ void function OnWeaponZoomOut_HaloModSniper(  entity weapon )
 	{
 		Minimap_EnableDraw()
 	}
+	
+	//Show the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", false )
+	PlayerHudSetWeaponInspect( false )
+	WeaponStatusSetWeaponInspect( false )
+	#endif
+
+	weapon.w.isInAdsCustom = false
+}
+
+void function OnWeaponZoomIn_ModdedPistol(  entity weapon )
+{
+	if( weapon.w.isInAdsCustom )
+		return
+
+	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	asset overlayToShow = $"rui/flowstate_custom/modded_pistol_overlay"
+	
+	foreach( mod in weapon.GetMods() )
+	{
+		if( mod == "optic_cq_threat" )
+		{
+			overlayToShow = $"rui/flowstate_custom/modded_pistol_overlay_threat"
+			continue
+		}
+	}
+
+	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
+	RuiSetImage( Hud_GetRui( BRAds ), "basicImage", overlayToShow )
+	Hud_SetVisible( BRAds, true )
+
+	weapon.HideWeapon()
+	
+	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// {
+		Minimap_DisableDraw()
+	// }
+	
+	//Hide the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", true )
+	PlayerHudSetWeaponInspect( true )
+	WeaponStatusSetWeaponInspect( true )
+	#endif
+	
+	weapon.w.isInAdsCustom = true
+}
+
+void function OnWeaponZoomOut_ModdedPistol(  entity weapon )
+{
+	if( !weapon.w.isInAdsCustom )
+		return
+
+	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
+	Hud_SetVisible( BRAds, false )
+
+	weapon.ShowWeapon()
+
+	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// {
+		Minimap_EnableDraw()
+	// }
 	
 	//Show the HUD.
 	var gamestateRui = ClGameState_GetRui()

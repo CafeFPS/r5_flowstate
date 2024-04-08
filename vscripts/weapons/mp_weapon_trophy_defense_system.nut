@@ -772,7 +772,7 @@ void function Trophy_CreateTriggerArea( entity pylon ) {
 	vortexSphere.kv.spawnflags = spawnFlags
 	vortexSphere.kv.enabled = 1
 	vortexSphere.kv.radius = TROPHY_INTERCEPT_PROJECTILE_RANGE
-	vortexSphere.kv.bullet_fov = 105
+	vortexSphere.kv.bullet_fov = 180
 	vortexSphere.kv.physics_pull_strength = 25
 	vortexSphere.kv.physics_side_dampening = 6
 	vortexSphere.kv.physics_fov = 360

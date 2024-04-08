@@ -377,6 +377,7 @@ void function Init_PlayerScripts( entity player )
 
 void function CodeCallback_EntityVarChanged( entity ent, varName, newValue, oldValue )
 {
+	// printt( "entity var changed", varName, newValue, ent )
 	string className = expect string( ent.GetNetworkedClassName() )
 
 	if ( !(className in _entityClassVarChangeCallbacks) )

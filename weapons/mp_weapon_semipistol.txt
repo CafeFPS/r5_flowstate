@@ -1,9 +1,6 @@
 #base "_base_handgun.txt"
 #base "_base_mags_light.txt"
 #base "_base_laser_sights_small.txt"
-                  
-                            
-      
 
 WeaponData
 {
@@ -33,10 +30,13 @@ WeaponData
 	"stat_rof"										"41"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/p2011/ptpov_p2011.rmdl"
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_p2011_sniperOptics.rmdl"
 	"playermodel" 									"mdl/weapons/p2011/w_p2011.rmdl"
 
 	"chroma_color"									"1 .8 .6"
+
+	"OnWeaponStartZoomIn"                           "OnWeaponZoomIn_ModdedPistol"
+	"OnWeaponStartZoomOut"                          "OnWeaponZoomOut_ModdedPistol"
 
 	// Sounds
 	"fire_sound_1"									"weapon_re45auto_shell"
@@ -195,6 +195,9 @@ WeaponData
 	"airburst_pattern_scale"                "10.0"
 	"blast_pattern_default_scale"           "10.0"
 
+	"sway_rotate_attach_zoomed" ""
+	"sway_rotate_attach" ""
+
 	Mods
 	{
         gold
@@ -248,21 +251,110 @@ WeaponData
 		optic_cq_holosight
 		{
 			"bodygroup3_set"	    "1"
+			
+            // "bodygroup1_set"		"0"
+            // "bodygroup8_set"		"1"
+
+            // "ui1_enable"			"0"
+            // "ui8_enable"			"1"
+
+			// scope_talon
+
+			"zoom_fov" 					"19.8583" // 4x @ 70
+			"zoom_toggle_fov"			"10.0042" // 8x @ 70
+			"zoom_toggle_lerp_time"		"0.2"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"1"
+
+			"bodygroup_ads_scope_set"	"3"
+
+			"viewmodel_offset_ads"		"0 -9 -2"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+			"zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+			"aimassist_adspull_weaponclass"            "none"
+
+            zoomed_convar_sensitivity_index         3
+            zoomed_convar_toggle_sensitivity_index  5
 		}
 
 		optic_cq_holosight_variable
 		{
 			"bodygroup3_set"	"1"
+			//scope_dcom
+
+			"zoom_fov" 			"13.3128" // 6x @ 70
+
+			// "bodygroup1_set" 	"0"
+			// "bodygroup21_set" 	"1"
+
+			// "ui1_enable" 		"0"
+			// "ui30_enable" 		"1"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"1"
+
+			"bodygroup_ads_scope_set"	"2"
+
+			"viewmodel_offset_ads"		"0 0 0.005"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+            "zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+            // Behavior- Aim Assist
+			"aimassist_adspull_weaponclass"            "none"
+
+
+            zoomed_convar_sensitivity_index         4
 		}
 
 		optic_cq_threat
 		{
 		    "bodygroup3_set"	"1"
 
-            "viewmodel_offset_ads"                  "0 15 0"
+			// scope_zoom
 
-            "dof_zoom_nearDepthStart"               "0.75"
-            "dof_zoom_nearDepthEnd"                 "10.0"
+            "zoom_fov"				    "19.8583" // 4x @ 70
+			"zoom_toggle_fov"           "8.01071" // 10x @ 70
+	        "zoom_toggle_lerp_time"     "0.04"  // super fast lerp to simulate digital zoom snappiness
+
+			// "bodygroup1_set" 	"0"
+			// "bodygroup23_set" 	"1"
+
+			// "ui1_enable" 		"0"
+			// "ui32_enable" 		"1"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"2"
+
+			"bodygroup_ads_scope_set"	"1"
+
+			"threat_scope_enabled"				"1"
+			"threat_scope_fadedist_start"       "5905.51" // 150m
+			"threat_scope_fadedist_end"         "11811.0" // 300m
+			// "threat_scope_bounds_tagname1"	    "SCR_TR_CRO"
+			// "threat_scope_bounds_tagname2"	    "SCR_BL_CRO"
+
+			"viewmodel_offset_ads"		"-0.004 0.1 0.0085"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+			"zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+			"aimassist_adspull_weaponclass"            "none"
+
+            zoomed_convar_sensitivity_index         3
+            zoomed_convar_toggle_sensitivity_index  6
 		}
 
 		bullets_mag_l1
@@ -359,14 +451,25 @@ WeaponData
 		    crosshairMovementY          crosshair_movement_y
 		}
 
-		Crosshair_1
-		{
-			"ui"						"ui/crosshair_plus"
-			"base_spread"				"0.0"
-			Args
-			{
-				isFiring				weapon_is_firing
-			}
-		}
+		// Crosshair_1
+		// {
+			// "ui"						"ui/crosshair_plus"
+			// "base_spread"				"0.0"
+			// Args
+			// {
+				// isFiring				weapon_is_firing
+			// }
+		// }
+
+		// Crosshair_1
+		// {
+			// "ui"           "ui/crosshair_circle2"
+			// "base_spread"  "0"
+
+			// "Args"
+			// {
+				// "isFiring"  "weapon_is_firing"
+			// }
+		// }
 	}
 }

@@ -199,7 +199,7 @@ void function SetCommonScoreRUIVars( var rui )
 		return
 		
 		case "fs_dm_fast_instagib":
-			RuiSetString( rui, "gameModeString", "LG INSTAGIB" )
+			RuiSetString( rui, "gameModeString", "FS INSTAGIB" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
@@ -239,7 +239,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 		} else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		{
-			RuiSetString( rui, "gameModeString", "FS LG DUELS" )
+			RuiSetString( rui, "gameModeString", "FS LGDUELS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 		}

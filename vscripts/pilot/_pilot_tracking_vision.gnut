@@ -15,6 +15,8 @@ void function TrackingVision_Init()
 
 void function TrackingVision_OnPlayerConnected( entity player ) 
 {
+	if( g_bIs1v1 ){ return } //needs proper specific init
+	
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.BEGIN_WALLRUN, Flowstate_TrackingVision_WalljumpDetection )
 
@@ -66,7 +68,9 @@ void function Flowstate_TrackingVision_TryToTrackSuperglide( entity player )
 			
 			if(wasmantle == true && !player.IsOnGround() && playerVel > 480 &&  player.IsSliding() && airtime <= 0.5)
 			{
+				#if DEVELOPER
 				printt( "Superglide detected for player " + player.GetPlayerName() + " at " + player.GetOrigin() )
+				#endif
 				TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE, player, player.GetOrigin(), player.GetTeam(), player )	
 				break
 			}

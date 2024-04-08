@@ -158,6 +158,30 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 
 	EmitSoundOnEntity( projectile, CREEPING_BOMBARDMENT_FLARE_SOUND )
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod5", false ) )
+	{
+		
+		for (int cur = 0; cur < 60; cur++) {
+			wait 1
+			thread function () : ( bombardmentWeapon, dir, origin, signalFX )
+			{
+				thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, origin,
+					CREEPING_BOMBARDMENT_WIDTH,
+					CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP,
+					CREEPING_BOMBARDMENT_STEP_COUNT,
+					CREEPING_BOMBARDMENT_STEP_INTERVAL,
+					CREEPING_BOMBARDMENT_DELAY )
+
+				float duration = CREEPING_BOMBARDMENT_STEP_COUNT * CREEPING_BOMBARDMENT_STEP_INTERVAL
+				wait duration + CREEPING_BOMBARDMENT_DELAY
+
+				if ( IsValid( signalFX ) )
+					EffectStop( signalFX )
+			}()
+		}
+		return
+	}
+
 	thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, projectile.GetOrigin(),
 		CREEPING_BOMBARDMENT_WIDTH,
 		CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP,

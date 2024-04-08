@@ -2459,3 +2459,17 @@ string function StripRuiStringFormatting( string text )
 
 	return newText
 }
+
+bool function IsDevGamemode()
+{
+	switch(GetCurrentPlaylistName())
+	{
+		case "survival_dev":
+		case "dev_default":
+            return true
+
+        default: return false
+	}
+
+    unreachable
+}

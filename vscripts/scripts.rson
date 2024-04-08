@@ -248,6 +248,8 @@ Scripts:
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
 	weapons/mp_weapon_smart_pistol.nut
+	weapons/mp_weapon_softball.nut
+	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
 	
 
@@ -315,7 +317,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	_sh_init.gnut
+	sh_init.gnut
 	sh_sp_dialogue.gnut
 
 	sh_info_cords.gnut
@@ -380,6 +382,7 @@ Scripts:
 	sh_onboarding.gnut
 
 	sh_loot_vault_panel.nut
+	mp/sh_charge_pylons.gnut
 	mp/sh_loot_drones.nut
 	mp/sh_loot_rollers.nut
 
@@ -824,6 +827,7 @@ Scripts:
 	ui/FRChallenges/panel_buymenu5.nut
 	
 	ui/FRChallenges/flowstate_lgduels_settings.nut
+	ui/FRChallenges/flowstate_valksimulator_settings.nut
 	//Movement Gym
 	ui/MovementGym/movementgym_settings.nut
 	//KillReplay
@@ -870,6 +874,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	weapons/mp_weapon_portalgun_approach.nut
 	weapons/mp_weapon_grenade_gravity.nut
 	weapons/mp_ability_phase_rewind.nut
 	weapons/mp_ability_space_elevator_tac.nut
@@ -969,6 +974,8 @@ Scripts:
 	gamemodes/util/sh_custom_zombie_mystery_box.nut
 	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
+	
+	sh_hover_vehicle.gnut
 ]
 
 When: "SERVER"

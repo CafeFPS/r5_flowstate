@@ -149,6 +149,16 @@ void function ClientCodeCallback_PlayerSpawned( entity player )
 	if ( !IsValid( player ) )
 		return
 
+	if ( player == GetLocalClientPlayer() )
+	{
+		if( GetCurrentPlaylistVarBool( "flowstate_force_softened_locale", false ) )
+			SetConVarBool( "cl_is_softened_locale", true )
+
+		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
+
+		Flowstate_ApplyModifiedMovementToPlayer( player )
+	}
+
 	if ( IsMenuLevel() )
 		return
 

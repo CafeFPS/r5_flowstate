@@ -332,6 +332,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
 	PrecacheWeapon( $"mp_ability_emote_projector" )
+	PrecacheWeapon( $"mp_weapon_3030" )
+	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
+	PrecacheWeapon( $"melee_vctblue" )
 
 	switch(GameRules_GetGameMode())
 	{
@@ -363,8 +366,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_cloak" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
-	//PrecacheWeapon( $"mp_weapon_sentinel" ) //sights don't work, it's bad
 	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
+	PrecacheWeapon( $"mp_weapon_melee_boxing_ring" )
+	PrecacheWeapon( $"melee_boxing_ring" )
 
 	PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
@@ -379,13 +383,32 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_cj.rmdl" )
-	//PrecacheModel( $"mdl/Humans/pilots/ptpov_cj.rmdl")
 	PrecacheModel( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_gojo.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_naruto.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
+	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_marvin.rmdl" )
+	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_arrows_mn.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/evac_tower_balloon.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/evac_tower_weight.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+
+	PrecacheWeapon( $"melee_titan_sword" )
+	PrecacheWeapon( $"mp_weapon_titan_sword" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
@@ -471,11 +494,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	}
 	
 	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
-	
-	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
-	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
-	PrecacheWeapon( $"melee_titan_sword" )
-	PrecacheWeapon( $"mp_weapon_titan_sword" )
 }
 
 void function FS_RestartServerAfterSomeTimeWithoutPlayers()

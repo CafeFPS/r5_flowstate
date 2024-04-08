@@ -1665,6 +1665,9 @@ void function SetupCustomLoot( var categories, bool isAttachment = false)
 		if ( !catTypes.contains( data.lootType ) )
 			continue
 		
+		if( ref == "mp_weapon_titan_sword" )
+			continue
+		
 		if (data.lootType == eLootType.ATTACHMENT && !IsCustomAttachment(data)) continue
 		if (data.lootType == eLootType.MAINWEAPON && !IsCustomWeapon(data)) continue
 

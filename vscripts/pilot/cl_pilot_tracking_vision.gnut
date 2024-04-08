@@ -219,6 +219,9 @@ int function PlayTrackingVisionFX( entity ent, bool startActive, asset fxAsset =
 	int attachId = ent.LookupAttachment( "ORIGIN" )
 	Assert( attachId > 0, "Failed to find CHESTFOCUS attachment on" + ent + " with model " + ent.GetModelName() )
 
+	if( attachId == 0 )
+		return -1
+
 	int fxHandle = StartParticleEffectOnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW, attachId )
 
 	if ( !startActive )

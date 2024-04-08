@@ -60,13 +60,16 @@ global function Flowstate_GrantSpawnImmunity
 global function GetBlackListedWeapons
 global function DM__OnEntitiesDidLoad
 global function DissolveItem
+
 //R5R.DEV Tracker
+global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function Thread_CheckInput
 global function ClientCommand_mkos_LGDuel_IBMM_wait
-global function StringToArray
-global function trim
-global function Concatenate
+
+global function ClientCommand_mkos_lock1v1_setting
+global bool IS_1V1_MODE_ENABLED
+
 global function Message_New
 global function ServerMsgToBox
 
@@ -91,6 +94,50 @@ const string HIT_13 = "UI_MapPing_Acknowledge_1P"
 const string HIT_14 = "UI_Survival_Intro_PreLegendSelect_Countdown"
 const string HIT_15 = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P"
 const string HIT_16 = "jackhammer_pickup"
+
+
+const table<string, string> WeaponNameMap = {
+    ["mp_weapon_r97"] = "R99",
+    ["mp_weapon_vinson"] = "Flatline",
+    ["mp_weapon_volt_smg"] = "Volt SMG",
+    ["mp_weapon_car"] = "Car SMG",
+    ["mp_weapon_sniper"] = "Kraber",
+    ["mp_weapon_alternator_smg"] = "Alternator",
+    ["mp_weapon_defender"] = "Charge Rifle",
+    ["mp_weapon_esaw"] = "Devotion",
+    ["mp_weapon_epg"] = "EPG",
+    ["mp_weapon_shotgun"] = "EVA8",
+    ["mp_weapon_g2"] = "G7 Scout",
+    ["mp_weapon_energy_ar"] = "Havoc",
+    ["mp_weapon_hemlok"] = "Hemlok",
+    ["mp_weapon_dmr"] = "Longbow",
+    ["mp_weapon_lstar"] = "Lstar",
+    ["mp_weapon_mastiff"] = "Mastiff",
+    ["mp_weapon_shotgun_pistol"] = "Mozambique",
+    ["mp_weapon_semipistol"] = "P2020",
+    ["mp_weapon_energy_shotgun"] = "Peacekeeper",
+    ["mp_weapon_pdw"] = "Prowler",
+    ["mp_weapon_rspn101"] = "R301",
+    ["mp_weapon_autopistol"] = "RE45",
+    ["mp_weapon_smart_pistol"] = "Smart Pistol",
+    ["mp_weapon_lmg"] = "Spitfire",
+    ["mp_weapon_doubletake"] = "Triple Take",
+    ["mp_weapon_wingman"] = "Wingman",
+    ["mp_weapon_grenade_emp"] = "Arc Star",
+    ["mp_weapon_frag_grenade"] = "Frag",
+    ["mp_weapon_thermite_grenade"] = "Thermite",
+    ["mp_weapon_grenade_creeping_bombardment"] = "Bangalore Ultimate",
+    ["mp_weapon_grenade_bangalore"] = "Bangalore Tactical",
+    ["mp_weapon_dirty_bomb"] = "Caustic Tactical",
+    ["mp_weapon_grenade_gas"] = "Caustic Ultimate",
+    ["mp_ability_crypto_drone_emp"] = "Crypto Ultimate",
+    ["mp_weapon_grenade_defensive_bombardment"] = "Gibraltar Ultimate",
+    ["mp_weapon_tesla_trap"] = "Wattson Tactical",
+    ["deathField"] = "(ZONE)",
+    ["melee_pilot_emptyhanded"] = "Punch/Kick",
+    ["melee_bolo_sword"] = "Bolo Melee",
+    ["damagedef_unknown"] = "Lightning Gun"
+};
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
@@ -178,15 +225,103 @@ struct
 //////////////////////////////////////////////////// 
 ///////////////////  R5R.DEV:  /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////// 
-int function GetCurrentRound() { 
+
+struct {
+
+	//bool settings
+	bool ForceCharacter
+	bool is_halo_gamemode
+	bool RandomCharacterOnSpawn
+	bool GiveAllOpticsToPlayer
+	bool hackersVsPros
+	bool enable_afk_thread
+	bool flowstate_1v1mode_is_chinese_server
+	bool enable_ping_kick
+	bool BattleLogEnable
+	bool BattleLog_Linux
+	bool ChatLogEnable
+	bool end_match_message
+	bool rotate_map
+	bool flowstate_1v1mode
+	bool enable_oddball_gamemode
+	bool patch_for_dropoff
+	bool patch_waiting_area
+	bool ReloadTacticalOnRespawn
+	bool ReloadUltimateOnRespawn
+	bool RandomHaloGuns
+	bool DroppodsOnPlayerConnected
+	bool EndlessFFAorTDM
+	bool enable_global_chat
+	bool allow_cfgs
+	
+	//string settings 
+	string custom_match_ending_title
+	string custom_match_ending_message
+	string maplist
+	string Admins
+	
+	//int settings 
+	int ibmm_wait_limit
+	int endgame_delay
+	
+	//float settings
+	float aimassist_magnet_pc
+	float ring_radius_padding
+	float default_ibmm_wait
+
+} flowstateSettings
+
+
+void function InitializePlaylistSettings()
+{
+	flowstateSettings.ForceCharacter 						= GetCurrentPlaylistVarBool( "flowstateForceCharacter", false )
+	flowstateSettings.is_halo_gamemode 						= GetCurrentPlaylistVarBool( "is_halo_gamemode", false )
+	flowstateSettings.RandomCharacterOnSpawn 				= GetCurrentPlaylistVarBool( "flowstateRandomCharacterOnSpawn", false )
+	flowstateSettings.GiveAllOpticsToPlayer 				= GetCurrentPlaylistVarBool( "flowstateGiveAllOpticsToPlayer", false )
+	flowstateSettings.hackersVsPros 						= GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )
+	flowstateSettings.enable_afk_thread 					= GetCurrentPlaylistVarBool( "enable_afk_thread", false )
+	flowstateSettings.flowstate_1v1mode_is_chinese_server 	= GetCurrentPlaylistVarBool( "flowstate_1v1mode_is_chinese_server", false )
+	flowstateSettings.enable_ping_kick 						= GetCurrentPlaylistVarBool( "enable_ping_kick", false )
+	flowstateSettings.aimassist_magnet_pc 					= GetCurrentPlaylistVarFloat( "aimassist_magnet_pc", 0.0 )
+	flowstateSettings.BattleLogEnable 						= GetCurrentPlaylistVarBool( "flowstateBattleLogEnable", false )
+	flowstateSettings.BattleLog_Linux 						= GetCurrentPlaylistVarBool( "flowstateBattleLog_Linux", false )
+	flowstateSettings.ChatLogEnable 						= GetCurrentPlaylistVarBool( "flowstateChatLogEnable", false )
+	flowstateSettings.custom_match_ending_title 			= GetCurrentPlaylistVarString( "custom_match_ending_title", "Server clean up incoming" )
+	flowstateSettings.custom_match_ending_message 			= GetCurrentPlaylistVarString( "custom_match_ending_message", "Don't leave. Server is going to reload to avoid lag." )
+	flowstateSettings.end_match_message 					= GetCurrentPlaylistVarBool( "end_match_message",true )
+	flowstateSettings.rotate_map 							= GetCurrentPlaylistVarBool( "rotate_map", false )
+	flowstateSettings.maplist 								= GetCurrentPlaylistVarString( "maplist", "" )
+	flowstateSettings.ring_radius_padding 					= GetCurrentPlaylistVarFloat( "ring_radius_padding", 800 )
+	flowstateSettings.Admins 								= GetCurrentPlaylistVarString( "Admins", "" )
+	flowstateSettings.flowstate_1v1mode 					= GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
+	flowstateSettings.ibmm_wait_limit 						= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
+	flowstateSettings.enable_oddball_gamemode 				= GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false )
+	flowstateSettings.default_ibmm_wait 					= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 0 )
+	flowstateSettings.patch_for_dropoff 					= GetCurrentPlaylistVarBool( "patch_for_dropoff", false )
+	flowstateSettings.patch_waiting_area 					= GetCurrentPlaylistVarBool( "patch_waiting_area", false )
+	flowstateSettings.ReloadTacticalOnRespawn 				= GetCurrentPlaylistVarBool( "flowstateReloadTacticalOnRespawn", false )
+	flowstateSettings.ReloadUltimateOnRespawn 				= GetCurrentPlaylistVarBool( "flowstateReloadUltimateOnRespawn", false )
+	flowstateSettings.RandomHaloGuns 						= GetCurrentPlaylistVarBool( "flowstateRandomHaloGuns", false )
+	flowstateSettings.DroppodsOnPlayerConnected 			= GetCurrentPlaylistVarBool( "flowstateDroppodsOnPlayerConnected", false )
+	flowstateSettings.EndlessFFAorTDM 						= GetCurrentPlaylistVarBool( "flowstateEndlessFFAorTDM", false )
+	flowstateSettings.endgame_delay 						= GetCurrentPlaylistVarInt( "endgame_delay", 8 )
+	flowstateSettings.enable_global_chat 					= GetCurrentPlaylistVarBool( "enable_global_chat", true)
+	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )					
+}
+
+array<string> function ReturnChatArray()
+{
+	return file.allChatLines
+}
+
+int function GetCurrentRound() 
+{ 
     return file.currentRound;
 }
 
-
 void function INIT_LGDuels( entity player )
 {
-
-	thread AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
+	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged ) //was thread?why?
 	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("HITSOUND", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
@@ -200,13 +335,23 @@ void function INIT_LGDuels( entity player )
 void function Init_IBMM( entity player )
 {
 	thread notify_thread( player )
-	player.p.IBMM_grace_period = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	
+	if(player.p.IBMM_grace_period == -1)
+	{
+		SetDefaultIBMM( player )
+	}
+	
 	player.p.messagetime = 0
 	thread Thread_CheckInput( player )
+	AddClientCommandCallback("wait", ClientCommand_mkos_LGDuel_IBMM_wait )
+	AddClientCommandCallback("lock1v1", ClientCommand_mkos_lock1v1_setting )
+	AddClientCommandCallback("start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
+	AddClientCommandCallback("enable_input_banner", ClientCommand_enable_input_banner )
+	AddClientCommandCallback("challenge", ClientCommand_mkos_challenge )
 	AddButtonPressedPlayerInputCallback( player, IN_MOVELEFT, SetInput_IN_MOVELEFT )
 	AddButtonPressedPlayerInputCallback( player, IN_MOVERIGHT, SetInput_IN_MOVERIGHT )
 	AddButtonPressedPlayerInputCallback( player, IN_BACK, SetInput_IN_BACK )
-	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )
+	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )	
 }
 
 
@@ -220,7 +365,7 @@ void function Thread_CheckInput( entity player )
 
     while ( true ) 
 	{
-		wait 0.2
+		wait 0.2 //was 0.1
 		
 		if( !IsValid( player ) )
 			break
@@ -249,20 +394,21 @@ void function Thread_CheckInput( entity player )
 						
                     } else {
 					
-                        //printt("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
+                        //sqprint("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
                         player.p.input = typeOfInput;
+						player.Signal("InputChanged") //registered signal in CPlayer class
 						
                     }
 					continue
 				}
 				timesCheckedForNewInput++
-				//printt( "Checking if it's a valid input change..." + typeOfInput.tostring() + previousInput.tostring() + " - Times checked: " + timesCheckedForNewInput.tostring() )
+				//sqprint( "Checking if it's a valid input change..." + typeOfInput.tostring() + previousInput.tostring() + " - Times checked: " + timesCheckedForNewInput.tostring() )
 			}
 			else
 			{
 				timesCheckedForNewInput = 0
 				isCheckerRunning = false
-				//printt( "Player did NOT change input. It was a false alarm." )
+				//sqprint( "Player did NOT change input. It was a false alarm." )
 			}
 			
 			previousInput = typeOfInput
@@ -271,7 +417,7 @@ void function Thread_CheckInput( entity player )
 
 		if( player.p.input != typeOfInput && !isCheckerRunning )
 		{
-			//printt( "Input change check triggered. " + player.p.input.tostring() + typeOfInput.tostring() + " - Did player change input?" )
+			//sqprint( "Input change check triggered. " + player.p.input.tostring() + typeOfInput.tostring() + " - Did player change input?" )
 			isCheckerRunning = true
 			previousInput = typeOfInput
 			continue
@@ -279,14 +425,16 @@ void function Thread_CheckInput( entity player )
 
 		/*
 		if( player.p.input == 0 )
-				printt( player.GetPlayerName() + "is mnk" )
+				sqprint( player.GetPlayerName() + "is mnk" )
 			else // 1
-				printt( player.GetPlayerName() + "is rolla" )
+				sqprint( player.GetPlayerName() + "is rolla" )
 		*/
     }
 }
+//ty cafe for fixed thread
 
-bool function InvalidInput( int input_type, int movevalue ){
+bool function InvalidInput( int input_type, int movevalue )
+{
 
 	if ( movevalue == 0 && input_type == 0 )
 	{
@@ -297,7 +445,9 @@ bool function InvalidInput( int input_type, int movevalue ){
 	
 }
 
-void function HandlePlayer( entity player ){
+// not currently used ~mkos
+void function HandlePlayer( entity player )
+{
 	
 	string id = player.GetPlatformUID()
 	int action = GetCurrentPlaylistVarInt( "invalid_input_action", 1 )
@@ -308,15 +458,21 @@ void function HandlePlayer( entity player ){
 	{
 	
 		case 1:
-			printt("Action: keeping as controller")
+			#if HAS_TRACKER_DLL
+			sqprint("Action: keeping as controller")
+			#endif
 			player.p.input = 1;
 			break
 		case 2:
-			printt("Action: kick")
+			#if HAS_TRACKER_DLL
+			sqprint("Action: kick")
+			#endif
 			//KickPlayerById( id, msg )
 			break
 		case 3:
-			printt("Action: Ban")
+			#if HAS_TRACKER_DLL
+			sqprint("Action: Ban")
+			#endif
 			//BanPlayerById( id, msg )
 			break
 	
@@ -331,31 +487,33 @@ int function GetInput( entity player )
 	
     if( value == 0 || value == 0.5 )
 		return 9
-
+		
+	//sqprint( "Right axis value: " + player.GetInputAxisRight().tostring() + " --- Player forward axis: " + player.GetInputAxisForward())
+	//sqprint( "Value: " + value.tostring() + " Length:" + value.tostring().len().tostring() )
     return value.tostring().len() < 5 ? 0 : 1
 }
 
 void function SetInput_IN_MOVELEFT( entity player )
 {
-	//printt("Setting movevalue for " + player.GetPlayerName() + " to 3")
+	//sqprint( "Setting movevalue for " + player.GetPlayerName() + " to 3" )
 	player.p.movevalue = 3
 }
 
 void function SetInput_IN_MOVERIGHT( entity player )
 {
-	//printt("Setting movevalue for " + player.GetPlayerName() + " to 4")
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 4")
 	player.p.movevalue = 4
 }
 
 void function SetInput_IN_BACK( entity player )
 {	
-	//printt("Setting movevalue for " + player.GetPlayerName() + " to 5")
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 5")
 	player.p.movevalue = 5
 }
 
 void function SetInput_IN_FORWARD( entity player )
 {	
-	//printt("Setting movevalue for " + player.GetPlayerName() + " to 6")
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 6")
 	player.p.movevalue = 6
 }
 
@@ -386,17 +544,6 @@ void function LGDuel_OnPlayerDamaged(entity victim, var damageInfo)
 			attacker.p.totalLGHits++
 		}
 	}
-}
-
-bool function IsNumeric(string str, int limit = 16 )
-{
-
-    if (str.len() == 0 || (str[0] < '0' || str[0] > '9') && str[0] != '-') return false;
-	
-    int num = 0;
-    try { num = str.tointeger(); } catch (outofrange) { return false; }
-	
-    return (num >= 0 && num <= limit );
 }
 
 string function IntToSound(string num)
@@ -430,42 +577,41 @@ string function IntToSound(string num)
 	
 bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> args )
 {
-	if ( !IsValid( player ) ) return false
+	if (!CheckRate( player )) return false
 	
 	string param = ""
 	
-	if (args.len() > 0){
+	if (args.len() > 0)
+	{
 		param = args[0];
 	}
 	
 	
-		if (args.len() < 1){
+		if (args.len() < 1)
+		{
 			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Hitsounds:", " Type into console: hitsound # \n replacing # with a number below\n\n\n\n 0 = Default \n  1 = CountDown \n 2 = None \n 3 = Click \n 4 = Armed \n 5 = Chime \n 6 = Beep \n 7 = Menu \n 8 = Ping \n 9 = Downed \n 10 = Ping2 \n 11 = Ping3 \n 12 = Ping4 \n 13 = Ping5  \n 14 = Countdown2 \n 15 = Shotgun \n 16 = Pickup ", 15)
-			return false
+			return true
 		}				
 					
 		if ( args.len() > 0 && !IsNumeric( param ) ){
 		
 			Message( player, "Failed", "hitsound must be number 0-16.", 5)
-			return false
-
+			return true
 		} 
 		
 		
 		try
-		{
-			
+		{	
 			player.p.hitsound = IntToSound(param);
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 			Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
+			return true	
+		} 
+		catch ( hiterr )
+		{
+			Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
 			return true
-		
-		} catch ( hiterr ){
-				
-					Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
-					return false
-				
-				}
+		}
 				
 	return false
 					
@@ -473,7 +619,7 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 
 bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
 {
-	if ( !IsValid( player ) ) return false
+	if (!CheckRate( player )) return false
 	
 	string param = ""
 	
@@ -481,23 +627,17 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 		param = args[0];
 	}
 	
-	
-		if (args.len() < 1)
+		if (args.len() < 1 || param == "" )
 		{
 			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
-			return false
+			return true
 		}				
 		
-		if ( param == "")
-		{
-			return false; 
-		}
-		
-		
-		switch( param )
+		switch( param.tolower() )
 		{
 		
 		case "on":
+		case "1":
 					try
 					{
 						
@@ -509,11 +649,12 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 					} catch ( handicap_err_1 ){
 							
 								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_1 )
-								return false
+								return true
 							
 					}
 		
 		case "off":
+		case "0":
 					try
 					{
 						
@@ -525,7 +666,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 					} catch ( handicap_err_2 ){
 							
 								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_2 )
-								return false
+								return true
 							
 					}
 				
@@ -537,201 +678,332 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 
 bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> args )
 {
-	if ( !IsValid( player ) ) return false
-	
+	if (!CheckRate( player )) return false
+
+	player.p.messagetime = Time()
 	string param = "";
-	int limit = GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999);
+	int limit = flowstateSettings.ibmm_wait_limit
+	
+	if (args.len() > 0)
+	{
+		param = args[0]
+	}
+	
+		if  ( args.len() < 1 )
+		{		
+			string status = "";
+			if (player.p.IBMM_grace_period == 0)
+			{
+				status = " (disabled)";
+			}
+		
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
+			return true
+		}				
+					
+		if ( args.len() > 0 && !IsNumeric( param, limit ) )
+		{
+		
+			Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
+			return true
+		} 
+		
+		
+		try
+		{	
+			float user_value = float(param);
+			
+			if ( user_value > 0.0 && user_value < 3.0 )
+			{
+				user_value = 3;
+			}
+			
+			player.p.IBMM_grace_period = user_value;
+			SavePlayer_wait_time( player, user_value )
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+			Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
+			return true
+		
+		} 
+		catch ( hiterr )
+		{
+				
+			Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
+			return true			
+		}
+	
+					
+}
+
+bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
+{
+	if (!CheckRate( player )) return false
+	
+	string param = ""
 	
 	if (args.len() > 0){
 		param = args[0];
 	}
 	
 	
-		if (args.len() < 1){
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 0 - " + limit.tostring() + " . \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds.", 15)
+		if (args.len() < 1)
+		{
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n LOCK1V1 SETTING:", " Type into console: lock1v1 # \n replacing # with 'on' or 'off'.  \n\n On: You can lock/be locked into 1v1 fights with same player. \n\n Off: You can neither lock, nor be locked into 1v1s.", 15)
 			return true
 		}				
-					
-		if ( args.len() > 0 && !IsNumeric( param, limit ) ){
 		
-			Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
-			return false
-
-		} 
-		
-		
-		try
+		if ( param == "")
 		{
-			
-			player.p.IBMM_grace_period = float(param);
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-			Message( player, "Success", "Your wait to match inputs was changed to " + param + " seconds", 3);
-			return true
-		
-		} catch ( hiterr ){
-				
-					Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
-					return false
-				
-				}
-	
-					
-}
-
-
-//php my beloved
-//trims leading and trialing whitespace from a string
-string function trim( string str ) 
-{
-
-    int start = 0;
-    int end = str.len() - 1;
-    string whitespace = " \t\n\r";
-
-    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
-	{
-        start++;
-    }
-
-    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
-	{
-        end--;
-    }
-
-    return str.slice(start, end + 1);
-	
-}
-
-
-//////////////////////////////////////////////////
-//												//
-//				string to array			 		//
-//												//
-//	format of:									//												
-//					"string1, also string"		//
-// 												//
-//	into an array:  							//
-//					['string1','also string']	//
-//												//
-//												//
-// CALLING FUNCTION responsible for error catch //
-//////////////////////////////////////////////////
-
-array<string> function StringToArray( string str ) 
-{	
-	
-	int item_index = 0;
-	int length_check;
-	string t_str = trim( str )
-	
-    if ( t_str == "" )
-	{
-        throw "Cannot convert empty string to array.";
-	}
-	
-    array<string> arr = split( str, "," )
-	array<string> valid = []
-	
-	/*debug
-	foreach (index, item in arr) 
-	{
-		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
-	}
-	*/
-	
-    foreach ( item in arr ) 
-	{	
-	
-		item_index++
-		item = trim( item )
-		length_check = item.len()
-	
-        if ( item == "" ) 
-		{   
-		
-            sqprint( "Empty item in the list for item # " + ( item_index ) + " removed. " )	
-			
-        } else if ( length_check >= 128 ){
-
-			sqprint( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: 128 bytes" )	
-		
-		} else {
-			
-			valid.append( item )
-			
+			return true; 
 		}
 		
-    }
-	
-	if ( valid.len() <= 0 ) 
-	{
-        throw "Array empty after conversion";
-    }
-
-    return valid;
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.lock1v1_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_lock1v1_setting( player, true )
+						Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
+						return true
+					
+					} 
+					catch ( lock1v1_err_1 )
+					{			
+						Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_1 )
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.lock1v1_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_lock1v1_setting( player, false )
+						Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
+						return true
+					} 
+					catch ( lock1v1_err_2 )
+					{
+						Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_2 )
+						return true
+					}
+				
+		}
+		
+	return false
+					
 }
 
 
-string function Concatenate( string str1, string str2 ) 
-{
-	
-	int str1_length = str1.len()
-	int str2_length = str2.len()
-	int dif;
-	string error;
-	
-    if ( str1 == "" && str2 == "" ) 
-	{
-        return "";
-    }
 
-    if ( str1 != "" && str1_length > 1000 ) 
-	{
-		dif = ( str1_length - 1000 )
-		throw ("Error: First string exceeds length limit of 1000 by " + dif.tostring() + " bytes");
-		return "";
-    }
+bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<string> args )
+{
+	if (!CheckRate( player )) return false
 	
-    if ( str2 != "" && str2_length > 1000 ) 
-	{	
-		dif = ( str2_length - 1000 )
-        throw ("Error: Second string exceeds length limit of 1000 by " + dif.tostring() + " bytes");
-		return "";
-    }
+	string param = ""
 	
-	if ( str2 != ""  ){
-	
-		str2 = "," + str2;
-	
+	if (args.len() > 0){
+		param = args[0];
 	}
 	
-    return str1 + str2;
+	
+		if (args.len() < 1)
+		{
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: start_in_rest # \n replacing # with 'on' or 'off'.  \n\n On: When the round/game starts or you join, you will start in rest and have to join the queue manually. \n\n Off: You will join the queue automatically.", 15)
+			return true
+		}				
+		
+		if ( param == "")
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.start_in_rest_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_start_in_rest_setting( player, true )
+						Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
+						return true
+					
+					} 
+					catch ( rest_setting_err_1 )
+					{			
+						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.start_in_rest_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_start_in_rest_setting( player, false )
+						Message( player, "Success", "START_IN_REST setting set to disabled.", 3);
+						return true
+					} 
+					catch ( rest_setting_err_2 )
+					{
+						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
+						return true
+					}
+				
+		}
+		
+	return false
+					
 }
 
+
+bool function ClientCommand_enable_input_banner( entity player, array<string> args )
+{
+	if (!CheckRate( player )) return false
+	
+	string param = ""
+	
+	if (args.len() > 0){
+		param = args[0];
+	}
+	
+	
+		if (args.len() < 1)
+		{
+			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: enable_input_banner # \n replacing # with 'on' or 'off'.  ", 15)
+			return true
+		}				
+		
+		if ( param == "")
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.enable_input_banner = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_enable_input_banner( player, true )
+						Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
+						return true
+					
+					} 
+					catch ( rest_setting_err_1 )
+					{			
+						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.enable_input_banner = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						SavePlayer_enable_input_banner( player, false )
+						Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
+						return true
+					} 
+					catch ( rest_setting_err_2 )
+					{
+						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
+						return true
+					}
+				
+		}
+		
+	return false
+					
+}
 
 //////////////////////////////////////////////////// 
 ///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////// 
 
+//moved this to be initialized once instead of constantly computed...
+bool function bIs1v1Mode()
+{
+	if ( !flowstateSettings.flowstate_1v1mode )
+		return false
+
+	switch (GetMapName())
+	{
+		case "mp_rr_arena_composite":
+		case "mp_rr_aqueduct":
+		case "mp_rr_canyonlands_64k_x_64k":
+		case "mp_rr_canyonlands_staging":
+		case "mp_rr_party_crasher":
+		isChineseServer()
+		return true
+		default:
+		return false
+	}
+	return false
+}
 
 void function _CustomTDM_Init()
 {
+	//these must be executed first
+	Initialize_SH_FlowstateSettings() 
+	InitializePlaylistSettings() 
 	file.scriptversion = FLOWSTATE_VERSION
 	
 	RegisterSignal( "EndScriptedPropsThread" )
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
-
-	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
+	
+	
+	if( flowstateSettings.enable_global_chat )
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
 	try{
-	if( GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false ) ) // if you want to avoid cfg abusers
+	if( flowstateSettings.allow_cfgs ) // if you want to avoid cfg abusers
 		SetConVarInt( "sv_quota_scriptExecsPerSecond", 20 )
 	else
-		SetConVarInt( "sv_quota_scriptExecsPerSecond", 1 )
+		SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
 	}catch(e)
 
 	if (GetCurrentPlaylistName() != "fs_movementgym")
@@ -745,7 +1017,7 @@ void function _CustomTDM_Init()
 		PrecacheDEAFPSMapProps()
 	}
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( flowstateSettings.is_halo_gamemode )
 	{
 		PrecacheCyberdyne()
 		PrecacheLockout()
@@ -757,7 +1029,10 @@ void function _CustomTDM_Init()
 		}
 	}
 
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	
+	IS_1V1_MODE_ENABLED = bIs1v1Mode()
+
+	if( flowstateSettings.enable_oddball_gamemode )
 	{
 		VOTING_PHASE_ENABLE = false
 		SCOREBOARD_ENABLE = false
@@ -769,8 +1044,8 @@ void function _CustomTDM_Init()
 		SCOREBOARD_ENABLE = false
 		PrecacheMovementGymProps()
 	}
-	
-	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) || FlowState_LockPOI() )
+
+	if( flowstateSettings.flowstate_1v1mode || FlowState_LockPOI() )
 	{
 		VOTING_PHASE_ENABLE = false
 		SCOREBOARD_ENABLE = true
@@ -788,13 +1063,16 @@ void function _CustomTDM_Init()
 
         UpdatePlayerCounts()
 		
-		if ( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		if ( g_bLGmode )
 		{
 			INIT_LGDuels( player )
 		}
 		
 		// init for IBMM
-		Init_IBMM ( player )
+		if ( g_bIs1v1 && !player.p.bIsChatbot )
+		{	
+			Init_IBMM ( player )
+		}
 		
 
     })
@@ -827,7 +1105,7 @@ void function _CustomTDM_Init()
 			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 
-	AddClientCommandCallback("say", ClientCommand_Say)
+	//AddClientCommandCallback("say", ClientCommand_Say)
 	AddClientCommandCallback("adminlogin", ClientCommand_adminlogin)
 	// Used for sending votes from client to server
     AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
@@ -840,7 +1118,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("resetskills", ClientCommand_Maki_ResetSkills)
 	}
 	
-	if( GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) )
+	if( flowstateSettings.hackersVsPros )
 	{
 		AddClientCommandCallback("startcameraman", ClientCommand_setspecplayer )
 		AddClientCommandCallback("becomepro", ClientCommand_BecomePro )
@@ -848,7 +1126,8 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
-		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest)
+		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
+		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
 		_soloModeInit(GetMapName())
 	}
 		
@@ -864,14 +1143,26 @@ void function _CustomTDM_Init()
 
 	if( FlowState_SURF() )
 	{
+		PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
+		PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+
 		thread RunSURF()
 	}else {
 		thread RunTDM()
 	}
 		
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	if( flowstateSettings.enable_oddball_gamemode )
 	{
 		FsOddballInit()
+	}
+
+	float f_wait = flowstateSettings.default_ibmm_wait
+	
+	if ( f_wait > 0.0 && f_wait < 3.0 )
+	{
+		#if HAS_TRACKER_DLL
+		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
+		#endif
 	}
 }
 
@@ -909,16 +1200,14 @@ void function DM__OnEntitiesDidLoad()
     	}
     	case "mp_rr_arena_composite":
 		{
-			// if( GetCurrentPlaylistVarBool( "patch_for_dropoff", false )  && is1v1EnabledAndAllowed() )
-			// {			
-				// Patch_Dropoff();
-			// }
-			// else if( GetCurrentPlaylistVarBool( "patch_waiting_area", false ) && is1v1EnabledAndAllowed() )
-			// {
-				if( is1v1EnabledAndAllowed() )
-					Patch_Barrier_Dropoff()
-			// } 
-
+			if( flowstateSettings.patch_for_dropoff )
+			{			
+				Patch_Dropoff();
+			} 
+			else if( flowstateSettings.patch_waiting_area )
+			{
+				Patch_Barrier_Dropoff()
+			} 
 
 			array<entity> badMovers = GetEntArrayByClass_Expensive( "script_mover" )
 			foreach(mover in badMovers)
@@ -927,7 +1216,7 @@ void function DM__OnEntitiesDidLoad()
 		}
 		
 		case "mp_rr_aqueduct":
-			if( GetCurrentPlaylistVarBool( "patch_waiting_area", false ) )
+			if( flowstateSettings.patch_waiting_area )
 			{
 				Patch_Barrier_Overflow()
 			} 
@@ -939,7 +1228,7 @@ void function DM__OnEntitiesDidLoad()
 		
 		case "mp_rr_canyonlands_64k_x_64k":
 
-		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		if( flowstateSettings.is_halo_gamemode )
 		{
 			MapEditor_CreateRespawnableWeaponRack( <-10998.3535, -14660.9482, 3679.9812> , <0, 140, 0>, "mp_weapon_haloneedler", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <-8932.25488, -15722.7363, 3679.9812> , <0, 43.8712006, 0>, "mp_weapon_halobattlerifle", 0.5 )
@@ -953,7 +1242,7 @@ void function DM__OnEntitiesDidLoad()
 		
 		case "mp_rr_desertlands_64k_x_64k":
 
-		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		if( flowstateSettings.is_halo_gamemode )
 		{
 			MapEditor_CreateRespawnableWeaponRack( <11976.0313, 6755.27295, -4351.96875> , <0, 0, 0>, "mp_weapon_haloneedler", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <11427.2051, 6091.21631, -4351.96875> , <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 )
@@ -962,6 +1251,10 @@ void function DM__OnEntitiesDidLoad()
 			MapEditor_CreateRespawnableWeaponRack( <9344.03906, 5790.82031, -3695.96875> , <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 )
 			MapEditor_CreateRespawnableWeaponRack( <-10954.4912, -14820.9619, 3111.98145> , <0, 45, 0>, "mp_weapon_halobattlerifle", 0.5 )
 		}
+		break
+		case "mp_rr_party_crasher":
+
+		Patch_Partycrasher_Restarea()
 		break
     }
 }
@@ -1030,7 +1323,20 @@ void function SetTdmStateToNextRound(){
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
-void function SetTdmStateToInProgress(){
+void function SetTdmStateToInProgress()
+{
+	if( bLog() )
+	{
+		#if DEVELOPER && HAS_TRACKER_DLL
+		sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
+		#endif
+		FlagSet("START_LOG")
+	}
+	
+	if(g_bIs1v1)
+	{
+		resetChallenges()
+	}
 	file.tdmState = eTDMState.IN_PROGRESS
 	
 	if( GameRules_GetGameMode() != "fs_prophunt" )
@@ -1168,7 +1474,7 @@ void function DissolveItem(entity prop)
 	    if( !IsValid(prop) )
 	    	return
 
-		if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		if( !flowstateSettings.is_halo_gamemode )
 		{
 			wait 4
 		} else
@@ -1189,7 +1495,7 @@ void function _OnPlayerConnected(entity player)
 
     if ( !IsValid( player ) ) return
 
-	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	if( flowstateSettings.hackersVsPros )
 	{
 		AssignCharacter(player, characterslist.getrandom())
 	}
@@ -1266,7 +1572,7 @@ void function _OnPlayerConnected(entity player)
 						"Drop-Off"
 					]
 
-					bool DropPodOnSpawn = GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false )
+					bool DropPodOnSpawn = flowstateSettings.DroppodsOnPlayerConnected
 					bool IsStaging = InValidMaps.find( GetMapName() ) != -1
 					bool IsMapValid = InValidMaps.find(file.selectedLocation.name) != -1
 					if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !DropPodOnSpawn || IsStaging || IsMapValid )
@@ -1289,7 +1595,7 @@ void function _OnPlayerConnected(entity player)
 
 					// if(FlowState_Gungame())
 						// KillStreakAnnouncer(player, true)
-					if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+					if( flowstateSettings.hackersVsPros )
 					{
 						SetTeam(player, TEAM_IMC)
 						BecomeHacker(player)
@@ -1324,13 +1630,15 @@ void function _OnPlayerConnected(entity player)
 				break
 		}
 	}
-	
-	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+
+	if( !flowstateSettings.hackersVsPros )
 		thread __HighPingCheck( player )
 	
-	if( GetCurrentPlaylistVarBool( "enable_afk_thread", true ) )
+	if( flowstateSettings.enable_afk_thread )
+	{
 		thread Flowstate_InitAFKThreadForPlayer(player)
-	
+	}
+
 	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	{
 		AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
@@ -1341,6 +1649,8 @@ void function _OnPlayerConnected(entity player)
 	
 	if( is1v1EnabledAndAllowed() )
 	{
+		thread soloModefixDelayStart( player )
+	/*
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
 			Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 3, 0)
 			wait 1
@@ -1365,35 +1675,20 @@ void function _OnPlayerConnected(entity player)
 		}	
 
 		thread soloModefixDelayStart1()
+	*/
 	}
 }
 
 bool function is1v1EnabledAndAllowed()
 {
-	if ( !GetCurrentPlaylistVarBool( "flowstate_1v1mode", false ) )
-		return false
-
-	switch (GetMapName())
-	{
-		case "mp_rr_canyonlands_staging":
-		case "mp_rr_arena_composite":
-		case "mp_rr_aqueduct":
-		case "mp_rr_olympus_mu1":
-		case "mp_rr_arena_phase_runner":
-		case "mp_rr_canyonlands_64k_x_64k":
-		thread isChineseServer()
-		return true
-		default:
-		return false
-	}
-	return false
+	return IS_1V1_MODE_ENABLED
 }
 
 void function isChineseServer()
 {
-	if ( GetCurrentPlaylistVarBool( "flowstate_1v1mode_is_chinese_server", false ) )
+	if ( flowstateSettings.flowstate_1v1mode_is_chinese_server )
 	{
-		IS_CHINESE_SERVER = true
+		setChineseServer( true )
 	}
 }
 
@@ -1403,7 +1698,7 @@ void function __HighPingCheck(entity player)
 	
     if( !IsValid(player) || IsValid(player) && IsAdmin(player) ) return
 
-	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
+	if( flowstateSettings.enable_ping_kick && FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
 	{
 		player.FreezeControlsOnServer()
 		player.ForceStand()
@@ -1418,7 +1713,7 @@ void function __HighPingCheck(entity player)
 		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit" )
 		UpdatePlayerCounts()
 	}
-	// else if( GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ){
+	// else if( GameRules_GetGameMode() == "fs_dm" && !flowstateSettings.is_halo_gamemode ){
 		// Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	// }
 }
@@ -1434,9 +1729,9 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	string attackerweapon2 = "null"
 	string victimweapon1 = "null"
 	string victimweapon2 = "null"
-	
-	float aim_assist_value = GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0)
-	
+
+	float aim_assist_value = flowstateSettings.aimassist_magnet_pc
+
 	//string attacker_origin_id = killer.GetPlatformUID()
 	
 	string flowstate_gamemode = "fs_dm"
@@ -1515,7 +1810,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if( victim.p.isSpectating )
 		return
 
-	if(victim != attacker && GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
+	if( flowstateSettings.BattleLogEnable && victim != attacker)
 		Flowstate_AppendBattleLogEvent(attacker, victim)
 	
 	if( is1v1EnabledAndAllowed() )
@@ -1526,7 +1821,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 		if(isPlayerInWaitingList(victim))
 		{
-			LocPair waitingRoomLocation = getWaitingRoomLocation( GetMapName() )
+			LocPair waitingRoomLocation = getWaitingRoomLocation()
 			if (!IsValid(waitingRoomLocation)) return
 			
 			if( !IsAlive( victim ) )
@@ -1583,7 +1878,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				if( !IsValid(victim) )
 					return
 				
-				if ( !GetCurrentPlaylistVarBool("lg_duel_mode_60p", false) )
+				if ( !g_bLGmode )
 				{
 					if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
 						PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
@@ -1665,13 +1960,15 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			    GiveGungameWeapon(attacker)
 	    			    //KillStreakAnnouncer(attacker, false)
 	    			}
-					
-					// if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !attacker.p.playerHasEnergySword )
+
+					// if( flowstateSettings.is_halo_gamemode && !attacker.p.playerHasEnergySword )
 						// attacker.p.consecutiveKills++
 					
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
-					if ( !GetCurrentPlaylistVarBool("lg_duel_mode_60p", false) )
+					
+					//lg_duel mkos
+					if ( !g_bLGmode )
 					{
 						if( attacker == GetChampion() )
 							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
@@ -1683,10 +1980,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
 						
 					}
-					if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	
+					if( flowstateSettings.is_halo_gamemode )
 						HisWattsons_HaloModFFA_KillStreakAnnounce( attacker )
 
-					// if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 3 && !attacker.p.playerHasEnergySword )
+					// if( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 3 && !attacker.p.playerHasEnergySword )
 					// {
 						// entity activeWeapon = attacker.GetActiveWeapon( eActiveInventorySlot.mainHand )
 						// if( IsValid( activeWeapon ) )
@@ -1713,7 +2011,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 						// }
-					// } else if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 3 && attacker.p.playerHasEnergySword )
+					// } else if( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 3 && attacker.p.playerHasEnergySword )
 					// {
 							// entity newWeapon1
 							// try{
@@ -1731,7 +2029,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 							// attacker.p.consecutiveKills = 0
 
 							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-					// } else if ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && attacker.p.consecutiveKills == 2 && !attacker.p.playerHasEnergySword )
+					// } else if ( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 2 && !attacker.p.playerHasEnergySword )
 					// {
 						// Remote_CallFunction_NonReplay( attacker, "DM_HintCatalog", 1, 0)
 					// }
@@ -1754,7 +2052,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 void function PlayerKillStreakAnnounce( entity attacker, string doubleKill, string tripleKill )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( flowstateSettings.is_halo_gamemode )
 		return
 
 	if( Time() == attacker.p.lastDownedEnemyTime )
@@ -1847,8 +2145,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	else
 		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
-	
-	if( GetCurrentPlaylistVarBool( "flowstateForceCharacter", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+
+	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 	{
 		CharSelect(player)
 		player.SetPlayerNetBool( "hasLockedInCharacter", true )
@@ -1856,10 +2154,10 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if( !IsAlive(player) )
     {
-		if( GetCurrentPlaylistVarBool("flowstateRandomCharacterOnSpawn", false) && !GetCurrentPlaylistVarBool("flowstateForceCharacter", false) && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+		if( flowstateSettings.RandomCharacterOnSpawn && !flowstateSettings.ForceCharacter )//&& !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 		{
 			GivePlayerRandomCharacter(player)
-			player.SetPlayerNetBool( "hasLockedInCharacter", true)			
+			player.SetPlayerNetBool( "hasLockedInCharacter", true)
 		}
 
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
@@ -1896,6 +2194,11 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 				DecideRespawnPlayer(player, false)
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
+			
+			if( g_bIs1v1 )
+			{
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+			}		
         }
     }
 
@@ -1906,7 +2209,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 		if( is1v1EnabledAndAllowed() )
 		{
-			LocPair waitingRoomLocation = getWaitingRoomLocation(GetMapName())
+			LocPair waitingRoomLocation = getWaitingRoomLocation()
 			if (!IsValid(waitingRoomLocation)) return
 			
 			Survival_SetInventoryEnabled( player, false )
@@ -1945,8 +2248,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 			// player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-			
-			if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+
+			if( flowstateSettings.is_halo_gamemode )
 			{
 				player.GiveWeapon( "mp_weapon_melee_halo", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded_halo", OFFHAND_MELEE, [] )
@@ -1958,8 +2261,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		}catch(e420){
 		//AttachEdict rare crash
 		}
-		
-		if(GetCurrentPlaylistVarBool("flowstateGiveAllOpticsToPlayer", false ))
+
+		if( flowstateSettings.GiveAllOpticsToPlayer )
 		{
 			SetPlayerInventory( player, [] )
 			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
@@ -1968,8 +2271,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 				SURVIVAL_AddToPlayerInventory(player, optic)
 		}
 	}
-	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && IsValid( player ))
+
+	if( flowstateSettings.is_halo_gamemode && IsValid( player ))
 	{
 		try{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -2035,7 +2338,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
     } else if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	if( flowstateSettings.hackersVsPros  )
 	{
 		TakeAllWeapons(player)
 		GiveRandomPrimaryWeaponMetagame(player)
@@ -2075,7 +2378,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")	
 
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 	{
 		array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
 			foreach(item in loot)
@@ -2086,8 +2389,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	}
 
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
-	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+
+	if( !flowstateSettings.is_halo_gamemode )
 	{
 		WpnPulloutOnRespawn(player, 0)
 		thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
@@ -2185,7 +2488,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 void function SetRandomCustomModelToPlayer( entity player )
 {
-	switch( RandomIntRange(1,10) )
+	switch( RandomIntRangeInclusive(1,13) )
 	{
 		// case 0:
 		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
@@ -2224,7 +2527,7 @@ void function SetRandomCustomModelToPlayer( entity player )
 		
 		case 7:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
-		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_cj.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 		
 		case 8:
@@ -2241,6 +2544,21 @@ void function SetRandomCustomModelToPlayer( entity player )
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 		break
+
+		case 11: //loba ss
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+		break
+		
+		case 12: // ballistic
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+		break
+		
+		case 13: // mrvn
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
 	}	
 }
 
@@ -2252,7 +2570,7 @@ void function ReCheckGodMode(entity player)
 	player.MakeVisible()
 	player.ClearInvulnerable()
 	player.SetTakeDamageType( DAMAGE_YES )
-	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	if( !flowstateSettings.hackersVsPros )
 		Highlight_ClearEnemyHighlight( player )
 }
 
@@ -2280,7 +2598,7 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
 
 	player.SetTakeDamageType( DAMAGE_NO )
-	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	if( !flowstateSettings.hackersVsPros )
 		Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
 	player.SetInvulnerable()
 
@@ -2294,7 +2612,7 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	player.MakeVisible()
 	player.ClearInvulnerable()
 	player.SetTakeDamageType( DAMAGE_YES )
-	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+	if( !flowstateSettings.hackersVsPros )
 		Highlight_ClearEnemyHighlight( player )
 	
 	StatusEffect_StopAllOfType( player, eStatusEffect.adrenaline_visuals )
@@ -2302,7 +2620,8 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	StatusEffect_StopAllOfType( player, eStatusEffect.drone_healing )
 	StatusEffect_StopAllOfType( player, eStatusEffect.stim_visual_effect )
 	
-	thread ReCheckGodMode(player)
+	wait 0.1
+	ReCheckGodMode(player)
 	//maki script
 	wait 0.5
 	try
@@ -2330,14 +2649,14 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	// if( IsValid( player ) && file.tdmState != eTDMState.NEXT_ROUND_NOW )
 	// 	DeployAndEnableWeapons( player )
 	player.ClearFirstDeployForAllWeapons()
-	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
+	if( flowstateSettings.ReloadTacticalOnRespawn )
 	{
 		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 		//maki script
 		if ( !IsValid( tactical ) ) return
 		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
 	}
-	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
+	if( flowstateSettings.ReloadUltimateOnRespawn )
 	{
 		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 		//maki script
@@ -2419,6 +2738,9 @@ void function SummonPlayersInACircle(entity player0)
 void function __GiveWeapon( entity player, array<string> WeaponData, int slot, int select, bool isGungame = false)
 {
 	array<string> Data = split(WeaponData[select], " ")
+	
+	if ( Data.len() == 0 ) return 
+	
 	string weaponclass = Data[0]
 	
 	if(weaponclass == "tgive") return
@@ -2480,7 +2802,9 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_haloassaultrifle"
+		"mp_weapon_halosmg",
+		"mp_weapon_haloassaultrifle",
+		"mp_weapon_halobattlerifle"
 	]
 
 	foreach(weapon in Weapons)
@@ -2533,7 +2857,7 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 	}
 
     array<string> Weapons = [
-		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2",
+		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
@@ -2620,16 +2944,10 @@ void function GiveRandomSecondaryWeapon( entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3",
-		"mp_weapon_energy_shotgun shotgun_bolt_l2",
-		"mp_weapon_mastiff shotgun_bolt_l3",
-		"mp_weapon_autopistol bullets_mag_l2",
-		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3",
-		"mp_weapon_energy_ar energy_mag_l1 stock_tactical_l3 hopup_turbocharger",
-		"mp_weapon_doubletake optic_ranged_hcog energy_mag_l3 stock_sniper_l3",
-		"mp_weapon_vinson stock_tactical_l3 highcal_mag_l3",
-		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2",
-		"mp_weapon_volt_smg energy_mag_l2 stock_tactical_l3"
+		"mp_weapon_r97 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l1 highcal_mag_l3",
+		"mp_weapon_energy_ar optic_cq_hcog_classic hopup_turbocharger",
 	]
 
 	foreach(weapon in Weapons)
@@ -2652,35 +2970,32 @@ void function GiveActualGungameWeapon(int index, entity player)
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l1",
 		"mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 bullets_mag_l2",
 		"mp_weapon_energy_shotgun shotgun_bolt_l1",
-		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3",
-		"mp_weapon_shotgun shotgun_bolt_l1",
-		"mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3 barrel_stabilizer_l4_flash_hider",
-		"mp_weapon_mastiff",
-		"mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l1",
-		"mp_weapon_lmg optic_cq_hcog_bruiser highcal_mag_l3 barrel_stabilizer_l3 stock_tactical_l3",
-		"mp_weapon_shotgun_pistol shotgun_bolt_l3",
-		"mp_weapon_rspn101 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",
-		"mp_weapon_defender optic_ranged_hcog stock_sniper_l2",
-		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l3 stock_tactical_l3 hopup_turbocharger",
-		"mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3",
-		"mp_weapon_semipistol",
+		"mp_weapon_mastiff shotgun_bolt_l1",
+		"mp_weapon_doubletake",
+		//"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3 barrel_stabilizer_l4_flash_hider",
+		//"mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l1",
+		//"mp_weapon_lmg optic_cq_hcog_bruiser highcal_mag_l3 barrel_stabilizer_l3 stock_tactical_l3",
+		//"mp_weapon_shotgun_pistol shotgun_bolt_l3",
+		//"mp_weapon_defender optic_ranged_hcog stock_sniper_l2",
+		//"mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3",
+		//"mp_weapon_semipistol",
 		//"mp_weapon_esaw optic_cq_hcog_bruiser energy_mag_l1 barrel_stabilizer_l2",
-		"mp_weapon_doubletake energy_mag_l3",
-		"mp_weapon_rspn101 optic_cq_hcog_classic bullets_mag_l1 barrel_stabilizer_l1 stock_tactical_l1",
-		"mp_weapon_wingman sniper_mag_l1",
-		"mp_weapon_shotgun",
-		"mp_weapon_energy_shotgun",
-		"mp_weapon_vinson stock_tactical_l1 highcal_mag_l2",
-		"mp_weapon_r97 optic_cq_threat bullets_mag_l1 barrel_stabilizer_l3 stock_tactical_l1",
-		"mp_weapon_autopistol",
-		"mp_weapon_dmr optic_cq_hcog_bruiser sniper_mag_l2 barrel_stabilizer_l2 stock_sniper_l3",
+		//"mp_weapon_doubletake energy_mag_l3",
+		//"mp_weapon_rspn101 optic_cq_hcog_classic bullets_mag_l1 barrel_stabilizer_l1 stock_tactical_l1",
+		//"mp_weapon_wingman sniper_mag_l1",
+		//"mp_weapon_shotgun",
+		//"mp_weapon_energy_shotgun",
+		//"mp_weapon_vinson stock_tactical_l1 highcal_mag_l2",
+		//"mp_weapon_r97 optic_cq_threat bullets_mag_l1 barrel_stabilizer_l3 stock_tactical_l1",
+		//"mp_weapon_autopistol",
+		//"mp_weapon_dmr optic_cq_hcog_bruiser sniper_mag_l2 barrel_stabilizer_l2 stock_sniper_l3",
 		//"mp_weapon_esaw optic_cq_hcog_classic energy_mag_l1 barrel_stabilizer_l4_flash_hider",
-		"mp_weapon_alternator_smg optic_cq_hcog_classic barrel_stabilizer_l2",
-		"mp_weapon_sniper",
-		"mp_weapon_defender optic_sniper stock_sniper_l2",
+		//"mp_weapon_alternator_smg optic_cq_hcog_classic barrel_stabilizer_l2",
+		//"mp_weapon_sniper",
+		//"mp_weapon_defender optic_sniper stock_sniper_l2",
 		//"mp_weapon_esaw optic_cq_holosight_variable",
-		"mp_weapon_rspn101 optic_cq_holosight_variable",
-		"mp_weapon_semipistol bullets_mag_l2"
+		//"mp_weapon_rspn101 optic_cq_holosight_variable",
+		//"mp_weapon_semipistol bullets_mag_l2"
 	]
 
 	foreach(weapon in Weapons)
@@ -3294,7 +3609,7 @@ void function SimpleChampionUI()
 		file.randomprimary = RandomIntRangeInclusive( 0, 2 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
 	}
-	else if( GetCurrentPlaylistVarBool("flowstateRandomHaloGuns", false ) )
+	else if( flowstateSettings.RandomHaloGuns )
 	{
 		file.randomprimary = RandomIntRangeInclusive( 0, 1 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 1 )
@@ -3398,8 +3713,8 @@ void function SimpleChampionUI()
 	
 	if( file.currentRound > 1 )
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
-	
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
 	
 	if( GetCurrentPlaylistName() == "fs_movementgym" )
@@ -3464,11 +3779,11 @@ void function SimpleChampionUI()
 					Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 					
 					#if !DEVELOPER
-					if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+					if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
 						wait Flowstate_StartTimeDelay
 					#endif
 
-					if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+					if( flowstateSettings.enable_oddball_gamemode )
 					{
 
 						if( !debugging )
@@ -3544,7 +3859,7 @@ void function SimpleChampionUI()
 	} 
 
 	string subtext = ""
-	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	// if( !flowstateSettings.is_halo_gamemode )
 	// {
 		// if( GetBestPlayer() == PlayerWithMostDamage() && GetBestPlayerName() != "-still nobody-" )
 			// subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
@@ -3575,7 +3890,7 @@ void function SimpleChampionUI()
 		{
 			Oddball_RestorePlayerStats( player )
 		}
-		if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+		if( flowstateSettings.enable_oddball_gamemode )
 		{
 
 				if( !IsValid( player ) )
@@ -3625,6 +3940,11 @@ void function SimpleChampionUI()
 	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
+
+	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
+	
+	//CALL THIS FOR STATS NEW ROUND
+	
 	
 	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
@@ -3635,8 +3955,8 @@ void function SimpleChampionUI()
 		// if( !is1v1EnabledAndAllowed() )
 		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 	}
-	
-	if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+
+	if( flowstateSettings.hackersVsPros )
 	{
 		ResetAllPlayerStats()
 		int i
@@ -3677,10 +3997,10 @@ void function SimpleChampionUI()
 		}
 	}
 	#if !DEVELOPER
-	if( GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 		wait Flowstate_StartTimeDelay
 	#endif
-	SetGameState( eGameState.Playing )
+	//SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
 	
 	foreach( player in GetPlayerArray() )
@@ -3693,14 +4013,14 @@ void function SimpleChampionUI()
 
 	}
 
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	if( flowstateSettings.enable_oddball_gamemode )
 	{
 		SpawnBallSpawnerAtMapLocation( file.selectedLocation.name )
 	}
 
 	float endTime = Time() + FlowState_RoundTime()
 
-	if( GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ) )
+	if( flowstateSettings.EndlessFFAorTDM )
 	{
 		WaitForever()
 	}
@@ -3747,7 +4067,7 @@ void function SimpleChampionUI()
 		
 		while( Time() <= endTime )
 		{
-			if(GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
+			if( flowstateSettings.hackersVsPros )
 			{
 				foreach(player in GetPlayerArray())
 				{
@@ -3760,8 +4080,8 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-			
-			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+
+			if( flowstateSettings.enable_oddball_gamemode )
 			{
 				table< int,int > totalTeamsScore
 				
@@ -3783,7 +4103,7 @@ void function SimpleChampionUI()
 					if( score >= ODDBALL_POINTS_TO_WIN )
 					{
 						//set team as winner, show ui screen
-						if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
+						if( flowstateSettings.enable_oddball_gamemode && IsValid( GetBallCarrier() ) && IsAlive( GetBallCarrier() ) )
 						{
 							ClearBallCarrierPlayerSetup( GetBallCarrier() )
 							SetEmptyBallInBallSpawner()
@@ -3827,17 +4147,24 @@ void function SimpleChampionUI()
 
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 			{
+
+				PIN_RoundEnd( file.currentRound ) // r5r.dev
+
 				break
 			}
 
 			WaitFrame()
 		}
 	}
-	else if ( !FlowState_Timer() ){
+	else if ( !FlowState_Timer() )
+	{
 		while( Time() <= endTime )
 		{
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 			{
+				
+				PIN_RoundEnd( file.currentRound ) //R5R.DEV
+				
 				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
 				break
 			}
@@ -3846,7 +4173,7 @@ void function SimpleChampionUI()
 		}
 	}
 
-	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && file.winnerTeam == -1 )
+	if( flowstateSettings.enable_oddball_gamemode && file.winnerTeam == -1 )
 	{
 		table< int,int > totalTeamsScore
 		
@@ -3931,7 +4258,7 @@ void function SimpleChampionUI()
 			player.HolsterWeapon()
 			player.Server_TurnOffhandWeaponsDisabledOn()
 			
-			if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false )  )
+			if( flowstateSettings.enable_oddball_gamemode  )
 			{
 				AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
 
@@ -3946,18 +4273,25 @@ void function SimpleChampionUI()
 				SetBallEntity( null )
 			}
 		}
+
+
+	PIN_RoundEnd( file.currentRound )
+	
+	wait (2);
+	// end ship
+
 	if( SCOREBOARD_ENABLE )
 		thread SendScoreboardToClient()
 	
-	wait 8
-	
-	if(GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
-		if(GetCurrentPlaylistVarBool("flowstateBattleLog_Linux", false ))
+	wait flowstateSettings.endgame_delay
+
+	if( flowstateSettings.BattleLogEnable )
+		if( flowstateSettings.BattleLog_Linux )
 			thread Flowstate_SaveBattleLogToFile_Linux()
 		else
 			thread Flowstate_SaveBattleLogToFile()
-			
-	if(GetCurrentPlaylistVarBool("flowstateChatLogEnable", false ))
+
+	if( flowstateSettings.ChatLogEnable )
 		Flowstate_ServerSaveChat()
 
 	// foreach( player in GetPlayerArray() )
@@ -4004,37 +4338,57 @@ void function SimpleChampionUI()
 		
 	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
 	{
-		// foreach( player in GetPlayerArray() )
-			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
-		
-		string matchEndingTitle = GetCurrentPlaylistVarString( "custom_match_ending_title", "Server clean up incoming" )
-		string matchEndingMessage = GetCurrentPlaylistVarString( "custom_match_ending_message", "Don't leave. Server is going to reload to avoid lag." )
-		
-	
 		foreach( player in GetPlayerArray() )
-			Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
-
-		wait 6.0
-		
-		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
-			MovementGymSaveTimesToFile()
-
-		//cycle map /mkos
-		string to_map = "";
-		if( GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false ) && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		{
-			string rotate_map = GetMapName();
-			
-			if ( rotate_map == "mp_rr_arena_composite" )
+			if (player.p.isSpectating)
 			{
-				to_map = "mp_rr_aqueduct";
-			}else{
-				to_map = "mp_rr_arena_composite"
+				endSpectate( player )
 			}
-		} else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" ){
+		}	
+		
+		string matchEndingTitle = flowstateSettings.custom_match_ending_title
+		string matchEndingMessage = flowstateSettings.custom_match_ending_message
+		
+		if( flowstateSettings.end_match_message )
+		{
+			foreach( player in GetPlayerArray() )
+				Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
+
+			wait 6
+
+			if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+				MovementGymSaveTimesToFile()
+		}
+		
+		if( bLog() )
+		{
+			FlagEnd("START_LOG")
+		}
+		//cycle map /mkos
+		string to_map = GetMapName();
+
+		if ( g_bLGmode ) 
+		{
 			to_map = "mp_rr_canyonlands_staging";
-		} else {
-			to_map = GetMapName()
+		} 
+		else 
+		{
+			if ( flowstateSettings.rotate_map )
+			{
+				array<string> maplist = split( flowstateSettings.maplist, "," )
+				int countmaps = maplist.len()
+				int i;
+
+				for ( i = 0; i < countmaps; i++ ) 
+				{
+					if ( GetMapName() == maplist[i] ) 
+					{
+						int index = (i + 1) % countmaps	
+						to_map = maplist[index]
+						break
+					}
+				}
+			}
 		}
 
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
@@ -4066,7 +4420,7 @@ void function SimpleChampionUI()
 				continue
 			
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+			if( flowstateSettings.is_halo_gamemode )
 			{
 				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
 			}
@@ -4381,7 +4735,7 @@ entity function CreateRingBoundary(LocationSettings location)
             ringRadius = Distance(spawn.origin, ringCenter)
     }
 
-    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+    ringRadius += flowstateSettings.ring_radius_padding
 
     if ( file.selectedLocation.name == "Shipment By AyeZee" )
         ringRadius += 20000
@@ -4554,7 +4908,7 @@ void function CharSelect( entity player)
 //By @CafeFPS (CafeFPS)//
 {
 	//Give master chief skin and assign a color
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( flowstateSettings.is_halo_gamemode )
 	{
 		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
 
@@ -4683,9 +5037,11 @@ void function AssignCharacter( entity player, int index )
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
 //By @CafeFPS (CafeFPS)//
 {
-	if( !IsValid( player ) || !player.p.isConnected )
-		return
-	
+	if( !IsValid( player )) return
+	if( !player.IsPlayer() ) return //mkos
+	if ( !player.p.isConnected ) return
+	if ( ( text.len() + subText.len() ) >= 599 ) return //mkos
+
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )
 	{
@@ -5035,7 +5391,7 @@ void function PlayAnnounce( string sound )
 
 void function __InitAdmins()
 {
-	array<string> Split = split( GetCurrentPlaylistVarString("Admins", "" ) , " ")
+	array<string> Split = split( flowstateSettings.Admins , " ")
 
 	foreach(string data in Split)
 	{
@@ -5151,8 +5507,8 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 {
 	if( !IsValid(player) )
 		return false
-	
-	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+
+	if( flowstateSettings.flowstate_1v1mode )
 		return false
 	
     if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers || file.tdmState == eTDMState.NEXT_ROUND_NOW || !player.p.isSpectating && !IsAlive( player ) )
@@ -5172,7 +5528,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 
         if( !IsValid(specTarget) )
         {
-            printf("error: try again")
+            //printf("error: try again")
 			Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
             return false
         }
@@ -5221,8 +5577,8 @@ string function helpMessage()
 
 bool function ClientCommand_Say(entity player, array<string> args)
 {
-    if (!IsValid(player) || args.len() == 0) return false 
-	
+    if (!IsValid(player) || args.len() == 0) return false
+
 	string finalMsg = player.GetPlayerName() + " "
 	
 	foreach(arg in args)
@@ -5275,7 +5631,9 @@ bool function IsForcedlyDisabledWeapon( string weapon )
 }
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
-{
+{	
+	bool bRestFlag = false
+	
 	if( !IsValid( player ) || !IsAlive( player ) )
 		return false
 	
@@ -5422,11 +5780,269 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	
 	player.p.lastTgiveUsedTime = Time()
 	
+		if( ClientCommand_SaveCurrentWeapons( player, [] ) )
+		{	
+			string sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )
+			Message( player, "WEAPON " + sWepName + " SAVED")
+		}	
+			
+		if (bRestFlag)
+		{	
+			//HolsterAndDisableWeapons( player )
+		}
+
     return true
+}
+
+string function GetWepName_FromClassName( string classname )
+{
+	if ( classname in WeaponNameMap )
+	{
+		return WeaponNameMap[classname]
+	}
+	
+	return "Unknown";
+}
+
+///Save TDM Current Weapons
+bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
+{	
+	if (!CheckRate( player )) return false
+	
+	entity weapon1
+	entity weapon2
+	string optics1
+	string optics2
+	array<string> mods1
+	array<string> mods2
+	string weaponname1
+	string weaponname2
+	try
+	{
+		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			
+		mods1 = IsValid(weapon1) ? GetWeaponMods( weapon1 ) : [""];
+		mods2 = IsValid(weapon2) ? GetWeaponMods( weapon2 ) : [""];
+		
+		foreach (mod in mods1)
+			optics1 = mod + " " + optics1
+		foreach (mod in mods2)
+			optics2 = mod + " " + optics2
+
+		
+		if(IsValid(weapon1))
+		{
+			weaponname1 = weapon1.GetWeaponClassName()+" " + optics1;	
+		}
+		else 
+		{	
+			#if DEVELOPER && HAS_TRACKER_DLL
+			sqerror("Player: " + player.GetPlatformUID() + " Weapon 1 invalid, setting to empty ") 
+			#endif
+			
+			weaponname1 = " ";
+		}
+		
+		if(IsValid(weapon2))
+		{
+			weaponname2 = weapon2.GetWeaponClassName()+" " + optics2
+		}
+		else 
+		{	
+			#if DEVELOPER && HAS_TRACKER_DLL
+			sqerror("Player: " + player.GetPlatformUID() + " Weapon 2 invalid, setting to empty")
+			#endif		
+			
+			weaponname2 = "";
+		}
+		
+		
+	}
+	catch(error)
+	{	
+		#if DEVELOPER && HAS_TRACKER_DLL
+		sqerror("Error: " + error )
+		#endif
+	}
+	
+	if ( !isPlayerInRestingList( player ) )
+	{
+		if(weaponname1 == "" || weaponname2 == "")
+		{	
+			#if DEVELOPER && HAS_TRACKER_DLL
+			if (weaponname1 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname1 empty") }
+			if (weaponname2 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname2 empty") }
+			#endif
+			
+			Message( player, "FAILED TO SAVE" )
+			return false //dont save if player is dead
+		}
+	}
+	
+	#if DEVELOPER && HAS_TRACKER_DLL
+	sqprint( "Player: " + player.GetPlatformUID() + " weaponname1: " + weaponname1 + " weaponname2: " + weaponname2 )
+	#endif 
+	
+	string concatenate_weps = weaponname1 + "; " + weaponname2;
+	
+	weaponlist[player.GetPlayerName()] <- concatenate_weps;
+	SavePlayer_saved_weapons( player, concatenate_weps )
+	
+	return true
+}
+
+//Limit mod for weapons in LoadCustomWeapon
+string function modChecker( string weaponMods )
+{	
+	//sqprint("weaponMods: " + weaponMods)
+	if( trim(weaponMods) == "") return "";  //return empty weapon mods
+	
+	array<string> weaponMod = split(weaponMods , " ")
+	array<string> rifles = ["mp_weapon_energy_ar","mp_weapon_esaw","mp_weapon_rspn101","mp_weapon_vinson","mp_weapon_lmg","mp_weapon_g2","mp_weapon_hemlok"]
+	array<string> smgs = ["mp_weapon_r97","mp_weapon_volt_smg","mp_weapon_pdw","mp_weapon_car"]
+	if ( weaponMod.len() > 0 && weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("energy_mag_l3" == weaponMod[i] )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+		}
+	}
+
+	if ( weaponMod.len() > 0 && rifles.contains(weaponMod[0]))//this weapon is rifle
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if( i >= weaponMod.len() )
+				continue
+
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i] || "highcal_mag_l2" == weaponMod[i]  )//force player using highcal_mag_l1
+				weaponMod[i] = "highcal_mag_l1"
+			if ("energy_mag_l3" == weaponMod[i] || "energy_mag_l2" == weaponMod[i]  )//force player using energy_mag_l1
+				weaponMod[i] = "energy_mag_l1"
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
+				weaponMod.remove(i)
+		}
+	}
+
+	if ( weaponMod.len() > 0 && smgs.contains(weaponMod[0]))//this weapon is smg
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if( i >= weaponMod.len() )
+				continue
+
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i]   )//force player using highcal_mag_l2
+				weaponMod[i] = "highcal_mag_l2"
+			if ("energy_mag_l3" == weaponMod[i]   )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
+				weaponMod.remove(i)
+		}
+	}
+
+	weaponMod.reverse()
+	string returnweapon
+	foreach (i in weaponMod) {
+		returnweapon = i+" "+returnweapon
+	}
+
+	return returnweapon
+}
+
+//Auto-load TDM Saved Weapons at Respawn
+void function LoadCustomWeapon(entity player)
+{
+	if (!CheckRate( player )) return
+	
+	if (player.GetPlayerName() in weaponlist)
+	{
+		// TakeAllWeapons(player)
+		array<string> weapons =  split(weaponlist[player.GetPlayerName()] , ";")
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		//check if weapon's mods is allowed by server
+		foreach(index,weapon in weapons)
+		{	
+			if ( trim(weapon) == "" ) continue
+			
+            weapon =modChecker(weapon)
+			weapons[index]=weapon
+		}
+
+		foreach (index,rweapon in weapons)
+		{	
+			#if DEVELOPER && HAS_TRACKER_DLL
+			sqprint(rweapon)
+			#endif
+			
+			if ( trim(rweapon) == "" ) continue
+			
+			int slot
+			if(index == 0)
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+			}
+			else
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+			}
+
+			__GiveWeapon( player, weapons, slot, index )
+		}
+		
+		WaitFrame()
+		
+		if(!IsValid(player)) { return }			
+			
+		if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		{
+			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		}
+		else if (IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		{
+			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+		}
+		else 
+		{
+			#if DEVELOPER && HAS_TRACKER_DLL
+			sqerror("Player: " + player.GetPlatformUID() + " has no valid weapon to set: Active" )
+			#endif
+		}
+		
+	}
+}
+
+
+//Reset TDM Saved Weapons
+bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
+{
+	if (!CheckRate( player )) return false
+
+	if (player.GetPlayerName() in weaponlist)
+	{
+		delete weaponlist[player.GetPlayerName()]
+	}
+	
+	SavePlayer_saved_weapons(player, "NA")
+	player.p.weapon_loadout = "NA";
+	
+	return true
 }
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
+	if (!CheckRate( player )) return false
+	
 	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
 		return false
 	
@@ -5497,8 +6113,7 @@ bool function ClientCommand_UnGod(entity player, array<string> args)
 
 bool function ClientCommand_Scoreboard(entity player, array<string> args)
 {
-	if( !IsValid(player) ) 
-		return false
+	if (!CheckRate( player )) return false
 
 	float ping = player.GetLatency() * 1000 - 40
 
@@ -5516,9 +6131,8 @@ bool function ClientCommand_Scoreboard(entity player, array<string> args)
 
 bool function ClientCommand_ScoreboardPROPHUNT(entity player, array<string> args)
 {
-	if( !IsValid(player) ) 
-		return false
-	
+	if (!CheckRate( player )) return false
+
 	float ping = player.GetLatency() * 1000 - 40
 
 	Message(player,
@@ -5568,8 +6182,8 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 }
 bool function ClientCommand_BecomePro(entity p, array<string> args)
 {
-	if ( !IsValid( p ) ) return false
-	
+	if (!CheckRate( p )) return false
+
 	SetTeam(p, TEAM_MILITIA)
 	ClearHackerOrBecomePro(p)
 	
@@ -5606,156 +6220,9 @@ void function AnimationTiming( entity legend, float cycle )
 	}
 }
 
-///Save TDM Current Weapons
-bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
-{	entity weapon1
-	entity weapon2
-	string optics1
-	string optics2
-	array<string> mods1 
-	array<string> mods2 
-	string weaponname1
-	string weaponname2
-	try
-	{
-		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		mods1 = GetWeaponMods( weapon1 )
-		mods2 = GetWeaponMods( weapon2 )
-		foreach (mod in mods1)
-			optics1 = mod + " " + optics1
-		foreach (mod in mods2)
-			optics2 = mod + " " + optics2
-
-		if(!IsValid(weapon1) || !IsValid(weapon2)) return false
-		weaponname1 = weapon1.GetWeaponClassName()+" " + optics1 + "; "
-		weaponname2 = weapon2.GetWeaponClassName()+" " + optics2
-	}
-	catch(error)
-	{}
-
-	if(weaponname1 == "" || weaponname2 == "") return false //dont save if player is dead
-	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
-	return true
-}
-
-//Limit mod for weapons in LoadCustomWeapon
-string function modChecker( string weaponMods )
-{
-	array<string> weaponMod = split(weaponMods , " ")
-	array<string> rifles = ["mp_weapon_energy_ar","mp_weapon_esaw","mp_weapon_rspn101","mp_weapon_vinson","mp_weapon_lmg","mp_weapon_g2","mp_weapon_hemlok"]
-	array<string> smgs = ["mp_weapon_r97","mp_weapon_volt_smg","mp_weapon_pdw","mp_weapon_car"]
-	if ( weaponMod.len() > 0 && weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
-	{
-		for (int i = 1; i < weaponMod.len(); i++)
-		{
-			if ("energy_mag_l3" == weaponMod[i] )//force player using energy_mag_l2
-				weaponMod[i] = "energy_mag_l2"
-		}
-	}
-
-	if ( weaponMod.len() > 0 && rifles.contains(weaponMod[0]))//this weapon is rifle
-	{
-		for (int i = 1; i < weaponMod.len(); i++)
-		{
-			if( i >= weaponMod.len() )
-				continue
-
-			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
-				weaponMod[i] = "stock_tactical_l1"
-			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
-				weaponMod[i] = "bullets_mag_l2"
-			if ("highcal_mag_l3" == weaponMod[i] || "highcal_mag_l2" == weaponMod[i]  )//force player using highcal_mag_l1
-				weaponMod[i] = "highcal_mag_l1"
-			if ("energy_mag_l3" == weaponMod[i] || "energy_mag_l2" == weaponMod[i]  )//force player using energy_mag_l1
-				weaponMod[i] = "energy_mag_l1"
-			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
-				weaponMod.remove(i)
-		}
-	}
-
-	if ( weaponMod.len() > 0 && smgs.contains(weaponMod[0]))//this weapon is smg
-	{
-		for (int i = 1; i < weaponMod.len(); i++)
-		{
-			if( i >= weaponMod.len() )
-				continue
-
-			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
-				weaponMod[i] = "stock_tactical_l1"
-			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
-				weaponMod[i] = "bullets_mag_l2"
-			if ("highcal_mag_l3" == weaponMod[i]   )//force player using highcal_mag_l2
-				weaponMod[i] = "highcal_mag_l2"
-			if ("energy_mag_l3" == weaponMod[i]   )//force player using energy_mag_l2
-				weaponMod[i] = "energy_mag_l2"
-			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
-				weaponMod.remove(i)
-		}
-	}
-
-	weaponMod.reverse()
-	string returnweapon
-	foreach (i in weaponMod) {
-		returnweapon = i+" "+returnweapon
-	}
-
-	return returnweapon
-}
-
-//Auto-load TDM Saved Weapons at Respawn
-void function LoadCustomWeapon(entity player)
-{
-	if ( !IsValid( player ) ) return
-	if (player.GetPlayerName() in weaponlist)
-	{
-		// TakeAllWeapons(player)
-		array<string> weapons =  split(weaponlist[player.GetPlayerName()] , ";")
-		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		//check if weapon's mods is allowed by server
-		foreach(index,eachWeapons in weapons)
-		{
-            eachWeapons =modChecker(eachWeapons)
-			weapons[index]=eachWeapons
-		}
-
-		foreach (index,eachWeapon in weapons)
-		{
-			int slot
-			if(index == 0)
-			{
-				slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
-			}
-			else
-			{
-				slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
-			}
-
-			__GiveWeapon( player, weapons, slot, index )
-		}
-
-		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	}
-}
-
-
-//Reset TDM Saved Weapons
-bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
-{	
-	if (!IsValid(player))
-		return false
-	
-	if (player.GetPlayerName() in weaponlist)
-	{
-		delete weaponlist[player.GetPlayerName()]
-	}
-	return true
-}
-
 void function LoadCustomSkill(entity player)
-{	
-	if (!IsValid(player)) 
+{
+	if (!IsValid(player))
 		return
 
 	if (player.GetPlayerName() in skilllist) //列表里存在该玩家数据

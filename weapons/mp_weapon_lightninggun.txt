@@ -2,10 +2,10 @@ WeaponData
 {
 	// General
 	
-	"printname"   									"LIGHTNING GUN"
-	"shortprintname"   								"LIGHTNING GUN"
-	"description" 									"LIGHTNING GUN"
-	"longdesc"										"LIGHTNING GUN"
+	"printname"   									"Lightning Gun"
+	"shortprintname"   								"Lightning Gun"
+	"description" 									"Lightning Gun"
+	"longdesc"										"Lightning Gun"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
 
@@ -17,7 +17,7 @@ WeaponData
 	"ammo_pool_type"								"special"
 	"fire_mode"   									"automatic"
 	// Models
-	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl" // "mdl/flowstate_custom/ptpov_lightninggun.rmdl"
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
 	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"holster_type"									"anti_titan"

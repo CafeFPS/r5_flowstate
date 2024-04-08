@@ -199,8 +199,11 @@ void function CodeCallback_OnPrecache()
 
 function AddFlinch( entity attackedEnt, damageInfo )
 {
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_1v1" )
+	{
+		// DamageInfo_SetFlinchDirection( damageInfo, <0,0,0> )
 		return
+	}
 
 	Assert( IsValid_ThisFrame( attackedEnt ) )
 
@@ -1657,7 +1660,7 @@ bool function IsPointOutOfBounds( vector point )
 {
 	foreach ( trigger in file.outOfBoundsTriggers )
 	{
-		if ( trigger.ContainsPoint( point ) )
+		if ( trigger.ContainsPoint( ClampToWorldspace( point ) ) )
 			return true
 	}
 	return false

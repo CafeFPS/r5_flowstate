@@ -4,8 +4,8 @@
 WeaponData
 {
 	// General
-	"printname"   									"RAY GUN"
-	"shortprintname"								"RAY GUN"
+	"printname"   									"Ray Gun"
+	"shortprintname"								"Ray Gun"
 	"description" 									"Cool Ray Gun by CafeFPS"
 	"longdesc" 										"Cool Ray Gun by CafeFPS"
 

@@ -181,7 +181,7 @@ void function Consumable_Init()
 {
 	RegisterWeaponForUse( CONSUMABLE_WEAPON_NAME )
 	RegisterSignal( "ConsumableDestroyRui" ) // idk really, from S7 or so...
-
+	RegisterSignal( "VCTBlueFX" )
 	//Remote_RegisterUntypedFunction_deprecated( "ClientCallback_SetSelectedConsumableTypeNetInt") //, "int", INT_MIN, INT_MAX )
 	//Remote_RegisterUntypedFunction_deprecated( "ClientCallback_SetNextHealModType") //, "string" )
 

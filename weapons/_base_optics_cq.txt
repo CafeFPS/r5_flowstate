@@ -311,7 +311,7 @@ WeaponData
 
 
 	// optic_cq_hcog_classic
-	"bodygroup6_name"	"sight_hcog_og"
+	"bodygroup6_name"	"sight_hcog_og_ranked_s2_2019"
 	"bodygroup6_set"	"0"
 
 	"ui6_enable"		"0"

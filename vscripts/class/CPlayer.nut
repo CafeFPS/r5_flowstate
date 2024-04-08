@@ -41,6 +41,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.cloakedForever <- false
 	CPlayer.stimmedForever <- false
 
+	RegisterSignal( "InputChanged" )
 	RegisterSignal( "OnRespawnPlayer" )
 	RegisterSignal( "NewViewAnimEntity" )
 	RegisterSignal( "PlayerDisconnected" )

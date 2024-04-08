@@ -72,11 +72,6 @@ void function Utility_Init()
 	#endif
 }
 
-void function sqprint( string msg )
-{
-	printt( msg )
-}
-
 void function GiveAllTitans()
 {
 
@@ -1659,6 +1654,48 @@ bool function IsValidPlayer( entity player )
 bool function IsDisconnected( entity player )
 {
 	return player.p.isDisconnected
+}
+
+
+#if !DEVELOPER
+table function GetPlayerPos( entity player = null )
+{
+	if ( !player )
+		player = gp()[0]
+
+	vector org = player.GetOrigin()
+	vector vec = player.GetViewVector()
+	vector ang = VectorToAngles( vec )
+
+	return { origin = org, angles = ang }
+}
+
+
+string function CreateOriginAnglesString( vector origin, vector angles )
+{
+	string returnStr = "< " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " >"
+	return returnStr
+}
+#endif
+
+string function CreateOriginAnglesString_CC( string name, vector origin, vector angles )
+{		
+	string returnStr = name + ": NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ),";
+	return returnStr
+}
+
+void function POS_CC( entity player, string name )
+{	
+	table playerPos = GetPlayerPos( player )
+	vector origin = expect vector( playerPos.origin )
+	vector angles = expect vector( playerPos.angles )
+
+	string returnStr = CreateOriginAnglesString_CC( player.GetPlayerName() + " addspawn name: " + name, origin, <angles.x, angles.y, angles.z> )
+	
+	Message( player, "SAVED SPAWN: " + name , returnStr)
+	#if HAS_TRACKER_DLL
+	sqprint(format("Pos: %s", returnStr))
+	#endif
 }
 
 /****************************************************************************************************\
@@ -4353,7 +4390,12 @@ void function TakeAllWeapons( entity ent )
 {
 try{
 	if ( ent.IsPlayer() )
-	{
+	{	
+		if(g_bGiveTactical)
+		{
+			ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		}
+		
 		ent.RemoveAllItems()
 		array<entity> weapons = ent.GetMainWeapons()
 		foreach ( weapon in weapons )

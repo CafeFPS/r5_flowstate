@@ -14,6 +14,7 @@ global function OnWeaponOwnerChanged_weapon_tesla_trap
 global function OnWeaponPrimaryAttack_weapon_tesla_trap
 global function CodeCallback_TeslaTrapCrossed
 global function Placement_IsHitEntScriptedPlaceable
+global function DestroyAllTeslaTrapsForPlayer
 #if CLIENT
 global function TeslaTrap_AreTrapsLinked
 global function ClientCodeCallback_TeslaTrapLinked
@@ -495,16 +496,22 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfo( entity player, entit
 	vector traceOffset = TESLA_TRAP_PLACEMENT_TRACE_OFFSET_UPDATE
 
 	array<entity> ignoreEnts = TeslaTrap_GetAllDead()
-	ignoreEnts.extend( GetFriendlySquadArrayForPlayer_AliveConnected( player ) )
+	ignoreEnts.extend( GetFriendlySquadArrayForPlayer_AliveConnected( player ) )	
 	ignoreEnts.append( player )
 	ignoreEnts.append( proxy )
 
 	if ( ignorePlacedTraps )
+	{
 		ignoreEnts.extend( TeslaTrap_GetAll() )
+	}
 
-	foreach( ignoredEnt in ignoreEnts )
-		if( !IsValid( ignoredEnt ) )
-			ignoreEnts.fastremovebyvalue( ignoredEnt )
+	for ( int i = ignoreEnts.len() - 1; i >= 0; i-- )
+	{
+		if ( !IsValid(ignoreEnts[i]) )
+		{
+			ignoreEnts.remove(i);
+		}
+	}
 
 	TraceResults viewTraceResults = TraceLine( eyePos, eyePos + player.GetViewVector() * (file.balance_teslaTrapRange * 2), ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE, player )
 	if ( viewTraceResults.fraction < 1.0 )
@@ -1384,6 +1391,20 @@ array<entity> function TeslaTrap_GetAllLinkable(entity player)
 	}
 
 	return linkableTraps
+}
+
+//mkos
+void function DestroyAllTeslaTrapsForPlayer( entity player )
+{
+	array<entity> playerTraps = TeslaTrap_GetAll()
+	
+	foreach ( trap in playerTraps )
+	{
+		if( IsValid(trap) && trap.GetOwner() == player )
+		{
+			trap.Destroy()
+		}
+	}
 }
 
 array<entity> function TeslaTrap_GetAllDead()

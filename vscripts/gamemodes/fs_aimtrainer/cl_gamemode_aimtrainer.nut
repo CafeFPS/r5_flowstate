@@ -118,7 +118,7 @@ void function Cl_ChallengesByColombia_Init()
 {
 	//Increase client command limit to 60
 	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-	SetConVarInt("net_processTimeBudget", 2000)
+	SetConVarInt("net_processTimeBudget", 0)
 
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )

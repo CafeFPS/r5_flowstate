@@ -80,8 +80,8 @@ void function Canyonlands_MapInit_Common()
 {
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 	
-	if(GameRules_GetGameMode() != SURVIVAL)
-		return
+	// if(GameRules_GetGameMode() != SURVIVAL)
+		// return
 
 	#if SERVER
 	RegisterSignal( "NessyDamaged" )
@@ -223,14 +223,13 @@ void function EntitiesDidLoad()
 
 void function __EntitiesDidLoad()
 {
-	if( GameRules_GetGameMode() != FREELANCE || GameRules_GetGameMode() == SURVIVAL )
-	{
-		// waitthread FindHoverTankEndNodes()
-		// SpawnHoverTanks()
-		// if ( GetCurrentPlaylistVarBool( "enable_nessies", false ) )
-			// Nessies()
-		DestroyHoverTankNodes()
-	}
+	// waitthread FindHoverTankEndNodes()
+	// SpawnHoverTanks()
+
+	if ( GetCurrentPlaylistVarBool( "enable_nessies", false ) )
+		Nessies()
+
+	DestroyHoverTankNodes()
 }
 
 void function DestroyHoverTankNodes()

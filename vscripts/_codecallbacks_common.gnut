@@ -112,7 +112,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	CodeCallback_OnClientReloadConnectionCompleted( player )
 	
 	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
-		player.p.assignedCustomModel = RandomIntRangeInclusive(1,10)
+		player.p.assignedCustomModel = RandomIntRangeInclusive(1,13)
 	
 	if( GameRules_GetGameMode() == "fs_snd" )
 		_OnPlayerConnectedSND( player )
@@ -774,6 +774,9 @@ void function RemoveEntityCallback_OnDamaged( entity ent, void functionref( enti
 {
 	int index = ent.e.entDamageCallbacks.find( callbackFunc )
 
+	if( index == -1 )
+		return
+
 	Assert( index != -1, "Requested DamageCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entDamageCallbacks.fastremove( index )
 
@@ -792,7 +795,8 @@ void function AddEntityCallback_OnPostDamaged( entity ent, void functionref( ent
 void function RemoveEntityCallback_OnPostDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
 {
 	int index = ent.e.entPostDamageCallbacks.find( callbackFunc )
-
+	if( index == -1 )
+		return
 	Assert( index != -1, "Requested PostDamageCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entPostDamageCallbacks.fastremove( index )
 
@@ -816,7 +820,8 @@ void function AddEntityCallback_OnKilled( entity ent, void functionref( entity, 
 void function RemoveEntityCallback_OnKilled( entity ent, void functionref( entity, var ) callbackFunc )
 {
 	int index = ent.e.entKilledCallbacks.find( callbackFunc )
-
+	if( index == -1 )
+		return
 	Assert( index != -1, "Requested KilledCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entKilledCallbacks.fastremove( index )
 

@@ -50,7 +50,8 @@ void function _ChallengesByColombia_Init()
 {
 	//Increase client command limit to 60
 	SetConVarInt("sv_quota_stringCmdsPerSecond", 60)
-	
+	SetConVarInt("net_processTimeBudget", 0 )
+
 	//Todo: create only one cc for this
 	//first challenges select menu column
 	AddClientCommandCallback("CC_StartChallenge1", CC_StartChallenge1)
@@ -309,10 +310,10 @@ void function StrafeMovement(entity ai, entity player)
 		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.2,0.75)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.2,0.75)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
 	}
 }

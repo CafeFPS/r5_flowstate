@@ -58,13 +58,16 @@ void function OnClientConnected( entity player )
 
 	printt( "[+] New player connected! ", player )
 
-	//CafeFPS
-	//Wraith Q fix. Colombia
-	player.SetForceVisibleInPhaseShift(true)
+	//By CafeFPS
+
+	//Wraith Q fix
+	player.SetForceVisibleInPhaseShift( true )
+
 	//Phase Rewind Record Positions
-	thread RecordPositions(player)
+	thread RecordPositions( player )
+
 	//Record a networked int for Latency to show in scoreboard
-	thread NetworkedIntLatencyThingy(player)	
+	thread NetworkedIntLatencyThingy( player )	
 
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
@@ -87,7 +90,7 @@ void function NetworkedIntLatencyThingy( entity player )
 			player.SetPlayerNetInt( "latency", latency )
 		}
 
-		wait 0.1
+		wait 0.5
 	}
 }
 

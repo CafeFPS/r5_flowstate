@@ -77,6 +77,7 @@ void function ShLootBin_Init()
 		//AddClientCommandCallback( "dev_spawn_lootbin", ClientCommand_spawn_lootbin )
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		PrecacheParticleSystem( $"P_impact_exp_artillery" )
 	#endif
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
@@ -277,10 +278,11 @@ void function InitLootBin( entity lootbin )
 		//lootbin.SetSkin(2)
 		return
 	}
-	
+	array<string> Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
+
 	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && GameRules_GetGameMode() != "fs_snd" )
 	{
-		AddMultipleLootItemsToLootBin( lootbin, SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3, 4) ) )
+		AddMultipleLootItemsToLootBin( lootbin, Refs )
 	}
 }
 
@@ -507,6 +509,8 @@ void function HandleLootbinUse( entity lootbin, entity player )
 		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, lootbin, lootbin.GetWorldSpaceCenter(), player.GetTeam(), player )
 }
 
+int opened = 0
+
 void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 {
 	lootbin.EndSignal( "OnDestroy" )
@@ -543,12 +547,31 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 
 	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) && GameRules_GetGameMode() == SURVIVAL )
+	{
+		printt( "Lootbin opened ", opened )
+		opened++
+		
+		if( opened == 25 )
+			thread function () : ( lootbin, player )
+			{
+				wait 1
+
+				entity hotZoneBeam = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_impact_exp_artillery" ), lootbin.GetOrigin(), <0,90,0> )
+				EmitSoundAtPosition( 99, lootbin.GetOrigin(), "weapon_explosion_med" )
+				lootbin.Destroy()
+				player.TakeDamage( player.GetHealth() + 1 , null, null, { damageSourceId = eDamageSourceId.titan_explosion, damageType = DMG_BURN } )
+			}()
+	}
+
 	entity lootbinParent = lootbin.GetParent()
 	if ( IsValid( lootbinParent ) )
 		waitthread PlayAnim( lootbin, "loot_bin_01_open", lootbinParent, "ref" )
 	else
 		waitthread PlayAnim( lootbin, "loot_bin_01_open" )
-
+	
+	if( !IsValid( lootbin ) )
+		return
 
 	GradeFlagsClear( lootbin, eGradeFlags.IS_BUSY )
 }

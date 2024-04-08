@@ -1,0 +1,2159 @@
+//Made by @CafeFPS and Archtux
+//draft script, move everything to one function, clean up useless shit. CafeFPS
+
+untyped
+
+global function ShHoverVehicle_Init
+#if SERVER
+global function SpawnTridentTest
+#endif
+
+#if CLIENT
+global function SetupThirdPersonForVehicle
+global function TridentBoost_Visuals
+global function GetPlayerCrosshairOriginRaw
+#endif
+
+const asset MIL_TANK = $"mdl/vehicles_r5/land/mil_tank_paladin_mkv/veh_land_mil_tank_paladin_mkv.rmdl"
+const asset CREEPING_BOMBARDMENT_WEAPON_SMOKESCREEN_FX = $"P_smokescreen_FD"
+const asset CREEPING_BOMBARDMENT_SMOKE_FX = $"P_bBomb_smoke"
+
+const asset TANK_BULLET_SMALL =	$"mdl/weapons/bullets/projectile_20mm.rmdl"
+const asset TANK_BULLET_LARGE =	$"mdl/weapons/bullets/projectile_40mm.rmdl"
+const asset TANK_SMOKE_FX = $"P_dog_w_fire_trail_1"
+const asset TANK_FIRE_FX = $"P_muz_turretplasma_mega"
+const LERP_IN_FLOAT = 0.5
+const TRIDENT_HOVER_HEIGHT = 60
+const WARTHOG_HOVER_HEIGHT = 5
+
+void function ShHoverVehicle_Init()
+{
+	#if SERVER
+		PrecacheModel($"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl")
+		PrecacheModel($"mdl/flowstate_custom/warthog.rmdl")
+		PrecacheModel($"mdl/flowstate_custom/mongoose.rmdl")
+		PrecacheModel($"mdl/flowstate_custom/banshee.rmdl")
+		PrecacheModel(TANK_BULLET_SMALL)
+		PrecacheModel(TANK_BULLET_LARGE)
+		PrecacheParticleSystem(TANK_FIRE_FX)
+		PrecacheParticleSystem(TANK_SMOKE_FX)
+		
+		AddClientCommandCallback( "spawntridentatcrosshair", CC_SpawnTrident )
+		//halo vehicles
+		AddClientCommandCallback( "spawnwarthogatcrosshair", CC_SpawnWarthog )
+		AddClientCommandCallback( "spawnmongooseatcrosshair", CC_SpawnMongoose )
+		AddClientCommandCallback( "spawnBansheeatcrosshair", CC_SpawnBanshee )
+		
+		RegisterSignal("NewTridentAnim")
+		RegisterSignal("StopDriving")
+	#endif
+}
+
+#if SERVER
+bool function CC_SpawnTrident( entity player, array<string> args )
+{
+	thread SpawnTridentTest(player)
+	return true	
+}
+
+bool function CC_SpawnWarthog( entity player, array<string> args )
+{
+	thread SpawnWarthogTest(player)
+	return true	
+}
+
+bool function CC_SpawnMongoose( entity player, array<string> args )
+{
+	thread SpawnMongooseTest(player)
+	return true	
+}
+
+void function SpawnTridentTest(entity player)
+{
+    vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z -= 25
+	vector angles = Vector(0,0,0)
+
+	entity physics = CreateEntity( "prop_physics" )
+	physics.SetValueForModelKey( $"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl" )
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
+	physics.kv.spawnflags = 4
+	physics.kv.fadedist = -1
+	physics.kv.physdamagescale = 0.1
+	physics.kv.inertiaScale = 1.0
+	physics.kv.renderamt = 255
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.solid = SOLID_VPHYSICS
+	physics.SetOrigin( origin )
+	physics.SetAngles( angles )
+	DispatchSpawn( physics )
+
+	physics.PhysicsSetDamping(0,0)
+	physics.PhysicsSetFriction(0)
+	physics.StopPhysics()
+	
+	physics.SetModel($"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl")
+	physics.SetValueForModelKey( $"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl" )
+	physics.Hide()
+	
+	entity trident = CreateEntity( "prop_dynamic" )
+    trident.SetValueForModelKey( $"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl" )
+	trident.kv.fadedist = 10000
+	trident.kv.renderamt = 255
+    trident.SetOrigin(physics.GetOrigin())
+    trident.SetAngles(Vector(0,90,90))
+	DispatchSpawn( trident )
+	trident.SetParent(physics)
+	
+	trident.e.physicsCar = physics
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Drive Trident", "%use% Drive Trident")
+	trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	AddCallback_OnUseEntity(trident, OnUseCar)	
+}
+
+void function SpawnWarthogTest(entity player)
+{
+    vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z -= 25
+	vector angles = Vector(0,0,0)
+
+	entity physics = CreateEntity( "prop_physics" )
+	physics.SetValueForModelKey( $"mdl/flowstate_custom/warthog.rmdl" )
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
+	physics.kv.spawnflags = 4
+	physics.kv.fadedist = -1
+	physics.kv.physdamagescale = 10.0
+	physics.kv.inertiaScale = 10.0
+	physics.kv.renderamt = 255
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.solid = SOLID_VPHYSICS
+	physics.SetOrigin( origin )
+	physics.SetAngles( angles )
+	DispatchSpawn( physics )
+
+	physics.PhysicsSetDamping(5,5)
+	physics.PhysicsSetFriction(10)
+	physics.kv.gravity = 2.5
+	//physics.StopPhysics()
+	
+	// physics.SetModel($"mdl/flowstate_custom/warthog.rmdl")
+	// physics.SetValueForModelKey( $"mdl/flowstate_custom/warthog.rmdl" )
+	//physics.Hide()
+	
+	entity trident = physics
+	// CreateEntity( "prop_dynamic" )
+    // trident.SetValueForModelKey( $"mdl/flowstate_custom/warthog.rmdl")
+	// trident.kv.fadedist = 10000
+	// trident.kv.renderamt = 255
+    // trident.SetOrigin(physics.GetOrigin())
+    // trident.SetAngles(Vector(0,0,0))
+	// DispatchSpawn( trident )
+	// trident.SetParent(physics)
+	
+	trident.e.physicsCar = physics
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Drive Warthog", "%use% Drive Warthog")
+	trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	AddCallback_OnUseEntity(trident, OnUseWarthog)	
+}
+
+void function SpawnMongooseTest(entity player)
+{
+    vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z -= 25
+	vector angles = Vector(0,0,0)
+
+	entity physics = CreateEntity( "prop_physics" )
+	physics.SetValueForModelKey( $"mdl/flowstate_custom/mongoose.rmdl" )
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
+	physics.kv.spawnflags = 4
+	physics.kv.fadedist = -1
+	physics.kv.physdamagescale = 10.0
+	physics.kv.inertiaScale = 10.0
+	physics.kv.renderamt = 255
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.solid = SOLID_VPHYSICS
+	physics.SetOrigin( origin )
+	physics.SetAngles( angles )
+	DispatchSpawn( physics )
+
+	physics.PhysicsSetDamping(5,5)
+	physics.PhysicsSetFriction(10)
+	physics.kv.gravity = 2.5
+	//physics.StopPhysics()
+	
+	// physics.SetModel($"mdl/flowstate_custom/warthog.rmdl")
+	// physics.SetValueForModelKey( $"mdl/flowstate_custom/warthog.rmdl" )
+	//physics.Hide()
+	
+	entity trident = physics
+	// CreateEntity( "prop_dynamic" )
+    // trident.SetValueForModelKey( $"mdl/flowstate_custom/warthog.rmdl")
+	// trident.kv.fadedist = 10000
+	// trident.kv.renderamt = 255
+    // trident.SetOrigin(physics.GetOrigin())
+    // trident.SetAngles(Vector(0,0,0))
+	// DispatchSpawn( trident )
+	// trident.SetParent(physics)
+	
+	trident.e.physicsCar = physics
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Drive Mongoose", "%use% Drive Mongoose")
+	trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	AddCallback_OnUseEntity(trident, OnUseMongoose)	
+}
+
+void function OnUseCar(entity trident, entity user, int input)
+{
+	if(IsValid(trident.e.driver))
+		return
+
+	thread GetPlayerInVehicle(user, trident.e.physicsCar, trident)
+
+}
+
+void function OnUseWarthog(entity trident, entity user, int input)
+{
+	if(IsValid(trident.e.driver))
+		return
+
+	thread GetPlayerInWarthog(user, trident.e.physicsCar, trident)
+
+}
+
+void function OnUseMongoose(entity trident, entity user, int input)
+{
+	if(IsValid(trident.e.driver))
+		return
+
+	thread GetPlayerInMongoose(user, trident.e.physicsCar, trident)
+
+}
+
+void function GetPlayerInVehicle( entity player, entity vehicle, entity trident )
+{
+	if(IsValid(trident.e.driver))
+		return
+
+	trident.e.driver = player
+	vehicle.SetPhysics(MOVETYPE_VPHYSICS) 
+	RemoveCallback_OnUseEntity(trident, OnUseCar)
+	trident.RemoveUsableValue(USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	trident.UnsetUsable()
+	
+	vector forward = vehicle.GetForwardVector()
+
+	vector tempOffset = <0 , 0, 20>
+	vector offset = RotateVector(tempOffset, VectorToAngles(forward))
+	player.SetOrigin(vehicle.GetOrigin() + offset)
+	player.Hide()
+
+	entity dummy = CreateEntity( "prop_dynamic" )
+    dummy.SetValueForModelKey( player.GetModelName() )
+    dummy.SetOrigin(vehicle.GetOrigin())
+    dummy.SetAngles(vehicle.GetAngles())
+	DispatchSpawn( dummy )
+	dummy.SetParent( trident ) //, "driver" )
+	//dummy.SetParent( trident, "driver" )
+	// thread HandleTridentAnims(trident, 8)
+	vehicle.e.driverDummy = dummy
+	thread HandlePlayerAnims(dummy, RandomInt(3))
+	
+	player.SetAngles(vehicle.GetAngles())
+	player.SetParent(vehicle)
+
+	thread DriveVehicle(player, vehicle, trident)
+	thread HandleAngularVelocity(player, vehicle, trident)
+	thread HoverVehicle(player, vehicle, trident)
+	
+	trident.SetOwner(player)
+
+	player.SetThirdPersonShoulderModeOn() 	
+	
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", true)
+	
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Exit Trident \n %speed% Boost", "%use% Exit Trident \n %speed% Boost")
+	trident.AddUsableValue( USABLE_BY_OWNER )
+	AddCallback_OnUseEntity(trident, OnUnuseCar)
+}
+
+void function GetPlayerInMongoose( entity player, entity vehicle, entity trident )
+{
+	vector vUp = vehicle.GetUpVector()
+	vector up = <0,0,1>
+
+	// angle 
+	float ang = acos( (up.x * vUp.x + up.y * vUp.y + up.z * vUp.z) /  (sqrt( up.x * up.x + up.y * up.y + up.z * up.z) * sqrt( vUp.x * vUp.x + vUp.y * vUp.y + vUp.z * vUp.z)))
+
+	print(ang)
+
+	if (ang > (3.14 / 2))
+	{
+		print("resetting pos")
+		ResetPos(vehicle, false)
+	}
+	
+	if(IsValid(trident.e.driver))
+		return
+
+	trident.e.driver = player
+	vehicle.SetPhysics(MOVETYPE_VPHYSICS) 
+	RemoveCallback_OnUseEntity(trident, OnUseMongoose)
+	trident.RemoveUsableValue(USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	trident.UnsetUsable()
+	
+	vector forward = vehicle.GetForwardVector()
+
+	vector tempOffset = <0 , 0, 20>
+	vector offset = RotateVector(tempOffset, VectorToAngles(forward))
+	player.SetOrigin(vehicle.GetOrigin() + offset)
+	player.Hide()
+
+	entity dummy = CreateEntity( "prop_dynamic" )
+    dummy.SetValueForModelKey( player.GetModelName() )
+    dummy.SetOrigin(vehicle.GetOrigin())
+    dummy.SetAngles(vehicle.GetAngles())
+	DispatchSpawn( dummy )
+	dummy.SetParent(trident)//, "ORIGIN")
+	//thread HandleTridentAnims(trident, 8)
+	vehicle.e.driverDummy = dummy
+	thread HandlePlayerAnims(dummy, RandomInt(3))
+	
+	player.SetAngles(vehicle.GetAngles())
+	player.SetParent(vehicle)
+
+	thread DriveMongoose(player, vehicle, trident)
+	thread HandleAngularVelocity(player, vehicle, trident)
+	
+	thread HandleWarthogGravity(player, vehicle, trident)
+	
+	trident.SetOwner(player)
+	
+	player.SetThirdPersonShoulderModeOn() 	
+	
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", true)
+	
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Exit Mongoose \n %speed% Boost", "%use% Exit Mongoose \n %speed% Boost")
+	trident.AddUsableValue( USABLE_BY_OWNER )
+	AddCallback_OnUseEntity(trident, OnUnuseMongoose)
+}
+
+void function GetPlayerInWarthog( entity player, entity vehicle, entity trident )
+{
+	vector vUp = vehicle.GetUpVector()
+	vector up = <0,0,1>
+
+	// angle 
+	float ang = acos( (up.x * vUp.x + up.y * vUp.y + up.z * vUp.z) /  (sqrt( up.x * up.x + up.y * up.y + up.z * up.z) * sqrt( vUp.x * vUp.x + vUp.y * vUp.y + vUp.z * vUp.z)))
+
+	print(ang)
+
+	if (ang > (3.14 / 2))
+	{
+		print("resetting pos")
+		ResetPos(vehicle, false)
+	}
+	
+	if(IsValid(trident.e.driver))
+		return
+
+	trident.e.driver = player
+	vehicle.SetPhysics(MOVETYPE_VPHYSICS) 
+	RemoveCallback_OnUseEntity(trident, OnUseWarthog)
+	trident.RemoveUsableValue(USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	trident.UnsetUsable()
+	
+	vector forward = vehicle.GetForwardVector()
+
+	vector tempOffset = <0 , 0, 20>
+	vector offset = RotateVector(tempOffset, VectorToAngles(forward))
+	player.SetOrigin(vehicle.GetOrigin() + offset)
+	player.Hide()
+
+	entity dummy = CreateEntity( "prop_dynamic" )
+    dummy.SetValueForModelKey( player.GetModelName() )
+    dummy.SetOrigin(vehicle.GetOrigin())
+    dummy.SetAngles(vehicle.GetAngles())
+	DispatchSpawn( dummy )
+	dummy.SetParent(trident)//, "ORIGIN")
+	//thread HandleTridentAnims(trident, 8)
+	vehicle.e.driverDummy = dummy
+	thread HandlePlayerAnims(dummy, RandomInt(3))
+	
+	player.SetAngles(vehicle.GetAngles())
+	player.SetParent(vehicle)
+
+	thread DriveWarthog(player, vehicle, trident)
+	thread HandleAngularVelocity(player, vehicle, trident)
+	
+	thread HandleWarthogGravity(player, vehicle, trident)
+	
+	trident.SetOwner(player)
+	
+	player.SetThirdPersonShoulderModeOn() 	
+	
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", true)
+	
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Exit Warthog \n %speed% Boost", "%use% Exit Warthog \n %speed% Boost")
+	trident.AddUsableValue( USABLE_BY_OWNER )
+	AddCallback_OnUseEntity(trident, OnUnuseWarthog)
+}
+
+void function OnUnuseCar(entity trident, entity user, int input)
+{
+	thread GetPlayerOutVehicle(user, trident.e.physicsCar, trident)
+}
+
+void function OnUnuseWarthog(entity trident, entity user, int input)
+{
+	thread GetPlayerOutOfWarthog(user, trident.e.physicsCar, trident)
+}
+
+void function OnUnuseMongoose(entity trident, entity user, int input)
+{
+	thread GetPlayerOutOfMongoose(user, trident.e.physicsCar, trident)
+}
+
+void function GetPlayerOutVehicle( entity player, entity vehicle, entity trident )
+{
+	// leaving car
+	vector side = vehicle.GetRightVector()
+	player.SetOrigin(vehicle.GetOrigin() + < 0, 0, 100>  - side * 75)
+	player.SetThirdPersonShoulderModeOff() 	
+	player.Show()
+	player.ClearParent()
+	Signal(vehicle, "StopDriving")
+	RemoveCallback_OnUseEntity(trident, OnUnuseCar)
+	// thread HandleTridentAnims(trident, 7)
+	trident.e.driver = null
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", false)
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	AddCallback_OnUseEntity(trident, OnUseCar)
+}
+
+void function GetPlayerOutOfWarthog( entity player, entity vehicle, entity trident )
+{
+	// leaving car
+	vector side = vehicle.GetRightVector()
+	player.SetOrigin(vehicle.GetOrigin() + < 0, 0, 100>  - side * 75)
+	player.SetThirdPersonShoulderModeOff() 	
+	player.Show()
+	player.ClearParent()
+	Signal(vehicle, "StopDriving")
+	RemoveCallback_OnUseEntity(trident, OnUnuseWarthog)
+	//thread HandleTridentAnims(trident, 7)
+	trident.e.driver = null
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", false)
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	AddCallback_OnUseEntity(trident, OnUseWarthog)
+}
+
+void function GetPlayerOutOfMongoose( entity player, entity vehicle, entity trident )
+{
+	// leaving car
+	vector side = vehicle.GetRightVector()
+	player.SetOrigin(vehicle.GetOrigin() + < 0, 0, 100>  - side * 75)
+	player.SetThirdPersonShoulderModeOff() 	
+	player.Show()
+	player.ClearParent()
+	Signal(vehicle, "StopDriving")
+	RemoveCallback_OnUseEntity(trident, OnUnuseMongoose)
+	//thread HandleTridentAnims(trident, 7)
+	trident.e.driver = null
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", false)
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	AddCallback_OnUseEntity(trident, OnUseMongoose)
+}
+
+void function DriveWarthog(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			if(IsValid(vehicle.e.driverDummy))
+				vehicle.e.driverDummy.Destroy()
+			
+			//todo: check ground before nulling movement
+			vehicle.SetAngularVelocity( 0,0,0 )
+			vehicle.SetVelocity( <0,0,0> )
+			//vehicle.StopPhysics()
+		}
+		
+		if ( IsValid( trident ) )
+		{
+			trident.ClearBossPlayer()
+
+			trident.SetUsable()
+			trident.SetUsableByGroup("pilot")
+			trident.SetUsePrompts("%use% Drive Warthog", "%use% Drive Warthog")
+			trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES  )
+		}
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	bool airborne = false
+	bool hovering = false
+	float absolute_old_velocity = 0
+	
+	float dt = 0.01666667 // old behavior
+	vector normalDir
+	vector dir
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	vector newvel
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		normalDir = -Normalize(vehicle.GetUpVector())
+		dir = vehicle.GetForwardVector()
+		vehicle.e.isInAirborne = false
+		
+		pos = vehicle.GetOrigin()
+
+		result = TraceHull( pos, pos +  150 * normalDir, GetBoundsMin( HULL_HUMAN ), GetBoundsMax( HULL_HUMAN ), [vehicle], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_PLAYER )
+		//DebugDrawAxis( pos, -normalDir, 1, 150)
+		
+		vehicle.e.hoverTrace = result
+		vector normal = result.surfaceNormal
+		dist = Length(result.endPos - pos)
+		
+		if (dist > 30)
+		{
+			printt("airborne")
+			vehicle.e.isInAirborne = true
+	
+		} else 
+		{
+			vehicle.e.isInAirborne = false
+		}
+
+		// RESET
+		// if ( player.IsInputCommandHeld( IN_SPEED ) ) 
+		// {
+
+			// ResetPos( vehicle, true )
+		// }
+		
+		// BOOST
+		if(player.IsInputCommandHeld( IN_SPEED ))
+		{
+			if(vehicle.e.canBoost){
+				thread Boost(vehicle, player)
+			}
+		}
+
+		forward  = 0
+		backward = 0
+		
+		forwardInertia = true	
+		// AxisForward
+		switch(player.GetInputAxisForward())
+		{
+			case 1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 1)
+				// trident.Anim_Stop()
+				forward = 900
+				
+				if (Length(old_velocity) > forward)
+				{
+					forward = Length(old_velocity) * 0.9
+					if (forward < 900)
+						forward = 900
+				}
+
+				if ( Length(old_velocity) < forward)
+				{
+					forward = Length(old_velocity) + 50
+				}
+
+				if (vehicle.e.isBoosting){
+					forward = 1800
+				} 
+
+		
+			break
+			
+			case -1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 3)
+				// trident.Anim_Stop()
+				backward = -300
+
+				if (forwardInertia)
+				{
+					// speed damping instead of going backward
+					forward = Length(old_velocity) - 100
+					if ( forward < 0){
+						forward = 0
+						forwardInertia = false
+					}
+				} else {
+					if ( -Length(old_velocity) > backward)
+					{
+						backward = -Length(old_velocity) - 50
+						forwardInertia = false
+					}
+				}
+				// forwardInertia = false			
+			break
+		}
+
+		vector gravity = < 0 , 0, -100>
+		forwardSpeed = dir * (forward + backward)
+		vehicle.e.forwardSpeed = forwardSpeed
+		
+		// inertia
+		if(forward == 0 && backward == 0)
+        {
+        	if (forwardInertia)
+        		forwardSpeed = old_velocity * 0.9
+        	else 
+        		forwardSpeed = old_velocity * 0.6
+        }
+
+        if(airborne) {
+        	forwardSpeed = old_velocity * 0.99
+        }
+
+		old_velocity = forwardSpeed
+		
+		if (Length(forwardSpeed) < 5)
+		{
+			gravity = <0,0,0>
+		}
+		
+		if (airborne){ //move this to new function handlewarthoggravity
+			gravity = < 0, 0, -500 * dt>
+			old_velocity = vehicle.GetVelocity()
+		}
+		
+		if(!airborne)
+		{
+			vehicle.SetVelocity(forwardSpeed + gravity)
+		} else {
+			old_velocity = vehicle.GetVelocity()
+		}
+
+		player.p.lastRightInput = player.GetInputAxisRight()
+		player.p.lastForwardInput = player.GetInputAxisForward()
+		
+		WaitFrame()
+	}
+}
+
+void function DriveMongoose(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			if(IsValid(vehicle.e.driverDummy))
+				vehicle.e.driverDummy.Destroy()
+			
+			//todo: check ground before nulling movement
+			vehicle.SetAngularVelocity( 0,0,0 )
+			vehicle.SetVelocity( <0,0,0> )
+			//vehicle.StopPhysics()
+		}
+		
+		if ( IsValid( trident ) )
+		{
+			trident.ClearBossPlayer()
+
+			trident.SetUsable()
+			trident.SetUsableByGroup("pilot")
+			trident.SetUsePrompts("%use% Drive Mongoose", "%use% Drive Mongoose")
+			trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES  )
+		}
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	bool airborne = false
+	bool hovering = false
+	float absolute_old_velocity = 0
+	
+	float dt = 0.01666667 // old behavior
+	vector normalDir
+	vector dir
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	vector newvel
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		normalDir = -Normalize(vehicle.GetUpVector())
+		dir = vehicle.GetForwardVector()
+		vehicle.e.isInAirborne = false
+		
+		pos = vehicle.GetOrigin()
+
+		result = TraceHull( pos, pos +  150 * normalDir, GetBoundsMin( HULL_HUMAN ), GetBoundsMax( HULL_HUMAN ), [vehicle], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_PLAYER )
+		//DebugDrawAxis( pos, -normalDir, 1, 150)
+		
+		vehicle.e.hoverTrace = result
+		vector normal = result.surfaceNormal
+		dist = Length(result.endPos - pos)
+		
+		if (dist > 30)
+		{
+			printt("airborne")
+			vehicle.e.isInAirborne = true
+	
+		} else 
+		{
+			vehicle.e.isInAirborne = false
+		}
+
+		// RESET
+		// if ( player.IsInputCommandHeld( IN_SPEED ) ) 
+		// {
+
+			// ResetPos( vehicle, true )
+		// }
+		
+		// BOOST
+		if(player.IsInputCommandHeld( IN_SPEED ))
+		{
+			if(vehicle.e.canBoost){
+				thread Boost(vehicle, player)
+			}
+		}
+
+		forward  = 0
+		backward = 0
+		
+		forwardInertia = true	
+		// AxisForward
+		switch(player.GetInputAxisForward())
+		{
+			case 1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 1)
+				// trident.Anim_Stop()
+				forward = 900
+				
+				if (Length(old_velocity) > forward)
+				{
+					forward = Length(old_velocity) * 0.9
+					if (forward < 900)
+						forward = 900
+				}
+
+				if ( Length(old_velocity) < forward)
+				{
+					forward = Length(old_velocity) + 50
+				}
+
+				if (vehicle.e.isBoosting){
+					forward = 1800
+				} 
+
+		
+			break
+			
+			case -1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 3)
+				// trident.Anim_Stop()
+				backward = -300
+
+				if (forwardInertia)
+				{
+					// speed damping instead of going backward
+					forward = Length(old_velocity) - 100
+					if ( forward < 0){
+						forward = 0
+						forwardInertia = false
+					}
+				} else {
+					if ( -Length(old_velocity) > backward)
+					{
+						backward = -Length(old_velocity) - 50
+						forwardInertia = false
+					}
+				}
+				// forwardInertia = false			
+			break
+		}
+
+		vector gravity = < 0 , 0, -100>
+		forwardSpeed = dir * (forward + backward)
+		vehicle.e.forwardSpeed = forwardSpeed
+		
+		// inertia
+		if(forward == 0 && backward == 0)
+        {
+        	if (forwardInertia)
+        		forwardSpeed = old_velocity * 0.9
+        	else 
+        		forwardSpeed = old_velocity * 0.6
+        }
+
+        if(airborne) {
+        	forwardSpeed = old_velocity * 0.99
+        }
+
+		old_velocity = forwardSpeed
+		
+		if (Length(forwardSpeed) < 5)
+		{
+			gravity = <0,0,0>
+		}
+		
+		if (airborne){ //move this to new function handlewarthoggravity
+			gravity = < 0, 0, -500 * dt>
+			old_velocity = vehicle.GetVelocity()
+		}
+		
+		if(!airborne)
+		{
+			vehicle.SetVelocity(forwardSpeed + gravity)
+		} else {
+			old_velocity = vehicle.GetVelocity()
+		}
+
+		player.p.lastRightInput = player.GetInputAxisRight()
+		player.p.lastForwardInput = player.GetInputAxisForward()
+		
+		WaitFrame()
+	}
+}
+
+void function DriveVehicle(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	
+	// // entity light = CreateEntity("prop_dynamic")
+	// // light.kv.solid = 0
+	// // light.SetValueForModelKey($"mdl/lamps/security_light_01_on.rmdl")
+		// light.kv.rendercolor = "0 229 255"
+	// // light.SetOrigin(trident.GetOrigin())
+	// // light.SetAngles(trident.GetAngles())
+	// // DispatchSpawn(light)
+	// // light.SetParent(trident, "EXHAUST_REAR_L")
+	// // light.SetModelScale(0.1)
+	// entity exhaustFx = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_REAR_L" ) )
+	// entity exhaustFx1 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_REAR" ) )
+	// entity exhaustFx2 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_FRONT_L" ) )
+	// entity exhaustFx3 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_REAR_R" ) )
+	// entity exhaustFx4 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_FRONT_R" ) )
+	// entity exhaustFx5 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "EXHAUST_FRONT" ) )
+	// entity exhaustFx6 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "FX_AIRBRAKE_L" ) )
+	// entity exhaustFx7 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "FX_AIRBRAKE_R" ) )
+	// entity exhaustFx8 = StartParticleEffectOnEntity_ReturnEntity( trident, GetParticleSystemIndex( $"P_ts_plasma_proj_MD" ), FX_PATTACH_ABSORIGIN_FOLLOW, trident.LookupAttachment( "FX_BRAKE" ) )	
+	
+	
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			if(IsValid(vehicle.e.driverDummy))
+				vehicle.e.driverDummy.Destroy()
+			
+			//todo: check ground before nulling movement
+			vehicle.SetAngularVelocity( 0,0,0 )
+			vehicle.SetVelocity( <0,0,0> )
+			vehicle.StopPhysics()
+		}
+		
+		if ( IsValid( trident ) )
+		{
+			trident.ClearBossPlayer()
+
+			trident.SetUsable()
+			trident.SetUsableByGroup("pilot")
+			trident.SetUsePrompts("%use% Drive Trident", "%use% Drive Trident")
+			trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES  )
+		}
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	bool airborne = false
+	bool hovering = false
+	float absolute_old_velocity = 0
+
+	vector normalDir
+	vector dir
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	vector newvel
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		normalDir = -Normalize(vehicle.GetUpVector())
+		dir = vehicle.GetForwardVector()
+		vehicle.e.isInAirborne = false
+		
+		pos = vehicle.GetOrigin()
+
+		result = TraceHull( pos, pos +  150 * normalDir, GetBoundsMin( HULL_HUMAN ), GetBoundsMax( HULL_HUMAN ), [vehicle], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_PLAYER )
+		//DebugDrawAxis( pos, -normalDir, 1, 150)
+		
+		vehicle.e.hoverTrace = result
+		vector normal = result.surfaceNormal
+		dist = Length(result.endPos - pos)
+		
+		if (dist > 100)
+		{
+			printt("airborne")
+			vehicle.e.isInAirborne = true
+	
+		} else 
+		{
+			vehicle.e.isInAirborne = false
+		}
+
+		// RESET
+		// if ( player.IsInputCommandHeld( IN_SPEED ) ) 
+		// {
+
+			// ResetPos( vehicle, true )
+		// }
+		
+		// BOOST
+		if(player.IsInputCommandHeld( IN_SPEED ))
+		{
+			if(vehicle.e.canBoost){
+				thread Boost(vehicle, player)
+			}
+		}
+
+		forward  = 0
+		backward = 0
+
+		// AxisForward
+		switch(player.GetInputAxisForward())
+		{
+			case 1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 1)
+				trident.Anim_Stop()
+				forward = 800
+				
+				if (Length(old_velocity) > forward)
+				{
+					forward = Length(old_velocity) * 0.9
+					if (forward < 800)
+						forward = 800
+				}
+
+				if ( Length(old_velocity) < forward)
+				{
+					forward = Length(old_velocity) + 50
+				}
+
+				if (vehicle.e.isBoosting){
+					forward = 1800
+				} 
+
+				forwardInertia = true			
+			break
+			
+			case -1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 3)
+				trident.Anim_Stop()
+				backward = -300
+
+				if (forwardInertia)
+				{
+					// speed damping instead of going backward
+					forward = Length(old_velocity) - 100
+					if ( forward < 0){
+						forward = 0
+						forwardInertia = false
+					}
+				} else {
+					if ( -Length(old_velocity) > backward)
+					{
+						backward = -Length(old_velocity) - 50
+						forwardInertia = false
+					}
+				}
+				forwardInertia = false			
+			break
+		}
+		
+		forwardSpeed = dir * (forward + backward)
+		vehicle.e.forwardSpeed = forwardSpeed
+		
+		// inertia
+		if(forward == 0 && backward == 0)
+        {
+        	if (forwardInertia)
+        		forwardSpeed = old_velocity * 0.8
+        	else 
+        		forwardSpeed = old_velocity * 0.5
+        }
+
+        if(airborne) {
+        	forwardSpeed = old_velocity * 0.99
+        }
+
+		old_velocity = forwardSpeed
+
+		if(!airborne)
+		{
+			vehicle.SetVelocity(forwardSpeed)
+		} else {
+			old_velocity = vehicle.GetVelocity()
+		}
+
+		//Trident strafe
+		if( player.GetInputAxisRight() != 0 && player.GetInputAxisForward() == 0 && !airborne && Length(forwardSpeed) < 100)
+		{
+			vehicle.SetVelocity(vehicle.GetVelocity()+AnglesToRight(vehicle.GetAngles())*signum(player.GetInputAxisRight())*150)
+			trident.Anim_Stop()
+			switch(player.GetInputAxisRight() )
+			{
+				case 1:
+				// if(player.p.lastRightInput != player.GetInputAxisRight())
+					// thread HandleTridentAnims(trident, 12)
+				break
+				case -1:
+				// if(player.p.lastRightInput != player.GetInputAxisRight())
+					// thread HandleTridentAnims(trident, 11)
+				break
+			}
+		}
+
+		player.p.lastRightInput = player.GetInputAxisRight()
+		player.p.lastForwardInput = player.GetInputAxisForward()
+		
+		WaitFrame()
+	}
+}
+
+void function HandleAngularVelocity(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			vehicle.SetAngularVelocity( 0,0,0 )
+		}
+
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	vector normalDir
+	vector dir
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		forwardSpeed = vehicle.e.forwardSpeed
+		
+		vector rotAng = < 0, 50, 0 >
+
+		if(vehicle.e.isInAirborne){
+			rotAng = < 0, 35, 0>
+		}
+		
+		//AxisRight
+		vector angVelocity = < 0, 0, 0>
+		
+		if(player.GetInputAxisRight() != 0 && Length(forwardSpeed) >= 100)
+			angVelocity = -signum(player.GetInputAxisRight()) * rotAng
+		
+		if(backward == 0 && Length(forwardSpeed) >= 100 || backward == 0 && Length(forwardSpeed) >= 100 ) 
+        {
+        	angVelocity.y += 200 * -AnglesToRight( vehicle.GetAngles() - player.CameraAngles() ).x //holy fuck. Colombia
+        }
+		
+		if(vehicle.e.isInAirborne)
+		{
+			angVelocity += < signum(player.GetInputAxisForward()) * 20, angVelocity.y, signum(player.GetInputAxisRight())*20 > 
+		}
+		
+		if(backward < 0)
+			angVelocity = -angVelocity
+
+		vehicle.SetAngularVelocity( angVelocity.x, angVelocity.y , angVelocity.z ) //magnific
+		
+		WaitFrame()
+	}	
+}
+
+void function HandleWarthogGravity(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	vector vel
+	
+	float startTime = Time()
+	float timePassed
+	float height
+	vector normal
+	bool resetTime = false
+	float dt = 0.01666667 // old behavior
+	vector velocity
+	float strength
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		if(vehicle.e.isInAirborne) 
+		{
+			WaitFrame()
+			continue
+		}
+		
+		pos = vehicle.GetOrigin()
+		result = vehicle.e.hoverTrace		
+		dist = Length(result.endPos - pos)
+		velocity = vehicle.GetVelocity()
+		
+		height = GraphCapped( Time(), LERP_IN_FLOAT, 1, GraphCapped( timePassed, 0, 2, 150, WARTHOG_HOVER_HEIGHT ), WARTHOG_HOVER_HEIGHT )
+		normal = result.surfaceNormal
+		
+		if(player.GetInputAxisForward() == 0 && player.GetInputAxisRight() == 0)
+			resetTime = true
+		
+		timePassed = Time() - startTime
+		
+		if (dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		{
+			if(resetTime)
+			{
+				startTime = Time()
+				resetTime = false
+			}
+			height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, dist, WARTHOG_HOVER_HEIGHT )
+			// strength = GraphCapped( timePassed, 0.0, 1, dist, WARTHOG_HOVER_HEIGHT )
+			
+			printt("DIST: " + dist + " " + " | HeightValue: " + height + " | Strenght value " + strength)
+	
+			//float distFromCover = Distance( testPos, result.endPos )
+			
+	
+			velocity += Normalize(normal) * height
+			
+		}
+		else if (dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		{
+			if(resetTime)
+			{
+				startTime = Time()
+				resetTime = false
+			}
+			height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, dist, WARTHOG_HOVER_HEIGHT )
+			// strength = GraphCapped( timePassed, 0.0, 1, dist, WARTHOG_HOVER_HEIGHT )
+			
+			printt("DIST: " + dist + " " + " | HeightValue: " + height + " | Strenght value " + strength)
+	
+			//float distFromCover = Distance( testPos, result.endPos )
+			
+	
+			velocity += Normalize(normal) * height
+		}		
+		
+		if(dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= WARTHOG_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		{
+			if(resetTime)
+			{
+				startTime = Time()
+				resetTime = false
+			}
+			height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, 100-dist, WARTHOG_HOVER_HEIGHT )
+			
+			//printt("DIST: " + dist + " " + " | HeightValue: " + height)
+			
+			velocity += Normalize(normal) * height
+		}
+		
+		if(dist > WARTHOG_HOVER_HEIGHT && player.GetInputAxisForward() != 0 && !vehicle.e.isInAirborne || dist > WARTHOG_HOVER_HEIGHT && player.GetInputAxisRight() != 0 && !vehicle.e.isInAirborne)
+		{
+			velocity -= Normalize(normal)
+		}
+		
+		vehicle.SetVelocity( velocity )
+		
+		WaitFrame()
+	}
+}
+
+void function HoverVehicle(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	vector vel
+	
+	float startTime = Time()
+	float timePassed
+	float height
+	vector normal
+	bool resetTime = false
+	float dt = 0.01666667 // old behavior
+	vector velocity
+	float strength
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		if(vehicle.e.isInAirborne) 
+		{
+			WaitFrame()
+			continue
+		}
+		
+		pos = vehicle.GetOrigin()
+		result = vehicle.e.hoverTrace		
+		dist = Length(result.endPos - pos)
+		velocity = vehicle.GetVelocity()
+		
+		// height = GraphCapped( Time(), LERP_IN_FLOAT, 1, GraphCapped( timePassed, 0, 2, 150, TRIDENT_HOVER_HEIGHT ), TRIDENT_HOVER_HEIGHT )
+		normal = result.surfaceNormal
+		
+		if(player.GetInputAxisForward() == 0 && player.GetInputAxisRight() == 0)
+			resetTime = true
+		
+		timePassed = Time() - startTime
+		
+		if (dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		{
+			if(resetTime)
+			{
+				startTime = Time()
+				resetTime = false
+			}
+			height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, dist, TRIDENT_HOVER_HEIGHT )
+			// strength = GraphCapped( timePassed, 0.0, 1, dist, TRIDENT_HOVER_HEIGHT )
+			
+			printt("DIST: " + dist + " " + " | HeightValue: " + height + " | Strenght value " + strength)
+	
+			//float distFromCover = Distance( testPos, result.endPos )
+			
+	
+			velocity += Normalize(normal) * height
+			
+		}
+		// else if (dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		// {
+			// if(resetTime)
+			// {
+				// startTime = Time()
+				// resetTime = false
+			// }
+			// height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, dist, TRIDENT_HOVER_HEIGHT )
+			// // strength = GraphCapped( timePassed, 0.0, 1, dist, TRIDENT_HOVER_HEIGHT )
+			
+			// printt("DIST: " + dist + " " + " | HeightValue: " + height + " | Strenght value " + strength)
+	
+			// //float distFromCover = Distance( testPos, result.endPos )
+			
+	
+			// velocity += Normalize(normal) * height
+		// }		
+		// else (dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisForward() != 0 || dist <= TRIDENT_HOVER_HEIGHT && player.GetInputAxisRight() != 0)
+		// {
+			// if(resetTime)
+			// {
+				// startTime = Time()
+				// resetTime = false
+			// }
+			// height = GraphCapped( timePassed, LERP_IN_FLOAT, 2, 100-dist, TRIDENT_HOVER_HEIGHT )
+			// printt("DIST: " + dist + " " + " | HeightValue: " + height)
+			// velocity += Normalize(normal) * height
+		// }
+		
+		if(dist > TRIDENT_HOVER_HEIGHT && player.GetInputAxisForward() != 0 && !vehicle.e.isInAirborne || dist > TRIDENT_HOVER_HEIGHT && player.GetInputAxisRight() != 0 && !vehicle.e.isInAirborne)
+		{
+			velocity -= Normalize(normal)
+		}
+		
+		vehicle.SetVelocity( velocity )
+		
+		WaitFrame()
+	}
+}
+
+// float function GetHoverStrength( entity ent, vector testPos, vector cylinderBottom, vector cylinderTop, vector fanDirection )
+// {
+	// vector pointAlongFan = GetClosestPointOnLineSegment( cylinderBottom, cylinderTop, testPos )
+	// vector vecFromFanCenter = testPos - pointAlongFan
+	// vector traceEnd = cylinderBottom + vecFromFanCenter
+
+	// // Trace from the entity towards the fan along the fan axis to see if we are getting blocked
+	// TraceResults result = TraceLine( testPos, traceEnd, ent, TRACE_MASK_NPCSOLID, TRACE_COLLISION_GROUP_NONE )
+
+	// float distFromCover = Distance( testPos, result.endPos )
+	// float strength = GraphCapped( distFromCover, 256, 1024, 0.0, 1.0 )
+	// if ( result.fraction == 1.0 )
+		// strength = 1.0
+
+		// printt( "strength:", strength )
+		// printt( "fraction:", result.fraction )
+		// printt( "dist from fan:", Distance( testPos, cylinderBottom ) )
+		// printt( "distFromCover:", distFromCover )
+
+	// Assert( strength >= 0.0 && strength <= 1.0 )
+	// return strength
+// }
+
+void function HandleTridentAnims(entity trident, int index)
+{
+
+	string animtoplay
+	
+	switch(index)
+	{
+		case 1:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_activate_chase.rseq"
+		break
+		
+		case 2:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_activate_hover.rseq"
+		break
+		
+		case 3:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_breaking_idle.rseq"
+		break
+		
+		case 4:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_chase_idle.rseq"
+		break
+		
+		case 5:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_damage_large.rseq"
+		break
+		
+		case 6:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_damage_small.rseq"
+		break
+		
+		case 7:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_deactivate.rseq"
+		break
+		
+		case 8:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_grounded_idle.rseq"
+		break
+		
+		case 9:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_hover_idle.rseq"
+		break
+		
+		case 10:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_Rside_mount_across.rseq"
+		break
+		
+		case 11:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_strafe_Left.rseq"
+		break
+		
+		case 12:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_strafe_Right.rseq"
+		break
+		
+		case 13:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_turn_Left.rseq"
+		break
+		
+		case 14:
+			animtoplay = "animseq/vehicle/olympus_hovercraft/olympus_hovercraft/hovercraft_turn_Right.rseq"
+		break
+	}
+	
+	if(trident.e.LastTridentAnim == animtoplay) return
+		
+	Signal( trident, "NewTridentAnim" )
+	EndSignal( trident, "NewTridentAnim" )
+	EndSignal( trident, "StopDriving")
+	
+	OnThreadEnd( function() : ( trident ) {
+		if ( IsValid( trident ) )
+		{
+			if(IsValid(trident.e.driver))
+				thread HandleTridentAnims(trident, 9)
+			else
+				thread HandleTridentAnims(trident, 8)
+		}
+	})
+	
+	trident.Anim_NonScriptedPlay(animtoplay)
+	trident.e.LastTridentAnim = animtoplay
+	float maxTime = Time() + trident.GetSequenceDuration(animtoplay)
+	
+	//printt(trident.GetSequenceDuration(animtoplay))
+	
+	if(index == 4) //chase idle
+	{
+		maxTime = Time() + trident.GetSequenceDuration(animtoplay) - 1.5
+	}
+	
+	if(maxTime <= 0) return
+	
+	while( Time() < maxTime )
+		WaitFrame()
+	
+	trident.e.LastTridentAnim = ""
+}
+
+void function HandlePlayerAnims(entity dummyPlayer, int index)
+{
+	string animtoplay
+	
+	switch(index)
+	{
+		case 1:
+			animtoplay = "ACT_MP_MENU_LOBBY_SELECT_IDLE"
+		break
+		
+		case 2:
+			animtoplay = "ACT_MP_MENU_LOBBY_SELECT_IDLE"
+		break
+		
+		case 3:
+			animtoplay = "ACT_MP_MENU_LOBBY_SELECT_IDLE"
+		break
+	}
+
+	EndSignal( dummyPlayer, "OnDestroy")
+	
+	OnThreadEnd( function() : ( dummyPlayer ) {
+		if ( IsValid( dummyPlayer ) )
+		{
+			dummyPlayer.Anim_Stop()
+			thread HandlePlayerAnims(dummyPlayer, RandomInt(3))
+		}
+	})
+
+	float maxTime = 1
+	bool animExists = dummyPlayer.LookupSequence( animtoplay ) != -1
+		if ( animExists )
+		{
+			dummyPlayer.Anim_Play(animtoplay)
+			maxTime = Time() + dummyPlayer.GetSequenceDuration(animtoplay)
+		}
+	
+	while( Time() < maxTime )
+		WaitFrame()
+}
+
+void function Boost(entity vehicle, entity player)
+{
+	if(!IsValid(vehicle)) return
+	vehicle.e.canBoost = false
+	vehicle.e.isBoosting = true
+	Remote_CallFunction_NonReplay( player, "TridentBoost_Visuals" )
+	wait 1.5
+	if(!IsValid(vehicle)) return
+	vehicle.e.isBoosting = false
+	wait 8.0
+	if(!IsValid(vehicle)) return
+	vehicle.e.canBoost = true
+}
+
+void function ResetPos(entity vehicle, bool timer)
+{	
+	if (vehicle.e.canReset)
+	{
+		if (timer)
+		{
+			vehicle.e.canReset = false
+			thread ResetTimer(vehicle)
+        }
+        vehicle.SetOrigin(vehicle.GetOrigin() + <0,0,200>)
+        vector tempAng = vehicle.GetAngles()
+        tempAng.x = 0
+        tempAng.z = 0
+        vehicle.SetAngles(tempAng)
+	}
+}
+
+void function ResetTimer(entity vehicle)
+{
+	wait 3.0
+	
+	if(!IsValid(vehicle)) return
+	
+	vehicle.e.canReset = true
+}
+
+// ██████╗░██╗░░░░░░█████╗░███╗░░██╗███████╗
+// ██╔══██╗██║░░░░░██╔══██╗████╗░██║██╔════╝
+// ██████╔╝██║░░░░░███████║██╔██╗██║█████╗░░
+// ██╔═══╝░██║░░░░░██╔══██║██║╚████║██╔══╝░░
+// ██║░░░░░███████╗██║░░██║██║░╚███║███████╗
+// ╚═╝░░░░░╚══════╝╚═╝░░╚═╝╚═╝░░╚══╝╚══════╝
+
+bool function CC_SpawnBanshee( entity player, array<string> args )
+{
+	thread SpawnBansheeTest(player)
+	return true	
+}
+
+void function SpawnBansheeTest(entity player)
+{
+    vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z -= 25
+	vector angles = Vector(0,0,0)
+
+	entity physics = CreateEntity( "prop_physics" )
+	physics.SetValueForModelKey( $"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl" )
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
+	physics.kv.spawnflags = 4
+	physics.kv.fadedist = -1
+	physics.kv.physdamagescale = 10.0
+	physics.kv.inertiaScale = 10.0
+	physics.kv.renderamt = 255
+	physics.kv.rendercolor = "255 255 255"
+	physics.kv.solid = SOLID_VPHYSICS
+	physics.SetOrigin( origin )
+	physics.SetAngles( angles )
+	DispatchSpawn( physics )
+
+	// physics.PhysicsSetDamping(5,5)
+	// physics.PhysicsSetFriction(10)
+	physics.kv.gravity = 2.5
+	physics.Hide()
+	
+	entity trident = CreateEntity( "prop_dynamic" )
+    trident.SetValueForModelKey( $"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl" )
+	trident.kv.fadedist = 10000
+	trident.kv.renderamt = 255
+    trident.SetOrigin(physics.GetOrigin())
+    trident.SetAngles(physics.GetAngles())
+	DispatchSpawn( trident )
+	trident.SetParent(physics)
+	
+	trident.e.physicsCar = physics
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Drive Banshee", "%use% Drive Banshee")
+	trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	AddCallback_OnUseEntity(trident, OnUseBanshee)	
+}
+
+void function OnUseBanshee(entity trident, entity user, int input)
+{
+	if(IsValid(trident.e.driver))
+		return
+
+	thread GetPlayerInBanshee(user, trident.e.physicsCar, trident)
+
+}
+
+void function GetPlayerInBanshee( entity player, entity vehicle, entity trident )
+{
+	vector vUp = vehicle.GetUpVector()
+	vector up = <0,0,1>
+
+	// angle 
+	float ang = acos( (up.x * vUp.x + up.y * vUp.y + up.z * vUp.z) /  (sqrt( up.x * up.x + up.y * up.y + up.z * up.z) * sqrt( vUp.x * vUp.x + vUp.y * vUp.y + vUp.z * vUp.z)))
+
+	print(ang)
+
+	if (ang > (3.14 / 2))
+	{
+		print("resetting pos")
+		ResetPos(vehicle, false)
+	}
+	
+	if(IsValid(trident.e.driver))
+		return
+
+	trident.e.driver = player
+	vehicle.SetPhysics(MOVETYPE_VPHYSICS) 
+	RemoveCallback_OnUseEntity(trident, OnUseBanshee)
+	trident.RemoveUsableValue(USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	trident.UnsetUsable()
+	
+	vector forward = vehicle.GetForwardVector()
+
+	vector tempOffset = <0 , 0, 20>
+	vector offset = RotateVector(tempOffset, VectorToAngles(forward))
+	player.SetOrigin(vehicle.GetOrigin() + offset)
+	player.SetAngles(offset)
+	player.Hide()
+
+	entity dummy = CreateEntity( "prop_dynamic" )
+    dummy.SetValueForModelKey( player.GetModelName() )
+    dummy.SetOrigin(vehicle.GetOrigin())
+    dummy.SetAngles(vehicle.GetAngles())
+	DispatchSpawn( dummy )
+	dummy.SetParent(trident)//, "ORIGIN")
+	dummy.Hide()
+	//thread HandleTridentAnims(trident, 8)
+	vehicle.e.driverDummy = dummy
+	thread HandlePlayerAnims(dummy, RandomInt(3))
+	
+	player.SetAngles(vehicle.GetAngles())
+	player.SetParent(vehicle)
+
+	thread DriveBanshee(player, vehicle, trident)
+	thread HandleAngularVelocityBanshee(player, vehicle, trident)
+	// thread HandleWarthogGravity(player, vehicle, trident)
+	
+	trident.SetOwner(player)
+	
+	player.SetThirdPersonShoulderModeOn() 	
+	
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", true)
+	
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	
+	trident.SetUsable()
+	trident.SetUsableByGroup("pilot")
+	trident.SetUsePrompts("%use% Exit Banshee \n %speed% Boost\n %duck% Shoot", "%use% Exit Banshee \n %speed% Boost\n %duck% Shoot")
+	trident.AddUsableValue( USABLE_BY_OWNER )
+	AddCallback_OnUseEntity(trident, OnUnuseBanshee)
+}
+
+void function OnUnuseBanshee(entity trident, entity user, int input)
+{
+	thread GetPlayerOutOfBanshee(user, trident.e.physicsCar, trident)
+}
+
+void function GetPlayerOutOfBanshee( entity player, entity vehicle, entity trident )
+{
+	// leaving car
+	vector side = vehicle.GetRightVector()
+	player.SetOrigin(vehicle.GetOrigin() + < 0, 0, 100>  - side * 75)
+	player.SetThirdPersonShoulderModeOff() 	
+	player.Show()
+	player.ClearParent()
+	Signal(vehicle, "StopDriving")
+	RemoveCallback_OnUseEntity(trident, OnUnuseBanshee)
+	//thread HandleTridentAnims(trident, 7)
+	trident.e.driver = null
+	Remote_CallFunction_NonReplay( player, "SetupThirdPersonForVehicle", false)
+	wait 2.0
+	
+	if(!IsValid(trident)) return
+	AddCallback_OnUseEntity(trident, OnUseBanshee)
+}
+
+void function DriveBanshee(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+	
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			if(IsValid(vehicle.e.driverDummy))
+				vehicle.e.driverDummy.Destroy()
+			
+			//todo: check ground before nulling movement
+			// vehicle.SetAngularVelocity( 0,0,0 )
+			// vehicle.SetVelocity( <0,0,0> )
+			
+			//vehicle.StopPhysics()
+		}
+		
+		if ( IsValid( trident ) )
+		{
+			trident.ClearBossPlayer()
+
+			trident.SetUsable()
+			trident.SetUsableByGroup("pilot")
+			trident.SetUsePrompts("%use% Drive Banshee", "%use% Drive Banshee")
+			trident.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES  )
+		}
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	bool airborne = false
+	bool hovering = false
+	float absolute_old_velocity = 0
+	
+	float dt = 0.01666667 // old behavior
+	vector normalDir
+	vector dir
+	vector pos
+	vector maxs
+	vector mins
+	TraceResults result
+	float dist
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	vector newvel
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		normalDir = -Normalize(vehicle.GetUpVector())
+		dir = vehicle.GetForwardVector()
+		vehicle.e.isInAirborne = false
+		
+		pos = vehicle.GetOrigin()
+
+		result = TraceHull( pos, pos +  150 * normalDir, GetBoundsMin( HULL_HUMAN ), GetBoundsMax( HULL_HUMAN ), [vehicle], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_PLAYER )
+		//DebugDrawAxis( pos, -normalDir, 1, 150)
+		
+		vehicle.e.hoverTrace = result
+		vector normal = result.surfaceNormal
+		dist = Length(result.endPos - pos)
+		
+		if (dist > 30)
+		{
+			printt("airborne")
+			vehicle.e.isInAirborne = true
+	
+		} else 
+		{
+			vehicle.e.isInAirborne = false
+		}
+
+		// RESET
+		if ( player.IsInputCommandHeld( IN_DUCK ) ) 
+		{
+			thread tankFire(player, vehicle)
+		}
+		
+		// BOOST
+		if(player.IsInputCommandHeld( IN_SPEED ))
+		{
+			if(vehicle.e.canBoost){
+				thread Boost(vehicle, player)
+			}
+		}
+
+		forward  = 0
+		backward = 0
+		
+		forwardInertia = true	
+		// AxisForward
+		
+		switch(player.GetInputAxisForward())
+		{
+			case 1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 1)
+				// trident.Anim_Stop()
+				forward = 1000
+				
+				if (Length(old_velocity) > forward)
+				{
+					forward = Length(old_velocity) * 0.9
+					if (forward < 1000)
+						forward = 1000
+				}
+
+				if ( Length(old_velocity) < forward)
+				{
+					forward = Length(old_velocity) + 50
+				}
+
+				if (vehicle.e.isBoosting){
+					forward = 1600
+				} 
+
+		
+			break
+			
+			case -1:
+				// if(player.p.lastForwardInput != player.GetInputAxisForward())
+					// thread HandleTridentAnims(trident, 3)
+				// trident.Anim_Stop()
+
+				backward = -800
+
+				if (forwardInertia)
+				{
+					// speed damping instead of going backward
+					forward = Length(old_velocity) - 100
+					if ( forward < 0){
+						forward = 0
+						forwardInertia = false
+					}
+				} else {
+					if ( -Length(old_velocity) > backward)
+					{
+						backward = -Length(old_velocity) - 50
+						forwardInertia = false
+					}
+				}
+				forwardInertia = false			
+			break
+		}
+
+		vector gravity = < 0 , 0, -100>
+		forwardSpeed = dir * (forward + backward)
+		vehicle.e.forwardSpeed = forwardSpeed
+		
+		// inertia
+		if(forward == 0 && backward == 0)
+        {
+        	if (forwardInertia)
+        		forwardSpeed = old_velocity * 0.9
+        	else 
+        		forwardSpeed = old_velocity * 0.6
+        }
+
+        if(airborne) {
+        	forwardSpeed = old_velocity * 0.99
+        }
+
+		old_velocity = forwardSpeed
+		
+		if (Length(forwardSpeed) < 5)
+		{
+			gravity = <0,0,0>
+		}
+		
+		if (airborne){ //move this to new function handlewarthoggravity
+			// gravity = < 0, 0, -500 * dt>
+			old_velocity = vehicle.GetVelocity()
+		}
+		
+		
+		if(!airborne)
+		{
+			vehicle.SetVelocity(forwardSpeed + gravity)
+		} else {
+			old_velocity = vehicle.GetVelocity()
+		}
+
+		player.p.lastRightInput = player.GetInputAxisRight()
+		player.p.lastForwardInput = player.GetInputAxisForward()
+		
+		WaitFrame()
+	}
+}
+
+
+void function HandleAngularVelocityBanshee(entity player, entity vehicle, entity trident)
+{
+	EndSignal( vehicle, "StopDriving")
+
+	OnThreadEnd( function() : ( vehicle, trident) {
+		if ( IsValid( vehicle ) )
+		{
+			// vehicle.SetAngularVelocity( 0,0,0 )
+		}
+
+	})
+	
+	vector old_velocity = < 0, 0, 0>
+	bool forwardInertia = true
+	vector normalDir
+	vector dir
+	float forward  = 0
+	float backward = 0
+	vector forwardSpeed
+	
+	while(true)
+	{
+		if( !IsValid(player) || !IsValid(vehicle) ) break
+		
+		forwardSpeed = vehicle.e.forwardSpeed
+		
+		vector rotAng = < 0, 0, 50 >
+
+		// if(vehicle.e.isInAirborne){
+			// rotAng = < 0, 35, 0>
+		// }
+		
+		//AxisRight
+		vector angVelocity = < 0, 0, 0>
+		
+		if(player.GetInputAxisRight() != 0 && Length(forwardSpeed) >= 100)
+		{
+			angVelocity = signum(player.GetInputAxisRight()) * rotAng
+		}
+
+		// if(player.GetInputAxisForward() == -1 )
+		// {
+			// rotAng = < 0, 50, 0 >
+			// angVelocity = signum(player.GetInputAxisForward()) * rotAng
+		// }
+		
+		
+		if(backward == 0 && Length(forwardSpeed) >= 100 || backward == 0 && Length(forwardSpeed) >= 100 ) 
+        {
+        	angVelocity.y += 200 * -AnglesToRight( vehicle.GetAngles() - player.CameraAngles() ).x //holy fuck. Colombia
+			angVelocity.x += 200 * AnglesToForward( vehicle.GetAngles() - player.CameraAngles() ).z //holy fuck. Colombia
+        }
+		
+		// if(vehicle.e.isInAirborne)
+		// {
+			// angVelocity += < signum(player.GetInputAxisForward()) * 20, angVelocity.y, signum(player.GetInputAxisRight())*20 > 
+		// }
+		
+		if(backward < 0)
+			angVelocity = -angVelocity
+
+		vehicle.SetAngularVelocity( angVelocity.x, angVelocity.y , angVelocity.z ) //magnific
+		
+		WaitFrame()
+	}	
+}
+
+void function tankFire(entity player, entity tank)
+{
+	//1 create bullet
+	vector ang = tank.GetAngles()
+	vector pos = tank.GetOrigin()
+
+	vector offset1 = <220, 23, 105>
+	vector offset2 = <220, -23, 105>
+
+	vector bulletPos1 = pos + RotateVector( offset1, ang )
+	vector bulletPos2 = pos + RotateVector( offset2, ang )
+
+	entity bullet1 = CreateBullet(bulletPos1, ang)
+	entity bullet2 = CreateBullet(bulletPos2, ang)
+	
+	WaitFrame()
+
+	float speed = 6000
+
+	vector dir = tank.GetForwardVector()
+
+	vector targetOffset = dir * speed
+
+	vector target1 = bullet1.GetOrigin() + targetOffset
+	vector target2 = bullet2.GetOrigin() + targetOffset
+
+
+
+	TraceResults result1 = TraceLine(bulletPos1, target1, [tank], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_PLAYER)
+	TraceResults result2 = TraceLine(bulletPos2, target1, [tank], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_PLAYER)
+
+
+	vector collisionPos1 = result1.endPos
+	vector collisionPos2 = result2.endPos
+
+
+
+	float travelTime = 0.1
+	// float travelTime = Length(tempEndPos - bullet1.GetOrigin) / 30000
+
+
+	// bullet1.NonPhysicsMoveTo( bullet1.GetOrigin() + target, travelTime, 0, 0 )
+	// bullet2.NonPhysicsMoveTo( bullet2.GetOrigin() + target, travelTime, 0, 0 )
+
+
+
+	bullet1.NonPhysicsMoveTo( collisionPos1, travelTime, 0, 0 )
+	bullet2.NonPhysicsMoveTo( collisionPos2, travelTime, 0, 0 )
+
+
+
+
+	entity tank_fire = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TANK_FIRE_FX ), bulletPos1  + (dir * 30 ), <90,90,0>)
+	entity tank_fire2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TANK_FIRE_FX ), bulletPos2 + (dir * 30 ), <90,90,0>)
+
+
+	EmitSoundAtPosition(TEAM_UNASSIGNED, bulletPos1, "weapon_smartpistol_firesuppressed_3p") // 1 sound is enough
+
+	// vector recoilAngle = VectorToAngles(tank.GetForwardVector() * -30)
+	// print(recoilAngle)
+
+
+	// 3 explosion
+	wait travelTime
+
+	vector finalTarget1 = collisionPos1 - <0,0,105>
+	vector finalTarget2 = collisionPos2 - <0,0,105>
+
+	if (collisionPos1 != (target1))
+		finalTarget1 = collisionPos1
+
+	if (collisionPos2 != (target2))
+		finalTarget2 = collisionPos2
+
+	// Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos1, player, player, collisionPos1 )
+	// Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos2, player, player, collisionPos2 )
+
+	Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos1, player, player, collisionPos1 )
+	Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos1, player, player, collisionPos1 - dir * 50)
+
+	Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos2, player, player, collisionPos2 )
+	Explosion_DamageDefSimple( damagedef_tank_bombardment_detcord_explosion, collisionPos2, player, player, collisionPos2 - dir * 50)
+
+	wait 0.3
+
+	tank_fire.Destroy()
+	tank_fire2.Destroy()
+
+	wait 0.5
+	bullet1.Destroy()
+	bullet2.Destroy()
+}
+
+
+
+entity function CreateBullet(vector pos, vector ang)
+{
+	entity root = CreateScriptMover( pos, ang )
+
+	entity bullet = CreateEntity( "script_mover" )
+	bullet.SetValueForModelKey( TANK_BULLET_SMALL )
+	bullet.kv.solid = 6
+	bullet.kv.inertiaScale = 1.0
+	bullet.kv.SpawnAsPhysicsMover = 0
+	bullet.kv.fadedist = 10000
+	bullet.kv.renderamt = 255
+	bullet.kv.rendercolor = "255 255 255"
+
+	bullet.SetOrigin( pos )
+	bullet.SetAngles( ang )
+
+	DispatchSpawn( bullet )
+	bullet.SetModel( TANK_BULLET_SMALL )
+
+	bullet.SetParent(root)
+
+	return root
+}
+
+
+#endif
+
+#if CLIENT
+void function SetupThirdPersonForVehicle(bool enable)
+{
+	if(enable)
+	{
+		SetConVarFloat( "c_thirdpersonshoulderheight", 85 )
+		SetConVarFloat( "c_thirdpersonshoulderoffset", 0.0 )
+		SetConVarFloat( "c_thirdpersonshoulderaimdist", 215.0 )
+	}
+	else
+	{
+		SetConVarFloat("c_thirdpersonshoulderheight", 30)
+		SetConVarFloat("c_thirdpersonshoulderoffset", 20)
+		SetConVarFloat("c_thirdpersonshoulderaimdist", 100)
+	}
+}
+
+void function TridentBoost_Visuals()
+{
+	entity player = GetLocalViewPlayer()
+	
+	thread function() : (player)
+	{
+		if( !IsValid(player) || !IsValid( player.GetCockpit() )) return
+
+		EndSignal( player, "OnDeath" )
+		
+		float endTime = Time() + 2
+		int fxHandle
+		
+		if ( IsValid( player.GetCockpit() ) )
+		{
+			fxHandle = StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( SPRINT_FP ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+			EffectSetIsWithCockpit( fxHandle, true )
+		}
+
+		OnThreadEnd(
+		function() : (fxHandle, player)
+		{
+			if(IsValid(player))
+				player.SetFOVScale( 1, 0.1 )
+			if ( fxHandle > -1 )
+				EffectStop( fxHandle, false, true )
+		})
+
+		while( Time() <= endTime && IsValid(player) )
+		{
+			player.SetFOVScale( 1.15, 0.1 )
+			WaitFrame()
+		}
+	}()
+}
+
+vector function GetPlayerCrosshairOriginRaw( entity player )
+{
+	vector angles = player.EyeAngles()
+	vector forward = AnglesToForward( angles )
+	vector origin = player.EyePosition()
+
+	vector start = origin
+	vector end = origin + forward * 50000
+	TraceResults result = TraceLine( start, end )
+	vector crosshairOrigin = result.endPos
+
+	return crosshairOrigin
+}
+#endif

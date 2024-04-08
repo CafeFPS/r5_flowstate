@@ -29,8 +29,8 @@ WeaponData
 	"stat_range"  									"65"
 	"stat_accuracy"   								"80"
 	"stat_rof"										"80"
-	// "viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
-	// "playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
+	//"viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
+	//"playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
 	
 	// Models
 	"viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"

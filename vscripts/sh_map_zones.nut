@@ -307,6 +307,12 @@ void function GenerateZoneTiers()
 	{
 		foreach ( lootZone in lootZones )
 		{
+			if( !IsValid( mapZoneData.zoneTrigger ) )
+			{
+				printt( "zone not valid?" )
+				continue
+			}
+
 			if ( !mapZoneData.zoneTrigger.ContainsPoint( lootZone.origin ) )
 				continue
             

@@ -410,7 +410,8 @@ void function BleedoutScreenFX_Start( entity woundedPlayer, float startTime, flo
 
 	EndSignal( woundedPlayer, "OnDeath" )
 	EndSignal( woundedPlayer, "Bleedout_StopBleedoutEffects" )
-
+	EndSignal( woundedPlayer, SIGNAL_BLEEDOUT_STATE_CHANGED )
+	
 	//Creates the particle effect
 	file.bleedoutFXID = StartParticleEffectOnEntity( woundedPlayer, index, FX_PATTACH_POINT_FOLLOW, woundedPlayer.GetCockpit().LookupAttachment( "CAMERA" ) )
 
@@ -431,7 +432,7 @@ void function BleedoutScreenFX_Start( entity woundedPlayer, float startTime, flo
 	//Fade the alpha on the control point
 	float currentLerpTime
 	float lerpTime = endTime
-	while ( Bleedout_IsBleedingOut( woundedPlayer ) )
+	while ( true ) //Bleedout_IsBleedingOut( woundedPlayer ) )
 	{
 		if ( !IsValid( Bleedout_GetRevivingPlayer( woundedPlayer ) ) && !woundedPlayer.ContextAction_IsMeleeExecutionTarget() )
 		{
@@ -461,7 +462,7 @@ void function BleedoutScreenFX_Start( entity woundedPlayer, float startTime, flo
 			EffectSetControlPointVector( file.bleedoutFXID, 1, <file.bleedoutFXAlpha, 0, 0> )
 
 		ColorCorrection_SetWeight( file.colorCorrection, colorCorrectionWeight )
-
+		// printt("showing redish screen" )
 		WaitFrame()
 	}
 }

@@ -39,7 +39,7 @@ void function ShDevUtility_Init()
 #endif
 
 #if SERVER
-void function SetupShadowHands( bool allplayers = false)
+void function SetupHeirloom( int heirloomIndex )
 {
 	entity player = gp()[0]
 	if ( !IsValid( player ) )
@@ -47,20 +47,36 @@ void function SetupShadowHands( bool allplayers = false)
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
 	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE )
-}
 
-void function SetupHeirloom( bool allplayers = false)
-{
-	entity player = gp()[0]
-	if ( !IsValid( player ) )
-		return
+	switch(heirloomIndex)
+	{
+		case 0:
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )			
+		break
+		
+		case 1:
+		// player.GiveWeapon( "mp_weapon_paracord_knife_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		// player.GiveOffhandWeapon( "melee_paracord_knife", OFFHAND_MELEE, [] )		
+		break	
+		
+		case 2:
+		player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
+		break
+		
+		case 3:
+		player.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )	
+		break
 
-	player.TakeOffhandWeapon(OFFHAND_MELEE)
-	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE )
+		case 4:
+		player.GiveWeapon( "mp_weapon_melee_boxing_ring", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_boxing_ring", OFFHAND_MELEE, [] )	
+		break
+	}
+
+	EmitSoundOnEntity( player, "LootCeremony_LootHologram_Appear_Heirloom" )
 }
 
 void function UnEquipMelee( bool allplayers = false)

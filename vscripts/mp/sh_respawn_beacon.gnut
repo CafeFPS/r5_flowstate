@@ -999,7 +999,7 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) rename?
 {
 	box.EndSignal( "OnDestroy" )
-	dna.EndSignal( "OnDestroy" )
+	// dna.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( box, dna )

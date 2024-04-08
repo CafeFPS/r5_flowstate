@@ -46,6 +46,7 @@ WeaponData
 	"OnWeaponActivate"                              "OnWeaponActivate_R101"
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_R101"
     "OnWeaponPrimaryAttack"                         "OnWeaponPrimaryAttack_R101"
+	"OnProjectileCollision"                         "OnProjectileCollision_weapon_basic_bolt"
 
 	"looping_sounds"								"1"
 

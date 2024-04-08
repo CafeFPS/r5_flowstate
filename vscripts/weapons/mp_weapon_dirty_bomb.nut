@@ -20,7 +20,11 @@ const asset DIRTY_BOMB_CANISTER_MODEL = $"mdl/props/caustic_gas_tank/caustic_gas
 const asset DIRTY_BOMB_CANISTER_EXP_FX = $"P_meteor_trap_EXP"
 const asset DIRTY_BOMB_CANISTER_FX_ALL = $"P_gastrap_start"
 
-const int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
+int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
+const float DIRTY_BOMB_SPAWN_MIN = 1 			 //Min Spawn Delay
+const float DIRTY_BOMB_SPAWN_MAX = 2 			 //Max Spawn Delay
+const float DIRTY_BOMB_SPAWN_FORCE_MIN = 0.2 	 //Min Spawning Vel Force
+const float DIRTY_BOMB_SPAWN_FORCE_MAX = 1 	 //Max Spawning Vel Force
 
 const string DIRTY_BOMB_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep"
 
@@ -73,6 +77,11 @@ struct
 void function MpWeaponDirtyBomb_Init()
 {
 	DirtyBombPrecache()
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod6", false ) )
+	{
+		DIRTY_BOMB_MAX_GAS_CANISTERS = 300
+	}
 }
 
 void function DirtyBombPrecache()
@@ -341,9 +350,71 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 			entToDelete.Destroy()
 		}
 	}
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod6", false ) )
+	{
+		while(true){
+			wait RandomFloatRange(DIRTY_BOMB_SPAWN_MIN,DIRTY_BOMB_SPAWN_MAX)
+
+			vector attackPos = placementInfo.origin + <0,0,80>
+			float angle = RandomFloatRange(0,360)
+			vector dir = Normalize( <deg_sin(angle),deg_cos(angle),1> )
+			entity weapon = owner.GetOffhandWeapon(OFFHAND_LEFT)
+
+			thread Mitosis(attackPos, dir, weapon, owner)
+		}
+	}
 
 	WaitForever()
 }
+
+void function Mitosis(vector attackPos, vector dir, entity weapon, entity owner)
+{
+	if(weapon == null || !IsValid(weapon))
+	{
+		print("Weapon Invalid?")
+		return
+	}
+
+	WeaponFireGrenadeParams fireGrenadeParams
+	fireGrenadeParams.pos = attackPos
+	fireGrenadeParams.vel = dir*RandomFloatRange(DIRTY_BOMB_SPAWN_FORCE_MIN,DIRTY_BOMB_SPAWN_FORCE_MAX)
+	fireGrenadeParams.angVel = <600, RandomFloatRange( -300, 300 ), 0>
+	fireGrenadeParams.fuseTime = 0
+	fireGrenadeParams.scriptTouchDamageType = damageTypes.explosive
+	fireGrenadeParams.scriptExplosionDamageType = damageTypes.explosive
+	fireGrenadeParams.clientPredicted = false
+	fireGrenadeParams.lagCompensated = true
+	fireGrenadeParams.useScriptOnDamage = true
+
+	entity deployable = weapon.FireWeaponGrenade( fireGrenadeParams )
+
+	#if SERVER
+		if ( deployable )
+		{
+			if ( IsValid( owner ) )
+			{
+				deployable.RemoveFromAllRealms()
+				deployable.AddToOtherEntitysRealms( owner )
+			}
+
+			//deployable.proj.savedAngles = <0, angles.y, 0>
+			Grenade_Init( deployable, weapon )
+			thread OnProjectilePlanted( deployable, OnDirtyBombPlanted )
+		}
+	#endif
+}
+
+#if SERVER
+//some reason using the global OnProjectilePlanted wasn't working so
+void function OnProjectilePlanted( entity projectile, void functionref(entity) deployFunc )
+{
+	projectile.EndSignal( "OnDestroy" )
+	projectile.WaitSignal( "Planted" )
+	projectile.proj.isPlanted = true
+	thread deployFunc( projectile )
+}
+#endif
 
 void function CausticTrap_OnDamaged_Activated(entity ent, var damageInfo)
 {

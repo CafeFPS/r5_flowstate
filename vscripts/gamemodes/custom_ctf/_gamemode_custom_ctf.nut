@@ -13,6 +13,7 @@ global function ResetMILITIAFlag
 global function FS_StartIntroScreen
 
 bool debugging = false
+const float FS_HALOMOD_VOTETEAM_TIME = 5
 
 enum eCTFState
 {
@@ -338,7 +339,7 @@ void function VotingPhase()
 	{
 		file.VoteTeamEnabled = true
 		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
-		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + 30 )
+		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
 
 		foreach( player in GetPlayerArray() )
 		{
@@ -440,7 +441,9 @@ void function StartRound()
 	ResetMILITIAFlag()
 	thread ResetIMCFlag()
 	
-	// wait 1
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		while( !IsValid( GetGlobalNetEnt( "imcFlag" ) ) )
+			WaitFrame()
 
 	int milCount
 	int imcCount

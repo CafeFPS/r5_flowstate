@@ -208,7 +208,7 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 		Hud_SetText( HudElement( "FS_1v1_UI_Damage"), player.GetPlayerNetInt( "damage" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() )
 		Hud_SetText( HudElement( "FS_1v1_UI_Position"), player.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ).tostring() ) 
-		wait 0.1
+		wait 0.5
 	}
 }
 

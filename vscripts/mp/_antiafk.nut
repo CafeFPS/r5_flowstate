@@ -14,11 +14,11 @@ void function Flowstate_InitAFKThreadForPlayer(entity player)
 	return
 	#endif
 
-	if ( !IsValid(player) || IsAdmin(player) || !GetCurrentPlaylistVarBool( "flowstate_afk_kick_enable", true ) )
+	if ( !IsValid(player) || IsAdmin(player) || !GetCurrentPlaylistVarBool( "flowstate_afk_kick_enable", true ) || !GetCurrentPlaylistVarBool("enable_afk_thread", true) )
 		return
 
-	//AfkThread_AddPlayerCallbacks( player )
-	player.SetSendInputCallbacks( true )
+	AfkThread_AddPlayerCallbacks( player ) //readded mkos
+	//player.SetSendInputCallbacks( true ) //disabled internal call
 	AfkThread_PlayerMoved( player )
 	thread CheckAfkKickThread(player)
 }
@@ -44,21 +44,19 @@ int function GetAfkState( entity player )
 //lg_duel mkos modified
 void function AfkWarning( entity player )
 {	
-	if ( GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )){
-		
-		Message( player, "Are you there?", "\n Sending to rest if you don't move in the next " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " seconds." )
-		
-	} else {
+	if ( bAfkToRest() )
+	{	
+		Message( player, "Are you there?", "\n Sending to rest if you don't move in the next " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " seconds." )		
+	} 
+	else
+	{
 		Message( player, "AFK WARNING", "\n You're afk, server will kick you if you don't move in the next " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " seconds." )
 	}
 }
 
 void function CheckAfkKickThread(entity player)
 {	
-
-
-	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName() )
-	
+	//printt("Flowstate - AFK thread initialized for " + player.GetPlayerName() )	
 	while( true )
 	{
 		wait GetCurrentPlaylistVarFloat( "Flowstate_antiafk_interval", 10.0 )
@@ -75,15 +73,15 @@ void function CheckAfkKickThread(entity player)
 		if ( player.p.isSpectating )
 			continue
 			
-		if (!afk_to_rest_enabled)
+		if (!bAfkToRest())
 			continue
 		
 		//another mkos mod
-		if ( GetCurrentPlaylistName() == "fs_1v1" && isPlayerInRestingList( player ) && GetCurrentPlaylistVarBool( "rest_msg", false) )
+		if ( g_bIs1v1 && isPlayerInRestingList( player ) && g_bRestMsg )
 		{	
-			if ( player.p.messagetime == 0 || Time() >= player.p.messagetime + 25 )
+			if ( player.p.messagetime == 0 || Time() >= player.p.messagetime + 30 )
 			{	
-				Message(player, "\n\n\n\n\n\n You are Resting", "Type 'rest' in console to exit rest \n or press panel button to resume 1v1s \n\n\n\n  Type 'wait' in console for info \n about your IBMM queue times \n\n\n\n Type 'show input' in console for a list \n of players and their current inputs \n\n\n\n Type 'show stats' in console for a list \n of players and their current stats", 25, "")
+				Message(player, "\n\n\n\n\n\n You are Resting", LineBreak("Type 'rest' in console to exit rest or press panel button to resume 1v1s \n\n Type 'wait' in console for info about your IBMM queue times \n\n Type 'show player #' in console replacing # with player's name/id for info about that player.",50), 30, "")
 				player.p.messagetime = Time()
 			}
 			
@@ -97,17 +95,21 @@ void function CheckAfkKickThread(entity player)
 				AfkWarning( player )
 				break
 			
-			//mkos modificaiton, afk_to_rest
+			//mkos modificaiton, afk_to_rest = bAfkToRest()
 			case eAntiAfkPlayerState.AFK:
-				if ( GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )){
-				
+				if ( bAfkToRest() )
+				{		
 					player.p.lastmoved = Time()
-					mkos_Force_Rest( player, [] )
 					
-				} else {
-				
-					KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )
+					if(GetCurrentPlaylistName() == "fs_1v1")
+					{
+						mkos_Force_Rest( player, [] )
+					}
 					
+				} 
+				else 
+				{	
+					KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )		
 				}
 				break
 		}
@@ -117,13 +119,26 @@ void function CheckAfkKickThread(entity player)
     }
 }
 
-void function AfkThread_PlayerMoved( entity player )
+bool function AfkThread_PlayerMoved( entity player )
 {
+	if(!IsValid(player))
+		return false
+	
     player.p.lastmoved = Time()
+	return true
 }
 
 void function AfkThread_AddPlayerCallbacks( entity player )
 {	
+	
+	AddPlayerPressedForwardCallback( player, AfkThread_PlayerMoved )
+	AddPlayerPressedBackCallback( player, AfkThread_PlayerMoved )
+	AddPlayerPressedLeftCallback( player, AfkThread_PlayerMoved )
+	AddPlayerPressedRightCallback( player, AfkThread_PlayerMoved )
+	
+	
+	//disabled and reworked to above (fixed callback move inputs) -- mkos
+	
 	/*
 	AddButtonPressedPlayerInputCallback( player, IN_ATTACK, AfkThread_PlayerMoved )
 	AddButtonPressedPlayerInputCallback( player, IN_JUMP, AfkThread_PlayerMoved )

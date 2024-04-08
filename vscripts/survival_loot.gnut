@@ -155,6 +155,7 @@ void function LoadLootZonesForMap()
 		}
 
 		file.lootZones.append( zone )
+		lzEnt.Destroy() // save edicts
 	}
 
 	if ( file.lootZones.len() == 0 )
@@ -184,6 +185,7 @@ void function LoadLootZonesForMap()
 		zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 
 		hotZones.append( zone )
+		lzEnt.Destroy() // save edicts
 	}
 
 	if ( hotZones.len() == 0 )
@@ -680,6 +682,7 @@ void function OnGroundLootSpawned( entity ent )
 		else
 			file.vaultLootSpawned[zoneOrigin] <- alreadySpawnedLoot
 		itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+
 		while(alreadySpawnedLoot.contains(itemRef))
 		{
 			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
@@ -689,13 +692,35 @@ void function OnGroundLootSpawned( entity ent )
 	}
 	else
 	{
-		itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+		for(int i = 0; i < 1; i++)
+		{
+			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+			LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+
+			if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) )
+			{
+				if (  lootData.lootType == eLootType.ARMOR || lootData.lootType == eLootType.MAINWEAPON || lootData.tier >= 2 )
+				{
+					i--
+					continue
+				}
+			}
+
+			if(  lootData.lootType == eLootType.ARMOR || itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
+			{
+				i--
+				continue
+			}
+		}
 	}
 
-	if(itemRef == "blank" || itemRef == "mp_weapon_raygun")
-		return
-
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod9", false ) )
+	{
+		itemRef = "mp_weapon_shotgun_pistol"
+		itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+	}
 	LootTypeData lt = GetLootTypeData( itemData.lootType)
 
 	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
@@ -714,8 +739,17 @@ void function OnGroundLootSpawned( entity ent )
 			itemRef = "armor_pickup_lv1"
 	}
 	
+	// printt( "spawning ", itemRef )
+
 	if(lt.specialCaseSpawnFunction != null)
 	{
+		if( GetCurrentPlaylistVarBool( "lsm_mod9", false ) && RandomInt(3) == 1)
+		{
+			int angleZ = 0
+			entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+			return
+		}
+
 		lt.specialCaseSpawnFunction(itemRef, spawnOrigin)
 		return
 	}
@@ -1646,6 +1680,13 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	string newEquip     = newEquipData.ref
 
+	if( newEquip == "mp_weapon_titan_sword" || newEquip == "melee_titan_sword" )
+	{
+		foreach( weaponOk in player.GetMainWeapons() )
+			if( weaponOk.GetWeaponClassName() == newEquip )
+				return
+	}
+	
 	LootData oldEquipData
 
 	if ( IsValid( activeWeapon ) && SURVIVAL_Loot_IsRefValid( GetWeaponClassName( activeWeapon ) ) )
@@ -1779,79 +1820,75 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			}
 		}
 	}
+	
+	int clipCount = pickup.GetClipCount()
+	int lastAmmo = pickup.e.crateWeaponLastAmmo
+	int lastClip = pickup.e.crateWeaponLastAmmoClip
 
-	thread function () : ( player, newEquipData, mods, pickup, dropCurrentWeapon, weaponSlot ) 
+	player.AmmoPool_SetCapacity( 65535 )
+
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
+
+	if( IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
+	{
+		weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
+	}
+	player.DeployWeapon()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+
+	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+		weapon.AddMod("duckhunt")
+	
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+
+	int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+	int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
+
+	if( newEquipData.baseMods.contains( "crate" ) )
+	{
+		if( lastAmmo != -1 )
+			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
+		else
+			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
+		
+		if( weapon.UsesClipsForAmmo() && lastClip != -1 )
+		{
+			weapon.SetWeaponPrimaryClipCount( lastClip )
+		}
+	} else if( weapon.UsesClipsForAmmo() )
+		weapon.SetWeaponPrimaryClipCount( ammoToGive )
+
+	if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
+	{
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int requiredAmmo = maxAmmo - currentAmmo
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+
+		player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+	}
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+		weapon.SetLegendaryModelIndex(RandomInt(4))
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
 	{		
-		int clipCount = pickup.GetClipCount()
-		int lastAmmo = pickup.e.crateWeaponLastAmmo
-		int lastClip = pickup.e.crateWeaponLastAmmoClip
-
-		player.AmmoPool_SetCapacity( 65535 )
-
-		entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
-
-		if( IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
-		{
-			weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
-		}
-		player.DeployWeapon()
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
-
-		if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
-			weapon.AddMod("duckhunt")
+		int charmIndex = RandomInt( 2 )
 		
-		int ammoType = weapon.GetWeaponAmmoPoolType()
-
-		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
-
-		if( newEquipData.baseMods.contains( "crate" ) )
+		switch( charmIndex )
 		{
-			if( lastAmmo != -1 )
-				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
-			else
-				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
-			
-			if( weapon.UsesClipsForAmmo() && lastClip != -1 )
-			{
-				weapon.SetWeaponPrimaryClipCount( lastClip )
-			}
-		} else if( weapon.UsesClipsForAmmo() )
-			weapon.SetWeaponPrimaryClipCount( ammoToGive )
-
-		if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
-		{
-			string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-			int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-			int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
-			int requiredAmmo = maxAmmo - currentAmmo
-			int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-			player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+			case 0:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
+				//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
+			break
+			case 1:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
+			break
 		}
-
-		if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
-			weapon.SetLegendaryModelIndex(RandomInt(4))
-
-		if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
-		{		
-			int charmIndex = RandomInt( 2 )
-			
-			switch( charmIndex )
-			{
-				case 0:
-					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
-					//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
-				break
-				case 1:
-					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
-				break
-			}
-		}
-		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-	}()
-
+	}
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
 vector function GetThrowOrigin( entity player )

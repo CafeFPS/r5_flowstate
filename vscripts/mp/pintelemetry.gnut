@@ -1,5 +1,3 @@
-// stub script
-
 global function PIN_Init
 global function PIN_ItemPickup
 global function PIN_GameStart
@@ -32,28 +30,212 @@ global function PIN_PlayerLandedOnGround
 global function PIN_PlayerJumpedFromPlane
 global function PIN_Training
 
-global struct GameSummarySquadData 
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+// these defines dictate the compiler for tracker code vs stub code
+
+global const bool TRACKER = false
+global const bool HAS_TRACKER_DLL = false
+
+//do not edit below this line
+#if TRACKER
+	global const bool STUB = false
+#else
+	global const bool STUB = true 
+#endif 
+
+
+#if STUB 	
+	
+	//const
+	const int SQ_MAX_INT_32 = 2147483647;
+	const int SQ_MIN_INT_32 = -2147483647;
+	
+	//flags
+	global function bAfkToRest
+	global function bGlobalStats
+	global function bLog
+	global function bEnc
+	global bool g_bIs1v1
+	global bool g_bLGmode = false
+	global bool g_bGiveTactical = false
+	global bool g_bRestMsg = false // used in antiafk
+	global float COMMAND_RATE_LIMIT = 0.200 
+	
+	global struct GameSummarySquadData 
+	{
+		int kills
+		int damageDealt
+		int survivalTime
+		int revivesGiven
+		int respawnsGiven
+		int deaths 
+	}
+	
+	//shared
+	global function SetDefaultIBMM
+	global function GetDefaultIBMM
+	global function bBotEnabled
+	global function SendServerMessage
+	global function getEventByPlayerHandle
+	
+	//persistence
+	global function SavePlayer_wait_time
+	global function SavePlayer_lock1v1_setting
+	global function SavePlayer_start_in_rest_setting
+	global function SavePlayer_enable_input_banner
+	global function SavePlayer_saved_weapons
+	
+	//utility 
+	global function empty
+	global function StringToArray
+	global function trim
+	global function Concatenate
+	global function IsNumeric
+	global function IsNum
+	global function GetPlayer
+	global function GetPlayerEntityByOID
+	global function GetPlayerEntityByName
+	global function IsValidOID
+	global function Is_Bool
+	global function sanitize
+	global function LineBreak
+	global function printarray
+	global function CheckRate
+	global function ParseWeapon
+	global function IsWeaponValid
+	
+	global struct DamageEvent {
+		int weaponSource
+		array<int> weaponOrder
+		
+		int attackerHandle //encoded ehandle
+		int victimHandle
+		
+		int hitCount
+		float bulletsHit
+		float damage
+		int headshots
+		float actionTimestamp
+		int lastWeaponSource
+		float lastHitTimestamp
+		
+		bool isNew
+		float shotIdentifier	
+	};
+	
+#endif
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+// ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦¦¦¦¦     ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦    ¦¦     ¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦   ¦¦¦¦¦   ¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦¦¦¦¦ 
+// ¦¦   ¦¦ ¦¦      ¦¦   ¦¦    ¦¦   ¦¦ ¦¦      ¦¦    ¦¦        ¦¦    ¦¦   ¦¦ ¦¦   ¦¦ ¦¦      ¦¦  ¦¦  ¦¦      ¦¦   ¦¦ 
+// ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦¦¦¦¦     ¦¦   ¦¦ ¦¦¦¦¦   ¦¦    ¦¦        ¦¦    ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦      ¦¦¦¦¦   ¦¦¦¦¦   ¦¦¦¦¦¦  
+// ¦¦   ¦¦      ¦¦ ¦¦   ¦¦    ¦¦   ¦¦ ¦¦       ¦¦  ¦¦         ¦¦    ¦¦   ¦¦ ¦¦   ¦¦ ¦¦      ¦¦  ¦¦  ¦¦      ¦¦   ¦¦ 
+// ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦ ¦¦¦¦¦¦  ¦¦¦¦¦¦¦   ¦¦¦¦          ¦¦    ¦¦   ¦¦ ¦¦   ¦¦  ¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦   ¦¦ 
+// r5r.dev by mkos
+
+#if TRACKER
+//shared
+global function getEventByPlayerHandle
+global function SavePlayer_wait_time
+global function SavePlayer_saved_weapons
+global function SavePlayer_lock1v1_setting
+global function SavePlayer_start_in_rest_setting
+global function SavePlayer_enable_input_banner
+global function SetDefaultIBMM
+global function GetDefaultIBMM
+global function GetDefaultLock1v1Setting
+global function GetDefaultEnableInputBannerSetting
+global function GetStringSetting
+global function GetFloatSetting
+global function GetIntSetting
+global function GetBoolSetting
+global function bAfkToRest
+global function bGlobalStats
+global function bLog
+global function bEnc
+global function ClientCommand_mkos_test_return_data
+global function __executeEventStart_messages
+global function eMessageBot
+global function SendServerMessage
+global function bBotEnabled
+global function update
+
+//admin util
+global function GetAdminList
+global function EnableVoice
+
+//utility 
+global function empty
+global function StringToArray
+global function trim
+global function Concatenate
+global function IsNumeric
+global function IsNum
+global function GetPlayer
+global function GetPlayerEntityByOID
+global function GetPlayerEntityByName
+global function IsValidOID
+global function Is_Bool
+global function sanitize
+global function LineBreak
+global function printarray
+global function CheckRate
+global function ParseWeapon
+global function IsWeaponValid
+global function ChatEffects
+
+
+////////////////////////////////////
+//
+global bool g_bIs1v1 //used in all modes
+global bool g_bLGmode //used in all modes
+global bool g_bGiveTactical //used in all modes
+global bool g_bRestMsg // used in antiafk
+global float COMMAND_RATE_LIMIT = 0.200 //used in all client commands
+//
+////////////////////////////////////
+
+
+const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
+const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
+const int MAX_SAY_MSG = 255;
+const int SQ_MAX_INT_32 = 2147483647;
+const int SQ_MIN_INT_32 = -2147483647;
+const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to Player_Has_Access()
+const int REQUIRED_SYNC_DATA_FIELDS = 5;  //amount of fields returned by stats the scripts require (non-settings values)
+const float T_VERS = 2.1
+
+const array<string> EventTypes = [
+
+		"start",
+		"end"
+		
+	]
+	
+
+//(respawns) game summary
+
+global struct GameSummarySquadData
 {
 	int kills
 	int damageDealt
 	int survivalTime
 	int revivesGiven
 	int respawnsGiven
-	int deaths 
+	int deaths
 }
-
-global int fightIdCounter = 0
-global bool SHOULD_SHIP = false
-global bool hasSpecialWeaponShotBeenCountered = false;
-global bool PROCESS_THIS = true;
-global bool PIN_GameState_Start = false;
-global table PlayerSupergliding
-global table < string, bool > PlayerDidJump
-global bool afk_to_rest_enabled = true;// bool to reflect state of cc (chat command)
-global float FS_MaxHealth;
-global string DISCORD_PLAYERS_WEBHOOK;
-global string DISCORD_MATCHES_WEBHOOK;
-const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 
 //verify struct
 
@@ -61,54 +243,5378 @@ global struct PlayerVerifyCount {
     string playerID
     int verifyCount
 };
+
+
+global struct DamageEvent {
+
+    int weaponSource
+	array<int> weaponOrder
+	
+	int attackerHandle //encoded ehandle
+	int victimHandle
+	
+    int hitCount
+    float bulletsHit
+    float damage
+	int headshots
+	float actionTimestamp
+	int lastWeaponSource
+	float lastHitTimestamp
+	
+	bool isNew
+	float shotIdentifier
+	
+};
+
+
+
+global struct DeleteEvents {
+
+	int victim_handle
+	int attacker_handle
+	
+};
+
+// array of player structs containing various new metrics
+struct PlayerMetrics {
+
+    string playerID
+	string playername
+	
+    array<float> JumpTimestamps
+    table<int, array< float > > WeaponShotsTimestamps
+	array<float> SuperglideTimestamps
+	int kills
+	int deaths
+	float damage
+	
+	float wait_time
+	string saved_weapons = "NA"
+	bool lock1v1_setting
+	bool start_in_rest_setting
+	bool playerleft = false
+	bool ignore_sync_flag = false
+	bool enable_input_banner = false
+	
+};
+
+//tables
+global table PlayerSupergliding
+global table < string, bool > PlayerDidJump
+table<string, string> player_admins
+table<string, int> PlayerIdMap //for constant time operation lookups
+
+//script arrays
+global array<DamageEvent> allDamageEvents
+array<PlayerMetrics> PlayerMetricsArray
+array<PlayerVerifyCount> playerVerifyCounts
+array< array< string > > list_maps
+array< array< string > > list_gamemodes
+array< string > whitelist
+array<DeleteEvents> DeleteEventTaskList // queue for managing event deletion //TODO rework
+
+#if SERVER   
+bool function Logging_ShipStats() 				{ return GetCurrentPlaylistVarBool("logging_shipstats", false) }
+bool function Enable_CC_Administration() 		{ return GetCurrentPlaylistVarBool("cc_administration", false) }
+bool function Ea_Verify_Server()				{ return GetCurrentPlaylistVarBool("ea_verify_server", false) }
+#endif
+
+struct PlayerData {
+
+	string playerUID 
+	string playerName 
+	
+};
+
+struct { 
+
+    int READY = 1,
+    int BUSY = 2,
+	int SAFE = 3
+	
+} state
+
+struct {
+	
+	table<int,PlayerData> HandleToPlayerData
+	array <string> ADMINS
+	
+	table <string,string> Global_R5RDEV_StringSettings
+	table <string,float> Global_R5RDEV_FloatSettings
+	table <string,int> Global_R5RDEV_IntSettings
+	table <string,bool> Global_R5RDEV_BoolSettings
+	
+	int fightIdCounter = 0
+	bool PIN_GameState_Start = false
+	bool global_stats
+
+	bool LogOn
+	bool LogE
+	bool FETCH_BATCH_COMPLETE = false
+	bool restricted_server
+	bool bSyncedGlobal
+	bool bSafeLog = true
+	bool bShouldShip = false
+	bool bCheckShip
+	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
+	
+	bool stop_update_msg_flag = false
+	bool sg_counter_msg
+	float FS_MaxHealth
+
+	string DISCORD_PLAYERS_WEBHOOK
+	string DISCORD_MATCHES_WEBHOOK
+	string superglide_msg
+	string superglidetitle
+	
+	//ServerMessages
+	bool bChatbotEnabled
+	bool bIntervalThreadRunning
+	bool bKillIntervalThread
+	int iLoopMessagesTime
+	
+	string sBotName
+	int iBotID
+	entity eBotEnt
+	
+	table < int, array<string> > MessageEvents
+	array<string> Messages_EventStart
+	array<string> Messages_EventEnd
+	array<string> arrayLoopMessages = []
+	
+	bool DefaultLock1v1Setting
+	bool DefaultEnableInputBannerSetting
+	bool DefaultStartInRestSetting
+	
+} file
+
+//CHAT EFFECTS
+struct {
+
+	table<string,string> effects = {
+	
+		["THUMBSUP"] = "??",
+		["SKULL"] = "??",
+		["PISTOL"] = "??",
+		["ROOK"] = "??",
+		["YELLOW_SKULL"] = "??",
+		["NO_WEP"] = "??",
+		["HEALTHKIT"] = "??",
+		["PHOENIX"] = "??",
+		["LOCKED"] = "??",
+		["EYE"] = "??",
+		["FRIEND"] = "??",
+		["LAG"] = "??",
+		["CONNECTING"] = "??",
+		["CELL"] = "??",
+		["BATTERY"] = "??",
+		["APEX"] = "??",
+		["FIVE"] = "??",
+		["CIRCLE"] = "??",
+		["BLUEPEX"] = "??",
+		["WRAITH_BANNER"] = "??",
+		["BIG_WHITE_CROWN"] = "??",
+		["WHITE_CROWN"] = "??",
+		["BLUE_CROWN"] = "??",
+		["TREE"] = "??",
+		["SUS"] = "??",
+		["RED_SQUARE"] = "??"
+	}
+
+} chat
+
+table <string,string> function ChatEffects()
+{
+	return chat.effects
+}
+
+string function FindChatEffect( string key )
+{
+	if( key in chat.effects )
+	{
+		return chat.effects[key]
+	}
+	
+	string query = key.tolower()
+	
+	foreach( effectKey, chatValue in chat.effects )
+	{
+		if ( effectKey.tolower() == query )
+		{
+			return chatValue
+		}
+	}
+	
+	return "Not found.";
+}
+
+void function PrintAllChatEffects()
+{
+	string print_effects = format( "\n\n --- Chat Effects --- \n\n" )
+	
+	foreach( key, value in chat.effects )
+	{
+		print_effects += format( "%s \n", key ) 
+	}
+	
+	sqprint( print_effects )
+}
+
+bool function bLog()
+{
+	return file.LogOn
+}
+
+bool function bEnc()
+{
+	return file.LogE
+}
+
+bool function bGlobalStats()
+{
+	return file.global_stats
+}
+
+bool function bAfkToRest()
+{
+	return file.afk_to_rest_enabled
+}
+
+string function GetPlayerIdFromHandle( int handle )
+{
+	if( handle in file.HandleToPlayerData )
+	{
+		return file.HandleToPlayerData[handle].playerUID
+	}
+	
+	return handle.tostring()
+}
+
+string function GetPlayerNameFromHandle( int handle )
+{
+	if( handle in file.HandleToPlayerData )
+	{
+		return file.HandleToPlayerData[handle].playerName
+	}
+	
+	return handle.tostring()
+}
+
+table <string,string> function GetAllStringSettings()
+{
+	return file.Global_R5RDEV_StringSettings
+} 
+
+table <string,float> function GetAllFloatSettings()
+{
+	return file.Global_R5RDEV_FloatSettings
+} 
+
+table <string,int> function GetAllIntSettings()
+{
+	return file.Global_R5RDEV_IntSettings
+} 
+
+table <string,bool> function GetAllBoolSettings()
+{
+	return file.Global_R5RDEV_BoolSettings
+} 
+
+string function GetStringSetting( string setting, string none = "" )
+{
+	if ( setting in GetAllStringSettings())
+	{
+		return GetAllStringSettings()[setting];
+	}
+	
+	return none;
+}
+
+float function GetFloatSetting( string setting, float none = 0.0 )
+{
+	if ( setting in GetAllFloatSettings())
+	{
+		return GetAllFloatSettings()[setting];
+	}
+	
+	return none;
+}
+
+int function GetIntSetting( string setting, int none = 0 )
+{
+	if ( setting in GetAllIntSettings())
+	{
+		return GetAllIntSettings()[setting];
+	}
+	
+	return none;
+}
+
+bool function GetBoolSetting( string setting, bool none = false )
+{
+	if ( setting in GetAllBoolSettings())
+	{
+		return GetAllBoolSettings()[setting];
+	}
+	
+	return none;
+}
+
+////////////////////////////////////////////
+////////		QUERY Data			////////
+
+string function GetQueryDataString()
+{
+	string query_data_string;
+
+	query_data_string += "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring();
+	//more += later
+	
+	return query_data_string
+}
+
+void function INIT_Global_R5RDEV_VarTable()
+{	
+	string QueryDataString = GetQueryDataString()
+	
+	string settings_string = FetchGlobalSettingsFromR5RDEV(QueryDataString)
+	
+	#if DEVELOPER 
+	sqprint( "QueryDataString: " + QueryDataString )
+	sqprint( "settings_string: " + settings_string )
+	#endif
+	
+	array<string> categories = split(settings_string,"`")
+	
+	foreach ( settings in categories )
+	{
+		array<string> values = split( settings, ",")
+		
+		if( values.len() >= 1)
+		{
+			string data_type = trim(values[0]);
+			
+			int i;
+			for (i = 1; i < values.len(); i++)
+			{	
+				
+				array<string> setting = split(values[i],":")
+				
+				switch(data_type)
+				{
+					case "[bool]":
+						
+						if( setting.len() > 1 )
+						{	
+							bool val = ( trim(setting[1]) == "true" || trim(setting[1]) == "1" ) ? true : false;
+							file.Global_R5RDEV_BoolSettings[setting[0]] <- val;
+						}
+						break
+					
+					case "[string]":
+						
+						if( setting.len() > 1 )
+						{
+							file.Global_R5RDEV_StringSettings[trim(setting[0])] <- trim(setting[1]);
+						}
+						break
+					
+					case "[int]":
+					
+						if( setting.len() > 1 )
+						{	
+							try
+							{
+								file.Global_R5RDEV_IntSettings[trim(setting[0])] <- trim(setting[1]).tointeger();
+							}
+							catch(errint)
+							{
+								#if DEVELOPER 
+								sqerror("Error: " + errint)
+								#endif
+							}
+						}
+						break
+					
+					case "[float]":
+					
+						if( setting.len() > 1 )
+						{
+							try 
+							{
+								file.Global_R5RDEV_FloatSettings[trim(setting[0])] <- trim(setting[1]).tofloat();
+							}
+							catch(errfloat)
+							{
+								#if DEVELOPER 
+								sqerror("Error: " + errfloat)
+								#endif
+							}
+						}
+						break
+						
+					default:
+					
+						#if DEVELOPER 
+						sqprint("Unknown data type: " + data_type + " for setting: " + settings)
+						#endif 
+						break 
+						
+				}//switch for setting data type
+			}//for loop length of settings in category
+		}//value len check
+	}//foreach category
+	
+	file.bSyncedGlobal = true
+	
+}//init global settings
+
+void function INIT_BATCH_FETCH() 
+{
+	
+	file.FETCH_BATCH_COMPLETE = false
+	array<string> oids
+	string oid_list = "";
+	
+	wait 9 //allow players to load
+	//sqprint("Calling init batch")
+	
+	foreach ( player in GetPlayerArray() )
+	{	
+	
+		bool next_player = false;
+
+        while ( IsDisconnected( player ) ) 
+		{
+            if ( !IsValid( player ) ) 
+			{
+                next_player = true
+                break;
+            }
+			
+			wait 0.01
+			//sqprint("waiting for connection")
+        }
+
+        if ( next_player ) {
+            continue
+        }
+	
+		oids.append( player.GetPlatformUID() )	
+		
+	}
+	
+	int list_length = oids.len()
+	
+	if( list_length > 0 ) 
+	{	
+		
+		foreach ( index, oid in oids ) 
+		{
+            oid_list += oid;
+			
+            if ( index < list_length - 1 ) 
+			{
+                oid_list += ",";
+            }
+			
+        }
+	
+        LoadBatchKDStrings( oid_list )
+		
+    }
+		
+	file.FETCH_BATCH_COMPLETE = true
+	
+}
+
+void function SQ_LoadPlayerKD( entity player )
+{
+	LoadKDString( player.GetPlatformUID() )
+}
+
+void function SetPlayerKD( entity player )
+{	
+	
+	while ( file.FETCH_BATCH_COMPLETE == false )
+	{
+		#if DEVELOPER
+		sqprint("waiting for batch fetch to complete")
+		#endif
+		wait 1
+	}
+	
+	wait 1;
+	
+	string OID;
+	int attempts = 0;
+	
+	if( !IsValid( player )) 
+	{
+		return
+	}
+			
+	OID = player.GetPlatformUID()
+	
+	int player_lifetime_kills = 0;
+	int player_lifetime_deaths = 0;
+	int player_lifetime_glides = 0;
+	int player_lifetime_playtime = 0;
+	int player_lifetime_gamesplayed = 0;
+	int player_lifetime_score = 0;
+	float wait_time = GetDefaultIBMM()
+	bool lock1v1_setting = GetDefaultLock1v1Setting()
+	string saved_weapons = "NA";
+	bool enable_input_banner = false;
+	
+	
+	while ( IsValid( player ) )
+	{
+		
+		wait 1.2 + ( attempts * 0.09 ); //IMPORTANT
+		
+		string stat_data = GetKDString( OID )
+		
+		if ( attempts > 10 )
+		{	
+			break
+		}	
+		if ( stat_data == "NA" )
+		{	
+			break
+		}
+		if ( stat_data == "" )
+		{	
+			attempts++;
+			continue
+		}
+		if ( stat_data != "" || stat_data != "NA" )
+		{	
+			
+			#if DEVELOPER 
+			sqprint(stat_data)
+			#endif 
+		
+			array<string> SYNC_Data = split( stat_data , ",")
+			int SYNC_Data_length = SYNC_Data.len()
+			
+			if ( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS) 
+			{
+				#if DEVELOPER 
+				sqerror("Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
+				#endif 
+				return
+			}
+			
+			string kills = (SYNC_Data_length > 0) ? SYNC_Data[0] : "";
+			string deaths = (SYNC_Data_length > 1) ? SYNC_Data[1] : "";
+			string glides = (SYNC_Data_length > 2) ? SYNC_Data[2] : "";
+			string playtime = (SYNC_Data_length > 3) ? SYNC_Data[3] : "";
+			string gamesplayed = (SYNC_Data_length > 4) ? SYNC_Data[4] : "";
+			string synced_score = (SYNC_Data_length > 5) ? SYNC_Data[5] : "";
+			string synced_wait_time = (SYNC_Data_length > 6) ? ReturnValue(SYNC_Data[6]) : "";
+			string synced_weapon_loadout = (SYNC_Data_length > 7) ? ReturnValue(SYNC_Data[7]) : "";
+			string synced_lock1v1_setting = (SYNC_Data_length > 8) ? ReturnValue(SYNC_Data[8]) : "";
+			string synced_start_in_rest_setting = (SYNC_Data_length > 9) ? ReturnValue(SYNC_Data[9]) : "";
+			string synced_enable_input_banner_setting = (SYNC_Data_length > 10) ? ReturnValue(SYNC_Data[10]) : "";
+			
+			
+			if(!IsValid( player ))
+			{
+				return
+			}
+			
+			if(!GetIgnoreSyncFlag( player ))
+			{
+				if( !empty(synced_wait_time) && ReturnKey(SYNC_Data[6]) == "wait_time" )
+				{	
+					
+					if( IsNumeric( synced_wait_time, SQ_MAX_INT_32 ) )
+					{
+						wait_time = synced_wait_time.tofloat()
+					}
+					
+					if (wait_time <= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999) )
+					{
+						player.p.IBMM_grace_period = wait_time
+					}			
+				}
+				
+				if( !empty(synced_weapon_loadout) && ReturnKey(SYNC_Data[7]) == "saved_weapons" )
+				{	
+					
+					if( synced_weapon_loadout != "NA" )
+					{
+						weaponlist[player.GetPlayerName()] <- synced_weapon_loadout
+						player.p.weapon_loadout = synced_weapon_loadout
+					}
+				}
+				
+				if( !empty(synced_lock1v1_setting ) && ReturnKey(SYNC_Data[8]) == "lock1v1_setting" )
+				{	
+					
+					if( synced_lock1v1_setting == "0" )
+					{
+						player.p.lock1v1_setting = false;
+					}
+					else if( synced_lock1v1_setting == "1" )
+					{
+						player.p.lock1v1_setting = true;
+					}
+					else 
+					{
+						player.p.lock1v1_setting = GetDefaultLock1v1Setting()
+					}
+				}
+				
+				if( ( !empty(synced_start_in_rest_setting) && ReturnKey(SYNC_Data[9]) == "start_in_rest_setting" ) )
+				{	
+					
+					if( !empty( synced_start_in_rest_setting ) && synced_start_in_rest_setting == "0" )
+					{
+						player.p.start_in_rest_setting = false;
+					}
+					else if( !empty( synced_start_in_rest_setting ) && synced_start_in_rest_setting == "1" )
+					{
+						player.p.start_in_rest_setting = true;
+					}
+					else 
+					{
+						player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
+					}
+				}
+				else 
+				{
+					player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
+				}
+				
+				
+				if( ( !empty(synced_enable_input_banner_setting) && ReturnKey(SYNC_Data[10]) == "enable_input_banner" ) )
+				{	
+					
+					if( !empty( synced_enable_input_banner_setting ) && synced_enable_input_banner_setting == "0" )
+					{
+						player.p.enable_input_banner = false;
+					}
+					else if( !empty( synced_enable_input_banner_setting ) && synced_enable_input_banner_setting == "1" )
+					{
+						player.p.enable_input_banner = true;
+					}
+					else 
+					{
+						player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
+					}
+				}
+				else 
+				{
+					player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
+				}
+				//TODO more [CHANGE TO MODULAR FUNCTION]
+				
+				
+			}
+			
+			if ( IsNumeric( kills, SQ_MAX_INT_32) )
+			{
+				player_lifetime_kills = kills.tointeger()
+			}
+			
+			if( IsNumeric( deaths, SQ_MAX_INT_32) )
+			{
+				player_lifetime_deaths = deaths.tointeger()
+			}			
+			
+			if ( IsNumeric( glides, SQ_MAX_INT_32) )
+			{
+				player_lifetime_glides = glides.tointeger()
+			}
+			
+			if ( IsNumeric( playtime, SQ_MAX_INT_32) )
+			{
+				player_lifetime_playtime = playtime.tointeger()
+			}	
+			
+			if ( IsNumeric( gamesplayed, SQ_MAX_INT_32) )
+			{
+				player_lifetime_gamesplayed = gamesplayed.tointeger()
+			}
+			
+			if ( IsNumeric( synced_score, SQ_MAX_INT_32) )
+			{
+				player_lifetime_score = synced_score.tointeger()
+			}
+						
+								
+			#if DEVELOPER
+			sqprint("kills: " + kills + " deaths: " + deaths + " glides: " + glides + " playtime: " + playtime + " gamesplayed: " + gamesplayed + " synced_score: " + synced_score)
+			#endif
+			
+			
+			player.p.lifetime_kills = player_lifetime_kills;
+			player.p.lifetime_deaths = player_lifetime_deaths; 
+			player.p.lifetime_glides = player_lifetime_glides;
+			player.p.lifetime_playtime = player_lifetime_playtime;
+			player.p.lifetime_gamesplayed = player_lifetime_gamesplayed;
+			player.p.lifetime_score = player_lifetime_score;
+			
+			break
+		}
+		
+		attempts++;
+		
+	}
+	
+	player.p.stats_done_loading = true;
+
+	if( g_bIs1v1 )
+	{
+		INIT_playerChallengesStruct( player )
+	}		
+			
+	wait 0.2
+	SQ_ResetStats( OID )
+	
+}
+
+
+void function DestroyStats()
+{	
+	file.bCheckShip = true
+	file.bShouldShip = false;
+	allDamageEvents.resize(0)
+	PlayerMetricsArray.resize(0)
+	playerVerifyCounts.resize(0)
+	PlayerIdMap = {}
+}
+
+void function __CONTROLLED_LogInit()
+{
+	while(true)
+	{
+		FlagWait("START_LOG")	
+		__START_LOGGING()	
+		FlagClear("START_LOG")	
+	}
+}
+
 void function PIN_Init()
+{	
+	INIT_fastComputes()
+	INIT_IntervalMessages()
+	
+	if( file.bChatbotEnabled )
+	{
+		thread __LoadServerBot()
+	}
+	
+	if( file.LogOn )
+	{
+		FlagInit( "START_LOG", true )
+		thread __CONTROLLED_LogInit()
+	}
+	
+	
+	if( GetCurrentPlaylistVarBool("disable_lag_comp",false) )
+	{
+		SetConVarInt("sv_unlag",0)
+	}
+	 
+	//init event manager thread
+	//FlagInit("DeleteEvents")
+	//thread EventManager()
+	
+		AddCallback_GameStateEnter( eGameState.Playing, __executeEventStart_messages )
+		AddCallback_OnClientConnected(PlayerConnectedCallback);
+		AddClientCommandCallback( "show", ClientCommand_mkos_test_return_data )
+		
+		if ( Enable_CC_Administration() )
+		{ 
+			AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
+		}
+		
+		if ( file.LogOn )
+		{
+			string message = format("R5R.DEV metrics initialized at:  %d ", GetUnixTimestamp())
+			sqprint(message)
+			
+			AddCallback_OnClientDisconnected(PlayerDisconnectedCallback);			
+			if (Ea_Verify_Server()){
+				AddClientCommandCallback( "ea_verify", ClientCommand_mkos_ea_verify ) 
+			} 
+			AddCallback_OnWeaponAttack(WeaponAttack);
+			RegisterSignal( "SuperglideDetectionResetStats" )		
+			file.FS_MaxHealth = (GetCurrentPlaylistVarFloat("default_shield_hp", 100)) + 100;
+		}
+	
+	//moved to r5rdev_config.json
+	file.DISCORD_PLAYERS_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_PLAYERS_WEBHOOK", ""))
+	file.DISCORD_MATCHES_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_MATCHES_WEBHOOK", ""))
+	
+	//initialize array/table values
+	INIT_GameTypes()
+	INIT_MapNames()
+	INIT_playeradmins()
+	
+	if (file.restricted_server) 
+	{
+		INIT_player_whitelist()
+	}
+	
+	//init superglide strings
+	file.sg_counter_msg = GetCurrentPlaylistVarBool("superglide_counter_msg", false )
+	file.superglide_msg = GetCurrentPlaylistVarString( "custom_superglide_msg", "" )
+	file.superglidetitle = file.global_stats ? "Season Glides" : "Glides";
+	
+	//fetch global STATS
+	if ( file.global_stats )
+	{
+		thread INIT_Global_R5RDEV_VarTable()
+		thread INIT_BATCH_FETCH()
+	}
+	
+	if (GetCurrentPlaylistVarBool( "enable_voice",false ))
+	{
+		EnableVoice()
+	}
+	
+	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
+	{
+		AddClientCommandCallback( "say", ClientCommand_ParseSay )
+	}
+	
+}
+
+void function INIT_fastComputes()
+{
+	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
+	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
+	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false)
+	file.LogOn = GetCurrentPlaylistVarBool("logging_enabled", false)
+	file.LogE = GetCurrentPlaylistVarBool("logging_encryption", false)
+	file.bChatbotEnabled = !IsLobby() && SQ_GetSetting("settings.ENABLE_CHATBOT") == "true" ? true : false;
+	
+	if(file.bChatbotEnabled)
+	{
+		file.sBotName = SQ_GetSetting("settings.CHATBOT_PREFIX")
+	}	
+	
+	COMMAND_RATE_LIMIT = GetCurrentPlaylistVarFloat( "COMMAND_RATE_LIMIT", 0.200 )
+	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
+	
+	//init stat bools (must be before string inits)
+	file.global_stats = GetCurrentPlaylistVarBool( "use_global_stats", false )
+	file.restricted_server = GetCurrentPlaylistVarBool( "restricted_server", false )
+	file.DefaultLock1v1Setting = GetCurrentPlaylistVarBool("default_lock1v1_setting", true)
+	file.DefaultEnableInputBannerSetting = GetCurrentPlaylistVarBool("default_enable_input_banner_setting", false)
+	file.DefaultStartInRestSetting = GetCurrentPlaylistVarBool("default_start_in_rest_setting", false)
+
+}
+
+void function UpdateFromLocalPersistence( entity player )
+{		
+	SetIgnoreSyncFlag( player )
+	player.p.IBMM_grace_period = GetPlayer_wait_time( player )
+	player.p.weapon_loadout = GetPlayer_saved_weapons( player )
+	player.p.lock1v1_setting = GetPlayer_lock1v1_setting( player )	
+	player.p.start_in_rest_setting = GetPlayer_start_in_rest_setting( player )
+	player.p.enable_input_banner = GetPlayer_enable_input_banner_setting( player )
+	player.SetPlayerNetInt("kills", GetPlayerKills( player ))
+	player.SetPlayerNetInt("deaths", GetPlayerDeaths( player ))
+	player.SetPlayerNetInt("damage", GetPlayerDamage( player ))
+}
+
+//initplayer
+void function PlayerConnectedCallback( entity player ) 
+{	
+	
+	if ( !IsValid( player ) ) return
+	//init player vars
+	int playerHandle = player.GetEncodedEHandle()
+	string playerUID = player.GetPlatformUID()
+	string playerName = player.GetPlayerName()
+	
+	player.p.name = playerName
+	player.p.UID = playerUID
+	player.p.handle = playerHandle
+	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	if(!file.LogOn){ return }
+	/////////////////////////////////////////////////////////////////////////////////////////
+	
+	//init player map
+	PlayerData Data;
+	Data.playerName = playerName;
+	Data.playerUID = playerUID;	
+	file.HandleToPlayerData[playerHandle] <- Data
+	
+	AddEntityCallback_OnDamaged( player, R5R_OnPlayerDamaged )
+    thread PIN_AddPlayer(player);
+	AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, OnJumped);
+	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection_Stats ) //credit cafe
+	
+	string count = GetNumHumanPlayers().tostring();
+	string OID = player.GetPlatformUID();
+	string name = sanitize( player.GetPlayerName() );
+	
+	if ( GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false ) )
+	{
+		PlayerCounts("Connected", name, OID, count )
+	}
+	
+	
+	if ( file.global_stats && file.FETCH_BATCH_COMPLETE )
+	{
+		thread SQ_LoadPlayerKD( player )
+	}
+	
+	if ( file.global_stats )
+	{
+		thread SetPlayerKD( player )
+	}
+}
+
+void function PlayerCounts( string state, string name, string OID, string count )
+{
+	if ( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS || GetNumHumanPlayers() == 1 )
+	{
+		_STATSHOOK_UpdatePlayerCount(state, name, OID, count, file.DISCORD_PLAYERS_WEBHOOK )
+	}
+}
+
+
+void function EndOfMatch( string recap, string DISCORD_MATCHES_WEBHOOK )
+{
+	if ( GetCurrentPlaylistVarBool("stats_discord_webhook_matches_enabled", false ) )
+	{
+		_STATSHOOK_EndOfMatch( recap, DISCORD_MATCHES_WEBHOOK )
+	}
+}
+
+void function __START_LOGGING()
+{
+	if ( file.PIN_GameState_Start ) 
+	{
+		#if DEVELOPER 
+			sqprint("file.PIN_GameState_Start was true, returning")
+		#endif
+		return 
+	}
+	
+	#if DEVELOPER 
+		sqprint("Dispatching Init_NewGame() thread")
+	#endif
+	
+	thread Init_NewGame()
+}
+
+void function Init_NewGame()
+{
+	
+	if(GetMapName() == "mp_lobby")
+	{
+		return;
+	}
+	
+	#if DEVELOPER 
+	sqprint("initgame called")
+	#endif
+	
+	if (!file.LogOn)
+	{
+		sqprint("::: Logging disabled -- to enable set in playlists file --");
+		file.PIN_GameState_Start = true;
+		return
+	}
+	
+	DestroyStats(); //make sure metrics incrued during intermediate time is not included
+	SaveAllPlayerSettings()
+
+	//////////////////////////////////
+	//	THIS IS HANDLED INTERNALLY	//
+	//	However, this adds a layer 	//
+	//	of assurance for syncing	//
+	//	game events with log thread //
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	int waitlimit = 0;
+	while( SQ_GetLogState( state.BUSY ) )
+	{
+		wait 0.5;
+		waitlimit++;
+		
+		if (waitlimit >= MAX_WAIT_FOR_LOGGING_THREAD)
+		{
+			sqerror(format("Log thread failed to finish within [%d] seconds during busy check.", floor(MAX_WAIT_FOR_LOGGING_THREAD/2) ))
+			file.bSafeLog = false;
+			return
+		}
+		#if DEVELOPER
+		else 
+		{
+			sqprint("Log thread checking busy...")
+		}
+		#endif
+	}
+	
+	
+	InitializeLogThread_internal(file.LogE);
+	
+	waitlimit = 0;
+	while( !SQ_GetLogState( state.READY ) )
+	{
+		wait 0.5;
+		waitlimit++;
+		
+		if (waitlimit >= MAX_WAIT_FOR_LOGGING_THREAD)
+		{
+			sqerror(format("Log thread failed to finish within [%d] seconds during ready check.", floor(MAX_WAIT_FOR_LOGGING_THREAD/2) ))
+			file.bSafeLog = false;
+			return
+		}
+		#if DEVELOPER
+		else 
+		{
+			sqprint("Log thread state: ready.")
+		}
+		#endif
+	}	
+	waitlimit = 0;
+	while( !SQ_GetLogState( state.SAFE ) )
+	{
+		wait 0.5;
+		waitlimit++;
+		
+		if (waitlimit >= MAX_WAIT_FOR_LOGGING_THREAD)
+		{
+			sqerror(format("Log thread failed to init [%d] seconds during safe check.", floor(MAX_WAIT_FOR_LOGGING_THREAD/2) ))
+			file.bSafeLog = false;
+			return
+		}
+		#if DEVELOPER
+		else 
+		{
+			sqprint("Log thread state: safe.")
+		}
+		#endif
+	}
+	
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////
+	// Round started, make a new log. r5r.dev
+	LogEvent(
+	format("|#Tracker version:%.1f\n|| New match; round %s;  started at: %d\n",T_VERS, GetCurrentRound().tostring(), GetUnixTimestamp() ),
+	file.LogE
+	);
+	
+	
+	//sqprint(format("Current round: %s ; isLogging: %s",GetCurrentRound().tostring(), isLogging().tostring()));
+
+	foreach( player in GetPlayerArray() )
+	{
+		CheckPlayerStartInRest( player )
+	}
+	
+	file.PIN_GameState_Start = true;
+	//END .DEV
+}
+
+
+		//client command: show
+		bool function ClientCommand_mkos_test_return_data(entity player, array<string> args)
+		{
+			if (!CheckRate( player )) return false
+			
+			player.p.messagetime = Time()
+			
+			if ( args.len() < 1)
+			{	
+				Message( player, "\n\n\nUsage: ", " showdata argument \n\n\n Arguments:\n map - Shows current map name \n round - Shows current round number \n input - Shows a list of players and their current input", 5 )
+				return true;	
+			}
+			
+			string requestedData = args[0];
+			string param = "";
+			
+			if ( args.len() >= 2 )
+			{
+				param = args[1]
+			}
+
+			switch(requestedData)
+			{
+
+				case "map":
+					//sqprint( GetMapName() )
+					Message( player, "Mapname:", GetMapName(), 5 )
+					return true;
+				case "round":
+					//sqprint( GetCurrentRound().tostring() )
+					Message( player, "Round:", GetCurrentRound().tostring(), 5 )
+					return true;
+				case "player":
+						
+						string stringHandicap = "";
+						string handicap = "";
+						string p_input = "";
+						string data = "";
+						string inputmsg = "";
+						float kd = 0.0
+						string kd_string = "";
+						int kills = 0;
+						int deaths = 0;
+						string l_oid = "";
+						string l_name = "";
+						float l_wait = 0.0
+						
+						if ( param == "" )
+						{
+							Message( player, "Failed", " Command 'player' requires playername/oid as first param. ")
+							return true;
+						}
+							
+							try
+							{	
+								
+								if ( param.len() > 16 )
+								{
+									Message( player, "Failed", "Input exceeds char limit. ")
+									return true;
+								}
+								
+								entity l_player = GetPlayer( param )
+								
+								if ( !IsValid( l_player ) )
+								{
+									Message( player, "Failed", "Player: " + param + " - is invalid. ")
+									return true;
+								}			
+								
+								if (g_bLGmode)
+								{
+									handicap = l_player.p.p_damage == 2 ? "On" : "Off";
+									stringHandicap = "---- Handicap: " + handicap; 
+								}
+								
+								p_input = l_player.p.input > 0 ? "Controller" : "MnK"; 
+								kills = l_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
+								deaths = l_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								l_name = l_player.GetPlayerName()
+								l_oid = l_player.GetPlatformUID()
+								l_wait = l_player.p.IBMM_grace_period
+								inputmsg = "Player: " + l_name + " OID: " + l_oid;
+								
+								if (deaths > 0) 
+								{
+									kd = getkd( kills, deaths )
+								}
+								
+								data += "Season Kills: " + kills + " ---- Deaths: " + deaths + " ---- KD: " + kd + "\n"; 
+								data += "Input:  " + p_input + stringHandicap + "\n"; 
+								data += "wait time:  " + l_wait.tostring() + "\n"; 
+								data += GetScore(l_player) + "\n";
+								data += "Season playtime: " + PlayTime(l_player.p.lifetime_playtime) + "\n";
+								data += "Season games: " + l_player.p.lifetime_gamesplayed + "\n";
+								data += "Season score: " + l_player.p.lifetime_score;
+								
+								if( (inputmsg.len() + data.len()) > 599 )
+								{
+									Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+									return true;
+								}
+								
+								Message( player, inputmsg, data, 15);
+								
+							} 
+							catch (errlookup) 
+							{
+								Message(player, "Failed", "Command failed because of: \n\n " + errlookup )
+								return false
+							}
+							
+							return true;
+		
+				
+				case "input":
+						
+						
+						string handicap = "";
+						string p_input = "";					
+						string data = "";
+						string inputmsg = "Current Player Inputs";
+						
+						try 
+						{
+							foreach ( active_player in GetPlayerArray() )
+							{	
+								handicap = active_player.p.p_damage == 2 ? "On" : "Off";
+								p_input = active_player.p.input > 0 ? "Controller" : "MnK"; 
+								data += "Player: " + active_player.GetPlayerName() + " is using: " + p_input + " ---- Handicap: " + handicap + "\n"; 
+							}
+							
+							
+							if( ( inputmsg.len() + data.len()) > 599 )
+							{
+								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+								return true;
+							}
+							
+							Message( player, inputmsg, data, 20);	
+						} 
+						catch (show_err) 
+						{
+							Message(player, "Failed", "Command failed because of: \n\n " + show_err )
+							return false			
+						}
+						
+						
+						return true;
+						
+				case "inputs":
+				
+						int controllerCount = 0;
+						int mnkCount = 0;
+						
+						foreach ( active_player in GetPlayerArray() )
+						{
+							if ( active_player.p.input == 0 )
+							{
+								mnkCount++;
+							}
+							else if ( active_player.p.input == 1 )
+							{
+								controllerCount++;
+							}
+						}
+						
+						string cplural = controllerCount > 1 || controllerCount == 0 ? "s" : "";
+						string mplural = mnkCount > 1 || mnkCount == 0 ? "s" : "";
+						
+						
+						string countMsg = format("%d controller player%s \n %d mnk player%s", controllerCount, cplural, mnkCount, mplural );
+						Message( player, "There is currently", countMsg, 7 )
+						
+						return true;
+						
+				case "stats":
+						
+						string data = "";
+						string inputmsg = file.global_stats ? "Current Player Global Stats" : "Current Player Round Stats";
+						float kd = 0.0
+						string kd_string = "";
+						int kills = 0;
+						int deaths = 0;
+						string global_stats_msg = file.global_stats ? " Season Stats:" : " Current Round Stats:";
+						
+						try 
+						{
+						
+							foreach ( active_player in GetPlayerArray() )
+							{
+								kills = active_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
+								deaths = active_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								
+								if (deaths > 0) 
+								{
+									kd = getkd( kills, deaths )
+								}
+								
+								kd_string = kd != 0.0 ? kd.tostring() : "N/A";
+
+								data += "Player: " + active_player.GetPlayerName() + global_stats_msg + " Kills: " + kills + " ---- Deaths: " + deaths + " ---- KD: " + kd + "\n"; 
+							}
+							
+							
+							if( (inputmsg.len() + data.len()) > 599 )
+							{
+								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+								return true;
+							}
+							
+							Message( player, inputmsg, data, 20);
+						
+						} 
+						catch (show_err2) 
+						{
+		
+							Message(player, "Failed", "Command failed because of: \n\n " + show_err2 )
+							return false
+									
+						}
+						
+						
+						return true;
+						
+				case "aa":
+					
+						string data = "";
+						string inputmsg = "Server AA values:";
+						
+						try 
+						{
+							
+							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0) );
+							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0) );
+									
+							if( (inputmsg.len() + data.len()) > 599 )
+							{	
+								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+								return true;		
+							}
+							
+							Message( player, inputmsg, data, 20);
+						
+						} 
+						catch (show_err3) 
+						{
+		
+							Message(player, "Failed", "Command failed because of: \n\n " + show_err3 )
+							return false
+									
+						}
+						
+						return true
+					
+				case "id":
+				
+					string data = "";
+					string inputmsg = ":::: Match ID ::::";
+					
+					try 
+					{
+						
+						data += format("\n\n %s ", SQMatchID() );
+								
+						if( (inputmsg.len() + data.len()) > 599 )
+						{	
+							Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+							return true;		
+						}
+						
+						Message( player, inputmsg, data, 20);
+					
+					} 
+					catch (show_err4) 
+					{
+
+						Message(player, "Failed", "Command failed because of: \n\n " + show_err4 )
+						return false
+								
+					}
+					
+					return true;
+
+					
+				default:
+					//sqprint ( "Usage: show argument \n" )
+					Message( player, "Failed: ", "Usage: show argument \n", 5 )
+					return true;
+			}
+			return false;
+		}
+	
+	
+	void function INIT_MapNames()
+	{
+	
+		list_maps = [
+			["dropoff", "mp_rr_arena_composite"],
+			["overflow", "mp_rr_aqueduct"],
+			["firingrange", "mp_rr_canyonlands_staging"],
+			["kingscanyon", "mp_rr_canyonlands_64k_x_64k"],
+			["kingscanyons2", "mp_rr_canyonlands_mu1"],
+			["kingscanyonafterdark", "mp_rr_canyonlands_mu1_night"],
+			["worldsedge", "mp_rr_desertlands_64k_x_64k"],
+			["worldsedgeafterdark", "mp_rr_desertlands_64k_x_64k_nx"],
+			["miragevoyage", "mp_rr_desertlands_64k_x_64k_tt"],
+			["partycrasher", "mp_rr_party_crasher"],
+			["skygarden", "mp_rr_arena_skygarden"],
+			["ashsredemption", "mp_rr_ashs_redemption"],
+			["overflownight", "mp_rr_aqueduct_night"]
+		];
+	
+	}
+	
+	
+	void function INIT_GameTypes()
+	{
+	
+		list_gamemodes = [
+			["1v1", "fs_1v1"],
+			["dm", "fs_dm"],
+			["tdm", "fs_tdm"],
+			["prophunt", "fs_prophunt"],
+			["duckhunt", "fs_duckhunt"],
+			["solobr", "fs_survival_solos"],
+			["duobr", "fs_survival_duos"],
+			["triobr", "fs_survival_trios"],
+			["surf", "fs_surf"],
+			["gym", "fs_movementgym"],
+			["infected", "fs_infected"],
+			["survival", "fs_survival"],
+			["survivaldev", "survival_dev"]
+		];
+	}
+	
+	void function INIT_player_whitelist()
+	{
+		string string_whitelist = SQ_GetSetting( "settings.PLAYER_WHITELIST" )
+		
+		if (string_whitelist != "")
+		{	
+			try
+			{
+				whitelist = StringToArray( string_whitelist, 2000 )	
+			}
+			catch(err)
+			{
+				sqerror("Error: " + err)
+			}
+		}
+	}
+	
+	int function Player_Has_Access( entity player )
+	{	
+		string player_UID = player.GetPlatformUID()
+		
+		if ( whitelist.contains( player_UID ))
+		{
+			return 8
+		}
+		
+		if ( GetAdminList().contains( player_UID ) )
+		{
+			return 7
+		}
+		
+		if ( player.p.lifetime_score < GetIntSetting("restricted_rank") )
+		{
+			return 6
+		}
+		
+		if ( player.p.lifetime_gamesplayed < GetCurrentPlaylistVarInt( "restricted_gamesplayed", 0 ) )
+		{
+			return 4
+		}
+		
+		if ( player.p.lifetime_kills < GetCurrentPlaylistVarInt( "restricted_kills", 0 ) )
+		{	
+			//sqprint(format("Kills at time of check: %d",player.p.lifetime_kills));
+			return 3
+		}
+		
+		if ( getkd( player.p.lifetime_kills, player.p.lifetime_deaths ) < GetCurrentPlaylistVarFloat( "restricted_kd", 0 ) )
+		{
+			return 2
+		}
+		
+		if ( player.p.lifetime_playtime < GetCurrentPlaylistVarInt( "restricted_playtime", 0 ) )
+		{
+			return 1
+		}
+		
+		return 9
+	}
+	
+	string function Player_Access_Message( entity player, int result )
+	{
+		switch(result)
+		{
+			case 9:
+				return LineBreak(GetCurrentPlaylistVarString("restricted_join_message","You are able to play on this restricted server."));
+			
+			case 8:
+				return LineBreak(GetCurrentPlaylistVarString("restricted_whitelist_message","You are whitelisted to play on this restricted server."));
+				
+			case 7:
+				return LineBreak(GetCurrentPlaylistVarString("restricted_admin_message","You are an admin."));
+				
+			case 6: 
+				return "Your Rank is too low to play on this server. \n\n Your Score: " + player.p.lifetime_score.tostring() + ". \nLowest rank allowed: " + GetCurrentPlaylistVarInt("restricted_rank", 0) + " (Score: " + GetIntSetting("restricted_rank") + ")";
+			
+			case 4:
+				return "You do not have enough games played to play on this server. \n Your total games played: " + player.p.lifetime_gamesplayed.tostring() + " \n Server required minimum: " + GetCurrentPlaylistVarInt("restricted_gamesplayed",0).tostring() + "\n You need to play " + ( GetCurrentPlaylistVarInt("restricted_gamesplayed",0) - player.p.lifetime_gamesplayed ).tostring() + " more games to play on this server.";
+			
+			case 3:
+				return "You do not have enough kills to play on this server. \n Your kills: " + player.p.lifetime_kills.tostring() + " \n Server required minimum: " + GetCurrentPlaylistVarInt("restricted_kills",0).tostring() + "\n You need " + ( GetCurrentPlaylistVarInt("restricted_kills",0) - player.p.lifetime_kills ).tostring() + " more kills to play on this server.";
+			
+			case 2:
+				return "Your K/D ratio is too low to play on this server. \n Your K/D: " + getkd( player.p.lifetime_kills, player.p.lifetime_deaths ) + " \n Server required minimum: " + GetCurrentPlaylistVarFloat("restricted_kd",0).tostring() + "\n You need to increase your K/D ratio by:  " + (GetCurrentPlaylistVarFloat("restricted_kd",0) - getkd( player.p.lifetime_kills, player.p.lifetime_deaths )).tostring() + " to play on this server.";
+				
+			case 1:
+				return "Your play time does not meet this server's required minimum play time of: " + PlayTime(GetCurrentPlaylistVarInt("restricted_playtime",0)) + "\n Your playtime: " + PlayTime(player.p.lifetime_playtime) + "\n\n You need to play for at least: " + PlayTime((GetCurrentPlaylistVarInt("restricted_playtime",0) - player.p.lifetime_playtime)) + " more time.";
+			
+			default:
+				return "Error 404";
+		}
+		
+		unreachable
+	}
+	
+	void function force_rest( entity player )
+	{
+		player.FreezeControlsOnServer()
+		player.ForceStand()
+		
+		while( IsValid( player ) )
+		{				
+			mkos_Force_Rest( player, [] )
+			wait 0.5
+		}	
+	}
+	
+	void function Alert_Player_Access( entity player )
+	{	
+		while( IsValid(player) && file.FETCH_BATCH_COMPLETE == false)
+		{	
+			mkos_Force_Rest( player, [] )
+			wait 1
+		}
+		
+		while( IsValid(player) && player.p.stats_done_loading == false)
+		{	
+			mkos_Force_Rest( player, [] )
+			wait 1
+		}
+		
+		if( !IsValid( player) )
+		{
+			return
+		}
+
+		//this int must be set after stats have loaded
+		int access_status = Player_Has_Access( player )
+		
+		wait 2
+		
+		if ( IsValid(player) && access_status >= RESTRICTED_ACCESS_STATUS_REQUIRED )
+		{	
+			mkos_Force_Rest( player, [] )
+			Message( player, "Welcome " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30)
+		}
+		else 
+		{	
+			if(IsValid( player ))
+			{
+				thread force_rest( player )
+				
+				Message( player, "Sorry " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30)
+				wait 7	
+				
+				if(IsValid( player ))
+				{
+					KickPlayerById( player.GetPlatformUID(), Player_Access_Message( player, access_status ) )
+					UpdatePlayerCounts()
+					
+					if(GetCurrentPlaylistVarBool("restricted_kick_log",false))
+					{
+						sqprint(format("\n\n Player: %s, Kick msg: %s",player.GetPlayerName(), Player_Access_Message( player, access_status )))
+					}
+				}
+			}
+		}
+		
+	}
+	
+	void function INIT_playeradmins()
+	{	
+		string admins_list;
+		string pair;
+		
+		admins_list = SQ_GetSetting("settings.ADMINS")
+		
+		if( admins_list != "" )
+		{
+			#if DEVELOPER 
+			sqprint("Admins loaded from r5r_dev.json")
+			#endif
+		}
+		else 
+		{
+			admins_list = GetCurrentPlaylistVarString( "admins_list", "" )
+		}
+		
+		if ( admins_list == "" ){ return }
+		
+		
+		try 
+		{
+			array<string> list = StringToArray( admins_list )
+		
+			foreach ( admin_pair in list )
+			{	
+				pair = admin_pair
+				array<string> a_format = split( admin_pair, "-")
+				player_admins[a_format[0]] <- a_format[1];
+				file.ADMINS.append(a_format[1])
+			}
+			
+		}
+		catch(erradmin)
+		{
+			sqerror("Error with adminpair: " + pair + " Error: " + erradmin )
+		}
+	
+	}
+	
+	array<string> function GetAdminList()
+	{
+		return file.ADMINS;
+	}
+	
+
+	string function PlayTime( int iSeconds ) 
+	{	
+		float seconds = iSeconds.tofloat();
+		float hours =  seconds / 3600;
+		float minutes = (seconds % 3600) / 60;
+		float r_seconds = seconds % 60;
+		
+		string playtime = format("%d hours, %d minutes, %d seconds", hours, minutes, r_seconds);
+		return playtime;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	//cc commands
+	bool function ClientCommand_mkos_admin(entity player, array<string> args)
+	{	
+		
+		if (!CheckRate( player )) return false
+		
+		string PlayerName = player.GetPlayerName();
+		string PlayerUID = player.GetPlatformUID();
+
+  
+		if (PlayerName in player_admins) {
+		
+			if ( player_admins[PlayerName] != PlayerUID ) {
+				return false;
+			}
+			
+		} else { return false }
+
+		player.p.messagetime = Time()	
+		
+		string command = "";
+		string param = "";
+		string param2 = "";
+		string param3 = "";
+		string param4 = "";
+		
+		if (args.len() > 0){
+			command = args[0];
+		}
+		
+		if (args.len() > 1){
+			param = args[1];
+		}
+		
+		if (args.len() > 2){
+			param2 = args[2];
+		}
+		
+		if (args.len() > 3){
+			param3 = args[3];
+		}
+		
+		if (args.len() > 4){
+			param4 = args[4];
+		}
+		
+		switch(command.tolower()){  
+			
+			case "help":	
+			
+			
+							try 
+							{
+								Message( player, "Commands:", "A command is entered as: \n\n cc command #param #param2.  \n\n cc kick #name/oid   - Kicks a player by name/oid \n cc afk #0/1   - disabled or enables afk to rest mode \n cc playself #audiofile   - Plays audiofile to self \n cc playall #audiofile    - Plays audiofile to all player \n cc sayall '#title' '#message' #duration   - says to all \n cc ban #name/oid #reason    - Bans a player \n cc unban #oid   - attempts to unban a player by OID \n cc map #name #mode   - reloads map \n cc playerinput #name/oid   - shows players input \n cc playerinfo  - some stats", 20 )
+							} 
+							catch (err) 
+							{ 
+								return false 
+							}
+					
+							return true
+				
+				
+			case "kick":	
+							
+							if ( args.len() < 2 )
+							{
+								Message( player, "Failed", "kick requires name/id for 1st param of command" )
+								return false
+							}
+			
+							try 
+							{		
+								entity k_player;
+								string k_playeroid;
+								string reason = param2;	
+								
+								k_player = GetPlayer( param );
+								
+								if ( !IsValid(k_player) )
+								{
+									Message( player, "Failed", "Player: " + param + " - is invalid. ")
+									return true;
+								}
+									
+								k_playeroid = k_player.GetPlatformUID()	
+								
+								if ( IsAdmin(k_playeroid) ){
+									Message( player, "Cannot kick admin")
+									return true
+								}
+							
+								KickPlayerById( k_playeroid, reason )
+								UpdatePlayerCounts()
+								
+								Message( player, "Kicked player", "PUID: " + param + " was kicked" )
+								return true	
+							} 
+							catch (erraaarg)
+							{
+								Message( player, "Error", "Invalid player or argument missing" )
+								return true
+							}
+							
+							return true;
+				
+				
+			case "afk":
+					
+							try {
+							
+								if ( args[1] == "1" )
+								{
+									file.afk_to_rest_enabled = true;
+									Message( player, "Command sent", "Afk to rest was ENABLED" )
+									return true
+								} 
+								else if ( args[1] == "0" )
+								{
+									file.afk_to_rest_enabled = false;
+									Message( player, "Command sent", "Afk to rest was disabled" )
+									return true
+								} 
+							} catch (erroreo){
+							
+								Message( player, "Error", "argument missing" )
+								return false
+							}
+							
+							return true
+							
+			case "restricted":
+			
+							try 
+							{
+							
+								if ( args[1] == "1" )
+								{
+									file.restricted_server = true;
+									Message( player, "Command sent", "restricted_server was ENABLED" )
+									return true
+								} 
+								else if ( args[1] == "0" )
+								{
+									file.restricted_server = false;
+									Message( player, "Command sent", "restricted_server was disabled" )
+									return true
+								} 
+							} 
+							catch (errorres)
+							{
+								Message( player, "Error", "argument missing" )
+								return false
+							}
+							
+							return true
+							
+			case "playonself": 
+			
+								
+							if ( args.len() < 2 )
+							{
+								Message( player, "Failed", "playself requires param of audiofile as string" )
+								return false
+							} 
+								
+							try 
+							{
+								EmitSoundOnEntity( player, args[1] )	
+							} 
+							catch ( erra )
+							{
+								Message(player, "Failed", "Command failed because of: \n\n " + erra )
+								return false	
+							}
+							
+							return true
+				
+				
+			case "playself": 
+			
+								
+							if ( args.len() < 2 )
+							{
+								Message( player, "Failed", "Command 'playself' requires param of audiofile as string" )
+								return false
+							} 
+								
+							try 
+							{
+								EmitSoundOnEntityOnlyToPlayer( player, player, args[1] )	
+							} 
+							catch ( erra )
+							{
+									
+								Message(player, "Failed", "Command failed because of: \n\n " + erra )
+								return false
+									
+							}
+							
+							return true
+							
+							
+			case "playall":
+						
+							
+							foreach (connected_player in GetPlayerArray())
+							{
+							
+								try 
+								{
+									EmitSoundOnEntityOnlyToPlayer( connected_player, connected_player, args[1] )
+									return true		
+								} 
+								catch ( errb )
+								{	
+									Message(player, "Failed", "Command failed because of: \n\n " + errb )
+									return false	
+								}
+							
+							}
+
+							return true
+			
+							
+							
+			case "stopplayall":
+						
+							
+							foreach (connected_player in GetPlayerArray()){
+							
+								try 
+								{
+									StopSoundOnEntity( connected_player, args[1] )
+									return true	
+								} 
+								catch ( errb )
+								{	
+									Message(player, "Failed", "Command failed because of: \n\n " + errb )
+									return false
+								}
+							
+							}
+
+							return true
+							
+							
+					
+					
+			case "sayall": 
+					
+							if ( args.len() < 4 )
+							{	
+								Message( player, "Failed", "Command 'sayall' requires duration for third param of command as float" )
+								return false
+							} 
+							
+							foreach ( say_to_player in GetPlayerArray())
+							{
+							
+								try	
+								{	
+									Message( say_to_player, param, param2, param3.tofloat())	
+								} 
+								catch ( errc ){
+								
+									Message(player, "Failed", "Command failed because of: \n\n " + errc )
+									return true
+								}
+							}
+							
+					return true
+							
+			case "sayto": 
+		
+							if ( param4 == "" )
+							{			
+								param4 = "3"		
+							} 	
+							
+								try	
+								{	
+									entity to_player = GetPlayer(param)	
+									
+									if(IsValid(to_player))
+									{
+										Message( to_player, param2, param3, param4.tofloat())
+									}
+									else 
+									{
+										Message( player, "INVALID PLAYER")
+									}
+																	
+								} 
+								catch ( errst )
+								{	
+									Message(player, "Failed", "Command failed because of: \n\n " + errst )			
+								}
+
+					
+							return true
+			case "ban":
+							
+							
+							if ( args.len() < 2 ){
+						
+								Message( player, "Failed", "Command 'ban' requires name/id for 1st param of command" )
+								return false
+							}			
+							
+							try 
+							{		
+							
+								entity b_player;
+								string b_playeroid;
+								string b_reason = param2;	
+								
+								b_player = GetPlayer( param )
+							
+								if ( !IsValid( b_player ) )
+								{
+									Message( player, "Failed", "Player: " + param + " - is invalid. ")
+									return true;
+								}
+								
+								b_playeroid = b_player.GetPlatformUID()	
+									
+								
+								if ( IsAdmin( b_playeroid ) )
+								{
+									Message( player, "Cannot ban admin")
+									return true
+								}
+							
+								BanPlayerById( b_playeroid, b_reason )
+								UpdatePlayerCounts()
+								
+								Message( player, "Success", "Player: " + param + "\n\n was banned for: \n\n" + b_reason )
+								return true
+								
+							} 
+							catch ( erre )
+							{
+							
+								Message(player, "Failed", "Command failed because of: \n\n " + erre )
+								return false
+							}
+							
+						return true;
+			
+			case "banid":
+			
+						if ( args.len() < 2 )
+						{
+							Message( player, "Failed", "Command 'banid' requires oid for 1st param of command")
+							return false
+						}	
+
+							try 
+							{
+								
+								if ( IsAdmin(param) )
+								{		
+									Message( player, "Failed", param + " is an admin. Ban rejected.", 10 )
+									return false		
+								}
+								
+								if ( !IsNum(param) )
+								{			
+									Message( player, "Failed", param + " is not a valid oid format.", 10 )
+									return false	
+								}
+								
+								if ( param2 == "")
+								{		
+									param2 = "0";							
+								}
+								
+								if ( AddBanByID( param2, param ) )
+								{					
+									Message( player, "Success", param + " was added to the banlist.", 10 )
+									return true	
+								} 
+								else 
+								{	
+									Message( player, "Failed", "Failed to add player oid: " + param + " to the banlist.", 10 )
+									return true		
+								}
+								
+							} 
+							catch ( errbanid )
+							{
+								Message(player, "Failed", "Command failed because of: \n\n " + errbanid )
+								return false
+							}
+					
+			case "unban":
+			
+					
+					
+						if ( args.len() < 2 ){
+						
+							Message( player, "Failed", "Command 'unban' requires id for 1st param of command as string" )
+							return false
+						
+						}
+						
+						try {
+						
+								UnbanPlayer( args[1])
+								
+								Message( player, "Success", "ID: " + args[1] + " was supposedly unbanned" )
+								
+								return true
+								
+							} catch ( erre ){
+							
+								Message(player, "Failed", "Command failed because of: \n\n " + erre )
+								return false
+							}
+					
+						
+					
+						return true;
+						
+						
+						
+			case "playerinfo":
+			
+						try {
+							
+							string nputmsg = "Current Stats:"
+							
+							string info = PrintAllPlayerMetrics(true);
+							
+							if( (nputmsg.len() + info.len()) > 599 )
+							{
+						
+								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+								return true;
+						
+							}
+							
+							Message( player, nputmsg, LineBreak(info), 20);
+							return true;
+						
+						} catch (errf){
+							
+							Message( player, "Failed", "Command failed because of: \n\n " + errf )
+							return false;
+						}
+						
+			//for testing
+			
+			case "zero":
+			#if DEVELOPER
+						if ( args.len() < 1){
+						
+							Message( player, "Failed", "Param 1 of command 'zero' requires playername string.")
+							return false;
+							
+						}
+			
+						try {
+							
+							entity z_player = GetPlayerEntityByName(args[1])
+							
+							if ( !IsValid(z_player) )
+							{
+								Message( player, "Failed", "Player: " + args[1] + " - is invalid. ")
+								return true;
+							}
+							
+							string playeroid = z_player.GetPlatformUID()
+							
+							int index = GetPlayerMetricsIndexByUID( playeroid )
+							
+							if ( index != -1 ){
+							
+								foreach ( playerMetrics in PlayerMetricsArray ) {
+									if ( playerMetrics.playerID == args[1] ) {
+									
+										PlayerMetricsArray.removebyvalue(playerMetrics);
+										
+									}
+								}
+								
+								Message( player, "Success", "Player " + args[1] + " stats were zeroed. Does not effect kill/death/damage. ")
+								return true;
+								
+							}
+						
+						} catch (errg) {
+						
+							Message( player, "Failed", "Command failed because of: \n\n " + errg )
+							return true;
+							
+						}
+			#endif
+			
+			Message( player, "Command only allowed in devmode" )
+					return false
+						
+			case "playerinput":
+						
+						if ( args.len() < 1){
+						
+							Message( player, "Failed", "Param 1 of command 'playerinput' requires player name/oid.")
+							return true
+							
+						}
+						
+						try {
+							
+							entity a_player;
+							string mode;
+							
+							a_player = GetPlayer( param )
+							
+							if ( !IsValid( a_player ) )
+							{	
+								Message( player, "Failed", "Player: " + param + " -- is invalid" );
+								return true
+							}
+					
+							
+							mode = a_player.p.input == 0 ? "Mouse and keyboard" : "Controller";
+							
+							Message( player, "Success: ", "Current inputmode: " + mode );
+							return true
+							
+						} catch (errh) {
+							
+							Message( player, "Failed", "Command failed because of: \n\n " + errh )
+							return true
+							
+						}
+					
+					return true
+		
+						
+			case "input":	
+
+						if ( args.len() < 1){
+						
+							Message( player, "Failed", "Param 1 of command 'input' requires player name/oid.")
+							return true
+							
+						}
+						
+						
+						if ( args.len() < 2){
+						
+							Message( player, "Failed", "Param 2 of command 'input' requires type 0/1.")
+							return true
+							
+						}
+								
+						try {	
+						
+								string str = args[2]
+								string a_str = str;
+								
+								if (str == "false"){ a_str = "0" }
+								if (str == "true"){ a_str = "1" }
+								if (str == "mnk" ){ a_str = "0" }
+								if (str == "controller" ) { a_str = "1" }
+								
+								if ( !Is_Bool(a_str) ){
+								
+									Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
+									return false;
+								
+								}
+								
+								entity select_player =  GetPlayer( param )
+								
+								if ( !IsValid(select_player) )
+								{
+									Message( player, "Failed", "Player: " + param + " - is invalid. ")
+									return true;
+								}
+								
+								select_player.p.input = a_str.tointeger();
+								
+								string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
+								
+								Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
+								return true;
+						
+						} catch (errj) {
+						
+							Message( player, "Failed", "Command failed because of: \n\n " + errj )
+							return false;
+						
+						}
+						
+			case "listhandles":
+						
+						try {
+						
+							string statement = "\n ";
+							
+							foreach ( list_player in GetPlayerArray() )
+							{
+								int handle = list_player.GetEncodedEHandle()
+								string p_name = list_player.GetPlayerName()
+								
+								statement += " Player: " + p_name + "   Handle: " + handle + "\n";
+								
+							}
+							
+							sqprint(statement);
+							Message( player, "Handles:", statement, 20)
+							
+							return true;
+						
+						} catch (errk) {
+						
+							Message( player, "Failed", "Command failed because of: \n\n " + errk )
+							return true;
+						
+						}
+						
+					return true
+						
+			case "map":
+					
+						if( GetPlaylistMaps( GetMode(param2) ).contains( GetMap(param) ) )
+						{
+							GameRules_ChangeMap( GetMap(param) , GetMode(param2) )
+						}
+						else 
+						{	
+							Message( player, "MAP NOT IN PLAYLIST" )
+							sqerror("Map not in playlist - rejecting load")
+						}
+						
+					return true
+					
+			case "score":
+			
+						if ( args.len() < 1){
+							
+								Message( player, "Info", "Param 1 of command 'score' requires player name/oid/*/current/lifetime/difference. \n\n Usage: score player | score * | score current")
+								return true
+								
+						}
+						
+						if ( param == "current" )
+						{
+							
+							Message( player, "Success", "'Current KD' server weight setting is:   " + getSbmmSetting( "current_kd_weight" ) )
+							return true
+							
+						}
+						else if ( param == "lifetime" )
+						{
+							
+							Message( player, "Success", "'lifetime KD' server weight setting is:   " + getSbmmSetting( "lifetime_kd_weight" ) )
+							return true
+						
+						}
+						else if ( param == "difference" )
+						{
+							
+							Message( player, "Success", "'KD matchmaking difference' server setting is:   " + getSbmmSetting( "SBMM_kd_difference" ) )
+							return true
+						
+						}
+					
+						if ( param == "*")
+						{
+							
+							
+							try 
+							{
+							
+								string putmsg = "Success";
+								string s_data;
+								
+								foreach ( score_player in GetPlayerArray() )
+								{
+									if ( !IsValid( score_player ) ) continue
+									
+									s_data += GetScore( score_player ) + "\n";
+							
+								}
+								
+								if( ( putmsg.len() + s_data.len() ) > 599 )
+								{
+							
+									Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
+									return true;
+							
+								}
+							
+							
+								Message( player, putmsg, s_data, 20 );
+							
+							} catch (errallscore) {
+							
+								Message( player, "Failed", "Command failed because of: \n\n " + errallscore )
+								return true;
+							
+							}
+						
+						}
+						else
+						{
+						
+							entity s_player;
+									
+							s_player = GetPlayer( param )
+							
+							if ( !IsValid( s_player ) )
+							{	
+								Message( player, "Failed", "Player: " + param + " -- is invalid" );
+								return true
+							}
+							
+							try 
+							{
+							
+								Message( player, "Success", GetScore( s_player ) );
+							
+							} 
+							catch (errscore) 
+							{
+							
+								Message( player, "Failed", "Command failed because of: \n\n " + errscore )
+								return true;
+							
+							}
+						
+						}
+						
+					return true
+					
+			case "scoreconfig":
+			
+						if ( args.len() < 2)
+						{
+							Message( player, "Failed", "Param 1 of command 'scoreconfig' requires type: current/lifetime/difference.")
+							return true
+						}
+						
+						if ( args.len() < 3)
+						{	
+							Message( player, "Failed", "Param 2 of command 'scoreconfig' requires float")
+							return true	
+						}
+						
+						
+						
+						try {
+						
+							if ( !IsFloat( param2 ) )
+							{
+								Message( player, "Failed", "param 3 of command 'scoreconfig' must be numeric type float, \n\n example: 0.8 --            '" + param2 + "' was provided" )
+								return true
+							}
+							
+							if ( param == "current" )
+							{
+							
+								setSbmmSetting( "current_kd_weight", param2.tofloat() )
+							
+							}
+							else if ( param == "lifetime" )
+							{
+							
+								setSbmmSetting( "lifetime_kd_weight", param2.tofloat() )
+							
+							}
+							else if ( param == "difference" )
+							{
+							
+								setSbmmSetting( "SBMM_kd_difference", param2.tofloat() )
+							
+							}
+							else
+							{
+								Message( player, "Failed", "Invalid scoreconfig type: " + param )
+								return true
+							}
+							
+							
+							Message( player, "Success", "Weight for " + param + " KD -- was set to: " + param2 , 5 );
+						
+						} catch (errsetweight) {
+						
+							Message( player, "Failed", "Command failed because of: \n\n " + errsetweight )
+							return true;
+						
+						}
+						
+					return true
+					
+			case "cleanuplogs":
+				
+						CleanupLogs(); //sdk function 
+							
+						return true
+			
+			case "reload_config":
+			
+						SQ_ReloadConfig() //sdk function
+						
+						return true
+						
+			case "setting":
+						
+			
+						if ( args.len() < 2)
+						{
+							Message( player, "Failed", "Param 1 of command 'setting' requires key name")
+							return true
+						}
+						
+						
+						try 
+						{	
+							string return_str = "";
+							return_str = SQ_GetSetting(param);	
+							
+							Message( player, param + ":", return_str)
+							return true
+						} 
+						catch (errset) 
+						{
+							
+							Message( player, "Failed", "Command failed because of: \n\n " + errset )
+							return true		
+						}
+						
+					break;
+					
+			case "spamupdate":
+			case "spam":
+					
+					file.stop_update_msg_flag = false;
+					thread RunUpdateMsg()
+				
+				break;
+			
+			case "spamstop":
+			case "stopspam":
+			
+					file.stop_update_msg_flag = true;
+				
+				break;
+				
+			case "msg":
+			
+						if ( args.len() < 2)
+						{
+							Message( player, "Failed", "Param 1 of command 'serversay' requires string")
+							return true
+						}
+						
+						
+						try 
+						{	
+							if( !SendServerMessage( param ))
+							{
+								Message( player, "Error", "Message was truncated")
+							}
+							
+							return true
+						} 
+						catch (errservermsg) 
+						{		
+							Message( player, "Failed", "Command failed because of: \n\n " + errservermsg )
+							return true		
+						}
+						
+			case "vc":
+				
+					if ( args.len() < 2)
+						{
+							Message( player, "Failed", "Param 1 of command 'vc' requires bool: 1/0 true/false on/off enabled/disabled")
+							return true
+						}
+						
+						
+						try 
+						{	
+							switch(param)
+							{	
+								case "1":
+								case "true":
+								case "on":
+								case "enabled":
+									SetConVarBool( "sv_voiceenable", true )
+									SetConVarBool( "sv_alltalk", true )
+									
+									if ( GetConVarBool( "sv_voiceenable" ) || GetConVarBool( "sv_alltalk" ) )
+									{
+										foreach ( active_player in GetPlayerArray() )
+										{	
+											Message( active_player, "VOICE CHAT ENABLED" )
+										}
+									}
+									else 
+									{
+										Message( player, "FAILED" )
+									}
+		
+									return true
+									
+								case "0":
+								case "false":
+								case "off":
+								case "disabled":
+									SetConVarBool( "sv_voiceenable", false )
+									SetConVarBool( "sv_alltalk", false )
+									
+									if ( !GetConVarBool( "sv_voiceenable" ) || !GetConVarBool( "sv_alltalk" ) )
+									{	
+										foreach ( active_player in GetPlayerArray() )
+										{	
+											Message( active_player, "VOICE CHAT DISABLED" )
+										}
+									}
+									else 
+									{
+										Message( player, "FAILED" )
+									}
+									
+									return true		
+							}
+							
+							Message( player, "INVALID SETTING" )
+							return true
+						} 
+						catch (errvc) 
+						{		
+							Message( player, "Failed", "Command failed because of: \n\n " + errvc)
+							return true		
+						}
+				
+				
+			case "startbr":
+					
+					SetConVarBool( "sv_cheats", true )
+					FlagSet("MinPlayersReached")
+					SetConVarBool( "sv_cheats", false )
+					
+					return true
+					
+			case "pos":
+				
+					#if DEVELOPER
+					if (args.len() < 2)
+					{
+						Message( player, "NEED TO NAME THE SPAWN" );
+						return true
+					}
+					
+					try 
+					{
+						POS_CC(player,param)
+					}
+					catch(pos_error)
+					{
+						Message( player, "Error", "Failed: " + pos_error )
+					}
+					return true
+					#endif
+				return false;
+			
+			case "groups":
+			
+					Message(player, "\"groupsInProgress\"", getGroupsInProgress().len().tostring())
+					return true
+					
+			case "groupmap":
+			
+					Message(player, "\"playerToGroupMap\"", getPlayerToGroupMap().len().tostring())
+					return true
+					
+			case "start_interval_thread":
+
+					if(file.bIntervalThreadRunning)
+					{
+						Message( player, "Interval thread is already running." )
+						return true 
+					}
+					
+					thread IntervalThread()
+					return true 
+					
+			case "kill_interval_thread":
+			
+					file.bKillIntervalThread = true;
+					Message( player, "INTERVAL THREAD STOPPING" )
+					return true
+					
+			//case "testsend":
+			
+					//SQ_MsgToClient( param.tointeger(), param2 )
+					
+					//return true
+			case "thumbsup":
+				
+				SendServerMessage(chat.effects["THUMBSUP"])		
+				return true
+				
+			case "print_chat_effects":
+			
+				PrintAllChatEffects()
+				return true
+				
+			case "msgeffect":
+					
+				SendServerMessage( FindChatEffect( param ) )
+				return true
+
+			default:
+			
+						Message( player, "Usage", "cc #command #param1 #param2 #para...." )
+						return true;
+		}
+		
+		
+		return true;
+	}
+
+void function RunUpdateMsg()
+{	
+	
+	string update_title = GetCurrentPlaylistVarString("update_title","Server about to UPDATE");
+	string update_msg = GetCurrentPlaylistVarString("update_msg","Server will go down briefly");
+	
+	while(true)
+	{	
+		WaitFrame()
+		
+		if ( file.stop_update_msg_flag == true )
+		{
+			break
+		}
+		
+		foreach ( player in GetPlayerArray())
+		{
+			if (!IsValid( player ))
+			{
+				continue
+			}
+			
+			Message( player, update_title, update_msg, 3 )
+		}
+		
+		SendServerMessage(update_title)
+		
+		wait 3.6
+		
+	}
+}
+
+void function update()
+{
+	file.stop_update_msg_flag = false;
+	thread RunUpdateMsg()
+	sqerror("Update spam messages started")
+}
+
+bool function EnableVoice()
+{
+	if ( !GetConVarBool( "sv_voiceenable" ) || !GetConVarBool( "sv_alltalk" ) )
+	{
+		SetConVarBool( "sv_voiceenable", true )
+		SetConVarBool( "sv_alltalk", true )
+		
+		if ( GetConVarBool( "sv_voiceenable" ) && GetConVarBool( "sv_alltalk" ) )
+		{
+			return true
+		}
+	}
+	
+	return false
+}
+
+//returns true if message was sent without truncation, false if truncated. 
+bool function SendServerMessage( string _msg )
+{	
+	bool status = true;	
+	int msg_length = _msg.len();
+	
+	if ( msg_length > MAX_SAY_MSG )
+	{
+		_msg = truncate( _msg, MAX_SAY_MSG )
+		sqerror("Message contained " + msg_length.tostring() + " characters ( " + (msg_length - MAX_SAY_MSG).tostring() + " too many ) and was truncated. Maxlength: " + MAX_SAY_MSG.tostring() )
+		status = false;
+	}
+	
+	SQ_ServerMsg( sanitize( _msg ), file.iBotID )
+	
+	//if cafe's save chat log enabled
+	//ReturnChatArray().append(_msg)
+	return status
+}
+
+void function INIT_IntervalMessages()
+{
+	string msg_ArrayString = trim( SQ_GetSetting("settings.INTERVAL_MESSAGES") )
+	bool gotoLoopMessage = false 
+	
+	if( msg_ArrayString.len() == 0 )
+	{
+		gotoLoopMessage = true
+	}
+	
+	if( !gotoLoopMessage )
+	{
+		array<string> interval_settings = split( msg_ArrayString , "|")
+		
+		int iMessageNum = 0
+		
+		foreach( msg_string in interval_settings )
+		{
+			iMessageNum++;
+			
+			array<string> _msg = split( trim(msg_string), "=" )
+			if( _msg.len() > 1 )
+			{
+				string sM0 = trim(_msg[0])
+				string sM1 = trim(_msg[1])
+				
+				#if DEVELOPER
+				sqprint(format("interval found: %s  ;message: %s", sM0, sM1))
+				#endif
+				
+				string sm0Match = sM0.tolower()
+				
+				if( IsNumeric( sM0, FS_RoundTime() ) && sM1.len() > 0 && sM1.len() < 1000 )
+				{
+					try
+					{
+						string sMsg = sanitize( sM1 )
+						
+						int convert = sM0.tointeger()
+						float iRound10 = ceil(float(convert) / 10.0) * 10
+						int interval = (iRound10 / 10).tointeger()
+						
+						if ( !( interval in file.MessageEvents ) )
+						{
+							array<string> messages;
+							
+							messages.append( sMsg )
+							
+							file.MessageEvents[interval] <- messages
+						}
+						else 
+						{
+							file.MessageEvents[interval].append( sMsg )
+						}
+					}
+					catch(c_err)
+					{
+						sqerror(format("Cannot add msg #[ %d ] to MessageEvents, improper format", iMessageNum ))
+					}
+				}
+				else if( EventTypes.find( sm0Match ) > -1 && sM1.len() > 0 && sM1.len() < 1000 )
+				{
+					switch( sm0Match )
+					{
+						case "start":
+							file.Messages_EventStart.append(sM1)
+							break
+						case "end":
+							file.Messages_EventEnd.append(sM1)
+							break
+					}
+				}
+				else 
+				{
+					sqerror("InitIntervalMessages parsing error")
+				}
+			}
+		}
+	}//goto
+	
+	//loop messages (every x seconds)
+	
+	string loopTime = SQ_GetSetting( "settings.LOOP_MESSAGES_INTERVAL" )
+	
+	if( IsNumeric( loopTime, SQ_MAX_INT_32 ) )
+	{
+		int convert = loopTime.tointeger()
+		float iRound10 = ceil(float(convert) / 10.0) * 10
+		int interval = (iRound10 / 10).tointeger()
+		file.iLoopMessagesTime = interval //seconds rounded to thread cycle as multiple of 10
+	}
+	else 
+	{
+		file.iLoopMessagesTime = 2 //20 seconds
+	}
+	
+	#if DEVELOPER
+	sqprint(format("file.iLoopMessagesTime is: %d ", file.iLoopMessagesTime ))
+	#endif
+		
+	string getLoopMessages = SQ_GetSetting( "settings.LOOP_MESSAGES" )
+
+	if( getLoopMessages != "" && getLoopMessages.find("|") )
+	{
+		array<string> aLoopMessages = split( getLoopMessages, "|" )
+		
+		foreach( message in aLoopMessages )
+		{
+			file.arrayLoopMessages.append( trim(message) )
+			#if DEVELOPER
+			sqprint( format("Initialized loop message: %s", message ) )
+			#endif
+		}
+	}
+}
+
+
+void function __executeEventStart_messages()
+{	
+	if( file.Messages_EventStart.len() == 0 )
+	{
+		return 
+	}
+	
+	foreach ( message in file.Messages_EventStart )
+	{
+		SendServerMessage( message )
+	}
+}
+
+void function __executeEventEnd_messages()
+{
+	if( file.Messages_EventEnd.len() == 0 )
+	{
+		return 
+	}
+	
+	foreach ( message in file.Messages_EventEnd )
+	{
+		SendServerMessage( message )
+	}
+}
+
+void function InitPlayerWelcomeMessage()
+{
+	//requires filter recipient
+}
+
+void function IntervalThread()
+{
+	if(file.bIntervalThreadRunning)
+	{
+		sqerror( "Interval thread is already running." )
+		return
+	}
+	
+	int threadCycleCount = 0;
+	int loopMsgCount = 1; //gets reset when last message in loop messages is reached
+	file.bIntervalThreadRunning = true
+	
+	bool bLoopServerMessages = true 
+	
+	if( file.arrayLoopMessages.len() <= 0 )
+	{
+		bLoopServerMessages = false
+	}
+	
+	while(true)
+	{	
+		if(file.bKillIntervalThread){ break }
+		
+		wait 10
+		threadCycleCount += 1;
+		
+		//events
+		foreach(interval, msgs in file.MessageEvents) 
+		{
+			if ( ( threadCycleCount % interval) == 0 ) 
+			{
+				foreach( index, _msg in msgs ) 
+				{
+					SendServerMessage( _msg );
+				}
+			}
+		}	
+		
+		//train (loopmessages)
+		if( bLoopServerMessages )
+		{
+			loopMsgCount = SendLoopMessage( threadCycleCount, loopMsgCount )
+		}
+	}
+	
+	file.bIntervalThreadRunning = false
+}
+
+int function SendLoopMessage( int threadCycleCount, int loopMsgCount  )
+{
+	if( loopMsgCount > file.arrayLoopMessages.len() )
+	{
+		loopMsgCount = 1
+	}
+	
+	if( loopMsgCount > 0 && threadCycleCount > 0 && threadCycleCount % file.iLoopMessagesTime == 0  )
+	{
+		SendServerMessage( file.arrayLoopMessages[( loopMsgCount - 1 )] )
+		loopMsgCount++;
+	}
+	
+	return loopMsgCount
+}
+
+void function EventMessageSystem()
+{
+	//TODO
+}
+
+void function __LoadServerBot()
+{
+	wait 3
+	
+	array<int> result = SQ_CreateServerBot(file.sBotName)
+	
+	if( result.len() < 1 )
+	{
+		return
+	}
+	
+	file.iBotID = result[0]
+	
+	if(file.iBotID == -1)
+	{
+		return
+	}
+	
+	//file.iBotHandle = result[1]
+	//sqprint(format( "Bot id is: %d", file.iBotID ))
+}
+
+entity function eMessageBot() //global
+{
+	return file.eBotEnt
+}
+
+bool function bBotEnabled()
+{
+	return file.bChatbotEnabled
+}
+
+//chat commands
+bool function ClientCommand_ParseSay( entity player, array<string> args )
+{		
+    if ( !IsValid(player) || args.len() == 0 )
+		return true
+	
+	Commands( player, args )
+		return true 		
+}
+
+void function Commands( entity player, array<string> args )
+{	
+	#if DEVELOPER
+	printarray( args )
+	#endif 
+	
+	switch( args[0].tolower() )
+	{	
+		case "!wait":
+		case "/wait":
+		case "\\wait":
+			args.remove(0)
+			ClientCommand_mkos_LGDuel_IBMM_wait( player, args )
+			break
+			
+		case "!rest":
+		case "/rest":
+		case "\\rest":
+			ClientCommand_Maki_SoloModeRest( player, [] )
+			break
+			
+		case "!info":
+		case "/info":
+		case "\\info":
+			args.remove(0)
+			args.insert(0, "player")
+			if(args.len() < 2)
+			{
+				args.append(player.p.name)
+			}
+			ClientCommand_mkos_test_return_data( player, args )
+			break 
+			
+		case "!id":
+		case "/id":
+		case "\\id":
+			ClientCommand_mkos_test_return_data( player, ["id"] )
+			break
+			
+		case "!aa":
+		case "/aa":
+		case "\\aa":
+			ClientCommand_mkos_test_return_data( player, ["aa"] )
+			break
+			
+		case "!inputs":
+		case "/inputs":
+		case "\\inputs":
+			ClientCommand_mkos_test_return_data( player, ["inputs"] )
+			break
+		
+		case "!chal":
+		case "!chall":
+		case "/chall":
+		case "\\chall":
+		case "!challenge":
+		case "/challenge":
+		case "\\challenge":
+		case "/chal":
+		case "\\chal":
+			args.remove(0)
+			args.insert(0, "chal")
+			ClientCommand_mkos_challenge( player, args )
+			break
+		
+		case "!accept":
+		case "/accept":
+		case "\\accept":
+			args.remove(0)
+			args.insert(0, "accept")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!list":
+		case "/list":
+		case "\\list":
+			args.remove(0)
+			args.insert(0, "list")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!end":
+		case "/end":
+		case "\\end":
+			args.remove(0)
+			args.insert(0, "end")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!remove":
+		case "/remove":
+		case "\\remove":
+			args.remove(0)
+			args.insert(0, "remove")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!clear":
+		case "/clear":
+		case "\\clear":
+			args.remove(0)
+			args.insert(0, "clear")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!revoke":
+		case "/revoke":
+		case "\\revoke":
+			args.remove(0)
+			args.insert(0, "revoke")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!cycle":
+		case "/cycle":
+		case "\\cycle":
+			args.remove(0)
+			args.insert(0, "cycle")
+			ClientCommand_mkos_challenge( player, args )
+			break
+		
+		case "!swap":
+		case "/swap":
+		case "\\swap":
+			args.remove(0)
+			args.insert(0, "swap")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!legend":
+		case "/legend":
+		case "\\legend":
+			args.remove(0)
+			args.insert(0, "legend")
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//START KILL RECAP
+/*****************************************************************************************************************************/
+
+int function GetUniqueFightId() 
+{
+    return file.fightIdCounter++;
+}
+
+//endfight function to count from global metrics struct
+int function CountEventsWithinTimeframe(array< float > timestamps, float startTime, float endTime) 
+{
+    int count = 0;
+    foreach (timestamp in timestamps) 
+	{
+        if (timestamp >= startTime && timestamp <= endTime) 
+		{
+            count++;
+        }
+    }
+    return count;
+}
+
+
+//test function for _LG_Duels
+void function RecapStats(entity player, float damage, float hits, float shots, string victim, float victimdamage, float victimhits, float victimshots) 
+{
+    float accuracy = 0.0;
+    float victim_accuracy = 0.0;
+	
+    if (shots > 0.0) {
+        accuracy = (hits / shots) * 100.0;
+        if (accuracy >= 100.0) {
+            accuracy = 100.0;
+        }
+    }
+	
+    if (victimshots > 0.0) {
+        victim_accuracy = (victimhits / victimshots) * 100.0;
+        if (victim_accuracy >= 100.0) {
+            victim_accuracy = 100.0;
+        }
+    }
+
+    string print_totals = format("Your Dmg: %d, Your Accuracy: %d%% \n %s's Dmg: %d, %s's Accuracy: %d%%", damage, accuracy, victim, victimdamage, victim, victim_accuracy);
+    Message(player, "Recap vs: " + victim, print_totals, 3.5);
+}
+
+
+
+
+
+DamageEvent function CreateDamageEvent( int weaponSource, float damage, float actionTimestamp, float shotIdentifier, int attackerHandle, int victimHandle ) 
+{
+    DamageEvent event;
+	event.isNew = true; //bool
+	event.attackerHandle = attackerHandle; //players ehandle (for comparison logic) - int
+	event.victimHandle = victimHandle; //int
+    event.weaponSource = weaponSource; // int
+    event.damage = damage; //float
+    event.hitCount = 0; //int
+    event.bulletsHit = 0.0; //float
+	event.headshots = 0; //int
+	event.actionTimestamp = (actionTimestamp - .0900); //float
+	event.lastWeaponSource = weaponSource; //int
+	event.lastHitTimestamp = 0; //float
+	event.shotIdentifier = shotIdentifier; //int
+    return event;
+}
+
+
+
+	void function EndFight( entity victim, entity attacker, var damageInfo, float deathtime )
+	{	
+		if ( !IsValid(victim) || !victim.IsPlayer() || !IsValid(attacker) )
+		{
+			#if DEVELOPER 
+			sqerror( "returning from endfight, invalid player/attacker" )
+			#endif
+			return
+		}
+		
+		//Increment fightid
+		int id = GetUniqueFightId();
+		
+		//set p vars
+		string victimName = victim.p.name
+		string victimUID = victim.p.UID 
+		string attackerUID;
+		string attackerName;
+		
+		int victim_handle = victim.p.handle 
+		int attacker_handle = attacker.IsPlayer() ? attacker.p.handle : DamageInfo_GetDamageSourceIdentifier(damageInfo);
+		
+	
+		
+		
+		//statement header
+		string logString = "|#Fight Recap:{" + GetUnixTimestamp() + "}| Fight ID:{" + id + "}| Victim: {" + victimUID + "};";
+		
+		// initialize vars..
+		float totalDamageToVictim = 0.0;
+		float timeWindow = deathtime;
+		bool REPORT_STATS = true;
+		float fightStartTime = FLT_MAX;
+		float fightEndTime = 0.0; 
+		
+		//hardcoded jump & sueprglide grace for pre-shot start of fight actions
+		float jumpgrace = 1.2
+		float glidegrace = 2.2
+
+		// temp array to analyze data
+		array<DamageEvent> relevantDamageEvents;
+
+		// initialize temporary attacker array totals. these indexes will all be aligned.
+		array<int> player_handles;
+		array<string> playerDISPLAYNAME;
+		array<float> playerTotalDamages;
+		array<int> playerTotalHits;
+		array<int> playerTotalHeadshots;
+		array<int> playerTotalJumps;
+		array<int> playerTotalShots;
+		array<int> playerSuperglides;
+
+		// initialize victim total vars
+		float victimTotalDamage = 0.0;
+		int victimTotalHits = 0;
+		int victimTotalHeadshots = 0;
+		int victimTotalJumps = 0;
+		int victimTotalShots = 0;
+		int victimSuperglides = 0;
+		
+		//initialize attacker shared int vars (depending on current attacker these change during loops)
+		int attackerJumps = 0;
+		int attackerShots = 0;
+		int attackerSuperglides = 0;
+		
+		
+		// collect all DamageEvents on victim and calculate total damage
+		foreach ( DamageEvent event in allDamageEvents ) 
+		{
+			if ( event.victimHandle == victim.p.handle ) 
+			{
+			
+				totalDamageToVictim += event.damage;
+				relevantDamageEvents.append( event );
+				
+				#if DEVELOPER
+				sqprint(format("Event timestamp: %d",event.actionTimestamp))
+				sqprint(format("Event lasthit: %d",event.lastHitTimestamp))
+				#endif
+				
+				if ( event.actionTimestamp <= fightStartTime ) 
+				{
+					fightStartTime = event.actionTimestamp;
+				}		
+				
+				if ( event.lastHitTimestamp >= fightEndTime ) 
+				{
+					fightEndTime = (event.lastHitTimestamp + 0.0500);
+				}			
+				
+			}
+			#if DEVELOPER 
+			else 
+			{
+				sqprint(format("event.victimHandle does not equal event victim of: victim.p.handle. values: %d, %d", event.victimHandle, victim.p.handle))
+			}
+			#endif
+		}
+		
+		// set should ship to true
+		if ( file.bCheckShip && totalDamageToVictim >= 50 )
+		{
+			#if DEVELOPER 
+			Warning("Flag shouldship set")
+			#endif
+			file.bShouldShip = true;
+			file.bCheckShip = false;
+		}
+		
+		if ( totalDamageToVictim <= 0 )
+		{
+			//return	
+			REPORT_STATS = false;
+			DeleteEvents Event;
+			Event.attacker_handle = attacker_handle 
+			Event.victim_handle = victim_handle
+			AddEventTask( Event )
+			return
+		}
+		
+		#if DEVELOPER
+		sqprint(format("\n Fight start time: %d, end time: %d",fightStartTime, fightEndTime));
+		#endif
+
+		//check bool first
+		if ( !g_bIs1v1 && totalDamageToVictim < file.FS_MaxHealth ) 
+		{
+			timeWindow = DAMAGE_LOOKBACK_TIME_WINDOW;
+		}
+
+		// Reset totalDamageToVictim for the second pass
+		totalDamageToVictim = 0.0;
+		
+		/////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////// 		attackers of victim		/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// log DamageEvents that fall within the time window if damages are less than full health
+		foreach ( DamageEvent event in relevantDamageEvents ) 
+		{	
+			
+			if ( g_bIs1v1 || ( deathtime - event.actionTimestamp <= timeWindow ) ) 
+			{
+				attackerUID = GetPlayerIdFromHandle(event.attackerHandle)
+				attackerName = GetPlayerNameFromHandle(event.attackerHandle)
+				
+				totalDamageToVictim += event.damage;
+				
+				string mul = event.hitCount > 1 ? "s" : ""; //this needs to go
+				
+				//statement header
+				logString += "{" + attackerUID + "}{" + attackerName + "} dealt:";
+
+				if (IsSpecialWeapon(event.weaponSource)) 
+				{
+					int bulletsPerShot = GetBulletsPerShot(event.weaponSource);
+					int totalBulletsFired = event.hitCount * bulletsPerShot;
+					logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s {%d/%d} bullets with weapon {%s} headshots: {%d};",
+										event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, event.bulletsHit, totalBulletsFired, DamageSourceIDToString(event.weaponSource), event.headshots);
+				} 
+				else 
+				{
+					logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s with weapon {%s} headshots: {%d};",
+										event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, DamageSourceIDToString(event.weaponSource), event.headshots);
+				}
+				
+
+				// attackers totals
+				int playerIndex = player_handles.find( event.attackerHandle );
+				
+				if (playerIndex == -1) 
+				{
+					// new attacker
+					player_handles.append( event.attackerHandle );
+					playerDISPLAYNAME.append(attackerName);
+					playerTotalDamages.append(0.0);
+					playerTotalHits.append(0);
+					playerTotalHeadshots.append(0);
+					playerTotalJumps.append(0);
+					playerTotalShots.append(0);
+					playerSuperglides.append(0);
+					playerIndex = player_handles.len() - 1;
+				}
+				
+					playerTotalDamages[playerIndex] += event.damage;
+					playerTotalHits[playerIndex] += event.hitCount;
+					playerTotalHeadshots[playerIndex] += event.headshots;
+			}
+		}
+		
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////	 	extended time based damage events		/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// if total damage to victim is less than max health, extend time frame
+		
+		//check bool first
+		if ( !g_bIs1v1 && totalDamageToVictim < file.FS_MaxHealth ) 
+		{
+			foreach (DamageEvent event in allDamageEvents) 
+			{	
+				
+				attackerName = GetPlayerNameFromHandle(event.attackerHandle)
+				
+				if ( event.victimHandle == victim_handle && ( deathtime - event.actionTimestamp <= timeWindow ) ) 
+				{
+					if ( totalDamageToVictim + event.damage <= file.FS_MaxHealth ) 
+					{
+						totalDamageToVictim += event.damage;
+
+						string mul = event.hitCount > 1 ? "s" : ""; //go away
+
+						logString += "{" + GetPlayerIdFromHandle(event.attackerHandle) + "}{" + attackerName + "} dealt:";
+
+						if (IsSpecialWeapon(event.weaponSource)) 
+						{
+							int bulletsPerShot = GetBulletsPerShot(event.weaponSource);
+							int totalBulletsFired = event.hitCount * bulletsPerShot;
+							logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s {%d/%d} bullets with weapon {%s} headshots: {%d};",
+												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, event.bulletsHit, totalBulletsFired, DamageSourceIDToString(event.weaponSource), event.headshots);
+						} 
+						else 
+						{
+							logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s with weapon {%s} headshots: {%d};",
+												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, DamageSourceIDToString(event.weaponSource), event.headshots);
+						}
+						
+						
+						//attackers jumps & total shots for fight
+						int playerIndex = player_handles.find( event.attackerHandle );
+						if (playerIndex == -1) 
+						{
+							// new attacker
+							player_handles.append( event.attackerHandle );
+							playerDISPLAYNAME.append(attackerName);
+							playerTotalDamages.append(0.0);
+							playerTotalHits.append(0);
+							playerTotalHeadshots.append(0);
+							playerTotalJumps.append(0);
+							playerTotalShots.append(0);
+							playerSuperglides.append(0);
+							playerIndex = player_handles.len() - 1;
+						}
+						
+							playerTotalDamages[playerIndex] += event.damage;
+							playerTotalHits[playerIndex] += event.hitCount;
+							playerTotalHeadshots[playerIndex] += event.headshots;
+							
+					}
+				}
+			}
+		}
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////// 		victim			/////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		
+		foreach ( DamageEvent event in allDamageEvents ) 
+		{
+			if ( event.attackerHandle == victim.p.handle && ( g_bIs1v1 || deathtime - event.actionTimestamp <= timeWindow ) ) 
+			{		
+				victimTotalDamage += event.damage;
+				victimTotalHits += event.hitCount;
+				victimTotalHeadshots += event.headshots;	
+				
+				
+				string mul = event.hitCount > 1 ? "s" : ""; //needs to go
+				
+				logString += "{" + victim.p.UID + "}{" + victim.p.name + "} dealt:"; //Note: don't confuse entity struct with damage event struct, victim entity is current attacker
+
+				if (IsSpecialWeapon( event.weaponSource )) 
+				{
+					int bulletsPerShot = GetBulletsPerShot( event.weaponSource )
+					int totalBulletsFired = event.hitCount * bulletsPerShot;
+					logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s {%d/%d} bullets with weapon {%s} headshots: {%d};",
+										event.damage, GetPlayerIdFromHandle(event.victimHandle), GetPlayerNameFromHandle(event.victimHandle), event.actionTimestamp, event.hitCount, mul, event.bulletsHit, totalBulletsFired, DamageSourceIDToString(event.weaponSource), event.headshots);
+				} 
+				else 
+				{
+					logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s with weapon {%s} headshots: {%d};",
+										event.damage, GetPlayerIdFromHandle(event.victimHandle), GetPlayerNameFromHandle(event.victimHandle), event.actionTimestamp, event.hitCount, mul, DamageSourceIDToString(event.weaponSource), event.headshots);
+				}
+			}
+		}
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////// 			REMOVE Events			/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		
+		//queue events for deletion immediately so they are not reused in the next fight
+		DeleteEvents Event;
+		Event.attacker_handle = attacker.IsPlayer() ? attacker_handle : DamageInfo_GetDamageSourceIdentifier(damageInfo)
+		Event.victim_handle = victim_handle
+		AddEventTask(Event)
+			
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////// 		attackers summary			/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// attackers summary - may change weapon(s) in the future to use cafe's logic for weps
+		
+		
+		//This for loop is fine, it should never really exceed 2-5 attackers on the same victim. Even if it's server limit, it's relatively close to O(1)	
+		for ( int i = 0; i < player_handles.len(); ++i ) 
+		{
+			
+			attackerShots = 0
+			attackerSuperglides = 0
+			attackerJumps = 0
+			//attackers jumps & total shots for fight
+			int attackerIndex = GetPlayerMetricsIndexByUID( GetPlayerIdFromHandle(player_handles[i]) ); 
+			
+			if ( attackerIndex != -1 ) 
+			{
+				attackerJumps = CountEventsWithinTimeframe(PlayerMetricsArray[attackerIndex].JumpTimestamps, fightStartTime - jumpgrace, fightEndTime)
+				attackerSuperglides = CountEventsWithinTimeframe(PlayerMetricsArray[attackerIndex].SuperglideTimestamps, fightStartTime - glidegrace, fightEndTime)
+				
+				foreach ( weapon, timestamps in PlayerMetricsArray[attackerIndex].WeaponShotsTimestamps ) 
+				{	
+					int event_hitcount = CountEventsWithinTimeframe( timestamps, fightStartTime, fightEndTime )
+					
+					if(IsSpecialWeapon(weapon))
+					{
+						int event_bullets_per_shot = GetBulletsPerShot(weapon)
+						int total_event_shots = event_hitcount * event_bullets_per_shot
+						attackerShots += total_event_shots
+					}
+					else
+					{
+						attackerShots += event_hitcount;
+					}	
+				}
+				
+				playerTotalShots[i] += attackerShots;
+			}
+		
+			logString += format("{%s}{%s} dealt:Recap: {%.2f} total damage in {%d} hits with weapon(s), headshots: {%d}, Total Jumps: {%d}, Total Shots: {%d}, Superglides: {%d};",
+								GetPlayerIdFromHandle(player_handles[i]), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i], playerTotalHeadshots[i], attackerJumps, attackerShots, attackerSuperglides);
+								
+								//DEBUG
+								//sqprint(format("Total shots for fight: %d", attackerShots));
+								
+								AddToPlayerDamage( GetPlayerIdFromHandle(player_handles[i]), playerTotalDamages[i] )
+								
+								//*move to gametype specific in future
+								if ( g_bLGmode )
+								{
+									if (IsValid( attacker ) && IsValid( victim ) )
+									{
+										RecapStats( attacker, playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat(), victim.p.name, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat()  )
+									}
+								}
+								
+								if( g_bIs1v1 )
+								{
+									soloGroupStruct group = returnSoloGroupOfPlayer( attacker )
+									
+									if( group.IsKeep )
+									{
+										addStatsToGroup( attacker, group, playerTotalDamages[i], playerTotalHits[i], playerTotalShots[i], true )
+									}
+								}
+								
+		}
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////// 			victims summary			/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//vttackers jumps & total shots for fight
+		
+		int victimIndex = GetPlayerMetricsIndex( victim );
+		
+		if (victimIndex != -1) 
+		{
+			victimTotalJumps = CountEventsWithinTimeframe(PlayerMetricsArray[victimIndex].JumpTimestamps, fightStartTime - jumpgrace, fightEndTime);
+			victimSuperglides = CountEventsWithinTimeframe(PlayerMetricsArray[victimIndex].SuperglideTimestamps, fightStartTime - glidegrace, fightEndTime);
+			
+			foreach ( weapon, timestamps in PlayerMetricsArray[victimIndex].WeaponShotsTimestamps ) 
+			{	
+				int event_hitcount = CountEventsWithinTimeframe(timestamps, fightStartTime, (fightEndTime));
+				
+				if( IsSpecialWeapon(weapon) )
+				{
+					int event_bullets_per_shot = GetBulletsPerShot(weapon);
+					int total_event_shots = event_hitcount * event_bullets_per_shot;
+					victimTotalShots += total_event_shots;
+				}
+				else
+				{
+					victimTotalShots += event_hitcount;
+				}	
+			}
+		}
+		
+		logString += format("{%s}{%s} dealt:Recap: {%.2f} total damage in {%d} hits with weapon(s), headshots: {%d}, Total Jumps: {%d}, Total Shots: {%d}, Superglides: {%d};",
+                    victimUID, victimName, victimTotalDamage, victimTotalHits, victimTotalHeadshots, victimTotalJumps, victimTotalShots, victimSuperglides);
+			
+					AddToPlayerDamage( victimUID, victimTotalDamage )
+			
+		//*move to gametype specific in future or set playlist bool
+		if ( g_bLGmode )
+		{
+			if ( IsValid( victim ) )
+			{	
+				for (int i = 0; i < player_handles.len(); ++i) 
+				{
+					RecapStats( victim, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat(), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat()  )
+				}
+			}
+		}
+		
+		if( g_bIs1v1 )
+		{
+			soloGroupStruct group = returnSoloGroupOfPlayer( victim )
+			
+			if( group.IsKeep )
+			{
+				addStatsToGroup( victim, group, victimTotalDamage, victimTotalHits, victimTotalShots, false )
+			}
+		}
+			
+		
+		
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////// 			LOG THE data			/////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+
+            float timeRemaining = 0;
+            if (g_bIs1v1) 
+			{
+                const int INITIAL_DELAY = 7;
+                const int DELAY_BETWEEN_ROUNDS = 13;
+
+                int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+                timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+            } 
+			else if (GameRules_GetGameMode() == "fs_dm") 
+			{
+                const int INITIAL_DELAY = 8;
+                int DELAY_BETWEEN_ROUNDS;
+
+                if (VOTING_PHASE_ENABLE) {
+                    DELAY_BETWEEN_ROUNDS = 32;
+                } else {
+                    DELAY_BETWEEN_ROUNDS = 13;
+                }
+
+                int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+                timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+            }
+			else
+			{
+				//add timeRemaining for survival etc
+			}
+
+            int placeM = GetNumTeamsRemaining() //ty ida
+
+			string attName = "";
+			string aController = "";
+			string attTeam = "-1";
+			
+			if (!attacker.IsPlayer())
+			{
+				attTeam = "-1";
+				aController = "worldspawn";	
+			} 
+			else 
+			{
+				attTeam = attacker.GetTeam().tostring();
+				aController = attacker.p.input.tostring();
+			}
+
+
+            string team_of_killer = attTeam;
+            string team_of_killed = victim.GetTeam().tostring();
+			float pingVictim = victim.GetLatency() * 1000 - 40;
+			float pingAttacker = 0;
+			string a_OID = "";
+			string v_OID = victimUID;
+			string vicName = victim.p.name;
+
+			if (attacker.IsPlayer())
+			{
+				attName = attacker.p.name;
+				pingAttacker = attacker.GetLatency() * 1000 - 40;
+				a_OID = attacker.p.UID
+				
+				if (REPORT_STATS && attacker != victim)
+				{
+					AddToPlayerKills( a_OID )
+				}	
+			} 
+			else 
+			{
+				attName = DamageInfo_GetDamageSourceIdentifier( damageInfo ).tostring();
+				a_OID = "172";
+			}
+			
+			if (REPORT_STATS)
+			{
+				AddToPlayerDeaths( victim )
+			}
+			
+			
+			//temporary unknown
+			//aController = "";
+			string victimcontroller = victim.p.input.tostring();
+
+			int pA = pingAttacker.tointeger();
+			int pV = pingVictim.tointeger();
+            logString += format("\n^^,%s,1,%s,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s\n",
+                a_OID, //attName, //0
+                GetNumTeamsRemaining().tostring(), //2
+                GetUnixTimestamp(), //3
+                v_OID, //was victim.GetPlayerName( ), //4
+                team_of_killer, //5
+                team_of_killed, //6
+                timeRemaining, //7
+                id, //8
+				aController, //9
+				pA, //10
+				pV, //11
+				attName, //a_OID, //12	
+				vicName, //13							//victim totals	below
+                v_OID, //0 was victim.GetPlayerName( )
+                placeM, //1
+                a_OID, //attName, //2
+                GetUnixTimestamp(), //3
+                team_of_killer, //4
+                team_of_killed, //5
+                timeRemaining, //6
+                id, //7
+				aController, //8
+				pV, //9
+				pA, //10
+				victimcontroller, //11
+				attName, //12
+				vicName //13
+            );
+
+			if (REPORT_STATS && file.bSafeLog)
+			{
+				LogEvent(logString, file.LogE);
+				#if DEVELOPER
+				sqprint(logString);
+				#endif
+			}
+
+            return;
+    }
+
+	//TODO redesign delete thread
+	void function EventManager() 
+	{		
+		if ( DeleteEventTaskList.len() > 0 )
+		{				
+			int victim_handle = DeleteEventTaskList[0].victim_handle;
+			int attacker_handle = DeleteEventTaskList[0].attacker_handle;
+			RemoveEvents( victim_handle, attacker_handle );	
+			DeleteEventTaskList.remove(0);			
+		}
+	}
+	
+	void function AddEventTask( DeleteEvents Event ) 
+	{
+		DeleteEventTaskList.append( Event );
+		EventManager()
+		//FlagSet("DeleteEvents")
+	}
+
+
+	void function RemoveEvents( int dead_victim_handle, int killer_attacker_handle ) 
+	{
+		#if DEVELOPER 
+		int removed = 0		
+		#endif
+  
+		for (int i = allDamageEvents.len() - 1; i >= 0; --i) 
+		{
+			if (g_bIs1v1) 
+			{
+				if (allDamageEvents[i].attackerHandle == dead_victim_handle || allDamageEvents[i].attackerHandle == killer_attacker_handle) 
+				{
+					allDamageEvents.remove(i);
+					#if DEVELOPER 
+					removed++;
+					#endif 
+				}
+			} 
+			else 
+			{
+				if (allDamageEvents[i].victimHandle == dead_victim_handle) 
+				{          
+					allDamageEvents.remove(i);
+					#if DEVELOPER 
+					removed++;
+					#endif
+				}
+			}
+		}
+
+		#if DEVELOPER
+				foreach (event in allDamageEvents) 
+				{
+					sqprint(format( "Remaining event handle: dealer: %d, reciever: %d ", event.attackerHandle, event.victimHandle ));
+				}
+			sqprint(format("Total remaining events: %d, Total removed: %d", allDamageEvents.len(), removed));
+		#endif
+	}
+
+
+// these need replaced with global CONST to make future updates seamless
+const table<int,float> DamagePerBullet = {
+
+ [54] = 7.00, //mp_weapon_shotgun
+ [55] = 11.00, //mp_weapon_mastiff
+ [218] = 9.00, //mp_weapon_energy_shotgun
+ [63] = 21.00, //mp_weapon_doubletake
+ [62] = 20.25 //mp_weapon_shotgun_pistol
+ 
+}
+
+const table<int,int> SpecialWeaponsBulletsPerShot = {
+
+ [54] = 8, //mp_weapon_shotgun
+ [55] = 8, //mp_weapon_mastiff
+ [218] = 11, //mp_weapon_energy_shotgun
+ [63] = 3, //mp_weapon_doubletake
+ [62] = 3 //mp_weapon_shotgun_pistol
+ 
+}
+
+int function GetBulletsPerShot( int weaponSource ) 
+{
+	return SpecialWeaponsBulletsPerShot[weaponSource]
+}
+
+float function GetDamagePerBullet( int weaponSource ) 
+{	
+	if( weaponSource in DamagePerBullet )
+	{
+		return DamagePerBullet[weaponSource]
+	}
+	
+	return 1
+}
+
+bool function IsSpecialWeapon( int weaponSource )
+{
+	if ( weaponSource in SpecialWeaponsBulletsPerShot )
+	{
+		return true
+	}
+	
+	return false 
+}
+
+
+void function HandleDamage(DamageEvent event, entity attacker, int weaponSource, float damageAmount, var damageInfo, entity victim) 
+{
+	if (!IsValid(victim) || !IsValid(attacker)) return;
+	float currentHealth = victim.GetHealth().tofloat() + victim.GetShieldHealth().tofloat();
+	
+	// negate damage that can't be done (no health to recieve damage)
+	if (damageAmount > currentHealth) 
+	{
+		damageAmount = currentHealth;
+	}
+
+	// for calculating total projectiles from constants
+	float damagePerBullet = GetDamagePerBullet(weaponSource);
+	float bulletsHit = damageAmount / damagePerBullet;
+
+	// headshot count
+	if (IsValidHeadShot(damageInfo, victim)) 
+	{
+		event.headshots++;
+	}
+
+	bool multiple = false;
+	// count damageInfo from special weapons as a single shot
+	float currentTime = Time();
+	
+	if (IsSpecialWeapon(weaponSource)) 
+	{
+		if (event.lastHitTimestamp == 0 || (currentTime - event.lastHitTimestamp) * 1000 > 100) 
+		{
+			event.hitCount++;
+			multiple = true;
+		}
+	} 
+	else 
+	{
+		event.hitCount++;
+	}
+
+	// update DamageEvent
+	event.lastHitTimestamp = currentTime;
+	event.bulletsHit += bulletsHit;
+
+	if (event.isNew) 
+	{
+		event.damage = damageAmount;
+
+		if (multiple) 
+		{
+			event.isNew = true;
+		} 
+		else 
+		{
+			event.isNew = false;
+		}
+	} 
+	else 
+	{
+		event.damage += damageAmount;
+		if (multiple) 
+		{
+			event.isNew = true;
+		}
+	}
+
+	//sqprint(format("Handling damage for an event with isNew: %s and existing damage: %.2f\n", event.isNew ? "true" : "false", event.damage));
+}
+
+
+
+void function R5R_OnPlayerDamaged(entity victim, var damageInfo)
+{	
+	float actionTimestamp = Time();
+	//sqprint("on player damaged called") //DEBUG
+    // early exits
+    if (!IsValid(victim) || Bleedout_IsBleedingOut(victim)) return;
+
+    entity attacker = InflictorOwner(DamageInfo_GetAttacker(damageInfo));
+    int weaponSource = DamageInfo_GetDamageSourceIdentifier(damageInfo);
+
+    // exclude this damage type
+    if (weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution) return;
+
+    float damageAmount = DamageInfo_GetDamage(damageInfo);
+
+	#if DEVELOPER
+	//sqprint(format("Weapon Source: %d, Damage Amount: %.2f", weaponSource, damageAmount));
+	#endif
+
+	int attackerHandle = 0  
+	if ( attacker.IsPlayer() ) 
+	{
+		attackerHandle = attacker.p.handle
+		//sqprint("Valid attacker is player");
+    } 
+	else 
+	{
+		#if DEVELOPER 
+		sqerror("Attacker not player")
+		#endif 
+		attackerHandle = DamageInfo_GetDamageSourceIdentifier(damageInfo)
+    }
+
+	// find existing event and its index
+	bool eventExists = false;
+	int mostRecentEventIndex = -1;
+	int existingEventIndex = -1;
+	float latestTimestamp = -1.0;
+
+	// find most recent event with the same attacker and victim
+	//TODO:: REWORK
+	for (int i = 0; i < allDamageEvents.len(); ++i) 
+	{
+		if ( allDamageEvents[i].attackerHandle == attackerHandle && ( g_bIs1v1 || allDamageEvents[i].victimHandle == victim.p.handle ) ) 
+		{
+			if ( allDamageEvents[i].actionTimestamp > latestTimestamp ) 
+			{
+				mostRecentEventIndex = i;
+				latestTimestamp = allDamageEvents[i].actionTimestamp;
+			}
+		}
+	}
+
+	if (mostRecentEventIndex != -1) 
+	{
+		existingEventIndex = mostRecentEventIndex;
+		eventExists = true;
+	} 
+	else 
+	{
+		existingEventIndex = -1;
+		eventExists = false;
+	}
+
+	// sqprint(format("Event exists: %s, existing event index: %d\n", eventExists ? "true" : "false", existingEventIndex));
+
+	float shotIdentifier = 0.0;
+    if (IsSpecialWeapon(weaponSource)) 
+	{
+        shotIdentifier = weaponSource.tofloat() + Time() 
+    }
+
+    if ( eventExists ) 
+	{
+        // last weapon used from the existing event
+        int lastWeaponSource = allDamageEvents[existingEventIndex].weaponOrder[allDamageEvents[existingEventIndex].weaponOrder.len() - 1];
+
+        // check if weapon changed or new shot from special weapon (new event(block))
+        if (lastWeaponSource != weaponSource || (IsSpecialWeapon(weaponSource) && allDamageEvents[existingEventIndex].shotIdentifier != shotIdentifier)) 
+		{
+            DamageEvent newEvent = CreateDamageEvent( weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle );
+            newEvent.weaponOrder.append( weaponSource );
+            newEvent.shotIdentifier = shotIdentifier;
+            HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim );
+            allDamageEvents.append( newEvent );
+        } 
+		else 
+		{
+            // update existing damage event
+            allDamageEvents[existingEventIndex].isNew = false;
+            allDamageEvents[existingEventIndex].weaponOrder.append(weaponSource);
+            HandleDamage( allDamageEvents[existingEventIndex], attacker, weaponSource, damageAmount, damageInfo, victim );
+        }
+    } 
+	else //event doesn't exist
+	{
+        //create new one
+        DamageEvent newEvent = CreateDamageEvent(weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle );
+        newEvent.weaponOrder.append( weaponSource );
+        newEvent.shotIdentifier = shotIdentifier;
+        HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim );
+        allDamageEvents.append( newEvent );
+    }
+
+    /*
+    sqprint("Current Damage Events: \n");
+    foreach (DamageEvent event in allDamageEvents) {
+        sqprint(format("Attacker: %s, Victim: %s, Damage: %.2f, Time: %.2f\n", event.attackerUID, event.victimUID, event.damage, event.actionTimestamp));
+    }
+	*/
+}
+
+
+DamageEvent function getEventByPlayerHandle( int playerHandle )
+{	
+	foreach( event in allDamageEvents )
+	{
+		if ( event.attackerHandle == playerHandle )
+		{
+			return event
+		}
+	}
+	
+	DamageEvent nullevent;
+	nullevent.lastHitTimestamp = 0.0
+	return nullevent
+}
+
+
+//END KILL RECAP
+/*****************************************************************************************************************************/
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool function ClientCommand_mkos_ea_verify(entity player, array<string> args)
+	{	
+		PlayerEA_Verify( player, args )	
+		return true;	
+	}
+	
+	
+	void function PlayerEA_Verify( entity player, array<string> args ) 
+	{
+	
+		if (!IsValid(player)) // || !player.p.isConnected)
+				return;
+		
+			if (g_bIs1v1) 
+			{
+				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+				mkos_Force_Rest( player, [] )
+			}
+
+			if (args.len() < 1)
+			{
+				Message(player, "Token from R5R.DEV is required.");
+				return;
+			}
+
+			string ea_acc = player.GetPlayerName();
+			string OID = player.GetPlatformUID();
+		
+		
+			int index = -1;
+			for (int i = 0; i < playerVerifyCounts.len(); i++) 
+			{
+				if (playerVerifyCounts[i].playerID == ea_acc) 
+				{
+					index = i;
+					break;
+				}
+			}
+
+			if (index == -1) 
+			{
+				PlayerVerifyCount newEntry;
+				newEntry.playerID = ea_acc;
+				newEntry.verifyCount = 0;
+				playerVerifyCounts.append(newEntry);
+				index = playerVerifyCounts.len() - 1;
+			}
+
+			if (playerVerifyCounts[index].verifyCount >= 3) 
+			{
+				Message(player, "Too many attempts. Try again later.");
+				return;
+			}
+
+			playerVerifyCounts[index].verifyCount += 1;
+
+			string token = args[0];
+			thread Player_EA_Verify( player, token, OID, ea_acc );
+
+			return;
+		
+	}
+	
+	void function Player_EA_Verify (entity player, string token, string OID, string ea_acc)
+	{	
+		SetConVarInt( "net_processTimeBudget", 5100 )
+		WaitFrame();
+		int VERIFY = EA_Verify( token, OID, ea_acc );
+		SetConVarInt( "net_processTimeBudget", 200 )
+
+			switch (VERIFY) 
+			{
+				case 10:
+					Message(player, "Failed: Expired Token", "Please request a new one");
+					return;
+
+				case 2:
+					Message(player, "Invalid token", "Usage: ea_verify   yourtoken");
+					return;
+
+				case 4:
+					Message(player, "Failed", "EA Account already linked.");
+					return;
+
+				case 1:
+					Message(player, "SUCCESS", "Your account was successfully verified on R5R.DEV");
+					return;
+
+				case 5:
+					Message(player, "Failed: ", "Database error on success");
+					return;
+
+				case 3:
+					Message(player, "Failed: ", "DB error");
+					return;
+
+				case 6:
+					Message(player, "Failed: ", "Missing Data");
+					return;
+
+				case 8:
+					Message(player, "Failed: ", "CURL Error.");
+					return;
+
+				case 0:
+				default:
+					Message(player, "Failed", "Could not verify EA Account.");
+					return;
+			}
+			
+	}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////// PLAYER METRICS stuct /////////////////////////////////////////
+
+string function PrintAllPlayerMetrics(bool trigger = false) 
+{
+    string json = "[";
+    foreach (index, metrics in PlayerMetricsArray) 
+	{
+        if (index > 0) {
+            json += ", ";
+        }
+		
+        json += "{";
+        json += format("\"player\": \"%s\", ", metrics.playerID);
+        json += format("\"jumps\": %d, ", metrics.JumpTimestamps.len());
+		json += format("\"superglides\": %d, ", metrics.SuperglideTimestamps.len());
+        json += format("\"kills\": %d, ", metrics.kills); 
+        json += format("\"deaths\": %d, ", metrics.deaths);
+		
+		//settings 
+		json += "\"settings\": {";
+
+		json += format("\"wait_time\": \"%1.f\", ", metrics.wait_time);
+		json += format("\"saved_weapons\": \"%s\", ", metrics.saved_weapons);
+		json += format("\"lock1v1_setting\": \"%s\", ", metrics.lock1v1_setting ? "1" : "0");
+		json += format("\"start_in_rest_setting\": \"%s\", ", metrics.start_in_rest_setting ? "1" : "0");
+		json += format("\"enable_input_banner\": \"%s\" ", metrics.enable_input_banner ? "1" : "0");
+		
+		json += "},";
+
+		//weapons array
+        json += "\"weaponShots\": {";
+		
+        bool wep_first = true;
+		
+		string replace = "";
+        foreach (weaponSource, timestamps in metrics.WeaponShotsTimestamps) 
+		{					
+            if (!wep_first) {
+                json += ", ";
+            }
+			
+			if(!exclude(weaponSource))
+			{
+				replace = DamageSourceIDToString(weaponSource)
+			}
+			else 
+			{
+				replace = weaponSource.tostring()
+			}
+			
+            json += format("\"%s\": %d", replace, timestamps.len());
+            wep_first = false;
+        }
+        json += "}";
+        json += "}";
+    }
+    json += "]";
+	
+	if (trigger){
+	
+		return json;
+		
+	} else {
+	
+		sqprint("^|," + json + "\n");
+		
+	}
+	
+	unreachable
+	
+}
+
+
+//////////////////////////////////////
+//									//
+//		  PLAYER METRICS INIT		//
+//									//
+//////////////////////////////////////
+
+int function GetPlayerMetricsIndex( entity player ) 
+{	
+	if(!IsValid( player ))
+	{
+		return -1;
+	}
+	
+    if ( player.GetPlatformUID() in PlayerIdMap ) 
+	{
+        return PlayerIdMap[player.GetPlatformUID()];
+    }
+	
+    return -1; 
+}
+
+int function GetPlayerMetricsIndexByUID( string uid )
+{
+	if ( uid in PlayerIdMap ) 
+	{
+        return PlayerIdMap[uid];
+    }
+    return -1; 
+}
+
+
+int function UpdatePlayerMap( string uid ) 
+{
+    int index = PlayerMetricsArray.len() - 1;
+    PlayerIdMap[uid] <- index;
+	return index;
+}
+
+
+int function InitializePlayerMetricsStructForPlayer( entity player )
+{		
+	if(!IsValid(player)) 
+	{
+		return -1
+	}
+
+	int index = GetPlayerMetricsIndex( player ); //to prevent reinitialization
+	
+	if (index != -1) 
+	{	
+		#if DEVELOPER
+			sqerror("Metrics already initialized for player: " + player.GetPlayerName() )
+		#endif
+		return -1
+	}
+		
+	PlayerMetrics NewMetrics;
+	NewMetrics.playerID = player.GetPlatformUID()
+	NewMetrics.playername = player.GetPlayerName()
+    NewMetrics.JumpTimestamps = []
+    NewMetrics.WeaponShotsTimestamps = {}
+	NewMetrics.SuperglideTimestamps = []
+	NewMetrics.kills = 0
+	NewMetrics.deaths = 0
+	NewMetrics.damage = 0.0
+	NewMetrics.wait_time = 0
+	NewMetrics.saved_weapons = "NA"
+	NewMetrics.lock1v1_setting = true
+	NewMetrics.start_in_rest_setting = false
+	NewMetrics.playerleft = false
+	NewMetrics.ignore_sync_flag = false
+	NewMetrics.enable_input_banner = false
+	PlayerMetricsArray.append(NewMetrics);
+	return UpdatePlayerMap(player.GetPlatformUID())	
+}
+
+int function InitializePlayerMetricsStructForPlayerByUID( string playerID )
+{
+	if ( empty(playerID) ) return -1
+		
+	PlayerMetrics NewMetrics;
+	NewMetrics.playerID = playerID
+	NewMetrics.playername = ""
+    NewMetrics.JumpTimestamps = []
+    NewMetrics.WeaponShotsTimestamps = {}
+	NewMetrics.SuperglideTimestamps = []
+	NewMetrics.kills = 0
+	NewMetrics.deaths = 0
+	NewMetrics.damage = 0.0
+	NewMetrics.wait_time = 0
+	NewMetrics.saved_weapons = "NA"
+	NewMetrics.lock1v1_setting = true
+	NewMetrics.start_in_rest_setting = false
+	NewMetrics.playerleft = false
+	NewMetrics.ignore_sync_flag = false
+	NewMetrics.enable_input_banner = false
+	PlayerMetricsArray.append(NewMetrics);
+	return UpdatePlayerMap(playerID)	
+}
+
+
+void function RecordPlayerJump( entity player ) 
+{
+	float time = Time();
+ 
+    int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{
+       PlayerMetricsArray[index].JumpTimestamps.append(time);
+	}catch(e){}
+
+}
+
+
+void function RecordPlayerSuperglides( entity player ) 
+{
+	float time = Time();
+ 
+    int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{	
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{
+        PlayerMetricsArray[index].SuperglideTimestamps.append(time);
+    }catch(e){}
+}
+
+
+void function RecordPlayerShot( entity player, int weaponSource ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	float time = Time();
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )		
+    } 
+	
+	try
+	{
+        if (!(weaponSource in PlayerMetricsArray[index].WeaponShotsTimestamps)) 
+		{
+			PlayerMetricsArray[index].WeaponShotsTimestamps[weaponSource] <- [time];
+        } 
+		else 
+		{
+            PlayerMetricsArray[index].WeaponShotsTimestamps[weaponSource].append(time);
+        }
+		
+    }catch(e){}
+}
+
+
+void function AddToPlayerKills( string playerID )
 {
 
+	int index = GetPlayerMetricsIndexByUID(playerID);
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayerByUID( playerID )
+    } 
+	
+	try
+	{
+		PlayerMetricsArray[index].kills += 1;		
+    }catch(e){}
+
+}
+
+
+void function AddToPlayerDeaths( entity player )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )	
+    } 
+	
+	try
+	{
+		PlayerMetricsArray[index].deaths += 1;		
+    }catch(e){}
+}
+
+
+void function AddToPlayerDamage( string playerID, float damage )
+{	
+	int index = GetPlayerMetricsIndexByUID( playerID )
+	
+    if (index == -1) 
+	{	
+		index = InitializePlayerMetricsStructForPlayerByUID( playerID )		
+    } 
+	
+	try
+	{	
+        PlayerMetricsArray[index].damage += damage;		
+    }catch(e){}
+}
+
+
+
+/////////////////////////////// PERSISTENCE /////////////////////////////////////
+
+
+void function SetIgnoreSyncFlag( entity player )
+{
+	int index = GetPlayerMetricsIndex( player )
+	
+	if (index == -1) 
+	{
+      index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{
+		PlayerMetricsArray[index].ignore_sync_flag = true;
+	}catch(e){}
+}
+
+
+bool function GetIgnoreSyncFlag( entity player )
+{
+	int index = GetPlayerMetricsIndex( player )
+	
+	if( index != -1 )
+	{
+		return PlayerMetricsArray[index].ignore_sync_flag;
+	}
+	
+	return false
+}
+
+
+void function SetPlayerLeftFlag( entity player )
+{
+	//we double set/check this function 
+	//to make sure leaving player has flag set
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		InitializePlayerMetricsStructForPlayer( player )				
+    }
+	
+	index = GetPlayerMetricsIndex( player );
+	
+	if (index != -1) 
+	{
+		PlayerMetricsArray[index].playerleft = true;
+	}
+}
+
+
+void function SavePlayer_wait_time( entity player, float value )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{	
+		PlayerMetricsArray[index].wait_time = value;	
+    }catch(e){}
+}
+
+
+void function SavePlayer_saved_weapons( entity player, string value )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{
+		PlayerMetricsArray[index].saved_weapons = value;	
+    }catch(e){}
+}
+
+
+void function SavePlayer_lock1v1_setting( entity player, bool value )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{	
+		PlayerMetricsArray[index].lock1v1_setting = value;	
+    }catch(e){}
+}
+
+
+void function SavePlayer_enable_input_banner( entity player, bool value )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{	
+		PlayerMetricsArray[index].enable_input_banner = value;	
+    }catch(e){}
+}
+
+
+void function SavePlayer_start_in_rest_setting( entity player, bool value )
+{
+	int index = GetPlayerMetricsIndex( player );
+	
+    if (index == -1) 
+	{
+		index = InitializePlayerMetricsStructForPlayer( player )
+    } 
+	
+	try
+	{		
+		PlayerMetricsArray[index].start_in_rest_setting = value;
+    }catch(e){}
+}
+
+
+bool function GetPlayerLeftFlag( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{	
+        return PlayerMetricsArray[index].playerleft;
+    }
+	
+    return false;
+}
+
+
+float function GetPlayer_wait_time( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{	
+        return PlayerMetricsArray[index].wait_time;
+    }
+	
+    return GetDefaultIBMM(); 
+}
+
+
+string function GetPlayer_saved_weapons( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].saved_weapons;
+    }
+	
+    return "NA";
+}
+
+
+bool function GetPlayer_lock1v1_setting( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].lock1v1_setting;
+    }
+	
+    return GetDefaultLock1v1Setting(); 
+}
+
+
+bool function GetPlayer_start_in_rest_setting( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].start_in_rest_setting;
+    }
+	
+    return GetDefaultStartInRestSetting(); 
+}
+
+
+bool function GetPlayer_enable_input_banner_setting( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].enable_input_banner;
+    }
+	
+    return GetDefaultEnableInputBannerSetting(); 
+}
+
+
+void function SavePlayer_R5RDEV_Settings_To_Struct( entity player )
+{	
+	if( !IsValid(player) ) return
+	
+	SavePlayer_wait_time( player, player.p.IBMM_grace_period )
+	SavePlayer_saved_weapons( player, player.p.weapon_loadout )
+	SavePlayer_lock1v1_setting( player, player.p.lock1v1_setting )
+	SavePlayer_start_in_rest_setting( player, player.p.start_in_rest_setting )
+	SavePlayer_enable_input_banner( player, player.p.start_in_rest_setting )
+}
+
+
+void function SaveAllPlayerSettings()
+{
+	foreach ( player in GetPlayerArray() )
+	{	
+		SavePlayer_R5RDEV_Settings_To_Struct( player );
+	}
+}
+
+
+bool function GetDefaultLock1v1Setting()
+{
+	return file.DefaultLock1v1Setting
+}
+
+bool function GetDefaultEnableInputBannerSetting()
+{
+	return file.DefaultEnableInputBannerSetting
+}
+
+bool function GetDefaultStartInRestSetting()
+{
+	return file.DefaultStartInRestSetting
+}
+
+
+// END PERSISTENCE //////////////////////////////////////////////////////////////////
+
+
+int function GetPlayerKills( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].kills;
+    }
+	
+    return 0;
+}
+
+
+float function GetPlayerDamage( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].damage;
+    }
+	
+    return 0;
+}
+
+
+int function GetPlayerDeaths( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if ( index != -1 ) 
+	{
+        return PlayerMetricsArray[index].deaths;
+    }
+	
+    return 0;
+}
+
+
+/***************************# JUMPS / SHOTS / SuperGlides #******************************************/
+
+
+void function Flowstate_TrackingVision_SuperglideDetection_Stats(entity player) 
+{ 
+	if ( !IsValid(player) ) return
+    string playerID = player.GetPlatformUID();
+	thread Flowstate_TrackingVision_TryToTrackSuperglide_Stats( player )
+	AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, DidJump)
+}
+
+
+void function DidJump( entity player )
+{	
+	PlayerDidJump[player.GetPlatformUID()] = true;
+}
+
+
+void function ResetJump( string playerID )
+{
+	PlayerDidJump[playerID] <- false;	
+}
+
+
+bool function pDidJump( string playerID )
+{
+	if ( ! (playerID in PlayerDidJump) ) return false
+	
+	if ( PlayerDidJump[playerID] == true ) return true 
+	
+	return false;
+}
+
+
+int function GetGlides( entity player ) 
+{
+    int index = GetPlayerMetricsIndex( player );
+	
+    if (index != -1) 
+	{
+        return PlayerMetricsArray[index].SuperglideTimestamps.len();
+    }
+	
+    return 0;
+}
+
+
+//credit: columbiaFPS (cafe), heavily modified by mkos
+void function Flowstate_TrackingVision_TryToTrackSuperglide_Stats( entity player )
+{	
+	
+	if ( !IsValid(player) ) return
+	
+	Signal( player, "SuperglideDetectionResetStats" )
+	EndSignal( player, "SuperglideDetectionResetStats" )
+	//sqprint("Superglide reset signal");
+	
+		
+	bool AttemptingSuperGlide = true
+	string playerID = player.GetPlatformUID() 
+	ResetJump(playerID);
+			
+	float playerVel
+	vector playerVelV
+	float airtime = 0;
+	bool hadair = false;
+	bool didmantle = false;
+	bool didslide = false;
+	vector start = player.GetOrigin()
+	
+	while( IsValid( player ) && !player.IsObserver() && AttemptingSuperGlide == true)
+	{
+		//sqprint(format("Time: %d, on ground? %s , mantling? %s, Did jump? %s", Time(), player.IsOnGround().tostring(), player.IsMantling().tostring(), pDidJump(playerID).tostring()))
+		
+		playerVelV = player.GetVelocity()
+		playerVel = playerVelV.Length()
+		vector current = player.GetOrigin();
+		vector difference = current - start;
+		float distance = sqrt(difference.x * difference.x + difference.y * difference.y + difference.z * difference.z);
+			
+		if( player.IsOnGround() || player.IsMantling())
+		{	
+			airtime = 0.0
+			//sqprint(format("Air time reset: %d", airtime ))
+			if (player.IsMantling()){ didmantle = true; }
+			
+		} 
+		else if( !player.IsOnGround() && !player.ContextAction_IsZipline() && !player.IsMantling() )
+		{
+			airtime += 0.025
+			hadair = true;
+			if ( player.IsSliding() ){ didslide = true }
+			//sqprint(format("Air time increasing: %d", airtime ))
+		}
+		
+		if ( player.IsSliding() ){ didslide = true }
+		
+		if( pDidJump(playerID) == true && didmantle == true && didslide == true && playerVel > 445 && airtime <= 0.6 )
+		{	
+			//sqprint(format("hitsuperglide airtime: %d, velocity: %d", airtime, playerVel));
+			AttemptingSuperGlide = false;
+			RecordPlayerSuperglides( player )
+			if ( file.sg_counter_msg )
+			{	
+				Message ( player, format("%s: %d", file.superglidetitle, ( GetGlides(player) + player.p.lifetime_glides ) ), file.superglide_msg )
+			}
+			break;	
+		} 			
+		if (distance > 115 && player.IsOnGround())
+		{
+			//sqprint(format("breaking due to moving from mantle. Distance: %d", distance))
+			AttemptingSuperGlide = false;
+			break;		
+		}
+		if (!player.IsMantling() && player.IsOnGround() && hadair == true)
+		{
+			//sqprint("Breaking due to mantle time and ground")
+			AttemptingSuperGlide = false;
+			break;	
+		}
+		if (player.IsMantling()){ didmantle = true; }
+		if ( player.IsSliding()){ didslide = false }
+		ResetJump(playerID);	
+		
+		wait 0.01
+	}
+	
+	//sqprint("End of loop");
+	ResetJump(playerID)
+	RemovePlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, DidJump)
+}
+
+
+//// end metrics
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+void function UpdateRoundStats_GlobalsCarryOver()
+{
+
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( IsValid( player ) )
+		{
+		
+			int lifetime_kills = player.p.lifetime_kills
+			int lifetime_deaths = player.p.lifetime_deaths
+			int lifetime_glides = player.p.lifetime_glides
+		
+			string player_oid = player.GetPlatformUID()
+			int current_kills = GetPlayerKills( player ) 
+			int current_deaths = GetPlayerDeaths( player )
+			int current_glides = GetGlides( player )
+			
+			player.p.lifetime_kills = current_kills + lifetime_kills
+			player.p.lifetime_deaths = current_deaths + lifetime_deaths
+			player.p.lifetime_glides = current_glides + lifetime_glides
+			
+		}
+		
+	}
+
+}
+
+
+void function OnJumped( entity player ) 
+{
+	RecordPlayerJump( player );
+}
+
+
+void function WeaponAttack(entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir) 
+{
+	RecordPlayerShot( player, WeaponIdentifiers[weaponName] );	
+}
+
+
+/**** END JUMPS SHOTS SUPERGLIDES ************************************************************/
+
+void function PlayerDisconnectedCallback( entity player ) 
+{	
+	player.Signal( "PlayerDisconnected" )
+    string reason = "Disconnection";
+    PIN_PlayerLeft(player, reason);
 }
 
 void function PIN_GameStart()
 {
+	//stubbed
+}
+
+
+void function PIN_SetGameStartTime()
+{
 
 }
+
+//make sure round_end isn't started from multiple sources in codebase at same time.
+bool process_end_round_complete = true; 
 
 void function PIN_RoundEnd( int roundnum )
-{
-
+{	
+	if ( process_end_round_complete == true )
+	{
+		__executeEventEnd_messages()
+		thread FinishGameStatsRound()
+	}
 }
+
+void function UpdateLiveStats( string metrics )
+{
+	
+	if ( metrics != "" )
+	{
+		SQ_UpdateLiveStats( metrics )
+	}
+	
+}
+
+void function FinishGameStatsRound()
+{
+	if ( process_end_round_complete == true )
+	{
+	
+		process_end_round_complete = false;
+	
+		//string message = format("round ended at %d, shipping match stats ", GetUnixTimestamp() )
+		//sqprint(message)
+
+						//R5R.DEV
+						if ( file.LogOn && isLogging() )
+						{
+						
+								if(!file.bSafeLog){ stopLogging(false); return; }
+								
+								//mkos: log winner placement - && denotes placement entry for parser
+								LogEvent(
+								format("\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true)),
+								file.LogE
+								);
+
+										if(!Logging_ShipStats()){
+											sqprint("Shipping to stats server DISABLED -- check playlists file to enable --");
+										}
+											
+										if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
+										{
+											sqprint("No stats to ship...\n");
+											stopLogging(false);
+										} 
+										else 
+										{
+										stopLogging(Logging_ShipStats()); //IMPORTANT
+										
+										//update live global stats for match making (verified only)
+										string metrics = PrintAllPlayerMetrics(true);
+										UpdateLiveStats( metrics );
+										
+										//send to discord:
+										string recap = PIN_WinnerByKillsAndDamage();
+										thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK );
+										
+											if (Logging_ShipStats())
+											{
+												foreach(player in GetPlayerArray())
+													{
+														if(!IsValid(player)) continue
+														Message(player, "Stats Shipped", "\n\n\n\n Match metrics sent to tracker @ www.r5r.dev \n\n\n\n" , 4)
+													}
+											}
+										}
+
+						}
+						//END.DEV
+		
+		UpdateRoundStats_GlobalsCarryOver()
+		DestroyStats()
+		process_end_round_complete = true;	
+		file.PIN_GameState_Start = false;		
+	} 
+}
+
 
 void function PIN_GameEnd()
-{
-
+{	
+	if ( process_end_round_complete == true )
+	{
+		file.bKillIntervalThread = true; //TEST
+		thread FinishGameStatsRound()
+	}
 }
 
-void function PIN_AddPlayer( entity player )
-{
 
+int function FS_RoundTime(){ return GetCurrentPlaylistVarInt("flowstateRoundtime", 1800) }
+
+void function PIN_AddPlayer( entity player )
+{	
+	if(!IsValid(player)) return 
+	
+	if( file.bChatbotEnabled && player.GetPlayerName() == "["+ file.sBotName +"]")
+	{
+		file.eBotEnt = player 
+		
+		if( IsValid(file.eBotEnt) )
+		{
+			player.p.bIsChatbot = true
+			mkos_Force_Rest( file.eBotEnt, [] )
+			file.eBotEnt.p.start_in_rest_setting = true;
+			thread BotInvis( player )
+			thread IntervalThread()
+		}
+		else 
+		{
+			sqerror("ServerBot Entity Error")
+		}
+		
+		return
+	}
+	
+	string UID = player.GetPlatformUID()
+	InitializePlayerMetricsStructForPlayer( player )
+	
+	if( !file.global_stats )
+	{
+		player.p.stats_done_loading = true
+	}
+	
+	if( IsValid( player ) && GetPlayerLeftFlag( player ))
+	{	
+		//sqprint("R5RDEV_DEBUG_PRINT: Player had left previously flag triggered")
+		UpdateFromLocalPersistence( player )
+	}
+	else 
+	{	
+		int i = 0;
+		while( IsValid(player) && !player.p.stats_done_loading )
+		{	
+			i++; wait 1; if(i==30){	break }
+		}
+		
+		SavePlayer_R5RDEV_Settings_To_Struct( player );
+	}
+	
+	if (file.restricted_server)
+	{	
+		thread Alert_Player_Access( player );
+	}
+	else 
+	{
+		if ( player.p.start_in_rest_setting )
+		{
+			#if DEVELOPER
+			sqprint("Player sent to rest from rest setting")
+			#endif
+			mkos_Force_Rest( player, [] )
+		}
+	}
+	
+	if ( file.LogOn && isLogging() && IsValid( player ) )
+	{	
+		string p_ea_name = player.GetPlayerName();
+		Message(player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10)	
+
+		
+			try 
+			{
+				float timeRemaining;
+
+				if (g_bIs1v1) 
+				{
+					const int INITIAL_DELAY = 7;
+					const int DELAY_BETWEEN_ROUNDS = 13;
+
+					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+				} 
+				else if (GameRules_GetGameMode() == "fs_dm") 
+				{
+					const int INITIAL_DELAY = 8;
+					int DELAY_BETWEEN_ROUNDS;
+
+					if (VOTING_PHASE_ENABLE) {
+						DELAY_BETWEEN_ROUNDS = 32;
+					} else {
+						DELAY_BETWEEN_ROUNDS = 13;
+					}
+
+					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+				}
+				
+				if (IsValid(player)) 
+				{
+					LogEvent(format("^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
+					   UID,
+					   GetNumTeamsRemaining().tostring(),
+					   GetUnixTimestamp(),
+					   timeRemaining,
+					   p_ea_name
+					   ),
+					file.LogE
+					);
+				} 
+
+			} 
+			catch (error) 
+			{}		
+	}	
+}
+
+void function BotInvis( entity bot )
+{	
+	if( !IsValid( bot ) ){ return }
+	maki_tp_player( bot, getBotSpawn() )
+	wait 7
+	maki_tp_player( bot, getBotSpawn() )
+	bot.MakeInvisible()
+	wait 2
+	bot.MakeInvisible()
 }
 
 void function PIN_PlayerLeft( entity player, string reason )
 {
+	string p_ea_name = player.GetPlayerName()
+	string OID = player.GetPlatformUID()
+	SetPlayerLeftFlag( player )
+	//string message = format("%s disconnected ", pname )
+	//sqprint(message)
 
+	if (file.LogOn && file.bSafeLog) 
+	{
+		if (isLogging()) 
+		{
+			if ( GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false ) )
+			{		
+				string count = (GetNumHumanPlayers() - 1).tostring();
+				thread PlayerCounts("Left", p_ea_name, OID, count );		
+			}
+	
+			float timeRemaining;
+
+			if (g_bIs1v1) 
+			{
+				const int INITIAL_DELAY = 7;
+				const int DELAY_BETWEEN_ROUNDS = 13;
+
+				int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+			} 
+			else if (GameRules_GetGameMode() == "fs_dm") 
+			{
+				const int INITIAL_DELAY = 8;
+				int DELAY_BETWEEN_ROUNDS;
+
+				if (VOTING_PHASE_ENABLE) {
+					DELAY_BETWEEN_ROUNDS = 32;
+				} else {
+					DELAY_BETWEEN_ROUNDS = 13;
+				}
+
+				int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
+				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
+			}
+
+			LogEvent(
+				format("|&,%s,%i,%d,%s",
+					   OID,
+					   timeRemaining,
+					   GetUnixTimestamp(),
+					   p_ea_name
+					   ),
+				file.LogE
+			);
+		}
+	}
 }
 
 void function PIN_PlayerSpawned( entity player )
 {
-
+	/*
+	string pname = player.GetPlayerName( )
+	string message = format("%s spawned ", pname )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo )
 {
-
+	/*
+	string downedplayer = victim.GetPlayerName( )
+	string attackingplayer = attacker.GetPlayerName( )
+	string message = format("%s was downed by %s ", downedplayer, attackingplayer )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerRevived( entity injured, entity healer )
 {
-
+	/*
+	string downedplayer = injured.GetPlayerName( )
+	string revivingplayer = healer.GetPlayerName( )
+	string message = format("%s was revived by %s ", downedplayer, revivingplayer )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
-{
+{	
+	/*
+	string pname = victim.GetPlayerName( )
+	string killer = attacker.GetPlayerName( )
+	string message = format("%s died to %s", pname, killer )
+	sqprint(message)
+	*/
 
+	float deathtime = Time();
+
+	if ( file.LogOn && isLogging() && IsValid(victim) && victim.IsPlayer() )
+	{
+		//TODO: Call function with additional flag
+		// for attackers from non player sources
+		thread EndFight( victim, attacker, damageInfo, deathtime );
+	}
 }
 
 void function PIN_PlanePath( vector startPos, vector endPos, float duration )
@@ -116,19 +5622,98 @@ void function PIN_PlanePath( vector startPos, vector endPos, float duration )
 
 }
 
-void function PIN_SetGameStartTime()
+void function PIN_SetGameStartGetUnixTimestamp()
 {
-
+	/*
+	int time = GetUnixTimestamp()
+	string message = format(" deprecate Game start time: %d ", time )
+	sqprint(message)
+	*/
 }
+
+
+
+/* #########################TODO: track only once ########################### */
+/*
+array<string> GameStartedForPlayer
+
+bool function IsPlayerTracked(string playerID) {
+    for (int i = 0; i < GameStartedForPlayer.len(); i++) {
+        if (GameStartedForPlayer[i] == playerID) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void function RemovePlayer(string playerID) {
+    array<string> updatedList;
+
+    for (int i = 0; i < GameStartedForPlayer.len(); i++) {
+        if (GameStartedForPlayer[i] != playerID) {
+            updatedList.push(GameStartedForPlayer[i]);
+        }
+    }
+
+    GameStartedForPlayer = updatedList;
+}
+*/
+/* #################################### ########################### */
+
+bool function CheckPlayerStartInRest( entity player )
+{
+	if  ( !IsValid(player) ) 
+	{
+		return false
+	}
+	
+	if (g_bIs1v1)
+	{
+		if (player.p.start_in_rest_setting)
+		{
+			mkos_Force_Rest( player, [] )
+		}
+	
+	
+		if (isPlayerInRestingList( player ))
+		{
+			return true 
+		}
+	}
+	
+	return false	
+}
+
 
 void function PIN_GameStartedForPlayer( entity player )
 {
+	
+	
+	/*
+	string pname = player.GetPlayerName( )
 
+	if ( IsPlayerTracked(pname)) {
+        return;
+    }
+
+	GameStartedForPlayer.push(pname);
+
+
+	// useless, handled by onconnected
+	string message = format("useless call; Game started for: %s ", pname )
+	sqprint(message)
+	*/
+		
 }
+
+
+/* ######################################################################################### */
 
 void function PIN_ItemPickup( entity player, entity pickup, string ref, int unitsPickedUp )
 {
-
+	//string pname = player.GetPlayerName( )
+	//string message = format("%s picked up item %s", pname, ref )
+	//sqprint(message)
 }
 
 void function PIN_CircleLocation( string type, vector origin, float radius, string action )
@@ -138,27 +5723,1220 @@ void function PIN_CircleLocation( string type, vector origin, float radius, stri
 
 void function PIN_DamageDone( entity attacker, entity victim, float damageAmount )
 {
+	/* doesn't help without damageInfo
+
+	string pname = attacker.GetPlayerName( )
+	string vname = victim.GetPlayerName( )
+	string message = format("%s did damage to %s", pname, vname)
+	sqprint(message)
+	*/
 
 }
 
 void function PIN_DamageDoneToPlayerForWeapon( entity attacker, string weaponclassname, float damageAmount, bool isHeadshot )
 {
-
+	/* useless
+	string pname = attacker.GetPlayerName( )
+	string message = format("%s did damge with weapon ", pname )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerEquip( entity player )
-{
-
+{	
+	/* useless
+	string pname = player.GetPlayerName( )
+	string message = format("%s equiped something ", pname )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerUse( entity player, string ref, ... )
-{
-
+{	
+	/*
+	string pname = player.GetPlayerName( )
+	string message = format("%s used %s ", pname, ref )
+	sqprint(message)
+	*/
 }
 
 void function PIN_PlayerOutResource( entity player, string ref )
 {
+
+}
+
+string function PIN_WinnerByKillsAndDamage() 
+{
+
+    int Most_Kills = -1;
+    float Most_Damage = -1.0;
+    string winner = "";
+    float winner_damage;
+    int winner_kills;
+    string winner_oid = "";
+
+    foreach (player in PlayerMetricsArray) 
+	{
+        int kills = player.kills;
+        float damage = player.damage;
+
+        if (kills > Most_Kills || (kills == Most_Kills && damage > Most_Damage)) 
+		{
+            Most_Kills = kills;
+            Most_Damage = damage;
+
+            winner = player.playername;
+            winner_oid = player.playerID;
+            winner_damage = damage;
+            winner_kills = kills;
+        }
+    }
+
+    if (winner != "") 
+	{
+        string json = "{\"winner\":\"" + sanitize(winner) + "\",\"winner_oid\":\"" + winner_oid + "\",\"winner_kills\":" + winner_kills.tostring() + ",\"winner_damage\":" + format("%.2f", winner_damage) + "}";
+        return json;
+    }
+
+    return "";
+}
+
+
+GameSummarySquadData function GameSummary_GetPlayerData( entity player )
+{
+	GameSummarySquadData data
+
+	if ( !IsValid( player ) )
+		return data
+
+	data.kills = player.GetPlayerNetInt( "kills" )
+	data.deaths = player.p.numberOfDeaths
+	data.survivalTime = int( GetUnixTimestamp() - player.p.lastRespawnTime )
+	data.damageDealt = int( player.p.playerDamageDealt )
+	data.revivesGiven = player.p.revivesGiven
+	data.respawnsGiven = player.p.respawnsGiven
+
+
+    string metrics = format("Player Stats - Kills: %d, Deaths: %d, Survival Time: %d seconds, Damage Dealt: %d, Revives Given: %d, Respawns Given: %d",
+                                 data.kills, data.deaths, data.survivalTime, data.damageDealt, data.revivesGiven, data.respawnsGiven);
+    //sqprint(metrics);
+
+	return data
+}
+
+void function PIN_Interact(entity player, string sound, ... )
+{	
+	/* useless metric atm
+	string pname = player.GetPlayerName( )
+	string message = format("%s interacted ", pname )
+	sqprint(message)
+	*/
+}
+
+void function PIN_PlayerAbility( entity player, string name, int ability, entity tracked, table additionalData )
+{	
+	/* useless metric atm
+	string pname = player.GetPlayerName( )
+	string message = format("%s used: %s ", pname, name )
+	sqprint(message)
+	*/
+}
+
+void function PIN_PlayerAbilityReady( entity player, int ability )
+{
+
+}
+
+void function PIN_AddToPlayerCountStat( entity player, string ability )
+{
+
+}
+
+void function PIN_OnWeaponAttack( entity player, entity meleeAttackWeapon, string classname, int num, vector origin, vector lookDirection )
+{
+	/* no need, handled by ondamage
+	string pname = player.GetPlayerName( )
+	string message = format("%s meleed: ", pname )
+	sqprint(message)
+	*/
+}
+
+void function PIN_Ping( entity player, string pingType, entity pingEnt, vector position )
+{	
+	/* no need yet
+	sqprint(format( "%s, %s, %s", string( player ), pingType, string( pingEnt ) ))
+	string pname = player.GetPlayerName( )
+	//string ping_what = pingEnt.tostring( )
+	string message = format("%s pinged: at location: ", pname )
+	sqprint(message)
+	*/
+}
+
+void function PIN_OnPlayerHealed( entity player, ... )
+{	
+	/*
+	//TODO:
+	string who = player.GetPlayerName( )
+	string message = format("%s healed", who )
+	sqprint(message)
+	*/
+}
+
+void function PIN_PlayerLandedOnGround( entity player )
+{	
+	/*
+	get player vectors to build map
 	
+	string who = player.GetPlayerName( )
+	string message = format("%s landed on ground", who )
+	sqprint(message)
+	*/
+}
+
+void function PIN_PlayerJumpedFromPlane( entity player, int len )
+{
+	/*
+	get player vectors to build map
+	
+	string who = player.GetPlayerName( )
+	string message = format("%s jumped from plane", who )
+	sqprint(message)
+	*/
+}
+
+void function PIN_Training( entity player, string status, string trainingStatus )
+{
+
+}
+
+
+#endif //END TRACKER DEFINE
+
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////					  ///////////////////////////
+/////////////////////////////		UTILITY		  ///////////////////////////
+/////////////////////////////					  ///////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+//php my beloved
+//trims leading and trialing whitespace from a string
+string function trim( string str ) 
+{
+    int start = 0;
+    int end = str.len() - 1;
+    string whitespace = " \t\n\r";
+
+    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	{
+        start++;
+    }
+
+    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	{
+        end--;
+    }
+
+    return str.slice(start, end + 1);
+}
+
+
+//////////////////////////////////////////////////
+//												//
+//				string to array			 		//
+//												//
+//	format of:									//												
+//					"string1, also string"		//
+// 												//
+//	into an array:  							//
+//					['string1','also string']	//
+//												//
+//												//
+// CALLING FUNCTION responsible for error catch //
+//////////////////////////////////////////////////
+
+array<string> function StringToArray( string str, int MAX_LENGTH = 128 ) 
+{		
+	int item_index = 0;
+	int length_check;
+	string t_str = trim( str )
+	
+    if ( t_str == "" )
+	{
+        throw "Cannot convert empty string to array.";
+	}
+	
+    array<string> arr = split( str, "," )
+	array<string> valid = []
+	
+	/*debug
+	foreach (index, item in arr) 
+	{
+		sqprint("Item #" + (index + 1) + ": '" + item + "'\n");
+	}
+	*/
+	
+    foreach ( item in arr ) 
+	{	
+	
+		item_index++
+		item = trim( item )
+		length_check = item.len()
+	
+        if ( item == "" ) 
+		{   
+		
+            sqerror( "Empty item in the list for item # " + ( item_index ) + " removed. " )	
+			
+        } else if ( length_check >= MAX_LENGTH ){
+
+			sqerror( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + MAX_LENGTH + " chars")	
+		
+		} else {
+			
+			valid.append( item )
+			
+		}
+		
+    }
+	
+	if ( valid.len() <= 0 ) 
+	{
+        throw "Array empty after conversion";
+    }
+
+    return valid;
+}
+
+
+string function Concatenate( string str1, string str2 ) 
+{	
+	int str1_length = str1.len()
+	int str2_length = str2.len()
+	int dif
+	string error
+	
+    if ( str1 == "" && str2 == "" ) 
+	{
+        return "";
+    }
+
+    if ( str1_length > 1000 ) 
+	{
+		dif = ( str1_length - 1000 )
+		throw ("Error: First string exceeds length limit of 1000 by " + dif.tostring() + " chars")
+    }
+	
+    if ( str2_length > 1000 ) 
+	{	
+		dif = ( str2_length - 1000 )
+        throw ("Error: Second string exceeds length limit of 1000 by " + dif.tostring() + " chars")
+    }
+	
+	if ( str2 != ""  )
+	{
+	
+		str2 = "," + str2;
+	
+	}
+	
+    return str1 + str2;
+}
+
+float function GetDefaultIBMM()
+{
+	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	return f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
+}
+
+void function SetDefaultIBMM( entity player )
+{	
+	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	player.p.IBMM_grace_period = f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
+}
+
+bool function IsNum( string str ) 
+{
+
+	if ( str.len() == 0 )
+		return false
+	
+	int i;
+	var char;
+	for ( i = 0; i < str.len(); i++ ) 
+	{
+		char = str[i];
+		if ( char < '0' || char > '9' ) 
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+bool function empty( string str )
+{
+	return str == "";
+}
+
+bool function IsNumeric(string str, int limit = 16 )
+{
+
+	if ( !IsNum( str ) ) return false;
+	
+	int num = 0;
+	try { num = str.tointeger(); } catch (outofrange) { return false; }
+	
+	return ( num >= 0 && num <= limit );
+	
+}
+
+bool function IsFloat( string str, float min = SQ_MIN_INT_32, float limit = SQ_MAX_INT_32 ) 
+{
+	if (str.len() == 0) 
+	{
+		return false;
+	}
+	
+	for (int i = 0; i < str.len(); i++) 
+	{
+		var c = str[i];
+		if (!((c >= '0' && c <= '9') || (c == '.' && i != 0) || (c == '-' && i == 0))) 
+		{
+			return false;
+		}
+	}
+	
+	float num = 0.0;
+	try { num = str.tofloat(); } catch (outofrange) { return false; }
+	
+	return ( num >= min && num <= limit );
+}
+
+string function LineBreak(string str, int interval = 80) 
+{
+	string output = "";
+	
+	for (int i = 0; i < str.len();) 
+	{
+		int end = i + interval;
+		
+		if (end >= str.len()) 
+		{
+			output += str.slice(i) + "\n";
+			break;
+		}
+		
+		bool located_space = false;
+		
+		for (int j = end; j > i; --j) 
+		{
+			if (str.slice(j-1, j) == " ") 
+			{
+				end = j;
+				located_space = true;
+				break;
+			}
+		}
+		
+		if (!located_space) 
+		{
+			end = i + interval;
+		}
+
+		output += str.slice(i, end) + "\n";
+		i = end;
+	}
+	
+	return output;
+}
+
+string function ReturnKey( string str )
+{
+	array<string> split = split(str , ":")	
+	return split[0]
+}
+
+string function ReturnValue( string str )
+{	
+	try {
+	
+		array<string> split = split(str , ":")
+		
+		if(split.len() < 2)
+		{
+			return "";
+		}
+		
+		if (split[1] == "NA")
+		{	
+			#if DEVELOPER
+			sqprint( "Default value was returned for key: " + str )
+			#endif
+			return "";
+		}
+		
+		return split[1]
+	} 
+	catch (err)
+	{
+		#if DEVELOPER 
+		sqerror( "ReturnValue() failed for key " + str )
+		#endif 
+		return "";
+	}		
+}
+
+bool function Is_Bool(string str)
+{
+	int num = 0;
+	string a_str = str; 
+	
+	if (a_str.len() == 0 || (a_str[0] < '0' || a_str[0] > '9') && a_str[0] != '-') return false;
+	
+	try { num = a_str.tointeger(); } catch (outofrange) { return false; }
+	
+	return ( abs(num) >= 0 && abs(num) <= 1);
+}
+
+entity function GetPlayerEntityByName( string name )
+{	
+	entity p;	
+	name = name.tolower()
+	
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( player.GetPlayerName().tolower() == name )
+		{		
+			return player;	
+		}	
+	}
+	
+	return p;
+}
+
+#if TRACKER
+bool function IsAdmin( string CheckPlayer )
+{
+	foreach ( Player, OID in player_admins) 
+	{
+	
+		if ( Player == CheckPlayer || OID == CheckPlayer) 
+		{
+			return true;
+		}
+	
+	}
+	
+	return false;
+}
+#endif
+
+bool function IsValidOID( string str )
+{
+	if ( !IsNum( str ) )
+		return false
+	
+	string oid;
+		
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !IsValid( player ) )
+		{
+			continue
+		}
+		
+		oid = player.GetPlatformUID()
+		
+		if ( oid == str )
+			return true
+	
+	}
+	
+	return false
+}
+
+entity function GetPlayerEntityByOID( string str )
+{
+	entity r_player;
+	string oid;
+	
+	if ( !IsNum( str ) )
+		return r_player
+		
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !IsValid( player ) )
+		{
+			continue
+		}
+		
+		oid = player.GetPlatformUID()
+		
+		if ( oid == str )
+		{
+			return player;
+		}
+	}
+	
+	return r_player;
+}
+
+entity function GetPlayer( string str ) 
+{
+	entity player;
+	
+	if ( IsValidOID( str ) )
+	{
+		return GetPlayerEntityByOID( str )	
+	}
+	else
+	{
+		return GetPlayerEntityByName( str )	
+	}
+	
+	return player
+}
+
+#if TRACKER
+string function GetMap( string str ) 
+{
+	foreach ( map in list_maps ) 
+	{
+		if ( map[0] == str || map[1] == str ) 
+		{
+			return map[1];
+		}
+	}
+	
+	return GetMapName()
+}
+
+string function GetMode( string str ) 
+{
+
+	foreach ( mode in list_gamemodes ) 
+	{
+		if ( mode[0] == str || mode[1] == str ) 
+		{
+			return mode[1];
+		}
+	}
+	
+	return GameRules_GetGameMode()
+}
+#endif //TRACKER
+
+bool function IsControlCharacter(string c) 
+{
+	var byte = c[0];
+	return (byte >= 0 && byte <= 31) || byte == 127;	
+}
+
+string function sanitize(string str) 
+{
+	string sanitized = "";
+
+	for (int i = 0; i < str.len(); i++) {
+		string c = str.slice(i, i + 1);
+
+		if ( IsControlCharacter(c) ) 
+		{
+			continue	
+		} 
+		else 
+		{
+			sanitized += c;
+		}
+	}
+
+	return sanitized;	
+}
+
+string function truncate( string str, int limit ) 
+{
+    if ( str.len() > limit ) 
+	{
+        return str.slice( 0, limit );
+    }
+    
+    return str;
+}
+
+void function printarray( array<string> args )
+{
+	try 
+	{
+		string test = ""
+		
+		foreach( arg in args )
+		{
+			test += arg;
+		}
+		
+		sqprint(test)
+	}
+	catch(badType)
+	{
+		sqprint("Error: " + badType )
+	}
+}
+
+
+bool function CheckRate( entity player )
+{	
+	if ( !IsValid( player ) ) 
+		return false 
+		
+	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
+	{
+		Message( player, "COMMANDS COOLDOWN")
+		return false
+	}
+	
+	player.p.ratelimit = Time()
+	
+	return true
+}
+
+//taken from sh_playlists.gnut
+#if SERVER	
+array<string> function GetPlaylistMaps( PlaylistName playlistName )
+{
+	array<string> mapsArray
+
+	int numModes = GetPlaylistGamemodesCount( playlistName )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		int numMaps = GetPlaylistGamemodeByIndexMapsCount( playlistName, modeIndex )
+		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+		{
+			string mapName = GetPlaylistGamemodeByIndexMapByIndex( playlistName, modeIndex, mapIndex )
+			if ( mapsArray.contains( mapName ) )
+				continue
+
+			mapsArray.append( mapName )
+		}
+	}
+
+	return mapsArray
+}
+#endif
+
+int function WeaponToIdentifier( string weaponName )
+{
+	if( !IsWeaponValid( weaponName )) 
+	{
+		string err = format( "#^ Unknown weaponName !DEBUG IT! -- weapon: %s", weaponName )
+		if(isLogging())
+		{
+			LogEvent(err,file.LogE)
+		}
+		
+		sqerror(err)
+		
+		return 2
+	}
+	
+	return WeaponIdentifiers[weaponName]
+}
+
+bool function IsWeaponValid( string weaponref )
+{
+	return ( weaponref in WeaponIdentifiers )
+}
+
+table<string,int> WeaponIdentifiers = {
+    ["damagedef_unknown"] = 1,
+    ["damagedef_unknownBugIt"] = 2,
+    ["damagedef_suicide"] = 3,
+    ["damagedef_despawn"] = 4,
+    ["damagedef_titan_step"] = 5,
+    ["damagedef_crush"] = 6,
+    ["damagedef_sonic_blast"] = 7,
+    ["damagedef_nuclear_core"] = 8,
+    ["damagedef_titan_fall"] = 9,
+    ["damagedef_titan_hotdrop"] = 10,
+    ["damagedef_reaper_fall"] = 11,
+    ["damagedef_trip_wire"] = 12,
+    ["damagedef_wrecking_ball"] = 13,
+    ["damagedef_reaper_groundslam"] = 14,
+    ["damagedef_reaper_nuke"] = 15,
+    ["damagedef_frag_drone_explode"] = 16,
+    ["damagedef_frag_drone_explode_FD"] = 17,
+    ["damagedef_frag_drone_throwable_PLAYER"] = 18,
+    ["damagedef_frag_drone_throwable_NPC"] = 19,
+    ["damagedef_stalker_powersupply_explosion_small"] = 20,
+    ["damagedef_stalker_powersupply_explosion_large"] = 21,
+    ["damagedef_stalker_powersupply_explosion_large_at"] = 22,
+    ["damagedef_shield_captain_arc_shield"] = 23,
+    ["damagedef_fd_explosive_barrel"] = 24,
+    ["damagedef_fd_tether_trap"] = 25,
+    ["damagedef_pilot_slam"] = 26,
+    ["damagedef_ticky_arc_blast"] = 27,
+    ["damagedef_grenade_gas"] = 28,
+    ["damagedef_gas_exposure"] = 29,
+    ["damagedef_dirty_bomb_explosion"] = 30,
+    ["damagedef_sonic_boom"] = 31,
+    ["damagedef_bangalore_smoke_explosion"] = 32,
+    ["damagedef_creeping_bombardment_detcord_explosion"] = 33,
+    ["damagedef_tank_bombardment_detcord_explosion"] = 34,
+    ["damagedef_defensive_bombardment"] = 35,
+    ["damagedef_loot_drone_explosion"] = 36,
+    ["damagedef_DocDrone"] = 37,
+    ["mp_weapon_grenade_decoyaudio"] = 38,
+    ["mp_weapon_grenade_cryonade"] = 39,
+    ["mp_weapon_hemlok"] = 40,
+    ["mp_weapon_lmg"] = 41,
+    ["mp_weapon_rspn101"] = 42,
+    ["mp_weapon_vinson"] = 43,
+    ["mp_weapon_lstar"] = 44,
+    ["mp_weapon_g2"] = 45,
+    ["mp_weapon_r97"] = 46,
+    ["mp_weapon_dmr"] = 47,
+    ["mp_weapon_wingman"] = 48,
+    ["mp_weapon_wingmanelite"] = 49,
+    ["mp_weapon_semipistol"] = 50,
+    ["mp_weapon_autopistol"] = 51,
+    ["mp_weapon_sniper"] = 52,
+    ["mp_weapon_sentinel"] = 53,
+    ["mp_weapon_shotgun"] = 54,
+    ["mp_weapon_mastiff"] = 55,
+    ["mp_weapon_frag_grenade"] = 56,
+    ["mp_weapon_grenade_emp"] = 57,
+    ["mp_weapon_arc_blast"] = 58,
+    ["mp_weapon_thermite_grenade"] = 59,
+    ["mp_weapon_nuke_satchel"] = 60,
+    ["mp_extreme_environment"] = 61,
+    ["mp_weapon_shotgun_pistol"] = 62,
+    ["mp_weapon_doubletake"] = 63,
+    ["mp_weapon_alternator_smg"] = 64,
+    ["mp_weapon_esaw"] = 65,
+    ["mp_weapon_wrecking_ball"] = 66,
+    ["mp_weapon_melee_survival"] = 67,
+    ["mp_weapon_pdw"] = 68,
+    ["mp_weapon_energy_ar"] = 69,
+    ["mp_weapon_volt_smg"] = 70,
+    ["mp_weapon_defender"] = 71,
+    ["mp_weapon_warmachine"] = 72,
+    ["mp_weapon_car"] = 73,
+    ["mp_weapon_3030"] = 74,
+    ["mp_weapon_dragon_lmg"] = 75,
+    ["mp_weapon_throwingknife"] = 76,
+    ["mp_weapon_grenade_electric_smoke"] = 77,
+    ["mp_weapon_grenade_gravity"] = 78,
+    // Melee
+    ["melee_pilot_emptyhanded"] = 79,
+    ["melee_pilot_arena"] = 80,
+    ["melee_pilot_sword"] = 81,
+    ["melee_titan_punch"] = 82,
+    ["melee_titan_punch_ion"] = 83,
+    ["melee_titan_punch_tone"] = 84,
+    ["melee_titan_punch_legion"] = 85,
+    ["melee_titan_punch_scorch"] = 86,
+    ["melee_titan_punch_northstar"] = 87,
+    ["melee_titan_punch_fighter"] = 88,
+    ["melee_titan_punch_vanguard"] = 89,
+    ["melee_titan_punch_stealth"] = 90,
+    ["melee_titan_punch_rocket"] = 91,
+    ["melee_titan_punch_drone"] = 92,
+    ["melee_titan_sword"] = 93,
+    ["melee_titan_sword_aoe"] = 94,
+    ["melee_boxing_ring"] = 95,
+    ["mp_weapon_melee_boxing_ring"] = 96,
+    ["melee_data_knife"] = 97,
+    ["mp_weapon_data_knife_primary"] = 98,
+    ["melee_wraith_kunai"] = 99,
+    ["mp_weapon_wraith_kunai_primary"] = 100,
+	["melee_bolo_sword"] = 101,
+	["mp_weapon_bolo_sword_primary"] = 102,
+	["melee_bloodhound_axe"] = 103,
+	["mp_weapon_bloodhound_axe_primary"] = 104,
+	["melee_lifeline_baton"] = 105,
+	["mp_weapon_lifeline_baton_primary"] = 106,
+	["melee_shadowsquad_hands"] = 107,
+	["melee_shadowroyale_hands"] = 108,
+	["mp_weapon_shadow_squad_hands_primary"] = 109,
+	["mp_weapon_tesla_trap"] = 110,
+	// Turret Weapons
+	["mp_weapon_yh803"] = 111,
+	["mp_weapon_yh803_bullet"] = 112,
+	["mp_weapon_yh803_bullet_overcharged"] = 113,
+	["mp_weapon_mega_turret"] = 114,
+	["mp_weapon_mega_turret_aa"] = 115,
+	["mp_turretweapon_rockets"] = 116,
+	["mp_turretweapon_blaster"] = 117,
+	["mp_turretweapon_plasma"] = 118,
+	["mp_turretweapon_sentry"] = 119,
+	["mp_weapon_smart_pistol"] = 120,
+	// Character Abilities
+	["mp_weapon_defensive_bombardment_weapon"] = 121,
+	["mp_weapon_creeping_bombardment_weapon"] = 122,
+	["mp_ability_octane_stim"] = 123,
+	["mp_ability_crypto_drone_emp"] = 124,
+	["mp_ability_crypto_drone_emp_trap"] = 125,
+	// AI only Weapons
+	["mp_weapon_super_spectre"] = 126,
+	["mp_weapon_dronebeam"] = 127,
+	["mp_weapon_dronerocket"] = 128,
+	["mp_weapon_droneplasma"] = 129,
+	["mp_weapon_turretplasma"] = 130,
+	["mp_weapon_turretrockets"] = 131,
+	["mp_weapon_turretplasma_mega"] = 132,
+	["mp_weapon_gunship_launcher"] = 133,
+	["mp_weapon_gunship_turret"] = 134,
+	["mp_weapon_gunship_missile"] = 135,
+	// Misc
+	["rodeo"] = 136,
+	["rodeo_forced_titan_eject"] = 137,
+	["rodeo_execution"] = 138,
+	["human_melee"] = 139,
+	["auto_titan_melee"] = 140,
+	["berserker_melee"] = 141,
+	["mind_crime"] = 142,
+	["charge_ball"] = 143,
+	["grunt_melee"] = 144,
+	["spectre_melee"] = 145,
+	["prowler_melee"] = 146,
+	["super_spectre_melee"] = 147,
+	["titan_execution"] = 148,
+	["human_execution"] = 149,
+	["eviscerate"] = 150,
+	["wall_smash"] = 151,
+	["ai_turret"] = 152,
+	["team_switch"] = 153,
+	["rocket"] = 154,
+	["titan_explosion"] = 155,
+	["flash_surge"] = 156,
+	["sticky_time_bomb"] = 157,
+	["vortex_grenade"] = 158,
+	["droppod_impact"] = 159,
+	["ai_turret_explosion"] = 160,
+	["rodeo_trap"] = 161,
+	["round_end"] = 162,
+	["bubble_shield"] = 163,
+	["evac_dropship_explosion"] = 164,
+	["sticky_explosive"] = 165,
+	["titan_grapple"] = 166,
+	// Environmental
+	["fall"] = 167,
+	["splat"] = 168,
+	["crushed"] = 169,
+	["burn"] = 170,
+	["lasergrid"] = 171,
+	["outOfBounds"] = 172,
+	["deathField"] = 173,
+	["indoor_inferno"] = 174,
+	["submerged"] = 175,
+	["switchback_trap"] = 176,
+	["floor_is_lava"] = 177,
+	["suicideSpectreAoE"] = 178,
+	["titanEmpField"] = 179,
+	["stuck"] = 180,
+	["deadly_fog"] = 181,
+	["exploding_barrel"] = 182,
+	["electric_conduit"] = 183,
+	["turbine"] = 184,
+	["harvester_beam"] = 185,
+	["toxic_sludge"] = 186,
+	["mp_weapon_spectre_spawner"] = 187,
+	// development
+	["weapon_cubemap"] = 188,
+	// Prototype
+	["mp_weapon_zipline"] = 189,
+	["at_turret_override"] = 190,
+	["rodeo_battery_removal"] = 191,
+	["phase_shift"] = 192,
+	["gamemode_bomb_detonation"] = 193,
+	["nuclear_turret"] = 194,
+	["proto_viewmodel_test"] = 195,
+	["mp_titanweapon_heat_shield"] = 196,
+	["mp_titanweapon_sonar_pulse"] = 197,
+	["mp_titanability_slow_trap"] = 198,
+	["mp_titanability_gun_shield"] = 199,
+	["mp_titanability_power_shot"] = 200,
+	["mp_titanability_ammo_swap"] = 201,
+	["mp_titanability_sonar_pulse"] = 202,
+	["mp_titanability_rearm"] = 203,
+	["mp_titancore_upgrade"] = 204,
+	["mp_titanweapon_xo16_vanguard"] = 205,
+	["mp_weapon_arc_trap"] = 206,
+	["mp_weapon_arc_launcher"] = 207,
+	["core_overload"] = 208,
+	["mp_titanweapon_stasis"] = 209,
+	["mp_titanweapon_stealth_titan"] = 210,
+	["mp_titanweapon_rocket_titan"] = 211,
+	["mp_titanweapon_drone_titan"] = 212,
+	["mp_titanweapon_stealth_sword"] = 213,
+	["mp_ability_consumable"] = 214,
+	["snd_bomb"] = 215,
+	["bombardment"] = 216,
+	["bleedout"] = 217,
+	["mp_weapon_energy_shotgun"] = 218,
+	["fire"] = 219,
+	// Custom
+	["mp_weapon_raygun"] = 220,
+	["mp_weapon_haloshotgun"] = 221,
+	["mp_weapon_halosmg"] = 222,
+	["mp_weapon_halomagnum"] = 223,
+	["mp_weapon_halobattlerifle"] = 224,
+	["mp_weapon_haloassaultrifle"] = 225,
+	["mp_weapon_halosniperrifle"] = 226,
+	["mp_weapon_haloneedler"] = 227,
+	["mp_weapon_energysword"] = 228,
+	["mp_weapon_frag_grenade_halomod"] = 229,
+	["mp_weapon_plasma_grenade_halomod"] = 230,
+	["mp_weapon_oddball_primary"] = 231,
+	["melee_oddball"] = 232,
+	["mp_weapon_clickweaponauto"] = 233,
+	// lies
+	["mp_weapon_grenade_creeping_bombardment"] = 234,
+	["mp_ability_area_sonar_scan"] = 235,
+	["mp_ability_hunt_mode"] = 236,
+	["mp_weapon_dirty_bomb"] = 237,
+	["mp_weapon_grenade_gas"] = 238,
+	["mp_ability_crypto_drone"] = 239,
+	["mp_ability_crypto_drone_emp"] = 240,
+	["mp_ability_gibraltar_shield"] = 241,
+	["mp_weapon_bubble_bunker"] = 242,
+	["mp_weapon_grenade_defensive_bombardment"] = 243,
+	["mp_weapon_deployable_medic"] = 244,
+	["mp_ability_care_package"] = 245,
+	["mp_ability_holopilot"] = 246,
+	["mp_ability_mirage_ultimate"] = 247,
+	["mp_ability_heal"] = 248,
+	["mp_weapon_jump_pad"] = 249,
+	["mp_ability_grapple"] = 250,
+	["mp_weapon_zipline"] = 251,
+	["mp_weapon_tesla_trap"] = 252,
+	["mp_weapon_trophy_defense_system"] = 253,
+	["mp_ability_phase_walk"] = 254,
+	["mp_weapon_phase_tunnel"] = 255,
+	["mp_weapon_grenade_bangalore"] = 256
+	
+	//ADDING TO THIS LIST REQUIRES CHANGES TO EXCLUSION LIST
+
+};
+
+array<int> function exclusions()
+{
+	const array<int> exclude = [
+		233,
+		234,
+		235,
+		236,
+		237,
+		238,
+		239,
+		240,
+		241,
+		242,
+		243,
+		244,
+		245,
+		246,
+		247,
+		248,
+		249,
+		250,
+		251,
+		252,
+		253,
+		254,
+		255,
+		256
+	];
+
+	return exclude;
+}
+
+bool function exclude( int weaponSource )
+{
+	if(exclusions().find(weaponSource) != -1)
+	{
+		return true	
+	}
+	
+	return false
+}
+
+
+string function ParseWeapon( string weaponString )
+{
+	array<string> mods = split( trim( weaponString ), " " )
+	
+	if( mods.len() < 1 )
+	{
+		return ""
+	}
+	
+	if( !IsWeaponValid( mods[0] ) || !(SURVIVAL_Loot_IsRefValid( mods[0] )) )
+	{
+		return ""
+	}
+	
+	bool removed = false
+	
+	for ( int i = mods.len() - 1 ; i >= 1; i-- )
+	{
+		if ( !SURVIVAL_Loot_IsRefValid( mods[i] ) 
+		|| !IsModValidForWeapon( mods[0], mods[i] ) )
+		{
+			removed = true
+			sqprint("removed: " + mods[i] )		
+			mods.remove(i)
+		}
+	}
+	
+	if (removed)
+	{
+		sqprint( PrintSupportedAttachpointsForWeapon( mods[0] ) )
+	}
+	
+	string return_string = ""
+	
+	foreach( mod in mods )
+	{
+		return_string += mod + " "
+	}
+	
+	return trim(return_string)
+}
+
+bool function IsModValidForWeapon( string weaponref, string mod )
+{	
+	array<string> attachPoint = GetAttachPointsForAttachment( mod )
+	LootData wData = SURVIVAL_Loot_GetLootDataByRef( weaponref )	
+	
+	return ( wData.supportedAttachments.contains( attachPoint[0] ) 
+	&& !wData.disabledAttachments.contains( attachPoint[0] ) )
+}
+
+string function PrintSupportedAttachpointsForWeapon( string weaponref )
+{
+	LootData wData = SURVIVAL_Loot_GetLootDataByRef( weaponref )
+	
+	string debug = format("\n --- Attachment List for %s --- \n", weaponref)
+	int i = 1
+	
+	foreach( supported in wData.supportedAttachments )
+	{
+		debug += format( "%d. %s \n", i, supported )
+		i++;
+	}
+	
+	return debug
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+#if HAS_TRACKER_DLL
+//do nothing
+#else
+		array<int> function SQ_CreateServerBot(){ return [-1] }
+		
+		int function EA_Verify(){ return 0 }
+		
+		bool function isLogging(){ return false }
+		bool function SQ_GetLogState(){ return false }
+	
+		string function SQMatchID(){ return "" }
+		string function GetKDString( string UID ){ return "NA" }
+		string function SQ_GetSetting( string key ){ return "" }
+		string function FetchGlobalSettingsFromR5RDEV( string query ){ return "" }
+			
+		void function InitializeLogThread_internal(){}
+		void function LogEvent( string data, bool encrypt ){}
+		void function stopLogging(){}	
+		void function sqprint( string data ){ printl(data) }
+		void function sqerror( string data ){ printl(data) }		
+		void function testbool(){}		
+		void function _STATSHOOK_UpdatePlayerCount(){}
+		void function _STATSHOOK_EndOfMatch(){}
+		void function LoadKDString( string UID ){}
+		void function SQ_UpdateLiveStats(){}
+		void function SQ_ResetStats(){}
+		void function LoadBatchKDStrings(){}
+		void function CleanupLogs(){}	
+		void function SQ_ReloadConfig(){}		
+		void function SQ_ServerMsg( string msg, int id ){}	
+#endif
+
+#if STUB
+
+struct {
+
+	bool LogOn = false
+	bool LogE = false
+	bool bChatbotEnabled = false
+	bool global_stats = false
+	bool afk_to_rest_enabled = false
+
+} file
+
+//flags
+bool function bLog(){ return file.LogOn }
+bool function bEnc(){ return file.LogE }
+bool function bGlobalStats(){ return file.global_stats }
+bool function bAfkToRest(){ return file.afk_to_rest_enabled }
+bool function bBotEnabled(){ return file.bChatbotEnabled }
+
+//persistence
+void function SavePlayer_wait_time( entity ent, float time ){}
+void function SavePlayer_lock1v1_setting( entity ent, bool setting ){}
+void function SavePlayer_start_in_rest_setting( entity ent, bool setting ){}
+void function SavePlayer_enable_input_banner( entity ent, bool setting ){}
+void function SavePlayer_saved_weapons( entity ent, string settings ){}
+
+//shared
+void function SendServerMessage( string msg ){}
+DamageEvent function getEventByPlayerHandle( int handle ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }
+
+void function PIN_Init()
+{
+	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
+	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
+	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
+	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
+	AddCallback_OnClientConnected(PlayerConnectedCallback);
+}
+
+void function PIN_GameStart(){}
+void function PIN_RoundEnd( int roundnum ){}
+void function PIN_GameEnd(){}
+void function PIN_AddPlayer( entity player ){}
+void function PIN_PlayerLeft( entity player, string reason ){}
+void function PIN_PlayerSpawned( entity player ){}
+void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo ){}
+void function PIN_PlayerRevived( entity injured, entity healer ){}
+void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo ){}
+void function PIN_PlanePath( vector startPos, vector endPos, float duration ){}
+void function PIN_SetGameStartTime(){}
+void function PIN_GameStartedForPlayer( entity player ){}
+void function PIN_ItemPickup( entity player, entity pickup, string ref, int unitsPickedUp ){}
+void function PIN_CircleLocation( string type, vector origin, float radius, string action ){}
+void function PIN_DamageDone( entity attacker, entity victim, float damageAmount ){}
+void function PIN_DamageDoneToPlayerForWeapon( entity attacker, string weaponclassname, float damageAmount, bool isHeadshot ){}
+void function PIN_PlayerEquip( entity player ){}
+void function PIN_PlayerUse( entity player, string ref, ... ){}
+void function PIN_PlayerOutResource( entity player, string ref ){}
+
+void function PlayerConnectedCallback( entity player )
+{	
+	if ( !IsValid( player ) ){ return }
+	
+	player.p.name = player.GetPlayerName()
+	player.p.UID = player.GetPlatformUID()
+	player.p.handle = player.GetEncodedEHandle()
 }
 
 GameSummarySquadData function GameSummary_GetPlayerData( entity player )
@@ -178,52 +6956,15 @@ GameSummarySquadData function GameSummary_GetPlayerData( entity player )
 	return data
 }
 
-void function PIN_Interact(entity player, string sound, ... )
-{
+void function PIN_Interact(entity player, string sound, ... ){}
+void function PIN_PlayerAbility( entity player, string name, int ability, entity tracked, table additionalData ){}
+void function PIN_PlayerAbilityReady( entity player, int ability ){}
+void function PIN_AddToPlayerCountStat( entity player, string ability ){}
+void function PIN_OnWeaponAttack( entity player, entity meleeAttackWeapon, string classname, int num, vector origin, vector lookDirection ){}
+void function PIN_Ping( entity player, string pingType, entity pingEnt, vector position ){}
+void function PIN_OnPlayerHealed( entity player, ... ){}
+void function PIN_PlayerLandedOnGround( entity player ){}
+void function PIN_PlayerJumpedFromPlane( entity player, int len ){}
+void function PIN_Training( entity player, string status, string trainingStatus ){}
 
-}
-
-void function PIN_PlayerAbility( entity player, string name, int ability, entity tracked, table additionalData )
-{
-
-}
-
-void function PIN_PlayerAbilityReady( entity player, int ability )
-{
-
-}
-
-void function PIN_AddToPlayerCountStat( entity player, string ability )
-{
-
-}
-
-void function PIN_OnWeaponAttack( entity player, entity meleeAttackWeapon, string classname, int num, vector origin, vector lookDirection )
-{
-
-}
-
-void function PIN_Ping( entity player, string pingType, entity pingEnt, vector position )
-{
-
-}
-
-void function PIN_OnPlayerHealed( entity player, ... )
-{
-	
-}
-
-void function PIN_PlayerLandedOnGround( entity player )
-{
-
-}
-
-void function PIN_PlayerJumpedFromPlane( entity player, int len )
-{
-
-}
-
-void function PIN_Training( entity player, string status, string trainingStatus )
-{
-
-}
+#endif

@@ -1,0 +1,29 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Bolo_Sword"
+	"shortprintname"								"Bolo_Sword"
+	"description" 									"Bolo_Sword"
+	"longdesc"										"Bolo_Sword"
+
+	"weapon_type_flags"								"WPT_MELEE"
+	
+	// UI/HUD
+	"menu_icon"										"rui/weapon_icons/r5/weapon_bolo"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_bolo"
+
+	// Models
+	"viewmodel"   									"mdl/Weapons/paracord_knife/ptpov_parcord_knife.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_bolo_sword_primary"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword_primary"
+	
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"2.3"
+}

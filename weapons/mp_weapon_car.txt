@@ -33,9 +33,9 @@ WeaponData
 	"stat_rof"		        						"38"
 	
 	// Models
-	"viewmodel"   									"mdl/weapons/r97/ptpov_r97.rmdl"
-	"playermodel" 									"mdl/weapons/r97/w_r97.rmdl"
-	"holstermodel"									"mdl/weapons/r97/w_r97.rmdl"
+	"viewmodel"   									"mdl/techart/mshop/weapons/class/smg/car/car_base_v.rmdl"
+	"playermodel" 									"mdl/techart/mshop/weapons/class/smg/car/car_base_w.rmdl"
+	"holstermodel"									"mdl/techart/mshop/weapons/class/smg/car/car_base_w.rmdl"
 	"holster_offset"								"2 0 0"
 	"holster_type"									"rifle"
 	
@@ -251,10 +251,8 @@ WeaponData
 	//"bob_roll_zoomed"								".002"
 
     // Sway
-    "sway_min_yaw_zoomed"							"-0.025"
-    "sway_max_yaw_zoomed"							"0.025"
-    "sway_min_pitch_zoomed"  						"-0.01"
-    "sway_max_pitch_zoomed"  						"0.02"
+	"sway_rotate_attach_zoomed" ""
+	"sway_rotate_attach" ""
 
 	// Rumble
 	"fire_rumble"									"rumble_smg"
@@ -274,6 +272,10 @@ WeaponData
 
 	Mods
 	{
+		gold
+		{
+		}
+
 		survival_finite_ammo
         {
             "ammo_default_total"					"0"

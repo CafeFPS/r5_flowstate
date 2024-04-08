@@ -15,6 +15,7 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
+global function ReMapCreateEvacTower
 global function ReMapCreateRespawnableHeal
 global function ReMapCreateSpeedBoost
 global function ReMapCreateCamera
@@ -55,8 +56,11 @@ global enum eReMapHealType
 global array< entity > MapEditorEnts;
 
 // Jump Tower
-const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
-const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+global const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
+global const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+
+global const asset EVAC_BALLON_MDL = $"mdl/flowstate_custom/evac_tower_balloon.rmdl"
+global const asset EVAC_BASE_MDL = $"mdl/flowstate_custom/evac_tower_weight.rmdl"
 
 // Respawnable MedKit
 const asset MEDKIT_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_large.rmdl"
@@ -703,6 +707,52 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
 
     MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
+
+    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
+    trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
+
+    DispatchSpawn( trigger )
+}
+
+void function ReMapCreateEvacTower( vector origin, vector angles, float height, bool addToArray = false ) //faster and use different models
+{
+	origin += <0,0,-24>
+    entity ballon_base = CreateEntity( "prop_dynamic" )
+    ballon_base.SetOrigin( origin )
+    ballon_base.SetAngles( < 0, 0, 0 > )
+    ballon_base.SetModelScale( 1 )
+    ballon_base.SetValueForModelKey( EVAC_BASE_MDL )
+    ballon_base.kv.solid = 0
+	ballon_base.kv.fadedist = 99999
+    ballon_base.AllowMantle()
+
+    entity ballon_top = CreateEntity( "prop_dynamic" )
+    ballon_top.SetOrigin( origin + < 0, 0, height > )
+    ballon_top.SetAngles( < 0, angles.y, 90 > )
+    ballon_top.SetModelScale( 1 )
+    ballon_top.SetValueForModelKey( EVAC_BALLON_MDL )
+	ballon_top.kv.fadedist = 99999
+    ballon_top.kv.solid = 0
+
+    array < entity > ballonArr = [ ballon_base, ballon_top ]
+
+    foreach ( ent in ballonArr )
+    {
+        ent.kv.fadedist = -1
+        ent.kv.renderamt = 255
+        ent.kv.rendercolor = "255 255 255"
+        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+        ent.SetScriptName( "jump_tower" )
+
+        if( addToArray ) MapEditorEnts.append( ent )
+
+        DispatchSpawn( ent )
+    }
+
+    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
+    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, 0, 0, 60 )
+
+    MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1.4, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
 
     entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
     trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )

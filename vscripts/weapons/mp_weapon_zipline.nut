@@ -235,7 +235,7 @@ void function CreateGunZipline( entity weapon, vector startPos, vector endPos, v
 	entity zipline_start = CreateEntity( "zipline" )
 	zipline_start.RemoveFromAllRealms()
 	zipline_start.AddToOtherEntitysRealms( weapon )
-	zipline_start.kv.Material = "cable/zipline"
+	zipline_start.kv.Material = "cable/zipline.vmt"
 	zipline_start.kv.ZiplineAutoDetachDistance = ZIPLINE_AUTO_DETACH_DISTANCE
 	zipline_start.kv._zipline_rest_point_0 = startPos.x + " " + startPos.y + " " + startPos.z
 	zipline_start.kv._zipline_rest_point_1 = endPos.x + " " + endPos.y + " " + endPos.z

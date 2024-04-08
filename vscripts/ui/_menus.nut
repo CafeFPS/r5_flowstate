@@ -1558,6 +1558,7 @@ void function InitMenus()
 
 	//Settings
 	AddMenu( "FRLGDuelsSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu", InitLGDuelsSettings )
+	// AddMenu( "ValkSimulatorSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_valksimulator_settings.menu", InitValkSimulatorSettings )
 
 	//CTF UI
 	var controlmenu = AddMenu( "CTFRespawnMenu", $"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu", InitCTFRespawnMenu )

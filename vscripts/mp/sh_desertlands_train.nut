@@ -1,7 +1,6 @@
 // Made by @CafeFPS
 
 //-todo
-// fix TRAIN_POI_BEAM
 // recreate smooth points for next node from stop node
 // clean up installed stopmover and created smooth points in path chain ?, connect lastnode to next path again and remove the new smooth points
 // add timeout to manual stop, like, after being manually stopped some time it should restart auto after a while

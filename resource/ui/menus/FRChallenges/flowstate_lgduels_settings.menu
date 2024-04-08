@@ -132,7 +132,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.0 | Made my mkos and @CafeFPS. %$rui/flowstate_custom/colombia_flag_papa%"
+			labelText				"v1.0 | Made by mkos and @CafeFPS. %$rui/flowstate_custom/colombia_flag_papa%"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

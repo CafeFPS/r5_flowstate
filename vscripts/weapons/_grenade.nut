@@ -17,6 +17,7 @@ global function Grenade_OnWeaponDeactivate
 global function Grenade_OnWeaponTossPrep
 global function Grenade_OnProjectileIgnite
 
+global function OnProjectileCollision_weapon_impulse_grenade
 #if SERVER
 	global function Grenade_OnPlayerNPCTossGrenade_Common
 	global function EnableTrapWarningSound
@@ -177,7 +178,7 @@ int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams atta
 
 	if ( IsValid( grenade ) )
 		grenade.proj.savedDir = weaponOwner.GetViewForward()
-
+	
 #if SERVER
 
 	#if BATTLECHATTER_ENABLED
@@ -188,6 +189,101 @@ int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams atta
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
+
+void function OnProjectileCollision_weapon_impulse_grenade( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
+{
+	entity player = projectile.GetOwner()
+	entity weapon = projectile.GetWeaponSource()
+
+	if ( IsValid( hitEnt ) && hitEnt.IsPlayer() )
+		return
+
+	table collisionParams =
+	{
+		pos = pos,
+		normal = normal,
+		hitEnt = hitEnt,
+		hitbox = hitbox
+	}
+
+	bool result = PlantStickyEntityOnWorldThatBouncesOffWalls( projectile, collisionParams, 0.7 )
+
+	// #if SERVER
+		// thread ArcCookSound( projectile )
+	// #endif
+
+	if( result && IsValid( projectile ) && !projectile.GrenadeHasIgnited() )
+	{
+		thread function () : ( player, projectile, weapon ) 
+		{
+			float radius = projectile.GetDamageRadius()
+			vector origin = projectile.GetWorldSpaceCenter()
+
+			wait 1
+			
+			if( IsValid( projectile ) && !projectile.GrenadeHasIgnited() )
+			{
+				projectile.GrenadeIgnite()
+			}
+	
+			foreach( sPlayer in GetPlayerArray() )
+			{
+				printt( sPlayer, Distance( origin, sPlayer.GetOrigin() ) )
+				if( Distance( origin, sPlayer.GetOrigin() ) < radius )
+				{
+					printt( "player should knockback" )
+					#if SERVER
+					thread PushPlayerApart( sPlayer, origin, 1500 )
+					#endif
+				}
+			}
+		}()
+	}
+}
+
+#if SERVER
+void function PushPlayerApart( entity target, vector dmgOrigin, float speed )
+{
+	EndSignal( target, "OnDeath" )
+	EndSignal( target, "OnDestroy" )
+
+	array<string> attachments = [ "vent_left", "vent_right" ]
+	array<entity> fxs
+	foreach ( attachment in attachments )
+	{
+		int enemyID    = GetParticleSystemIndex( $"P_enemy_jump_jet_ON_trails" )
+
+		if( target.LookupAttachment( attachment ) == 0 )
+			continue
+		entity fx = StartParticleEffectOnEntity_ReturnEntity( target, enemyID, FX_PATTACH_POINT_FOLLOW, target.LookupAttachment( attachment ) )
+		fx.SetOwner( target )
+		fx.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)
+
+		fxs.append( fx )
+	}
+
+	OnThreadEnd(
+		function() : ( fxs )
+		{
+			foreach( fx in fxs )
+				if( IsValid( fx ) )
+					fx.Destroy()
+		}
+	)
+
+	vector dif = Normalize( target.GetOrigin() - dmgOrigin )
+	dif *= speed
+	vector result = dif
+	result.z = max( 800, fabs( dif.z ) )
+	target.SetVelocity( result )
+
+	WaitFrame()
+
+	while( IsValid( target ) && !target.IsOnGround() )
+		WaitFrame()
+
+}
+#endif
 
 var function Grenade_OnWeaponTossReleaseAnimEvent( entity weapon, WeaponPrimaryAttackParams attackParams )
 {

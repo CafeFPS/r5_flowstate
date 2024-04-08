@@ -1,0 +1,27 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	"weapon_type_flags"							"WPT_MELEE"
+	
+	// Models
+	"viewmodel"   									"mdl/Weapons/paracord_knife/ptpov_parcord_knife.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_bolo_sword"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword"
+
+	// FX
+	"impact_effect_table"							"melee_bolo"
+}
+

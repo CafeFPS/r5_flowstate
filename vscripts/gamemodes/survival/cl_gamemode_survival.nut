@@ -1990,10 +1990,12 @@ void function Sur_OnScoreboardShow()
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	#if(false)
-
-
-#endif //
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
+	{
+		if( IsAlive( GetLocalClientPlayer() ) )
+			ScoreboardToggleFocus( GetLocalClientPlayer() )
+		return
+	}
 
 	ShowMapRui()
 	UpdateFullmapRuiTracks()
@@ -2024,6 +2026,13 @@ void function Sur_OnScoreboardShow()
 void function Sur_OnScoreboardHide()
 {
 	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
+
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
+	{
+		if( IsAlive( GetLocalClientPlayer() ) )
+			ScoreboardToggleFocus( GetLocalClientPlayer() )
+		return
+	}
 
 	HideMapRui()
 
@@ -3299,7 +3308,7 @@ void function UpdateWaitingForPlayersMuteHint()
 
 void function WaitingForPlayers_CreateCustomCameras()
 {
-	if( GetCurrentPlaylistName() == "survival_dev" && s_overlayRui != null )
+	if( IsDevGamemode() && s_overlayRui != null )
 	{
 		RuiSetBool( s_overlayRui, "isOpaque", true )
 		return

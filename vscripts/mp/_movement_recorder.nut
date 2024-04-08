@@ -19,7 +19,7 @@ void function AssignCharacter( entity player, int index )
 	player.SetPlayerSettingsWithMods( characterSetFile, [] )
 }
 
-void function StartMovementRecorder(entity player, float length = 10, int character = 0, int shield = 1, float animRate = 1.0 )
+void function StartMovementRecorder(entity player, float length = 10, bool loop = false, int character = 0, int shield = 1, float animRate = 1.0)
 {
 	if( character < 0 ) return
 	
@@ -92,10 +92,9 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	#if DEVELOPER
 		printt(anim) //userdata
 	#endif
-	
-	continueLoop = true
-	// while( IsValid(player) && continueLoop )
-	// {
+
+	while( IsValid(player) )
+	{
 		entity dummy = CreateDummy( 99, initialpos, initialang )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
@@ -128,7 +127,10 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 			
 			dummy.Destroy()
 		}()
-	// }
+		
+		if( !loop )
+			break
+	}
 }
 
 int function ReturnShieldAmountForDesiredLevel(int shield)

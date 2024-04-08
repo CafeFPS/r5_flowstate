@@ -163,7 +163,7 @@ void function SV_CL_Init()
 	ShWarpGates_Init()
 
 	Sh_Loot_Vault_Panel_Init()
-
+	ChargePylons_Init()
 
 	ShLootDrones_Init()
 
@@ -177,6 +177,7 @@ void function SV_CL_Init()
 	CharacterSelectNewMenu_Init()
 
 	//ShHoverBike_Init()
+	ShHoverVehicle_Init()
 	ShLootBin_Init()
 
 	ShFlyers_Init()
@@ -192,6 +193,7 @@ void function SV_CL_Init()
 	
 	//R5R Sword
 	MpWeaponTitanSword_Init()
+	MpWeaponPortalGun_Init()
 
     // Zipline Utility
     #if SERVER
@@ -346,7 +348,7 @@ void function Server_Init()
 	ObjectiveResourceSystem_ServerInit()
 
     // ReMap Live
-    if ( GetCurrentPlaylistName() == "survival_dev" )
+    if ( IsDevGamemode() )
         ReMapLive_Init()
 
 	#if DEVELOPER

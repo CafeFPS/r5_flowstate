@@ -66,6 +66,11 @@ void function GamemodeSurvival_Init()
 	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
 	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+	AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
+	AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
+	AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
+	AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
+	AddClientCommandCallback("startMovementRecorder", ClientCommand_MovementRecorder)
 	// #endif
 
 	FillSkyWithClouds()
@@ -79,6 +84,61 @@ void function GamemodeSurvival_Init()
 	)
 
 	thread SURVIVAL_RunArenaDeathField()
+}
+
+bool function ClientCommand_MovementRecorder(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+	
+	if( args.len() == 0 )
+		return false
+
+	thread StartMovementRecorder( player, args[0].tofloat() )
+	return true
+}
+
+bool function ClientCommand_GiveSword(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	GiveSword( player )
+	return true
+}
+
+bool function ClientCommand_bleedout(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	Bleedout_StartPlayerBleedout( player, player )
+	return true
+}
+
+bool function ClientCommand_restartServer(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	GameRules_ChangeMap( GetMapName(), GetCurrentPlaylistName() )
+	return true
+}
+
+bool function ClientCommand_deathbox(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	vector origin = OriginToGround( GetPlayerCrosshairOrigin( player ) )
+
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+	
+	CreateAimtrainerDeathbox( gp()[0], origin )
+	return true
 }
 
 void function OnSurvivalMapEntsDidLoad()
@@ -164,6 +224,36 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		case "10":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+		break
+
+		case "11": //loba ss
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+		break
+		
+		case "12": // ballistic
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+		break
+		
+		case "13": // mrvn
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+
+		case "14": // gojo
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+		break
+
+		case "15": // naruto
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+		break
+
+		case "16": // naruto
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 		break
 	}
 
@@ -1038,6 +1128,12 @@ void function OnClientConnected( entity player )
 	playerTeam.fastremovebyvalue( player )
 	player.p.squadRank = 0
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod4", false ) )
+	{
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, LSM_OnPlayerTouchGround )
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.LEAVE_GROUND, LSM_OnPlayerLeaveGround )
+	}
+
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
 	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 	
@@ -1052,7 +1148,7 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
-	} else if ( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+	} else if( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistName() == "dev_default" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 	{
 		vector origin
 		if( GetPlayerArray_Alive().len() > 0 )
@@ -1099,12 +1195,23 @@ void function OnClientConnected( entity player )
 			}
 			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
 			{
+				array<entity> players = clone GetPlayerArray_Alive()
+				players.fastremovebyvalue( player )
+
+				if( players.len() == 0 )
+					return
+
+				entity target = players.getrandom()
+
+				if( !ShouldSetObserverTarget( target ) )
+					return
+
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
-				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray_Alive().len() )
+				player.SetPlayerNetInt( "spectatorTargetCount", players.len() )
 				player.SetSpecReplayDelay( 1 )
 				player.StartObserverMode( OBS_MODE_IN_EYE )
-				player.SetObserverTarget( GetPlayerArray_Alive().getrandom() )
+				player.SetObserverTarget( target )
 				player.SetPlayerCanToggleObserverMode( false )
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 			}
@@ -1384,4 +1491,45 @@ void function Flowstate_Lv4MagazinesRefillAmmo_Thread( entity player, entity wea
 	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 	weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_POOL, min( SURVIVAL_CountItemsInInventory( player, ammoRef ), weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_POOL ) ) )
 	EmitSoundOnEntityOnlyToPlayer( player, player, "HUD_Boost_Card_Earned_1P" )
+}
+
+float MaxFallDistanceForDamage = 400.0
+
+void function LSM_OnPlayerTouchGround( entity player )
+{
+	if( !player.e.IsFalling )
+		return
+
+	if ( player.IsNoclipping() )
+		return
+
+	player.e.IsFalling = false
+
+	vector landingdist = <player.e.FallDamageJumpOrg.x, player.e.FallDamageJumpOrg.y, player.GetOrigin().z>
+	float fallDist = Distance(player.e.FallDamageJumpOrg, landingdist)
+
+	printf("Fall Distance: " + fallDist)
+
+	if(fallDist < MaxFallDistanceForDamage)
+		return
+
+	float Damagemultiplier = 0.035
+
+	if(fallDist > 1000)
+		Damagemultiplier = 0.05
+	
+	player.TakeDamage( Damagemultiplier * fallDist, null, null, { damageSourceId=damagedef_suicide } )
+}
+
+void function LSM_OnPlayerLeaveGround( entity player )
+{
+	if( player.e.IsFalling )
+		return
+
+	if( player.IsNoclipping() )
+		return
+
+	player.e.IsFalling = true
+
+	player.e.FallDamageJumpOrg = player.GetOrigin()
 }

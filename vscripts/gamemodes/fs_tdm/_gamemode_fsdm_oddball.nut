@@ -305,7 +305,7 @@ void function CreateBallSpawner( vector origin )
 	DispatchSpawn(  holo )
 
 	holo.SetCollisionAllowed(false)
-	thread LoopFXOnEntity( holo , $"P_BT_eye_proj_holo" , 10, <0,0,3> )
+	thread LoopFXOnEntity2( holo , $"P_BT_eye_proj_holo" , 10, <0,0,3> )
 	
 	if( IsValid( file.ballSpawn ) )
 		file.ballSpawn.Destroy()
@@ -348,7 +348,7 @@ void function ResetBallInBallSpawner( bool actualReset = false )
 	}
 
 	SetBallEntity( AnimProxy )
-	thread SpinRotateEntity(AnimProxy , 4.0)
+	thread SpinRotateEntity2(AnimProxy , 4.0)
 
 	entity trigger = CreateEntity( "trigger_cylinder" )
 	trigger.SetRadius( 30 )
@@ -408,15 +408,15 @@ void function SetEmptyBallInBallSpawner()
 		AnimProxy.kv.renderamt = 180
 		AnimProxy.kv.fadedist = 9999 
 		// ScaleBoundingBox( AnimProxy, 0.25 )
-		HighlightDecoy( AnimProxy )
+		HighlightDecoy2( AnimProxy )
 		AnimProxy.SetParent( file.ballSpawn )
 	}
 
 	file.ballSpawn_emptyball = AnimProxy
-	thread SpinRotateEntity(AnimProxy , 4.0)
+	thread SpinRotateEntity2(AnimProxy , 4.0)
 }
 
-void function LoopFXOnEntity( entity ent , asset fxname , float loop_speed , vector offset = ZERO_VECTOR , int loop_count = -1)
+void function LoopFXOnEntity2( entity ent , asset fxname , float loop_speed , vector offset = ZERO_VECTOR , int loop_count = -1)
 {
    Assert( !IsNewThread(), "Must be threaded" )
 
@@ -438,14 +438,14 @@ void function LoopFXOnEntity( entity ent , asset fxname , float loop_speed , vec
    }
 }
 
-void function ScaleBoundingBox(entity ent,float scale = 1)
+void function ScaleBoundingBox2(entity ent,float scale = 1)
 {
 	if(scale == 1)
 		ent.SetBoundingBox( ent.GetBoundingMins() * ent.GetModelScale(), ent.GetBoundingMaxs() * ent.GetModelScale() )
 	else ent.SetBoundingBox( ent.GetBoundingMins() * scale, ent.GetBoundingMaxs() * scale )
 }
 
-void function SpinRotateEntity( entity Ent , float Direction = 4)
+void function SpinRotateEntity2( entity Ent , float Direction = 4)
 {
 	while( IsValid( Ent ) )
 	{
@@ -457,7 +457,7 @@ void function SpinRotateEntity( entity Ent , float Direction = 4)
 	}
 }
   
-void function HighlightDecoy( entity ent , vector RGB = ZERO_VECTOR)
+void function HighlightDecoy2( entity ent , vector RGB = ZERO_VECTOR)
 {
     Highlight_SetNeutralHighlight( ent , "decoy_prop" )
 

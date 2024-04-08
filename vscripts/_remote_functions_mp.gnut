@@ -53,13 +53,13 @@ void function RemoteFunctions_Init_Begin()
 	if( GetCurrentPlaylistName() == "fs_fallingforever" )
 		Remote_RegisterClientFunction("ServerCallback_SetTimer", "int", 0, INT_MAX)
 
-	#if DEVELOPER
-	if( GetCurrentPlaylistName() == "survival_dev" )
-	{
-		Remote_RegisterClientFunction("DM_HintCatalog", "int", 0, 10, "int", INT_MIN, INT_MAX)
-		Remote_RegisterClientFunction("Oddball_HintCatalog", "int", -100, 100, "int", INT_MIN, INT_MAX)
-	}
-	#endif
+	// #if DEVELOPER
+	// if( IsDevGamemode() )
+	// {
+		// Remote_RegisterClientFunction("DM_HintCatalog", "int", 0, 10, "int", INT_MIN, INT_MAX)
+		// Remote_RegisterClientFunction("Oddball_HintCatalog", "int", -100, 100, "int", INT_MIN, INT_MAX)
+	// }
+	// #endif
 
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
@@ -68,6 +68,10 @@ void function RemoteFunctions_Init_Begin()
 		Remote_RegisterClientFunction( "FSHaloMod_CreateKillStreakAnnouncement", "int", 0, 50 ) 
 		// Remote_RegisterClientFunction( "RefreshImageAndScaleOnMinimapAndFullmap" )
 	}
+
+	//Trident
+	Remote_RegisterClientFunction("SetupThirdPersonForVehicle", "bool")
+	Remote_RegisterClientFunction("TridentBoost_Visuals")
 
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 

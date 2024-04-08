@@ -18,6 +18,9 @@ global function OnWeaponRegenEnd_ability_crypto_drone
 global function IsPlayerInCryptoDroneCameraView
 global function CryptoDrone_SetMaxZ
 global function CryptoDrone_GetPlayerDrone
+#if SERVER
+global function GetPlayerOutOfCamera
+#endif
 
 #if CLIENT
 global function OnClientAnimEvent_ability_crypto_drone

@@ -40,7 +40,9 @@ struct
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
 	table<var, ButtonData > Toggle1v1ScoreboardFocus
-	table<var, ButtonData > OpenLGDuelsSettingsFocus
+	table<var, ButtonData > OpenLGDuelsSettingsData
+	table<var, ButtonData > OpenValkSimulatorSettingsData
+	table<var, ButtonData > LockCurrent1v1Enemy
 
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
@@ -145,7 +147,9 @@ void function InitSystemPanel( var panel )
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
 	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
-	file.OpenLGDuelsSettingsFocus[ panel ] <- clone data
+	file.OpenLGDuelsSettingsData[ panel ] <- clone data
+	file.OpenValkSimulatorSettingsData[ panel ] <- clone data
+	file.LockCurrent1v1Enemy[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -204,9 +208,15 @@ void function InitSystemPanel( var panel )
 	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
-	file.OpenLGDuelsSettingsFocus[ panel ].label = "LG DUELS SETTINGS"
-	file.OpenLGDuelsSettingsFocus[ panel ].activateFunc = OpenLGDuelsSettings_System
+	file.OpenLGDuelsSettingsData[ panel ].label = "LG DUELS SETTINGS"
+	file.OpenLGDuelsSettingsData[ panel ].activateFunc = OpenLGDuelsSettings_System
 
+	file.OpenValkSimulatorSettingsData[ panel ].label = "VALK ULT SIM SETTINGS"
+	file.OpenValkSimulatorSettingsData[ panel ].activateFunc = OpenValkSimulatorSettings_System
+	
+	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK"
+	file.LockCurrent1v1Enemy[ panel ].activateFunc = OpenLockCurrent1v1Enemy_System
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -252,10 +262,11 @@ void function UpdateSystemPanel( var panel )
 		if( GetCurrentPlaylistName() == "fs_1v1" )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 
 		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
-			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsFocus[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
 
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
@@ -268,7 +279,10 @@ void function UpdateSystemPanel( var panel )
 			if(ISAIMTRAINER)
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
 			else
+			{
+				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
 				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+			}
 		}
 		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
@@ -411,6 +425,16 @@ void function Toggle1v1Scoreboard_System()
 void function OpenLGDuelsSettings_System()
 {
 	OpenLGDuelsSettings()
+}
+
+void function OpenValkSimulatorSettings_System()
+{
+	OpenValkSimulatorSettings()
+}
+
+void function OpenLockCurrent1v1Enemy_System()
+{
+	ClientCommand( "lockenemy_1v1" )
 }
 
 void function RunKillSelf()

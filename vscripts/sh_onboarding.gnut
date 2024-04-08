@@ -79,6 +79,8 @@ global function CharSelect_GetOutroTransitionDuration
 
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
+global function SetPlayerSettings
+global function Flowstate_ApplyModifiedMovementToPlayer
 
 void function SV_CL_Onboarding_Init()
 {
@@ -314,6 +316,12 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 				characters.fastremovebyvalue( mateCharacter )
 		}
 	}
+	
+	if( IsDevGamemode() )
+	{
+		player.SetPlayerNetBool( "hasLockedInCharacter", false )
+		return
+	}
 
 	ItemFlavor initialCharacter
 	
@@ -326,7 +334,7 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	
 	CharacterSelect_AssignCharacter( player, initialCharacter )
 	
-	if( !lock || GetCurrentPlaylistName() == "survival_dev" )
+	if( !lock )
 		player.SetPlayerNetBool( "hasLockedInCharacter", false )
 }
 
@@ -445,7 +453,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( !GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false ) || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
@@ -472,7 +480,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	array<string> enabledMods = []
 	foreach ( playlistVar, modName in possibleMods )
-		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
+		if ( GetCurrentPlaylistVarBool( playlistVar, false ) || GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) == 1 )
 			enabledMods.append( modName )
 		
 	DoRespawnPlayer( player, null )
@@ -533,9 +541,16 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
 	}
 	
+	Flowstate_ApplyModifiedMovementToPlayer( player )
+
 	if( player.p.assignedCustomModel != -1 )
 	{
 		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
+	}
+	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+	{
+		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
 	}
 }
 
@@ -822,14 +837,14 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			
-			if( GameRules_GetGameMode() == "map_editor_deprecated")
-				DecideRespawnPlayer( player )
-			
 			if( GameRules_GetGameMode() != SURVIVAL ) break
 
 			switch(GetMapName())
 			{
+				case "mp_rr_olympus_mu1":
+					player.SetOrigin( <833.014587, -19103.7949, -4947.88916> )
+					player.SetAngles( <0, -5.91907549, 0> )
+				break
 				case "mp_rr_canyonlands_64k_x_64k":
 				case "mp_rr_canyonlands_mu1":
 				case "mp_rr_canyonlands_mu1_night":				
@@ -1022,3 +1037,90 @@ bool function Survival_CharacterSelectEnabled()
 	return GetCurrentPlaylistVarBool( "charselect_enabled", true )
 }
 #endif
+
+void function SetPlayerSettings( entity player, table settings )
+{
+	string cc
+
+	foreach( k, v in settings )
+	{	
+		#if CLIENT
+			cc = "set"
+		#elseif SERVER
+			cc = "_setClassVarServer"
+		#endif
+
+		cc += " " + k + " " + v
+
+		#if CLIENT
+			player.ClientCommand( cc )
+		#elseif SERVER
+			ClientCommand( player, cc )
+		#endif
+		player.kv.k = v
+	}
+}
+
+void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool resetOnly = false )
+{
+	if( GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) == 0 )
+		return
+	SetConVarInt( "sv_quota_stringCmdsPerSecond", 200 )
+	SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
+
+	if( resetOnly )
+		return
+
+	switch( GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) )
+	{
+		case 1:
+			#if SERVER
+			player.SetMoveSpeedScale( 0.87 )
+			#endif
+			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
+			printt( "Player movement changed to TF2" )
+		break
+		
+		case 2:
+			#if SERVER
+			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+			player.SetMoveSpeedScale(1.38854974986041364747)
+			player.DisableMantle()
+			player.SetGroundFrictionScale(1.03125)
+			#endif
+
+			SetPlayerSettings( player, CSGO_MOVEMENT )
+			printt( "Player movement changed to CSGO" )
+		break
+
+		case 3:
+			#if SERVER
+			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+			player.SetMoveSpeedScale(1.77840093365762835808)
+			player.DisableMantle()
+			#endif
+			SetPlayerSettings( player, HL1_MOVEMENT )
+			printt( "Player movement changed to HL1" )
+		break
+
+		case 4:
+			#if SERVER
+			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+			player.SetMoveSpeedScale( 1.1 )
+			player.DisableMantle()
+			#endif
+			SetPlayerSettings( player, HALO_MOVEMENT )
+			printt( "Player movement changed to Halo" )
+		break
+
+		case 5:
+			SetPlayerSettings( player, SURF_SETTINGS )
+			printt( "Player movement changed to Surf" )
+		break
+		
+		case 6:
+			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
+			printt( "Superglide modified for all players" )
+		break
+	}
+}
