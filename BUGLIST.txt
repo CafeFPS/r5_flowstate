@@ -5,52 +5,13 @@ REV_001: 	I don't know how to define what it's asking for.
 	[5457.000] Script(S):SCRIPT ERROR: [SERVER] No physics object for entity with physicsmode == PHYSICS_MULTIPLAYER_AUTODETECT.  Removing.
 	[5457.000] Script(S): -> DispatchSpawn( prop_physics )
 	[5457.000] Script(S):
+	
 	CALLSTACK
 	*FUNCTION [CreatePropPhysics()] _utility.gnut line [1579]
 	*FUNCTION [FakePhysicsThrow()] survival_loot.gnut line [2084]
 	*FUNCTION [SURVIVAL_DropMainWeapon()] survival_loot.gnut line [2482]
 	*FUNCTION [ClientCommand_Sur_DropEquipment()] survival_loot.gnut line [898]
 
-	[5457.000] Script(S):LOCALS
-	[prop_physics] ENTITY (prop_physics [455] at <37168.7 2376.42 -23855.2>)
-	[angles] <0, 0, 90>
-	[origin] <37168.7, 2376.42, -23855.2>
-	[model] $"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
-	[this] TABLE
-	[isCargoBot] false
-	[DestroyTimer] -1
-	[forward] <84.7704, -40.4772, -34.2868>
-	[drop] ENTITY (prop_survival [442] at <37168.7 2376.42 -23855.2>)
-	[player] ENTITY (player R5mkos [1] (player "R5mkos" at <37143.3 2388.55 -23911.2>))
-	[this] TABLE
-	[@ITERATOR@] 1
-	[loot] ENTITY (prop_survival [442] at <37168.7 2376.42 -23855.2>)
-	[@INDEX@] 0
-	[lootToDrop] ARRAY
-	[weaponToDrop] ENTITY (weaponx mp_weapon_lightninggun [326] (weapon "mp_weapon_lightninggun" at <37150 2380.76 -23871.6>))
-	[weaponSlot] 0
-	[velocity] <0.847704, -0.404772, -0.342868>
-	[origin] <37168.7, 2376.42, -23855.2>
-	[slot] "main_weapon0"
-	[player] ENTITY (player R5mkos [1] (player "R5mkos" at <37143.3 2388.55 -23911.2>))
-	[this] TABLE
-	[currentSlot] 0
-	[fwd] <0.847704, -0.404772, -0.342868>
-	[origin] <37168.7, 2376.42, -23855.2>
-	[es] STRUCT EquipmentSlot
-	[slotRef] "main_weapon0"
-	[args] ARRAY
-	[player] ENTITY (player R5mkos [1] (player "R5mkos" at <37143.3 2388.55 -23911.2>))
-	[this] TABLE
-
-	DIAGPRINTS
-
-	[5457.003] Native(C):There was a problem processing game logic.
-	Please try again.
-
-	------
-	_utility.gnut #1579
-	[SERVER] No physics object for entity with physicsmode == PHYSICS_MULTIPLAYER_AUTODETECT.  Removing.
 }
 TEMP_PATCH: sh_gamemode_fsdm.nut; LINE: 2477
 {

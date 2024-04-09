@@ -7004,7 +7004,6 @@ void function PIN_Init()
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
 	AddCallback_OnClientConnected(PlayerConnectedCallback);
 	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
-	sqprint(" After setting, its: " + settings.sv_autoReloadRate.tostring() )
 	SetServerReloadReadyState( ReloadState.BUSY )
 }
 
