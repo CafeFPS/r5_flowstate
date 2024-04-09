@@ -873,7 +873,7 @@ string function GetRandomLootItem( int mapZone = -1 )
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
 {
 	if ( !GetCurrentPlaylistVarBool( "survival_drop_equipment", true ) )
-		return true
+		return true	
 
 	if ( !IsValid( player ) )
 		return true
@@ -2473,6 +2473,9 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 
 	if ( !IsValid( weaponToDrop ) )
 		return false
+		
+	if( weaponToDrop.GetWeaponClassName() == "mp_weapon_lightninggun" ) //verboose hack until physics exist. see: REV_001
+		return false
 	
 	array<entity> lootToDrop = CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, origin )
 
@@ -2485,32 +2488,41 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	return true
 }
 
-void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, bool fromBackpackLimit = false )
+const array<string> fs_snd_drop_exclusions_array = [
+
+	"health_pickup_ultimate",
+	"health_pickup_combo_full",
+	"health_pickup_health_large",
+	"health_pickup_health_small",
+	"health_pickup_combo_large",
+	"health_pickup_combo_small",
+
+];
+
+bool function FlowstateCheckItemDropableFor__fs_snd( string ref, entity player )
 {
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_ultimate" )
-		return
+	if( GameRules_GetGameMode() != "fs_snd" )
+		return true
+		
+	if ( fs_snd_drop_exclusions_array.contains( ref ) )
+		return false
 	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_combo_full" )
-		return
-	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_health_large" )
-		return
-	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_health_small" )
-		return
-	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_combo_large" )
-		return
-	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "health_pickup_combo_small" )
-		return
-	
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "snd_bomb" && player.p.playerIsPlantingBomb && GetGameState() == eGameState.Playing ) return
+	if( ref == "snd_bomb" && player.p.playerIsPlantingBomb && GetGameState() == eGameState.Playing ) 
+		return false
 	
 	#if SERVER
-	if( GameRules_GetGameMode() == "fs_snd" && ref == "snd_bomb" && IsValid( GetPlantedBombEntity() ) )
-		return
+	if( ref == "snd_bomb" && IsValid( GetPlantedBombEntity() ) )
+		return false
 	#endif
+	
+	return true
+} 
+
+void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, bool fromBackpackLimit = false )
+{
+	if ( !FlowstateCheckItemDropableFor__fs_snd( ref, player ) )
+		return
+	
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	SURVIVAL_RemoveFromPlayerInventory( player, ref, count )
@@ -2561,8 +2573,7 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, b
 				foreach( minimapObj in VaultPanel_GetBestMinimapObjs() )
 					SetMinimapObjectVisibleToPlayer( mate, minimapObj, true )
 			}
-		}	
-		
+		}		
 	}
 	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )

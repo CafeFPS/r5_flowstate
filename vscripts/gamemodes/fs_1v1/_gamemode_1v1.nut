@@ -4,6 +4,8 @@
 
 //globalize_all_functions // why?
 
+global const INVALID_ACCESS_DEBUG = true
+
 global function isPlayerInRestingList
 global function mkos_Force_Rest
 global function INIT_playerChallengesStruct
@@ -72,6 +74,7 @@ global struct soloGroupStruct
 	float startTime
 	table <entity,groupStats> statsRecap
 }
+
 global struct soloPlayerStruct
 {
 	entity player
@@ -88,7 +91,7 @@ global struct soloPlayerStruct
 struct ChallengesStruct
 {
 	entity player 
-	table<entity,float> challengers // challenging entity, float Time()
+	table<entity,float> challengers = {} // challenging entity, float Time()
 }
 
 array< bool > realmSlots
@@ -133,6 +136,7 @@ struct {
 
 	int ibmm_wait_limit
 	float default_ibmm_wait
+	bool enableChallenges = false
 
 } settings
 
@@ -180,8 +184,11 @@ void function resetChallenges()
 {
 	foreach ( chalStruct in file.allChallenges )
 	{
-		if( IsValid( chalStruct ) )
-		{		
+		if( isChalValid( chalStruct ) )
+		{	
+			#if INVALID_ACCESS_DEBUG
+			printl("Potential crash avoided 01")
+			#endif
 			chalStruct.challengers.clear()
 		}
 	}
@@ -272,9 +279,11 @@ void function INIT_Flags()
 	bAllowLegend 						= GetCurrentPlaylistVarBool( "give_legend", true )
 	bAllowTactical 						= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
 	bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
-	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
-	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat("default_ibmm_wait", 3)
+	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
+	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
+	settings.enableChallenges			= GetCurrentPlaylistVarBool( "enable_challenges", true )
 }
+
 
 int function GetUniqueID() 
 {
@@ -330,7 +339,7 @@ string function GetScore( entity player )
 	float lt_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.lifetime_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.lifetime_deaths) )
 	float cur_kd = getkd( player.GetPlayerNetInt( "kills" ) , player.GetPlayerNetInt( "deaths" )  )
 	float score = (  ( lt_kd * file.lifetime_kd_weight ) + ( cur_kd * file.current_kd_weight ) )
-	string name = player.GetPlayerName()	
+	string name = player.p.name	
 	
 	return format("Player: %s, Lifetime KD: %.2f, Current KD: %.2f, Round Score: %.2f ", name, lt_kd, cur_kd, score )
 }
@@ -346,7 +355,7 @@ void function INIT_1v1_sbmm()
 	
 		try 
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER 
 			sqprint("Checking: custom_weapons_primary")
 			#endif
 			
@@ -360,7 +369,7 @@ void function INIT_1v1_sbmm()
 				
 				if ( trim(custom_weapons_primary[i]) != before )
 				{				
-					printt(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\" \n\n", i, before, trim( custom_weapons_primary[i] ) ))
+					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\" \n\n", i, before, trim( custom_weapons_primary[i] ) ))
 				}
 				
 				if ( custom_weapons_primary[i] == "" )
@@ -371,7 +380,7 @@ void function INIT_1v1_sbmm()
 		} 
 		catch ( error ) 
 		{
-			printt( "" + error )
+			sqerror( "" + error )
 		}
 	
 	}
@@ -382,7 +391,7 @@ void function INIT_1v1_sbmm()
 	
 		try 
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER 
 			sqprint("Checking: custom_weapons_secondary")
 			#endif
 			custom_weapons_secondary = StringToArray( concatenate )
@@ -395,7 +404,7 @@ void function INIT_1v1_sbmm()
 				
 				if ( trim(custom_weapons_secondary[i]) != sbefore )
 				{				
-					printt(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\"\n\n", i, sbefore, trim( custom_weapons_secondary[i] ) ))
+					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\"\n\n", i, sbefore, trim( custom_weapons_secondary[i] ) ))
 				}
 				
 				if ( custom_weapons_secondary[i] == "" )
@@ -406,7 +415,7 @@ void function INIT_1v1_sbmm()
 		} 
 		catch ( error ) 
 		{
-			printt( "" + error )
+			sqerror( "" + error )
 		}
 	
 	}
@@ -500,7 +509,7 @@ void function SetIsUsedBoolForRealmSlot( int realmID, bool usedState )
 	}
 	catch(e)
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("SetIsUsedBoolForRealmSlot crash " + e )
 		#endif
 	}
@@ -526,11 +535,13 @@ soloGroupStruct function returnSoloGroupOfPlayer( entity player )
 	soloGroupStruct group;	
 	if(!IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("returnSoloGroupOfPlayer entity was invalid")
-		return group; 
 		#endif
-	}	
+		
+		return group; 
+	}
+	
 	try
 	{
 		if ( player.p.handle in file.playerToGroupMap ) 
@@ -543,7 +554,7 @@ soloGroupStruct function returnSoloGroupOfPlayer( entity player )
 	}
 	catch(e)
 	{
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
@@ -555,7 +566,7 @@ void function addGroup(soloGroupStruct newGroup)
 {
 	if(!IsValid(newGroup))
 	{
-		printt("[addGroup]: Logic Flow Error: group is invalid during creation")
+		sqerror("[addGroup]: Logic Flow Error: group is invalid during creation")
 		return
 	}
 	mGroupMutexLock = true
@@ -567,7 +578,7 @@ void function addGroup(soloGroupStruct newGroup)
 		newGroup.groupHandle = groupHandle
 		newGroup.startTime = Time()
 		
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint(format("adding group: %d", groupHandle ))
 		#endif
 		if( !( groupHandle in file.groupsInProgress ) )
@@ -577,18 +588,18 @@ void function addGroup(soloGroupStruct newGroup)
 			if( IsValid(newGroup.player1 && IsValid(newGroup.player2) ))
 			{
 				file.playerToGroupMap[newGroup.player1.p.handle] <- newGroup;
-				#if DEVELOPER && HAS_TRACKER_DLL
+				#if DEVELOPER
 				sqprint(format("player 1 added to group: %s", newGroup.player1.p.name ))
 				#endif
 				file.playerToGroupMap[newGroup.player2.p.handle] <- newGroup;
-				#if DEVELOPER && HAS_TRACKER_DLL
+				#if DEVELOPER
 				sqprint(format("player 2 added to group: %s", newGroup.player2.p.name ))
 				#endif
 			}
 			else 
 			{	
 				#if DEVELOPER
-				printt("FAILURE adding players to group")
+				sqerror("FAILURE adding players to group")
 				#endif
 				success = false
 			}
@@ -601,7 +612,7 @@ void function addGroup(soloGroupStruct newGroup)
 		else 
 		{	
 			#if DEVELOPER
-			printt(format("Logic flow error, group: [%d] already exists", groupHandle))
+			sqerror(format("Logic flow error, group: [%d] already exists", groupHandle))
 			#endif
 		}
 		
@@ -609,7 +620,7 @@ void function addGroup(soloGroupStruct newGroup)
 	}
 	catch(e)
 	{
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("addGroup crash: " + e)
 		#endif
 	}
@@ -622,7 +633,7 @@ void function removeGroupByHandle( int handle )
 {
 	if ( handle in file.groupsInProgress )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint(format("Removing group by handle: %d", handle))
 		#endif
 		delete file.groupsInProgress[handle]
@@ -631,11 +642,11 @@ void function removeGroupByHandle( int handle )
 	{
 		if(!handle)
 		{
-			printt("[removeGroupByHandle] ERROR: handle was null")
+			sqerror("[removeGroupByHandle] ERROR: handle was null")
 		}
 		else 
 		{
-			printt(format("[removeGroupByHandle] Handle: \"%d\" does not exist in table: \"file.groupsInProgress\"", handle ))
+			sqerror(format("[removeGroupByHandle] Handle: \"%d\" does not exist in table: \"file.groupsInProgress\"", handle ))
 		}
 	}
 }
@@ -645,7 +656,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 	mGroupMutexLock = true  
 	if(!IsValid(groupToRemove))
 	{
-		printt("Logic flow error:  groupToRemove is invalid")
+		sqerror("Logic flow error:  groupToRemove is invalid")
 		return
 	}
 	
@@ -653,7 +664,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 	{	
 		if ( IsValid(groupToRemove.player1) && groupToRemove.player1.p.handle in file.playerToGroupMap )
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
 			#endif
 			delete file.playerToGroupMap[groupToRemove.player1.p.handle]
@@ -661,7 +672,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 			
 		if ( IsValid(groupToRemove.player2) && groupToRemove.player2.p.handle in file.playerToGroupMap )
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
 			#endif
 			delete file.playerToGroupMap[groupToRemove.player2.p.handle];
@@ -669,21 +680,21 @@ void function removeGroup(soloGroupStruct groupToRemove)
 		
 		if( groupToRemove.groupHandle in file.groupsInProgress )
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint(format("removing group: %d", groupToRemove.groupHandle) )
 			#endif
 			delete file.groupsInProgress[groupToRemove.groupHandle]
 		}
 		else 
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
 			#endif
 		}
 	}
 	catch(e)
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint( "removeGroup crash: " + e )
 		#endif
 	}
@@ -714,7 +725,7 @@ bool function isPlayerInSoloMode(entity player)
 {
 	if(!IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("isPlayerInSoloMode entity was invalid")
 		#endif
 		return false 
@@ -728,7 +739,7 @@ bool function isPlayerInWaitingList(entity player)
 	//mkos
 	if(!IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("isPlayerInWaitingList entity was invalid")
 		#endif
 		return false 
@@ -743,7 +754,7 @@ bool function return_rest_state( entity player )
 {
 	if(!IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("return_rest_state entity was invalid")
 		#endif
 		return false 
@@ -762,7 +773,7 @@ bool function isPlayerInRestingList( entity player )
 {	
 	if(!IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("isPlayerInRestingList entity was invalid")
 		#endif
 		return false 
@@ -782,7 +793,7 @@ void function deleteSoloPlayerResting( entity player )
 	}
 	catch(e)
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint( "crash in deleteSoloPlayerResting: " + e )
 		#endif
 	}
@@ -790,9 +801,9 @@ void function deleteSoloPlayerResting( entity player )
 
 void function addSoloPlayerResting( entity player )
 {
-	if(!IsValid (player) )
+	if( !IsValid (player) )
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("addSoloPlayerResting enttiy was invalid")
 		#endif
 		return
@@ -804,7 +815,7 @@ void function addSoloPlayerResting( entity player )
 	}
 	catch(e)
 	{
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("crass in addSoloPlayerResting: " + e )
 		#endif
 	}
@@ -822,25 +833,25 @@ void function AddPlayerToWaitingList(soloPlayerStruct playerStruct)
 {
 	try 
 	{
-		if(!IsValid(playerStruct))
+		if( !IsValid(playerStruct) )
 		{
-			printt( "[AddPlayerToWaitingList] playerStruct was invalid" )
+			sqerror( "[AddPlayerToWaitingList] playerStruct was invalid" )
 		}
 		else 
 		{
-			if(IsValid(playerStruct.player))
+			if( IsValid(playerStruct.player) )
 			{
 				file.soloPlayersWaiting[playerStruct.player.p.handle] <- playerStruct
 			}
 			else 
 			{
-				printt( "[AddPlayerToWaitingList] player to add was invalid" )
+				sqerror( "[AddPlayerToWaitingList] player to add was invalid" )
 			}
 		}
 	}
 	catch(e)
 	{
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("crash in AddPlayerToWaitingList: " + e )
 		#endif
 	}
@@ -848,6 +859,9 @@ void function AddPlayerToWaitingList(soloPlayerStruct playerStruct)
 
 bool function mkos_Force_Rest(entity player, array<string> args)
 {
+	if( !g_bIs1v1 && !g_bLGmode )
+		return false
+	
 	if( !IsValid(player) ) //|| !IsAlive(player) )
 		return false
 
@@ -899,6 +913,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 	if( GetTDMState() != eTDMState.IN_PROGRESS )
 	{
 		Message( player, "Game is not playing" )
+		return true
+	}
+	
+	if( !settings.enableChallenges )
+	{
+		Message( player, "Host has disabled challenges" )
 		return true
 	}
 	
@@ -1016,15 +1036,11 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				if (acceptChallenge( player, challenger ))
 				{
-					#if HAS_TRACKER_DLL
 					sqprint("success")
-					#endif
 				}
 				else 
 				{
-					#if HAS_TRACKER_DLL
 					sqprint("failure")
-					#endif
 				}
 			}
 			return true;
@@ -1071,9 +1087,22 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		case "clear":
 			
 			player.p.waitingFor1v1 = false
-			getChallengeListForPlayer( player ).challengers.clear()
+			ChallengesStruct chalStruct = getChallengeListForPlayer( player )
+			
+			if( isChalValid( chalStruct ) )
+			{
+				chalStruct.challengers.clear()
+			}
+			else 
+			{
+				#if INVALID_ACCESS_DEBUG
+				PrintDebug( player, 2 )
+				#endif
+			}
+			
 			endLock1v1( player, false )
 			Message( player, "CHALLENGERS CLEARED")
+			
 			return true
 			
 		case "revoke":
@@ -1307,8 +1336,11 @@ int function addToChallenges( entity challenger, entity challengedPlayer )
 {
 	ChallengesStruct chalStruct = getChallengeListForPlayer( challengedPlayer )
 	
-	if( !IsValid( chalStruct.player ) )
+	if( !isChalValid( chalStruct ) )
 	{
+		#if INVALID_ACCESS_DEBUG
+		PrintDebug( challengedPlayer, 7 )
+		#endif
 		return 5;
 	}
 	
@@ -1334,9 +1366,32 @@ int function addToChallenges( entity challenger, entity challengedPlayer )
 }
 
 
+bool function isChalValid( ChallengesStruct chalStruct )
+{
+	return ( IsValid( chalStruct ) && IsValid( chalStruct.player ) )
+}
+
+
 float function checkChallengeTime( entity challenger, entity challengedPlayer )
 {
-	if( challenger in getChallengeListForPlayer( challengedPlayer ).challengers )
+	ChallengesStruct chalStruct = getChallengeListForPlayer( challengedPlayer )
+	
+	if ( !isChalValid( chalStruct ) )
+	{
+		#if INVALID_ACCESS_DEBUG
+		if( IsValid( challengedPlayer ) )
+		{
+			PrintDebug( challengedPlayer, 3 )
+		}
+		else 
+		{
+			printl("Invalid player during chal access #8")
+		}
+		#endif
+		return 0.0 
+	}
+	
+	if( challenger in chalStruct.challengers )
 	{
 		return getChallengeListForPlayer( challengedPlayer ).challengers[challenger]
 	}
@@ -1361,7 +1416,7 @@ ChallengesStruct function getChallengeListForPlayer( entity player )
 			continue
 		}
 		
-		if ( challengeStruct.player == player )
+		if ( IsValid( challengeStruct.player ) && challengeStruct.player == player )
 		{
 			return challengeStruct
 		}
@@ -1374,6 +1429,7 @@ ChallengesStruct function getChallengeListForPlayer( entity player )
 string function listPlayerChallenges( entity player )
 {
 	ChallengesStruct chalStruct = getChallengeListForPlayer( player )
+	
 	string list = "";
 	string emphasis = ""
 	entity opponent
@@ -1392,8 +1448,11 @@ string function listPlayerChallenges( entity player )
 		list += "No active challenge yet... \n\n";
 	}
 	
-	if ( !IsValid(chalStruct) )
+	if ( !isChalValid( chalStruct ) )
 	{
+		#if INVALID_ACCESS_DEBUG
+		PrintDebug( player, 4 )
+		#endif
 		return list;
 	}
 	
@@ -1421,7 +1480,18 @@ string function listPlayerChallenges( entity player )
 
 bool function removeChallenger( entity player, entity challenger )
 {
-	if ( challenger in getChallengeListForPlayer( player ).challengers )
+	ChallengesStruct chalStruct = getChallengeListForPlayer( player )
+	
+	if ( !isChalValid( chalStruct ) )
+	{	
+		#if INVALID_ACCESS_DEBUG
+		PrintDebug( player, 5 )
+		#endif
+		
+		return false 
+	}
+	
+	if ( challenger in chalStruct.challengers )
 	{
 		delete getChallengeListForPlayer( player ).challengers[challenger]
 		return true
@@ -1430,6 +1500,10 @@ bool function removeChallenger( entity player, entity challenger )
 	return false
 }
 
+void function PrintDebug( entity player, int functioncall )
+{
+	printl( format("Potential invalid access for player: %s, %s --CALL: %d", player.p.name, player.p.UID, functioncall) )
+}
 
 bool function acceptChallenge( entity player, entity challenger )
 {
@@ -1453,7 +1527,7 @@ bool function acceptChallenge( entity player, entity challenger )
 	//sqprint("accepted")
 	ChallengesStruct chalStruct = getChallengeListForPlayer( player )
 	
-	if ( challenger in chalStruct.challengers )
+	if ( isChalValid( chalStruct ) && challenger in chalStruct.challengers )
 	{
 		file.acceptedChallenges[player] <- challenger 	
 		SetUpChallengeNotifications( player, challenger )
@@ -1477,8 +1551,11 @@ bool function acceptRecentChallenge( entity player )
 	
 	ChallengesStruct chalStruct = getChallengeListForPlayer( player )
 	
-	if(!IsValid( chalStruct ))
+	if( !isChalValid( chalStruct ) )
 	{
+		#if INVALID_ACCESS_DEBUG
+		PrintDebug( player, 6 )
+		#endif
 		return false;
 	}
 	
@@ -1504,7 +1581,7 @@ bool function acceptRecentChallenge( entity player )
 		
 	if( !IsValid(recentChallenger) )
 	{
-		if (removeChallenger( player, recentChallenger ))
+		if ( removeChallenger( player, recentChallenger ) )
 		{
 			Message( player, "CHALLENGER QUIT" )
 		}
@@ -1516,7 +1593,7 @@ bool function acceptRecentChallenge( entity player )
 		return false
 	}
 	
-	if( isPlayerPendingChallenge( recentChallenger ) ||  isPlayerPendingLockOpponent( recentChallenger ) )
+	if( isPlayerPendingChallenge( recentChallenger ) || isPlayerPendingLockOpponent( recentChallenger ) )
 	{
 		Message( player, "PLAYER ALREADY IN CHALLENGE")
 	}
@@ -1778,6 +1855,8 @@ void function sendGroupRecapsToPlayers( soloGroupStruct group )
 
 void function addStatsToGroup( entity player, soloGroupStruct group, float damage, int hits, int shots, bool bIsKill )
 {
+	if( !IsValid( player ) || !IsValid( group ) ){ return }
+	
 	if ( !( player in group.statsRecap ) )
 	{
 		groupStats gS;	
@@ -1943,7 +2022,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 					}
 					
 					string sTryAgain = format("Or.. try again in: %d seconds", floor( fTryAgainIn.tointeger() ) )
-					#if DEVELOPER && HAS_TRACKER_DLL
+					#if DEVELOPER
 					sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
 					Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
@@ -1952,7 +2031,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				}
 				else 
 				{
-					#if DEVELOPER && HAS_TRACKER_DLL
+					#if DEVELOPER
 					sqprint(format("Time was good: difference: %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
 					restText = format("Sent to rest because time since last damage recieved was greater than %d seconds.", REST_GRACE );
@@ -2160,12 +2239,12 @@ void function soloModePlayerToWaitingList( entity player )
 		
 		if(mGroupMutexLock)
 		{ 
-			printt("tried to modify groups in use")
+			sqerror("tried to modify groups in use")
 			throw "tried to modify groups in use.";
 		}
 		else if(!IsValid(group))
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint("remove group request 01")
 			#endif
 			destroyRingsForGroup(group);
@@ -2211,13 +2290,13 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 		
         destroyRingsForGroup(existingGroup);
 		
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("remove group request 02")
 		#endif
 		
 		while(mGroupMutexLock) 
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint("Waiting for lock to release R002")
 			#endif
 			WaitFrame() 
@@ -2246,7 +2325,7 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 		
 		while(mGroupMutexLock) 
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint("Waiting for lock to release R001")
 			#endif
 			WaitFrame() 
@@ -2289,13 +2368,13 @@ void function soloModePlayerToRestingList(entity player)
 
 		destroyRingsForGroup(group)
 		
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("remove group request 03")
 		#endif
 		
 		while(mGroupMutexLock) 
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint("Waiting for lock to release R003")
 			#endif
 			WaitFrame() 
@@ -2529,7 +2608,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 		}
 		catch (erroree)
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint("Caught an error that would crash the server" + erroree)
 			#endif
 			// printt("fail to respawn")
@@ -2557,7 +2636,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	if( !isGroupValid( group ) )
 	{	
 		#if DEVELOPER
-		printt("group was invalid, err 007")
+		sqerror("group was invalid, err 007")
 		#endif
 		return //Is this group available
 	}
@@ -2578,7 +2657,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	}
 	catch (error)
 	{
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("Caught an error that would crash the server")
 		#endif
 		// Warning("fail to respawn")
@@ -2707,7 +2786,7 @@ void function _soloModeInit(string mapName)
 	if ( g_bLGmode ) 
 	{
 		Weapons = [
-			"mp_weapon_clickweaponauto" //Lg_Duel beta
+			"mp_weapon_lightninggun" //Lg_Duel
 		]
 		
 	} 
@@ -2743,7 +2822,7 @@ void function _soloModeInit(string mapName)
 	if ( g_bLGmode ) {
 
 		WeaponsSecondary = [
-			"mp_weapon_clickweaponauto" //Lg_Duel beta
+			"mp_weapon_lightninggun" //Lg_Duel beta
 		]
 		
 	} else
@@ -3116,7 +3195,7 @@ void function _soloModeInit(string mapName)
 				]
 			}
 		}	
-		else if (mapName == "mp_rr_canyonlands_staging") //_LG_duels
+		else if ( mapName == "mp_rr_canyonlands_staging" && g_bLGmode ) //_LG_duels
 		{
 			bMap_mp_rr_canyonlands_staging = true
 			//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  
@@ -3124,124 +3203,124 @@ void function _soloModeInit(string mapName)
 
 			allSoloLocations= [
 
-			NewLocPair( < 1317.27, 10573.3, 136.275 >, < 358.367, 0.169666, 0 > ),//1
-			NewLocPair( < 1912.15, 10630.3, 136.275 >, < 358.431, 180.377, 0 > ),
+			NewLocPair( < 1317.27, 10573.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.367, 0.169666, 0 > ),//1
+			NewLocPair( < 1912.15, 10630.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.431, 180.377, 0 > ),
 			
 			
-			NewLocPair( < 1314.7, 11484.3, 136.275 >, < 359.433, 359.118, 0 > ),//2
-			NewLocPair( < 1920.17, 11083.7, 136.275 >, < 358.616, 179.015, 0 > ),
+			NewLocPair( < 1314.7, 11484.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.433, 359.118, 0 > ),//2
+			NewLocPair( < 1920.17, 11083.7, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.616, 179.015, 0 > ),
 			
 			
-			NewLocPair( < 1342.6, 12083.1, 136.275 >, < 359.021, 359.681, 0 > ),//3
-			NewLocPair( < 1928.12, 12062, 136.275 >, < 358.46, 179.056, 0 > ),
+			NewLocPair( < 1342.6, 12083.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.021, 359.681, 0 > ),//3
+			NewLocPair( < 1928.12, 12062, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.46, 179.056, 0 > ),
 			
 			
-			NewLocPair( < 1334.54, 12767, 135.001 >, < 359.376, 359.648, 0 > ),//4
-			NewLocPair( < 1929.33, 12617.3, 136.275 >, < 358.646, 179.52, 0 > ),
+			NewLocPair( < 1334.54, 12767, 135.001 > + LG_DUELS_OFFSET_ORIGIN, < 359.376, 359.648, 0 > ),//4
+			NewLocPair( < 1929.33, 12617.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.646, 179.52, 0 > ),
 			
 			
-			NewLocPair( < 1314.61, 13608.2, 136.275 >, < 359.413, 359.458, 0 > ),//5
-			NewLocPair( < 1932.81, 13588.9, 136.275 >, < 358.417, 179.147, 0 > ),
+			NewLocPair( < 1314.61, 13608.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.413, 359.458, 0 > ),//5
+			NewLocPair( < 1932.81, 13588.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.417, 179.147, 0 > ),
 			
 			
-			NewLocPair( < 1327.13, 14445.1, 136.275 >, < 359.142, 359.982, 0 > ),//6
-			NewLocPair( < 1895.99, 14101.3, 136.275 >, < 359.454, 179.149, 0 > ),
+			NewLocPair( < 1327.13, 14445.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.142, 359.982, 0 > ),//6
+			NewLocPair( < 1895.99, 14101.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.454, 179.149, 0 > ),
 			
 			
-			NewLocPair( < 2027.17, 14255.7, 136.275 >, < 359.44, 0.900257, 0 > ),//7
-			NewLocPair( < 2705.93, 14519.9, 136.275 >, < 358.557, 179.749, 0 > ),
+			NewLocPair( < 2027.17, 14255.7, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.44, 0.900257, 0 > ),//7
+			NewLocPair( < 2705.93, 14519.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.557, 179.749, 0 > ),
 						
 			
-			NewLocPair( < 2022.17, 13587.2, 136.275 >, < 358.804, 1.26951, 0 > ),//8
-			NewLocPair( < 2649.07, 13569.1, 136.275 >, < 358.587, 177.486, 0 > ),
+			NewLocPair( < 2022.17, 13587.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.804, 1.26951, 0 > ),//8
+			NewLocPair( < 2649.07, 13569.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.587, 177.486, 0 > ),
 			
 			
-			NewLocPair( < 2012.83, 12907, 136.275 >, < 358.71, 358.894, 0 > ),//9
-			NewLocPair( < 2705.93, 12639.9, 136.275 >, < 358.306, 179.909, 0 > ),
+			NewLocPair( < 2012.83, 12907, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.71, 358.894, 0 > ),//9
+			NewLocPair( < 2705.93, 12639.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.306, 179.909, 0 > ),
 			
 			
-			NewLocPair( < 2007.38, 12065.2, 136.275 >, < 358.02, 1.20616, 0 > ),//10
-			NewLocPair( < 2705.93, 12187.1, 136.275 >, < 358.205, 179.637, 0 > ),
+			NewLocPair( < 2007.38, 12065.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.02, 1.20616, 0 > ),//10
+			NewLocPair( < 2705.93, 12187.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.205, 179.637, 0 > ),
 						
 			
-			NewLocPair( < 2010.97, 11294.1, 136.275 >, < 358.677, 1.92442, 0 > ),//11
-			NewLocPair( < 2684.01, 11274.2, 136.275 >, < 358.706, 181.528, 0 > ),
+			NewLocPair( < 2010.97, 11294.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.677, 1.92442, 0 > ),//11
+			NewLocPair( < 2684.01, 11274.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.706, 181.528, 0 > ),
 			
 			
-			NewLocPair( < 2018.2, 10553.4, 136.275 >, < 358.365, 0.918914, 0 > ),//12
-			NewLocPair( < 2695.21, 10658.3, 136.275 >, < 358.73, 180.507, 0 > ),
+			NewLocPair( < 2018.2, 10553.4, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.365, 0.918914, 0 > ),//12
+			NewLocPair( < 2695.21, 10658.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.73, 180.507, 0 > ),
 			
 			
-			NewLocPair( < 3454.38, 10463.6, 136.275 >, < 358.461, 179.844, 0 >),//13
-			NewLocPair( < 2774.57, 10563.2, 136.275 >, < 358.25, 359.569, 0 > ),
+			NewLocPair( < 3454.38, 10463.6, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.461, 179.844, 0 >),//13
+			NewLocPair( < 2774.57, 10563.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.25, 359.569, 0 > ),
 						
 			
-			NewLocPair( < 2789.48, 11318, 136.275 >, < 358.431, 359.476, 0 > ),//14
-			NewLocPair( < 3419.66, 11296.9, 136.275 >, < 358.114, 178.214, 0 > ),
+			NewLocPair( < 2789.48, 11318, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.431, 359.476, 0 > ),//14
+			NewLocPair( < 3419.66, 11296.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.114, 178.214, 0 > ),
 			
 			
-			NewLocPair( < 2851.9, 12073.4, 136.275 >, < 359.097, 0.0967312, 0 > ),//15
-			NewLocPair( < 3410.55, 11985.1, 136.275 >, < 358.553, 178.984, 0 > ),
+			NewLocPair( < 2851.9, 12073.4, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.097, 0.0967312, 0 > ),//15
+			NewLocPair( < 3410.55, 11985.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.553, 178.984, 0 > ),
 			
 			
-			NewLocPair( < 3434.33, 12949.8, 136.275 >, < 358.217, 180.349, 0 > ),//16
-			NewLocPair( < 2789.41, 12696.9, 136.275 >, < 358.063, 0.618432, 0 > ),
+			NewLocPair( < 3434.33, 12949.8, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.217, 180.349, 0 > ),//16
+			NewLocPair( < 2789.41, 12696.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.063, 0.618432, 0 > ),
 						
 			
-			NewLocPair( < 2821.61, 13592.5, 136.275 >, < 358.434, 0.300493, 0 > ),//17
-			NewLocPair( < 3445.45, 13501.6, 136.275 >, < 358.302, 178.999, 0 > ),
+			NewLocPair( < 2821.61, 13592.5, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.434, 0.300493, 0 > ),//17
+			NewLocPair( < 3445.45, 13501.6, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.302, 178.999, 0 > ),
 			
 			
-			NewLocPair( < 2785.1, 14336.5, 136.275 >, < 357.755, 1.08752, 0 > ),//18
-			NewLocPair( < 3418.27, 14335, 136.275 >, < 358.706, 178.716, 0 > ),
+			NewLocPair( < 2785.1, 14336.5, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 357.755, 1.08752, 0 > ),//18
+			NewLocPair( < 3418.27, 14335, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.706, 178.716, 0 > ),
 			
 			
-			NewLocPair( < 3556.97, 14536.3, 136.275 >, < 358.44, 359.719, 0 > ),//19
-			NewLocPair( < 4190.3, 14080.3, 136.275 >, < 358.096, 178.87, 0 > ),
+			NewLocPair( < 3556.97, 14536.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.44, 359.719, 0 > ),//19
+			NewLocPair( < 4190.3, 14080.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.096, 178.87, 0 > ),
 						
 			
-			NewLocPair( < 3567.85, 13604.9, 136.275 >, < 358.768, 359.636, 0 > ),//20
-			NewLocPair( < 4201.19, 13668.7, 136.275 >, < 358.71, 180.051, 0 > ),
+			NewLocPair( < 3567.85, 13604.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.768, 359.636, 0 > ),//20
+			NewLocPair( < 4201.19, 13668.7, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.71, 180.051, 0 > ),
 			
 			
-			NewLocPair( < 3551.94, 13015.2, 136.275 >, < 358.056, 359.814, 0 > ),//21
-			NewLocPair( < 4194.56, 12673.9, 136.275 >, < 358.854, 180.855, 0 > ),
+			NewLocPair( < 3551.94, 13015.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.056, 359.814, 0 > ),//21
+			NewLocPair( < 4194.56, 12673.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.854, 180.855, 0 > ),
 			
 			
-			NewLocPair( < 3542.06, 11949.6, 136.275 >, < 358.863, 0.431551, 0 > ),//22
-			NewLocPair( < 4212.53, 12181.8, 136.275 >, < 358.223, 179.777, 0 > ),
+			NewLocPair( < 3542.06, 11949.6, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.863, 0.431551, 0 > ),//22
+			NewLocPair( < 4212.53, 12181.8, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.223, 179.777, 0 > ),
 						
 			
-			NewLocPair( < 3535.76, 11498.9, 136.275 >, < 358.982, 359.36, 0 > ),//23
-			NewLocPair( < 4155.54, 11130.5, 136.275 >, < 358.654, 179.863, 0 > ),
+			NewLocPair( < 3535.76, 11498.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.982, 359.36, 0 > ),//23
+			NewLocPair( < 4155.54, 11130.5, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.654, 179.863, 0 > ),
 			
 			
-			NewLocPair( < 3542.66, 10485.4, 136.275 >, < 358.779, 359.757, 0 > ),//24
-			NewLocPair( < 4216.37, 10769.5, 136.275 >, < 358.249, 180.085, 0 > ),
+			NewLocPair( < 3542.66, 10485.4, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.779, 359.757, 0 > ),//24
+			NewLocPair( < 4216.37, 10769.5, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.249, 180.085, 0 > ),
 			
 			
-			NewLocPair( < 4312.77, 10552.7, 136.275 >, < 358.922, 0.222934, 0 > ),//25
-			NewLocPair( < 4934.16, 10569.1, 136.275 >, < 358.363, 179.387, 0 > ),
+			NewLocPair( < 4312.77, 10552.7, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.922, 0.222934, 0 > ),//25
+			NewLocPair( < 4934.16, 10569.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.363, 179.387, 0 > ),
 						
 			
-			NewLocPair( < 4934.63, 11044.4, 136.275 >, < 358.444, 179.237, 0 > ),//26
-			NewLocPair( < 4293.06, 11584.1, 136.275 >, < 359.283, 358.251, 0 > ),
+			NewLocPair( < 4934.63, 11044.4, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.444, 179.237, 0 > ),//26
+			NewLocPair( < 4293.06, 11584.1, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 359.283, 358.251, 0 > ),
 			
 			
-			NewLocPair( < 4939.28, 12050.6, 136.275 >, < 358.252, 178.744, 0 > ),//27
-			NewLocPair( < 4317.15, 12075.5, 136.275 >, < 357.813, 359.825, 0 > ),
+			NewLocPair( < 4939.28, 12050.6, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.252, 178.744, 0 > ),//27
+			NewLocPair( < 4317.15, 12075.5, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 357.813, 359.825, 0 > ),
 			
 			
-			NewLocPair( < 4953.12, 12665.2, 136.275 >, < 358.416, 179.383, 0 > ),//28
-			NewLocPair( < 4288.89, 12679.3, 136.275 >, < 358.572, 359.256, 0 > ),
+			NewLocPair( < 4953.12, 12665.2, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.416, 179.383, 0 > ),//28
+			NewLocPair( < 4288.89, 12679.3, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.572, 359.256, 0 > ),
 						
 			
-			NewLocPair( < 4949.51, 13535, 136.275 >, < 358.109, 179.168, 0 > ),//29
-			NewLocPair( < 4334.56, 13790.7, 136.275 >, < 358.745, 359.199, 0 > ),
+			NewLocPair( < 4949.51, 13535, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.109, 179.168, 0 > ),//29
+			NewLocPair( < 4334.56, 13790.7, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.745, 359.199, 0 > ),
 			
 			
-			NewLocPair( < 4854.76, 14333.8, 136.275 >, < 358.84, 179.242, 0 > ),//30
-			NewLocPair( < 4449.29, 14355.9, 136.275 >, < 358.114, 359.415, 0 > ),
+			NewLocPair( < 4854.76, 14333.8, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.84, 179.242, 0 > ),//30
+			NewLocPair( < 4449.29, 14355.9, 136.275 > + LG_DUELS_OFFSET_ORIGIN, < 358.114, 359.415, 0 > ),
 			
 			]
 			
@@ -3601,15 +3680,15 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			} 
 			catch (varerror)
 			{
-				printt("\n\n --- DEBUGIT ERROR --- \n " + varerror )
+				sqerror("\n\n --- DEBUGIT ERROR --- \n " + varerror )
 				if( typeof( playerInWaitingStruct.queue_time ) != "float" )
 				{
-					printt( "playerInWaitingStruct.queue_time was not a float" )
+					sqerror( "playerInWaitingStruct.queue_time was not a float" )
 				}
 				
 				if( typeof( playerInWaitingStruct.player.p.IBMM_grace_period ) != "float" )
 				{
-					printt( "playerInWaitingStruct.player.p.IBMM_grace_period was not a float" )
+					sqerror( "playerInWaitingStruct.player.p.IBMM_grace_period was not a float" )
 				}
 				
 				continue //onward
@@ -3634,7 +3713,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			removed = false
 			//if(!IsValid(group))
 			//{
-			//	printt("Logic flow error 0002: group was invalid")
+			//	sqerror("Logic flow error 0002: group was invalid")
 			//	removeGroupByHandle(groupHandle)
 			//}
 			//else 
@@ -3663,13 +3742,13 @@ void function soloModeThread(LocPair waitingRoomLocation)
 						HolsterAndDisableWeapons( group.player2 )
 					}	
 					
-					#if DEVELOPER && HAS_TRACKER_DLL
+					#if DEVELOPER
 					sqprint("remove group request 04")
 					#endif
 					
 					while(mGroupMutexLock) 
 					{
-						#if DEVELOPER && HAS_TRACKER_DLL
+						#if DEVELOPER
 						sqprint("Waiting for lock to release R004")
 						#endif
 						WaitFrame() 
@@ -3752,7 +3831,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 						SetIsUsedBoolForRealmSlot(group.slotIndex, false);
 					}
 					
-					#if DEVELOPER && HAS_TRACKER_DLL
+					#if DEVELOPER
 					sqprint("remove group request 05")
 					#endif
 					groupsToRemove.append(group)
@@ -3782,12 +3861,12 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		
 		foreach ( group in groupsToRemove )
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
 			#endif 
 			while(mGroupMutexLock) 
 			{	
-				#if DEVELOPER && HAS_TRACKER_DLL
+				#if DEVELOPER
 				sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
 				#endif
 				WaitFrame() 
@@ -3799,7 +3878,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			else 
 			{
 				#if DEVELOPER
-				printt("Invalid group cannot be removed by reference alone")
+				sqerror("Invalid group cannot be removed by reference alone")
 				#endif
 			}
 		}
@@ -3809,7 +3888,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		{
 			if(!restingPlayerHandle)
 			{	
-				printt("Null handle")
+				sqerror("Null handle")
 					continue
 			}
 			
@@ -4145,7 +4224,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			
 			if(newGroup.player1.p.enable_input_banner && !bMatchFound )
 			{
-				Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.GetPlayerName() + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
+				Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
@@ -4153,7 +4232,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			
 			if(newGroup.player2.p.enable_input_banner && !bMatchFound )
 			{
-				Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.GetPlayerName() + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
+				Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
 			}
 		} //not waiting
 		
@@ -4204,7 +4283,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 //mkos input watch
 void function InputWatchdog( entity player, entity opponent, soloGroupStruct group )
 {
-	#if DEVELOPER && HAS_TRACKER_DLL
+	#if DEVELOPER
 	sqprint( format("THREAD FOR GROUP STARTED" ))
 	#endif
 	
@@ -4215,14 +4294,14 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 	EndSignal( player, "PlayerDisconnected" )
 	EndSignal( opponent, "PlayerDisconnected" )
 		
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqprint("Waiting for input to change");
 		#endif
 	
 	OnThreadEnd(
 		function() : ( player, opponent, group )
 		{
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqprint( format("THREAD FOR GROUP ENDED" ))
 			#endif
 			
@@ -4294,7 +4373,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			
 			DeployAndEnableWeapons( player )
 
-			if ( !(player.GetPlayerName() in weaponlist))//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
+			if ( !(player.p.name in weaponlist))//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
 			{
 				TakeAllWeapons(player)
 
@@ -4399,7 +4478,7 @@ void function ForceAllRoundsToFinish_solomode()
 		
 		if(isPlayerInWaitingList(player))
 		{
-			return
+			continue
 		}
 
 		soloGroupStruct group = returnSoloGroupOfPlayer(player) 	
@@ -4419,7 +4498,7 @@ void function ForceAllRoundsToFinish_solomode()
 	
 	foreach( challengeStruct in file.allChallenges )
 	{
-		if( !IsValid( challengeStruct ) ){ return }
+		if( !IsValid( challengeStruct ) ){ continue }
 		
 		if( IsValid (challengeStruct.player) )
 		{
@@ -4476,6 +4555,8 @@ vector function Return_Loc_Data( string _type )
 				coordinates = < -532.278, 20713.6, 4746.85 >
 				return coordinates
 				break
+				
+			//TODO add party crasher?
 				
 			default: 
 			

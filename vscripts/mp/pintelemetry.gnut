@@ -38,10 +38,17 @@ global function PIN_Training
 
 // these defines dictate the compiler for tracker code vs stub code
 
-global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+global const bool TRACKER = true
+global const bool HAS_TRACKER_DLL = true
 
 //do not edit below this line
+
+
+
+
+global function PIN_Callback_CheckReload
+global function SetServerReloadReadyState
+
 #if TRACKER
 	global const bool STUB = false
 #else
@@ -108,6 +115,10 @@ global const bool HAS_TRACKER_DLL = false
 	global function CheckRate
 	global function ParseWeapon
 	global function IsWeaponValid
+#if !HAS_TRACKER_DLL
+	global function sqprint
+	global function sqerror
+#endif
 	
 	global struct DamageEvent {
 		int weaponSource
@@ -138,11 +149,11 @@ global const bool HAS_TRACKER_DLL = false
 
 
 
-// ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦¦¦¦¦     ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦    ¦¦     ¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦   ¦¦¦¦¦   ¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦¦¦¦¦ 
-// ¦¦   ¦¦ ¦¦      ¦¦   ¦¦    ¦¦   ¦¦ ¦¦      ¦¦    ¦¦        ¦¦    ¦¦   ¦¦ ¦¦   ¦¦ ¦¦      ¦¦  ¦¦  ¦¦      ¦¦   ¦¦ 
-// ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦¦¦¦¦     ¦¦   ¦¦ ¦¦¦¦¦   ¦¦    ¦¦        ¦¦    ¦¦¦¦¦¦  ¦¦¦¦¦¦¦ ¦¦      ¦¦¦¦¦   ¦¦¦¦¦   ¦¦¦¦¦¦  
-// ¦¦   ¦¦      ¦¦ ¦¦   ¦¦    ¦¦   ¦¦ ¦¦       ¦¦  ¦¦         ¦¦    ¦¦   ¦¦ ¦¦   ¦¦ ¦¦      ¦¦  ¦¦  ¦¦      ¦¦   ¦¦ 
-// ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦ ¦¦¦¦¦¦  ¦¦¦¦¦¦¦   ¦¦¦¦          ¦¦    ¦¦   ¦¦ ¦¦   ¦¦  ¦¦¦¦¦¦ ¦¦   ¦¦ ¦¦¦¦¦¦¦ ¦¦   ¦¦ 
+// â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€    â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€   â–ˆâ–ˆâ€    â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€
+// â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â€â€â€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€   â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â€â€â€â–ˆâ–ˆâ€   â–ˆâ–ˆâ€    â€â€â€â–ˆâ–ˆâ€â€â€â€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â€â€â€â–ˆâ–ˆâ€ â–ˆâ–ˆâ€â€â–ˆâ–ˆâ€â€â€â€â€â€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€
+// â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€   â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€  â–ˆâ–ˆâ€   â–ˆâ–ˆâ€       â–ˆâ–ˆâ€   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€     â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€
+// â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â€â€â€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€   â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â€  â€â–ˆâ–ˆâ€ â–ˆâ–ˆâ€â€       â–ˆâ–ˆâ€   â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€â–ˆâ–ˆâ€     â–ˆâ–ˆâ€â€â–ˆâ–ˆâ€ â–ˆâ–ˆâ€â€â€â€  â–ˆâ–ˆâ€â€â€â–ˆâ–ˆâ€
+// â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€ â€â–ˆâ–ˆâ–ˆâ–ˆâ€â€        â–ˆâ–ˆâ€   â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€  â–ˆâ–ˆâ€â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ€â–ˆâ–ˆâ€  â–ˆâ–ˆâ€
 // r5r.dev by mkos
 
 #if TRACKER
@@ -259,7 +270,7 @@ global struct DamageEvent {
 	int headshots
 	float actionTimestamp
 	int lastWeaponSource
-	float lastHitTimestamp
+	float lastHitTimestamp = 0
 	
 	bool isNew
 	float shotIdentifier
@@ -326,13 +337,12 @@ struct PlayerData {
 	
 };
 
-struct { 
-
-    int READY = 1,
-    int BUSY = 2,
-	int SAFE = 3
-	
-} state
+enum state 
+{ 
+    READY = 1,
+    BUSY = 2,
+	SAFE = 3	
+} 
 
 struct {
 	
@@ -386,6 +396,8 @@ struct {
 	bool DefaultEnableInputBannerSetting
 	bool DefaultStartInRestSetting
 	
+	int flowstateRoundtime
+	
 } file
 
 //CHAT EFFECTS
@@ -393,32 +405,32 @@ struct {
 
 	table<string,string> effects = {
 	
-		["THUMBSUP"] = "??",
-		["SKULL"] = "??",
-		["PISTOL"] = "??",
-		["ROOK"] = "??",
-		["YELLOW_SKULL"] = "??",
-		["NO_WEP"] = "??",
-		["HEALTHKIT"] = "??",
-		["PHOENIX"] = "??",
-		["LOCKED"] = "??",
-		["EYE"] = "??",
-		["FRIEND"] = "??",
-		["LAG"] = "??",
-		["CONNECTING"] = "??",
-		["CELL"] = "??",
-		["BATTERY"] = "??",
-		["APEX"] = "??",
-		["FIVE"] = "??",
-		["CIRCLE"] = "??",
-		["BLUEPEX"] = "??",
-		["WRAITH_BANNER"] = "??",
-		["BIG_WHITE_CROWN"] = "??",
-		["WHITE_CROWN"] = "??",
-		["BLUE_CROWN"] = "??",
-		["TREE"] = "??",
-		["SUS"] = "??",
-		["RED_SQUARE"] = "??"
+		["THUMBSUP"] = "ó°‰¥",
+		["SKULL"] = "ó°†¿",
+		["PISTOL"] = "ó°‰…",
+		["ROOK"] = "ó°ˆ­",
+		["YELLOW_SKULL"] = "ó°ˆ«",
+		["NO_WEP"] = "ó°ˆ",
+		["HEALTHKIT"] = "ó°ˆ˜",
+		["PHOENIX"] = "ó°ˆ–",
+		["LOCKED"] = "ó°ˆ",
+		["EYE"] = "ó°‡Š",
+		["FRIEND"] = "ó°†¾",
+		["LAG"] = "ó°†¼",
+		["CONNECTING"] = "ó°†º",
+		["CELL"] = "ó°ˆš",
+		["BATTERY"] = "ó°ˆ™",
+		["APEX"] = "ó°…¡",
+		["FIVE"] = "ó°†—",
+		["CIRCLE"] = "ó°†‰",
+		["BLUEPEX"] = "ó°… ",
+		["WRAITH_BANNER"] = "ó°„’",
+		["BIG_WHITE_CROWN"] = "ó°„ˆ",
+		["WHITE_CROWN"] = "ó°„‡",
+		["BLUE_CROWN"] = "ó°„„",
+		["TREE"] = "ó°ƒ»",
+		["SUS"] = "ó°ƒ´",
+		["RED_SQUARE"] = "ó°ƒ­"
 	}
 
 } chat
@@ -1002,6 +1014,8 @@ void function PIN_Init()
 	INIT_fastComputes()
 	INIT_IntervalMessages()
 	
+	SetServerReloadReadyState( ReloadState.BUSY )
+	
 	if( file.bChatbotEnabled )
 	{
 		thread __LoadServerBot()
@@ -1086,12 +1100,15 @@ void function PIN_Init()
 
 void function INIT_fastComputes()
 {
+	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
+	
 	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false)
 	file.LogOn = GetCurrentPlaylistVarBool("logging_enabled", false)
 	file.LogE = GetCurrentPlaylistVarBool("logging_encryption", false)
 	file.bChatbotEnabled = !IsLobby() && SQ_GetSetting("settings.ENABLE_CHATBOT") == "true" ? true : false;
+	file.flowstateRoundtime = FS_RoundTime()
 	
 	if(file.bChatbotEnabled)
 	{
@@ -2899,6 +2916,11 @@ void function Init_NewGame()
 					
 				SendServerMessage( FindChatEffect( param ) )
 				return true
+				
+			case "nextmap":
+			
+				RotateMap()
+				return true
 
 			default:
 			
@@ -3017,7 +3039,7 @@ void function INIT_IntervalMessages()
 				
 				string sm0Match = sM0.tolower()
 				
-				if( IsNumeric( sM0, FS_RoundTime() ) && sM1.len() > 0 && sM1.len() < 1000 )
+				if( IsNumeric( sM0, file.flowstateRoundtime ) && sM1.len() > 0 && sM1.len() < 1000 )
 				{
 					try
 					{
@@ -3045,7 +3067,7 @@ void function INIT_IntervalMessages()
 						sqerror(format("Cannot add msg #[ %d ] to MessageEvents, improper format", iMessageNum ))
 					}
 				}
-				else if( EventTypes.find( sm0Match ) > -1 && sM1.len() > 0 && sM1.len() < 1000 )
+				else if( EventTypes.contains( sm0Match ) && sM1.len() > 0 && sM1.len() < 1000 )
 				{
 					switch( sm0Match )
 					{
@@ -3057,9 +3079,9 @@ void function INIT_IntervalMessages()
 							break
 					}
 				}
-				else 
+				else
 				{
-					sqerror("InitIntervalMessages parsing error")
+					sqerror( format( "InitIntervalMessages parsing error with: %s, %s", sM0, sM1 ) )
 				}
 			}
 		}
@@ -3069,7 +3091,7 @@ void function INIT_IntervalMessages()
 	
 	string loopTime = SQ_GetSetting( "settings.LOOP_MESSAGES_INTERVAL" )
 	
-	if( IsNumeric( loopTime, SQ_MAX_INT_32 ) )
+	if( loopTime != "" && IsNumeric( loopTime, SQ_MAX_INT_32 ) )
 	{
 		int convert = loopTime.tointeger()
 		float iRound10 = ceil(float(convert) / 10.0) * 10
@@ -3078,7 +3100,12 @@ void function INIT_IntervalMessages()
 	}
 	else 
 	{
-		file.iLoopMessagesTime = 2 //20 seconds
+		if( loopTime != "" )
+		{
+			sqerror("[TRACKER] Invalid LOOP_MESSAGES_INTERVAL ; setting to 60")
+		}
+		
+		file.iLoopMessagesTime = 6 //60 seconds default
 	}
 	
 	#if DEVELOPER
@@ -3217,6 +3244,7 @@ void function __LoadServerBot()
 	
 	if(file.iBotID == -1)
 	{
+		file.bChatbotEnabled = false
 		return
 	}
 	
@@ -3852,11 +3880,17 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 								
 								if( g_bIs1v1 )
 								{
-									soloGroupStruct group = returnSoloGroupOfPlayer( attacker )
-									
-									if( group.IsKeep )
+									if( IsValid( attacker ) )
 									{
-										addStatsToGroup( attacker, group, playerTotalDamages[i], playerTotalHits[i], playerTotalShots[i], true )
+										soloGroupStruct group = returnSoloGroupOfPlayer( attacker )
+									
+										if ( IsValid( group ) )
+										{
+											if( group.IsKeep )
+											{
+												addStatsToGroup( attacker, group, playerTotalDamages[i], playerTotalHits[i], playerTotalShots[i], true )
+											}
+										}
 									}
 								}
 								
@@ -3913,7 +3947,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		{
 			soloGroupStruct group = returnSoloGroupOfPlayer( victim )
 			
-			if( group.IsKeep )
+			if( IsValid( group ) && group.IsKeep )
 			{
 				addStatsToGroup( victim, group, victimTotalDamage, victimTotalHits, victimTotalShots, false )
 			}
@@ -4410,7 +4444,7 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 		if (!IsValid(player)) // || !player.p.isConnected)
 				return;
 		
-			if (g_bIs1v1) 
+			if ( g_bIs1v1 || g_bLGmode ) 
 			{
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 				mkos_Force_Rest( player, [] )
@@ -5979,27 +6013,23 @@ array<string> function StringToArray( string str, int MAX_LENGTH = 128 )
 	*/
 	
     foreach ( item in arr ) 
-	{	
-	
+	{		
 		item_index++
 		item = trim( item )
 		length_check = item.len()
 	
         if ( item == "" ) 
 		{   
-		
-            sqerror( "Empty item in the list for item # " + ( item_index ) + " removed. " )	
-			
-        } else if ( length_check >= MAX_LENGTH ){
-
+            sqerror( "Empty item in the list for item # " + ( item_index ) + " removed. " )			
+        } 
+		else if ( length_check >= MAX_LENGTH )
+		{
 			sqerror( "item # " + ( item_index ) + " is too long and was removed. Length: " + length_check + " ; Max: " + MAX_LENGTH + " chars")	
-		
-		} else {
-			
-			valid.append( item )
-			
-		}
-		
+		} 
+		else
+		{		
+			valid.append( item )		
+		}	
     }
 	
 	if ( valid.len() <= 0 ) 
@@ -6037,9 +6067,7 @@ string function Concatenate( string str1, string str2 )
 	
 	if ( str2 != ""  )
 	{
-	
-		str2 = "," + str2;
-	
+		str2 = "," + str2;	
 	}
 	
     return str1 + str2;
@@ -6059,7 +6087,6 @@ void function SetDefaultIBMM( entity player )
 
 bool function IsNum( string str ) 
 {
-
 	if ( str.len() == 0 )
 		return false
 	
@@ -6082,7 +6109,7 @@ bool function empty( string str )
 	return str == "";
 }
 
-bool function IsNumeric(string str, int limit = 16 )
+bool function IsNumeric(string str, int limit = 16 ) //TODO default max to sq max int, (change 16 specific calls to 16)
 {
 
 	if ( !IsNum( str ) ) return false;
@@ -6374,7 +6401,7 @@ void function printarray( array<string> args )
 		
 		foreach( arg in args )
 		{
-			test += arg;
+			test += format( "%s \n", arg )
 		}
 		
 		sqprint(test)
@@ -6691,7 +6718,7 @@ table<string,int> WeaponIdentifiers = {
 	["mp_weapon_plasma_grenade_halomod"] = 230,
 	["mp_weapon_oddball_primary"] = 231,
 	["melee_oddball"] = 232,
-	["mp_weapon_clickweaponauto"] = 233,
+	["mp_weapon_lightninggun"] = 233,
 	// lies
 	["mp_weapon_grenade_creeping_bombardment"] = 234,
 	["mp_ability_area_sonar_scan"] = 235,
@@ -6831,6 +6858,67 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	return debug
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+// SHARED
+
+	struct {
+		
+		float sv_autoReloadRate
+	
+	} settings 
+	
+	enum ReloadState 
+	{	
+		BUSY = 0
+		READY = 1
+	};
+	
+	void function SetServerReloadReadyState( int state )
+	{
+		if( state == 1 )
+		{
+			SetConVarFloat( "sv_autoReloadRate", settings.sv_autoReloadRate )
+		}
+		else 
+		{
+			SetConVarFloat( "sv_autoReloadRate", 0 )
+		}	
+	}
+	
+	//gamemode dev is responsible for placement of this reload callback
+	//internal check after game related / logging activities are done.
+	void function PIN_Callback_CheckReload()
+	{ 
+		thread CheckAndResetReadyState()
+	}
+
+	void function CheckAndResetReadyState()
+	{
+		if( file.LogOn )
+		{
+			int max = 0
+			while( !SQ_GetLogState( state.READY ) )
+			{
+				wait 0.1
+				max++;
+				
+				if ( max >= 50 )
+				{
+					sqerror("Timeout while waiting for log to finish...")
+					break
+				}
+			}
+		}
+	
+		SetServerReloadReadyState( ReloadState.READY )
+		wait 1.2
+		SetServerReloadReadyState( ReloadState.BUSY )
+	}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -6857,8 +6945,8 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 		void function InitializeLogThread_internal(){}
 		void function LogEvent( string data, bool encrypt ){}
 		void function stopLogging(){}	
-		void function sqprint( string data ){ printl(data) }
-		void function sqerror( string data ){ printl(data) }		
+		void function sqprint( string data ){ printt(data) }
+		void function sqerror( string data ){ printt(data) }		
 		void function testbool(){}		
 		void function _STATSHOOK_UpdatePlayerCount(){}
 		void function _STATSHOOK_EndOfMatch(){}
@@ -6872,6 +6960,13 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 #endif
 
 #if STUB
+
+enum state 
+{ 
+	READY = 1,
+	BUSY = 2,
+	SAFE = 3	
+} 
 
 struct {
 
@@ -6895,7 +6990,7 @@ void function SavePlayer_wait_time( entity ent, float time ){}
 void function SavePlayer_lock1v1_setting( entity ent, bool setting ){}
 void function SavePlayer_start_in_rest_setting( entity ent, bool setting ){}
 void function SavePlayer_enable_input_banner( entity ent, bool setting ){}
-void function SavePlayer_saved_weapons( entity ent, string settings ){}
+void function SavePlayer_saved_weapons( entity ent, string setting ){}
 
 //shared
 void function SendServerMessage( string msg ){}
@@ -6908,6 +7003,9 @@ void function PIN_Init()
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
 	AddCallback_OnClientConnected(PlayerConnectedCallback);
+	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
+	sqprint(" After setting, its: " + settings.sv_autoReloadRate.tostring() )
+	SetServerReloadReadyState( ReloadState.BUSY )
 }
 
 void function PIN_GameStart(){}

@@ -2,13 +2,15 @@ globalize_all_functions
 
 //mp_rr_canyonlands_staging
 
+global const vector LG_DUELS_OFFSET_ORIGIN = <33184.4023, -11875.7686, -24047.4277>
 
 
-void function SpawnLGProps() {
 
+void function SpawnLGProps() 
+{
     // Props
     entity prop
-	vector startingorg = <0,0,0>
+	vector startingorg = LG_DUELS_OFFSET_ORIGIN
 
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_frame_16x128_01.rmdl", < 3631.001, 13850, 134.8387 > + startingorg, < 0, 0, 0 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_frame_16x128_01.rmdl", < 4125.001, 13332, 134.8387 > + startingorg, < 0, 0, 0 >, true, 50000, -1, 1 )
@@ -1334,15 +1336,14 @@ void function SpawnLGProps() {
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 2583.18, 10491.57, 968.2124 > + startingorg, < 0, -180, 90 >, true, 0.0001, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 2583.179, 11341.57, 968.213 > + startingorg, < 0, -180, 90 >, true, 0.0001, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 2328.178, 12156.57, 968.213 > + startingorg, < 0, -180, 90 >, true, 0.0001, -1, 1 )
-
-
+	
 }
 
 void function SpawnLGProps2()
 {
     // Props
     entity prop
-	vector startingorg = <33184.4023, -11875.7686, -24047.4277>
+	vector startingorg = LG_DUELS_OFFSET_ORIGIN
 
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 2328.179, 10921.57, 968.2123 > + startingorg, < 0, -180, 90 >, true, 0.0001, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 2583.18, 10921.57, 968.2123 > + startingorg, < 0, -180, 90 >, true, 0.0001, -1, 1 )
@@ -2907,6 +2908,5 @@ void function SpawnLGProps2()
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4985.706, 11424.18, 128.2126 > + startingorg, < 0, 0, 90 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 4730.706, 11424.18, 128.2126 > + startingorg, < 0, 0, 90 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 3062, 13199.21, 125.7126 > + startingorg, < 0, 0, 90 >, true, 50000, -1, 1 )
-
 	
 }

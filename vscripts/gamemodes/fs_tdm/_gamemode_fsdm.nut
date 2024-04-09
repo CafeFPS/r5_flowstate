@@ -70,6 +70,8 @@ global function ClientCommand_mkos_LGDuel_IBMM_wait
 global function ClientCommand_mkos_lock1v1_setting
 global bool IS_1V1_MODE_ENABLED
 
+global function RotateMap
+
 global function Message_New
 global function ServerMsgToBox
 
@@ -145,7 +147,7 @@ const string PURPLE_SHIELD = "armor_pickup_lv3"
 
 const int Flowstate_StartTimeDelay = 10
 bool debugging = true
-bool VOTING_PHASE_ENABLE = true
+global bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
 
 //TDM Saved Weapon List
@@ -957,6 +959,28 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 					
 }
 
+void function RotateMap()
+{
+	string to_map = GetMapName()
+	
+	array<string> maplist = split( flowstateSettings.maplist, "," )
+	
+	int countmaps = maplist.len()
+	int i;
+
+	for ( i = 0; i < countmaps; i++ ) 
+	{
+		if ( GetMapName() == maplist[i] ) 
+		{
+			int index = (i + 1) % countmaps	
+			to_map = maplist[index]
+			break
+		}
+	}
+	
+	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
+}
+
 //////////////////////////////////////////////////// 
 ///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////// 
@@ -1000,10 +1024,10 @@ void function _CustomTDM_Init()
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
 	try{
-	if( flowstateSettings.allow_cfgs ) // if you want to avoid cfg abusers
+	if( flowstateSettings.allow_cfgs ) // if you want to allow cfg abusers
 		SetConVarInt( "sv_quota_scriptExecsPerSecond", 20 )
 	else
-		SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
+		SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 ) //is 4 acceptable, or wont this allow superglide? ~mkos
 	}catch(e)
 
 	if (GetCurrentPlaylistName() != "fs_movementgym")
@@ -1160,9 +1184,8 @@ void function _CustomTDM_Init()
 	
 	if ( f_wait > 0.0 && f_wait < 3.0 )
 	{
-		#if HAS_TRACKER_DLL
+		//this shouldn't be defined out, it let's the host know they have an invalid setting
 		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
-		#endif
 	}
 }
 
@@ -4335,6 +4358,7 @@ void function SimpleChampionUI()
 			}()
 			
 	}
+	
 		
 	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
 	{
@@ -4391,6 +4415,8 @@ void function SimpleChampionUI()
 			}
 		}
 
+		PIN_Callback_CheckReload()
+		wait 1.2
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
 	}
 
@@ -4471,7 +4497,7 @@ void function SimpleChampionUI()
 		FS_DM.scoreboardShowing = false
 	}
 	
-	
+	PIN_Callback_CheckReload()
 
 	if( VOTING_PHASE_ENABLE )
 	{
@@ -4620,7 +4646,7 @@ void function SimpleChampionUI()
 		// player.UnfreezeControlsOnServer()
 	// }
 
-	file.currentRound++
+	file.currentRound++	
 }
 
 entity function GetMainRingBoundary()
