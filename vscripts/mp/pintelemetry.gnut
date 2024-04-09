@@ -38,8 +38,8 @@ global function PIN_Training
 
 // these defines dictate the compiler for tracker code vs stub code
 
-global const bool TRACKER = true
-global const bool HAS_TRACKER_DLL = true
+global const bool TRACKER = false
+global const bool HAS_TRACKER_DLL = false
 
 //do not edit below this line
 
@@ -6935,7 +6935,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 		int function EA_Verify(){ return 0 }
 		
 		bool function isLogging(){ return false }
-		bool function SQ_GetLogState(){ return false }
+		bool function SQ_GetLogState( int state ){ return false }
 	
 		string function SQMatchID(){ return "" }
 		string function GetKDString( string UID ){ return "NA" }
