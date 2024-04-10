@@ -470,10 +470,21 @@ void function Sequence_Playing()
 	wait 5.0
 
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
+	{
 		FlagSet( "DeathCircleActive" )
+		thread CircleRemainingTimeChatter_Think()
+	}
 
-	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
+	if( GetCurrentPlaylistVarBool( "lsm_mod11", false ) )
+	{
+		while( GetPlayerArray().len() < 2 )
+		{
+			WaitFrame()
+		}
+	} else if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
+	{
 		WaitForever() // match never ending
+	}
 	
 	while ( GetGameState() == eGameState.Playing )
 	{
@@ -493,6 +504,67 @@ void function Sequence_Playing()
 	}
 
 	thread Sequence_WinnerDetermined()
+}
+
+void function CircleRemainingTimeChatter_Think()
+{
+	while( true )
+	{
+		wait 1.0
+
+		int remainingTime = int( GetGlobalNetTime( "nextCircleStartTime" ) - Time() )
+
+		if( remainingTime < 0 )
+			continue
+		
+		string line = ""
+		array< int > alreadySaidTeam = []
+
+		switch( remainingTime )
+		{
+			case 60:
+				line = "bc_circleMovesNag1Min"
+				break
+
+			case 45:
+				line = "bc_circleMovesNag45Sec"
+				break
+
+			case 30:
+				line = "bc_circleMovesNag30Sec"
+				break
+
+			case 10:
+				line = "bc_circleMovesNag10Sec"
+				break
+		}
+
+		if( line == "" )
+			continue
+
+		foreach( player in GetPlayerArray_Alive() )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			if( alreadySaidTeam.contains( player.GetTeam() ) )
+				continue
+
+			alreadySaidTeam.append( player.GetTeam() )
+			string distance = ""
+			entity speaker = GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom()
+
+			if( SURVIVAL_PosInSafeZone( speaker.GetOrigin() ) )
+				continue
+
+			if( Distance( SURVIVAL_GetSafeZoneCenter(), speaker.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 17500 )
+				distance = "_far"
+			else
+				distance = "_close"
+
+			PlayBattleChatterLineToSpeakerAndTeam( speaker, line + distance )
+		}
+	}
 }
 
 void function Sequence_WinnerDetermined()
@@ -1310,8 +1382,6 @@ void function SURVIVAL_CalculateAirdropPositions()
     array<vector> previousAirdrops
 
     array<DeathFieldStageData> deathFieldData = SURVIVAL_GetDeathFieldStages()
-	
-	float timeOut = Time() + 10
 
     for ( int i = deathFieldData.len() - 1; i >= 0; i-- )
     {
@@ -1342,9 +1412,6 @@ void function SURVIVAL_CalculateAirdropPositions()
         for (int j = 0; j < numAirdropsForThisRound; j++)
         {
             Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
-			
-			if( Time() > timeOut )
-				return
 
             if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y % 360 ))
             {

@@ -33,9 +33,9 @@ WeaponData
 	"stat_rof"		        						"38"
 	
 	// Models
-	"viewmodel"   									"mdl/techart/mshop/weapons/class/smg/car/car_base_v.rmdl"
-	"playermodel" 									"mdl/techart/mshop/weapons/class/smg/car/car_base_w.rmdl"
-	"holstermodel"									"mdl/techart/mshop/weapons/class/smg/car/car_base_w.rmdl"
+	"viewmodel"   									"mdl/weapons/r97/ptpov_r97.rmdl"
+	"playermodel" 									"mdl/weapons/r97/w_r97.rmdl"
+	"holstermodel"									"mdl/weapons/r97/w_r97.rmdl"
 	"holster_offset"								"2 0 0"
 	"holster_type"									"rifle"
 	

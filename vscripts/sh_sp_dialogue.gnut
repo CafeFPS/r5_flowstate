@@ -652,7 +652,7 @@ void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity play
 {
 	if ( dialogueFlags & eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS )
 	{
-		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueOnEnvironmentSpeakers, aliasID, NUM_NEARBY_SPEAKERS_TO_PLAY_FROM, dialogueFlags, responseID, responseSpeaker )
+		Remote_CallFunction_Replay( player, FUNCNAME_PlayDialogueOnEnvironmentSpeakers, aliasID, NUM_NEARBY_SPEAKERS_TO_PLAY_FROM, dialogueFlags, responseID, responseSpeaker )
 	}
 	else if ( speaker.IsNPC() || speaker.IsPlayer() || (speaker.GetClassName() == "script_mover_lightweight") )
 	{

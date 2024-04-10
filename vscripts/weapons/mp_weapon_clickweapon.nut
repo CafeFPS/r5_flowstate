@@ -1,4 +1,4 @@
-//Lightning Gun
+//Flowstate Lightning Gun
 //Made by @CafeFPS
 //-- everyone else: advice
 
@@ -217,8 +217,213 @@ void function OnWeaponDeactivate_Clickweapon( entity weapon )
 	#endif
 }
 
+#if SERVER
+void function FS_LG_PlayerStartShooting( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if ( !IsValid( player ) || !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
+		return
+	
+	thread FS_LG_PlayerStartShooting_Thread( player, weapon ) 
+}
+
+void function FS_LG_PlayerStartShooting_Thread( entity player, entity weapon )
+{
+	if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
+		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
+
+	Signal( player, "PlayerStartShotingLightningGun" )
+	EndSignal( player, "PlayerStartShotingLightningGun" )
+
+	wait 0.1
+	
+	if( !IsValid( player ) )
+		return
+
+	if( player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
+		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
+}
+#endif
 
 #if CLIENT
+void function FS_LG_OnPlayerCreated( entity player )
+{
+	if ( !IsValid( player ) ) 
+		return
+
+	if( !( player in file.beammover ) )
+	{
+		file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+	}
+
+	if( !( player in file.handmover ) )
+	{
+		file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
+	}
+
+	if( !( player in file.beamsFxs ) )
+	{
+		file.beamsFxs[player] <- -1
+	}
+
+	if( !( player in file.healthBars ) )
+	{
+		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
+	}
+
+	thread FS_LG_HandleLaserForPlayer( player )
+	
+	if( GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+		return
+
+	Flowstate_CreateCustomHealthBarForPlayer( player )
+}
+
+void function FS_LG_HandleLaserForPlayer( entity player )
+{
+	FlagWait( "EntitiesDidLoad" ) // for dev
+
+	if( !IsValid( player ) || player == GetLocalViewPlayer() ) 
+		return
+
+	entity mover = file.beammover[player]
+	entity handmover = file.handmover[player]
+
+	int fx = file.beamsFxs[ player ]
+
+	bool wasPlayerShooting = false
+	while( IsValid( player ) && IsValid( mover ) )
+	{
+		if( !EffectDoesExist( file.beamsFxs[ player ] ) && player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && !wasPlayerShooting )
+		{
+			if( player.LookupAttachment( "R_HAND" ) != -1 )
+				handmover.SetParent( player, "R_HAND" )
+			else
+				handmover.SetParent( player )
+			//create a mover for the hand/weapon
+			file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+			EffectSetDontKillForReplay( file.beamsFxs[ player ] )
+
+			if( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
+				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenEnemyColor )
+			else
+				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
+
+			EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
+			wait 0.01
+			continue
+		}
+
+		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) )
+		{
+			EffectStop( file.beamsFxs[ player ], false, false )
+		}
+		
+		wasPlayerShooting = player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" )
+		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.0001, 0, 0 )
+		
+		WaitFrame()
+	}
+}
+
+// cool health bars, im insane
+void function Flowstate_CreateCustomHealthBarForPlayer( entity player ) 
+{
+	entity vgui
+	
+	if( player in file.healthBars )
+	{
+		vgui = file.healthBars[player]
+	} else
+	{
+		vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
+		file.healthBars[player] <- vgui
+	}
+	
+	if( !IsValid( vgui ) )
+		return
+
+	vgui.SetParent( player )
+	thread Flowstate_CustomHealthBar_FaceVguiToPlayer( player, vgui )
+}
+
+void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity vgui )
+{
+	//todo desharcodear 80, quizá tomar el headfocus
+	local foreground = HudElement( "HealthBar_Foreground", vgui.GetPanel() )
+	local background = HudElement( "HealthBar_Background", vgui.GetPanel() )
+	int baseHeight = 280
+	
+	while( true )
+	{
+		WaitFrame()
+
+		if( !IsValid( player ) )
+			break
+		
+		if( !IsValid( vgui ) )
+		{
+			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
+			vgui.SetParent( player )
+			file.healthBars[player] = vgui
+		}
+
+		if( !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
+		{
+			foreground.Hide()
+			background.Hide()
+			continue
+		}
+
+		foreground.Show()
+		background.Show()
+
+		int health = player.GetHealth()
+		float Width = float( health * baseHeight ) / player.GetMaxHealth()
+		foreground.SetHeight( Width )
+
+		//make it face view player
+		vector closestPoint = GetClosestPointOnLine( GetLocalViewPlayer().CameraPosition(), GetLocalViewPlayer().CameraPosition() + (AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 100.0), vgui.GetOrigin() )		
+		vector angles = VectorToAngles( vgui.GetOrigin() - closestPoint )
+		vgui.SetAngles( Vector( -90, angles.y, 0 ) )
+		vgui.SetOrigin( player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20 )
+	}
+}
+
+void function FS_LG_OnPlayerDestroyed( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if( player in file.healthBars )
+	{
+		if( IsValid( file.healthBars[player] ) )
+			file.healthBars[ player ].Destroy()
+		delete file.healthBars[player]
+	}
+
+	if( player in file.beammover )
+	{
+		if( IsValid( file.beammover[player] ) )
+			file.beammover[ player ].Destroy()
+		delete file.beammover[player]
+	}
+
+	if( player in file.handmover )
+	{
+		if( IsValid( file.handmover[player] ) )
+			file.handmover[ player ].Destroy()
+		delete file.handmover[player]
+	}
+
+	if( player in file.beamsFxs )
+	{
+		if( EffectDoesExist( file.beamsFxs[ player ] ) )
+			EffectStop( file.beamsFxs[ player ], false, true )
+		delete file.beamsFxs[player]
+	}
+}
+
+//Settings
 void function LGDuels_SetPresetRed( bool isLocalChosen )
 {
 	if( isLocalChosen )
@@ -499,210 +704,5 @@ void function LGDuels_SetPositionOffset( float offset )
 	{
 		EffectStop( file.beamsFxs[ sPlayer ], false, true )
 	}
-}
-
-void function FS_LG_OnPlayerCreated( entity player )
-{
-	if ( !IsValid( player ) ) 
-		return
-
-	if( !( player in file.beammover ) )
-	{
-		file.beammover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-	}
-
-	if( !( player in file.handmover ) )
-	{
-		file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
-	}
-
-	if( !( player in file.beamsFxs ) )
-	{
-		file.beamsFxs[player] <- -1
-	}
-
-	if( !( player in file.healthBars ) )
-	{
-		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
-	}
-
-	thread FS_LG_HandleLaserForPlayer( player )
-	
-	if( GetCurrentPlaylistName() != "fs_lgduels_1v1" )
-		return
-
-	Flowstate_CreateCustomHealthBarForPlayer( player )
-}
-
-void function FS_LG_HandleLaserForPlayer( entity player )
-{
-	FlagWait( "EntitiesDidLoad" ) // for dev
-
-	if( !IsValid( player ) || player == GetLocalViewPlayer() ) 
-		return
-
-	entity mover = file.beammover[player]
-	entity handmover = file.handmover[player]
-
-	int fx = file.beamsFxs[ player ]
-
-	bool wasPlayerShooting = false
-	while( IsValid( player ) && IsValid( mover ) )
-	{
-		if( !EffectDoesExist( file.beamsFxs[ player ] ) && player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && !wasPlayerShooting )
-		{
-			if( player.LookupAttachment( "R_HAND" ) != -1 )
-				handmover.SetParent( player, "R_HAND" )
-			else
-				handmover.SetParent( player )
-			//create a mover for the hand/weapon
-			file.beamsFxs[ player ] = StartParticleEffectOnEntityWithPos( handmover, GetParticleSystemIndex( TheBestAssetInTheGame ), FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
-			EffectSetDontKillForReplay( file.beamsFxs[ player ] )
-
-			if( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
-				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenEnemyColor )
-			else
-				EffectSetControlPointVector( file.beamsFxs[ player ], 2, chosenColor )
-
-			EffectAddTrackingForControlPoint( file.beamsFxs[ player ], 1, mover, FX_PATTACH_ABSORIGIN_FOLLOW, -1, <0, 0, 3> )
-			wait 0.01
-			continue
-		}
-
-		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) )
-		{
-			EffectStop( file.beamsFxs[ player ], false, false )
-		}
-		
-		wasPlayerShooting = player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" )
-		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.0001, 0, 0 )
-		
-		WaitFrame()
-	}
-}
-
-// cool health bars, im insane
-void function Flowstate_CreateCustomHealthBarForPlayer( entity player ) 
-{
-	entity vgui
-	
-	if( player in file.healthBars )
-	{
-		vgui = file.healthBars[player]
-	} else
-	{
-		vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-		file.healthBars[player] <- vgui
-	}
-	
-	if( !IsValid( vgui ) )
-		return
-
-	vgui.SetParent( player )
-	thread Flowstate_CustomHealthBar_FaceVguiToPlayer( player, vgui )
-}
-
-void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity vgui )
-{
-	//todo desharcodear 80, quizá tomar el headfocus
-	local foreground = HudElement( "HealthBar_Foreground", vgui.GetPanel() )
-	local background = HudElement( "HealthBar_Background", vgui.GetPanel() )
-	int baseHeight = 280
-	
-	while( true )
-	{
-		WaitFrame()
-
-		if( !IsValid( player ) )
-			break
-		
-		if( !IsValid( vgui ) )
-		{
-			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-			vgui.SetParent( player )
-			file.healthBars[player] = vgui
-		}
-
-		if( !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
-		{
-			foreground.Hide()
-			background.Hide()
-			continue
-		}
-
-		foreground.Show()
-		background.Show()
-
-		int health = player.GetHealth()
-		float Width = float( health * baseHeight ) / player.GetMaxHealth()
-		foreground.SetHeight( Width )
-
-		//make it face view player
-		vector closestPoint = GetClosestPointOnLine( GetLocalViewPlayer().CameraPosition(), GetLocalViewPlayer().CameraPosition() + (AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 100.0), vgui.GetOrigin() )		
-		vector angles = VectorToAngles( vgui.GetOrigin() - closestPoint )
-		vgui.SetAngles( Vector( -90, angles.y, 0 ) )
-		vgui.SetOrigin( player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20 )
-	}
-}
-
-void function FS_LG_OnPlayerDestroyed( entity player )
-{
-	if ( !IsValid( player ) )
-		return
-
-	if( player in file.healthBars )
-	{
-		if( IsValid( file.healthBars[player] ) )
-			file.healthBars[ player ].Destroy()
-		delete file.healthBars[player]
-	}
-
-	if( player in file.beammover )
-	{
-		if( IsValid( file.beammover[player] ) )
-			file.beammover[ player ].Destroy()
-		delete file.beammover[player]
-	}
-
-	if( player in file.handmover )
-	{
-		if( IsValid( file.handmover[player] ) )
-			file.handmover[ player ].Destroy()
-		delete file.handmover[player]
-	}
-
-	if( player in file.beamsFxs )
-	{
-		if( EffectDoesExist( file.beamsFxs[ player ] ) )
-			EffectStop( file.beamsFxs[ player ], false, true )
-		delete file.beamsFxs[player]
-	}
-}
-#endif
-
-#if SERVER
-void function FS_LG_PlayerStartShooting( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
-{
-	if ( !IsValid( player ) || !IsValid( weapon ) || weapon.GetWeaponClassName() != "mp_weapon_lightninggun" )
-		return
-	
-	thread FS_LG_PlayerStartShooting_Thread( player, weapon ) 
-}
-
-void function FS_LG_PlayerStartShooting_Thread( entity player, entity weapon )
-{
-	if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
-		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", true )
-
-	Signal( player, "PlayerStartShotingLightningGun" )
-	EndSignal( player, "PlayerStartShotingLightningGun" )
-
-	wait 0.1
-	
-	if( !IsValid( player ) )
-		return
-
-	if( player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) )
-		player.SetPlayerNetBool( "isPlayerShootingFlowstateLightningGun", false )
 }
 #endif

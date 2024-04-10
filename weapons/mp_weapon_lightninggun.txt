@@ -18,7 +18,7 @@ WeaponData
 	"fire_mode"   									"automatic"
 	// Models
 	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
-	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_lightninggun.rmdl"
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"holster_type"									"anti_titan"
 

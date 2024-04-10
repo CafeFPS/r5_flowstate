@@ -35,8 +35,10 @@ void function JumpPad_Init()
 
 void function JumpPad_GiveDoubleJump( entity player )
 {
-	if( !IsValid( player) || !player.IsPlayer() )
+	if( !IsValid( player) || !player.IsPlayer() || player.p.usingJumpPad )
 		return
+
+	player.p.usingJumpPad = true
 
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
@@ -81,9 +83,12 @@ void function JumpPad_GiveDoubleJump( entity player )
 
 		player.kv.gravity = 1
 		player.p.playerEnteredJumppadCrouching = false
+		player.p.usingJumpPad = false
 		StopSoundOnEntity( player, "jumpjet_jet_body_1p" )
 		StopSoundOnEntity( player, "jumpjet_jet_body_3p_enemy" )
-	
+
+		RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump )
+
 		bool stillHasDoubleJumpMod = false
 
 		foreach( mod in player.GetPlayerSettingsMods() )
@@ -92,19 +97,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 
 		if ( IsValid( player ) && IsAlive( player ) && stillHasDoubleJumpMod )
 		{
-			player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
-			// Restore player settings
-			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
-			player.SetHealth( player.p.storedPlayerHealth[0] )
-			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
-
-			foreach( passive in player.p.storedPlayerPassives )
-			{
-				if( !player.HasPassive( passive ) )
-					GivePassive( player, passive )
-			}
-
-			RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
+			RestorePlayerSettings( player )
 		}
 	})
 
@@ -125,7 +118,7 @@ void function JumpPad_consumeDoubleJump( entity player )
 	}
 	else
 	{
-		player.SetVelocity( player.GetVelocity() + AnglesToUp( player.CameraAngles() ) * 30 - AnglesToForward( player.CameraAngles() ) * 150  ) 
+		player.SetVelocity( player.GetVelocity() + AnglesToUp( player.CameraAngles() ) * 30 - AnglesToForward( player.CameraAngles() ) * 150  )
 	}
 
 	player.ConsumeDoubleJump()
@@ -133,8 +126,22 @@ void function JumpPad_consumeDoubleJump( entity player )
 
 	if(!IsAlive(player)) return
 
+	RestorePlayerSettings( player )
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "jumpjet_jet_body_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "jumpjet_jet_body_3p_enemy" )
+}
+
+void function RestorePlayerSettings( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
 	player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
 	// Restore player settings
+	if( !IsValid( player.p.storedPlayerSettings ) || player.p.storedPlayerSettings == $"" )
+		player.p.storedPlayerSettings = player.GetPlayerSettings()
+
 	player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
 	player.SetHealth( player.p.storedPlayerHealth[0] )
 	player.SetShieldHealth( player.p.storedPlayerHealth[1] )
@@ -145,10 +152,7 @@ void function JumpPad_consumeDoubleJump( entity player )
 			GivePassive( player, passive )
 	}
 
-	EmitSoundOnEntityOnlyToPlayer( player, player, "jumpjet_jet_body_1p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "jumpjet_jet_body_3p_enemy" )
-
-	RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
+	RemoveButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump )
 }
 
 const float JUMP_PAD_PUSH_VELOCITY = 1000

@@ -204,7 +204,6 @@ function PrecacheMovementGymProps() {
 	PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
 	PrecacheModel( $"mdl/garbage/trash_can_metal_01_a.rmdl" )
 	PrecacheModel( $"mdl/garbage/trash_can_metal_02_a.rmdl" )
-	PrecacheModel( $"mdl/hud/grenade_indicator/bang_indicator.rmdl" )
 	PrecacheModel( $"mdl/hud/grenade_indicator/grenade_indicator_arrow.rmdl" )
 	PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
 	PrecacheModel( $"mdl/IMC_base/scaffold_tech_alpharail_128.rmdl" )
@@ -474,24 +473,42 @@ function ClientCommand_invis(entity user, array < string > args) {
 
 bool
 function _MG_Spectate(entity player, array < string > name){
+	
+	if( !IsValid(player) )
+		return false
 
-	thread _MG_Spectate_by_name(player, name[0])
+	if( name.len() == 0 )
+	{
+		Message(player, "Incorrect Username", "")
+		return false
+	}
+
+	bool doesNameExist = false
+	foreach( sPlayer in GetPlayerArray() )
+	{
+		if( sPlayer.GetPlayerName() == name[0] )
+		{
+			doesNameExist = true
+			break
+		}
+	}
+	
+	if( !doesNameExist )
+	{
+		Message(player, "Incorrect Username", "")
+		return false
+	}
+
+	thread _MG_Spectate_by_name(player, name[0] )
 	return true
 }
 
 void
 function _MG_Spectate_by_name(entity player, string name){
-	if( !IsValid(player) ) return
-	
 	//if( !IsAdmin(player) ){
 	//	Message(player, "Admin Only", "try logging in if you are a admin")
 	//	return false
 	//}
-	
-	if( name.len() == 0){
-		Message(player, "Incorrect Username", "")
-		return
-	}
 	
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
 	{
@@ -516,10 +533,17 @@ function _MG_Spectate_by_name(entity player, string name){
 		}
 	}
 	
-	if(name != "stop" && player.GetPlayerName() != name && !player.p.isSpectating ){
-		foreach(target in GetPlayerArray_Alive()) {
+	if(name != "stop" && player.GetPlayerName() != name && !player.p.isSpectating )
+	{
+		foreach(target in GetPlayerArray_Alive())
+		{
+			if ( !IsValid( target ) ) 
+				continue
+			
+			if( !IsValid( player ) )
+				return
+
 			if( target.GetPlayerName() == name ){
-				if(IsValid(target)){
 					player.p.isSpectating = true
 					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 					player.SetPlayerNetInt( "spectatorTargetCount", 1 )
@@ -528,12 +552,10 @@ function _MG_Spectate_by_name(entity player, string name){
 					player.StartObserverMode( OBS_MODE_IN_EYE )
 					player.p.lastTimeSpectateUsed = Time()
 					
-					while(true){
+					while( IsValid( player ) )
+					{
 						if(!IsValid(target) || !target.IsInRealm(1))
 						{
-							if( !IsValid( player ) )
-								break
-
 							player.p.isSpectating = false
 							player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 							player.SetObserverTarget( null )
@@ -548,16 +570,8 @@ function _MG_Spectate_by_name(entity player, string name){
 							player.PhaseShiftCancel()
 							return
 						}
-					WaitFrame()
+						WaitFrame()
 					}
-				} else {
-					Message(player, "Invalid Target", "")
-					return 
-				}
-				
-			} else {
-				Message(player, "Invalid Player Name", "or player are already spectating someone")
-				return 
 			}	
 		}	
 	} else {
@@ -719,8 +733,6 @@ vector tpoffset = < 0, 0, -20000 >
 //Init Hub
 void
 function MovementGym_Hub() {
-    MapEditor_CreateProp( $"mdl/hud/grenade_indicator/bang_indicator.rmdl", < 10940.9, 9829.7, -4192.7 >, < 0, 0, 0 >, true, 50000, -1, 15 )
-
     // Props Array
     array < entity > NoClimbArray; array < entity > NoCollisionArray; 
 
@@ -4069,6 +4081,7 @@ function MovementGym_Map3() {
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4223.4, 20587.2, 24891.9 >, < 0, -45, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4076.2, 20520.2, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/utilities/wall_Waterpipe.rmdl", < 4183.3, 20627.3, 24891.9 >, < 0, 135, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < -6132.1, 25783.2, 23042.5 >, < 0, 0, 90 >, true, 50000, -1, 1 )
 
     foreach ( entity ent in ClipArray )
     {

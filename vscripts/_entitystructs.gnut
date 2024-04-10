@@ -985,6 +985,8 @@ global struct ServerPlayerStruct
 	array< string > storedPlayerSettingsMods
 	array< int > storedPlayerHealth // { health, shieldHealth }
 	array< int > storedPlayerPassives
+
+	bool usingJumpPad = false
 	
 	//LGDuels
 	int totalLGShots = 0

@@ -434,11 +434,11 @@ void function SetDevMenu_Weapons( var _ )
 }
 void function SetDevMenu_TDMPrimaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMPrimaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMPrimaryWeapons )
 }
 void function SetDevMenu_TDMSecondaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMSecondaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMSecondaryWeapons )
 }
 void function SetDevMenu_SurvivalCharacter( var _ )
 {
@@ -732,7 +732,7 @@ void function SetupRespawnPlayersDevMenu()
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
 }
-void function SetupTDMPrimaryWeapsons()
+void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -773,7 +773,7 @@ void function SetupTDMPrimaryWeapsons()
 	//}
 }
 
-void function SetupTDMSecondaryWeapsons()
+void function SetupTDMSecondaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )

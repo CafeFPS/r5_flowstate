@@ -1,5 +1,6 @@
 global function InitPromoData
 global function UpdatePromoData
+global function TEMP_UpdatePromoData
 global function IsPromoDataProtocolValid
 global function GetPromoDataVersion
 global function GetPromoDataLayout
@@ -58,15 +59,21 @@ void function UpdatePromoData()
 	file.promoData = GetMainMenuPromos()
 }
 
+void function TEMP_UpdatePromoData()
+{
+	MainMenuPromos skypad
+	skypad.prot = PROMO_PROTOCOL
+	skypad.version = 1
+	skypad.layout = "This should be a string that contains image title and desc, InitPages funct cleans it using regex"
+	skypad.promoRpak = $""
+	skypad.miniPromoRpak = $""
+
+	file.promoData = skypad
+}
 
 void function UICodeCallback_MainMenuPromosUpdated()
 {
-	printt( "Promos updated" )
-
-	#if DEVELOPER
-		//if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 ) // ConVar is not registered in R5Launch
-			//UpdatePromoData()
-	#endif //
+	TEMP_UpdatePromoData()
 }
 
 

@@ -5169,7 +5169,7 @@ bool function IsSquadMuted()
 
 bool function SquadMuteIntroEnabled()
 {
-	return GetCurrentPlaylistVarBool( "squad_mute_intro_enable", true )
+	return IsFiringRangeGameMode() ? false : GetCurrentPlaylistVarBool( "squad_mute_intro_enable", true )
 }
 
 
