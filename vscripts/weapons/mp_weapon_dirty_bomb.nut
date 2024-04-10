@@ -222,6 +222,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	vector angles = placementInfo.angles
 
 	owner.EndSignal( "OnDestroy" )
+	owner.EndSignal( "CleanUpChallenge1v1" )
 
 	int team = owner.GetTeam()
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
@@ -415,6 +416,7 @@ void function OnProjectilePlanted( entity projectile, void functionref(entity) d
 	thread deployFunc( projectile )
 }
 #endif
+
 
 void function CausticTrap_OnDamaged_Activated(entity ent, var damageInfo)
 {
@@ -717,6 +719,17 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	canisterProxy.Signal( "DirtyBomb_Active" )
 
 	entity owner = canisterProxy.GetBossPlayer()
+	
+	owner.EndSignal( "CleanUpChallenge1v1" )
+	
+	OnThreadEnd( function() : ( canisterProxy )
+		{
+			if( IsValid(canisterProxy) )
+			{
+				canisterProxy.Signal( "OnDestroy" )
+			}
+		}
+	)
 	//If the owner is alive we should use the owner, otherwise world is attacker
 	entity attacker = IsValid( owner ) ? owner : svGlobal.worldspawn
 

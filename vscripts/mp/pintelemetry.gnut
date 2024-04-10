@@ -45,9 +45,9 @@ global const bool HAS_TRACKER_DLL = false
 
 
 
-
+// SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 global function PIN_Callback_CheckReload
-global function SetServerReloadReadyState
+global bool g_bPassivesAllowed
 
 #if TRACKER
 	global const bool STUB = false
@@ -1109,6 +1109,7 @@ void function INIT_fastComputes()
 	file.LogE = GetCurrentPlaylistVarBool("logging_encryption", false)
 	file.bChatbotEnabled = !IsLobby() && SQ_GetSetting("settings.ENABLE_CHATBOT") == "true" ? true : false;
 	file.flowstateRoundtime = FS_RoundTime()
+	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	
 	if(file.bChatbotEnabled)
 	{
@@ -3296,8 +3297,7 @@ void function Commands( entity player, array<string> args )
 		case "!info":
 		case "/info":
 		case "\\info":
-			args.remove(0)
-			args.insert(0, "player")
+			args[0] = "player";
 			if(args.len() < 2)
 			{
 				args.append(player.p.name)
@@ -3332,80 +3332,77 @@ void function Commands( entity player, array<string> args )
 		case "\\challenge":
 		case "/chal":
 		case "\\chal":
-			args.remove(0)
-			args.insert(0, "chal")
+			args[0] = "chal";
 			ClientCommand_mkos_challenge( player, args )
 			break
 		
 		case "!accept":
 		case "/accept":
 		case "\\accept":
-			args.remove(0)
-			args.insert(0, "accept")
+			args[0] = "accept";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!list":
 		case "/list":
 		case "\\list":
-			args.remove(0)
-			args.insert(0, "list")
+			args[0] = "list";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!end":
 		case "/end":
 		case "\\end":
-			args.remove(0)
-			args.insert(0, "end")
+			args[0] = "end";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!remove":
 		case "/remove":
 		case "\\remove":
-			args.remove(0)
-			args.insert(0, "remove")
+			args[0] = "remove";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!clear":
 		case "/clear":
 		case "\\clear":
-			args.remove(0)
-			args.insert(0, "clear")
+			args[0] = "clear";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!revoke":
 		case "/revoke":
 		case "\\revoke":
-			args.remove(0)
-			args.insert(0, "revoke")
+			args[0] = "revoke";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!cycle":
 		case "/cycle":
 		case "\\cycle":
-			args.remove(0)
-			args.insert(0, "cycle")
+			args[0] = "cycle";
 			ClientCommand_mkos_challenge( player, args )
 			break
 		
 		case "!swap":
 		case "/swap":
 		case "\\swap":
-			args.remove(0)
-			args.insert(0, "swap")
+			args[0] = "swap";		
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
 		case "!legend":
 		case "/legend":
 		case "\\legend":
-			args.remove(0)
-			args.insert(0, "legend")
+			args[0] = "legend";
+			ClientCommand_mkos_challenge( player, args )
+			break
+			
+		case "!outlist":
+		case "/outlist":
+		case "\\outlist":
+			args[0] = "outlist";
 			ClientCommand_mkos_challenge( player, args )
 			break
 			
@@ -6998,19 +6995,24 @@ DamageEvent function getEventByPlayerHandle( int handle ){ DamageEvent e; e.last
 
 void function PIN_Init()
 {
+	//These global bools are initialized here and used in all scripts
+	
 	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
+	g_bPassivesAllowed = ( GameRules_GetGameMode() == SURVIVAL || GetCurrentPlaylistName() == "fs_1v1" ? true : false )
+	
 	AddCallback_OnClientConnected(PlayerConnectedCallback);
 	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )
+	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 }
 
 void function PIN_GameStart(){}
 void function PIN_RoundEnd( int roundnum ){}
 void function PIN_GameEnd(){}
-void function PIN_AddPlayer( entity player ){}
+void function PIN_AddPlayer( entity player ){ if(g_bIs1v1){ INIT_playerChallengesStruct( player ) } }
 void function PIN_PlayerLeft( entity player, string reason ){}
 void function PIN_PlayerSpawned( entity player ){}
 void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo ){}

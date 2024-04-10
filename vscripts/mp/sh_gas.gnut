@@ -8,6 +8,7 @@ global function ShGas_Init
 	global function MakeEntityAsGasEmitter
 	global function GasCloud_RampDamageBasedOnExposureTime_Copy
 	global function GasCloud_HandleGasExposure_Copy
+	global function GetGasEmitters
 #endif //SERVER
 
 #if CLIENT
@@ -799,6 +800,8 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 		gasDmgInflictor.RemoveFromAllRealms()
 		gasDmgInflictor.AddToOtherEntitysRealms( smokescreen.inflictor )
 	}
+	
+	smokescreen.attacker.EndSignal( "CleanUpChallenge1v1" )
 
 	OnThreadEnd(
 	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeOriginRef, smokeFXs, TrainOrMover )

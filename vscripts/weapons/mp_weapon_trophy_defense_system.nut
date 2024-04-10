@@ -689,6 +689,7 @@ void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacem
 	thread Trophy_Watcher( pylon )
 	thread Trophy_Anims( pylon )
 	waitthread Trophy_CreateTriggerArea( pylon )
+	
 }
 
 void function Trophy_Watcher( entity trophy )
@@ -696,6 +697,8 @@ void function Trophy_Watcher( entity trophy )
 	EndSignal( trophy, "OnDestroy" )
 	
 	entity player = trophy.GetBossPlayer()
+	player.EndSignal( "CleanUpChallenge1v1" )
+	
 	// EndSignal( player, "OnDeath" )
 	// EndSignal( player, "OnDestroy" )
 	

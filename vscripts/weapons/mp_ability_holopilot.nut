@@ -424,7 +424,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 		vector endvec = VectorToAngles( player.GetOrigin() - endPosition )
 		decoy = player.CreateMimicPlayerDecoy( ShortestRotation( startvec, endvec ).y ) //retail accurate ultimate mimic decoy :) Colombia
 		decoy.SetOrigin( endPosition )
-		thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
+		//thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
 	}
 	
 	CharacterSkin_Apply( decoy, skin )
@@ -672,15 +672,21 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 
 	decoy.EndSignal( "OnDestroy" ) //Note that we do this OnDestroy instead of the inbuilt OnHoloPilotDestroyed() etc functions so there is a bit of leeway after the holopilot starts to die/is fully invisible before being destroyed
 	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "CleanUpChallenge1v1" )
 	player.EndSignal( "CleanupPlayerPermanents" )
 
 	OnThreadEnd(
-	function() : ( player )
+	function() : ( player, decoy )
 		{
 			if ( IsValid( player ) )
 			{
 				Assert( player in file.playerToDecoysActiveTable )
 				--file.playerToDecoysActiveTable[ player ]
+				
+				if( g_bIs1v1 && IsValid( decoy ) )
+				{
+					decoy.Destroy() //could use fancy cleanup function as well for cleaner effect
+				}
 			}
 		}
 	)

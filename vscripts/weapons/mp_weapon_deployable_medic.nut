@@ -291,6 +291,7 @@ void function DeployMedicCanister( entity projectile )
 
 	owner.EndSignal( "OnDestroy" )
 	owner.EndSignal( "CleanupAllDroneMedics" )
+	owner.EndSignal( "CleanUpChallenge1v1" )
 
 	if ( IsValid( projectile ) )
 	{

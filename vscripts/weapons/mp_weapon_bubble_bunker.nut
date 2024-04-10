@@ -221,6 +221,7 @@ void function DeployBubbleBunker( entity projectile, float duration )
 	owner.Signal( "DeployBubbleBunker" )
 
 	owner.EndSignal( "OnDestroy" )
+	owner.EndSignal( "CleanUpChallenge1v1" )
 	mover.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
