@@ -98,16 +98,37 @@ global struct GamemodeSettings
 // DO NOT CHANGE THESE VALUES AFTER THEY HAVE GONE LIVE
 global enum eGameModes
 {
-	invalid =							-1,
+invalid =             -1,
 
-	SURVIVAL_ID =						0,
-	TEAM_DEATHMATCH_ID =				1,
-	//GAMEMODE_SP_ID =					2,
+	SURVIVAL_ID =          0,
+	TEAM_DEATHMATCH_ID =   1,
+	GAMEMODE_SP_ID =       2,
+
+	MENUFALL_ID =          3,
+	CUSTOM_CTF_ID =        4,
+
+	FS_DM_ID =             5,
+	FS_AIMTRAINER_ID =     6,
+	FS_PROPHUNT_ID =       7,
+	FS_DUCKHUNT_ID =       8,
+	FS_INFECTED_ID =       9,
+	FS_SND_ID =            10,
 }
 
 const table<string, int> gameModesStringToIdMap = {
-	[ TEAM_DEATHMATCH ] 					= eGameModes.TEAM_DEATHMATCH_ID,
-	[ SURVIVAL ]							= eGameModes.SURVIVAL_ID,
+    [ TEAM_DEATHMATCH ]   = eGameModes.TEAM_DEATHMATCH_ID,
+	[ SURVIVAL ]          = eGameModes.SURVIVAL_ID,
+	[ FREELANCE ]         = eGameModes.GAMEMODE_SP_ID,
+
+	[ MENUFALL ]          = eGameModes.MENUFALL_ID,
+	[ CUSTOM_CTF ]        = eGameModes.CUSTOM_CTF_ID,
+
+	[ fs_dm ]             = eGameModes.FS_DM_ID,
+	[ fs_aimtrainer ]     = eGameModes.FS_AIMTRAINER_ID,
+	[ fs_prophunt ]       = eGameModes.FS_PROPHUNT_ID,
+	[ fs_duckhunt ]       = eGameModes.FS_DUCKHUNT_ID,
+	[ fs_infected ]       = eGameModes.FS_INFECTED_ID,
+	[ fs_snd ]            = eGameModes.FS_SND_ID,
 }
 
 struct

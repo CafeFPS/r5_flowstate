@@ -251,7 +251,7 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
 		break
 
-		case "16": // naruto
+		case "16": // pete
 		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 		break

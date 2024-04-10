@@ -49,7 +49,7 @@ void function OnWeaponChargeEnd_ability_heal( entity weapon )
 	entity player = weapon.GetWeaponOwner()
 
 	#if CLIENT
-	if( player != GetLocalClientPlayer() )
+	if( !IsValid( player ) || player != GetLocalClientPlayer() )
 		return
 	#endif
 

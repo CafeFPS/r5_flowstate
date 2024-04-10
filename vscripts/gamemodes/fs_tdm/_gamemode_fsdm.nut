@@ -2497,6 +2497,36 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 			break
+
+			case 21: //loba ss
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+			break
+			
+			case 22: // ballistic
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+			break
+			
+			case 23: // mrvn
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+
+			case 24: // gojo
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
+			player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+			break
+
+			case 25: // naruto
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
+			player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+			break
+
+			case 26: // pete
+			player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+			player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+			break
 		}
 	} 
 	
