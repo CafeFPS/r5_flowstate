@@ -139,7 +139,7 @@ void function Adrenaline_OnProjectilesTriggerTouch( entity vortexSphere, entity 
 		!DoubleTime_IsValidProjectileForTrigger(projectile) || 
 		StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 ||
 		StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 ||
-		!vortexTrigger.DoesShareRealms( projectile ) ))
+		!vortexTrigger.DoesShareRealms( projectile ) )
 		return
 	
 	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
