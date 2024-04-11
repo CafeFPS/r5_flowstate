@@ -114,8 +114,7 @@ void function Adrenaline_OnBulletTriggerTouch( entity vortexSphere, entity vorte
 		!player.IsSprinting() ||
 		DamageInfo_GetAttacker(damageInfo).GetTeam() == player.GetTeam() ||
 		StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 ||
-		StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 ||
-		// !vortexTrigger.DoesShareRealms( vortexSphere ) )
+		StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 )
 		return
 	
 	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
