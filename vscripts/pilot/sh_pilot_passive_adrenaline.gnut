@@ -80,6 +80,22 @@ void function Flowstate_GrantAdrenaline( entity player )
 	vortexSphere.SetOrigin( player.GetOrigin() )
 	vortexSphere.SetParent( player )
 	vortexSphere.SetAbsAngles( <0,0,0> ) //Setting local angles on a parented object is not supported
+
+	Adrenaline_UpdateTriggerRealmForPlayer( player )
+}
+
+void function Adrenaline_UpdateTriggerRealmForPlayer( entity player )
+{
+	if( !IsValid( player ) )
+		return
+
+	entity trigger = player.p.vortexTriggerDoubleTime
+	
+	if( !IsValid( trigger ) )
+		return
+
+	trigger.RemoveFromAllRealms()
+	trigger.AddToOtherEntitysRealms( player )	
 }
 
 void function Adrenaline_OnBulletTriggerTouch( entity vortexSphere, entity vortexTrigger, var damageInfo )
@@ -93,7 +109,13 @@ void function Adrenaline_OnBulletTriggerTouch( entity vortexSphere, entity vorte
 	
 	entity player = vortexTrigger.GetOwner()
 
-	if ( !IsValid(player) || !IsAlive(player) ||  !player.IsSprinting() || DamageInfo_GetAttacker(damageInfo).GetTeam() == player.GetTeam() || StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 || StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 )
+	if ( !IsValid(player) ||
+		!IsAlive(player) ||
+		!player.IsSprinting() ||
+		DamageInfo_GetAttacker(damageInfo).GetTeam() == player.GetTeam() ||
+		StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 ||
+		StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 ||
+		// !vortexTrigger.DoesShareRealms( vortexSphere ) )
 		return
 	
 	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
@@ -111,7 +133,14 @@ void function Adrenaline_OnProjectilesTriggerTouch( entity vortexSphere, entity 
 	
 	entity player = vortexTrigger.GetOwner()
 
-	if ( !IsValid(player) || !IsAlive(player) ||  !player.IsSprinting() || projectile.GetTeam() == player.GetTeam() || !DoubleTime_IsValidProjectileForTrigger(projectile) || StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 || StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 )
+	if ( !IsValid(player) || 
+		!IsAlive(player) ||  
+		!player.IsSprinting() || 
+		projectile.GetTeam() == player.GetTeam() || 
+		!DoubleTime_IsValidProjectileForTrigger(projectile) || 
+		StatusEffect_GetSeverity( player, eStatusEffect.adrenaline_visuals ) > 0.0 ||
+		StatusEffect_GetSeverity( player, eStatusEffect.speed_boost ) > 0.0 ||
+		!vortexTrigger.DoesShareRealms( projectile ) ))
 		return
 	
 	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, ADRENALINE_DURATION, ADRENALINE_DURATION )
