@@ -588,7 +588,7 @@ void function Flowstate_AddCustomScoreEventMessage( string eventText, float dura
 	}
 
 	UISize screenSize = GetScreenSize()
-    var topo = RuiTopology_CreatePlane( <( screenSize.width * 0),( screenSize.height * -0.618 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
+	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0),( screenSize.height * -0.618 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
 	var rui = RuiCreate( $"ui/centerevent_info.rpak", topo, RUI_DRAW_HUD, 0 )
 
 	RuiSetGameTime( rui, "startTime", Time() )
