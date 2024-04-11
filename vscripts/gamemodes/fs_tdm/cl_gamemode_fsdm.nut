@@ -1613,7 +1613,7 @@ void function fs_ServerMsgsToChatBox_ShowMessage( Width, Duration, ... )
 
 void function fs_NewBoxBuildMessage( Type, ... )
 {
-	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+	// clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
 
 	if ( Type == 0 )
 	{
@@ -1629,9 +1629,14 @@ void function fs_NewBoxBuildMessage( Type, ... )
 
 void function fs_NewBoxShowMessage( float duration )
 {
-	thread FS_NewBox_Msg( duration )
+	Flowstate_AddCustomScoreEventMessage( "[SERVER] %$rui/bullet_point% " + file.fs_newMsgBoxString, duration )
+
+	file.fs_newMsgBoxString = ""
+	file.fs_newMsgBoxSubString = ""
+	// thread FS_NewBox_Msg( duration )
 }
 
+//Unused :C Cafe
 void function FS_NewBox_Msg( float duration = 3 )
 {
 	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
