@@ -1813,13 +1813,6 @@ struct {
 	int Flowstate_MovementGym_ClassicMovement_Type
 	bool Flowstate_MovementGym_ClassicMovement_AutoBHOP	
 	bool Equipment_GetRespawnKitEnabled
-	bool Flowstate_movementgym
-	bool Flowstate_dm_oddball
-	bool Flowstate_haloMod_oddball
-	bool Flowstate_fs_1v1
-	bool Flowstate_fs_lgduels_1v1
-	bool Flowstate_fs_dm_fast_instagib
-	bool Flowstate_fs_dm
 	
 } SH_flowstateSettings
 
@@ -1900,15 +1893,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type 	= GetCurrentPlaylistVarInt( "flowstate_MovementGym_ClassicMovement_Type", 0 )
 	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP = GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement_AutoBHOP", false )
 	SH_flowstateSettings.Equipment_GetRespawnKitEnabled					= GetCurrentPlaylistVarBool("respawn_kit_enabled", false)
-	SH_flowstateSettings.Flowstate_movementgym 							= ( GetCurrentPlaylistName() == "fs_movementgym" )
-	SH_flowstateSettings.Flowstate_dm_oddball							= ( GetCurrentPlaylistName() == "fs_dm_oddball" )
-	SH_flowstateSettings.Flowstate_haloMod_oddball						= ( GetCurrentPlaylistName() == "fs_haloMod_oddball" )
-	SH_flowstateSettings.Flowstate_fs_1v1								= ( GetCurrentPlaylistName() == "fs_1v1" )
-	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
-	SH_flowstateSettings.Flowstate_fs_dm								= ( GetCurrentPlaylistName() == "fs_dm" )
 }
-
 
 // Playlist GET
 
@@ -1921,6 +1906,9 @@ float function Deathmatch_GetRespawnDelay()						{ return SH_flowstateSettings.D
 float function Equipment_GetDefaultShieldHP()					{ return SH_flowstateSettings.Equipment_GetDefaultShieldHP }
 float function Deathmatch_GetOOBDamagePercent()					{ return SH_flowstateSettings.Deathmatch_GetOOBDamagePercent }
 float function Deathmatch_GetVotingTime()						{ return SH_flowstateSettings.Deathmatch_GetVotingTime }
+
+//d
+
 string function FlowState_Hoster()								{ return SH_flowstateSettings.FlowState_Hoster }
 string function FlowState_Admin1()								{ return SH_flowstateSettings.FlowState_Admin1 }
 string function FlowState_Admin2()								{ return SH_flowstateSettings.FlowState_Admin2 }
@@ -1937,6 +1925,9 @@ bool function FlowState_AdminTgive()							{ return SH_flowstateSettings.FlowSta
 float function FlowState_TgiveDelay()							{ return SH_flowstateSettings.FlowState_TgiveDelay }
 bool function FlowState_ForceCharacter()						{ return SH_flowstateSettings.FlowState_ForceCharacter } 
 int function FlowState_ChosenCharacter()						{ return SH_flowstateSettings.FlowState_ChosenCharacter }
+
+//d
+
 bool function FlowState_ForceAdminCharacter()					{ return SH_flowstateSettings.FlowState_ForceAdminCharacter } 
 int function FlowState_ChosenAdminCharacter()					{ return SH_flowstateSettings.FlowState_ChosenAdminCharacter }
 bool function FlowState_DummyOverride()							{ return SH_flowstateSettings.FlowState_DummyOverride } 
@@ -1955,6 +1946,8 @@ bool function FlowState_ExtrashieldsEnabled()					{ return SH_flowstateSettings.
 float function FlowState_ExtrashieldsSpawntime()				{ return SH_flowstateSettings.FlowState_ExtrashieldsSpawntime }
 float function FlowState_ExtrashieldValue()						{ return SH_flowstateSettings.FlowState_ExtrashieldValue }
 bool function FlowState_Gungame()								{ return SH_flowstateSettings.FlowState_Gungame }
+
+//d2
 bool function FlowState_GungameRandomAbilities()				{ return SH_flowstateSettings.FlowState_GungameRandomAbilities }
 bool function FlowState_SURF()									{ return SH_flowstateSettings.FlowState_SURF }
 int function FlowState_SURFRoundTime()							{ return SH_flowstateSettings.FlowState_SURFRoundTime }
@@ -1970,6 +1963,9 @@ bool function FlowState_EnableCaveByBlessedSeal()				{ return SH_flowstateSettin
 bool function FlowState_EnableShipmentByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableShipmentByAyeZee }
 bool function FlowState_EnableKillhouseByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableKillhouseByAyeZee }
 bool function FlowState_EnableNuketownByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableNuketownByAyeZee }
+
+//d3
+
 bool function Flowstate_DoorsEnabled()							{ return SH_flowstateSettings.Flowstate_DoorsEnabled }
 int function FlowState_MaxPingAllowed() 						{ return SH_flowstateSettings.FlowState_MaxPingAllowed }
 bool function FlowState_KickHighPingPlayer()					{ return SH_flowstateSettings.FlowState_KickHighPingPlayer }
@@ -1985,13 +1981,6 @@ bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSetting
 bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
 int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
-bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
-bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
-bool function Flowstate_IsDmOddball()							{ return SH_flowstateSettings.Flowstate_dm_oddball }
-bool function Flowstate_IsHalomodeOddball()						{ return SH_flowstateSettings.Flowstate_haloMod_oddball }
-bool function Flowstate_IsFS1v1()								{ return SH_flowstateSettings.Flowstate_fs_1v1 }
-bool function Flowstate_IsFastInstaGib()						{ return SH_flowstateSettings.Flowstate_fs_dm_fast_instagib }
-bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_fs_dm }
 
 #if SERVER   
 bool function Equipment_GetRespawnKitEnabled()                       { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }

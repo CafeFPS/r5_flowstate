@@ -31,7 +31,6 @@ global function ForceAllRoundsToFinish_solomode
 global function addStatsToGroup
 global function getBotSpawn
 global function RechargePlayerAbilities
-global function GiveWeaponsToGroup //i hate this
 
 global struct soloLocStruct
 {

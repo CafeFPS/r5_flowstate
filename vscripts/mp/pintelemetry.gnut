@@ -5658,10 +5658,6 @@ void function PIN_AddPlayer( entity player )
 		
 		//deprecated
 		//SavePlayer_R5RDEV_Settings_To_Struct( player );
-		if( Flowstate_IsLGDuels() )
-		{
-			ResetLoadedWeapons( player )
-		}
 	}
 	
 	if (file.restricted_server)

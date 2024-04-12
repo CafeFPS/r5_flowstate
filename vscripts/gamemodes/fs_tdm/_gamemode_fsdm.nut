@@ -75,7 +75,7 @@ global function RotateMap
 global function Message_New
 global function ServerMsgToBox
 
-global function ResetLoadedWeapons //tracker override
+global bool input_monitor_running = false
 global function SetRandomCustomModelToPlayer
 
 //LGDuels
@@ -255,8 +255,6 @@ struct {
 	bool EndlessFFAorTDM
 	bool enable_global_chat
 	bool allow_cfgs
-	bool fs_lgduels_1v1
-	bool give_random_custom_models_toall
 	
 	//string settings 
 	string custom_match_ending_title
@@ -310,8 +308,7 @@ void function InitializePlaylistSettings()
 	flowstateSettings.EndlessFFAorTDM 						= GetCurrentPlaylistVarBool( "flowstateEndlessFFAorTDM", false )
 	flowstateSettings.endgame_delay 						= GetCurrentPlaylistVarInt( "endgame_delay", 8 )
 	flowstateSettings.enable_global_chat 					= GetCurrentPlaylistVarBool( "enable_global_chat", true)
-	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )
-	flowstateSettings.give_random_custom_models_toall		= GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false )
+	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )					
 }
 
 array<string> function ReturnChatArray()
@@ -331,15 +328,11 @@ void function INIT_LGDuels( entity player )
 	AddClientCommandCallback("HITSOUND", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
 	player.p.hitsound = HIT_0
-	
-	CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
-	CreatePanelText(player, "mkos", " and @CafeFPS",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+	// CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
+	// CreatePanelText(player, "mkos and @CafeFPS", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+
 }
 
-void function ResetLoadedWeapons( entity player )
-{
-	ClientCommand_ResetSavedWeapons( player, [] )
-}
 
 void function Init_IBMM( entity player )
 {
@@ -544,12 +537,14 @@ void function LGDuel_OnPlayerDamaged(entity victim, var damageInfo)
 			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
 		}
 
-		if( attacker.p.totalLGShots == 0 )
-			return
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		{
+			if( attacker.p.totalLGShots == 0 )
+				return
 
-		attacker.SetPlayerNetInt( "accuracy", int( ( float( attacker.p.totalLGHits ) / float( attacker.p.totalLGShots ) )*100 ) )
-		attacker.p.totalLGHits++
-
+			attacker.SetPlayerNetInt( "accuracy", int( ( float( attacker.p.totalLGHits ) / float( attacker.p.totalLGShots ) )*100 ) )
+			attacker.p.totalLGHits++
+		}
 	}
 }
 
@@ -1035,7 +1030,7 @@ void function _CustomTDM_Init()
 		SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 ) //is 4 acceptable, or wont this allow superglide? ~mkos
 	}catch(e)
 
-	if ( !Flowstate_IsMovementGym() )
+	if (GetCurrentPlaylistName() != "fs_movementgym")
 		SurvivalFreefall_Init() //Enables freefall/skydive
 	
 	if( !is1v1EnabledAndAllowed() )
@@ -1067,7 +1062,7 @@ void function _CustomTDM_Init()
 		SCOREBOARD_ENABLE = false
 	}
 
-	if ( Flowstate_IsMovementGym() )
+	if (GetCurrentPlaylistName() == "fs_movementgym")
 	{
 		VOTING_PHASE_ENABLE = false
 		SCOREBOARD_ENABLE = false
@@ -1106,7 +1101,7 @@ void function _CustomTDM_Init()
 
     })
 	
-	if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
+	if( GetCurrentPlaylistName() != "fs_dm_oddball" && GetCurrentPlaylistName() != "fs_haloMod_oddball" )
 		AddSpawnCallback( "prop_survival", DissolveItem )
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
@@ -1118,10 +1113,9 @@ void function _CustomTDM_Init()
 	if ( FlowState_SURF() )
 	{
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
-	} 
-	else
+	} else
 	{
-		if( !Flowstate_IsMovementGym() && !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() ){
+		if( GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 		}
 		
@@ -1131,7 +1125,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("ungod", ClientCommand_UnGod)
 		AddClientCommandCallback("next_round", ClientCommand_NextRound)
 
-		if( !Flowstate_IsMovementGym() && !Flowstate_IsLGDuels() )
+		if( GetCurrentPlaylistName() != "fs_movementgym" )
 			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 
@@ -1140,8 +1134,8 @@ void function _CustomTDM_Init()
 	// Used for sending votes from client to server
     AddClientCommandCallback("VoteForMap", ClientCommand_VoteForMap)
 	
-	if( !FlowState_AdminTgive() && !Flowstate_IsMovementGym() && !Flowstate_IsLGDuels() )
-	{	
+	if( !FlowState_AdminTgive() && GetCurrentPlaylistName() != "fs_movementgym" )
+	{
 		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
 		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
 		AddClientCommandCallback("saveskills", ClientCommand_Maki_SaveCurSkill)
@@ -1208,7 +1202,7 @@ void function __OnEntitiesDidLoadCTF()
 
 void function DM__OnEntitiesDidLoad()
 {
-	if( GameRules_GetGameMode() == "custom_ctf" && flowstateSettings.is_halo_gamemode )
+	if( GameRules_GetGameMode() == "custom_ctf" && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		__OnEntitiesDidLoadCTF()
 		return
@@ -1218,7 +1212,7 @@ void function DM__OnEntitiesDidLoad()
     {
     	case "mp_rr_canyonlands_staging":
     	{
-    		if( Flowstate_IsLGDuels() )
+    		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 			{
     			SpawnLGProps()
 				SpawnLGProps2()
@@ -1668,11 +1662,10 @@ void function _OnPlayerConnected(entity player)
 		thread Flowstate_InitAFKThreadForPlayer(player)
 	}
 
-	if( Flowstate_IsLGDuels() )
+	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	{
 		AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
-	} 
-	else if( Flowstate_IsFastInstaGib() )
+	} else if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 	{
 		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
 	}	
@@ -1885,7 +1878,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				
 				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 
-				if( flowstateSettings.is_halo_gamemode )
+				if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 				{
 					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
@@ -1897,7 +1890,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					weapon.w.isInAdsCustom = false
 				}
 
-				if( Flowstate_IsFastInstaGib() )
+				if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 					victim.Gib( <0,0,100> )
 
 				wait DEATHCAM_TIME_SHORT
@@ -1918,7 +1911,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				{
 					thread function () : ( victim )
 					{
-						if( !Flowstate_IsFastInstaGib() )
+						if( GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 							wait Deathmatch_GetRespawnDelay()
 						else
 							wait 1
@@ -1932,7 +1925,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					return
 				}
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && !Flowstate_IsFastInstaGib() )
+	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
@@ -1950,7 +1943,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
 				{
-					if( !Flowstate_IsFastInstaGib() )
+					if( GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 						wait Deathmatch_GetRespawnDelay()
 					else
 						wait 1
@@ -2392,7 +2385,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 	}
 	
-	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() && !Flowstate_IsFastInstaGib() )
+	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" && GetCurrentPlaylistName() != "fs_dm_fast_instagib" )
 		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
 	//allow healing items to be used	
@@ -2408,7 +2401,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")	
 
-	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 	{
 		array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large", "health_pickup_combo_full"]
 			foreach(item in loot)
@@ -2451,7 +2444,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	}
 	
 		
-	if( FlowState_ChosenCharacter() > 10 && !flowstateSettings.give_random_custom_models_toall )
+	if( FlowState_ChosenCharacter() > 10 && !GetCurrentPlaylistVarBool( "give_random_custom_models_toall", false ) )
 	{
 		switch( FlowState_ChosenCharacter() )
 		{				
@@ -2537,12 +2530,12 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		}
 	} 
 	
-	if( flowstateSettings.give_random_custom_models_toall )
+	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
 	{
 		SetRandomCustomModelToPlayer( player )
 	}
 	
-	if( Flowstate_IsFastInstaGib() )
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 		FS_Instagib_PlayerSpawn( player )
 }
 
@@ -2824,7 +2817,7 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 			SetupInfiniteAmmoForWeapon( player, weaponNew )
 			player.DeployWeapon()
 			
-			if( weaponclass == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
+			if( weaponclass == "mp_weapon_lightninggun" && GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 				weaponNew.AddMod( "noauto" )
 		}
 		else if(IsValid(player) && isGungame)
@@ -2906,7 +2899,7 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
-	if( Flowstate_IsFastInstaGib() )
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 	{
 		array<string> Weapons = [
 			"mp_weapon_lightninggun"
@@ -2941,7 +2934,7 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 {
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
-	if( Flowstate_IsFastInstaGib() )
+	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 	{
 		array<string> Weapons = [
 			"mp_weapon_lightninggun"
@@ -3774,10 +3767,10 @@ void function SimpleChampionUI()
 	if( file.currentRound > 1 )
 		WaitSignal( svGlobal.levelEnt, "FS_WaitForBlackScreen" )
 
-	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 		SetGlobalNetTime( "flowstate_DMStartTime", Time() + Flowstate_StartTimeDelay )
 	
-	if( Flowstate_IsMovementGym()	 )
+	if( GetCurrentPlaylistName() == "fs_movementgym" )
 	{
 		foreach( entity player in GetPlayerArray() )
 		{
@@ -3839,7 +3832,7 @@ void function SimpleChampionUI()
 					Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 					
 					#if !DEVELOPER
-					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
+					if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
 						wait Flowstate_StartTimeDelay
 					#endif
 
@@ -3946,7 +3939,7 @@ void function SimpleChampionUI()
 	{
 		if( !IsValid(player) ) continue
 
-		if( Flowstate_IsDmOddball() || Flowstate_IsHalomodeOddball() )
+		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
 		{
 			Oddball_RestorePlayerStats( player )
 		}
@@ -3975,7 +3968,7 @@ void function SimpleChampionUI()
 			player.SetPlayerGameStat( PGS_DEATHS, 0 )
 		}
 
-		if( Flowstate_IsLGDuels() )
+		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 		{
 			player.SetPlayerNetInt( "accuracy", 0 )
 			player.p.totalLGHits = 0
@@ -4057,7 +4050,7 @@ void function SimpleChampionUI()
 		}
 	}
 	#if !DEVELOPER
-	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
+	if( GetCurrentPlaylistName() == "fs_dm" || flowstateSettings.is_halo_gamemode )
 		wait Flowstate_StartTimeDelay
 	#endif
 	//SetGameState( eGameState.Playing )
@@ -4862,7 +4855,7 @@ entity function CreateRingBoundary(LocationSettings location)
 	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
 
 	//Audio thread for ring
-	if( ringRadius != 99999 && !Flowstate_IsMovementGym() ){
+	if( ringRadius != 99999 && GetCurrentPlaylistName() != "fs_movementgym" ){
 		foreach(sPlayer in GetPlayerArray())
 			thread AudioThread(circle, sPlayer, ringRadius)
 	}
@@ -6030,7 +6023,7 @@ string function modChecker( string weaponMods )
 //Auto-load TDM Saved Weapons at Respawn
 void function LoadCustomWeapon(entity player)
 {
-	if ( !IsValid( player ) ) return
+	if ( !IsValid( player )) return
 	
 	if (player.GetPlayerName() in weaponlist)
 	{
