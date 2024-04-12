@@ -162,11 +162,11 @@ bool function ScoreboardEnabled()
 void function InitScoreboardMP()
 {
 	entity localPlayer = GetLocalClientPlayer()
-	int myTeam = localPlayer.GetTeam()
-	if ( myTeam == TEAM_SPECTATOR ) //To handle demos
-	{
-		myTeam = GetDefaultNonSpectatorTeam()
-	}
+	int myTeam = TEAM_MULTITEAM_FIRST //localPlayer.GetTeam()
+	// if ( myTeam == TEAM_SPECTATOR ) //To handle demos
+	// {
+		// myTeam = GetDefaultNonSpectatorTeam()
+	// }
 	string mapName = GetMapDisplayName( GetMapName() )
 
 	var scoreboard = HudElement( "Scoreboard" )
@@ -358,7 +358,7 @@ void function ShowScoreboardMP()
 	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
 	
 	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
-		
+
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
@@ -368,17 +368,17 @@ void function ShowScoreboardMP()
 	
 	Hud_SetVisible( file.backgroundCustom, true )
 	Hud_SetVisible( file.titleCustom, true )
-	if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	{
-		Hud_SetVisible( file.hintCustom, true )
-	}
-	else
+	// if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	// {
+		// Hud_SetVisible( file.hintCustom, true )
+	// }
+	// else
 		Hud_SetVisible( file.hintCustom, false )
 	
 	//file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
-	int myTeam = localPlayer.GetTeam()
+	int myTeam = TEAM_MULTITEAM_FIRST // localPlayer.GetTeam()
 
 	array<int> enemyTeams = GetAllEnemyTeams( myTeam )
 
@@ -500,7 +500,8 @@ void function ShowScoreboardMP()
 		if ( UseOnlyMyTeamScoreboard() || UseSingleTeamScoreboard() )
 		{
 			file.header.gametypeAndMap.SetY( scoreboardYOffset )
-			file.teamElems[winningTeam].logo.SetY( winningTeamYOffset )
+			if( winningTeam in file.teamElems )
+				file.teamElems[winningTeam].logo.SetY( winningTeamYOffset )
 			file.footer.SetY( footerYOffset )
 		}
 		else
@@ -868,9 +869,9 @@ bool function UseSingleTeamScoreboard()
 
 bool function UseOnlyMyTeamScoreboard()
 {
-	bool scoreboard_onlyMyTeam = bool( GetCurrentPlaylistVarInt( "scoreboard_onlyMyTeam", 0 ) )
-	if ( scoreboard_onlyMyTeam )
-		return true
+	// bool scoreboard_onlyMyTeam = bool( GetCurrentPlaylistVarInt( "scoreboard_onlyMyTeam", 0 ) )
+	// if ( scoreboard_onlyMyTeam )
+		// return true
 
 	return false
 }

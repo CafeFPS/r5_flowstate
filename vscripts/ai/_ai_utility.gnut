@@ -1501,7 +1501,8 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
 	dummy.SetEfficientMode( false )
-	
+	dummy.RemoveFromAllRealms()
+	dummy.AddToOtherEntitysRealms( player )
 	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		thread PlayAnimOnTrainingDummy(dummy)
 

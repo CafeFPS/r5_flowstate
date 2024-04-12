@@ -780,14 +780,19 @@ void function Cl_Survival_AddClient( entity player )
 	getroottable().testRui <- file.dpadMenuRui
 	SetDpadMenuVisible()
 
-	#if DEVELOPER
-		if ( GetBugReproNum() == 1972 )
-			file.pilotRui = CreatePermanentCockpitPostFXRui( $"ui/survival_player_hud_editor_version.rpak", HUD_Z_BASE )
-		else
-			file.pilotRui = CreatePermanentCockpitPostFXRui( SURVIVAL_HUD_PLAYER, HUD_Z_BASE )
-	#else
+	// #if DEVELOPER
+		// if ( GetBugReproNum() == 1972 )
+			// file.pilotRui = CreatePermanentCockpitPostFXRui( $"ui/survival_player_hud_editor_version.rpak", HUD_Z_BASE )
+		// else
+			// file.pilotRui = CreatePermanentCockpitPostFXRui( SURVIVAL_HUD_PLAYER, HUD_Z_BASE )
+	// #else
+		// file.pilotRui = CreatePermanentCockpitPostFXRui( SURVIVAL_HUD_PLAYER, HUD_Z_BASE )
+	// #endif
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_enable_editor_hud", false ) )
+		file.pilotRui = CreatePermanentCockpitPostFXRui( $"ui/survival_player_hud_editor_version.rpak", HUD_Z_BASE )
+	else
 		file.pilotRui = CreatePermanentCockpitPostFXRui( SURVIVAL_HUD_PLAYER, HUD_Z_BASE )
-	#endif
 
 	RuiSetBool( file.pilotRui, "isVisible", GetHudDefaultVisibility() )
 	RuiSetBool( file.pilotRui, "useShields", true )
@@ -837,6 +842,33 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 {
 	Assert( IsValid( player ) )
 
+	if ( GetCurrentPlaylistVarBool( "flowstate_enable_editor_hud", false ) )
+	{
+		RuiTrackInt( rui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
+		RuiTrackString( rui, "name", player, RUI_TRACK_PLAYER_NAME_STRING )
+		RuiTrackInt( rui, "micStatus", player, RUI_TRACK_MIC_STATUS )
+
+		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset classIcon      = CharacterClass_GetGalleryPortrait( character )
+
+		RuiSetImage( rui, "playerIcon", classIcon )
+		RuiTrackFloat( rui, "playerHealthFrac", player, RUI_TRACK_HEALTH )
+		RuiTrackFloat( rui, "playerTargetHealthFrac", player, RUI_TRACK_HEAL_TARGET )
+		RuiTrackFloat( rui, "playerShieldFrac", player, RUI_TRACK_SHIELD_FRACTION )
+		// RuiTrackFloat( rui, "cameraViewFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.camera_view ) //
+
+		vector shieldFrac = < SURVIVAL_GetArmorShieldCapacity( 0 ) / 100.0,
+				SURVIVAL_GetArmorShieldCapacity( 1 ) / 100.0,
+				SURVIVAL_GetArmorShieldCapacity( 2 ) / 100.0 >
+
+		RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 3 ) ) )
+		RuiTrackFloat( rui, "playerTargetShieldFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_shields )
+		RuiTrackFloat( rui, "playerTargetHealthFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_health )
+		RuiTrackFloat( rui, "playerTargetHealthFracTemp", player, RUI_TRACK_HEAL_TARGET )
+
+		OverwriteWithCustomPlayerInfoTreatment( player, rui )
+		return
+	}
 	RuiTrackInt( rui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	RuiTrackString( rui, "name", player, RUI_TRACK_PLAYER_NAME_STRING )
 	RuiTrackInt( rui, "micStatus", player, RUI_TRACK_MIC_STATUS )
@@ -890,6 +922,14 @@ void function RGBRui(var rui)
 
 void function OverwriteWithCustomPlayerInfoTreatment( entity player, var rui )
 {
+	if ( GetCurrentPlaylistVarBool( "flowstate_enable_editor_hud", false ) )
+	{
+		if ( player in file.customCharacterIcon )
+			RuiSetImage( rui, "playerIcon", file.customCharacterIcon[player] )
+
+		return
+	}
+
 	if ( player in file.customCharacterIcon )
 		RuiSetImage( rui, "playerIcon", file.customCharacterIcon[player] )
 
@@ -1990,7 +2030,7 @@ void function Sur_OnScoreboardShow()
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" || GetCurrentPlaylistName() == "fs_3v3" )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
