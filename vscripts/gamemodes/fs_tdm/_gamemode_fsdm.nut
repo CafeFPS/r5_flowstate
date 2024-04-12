@@ -1866,8 +1866,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 		if(IsValid(attacker) && IsValid(victim))
 			victim.p.lastKiller = attacker
-
-		HandleGroupIsFinished( victim )
+		soloGroupStruct group = returnSoloGroupOfPlayer(victim) 
+		
+		if(!group.IsKeep)
+			group.IsFinished = true //tell solo thread this round has finished
+		
 		ClearInvincible(victim)
 
 		return
@@ -5118,17 +5121,22 @@ void function Message( entity player, string text, string subText = "", float du
 		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 }
 
-void function Message_New( entity player, string text, float duration = 7.0, string sound = "" )
+void function Message_New( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
+//By @CafeFPS (CafeFPS)//
 {
 	if( !IsValid( player ) || !player.p.isConnected )
 		return
 	
-	string sendMessage = text
-	for ( int i = 0; i < sendMessage.len(); i++ )
+	string sendMessage
+	for ( int textType = 0 ; textType < 2 ; textType++ )
 	{
-		Remote_CallFunction_NonReplay( player, "fs_NewBoxBuildMessage", 0, sendMessage[i] )
-	}
+		sendMessage = textType == 0 ? text : subText
 
+		for ( int i = 0; i < sendMessage.len(); i++ )
+		{
+			Remote_CallFunction_NonReplay( player, "fs_NewBoxBuildMessage", textType, sendMessage[i] )
+		}
+	}
 	Remote_CallFunction_NonReplay( player, "fs_NewBoxShowMessage", duration )
 
 	if ( sound != "" )
