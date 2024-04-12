@@ -4,7 +4,7 @@
 
 //globalize_all_functions // why?
 
-global const INVALID_ACCESS_DEBUG = true
+global const INVALID_ACCESS_DEBUG = false
 
 global function isPlayerInRestingList
 global function mkos_Force_Rest
@@ -1036,11 +1036,11 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				if (acceptChallenge( player, challenger ))
 				{
-					sqprint("success")
+					//sqprint("success")
 				}
 				else 
 				{
-					sqprint("failure")
+					//sqprint("failure")
 				}
 			}
 			return true;
@@ -1534,7 +1534,7 @@ bool function removeChallenger( entity player, int challenger_eHandle )
 
 void function PrintDebug( entity player, int functioncall )
 {
-	printl( format("Potential invalid access for player: %s, %s --CALL: %d", player.p.name, player.p.UID, functioncall) )
+	printt( format("Potential invalid access for player: %s, %s --CALL: %d", player.p.name, player.p.UID, functioncall) )
 }
 
 bool function acceptChallenge( entity player, entity challenger )
@@ -2763,9 +2763,11 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //å¤æ
 
 void function _decideLegend( soloGroupStruct group )
 {
+	if ( !isGroupValid(group) ){ return }
+	
 	ItemFlavor select_character
 	
-	if ( IsValid(group.player1) && group.p1LegendIndex > 0 )
+	if ( group.p1LegendIndex > 0 )
 	{
 		if( group.p1LegendIndex <= 10 )
 		{
@@ -2778,7 +2780,7 @@ void function _decideLegend( soloGroupStruct group )
 		}	
 	}
 
-	if ( IsValid(group.player2) && group.p2LegendIndex > 0 )
+	if ( group.p2LegendIndex > 0 )
 	{
 		if( group.p2LegendIndex <= 10 )
 		{
@@ -4997,6 +4999,8 @@ const array<int> LegendGUID_EnabledUltimates = [
 
 void function RechargePlayerAbilities( entity player )
 {
+	if( !IsValid( player ) ){ return }
+	
 	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))

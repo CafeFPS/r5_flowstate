@@ -39,7 +39,7 @@ global function PIN_Training
 // these defines dictate the compiler for tracker code vs stub code
 
 global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+global const bool HAS_TRACKER_DLL = true
 
 //do not edit below this line
 
@@ -47,6 +47,9 @@ global const bool HAS_TRACKER_DLL = false
 
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 global function PIN_Callback_CheckReload
+global function FetchPlayerData
+global function SavePlayerData
+
 global bool g_bPassivesAllowed
 
 #if TRACKER
@@ -158,6 +161,7 @@ global bool g_bPassivesAllowed
 
 #if TRACKER
 //shared
+global function AddCallback_PlayerData
 global function getEventByPlayerHandle
 global function SavePlayer_wait_time
 global function SavePlayer_saved_weapons
@@ -225,7 +229,7 @@ const int MAX_SAY_MSG = 255;
 const int SQ_MAX_INT_32 = 2147483647;
 const int SQ_MIN_INT_32 = -2147483647;
 const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to Player_Has_Access()
-const int REQUIRED_SYNC_DATA_FIELDS = 5;  //amount of fields returned by stats the scripts require (non-settings values)
+const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
 
 const array<string> EventTypes = [
@@ -278,7 +282,6 @@ global struct DamageEvent {
 };
 
 
-
 global struct DeleteEvents {
 
 	int victim_handle
@@ -287,6 +290,8 @@ global struct DeleteEvents {
 };
 
 // array of player structs containing various new metrics
+// Add settings that you want synced online here. 
+
 struct PlayerMetrics {
 
     string playerID
@@ -298,14 +303,9 @@ struct PlayerMetrics {
 	int kills
 	int deaths
 	float damage
-	
-	float wait_time
-	string saved_weapons = "NA"
-	bool lock1v1_setting
-	bool start_in_rest_setting
+
 	bool playerleft = false
 	bool ignore_sync_flag = false
-	bool enable_input_banner = false
 	
 };
 
@@ -367,10 +367,12 @@ struct {
 	bool bShouldShip = false
 	bool bCheckShip
 	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
+	bool update_discord_player_counts
 	
 	bool stop_update_msg_flag = false
 	bool sg_counter_msg
 	float FS_MaxHealth
+	int ibmm_wait_limit
 
 	string DISCORD_PLAYERS_WEBHOOK
 	string DISCORD_MATCHES_WEBHOOK
@@ -397,6 +399,9 @@ struct {
 	bool DefaultStartInRestSetting
 	
 	int flowstateRoundtime
+	
+	table <string, array<void functionref( entity player, string data )> > PlayerSettingsMap = {}
+	table<string, table<string,string> > PlayerData // playerUID = setting,value
 	
 } file
 
@@ -774,10 +779,6 @@ void function SetPlayerKD( entity player )
 	int player_lifetime_playtime = 0;
 	int player_lifetime_gamesplayed = 0;
 	int player_lifetime_score = 0;
-	float wait_time = GetDefaultIBMM()
-	bool lock1v1_setting = GetDefaultLock1v1Setting()
-	string saved_weapons = "NA";
-	bool enable_input_banner = false;
 	
 	
 	while ( IsValid( player ) )
@@ -824,107 +825,32 @@ void function SetPlayerKD( entity player )
 			string playtime = (SYNC_Data_length > 3) ? SYNC_Data[3] : "";
 			string gamesplayed = (SYNC_Data_length > 4) ? SYNC_Data[4] : "";
 			string synced_score = (SYNC_Data_length > 5) ? SYNC_Data[5] : "";
-			string synced_wait_time = (SYNC_Data_length > 6) ? ReturnValue(SYNC_Data[6]) : "";
-			string synced_weapon_loadout = (SYNC_Data_length > 7) ? ReturnValue(SYNC_Data[7]) : "";
-			string synced_lock1v1_setting = (SYNC_Data_length > 8) ? ReturnValue(SYNC_Data[8]) : "";
-			string synced_start_in_rest_setting = (SYNC_Data_length > 9) ? ReturnValue(SYNC_Data[9]) : "";
-			string synced_enable_input_banner_setting = (SYNC_Data_length > 10) ? ReturnValue(SYNC_Data[10]) : "";
 			
+			// Settings from this point use custom callbacks defined by gamemode dev.		
 			
-			if(!IsValid( player ))
+			if( !IsValid( player ) )
 			{
 				return
 			}
 			
-			if(!GetIgnoreSyncFlag( player ))
+			if( !GetIgnoreSyncFlag( player ) )
 			{
-				if( !empty(synced_wait_time) && ReturnKey(SYNC_Data[6]) == "wait_time" )
-				{	
-					
-					if( IsNumeric( synced_wait_time, SQ_MAX_INT_32 ) )
-					{
-						wait_time = synced_wait_time.tofloat()
-					}
-					
-					if (wait_time <= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999) )
-					{
-						player.p.IBMM_grace_period = wait_time
-					}			
-				}
+				array<string> PersistenceData = []
 				
-				if( !empty(synced_weapon_loadout) && ReturnKey(SYNC_Data[7]) == "saved_weapons" )
-				{	
-					
-					if( synced_weapon_loadout != "NA" )
-					{
-						weaponlist[player.GetPlayerName()] <- synced_weapon_loadout
-						player.p.weapon_loadout = synced_weapon_loadout
-					}
-				}
-				
-				if( !empty(synced_lock1v1_setting ) && ReturnKey(SYNC_Data[8]) == "lock1v1_setting" )
-				{	
-					
-					if( synced_lock1v1_setting == "0" )
-					{
-						player.p.lock1v1_setting = false;
-					}
-					else if( synced_lock1v1_setting == "1" )
-					{
-						player.p.lock1v1_setting = true;
-					}
-					else 
-					{
-						player.p.lock1v1_setting = GetDefaultLock1v1Setting()
-					}
-				}
-				
-				if( ( !empty(synced_start_in_rest_setting) && ReturnKey(SYNC_Data[9]) == "start_in_rest_setting" ) )
-				{	
-					
-					if( !empty( synced_start_in_rest_setting ) && synced_start_in_rest_setting == "0" )
-					{
-						player.p.start_in_rest_setting = false;
-					}
-					else if( !empty( synced_start_in_rest_setting ) && synced_start_in_rest_setting == "1" )
-					{
-						player.p.start_in_rest_setting = true;
-					}
-					else 
-					{
-						player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
-					}
-				}
-				else 
+				for ( int i = 6; i <= ( SYNC_Data_length - 1) ; ++i)
 				{
-					player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
+					PersistenceData.append( SYNC_Data[i] )
 				}
 				
+				#if DEVELOPER 
+					//sqprint("BEFORE SENDING")
+					//printarray(PersistenceData)
+				#endif 
 				
-				if( ( !empty(synced_enable_input_banner_setting) && ReturnKey(SYNC_Data[10]) == "enable_input_banner" ) )
-				{	
-					
-					if( !empty( synced_enable_input_banner_setting ) && synced_enable_input_banner_setting == "0" )
-					{
-						player.p.enable_input_banner = false;
-					}
-					else if( !empty( synced_enable_input_banner_setting ) && synced_enable_input_banner_setting == "1" )
-					{
-						player.p.enable_input_banner = true;
-					}
-					else 
-					{
-						player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
-					}
-				}
-				else 
-				{
-					player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
-				}
-				//TODO more [CHANGE TO MODULAR FUNCTION]
-				
-				
+				UpdatePlayerData( player, PersistenceData )
 			}
+			
+			//set base stats
 			
 			if ( IsNumeric( kills, SQ_MAX_INT_32) )
 			{
@@ -989,6 +915,55 @@ void function SetPlayerKD( entity player )
 }
 
 
+void function AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
+{
+	if ( setting in file.PlayerSettingsMap )
+	{
+		if( file.PlayerSettingsMap[setting].contains( callbackFunc ) )
+		{
+			throw format( "Already added function %s for setting: %s ", string( callbackFunc ), setting )
+		}
+		else
+		{
+			file.PlayerSettingsMap[setting].append( callbackFunc )
+		}
+	}
+	else 
+	{
+		file.PlayerSettingsMap[setting] <- [callbackFunc];
+	}
+}
+
+void function UpdatePlayerData( entity player, array<string> Sync_Data )
+{
+	int i = 0
+	
+	#if DEVELOPER
+		//printarray( Sync_Data )
+	#endif
+	
+	foreach ( setting in Sync_Data )
+	{
+		string key = ReturnKey( setting )
+		
+		if ( key in file.PlayerSettingsMap )
+		{
+			SavePlayerData( player.p.UID , key, ReturnValue( Sync_Data[i] ) )
+			
+			foreach( callBackFunc in file.PlayerSettingsMap[key] )
+			{
+				callBackFunc( player, ReturnValue( Sync_Data[i] ) )
+			}
+		}
+		else 
+		{
+			sqerror( format("Setting %s does not exist in PlayerSettingsMap", key ) )
+		}
+		
+		i++;
+	}
+}
+
 void function DestroyStats()
 {	
 	file.bCheckShip = true
@@ -1013,6 +988,7 @@ void function PIN_Init()
 {	
 	INIT_fastComputes()
 	INIT_IntervalMessages()
+	INIT_PlayerDataCallbacks()
 	
 	SetServerReloadReadyState( ReloadState.BUSY )
 	
@@ -1110,6 +1086,8 @@ void function INIT_fastComputes()
 	file.bChatbotEnabled = !IsLobby() && SQ_GetSetting("settings.ENABLE_CHATBOT") == "true" ? true : false;
 	file.flowstateRoundtime = FS_RoundTime()
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
+	file.update_discord_player_counts = GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
+	file.ibmm_wait_limit = GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
 	
 	if(file.bChatbotEnabled)
 	{
@@ -1126,19 +1104,6 @@ void function INIT_fastComputes()
 	file.DefaultEnableInputBannerSetting = GetCurrentPlaylistVarBool("default_enable_input_banner_setting", false)
 	file.DefaultStartInRestSetting = GetCurrentPlaylistVarBool("default_start_in_rest_setting", false)
 
-}
-
-void function UpdateFromLocalPersistence( entity player )
-{		
-	SetIgnoreSyncFlag( player )
-	player.p.IBMM_grace_period = GetPlayer_wait_time( player )
-	player.p.weapon_loadout = GetPlayer_saved_weapons( player )
-	player.p.lock1v1_setting = GetPlayer_lock1v1_setting( player )	
-	player.p.start_in_rest_setting = GetPlayer_start_in_rest_setting( player )
-	player.p.enable_input_banner = GetPlayer_enable_input_banner_setting( player )
-	player.SetPlayerNetInt("kills", GetPlayerKills( player ))
-	player.SetPlayerNetInt("deaths", GetPlayerDeaths( player ))
-	player.SetPlayerNetInt("damage", GetPlayerDamage( player ))
 }
 
 //initplayer
@@ -1175,7 +1140,7 @@ void function PlayerConnectedCallback( entity player )
 	string OID = player.GetPlatformUID();
 	string name = sanitize( player.GetPlayerName() );
 	
-	if ( GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false ) )
+	if ( file.update_discord_player_counts )
 	{
 		PlayerCounts("Connected", name, OID, count )
 	}
@@ -1246,7 +1211,6 @@ void function Init_NewGame()
 	}
 	
 	DestroyStats(); //make sure metrics incrued during intermediate time is not included
-	SaveAllPlayerSettings()
 
 	//////////////////////////////////
 	//	THIS IS HANDLED INTERNALLY	//
@@ -2922,6 +2886,27 @@ void function Init_NewGame()
 			
 				RotateMap()
 				return true
+				
+			case "fetchsetting":
+			
+				entity p = GetPlayer( param )
+				
+				if ( empty(param2) )
+				{
+					Message( player, "Parameter 2 was empty" )
+					return true 
+				}
+				
+				if( IsValid( p ))
+				{
+					Message( player, "Data for: " + param, FetchPlayerData( p.p.UID, param2 ) )
+				}
+				else 
+				{
+					Message( player, "Error", format( "Player: %s was invalid", sanitize(param) ), 7 )
+				}
+				
+				return true
 
 			default:
 			
@@ -3276,7 +3261,7 @@ bool function ClientCommand_ParseSay( entity player, array<string> args )
 void function Commands( entity player, array<string> args )
 {	
 	#if DEVELOPER
-	printarray( args )
+		//printarray( args )
 	#endif 
 	
 	switch( args[0].tolower() )
@@ -4428,6 +4413,7 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+
 	bool function ClientCommand_mkos_ea_verify(entity player, array<string> args)
 	{	
 		PlayerEA_Verify( player, args )	
@@ -4544,84 +4530,58 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////// PLAYER METRICS stuct /////////////////////////////////////////
+////////////////////////////////////////// PLAYER METRICS struct /////////////////////////////////////////
 
-string function PrintAllPlayerMetrics(bool trigger = false) 
-{
-    string json = "[";
-    foreach (index, metrics in PlayerMetricsArray) 
+int function InitializePlayerMetricsStructForPlayer( entity player, string playerID = "" )
+{	
+	bool byID = false 
+	
+	if( !IsValid(player) ) 
 	{
-        if (index > 0) {
-            json += ", ";
-        }
-		
-        json += "{";
-        json += format("\"player\": \"%s\", ", metrics.playerID);
-        json += format("\"jumps\": %d, ", metrics.JumpTimestamps.len());
-		json += format("\"superglides\": %d, ", metrics.SuperglideTimestamps.len());
-        json += format("\"kills\": %d, ", metrics.kills); 
-        json += format("\"deaths\": %d, ", metrics.deaths);
-		
-		//settings 
-		json += "\"settings\": {";
-
-		json += format("\"wait_time\": \"%1.f\", ", metrics.wait_time);
-		json += format("\"saved_weapons\": \"%s\", ", metrics.saved_weapons);
-		json += format("\"lock1v1_setting\": \"%s\", ", metrics.lock1v1_setting ? "1" : "0");
-		json += format("\"start_in_rest_setting\": \"%s\", ", metrics.start_in_rest_setting ? "1" : "0");
-		json += format("\"enable_input_banner\": \"%s\" ", metrics.enable_input_banner ? "1" : "0");
-		
-		json += "},";
-
-		//weapons array
-        json += "\"weaponShots\": {";
-		
-        bool wep_first = true;
-		
-		string replace = "";
-        foreach (weaponSource, timestamps in metrics.WeaponShotsTimestamps) 
-		{					
-            if (!wep_first) {
-                json += ", ";
-            }
-			
-			if(!exclude(weaponSource))
-			{
-				replace = DamageSourceIDToString(weaponSource)
-			}
-			else 
-			{
-				replace = weaponSource.tostring()
-			}
-			
-            json += format("\"%s\": %d", replace, timestamps.len());
-            wep_first = false;
-        }
-        json += "}";
-        json += "}";
-    }
-    json += "]";
-	
-	if (trigger){
-	
-		return json;
-		
-	} else {
-	
-		sqprint("^|," + json + "\n");
-		
+		if ( empty(playerID) )
+		{ 
+			return -1 
+		} 
+		else 
+		{ 
+			byID = true 
+		}
 	}
 	
-	unreachable
+	int index = byID ? -1 : GetPlayerMetricsIndex( player ); //to prevent reinitialization
 	
+	if (index != -1) 
+	{	
+		#if DEVELOPER
+			sqerror("Metrics already initialized for player: " + ( byID ? playerID : player.GetPlayerName() ) )
+		#endif
+		return -1
+	}
+	
+	string ID = byID ? playerID : player.GetPlatformUID()
+	string name = byID ? "" : player.GetPlayerName()
+		
+	PlayerMetrics NewMetrics;
+	NewMetrics.playerID = ID
+	NewMetrics.playername = name
+    NewMetrics.JumpTimestamps = []
+    NewMetrics.WeaponShotsTimestamps = {}
+	NewMetrics.SuperglideTimestamps = []
+	NewMetrics.kills = 0
+	NewMetrics.deaths = 0
+	NewMetrics.damage = 0.0
+	NewMetrics.playerleft = false
+	NewMetrics.ignore_sync_flag = false
+	PlayerMetricsArray.append(NewMetrics);
+	return UpdatePlayerMap( ID )	
 }
-
 
 //////////////////////////////////////
 //									//
 //		  PLAYER METRICS INIT		//
 //									//
 //////////////////////////////////////
+
 
 int function GetPlayerMetricsIndex( entity player ) 
 {	
@@ -4637,6 +4597,7 @@ int function GetPlayerMetricsIndex( entity player )
 	
     return -1; 
 }
+
 
 int function GetPlayerMetricsIndexByUID( string uid )
 {
@@ -4656,65 +4617,11 @@ int function UpdatePlayerMap( string uid )
 }
 
 
-int function InitializePlayerMetricsStructForPlayer( entity player )
-{		
-	if(!IsValid(player)) 
-	{
-		return -1
-	}
-
-	int index = GetPlayerMetricsIndex( player ); //to prevent reinitialization
-	
-	if (index != -1) 
-	{	
-		#if DEVELOPER
-			sqerror("Metrics already initialized for player: " + player.GetPlayerName() )
-		#endif
-		return -1
-	}
-		
-	PlayerMetrics NewMetrics;
-	NewMetrics.playerID = player.GetPlatformUID()
-	NewMetrics.playername = player.GetPlayerName()
-    NewMetrics.JumpTimestamps = []
-    NewMetrics.WeaponShotsTimestamps = {}
-	NewMetrics.SuperglideTimestamps = []
-	NewMetrics.kills = 0
-	NewMetrics.deaths = 0
-	NewMetrics.damage = 0.0
-	NewMetrics.wait_time = 0
-	NewMetrics.saved_weapons = "NA"
-	NewMetrics.lock1v1_setting = true
-	NewMetrics.start_in_rest_setting = false
-	NewMetrics.playerleft = false
-	NewMetrics.ignore_sync_flag = false
-	NewMetrics.enable_input_banner = false
-	PlayerMetricsArray.append(NewMetrics);
-	return UpdatePlayerMap(player.GetPlatformUID())	
-}
-
 int function InitializePlayerMetricsStructForPlayerByUID( string playerID )
 {
-	if ( empty(playerID) ) return -1
-		
-	PlayerMetrics NewMetrics;
-	NewMetrics.playerID = playerID
-	NewMetrics.playername = ""
-    NewMetrics.JumpTimestamps = []
-    NewMetrics.WeaponShotsTimestamps = {}
-	NewMetrics.SuperglideTimestamps = []
-	NewMetrics.kills = 0
-	NewMetrics.deaths = 0
-	NewMetrics.damage = 0.0
-	NewMetrics.wait_time = 0
-	NewMetrics.saved_weapons = "NA"
-	NewMetrics.lock1v1_setting = true
-	NewMetrics.start_in_rest_setting = false
-	NewMetrics.playerleft = false
-	NewMetrics.ignore_sync_flag = false
-	NewMetrics.enable_input_banner = false
-	PlayerMetricsArray.append(NewMetrics);
-	return UpdatePlayerMap(playerID)	
+	entity p;
+	
+	return InitializePlayerMetricsStructForPlayer( p, playerID )
 }
 
 
@@ -4830,8 +4737,283 @@ void function AddToPlayerDamage( string playerID, float damage )
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////					/////////////////////////////////
+/////////////////////////////	 PERSISTENCE 	/////////////////////////////////
+/////////////////////////////					/////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////// PERSISTENCE /////////////////////////////////////
+// add your settings with AddCallback_PlayerData(
+
+
+//player quit and rejoined, but data is already in table
+//therefore to avoid overriding with old data we pull it from local
+void function UpdateFromLocalPersistence( entity player )
+{		
+	SetIgnoreSyncFlag( player )
+	
+	player.p.IBMM_grace_period = GetPlayer_wait_time( player )
+	player.p.weapon_loadout = GetPlayer_saved_weapons( player )
+	player.p.lock1v1_setting = GetPlayer_lock1v1_setting( player )	
+	player.p.start_in_rest_setting = GetPlayer_start_in_rest_setting( player )
+	player.p.enable_input_banner = GetPlayer_enable_input_banner_setting( player )
+	
+	player.SetPlayerNetInt("kills", GetPlayerKills( player ))
+	player.SetPlayerNetInt("deaths", GetPlayerDeaths( player ))
+	player.SetPlayerNetInt("damage", GetPlayerDamage( player ))
+}
+
+void function INIT_PlayerDataCallbacks()
+{
+	AddCallback_PlayerData( "wait_time", UpdateIBMMWaitTime )
+	AddCallback_PlayerData( "saved_weapons", UpdateSavedWeapons )
+	AddCallback_PlayerData( "lock1v1_setting", UpdateLock1v1Setting )
+	AddCallback_PlayerData( "start_in_rest_setting", UpdateStartInRestSetting )
+	AddCallback_PlayerData( "enable_input_banner", UpdateInputBannerSetting )
+}
+
+// utility funcitons for fetch/save playerdata 
+
+
+void function SavePlayerData( string UID, string setting, ... )
+{
+	if( vargc < 1 )
+	{
+		#if DEVELOPER 
+			sqprint("No argument was passed to SavePlayerData() ")
+		#endif 
+		return 
+	}
+	
+	ThrowValidSaveType( vargv[0] )
+	//Assert( ValidSaveType( vargv[0] ), "Invalid variable type passed to SavePlayerData()" )
+
+	string value = "";
+	
+	if ( typeof( vargv[0] ) != "string" )
+	{
+		if( typeof( vargv[0] ) == "bool" )
+		{
+			value = vargv[0] == true ? "1" : "0";
+		}
+		else 
+		{	
+			#if DEVELOPER 
+			//sqprint( format( "Converting SavePlayerData for setting: %s to string from type %s", setting, typeof( vargc ) ) )
+			#endif
+			value = string(vargv[0])
+		}
+	}
+	else 
+	{
+		value = string(vargv[0])
+	}
+	
+	#if DEVELOPER
+		sqprint( format( "saving setting: %s as %s", setting, value ) )
+	#endif
+	
+	if ( !( UID in file.PlayerData ) )
+    {
+        file.PlayerData[UID] <- {}
+    }
+	
+	if ( !( setting in file.PlayerData[UID] ) )
+	{
+		file.PlayerData[UID][setting] <- value
+	}
+	else 
+	{
+		file.PlayerData[UID][setting] = value
+	}
+
+
+}
+
+bool function ValidSaveType( ... )
+{	
+	if( !vargv[0] )
+	{
+		return false
+	}
+	
+	string type = typeof( vargv[0] )
+	
+	switch( type )
+	{
+		case "string":
+		case "bool":
+		case "int":
+		case "float":
+			
+			return true 
+			
+		default:
+			
+			return false
+	}
+	
+	unreachable
+}
+
+void function ThrowValidSaveType( ... )
+{	
+	string type = typeof( vargv[0] )
+	
+	switch( type )
+	{
+		case "string":
+		case "bool":
+		case "int":
+		case "float":
+			
+			return
+			
+		default:
+			
+			throw format( "Invalid variable type of: [%s] passed to SavePlayerData(); Expects: [string,bool,int,float]", type );
+	}
+	
+	unreachable
+}
+
+string function FetchPlayerData( string UID, string setting )
+{
+	string notfound = "";
+	
+	if ( UID in file.PlayerData )
+	{
+		if ( setting in file.PlayerData[UID] )
+		{
+			return file.PlayerData[UID][setting]
+		}
+	}
+	
+	return notfound
+}
+
+// This function is responsible for sending sync data to r5r.dev.
+// If your data is not output with this, your data will not be synced. 
+
+// For settings added via AddCallback_PlayerData, your settings will be here,  IF
+// they were saved using SavePlayerData()
+
+
+string function PrintAllPlayerMetrics(bool trigger = false) 
+{
+    string json = "[";
+    foreach (index, metrics in PlayerMetricsArray) 
+	{
+        if (index > 0) {
+            json += ", ";
+        }
+		
+		string UID = metrics.playerID
+		
+        json += "{";
+        json += format("\"player\": \"%s\", ", UID);
+        json += format("\"jumps\": %d, ", metrics.JumpTimestamps.len());
+		json += format("\"superglides\": %d, ", metrics.SuperglideTimestamps.len());
+        json += format("\"kills\": %d, ", metrics.kills); 
+        json += format("\"deaths\": %d, ", metrics.deaths);
+		
+		//settings 
+		json += "\"settings\": {";
+	
+		bool first = true	
+		if( UID in file.PlayerData )
+		{
+			foreach ( setting,value in file.PlayerData[UID] )
+			{
+				if (!first) 
+				{
+					json += ", ";
+				}
+				
+				first = false
+				json += format("\"%s\": \"%s\"", setting, value);
+			}
+		}
+		
+		json += "},";
+
+		//weapons array
+        json += "\"weaponShots\": {";
+		
+        bool wep_first = true;
+		
+		string replace = "";
+        foreach (weaponSource, timestamps in metrics.WeaponShotsTimestamps) 
+		{					
+            if (!wep_first) {
+                json += ", ";
+            }
+			
+			if(!exclude(weaponSource))
+			{
+				replace = DamageSourceIDToString(weaponSource)
+			}
+			else 
+			{
+				replace = weaponSource.tostring()
+			}
+			
+            json += format("\"%s\": %d", replace, timestamps.len());
+            wep_first = false;
+        }
+        json += "}";
+        json += "}";
+    }
+    json += "]";
+	
+	if (trigger){
+	
+		return json;
+		
+	} else {
+	
+		sqprint("^|," + json + "\n");
+		
+	}
+	
+	unreachable
+	
+}
+
+
+// This function is responsible for summing up global stats between rounds 
+// Kills/deaths/glides get reset per round, therefore globals have to be reset. 
+
+
+void function UpdateRoundStats_GlobalsCarryOver()
+{
+
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( IsValid( player ) )
+		{
+		
+			int lifetime_kills = player.p.lifetime_kills
+			int lifetime_deaths = player.p.lifetime_deaths
+			int lifetime_glides = player.p.lifetime_glides
+		
+			string player_oid = player.GetPlatformUID()
+			int current_kills = GetPlayerKills( player ) 
+			int current_deaths = GetPlayerDeaths( player )
+			int current_glides = GetGlides( player )
+			
+			player.p.lifetime_kills = current_kills + lifetime_kills
+			player.p.lifetime_deaths = current_deaths + lifetime_deaths
+			player.p.lifetime_glides = current_glides + lifetime_glides
+			
+		}
+		
+	}
+}
 
 
 void function SetIgnoreSyncFlag( entity player )
@@ -4885,81 +5067,31 @@ void function SetPlayerLeftFlag( entity player )
 
 void function SavePlayer_wait_time( entity player, float value )
 {
-	int index = GetPlayerMetricsIndex( player );
-	
-    if (index == -1) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-	try
-	{	
-		PlayerMetricsArray[index].wait_time = value;	
-    }catch(e){}
+	SavePlayerData( player.p.UID, "wait_time", value )
 }
 
 
 void function SavePlayer_saved_weapons( entity player, string value )
 {
-	int index = GetPlayerMetricsIndex( player );
-	
-    if (index == -1) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-	try
-	{
-		PlayerMetricsArray[index].saved_weapons = value;	
-    }catch(e){}
+	SavePlayerData( player.p.UID, "saved_weapons", value )
 }
 
 
 void function SavePlayer_lock1v1_setting( entity player, bool value )
 {
-	int index = GetPlayerMetricsIndex( player );
-	
-    if (index == -1) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-	try
-	{	
-		PlayerMetricsArray[index].lock1v1_setting = value;	
-    }catch(e){}
+	SavePlayerData( player.p.UID, "lock1v1_setting", value )
 }
 
 
 void function SavePlayer_enable_input_banner( entity player, bool value )
 {
-	int index = GetPlayerMetricsIndex( player );
-	
-    if (index == -1) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-	try
-	{	
-		PlayerMetricsArray[index].enable_input_banner = value;	
-    }catch(e){}
+	SavePlayerData( player.p.UID, "enable_input_banner", value )
 }
 
 
 void function SavePlayer_start_in_rest_setting( entity player, bool value )
 {
-	int index = GetPlayerMetricsIndex( player );
-	
-    if (index == -1) 
-	{
-		index = InitializePlayerMetricsStructForPlayer( player )
-    } 
-	
-	try
-	{		
-		PlayerMetricsArray[index].start_in_rest_setting = value;
-    }catch(e){}
+	SavePlayerData( player.p.UID, "start_in_rest_setting", value )
 }
 
 
@@ -4969,7 +5101,13 @@ bool function GetPlayerLeftFlag( entity player )
 	
     if ( index != -1 ) 
 	{	
-        return PlayerMetricsArray[index].playerleft;
+        bool left = PlayerMetricsArray[index].playerleft;
+		
+		if(left)
+		{
+			PlayerMetricsArray[index].playerleft = false
+			return true
+		}
     }
 	
     return false;
@@ -4978,51 +5116,51 @@ bool function GetPlayerLeftFlag( entity player )
 
 float function GetPlayer_wait_time( entity player ) 
 {
-    int index = GetPlayerMetricsIndex( player );
+	string setting = FetchPlayerData( player.p.UID, "enable_input_banner" ) 
 	
-    if ( index != -1 ) 
-	{	
-        return PlayerMetricsArray[index].wait_time;
-    }
+	if ( !empty( setting ) )
+	{
+		return setting.tofloat()
+	}
 	
     return GetDefaultIBMM(); 
 }
 
 
 string function GetPlayer_saved_weapons( entity player ) 
-{
-    int index = GetPlayerMetricsIndex( player );
+{	
+	string setting = FetchPlayerData( player.p.UID, "saved_weapons" )
 	
-    if ( index != -1 ) 
+	if ( !empty( setting ) )
 	{
-        return PlayerMetricsArray[index].saved_weapons;
-    }
+		return setting
+	}
 	
     return "NA";
 }
 
 
 bool function GetPlayer_lock1v1_setting( entity player ) 
-{
-    int index = GetPlayerMetricsIndex( player );
+{	
+	string setting = FetchPlayerData( player.p.UID, "lock1v1_setting" )
 	
-    if ( index != -1 ) 
+	if ( !empty( setting ) )
 	{
-        return PlayerMetricsArray[index].lock1v1_setting;
-    }
+		return ( setting == "1" )
+	}
 	
     return GetDefaultLock1v1Setting(); 
 }
 
 
 bool function GetPlayer_start_in_rest_setting( entity player ) 
-{
-    int index = GetPlayerMetricsIndex( player );
+{	
+	string setting = FetchPlayerData( player.p.UID, "start_in_rest_setting" )
 	
-    if ( index != -1 ) 
+	if ( !empty( setting ) )
 	{
-        return PlayerMetricsArray[index].start_in_rest_setting;
-    }
+		return ( setting == "1" )
+	}
 	
     return GetDefaultStartInRestSetting(); 
 }
@@ -5030,37 +5168,16 @@ bool function GetPlayer_start_in_rest_setting( entity player )
 
 bool function GetPlayer_enable_input_banner_setting( entity player ) 
 {
-    int index = GetPlayerMetricsIndex( player );
+
+	string setting = FetchPlayerData( player.p.UID, "enable_input_banner" )
 	
-    if ( index != -1 ) 
+	if ( !empty( setting ) )
 	{
-        return PlayerMetricsArray[index].enable_input_banner;
-    }
+		return ( setting == "1" )
+	}
 	
     return GetDefaultEnableInputBannerSetting(); 
 }
-
-
-void function SavePlayer_R5RDEV_Settings_To_Struct( entity player )
-{	
-	if( !IsValid(player) ) return
-	
-	SavePlayer_wait_time( player, player.p.IBMM_grace_period )
-	SavePlayer_saved_weapons( player, player.p.weapon_loadout )
-	SavePlayer_lock1v1_setting( player, player.p.lock1v1_setting )
-	SavePlayer_start_in_rest_setting( player, player.p.start_in_rest_setting )
-	SavePlayer_enable_input_banner( player, player.p.start_in_rest_setting )
-}
-
-
-void function SaveAllPlayerSettings()
-{
-	foreach ( player in GetPlayerArray() )
-	{	
-		SavePlayer_R5RDEV_Settings_To_Struct( player );
-	}
-}
-
 
 bool function GetDefaultLock1v1Setting()
 {
@@ -5078,8 +5195,113 @@ bool function GetDefaultStartInRestSetting()
 }
 
 
-// END PERSISTENCE //////////////////////////////////////////////////////////////////
+void function UpdateIBMMWaitTime( entity player, string data )
+{	
+	if( empty( data )){ return }
+	
+	float wait_time = 0.0
+	
+	if( IsNumeric( data, SQ_MAX_INT_32 ) )
+	{
+		wait_time = data.tofloat()
+	}
+	
+	if ( wait_time <= file.ibmm_wait_limit )
+	{
+		player.p.IBMM_grace_period = wait_time
+	}
+	else 
+	{
+		player.p.IBMM_grace_period = GetDefaultIBMM()
+	}
+}
 
+void function UpdateSavedWeapons( entity player, string data )
+{	
+	if ( empty( data ) ) { return }
+	if ( data == "NA" ) { return }
+	
+	weaponlist[player.GetPlayerName()] <- data
+	player.p.weapon_loadout = data
+}
+
+
+void function UpdateLock1v1Setting( entity player, string data )
+{	
+	if ( empty( data ) ) 
+	{ 
+		player.p.lock1v1_setting = GetDefaultLock1v1Setting()
+		return 
+	}
+	
+	if( data == "0" )
+	{
+		player.p.lock1v1_setting = false;
+	}
+	else if( data == "1" )
+	{
+		player.p.lock1v1_setting = true;
+	}
+	else 
+	{
+		player.p.lock1v1_setting = GetDefaultLock1v1Setting()
+	}
+}
+
+void function UpdateStartInRestSetting( entity player, string data )
+{	
+	if ( empty( data ) ) 
+	{ 
+		player.p.lock1v1_setting = GetDefaultLock1v1Setting()
+		return 
+	}
+
+	if( data == "0" )
+	{
+		player.p.start_in_rest_setting = false;
+	}
+	else if( data == "1" )
+	{
+		player.p.start_in_rest_setting = true;
+	}
+	else 
+	{
+		player.p.start_in_rest_setting = GetDefaultStartInRestSetting()
+	}
+}
+
+void function UpdateInputBannerSetting( entity player, string data )
+{	
+	if ( empty( data ) ) 
+	{ 
+		player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
+		return 
+	}
+	
+	if( data == "0" )
+	{
+		player.p.enable_input_banner = false;
+	}
+	else if( data == "1" )
+	{
+		player.p.enable_input_banner = true;
+	}
+	else 
+	{
+		player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
+	}
+}
+
+// END PERSISTENCE //////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 int function GetPlayerKills( entity player ) 
 {
@@ -5259,35 +5481,6 @@ void function Flowstate_TrackingVision_TryToTrackSuperglide_Stats( entity player
 
 
 
-
-void function UpdateRoundStats_GlobalsCarryOver()
-{
-
-	foreach ( player in GetPlayerArray() )
-	{
-		if ( IsValid( player ) )
-		{
-		
-			int lifetime_kills = player.p.lifetime_kills
-			int lifetime_deaths = player.p.lifetime_deaths
-			int lifetime_glides = player.p.lifetime_glides
-		
-			string player_oid = player.GetPlatformUID()
-			int current_kills = GetPlayerKills( player ) 
-			int current_deaths = GetPlayerDeaths( player )
-			int current_glides = GetGlides( player )
-			
-			player.p.lifetime_kills = current_kills + lifetime_kills
-			player.p.lifetime_deaths = current_deaths + lifetime_deaths
-			player.p.lifetime_glides = current_glides + lifetime_glides
-			
-		}
-		
-	}
-
-}
-
-
 void function OnJumped( entity player ) 
 {
 	RecordPlayerJump( player );
@@ -5375,16 +5568,16 @@ void function FinishGameStatsRound()
 										} 
 										else 
 										{
-										stopLogging(Logging_ShipStats()); //IMPORTANT
-										
-										//update live global stats for match making (verified only)
-										string metrics = PrintAllPlayerMetrics(true);
-										UpdateLiveStats( metrics );
-										
-										//send to discord:
-										string recap = PIN_WinnerByKillsAndDamage();
-										thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK );
-										
+											stopLogging(Logging_ShipStats()); //IMPORTANT
+											
+											//update live global stats for match making (verified only)
+											string metrics = PrintAllPlayerMetrics(true);
+											UpdateLiveStats( metrics );
+											
+											//send to discord:
+											string recap = PIN_WinnerByKillsAndDamage();
+											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK );
+											
 											if (Logging_ShipStats())
 											{
 												foreach(player in GetPlayerArray())
@@ -5463,7 +5656,8 @@ void function PIN_AddPlayer( entity player )
 			i++; wait 1; if(i==30){	break }
 		}
 		
-		SavePlayer_R5RDEV_Settings_To_Struct( player );
+		//deprecated
+		//SavePlayer_R5RDEV_Settings_To_Struct( player );
 	}
 	
 	if (file.restricted_server)
@@ -5548,7 +5742,9 @@ void function PIN_PlayerLeft( entity player, string reason )
 {
 	string p_ea_name = player.GetPlayerName()
 	string OID = player.GetPlatformUID()
+	
 	SetPlayerLeftFlag( player )
+	
 	//string message = format("%s disconnected ", pname )
 	//sqprint(message)
 
@@ -5717,9 +5913,7 @@ bool function CheckPlayerStartInRest( entity player )
 
 
 void function PIN_GameStartedForPlayer( entity player )
-{
-	
-	
+{	
 	/*
 	string pname = player.GetPlayerName( )
 
@@ -6414,7 +6608,7 @@ bool function CheckRate( entity player )
 {	
 	if ( !IsValid( player ) ) 
 		return false 
-		
+			
 	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
 	{
 		Message( player, "COMMANDS COOLDOWN")
@@ -6983,6 +7177,8 @@ bool function bAfkToRest(){ return file.afk_to_rest_enabled }
 bool function bBotEnabled(){ return file.bChatbotEnabled }
 
 //persistence
+void function FetchPlayerData( string UID, string setting ){}
+void function SavePlayerData( string UID, string setting, ... ){}
 void function SavePlayer_wait_time( entity ent, float time ){}
 void function SavePlayer_lock1v1_setting( entity ent, bool setting ){}
 void function SavePlayer_start_in_rest_setting( entity ent, bool setting ){}

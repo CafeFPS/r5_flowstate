@@ -5692,7 +5692,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	
 	if( !IsValid( player ) || !IsAlive( player ) )
 		return false
-	
+
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
 		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
@@ -5700,14 +5700,15 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	}
 
 	if(args.len() < 2) return false
-	
-	if( is1v1EnabledAndAllowed() && isPlayerInRestingList( player ) ) 
-	{
-		Message( player, "NOT ALLOWED IN RESTING MODE" )
-		return false
-	}
 
-	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) ) 
+	if( is1v1EnabledAndAllowed() && isPlayerInRestingList( player ) )
+	{	
+		bRestFlag = true
+		//Message( player, "NOT ALLOWED IN RESTING MODE" )
+		//return false
+	}
+	
+	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) )
 	{
 		Message( player, "NOT ALLOWED IN WAITING MODE" )
 		return false
@@ -5715,7 +5716,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 	if( is1v1EnabledAndAllowed() && args[0] != "p" && args[0] != "s" )
 		return false
-	
+
 	if( !SURVIVAL_Loot_IsRefValid( args[1] ) || IsForcedlyDisabledWeapon( args[1] ) )
 	{
 		Message( player, "WEAPON NOT ALLOWED :(" )
@@ -5733,7 +5734,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		Message(player, "ABILITY BLACKLISTED")
 		return false
 	}
-	
+
 	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
 	{
 		Message(player, "TGIVE COOLDOWN")
@@ -5746,7 +5747,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		{
 			case "p":
 			case "primary":
-				
+
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
 				if ( data.lootType != eLootType.MAINWEAPON )
 					return false
@@ -5754,22 +5755,22 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				if( IsValid( primary ) )
 					player.TakeWeaponByEntNow( primary )
-				
+
 				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
-				
+
 				SetupInfiniteAmmoForWeapon( player, weapon )
 			break
 			case "s":
 			case "secondary":
-				
+
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
 				if ( data.lootType != eLootType.MAINWEAPON )
 					return false
 
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-				if( IsValid( secondary ) ) 
+				if( IsValid( secondary ) )
 					player.TakeWeaponByEntNow( secondary )
-				
+
 				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
 
 				SetupInfiniteAmmoForWeapon( player, weapon )
@@ -5779,7 +5780,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
 				if ( IsValid( tactical ) )
 					player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-					
+
 				tactical = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
 			break
 			case "u":
@@ -5787,12 +5788,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 				if( IsValid( ultimate ) )
 					player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-				
+
 				ultimate = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
 			break
 		}
 	} catch( e420 ) {
-            printt("Invalid weapon name for tgive command.")
+           // printt("Invalid weapon name for tgive command.")
         }
 
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() && args.len() > 2 )
@@ -5801,12 +5802,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		{
 			if( !IsValidAttachment( args[i] ) )
 				continue
-			
+
 			if( !SURVIVAL_Loot_IsRefValid( args[i] ) )
 				continue
 
 			string attachPoint = GetAttachPointForAttachmentOnWeapon( GetWeaponClassNameWithLockedSet( weapon ), args[i] )
-			
+
 			if( attachPoint == "" )
 				continue
 
@@ -5823,7 +5824,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				weapon.AddMod(args[i])
 			}
 			catch( e2 ) {
-				printt( "Invalid mod. - ", args[i] )
+				// printt( "Invalid mod. - ", args[i] )
 				weapon.RemoveMod( args[i] )
 			}
 		}
@@ -5833,8 +5834,9 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
 		player.ClearFirstDeployForAllWeapons()
 	}
-	
+
 	player.p.lastTgiveUsedTime = Time()
+	
 	
 		if( ClientCommand_SaveCurrentWeapons( player, [] ) )
 		{	
@@ -5844,11 +5846,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 			
 		if (bRestFlag)
 		{	
-			//HolsterAndDisableWeapons( player )
+			HolsterAndDisableWeapons( player )
 		}
 
     return true
 }
+
 
 string function GetWepName_FromClassName( string classname )
 {
@@ -5860,10 +5863,11 @@ string function GetWepName_FromClassName( string classname )
 	return "Unknown";
 }
 
+
 ///Save TDM Current Weapons
 bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
 {	
-	if (!CheckRate( player )) return false
+	if ( !IsValid( player ) ) return false
 	
 	entity weapon1
 	entity weapon2
@@ -5873,6 +5877,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	array<string> mods2
 	string weaponname1
 	string weaponname2
+	
 	try
 	{
 		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -5893,7 +5898,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 		}
 		else 
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqerror("Player: " + player.GetPlatformUID() + " Weapon 1 invalid, setting to empty ") 
 			#endif
 			
@@ -5906,7 +5911,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 		}
 		else 
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			sqerror("Player: " + player.GetPlatformUID() + " Weapon 2 invalid, setting to empty")
 			#endif		
 			
@@ -5917,7 +5922,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	}
 	catch(error)
 	{	
-		#if DEVELOPER && HAS_TRACKER_DLL
+		#if DEVELOPER
 		sqerror("Error: " + error )
 		#endif
 	}
@@ -5926,7 +5931,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	{
 		if(weaponname1 == "" || weaponname2 == "")
 		{	
-			#if DEVELOPER && HAS_TRACKER_DLL
+			#if DEVELOPER
 			if (weaponname1 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname1 empty") }
 			if (weaponname2 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname2 empty") }
 			#endif
@@ -5936,7 +5941,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 		}
 	}
 	
-	#if DEVELOPER && HAS_TRACKER_DLL
+	#if DEVELOPER 
 	sqprint( "Player: " + player.GetPlatformUID() + " weaponname1: " + weaponname1 + " weaponname2: " + weaponname2 )
 	#endif 
 	
@@ -6018,7 +6023,7 @@ string function modChecker( string weaponMods )
 //Auto-load TDM Saved Weapons at Respawn
 void function LoadCustomWeapon(entity player)
 {
-	if (!CheckRate( player )) return
+	if ( !IsValid( player )) return
 	
 	if (player.GetPlayerName() in weaponlist)
 	{
@@ -6089,7 +6094,7 @@ bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 		delete weaponlist[player.GetPlayerName()]
 	}
 	
-	SavePlayer_saved_weapons(player, "NA")
+	SavePlayer_saved_weapons( player, "NA" )
 	player.p.weapon_loadout = "NA";
 	
 	return true

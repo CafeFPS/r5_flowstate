@@ -171,10 +171,8 @@ void function OnJumpPadPlanted( entity projectile )
 		
 		OnThreadEnd( function() : ( jumpPad )
 			{
-				sqprint("thread ended")
 				if( IsValid(jumpPad) )
 				{
-					sqprint("called destroy")
 					jumpPad.Destroy()
 				}
 			}	
