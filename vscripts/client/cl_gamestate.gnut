@@ -144,126 +144,119 @@ void function Hud_SetModeEmblem()
 }
 
 void function SetCommonScoreRUIVars( var rui )
-{
-	switch( GameRules_GetGameMode() )
+{	
+	if ( GameRules_GetGameMode() != SURVIVAL )
 	{
-		case "fs_infected":
+		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+		
+		switch( GetCurrentPlaylistName() )
+		{
+			case "fs_1v1":
+			RuiSetString( rui, "gameModeString", "FS 1v1" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			break
+
+			case "fs_lgduels_1v1":
+			RuiSetString( rui, "gameModeString", "FS LGDUELS" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			break
+			
+			case "fs_3v3":
+			RuiSetString( rui, "gameModeString", "FS SCENARIOS" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			break
+			
+			case "fs_movementgym":
+			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
+			break
+			
+			case "fs_dm":
+			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
+			break
+			
+			case "fs_survival_solos":
+			RuiSetString( rui, "gameModeString", "APEX SOLO" )
+			break
+
+			case "fs_haloMod_oddball":	
+			RuiSetString( rui, "gameModeString", "ODDBALL" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+			break
+		
+			case "fs_dm_fast_instagib":
+			RuiSetString( rui, "gameModeString", "FS INSTAGIB" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetVisible(rui, true)
+			break
+
+			case "fs_infected":
 			RuiSetString( rui, "gameModeString", "FS INFECTED" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 			RuiSetString( rui, "squadsRemaining2TextSingular", "INFECTED" )
 			RuiSetString( rui, "squadsRemaining2TextPlural", "INFECTED" )
-			return
-		
-		case "fs_prophunt":
+			break
+			
+			case "fs_prophunt":
 			RuiSetString( rui, "gameModeString", "FS PROPHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PROP ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PROPS ALIVE" )
 			RuiSetVisible(rui, true)
-			return
+			break
 			
-		case "fs_duckhunt":
+			case "fs_duckhunt":
 			RuiSetString( rui, "gameModeString", "FS DUCKHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "DUCK ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "DUCKS ALIVE" )
 			RuiSetVisible(rui, true)	
-			return
-			
-		case "fs_snd":
+			break
+				
+			case "fs_snd":
 			RuiSetString( rui, "gameModeString", "SEARCH AND DESTROY" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
 			RuiSetVisible(rui, true)	
-			return
-		case "custom_ctf":
+			break
+	
+			case "custom_ctf":
 			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			RuiSetVisible(rui, true)
-			return
-	}
-
-	switch( GetCurrentPlaylistName() )
-	{
-		case "fs_haloMod_oddball":	
-			RuiSetString( rui, "gameModeString", "ODDBALL" )
-			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
-			RuiSetVisible(rui, true)
-		return
-		
-		case "fs_dm_fast_instagib":
-			RuiSetString( rui, "gameModeString", "FS INSTAGIB" )
-			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
-			RuiSetVisible(rui, true)
-		return
-	}
-
-	//Legacy, clean up this later ?
-	
-	if ( IsFallLTM() )
-	{
-		RuiSetString( rui, "gameModeString", "" )
-		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
-		RuiSetString( rui, "squadsRemaining2TextSingular", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
-		RuiSetString( rui, "squadsRemaining2TextPlural", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
-		return
-	}	
-	
-	if ( IsSoloMode() )
-	{
-		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
-		
-		if(GameRules_GetGameMode() == "fs_dm" && !GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
-			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
-		else if(GameRules_GetGameMode() == "fs_dm" && GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ) && GetCurrentPlaylistName() != "fs_movementgym" && GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
-			RuiSetString( rui, "gameModeString", "HACKERS VS PROS" )
-		else if(GetCurrentPlaylistName() == "fs_movementgym")
-			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
-		else if(GetCurrentPlaylistName() == "fs_1v1")
-		{
-			RuiSetString( rui, "gameModeString", "FS 1v1" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
-		} else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-		{
-			RuiSetString( rui, "gameModeString", "FS LGDUELS" )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
+			break
 		}
-		else if( GetCurrentPlaylistName() == "fs_survival_solos" )
-			RuiSetString( rui, "gameModeString", "APEX SOLO" )
 		
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 			RuiSetString( rui, "gameModeString", "HALO DM" )
-
-		if(GameRules_GetGameMode() == "flowstate_pkknockback")
-		{
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
-			RuiSetString( rui, "gameModeString", "PK PUSHBACK" )
-		}
-	}
-	else if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false )){
-		RuiSetString( rui, "gameModeString", "DUMMIES HORDE" )
-		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "DUMMY REMAINING" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "DUMMIES REMAINING" )
 	}
 	else
 	{
+		if ( IsFallLTM() )
+		{
+			RuiSetString( rui, "gameModeString", "" )
+			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
+			RuiSetString( rui, "squadsRemaining2TextSingular", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
+			RuiSetString( rui, "squadsRemaining2TextPlural", "#SHADOW_SQUAD_SHADOW_PLAYERS_REMAIN" )
+			return
+		}
+
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", true )
 
 		RuiSetInt( rui, "livingPlayerCountMin", 10 )

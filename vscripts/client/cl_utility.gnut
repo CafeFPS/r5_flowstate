@@ -713,7 +713,7 @@ void function Dev_PrintClientMessage( float duration )
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos" || GetCurrentPlaylistName() == "fs_lgduels_1v1" || GameRules_GetGameMode() == "fs_snd" )
+	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_3v3" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos" || GetCurrentPlaylistName() == "fs_lgduels_1v1" || GameRules_GetGameMode() == "fs_snd" )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

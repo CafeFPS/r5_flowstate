@@ -1,8 +1,7 @@
 //Flowstate 1v1 gamemode
 //made by __makimakima__
-//redesigned by mkos [refactored/coderewrite/ibmm/sbmm]
-
-//globalize_all_functions // why?
+//integrated and maintained by @CafeFPS
+//redesigned by mkos [r5r.dev stats system/ibmm/sbmm]
 
 global const INVALID_ACCESS_DEBUG = false
 
@@ -31,6 +30,22 @@ global function ForceAllRoundsToFinish_solomode
 global function addStatsToGroup
 global function getBotSpawn
 global function RechargePlayerAbilities
+
+//shared with 3v3 server script
+global function HandleGroupIsFinished
+global function GiveWeaponsToGroup
+global function deleteWaitingPlayer
+global function deleteSoloPlayerResting
+global function getAvailableRealmSlotIndex
+global function GetUniqueID
+global function GivePlayerCustomPlayerModel
+global function FS_ClearRealmsAndAddPlayerToAllRealms
+global function PlayerRestoreHP_1v1
+global function SetIsUsedBoolForRealmSlot
+global function processRestRequest
+global function FS_SetRealmForPlayer
+global function FS_1v1_GetPlayersWaiting
+global function FS_1v1_GetPlayersResting
 
 global struct soloLocStruct
 {
@@ -95,11 +110,10 @@ struct ChallengesStruct
 }
 
 array< bool > realmSlots
-
 LocPair WaitingRoom
 
 //this is fine
-array <soloLocStruct> soloLocations //all respawn location stored here
+global array <soloLocStruct> soloLocations //all respawn location stored here
 
 //TODO:: move to r5rdev_config.json-- mkos
 array <string> custom_weapons_primary = [] 
@@ -129,6 +143,7 @@ struct {
 	array<ChallengesStruct> allChallenges
 	table<int,entity> acceptedChallenges //(player handle challenger -> player challenged )
 
+	bool is3v3Mode
 } file
 
 
@@ -137,11 +152,10 @@ struct {
 	int ibmm_wait_limit
 	float default_ibmm_wait
 	bool enableChallenges = false
-
 } settings
 
 //script vars 
-bool mGroupMutexLock
+global bool mGroupMutexLock
 int groupID = 112250000;
 bool bMap_mp_rr_party_crasher
 bool bMap_mp_rr_canyonlands_staging
@@ -204,6 +218,16 @@ table<int, soloGroupStruct> function getGroupsInProgress()
 table<int, soloGroupStruct> function getPlayerToGroupMap()
 {
 	return file.playerToGroupMap
+}
+
+table<int, soloPlayerStruct> function FS_1v1_GetPlayersWaiting()
+{
+	return file.soloPlayersWaiting
+}
+
+table<int,bool> function FS_1v1_GetPlayersResting()
+{
+	return file.soloPlayersResting
 }
 
 void function setChineseServer( bool value )
@@ -282,6 +306,7 @@ void function INIT_Flags()
 	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
 	settings.enableChallenges			= GetCurrentPlaylistVarBool( "enable_challenges", true )
+	file.is3v3Mode						= GetCurrentPlaylistName() == "fs_3v3"
 }
 
 
@@ -2238,6 +2263,11 @@ void function soloModePlayerToWaitingList( entity player )
 		return
 	}
 	
+	if( file.is3v3Mode )
+	{
+		SetTeam( player, TEAM_MULTITEAM_FIRST )
+	}
+
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
 
 	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
@@ -2285,32 +2315,47 @@ void function soloModePlayerToWaitingList( entity player )
 	//检查InProgress是否存在该玩家
 	// Check if the player is part of any group
 	
-	//mkos version
-	
-	if ( player.p.handle in file.playerToGroupMap ) 
+	if( file.is3v3Mode )
 	{
-		soloGroupStruct group = returnSoloGroupOfPlayer(player);
-		entity opponent = returnOpponentOfPlayer(player);	
-		
-		if(mGroupMutexLock)
-		{ 
-			sqerror("tried to modify groups in use")
-			throw "tried to modify groups in use.";
-		}
-		else if(!IsValid(group))
+		if ( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() ) 
 		{
-			#if DEVELOPER
-			sqprint("remove group request 01")
-			#endif
-			destroyRingsForGroup(group);
-			removeGroup(group);
+			scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player);
+
+			if(!IsValid(group))
+			{
+				FS_Scenarios_RemoveGroup(group);
+			}
+			
+			soloModePlayerToWaitingList(player); 
 		}
-		
-		soloModePlayerToWaitingList(player); 
-		
-		if (IsValid(opponent)) 
+	}	//mkos version
+	else
+	{	
+		if ( player.p.handle in file.playerToGroupMap ) 
 		{
-			soloModePlayerToWaitingList(opponent);
+			soloGroupStruct group = returnSoloGroupOfPlayer(player);
+			entity opponent = returnOpponentOfPlayer(player);	
+			
+			if(mGroupMutexLock)
+			{ 
+				sqerror("tried to modify groups in use")
+				throw "tried to modify groups in use.";
+			}
+			else if(!IsValid(group))
+			{
+				#if DEVELOPER
+				sqprint("remove group request 01")
+				#endif
+				destroyRingsForGroup(group);
+				removeGroup(group);
+			}
+			
+			soloModePlayerToWaitingList(player); 
+			
+			if (IsValid(opponent)) 
+			{
+				soloModePlayerToWaitingList(opponent);
+			}
 		}
 	}
 	
@@ -2460,9 +2505,9 @@ void function soloModefixDelayStart(entity player)
 	#endif
 	
 	if(file.IS_CHINESE_SERVER)
-		Message(player, format("加载中 FS 1v1 %s\n\n\n", tracker ) )
+		Message(player, format( file.is3v3Mode == true ? "加载中 FS Scenarios %s\n\n\n" : "加载中 FS 1v1 %s\n\n\n", tracker ) )
 	else
-		Message(player, format("Flowstate 1v1 %s\n\n\n", tracker ) )
+		Message(player, format(file.is3v3Mode == true ? "Flowstate Scenarios %s\n\n\n" : "Flowstate 1v1 %s\n\n\n", tracker ) )
 	
 	HolsterAndDisableWeapons(player)
 	
@@ -2813,34 +2858,16 @@ void function GivePlayerCustomPlayerModel( entity ent )
 	}
 }
 
-void function SetPlayerCustomModel( entity ent, int index )
-{
-	switch(index)
-	{
-		case 11:
-		ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
-		ent.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
-		break
-		
-		case 12:
-		ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_phantom.rmdl" )
-		ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
-		break
-		
-		case 13:
-		ent.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
-		ent.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
-	}
-}
-
 void function _soloModeInit(string mapName)
 {	
 	//RegisterSignal("On1v1Death") //TODO
 	RegisterSignal( "NotificationChanged" )
 	INIT_1v1_sbmm()
 	INIT_Flags()
-	
+
+	if( file.is3v3Mode )
+		Init_FS_Scenarios()
+
 	IBMM_COORDINATES = IBMM_Coordinates()
 	IBMM_ANGLES = IBMM_Angles()
 	
@@ -3685,7 +3712,7 @@ void function _soloModeInit(string mapName)
 	{
 		realmSlots[ i ] = false
 	}
-	
+
 	string buttonText2
 	
 	if(file.IS_CHINESE_SERVER)
@@ -3698,7 +3725,10 @@ void function _soloModeInit(string mapName)
 	}
 
 	forbiddenZoneInit(GetMapName())
-	thread soloModeThread(getWaitingRoomLocation())
+	if( file.is3v3Mode )
+		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
+	else
+		thread soloModeThread( getWaitingRoomLocation() )
 
 }
 
@@ -5035,5 +5065,43 @@ void function RechargePlayerAbilities( entity player )
 		
 		//Fix for grapple not recharging after grappling server created props
 		player.SetSuitGrapplePower(100)
+	}
+}
+
+void function HandleGroupIsFinished( entity player )
+{
+	if( file.is3v3Mode )
+	{
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+		int aliveCount1
+		foreach( splayer in group.team1Players )
+		{
+			if( !IsValid( splayer ) )
+				continue
+			
+			if( IsAlive( splayer ) )
+				aliveCount1++
+		}
+		
+		int aliveCount2
+		foreach( splayer in group.team2Players )
+		{
+			if( !IsValid( splayer ) )
+				continue
+			
+			if( IsAlive( splayer ) )
+				aliveCount2++
+		}
+
+		if( aliveCount1 == 0 || aliveCount2 == 0 )
+			group.IsFinished = true //tell solo thread this round has finished
+	} 
+	else
+	{
+		soloGroupStruct group = returnSoloGroupOfPlayer(player) 
+		
+		if(!group.IsKeep)
+			group.IsFinished = true //tell solo thread this round has finished
 	}
 }

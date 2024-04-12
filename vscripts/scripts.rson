@@ -984,7 +984,7 @@ Scripts:
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
-	gamemodes/fs_1v1/_gamemode_3v3.nut
+	gamemodes/fs_scenarios/_gamemode_scenarios.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/_gamemode_prophunt.nut
