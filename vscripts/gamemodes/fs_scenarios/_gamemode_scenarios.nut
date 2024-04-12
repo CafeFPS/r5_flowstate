@@ -151,7 +151,14 @@ void function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup 
 	{
         newGroup.slotIndex = slotIndex;
         newGroup.groupLocStruct = soloLocations.getrandom()
-
+		
+		while(mGroupMutexLock) 
+		{
+			#if DEVELOPER
+			sqprint("Waiting for lock to release R001")
+			#endif
+			WaitFrame() 
+		}
 		FS_Scenarios_AddGroup(newGroup); 
     } 
 
@@ -165,6 +172,8 @@ void function FS_Scenarios_AddGroup( scenariosGroupStruct newGroup)
 		sqerror("[addGroup]: Logic Flow Error: group is invalid during creation")
 		return
 	}
+	mGroupMutexLock = true
+
 	array<entity> players
 	players.extend( newGroup.team1Players )
 	players.extend( newGroup.team2Players )
@@ -217,10 +226,13 @@ void function FS_Scenarios_AddGroup( scenariosGroupStruct newGroup)
 		sqprint("addGroup crash: " + e)
 		#endif
 	}
+	
+	mGroupMutexLock = false
 }
 
 void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove ) 
 {
+	mGroupMutexLock = true  
 	if(!IsValid(groupToRemove))
 	{
 		sqerror("Logic flow error:  groupToRemove is invalid")
@@ -259,6 +271,8 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		sqprint( "removeGroup crash: " + e )
 		#endif
 	}
+	
+	mGroupMutexLock = false
 }
 
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
@@ -499,7 +513,15 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				#if DEVELOPER
 				sqprint("remove group request 04")
 				#endif
-
+				
+				while(mGroupMutexLock) 
+				{
+					#if DEVELOPER
+					sqprint("Waiting for lock to release R004")
+					#endif
+					WaitFrame() 
+				}
+				
 				groupsToRemove.append(group)
 				quit = true
 			}
@@ -575,7 +597,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			#if DEVELOPER
 			sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
 			#endif 
-
+			while(mGroupMutexLock) 
+			{	
+				#if DEVELOPER
+				sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
+				#endif
+				WaitFrame() 
+			}
 			if(IsValid(group))
 			{
 				FS_Scenarios_RemoveGroup(group)
