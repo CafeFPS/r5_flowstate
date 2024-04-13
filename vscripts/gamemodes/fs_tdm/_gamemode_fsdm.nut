@@ -365,7 +365,6 @@ void function LgDuelLoadSettings( entity player, string data )
 	}
 	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_SetLGDuelPesistenceSettings", values[0].tofloat(), values[1].tointeger(), values[2].tointeger(), values[3].tointeger(), values[4].tofloat(), values[5].tointeger(), values[6].tointeger(), values[7].tointeger() )
-
 }
 
 void function Init_IBMM( entity player )
@@ -1125,7 +1124,10 @@ void function _CustomTDM_Init()
     AddCallback_EntitiesDidLoad( DM__OnEntitiesDidLoad )
 	
 	#if TRACKER && HAS_TRACKER_DLL
-		AddCallback_PlayerData( "LgDuelsSetting", LgDuelLoadSettings )
+		if( Flowstate_IsLGDuels() )
+		{
+			AddCallback_PlayerData( "LgDuelsSetting", LgDuelLoadSettings )
+		}	
 	#endif
 
     AddCallback_OnClientConnected( void function(entity player) {

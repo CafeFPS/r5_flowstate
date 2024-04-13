@@ -1820,6 +1820,8 @@ struct {
 	bool Flowstate_fs_lgduels_1v1
 	bool Flowstate_fs_dm_fast_instagib
 	bool Flowstate_fs_dm
+	bool Flowstate_Is_PartyCrasher
+	bool Flowstate_Is_Canyon_Staging
 	
 } SH_flowstateSettings
 
@@ -1907,6 +1909,8 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
 	SH_flowstateSettings.Flowstate_fs_dm								= ( GetCurrentPlaylistName() == "fs_dm" )
+	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( GetMapName() == "mp_rr_party_crasher" )
+	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( GetMapName() == "mp_rr_canyonlands_staging" )
 }
 
 // Playlist GET
@@ -1991,7 +1995,8 @@ bool function Flowstate_IsHalomodeOddball()						{ return SH_flowstateSettings.F
 bool function Flowstate_IsFS1v1()								{ return SH_flowstateSettings.Flowstate_fs_1v1 }
 bool function Flowstate_IsFastInstaGib()						{ return SH_flowstateSettings.Flowstate_fs_dm_fast_instagib }
 bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_fs_dm }
-
+bool function Flowstate_IsMapPartyCrasher()						{ return SH_flowstateSettings.Flowstate_Is_PartyCrasher }
+bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettings.Flowstate_Is_Canyon_Staging }
 
 
 #if SERVER   

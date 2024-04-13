@@ -39,7 +39,7 @@ global function PIN_Training
 // these defines dictate the compiler for tracker code vs stub code
 
 global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+global const bool HAS_TRACKER_DLL = true
 
 //do not edit below this line
 

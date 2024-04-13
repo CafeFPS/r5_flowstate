@@ -983,6 +983,7 @@ Scripts:
 [
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
+	gamemodes/fs_1v1/sh_gamemode_1v1.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
 	gamemodes/fs_scenarios/_gamemode_scenarios.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
