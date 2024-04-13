@@ -335,7 +335,11 @@ void function INIT_LGDuels_Player( entity player )
 	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged ) //was thread?why?
 	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
-	AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
+	
+	#if TRACKER && HAS_TRACKER_DLL
+		AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
+	#endif
+	
 	player.p.hitsound = HIT_0
 	// CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
 	// CreatePanelText(player, "mkos and @CafeFPS", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)

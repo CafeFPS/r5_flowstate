@@ -90,7 +90,7 @@ void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 				{
 					case true: 
 						file.allBeamSettings["local"].offset = expect float( vargv[i] )
-						printt("kewl offset was changed to ", vargv[i] )
+						//printt("kewl offset was changed to ", vargv[i] )
 						break
 					case false: file.allBeamSettings["enemy"].offset = expect float( vargv[i] )
 						break
