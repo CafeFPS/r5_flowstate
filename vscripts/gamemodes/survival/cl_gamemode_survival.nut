@@ -2030,7 +2030,7 @@ void function Sur_OnScoreboardShow()
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" || GetCurrentPlaylistName() == "fs_3v3" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" || GetCurrentPlaylistName() == "fs_scenarios" )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )

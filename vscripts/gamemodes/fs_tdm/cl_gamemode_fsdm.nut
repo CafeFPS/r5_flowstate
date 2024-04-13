@@ -1638,7 +1638,7 @@ void function fs_NewBoxBuildMessage( Type, ... )
 
 void function fs_NewBoxShowMessage( float duration )
 {
-	Flowstate_AddCustomScoreEventMessage( "[SERVER] %$rui/bullet_point% " + file.fs_newMsgBoxString, duration )
+	Flowstate_AddCustomScoreEventMessage(  file.fs_newMsgBoxString, duration )
 
 	file.fs_newMsgBoxString = ""
 	file.fs_newMsgBoxSubString = ""

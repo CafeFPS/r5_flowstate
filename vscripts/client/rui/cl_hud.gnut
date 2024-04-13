@@ -575,13 +575,13 @@ void function AddScoreEventMessage( ScoreEvent scoreEvent, EHI associatedEHI, in
 
 void function Flowstate_AddCustomScoreEventMessage( string eventText, float duration )
 {
-	if(file.flowstateSmallServerMsg != null)
+	if(file.flowstateSmallServerMsg != null || eventText == "" )
 	{
 		RuiDestroyIfAlive( file.flowstateSmallServerMsg )
 		file.flowstateSmallServerMsg = null
 	}
 	
-	if ( file.flowstateSmallServerMsg_Topo != null )
+	if ( file.flowstateSmallServerMsg_Topo != null ||  eventText == "" )
 	{
 		RuiTopology_Destroy( file.flowstateSmallServerMsg_Topo )
 		file.flowstateSmallServerMsg_Topo = null
@@ -593,7 +593,7 @@ void function Flowstate_AddCustomScoreEventMessage( string eventText, float dura
 
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetFloat( rui, "duration", duration )
-	RuiSetString( rui, "messageText", Localize( eventText ) )
+	RuiSetString( rui, "messageText", Localize( "%$rui/bullet_point%" + eventText + "%$rui/bullet_point%") )
 	RuiSetBool( rui, "isBigText", true )
 	RuiSetFloat( rui, "messageOffsetScale", 1.0 )
 	RuiSetGameTime( rui, "updateTime", Time() )	

@@ -308,7 +308,7 @@ void function INIT_Flags()
 	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
 	settings.enableChallenges			= GetCurrentPlaylistVarBool( "enable_challenges", true )
-	file.is3v3Mode						= GetCurrentPlaylistName() == "fs_3v3"
+	file.is3v3Mode						= GetCurrentPlaylistName() == "fs_scenarios"
 }
 
 
@@ -2363,7 +2363,7 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	
+	Message_New( player, "Waiting for players", 300 )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 
@@ -2384,6 +2384,7 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 	
     player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent);
     opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player);
+	Message_New( player, "", 1 )
 
     if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
 	{	

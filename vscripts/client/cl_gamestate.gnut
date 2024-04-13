@@ -165,7 +165,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			break
 			
-			case "fs_3v3":
+			case "fs_scenarios":
 			RuiSetString( rui, "gameModeString", "FS SCENARIOS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )

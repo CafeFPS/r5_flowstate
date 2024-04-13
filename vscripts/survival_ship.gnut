@@ -252,7 +252,7 @@ void function CommonPlayerDropLines(entity player)
 
 void function GiveBasicSurvivalItems( entity player )
 {
-	if( !IsValid( player ) || GetCurrentPlaylistName() == "fs_3v3" )
+	if( !IsValid( player ) || GetCurrentPlaylistName() == "fs_scenarios" )
 		return
 	
 	//add white shield, white knockdown shield, white helmet, two syringes and two cells

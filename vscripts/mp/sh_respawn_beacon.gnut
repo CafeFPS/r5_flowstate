@@ -432,14 +432,16 @@ void function RespawnPlayersInDropshipAtPoint( array<entity> players, vector ori
     entity dropship = CreateEntity( "npc_dropship" )
     SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
     SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
+    DispatchSpawn( dropship )
+    dropship.SetInvulnerable()
+    dropship.DisableHibernation()
+
 	if( realm > -1 )
 	{
 		dropship.RemoveFromAllRealms()
 		dropship.AddToRealm( realm )
 	}
-    DispatchSpawn( dropship )
-    dropship.SetInvulnerable()
-    dropship.DisableHibernation()
+
     thread JetwashFX( dropship )
 
     dropship.DisableGrappleAttachment()
@@ -1167,13 +1169,14 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 				{
 					DeployAndEnableWeapons( player )
 					EnableOffhandWeapons( player )
-					if( GetCurrentPlaylistName() == "fs_3v3" )
-					{
-						GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
-						Signal( player, "PlayerDroppedFromDropship" )
-					}
 				}
-					
+
+				if( GetCurrentPlaylistName() == "fs_scenarios" )
+				{
+					GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
+					Signal( player, "PlayerDroppedFromDropship" )
+				}
+
 				player.SetPlayerNetInt( "respawnStatus", 0 )
 				player.p.respawnPod = null
 				player.p.respawnPodLanded = false
@@ -1185,7 +1188,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 	wait idleTime
 	
-	if(!IsValid(player) || !IsValid(ship) ) return
+	if( !IsValid(player) || !IsValid(ship) ) return
 
 	player.StopObserverMode()
 	ClearPlayerEliminated( player )
@@ -1208,7 +1211,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 		return
 	
 	//return controls
-	DecideRespawnPlayer( player )
+	// DecideRespawnPlayer( player ) // why twice?
 	player.SetAngles( player.GetAngles() ) // this works don't change it	
 	player.ClearInvulnerable()
 	player.UnfreezeControlsOnServer() //once jumped, return controls

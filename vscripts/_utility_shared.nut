@@ -148,7 +148,7 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
 
-	if( GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1"  && GetCurrentPlaylistName() != "fs_3v3" )
+	if( GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1"  && GetCurrentPlaylistName() != "fs_scenarios" )
 		MpWeaponEmoteProjector_Init()
 
 	MpWeaponDoubletake_Init()
