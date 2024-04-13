@@ -1042,6 +1042,7 @@ bool function bIs1v1Mode()
 		case "mp_rr_canyonlands_64k_x_64k":
 		case "mp_rr_canyonlands_staging":
 		case "mp_rr_party_crasher":
+		case "mp_rr_olympus_mu1":
 		isChineseServer()
 		return true
 		default:

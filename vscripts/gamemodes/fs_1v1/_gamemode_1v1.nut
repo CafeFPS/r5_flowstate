@@ -157,6 +157,7 @@ struct {
 //script vars 
 global bool mGroupMutexLock
 int groupID = 112250000;
+bool bMap_mp_rr_olympus_mu1
 bool bMap_mp_rr_party_crasher
 bool bMap_mp_rr_canyonlands_staging
 bool bMap_mp_rr_canyonlands_64k_x_64k
@@ -2263,10 +2264,10 @@ void function soloModePlayerToWaitingList( entity player )
 		return
 	}
 	
-	if( file.is3v3Mode )
-	{
-		SetTeam( player, TEAM_MULTITEAM_FIRST )
-	}
+	// if( file.is3v3Mode )
+	// {
+		// SetTeam( player, TEAM_MULTITEAM_FIRST )
+	// }
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
 
@@ -2975,6 +2976,11 @@ void function _soloModeInit(string mapName)
 			WaitingRoom.origin = < 1881.75, -4210.87, 626.106 > 
 			WaitingRoom.angles = < 359.047, 104.246, 0 >
 			break;
+
+		case "mp_rr_olympus_mu1":
+			WaitingRoom.origin = <318.434906, -19474.4141, -4947.88867> 
+			WaitingRoom.angles = <0, 32.8506927, 0>
+			break;
 	}
 	
 	array<LocPair> allSoloLocations
@@ -3471,6 +3477,32 @@ void function _soloModeInit(string mapName)
 				NewLocPair( < 839.514, 191.83, 543.613 >, < 0, 0, 0 > ),
 			
 			]
+			
+			
+			panelLocations = [
+
+			]
+		}
+		else if (mapName == "mp_rr_olympus_mu1")
+		{
+			bMap_mp_rr_olympus_mu1 = true
+			//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  
+			waitingRoomPanelLocation = NewLocPair( <665.5224, -19241.1816, -4947.88916>, <0, -97.6569595, 0> ) //休息区观战面板
+
+			if( file.is3v3Mode )
+			{
+				allSoloLocations = [
+				NewLocPair( <-20382.9375, 28349.0488, -6379.54199>, <0, 42.8024635, 0> ),
+				NewLocPair( <-15628.7354, 33786.6602, -6181.9043>, <0, -144.864426, 0> ),
+				]
+			}
+			else
+			{
+				allSoloLocations = [
+				NewLocPair( <-16998.4922, 11897.5928, -6397.17383>, <0, 69.6194611, 0> ),
+				NewLocPair( <-16332.7354, 13246.3271, -6399.63477>, <0, -115.500526, 0> ),
+				]
+			}
 			
 			
 			panelLocations = [
