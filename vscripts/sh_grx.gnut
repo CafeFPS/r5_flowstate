@@ -2825,16 +2825,13 @@ bool function GRX_IsOfferRestricted( entity player = null )
 		player = GetUIPlayer()
 #endif
 
-	#if(false)
-
-
-#elseif SERVER || CLIENT
+	#if CLIENT
 		Assert( player == GetLocalClientPlayer() )
-		PlayerGRXScriptState grxState = GetPlayerGRXScriptState( player )
-	#else
+	#elseif UI
 		Assert( player == GetUIPlayer() )
-		PlayerGRXScriptState grxState = GetPlayerGRXScriptState( player )
 	#endif
+
+	PlayerGRXScriptState grxState = GetPlayerGRXScriptState( player )
 
 	return grxState.isOfferRestricted
 }
