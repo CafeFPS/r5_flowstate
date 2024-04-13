@@ -59,11 +59,10 @@ global bool g_bPassivesAllowed
 #endif 
 
 
-#if STUB 	
-	
+#if STUB
 	//const
-	const int SQ_MAX_INT_32 = 2147483647;
-	const int SQ_MIN_INT_32 = -2147483647;
+	global const int SQ_MAX_INT_32 = 2147483647;
+	global const int SQ_MIN_INT_32 = -2147483647;
 	
 	//flags
 	global function bAfkToRest
@@ -226,8 +225,8 @@ global float COMMAND_RATE_LIMIT = 0.200 //used in all client commands
 const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
 const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 const int MAX_SAY_MSG = 255;
-const int SQ_MAX_INT_32 = 2147483647;
-const int SQ_MIN_INT_32 = -2147483647;
+global const int SQ_MAX_INT_32 = 2147483647;
+global const int SQ_MIN_INT_32 = -2147483647;
 const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to Player_Has_Access()
 const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
@@ -852,32 +851,32 @@ void function SetPlayerKD( entity player )
 			
 			//set base stats
 			
-			if ( IsNumeric( kills, SQ_MAX_INT_32) )
+			if ( IsNumeric( kills ) )
 			{
 				player_lifetime_kills = kills.tointeger()
 			}
 			
-			if( IsNumeric( deaths, SQ_MAX_INT_32) )
+			if( IsNumeric( deaths ) )
 			{
 				player_lifetime_deaths = deaths.tointeger()
 			}			
 			
-			if ( IsNumeric( glides, SQ_MAX_INT_32) )
+			if ( IsNumeric( glides ) )
 			{
 				player_lifetime_glides = glides.tointeger()
 			}
 			
-			if ( IsNumeric( playtime, SQ_MAX_INT_32) )
+			if ( IsNumeric( playtime ) )
 			{
 				player_lifetime_playtime = playtime.tointeger()
 			}	
 			
-			if ( IsNumeric( gamesplayed, SQ_MAX_INT_32) )
+			if ( IsNumeric( gamesplayed ) )
 			{
 				player_lifetime_gamesplayed = gamesplayed.tointeger()
 			}
 			
-			if ( IsNumeric( synced_score, SQ_MAX_INT_32) )
+			if ( IsNumeric( synced_score ) )
 			{
 				player_lifetime_score = synced_score.tointeger()
 			}
@@ -2907,7 +2906,12 @@ void function Init_NewGame()
 				}
 				
 				return true
-
+				
+			case "testremote":
+			
+				Remote_CallFunction_NonReplay( player, "ServerCallback_SetPersistenceSettings", 1, 2, 3, 4)
+				return true
+				
 			default:
 			
 						Message( player, "Usage", "cc #command #param1 #param2 #para...." )
@@ -3025,7 +3029,7 @@ void function INIT_IntervalMessages()
 				
 				string sm0Match = sM0.tolower()
 				
-				if( IsNumeric( sM0, file.flowstateRoundtime ) && sM1.len() > 0 && sM1.len() < 1000 )
+				if( IsNumeric( sM0, 0, file.flowstateRoundtime ) && sM1.len() > 0 && sM1.len() < 1000 )
 				{
 					try
 					{
@@ -3077,7 +3081,7 @@ void function INIT_IntervalMessages()
 	
 	string loopTime = SQ_GetSetting( "settings.LOOP_MESSAGES_INTERVAL" )
 	
-	if( loopTime != "" && IsNumeric( loopTime, SQ_MAX_INT_32 ) )
+	if( loopTime != "" && IsNumeric( loopTime ) )
 	{
 		int convert = loopTime.tointeger()
 		float iRound10 = ceil(float(convert) / 10.0) * 10
@@ -5201,7 +5205,7 @@ void function UpdateIBMMWaitTime( entity player, string data )
 	
 	float wait_time = 0.0
 	
-	if( IsNumeric( data, SQ_MAX_INT_32 ) )
+	if( IsNumeric( data ) )
 	{
 		wait_time = data.tofloat()
 	}
@@ -6280,41 +6284,88 @@ void function SetDefaultIBMM( entity player )
 	player.p.IBMM_grace_period = f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
 }
 
-bool function IsNum( string str ) 
-{
-	if ( str.len() == 0 )
-		return false
-	
-	int i;
-	var char;
-	for ( i = 0; i < str.len(); i++ ) 
-	{
-		char = str[i];
-		if ( char < '0' || char > '9' ) 
-		{
-			return false;
-		}
-	}
-	
-	return true;
-}
 
 bool function empty( string str )
 {
 	return str == "";
 }
 
-bool function IsNumeric(string str, int limit = 16 ) //TODO default max to sq max int, (change 16 specific calls to 16)
+
+bool function IsNum( string str ) 
+{
+    if ( str.len() == 0 ){ return false }
+	
+    int start = ( str[0] == '-' && str.len() > 1 ) ? 1 : 0;
+    
+	bool dot = false
+	
+	for ( int i = start; i < str.len(); i++ ) 
+	{
+		if (str[i] == '.')
+		{
+			if(dot)
+			{ 
+				return false; 
+			}
+			else 
+			{
+				dot = true;
+			}
+		} 
+		else if (str[i] < '0' || str[i] > '9'){ return false }
+    }
+	
+    return true
+}
+
+int function stringcmp( string a, string b ) 
+{
+    if ( a.len() != b.len() ){ return a.len() < b.len() ? -1 : 1; }
+	
+    for (int i = 0; i < a.len(); ++i) 
+	{
+		if (a[i] != b[i])
+		{
+			return a[i] < b[i] ? -1 : 1;
+		}
+	}
+
+    return 0
+}
+
+bool function IsNumeric( string str, int min = -123, int max = -123 ) 
 {
 
-	if ( !IsNum( str ) ) return false;
+	string minStr = min == -123 ? "-2147483647" : min.tostring()
+	string maxStr = max == -123 ? "2147483647" : max.tostring()
 	
-	int num = 0;
-	try { num = str.tointeger(); } catch (outofrange) { return false; }
+	if ( !IsNum( str ) ) 
+	{
+        return false;
+    }
+    
+    if ( str[0] == '-' ) 
+	{
+        if ( stringcmp( str.slice(1), minStr.slice(1) ) > 0 ) 
+		{
+            return false;
+        }
+    } 
+	else 
+	{
+        if ( stringcmp(str, maxStr) > 0 ) 
+		{
+            return false;
+        }
+    }
+
+    //sqprint( format( "%s", str ) )
 	
-	return ( num >= 0 && num <= limit );
-	
+    return true
 }
+
+
+
 
 bool function IsFloat( string str, float min = SQ_MIN_INT_32, float limit = SQ_MAX_INT_32 ) 
 {
@@ -7196,6 +7247,7 @@ DamageEvent function getEventByPlayerHandle( int handle ){ DamageEvent e; e.last
 void function PIN_Init()
 {
 	//These global bools are initialized here and used in all scripts
+	//TODO: Use only sh file bools instead of globals
 	
 	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;

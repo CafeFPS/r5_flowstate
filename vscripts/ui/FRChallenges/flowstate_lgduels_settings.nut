@@ -1,6 +1,7 @@
 global function InitLGDuelsSettings
 global function OpenLGDuelsSettings
 global function CloseLGDuelsSettings
+global function LoadLgDuelSettings
 
 struct
 {
@@ -17,10 +18,10 @@ void function OpenLGDuelsSettings()
 }
 
 void function CloseLGDuelsSettings()
-{
+{	
 	SetSettingsMenuOpen( false )
 	CloseAllMenus()
-}
+} 
 
 void function InitLGDuelsSettings( var newMenuArg )
 {
@@ -135,10 +136,17 @@ void function OnR5RSB_Open()
 
 void function OnR5RSB_Close()
 {
+	RunClientScript( "LGDuels_SaveToServerPersistence" )
 	CloseLGDuelsSettings()
 }
 
 void function OnR5RSB_NavigateBack()
 {
 	CloseLGDuelsSettings()
+}
+
+void function LoadLgDuelSettings( float s1, int s2, int s3, int s4, float s5, int s6, int s7, int s8  )
+{
+	//printt("Running LGDuels_SetFromPersistence with : ", s1, s2, s3, s4)
+	RunClientScript( "LGDuels_SetFromPersistence", s1, s2, s3, s4, s5, s6, s7, s8 )
 }

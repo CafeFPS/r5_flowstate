@@ -1272,7 +1272,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			int index;
 			int indexMapLen = charIndexMap.len();
 			
-			if( IsNumeric( param, indexMapLen ) )
+			if( IsNumeric( param, 0, indexMapLen ) )
 			{
 				index = param.tointeger()
 			}

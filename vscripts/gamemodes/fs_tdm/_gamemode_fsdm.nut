@@ -7,6 +7,7 @@
 // Zer0Bytes#4428 -- Weapons randomizer rewrite
 // makimakima#5561 -- TDM Saved Weapon List, 1v1 gamemode
 // michae\l/#1125 -- flowstate admin
+// mkos -- tracker / refactoring
 // everyone else -- advice
 
 global function _CustomTDM_Init
@@ -329,18 +330,39 @@ int function GetCurrentRound()
     return file.currentRound;
 }
 
-void function INIT_LGDuels( entity player )
+void function INIT_LGDuels_Player( entity player )
 {
 	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged ) //was thread?why?
 	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
-	AddClientCommandCallback("HITSOUND", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
+	AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
 	player.p.hitsound = HIT_0
 	// CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
 	// CreatePanelText(player, "mkos and @CafeFPS", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
-
 }
 
+void function LgDuelLoadSettings( entity player, string data )
+{
+	if( data == "NA" || data == "" ){ return }
+	
+	array<string> values = split( data, "|" )
+	
+	if( values.len() < 8 ){ return }
+	
+	foreach( str in values )
+	{
+		if( !IsNumeric( str ) )
+		{
+			#if DEVELOPER
+				sqerror("Data for lgduel setting not numeric: " + str + ";Data:" + data )
+			#endif 
+			return
+		}
+	}
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SetLGDuelPesistenceSettings", values[0].tofloat(), values[1].tointeger(), values[2].tointeger(), values[3].tointeger(), values[4].tofloat(), values[5].tointeger(), values[6].tointeger(), values[7].tointeger() )
+
+}
 
 void function Init_IBMM( entity player )
 {
@@ -601,7 +623,7 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 			return true
 		}				
 					
-		if ( args.len() > 0 && !IsNumeric( param ) ){
+		if ( args.len() > 0 && !IsNumeric( param, 0, 16 ) ){
 		
 			Message( player, "Failed", "hitsound must be number 0-16.", 5)
 			return true
@@ -709,7 +731,7 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			return true
 		}				
 					
-		if ( args.len() > 0 && !IsNumeric( param, limit ) )
+		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
 		{
 		
 			Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
@@ -741,6 +763,18 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 		}
 	
 					
+}
+
+bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> args )
+{
+	if( args.len() == 0 ){ return true }
+	
+	#if DEVELOPER 
+	sqprint( "saving:" + args[0])
+	#endif
+	
+	SavePlayerData( player.p.UID, "LgDuelsSetting", args[0] )
+	return true
 }
 
 bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
@@ -1084,6 +1118,10 @@ void function _CustomTDM_Init()
     __InitAdmins()
 
     AddCallback_EntitiesDidLoad( DM__OnEntitiesDidLoad )
+	
+	#if TRACKER && HAS_TRACKER_DLL
+		AddCallback_PlayerData( "LgDuelsSetting", LgDuelLoadSettings )
+	#endif
 
     AddCallback_OnClientConnected( void function(entity player) {
         if (FlowState_SURF())
@@ -1095,7 +1133,7 @@ void function _CustomTDM_Init()
 		
 		if ( g_bLGmode )
 		{
-			INIT_LGDuels( player )
+			INIT_LGDuels_Player( player )
 		}
 		
 		// init for IBMM

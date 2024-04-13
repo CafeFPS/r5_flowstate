@@ -12,6 +12,9 @@ global function NotifyRingTimer
 //Statistics
 global function ServerCallback_OpenStatisticsUI
 
+//Persistence
+global function ServerCallback_SetLGDuelPesistenceSettings
+
 // Voting
 global function ServerCallback_FSDM_OpenVotingPhase
 global function ServerCallback_FSDM_ChampionScreenHandle
@@ -828,6 +831,12 @@ void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 	else
 		thread FSDM_CloseVotingPhase()
 	
+}
+
+void function ServerCallback_SetLGDuelPesistenceSettings( float s1, int s2, int s3, int s4, float s5, int s6, int s7, int s8 )
+{
+	printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
+	RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
 }
 
 void function ServerCallback_FSDM_ChampionScreenHandle(bool shouldOpen, int TeamWon, int skinindex)

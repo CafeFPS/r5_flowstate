@@ -82,7 +82,10 @@ void function RemoteFunctions_Init_Begin()
 			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 			{
 				RegisterNetworkedVariable( "accuracy", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
-				Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")
+				Remote_RegisterClientFunction( "ServerCallback_SetDefaultMenuSettings" )
+				
+				//offset, r, g, b | enemy offset, r, g, b
+				Remote_RegisterClientFunction( "ServerCallback_SetLGDuelPesistenceSettings", "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", -999999.0, 999999.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999 )
 			}
 
 			RegisterNetworkedVariable( "flowstate_DMStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
