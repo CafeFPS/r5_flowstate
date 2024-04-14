@@ -575,7 +575,7 @@ void function AddScoreEventMessage( ScoreEvent scoreEvent, EHI associatedEHI, in
 
 void function Flowstate_AddCustomScoreEventMessage( string eventText, float duration )
 {
-	if(file.flowstateSmallServerMsg != null || eventText == "" )
+	if(file.flowstateSmallServerMsg != null || eventText == "" && file.flowstateSmallServerMsg != null )
 	{
 		RuiDestroyIfAlive( file.flowstateSmallServerMsg )
 		file.flowstateSmallServerMsg = null

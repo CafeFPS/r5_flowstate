@@ -168,10 +168,6 @@ struct
 
 entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
 {
-	#if DEVELOPER
-	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
-	#endif
-	
 	if( !IsValid( observer ) )
 		return null
 	
@@ -181,7 +177,11 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 			observer.StartObserverMode( OBS_MODE_CHASE )
 		return observer.p.respawnPod
 	}
-	
+
+	#if DEVELOPER
+	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
+	#endif
+		
 	//Force teammate observer target when spec_next and spec_prev are used
 	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || GameRules_GetGameMode() == SURVIVAL )
 	{

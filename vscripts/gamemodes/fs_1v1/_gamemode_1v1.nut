@@ -2397,8 +2397,28 @@ void function soloModePlayerToWaitingList( entity player )
 			Signal( player, "PlayerSkyDive" )
 		}
 
-		LocPair waitingRoomLocation = getWaitingRoomLocation()
-		maki_tp_player(player, waitingRoomLocation)
+		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
+		
+		foreach( splayer in playerGroup.team1Players )
+		{
+			if( splayer == player )
+			{
+				printt( "removed player from team 1 ", player )
+				playerGroup.team1Players.removebyvalue( player )
+			}
+		}
+		
+		foreach( splayer in playerGroup.team2Players )
+		{
+			if( splayer == player )
+			{
+				printt( "removed player from team 2 ", player )
+				playerGroup.team2Players.removebyvalue( player )
+			}
+		}
+
+		if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
+			delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
@@ -2409,6 +2429,9 @@ void function soloModePlayerToWaitingList( entity player )
 	playerStruct.player = player
 	playerStruct.waitingTime = Time() + 2
 	playerStruct.handle = player.p.handle
+	
+	if( file.is3v3Mode )
+		playerStruct.waitingTime = Time() + 3
 	
 	//mkos
 	//playerStruct.queue_time = Time()
@@ -2446,12 +2469,7 @@ void function soloModePlayerToWaitingList( entity player )
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
-	if( file.is3v3Mode )
-	{
-		if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
-			delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
-	}	//mkos version
-	else if ( player.p.handle in file.playerToGroupMap )
+	if ( player.p.handle in file.playerToGroupMap && !file.is3v3Mode)
 	{
 		soloGroupStruct group = returnSoloGroupOfPlayer(player);
 		entity opponent = returnOpponentOfPlayer(player);	
@@ -4736,13 +4754,16 @@ void function RechargePlayerAbilities( entity player )
 	}
 }
 
-void function HandleGroupIsFinished( entity player )
+void function HandleGroupIsFinished( entity player, var damageInfo )
 {
 	if( !IsValid( player ) )
 		return
 
 	if( file.is3v3Mode )
 	{
+		if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
+			return
+
 		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
 		int aliveCount1
@@ -4767,17 +4788,6 @@ void function HandleGroupIsFinished( entity player )
 
 		if( aliveCount1 == 0 || aliveCount2 == 0 )
 			group.IsFinished = true //tell solo thread this round has finished
-		else
-		{
-			if( player.Player_IsFreefalling() )
-				Signal( player, "PlayerSkyDive" )
-
-			processRestRequest( player )
-			HolsterAndDisableWeapons( player )
-			LocPair waitingRoomLocation = getWaitingRoomLocation()
-			maki_tp_player(player, waitingRoomLocation)
-			printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-		}
 	} 
 	else
 	{

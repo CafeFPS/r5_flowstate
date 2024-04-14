@@ -1205,9 +1205,11 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
-		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
 		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
 		_soloModeInit(GetMapName())
+
+		if( !is3v3Mode() )
+			AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )	
 	}
 		
 	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
@@ -1915,7 +1917,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		if(IsValid(attacker) && IsValid(victim))
 			victim.p.lastKiller = attacker
 
-		HandleGroupIsFinished( victim )
+		HandleGroupIsFinished( victim, damageInfo )
 		ClearInvincible(victim)
 
 		return
@@ -4084,7 +4086,7 @@ void function SimpleChampionUI()
 			foreach (eachPlayer in GetPlayerArray() )
 			{
 				ResetPlayerStats( eachPlayer )
-				if(!isPlayerInRestingList(eachPlayer))
+				if(!isPlayerInRestingList(eachPlayer)) // shouldn't be isPlayerInRestingList(eachPlayer) ?
 				{
 					soloModePlayerToWaitingList(eachPlayer)
 				}
@@ -4444,7 +4446,9 @@ void function SimpleChampionUI()
 	
 	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 	
-	if( is1v1EnabledAndAllowed() )
+	if( is3v3Mode() )
+		FS_Scenarios_ForceAllRoundsToFinish()
+	else if( is1v1EnabledAndAllowed() )
 		ForceAllRoundsToFinish_solomode()
 	
 	if( SCOREBOARD_ENABLE )

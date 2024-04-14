@@ -1,10 +1,7 @@
 // By @CafeFPS
 
 global function Init_FS_Scenarios
-global function FS_Scenarios_IsPlayerIn3v3Mode
 global function FS_Scenarios_GroupToInProgressList
-global function FS_Scenarios_AddGroup
-global function FS_Scenarios_RemoveGroup
 global function FS_Scenarios_ReturnGroupForPlayer
 global function FS_Scenarios_RespawnIn3v3Mode
 global function FS_Scenarios_Main_Thread
@@ -12,6 +9,7 @@ global function FS_Scenarios_Main_Thread
 global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
 global function FS_Scenarios_GetSkydiveFromDropshipEnabled
+global function FS_Scenarios_ForceAllRoundsToFinish
 
 #if DEVELOPER
 global function DEV_KillAllPlayers
@@ -136,109 +134,74 @@ bool function FS_Scenarios_IsPlayerIn3v3Mode(entity player)
     return ( player.p.handle in file.scenariosPlayerToGroupMap );
 }
 
-void function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup ) 
+bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup, array<entity> players ) 
 {
 	printt( "FS_Scenarios_GroupToInProgressList" )
 
-	array<entity> players
-	players.extend( newGroup.team1Players )
-	players.extend( newGroup.team2Players )
+	int slotIndex = getAvailableRealmSlotIndex()
 
+	if( slotIndex == -1 )
+		return false
+	
 	foreach( player in players )
 	{
-		//!FIXME
-		// if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
-		// {	
-			// //directly assign since we checked. - mkos
-			// soloGroupStruct existingGroup = player.p.handle in file.playerToGroupMap ? file.playerToGroupMap[player.p.handle] : file.playerToGroupMap[opponent.p.handle];
-			
-			// destroyRingsForGroup(existingGroup);
-			
-			// #if DEVELOPER
-			// sqprint("remove group request 02")
-			// #endif
-			
-			// while(mGroupMutexLock) 
-			// {
-				// #if DEVELOPER
-				// sqprint("Waiting for lock to release R002")
-				// #endif
-				// WaitFrame() 
-			// }
-			
-			// removeGroup(existingGroup);
-
-			// return
-		// }
-
-		deleteWaitingPlayer(player.p.handle)
-		deleteSoloPlayerResting(player)
+		if( !IsValid( player ) )
+			continue
+		
+		if( player.p.handle in file.scenariosPlayerToGroupMap )
+		{
+			delete file.scenariosPlayerToGroupMap[ player.p.handle ]
+		}
+		
+		deleteWaitingPlayer( player.p.handle )
+		deleteSoloPlayerResting( player )
 		Message_New( player, "", 1 )
 	}
 
-    int slotIndex = getAvailableRealmSlotIndex();
-    if (slotIndex > -1) 
-	{
-        newGroup.slotIndex = slotIndex;
-        newGroup.groupLocStruct = soloLocations.getrandom()
-		
-		while(mGroupMutexLock) 
-		{
-			#if DEVELOPER
-			sqprint("Waiting for lock to release R001")
-			#endif
-			WaitFrame() 
-		}
-		FS_Scenarios_AddGroup(newGroup); 
-    } 
+	newGroup.slotIndex = slotIndex
+    newGroup.groupLocStruct = soloLocations.getrandom()
+	int groupHandle = GetUniqueID()
 
-    return
-}
+	newGroup.groupHandle = groupHandle
+	newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
 
-void function FS_Scenarios_AddGroup( scenariosGroupStruct newGroup) 
-{
-	if(!IsValid(newGroup))
-	{
-		sqerror("[addGroup]: Logic Flow Error: group is invalid during creation")
-		return
-	}
-	mGroupMutexLock = true
-
-	array<entity> players
-	players.extend( newGroup.team1Players )
-	players.extend( newGroup.team2Players )
-	
 	try 
 	{
-		int groupHandle = GetUniqueID();
-		
-		newGroup.groupHandle = groupHandle
-		newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
-		
-		#if DEVELOPER
-		sqprint(format("adding group: %d", groupHandle ))
-		#endif
 		if( !( groupHandle in file.scenariosGroupsInProgress ) )
 		{
-			bool success = true
-			
-			// Si algún equipo tiene 0 jugadores válidos, no agregar, success sería falso
-			int count = 0
+			#if DEVELOPER
+			sqprint(format("adding group: %d", groupHandle ))
+			#endif
+
 			foreach( player in players )
+			{
+				if( !IsValid( player ) || player.p.handle in file.scenariosPlayerToGroupMap )
+					continue
+
+				file.scenariosPlayerToGroupMap[ player.p.handle] <- newGroup
+
+				if( settings.fs_scenarios_dropshipenabled )
+				{
+					player.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
+				}
+			}
+
+			file.scenariosGroupsInProgress[ groupHandle ] <- newGroup
+
+			foreach( player in newGroup.team1Players )
 			{
 				if( !IsValid( player ) )
 					continue
 
-				file.scenariosPlayerToGroupMap[ player.p.handle] <- newGroup
-				count++
+				SetTeam( player, newGroup.team1Index )
 			}
-			
-			if( count == 0 )
-				success = false
 
-			if(success)
+			foreach( player in newGroup.team2Players )
 			{
-				file.scenariosGroupsInProgress[groupHandle] <- newGroup
+				if( !IsValid( player ) )
+					continue
+
+				SetTeam( player, newGroup.team2Index )
 			}
 		}
 		else 
@@ -246,24 +209,23 @@ void function FS_Scenarios_AddGroup( scenariosGroupStruct newGroup)
 			#if DEVELOPER
 			sqerror(format("Logic flow error, group: [%d] already exists", groupHandle))
 			#endif
+			return false
 		}
-		
-		
 	}
 	catch(e)
 	{
 		#if DEVELOPER
 		sqprint("addGroup crash: " + e)
 		#endif
+		return false
 	}
-	
-	mGroupMutexLock = false
+
+    return true
 }
 
 void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove ) 
-{
-	mGroupMutexLock = true  
-	if(!IsValid(groupToRemove))
+{  
+	if( !IsValid(groupToRemove) )
 	{
 		sqerror("Logic flow error:  groupToRemove is invalid")
 		return
@@ -280,10 +242,21 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		{
 			if( IsValid( player ) && player.p.handle in file.scenariosPlayerToGroupMap )
 			{
+				#if DEVELOPER
+				sqprint(format("removing player in progress: %d", player) )
+				#endif
 				delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 			}
 		}
-
+	}
+	catch(e)
+	{	
+		#if DEVELOPER
+		sqprint( "remove player in progress crash: " + e )
+		#endif
+	}
+	
+	try{
 		if( groupToRemove.groupHandle in file.scenariosGroupsInProgress )
 		{
 			#if DEVELOPER
@@ -298,14 +271,12 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 			#endif
 		}
 	}
-	catch(e)
+	catch(e2)
 	{	
 		#if DEVELOPER
-		sqprint( "removeGroup crash: " + e )
+		sqprint( "removeGroup crash: " + e2 )
 		#endif
 	}
-	
-	mGroupMutexLock = false
 }
 
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
@@ -341,14 +312,13 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 
 void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex = -1, bool fromDropship = false )
 {
-	EndSignal( player, "OnDeath" )
+	if ( !IsValid(player) )
+		return
+	
+	if ( !player.p.isConnected )
+		return
 
-	if (!IsValid(player)) return
-	
-	if ( !player.p.isConnected ) return //crash fix mkos
-	
-	// printt("respawnInSoloMode!")
-	// Warning("respawn player: " + player.GetPlayerName())
+	// EndSignal( player, "OnDeath" )
 
    	if( player.p.isSpectating )
     {
@@ -361,22 +331,12 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
         player.MakeVisible()
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
-    }//disable replay mode
+    }
 
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 
-   	if( isPlayerInRestingList(player) )
+   	if( isPlayerInRestingList( player ) )
 	{	
-		/*
-		try 
-		{
-			DoRespawnPlayer( player, null ) //mkos
-		}
-		catch(o){sqprint("Caught an error that would crash the server")}
-		*/
-		
-		
-		// Warning("resting respawn")
 		try
 		{
 			DecideRespawnPlayer(player, true)
@@ -386,7 +346,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 			#if DEVELOPER
 			sqprint("Caught an error that would crash the server" + erroree)
 			#endif
-			// printt("fail to respawn")
 		}
 	
 		LocPair waitingRoomLocation = getWaitingRoomLocation()
@@ -403,7 +362,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		FS_ClearRealmsAndAddPlayerToAllRealms( player )
 
 		return
-	}//玩家在休息模式
+	}
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
 
@@ -412,18 +371,12 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		#if DEVELOPER
 		sqerror("group was invalid, err 007")
 		#endif
-		return //Is this group available
+		return
 	}
 
 	if ( respawnSlotIndex == -1 ) 
 		return
-	
-	/*try 	
-	{
-		DoRespawnPlayer( player, null ) //mkos
-	}
-	catch(o){sqprint("Caught an error that would crash the server")}
-	*/
+
 	if( !settings.fs_scenarios_dropshipenabled )
 	{
 		try
@@ -438,9 +391,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 			// Warning("fail to respawn")
 		}
 	}
-	
-	// GivePlayerCustomPlayerModel( player )
-	
+
 	// if dropship enabled
 	if( settings.fs_scenarios_dropshipenabled && fromDropship )
 	{
@@ -452,7 +403,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	}
 
 	Message_New( player, "Kill and win to get points in the global match", 5 )
-	int index = group.slotIndex
+
 	#if DEVELOPER
 	#else
 	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
@@ -474,21 +425,16 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	//re-enable for inventory. 
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] ) //TODO: set array to list of custom attachments if any - mkos
-	
-	// wait 0.1
-	// ReCheckGodMode(player)
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 {
     WaitForGameState(eGameState.Playing)
 
-	string Text5 = "FLOWSTATE SCENARIOS GAME STARTED" 
-
 	OnThreadEnd(
 		function() : (  )
 		{
-			// Warning(Time() + "Solo thread is down!!!!!!!!!!!!!!!")
+			Warning(Time() + "Solo thread is down!!!!!!!!!!!!!!!")
 			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 		}
 	)
@@ -496,11 +442,21 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 	while(true)
 	{
 		WaitFrame()
+
+		// Recién conectados
+		foreach ( player in GetPlayerArray() )
+		{
+			if( !IsValid( player ) ) 
+				continue
+
+			// New player connected
+			if( player.p.isConnected && !isPlayerInWaitingList( player) && !isPlayerInRestingList( player ) && !FS_Scenarios_IsPlayerIn3v3Mode( player ) )
+			{
+				soloModePlayerToWaitingList(player)
+			}
+		}
 		
-		if( GetScoreboardShowingState() )
-			continue
-		
-		//cycle waiting queue
+		//Los jugadores que están en la sala de espera no se pueden alejar mucho de ahí
 		foreach ( playerHandle, playerInWaitingStruct in FS_1v1_GetPlayersWaiting() )
 		{
 			if ( !IsValid( playerInWaitingStruct.player ) )
@@ -509,32 +465,28 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				continue
 			}
 
-			//timeout preferred matchmaking 
-			if (playerInWaitingStruct.waitingTime < Time() && !playerInWaitingStruct.IsTimeOut && IsValid(playerInWaitingStruct.player))
-			{
-				playerInWaitingStruct.IsTimeOut = true;
-			}
-		}//foreach
+			float t_radius = 600;
 
-		array<scenariosGroupStruct> groupsToRemove;
-		bool quit;
-		bool removed;
-		
+			if( Distance2D( playerInWaitingStruct.player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
+			{
+				maki_tp_player( playerInWaitingStruct.player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( playerInWaitingStruct.player )
+			}
+		}
+
+		array<scenariosGroupStruct> groupsToRemove
+
 		foreach( groupHandle, group in file.scenariosGroupsInProgress ) 
 		{
-			quit = false
-			removed = false
-
-			if(!IsValid(group))
-			{
-				removed = true
-			}
+			if( !IsValid( group ) )
+				continue
 
 			array<entity> players
 			players.extend( group.team1Players )
 			players.extend( group.team2Players )
 
-			if( !removed && !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+			//Anuncio que la ronda individual está a punto de terminar
+			if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
 			{
 				foreach( player in players )
 				{
@@ -546,8 +498,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				group.showedEndMsg = true
 			}
 
-			// Acabó la ronda, todos los jugadores de un equipo murieron
-			if ( !removed && group.IsFinished || !removed && !group.IsFinished && Time() > group.endTime )
+			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
+			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
 			{
 				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
 
@@ -565,149 +517,65 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					}
 	
 					soloModePlayerToWaitingList( player )
-					// processRestRequest( player )
 					HolsterAndDisableWeapons( player )
 				}
 
-				#if DEVELOPER
-				sqprint("remove group request 04")
-				#endif
-				
-				while(mGroupMutexLock) 
-				{
-					#if DEVELOPER
-					sqprint("Waiting for lock to release R004")
-					#endif
-					WaitFrame() 
-				}
-				
 				groupsToRemove.append(group)
-				quit = true
 			}
 
-			// Si todos los jugadores de un equipo son inválidos, mandar el otro equipo a la lista de espera
-			//implement processRestRequest
-			int check = 0
-			foreach( player in group.team1Players )
+			// No se pueden alejar mucho de la zona de juego
+			soloLocStruct groupLocStruct = group.groupLocStruct
+			vector Center = groupLocStruct.Center
+
+			foreach( player in players )
 			{
-				if( IsValid( player ) || !IsAlive( player ) )
-					check++
-			}
-			if( check == 0 )
-			{
-				if(!removed)
+				if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+				
+				//Se murió, a la sala de espera
+				if( !IsAlive( player ) )
 				{
-					foreach( player in group.team2Players )
-					{
-						if( !IsValid( player ) )
-							continue
-	
-						// if(processRestRequest( player )){ continue }
-
-						soloModePlayerToWaitingList(player)
-						HolsterAndDisableWeapons( player )
-					}
-
-					SetIsUsedBoolForRealmSlot(group.slotIndex, false);
+					soloModePlayerToWaitingList( player )
+					DecideRespawnPlayer( player, false )
+					HolsterAndDisableWeapons( player )
+					printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+					continue
 				}
-				groupsToRemove.append( group)
+				player.p.lastDamageTime = Time() //avoid player regen health
 
-				quit = true
-			}
+				if ( player.IsPhaseShifted() )
+					continue
 
-			check = 0
-			foreach( player in group.team2Players )
-			{
-				if( IsValid( player ) || !IsAlive( player ) )
-					check++
-			}
-			if( check == 0 )
-			{				
-				if(!removed)
+				if( Distance2D( player.GetOrigin(),Center) > 6000 ) //检测乱跑的脑残
 				{
-					foreach( player in group.team1Players )
-					{
-						if( !IsValid( player ) )
-							continue
-
-						// if(processRestRequest( player )){ continue }
-						
-						soloModePlayerToWaitingList(player)
-						HolsterAndDisableWeapons( player )
-					}
-
-					SetIsUsedBoolForRealmSlot(group.slotIndex, false);
-				}
-				groupsToRemove.append( group)
-
-				quit = true
-			}
-
-			// Que no se se vayan de la zona
-			if(!removed && !quit)
-			{
-				soloLocStruct groupLocStruct = group.groupLocStruct
-				vector Center = groupLocStruct.Center
-
-				foreach (eachPlayer in players )
-				{
-					if( !IsValid(eachPlayer) || IsValid( eachPlayer.p.respawnPod ) || !IsAlive( eachPlayer ) ) continue
-					eachPlayer.p.lastDamageTime = Time() //avoid player regen health
-
-					if ( eachPlayer.IsPhaseShifted() )
-						continue
-
-					if(Distance2D(eachPlayer.GetOrigin(),Center) > 6000) //检测乱跑的脑残
-					{
-						Remote_CallFunction_Replay( eachPlayer, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-						eachPlayer.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-						// printt( eachPlayer, " TOOK DAMAGE", Distance2D(eachPlayer.GetOrigin(),Center) )
-					}
+					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+					player.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
 				}
 			}
 		}//foreach
 
 		foreach ( group in groupsToRemove )
-		{	
-			#if DEVELOPER
-			sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
-			#endif 
-			while(mGroupMutexLock) 
-			{	
-				#if DEVELOPER
-				sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
-				#endif
-				WaitFrame() 
-			}
-			if(IsValid(group))
-			{
-				FS_Scenarios_RemoveGroup(group)
-			}
-			else 
-			{
-				#if DEVELOPER
-				sqerror("Invalid group cannot be removed by reference alone")
-				#endif
-			}
+		{
+			FS_Scenarios_RemoveGroup(group)
 		}
 
 		if( groupsToRemove.len() > 0 )
 			continue
 
 		// Revivir jugadores muertos que están descansando ( No debería pasar, pero por si acaso )
-		foreach ( restingPlayerHandle,restingStruct in FS_1v1_GetPlayersResting() )
+		foreach ( restingPlayerHandle, restingStruct in FS_1v1_GetPlayersResting() )
 		{
-			if(!restingPlayerHandle)
+			if( !restingPlayerHandle )
 			{	
 				sqerror("Null handle")
-					continue
+				continue
 			}
 			
-			entity restingPlayerEntity = GetEntityFromEncodedEHandle(restingPlayerHandle)
+			entity restingPlayerEntity = GetEntityFromEncodedEHandle( restingPlayerHandle )
 			
-			if(!IsValid(restingPlayerEntity)) continue
+			if( !IsValid(restingPlayerEntity) ) continue
 
-			if(!IsAlive(restingPlayerEntity)  )
+			if( !IsAlive(restingPlayerEntity)  )
 			{	
 				thread FS_Scenarios_RespawnIn3v3Mode(restingPlayerEntity)
 			}
@@ -716,154 +584,89 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			HolsterAndDisableWeapons( restingPlayerEntity )
 		}
 
-		// Los jugadores que están en la sala de espera no se pueden alejar mucho de ahí
-		foreach ( player in GetPlayerArray() )
-		{
-			if( !IsValid( player ) ) 
+		if( GetScoreboardShowingState() )
 				continue
 
-			// New player connected
-			if( player.p.isConnected && !isPlayerInWaitingList( player) && !isPlayerInRestingList( player ) && !FS_Scenarios_IsPlayerIn3v3Mode( player ) )
-			{
-				// player.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
-				// DecideRespawnPlayer(player, true)
-				soloModePlayerToWaitingList(player)
-				continue
-			}
-
-			if( FS_Scenarios_IsPlayerIn3v3Mode( player ) )
-				continue
-
-			float t_radius = 600;
-
-			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
-			{
-				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons( player )
-			}
-		}
-
-		// Esperar a que hayan 6 jugadores, reworkear esto para que se espere al menos 4, si hay 5 esperar un 6.
+		// Hay suficientes jugadores para crear un equipo?
 		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
-		{	
-			
-			//mkos
-			foreach ( player, solostruct in FS_1v1_GetPlayersWaiting() )
-			{			
-				if ( !IsValid( player ) )
-				{
-					continue
-				}
-				
-				if(!IsValid(solostruct) || !IsValid(solostruct.player))
-				{
-					continue
-				}
-				
-				Remote_CallFunction_NonReplay( solostruct.player, "ForceScoreboardLoseFocus" );
-				// Message_New( solostruct.player, "Waiting for players...", 4 )
-				// CreatePanelText(solostruct.player, "", "Waiting for\n   players...",IBMM_WFP_Coordinates(),IBMM_WFP_Angles(), false, 2.5, solostruct.player.p.handle )
-				// SetMsg( solostruct.player, false )
-			}
 			continue		
+
+		scenariosGroupStruct newGroup
+		table<int, soloPlayerStruct> waitingPlayersShuffledTable = FS_1v1_GetPlayersWaiting()
+		array<entity> waitingPlayers
+
+		foreach ( playerHandle, eachPlayerStruct in waitingPlayersShuffledTable )
+		{	
+			if( !IsValid(eachPlayerStruct) )
+				continue				
+			
+			entity player = eachPlayerStruct.player
+			
+			if( !IsValid( player ) )
+				continue
+
+			if( Time() < eachPlayerStruct.waitingTime )
+				continue
+
+			waitingPlayers.append( player )
 		}
 
-		printt("------------------more than 6 (cambiar a 4 ) player in solo waiting array,matching------------------")
-		scenariosGroupStruct newGroup
-		entity opponent
-		bool bMatchFound = false
+		// Hay suficientes jugadores para crear un equipo?
+		if( waitingPlayers.len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
+			continue	
 
-		// mkos please add proper matchmaking for teams lol
-		foreach ( playerHandle, eachPlayerStruct in FS_1v1_GetPlayersWaiting() )
-		{	
-			if(!IsValid(eachPlayerStruct))
-			{
-				continue
-			}					
-			
-			entity playerSelf = eachPlayerStruct.player
-			float selfKd = eachPlayerStruct.kd
-			
+		Assert( waitingPlayers.len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
+
+		printt("------------------MATCHING GROUP------------------")
+
+		waitingPlayers.randomize()
+
+		// mkos please add proper matchmaking for teams lol	
+		foreach( player in waitingPlayers )
+		{
 			//Temp !FIXME
 			if( newGroup.team1Players.len() < settings.fs_scenarios_playersPerTeam )
-				newGroup.team1Players.append( playerSelf )
+				newGroup.team1Players.append( player )
 			else if( newGroup.team2Players.len() < settings.fs_scenarios_playersPerTeam )
-				newGroup.team2Players.append( playerSelf )
+				newGroup.team2Players.append( player )
 		}
-		
-		if( newGroup.team1Players.len() > 0 && newGroup.team2Players.len() > 0 )
-		{
-			newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
-			newGroup.team2Index = FS_Scenarios_GetAvailableTeamSlotIndex()
 
-			foreach( player in newGroup.team1Players )
-			{
-				SetTeam( player, newGroup.team1Index )
-			}
+		newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
+		newGroup.team2Index = FS_Scenarios_GetAvailableTeamSlotIndex()
 
-			foreach( player in newGroup.team2Players )
-			{
-				SetTeam( player, newGroup.team2Index )
-			}
-
-			printt( "available team 1:", newGroup.team1Index )
-			printt( "available team 2:", newGroup.team2Index )
-			
-			bMatchFound = true
-		}
 		array<entity> players
 		players.extend( newGroup.team1Players )
 		players.extend( newGroup.team2Players )
 
-		// Si todos los jugadores de un equipo son inválidos, mandar el otro equipo a la lista de espera
-		int check = 0
-		foreach( player in newGroup.team1Players )
+		bool success = FS_Scenarios_GroupToInProgressList( newGroup, players )
+		
+		if( !success )
 		{
-			if( IsValid( player ) )
-				check++
-		}
-		if( check == 0 )
-		{
-			foreach( player in newGroup.team2Players )
+			FS_Scenarios_RemoveGroup( newGroup )
+			foreach( player in players )
 			{
-				
+				if( !IsValid( player ) )
+					continue
+
 				soloModePlayerToWaitingList(player)
 			}
 			continue
 		}
-
-		check = 0
-		foreach( player in newGroup.team2Players )
-		{
-			if( IsValid( player ) )
-				check++
-		}
-		if( check == 0 )
-		{
-			foreach( player in newGroup.team1Players )
-			{
-				
-				soloModePlayerToWaitingList(player)
-			}
-			continue
-		}
-
-		//Emparejamos al menos cuatro jugadores
-		thread FS_Scenarios_GroupToInProgressList( newGroup )
+		
+		//Send teams to fight
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
 
-		foreach (index,eachPlayer in players )
+		foreach ( entity player in players )
 		{
-			eachPlayer.p.notify = false
-			eachPlayer.p.destroynotify = true
-			FS_SetRealmForPlayer( eachPlayer, newGroup.slotIndex )
-			thread FS_Scenarios_RespawnIn3v3Mode(eachPlayer, eachPlayer.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+			if( !IsValid( player ) )
+				return
 
-			// if( settings.fs_scenarios_dropshipenabled )
-			// {
-				// eachPlayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
-			// }
+			player.p.notify = false
+			player.p.destroynotify = true
+			FS_SetRealmForPlayer( player, newGroup.slotIndex )
+
+			thread FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
 		}
 
 		if( settings.fs_scenarios_dropshipenabled )
@@ -921,6 +724,41 @@ void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
 	if(!IsValid(group)) return
 	if(!IsValid(group.ring)) return
 	group.ring.Destroy()
+}
+
+void function FS_Scenarios_ForceAllRoundsToFinish()
+{
+	foreach(player in GetPlayerArray())
+	{
+		if(!IsValid(player)) continue
+		
+		try{
+			if(player.p.isSpectating)
+			{
+				player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+				player.p.isSpectating = false
+				player.SetSpecReplayDelay( 0 )
+				player.SetObserverTarget( null )
+				player.StopObserverMode()
+				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				player.MakeVisible()
+				player.ClearInvulnerable()
+				player.SetTakeDamageType( DAMAGE_YES )
+			}
+		}catch(e420){}
+		
+		if(isPlayerInWaitingList(player))
+		{
+			continue
+		}
+
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 	
+		if( IsValid( group ) )
+		{
+			FS_Scenarios_DestroyRingsForGroup(group)		
+			group.IsFinished = true //tell solo thread this round has finished
+		}
+	}
 }
 
 #if DEVELOPER

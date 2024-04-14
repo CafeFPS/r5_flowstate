@@ -1109,7 +1109,6 @@ void function PingNearestRespawnBeacon( entity player, vector origin )
 void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int pos, vector teleportOrigin )
 {
 	ship.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnDeath" )
 
 	dropshipAnimData animData = file.dropshipAnimDataList[ pos ]
 
@@ -1131,11 +1130,11 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
-	// if( GetCurrentPlaylistName() == "fs_scenarios" )
-	// {
-		// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-		// AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-	// }
+	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	{
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
+	}
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
 
 	entity dummyEnt = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl" ) // TODO: use generic model.  Can't use player settings here since they could be a spectator
@@ -1183,8 +1182,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 				if( GetCurrentPlaylistName() == "fs_scenarios" )
 				{
-					// RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-					// RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
+					RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+					RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 					GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
 					Signal( player, "PlayerDroppedFromDropship" )
 

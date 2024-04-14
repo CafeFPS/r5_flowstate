@@ -57,7 +57,7 @@ void function OnPlayerCreated( entity player )
 void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 {
 	#if DEVELOPER
-	//printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
+	printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
 	#endif
 
 	if ( PlayerShouldHaveUnitFrame( player ) )
@@ -113,7 +113,7 @@ void function OnViewPlayerChanged( entity newViewPlayer )
 
 void function UpdateRUITest()
 {
-	RefreshUnitframesForPlayer(GetLocalClientPlayer())
+	RefreshUnitframesForPlayer( GetLocalViewPlayer() )
 	thread InitSurvivalHealthBar()
 }
 
