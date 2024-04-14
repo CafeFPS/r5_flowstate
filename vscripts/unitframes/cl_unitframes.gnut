@@ -131,7 +131,7 @@ void function RefreshUnitframesForPlayer( entity player )
 
 	foreach ( unitframePlayer, unitFrame in file.teamUnitFrames )
 	{
-		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && GameRules_GetGameMode() == "fs_snd" || unitframePlayer.GetTeam() != playerTeam || playerTeam == 2 && GetCurrentPlaylistName() == "fs_scenarios" )
+		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && GameRules_GetGameMode() == "fs_snd" || unitframePlayer.GetTeam() != playerTeam )
 		{
 			playersToRemove.append( unitframePlayer )
 		}

@@ -240,8 +240,8 @@ void function SurvivalFreefall_Init()
 		AddCallback_OnClientDisconnected( OnPlayerDisconnected )
 		AddClientCommandCallback( "StopFreefallFollowMode", ClientCommand_StopFreefallFollowMode )
 
-		AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
-		AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
+		// AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
+		// AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
 		file.skydiveSmokeColors.randomize()
 	#endif
 
@@ -464,12 +464,12 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 				}
 
 				player.p.skydiveFreelookEnabled = 0
-				if ( player.Player_IsFreefalling() && player.Player_IsFreefallAnticipating() )
-				{
+				if( player.Player_IsFreefallAnticipating() )
 					player.Player_EndFreefallAnticipate()
+
+				if ( player.Player_IsFreefalling() )
 					player.Player_EndFreefall()
-					player.Anim_Stop()
-				}
+
 				player.p.isSkydiving = false
 
 				HeatMapStat( player, "Sur_Skydive_Landing", player.GetOrigin() )

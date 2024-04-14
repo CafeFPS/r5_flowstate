@@ -41,6 +41,9 @@ void function SetGameState( int newState )
 	svGlobal.levelEnt.Signal( "GameStateChanged" )
 	SetServerVar( "gameState", newState )
 
+	if( Flag( "EntitiesDidLoad" ) && GameRules_GetGameMode() != SURVIVAL )
+		SetGlobalNetInt( "gameState", newState )
+
 	// added in AddCallback_GameStateEnter
 	foreach ( callbackFunc in svGlobal.gameStateEnterCallbacks[ newState ] )
 	{

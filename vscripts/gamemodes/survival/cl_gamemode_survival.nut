@@ -330,6 +330,7 @@ void function ClGamemodeSurvival_Init()
 	RegisterSignal( "DroppodLanded" )
 	RegisterSignal( "SquadEliminated" )
 	RegisterSignal( "RestartLaserSightThread" )
+	RegisterSignal( "InitSurvivalHealthBarReset" )
 	FlagInit( "SquadEliminated" )
 
 	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_survival.rpak" )
@@ -817,6 +818,9 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
+	Signal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
+	EndSignal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
+
 	entity player = GetLocalViewPlayer()
 	
 	// if( GameRules_GetGameMode() != SURVIVAL )

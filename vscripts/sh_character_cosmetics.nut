@@ -718,6 +718,12 @@ array<ItemFlavor> function GetAllSkydiveEmotesForCharacter(entity player)
 table<int,ItemFlavor> function GetValidPlayerSkydiveEmotes( entity player )
 {
 	table<int,ItemFlavor> emotes
+
+	#if CLIENT || SERVER
+	if( GameRules_GetGameMode() != SURVIVAL )
+		return emotes
+	#endif
+
 	array<ItemFlavor> emotes2 = GetAllSkydiveEmotesForCharacter(player)
 	
 	for ( int i=0; i<emotes2.len(); i++ )

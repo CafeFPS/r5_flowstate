@@ -3594,10 +3594,22 @@ void function SetTeam( entity ent, int team )
 		}
 		else
 		{
+			int oldTeam = ent.GetTeam()
 			ent.Code_SetTeam( team )
-			
-			if( ent.IsPlayer() && IsAlive(ent) && ent.p.isConnected )
-				Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
+
+			if( ent.IsPlayer() )
+			{
+				foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
+				{
+					if( IsValid( player ) && player.p.isConnected && IsAlive(player) )
+						Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
+				}
+				foreach ( player in GetPlayerArrayOfTeam( team ) )
+				{
+					if( IsValid( player ) && player.p.isConnected && IsAlive(player) )
+						Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
+				}
+			}
 		}
 	#endif
 }

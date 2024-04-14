@@ -2265,10 +2265,18 @@ void function soloModePlayerToWaitingList( entity player )
 		return
 	}
 	
-	// if( file.is3v3Mode )
-	// {
-		// SetTeam( player, TEAM_MULTITEAM_FIRST )
-	// }
+	if( file.is3v3Mode )
+	{
+		SetTeam( player, TEAM_SPECTATOR )
+
+		if( player.Player_IsFreefalling() )
+		{
+			Signal( player, "PlayerSkyDive" )
+		}
+
+		LocPair waitingRoomLocation = getWaitingRoomLocation()
+		maki_tp_player(player, waitingRoomLocation)
+	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
 
@@ -2314,50 +2322,36 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 
-	//检查InProgress是否存在该玩家
 	// Check if the player is part of any group
-	
 	if( file.is3v3Mode )
 	{
-		if ( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() ) 
-		{
-			scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player);
-
-			if(!IsValid(group))
-			{
-				FS_Scenarios_RemoveGroup(group);
-			}
-			
-			soloModePlayerToWaitingList(player); 
-		}
+		if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
+			delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 	}	//mkos version
-	else
-	{	
-		if ( player.p.handle in file.playerToGroupMap ) 
+	else if ( player.p.handle in file.playerToGroupMap )
+	{
+		soloGroupStruct group = returnSoloGroupOfPlayer(player);
+		entity opponent = returnOpponentOfPlayer(player);	
+		
+		if(mGroupMutexLock)
+		{ 
+			sqerror("tried to modify groups in use")
+			throw "tried to modify groups in use.";
+		}
+		else if(!IsValid(group))
 		{
-			soloGroupStruct group = returnSoloGroupOfPlayer(player);
-			entity opponent = returnOpponentOfPlayer(player);	
-			
-			if(mGroupMutexLock)
-			{ 
-				sqerror("tried to modify groups in use")
-				throw "tried to modify groups in use.";
-			}
-			else if(!IsValid(group))
-			{
-				#if DEVELOPER
-				sqprint("remove group request 01")
-				#endif
-				destroyRingsForGroup(group);
-				removeGroup(group);
-			}
-			
-			soloModePlayerToWaitingList(player); 
-			
-			if (IsValid(opponent)) 
-			{
-				soloModePlayerToWaitingList(opponent);
-			}
+			#if DEVELOPER
+			sqprint("remove group request 01")
+			#endif
+			destroyRingsForGroup(group);
+			removeGroup(group);
+		}
+		
+		soloModePlayerToWaitingList(player); 
+		
+		if (IsValid(opponent)) 
+		{
+			soloModePlayerToWaitingList(opponent);
 		}
 	}
 	
@@ -2502,6 +2496,13 @@ void function soloModePlayerToRestingList(entity player)
 void function soloModefixDelayStart(entity player)
 {	
 	string tracker = "";
+
+	TakeAllPassives( player )
+	TakeAllWeapons( player )
+	HolsterAndDisableWeapons(player)
+	
+	if( file.is3v3Mode )
+		return
 	
 	#if HAS_TRACKER_DLL && TRACKER
 		tracker = "       Tracker Edition";
@@ -2511,8 +2512,6 @@ void function soloModefixDelayStart(entity player)
 		Message(player, format( file.is3v3Mode == true ? "加载中 FS Scenarios %s\n\n\n" : "加载中 FS 1v1 %s\n\n\n", tracker ) )
 	else
 		Message(player, format(file.is3v3Mode == true ? "Flowstate Scenarios %s\n\n\n" : "Flowstate 1v1 %s\n\n\n", tracker ) )
-	
-	HolsterAndDisableWeapons(player)
 	
 	wait 12
 	
@@ -3453,7 +3452,11 @@ void function soloModeThread(LocPair waitingRoomLocation)
 					foreach (eachPlayer in players )
 					{
 						if(!IsValid(eachPlayer)) continue
+
 						eachPlayer.p.lastDamageTime = Time() //avoid player regen health
+
+						if ( eachPlayer.IsPhaseShifted() )
+							continue
 
 						if(Distance2D(eachPlayer.GetOrigin(),Center) > 2000) //检测乱跑的脑残
 						{
@@ -4579,6 +4582,9 @@ void function RechargePlayerAbilities( entity player )
 
 void function HandleGroupIsFinished( entity player )
 {
+	if( !IsValid( player ) )
+		return
+
 	if( file.is3v3Mode )
 	{
 		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
@@ -4605,6 +4611,17 @@ void function HandleGroupIsFinished( entity player )
 
 		if( aliveCount1 == 0 || aliveCount2 == 0 )
 			group.IsFinished = true //tell solo thread this round has finished
+		else
+		{
+			if( player.Player_IsFreefalling() )
+				Signal( player, "PlayerSkyDive" )
+
+			processRestRequest( player )
+			HolsterAndDisableWeapons( player )
+			LocPair waitingRoomLocation = getWaitingRoomLocation()
+			maki_tp_player(player, waitingRoomLocation)
+			printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+		}
 	} 
 	else
 	{

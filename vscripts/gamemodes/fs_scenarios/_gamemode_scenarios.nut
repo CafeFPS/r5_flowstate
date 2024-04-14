@@ -11,6 +11,11 @@ global function FS_Scenarios_Main_Thread
 
 global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
+global function FS_Scenarios_GetSkydiveFromDropshipEnabled
+
+#if DEVELOPER
+global function DEV_KillAllPlayers
+#endif
 
 global struct scenariosGroupStruct
 {
@@ -27,7 +32,8 @@ global struct scenariosGroupStruct
 	int team2Index
 
 	bool IsFinished = false
-	float startTime
+	float endTime
+	bool showedEndMsg = false
 }
 
 struct {
@@ -39,14 +45,14 @@ struct {
 	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = 3
 
-	float fs_scenarios_endgame_time_remaining = 300
-	float fs_scenarios_max_queuetime
+	float fs_scenarios_maxIndividualMatchTime = 300
+	float fs_scenarios_max_queuetime = 150
 	int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
 	int fs_scenarios_maximum_team_allowed = 3
-	int fs_scenarios_max_fight_teams = 1
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
+	bool fs_scenarios_start_skydiving = true
 } settings
 
 array< bool > teamSlots
@@ -54,6 +60,14 @@ array< bool > teamSlots
 void function Init_FS_Scenarios()
 {
 	settings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
+	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
+	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
+	settings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
+	settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
+
+	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", false )
+	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", false ) // used only when max_queuetime is triggered
+	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -63,6 +77,7 @@ void function Init_FS_Scenarios()
 	{
 		teamSlots[ i ] = false
 	}
+	SurvivalFreefall_Init()
 }
 
 table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
@@ -73,6 +88,11 @@ table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
 table<int, scenariosGroupStruct> function FS_Scenarios_GetPlayerToGroupMap()
 {
 	return file.scenariosPlayerToGroupMap
+}
+
+bool function FS_Scenarios_GetSkydiveFromDropshipEnabled()
+{
+	return settings.fs_scenarios_start_skydiving
 }
 
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
@@ -92,9 +112,9 @@ void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
 
 int function FS_Scenarios_GetAvailableTeamSlotIndex()
 {
-	for( int slot = 1; slot < teamSlots.len(); slot++ )
+	for( int slot = 3; slot < teamSlots.len(); slot++ )
 	{
-		if( !teamSlots[slot] )
+		if( teamSlots[slot] == false )
 		{
 			FS_Scenarios_SetIsUsedBoolForTeamSlot( slot, true )
 			return slot
@@ -193,7 +213,7 @@ void function FS_Scenarios_AddGroup( scenariosGroupStruct newGroup)
 		int groupHandle = GetUniqueID();
 		
 		newGroup.groupHandle = groupHandle
-		newGroup.startTime = Time()
+		newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
 		
 		#if DEVELOPER
 		sqprint(format("adding group: %d", groupHandle ))
@@ -319,7 +339,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	return group;
 }
 
-void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex = -1)
+void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex = -1, bool fromDropship = false )
 {
 	EndSignal( player, "OnDeath" )
 
@@ -368,12 +388,11 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 			#endif
 			// printt("fail to respawn")
 		}
-		
-		SetTeam( player, 2 )
+	
 		LocPair waitingRoomLocation = getWaitingRoomLocation()
 		if (!IsValid(waitingRoomLocation)) return
 		
-		GivePlayerCustomPlayerModel( player )
+		// GivePlayerCustomPlayerModel( player )
 		maki_tp_player(player, waitingRoomLocation)
 		player.MakeVisible()
 		player.ClearInvulnerable() // !FIXME
@@ -423,17 +442,16 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	// GivePlayerCustomPlayerModel( player )
 	
 	// if dropship enabled
-	if( settings.fs_scenarios_dropshipenabled )
+	if( settings.fs_scenarios_dropshipenabled && fromDropship )
 	{
 		WaitSignal( player, "PlayerDroppedFromDropship" )
-		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-	} else
+	} else if( !settings.fs_scenarios_dropshipenabled && fromDropship )
 	{
 		soloLocStruct groupLocStruct = group.groupLocStruct
 		maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
 	}
 
-	Message_New( player, "Kill the enemy team and survive to earn points in the global match round", 5 )
+	Message_New( player, "Kill and win to get points in the global match", 5 )
 	int index = group.slotIndex
 	#if DEVELOPER
 	#else
@@ -441,12 +459,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	#endif
 
 	if(!IsValid(player)) return
-	
-	//debug
-	FS_SetRealmForPlayer( player, index )
-	player.kv.solid = SOLID_VPHYSICS
-	player.SetTakeDamageType( DAMAGE_YES )
-	//debug
 
 	Inventory_SetPlayerEquipment( player, "armor_pickup_lv3", "armor")
 	
@@ -469,11 +481,9 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 {
-	//printt("solo mode thread start!")
+    WaitForGameState(eGameState.Playing)
 
 	string Text5 = "FLOWSTATE SCENARIOS GAME STARTED" 
-
-	wait 8
 
 	OnThreadEnd(
 		function() : (  )
@@ -519,14 +529,26 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				removed = true
 			}
-			
-			// Acabó la ronda, todos los jugadores de un equipo murieron
-			if ( !removed && group.IsFinished )
-			{
-				array<entity> players
-				players.extend( group.team1Players )
-				players.extend( group.team2Players )
 
+			array<entity> players
+			players.extend( group.team1Players )
+			players.extend( group.team2Players )
+
+			if( !removed && !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+			{
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Message_New( player, "Scenario will end in 30 seconds",  5 )
+				}
+				group.showedEndMsg = true
+			}
+
+			// Acabó la ronda, todos los jugadores de un equipo murieron
+			if ( !removed && group.IsFinished || !removed && !group.IsFinished && Time() > group.endTime )
+			{
 				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
 
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
@@ -534,8 +556,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				foreach( player in players )
 				{
+					if( !IsValid( player ) )
+						continue
+
+					if( player.Player_IsFreefalling() )
+					{
+						Signal( player, "PlayerSkyDive" )
+					}
+	
 					soloModePlayerToWaitingList( player )
-					processRestRequest( player )
+					// processRestRequest( player )
 					HolsterAndDisableWeapons( player )
 				}
 
@@ -572,7 +602,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( !IsValid( player ) )
 							continue
 	
-						if(processRestRequest( player )){ continue }
+						// if(processRestRequest( player )){ continue }
 
 						soloModePlayerToWaitingList(player)
 						HolsterAndDisableWeapons( player )
@@ -600,7 +630,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( !IsValid( player ) )
 							continue
 
-						if(processRestRequest( player )){ continue }
+						// if(processRestRequest( player )){ continue }
 						
 						soloModePlayerToWaitingList(player)
 						HolsterAndDisableWeapons( player )
@@ -618,19 +648,20 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				soloLocStruct groupLocStruct = group.groupLocStruct
 				vector Center = groupLocStruct.Center
-				array<entity> players
-				players.extend( group.team1Players )
-				players.extend( group.team2Players )
+
 				foreach (eachPlayer in players )
 				{
-					if(!IsValid(eachPlayer) || IsValid( eachPlayer.p.respawnPod ) ) continue
+					if( !IsValid(eachPlayer) || IsValid( eachPlayer.p.respawnPod ) || !IsAlive( eachPlayer ) ) continue
 					eachPlayer.p.lastDamageTime = Time() //avoid player regen health
 
-					if(Distance2D(eachPlayer.GetOrigin(),Center) > 5000) //检测乱跑的脑残
+					if ( eachPlayer.IsPhaseShifted() )
+						continue
+
+					if(Distance2D(eachPlayer.GetOrigin(),Center) > 6000) //检测乱跑的脑残
 					{
 						Remote_CallFunction_Replay( eachPlayer, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 						eachPlayer.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-						printt( eachPlayer, " TOOK DAMAGE", Distance2D(eachPlayer.GetOrigin(),Center) )
+						// printt( eachPlayer, " TOOK DAMAGE", Distance2D(eachPlayer.GetOrigin(),Center) )
 					}
 				}
 			}
@@ -660,6 +691,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 		}
 
+		if( groupsToRemove.len() > 0 )
+			continue
+
 		// Revivir jugadores muertos que están descansando ( No debería pasar, pero por si acaso )
 		foreach ( restingPlayerHandle,restingStruct in FS_1v1_GetPlayersResting() )
 		{
@@ -687,7 +721,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			if( !IsValid( player ) ) 
 				continue
-			
+
+			// New player connected
+			if( player.p.isConnected && !isPlayerInWaitingList( player) && !isPlayerInRestingList( player ) && !FS_Scenarios_IsPlayerIn3v3Mode( player ) )
+			{
+				// player.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
+				// DecideRespawnPlayer(player, true)
+				soloModePlayerToWaitingList(player)
+				continue
+			}
+
 			if( FS_Scenarios_IsPlayerIn3v3Mode( player ) )
 				continue
 
@@ -701,7 +744,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 
 		// Esperar a que hayan 6 jugadores, reworkear esto para que se espere al menos 4, si hay 5 esperar un 6.
-		if( FS_1v1_GetPlayersWaiting().len() < 6 )
+		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
 		{	
 			
 			//mkos
@@ -814,17 +857,19 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			eachPlayer.p.notify = false
 			eachPlayer.p.destroynotify = true
-			EnableOffhandWeapons( eachPlayer )
-			DeployAndEnableWeapons( eachPlayer )
 			FS_SetRealmForPlayer( eachPlayer, newGroup.slotIndex )
-			thread FS_Scenarios_RespawnIn3v3Mode(eachPlayer, eachPlayer.GetTeam() == newGroup.team1Index ? 0 : 1 )
+			thread FS_Scenarios_RespawnIn3v3Mode(eachPlayer, eachPlayer.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+
+			// if( settings.fs_scenarios_dropshipenabled )
+			// {
+				// eachPlayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
+			// }
 		}
 
 		if( settings.fs_scenarios_dropshipenabled )
 		{
-			
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
+			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
+			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
 		} else
 		{
 			GiveWeaponsToGroup( players )
@@ -836,7 +881,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 entity function CreateSmallRingBoundary(vector Center, int realm = -1)
 {
     vector smallRingCenter = Center
-	float smallRingRadius = 5000
+	float smallRingRadius = 6000
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
 	smallcircle.kv.fadedist = 2000
@@ -877,3 +922,18 @@ void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
 	if(!IsValid(group.ring)) return
 	group.ring.Destroy()
 }
+
+#if DEVELOPER
+void function DEV_KillAllPlayers()
+{
+	entity player = gp()[0]
+	
+	foreach( splayer in gp() )
+	{
+		if( splayer == player )
+			continue
+		
+		splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+	}
+}
+#endif
