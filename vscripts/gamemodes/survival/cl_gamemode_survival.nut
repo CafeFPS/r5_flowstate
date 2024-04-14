@@ -4982,6 +4982,7 @@ void function ServerCallback_RefreshInventoryAndWeaponInfo()
 {
 	ServerCallback_RefreshInventory()
 	ClWeaponStatus_RefreshWeaponInfo()
+	UpdateDpadHud( GetLocalViewPlayer() )
 }
 
 
