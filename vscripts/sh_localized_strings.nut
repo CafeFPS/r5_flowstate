@@ -5,6 +5,7 @@ global function Flowstate_FetchToken
 
 #if SERVER
 	global function Flowstate_FetchTokenID
+	global function LocalMsg
 #endif
 
 #if CLIENT 	
@@ -161,6 +162,56 @@ string function Flowstate_FetchToken( int tokenID )
 		return 0
 	}
 	
+#endif
+
+
+//########################################################
+//					 SERVER FUNCTIONS					//
+//########################################################
+
+#if SERVER
+void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "" )
+{
+	//original by @Cafe
+	
+	if ( !IsValid( player ) ) return
+	if ( !player.IsPlayer() ) return
+	if ( !player.p.isConnected ) return
+	
+	int datalen = varString.len() + varSubstring.len()
+	if ( ( datalen ) >= 599 ) return 
+
+	string sendMessage
+	
+	if ( datalen > 0 )
+	{
+		for ( int textType = 0 ; textType < 2 ; textType++ )
+		{
+			sendMessage = textType == 0 ? varString : varSubstring
+
+			for ( int i = 0; i < sendMessage.len(); i++ )
+			{
+				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedTokenWithVariableString", textType, sendMessage[i] )
+			}
+		}
+	}
+	//if decide threading: else  {  }
+	
+	int tokenID = Flowstate_FetchTokenID(ref)
+	int subTokenID = 0
+	
+	if( subref != "" )
+	{
+		subTokenID = Flowstate_FetchTokenID(subref)
+	}
+	
+	Remote_CallFunction_NonReplay( player, "FS_DisplayLocalizedToken", tokenID, subTokenID, uiType, duration )
+	
+	if ( sound != "" )
+	{
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
+	}
+}
 #endif
 
 //########################################################
