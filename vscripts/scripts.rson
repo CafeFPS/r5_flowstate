@@ -72,6 +72,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	
 	gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 
@@ -1068,7 +1069,8 @@ Scripts:
 
 When: "SERVER || CLIENT"
 Scripts:
-[
+[	
+	sh_localized_strings.nut
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
 ]

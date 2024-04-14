@@ -48,6 +48,13 @@ global function FS_1v1_GetPlayersWaiting
 global function FS_1v1_GetPlayersResting
 global function is3v3Mode
 
+//DEV 
+#if DEVELOPER
+global function DEV_printlegends
+global function DEV_legend
+global function DEV_acceptchal
+#endif
+
 global struct soloLocStruct
 {
 	LocPair &Loc1 //player1 respawn location
@@ -161,7 +168,7 @@ int groupID = 112250000;
 bool bMap_mp_rr_party_crasher
 bool bGiveSameRandomLegendToBothPlayers
 bool bAllowLegend
-bool bAllowTactical
+bool bAllowAbilities
 bool bChalServerMsg
 
 array<string> Weapons = []
@@ -189,7 +196,49 @@ const array<string> charIndexMap = [
 		"Blisk", //11
 		"Fade", //12
 		"Amogus", //13
+		"Peter", //14
+		"Rhapsody", //15
+		"Ash", //16
+		"CJ", //17
+		"Jack", //18
+		"Loba", //19
+		"Revenant", //20
+		"Ballistic", //21
+		"Marvin", //22
+		"Gojo", //23
+		"Naruto", //24
+		"Pete", //25
 	];
+
+//DEV functions
+#if DEVELOPER
+void function DEV_printlegends()
+{
+	foreach ( char in GetAllCharacters() )
+	{
+		printt( ItemFlavor_GetHumanReadableRef( char ) )
+	}
+} 
+	
+void function DEV_legend( entity player, int id )
+{
+	if( id < GetAllCharacters().len() )
+	{
+		ItemFlavor select_character = characters[characterslist[id]]
+		CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
+	}
+	else
+	{
+		SetPlayerCustomModel( player, id )
+	}
+}
+
+void function DEV_acceptchal( entity player )
+{
+	array<string> args = ["accept"]
+	ClientCommand_mkos_challenge( player, args )
+}
+#endif
 
 void function resetChallenges()
 {
@@ -303,7 +352,7 @@ void function INIT_Flags()
 	bGiveSameRandomLegendToBothPlayers	= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
 	bIsKarma 							= GetCurrentPlaylistVarBool( "karma_server", false )
 	bAllowLegend 						= GetCurrentPlaylistVarBool( "give_legend", true )
-	bAllowTactical 						= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
+	bAllowAbilities 					= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
 	bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
 	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
@@ -939,19 +988,22 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 	
 	if( GetTDMState() != eTDMState.IN_PROGRESS )
 	{
-		Message( player, "Game is not playing" )
+		//Message( player, "Game is not playing" )
+		LocalMsg( player, "#FS_GameNotPlaying" )
 		return true
 	}
 	
 	if( !settings.enableChallenges )
 	{
-		Message( player, "Host has disabled challenges" )
+		//Message( player, "Host has disabled challenges" )
+		LocalMsg( player, "#FS_Challenges_Disabled" )
 		return true
 	}
 	
 	if ( args.len() < 1)
 	{	
-		Message( player, "\n\n\nUsage: ", "challenge chal [playername/id] - Challenges a player to 1v1 \n challenge accept [playername/id] - Accepts challenge by playername or id. If no player is specified accepts most recent challenge \n challenge list - Shows a list of all challenges and their times \n ", 5 )
+		//Message( player, "\n\n\nUsage: ", "challenge chal [playername/id] - Challenges a player to 1v1 \n challenge accept [playername/id] - Accepts challenge by playername or id. If no player is specified accepts most recent challenge \n challenge list - Shows a list of all challenges and their times \n ", 5 )
+		LocalMsg( player, "#FS_Usage", "#FS_Challenge_usage" )
 		return true;	
 	}
 	
@@ -971,7 +1023,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			if( args.len() < 2 )
 			{
-				Message( player, "CHALLENGES", "\n\n\n/chal [playername/id] -challenges a player to 1v1\n/chal player -challenges current fight player\n/accept [playername/id] -accepts a specific challenge or the most recent if none specified\n/list -incoming challenges\n/outlist -outgoing challenges\n/end -ends and removes current challenge\n/remove [playername/id] -removes challenge from list\n/clear -clears all incoming challenges\n/revoke [playername/id/all] -Revokes a challenge sent to a player or all players\n/cycle -random spawn\n/swap -random side of spawn\n/legend -choose legend by number or name", 30 )			
+				//Message( player, "CHALLENGES", "\n\n\n/chal [playername/id] -challenges a player to 1v1\n/chal player -challenges current fight player\n/accept [playername/id] -accepts a specific challenge or the most recent if none specified\n/list -incoming challenges\n/outlist -outgoing challenges\n/end -ends and removes current challenge\n/remove [playername/id] -removes challenge from list\n/clear -clears all incoming challenges\n/revoke [playername/id/all] -Revokes a challenge sent to a player or all players\n/cycle -random spawn\n/swap -random side of spawn\n/legend -choose legend by number or name", 30 )			
+				LocalMsg( player, "#FS_Challenges", "#FS_Challenge_usage_2", 0, 30 )
 			}
 			else 
 			{	
@@ -983,7 +1036,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					
 					if( !IsValid( group.player1 ) )
 					{
-						Message( player, "NOT IN A FIGHT")
+						//Message( player, "NOT IN A FIGHT")
+						LocalMsg( player, "#FS_NotInFight" )
 						return true
 					}
 					
@@ -997,7 +1051,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				if( player == challengedPlayer )
 				{
-					Message( player, "CANT CHALLENGE SELF")
+					//Message( player, "CANT CHALLENGE SELF")
+					LocalMsg( player, "#FS_CantChalSelf" )
 					return true
 				}
 
@@ -1010,9 +1065,13 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					{
 						case 1: 
 							challengedPlayer.p.messagetime = Time()
-							Message( player, "CHALLENGE SENT", "", 5)
-							string details = format("Player: %s wants to 1v1. \n Type /accept to accept the most recent challenge \n or /accept [playername] to accept a specific 1v1 ", player.p.name  )
-							Message( challengedPlayer, "NEW REQUEST", details , 10 )
+							//Message( player, "CHALLENGE SENT", "", 5)
+							LocalMsg( player, "#FS_ChalSent" )
+							
+							//string details = format("Player: %s wants to 1v1. \n Type /accept to accept the most recent challenge \n or /accept [playername] to accept a specific 1v1 ", player.p.name  )
+							//Message( challengedPlayer, "NEW REQUEST", details , 10 )
+							LocalMsg( challengedPlayer, "#FS_NEW_REQUEST", "#FS_ChalRequest", 0, 10, "", player.p.name )
+							
 							break; 
 						
 						case 2:
@@ -1034,13 +1093,15 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					
 					if(result > 1)
 					{
-						Message( player, "FAILED", "Couldn't add challenge: " + error, 5)
+						//Message( player, "FAILED", "Couldn't add challenge: " + error, 5)
+						LocalMsg( player, "#FS_FAILED", "", 0, 5, "", "Couldn't add challenge: " + error )
 					}
 					
 				}
 				else 
 				{
-					Message( player, "INVALID PLAYER...", "", 1)
+					//Message( player, "INVALID PLAYER...", "", 1)
+					LocalMsg( player, "#FS_InvalidPlayer" )
 				}
 			}
 			return true //end chal
@@ -1055,9 +1116,10 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{
 				entity challenger = GetPlayer( param )
 				
-				if(!IsValid( challenger ))
+				if( !IsValid( challenger ) )
 				{
-					Message( player, "INVALID PLAYER")
+					//Message( player, "INVALID PLAYER")
+					LocalMsg( player, "#FS_InvalidPlayer" )
 					return true
 				}
 				
@@ -1079,7 +1141,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( ( list.len() + title.len() ) > 599 )
 			{
-				Message( player, "Failed", "Cannot execute this command due to return result of overflow")
+				//Message( player, "Failed", "Cannot execute this command due to return result of overflow")
+				LocalMsg( player, "#FS_FAILED", "#FS_OVERFLOW" )
 			}
 			else 
 			{
@@ -1100,11 +1163,13 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{
 				if (removeChallenger( player, challenger.p.handle ))
 				{
-					Message( player, "REMOVED " + challenger.p.name )
+					//Message( player, "REMOVED " + challenger.p.name )
+					LocalMsg( player, "#FS_RemovedChallenger", "", 0, 5, challenger.p.name )
 				}
 				else 
 				{
-					Message( player, "PLAYER NOT IN CHALLENGES" )
+					//Message( player, "PLAYER NOT IN CHALLENGES" )
+					LocalMsg( player, "#FS_PlayerNotInChallenges" )
 				}
 				
 				endLock1v1( player, false )
@@ -1128,7 +1193,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			}
 			
 			endLock1v1( player, false )
-			Message( player, "CHALLENGERS CLEARED")
+			//Message( player, "CHALLENGERS CLEARED")
+			LocalMsg( player, "#FS_ChallengersCleared" )
 			
 			return true
 			
@@ -1154,11 +1220,13 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if ( revoked > 0 )
 				{
 					endLock1v1( player, false )
-					Message( player, format( "REVOKED %d CHALLENGES", revoked ), format( "\n----FROM PLAYERS---- \n\n %s", removed ), 10 )
+					//Message( player, format( "REVOKED %s CHALLENGES", revoked ), format( "\n----FROM PLAYERS---- \n\n %s", removed ), 10 )
+					LocalMsg( player, "#FS_RevokedX", "#FS_RevokedFromPlayers", 10, 0, revoked.tostring(), removed )
 				}
 				else 
 				{
-					Message( player, "NO CHALLENGES TO REMOVE" )
+					//Message( player, "NO CHALLENGES TO REMOVE" )
+					LocalMsg( player, "#FS_NoChallengesToRemove" )
 				}
 				
 				return true
@@ -1171,17 +1239,20 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if( removeChallenger( playerToRevoke, player.p.handle ) )
 				{
 					endLock1v1( player, false, true )
-					Message( player, "Challenge revoked")
+					//Message( player, "Challenge revoked")
+					LocalMsg( player, "#FS_ChalRevoked" )
 				}
 				else 
 				{
 					endLock1v1( player, false, false )
-					Message( player, "PLAYER NOT IN CHALLENGES" )
+					//Message( player, "PLAYER NOT IN CHALLENGES" )
+					LocalMsg( player, "#FS_PlayerNotInChallenges" )
 				}
 			}
 			else
 			{
-				Message( player, "Player QUIT")
+				//Message( player, "Player QUIT")
+				LocalMsg( player, "#FS_PlayerQuit" )
 			}
 			
 			return true
@@ -1192,7 +1263,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{}
 			else 
 			{
-				Message( player, "NOT IN CHALLENGE" )
+				//Message( player, "NOT IN CHALLENGE" )
+				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
 			
@@ -1203,14 +1275,18 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if(group.cycle)
 				{
 					group.cycle = false;
-					Message( group.player1, "SPAWN CYCLE DISABLED" )
-					Message( group.player2, "SPAWN CYCLE DISABLED" )
+					//Message( group.player1, "SPAWN CYCLE DISABLED" )
+					//Message( group.player2, "SPAWN CYCLE DISABLED" )
+					LocalMsg( group.player1, "#FS_SpawnCycDisabled" )
+					LocalMsg( group.player2, "#FS_SpawnCycDisabled" )
 				}
 				else 
 				{
 					group.cycle = true;
-					Message( group.player1, "SPAWN CYCLE ENABLED" )
-					Message( group.player2, "SPAWN CYCLE ENABLED" )
+					//Message( group.player1, "SPAWN CYCLE ENABLED" )
+					//Message( group.player2, "SPAWN CYCLE ENABLED" )
+					LocalMsg( group.player1, "#FS_SpawnCycEnabled" )
+					LocalMsg( group.player2, "#FS_SpawnCycEnabled" )
 				}
 			}
 			
@@ -1223,7 +1299,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{}
 			else 
 			{
-				Message( player, "NOT IN CHALLENGE" )
+				//Message( player, "NOT IN CHALLENGE" )
+				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
 			
@@ -1234,14 +1311,18 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if(group.swap)
 				{
 					group.swap = false;
-					Message( group.player1, "SPAWN SWAP DISABLED" )
-					Message( group.player2, "SPAWN SWAP DISABLED" )
+					//Message( group.player1, "SPAWN SWAP DISABLED" )
+					//Message( group.player2, "SPAWN SWAP DISABLED" )
+					LocalMsg( group.player1, "#FS_SpawnSwapDisabled" )
+					LocalMsg( group.player2, "#FS_SpawnSwapDisabled" )
 				}
 				else 
 				{
 					group.swap = true;
-					Message( group.player1, "SPAWN SWAP ENABLED" )
-					Message( group.player2, "SPAWN SWAP ENABLED" )
+					//Message( group.player1, "SPAWN SWAP ENABLED" )
+					//Message( group.player2, "SPAWN SWAP ENABLED" )
+					LocalMsg( group.player1, "#FS_SpawnSwapEnabled" )
+					LocalMsg( group.player2, "#FS_SpawnSwapEnabled" )
 				}
 			}
 			
@@ -1251,13 +1332,14 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			if(!bAllowLegend)
 			{
-				Message( player, "Admin has disabled legends" )
+				//Message( player, "Admin has disabled legends" )
+				LocalMsg( player, "#FS_DisabledLegends")
 				return true
 			}
 			
 			if( param == "" )
 			{
-				string legendList = "";
+				string legendList = "\n\n\n\n\n\n\n\n\n\n\n";
 				
 				int ii = 0
 				foreach( legend in charIndexMap )
@@ -1266,12 +1348,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					ii++;
 				}
 				
-				Message( player, "LEGENDS", legendList, 10 )
+				Message( player, "LEGENDS", legendList, 20 )
 				return true
 			}
 		
 			string legend = "undefined";
-			int index;
+			int index = -1;
 			int indexMapLen = charIndexMap.len();
 			
 			if( IsNumeric( param, 0, indexMapLen ) )
@@ -1285,7 +1367,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				{
 					if ( charIndexMap[i].tolower() == param.tolower() )
 					{
-						legend = charIndexMap[i] 
 						index = i;
 					}
 				}	
@@ -1293,7 +1374,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( index >= indexMapLen || index < 0 )
 			{
-				Message( player, "INVALID LEGEND INDEX" )
+				//Message( player, "INVALID LEGEND INDEX" )
+				LocalMsg( player, "#FS_InvalidLegend" )
 				return true
 			}
 			
@@ -1301,7 +1383,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{}
 			else 
 			{
-				Message( player, "NOT IN CHALLENGE" )
+				//Message( player, "NOT IN CHALLENGE" )
+				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
 			
@@ -1309,7 +1392,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( !IsValid( group ))
 			{
-				Message( player, "INVALID GROUP" )
+				//Message( player, "INVALID GROUP" ) //what?
 				return true
 			}
 			
@@ -1322,14 +1405,16 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				group.p2LegendIndex = index
 			}
 			
-			Message( player, "PLAYING AS: " + legend )
+			legend = index != -1 ? charIndexMap[index] : "undefined";
+			//Message( player, "PLAYING AS: " + legend )
+			LocalMsg( player, "#FS_PlayingAs", "", 0, 5, legend, "" )
 			
 			if( index <= 10 )
 			{
 				ItemFlavor select_character = characters[characterslist[index]]
 				CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
 				
-				if(!bAllowTactical)
+				if( !bAllowAbilities )
 				{
 					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				}
@@ -1337,6 +1422,11 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			else 
 			{
 				SetPlayerCustomModel( player, index )
+			}
+			
+			if( bAllowAbilities )
+			{
+				RechargePlayerAbilities( player )
 			}
 			
 			return true
@@ -1363,17 +1453,20 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( list != "" )
 			{
-				Message( player, "OUTGOING CHALLENGES", list, 15 )
+				//Message( player, "OUTGOING CHALLENGES", list, 15 )
+				LocalMsg( player, "#FS_OutgoingChal", "", 15, 0, "", list )
 			}
 			else 
 			{
-				Message( player, "NO OUTGOING CHALLENGES")
+				//Message( player, "NO OUTGOING CHALLENGES")
+				LocalMsg( player, "#FS_NoOutgoingChal" )
 			}
 		
 			return true
 		
 		default:
-			Message( player, "Failed: ", "Unknown command \n", 5 )
+			//Message( player, "Failed: ", "Unknown command \n", 5 )
+			LocalMsg( player, "#FS_FAILED", "#FS_UnknownCommand" )
 			return true
 	}
 	
@@ -1574,13 +1667,15 @@ bool function acceptChallenge( entity player, entity challenger )
 	
 	if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ))
 	{
-		Message( player, "ALREADY IN CHALLENGE", "do /end or /clear to finish" )
+		//Message( player, "ALREADY IN CHALLENGE", "do /end or /clear to finish" )
+		LocalMsg( player, "#FS_InChallenge", "#FS_InChallenge_SUBSTR" )
 		return true
 	} 
 	
 	if( isPlayerPendingChallenge( challenger ) ||  isPlayerPendingLockOpponent( challenger ) )
 	{
-		Message( player, "PLAYER ALREADY IN CHALLENGE" )
+		//Message( player, "PLAYER ALREADY IN CHALLENGE" )
+		LocalMsg( player, "#FS_PlayerInChal" )
 	}
 	
 	//sqprint("accepted")
@@ -1594,7 +1689,8 @@ bool function acceptChallenge( entity player, entity challenger )
 	}
 	else 
 	{
-		Message( player, "NO CHALLENGES FROM PLAYER", "Maybe revoked? Check with /list")
+		//Message( player, "NO CHALLENGES FROM PLAYER", "Maybe revoked? Check with /list")
+		LocalMsg( player, "#FS_NoChalFromPlayer", "#FS_NoChalFromPlayer_SUBSTR" )
 		return false 
 	}
 	
@@ -1605,7 +1701,8 @@ bool function acceptRecentChallenge( entity player )
 {
 	if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ))
 	{
-		Message( player, "ALREADY IN CHALLENGE", "do /end or /clear to finish" )
+		//Message( player, "ALREADY IN CHALLENGE", "do /end or /clear to finish" )
+		LocalMsg( player, "#FS_InChallenge", "#FS_InChallenge_SUBSTR" )
 		return true
 	} 
 	
@@ -1621,7 +1718,8 @@ bool function acceptRecentChallenge( entity player )
 	
 	if( chalStruct.challengers.len() <= 0 )
 	{
-		Message( player, "NO CHALLENGES", "Maybe revoked? Check with /list")
+		//Message( player, "NO CHALLENGES", "Maybe revoked? Check with /list")
+		LocalMsg( player, "#FS_NoChal", "#FS_NoChalFromPlayer_SUBSTR" )
 		return false
 	}
 	
@@ -1645,11 +1743,13 @@ bool function acceptRecentChallenge( entity player )
 	{
 		if ( removeChallenger( player, recentChallenger_eHandle ) )
 		{
-			Message( player, "CHALLENGER QUIT" )
+			//Message( player, "CHALLENGER QUIT" )
+			LocalMsg( player, "#FS_ChalQuit" )
 		}
 		else 
 		{
-			Message( player, "PLAYER NOT IN CHALLENGES" )
+			//Message( player, "PLAYER NOT IN CHALLENGES" )
+			LocalMsg( player, "#FS_PlayerNotInChallenges" )
 		}
 		
 		return false
@@ -1657,7 +1757,8 @@ bool function acceptRecentChallenge( entity player )
 	
 	if( !IsValid( recentChallenger ) || isPlayerPendingChallenge( recentChallenger ) || isPlayerPendingLockOpponent( recentChallenger ) )
 	{
-		Message( player, "PLAYER ALREADY IN CHALLENGE")
+		//Message( player, "PLAYER ALREADY IN CHALLENGE")
+		LocalMsg( player, "#FS_PlayerInChal" )
 		return false
 	}
 	//sqprint("accepted")
@@ -1673,8 +1774,10 @@ void function SetUpChallengeNotifications( entity player, entity challenger ) //
 {
 	player.p.waitingFor1v1 = true 
 	challenger.p.waitingFor1v1 = true
-	Message( player, "CHALLENGE ACCEPTED")
-	Message( challenger, "CHALLENGE ACCEPTED")
+	//Message( player, "CHALLENGE ACCEPTED")
+	//Message( challenger, "CHALLENGE ACCEPTED")
+	LocalMsg( player, "#FS_ChalAccepted" )
+	LocalMsg( challenger, "#FS_ChalAccepted" )
 	SetChallengeNotifications( [player,challenger], true )
 	player.p.eLastChallenger = challenger
 	challenger.p.eLastChallenger = player
@@ -1726,7 +1829,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 		{
 			if(addmsg)
 			{
-				Message( player, "NO CHALLENGE TO END")
+				//Message( player, "NO CHALLENGE TO END")
+				LocalMsg( player, "#FS_NoChalToEnd" )
 				return true
 			}
 		}
@@ -1737,7 +1841,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 	{
 		if(addmsg || revoke)
 		{
-			Message( opponent, "CHALLENGE ENDED")
+			//Message( opponent, "CHALLENGE ENDED")
+			LocalMsg( opponent, "#FS_ChalEnded" )
 		}
 		
 		removeChallenger( player, opponent.p.handle )
@@ -1749,7 +1854,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 	{
 		if(addmsg || revoke)
 		{
-			Message( challenged, "CHALLENGE ENDED")	
+			//Message( challenged, "CHALLENGE ENDED")	
+			LocalMsg( challenged, "#FS_ChalEnded")
 		}
 		
 		removeChallenger( challenged, player.p.handle )
@@ -1763,7 +1869,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 		
 		if(addmsg)
 		{
-			Message( player, "CHALLENGE ENDED")
+			//Message( player, "CHALLENGE ENDED")
+			LocalMsg( player, "#FS_ChalEnded" )
 		}
 		
 		if( IsValid( group ) )
@@ -1795,7 +1902,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 		
 		if(addmsg)
 		{
-			Message( player, "CHALLENGE ENDED")
+			//Message( player, "CHALLENGE ENDED")
+			LocalMsg( player, "#FS_ChalEnded" )
 		}
 		
 		player.Signal( "NotificationChanged" )
@@ -2016,11 +2124,13 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 	
 	if( Time() < player.p.lastRestUsedTime + 3 )
 	{
-		Message(player, "REST COOLDOWN")
+		//Message(player, "REST COOLDOWN")
+		LocalMsg( player, "#FS_RESTCOOLDOWN" )
 		return false
 	}
 	
-	string restText = "Type rest in console to pew pew again.";
+	string restText = "#FS_BASE_RestText";
+	string restFlag = ""
 
 	if( player.p.handle in file.soloPlayersResting )
 	{
@@ -2035,10 +2145,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 			player.SetTakeDamageType( DAMAGE_YES )
 		}
 
-		if(file.IS_CHINESE_SERVER)
-			Message(player,"匹配中")
-		else
-			Message(player,"Matching!")
+		LocalMsg( player, "#FS_MATCHING" )
 	
 		
 		soloModePlayerToWaitingList(player)
@@ -2103,29 +2210,42 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 						fTryAgainIn = REST_GRACE - ( timeNow - group.startTime )
 					}
 					
-					string sTryAgain = format("Or.. try again in: %d seconds", floor( fTryAgainIn.tointeger() ) )
+					//string sTryAgain = format("Or.. try again in: %d seconds", floor( fTryAgainIn.tointeger() ) )
+					string sTryAgain = format( " %s", floor( fTryAgainIn.tointeger() ) )
 					#if DEVELOPER
-					sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
+						sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
-					Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
+					//Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
+					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", 3, 0, "", sTryAgain )
 					player.p.rest_request = true;
 					return true
 				}
 				else 
 				{
 					#if DEVELOPER
-					sqprint(format("Time was good: difference: %d, REST_GRACE: %d ", difference, REST_GRACE ))
+						sqprint(format("Time was good: difference: %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
-					restText = format("Sent to rest because time since last damage recieved was greater than %d seconds.", REST_GRACE );
+					//restText = format("Sent to rest because time since last damage recieved was greater than %d seconds.", REST_GRACE );
+					restText = "#FS_RestGrace";
+					restFlag = REST_GRACE.tostring()
 				}
 			}
 		}
 	
 		
-		if(file.IS_CHINESE_SERVER)
+		/* if(file.IS_CHINESE_SERVER)
 			Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
 		else
-			Message(player,"You are resting now", restText )
+			Message(player,"You are resting now", restText ) */
+			
+		if ( restFlag == "" )
+		{		
+			LocalMsg( player, "#FS_YouAreResting", restText )
+		}
+		else 
+		{
+			LocalMsg( player, "#FS_YouAreResting", restText, 5, 0, "", restFlag )
+		}
 		
 		thread soloModePlayerToRestingList(player)
 		try
@@ -2172,10 +2292,13 @@ void function expliciteRest( entity player )
 		return 
 	}
 	
-		if(file.IS_CHINESE_SERVER)
+	/* 	if(file.IS_CHINESE_SERVER)
 		Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
 	else
 		Message(player,"You are resting now", "Type rest in console to pew pew again.")
+	 */
+	 
+	LocalMsg( player, "#FS_YouAreResting", "#FS_BASE_RestText" )
 	
 	thread soloModePlayerToRestingList(player)
 	
@@ -2357,7 +2480,8 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	Message_New( player, "Waiting for players", 300 )
+	//Message_New( player, "Waiting for players", 300 )
+	LocalMsg( player, "#FS_WaitingForPlayers", "", 300 )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 
@@ -2378,7 +2502,8 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 	
     player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent);
     opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player);
-	Message_New( player, "", 1 )
+	//Message_New( player, "", 1 ) //??? ""  ?????
+	LocalMsg( player, "#FS_NULL", "", 1, 1 )
 
     if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
 	{	
@@ -2505,13 +2630,10 @@ void function soloModefixDelayStart(entity player)
 		return
 	
 	#if HAS_TRACKER_DLL && TRACKER
-		tracker = "       Tracker Edition";
+		LocalMsg( player, "#FS_1V1_Tracker" )
+	#else 
+		LocalMsg( player, "#FS_1v1_Banner" )
 	#endif
-	
-	if(file.IS_CHINESE_SERVER)
-		Message(player, format( file.is3v3Mode == true ? "加载中 FS Scenarios %s\n\n\n" : "加载中 FS 1v1 %s\n\n\n", tracker ) )
-	else
-		Message(player, format(file.is3v3Mode == true ? "Flowstate Scenarios %s\n\n\n" : "Flowstate 1v1 %s\n\n\n", tracker ) )
 	
 	wait 12
 	
@@ -2840,7 +2962,7 @@ void function _decideLegend( soloGroupStruct group )
 		}
 	}	
 	
-	if(!bAllowTactical)
+	if( !bAllowAbilities )
 	{
 		group.player1.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
@@ -3049,16 +3171,19 @@ void function _soloModeInit(string mapName)
 		if(!IsValid(user)) return
 		if(!isPlayerInRestingList(user))
 		{
-			if(file.IS_CHINESE_SERVER)
+			/* if(file.IS_CHINESE_SERVER)
 				Message(user,"您必须在休息模式中才能使用观战功能您","请在控制台中输入'rest'进入休息模式")
 			else
 				Message(user,"You must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
-			
+			 */
+			LocalMsg( user, "#FS_MustBeInRest", "#FS_MustBeInRest_SUBSTR" )
+			 
 			return //不在休息队列中不能使用观战功能
 		}
 		if( GetTDMState() != eTDMState.IN_PROGRESS )
 		{
-			Message( user, "Game is not playing" )
+			//Message( user, "Game is not playing" )
+			LocalMsg( user, "#FS_GameNotPlaying" )
 			return
 		}
 
@@ -3086,10 +3211,12 @@ void function _soloModeInit(string mapName)
 			thread CheckForObservedTarget(user)
 			user.p.lastTimeSpectateUsed = Time()
 
-			if(file.IS_CHINESE_SERVER)
+	/* 		if(file.IS_CHINESE_SERVER)
 				Message(user,"按一下空格后结束观战")
 			else
-				Message(user,"Jump to stop spectating")
+				Message(user,"Jump to stop spectating") */
+				
+			LocalMsg( user, "#FS_JumpToStopSpec" )
 			
 			user.MakeInvisible()
 
@@ -3108,7 +3235,8 @@ void function _soloModeInit(string mapName)
 		{
 			user.p.IBMM_grace_period = 0;
 			SavePlayer_wait_time( user, 0.0 )
-			Message( user, "IBMM set to ANY INPUT (disabled).");
+			//Message( user, "IBMM set to ANY INPUT (disabled).");
+			LocalMsg( user, "#FS_IBMM_Any" )
 		}
 		else
 		{	
@@ -3124,11 +3252,13 @@ void function _soloModeInit(string mapName)
 					SetDefaultIBMM( user )
 				}
 				
-				Message( user, "IBMM set to search for same input type.");
+				//Message( user, "IBMM set to search for same input type.");
+				LocalMsg( user, "#FS_IBMM_SAME" )
 			}
 			else 
 			{
-				Message( user, "Server does not allow this setting.");
+				//Message( user, "Server does not allow this setting.");
+				LocalMsg( user, "#FS_SettingNotAllowed" )
 			}
 		}
 		
@@ -3143,13 +3273,15 @@ void function _soloModeInit(string mapName)
 		{
 			user.p.lock1v1_setting = false;
 			SavePlayer_lock1v1_setting( user, false )
-			Message( user, "ACCEPT CHALLENGES DISABLED.");
+			//Message( user, "ACCEPT CHALLENGES DISABLED.");
+			LocalMsg( user, "#FS_ChalDisabled" )
 		}
 		else
 		{	
 			user.p.lock1v1_setting = true;
 			SavePlayer_lock1v1_setting( user, true )
-			Message( user, "ACCEPT CHALLENGES ENABLED.");
+			//Message( user, "ACCEPT CHALLENGES ENABLED.");
+			LocalMsg( user, "#FS_ChalEnabled")
 		}
 		
 	})
@@ -3163,13 +3295,15 @@ void function _soloModeInit(string mapName)
 		{
 			user.p.start_in_rest_setting = false;
 			SavePlayer_start_in_rest_setting( user, false )
-			Message( user, "START_IN_REST Disabled");
+			//Message( user, "START_IN_REST Disabled");
+			LocalMsg( user, "#FS_StartInRestDisabled" )
 		}
 		else
 		{	
 			user.p.start_in_rest_setting = true;
 			SavePlayer_start_in_rest_setting( user, true )
-			Message( user, "START_IN_REST Enabled.");
+			//Message( user, "START_IN_REST Enabled.");
+			LocalMsg( user, "#FS_StartInRestEnabled" )
 		}
 		
 	})
@@ -3182,13 +3316,15 @@ void function _soloModeInit(string mapName)
 		{
 			user.p.enable_input_banner = false;
 			SavePlayer_enable_input_banner( user, false )
-			Message( user, "INPUT_BANNER Disabled");
+			//Message( user, "INPUT_BANNER Disabled");
+			LocalMsg( user, "#FS_InputBannerDisabled" )
 		}
 		else
 		{	
 			user.p.enable_input_banner = true;
 			SavePlayer_enable_input_banner( user, true )
-			Message( user, "INPUT_BANNER Enabled.");
+			//Message( user, "INPUT_BANNER Enabled.");
+			LocalMsg( user, "#FS_InputBannerEnabled" )
 		}
 		
 	})
@@ -3244,16 +3380,17 @@ void function soloModeThread(LocPair waitingRoomLocation)
 {
 	//printt("solo mode thread start!")
 
-	string Text5
+	string Text5 = "#FS_OpponentDisconnect"
 
-	if(file.IS_CHINESE_SERVER)
+/* 	if(file.IS_CHINESE_SERVER)
 	{
 		Text5 = "您的对手已断开连接"
 	}
 	else
 	{
 		Text5 = "Your opponent has disconnected!"
-	}
+	} */
+	
 	wait 8
 	while(true)
 	{
@@ -3420,7 +3557,8 @@ void function soloModeThread(LocPair waitingRoomLocation)
 						if(processRestRequest( group.player1 )){ continue }	
 						soloModePlayerToWaitingList( group.player1 ) //back to wating list
 						HolsterAndDisableWeapons( group.player1 )
-						Message( group.player1, Text5 ) 
+						//Message( group.player1, Text5 ) 
+						LocalMsg( group.player1, Text5 )
 					}
 
 					if ( !removed && IsValid( group.player2 ) ) 
@@ -3428,7 +3566,8 @@ void function soloModeThread(LocPair waitingRoomLocation)
 						if(processRestRequest( group.player2 )){ continue }
 						soloModePlayerToWaitingList(group.player2) //back to wating list
 						HolsterAndDisableWeapons(group.player2)
-						Message(group.player2, Text5);
+						//Message(group.player2, Text5);
+						LocalMsg( group.player2, Text5 )
 					}
 					
 					if(!removed)
@@ -3637,8 +3776,11 @@ void function soloModeThread(LocPair waitingRoomLocation)
 					newGroup.IsKeep = true
 					newGroup.player1.p.waitingFor1v1 = false 
 					newGroup.player2.p.waitingFor1v1 = false
-					Message(newGroup.player1, "1v1 CHALLENGE STARTED")
-					Message(newGroup.player2, "1v1 CHALLENGE STARTED")
+					//Message(newGroup.player1, "1v1 CHALLENGE STARTED")
+					//Message(newGroup.player2, "1v1 CHALLENGE STARTED")
+					LocalMsg( newGroup.player1, "#FS_ChalStarted" )
+					LocalMsg( newGroup.player2, "#FS_ChalStarted" )
+					
 					bMatchFound = true
 					break
 				}
@@ -3821,27 +3963,39 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{	
 				//sqprint(format("Starting watch thread for: %s", newGroup.player1.GetPlayerName() ))
 				thread InputWatchdog( newGroup.player1, newGroup.player2, newGroup ); 
-				e_str = " INPUT LOCKED " 
+				//e_str = " INPUT LOCKED " 
+				e_str = "#FS_InputLocked";
 			}
 			else 
 			{ 	
-				e_str = "COULDNT LOCK SAME INPUT " 
+				//e_str = "COULDNT LOCK SAME INPUT " 
+				e_str = "#FS_CouldNotLock";
 			}
 			
 			if ( newGroup.player1.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
-			{ e_str = "ANY INPUT"; }
+			{ 
+				//e_str = "ANY INPUT"; 
+				e_str = "#FS_AnyInput";
+			}
 			
 			if(newGroup.player1.p.enable_input_banner && !bMatchFound )
 			{
-				Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
+				//Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
+				string vs = "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 )
+				LocalMsg( newGroup.player1, e_str, "", 3, 0, "", vs )
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
-			{ e_str = "ANY INPUT"; }
+			{ 
+				//e_str = "ANY INPUT"; 
+				e_str = "#FS_AnyInput";
+			}
 			
 			if(newGroup.player2.p.enable_input_banner && !bMatchFound )
 			{
-				Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
+				//Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
+				string vs2 = "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 )
+				LocalMsg( newGroup.player2, e_str, "", 3, 0, "", vs2 )
 			}
 		} //not waiting
 		
@@ -3921,13 +4075,15 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 				if(IsValid(player))
 				{
 					Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
-					Message( player, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
+					//Message( player, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 3, 0, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(opponent))
 				{
 					Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" );
-					Message( opponent, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
+					//Message( opponent, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 3, 0, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(group))

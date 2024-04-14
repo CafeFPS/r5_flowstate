@@ -43,6 +43,7 @@ struct
 	table<var, ButtonData > OpenLGDuelsSettingsData
 	table<var, ButtonData > OpenValkSimulatorSettingsData
 	table<var, ButtonData > LockCurrent1v1Enemy
+	table<var, ButtonData > ToggleRest
 
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
@@ -150,6 +151,7 @@ void function InitSystemPanel( var panel )
 	file.OpenLGDuelsSettingsData[ panel ] <- clone data
 	file.OpenValkSimulatorSettingsData[ panel ] <- clone data
 	file.LockCurrent1v1Enemy[ panel ] <- clone data
+	file.ToggleRest[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -217,6 +219,9 @@ void function InitSystemPanel( var panel )
 	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK"
 	file.LockCurrent1v1Enemy[ panel ].activateFunc = OpenLockCurrent1v1Enemy_System
 	
+	file.ToggleRest[ panel ].label = "TOGGLE REST"
+	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -262,6 +267,7 @@ void function UpdateSystemPanel( var panel )
 		if( GetCurrentPlaylistName() == "fs_1v1" )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 
@@ -450,6 +456,11 @@ void function RunHub()
 void function RunMGsettings()
 {
 	RunClientScript("MG_Settings_UI")
+}
+
+void function ToggleRest_1v1()
+{
+	ClientCommand( "rest" )
 }
 
 #if CONSOLE_PROG

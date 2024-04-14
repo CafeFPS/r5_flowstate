@@ -49,7 +49,8 @@ void function SV_CL_Init()
 	#if SERVER
 	  SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
 	#endif
-
+	
+	INIT_Flowstate_Localization_Strings()
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
 	CodeCallbacksShared_Init()

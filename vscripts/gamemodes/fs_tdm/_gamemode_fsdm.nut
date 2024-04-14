@@ -1147,6 +1147,10 @@ void function _CustomTDM_Init()
 		if ( g_bIs1v1 && !player.p.bIsChatbot )
 		{	
 			Init_IBMM ( player )
+			
+			#if !TRACKER
+				INIT_playerChallengesStruct( player )
+			#endif
 		}
 		
 

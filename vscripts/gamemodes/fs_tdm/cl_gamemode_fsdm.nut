@@ -74,6 +74,7 @@ struct {
 	
 	string fs_newServerMsgsToChatBoxString        = ""
 	string fs_newServerMsgsToChatBoxSubString     = ""
+	
 } file
 
 struct VictoryCameraPackage
@@ -1644,6 +1645,7 @@ void function fs_NewBoxShowMessage( float duration )
 	file.fs_newMsgBoxSubString = ""
 	// thread FS_NewBox_Msg( duration )
 }
+
 
 //Unused :C Cafe
 void function FS_NewBox_Msg( float duration = 3 )
