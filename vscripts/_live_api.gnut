@@ -548,7 +548,7 @@ void function LiveAPI_OnDeathFieldStopShrink( DeathFieldData data )
 void function LiveAPI_OnMatchSetup()
 {
 	LiveAPI_WriteLogUsingDefinedFields(eLiveAPI_EventTypes.matchSetup,
-		[ GetMapName(),	GetCurrentPlaylistName(), GetCurrentPlaylistVarString( "description", "" ), GetDatacenterName(), !GetCurrentPlaylistVarBool( "aimassist_adspull_disabled", false ), false, ""/*TODO: GetServerID()*//*, TODO: loadoutConfiguration*/ ],
+		[ GetMapName(),	GetCurrentPlaylistName(), GetCurrentPlaylistVarString( "description", "" ), GetDatacenterName(), !GetCurrentPlaylistVarBool( "aimassist_adspull_disabled", false ), false, GetServerID()/*, TODO: loadoutConfiguration*/ ],
 		[ 3/*map*/,     4/*playlistName*/,        5/*playlistDesc*/,                              6/*dataCenter*/,     7/*aimAssistOn*/,                                                  8/*anonymousMode*/, 9/*, 10*/ ]
 	)
 }
