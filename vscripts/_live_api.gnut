@@ -2,10 +2,14 @@
 //	_live_api.gnut
 //=========================================================
 global function LiveAPI_Init
+
 global function LiveAPI_WriteLogUsingDefinedFields
+global function LiveAPI_WriteLogUsingCustomFields
 
 global function LiveAPI_GetPlayerIdentity
+
 global function LiveAPI_GetPlayerIdentityTable
+global function LiveAPI_GetPlayerIdentityTableString
 
 global function LiveAPI_OnGameStateChanged
 global function LiveAPI_OnRespawnTeamPlayers
@@ -23,6 +27,13 @@ global function LiveAPI_OnPlayerStatChanged
 ////////////////////////
 void function LiveAPI_Init()
 {
+	// NOTE: always call this since if we still have an open logger, this will
+	// close the handle. If the cvar 'liveapi_print_enabled' has been disabled
+	// by then, no new logging instance will be created, thus this func won't
+	// do anything besides closing an open logger instance if the function
+	// LiveAPI_StopLogging() hasn't been called prior
+	LiveAPI_StartLogging()
+
 	if( !LiveAPI_IsValidToRun() )
 		return
 
@@ -61,13 +72,31 @@ string function LiveAPI_GetPlayerIdentity( entity player )
 	return expect string( player.GetNetworkedClassName() )
 }
 
-table< int, var > function LiveAPI_GetWritableData( int eventEnum, array< var > logData, array< int > fieldEnums = [] )
+table< int, var > function LiveAPI_GetWritableDefinedData( array< var > logData, array< int > fieldEnums = [] )
 {
 	table< int , var > data = {}
 
-	for ( int i = 0; i < logData.len(); ++i )
+	for ( int i = 0; i < fieldEnums.len(); ++i )
 	{
+		if( i >= logData.len() )
+			return data
+		
 		data[ fieldEnums[ i ] ] <- logData[ i ]
+	}
+
+	return data
+}
+
+table< string, var > function LiveAPI_GetWritableCustomData( array< var > logData, array< string > fieldNames = [] )
+{
+	table< string , var > data = {}
+
+	for ( int i = 0; i < fieldNames.len(); ++i )
+	{
+		if( i >= logData.len() )
+			return data
+
+		data[ fieldNames[ i ] ] <- logData[ i ]
 	}
 
 	return data
@@ -136,10 +165,86 @@ table< int, var > function LiveAPI_GetPlayerIdentityTable( entity player )
 	return { [ 0 ]/*name*/ = expect string( player.GetNetworkedClassName() ) }
 }
 
+table< string, var > function LiveAPI_GetPlayerIdentityTableString( entity player )
+{
+	Assert( LiveAPI_IsValidToRun() )
+
+	if( player == null || player.IsWorld() )
+		return { [ "name" ] = "World" }
+
+	if( player.IsPlayer() )
+	{
+		EHI playerEHI = ToEHI( player )
+		int playerTeamID = player.GetTeam()
+
+		table< string, var > data
+		data[ "name"            ] <- player.GetPlayerName()
+		data[ "teamId"          ] <- playerTeamID
+		data[ "pos"             ] <- player.GetOrigin()
+		data[ "angles"          ] <- player.GetAngles()
+		data[ "currentHealth"   ] <- player.GetHealth()
+		data[ "maxHealth"       ] <- player.GetMaxHealth()
+		data[ "shieldHealth"    ] <- player.GetShieldHealth()
+		data[ "shieldMaxHealth" ] <- player.GetShieldHealthMax()
+		data[ "nucleusHash"     ] <- player.GetPlatformUID()
+		data[ "hardwareName"    ] <- player.GetHardware()
+
+		// TODO[ AMOS ] add this function to the SDK
+		//if( GameRules_IsTeamIndexValid( playerTeamID ) )
+		{
+			data[ "teamName" ] <- GameRules_GetTeamName( playerTeamID )
+		}
+
+		array< entity > playerSquad = GetPlayerArrayOfTeam( playerTeamID )
+		playerSquad.sort( SortPlayersByName );
+
+		int sortedPlayerSquadIndex = playerSquad.find( player )
+		data[ "squadIndex" ] <- sortedPlayerSquadIndex >= 0 
+			? sortedPlayerSquadIndex 
+			: EEH_GetTeamMemberIndex( EHIToEncodedEHandle( playerEHI ) )
+
+		LoadoutEntry characterSlot = Loadout_CharacterClass()
+		if( LoadoutSlot_IsReady( playerEHI, characterSlot ) )
+		{
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterSlot )
+			data[ "character" ] <- ItemFlavor_GetHumanReadableRef( character )
+
+			LoadoutEntry characterSkin = Loadout_CharacterSkin( character )
+			if( LoadoutSlot_IsReady( playerEHI, characterSkin ) )
+			{
+				ItemFlavor currentSkin = LoadoutSlot_GetItemFlavor( playerEHI, characterSkin )
+				data[ "skin" ] <- ItemFlavor_GetHumanReadableRef( currentSkin )
+			}
+		}
+
+		return data
+	}
+
+	return { [ "name" ] = expect string( player.GetNetworkedClassName() ) }
+}
+
+// Example usage of this func:
+// 	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.ammoUsed,
+// 		[ LiveAPI_GetPlayerIdentityTable( player ), ammoType,      ammoUsed,        oldCount,          newCount ],
+// 		[ 3/*player*/,                              4/*ammoType*/, 5/*amountUsed*/, 6/*oldAmmoCount*/, 7/*newAmmoCount*/ ]
+// 	)
 void function LiveAPI_WriteLogUsingDefinedFields( int eventEnum, array< var > data, array< int > fieldEnums = [] )
 {
-	table< int, var > writableData = LiveAPI_GetWritableData( eventEnum, data, fieldEnums )
+	table< int, var > writableData = LiveAPI_GetWritableDefinedData( data, fieldEnums )
 	LiveAPI_WriteLog( eventEnum, writableData )
+}
+
+// Example usage of this func:
+// 	LiveAPI_WriteLogUsingCustomFields( "myCustomEvent", 
+// 		[ LiveAPI_GetPlayerIdentityTableString( player ), weaponName, ammoUsed,   origin,   dir ],
+// 		[ "player",                                       "weapon",   "ammoUsed", "origin", "dir" ]
+// 	)
+void function LiveAPI_WriteLogUsingCustomFields( string eventName, array< var > data, array< string > fieldNames = [] )
+{
+	table< string, var > writableData = LiveAPI_GetWritableCustomData( data, fieldNames )
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.customEvent, 
+		[ eventName, writableData ],
+		[ 3/*name*/, 4/*data*/] )
 }
 
 void function LiveAPI_WriteLog( int category, table< int, var > data )
@@ -154,7 +259,6 @@ void function LiveAPI_WriteLog( int category, table< int, var > data )
 /////////////////////////
 void function LiveAPI_OnInit()
 {
-	LiveAPI_StartLogging()
 	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.init, [ 0 ], [ 0 ] )
 }
 
@@ -231,7 +335,7 @@ void function LiveAPI_OnWeaponAttack( entity player, entity weapon, string weapo
 	)
 }
 
-void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker, var damageInfo, int eventType )
+void function LiveAPI_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if( !IsValid( victim ) )
 		return
@@ -239,11 +343,35 @@ void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 
 	string weaponName = IsValid( weapon ) ? weapon.GetWeaponClassName() : DamageInfo_GetInflictor( damageInfo ).GetClassName()
-	int weaponNameFieldNum = 5
+	table< int, var > ornull attackerIdentity = null
 
-	// Message PlayerKilled has field 5 reserved, they otherwise line up.
-	if( eventType == eLiveAPI_EventTypes.playerKilled )
-		weaponNameFieldNum = 6
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+		attackerIdentity = LiveAPI_GetPlayerIdentityTable( attacker )
+
+	array< var > fieldData
+	array< int > fieldNums
+
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( victim ), LiveAPI_GetPlayerIdentityTable( attacker ), weaponName ]
+		fieldNums = [ 3/*attacker*/,                              4/*victim*/,                              5/*awardedTo*/                              6/*weapon*/ ]
+	}
+	else
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
+		fieldNums = [ 4/*victim*/,                              6/*weapon*/ ]
+	}
+	
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerKilled, fieldData, fieldNums )
+}
+
+void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker, var damageInfo, int eventType )
+{
+	if( !IsValid( victim ) )
+		return
+
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	string weaponName = IsValid( weapon ) ? weapon.GetWeaponClassName() : DamageInfo_GetInflictor( damageInfo ).GetClassName()
 
 	table< int, var > ornull attackerIdentity = null
 
@@ -256,12 +384,12 @@ void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker
 	if( IsValid( attacker ) && attacker.IsPlayer() )
 	{
 		fieldData = [ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
-		fieldNums = [ 3/*attacker*/,                              4/*victim*/,                              weaponNameFieldNum/*weapon*/ ]
+		fieldNums = [ 3/*attacker*/,                              4/*victim*/,                              5/*weapon*/ ]
 	}
 	else
 	{
 		fieldData = [ LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
-		fieldNums = [ 4/*victim*/,                              weaponNameFieldNum/*weapon*/ ]
+		fieldNums = [ 4/*victim*/,                              5/*weapon*/ ]
 	}
 
 	if( eventType == eLiveAPI_EventTypes.playerDamaged )
@@ -271,11 +399,6 @@ void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker
 	}
 
 	LiveAPI_WriteLogUsingDefinedFields( eventType, fieldData, fieldNums )
-}
-
-void function LiveAPI_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
-{
-	LiveAPI_OnPlayerDamageActionCommon( victim, attacker, damageInfo, eLiveAPI_EventTypes.playerKilled )
 }
 
 void function LiveAPI_OnPlayerStartBleedout( entity victim, entity attacker, var damageInfo )
