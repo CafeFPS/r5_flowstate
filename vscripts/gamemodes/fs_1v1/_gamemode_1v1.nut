@@ -2498,8 +2498,7 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	//Message_New( player, "Waiting for players", 300 )
-	LocalMsg( player, "#FS_WaitingForPlayers", "", 300 )
+	LocalMsg( player, "#FS_WaitingForPlayers", "", 1, 300 )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 
