@@ -581,7 +581,7 @@ void function Flowstate_AddCustomScoreEventMessage( string eventText, float dura
 		file.flowstateSmallServerMsg = null
 	}
 	
-	if ( file.flowstateSmallServerMsg_Topo != null ||  eventText == "" )
+	if ( file.flowstateSmallServerMsg_Topo != null ||  eventText == "" && file.flowstateSmallServerMsg_Topo != null )
 	{
 		RuiTopology_Destroy( file.flowstateSmallServerMsg_Topo )
 		file.flowstateSmallServerMsg_Topo = null
