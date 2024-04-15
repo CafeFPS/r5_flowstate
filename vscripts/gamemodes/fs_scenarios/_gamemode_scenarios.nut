@@ -9,7 +9,10 @@ global function FS_Scenarios_Main_Thread
 global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
 global function FS_Scenarios_GetSkydiveFromDropshipEnabled
+global function FS_Scenarios_GetGroundLootEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
+global function FS_Scenarios_SaveLocationFromLootSpawn
+global function FS_Scenarios_SaveLootbinData
 
 #if DEVELOPER
 global function DEV_KillAllPlayers
@@ -32,11 +35,24 @@ global struct scenariosGroupStruct
 	bool IsFinished = false
 	float endTime
 	bool showedEndMsg = false
+
+	// realm based ground loot system
+	array<entity> groundLoot
+	array<entity> lootbins
+}
+
+struct lootbinsData
+{
+	vector origin
+	vector angles
 }
 
 struct {
 	table<int, scenariosGroupStruct> scenariosPlayerToGroupMap = {} //map for quick assessment
 	table<int, scenariosGroupStruct> scenariosGroupsInProgress = {} //group map to group
+	
+	array<vector> allLootSpawnsLocations
+	array<lootbinsData> allMapLootbins
 } file
 
 struct {
@@ -63,8 +79,8 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
 	settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
 
-	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", false )
-	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", false ) // used only when max_queuetime is triggered
+	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
+	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", false )
 	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 
 	teamSlots.resize( 119 )
@@ -76,6 +92,250 @@ void function Init_FS_Scenarios()
 		teamSlots[ i ] = false
 	}
 	SurvivalFreefall_Init()
+}
+
+void function FS_Scenarios_SaveLootbinData( entity lootbin )
+{
+	lootbinsData lootbinStruct
+	lootbinStruct.origin = lootbin.GetOrigin()
+	lootbinStruct.angles = lootbin.GetAngles()
+	file.allMapLootbins.append( lootbinStruct )
+
+	lootbin.Destroy() //save edicts seven more
+}
+
+void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector center = groupLocStruct.Center
+	int realm = group.slotIndex
+
+	array< lootbinsData > chosenSpawns
+	
+	foreach( i, lootbinStruct in file.allMapLootbins )
+		if( Distance2D( lootbinStruct.origin, center) <= 6000 )
+			chosenSpawns.append( lootbinStruct )
+
+	string zoneRef = "zone_high"
+
+	int count = 0
+	int weapons = 0
+
+	foreach( lootbinStruct in chosenSpawns )
+	{
+		entity lootbin = FS_Scenarios_CreateCustomLootBin( lootbinStruct.origin, lootbinStruct.angles )
+
+		if( !IsValid( lootbin ) )
+			continue
+
+		FS_Scenarios_InitLootBin( lootbin )
+
+		array<string> Refs
+		string itemRef
+		LootData lootData
+
+		for(int i = 0; i < RandomIntRangeInclusive(3,5); i++)
+		{
+			for(int j = 0; j < 1; j++)
+			{
+				itemRef = SURVIVAL_GetWeightedItemFromGroup( "zone_high" )
+				lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+
+				if(  lootData.lootType == eLootType.RESOURCE ||
+				lootData.lootType == eLootType.DATAKNIFE ||
+				lootData.lootType == eLootType.INCAPSHIELD ||
+				lootData.lootType == eLootType.BACKPACK ||
+				lootData.lootType == eLootType.HELMET ||
+				lootData.lootType == eLootType.ARMOR ||
+				lootData.lootType == eLootType.GADGET ||
+				itemRef == "blank" ||
+				itemRef == "mp_weapon_raygun" ||
+				itemRef == "" )
+				{
+					j--
+					continue
+				}
+				
+				if( lootData.lootType == eLootType.MAINWEAPON )
+					weapons++
+
+				Refs.append( itemRef )
+			}
+		}
+		
+		lootbin.RemoveFromAllRealms()
+		lootbin.AddToRealm( realm )
+		
+		AddMultipleLootItemsToLootBin( lootbin, Refs )
+
+		group.lootbins.append( lootbin )
+		count++
+	}
+	printt("spawned", count, "lootbins for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+}
+
+entity function FS_Scenarios_CreateCustomLootBin( vector origin, vector angles )
+{
+	entity lootbin = CreateEntity( "prop_dynamic" )
+	lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME_CUSTOM_REALMS )
+	lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
+	lootbin.SetOrigin( origin )
+	lootbin.SetAngles( angles )
+	lootbin.kv.solid = SOLID_VPHYSICS
+
+	DispatchSpawn( lootbin )
+
+	return lootbin
+}
+
+void function FS_Scenarios_DestroyLootbinsForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	int count = 0
+	foreach( lootbin in group.lootbins )
+		if( IsValid( lootbin ) )
+		{
+			count++
+			RemoveLootBinReferences_Preprocess( lootbin )
+			lootbin.Destroy()
+		}
+		
+	printt( "destroyed", count, "lootbins for group", group.groupHandle )
+}
+
+void function FS_Scenarios_SaveLocationFromLootSpawn( entity ent )
+{
+	file.allLootSpawnsLocations.append( ent.GetOrigin() )
+	ent.Destroy() //save edicts even more
+}
+
+void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector center = groupLocStruct.Center
+	int realm = group.slotIndex
+
+	array<vector> chosenSpawns
+	
+	foreach( spawn in file.allLootSpawnsLocations )
+		if( Distance2D( spawn, center) <= 6000 )
+			chosenSpawns.append( spawn )
+
+	string zoneRef = "zone_high"
+
+	int count = 0
+	int weapons = 0
+
+	foreach( spawn in chosenSpawns )
+	{
+		string itemRef
+		LootData lootData
+
+		for(int i = 0; i < 1; i++)
+		{
+			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+			lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+
+			if(  lootData.lootType == eLootType.RESOURCE ||
+			lootData.lootType == eLootType.DATAKNIFE ||
+			lootData.lootType == eLootType.INCAPSHIELD ||
+			lootData.lootType == eLootType.BACKPACK ||
+			lootData.lootType == eLootType.HELMET ||
+			lootData.lootType == eLootType.ARMOR ||
+			lootData.lootType == eLootType.GADGET ||
+			itemRef == "blank" ||
+			itemRef == "mp_weapon_raygun" ||
+			itemRef == "" )
+			{
+				i--
+				continue
+			}
+		}
+
+		vector endOrigin         = <spawn.x, spawn.y, -MAX_WORLD_COORD_BUFFER >
+		TraceResults traceResult = TraceLine( spawn, endOrigin, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+		spawn = traceResult.endPos
+
+		LootTypeData lt = GetLootTypeData( lootData.lootType )
+
+		entity loot
+		int zangle = 0
+
+		if( lootData.lootType == eLootType.MAINWEAPON )
+		{
+			weapons++
+			string ammoType = lootData.ammoType
+
+			if ( !SURVIVAL_Loot_IsRefValid( ammoType ) )
+				continue
+
+			array<vector> circlePositions
+			
+			for(int i = 0; i < 8; i++)
+			{
+				float r = float(i) / float( 8 ) * 2 * PI
+				vector start = spawn + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0>
+				circlePositions.append( TraceLine( start, <start.x, start.y, -MAX_WORLD_COORD_BUFFER >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE ).endPos )
+			}
+
+			//Add two ammo stacks per weapon
+			lootData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
+
+			vector nextOrigin = circlePositions.getrandom()
+			entity ammo1 = SpawnGenericLoot( ammoType, nextOrigin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 1>, lootData.countPerDrop )
+			circlePositions.fastremovebyvalue( nextOrigin )
+
+			entity ammo2 = SpawnGenericLoot( ammoType, circlePositions.getrandom() + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 1>, lootData.countPerDrop )
+
+			ammo1.RemoveFromAllRealms()
+			ammo1.AddToRealm( realm )
+			ammo2.RemoveFromAllRealms()
+			ammo2.AddToRealm( realm )
+
+			group.groundLoot.append( ammo1 )
+			group.groundLoot.append( ammo2 )
+			zangle = 90
+		}
+
+		if( !IsValid( loot ) )
+			loot = SpawnGenericLoot( itemRef, spawn + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), zangle>, lootData.countPerDrop )
+
+		if( !IsValid( loot ) )
+			continue
+
+		loot.RemoveFromAllRealms()
+		loot.AddToRealm( realm )
+
+		group.groundLoot.append( loot )
+		count++
+	}
+
+	printt("spawned", count, "ground loot for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+}
+
+void function FS_Scenarios_DestroyLootForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	int count = 0
+	foreach( loot in group.groundLoot )
+		if( IsValid( loot ) )
+		{
+			count++
+			loot.Destroy()
+		}
+		
+	printt( "destroyed", count, "ground loot for group", group.groupHandle )
 }
 
 table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
@@ -91,6 +351,11 @@ table<int, scenariosGroupStruct> function FS_Scenarios_GetPlayerToGroupMap()
 bool function FS_Scenarios_GetSkydiveFromDropshipEnabled()
 {
 	return settings.fs_scenarios_start_skydiving
+}
+
+bool function FS_Scenarios_GetGroundLootEnabled()
+{
+	return settings.fs_scenarios_ground_loot
 }
 
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
@@ -224,7 +489,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 }
 
 void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove ) 
-{  
+{ 
 	if( !IsValid(groupToRemove) )
 	{
 		sqerror("Logic flow error:  groupToRemove is invalid")
@@ -232,6 +497,12 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 	}
 
 	FS_Scenarios_DestroyRingsForGroup( groupToRemove )
+
+	if( settings.fs_scenarios_ground_loot )
+	{
+		FS_Scenarios_DestroyLootForGroup( groupToRemove )
+		FS_Scenarios_DestroyLootbinsForGroup( groupToRemove )
+	}
 
 	array<entity> players
 	players.extend( groupToRemove.team1Players )
@@ -402,7 +673,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
 	}
 
-	Message_New( player, "Kill and win to get points in the global match", 5 )
+	Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
 
 	#if DEVELOPER
 	#else
@@ -410,9 +681,9 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	#endif
 
 	if(!IsValid(player)) return
-
-	Inventory_SetPlayerEquipment( player, "armor_pickup_lv3", "armor")
 	
+	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
+
 	if ( g_bLGmode )
 	{
 		PlayerRestoreHP_1v1(player, 100, 0 ) //lg
@@ -422,9 +693,25 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 	}
 	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-	//re-enable for inventory. 
 	Survival_SetInventoryEnabled( player, true )
-	SetPlayerInventory( player, [] ) //TODO: set array to list of custom attachments if any - mkos
+	SetPlayerInventory( player, [] )
+
+	if( FS_Scenarios_GetGroundLootEnabled() )
+	{
+		DeployAndEnableWeapons( player )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
+
+		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+		foreach(item in loot)
+			SURVIVAL_AddToPlayerInventory(player, item, 2)
+	}
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
@@ -441,7 +728,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 	while(true)
 	{
-		WaitFrame()
+		wait 0.1
 
 		// Recién conectados
 		foreach ( player in GetPlayerArray() )
@@ -493,7 +780,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						continue
 
-					Message_New( player, "Scenario will end in 30 seconds",  5 )
+					Message_New( player, "%$rui/menu/store/feature_timer% 30 Seconds remaining",  5 )
 				}
 				group.showedEndMsg = true
 			}
@@ -548,7 +835,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if( Distance2D( player.GetOrigin(),Center) > 6000 ) //检测乱跑的脑残
 				{
 					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-					player.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+					player.TakeDamage( 3, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
 					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
 				}
 			}
@@ -667,13 +954,23 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			FS_SetRealmForPlayer( player, newGroup.slotIndex )
 
 			thread FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+
+			if( settings.fs_scenarios_dropshipenabled )
+				Message_New( player, "Starting scenario",  5 )
 		}
+
+		if( settings.fs_scenarios_ground_loot )
+		{
+			thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
+			thread FS_Scenarios_SpawnLootForGroup( newGroup )
+		} else
+			printt( "ground loot is disabled from playlist!" )
 
 		if( settings.fs_scenarios_dropshipenabled )
 		{
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
-		} else
+		} else if( !settings.fs_scenarios_ground_loot )
 		{
 			GiveWeaponsToGroup( players )
 		}

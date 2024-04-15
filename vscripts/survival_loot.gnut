@@ -71,6 +71,9 @@ struct {
 
 bool function InfiniteAmmoEnabled()
 {
+	if( is3v3Mode() && FS_Scenarios_GetGroundLootEnabled() )
+		return false
+
 	return GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
 }
 
@@ -615,19 +618,25 @@ void function SURVIVAL_PlaceGroundItems()
 	}
 
 	
-		foreach( ent in itemEnts )
+	foreach( ent in itemEnts )
+	{
+		if( is3v3Mode() )
 		{
-			if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
-			{
-				ent.Destroy() // save even more edicts
-				continue
-			}
-
-			if( GetEditorClass( ent ) != "info_survival_weapon_location" )
-				continue
-
-			OnGroundLootSpawned( ent )
+			FS_Scenarios_SaveLocationFromLootSpawn( ent )
+			continue
 		}
+
+		if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
+		{
+			ent.Destroy() // save even more edicts
+			continue
+		}
+
+		if( GetEditorClass( ent ) != "info_survival_weapon_location" )
+			continue
+
+		OnGroundLootSpawned( ent )
+	}
 
 	FlagSet( "Survival_LootSpawned" )
 }

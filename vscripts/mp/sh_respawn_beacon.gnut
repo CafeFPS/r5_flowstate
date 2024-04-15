@@ -1184,7 +1184,10 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 				{
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-					GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
+
+					if( !FS_Scenarios_GetGroundLootEnabled() )
+						GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
+
 					Signal( player, "PlayerDroppedFromDropship" )
 
 					if( FS_Scenarios_GetSkydiveFromDropshipEnabled() )

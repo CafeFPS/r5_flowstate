@@ -261,8 +261,8 @@ bool function IsNewLootEnabled( string ref )
 		// case "mp_weapon_sentinel":
 		case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
-		//case "mp_weapon_3030":
-		// case "mp_weapon_nemesis":
+		case "mp_weapon_3030":
+		case "mp_weapon_nemesis":
 		case "arrows":
 		case "mp_weapon_dragon_lmg":
 		case "mp_weapon_car":

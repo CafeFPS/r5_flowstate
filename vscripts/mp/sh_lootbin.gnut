@@ -22,6 +22,7 @@ global function Thread_DissolveMovableLootBin
 global function RefreshLootBin
 global function ClearLootBinContents
 global function LootBin_PlayCloseSequence
+global function FS_Scenarios_InitLootBin
 #elseif CLIENT
 global function ServerCallback_RefreshLootbinHighlight
 #endif
@@ -33,6 +34,7 @@ global function LootBin_IsOpen
 
 global const string LOOT_BIN_MARKER_SCRIPTNAME = "survival_lootbin"
 global const string LOOT_BIN_SCRIPTNAME = "survival_lootbin_spawned"
+global const string LOOT_BIN_SCRIPTNAME_CUSTOM_REALMS = "survival_lootbin_custom_realms"
 
 global const asset LOOT_BIN_MODEL = $"mdl/props/loot_bin/loot_bin_01_animated.rmdl"
 global const bool LOOT_BIN_CLOSABLE = false // note that they will always be closable if playlist var lootbins_infinite is set to 1
@@ -114,6 +116,12 @@ void function EntitiesDidLoad()
 
 void function InitLootBinFromMap( entity lootbin )
 {
+	if( is3v3Mode() )
+	{
+		FS_Scenarios_SaveLootbinData( lootbin )
+		return
+	}
+
 	if(GameRules_GetGameMode() == "fs_infected")
 	{
 		if ( file.lootBinList.contains( lootbin ) )
@@ -284,6 +292,32 @@ void function InitLootBin( entity lootbin )
 	{
 		AddMultipleLootItemsToLootBin( lootbin, Refs )
 	}
+}
+
+void function FS_Scenarios_InitLootBin( entity lootbin )
+{
+	if ( file.lootBinList.contains( lootbin ) )
+		return
+
+	lootbin.e.isOpen = false
+	lootbin.e.isBusy = false
+	lootbin.e.hasBeenOpened = false
+	lootbin.e.shouldSpawnLoot = true
+
+	lootbin.AllowMantle()
+	lootbin.SetForceVisibleInPhaseShift( true )
+	lootbin.SetUsable()
+	lootbin.SetFadeDistance( 100000 )
+	lootbin.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	lootbin.SetUsablePriority( USABLE_PRIORITY_LOW )
+	AddCallback_OnUseEntity( lootbin, OnLootBinUse )
+
+	file.lootBinsSpawnedLootMap[lootbin] <- []
+	file.lootBinsLootInside[lootbin] <- []
+
+	file.lootBinList.append( lootbin )
+
+	SetCallback_CanUseEntityCallback( lootbin, LootBin_CanUse )
 }
 
 // the loop doesn't play without a delay involved for some reason
@@ -652,15 +686,15 @@ bool function LootBin_IsBusy( entity lootbin )
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
 {
-	if(GameRules_GetGameMode() == "fs_infected")
+	if( lootbin.GetScriptName() == "smartbin" && GameRules_GetGameMode() == "fs_infected")
 	{
 		AddMysteryBox( lootbin )
 		SetMysteryBoxUsable( lootbin )		
 		file.lootBinList.append( lootbin )
 		return
 	}
-	
-	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME && lootbin.GetScriptName() != "smartbin")
+
+	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME && lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME_CUSTOM_REALMS )
 		return
 
 	AddEntityCallback_GetUseEntOverrideText( lootbin, GetLootBinUseTextOverride )
