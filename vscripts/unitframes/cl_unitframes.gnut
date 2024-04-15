@@ -426,7 +426,7 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 	if ( playerTeam == TEAM_UNASSIGNED )
 		return false
 
-	if ( playerTeam == TEAM_SPECTATOR )
+	if ( playerTeam == TEAM_SPECTATOR && GetCurrentPlaylistName() != "fs_scenarios" )
 		return false
 
 	if ( playerTeam != viewer.GetTeam() )
