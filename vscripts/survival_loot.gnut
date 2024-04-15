@@ -614,9 +614,15 @@ void function SURVIVAL_PlaceGroundItems()
 		startLootEnt = Entities_FindByClassname( startLootEnt, "script_ref" )
 	}
 
-	if ( GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
+	
 		foreach( ent in itemEnts )
 		{
+			if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
+			{
+				ent.Destroy() // save even more edicts
+				continue
+			}
+
 			if( GetEditorClass( ent ) != "info_survival_weapon_location" )
 				continue
 
