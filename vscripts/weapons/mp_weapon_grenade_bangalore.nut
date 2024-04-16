@@ -213,7 +213,7 @@ void function Bangalore_DetonateSmokeGrenade( entity smokeGrenade, entity owner,
 	const FUSE_TIME = 0.75
 
 	EndSignal( owner, "OnDestroy" )
-	EndSignal( owner, "CleanupPlayerPermanents" )
+	EndSignal( owner, "CleanUpPlayerAbilities" )
 	EndSignal( smokeGrenade, "OnDestroy" )
 
 	OnThreadEnd(

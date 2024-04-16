@@ -121,7 +121,24 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.SetScriptName("jump_pad")
 
 	if(gameMode != "fs_dm")
-		thread TrapDestroyOnRoundEnd( owner, newProjectile )
+	{
+		thread function () : ( newProjectile, owner )
+		{
+			EndSignal( newProjectile, "OnDestroy" )
+			EndSignal( owner, "CleanUpPlayerAbilities" )
+
+			OnThreadEnd( function() : ( newProjectile )
+				{
+					if( IsValid( newProjectile ) )
+					{
+						newProjectile.Destroy()
+					}
+				}	
+			)
+
+			WaitForever()
+		}()
+	}
 
 	if ( IsValid( traceResult.hitEnt ) )
 	{

@@ -1209,7 +1209,7 @@ void function StartTraining_Revive( entity player )
 		}
 
 		// Give them ammo to do the drone again
-		Signal( player, "CleanupAllDroneMedics" )
+		Signal( player, "CleanUpPlayerAbilities" )
 		tacticalWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 		tacticalWeapon.SetWeaponPrimaryClipCount( tacticalWeapon.GetWeaponPrimaryClipCountMax() )
 	}

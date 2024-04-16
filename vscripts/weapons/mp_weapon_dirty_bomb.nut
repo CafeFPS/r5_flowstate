@@ -264,7 +264,6 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	string noSpawnIdx = CreateNoSpawnArea( TEAM_INVALID, team, origin, -1.0, DIRTY_BOMB_GAS_RADIUS )
 	SetObjectCanBeMeleed( canisterProxy, true )
 	SetVisibleEntitiesInConeQueriableEnabled( canisterProxy, false )
-	//thread TrapDestroyOnRoundEnd( owner, canisterProxy )
 
 	//make npc's fire at their own traps to cut off lanes
 	if ( owner.IsNPC() )

@@ -90,7 +90,6 @@ global function PROTO_InitTrackedProjectile
 global function PROTO_PlayTrapLightEffect
 global function Satchel_PostFired_Init
 global function StartClusterExplosions
-global function TrapDestroyOnRoundEnd
 global function TrapExplodeOnDamage
 global function PROTO_DelayCooldown
 global function PROTO_FlakCannonMissiles
@@ -287,7 +286,6 @@ void function WeaponUtility_Init()
 	RegisterSignal( "OnKnifeStick" )
 	RegisterSignal( "EMP_FX" )
 	RegisterSignal( "ArcStunned" )
-	RegisterSignal( "CleanupPlayerPermanents" )
 	RegisterSignal( "PlayerChangedClass" )
 	RegisterSignal( "OnSustainedDischargeEnd" )
 	RegisterSignal( "EnergyWeapon_ChargeStart" )
@@ -1769,22 +1767,6 @@ bool function WeaponIsSmartPistolVariant( entity weapon )
 		return false
 
 	return (isSP == 1)
-}
-
-// NOTE: we should stop using this
-void function TrapDestroyOnRoundEnd( entity player, entity trapEnt )
-{
-	trapEnt.EndSignal( "OnDestroy" )
-	waitthread WaitForTrapDestroyTriggers( player, trapEnt )
-	if ( IsValid( trapEnt ) )
-		trapEnt.Destroy()
-}
-
-void function WaitForTrapDestroyTriggers( entity player, entity trapEnt )
-{
-	player.EndSignal( "CleanupPlayerPermanents" )
-
-	svGlobal.levelEnt.WaitSignal( "ClearedPlayers" )
 }
 
 void function AddPlayerScoreForTrapDestruction( entity player, entity trapEnt )

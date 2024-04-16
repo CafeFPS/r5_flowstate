@@ -676,7 +676,7 @@ void function WaitForPhaseTunnelExpiration( entity player )
 {
 	if ( IsValid( player ) )
 	{
-		player.EndSignal( "CleanupPlayerPermanents" )
+		player.EndSignal( "CleanUpPlayerAbilities" )
 	}
 
 	wait PHASE_TUNNEL_LIFETIME
@@ -972,6 +972,7 @@ void function PhaseTunnel_PhaseEntity( entity ent, entity tunnelEnt, entity trig
 void function PhaseTunnel_MoveEntAlongPath( entity player, PhaseTunnelPathData pathData )
 {
 	player.EndSignal( "OnDeath" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 
 	//printt( "MOVING PLAYER " + player + " ALONG PATH!!!" )
 

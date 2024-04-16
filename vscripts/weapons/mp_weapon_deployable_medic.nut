@@ -105,8 +105,6 @@ void function MpWeaponDeployableMedic_Init()
 	RegisterSignal( "DeployableMedic_HealAborted" )
 	RegisterSignal( "DeployableMedic_Attached" )
 	RegisterSignal( "DeployableMedic_LeftHealingTrigger" )
-	RegisterSignal( "CleanupAllDroneMedics" )
-
 	PrecacheModel( DEPLOYABLE_MEDIC_DRONE_MODEL )
 	PrecacheMaterial(  $"models/cable/drone_medic_cable"  )
 
@@ -290,7 +288,6 @@ void function DeployMedicCanister( entity projectile )
 	}
 
 	owner.EndSignal( "OnDestroy" )
-	owner.EndSignal( "CleanupAllDroneMedics" )
 	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	if ( IsValid( projectile ) )
@@ -333,7 +330,6 @@ void function DeployMedicCanister( entity projectile )
 	SetVisibleEntitiesInConeQueriableEnabled( droneMedic, false )
 	droneMedic.RemoveFromAllRealms()
 	droneMedic.AddToOtherEntitysRealms( owner )
-	thread TrapDestroyOnRoundEnd( owner, droneMedic )
 
 	//make npc's fire at their own traps to cut off lanes
 	if ( owner.IsNPC() )
@@ -394,7 +390,7 @@ void function DroneMedicAnims( entity droneMedic )
 
 	entity owner = droneMedic.GetOwner()
 	EndSignal( owner, "OnDestroy" )
-	EndSignal( owner, "CleanupAllDroneMedics" )
+	EndSignal( owner, "CleanUpPlayerAbilities" )
 	EndSignal( droneMedic, "DeployableMedic_HealDepleated" )
 
 	droneMedic.SetSkin( 1)
@@ -589,7 +585,7 @@ void function DeployableMedic_CreateHealTriggerArea( entity owner, entity droneM
 	Assert ( IsNewThread(), "Must be threaded off" )
 	droneMedic.EndSignal( "OnDestroy" )
 	droneMedic.EndSignal( "DeployableMedic_HealDepleated" )
-	owner.EndSignal( "CleanupAllDroneMedics" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	vector origin = droneMedic.GetOrigin()
 

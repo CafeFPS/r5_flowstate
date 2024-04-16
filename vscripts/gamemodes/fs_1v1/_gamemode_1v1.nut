@@ -4662,9 +4662,7 @@ void function _CleanupPlayerEntities( entity player )
 {
 	DestroyAllTeslaTrapsForPlayer( player )	// no signal for destroying by owner.. (designed to persist)
 	//player.Signal( "OnDestroy" ) //this takes care of most tacticals
-	
-	player.Signal( "CleanUpPlayerAbilities" ) 	
-	
+
 	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) )
 	{
 		GetPlayerOutOfCamera( player )// why isn't this set up? -> Signal( "ExitCameraView" )
@@ -4677,7 +4675,8 @@ void function _CleanupPlayerEntities( entity player )
 	}
 
 	PhaseTunnel_CancelPlacement( player )
-	// player.Signal( "CleanupPlayerPermanents" )
+	
+	player.Signal( "CleanUpPlayerAbilities" )
 }
 
 LocPair function getBotSpawn()

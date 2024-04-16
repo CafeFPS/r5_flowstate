@@ -698,7 +698,8 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 
 	if( FS_Scenarios_GetGroundLootEnabled() )
 	{
-		DeployAndEnableWeapons( player )
+		thread RechargePlayerAbilities( player )
+
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
@@ -712,7 +713,8 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
-		RechargePlayerAbilities( player )
+		DeployAndEnableWeapons( player )
+		EnableOffhandWeapons( player )
 	}
 }
 
