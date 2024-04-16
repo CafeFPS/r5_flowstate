@@ -470,14 +470,12 @@ void function Thread_CheckInput( entity player )
 
 bool function InvalidInput( int input_type, int movevalue )
 {
-
 	if ( movevalue == 0 && input_type == 0 )
 	{
 		return true
 	} 
 	
-	return false
-	
+	return false	
 }
 
 // not currently used ~mkos
@@ -493,21 +491,15 @@ void function HandlePlayer( entity player )
 	{
 	
 		case 1:
-			#if HAS_TRACKER_DLL
-			sqprint("Action: keeping as controller")
-			#endif
+			printt("Action: keeping as controller")
 			player.p.input = 1;
 			break
 		case 2:
-			#if HAS_TRACKER_DLL
-			sqprint("Action: kick")
-			#endif
+			printt("Action: kick")
 			//KickPlayerById( id, msg )
 			break
 		case 3:
-			#if HAS_TRACKER_DLL
-			sqprint("Action: Ban")
-			#endif
+			printt("Action: Ban")
 			//BanPlayerById( id, msg )
 			break
 	
@@ -622,27 +614,30 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 	
 		if (args.len() < 1)
 		{
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Hitsounds:", " Type into console: hitsound # \n replacing # with a number below\n\n\n\n 0 = Default \n  1 = CountDown \n 2 = None \n 3 = Click \n 4 = Armed \n 5 = Chime \n 6 = Beep \n 7 = Menu \n 8 = Ping \n 9 = Downed \n 10 = Ping2 \n 11 = Ping3 \n 12 = Ping4 \n 13 = Ping5  \n 14 = Countdown2 \n 15 = Shotgun \n 16 = Pickup ", 15)
+			// Moved to lg duels drop down menu 
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Hitsounds:", " Type into console: hitsound # \n replacing # with a number below\n\n\n\n 0 = Default \n  1 = CountDown \n 2 = None \n 3 = Click \n 4 = Armed \n 5 = Chime \n 6 = Beep \n 7 = Menu \n 8 = Ping \n 9 = Downed \n 10 = Ping2 \n 11 = Ping3 \n 12 = Ping4 \n 13 = Ping5  \n 14 = Countdown2 \n 15 = Shotgun \n 16 = Pickup ", 15)
 			return true
 		}				
 					
-		if ( args.len() > 0 && !IsNumeric( param, 0, 16 ) ){
-		
-			Message( player, "Failed", "hitsound must be number 0-16.", 5)
+		if ( args.len() > 0 && !IsNumeric( param, 0, 16 ) )
+		{
+			//Message( player, "Failed", "Hitsound must be number 0-16.", 5)
+			LocalMsg( player, "#FS_FAILED", "#FS_HitsoundNumFail" )
 			return true
 		} 
 		
 		
 		try
 		{	
-			player.p.hitsound = IntToSound(param);
+			player.p.hitsound = IntToSound( param );
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-			Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
+			//Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
+			LocalMsg( player, "#FS_SUCCESS", "#FS_HitsoundChanged", 0, 3, "", param )
 			return true	
 		} 
 		catch ( hiterr )
 		{
-			Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
+			//Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
 			return true
 		}
 				
@@ -650,19 +645,22 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 					
 }
 
+//purpose of this client command: allow lg duelers to enable a handicap ( idk quake gods wanted it )
 bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
 {
-	if (!CheckRate( player )) return false
+	if ( !CheckRate( player ) ) return false
 	
 	string param = ""
 	
-	if (args.len() > 0){
+	if ( args.len() > 0 )
+	{
 		param = args[0];
 	}
 	
-		if (args.len() < 1 || param == "" )
+		if ( args.len() < 1 || param == "" )
 		{
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
+			LocalMsg( player, "#FS_HandicapTitle", "#FS_HandicapSubstr", 0, 15 )
 			return true
 		}				
 		
@@ -676,14 +674,15 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 						
 						player.p.p_damage = 2;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						Message( player, "Success", "Damage and healing was set to 2.", 3);
+						//Message( player, "Success", "Damage and healing was set to 2.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOnSubstr", 0, 3 )
 						return true
 					
-					} catch ( handicap_err_1 ){
-							
-								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_1 )
-								return true
-							
+					} 
+					catch ( handicap_err_1 )
+					{		
+						//Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_1 )
+						return true					
 					}
 		
 		case "off":
@@ -693,14 +692,15 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 						
 						player.p.p_damage = 3;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						Message( player, "Success", "Damage and healing was set to 3.", 3);
+						//Message( player, "Success", "Damage and healing was set to 3.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOffSubstr", 0, 3 )
 						return true
 					
-					} catch ( handicap_err_2 ){
-							
-								Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_2 )
-								return true
-							
+					} 
+					catch ( handicap_err_2 )
+					{
+						//Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_2 )
+						return true
 					}
 				
 		}
@@ -711,9 +711,10 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 
 bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> args )
 {
-	if (!CheckRate( player )) return false
+	if ( !CheckRate( player ) ) return true
 
 	player.p.messagetime = Time()
+	
 	string param = "";
 	int limit = flowstateSettings.ibmm_wait_limit
 	
@@ -731,13 +732,14 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			}
 		
 			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
+			//LocalVarMsg()
 			return true
 		}				
 					
 		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
 		{
-		
-			Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
+			//Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
+			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", 0, 5, "", limit.tostring() )
 			return true
 		} 
 		
@@ -754,14 +756,14 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			player.p.IBMM_grace_period = user_value;
 			SavePlayer_wait_time( player, user_value )
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-			Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
+			//Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
+			
+			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", 0, 3, "", user_value.tostring() )
 			return true
-		
 		} 
 		catch ( hiterr )
-		{
-				
-			Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
+		{		
+			//Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
 			return true			
 		}
 	
@@ -773,7 +775,7 @@ bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> a
 	if( args.len() == 0 ){ return true }
 	
 	#if DEVELOPER 
-	sqprint( "saving:" + args[0])
+		sqprint( "saving:" + args[0])
 	#endif
 	
 	SavePlayerData( player.p.UID, "LgDuelsSetting", args[0] )
@@ -793,7 +795,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 	
 		if (args.len() < 1)
 		{
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n LOCK1V1 SETTING:", " Type into console: lock1v1 # \n replacing # with 'on' or 'off'.  \n\n On: You can lock/be locked into 1v1 fights with same player. \n\n Off: You can neither lock, nor be locked into 1v1s.", 15)
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n LOCK1V1 SETTING:", " Type into console: lock1v1 # \n replacing # with 'on' or 'off'.  \n\n On: You can lock/be locked into 1v1 fights with same player. \n\n Off: You can neither lock, nor be locked into 1v1s.", 15)
 			return true
 		}				
 		
@@ -817,13 +819,14 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 						player.p.lock1v1_setting = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_lock1v1_setting( player, true )
-						Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
+						//Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", 0, 3 )
 						return true
 					
 					} 
 					catch ( lock1v1_err_1 )
 					{			
-						Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_1 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_1 )
 						return true		
 					}
 		
@@ -838,12 +841,13 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 						player.p.lock1v1_setting = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_lock1v1_setting( player, false )
-						Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
+						//Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", 0, 3 )
 						return true
 					} 
 					catch ( lock1v1_err_2 )
 					{
-						Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_2 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_2 )
 						return true
 					}
 				
@@ -868,7 +872,8 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 	
 		if (args.len() < 1)
 		{
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: start_in_rest # \n replacing # with 'on' or 'off'.  \n\n On: When the round/game starts or you join, you will start in rest and have to join the queue manually. \n\n Off: You will join the queue automatically.", 15)
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: start_in_rest # \n replacing # with 'on' or 'off'.  \n\n On: When the round/game starts or you join, you will start in rest and have to join the queue manually. \n\n Off: You will join the queue automatically.", 15)
+			LocalMsg( player, "#FS_START_IN_REST_TITLE", "#FS_START_IN_REST_SUBSTR" )
 			return true
 		}				
 		
@@ -892,13 +897,14 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 						player.p.start_in_rest_setting = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_start_in_rest_setting( player, true )
-						Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
+						//Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", 0, 3 )
 						return true
 					
 					} 
 					catch ( rest_setting_err_1 )
 					{			
-						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
 						return true		
 					}
 		
@@ -913,12 +919,13 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 						player.p.start_in_rest_setting = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_start_in_rest_setting( player, false )
-						Message( player, "Success", "START_IN_REST setting set to disabled.", 3);
+						//Message( player, "Success", "START_IN_REST setting set to disabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
 						return true
 					} 
 					catch ( rest_setting_err_2 )
 					{
-						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
 						return true
 					}
 				
@@ -942,7 +949,8 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 	
 		if (args.len() < 1)
 		{
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: enable_input_banner # \n replacing # with 'on' or 'off'.  ", 15)
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n INPUT BANNER", " Type into console: enable_input_banner # \n replacing # with 'on' or 'off'.  ", 15)
+			LocalMsg( player, "#FS_INPUT_BANNER_DEPRECATED", "#FS_INPUT_BANNER_SUBSTR_DEP" )
 			return true
 		}				
 		
@@ -966,13 +974,13 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						player.p.enable_input_banner = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_enable_input_banner( player, true )
-						Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
-						return true
-					
+						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", 0, 3 )
+						return true				
 					} 
 					catch ( rest_setting_err_1 )
 					{			
-						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
 						return true		
 					}
 		
@@ -987,12 +995,13 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						player.p.enable_input_banner = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_enable_input_banner( player, false )
-						Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
+						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
+						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", 0, 3 )
 						return true
 					} 
 					catch ( rest_setting_err_2 )
 					{
-						Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
+						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
 						return true
 					}
 				
@@ -1783,7 +1792,8 @@ void function __HighPingCheck(entity player)
 		player.FreezeControlsOnServer()
 		player.ForceStand()
 		HolsterAndDisableWeapons( player )
-
+		
+		//TODO: LocalVarMsg()
 		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
 		
 		wait 3
@@ -3380,7 +3390,8 @@ void function UpgradeShields(entity player, bool died)
 			case 5:
 				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", 0, 4, "", player.p.name )
+					//Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
             break
             case 6:
 			case 7:
@@ -3388,27 +3399,33 @@ void function UpgradeShields(entity player, bool died)
             break
 			case 8:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 8 kill streak and extra shield!", 5, "")
+				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 8 kill streak and extra shield!", 5, "")
 			break
 			case 15:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak!", 5, "")
+				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak!", 5, "")
 			break
 			case 20:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 5, "")
+				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 5, "")
 			break
 			case 25:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 5, "")
+				    LocalMsg( sPlayer, "#FS_30_KILL_STREAK_TITLE", "#FS_30_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 5, "")
 			break
 			case 35:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 5, "")
+				    LocalMsg( sPlayer, "#FS_PRED_SUMPREMACY_TITLE", "#FS_35_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 5, "")
 			break
 			case 50:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 5, "")
+				    LocalMsg( sPlayer, "#FS_50_KILL_STREAK_TITLE", "#FS_50_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 5, "")
             break
 			default:
             break
@@ -3434,25 +3451,30 @@ void function KillStreakAnnouncer(entity player, bool died) {
         switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
 			case 5:
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", 0, 4, "", player.p.name )
+					//Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
 			case 10:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
+				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
             break
 			case 15:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak and extra shield!", 5, "")
+				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak and extra shield!", 5, "")
 			case 20:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb and extra shield!", 5, "")
+				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+					//Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb and extra shield!", 5, "")
             break
 			case 25:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 25 kill streak and extra shield!", 5, "")
+					LocalMsg( sPlayer, "FS_PRED_SUMPREMACY_TITLE", "#FS_25_PREDATORY_SUPREMACY", 0, 5, "", player.p.name )
+				//Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 25 kill streak and extra shield!", 5, "")
             break
 			default:
                 break
@@ -3467,7 +3489,8 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	player.SetShieldHealth( FlowState_ExtrashieldValue() )
 	if(isOvershieldFromGround){
 			foreach(sPlayer in GetPlayerArray()){
-			Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
+			LocalMsg( sPlayer, "#FS_EXTRA_SHIELD_TITLE", "#FS_EXTRA_SHIELD_SUBSTR", 0, 5, "", player.p.name )
+			//Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
 		}
 	}
 }
@@ -3836,7 +3859,8 @@ void function SimpleChampionUI()
 							}
 						}
 
-						Message( player, "Oddball", file.selectedLocation.name, 5, "" )
+						//Message( player, "Oddball", file.selectedLocation.name, 5, "" )
+						LocalMsg( player, "#FS_Oddball", "", 0, 5, "", file.selectedLocation.name )
 						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
 						thread function ( ) : ( player )
 						{
@@ -3848,11 +3872,13 @@ void function SimpleChampionUI()
 							thread ResetBallInBallSpawner()
 
 							foreach( player in GetPlayerArray() )
-								Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
+								LocalMsg( player, "#FS_OddballReady", "", 0, 3, "", "", "UI_InGame_FD_SliderExit" )
+								//Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
 						}()
 					}
 					else if( !is1v1EnabledAndAllowed() )
-						Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
+						LocalMsg( player, "#FS_Deathmatch", "", 0, 5, "", file.selectedLocation.name )
+						//Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
 
 					if( !IsValid( player ) || !IsAlive( player ) )
 						return
@@ -5552,21 +5578,24 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
 	{
-		Message( player, "An error has occured", "It is in cool down. Please try again later." )
+		//Message( player, "An error has occured", "It is in cool down. Please try again later." )
+		LocalMsg( player, "#FS_ERROR_OCCURED", "#FS_COOLDOWN" )
 		return false
 	}
 	
     array<entity> enemiesArray = GetPlayerArray_Alive()
 	enemiesArray.fastremovebyvalue( player )
-    if ( enemiesArray.len() > 0 )
+    
+	if ( enemiesArray.len() > 0 )
     {
         entity specTarget = enemiesArray.getrandom()
 
         if( !IsValid(specTarget) )
         {
             //printf("error: try again")
-			Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
-            return false
+			//Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
+            LocalMsg( player, "#FS_ERROR_OCCURED", "#FS_COULD_NOT_SPECTATE" )
+			return false
         }
 
         if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 && player.p.isSpectating )
@@ -5590,16 +5619,20 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 				player.StartObserverMode( OBS_MODE_IN_EYE )				
 				thread CheckForObservedTarget(player)
 				player.p.lastTimeSpectateUsed = Time()
-			} catch(e420){
-				Message( player, "An error has occured", "Unknown error occurred. Please try again later." )
+			} 
+			catch(e420)
+			{
+				LocalMsg( player, "#FS_ERROR_OCCURED", "#FS_ERROR_OCCURED2" )
+				//Message( player, "An error has occured", "Unknown error occurred. Please try again later." )
 			}
         }
     }
     else
     {
-        printt("There is no one to spectate!")
-		Message( player, "An error has occured", "There are no players available to spectate. Please try again later." )
-    }
+        //printt("There is no one to spectate!")
+		//Message( player, "An error has occured", "There are no players available to spectate. Please try again later." )
+		LocalMsg( player, "#FS_ERROR_OCCURED", "#FS_NO_PLAYERS_TO_SPEC" )
+	}
     return true
 }
 
@@ -5675,7 +5708,8 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
-		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
+		//Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
+		LocalMsg( player, "#FS_ERROR", "#FS_DisabledTDMWeps" )
 		return false
 	}
 
@@ -5690,7 +5724,8 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	
 	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) )
 	{
-		Message( player, "NOT ALLOWED IN WAITING MODE" )
+		//Message( player, "NOT ALLOWED IN WAITING MODE" )
+		LocalMsg( player, "#FS_NotAllowedWaiting" )
 		return false
 	}
 
@@ -5699,27 +5734,32 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 	if( !SURVIVAL_Loot_IsRefValid( args[1] ) || IsForcedlyDisabledWeapon( args[1] ) )
 	{
-		Message( player, "WEAPON NOT ALLOWED :(" )
+		//Message( player, "WEAPON NOT ALLOWED :(" )
+		LocalMsg( player, "#FS_WepNotAllowed" )
 		return false
 	}
 
     if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
 	{
-		Message(player, "WEAPON BLACKLISTED")
+		//Message(player, "WEAPON BLACKLISTED")
+		LocalMsg( player, "#FS_WepBlacklisted" )
 		return false
 	}
 
 	if( file.blacklistedAbilities.len() && file.blacklistedAbilities.find(args[1]) != -1 )
 	{
-		Message(player, "ABILITY BLACKLISTED")
+		//Message(player, "ABILITY BLACKLISTED")
+		LocalMsg( player, "FS_AbilityBlacklisted" )
 		return false
 	}
 
 	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
 	{
-		Message(player, "TGIVE COOLDOWN")
+		//Message(player, "TGIVE COOLDOWN")
+		LocalMsg( player, "#FS_TgiveCooldown" )
 		return false
 	}
+	
 	entity weapon
 
 	try {
@@ -5821,7 +5861,8 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		if( ClientCommand_SaveCurrentWeapons( player, [] ) )
 		{	
 			string sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )
-			Message( player, "WEAPON " + sWepName + " SAVED")
+			//Message( player, "WEAPON " + sWepName + " SAVED")
+			LocalMsg( player, "#FS_WEAPONSAVED", "", 0, 5, sWepName )
 		}	
 			
 		if (bRestFlag)
@@ -5916,7 +5957,8 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 			if (weaponname2 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname2 empty") }
 			#endif
 			
-			Message( player, "FAILED TO SAVE" )
+			//Message( player, "FAILED TO SAVE" )
+			LocalMsg( player, "#FS_FAILEDSAVE" )
 			return false //dont save if player is dead
 		}
 	}
@@ -6216,7 +6258,8 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 		if (!IsValid(p)) continue
 		SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
 		currentTeam += 1
-		Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
+		//Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
+		LocalMsg( p, "#FS_TEAMSBALANCED", "#FS_TEAMSBALANCED_SUBSTR", 0, 4, "", numTeams.tostring() )
 	}
 
 	return true

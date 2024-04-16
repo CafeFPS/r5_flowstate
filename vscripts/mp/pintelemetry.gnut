@@ -379,6 +379,8 @@ struct {
 	string superglidetitle
 	
 	//ServerMessages
+	array<string> BotAllowedModes = ["fs_1v1"]
+	bool bBotAllowed
 	bool bChatbotEnabled
 	bool bIntervalThreadRunning
 	bool bKillIntervalThread
@@ -639,6 +641,11 @@ void function INIT_Global_R5RDEV_VarTable()
 					
 						if( setting.len() > 1 )
 						{	
+							if( !IsNumeric( trim(setting[1]) ) )
+							{
+								break
+							}
+							
 							try
 							{
 								file.Global_R5RDEV_IntSettings[trim(setting[0])] <- trim(setting[1]).tointeger();
@@ -656,6 +663,11 @@ void function INIT_Global_R5RDEV_VarTable()
 					
 						if( setting.len() > 1 )
 						{
+							if( !IsNumeric( trim(setting[1]) ) )
+							{
+								break
+							}
+							
 							try 
 							{
 								file.Global_R5RDEV_FloatSettings[trim(setting[0])] <- trim(setting[1]).tofloat();
@@ -987,13 +999,14 @@ void function __CONTROLLED_LogInit()
 
 void function PIN_Init()
 {	
+	if( IsLobby() ){ return }
 	INIT_fastComputes()
 	INIT_IntervalMessages()
 	INIT_PlayerDataCallbacks()
 	
 	SetServerReloadReadyState( ReloadState.BUSY )
 	
-	if( file.bChatbotEnabled )
+	if( file.bChatbotEnabled && file.bBotAllowed )
 	{
 		thread __LoadServerBot()
 	}
@@ -1089,6 +1102,7 @@ void function INIT_fastComputes()
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	file.update_discord_player_counts = GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
 	file.ibmm_wait_limit = GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
+	file.bBotAllowed = file.BotAllowedModes.contains( GetCurrentPlaylistName() )
 	
 	if(file.bChatbotEnabled)
 	{
@@ -1110,8 +1124,9 @@ void function INIT_fastComputes()
 //initplayer
 void function PlayerConnectedCallback( entity player ) 
 {	
+	if ( IsLobby() ){ return }
+	if ( !IsValid( player ) ){ return }
 	
-	if ( !IsValid( player ) ) return
 	//init player vars
 	int playerHandle = player.GetEncodedEHandle()
 	string playerUID = player.GetPlatformUID()
@@ -4993,7 +5008,8 @@ string function PrintAllPlayerMetrics(bool trigger = false)
 
 // This function is responsible for summing up global stats between rounds 
 // Kills/deaths/glides get reset per round, therefore globals have to be reset. 
-
+// This is because players that stay for multiple rounds will not resync online stats
+// and the server must locally keep track of these accumulations.
 
 void function UpdateRoundStats_GlobalsCarryOver()
 {

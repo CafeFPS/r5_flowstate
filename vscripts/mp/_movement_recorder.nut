@@ -23,8 +23,11 @@ void function StartMovementRecorder(entity player, float length = 10, bool loop 
 {
 	if( character < 0 ) return
 	
-	if( character > 2 ) 
+	if( character > 3 ) 
 		character = 0
+	
+	RegisterSignal("EndDummyThread")
+	EndSignal( player, "EndDummyThread" )
 	
 	vector initialpos = player.GetOrigin()
 	vector initialang = player.GetAngles()
@@ -44,7 +47,8 @@ void function StartMovementRecorder(entity player, float length = 10, bool loop 
 		"rexx_x64",
 		"IcePixelx", 
 		"KralRindo",
-		"sal"
+		"sal",
+		"mkos"
 	]
 	
 	switch(character)
@@ -65,6 +69,12 @@ void function StartMovementRecorder(entity player, float length = 10, bool loop 
 			msg1 = "RECORDING MOVEMENT AS BANGALORE"
 			aiFileToUse = "npc_dummie_bangalore"
 			AssignCharacter(player, 0)
+		break
+		
+		case 3:
+			msg1 = "RECORDING MOVEMENT AS OCTANE"
+			aiFileToUse = "npc_dummie_octane"
+			AssignCharacter(player, 6)
 		break
 		
 		default:
@@ -188,6 +198,13 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 
 void function DestroyDummys()
 {
+	entity player = GetPlayerArray()[0]
+	
+	if( IsValid( player ))
+	{
+		player.Signal("EndDummyThread")
+	}
+	
     continueLoop = false
 
     while (dummyList.len() > 0)

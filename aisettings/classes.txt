@@ -16,4 +16,5 @@ classes
 	import npc_dummie_wraith.txt
 	import npc_dummie_bangalore.txt
 	import npc_dummie_pathfinder.txt
+	import npc_dummie_octane.txt
 }

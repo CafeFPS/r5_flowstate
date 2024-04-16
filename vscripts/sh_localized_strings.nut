@@ -6,11 +6,14 @@ global function Flowstate_FetchToken
 #if SERVER
 	global function Flowstate_FetchTokenID
 	global function LocalMsg
+	global function LocalVarMsg
 #endif
 
 #if CLIENT 	
+	global function FS_ShowLocalizedMultiVarMessage
 	global function FS_BuildLocalizedTokenWithVariableString
 	global function FS_DisplayLocalizedToken
+	global function FS_BuildLocalizedMultiVarString
 #endif
 
 #if DEVELOPER 
@@ -18,6 +21,7 @@ global function Flowstate_FetchToken
 	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
 	global function DEV_printLocalizationTable
 #endif
+	global const DEBUG_VARMSG = false
 
 struct {
 
@@ -30,8 +34,11 @@ struct {
 #if CLIENT
 	string fs_variableString = ""
 	string fs_variableSubString = ""
+	table<int, string> variableVars = {}
 #endif
 
+	//these must match the same order on client.
+	//use playlist patch to add tokens between releases
 	array<string> allTokens = [
 		"#FS_NULL",
 		"#FS_1v1_Banner",
@@ -106,7 +113,63 @@ struct {
 		"#FS_CouldNotLock",
 		"#FS_AnyInput",
 		"#FS_INPUT_CHANGED",
-		"#FS_INPUT_CHANGED_SUBSTR"
+		"#FS_INPUT_CHANGED_SUBSTR",
+		"#FS_ERROR",
+		"#FS_DisabledTDMWeps",
+		"#FS_NotAllowedWaiting",
+		"#FS_WepNotAllowed",
+		"#FS_WepBlacklisted",
+		"#FS_AbilityBlacklisted",
+		"#FS_TgiveCooldown",
+		"#FS_WEAPONSAVED",
+		"#FS_FAILEDSAVE",
+		"#FS_TEAMSBALANCED",
+		"#FS_TEAMSBALANCED_SUBSTR",
+		"#FS_HitsoundNumFail",
+		"#FS_SUCCESS",
+		"#FS_HitsoundChanged",
+		"#FS_HandicapTitle",
+		"#FS_HandicapSubstr",
+		"#FS_HandicapOnSubstr",
+		"#FS_HandicapOffSubstr",
+		"#FS_IBMM_Time_Failed",
+		"#FS_IBMM_Time_Changed",
+		"#FS_LOCK1V1_ENABLED",
+		"#FS_LOCK1V1_DISABLED",
+		"#FS_START_IN_REST_TITLE",
+		"#FS_START_IN_REST_SUBSTR",
+		"#FS_START_IN_REST_ENABLED",
+		"#FS_START_IN_REST_DISABLED",
+		"#FS_INPUT_BANNER_DEPRECATED",
+		"#FS_INPUT_BANNER_SUBSTR_DEP",
+		"#FS_INPUT_BANNER_ENABLED_DEP",
+		"#FS_INPUT_BANNER_DISABLED_DEP",
+		"#FS_KILL_STREAK",
+		"#FS_5_KILL_STREAK_SUBSTR",
+		"#FS_EXTRA_KILL_STREAK_TITLE",
+		"#FS_EXTRA_KILL_STREAK_SUBSTR",
+		"#FS_15_KILL_STREAK_TITLE",
+		"#FS_15_KILL_STREAK_SUBSTR",
+		"#FS_20_KILL_STREAK_TITLE",
+		"#FS_20_KILL_STREAK_SUBSTR",
+		"#FS_30_KILL_STREAK_TITLE",
+		"#FS_30_KILL_STREAK_SUBSTR",
+		"#FS_PRED_SUMPREMACY_TITLE",
+		"#FS_35_KILL_STREAK_SUBSTR",
+		"#FS_50_KILL_STREAK_TITLE",
+		"#FS_50_KILL_STREAK_SUBSTR",
+		"#FS_25_PREDATORY_SUPREMACY",
+		"#FS_EXTRA_SHIELD_TITLE",
+		"#FS_EXTRA_SHIELD_SUBSTR",
+		"#FS_Oddball",
+		"#FS_STRING_VAR",
+		"#FS_OddballReady",
+		"#FS_Deathmatch",
+		"#FS_ERROR_OCCURED",
+		"#FS_ERROR_OCCURED2",
+		"#FS_COOLDOWN",
+		"#FS_COULD_NOT_SPECTATE",
+		"#FS_NO_PLAYERS_TO_SPEC"
 	]
 	
 } file
@@ -123,7 +186,12 @@ void function INIT_Flowstate_Localization_Strings()
 		printt("Initializing all localization tokens")
 	#endif
 	
-	for ( int i = 0; i <= file.allTokens.len() - 1; i++ )
+	int iTokensCount = file.allTokens.len()
+	
+	if( iTokensCount <= 0 )
+		return
+	
+	for ( int i = 0; i <= iTokensCount - 1; i++ )
 	{
 		file.FS_LocalizedStrings[i] <- file.allTokens[i]
 		
@@ -131,6 +199,8 @@ void function INIT_Flowstate_Localization_Strings()
 			file.FS_LocalizedStringMap[file.allTokens[i]] <- i
 		#endif
 	}
+	
+	file.allTokens.resize(0)
 }
 
 
@@ -138,7 +208,7 @@ void function INIT_Flowstate_Localization_Strings()
 //					 UTILITY FUNCTIONS					//
 //########################################################
 
-
+//SHARED
 string function Flowstate_FetchToken( int tokenID )
 {
 	if( tokenID in file.FS_LocalizedStrings )
@@ -149,6 +219,37 @@ string function Flowstate_FetchToken( int tokenID )
 	//possibly developer define out and return blank	
 	return "Token not found"
 }
+
+string function StringReplaceLimited( string baseString, string searchString, string replaceString, int limit )
+{
+	Assert( searchString.len() > 0, "cannot use StringReplaceLimited with an empty searchString" )
+
+	string newString = ""
+
+	int searchIndex = 0
+	int iReplaced = 0
+	
+	while( searchIndex < (baseString.len() - searchString.len() + 1) && iReplaced < limit )
+	{
+		var occurenceIndexOrNull = baseString.find_olduntyped( searchString, searchIndex )
+
+		if ( occurenceIndexOrNull == null )
+			break
+
+		int occurenceIndex = expect int( occurenceIndexOrNull )
+
+		newString += baseString.slice( searchIndex, occurenceIndex )
+		newString += replaceString
+
+		searchIndex = occurenceIndex + searchString.len()
+		iReplaced++;
+	}
+
+	newString += baseString.slice( searchIndex )
+
+	return newString
+}
+// /SHARED
 
 #if SERVER
 
@@ -179,6 +280,9 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	if ( !player.p.isConnected ) return
 	
 	int datalen = varString.len() + varSubstring.len()
+	
+	// this check is ui based and 
+	// should be changed based on ui type
 	if ( ( datalen ) >= 599 ) return 
 
 	string sendMessage
@@ -212,6 +316,61 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 	}
 }
+
+void function LocalVarMsg( entity player, string ref, int uiType = 3, float duration = 5, ... )
+{
+	if ( !IsValid( player ) ) return
+	if ( !player.IsPlayer() ) return
+	if ( !player.p.isConnected ) return
+	
+	int tokenID = Flowstate_FetchTokenID( ref )
+	
+	int vargCount = expect int( vargc );
+	
+	for ( int i = 0; i <= vargCount - 1; i++ )
+	{
+		if ( !ValidateType( vargv[i] ) ) 
+			return
+		
+		string send = "";
+
+		if( typeof( vargv[i] ) != "string" )
+		{
+			send = string( vargv[i] )
+		}
+		else
+		{
+			send = expect string( vargv[i] );
+		}
+
+		for ( int k = 0; k <= send.len() - 1; k++)
+		{
+			Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedMultiVarString", i, send[k] )
+		}
+	}
+	
+	Remote_CallFunction_NonReplay( player, "FS_ShowLocalizedMultiVarMessage", tokenID, uiType, duration )
+	
+}
+
+bool function ValidateType( ... )
+{
+	if( vargc <= 0 ){ return false }
+	
+	string type = typeof( vargv[0] )
+	
+	switch( type )
+	{	
+		case "string":
+		case "int":
+		case "float":
+		case "bool":
+		
+		return true
+	}
+	
+	return false
+}
 #endif
 
 //########################################################
@@ -240,8 +399,11 @@ void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
 
 int function countStringArgs( string str )
 {
-	array<string> count = split( str, "%s" )
-	return ( count.len() - 1 )
+	//return RegexpFindAll( str, "%s" ).len()
+	var pattern = MakeRegexp( "%s" )
+	int found = Regexp_Match( pattern, str ).len()
+	printt( "okay found: ", found )
+	return found
 }
 
 void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, float duration )
@@ -330,6 +492,103 @@ void function DisplayOldMessage( string str1, string str2, float duration )
 	}
 	
 	AnnouncementFromClass( player, announcement )
+}
+
+void function FS_BuildLocalizedMultiVarString( int varNum, ... )
+{	
+	for ( int i = 0; i < vargc; i++ )
+	{ 
+		if( !( varNum in file.variableVars ) )
+		{
+			file.variableVars[varNum] <- format( "%c", vargv[i] )
+		} 
+		else 
+		{
+			file.variableVars[varNum] += format( "%c", vargv[i] )
+		} 
+	} 
+}
+
+
+void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float duration )
+{
+	string localToken = Flowstate_FetchToken( token )
+	string localTokenString = Localize( localToken )
+	
+	int varCount = file.variableVars.len()
+	int tokenPlaceholdersCount = countStringArgs( localTokenString )
+	
+	if( varCount > 10 )
+	{
+		for( int k = varCount; k >= 11; k-- )
+		{
+			if( k in file.variableVars )
+			{
+				delete file.variableVars[k]
+			}
+		}
+		
+		Assert( file.variableVars.len() == 10, "Variable vars were removed, but do not equal max vars" )
+	}
+
+	if( tokenPlaceholdersCount > varCount )
+	{
+		int placeholdersToRemove = tokenPlaceholdersCount - varCount;	
+		localTokenString = StringReplaceLimited( localTokenString, "%s", "", placeholdersToRemove )
+	}
+	else if( varCount > tokenPlaceholdersCount )
+	{
+		int placeholdersToAdd = varCount - tokenPlaceholdersCount;  
+		
+		for( int i = 0; i <= placeholdersToAdd - 1; i++ )
+		{
+			localTokenString += " %s";
+		}
+	}
+	
+	string Msg = "";	
+	
+	//find me a variadic method, ty. 
+	switch( varCount )
+	{
+		case 0: break;
+		case 1: Msg = format( localTokenString, file.variableVars[0] ); break;
+		case 2: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1] ); break;
+		case 3: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2] ); break;
+		case 4: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3] ); break;
+		case 5: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4] ); break;
+		case 6: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5] ); break;
+		case 7: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6] ); break;
+		case 8: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7] ); break;
+		case 9: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8] ); break;
+		case 10: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8], file.variableVars[9] ); break;
+		default: break
+	}
+	
+	#if DEVELOPER && DEBUG_VARMSG
+		int count = 0;
+		foreach( vVar in file.variableVars )
+		{
+			count++;
+			printt( "var: ", count, vVar )
+		}
+		
+		printt("Message: ", Msg )
+		printt("uiType: ", uiType )
+		printt("Var count was: " + varCount + ", place holder count was: ", tokenPlaceholdersCount )
+	#endif 
+	
+	switch( uiType )
+	{
+		case 0: DisplayOldMessage( Msg, " ", duration ); break
+		case 1: DisplayOldMessage( " ", Msg, duration ); break
+		case 2: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
+		default:
+			printt("Server tried to call ui that doesn't exist.")
+			break
+	}
+	
+	file.variableVars.clear()
 }
 #endif
 

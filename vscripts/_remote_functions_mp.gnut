@@ -748,6 +748,8 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "ServerCallback_SetWeaponPreviewState", "bool" )
 	
 	// Localized Msg functions
+	Remote_RegisterUntypedFunction_deprecated( "FS_BuildLocalizedMultiVarString" )
+	Remote_RegisterClientFunction( "FS_ShowLocalizedMultiVarMessage", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "float", 0.0, 5000.0, 32 )
 	Remote_RegisterUntypedFunction_deprecated( "FS_BuildLocalizedTokenWithVariableString" ) //only for variable string
 	Remote_RegisterClientFunction( "FS_DisplayLocalizedToken", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "float", 0.0, 5000.0, 32 )
 

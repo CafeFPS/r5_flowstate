@@ -2647,7 +2647,8 @@ void function soloModefixDelayStart(entity player)
 		return
 	
 	#if HAS_TRACKER_DLL && TRACKER
-		LocalMsg( player, "#FS_1V1_Tracker" )
+		//LocalMsg( player, "#FS_1V1_Tracker" )
+		LocalVarMsg( player, "#FS_1V1_Tracker", 1, 5, "var 1", "var2", "var3", 4 )
 	#else 
 		LocalMsg( player, "#FS_1v1_Banner" )
 	#endif
@@ -4720,13 +4721,15 @@ void function RechargePlayerAbilities( entity player )
 	
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))
 	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
-	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )
+	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )	
+	ReloadTacticalAbility( player )
 	
 	int charID = ItemFlavor_GetGUID( character )
 	
 	if( LegendGUID_EnabledPassives.contains( charID ) )
 	{
-		GivePassive( player, 0 )
+		GivePassive( player, 0 ) //bangalore is only legend current in list
+		
 		/* //Only needed if passive list expands
 		TakeAllPassives( player )
 		ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
