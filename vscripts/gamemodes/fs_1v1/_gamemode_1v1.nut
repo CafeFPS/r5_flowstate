@@ -4660,10 +4660,7 @@ void function ClearAllNotifications()
 
 void function _CleanupPlayerEntities( entity player )
 {
-	DestroyAllTeslaTrapsForPlayer( player )	// no signal for destroying by owner.. (designed to persist)
-	//player.Signal( "OnDestroy" ) //this takes care of most tacticals
-
-	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) )
+	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) ) //todo signal
 	{
 		GetPlayerOutOfCamera( player )// why isn't this set up? -> Signal( "ExitCameraView" )
 		CryptoDrone_GetPlayerDrone( player ).Destroy()

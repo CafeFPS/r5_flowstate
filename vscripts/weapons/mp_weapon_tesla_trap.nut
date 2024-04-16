@@ -14,7 +14,6 @@ global function OnWeaponOwnerChanged_weapon_tesla_trap
 global function OnWeaponPrimaryAttack_weapon_tesla_trap
 global function CodeCallback_TeslaTrapCrossed
 global function Placement_IsHitEntScriptedPlaceable
-global function DestroyAllTeslaTrapsForPlayer
 #if CLIENT
 global function TeslaTrap_AreTrapsLinked
 global function ClientCodeCallback_TeslaTrapLinked
@@ -1393,20 +1392,6 @@ array<entity> function TeslaTrap_GetAllLinkable(entity player)
 	return linkableTraps
 }
 
-//mkos
-void function DestroyAllTeslaTrapsForPlayer( entity player )
-{
-	array<entity> playerTraps = TeslaTrap_GetAll()
-	
-	foreach ( trap in playerTraps )
-	{
-		if( IsValid(trap) && trap.GetOwner() == player )
-		{
-			trap.Destroy()
-		}
-	}
-}
-
 array<entity> function TeslaTrap_GetAllDead()
 {
 	array<entity> deadTraps
@@ -2431,6 +2416,9 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 			SetTeam( trigger, player.GetTeam() )
 
+			trigger.RemoveFromAllRealms()
+			trigger.AddToOtherEntitysRealms( player )
+
 			DispatchSpawn( trigger )
 		}
 
@@ -2464,6 +2452,21 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 
 	if( !IsValid(ownerPlayer) )
 		return
+
+	EndSignal( ownerPlayer, "CleanUpPlayerAbilities" )
+
+	OnThreadEnd( function() : ( trigger, start, end )
+		{
+			if( IsValid( trigger ) )
+				start.Destroy()
+
+			if( IsValid( start ) )
+				start.Destroy()
+
+			if( IsValid( end ) )
+				end.Destroy()
+		}	
+	)
 
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 
