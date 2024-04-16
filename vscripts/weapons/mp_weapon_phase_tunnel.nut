@@ -761,8 +761,8 @@ void function PhaseTunnel_CreateTriggerArea( entity tunnelEnt, PhaseTunnelPortal
 	DrawAngledBox( origin - Vector( 0,0,30 ), angles + <0,-90,-90>, <-20, -20, -16>, <20, 20, 70>, 255, 0, 0, true, 15 )
 	#endif
 
-	//traceBlocker.RemoveFromAllRealms()
-	//traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
+	traceBlocker.RemoveFromAllRealms()
+	traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
 
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_OPEN )
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_LOOP )
