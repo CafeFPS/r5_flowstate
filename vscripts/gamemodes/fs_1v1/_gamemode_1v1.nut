@@ -2392,12 +2392,12 @@ void function soloModePlayerToWaitingList( entity player )
 	{
 		_CleanupPlayerEntities( player )
 
-		SetTeam( player, TEAM_SPECTATOR )
-
 		if( player.Player_IsFreefalling() )
 		{
 			Signal( player, "PlayerSkyDive" )
 		}
+
+		SetTeam( player, TEAM_SPECTATOR )
 
 		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
 		
@@ -4677,7 +4677,7 @@ void function _CleanupPlayerEntities( entity player )
 	}
 
 	PhaseTunnel_CancelPlacement( player )
-	player.Signal( "CleanupPlayerPermanents" )
+	// player.Signal( "CleanupPlayerPermanents" )
 }
 
 LocPair function getBotSpawn()
