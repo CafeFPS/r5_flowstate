@@ -195,7 +195,7 @@ SmokescreenFXStruct function Smokescreen_CalculateFXStruct( SmokescreenStruct sm
 
 void function SmokescreenAffectsEntitiesInArea( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo, entity owner )
 {
-	owner.EndSignal( "CleanUpChallenge1v1" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 	
 	float startTime = Time()
 	float tickRate = 0.1
@@ -297,7 +297,7 @@ array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, Smokescreen
 
 void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime, SmokescreenFXStruct fxInfo, entity traceBlocker, array<entity> fxEntities, entity player )
 {
-	player.EndSignal( "CleanUpChallenge1v1" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 	
 	OnThreadEnd( function() : ( fxEntities, fxInfo, traceBlocker, smokescreen )
 		{

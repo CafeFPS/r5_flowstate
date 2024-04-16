@@ -672,7 +672,7 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 
 	decoy.EndSignal( "OnDestroy" ) //Note that we do this OnDestroy instead of the inbuilt OnHoloPilotDestroyed() etc functions so there is a bit of leeway after the holopilot starts to die/is fully invisible before being destroyed
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "CleanUpChallenge1v1" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 	player.EndSignal( "CleanupPlayerPermanents" )
 
 	OnThreadEnd(

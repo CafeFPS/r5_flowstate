@@ -801,7 +801,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 		gasDmgInflictor.AddToOtherEntitysRealms( smokescreen.inflictor )
 	}
 	
-	smokescreen.attacker.EndSignal( "CleanUpChallenge1v1" )
+	smokescreen.attacker.EndSignal( "CleanUpPlayerAbilities" )
 
 	OnThreadEnd(
 	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeOriginRef, smokeFXs, TrainOrMover )

@@ -165,7 +165,7 @@ void function OnJumpPadPlanted( entity projectile )
 	void function JumpPadWatcher(entity jumpPad)
 	{
 		entity owner = jumpPad.GetOwner()
-		owner.EndSignal( "CleanUpChallenge1v1" )
+		owner.EndSignal( "CleanUpPlayerAbilities" )
 		owner.EndSignal( "OnDestroy" )
 		jumpPad.EndSignal( "OnDestroy" )
 		

@@ -222,7 +222,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	vector angles = placementInfo.angles
 
 	owner.EndSignal( "OnDestroy" )
-	owner.EndSignal( "CleanUpChallenge1v1" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	int team = owner.GetTeam()
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
@@ -720,7 +720,7 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 
 	entity owner = canisterProxy.GetBossPlayer()
 	
-	owner.EndSignal( "CleanUpChallenge1v1" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 	
 	OnThreadEnd( function() : ( canisterProxy )
 		{

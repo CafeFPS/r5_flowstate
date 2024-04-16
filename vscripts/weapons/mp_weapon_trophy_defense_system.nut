@@ -697,7 +697,7 @@ void function Trophy_Watcher( entity trophy )
 	EndSignal( trophy, "OnDestroy" )
 	
 	entity player = trophy.GetBossPlayer()
-	player.EndSignal( "CleanUpChallenge1v1" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 	
 	// EndSignal( player, "OnDeath" )
 	// EndSignal( player, "OnDestroy" )

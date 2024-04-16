@@ -4663,7 +4663,7 @@ void function _CleanupPlayerEntities( entity player )
 	DestroyAllTeslaTrapsForPlayer( player )	// no signal for destroying by owner.. (designed to persist)
 	//player.Signal( "OnDestroy" ) //this takes care of most tacticals
 	
-	player.Signal( "CleanUpChallenge1v1" ) 	
+	player.Signal( "CleanUpPlayerAbilities" ) 	
 	
 	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) )
 	{
