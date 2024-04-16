@@ -101,7 +101,7 @@ void function FS_Scenarios_SaveLootbinData( entity lootbin )
 	lootbinStruct.angles = lootbin.GetAngles()
 	file.allMapLootbins.append( lootbinStruct )
 
-	lootbin.Destroy() //save edicts seven more
+	lootbin.Destroy() //save edicts even more
 }
 
 void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
@@ -711,6 +711,8 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
+
+		RechargePlayerAbilities( player )
 	}
 }
 
@@ -802,7 +804,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					{
 						Signal( player, "PlayerSkyDive" )
 					}
-	
+
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}

@@ -2390,6 +2390,8 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	if( file.is3v3Mode )
 	{
+		_CleanupPlayerEntities( player )
+
 		SetTeam( player, TEAM_SPECTATOR )
 
 		if( player.Player_IsFreefalling() )
@@ -2419,6 +2421,9 @@ void function soloModePlayerToWaitingList( entity player )
 
 		if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
 			delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
+
+		ClearRecentDamageHistory( player )
+		ClearLastAttacker( player )
 	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
@@ -4670,6 +4675,9 @@ void function _CleanupPlayerEntities( entity player )
 	{
 		player.p.lastDecoy.Destroy()
 	}
+
+	PhaseTunnel_CancelPlacement( player )
+	player.Signal( "CleanupPlayerPermanents" )
 }
 
 LocPair function getBotSpawn()
@@ -4737,7 +4745,7 @@ void function RechargePlayerAbilities( entity player )
 		*/
 	}
 
-	if( LegendGUID_EnabledUltimates.contains( charID ) ) 
+	if( LegendGUID_EnabledUltimates.contains( charID ) || is3v3Mode() ) 
 	{
 		ItemFlavor ultiamteAbility = CharacterClass_GetUltimateAbility( character )
 		player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultiamteAbility ), OFFHAND_ULTIMATE, [] )

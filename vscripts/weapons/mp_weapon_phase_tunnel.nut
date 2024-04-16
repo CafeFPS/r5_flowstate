@@ -9,6 +9,7 @@ global function OnWeaponChargeEnd_weapon_phase_tunnel
 global function OnWeaponPrimaryAttack_ability_phase_tunnel
 #if SERVER
 global function OnWeaponNPCPrimaryAttack_ability_phase_tunnel
+global function PhaseTunnel_CancelPlacement
 #endif
 
 const float CROUCH_HEIGHT = 48
