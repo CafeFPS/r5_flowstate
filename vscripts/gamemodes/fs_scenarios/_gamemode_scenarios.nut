@@ -796,6 +796,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team2Index, false )
+				ClearActiveProjectilesForRealm( group.slotIndex )
 
 				foreach( player in players )
 				{
