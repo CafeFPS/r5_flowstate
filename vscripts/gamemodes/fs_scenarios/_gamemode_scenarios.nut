@@ -16,7 +16,8 @@ global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 
 #if DEVELOPER
-global function DEV_KillAllPlayers
+global function Cafe_KillAllPlayers
+global function Cafe_EndAllRounds
 #endif
 
 global struct scenariosGroupStruct
@@ -54,12 +55,14 @@ struct {
 	
 	array<vector> allLootSpawnsLocations
 	array<lootbinsData> allMapLootbins
+	array<entity> aliveDropships
 } file
 
 struct {
 	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = 3
 
+	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
 	float fs_scenarios_max_queuetime = 150
 	int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
@@ -93,6 +96,35 @@ void function Init_FS_Scenarios()
 		teamSlots[ i ] = false
 	}
 	SurvivalFreefall_Init()
+	
+	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
+}
+
+void function FS_Scenarios_StoreAliveDropship( entity dropship )
+{
+	if( !IsValid( dropship ) )
+		return
+
+	file.aliveDropships.append( dropship )
+	printt( "added dropship to alive dropships array", dropship )
+}
+
+void function FS_Scenarios_CleanupDropships()
+{
+	foreach( i, dropship in file.aliveDropships )
+	{
+		if( !IsValid( dropship ) )
+		{
+			file.aliveDropships.removebyvalue( dropship )
+		}
+	}
+}
+
+void function FS_Scenarios_DestroyAllAliveDropships()
+{
+	foreach( dropship in file.aliveDropships )
+		if( IsValid( dropship ) )
+			dropship.Destroy()
 }
 
 void function FS_Scenarios_SaveLootbinData( entity lootbin )
@@ -117,7 +149,7 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	array< lootbinsData > chosenSpawns
 	
 	foreach( i, lootbinStruct in file.allMapLootbins )
-		if( Distance2D( lootbinStruct.origin, center) <= 6000 )
+		if( Distance2D( lootbinStruct.origin, center) <= settings.fs_scenarios_default_radius )
 			chosenSpawns.append( lootbinStruct )
 
 	string zoneRef = "zone_high"
@@ -227,7 +259,7 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 	array<vector> chosenSpawns
 	
 	foreach( spawn in file.allLootSpawnsLocations )
-		if( Distance2D( spawn, center) <= 6000 )
+		if( Distance2D( spawn, center) <= settings.fs_scenarios_default_radius )
 			chosenSpawns.append( spawn )
 
 	string zoneRef = "zone_high"
@@ -740,6 +772,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 	{
 		wait 0.1
 
+		FS_Scenarios_CleanupDropships()
+
 		// Recién conectados
 		foreach ( player in GetPlayerArray() )
 		{
@@ -843,7 +877,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if ( player.IsPhaseShifted() )
 					continue
 
-				if( Distance2D( player.GetOrigin(),Center) > 6000 ) //检测乱跑的脑残
+				if( Distance2D( player.GetOrigin(),Center) > settings.fs_scenarios_default_radius ) //检测乱跑的脑残
 				{
 					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 					player.TakeDamage( 3, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -967,7 +1001,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			thread FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
 
 			if( settings.fs_scenarios_dropshipenabled )
-				Message_New( player, "Starting scenario",  5 )
+				Message_New( player, "Game is starting",  5 )
 		}
 
 		if( settings.fs_scenarios_ground_loot )
@@ -979,8 +1013,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		if( settings.fs_scenarios_dropshipenabled )
 		{
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
+			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
+			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
 		} else if( !settings.fs_scenarios_ground_loot && !settings.fs_scenarios_inventory_empty )
 		{
 			GiveWeaponsToGroup( players )
@@ -992,7 +1026,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 entity function CreateSmallRingBoundary(vector Center, int realm = -1)
 {
     vector smallRingCenter = Center
-	float smallRingRadius = 6000
+	float smallRingRadius = settings.fs_scenarios_default_radius
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
 	smallcircle.kv.fadedist = 2000
@@ -1036,6 +1070,8 @@ void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
 
 void function FS_Scenarios_ForceAllRoundsToFinish()
 {
+	FS_Scenarios_DestroyAllAliveDropships()
+
 	foreach(player in GetPlayerArray())
 	{
 		if(!IsValid(player)) continue
@@ -1070,7 +1106,7 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 }
 
 #if DEVELOPER
-void function DEV_KillAllPlayers()
+void function Cafe_KillAllPlayers()
 {
 	entity player = gp()[0]
 	
@@ -1081,5 +1117,10 @@ void function DEV_KillAllPlayers()
 		
 		splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
 	}
+}
+
+void function Cafe_EndAllRounds()
+{
+	FS_Scenarios_ForceAllRoundsToFinish()
 }
 #endif

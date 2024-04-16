@@ -3367,9 +3367,9 @@ void function WaitingForPlayers_CreateCustomCameras()
 	
 	entity camera = CreateClientSidePointCamera( origin, waitingForPlayersCamera.angles, 70 )
 	player.ClearMenuCameraEntity()
-    player.SetMenuCameraEntityWithAudio( camera )
-    camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
-	
+	player.SetMenuCameraEntityWithAudio( camera )
+	camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
+
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 
 	if( GameRules_GetGameMode() == SURVIVAL )
@@ -3460,6 +3460,10 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 			cutsceneSpawns.append(NewCameraPair( <-15686.7402, 1259.25342, 2888.13013>, <0, 143.531845, 0> ))
 			cutsceneSpawns.append(NewCameraPair( <-26376.4258, -3842.12036, 2760.02759>, <0, 52.9255295, 0> ))
 			cutsceneSpawns.append(NewCameraPair( <28823.8867, 4136.58398, 4171.0459>, <0, -135.179871, 0> ))
+		break
+		
+		case "mp_rr_olympus_mu1":
+			cutsceneSpawns.append(NewCameraPair( <0,0,0>, <0,0,0> ) )
 		break
 	}
 	
