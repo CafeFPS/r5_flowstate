@@ -10,6 +10,7 @@ global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
 global function FS_Scenarios_GetSkydiveFromDropshipEnabled
 global function FS_Scenarios_GetGroundLootEnabled
+global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
@@ -80,7 +81,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
 
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
-	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", false )
+	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 
 	teamSlots.resize( 119 )
@@ -356,6 +357,11 @@ bool function FS_Scenarios_GetSkydiveFromDropshipEnabled()
 bool function FS_Scenarios_GetGroundLootEnabled()
 {
 	return settings.fs_scenarios_ground_loot
+}
+
+bool function FS_Scenarios_GetInventoryEmptyEnabled()
+{
+	return settings.fs_scenarios_inventory_empty
 }
 
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
@@ -975,7 +981,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 3000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
-		} else if( !settings.fs_scenarios_ground_loot )
+		} else if( !settings.fs_scenarios_ground_loot && !settings.fs_scenarios_inventory_empty )
 		{
 			GiveWeaponsToGroup( players )
 		}

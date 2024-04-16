@@ -4221,9 +4221,13 @@ void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )
 	//SetupInfiniteAmmoForWeapon( player, weaponNew )
 	
 	int ammoType = weaponNew.GetWeaponAmmoPoolType()
-	player.AmmoPool_SetCapacity( 65535 )
-	player.AmmoPool_SetCount( ammoType, 9999 )
-	
+
+	if( InfiniteAmmoEnabled() )
+	{
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, 9999 )
+	}
+
 	player.ClearFirstDeployForAllWeapons()
 	player.DeployWeapon()
 
