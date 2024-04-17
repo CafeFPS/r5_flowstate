@@ -134,7 +134,12 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 {
 	foreach( deathbox in file.aliveDeathboxes )
 		if( IsValid( deathbox ) && deathbox.IsInRealm( realm ) || IsValid( deathbox ) && realm == -1 )
+		{
+			if( IsValid( deathbox.GetParent() ) )
+				deathbox.GetParent().Destroy() // Destroy physics
+
 			deathbox.Destroy()
+		}
 }
 
 void function FS_Scenarios_StoreAliveDropship( entity dropship )
