@@ -1439,6 +1439,8 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	else
 		loot = SpawnGenericLoot( ref, origin, angles, count )
 
+	loot.RemoveFromAllRealms()
+	loot.AddToOtherEntitysRealms( player )	
 	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 	
 	if( ref != "snd_bomb" )
@@ -2097,6 +2099,10 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
 {
 	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
+
+	physics.RemoveFromAllRealms()
+	physics.AddToOtherEntitysRealms( player )
+
 	vector velocity = forward * 1000
 
 	// physics.PhysicsSetFriction( 50 )
@@ -2116,7 +2122,6 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 
 	// thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
 	// physics sometimes will stuck even if item seems to be static already
-
 }
 
 void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
