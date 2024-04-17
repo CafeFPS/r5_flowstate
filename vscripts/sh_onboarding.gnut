@@ -85,6 +85,7 @@ global function Flowstate_ApplyModifiedMovementToPlayer
 void function SV_CL_Onboarding_Init()
 {
 #if SERVER
+	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 	FlagInit( "MinPlayersReached", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
@@ -873,7 +874,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 		
-		if ( sourceId == eDamageSourceId.damagedef_suicide )
+		if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn)
 			return
 	}
 	UpdatePlayerCounts()
@@ -996,6 +997,8 @@ void function OnClientConnected( entity player )
 	}
 	
 	player.p.isConnected = true
+
+	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 }
 
 void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )

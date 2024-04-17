@@ -28,6 +28,7 @@ global function TakingFireDialogue
 global function GetAllDroppableItems
 global function ResetDeathRecapBlock
 global function CreateShipPath
+global function Flowstate_CheckForLv4MagazinesAndRefillAmmo
 
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
@@ -47,8 +48,6 @@ void function GamemodeSurvival_Init()
 	SurvivalFreefall_Init()
 	Sh_ArenaDeathField_Init()
 	SurvivalShip_Init()
-	
-	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
@@ -1207,7 +1206,6 @@ void function OnClientConnected( entity player )
 	}
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 	
 	if ( IsFiringRangeGameMode() )
 	{
