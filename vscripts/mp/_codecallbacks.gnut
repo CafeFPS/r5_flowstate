@@ -97,6 +97,9 @@ void function NetworkedIntLatencyThingy( entity player )
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.
 void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 {
+	if( !IsValid( ent ) )
+		return
+
 	bool entIsPlayer = ent.IsPlayer()
 	bool entIsTitan = ent.IsTitan()
 	bool entIsNPC = ent.IsNPC()

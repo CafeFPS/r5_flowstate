@@ -2866,6 +2866,9 @@ void function GiveRandomSecondaryWeaponHalo(entity player)
 
 void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 {
+	if( !InfiniteAmmoEnabled() )
+		return
+
 	if( IsValid( weapon ) && weapon.UsesClipsForAmmo() )
 	{
 		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )

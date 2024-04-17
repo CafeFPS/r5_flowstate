@@ -738,8 +738,7 @@ void function OnGroundLootSpawned( entity ent )
 	}
 	LootTypeData lt = GetLootTypeData( itemData.lootType)
 
-	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
-	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	TraceResults traceResult = TraceLine( origin + < 0, 0, 32 >, origin - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 	vector spawnOrigin = traceResult.endPos
 
@@ -772,6 +771,8 @@ void function OnGroundLootSpawned( entity ent )
 	int angleZ = 0
 
 	entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+	vector angles = AnglesOnSurface( traceResult.surfaceNormal, AnglesToForward( loot.GetAngles() ) )
+	loot.SetAngles( angles )
 	
 	if( isHoverTankLoot )
 	{
@@ -2342,12 +2343,13 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 	string ammoType = itemData.ammoType
 	
-	array<vector> circlePositions
+	array<TraceResults> circlePositions
 	
 	for(int i = 0; i < 8; i++)
 	{
 		float r = float(i) / float( 8 ) * 2 * PI
-		circlePositions.append( origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0> )
+		vector start = origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0>
+		circlePositions.append( TraceLine( start + < 0, 0, 32 >, start - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE ) )
 	}
 	
 	circlePositions.randomize()
@@ -2357,50 +2359,29 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	{
 		itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
 
-		vector nextOrigin = circlePositions.getrandom()
-		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		circlePositions.fastremovebyvalue( nextOrigin )
+		//Add two ammo stacks per weapon
+		TraceResults traceAmmo1 = circlePositions.getrandom()
+		entity ammo1 = SpawnGenericLoot( ammoType, traceAmmo1.endPos, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop )
 
-		nextOrigin = circlePositions.getrandom()
-		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		circlePositions.fastremovebyvalue( nextOrigin )
+		circlePositions.fastremovebyvalue( traceAmmo1 )
+		TraceResults traceAmmo2 = circlePositions.getrandom()
 		
-		//This will add sometimes two, sometimes one ammo stack
+		entity ammo2 = SpawnGenericLoot( ammoType, traceAmmo2.endPos, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop )
 
-		// foreach( ammo in file.spawnedAmmoStacks )
-		// {
-			// foreach( possiblePos in circlePositions )
-			// {
-				// if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
-					// circlePositions.fastremovebyvalue( possiblePos )
-			// }
-		// }
-	
-		// if( circlePositions.len() == 0 )
-		// {
-			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			// return ent
-		// }
+		vector anglesA = AnglesOnSurface( traceAmmo1.surfaceNormal, AnglesToForward( ammo1.GetAngles() ) )
+		ammo1.SetAngles( anglesA )
+		anglesA = AnglesOnSurface( traceAmmo2.surfaceNormal, AnglesToForward( ammo2.GetAngles() ) )
+		ammo2.SetAngles( anglesA )
 		
-		// vector nextOrigin = circlePositions.getrandom()
-		
-		// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		// circlePositions.fastremovebyvalue( nextOrigin )
-		
-		// if( circlePositions.len() == 0 )
-		// {
-			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			// return ent
-		// }
-
-		// if( CoinFlip() )
-		// {
-			// nextOrigin = circlePositions.getrandom()
-			// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		// }
+		//TODO add randomized 1 or 2 stacks
 	}
 
-	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+	ent = SpawnGenericLoot(ref, origin + <0, 0, 2>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+
+	TraceResults traceResult = TraceLine( ent.GetOrigin() + < 0, 0, 32 >, ent.GetOrigin() - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector angles = AnglesOnSurface( traceResult.surfaceNormal, AnglesToForward( ent.GetAngles() ) )
+	ent.SetAngles( < angles.x, angles.y, AnglesCompose( angles, <0,0,90> ).z > )
+
 	return ent
 }
 
