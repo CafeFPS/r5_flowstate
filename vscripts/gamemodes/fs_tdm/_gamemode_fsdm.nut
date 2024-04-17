@@ -2868,7 +2868,7 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 {
 	if( !InfiniteAmmoEnabled() )
 		return
-
+	
 	if( IsValid( weapon ) && weapon.UsesClipsForAmmo() )
 	{
 		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
@@ -3783,7 +3783,7 @@ void function SimpleChampionUI()
 	{
 		foreach( entity player in GetPlayerArray() )
 		{
-			if( !IsValid(player) ) return
+			if( !IsValid(player) ) continue
 			try 
 			{
 				RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
@@ -3815,7 +3815,7 @@ void function SimpleChampionUI()
 	{
 		foreach( entity player in GetPlayerArray() )
 		{
-			if( !IsValid(player) ) return
+			if( !IsValid(player) ) continue
 			try 
 			{
 				RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)

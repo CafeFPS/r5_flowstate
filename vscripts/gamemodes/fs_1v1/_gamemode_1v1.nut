@@ -2396,7 +2396,7 @@ void function soloModePlayerToWaitingList( entity player )
 			Signal( player, "PlayerSkyDive" )
 		}
 
-		SetTeam( player, TEAM_SPECTATOR )
+		SetTeam( player, TEAM_IMC )
 
 		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
 		
