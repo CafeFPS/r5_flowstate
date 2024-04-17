@@ -31,7 +31,7 @@ global function addStatsToGroup
 global function getBotSpawn
 global function RechargePlayerAbilities
 
-//shared with 3v3 server script
+//shared with scenarios server script
 global function HandleGroupIsFinished
 global function GiveWeaponsToGroup
 global function deleteWaitingPlayer
@@ -47,6 +47,7 @@ global function FS_SetRealmForPlayer
 global function FS_1v1_GetPlayersWaiting
 global function FS_1v1_GetPlayersResting
 global function is3v3Mode
+global function _CleanupPlayerEntities
 
 //DEV 
 #if DEVELOPER
@@ -2390,8 +2391,6 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	if( file.is3v3Mode )
 	{
-		_CleanupPlayerEntities( player )
-
 		if( player.Player_IsFreefalling() )
 		{
 			Signal( player, "PlayerSkyDive" )

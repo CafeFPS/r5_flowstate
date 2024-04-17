@@ -549,7 +549,11 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 	{
 		foreach( player in players )
 		{
-			if( IsValid( player ) && player.p.handle in file.scenariosPlayerToGroupMap )
+			if( !IsValid( player ) )
+				continue
+
+			_CleanupPlayerEntities( player )
+			if( player.p.handle in file.scenariosPlayerToGroupMap )
 			{
 				#if DEVELOPER
 				sqprint(format("removing player in progress: %d", player) )
