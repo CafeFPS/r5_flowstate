@@ -1990,6 +1990,9 @@ void function SetItemSpawnSource( entity drop, int spawnSource, entity owner )
 
 void function AddToDeathBox( entity drop, entity deathBox )
 {
+	drop.RemoveFromAllRealms()
+	drop.AddToOtherEntitysRealms( deathBox )
+
 	drop.Hide()
 	drop.UnsetUsable()
 
@@ -2018,7 +2021,6 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 
 	box.SetOwner( player )
 	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
-	box.AllowMantle()
 	
 	if ( hasCard )
 	{
@@ -2064,9 +2066,9 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 	{
 		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 		Highlight_ClearNeutralHighlight( box )
-
-		thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 	}
+
+	thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 
 	return box
 }
@@ -2074,8 +2076,11 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 {
 	entity prop_physics = CreateEntity( "prop_physics" )
+
+	prop_physics.RemoveFromAllRealms()
+	prop_physics.AddToOtherEntitysRealms( deathbox )
+
 	prop_physics.SetValueForModelKey( $"mdl/props/death_box/death_box_01.rmdl" )
-	prop_physics.kv.solid = 0
 	prop_physics.kv.spawnflags = SF_PHYSPROP_DEBRIS
 	prop_physics.kv.fadedist = -1
 	prop_physics.kv.renderamt = 255
@@ -2088,13 +2093,23 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	prop_physics.SetAngles( deathbox.GetAngles() )
 	DispatchSpawn( prop_physics )
 
+	prop_physics.PhysicsSetFriction( 1000 )
+	prop_physics.PhysicsSetDamping( 1, 1000 )
+
 	playerVelocity += deathbox.GetUpVector() * 300 // player velocity probably needs a limit, needs more testing, same for deathbox inertia scale. Seems to work fine for now
 	deathbox.SetParent( prop_physics )
 	prop_physics.Hide()
-	prop_physics.NotSolid()
+
 	prop_physics.SetVelocity( playerVelocity )
 	
-	// thread Flowstate_CheckForPhysicsMemoryLeak( deathbox, prop_physics )
+	thread function () : ( deathbox, prop_physics )
+	{
+		EndSignal( deathbox, "OnDestroy" )
+
+		wait 1
+		
+		deathbox.AllowMantle()
+	}()
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
@@ -2120,9 +2135,6 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 	physics.NotSolid()
 
 	physics.SetVelocity( forward )
-
-	// thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
-	// physics sometimes will stuck even if item seems to be static already
 }
 
 void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
@@ -2150,7 +2162,8 @@ void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2
 	physics.SetRollSoundName( "LootBall_Roll_Default" )
 
 	drop.SetParent( physics )
-	drop2.SetParent( physics )
+	if( IsValid( drop2 ) )
+		drop2.SetParent( physics )
 
 	physics.Hide()
 
@@ -2232,10 +2245,13 @@ void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity phys
 	float lastVel = vel
 	float numTicksSameSpeed
 
-	while( IsValid( physics ) && vel > 0 && IsValid( drop ) && IsValid( drop2 ) )
+	while( IsValid( physics ) && vel > 0 )
 	{
-		drop.SetAngles( <0,0,0> )
-		drop2.SetAngles( <0,0,0> )
+		if( IsValid( drop ) )
+			drop.SetAngles( <0,0,0> )
+			
+		if( IsValid( drop2 ) )
+			drop2.SetAngles( <0,0,0> )
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
 		printt( vel )

@@ -11,6 +11,7 @@ global function FS_Scenarios_GetPlayerToGroupMap
 global function FS_Scenarios_GetSkydiveFromDropshipEnabled
 global function FS_Scenarios_GetGroundLootEnabled
 global function FS_Scenarios_GetInventoryEmptyEnabled
+global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
@@ -56,6 +57,7 @@ struct {
 	array<vector> allLootSpawnsLocations
 	array<lootbinsData> allMapLootbins
 	array<entity> aliveDropships
+	array<entity> aliveDeathboxes
 } file
 
 struct {
@@ -71,6 +73,7 @@ struct {
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
 	bool fs_scenarios_start_skydiving = true
+	bool fs_scenarios_deathboxes_enabled = true
 } settings
 
 array< bool > teamSlots
@@ -86,6 +89,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
+	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -98,6 +102,39 @@ void function Init_FS_Scenarios()
 	SurvivalFreefall_Init()
 	
 	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
+	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+}
+
+bool function FS_Scenarios_GetDeathboxesEnabled()
+{
+	return settings.fs_scenarios_deathboxes_enabled
+}
+
+void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
+{
+	if( !IsValid( deathbox ) )
+		return
+
+	file.aliveDeathboxes.append( deathbox )
+	printt( "added deathbox to alive deathboxes array", deathbox )
+}
+
+void function FS_Scenarios_CleanupDeathboxes()
+{
+	foreach( i, deathbox in file.aliveDeathboxes )
+	{
+		if( !IsValid( deathbox ) )
+		{
+			file.aliveDeathboxes.removebyvalue( deathbox )
+		}
+	}
+}
+
+void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
+{
+	foreach( deathbox in file.aliveDeathboxes )
+		if( IsValid( deathbox ) && deathbox.IsInRealm( realm ) || IsValid( deathbox ) && realm == -1 )
+			deathbox.Destroy()
 }
 
 void function FS_Scenarios_StoreAliveDropship( entity dropship )
@@ -543,6 +580,8 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		FS_Scenarios_DestroyLootbinsForGroup( groupToRemove )
 	}
 
+	FS_Scenarios_DestroyAllAliveDeathboxesForRealm( groupToRemove.slotIndex )
+
 	array<entity> players
 	players.extend( groupToRemove.team1Players )
 	players.extend( groupToRemove.team2Players )	
@@ -778,6 +817,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		wait 0.1
 
 		FS_Scenarios_CleanupDropships()
+		FS_Scenarios_CleanupDeathboxes()
 
 		// Recién conectados
 		foreach ( player in GetPlayerArray() )
@@ -1020,7 +1060,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
-		} else if( !settings.fs_scenarios_ground_loot && !settings.fs_scenarios_inventory_empty )
+		} else if( !settings.fs_scenarios_inventory_empty )
 		{
 			GiveWeaponsToGroup( players )
 		}
@@ -1076,6 +1116,7 @@ void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
 void function FS_Scenarios_ForceAllRoundsToFinish()
 {
 	FS_Scenarios_DestroyAllAliveDropships()
+	FS_Scenarios_DestroyAllAliveDeathboxesForRealm( -1 )
 
 	foreach(player in GetPlayerArray())
 	{

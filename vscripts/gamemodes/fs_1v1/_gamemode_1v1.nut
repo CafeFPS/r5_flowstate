@@ -4797,6 +4797,14 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 
 		if( aliveCount1 == 0 || aliveCount2 == 0 )
 			group.IsFinished = true //tell solo thread this round has finished
+		
+		if( FS_Scenarios_GetDeathboxesEnabled() )
+		{
+			int droppableItems = GetAllDroppableItems( player ).len()
+
+			if ( droppableItems > 0 && !group.IsFinished )
+				CreateSurvivalDeathBoxForPlayer( player, DamageInfo_GetAttacker( damageInfo ), damageInfo )
+		}
 	} 
 	else
 	{
