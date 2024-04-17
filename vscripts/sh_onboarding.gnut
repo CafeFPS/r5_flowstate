@@ -874,7 +874,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 		
-		if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn)
+		if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn )
 			return
 	}
 	UpdatePlayerCounts()

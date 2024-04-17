@@ -1135,7 +1135,9 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 	}
-	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
+
+	if( !is3v3Mode() )
+		player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
 
 	entity dummyEnt = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl" ) // TODO: use generic model.  Can't use player settings here since they could be a spectator
 	float idleTime = dummyEnt.GetSequenceDuration( animData.idleAnim )
@@ -1143,7 +1145,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	float totalTime = idleTime + jumpTime
 	dummyEnt.Destroy()
 	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_RespawnPodStarted", Time() + totalTime )
+	if( !is3v3Mode() )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RespawnPodStarted", Time() + totalTime )
 	
 	player.p.respawnPod = ship
 	player.StartObserverMode( OBS_MODE_CHASE )

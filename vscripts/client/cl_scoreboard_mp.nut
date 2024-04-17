@@ -746,6 +746,8 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			{
 				if( GameRules_GetGameMode() == "custom_ctf" )
 					playerScore1 = player.GetPlayerNetInt( "captures" )
+				else if( GetCurrentPlaylistName() == "fs_scenarios" )
+					playerScore1 = player.GetPlayerNetInt( "kills" )
 			}
 			playerScore1NumDigits = numDigits[ 0 ]
 	}
