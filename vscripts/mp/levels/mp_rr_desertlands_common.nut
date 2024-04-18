@@ -55,7 +55,7 @@ void function Desertlands_PreMapInit_Common()
 
 void function Desertlands_MapInit_Common()
 {
-	if ( GetMapName() == "mp_rr_desertlands_mu3" )
+	if ( MapName() == eMaps.mp_rr_desertlands_mu3 )
 		return
 
 	//printt( "Desertlands_MapInit_Common" )
@@ -68,7 +68,7 @@ void function Desertlands_MapInit_Common()
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
-		if ( GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k_tt )
 			thread MirageVoyageSetup()
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		SURVIVAL_SetPlaneHeight( 15250 )
@@ -111,7 +111,7 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() == SURVIVAL && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
+	if( Gamemode() == eGamemodes.SURVIVAL && MapName() != eMaps.mp_rr_desertlands_64k_x_64k_tt ) 
 	{
 		thread function () : ()
 		{
@@ -543,7 +543,7 @@ void function SetButtonSettings( entity panel )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_Streamer" )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
 	
-	if ( GameRules_GetGameMode() == "fs_dm" )
+	if ( Gamemode() == eGamemodes.fs_dm )
 		WaitForever()
 	else
 		wait 2

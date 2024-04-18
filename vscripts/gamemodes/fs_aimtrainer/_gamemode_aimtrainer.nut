@@ -117,11 +117,11 @@ void function _ChallengesByColombia_Init()
 	//death callback for player because some challenges can kill player
 	AddDeathCallback( "player", OnPlayerDeathCallback )
 	
-	switch( GetMapName() )
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-		case "mp_rr_desertlands_64k_x_64k_tt":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
 		floorLocation = <-10020.1543, -8643.02832, 5189.92578>
 		onGroundLocationPos = <12891.2783, -2391.77124, -3121.60132>
 		onGroundLocationAngs = <0, -157.629303, 0>
@@ -129,7 +129,7 @@ void function _ChallengesByColombia_Init()
 		AimTrainer_startAngs = <0, 143.031052, 0>	
 		break
 
-		case "mp_rr_canyonlands_staging":
+		case eMaps.mp_rr_canyonlands_staging:
 		floorLocation = <35306.2344, -16956.5098, -27010.2539>
 		onGroundLocationPos = <33946,-6511,-28859>
 		onGroundLocationAngs = <0,-90,0>
@@ -137,9 +137,9 @@ void function _ChallengesByColombia_Init()
 		AimTrainer_startAngs = <7.71,91.67,0.00>	
 		break
 
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		floorLocation = <-11964.7803, -8858.25098, 17252.25>
 		onGroundLocationPos = <-14599.2178, -7073.89551, 2703.93286>
 		onGroundLocationAngs = <0,90,0>
@@ -147,7 +147,7 @@ void function _ChallengesByColombia_Init()
 		AimTrainer_startAngs = <0, 144.184357, 0>
 		break
 
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 		floorLocation = <9857.08496, -7948.96631, -1000>
 		onGroundLocationPos = <-13700.8594, 26238.1387, -6891.95508>
 		onGroundLocationAngs = <0, 175.306152, 0>
@@ -2209,7 +2209,7 @@ void function StartArmorSwapChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	
-	if( GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
+	if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_tt )
 		player.SetOrigin(<10377.2695, 6253.86523, -4303.90625>)
 	else
 		player.SetOrigin(onGroundLocationPos)
@@ -3142,13 +3142,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	string weapon = args[0]
 	
-	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
+	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
 		Message(player, "WEAPON WHITELISTED")
 		return false
 	}
 
-	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
+	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
 		Message(player, "ABILITY WHITELISTED")
 		return false

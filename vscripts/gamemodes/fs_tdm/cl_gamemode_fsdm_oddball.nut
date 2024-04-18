@@ -447,7 +447,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 		string reasonText
 		string teamText
 
-		if( GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+		if( Playlist() == ePlaylists.fs_haloMod_oddball )
 		{
 			switch(reason)
 			{
@@ -463,7 +463,7 @@ void function FSDM_CustomWinnerScreen_Start(int winnerTeam, int reason)
 					reasonText = "TIME RAN OUT, AND BOTH TEAMS HAD THE SAME SCORE"
 				break
 			}
-		} else if( GetCurrentPlaylistName() == "fs_haloMod_ctf" )
+		} else if( Playlist() == ePlaylists.fs_haloMod_ctf )
 		{
 			switch(reason)
 			{

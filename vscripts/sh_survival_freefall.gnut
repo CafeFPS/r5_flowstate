@@ -215,7 +215,7 @@ global function GetSkydiveSmokeColorForTeam
 
 void function SurvivalFreefall_Init()
 {
-	if(GameRules_GetGameMode() == "fs_prophunt")
+	if( Gamemode() == eGamemodes.fs_prophunt )
 		return
 	
 	#if SERVER

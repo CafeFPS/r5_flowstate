@@ -1218,7 +1218,7 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
-	} else if( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistName() == "dev_default" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+	} else if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 	{
 		vector origin
 		if( GetPlayerArray_Alive().len() > 0 )

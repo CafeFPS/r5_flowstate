@@ -51,7 +51,8 @@ void function ClPlayer_Common_Precache()
 	PrecacheParticleSystem( SHIELD_BREAK_FX )
 	PrecacheParticleSystem( SHIELD_MAX_FX )
 
-	if(GameRules_GetGameMode() != "fs_prophunt" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+	//if(GameRules_GetGameMode() != "fs_prophunt" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+	if( Gamemode() != eGamemodes.fs_prophunt && Playlist() != ePlaylists.fs_lgduels_1v1 )
 	{
 		PrecacheParticleSystem( FX_KILLSHOT_BLOODSPRAY )
 		PrecacheParticleSystem( FX_BLOODSPRAY_DECAL_SML )

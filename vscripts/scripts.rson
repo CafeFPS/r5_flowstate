@@ -45,6 +45,7 @@ When: "SERVER || CLIENT || UI"
 Scripts:
 [
 	_scripttest.gnut
+	sh_mapname_playlist_gamemode_enums.gnut //init this early before consts ~mkos
 	sh_consts.gnut
 	_threads.nut
 	_settings.nut

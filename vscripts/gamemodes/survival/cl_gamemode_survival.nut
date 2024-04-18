@@ -832,7 +832,7 @@ void function InitSurvivalHealthBar()
 			if(IsValid(player))
 				SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 			
-			if( GetCurrentPlaylistName() == "fs_movementgym" )
+			if( Playlist() == ePlaylists.fs_movementgym )
 					MG_CustomPilotRUI( player, file.pilotRui )
 		}
 	)
@@ -899,7 +899,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if( GameRules_GetGameMode() != SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+	if( Gamemode() != eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )
@@ -1282,13 +1282,13 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
 	
-	if(GameRules_GetGameMode() != "fs_snd")
+	if( Gamemode() != eGamemodes.fs_snd )
 	{
 		RuiTrackInt( statusRui, "livingPlayerCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "squadsRemainingCount" ) )
 	}
 	
-	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true || GameRules_GetGameMode() == "fs_infected")
+	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true || Gamemode() == eGamemodes.fs_infected )
 	{
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount2", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingShadowPlayerCount" ) )
@@ -1562,7 +1562,7 @@ void function NextCircleStartTimeChanged( entity player, float old, float new, b
 	if ( new < Time() )
 		return
 
-	if ( actuallyChanged && GamePlaying() && GetCurrentPlaylistName() != "fs_movementgym" )
+	if ( actuallyChanged && GamePlaying() && Playlist() != ePlaylists.fs_movementgym )
 	{
 		if ( !GetCurrentPlaylistVarBool( "deathfield_starts_after_ship_flyout", true ) && SURVIVAL_GetCurrentDeathFieldStage() == 0 )
 			return //
@@ -2034,7 +2034,7 @@ void function Sur_OnScoreboardShow()
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" || GetCurrentPlaylistName() == "fs_scenarios" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd || Playlist() == ePlaylists.fs_scenarios )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2071,7 +2071,7 @@ void function Sur_OnScoreboardHide()
 {
 	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2304,7 +2304,7 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 void function AddInWorldMinimapObjectiveInternal( entity ent, var screen )
 {
-	if ( !IsValid( ent ) || GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if ( !IsValid( ent ) || Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() )
 		return
 
 	int customState    = ent.Minimap_GetCustomState()
@@ -2445,7 +2445,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 
 	var rui = RuiCreate( minimapAsset, screen, drawType, FULLMAP_Z_BASE + zOrder + zOrderOffset )
 
-	if ( ent.IsPlayer() && GameRules_GetGameMode() == "fs_snd" ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
+	if ( ent.IsPlayer() && Gamemode() == eGamemodes.fs_snd ) //|| ent.IsPlayer() && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) //add enabled var and refresh funct so if we change location to a map one it works
 	{
 		foreach(player, savedRui in file.playerArrows)
 		{
@@ -2458,7 +2458,7 @@ void function AddInWorldMinimapObjectInternal( entity ent, var screen, asset def
 		thread HACK_TrackPlayerPositionOnScript( rui, ent, true )
 		file.mapCornerX = 0
 		file.mapCornerY = 0
-	} else if( GameRules_GetGameMode() != "fs_snd" ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	} else if( Gamemode() != eGamemodes.fs_snd ) //&& !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		RuiTrackFloat3( rui, "objectPos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 		RuiTrackFloat3( rui, "objectAngles", ent, RUI_TRACK_EYEANGLES_FOLLOW )
@@ -3288,7 +3288,7 @@ void function OnToggleMute( var button )
 
 bool function GetWaitingForPlayersOverlayEnabled( entity player )
 {
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetMapName() == "mp_flowstate" )
+	if( Playlist() == ePlaylists.fs_movementgym || MapName() == eMaps.mp_flowstate )
 		return false
 
 	if ( IsTestMap() )
@@ -3300,7 +3300,7 @@ bool function GetWaitingForPlayersOverlayEnabled( entity player )
 	// if( GameRules_GetGameMode() != SURVIVAL )
 		// return false
 
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 		return false
 	
 	return true
@@ -3372,7 +3372,7 @@ void function WaitingForPlayers_CreateCustomCameras()
 
 	Hud_SetVisible(HudElement( "WaitingForPlayers_GamemodeFrame" ), true)
 
-	if( GameRules_GetGameMode() == SURVIVAL )
+	if( Gamemode() == eGamemodes.SURVIVAL )
 	{
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
@@ -3414,7 +3414,7 @@ void function WaitingForPlayers_RemoveCustomCameras()
 	SetMapSetting_FogEnabled( true )
 	DisableCustomMapAndGamemodeNameFrames()
 	
-	if( GetCurrentPlaylistName() != "fs_survival" && GetCurrentPlaylistName() != "fs_survival_duos" && GetCurrentPlaylistName() != "fs_survival_solos" )
+	if( Playlist() != ePlaylists.fs_survival && Playlist() != ePlaylists.fs_survival_duos && Playlist() != ePlaylists.fs_survival_solos )
 		return
 		
 	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
@@ -3474,7 +3474,7 @@ void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
 	
-	if( GetCurrentPlaylistName() == "fs_survival" || GetCurrentPlaylistName() == "fs_survival_duos" || GetCurrentPlaylistName() == "fs_survival_solos" )
+	if( Playlist() == ePlaylists.fs_survival || Playlist() == ePlaylists.fs_survival_duos || Playlist() == ePlaylists.fs_survival_solos )
 		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
 
@@ -4184,7 +4184,7 @@ void function ShowChampionVictoryScreen( int winningTeam )
 
 asset function GetChampionScreenRuiAsset()
 {
-	if(GameRules_GetGameMode() == "fs_infected")
+	if( Gamemode() == eGamemodes.fs_infected )
 		return $"ui/shadowfall_legend_champion_screen.rpak"
 
 	if ( file.customChampionScreenRuiAsset != $"" )

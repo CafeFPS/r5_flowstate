@@ -288,7 +288,7 @@ var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAtta
 	}
 	
 	//The following code is only for the aim trainer stats
-	if( GameRules_GetGameMode() != "fs_aimtrainer" ) 
+	if( Gamemode() != eGamemodes.fs_aimtrainer ) 
 		return
 
 	if(!player.p.isChallengeActivated) 
@@ -393,7 +393,7 @@ void function FS_LG_OnPlayerCreated( entity player )
 
 	thread FS_LG_HandleLaserForPlayer( player )
 	
-	if( GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+	if( Playlist() != ePlaylists.fs_lgduels_1v1 )
 		return
 
 	Flowstate_CreateCustomHealthBarForPlayer( player )

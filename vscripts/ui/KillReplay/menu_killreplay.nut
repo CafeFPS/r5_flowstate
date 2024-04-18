@@ -21,7 +21,7 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 	
 	try{
 		RegisterButtonPressedCallback( KEY_ENTER, FocusChat )
-		if( IsConnected() && GetCurrentPlaylistName() != "fs_snd" )
+		if( IsConnected() && Playlist() != ePlaylists.fs_snd )
 		{
 			RegisterButtonPressedCallback( MOUSE_LEFT, SpecPrev )
 			RegisterButtonPressedCallback( MOUSE_RIGHT, SpecNext )
@@ -34,7 +34,7 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 
 	Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "Spectating")
 	
-	if( IsConnected() && GetCurrentPlaylistName() == "fs_snd" )
+	if( IsConnected() && Playlist() == ePlaylists.fs_snd )
 		Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "Spectating Teammate")
 	
     Hud_SetText(Hud_GetChild( file.menu, "KillReplayPlayerName" ), "")
@@ -55,7 +55,7 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerCardTopLine" ), true )
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerCardBottomLine" ), true )
 		
-		if( IsConnected() && GetCurrentPlaylistName() != "fs_snd" )
+		if( IsConnected() && Playlist() != ePlaylists.fs_snd )
 			Hud_SetVisible( Hud_GetChild( file.menu, "KillReplayKilledBy" ), true )
         
 		Hud_SetVisible( Hud_GetChild( file.menu, "PlayerImage" ), true )
@@ -75,13 +75,13 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false)
 	
 	//todo make it show only if there is more than 1 player to spectate
-	if( IsConnected() && GetCurrentPlaylistName() != "fs_snd" )
+	if( IsConnected() && Playlist() != ePlaylists.fs_snd )
 	{
 		Hud_SetText(Hud_GetChild( file.menu, "ControlsText" ), "%attack% Previous Player")
 		Hud_SetText(Hud_GetChild( file.menu, "ControlsText2" ), "%zoom% Next Player")
 	} 
 	
-	if(GetCurrentPlaylistName() == "fs_snd")
+	if( Playlist() == ePlaylists.fs_snd )
 	{
 		Hud_SetText(Hud_GetChild( file.menu, "ControlsText" ), "")
 		Hud_SetText(Hud_GetChild( file.menu, "ControlsText2" ), "")
@@ -112,7 +112,7 @@ void function CloseKillReplayHud(bool isProphunt)
 {
 	try{
 		DeregisterButtonPressedCallback( KEY_ENTER, FocusChat )
-		if( IsConnected() && GetCurrentPlaylistName() == "fs_snd" )
+		if( IsConnected() && Playlist() == ePlaylists.fs_snd )
 		{
 			DeregisterButtonPressedCallback( MOUSE_LEFT,  SpecPrev )
 			DeregisterButtonPressedCallback( MOUSE_RIGHT, SpecNext )

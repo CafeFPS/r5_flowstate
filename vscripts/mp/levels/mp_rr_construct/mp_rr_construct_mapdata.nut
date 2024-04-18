@@ -115,7 +115,7 @@ void function Construct_MAPDATA()
          entity skycam = GetEnt("skybox_cam_level")
          skycam.SetOrigin(<10578, 29104, -25851> + < -5.0, 4.30, 0.9 >)
 
-         if(GetMapName() == "mp_rr_construct_night") // if night set to night vista
+         if( MapName() == eMaps.mp_rr_construct_night ) // if night set to night vista
          {
             skyboxprops[0].SetModel($"mdl/vistas/canyonlands_night_se.rmdl")
             skyboxprops[0].SetAngles(<0,90,0>)
@@ -125,7 +125,7 @@ void function Construct_MAPDATA()
          }
       }
 
-      if(GetMapName() == "mp_rr_construct_night")
+      if( MapName() == eMaps.mp_rr_construct_night )
       {
          foreach(entity fxent in GetErray("night_fx_bugs"))
             thread LoopFXOnEntity( fxent , $"bugs_gnats_grass_tall" , 20)

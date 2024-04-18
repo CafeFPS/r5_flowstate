@@ -114,7 +114,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
 		player.p.assignedCustomModel = RandomIntRangeInclusive(1,13)
 	
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
 }
 
@@ -183,7 +183,7 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 	#endif
 		
 	//Force teammate observer target when spec_next and spec_prev are used
-	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || GameRules_GetGameMode() == SURVIVAL )
+	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || Gamemode() == eGamemodes.SURVIVAL )
 	{
 		int team = observer.GetTeam()
 		array<entity> players = GetPlayerArrayOfTeam_Alive( team )

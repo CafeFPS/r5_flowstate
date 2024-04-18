@@ -168,7 +168,7 @@ void function Train_StartTrainMovement()
 			if(distance > 300)
 				continue
 
-			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && GameRules_GetGameMode() == SURVIVAL)
+			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && Gamemode() == eGamemodes.SURVIVAL )
 			{
 				ClearLootBinContents( bin )
 				AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_HotZone", 4 ) )
@@ -233,7 +233,7 @@ void function Train_OnPlayerConnected( entity player )
 
 void function Flowstate_Train_SetupBinsAtStation()
 {
-	if( GameRules_GetGameMode() == "fs_infected" )
+	if( Gamemode() == eGamemodes.fs_infected )
 		return
 	
 	entity funcBrush

@@ -123,41 +123,41 @@ void function ReMap_Init()
 
 void function MapTriggers_Init()
 {
-    if(GameRules_GetGameMode() == "fs_duckhunt")
+    if( Gamemode() == eGamemodes.fs_duckhunt )
         return
     
-    switch (GetMapName())
+    switch ( MapName() )
     {
-        case "mp_rr_aqueduct_night":
-        case "mp_rr_aqueduct":
+        case eMaps.mp_rr_aqueduct_night:
+        case eMaps.mp_rr_aqueduct:
         {
             CreateWallTrigger( <425, -1590, -1689>, 1, 30000 )
             CreateWallTrigger( <732, -4456, 840>, 2 , 6000)
             CreateWallTrigger( <774, -6394, 2067>, 1 )
             break
         }
-        // case "mp_rr_arena_skygarden":
+        // case eMaps.mp_rr_arena_skygarden:
         // {
             // CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
             // CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
             // CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
             // break
         // }
-        case "mp_rr_arena_composite":
+        case eMaps.mp_rr_arena_composite:
         {
             CreateWallTrigger( <5, 2587, -520>, 1, 30000)
             CreateWallTrigger( <5, 5379, 860> , 0 )
             CreateWallTrigger( <5, 5379, 1160> , 1 )
             break
         }
-        case "mp_rr_ashs_redemption":
+        case eMaps.mp_rr_ashs_redemption:
         {
             CreateWallTrigger( <-20857, 5702, -25746> , 0 )
             CreateWallTrigger( <-20857, 5702, -25246> , 1, 30000 )
             CreateWallTrigger( <-20857, 5702, -28500> , 1, 30000 )
             break
         }
-        case "mp_rr_party_crasher":
+        case eMaps.mp_rr_party_crasher:
         {
             CreateWallTrigger( <811, 911, 2434>, 0 , 30000 )
             CreateWallTrigger( <811, 911, -537>, 1 , 30000 )
@@ -297,7 +297,7 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
             if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
                 thread HaloMod_Cyberdyne_CreateFanPusher( e.GetOrigin() + Vector( -60, 0, 15 ), e.GetAngles() )
 		}
-        if( GameRules_GetGameMode() == "fs_duckhunt" )
+        if( Gamemode() == eGamemodes.fs_duckhunt )
         {
             if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid( e ) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid( e ) )
             {
@@ -493,7 +493,7 @@ entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin 
 {
     entity lootbin = CreateEntity( "prop_dynamic" )
 
-	if( GameRules_GetGameMode() == "fs_infected" )
+	if( Gamemode() == eGamemodes.fs_infected )
 		lootbin.SetScriptName( MYSTERY_BOX_SCRIPT_NAME )
 	else
 		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )

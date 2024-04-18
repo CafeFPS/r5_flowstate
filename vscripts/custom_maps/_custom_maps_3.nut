@@ -313,7 +313,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 
 void function PrecacheCustomMapsProps()
 {
-if(GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
+if( MapName() == eMaps.mp_rr_canyonlands_64k_x_64k ){
 //white forest
 PrecacheModel( $"mdl/foliage/tree_green_forest_med_01.rmdl")
 PrecacheModel( $"mdl/rocks/rock_white_chalk_sand_modular_flat_03.rmdl")
@@ -487,7 +487,7 @@ PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl")
 PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_256_01.rmdl")
 
 }
-if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){
+if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx ){
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_couch_05.rmdl" )

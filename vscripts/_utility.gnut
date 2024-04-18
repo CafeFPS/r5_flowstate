@@ -4067,7 +4067,7 @@ int function GameTime_TimeLimitSeconds()
 
 int function GetSuddenDeathTimeLimit_ForGameMode()
 {
-	string mode = GameRules_GetGameMode()
+	string mode = GameRules_GetGameMode() //wtf? not even used.. ? ~mkos
 	string playlistString = "suddendeath_timelimit"
 
 	return GetCurrentPlaylistVarInt( playlistString, 4 )

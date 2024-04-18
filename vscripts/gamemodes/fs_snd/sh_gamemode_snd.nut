@@ -267,9 +267,9 @@ void function Sh_SetAttackingLocations(int map)
 	file.sidesSpawns.clear()
 	file.bombPlantingLocations.clear()
 	
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 			thisMapSides.Defenders = <-3223.99634, 1356.75903, 142.736221>
 			thisMapSides.Attackers = <3236.43018, 1352.34058, 142.736221>
 			
@@ -277,7 +277,7 @@ void function Sh_SetAttackingLocations(int map)
 			thisMapPlantingLocations.B = <3236.43018, 1352.34058, 142.736221>
 		break
 		
-		case "mp_rr_desertlands_64k_x_64k":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
 			thisMapSides.Defenders = <6193.33057, 5437.45313, -4295.96875>
 			thisMapSides.Attackers = <2090.76758, 12572.7256, -3336.95386>
 			
@@ -285,7 +285,7 @@ void function Sh_SetAttackingLocations(int map)
 			thisMapPlantingLocations.B = <2090.76758, 12572.7256, -3336.95386>
 		break
 		
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 			thisMapSides.Defenders = <-4899.18506, 23100.4492, -5939.96875>
 			thisMapSides.Attackers = <-8529.28125, 19642.5215, -5937.96875>
 
@@ -293,7 +293,7 @@ void function Sh_SetAttackingLocations(int map)
 			thisMapPlantingLocations.B = <-5436.7666, 19734.5449, -5889.96875>
 			
 		break
-		case "mp_rr_arena_empty":
+		case eMaps.mp_rr_arena_empty:
 			if(file.currentLocation != map)
 			{
 				switch(map)
@@ -330,7 +330,7 @@ void function Sh_SetAttackingLocations(int map)
 					thisMapPlantingLocations.A = <3644.49707, 2061.52881, 16491.0859>
 					thisMapPlantingLocations.B = <375.151031, 1383.72168, 16456.1621>
 					
-					if( GetMapName() == "mp_rr_arena_empty" )
+					if( MapName() == eMaps.mp_rr_arena_empty )
 					{
 						thisMapSides.Defenders -= <0,0,10000>
 						thisMapSides.Attackers -= <0,0,10000>

@@ -627,7 +627,7 @@ void function Infection_GameLoop()
 	
 	FS_INFECTION.allowedRadius = float(minint(5000 + 80*GetPlayerArray().len(), 8000))
 	
-	if(GetMapName() == "mp_rr_thepit")
+	if( MapName() == eMaps.mp_rr_thepit )
 	{
 		FS_INFECTION.allowedRadius = 5000
 		
@@ -682,7 +682,7 @@ void function Infection_GameLoop()
 	SurvivalCommentary_ResetAllData()
 	SurvivalCommentary_SetHost( eSurvivalHostType.NOC )
 	
-	if(GetMapName() == "mp_rr_thepit")
+	if( MapName() == eMaps.mp_rr_thepit )
 	{
 		array<entity> doors = GetEntArrayByClass_Expensive( "prop_dynamic" )
 		
@@ -991,7 +991,7 @@ int function ComparePlayerInfo_Infection(entity a, entity b)
 
 void function EntitiesDidLoad() //these props are spawned via script ent file, revisit
 {
-	if(GetMapName() != "mp_rr_thepit") return
+	if( MapName() != eMaps.mp_rr_thepit ) return
 	
 	array<entity> props = GetEntArrayByClass_Expensive( "prop_dynamic" )
 	
@@ -1754,7 +1754,7 @@ void function FlowstateInfection_CallEvac(vector origin)
 {
 	EndSignal( svGlobal.levelEnt, "MatchEndedEarlyDontCallEvac" )
 	
-	float waitArrival = GameRules_GetGameMode() == "fs_infected" ? DEFAULT_TIME_UNTIL_SHIP_ARRIVES : 10.0
+	float waitArrival = Gamemode() == eGamemodes.fs_infected ? DEFAULT_TIME_UNTIL_SHIP_ARRIVES : 10.0
 	
 	SetGlobalNetTime("countdownTimerStart", Time())
 	SetGlobalNetTime("countdownTimerEnd", Time() + waitArrival)
@@ -1834,7 +1834,7 @@ void function FlowstateInfection_HandleEvac( entity evac, entity fx, vector orig
 		
 	thread PlayAnim( evac, EVAC_IDLE, origin, angles )
 
-	float waitDepartTime = GameRules_GetGameMode() == "fs_infected" ? DEFAULT_TIME_UNTIL_SHIP_DEPARTS : 5.0
+	float waitDepartTime = Gamemode() == eGamemodes.fs_infected ? DEFAULT_TIME_UNTIL_SHIP_DEPARTS : 5.0
 	thread FlowstateInfection_HandleEvacTrigger( FS_INFECTION.CoolEvac, origin - <0,0,200>, waitDepartTime )
 	
 	SetGlobalNetTime("countdownTimerStart", Time())

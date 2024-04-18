@@ -358,7 +358,7 @@ void function INIT_Flags()
 	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
 	settings.enableChallenges			= GetCurrentPlaylistVarBool( "enable_challenges", true )
-	file.is3v3Mode						= GetCurrentPlaylistName() == "fs_scenarios"
+	file.is3v3Mode						= Playlist() == ePlaylists.fs_scenarios
 }
 
 
@@ -4315,7 +4315,8 @@ void function ForceAllRoundsToFinish_solomode()
 vector function Return_Loc_Data( string _type )
 {
 	
-	string map = GetMapName(); //better set as global string
+	//string map = GetMapName(); //better set as global string
+	int map = MapName()
 	vector coordinates = < 0,0,0 >
 	vector angles = < 0,0,0 >
 	
@@ -4325,26 +4326,26 @@ vector function Return_Loc_Data( string _type )
 		switch(map)
 		{
 			
-			case "mp_rr_arena_composite":
+			case eMaps.mp_rr_arena_composite:
 			
 				coordinates = < 6.94531, 687.949, 286.174 >
 				return coordinates
 				break
 			
 			
-			case "mp_rr_aqueduct":
+			case eMaps.mp_rr_aqueduct:
 				
 				coordinates = < 717.151, -5387.85, 580.00 >
 				return coordinates
 				break
 			
-			case "mp_rr_canyonlands_staging":
+			case eMaps.mp_rr_canyonlands_staging:
 				
 				coordinates = < 3480.93, -8729.28, -10144.3 >
 				return coordinates
 				break
 			
-			case "mp_rr_canyonlands_64k_x_64k":
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
 				coordinates = < -532.278, 20713.6, 4746.85 >
 				return coordinates
 				break
@@ -4682,17 +4683,17 @@ void function _CleanupPlayerEntities( entity player )
 LocPair function getBotSpawn()
 {	
 	LocPair move;
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 			move.origin = < 4.00458, -219.602, 202.3 >
 			move.angles = < 9.97307, 83.8519, 0 >
 			break
-		case "mp_rr_aqueduct":
+		case eMaps.mp_rr_aqueduct:
 			move.origin = < 1044.03, -5510.88, 336.031 >
 			move.angles = < 12.4284, 314.095, 0 >
 			break	
-		case "mp_rr_party_crasher":
+		case eMaps.mp_rr_party_crasher:
 			move.origin = < 2065.89, -4216.35, 626.106 >
 			move.angles = < 15.6277, 115.51, 0 >
 			break

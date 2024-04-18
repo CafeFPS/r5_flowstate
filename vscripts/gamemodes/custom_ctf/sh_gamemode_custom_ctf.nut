@@ -190,9 +190,9 @@ void function Sh_CustomCTF_Init()
 
 	// dtbl pls
 	// Map locations, flag spawns, team spawns, deathcam, victory pos, and undermap Z
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 
 			// Shared_RegisterLocationCTF(
 				// NewCTFLocationSettings(
@@ -253,7 +253,7 @@ void function Sh_CustomCTF_Init()
 			)
 			break
 
-		case "mp_rr_canyonlands_staging":
+		case eMaps.mp_rr_canyonlands_staging:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Firing Range",
@@ -285,8 +285,8 @@ void function Sh_CustomCTF_Init()
 			)
 			break
 
-		case "mp_rr_aqueduct":
-		case "mp_rr_aqueduct_night":
+		case eMaps.mp_rr_aqueduct:
+		case eMaps.mp_rr_aqueduct_night:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Overflow",
@@ -315,7 +315,7 @@ void function Sh_CustomCTF_Init()
 			)
 			break
 
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Drop Off",
@@ -345,7 +345,7 @@ void function Sh_CustomCTF_Init()
 			)
 			break
 
-		case "mp_rr_ashs_redemption":
+		case eMaps.mp_rr_ashs_redemption:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Ash's Redemption",
@@ -376,9 +376,9 @@ void function Sh_CustomCTF_Init()
 			)
 			break
 
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Relay",
@@ -603,7 +603,7 @@ void function Sh_CustomCTF_Init()
 			)
 
 			break
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Gardens",
@@ -662,8 +662,8 @@ void function Sh_CustomCTF_Init()
 				)
 			)
 			break
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 			Shared_RegisterLocationCTF(
 				NewCTFLocationSettings(
 					"Overlook",

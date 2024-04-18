@@ -52,7 +52,7 @@ void function UpdateLightingConVars()
 void function CL_EntitiesDidLoad()
 {
 	vector dlight_color = RGBToVector( <255 ,247, 232> )
-	if(GetMapName() == "mp_rr_construct_night")
+	if( MapName() == eMaps.mp_rr_construct_night )
 		dlight_color = RGBToVector( <63,91,175> )
 
     foreach(entity proxy in GetErray("CL_mp_rr_construct_skybox_dlights") )

@@ -5,7 +5,7 @@ globalize_all_functions
 
 void function PrecacheZeesMapProps()
 {
-    if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){
+    if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx ){
         PrecacheModel( $"mdl/foliage/icelandic_moss_grass_02.rmdl" )
         PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )
         PrecacheModel( $"mdl/signs/thumper_signs_03.rmdl" )
@@ -6919,12 +6919,12 @@ void function nuketown()
 {
     //Starting Origin, Change this to a origin in a map
     vector startingorg
-    if(GetMapName() == "mp_rr_arena_skygarden"){
+    if( MapName() == eMaps.mp_rr_arena_skygarden ){
 	startingorg = <28524,23022,43000>
 	} else {
 	startingorg = <28524,23022,-3375>
 	}
-	if( GetMapName() == "mp_rr_party_crasher_new" || GetMapName() == "mp_rr_arena_empty" )
+	if( MapName() == eMaps.mp_rr_party_crasher_new || MapName() == eMaps.mp_rr_arena_empty )
 	{
 		startingorg = <-7000, -5000, 20000>
 	}

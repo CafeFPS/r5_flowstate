@@ -50,7 +50,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
 
 	// Falling Forever Custom Timer
-	if( GetCurrentPlaylistName() == "fs_fallingforever" )
+	if( Playlist() == ePlaylists.fs_fallingforever )
 		Remote_RegisterClientFunction("ServerCallback_SetTimer", "int", 0, INT_MAX)
 
 	// #if DEVELOPER
@@ -76,10 +76,10 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
 	//Custom gamemodes
-	switch ( GameRules_GetGameMode() )
+	switch ( Gamemode() )
 	{
-		case fs_dm:
-			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		case eGamemodes.fs_dm:
+			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 			{
 				RegisterNetworkedVariable( "accuracy", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 				Remote_RegisterClientFunction( "ServerCallback_SetDefaultMenuSettings" )
@@ -140,7 +140,7 @@ void function RemoteFunctions_Init_Begin()
 				// RegisterNetworkedVariable( "FSVoteTeam_EndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			}
 			break
-		case fs_aimtrainer:
+		case eGamemodes.fs_aimtrainer:
 			Remote_RegisterUIFunction( "OpenFRChallengesMenu" )
 			Remote_RegisterUIFunction( "CloseFRChallengesMenu" )
 			Remote_RegisterUIFunction( "OpenFRChallengesMainMenu", "int", 0, 999999 )
@@ -169,7 +169,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies", "entity", "entity")
 			Remote_RegisterClientFunction("ServerCallback_ToggleDotForHitscanWeapons", "bool")
 			break
-		case fs_snd:
+		case eGamemodes.fs_snd:
 			Remote_RegisterClientFunction("Sh_SetAttackingLocations", "int", 0, 10)
 			Remote_RegisterClientFunction("Sh_SetAttackerTeam", "int", 0, 10, "int", INT_MIN, INT_MAX)
 			Remote_RegisterClientFunction("SND_HintCatalog", "int", 0, 20, "int", INT_MIN, INT_MAX)
@@ -219,7 +219,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterUIFunction("SND_Disable_IMCButton")
 			Remote_RegisterUIFunction("SND_Disable_MILITIAButton")
 			break
-		case fs_infected:
+		case eGamemodes.fs_infected:
 			RegisterNetworkedVariable( "isPlayerShadowForm", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 			Remote_RegisterClientFunction("ApplyInfectedHUD")
 			Remote_RegisterClientFunction("CleanUpInfectedClientEffects")
@@ -246,7 +246,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction( "ServerCallback_SetWeaponMysteryBoxUsable", "entity")
 			Remote_RegisterClientFunction( "ServerCallback_MysteryBoxChangeLocation_DoAnnouncement" )
 			break
-		case fs_duckhunt:
+		case eGamemodes.fs_duckhunt:
 			Remote_RegisterClientFunction("DUCKHUNT_CustomHint", "int", 0, 255, "int", INT_MIN, INT_MAX)
 			Remote_RegisterClientFunction("DUCKHUNT_Timer", "bool", "float", 0.0, 1000000.0, 32)
 			Remote_RegisterClientFunction("ToggleSetHunterClient", "bool")
@@ -269,7 +269,7 @@ void function RemoteFunctions_Init_Begin()
 			// Remote_RegisterClientFunction( "PKKNOCKBACK_SetUIVisibility", "bool" )
 			
 			// break
-		case fs_prophunt:
+		case eGamemodes.fs_prophunt:
 			Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)
 			Remote_RegisterClientFunction("ServerCallback_FSDM_OpenVotingPhase", "bool")
 			Remote_RegisterClientFunction("ServerCallback_FSDM_ChampionScreenHandle", "bool", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
@@ -296,7 +296,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("EnableHuntersAbility")
 			Remote_RegisterClientFunction("PROPHUNT_UpdateThirdPersonCameraPosition", "float", 0.0, 9999.0, 32)
 			break
-		case CUSTOM_CTF:
+		case eGamemodes.CUSTOM_CTF:
 			// CTF: Server to Client
 			Remote_RegisterClientFunction( "ServerCallback_CTF_AddPointIcon", "entity", "entity", "int", 0, 255)
 			Remote_RegisterClientFunction( "ServerCallback_CTF_RecaptureFlag", "int", 0, 999, "float", 0.0, 999.0, 32, "float", 0.0, 999.0, 32, "bool")
@@ -493,18 +493,20 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "latency", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 	RegisterNetworkedVariable( "damage", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0 )
 
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		RegisterNetworkedVariable( "captures", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 		RegisterNetworkedVariable( "returns", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0 )
-	} else if( GameRules_GetGameMode() == "fs_snd" )
+	} 
+	else if( Gamemode() == eGamemodes.fs_snd )
 	{
 		// RegisterNetworkedVariable( "money", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 		RegisterNetworkedVariable( "planted", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 		RegisterNetworkedVariable( "defused", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 		RegisterNetworkedVariable( "playerStamina", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 100 )
 		RegisterNetworkedVariable( "playerStaminaRecovering", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
-	} else
+	} 
+	else
 	{
 		RegisterNetworkedVariable( "deaths", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 		RegisterNetworkedVariable( "assists", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
@@ -597,13 +599,13 @@ void function RemoteFunctions_Init_Begin()
 		CLSurvival_RegisterNetworkFunctions()
 		ShEliteStreak_RegisterNetworkFunctions()
 
-		switch ( GameRules_GetGameMode() )
+		switch ( Gamemode() )
 		{
-			case "fs_dm":
+			case eGamemodes.fs_dm:
 				CL_FSDM_RegisterNetworkFunctions()
 			break
 			
-			case "custom_ctf":
+			case eGamemodes.CUSTOM_CTF:
 				CL_FSCTF_RegisterNetworkFunctions()
 			break
 		}

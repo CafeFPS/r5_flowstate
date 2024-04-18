@@ -58,7 +58,8 @@ void function OnWeaponTossPrep_weapon_jump_pad( entity weapon, WeaponTossPrepPar
 void function OnJumpPadPlanted( entity projectile )
 {
 	#if SERVER
-	string gameMode = GameRules_GetGameMode()
+	//string gameMode = GameRules_GetGameMode()
+	int gameMode = Gamemode()
 
 	Assert( IsValid( projectile ) )
 
@@ -102,7 +103,7 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.AddToOtherEntitysRealms( projectile )
 	projectile.Destroy()
 
-	if(gameMode != "fs_dm")
+	if( gameMode != eGamemodes.fs_dm )
 	{
 		newProjectile.SetTakeDamageType( DAMAGE_YES )
 		newProjectile.SetMaxHealth( 100 )
@@ -120,7 +121,7 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.EndSignal( "OnDestroy" )
 	newProjectile.SetScriptName("jump_pad")
 
-	if(gameMode != "fs_dm")
+	if( gameMode != eGamemodes.fs_dm )
 	{
 		thread function () : ( newProjectile, owner )
 		{
@@ -169,7 +170,7 @@ void function OnJumpPadPlanted( entity projectile )
 	jumpPadProxy.SetOwner( owner )
 	JumpPad_CreatedCallback( newProjectile )
 
-	if( gameMode == "fs_dm" )
+	if( gameMode == eGamemodes.fs_dm )
 	{
 		thread JumpPadWatcher(newProjectile)
 	}

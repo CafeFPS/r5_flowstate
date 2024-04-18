@@ -271,7 +271,7 @@ void function Consumable_Init()
 		file.consumableTypeToInfo[ eConsumableType.ULTIMATE ] <- ultimateBattery
 	}
 
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		// Bomb
 		ConsumableInfo bomb
@@ -294,7 +294,7 @@ void function Consumable_Init()
 	file.modNameToConsumableType[ "phoenix_kit" ] <-        eConsumableType.COMBO_FULL
 	file.modNameToConsumableType[ "ultimate_battery" ] <-    eConsumableType.ULTIMATE
 	
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 		file.modNameToConsumableType[ "snd_bomb" ] <-    eConsumableType.SND_BOMB
 	
 	file.consumableUseOrder.append( eConsumableType.SHIELD_LARGE )
@@ -302,7 +302,7 @@ void function Consumable_Init()
 	file.consumableUseOrder.append( eConsumableType.COMBO_FULL )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_LARGE )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_SMALL )
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 		file.consumableUseOrder.append( eConsumableType.SND_BOMB )
 	
 	#if SERVER
@@ -919,7 +919,7 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 		if( info.ultimateAmount > 0 )
 			UltimatePackUse( player, info )
 		
-		if( GameRules_GetGameMode() == "fs_snd" && itemName == "snd_bomb" || GameRules_GetGameMode() != "fs_snd" )
+		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
 			SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
 
 		//StatsHook_PlayerUsedResource( player, null, itemName )
@@ -1591,7 +1591,7 @@ void function UseConsumable_Bomb( entity player, ConsumableInfo info )//, Consum
 {
 	if( !IsValid(player) || player.GetTeam() != Sh_GetAttackerTeam() || GetGameState() != eGameState.Playing ) return
 	
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 		PlayBattleChatterToSelfOnClientAndTeamOnServer( player,"bc_super" )
 
 	#if SERVER
@@ -1848,7 +1848,7 @@ void function Bomb_OnUse( entity bomb, entity player, int useInputFlags )
 	settings.useInputFlag = IN_USE_LONG
 	
 	#if SERVER
-		if(GameRules_GetGameMode() == "fs_snd")
+		if( Gamemode() == eGamemodes.fs_snd )
 		{
 			Highlight_SetFriendlyHighlight( player, "hackers_wallhack" )
 		}

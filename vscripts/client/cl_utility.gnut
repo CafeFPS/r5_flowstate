@@ -707,13 +707,13 @@ void function Dev_PrintClientMessage( float duration )
 	Announcement_SetPurge( announcement, true )
 	// Announcement_SetSoundAlias( announcement, "" )
 
-	if(GameRules_GetGameMode() == "fs_dm" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_dm || Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_snd )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_scenarios" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos" || GetCurrentPlaylistName() == "fs_lgduels_1v1" || GameRules_GetGameMode() == "fs_snd" )
+	if( Playlist() == ePlaylists.fs_movementgym || Playlist() == ePlaylists.fs_scenarios || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_survival_solos || Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_snd )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

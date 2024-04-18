@@ -434,7 +434,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return true
 
-	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) && GameRules_GetGameMode() != "fs_aimtrainer")
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) && Gamemode() != eGamemodes.fs_aimtrainer )
 		return true
 
 	entity deathBox = null
@@ -454,7 +454,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
 			return true
 		
-		if( GameRules_GetGameMode() == "fs_aimtrainer" )
+		if( Gamemode() == eGamemodes.fs_aimtrainer )
 		{
 			thread function() : (deathBox)
 			{
@@ -1364,7 +1364,7 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 
 	pickup.Signal( "OnItemPickup", { player = player } )
 
-	if( pickupData.ref == "snd_bomb" && GameRules_GetGameMode() == "fs_snd" && GetGameState() == eGameState.Playing )
+	if( pickupData.ref == "snd_bomb" && Gamemode() == eGamemodes.fs_snd && GetGameState() == eGameState.Playing )
 	{
 		player.p.playerHasBomb = true
 		SetBombState(bombState.CARRIED)
@@ -1854,7 +1854,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	player.DeployWeapon()
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
 
-	if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+	if( Gamemode() == eGamemodes.fs_duckhunt && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
 		weapon.AddMod("duckhunt")
 	
 	int ammoType = weapon.GetWeaponAmmoPoolType()
@@ -2518,7 +2518,7 @@ const array<string> fs_snd_drop_exclusions_array = [
 
 bool function FlowstateCheckItemDropableFor__fs_snd( string ref, entity player )
 {
-	if( GameRules_GetGameMode() != "fs_snd" )
+	if( Gamemode() != eGamemodes.fs_snd )
 		return true
 		
 	if ( fs_snd_drop_exclusions_array.contains( ref ) )

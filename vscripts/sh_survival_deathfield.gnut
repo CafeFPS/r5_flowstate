@@ -281,7 +281,7 @@ float function SURVIVAL_Deathfield_GetStartRadius()
 {
 	float startRadius = GetCurrentPlaylistVarFloat( "survival_death_field_start_radius", 65000 )
 	
-	if( file.deathFieldStartStage == 0 && GetMapName() == "mp_rr_desertlands_64k_x_64k" )
+	if( file.deathFieldStartStage == 0 && MapName() == eMaps.mp_rr_desertlands_64k_x_64k )
 		startRadius = 70000
 
 	if ( file.deathFieldStartStage > 0 )

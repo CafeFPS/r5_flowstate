@@ -336,19 +336,19 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
 
-	switch(GameRules_GetGameMode())
+	switch( Gamemode() )
 	{
-		case "custom_ctf":
+		case eGamemodes.CUSTOM_CTF:
 			PrecacheWeapon( $"melee_flagpole" )
 			PrecacheWeapon( $"mp_weapon_flagpole_primary" )
 			break
-		case "fs_prophunt":
+		case eGamemodes.fs_prophunt:
 			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
 			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
 			break
-		case "fs_dm":
+		case eGamemodes.fs_dm:
 			break
-		case fs_aimtrainer:
+		case eGamemodes.fs_aimtrainer:
 			break
 		default:
 			LoadModelsFromEditor()

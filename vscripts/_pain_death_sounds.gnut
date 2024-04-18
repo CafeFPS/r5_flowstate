@@ -75,36 +75,50 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 		else
 		{
 			ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
-			string charRef = ItemFlavor_GetHumanReadableRef( character )
+			//string charRef = ItemFlavor_GetHumanReadableRef( character )
 			
-			if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+			if( Playlist() == ePlaylists.fs_lgduels_1v1 || Flowstate_IsHaloMode() ) //GetCurrentPlaylistVarBool( "is_halo_gamemode", false )
 			{
 				return eBodyTypes.NPC_SPECTRE 
 			}
 
-			switch( charRef )
+			int charID = ItemFlavor_GetGUID( character )
+			
+			//switch( charRef )
+			switch( charID ) //changed to guid compare ~mkos
 			{
-				case "character_bangalore":
-					return eBodyTypes.CLASS_BANGALORE
-				case "character_bloodhound":
-					return eBodyTypes.CLASS_BLOODHOUND
-				case "character_caustic":
-					return eBodyTypes.CLASS_CAUSTIC
-				case "character_crypto":
-					return eBodyTypes.CLASS_CRYPTO
-				case "character_gibraltar":
-					return eBodyTypes.CLASS_GIBRALTER
-				case "character_lifeline":
-					return eBodyTypes.CLASS_LIFELINE
-				case "character_mirage":
-					return eBodyTypes.CLASS_MIRAGE
-				case "character_octane":
-					return eBodyTypes.CLASS_OCTANE
-				case "character_pathfinder":
-					return eBodyTypes.CLASS_PATHFINDER
-				case "character_wraith":
+				//case "character_wraith":
+				case 827049897:
 					return eBodyTypes.CLASS_BANSHEE // is this even the right class?
-				case "character_wattson":
+				//case "character_bangalore":
+				case 725342087:
+					return eBodyTypes.CLASS_BANGALORE
+				//case "character_bloodhound":
+				case 898565421:
+					return eBodyTypes.CLASS_BLOODHOUND
+				//case "character_caustic":
+				case 1111853120:
+					return eBodyTypes.CLASS_CAUSTIC
+				//case "character_crypto":
+				case 80232848:
+					return eBodyTypes.CLASS_CRYPTO
+				//case "character_gibraltar":
+				case 182221730:
+					return eBodyTypes.CLASS_GIBRALTER
+				//case "character_lifeline":
+				case 1409694078:
+					return eBodyTypes.CLASS_LIFELINE
+				//case "character_mirage":
+				case 2045656322:
+					return eBodyTypes.CLASS_MIRAGE
+				//case "character_octane":
+				case 843405508:
+					return eBodyTypes.CLASS_OCTANE
+				//case "character_pathfinder":
+				case 1464849662:
+					return eBodyTypes.CLASS_PATHFINDER
+				//case "character_wattson":
+				case 187386164:
 					return eBodyTypes.CLASS_WATTSON
 			}
 
@@ -287,7 +301,7 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 
 bool function SE_ANY( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
 {
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 || Flowstate_IsHaloMode() )
 		return false
 
 	if(damageSourceID == eDamageSourceId.deathField) // Ring shouldn't play pain sounds

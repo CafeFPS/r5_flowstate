@@ -768,7 +768,8 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
 {
-	if ( GameRules_GetGameMode() == "fs_prophunt" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	//if ( GameRules_GetGameMode() == "fs_prophunt" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_prophunt )
 		return
 
 	if ( IsSoftenedLocale() || !Flag( "EnableBloodSprayDecals" ) )
@@ -1588,7 +1589,7 @@ void function PlayShieldBreakEffect( entity ent )
 
 	int attachID = shieldEnt.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
@@ -1617,7 +1618,7 @@ void function PlayShieldActivateEffect( entity ent )
 
 	int attachID = ent.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
@@ -1636,7 +1637,7 @@ void function PlayIt( entity victim )
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
 	int attachID = victim.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
@@ -1671,7 +1672,7 @@ void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldCo
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
 	int attachID = victim.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
 		vector color

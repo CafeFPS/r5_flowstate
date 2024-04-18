@@ -38,10 +38,10 @@ struct {
 
 void function _GamemodeDuckhunt_Init()
 {
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_aqueduct_night":
-		case "mp_rr_aqueduct":
+		case eMaps.mp_rr_aqueduct_night:
+		case eMaps.mp_rr_aqueduct:
 			FS_DUCKHUNT.lobbyLocation = <-323.799377, -16008.7832, 11485.8652>
 			FS_DUCKHUNT.lobbyAngles = <0, 24.2251167, 0>
 
@@ -1056,7 +1056,7 @@ void function CreateFanPusher(vector origin, vector angles2)
 	entity fx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), origin, angles2 )
 	fx2.SetParent(rotator)
 
-	if(GameRules_GetGameMode() == "fs_infected") return
+	if( Gamemode() == eGamemodes.fs_infected ) return
 
 	thread function() : (rotator, origin, angles2)
 	{

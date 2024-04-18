@@ -143,7 +143,7 @@ void function Canyonlands_MapInit_Common()
 
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_pvpcurrency_container", OnPvpCurrencyContainerSpawned )
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_upgrade_station", OnSurvivalUpgradeStationSpawned )
-		if ( GetMapName() == "mp_rr_canyonlands_staging" )
+		if ( MapName() == eMaps.mp_rr_canyonlands_staging )
 		{
 			// adjust skybox for staging area
 			AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
@@ -167,7 +167,7 @@ void function Canyonlands_MapInit_Common()
 		if ( !IsPVEMode() )
 			SetMapFeatureItem( 300, "#SUPPLY_DROP", "#SUPPLY_DROP_DESC", $"rui/hud/gametype_icons/survival/supply_drop" )
 
-		if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )// TODO(AMOS): desertlands_nx
+		if ( MapName() == eMaps.mp_rr_canyonlands_mu1_night )// TODO(AMOS): desertlands_nx
 		{
 			SetVictorySequenceLocation( <10472, 30000, 8500>, <0, 60, 0> )
 			SetVictorySequenceSunSkyIntensity( 0.8, 0.0 )
@@ -188,7 +188,7 @@ void function Canyonlands_MapInit_Common()
 #if SERVER
 void function OnPvpCurrencyContainerSpawned(entity ent)
 {
-    if( GameRules_GetGameMode() != FREELANCE )
+    if( Gamemode() != eGamemodes.FREELANCE )
 	{
         if(IsValid(ent))
             ent.Destroy()
@@ -197,7 +197,7 @@ void function OnPvpCurrencyContainerSpawned(entity ent)
 
 void function OnSurvivalUpgradeStationSpawned(entity ent)
 {
-    if( GameRules_GetGameMode() != FREELANCE )
+    if( Gamemode() != eGamemodes.FREELANCE )
 	{
         if(IsValid(ent))
             ent.Destroy()
@@ -212,7 +212,7 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "fs_dm" && GameRules_GetGameMode() != "fs_aimtrainer")
+	if( MapName() != eMaps.mp_rr_canyonlands_staging && Gamemode() != eGamemodes.fs_dm && Gamemode() != eGamemodes.fs_aimtrainer )
 	{
 		//InitLootDrones() //flyers
 		//InitLootRollers() //flyers

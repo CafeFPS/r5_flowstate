@@ -243,9 +243,9 @@ void function UpdateSystemPanel( var panel )
 {
 	entity player = GetLocalClientPlayer()
 	//temp workaround, not the best place for this tbh
-	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
+	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
-	else if( IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer" )
+	else if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
@@ -259,22 +259,22 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "fs_dm" )
+		if( Playlist() == ePlaylists.fs_dm )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_1v1" )
+		if( Playlist() == ePlaylists.fs_1v1 )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )
 			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
 
-		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
+		if( Playlist() != ePlaylists.fs_aimtrainer )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
@@ -298,12 +298,12 @@ void function UpdateSystemPanel( var panel )
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "fs_dm" && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		if( Playlist() == ePlaylists.fs_dm && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "fs_movementgym" )
+		if( Playlist() == ePlaylists.fs_movementgym )
 		{
 			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
@@ -339,7 +339,7 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
+	if(IsConnected() && Playlist() == ePlaylists.fs_aimtrainer)
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
@@ -366,7 +366,7 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
+	if( ISAIMTRAINER && IsConnected() && Playlist() == ePlaylists.fs_aimtrainer ){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -377,7 +377,7 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
+	if( ISAIMTRAINER && IsConnected() && Playlist() == ePlaylists.fs_aimtrainer ){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}

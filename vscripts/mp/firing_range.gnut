@@ -80,7 +80,7 @@ void function FiringRangeGameMode_Init()
 	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
-	if( GetCurrentPlaylistName() != "survival_firingrange" )
+	if( Playlist() != ePlaylists.survival_firingrange )
 		return
 	
 	if ( !IsFiringRangeGameMode() || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))

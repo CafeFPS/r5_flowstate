@@ -122,7 +122,7 @@ void function InitLootBinFromMap( entity lootbin )
 		return
 	}
 
-	if(GameRules_GetGameMode() == "fs_infected")
+	if( Gamemode() == eGamemodes.fs_infected )
 	{
 		if ( file.lootBinList.contains( lootbin ) )
 			return
@@ -203,7 +203,14 @@ void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems
 	if ( LootBin_IsOpen( lootBin ) )
 		waitthread LootBin_PlayCloseSequence( lootBin )
 
-	if(GameRules_GetGameMode() == "fs_snd" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_pkknockback" || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
+	//todo: change to array.contains( Gamemode() ) ~mkos
+	array<int> returnFromModes = [
+		eGamemodes.fs_snd,
+		eGamemodes.fs_prophunt,
+		eGamemodes.fs_duckhunt,
+		eGamemodes.flowstate_pkknockback
+	]
+	if( returnFromModes.contains( Gamemode() ) || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
 	
 	// New refs
 	file.lootBinsLootInside[ lootBin ] = []
@@ -288,7 +295,7 @@ void function InitLootBin( entity lootbin )
 	}
 	array<string> Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
 
-	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && GameRules_GetGameMode() != "fs_snd" )
+	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && Gamemode() != eGamemodes.fs_snd )
 	{
 		AddMultipleLootItemsToLootBin( lootbin, Refs )
 	}
@@ -581,7 +588,7 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 
 	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )
 
-	if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) && GameRules_GetGameMode() == SURVIVAL )
+	if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) && Gamemode() == eGamemodes.SURVIVAL )
 	{
 		printt( "Lootbin opened ", opened )
 		opened++
@@ -686,7 +693,7 @@ bool function LootBin_IsBusy( entity lootbin )
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
 {
-	if( lootbin.GetScriptName() == "smartbin" && GameRules_GetGameMode() == "fs_infected")
+	if( lootbin.GetScriptName() == "smartbin" && Gamemode() == eGamemodes.fs_infected )
 	{
 		AddMysteryBox( lootbin )
 		SetMysteryBoxUsable( lootbin )		

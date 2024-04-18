@@ -108,7 +108,7 @@ void function Olympus_OnEntitiesDidLoad()
 		}
 	}
 
-	if( GameRules_GetGameMode() == SURVIVAL )
+	if( Gamemode() == eGamemodes.SURVIVAL )
 	{
 		SpawnWeaponsonRacks()
 		SetupKeyForShipVault()

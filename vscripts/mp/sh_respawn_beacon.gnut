@@ -376,7 +376,7 @@ void function OnRespawnChamberSpawned( entity ent )
 
 	ent.Destroy()
 
-	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || GameRules_GetGameMode() != SURVIVAL )
+	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || Gamemode() != eGamemodes.SURVIVAL )
 		return
 
 	// spawn a new one with the correct targetname
@@ -396,7 +396,7 @@ void function OnMobileRespawnChamberSpawned( entity ent )
 	vector origin = ent.GetOrigin()
 	vector angles = ent.GetAngles()
 
-	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || GameRules_GetGameMode() != SURVIVAL )
+	if ( GetRespawnStyle() != eRespawnStyle.RESPAWN_CHAMBERS || Gamemode() != eGamemodes.SURVIVAL )
 		return
 
 	// spawn a new one with the correct targetname
@@ -979,7 +979,7 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 {
 	entity player = deathbox.GetOwner()
 	
-	if( GameRules_GetGameMode() == "fs_aimtrainer" )
+	if( Gamemode() == eGamemodes.fs_aimtrainer )
 		return
 	
 	if ( !IsValid( player ) )
@@ -1130,7 +1130,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
-	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	if( Playlist() == ePlaylists.fs_scenarios )
 	{
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
@@ -1183,7 +1183,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 				player.ClearParent()
 				ClearPlayerAnimViewEntity( player )
 
-				if( GetCurrentPlaylistName() == "fs_scenarios" )
+				if( Playlist() == ePlaylists.fs_scenarios )
 				{
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )

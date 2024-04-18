@@ -38,12 +38,10 @@ global function PIN_Training
 
 // these defines dictate the compiler for tracker code vs stub code
 
-global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+global const bool TRACKER = true
+global const bool HAS_TRACKER_DLL = true
 
 //do not edit below this line
-
-
 
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 global function PIN_Callback_CheckReload
@@ -54,6 +52,7 @@ global bool g_bPassivesAllowed
 
 #if TRACKER
 	global const bool STUB = false
+	global const bool PRINT_DEBUGZ = false
 #else
 	global const bool STUB = true 
 #endif 
@@ -997,8 +996,24 @@ void function __CONTROLLED_LogInit()
 	}
 }
 
+void function PRINT_ALL_INIT_DEBUG()
+{
+	if( Playlist() == ePlaylists.fs_1v1 )
+	{
+		sqprint( format("Playlist is 1v1, enum #: %d", getPlaylistEnumFromName( GetCurrentPlaylistName() ) ) )
+	}
+	else 
+	{
+		sqprint("Playlist is not 1v1")
+	}
+}
+
 void function PIN_Init()
 {	
+	#if PRINT_DEBUGZ
+		PRINT_ALL_INIT_DEBUG()
+	#endif 
+	
 	if( IsLobby() ){ return }
 	INIT_fastComputes()
 	INIT_IntervalMessages()
@@ -1092,7 +1107,7 @@ void function INIT_fastComputes()
 {
 	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
-	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
+	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false)
 	file.LogOn = GetCurrentPlaylistVarBool("logging_enabled", false)
@@ -1210,7 +1225,7 @@ void function __START_LOGGING()
 void function Init_NewGame()
 {
 	
-	if(GetMapName() == "mp_lobby")
+	if( MapName() == eMaps.mp_lobby )
 	{
 		return;
 	}
@@ -3971,7 +3986,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
                 int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
                 timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
             } 
-			else if (GameRules_GetGameMode() == "fs_dm") 
+			else if ( Gamemode() == eGamemodes.fs_dm ) 
 			{
                 const int INITIAL_DELAY = 8;
                 int DELAY_BETWEEN_ROUNDS;
@@ -5719,7 +5734,7 @@ void function PIN_AddPlayer( entity player )
 					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
 					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
 				} 
-				else if (GameRules_GetGameMode() == "fs_dm") 
+				else if ( Gamemode() == eGamemodes.fs_dm ) 
 				{
 					const int INITIAL_DELAY = 8;
 					int DELAY_BETWEEN_ROUNDS;
@@ -5794,7 +5809,7 @@ void function PIN_PlayerLeft( entity player, string reason )
 				int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
 				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
 			} 
-			else if (GameRules_GetGameMode() == "fs_dm") 
+			else if ( Gamemode() == eGamemodes.fs_dm ) 
 			{
 				const int INITIAL_DELAY = 8;
 				int DELAY_BETWEEN_ROUNDS;
@@ -7268,10 +7283,10 @@ void function PIN_Init()
 	//TODO: Use only sh file bools instead of globals
 	
 	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
-	g_bIs1v1 = GetCurrentPlaylistName() == "fs_1v1" ? true : false;
+	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode_60p", false )
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
-	g_bPassivesAllowed = ( GameRules_GetGameMode() == SURVIVAL || GetCurrentPlaylistName() == "fs_1v1" ? true : false )
+	g_bPassivesAllowed = ( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_1v1 ? true : false )
 	
 	AddCallback_OnClientConnected(PlayerConnectedCallback);
 	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )

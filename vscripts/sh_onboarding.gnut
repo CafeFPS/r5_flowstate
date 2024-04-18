@@ -147,22 +147,22 @@ void function Sequence_WaitingForPlayers()
 
 	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
 	
-	if(GameRules_GetGameMode() != SURVIVAL)
+	if( Gamemode() != eGamemodes.SURVIVAL)
 		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime()) - 1
 	else
 		wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
 	
-	if( GameRules_GetGameMode() == "fs_aimtrainer" )
+	if( Gamemode() == eGamemodes.fs_aimtrainer )
 		return
 
-	if(GameRules_GetGameMode() != SURVIVAL)
+	if( Gamemode() != eGamemodes.SURVIVAL )
 	{
 		foreach( player in GetPlayerArray() )
 		{
 			if( !IsValid( player ) )
 				continue
 			
-			if( GameRules_GetGameMode() != "custom_ctf" )
+			if( Gamemode() != eGamemodes.CUSTOM_CTF )
 			{
 				ScreenCoverTransition_Player(player, Time() + 2)
 			} else
@@ -172,7 +172,7 @@ void function Sequence_WaitingForPlayers()
 		}
 	}
 	
-	if(GameRules_GetGameMode() != SURVIVAL)
+	if( Gamemode() != eGamemodes.SURVIVAL )
 	{
 		wait 1
 		SetGameState( eGameState.Playing )
@@ -202,7 +202,7 @@ void function Sequence_PickLoadout()
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
 			
-			if( GameRules_GetGameMode() == SURVIVAL && !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+			if( Gamemode() == eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 		}
 
@@ -543,7 +543,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( !GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false ) || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_scenarios" )
+	if( !GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false ) || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_scenarios )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
@@ -590,7 +590,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	// CharacterSkin_Apply( player, playerCharacterSkin )
 	player.AmmoPool_SetCapacity( 65535 )
 
-	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor_deprecated")
+	if ( giveLoadoutWeapons || Gamemode() == eGamemodes.map_editor_deprecated )
 		GiveLoadoutRelatedWeapons( player )
 
 	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
@@ -602,7 +602,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	UpdatePlayerCounts()
 	
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
+	if( Gamemode() == eGamemodes.map_editor_deprecated )
 		thread (void function() : ( player )
 		{
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
@@ -626,7 +626,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	#endif
 
 	//Set highlight to mantain retail behavior
-	if( GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_snd )
 	{
 		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
 	}
@@ -884,18 +884,18 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 	}
 
-	if( GetCurrentPlaylistName() == SURVIVAL )
+	if( Playlist() == ePlaylists.SURVIVAL )
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
 	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1 )
-	if( GameRules_GetGameMode() != "custom_ctf" && GameRules_GetGameMode() != "fs_snd" )
+	if( Gamemode() != eGamemodes.custom_ctf && Gamemode() != eGamemodes.fs_snd )
 		victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
 	
 	victim.FreezeControlsOnServer()
 
 	victim.SetPredictionEnabled( false )
 	
-	if( GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) ) 
+	if( Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() ) 
 		return
 	
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
@@ -957,25 +957,25 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
-			if( GameRules_GetGameMode() != SURVIVAL ) break
+			if( Gamemode() != eGamemodes.SURVIVAL ) break
 
-			switch(GetMapName())
+			switch( MapName() )
 			{
-				case "mp_rr_olympus_mu1":
+				case eMaps.mp_rr_olympus_mu1:
 					player.SetOrigin( <833.014587, -19103.7949, -4947.88916> )
 					player.SetAngles( <0, -5.91907549, 0> )
 				break
-				case "mp_rr_canyonlands_64k_x_64k":
-				case "mp_rr_canyonlands_mu1":
-				case "mp_rr_canyonlands_mu1_night":				
+				case eMaps.mp_rr_canyonlands_64k_x_64k:
+				case eMaps.mp_rr_canyonlands_mu1:
+				case eMaps.mp_rr_canyonlands_mu1_night:				
 					player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
 					player.SetAngles( <0, 65.3776093, 0> )
 				break
 				
-				case "mp_rr_desertlands_64k_x_64k":
-				case "mp_rr_desertlands_64k_x_64k_nx":
-				case "mp_rr_desertlands_64k_x_64k_tt":
-				case "mp_rr_desertlands_mu1":
+				case eMaps.mp_rr_desertlands_64k_x_64k:
+				case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+				case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+				case eMaps.mp_rr_desertlands_mu1:
 					player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
 					player.SetAngles( <0, -136.298843, 0> )
 				break
@@ -1039,47 +1039,49 @@ array<int> function GetTeamsForPlayersFlowstate( array<entity> playersToUse )
 void function UpdatePlayerCounts()
 {
 
-	string currGameMode = GameRules_GetGameMode()
+	//string currGameMode = GameRules_GetGameMode()
+	
+	int currGameMode = Gamemode()
 	
 	switch(currGameMode)
 	{
-		case "fs_infected":
+		case eGamemodes.fs_infected:
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() )
 		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )
 		SetGlobalNetInt( "squadsRemainingCount", 2 )
 		break
 		
-		case "fs_dm":
+		case eGamemodes.fs_dm:
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
 		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
 		break
 
-		case "custom_ctf":
+		case eGamemodes.CUSTOM_CTF:
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
 		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
 		break
 		
-		case "fs_prophunt":
+		case eGamemodes.fs_prophunt:
 		array<entity> propsAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
 		SetGlobalNetInt( "livingPlayerCount", propsAlive.len() )
 		SetGlobalNetInt( "squadsRemainingCount", propsAlive.len() )		
 		break
 
-		case "flowstate_pkknockback":
+		case eGamemodes.flowstate_pkknockback:
 		array<entity> playersAlive = GetPlayerArray_Alive()
 		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
 		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
 		break
 		
-		case "fs_duckhunt":
+		case eGamemodes.fs_duckhunt:
 		array<entity> ducksAlive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
 		SetGlobalNetInt( "livingPlayerCount", ducksAlive.len() )
 		SetGlobalNetInt( "squadsRemainingCount", ducksAlive.len() )		
 		break
 		
-		case "fs_snd":
+		case eGamemodes.fs_snd:
 		foreach(player in GetPlayerArray())
 			Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
 		break

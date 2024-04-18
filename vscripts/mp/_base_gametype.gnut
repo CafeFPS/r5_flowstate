@@ -98,7 +98,7 @@ void function Flowstate_CheckForMapTriggers()
 	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_Killzone" ) )
 	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_oob_timer" ) )
 
-	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) || GetMapName() == "mp_rr_arena_skygarden" && GameRules_GetGameMode() == "fs_dm" )
+	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) || MapName() == eMaps.mp_rr_arena_skygarden && Gamemode() == eGamemodes.fs_dm )
 	{
 		int i = 0
 		foreach( trigger in file.allTriggers )
@@ -199,7 +199,8 @@ void function CodeCallback_OnPrecache()
 
 function AddFlinch( entity attackedEnt, damageInfo )
 {
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_1v1" )
+	//if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_1v1 )
 	{
 		// DamageInfo_SetFlinchDirection( damageInfo, <0,0,0> )
 		return
@@ -464,7 +465,7 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 
 void function HandlePainSounds( entity ent, var damageInfo )
 {
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		return
 
 	//exit if the thing is dead
@@ -584,7 +585,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 
 function PlayerDamageFeedback( entity ent, damageInfo, int num )
 {
-	if( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
+	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
 		return
 
 //	printt( "player damage feedback for " + ent )
@@ -1851,7 +1852,7 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 
 		dataStruct.timeLeftBeforeDyingFromOutOfBounds = deadTime
 
-		if ( GetMapName() == "mp_rr_aqueduct" || GetMapName() == "mp_rr_aqueduct_night" || GetMapName() == "mp_rr_arena_skygarden" )
+		if ( MapName() == eMaps.mp_rr_aqueduct || MapName() == eMaps.mp_rr_aqueduct_night || MapName() == eMaps.mp_rr_arena_skygarden )
 		{
 			ent.SetOutOfBoundsDeadTime( Time() + 5 )
 		}

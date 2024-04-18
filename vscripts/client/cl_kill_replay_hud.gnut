@@ -251,7 +251,7 @@ void function Custom_KillReplayHud_Activate()
 
 	string announcementText = "Kill Replay"
 	
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 		announcementText = "Spectating Team"
 
 	RuiSetString( file.killReplayOverlayRui, "killReplayTitleText", announcementText )

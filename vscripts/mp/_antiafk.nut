@@ -101,7 +101,7 @@ void function CheckAfkKickThread(entity player)
 				{		
 					player.p.lastmoved = Time()
 					
-					if(GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_scenarios")
+					if( Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_scenarios )
 					{
 						mkos_Force_Rest( player, [] )
 					}

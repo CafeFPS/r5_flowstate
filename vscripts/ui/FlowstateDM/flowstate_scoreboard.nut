@@ -89,7 +89,7 @@ void function Set_FSDM_ScoreboardScreen()
 	{
 		SetVoteHudElems(false, true, false, false, false, false, false, false, false, false, false, true)
 
-		if(GetCurrentPlaylistName() == "fs_prophunt")
+		if( Playlist() == ePlaylists.fs_prophunt )
 			Hud_SetText( Hud_GetChild( file.menu, "ScoreboardText" ), "PROPHUNT SCOREBOARD")
 		
 		while(file.FSDM_Scoreboard.len() == 0) //defensive fix

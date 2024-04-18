@@ -84,9 +84,9 @@ void function Sh_CustomTDM_Init()
 
     // Map locations
 
-    switch(GetMapName())
+    switch( MapName() )
     {
-	case "mp_rr_olympus_mu1":
+	case eMaps.mp_rr_olympus_mu1:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Olympus Test Location",
@@ -100,7 +100,7 @@ void function Sh_CustomTDM_Init()
             )
         )
 	break
-	case "mp_rr_arena_phase_runner":
+	case eMaps.mp_rr_arena_phase_runner:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Phase Runner",
@@ -121,8 +121,8 @@ void function Sh_CustomTDM_Init()
             )
         )
 	break
-   case "mp_rr_aqueduct":
-   case "mp_rr_aqueduct_night":
+   case eMaps.mp_rr_aqueduct:
+   case eMaps.mp_rr_aqueduct_night:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Overflow",
@@ -137,7 +137,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-   case "mp_rr_canyonlands_staging":
+   case eMaps.mp_rr_canyonlands_staging:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Deathbox by Ayezee",
@@ -164,7 +164,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-    case "mp_rr_ashs_redemption":
+    case eMaps.mp_rr_ashs_redemption:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Ash's Redemption",
@@ -179,7 +179,7 @@ void function Sh_CustomTDM_Init()
         )
 
         break
-    case "mp_rr_arena_composite":
+    case eMaps.mp_rr_arena_composite:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Drop-Off",
@@ -205,7 +205,7 @@ void function Sh_CustomTDM_Init()
         )
         break
 		
-	case "mp_rr_party_crasher":
+	case eMaps.mp_rr_party_crasher:
 	Shared_RegisterLocation(
 		NewLocationSettings(
 				"Party Crasher",
@@ -231,7 +231,7 @@ void function Sh_CustomTDM_Init()
 		)
 		break
 		
-	case "mp_rr_arena_skygarden":
+	case eMaps.mp_rr_arena_skygarden:
 	if(FlowState_EnableEncore()){
 	Shared_RegisterLocation(
 		NewLocationSettings(
@@ -1822,6 +1822,7 @@ struct {
 	bool Flowstate_fs_dm
 	bool Flowstate_Is_PartyCrasher
 	bool Flowstate_Is_Canyon_Staging
+	bool Flowstate_IsHaloMode
 	
 } SH_flowstateSettings
 
@@ -1902,15 +1903,16 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type 	= GetCurrentPlaylistVarInt( "flowstate_MovementGym_ClassicMovement_Type", 0 )
 	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP = GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement_AutoBHOP", false )
 	SH_flowstateSettings.Equipment_GetRespawnKitEnabled					= GetCurrentPlaylistVarBool("respawn_kit_enabled", false)
-	SH_flowstateSettings.Flowstate_movementgym 							= ( GetCurrentPlaylistName() == "fs_movementgym" )
-	SH_flowstateSettings.Flowstate_dm_oddball							= ( GetCurrentPlaylistName() == "fs_dm_oddball" )
-	SH_flowstateSettings.Flowstate_haloMod_oddball						= ( GetCurrentPlaylistName() == "fs_haloMod_oddball" )
-	SH_flowstateSettings.Flowstate_fs_1v1								= ( GetCurrentPlaylistName() == "fs_1v1" )
-	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( GetCurrentPlaylistName() == "fs_dm_fast_instagib" )
-	SH_flowstateSettings.Flowstate_fs_dm								= ( GetCurrentPlaylistName() == "fs_dm" )
-	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( GetMapName() == "mp_rr_party_crasher" )
-	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( GetMapName() == "mp_rr_canyonlands_staging" )
+	SH_flowstateSettings.Flowstate_movementgym 							= ( Playlist() == ePlaylists.fs_movementgym )
+	SH_flowstateSettings.Flowstate_dm_oddball							= ( Playlist() == ePlaylists.fs_dm_oddball )
+	SH_flowstateSettings.Flowstate_haloMod_oddball						= ( Playlist() == ePlaylists.fs_haloMod_oddball )
+	SH_flowstateSettings.Flowstate_fs_1v1								= ( Playlist() == ePlaylists.fs_1v1 )
+	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( Playlist() == ePlaylists.fs_lgduels_1v1 )
+	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( Playlist() == ePlaylists.fs_dm_fast_instagib )
+	SH_flowstateSettings.Flowstate_fs_dm								= ( Playlist() == ePlaylists.fs_dm )
+	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( MapName() == eMaps.mp_rr_party_crasher )
+	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
+	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 }
 
 // Playlist GET
@@ -1988,6 +1990,9 @@ bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSetting
 bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
 int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
+bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
+
+//these remain but should eventually change to use MapName() & PlaylistName() compared with eMap.mapname and ePlaylist.playlistname respectively
 bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
 bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
 bool function Flowstate_IsDmOddball()							{ return SH_flowstateSettings.Flowstate_dm_oddball }

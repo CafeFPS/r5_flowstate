@@ -450,31 +450,35 @@ void function DisplayOldMessage( string str1, string str2, float duration )
 	Announcement_SetPurge( announcement, true )
 	// Announcement_SetSoundAlias( announcement, "" )
 	
-	string mode = GameRules_GetGameMode()
+	//string mode = GameRules_GetGameMode()
+	int mode = Gamemode()
 	
 	switch(mode)
 	{
-		case "fs_dm":
-		case "fs_prophunt":
-		case "fs_duckhunt":
-		case "fs_snd":
-		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-		Announcement_SetTitleColor( announcement, Vector(0,0,0) )		
+		case eGamemodes.fs_dm:
+		case eGamemodes.fs_prophunt:
+		case eGamemodes.fs_duckhunt:
+		case eGamemodes.fs_snd:
+		
+			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+			Announcement_SetTitleColor( announcement, Vector(0,0,0) )	
+	
 		break;
 		
 		default: break;
 	}
 	
-	string playlist = GetCurrentPlaylistName()
+	//string playlist = GetCurrentPlaylistName()
+	int playlist = Playlist()
 	
 	switch(playlist)
 	{
-		case "fs_movementgym":
-		case "fs_scenarios":
-		case "fs_1v1":
-		case "fs_survival_solos":
-		case "fs_lgduels_1v1":
-		case "fs_snd":
+		case ePlaylists.fs_movementgym:
+		case ePlaylists.fs_scenarios:
+		case ePlaylists.fs_1v1:
+		case ePlaylists.fs_survival_solos:
+		case ePlaylists.fs_lgduels_1v1:
+		case ePlaylists.fs_snd:
 		
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )

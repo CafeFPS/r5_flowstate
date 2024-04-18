@@ -69,19 +69,19 @@ void function _OnPlayerConnectedSURF(entity player)
     case eGameState.WaitingForPlayers:
 	case eGameState.MapVoting:
         player.UnfreezeControlsOnServer()
-		switch(GetMapName())
+		switch( MapName() )
 		{
-			case "mp_rr_canyonlands_64k_x_64k":
-			case "mp_rr_canyonlands_mu1":
-			case "mp_rr_canyonlands_mu1_night":				
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
+			case eMaps.mp_rr_canyonlands_mu1:
+			case eMaps.mp_rr_canyonlands_mu1_night:				
 				player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
 				player.SetAngles( <0, 65.3776093, 0> )
 			break
 			
-			case "mp_rr_desertlands_64k_x_64k":
-			case "mp_rr_desertlands_64k_x_64k_nx":
-			case "mp_rr_desertlands_64k_x_64k_tt":
-			case "mp_rr_desertlands_mu1":
+			case eMaps.mp_rr_desertlands_64k_x_64k:
+			case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+			case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			case eMaps.mp_rr_desertlands_mu1:
 				player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
 				player.SetAngles( <0, -136.298843, 0> )
 			break
@@ -192,19 +192,19 @@ void function ActualSURFLobby()
     foreach(player in GetPlayerArray()) 
     {
         if(!IsValid(player)) continue;
-		switch(GetMapName())
+		switch( MapName() )
 		{
-			case "mp_rr_canyonlands_64k_x_64k":
-			case "mp_rr_canyonlands_mu1":
-			case "mp_rr_canyonlands_mu1_night":				
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
+			case eMaps.mp_rr_canyonlands_mu1:
+			case eMaps.mp_rr_canyonlands_mu1_night:				
 				player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
 				player.SetAngles( <0, 65.3776093, 0> )
 			break
 			
-			case "mp_rr_desertlands_64k_x_64k":
-			case "mp_rr_desertlands_64k_x_64k_nx":
-			case "mp_rr_desertlands_64k_x_64k_tt":
-			case "mp_rr_desertlands_mu1":
+			case eMaps.mp_rr_desertlands_64k_x_64k:
+			case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+			case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			case eMaps.mp_rr_desertlands_mu1:
 				player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
 				player.SetAngles( <0, -136.298843, 0> )
 			break

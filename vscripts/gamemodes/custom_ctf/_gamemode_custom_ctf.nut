@@ -412,7 +412,7 @@ void function VotingPhase()
 void function StartRound()
 {
 	// create the ring based on location
-	if( GetMapName() != "mp_flowstate" )
+	if( MapName() != eMaps.mp_flowstate )
 		file.ringBoundary = CreateRingBoundary(file.selectedLocation)
 
 	CTF.roundstarttime = Time()
@@ -584,7 +584,7 @@ void function StartRound()
 		if( !IsValid( player ) || !IsAlive( player ) )
 			return
 		
-		if( GetMapName() == "mp_flowstate" )
+		if( MapName() == eMaps.mp_flowstate )
 			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 		else
 			Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
@@ -1676,7 +1676,7 @@ void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 	
 	//printt( teamflagpoint.pole.GetOrigin().z, GetZLimitForCurrentLocationName() )
 
-	if( GetMapName() == "mp_flowstate" && flag.GetOrigin().z <= GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && flag.GetOrigin().z >= -19500 )
+	if( MapName() == eMaps.mp_flowstate && flag.GetOrigin().z <= GetZLimitForCurrentLocationName() || MapName() == eMaps.mp_flowstate && flag.GetOrigin().z >= -19500 )
 	{
 		ResetFlagForTeam( team )
 		return
@@ -1722,7 +1722,7 @@ void function TrackFlagDropTimeoutAndWorldBounds( int team, CTFPoint teamflagpoi
 			break
 		}
 
-		if( GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z <= CTF_GetZLimitForCurrentLocationName() || GetMapName() == "mp_flowstate" && teamflagpoint.pole.GetOrigin().z >= -19500 )
+		if( MapName() == eMaps.mp_flowstate && teamflagpoint.pole.GetOrigin().z <= CTF_GetZLimitForCurrentLocationName() || MapName() == eMaps.mp_flowstate && teamflagpoint.pole.GetOrigin().z >= -19500 )
 		{
 			Signal( teamflagpoint.pole, "FlagPhysicsEnd" )
 			ResetFlagForTeam( team )

@@ -196,7 +196,7 @@ void function OnWeaponZoomIn_HaloModBattleRifle( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -224,7 +224,7 @@ void function OnWeaponZoomOut_HaloModBattleRifle( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
@@ -253,7 +253,7 @@ void function OnWeaponZoomIn_HaloModMagnum( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -281,7 +281,7 @@ void function OnWeaponZoomOut_HaloModMagnum( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
@@ -310,7 +310,7 @@ void function OnWeaponZoomIn_HaloModSniper(  entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -338,7 +338,7 @@ void function OnWeaponZoomOut_HaloModSniper(  entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
@@ -378,6 +378,7 @@ void function OnWeaponZoomIn_ModdedPistol(  entity weapon )
 
 	weapon.HideWeapon()
 	
+	//use Flowstate_IsHaloMode() ~mkos
 	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	// {
 		Minimap_DisableDraw()
@@ -406,6 +407,7 @@ void function OnWeaponZoomOut_ModdedPistol(  entity weapon )
 
 	weapon.ShowWeapon()
 
+	//use Flowstate_IsHaloMode() ~mkos
 	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
 	// {
 		Minimap_EnableDraw()
@@ -446,7 +448,7 @@ void function FS_ForceDestroyCustomAdsOverlay()
 
 void function FS_ForceDestroyCustomAdsOverlay_Callback( entity attacker, float healthFrac, int damageSourceId, float recentHealthDamage )
 {
-	if( GameRules_GetGameMode() == "fs_dm" )
+	if( Gamemode() == eGamemodes.fs_dm )
 		return
 
 	printt( "You died! Removing custom overlay and restoring HUD visibility. - From callback." )

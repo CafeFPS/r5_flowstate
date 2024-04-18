@@ -121,7 +121,7 @@ void function CL_FSDM_RegisterNetworkFunctions()
 
 void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
 {
-	if( GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+	if( Playlist() != ePlaylists.fs_1v1 && Playlist() != ePlaylists.fs_lgduels_1v1 )
 		return
 	
 	entity localPlayer = GetLocalClientPlayer()
@@ -317,7 +317,7 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 	#if DEVELOPER
 	printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
-	if( new == -1 || GetCurrentPlaylistName() == "fs_movementgym" )
+	if( new == -1 || Playlist() == ePlaylists.fs_movementgym )
 	{
 		//force to hide
 		Signal( GetLocalClientPlayer(), "FSDM_EndTimer")
@@ -401,7 +401,7 @@ void function Flowstate_StartTime_Thread( float endtime )
 	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		msg = "Oddball Starting in "
-	else if( GameRules_GetGameMode() == "custom_ctf" )
+	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
 
 	while ( Time() <= endtime )
@@ -436,7 +436,7 @@ void function Flowstate_PlayStartRoundSounds()
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 	
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
@@ -495,11 +495,11 @@ void function CoolCamera()
 	
     if(!IsValid(player)) return
 	
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-		case "mp_rr_desertlands_64k_x_64k_tt":		
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:		
 		cutsceneSpawns.append(NewCameraPair(<10915.0039, 6811.3418, -3539.73657>,<0, -100.5355, 0>))
 		cutsceneSpawns.append(NewCameraPair(<9586.79199, 24404.5898, -2019.6366>, <0, -52.6216431, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-29335.9199, 11470.1729, -2374.77954>,<0, -2.17369795, 0>))
@@ -511,17 +511,17 @@ void function CoolCamera()
 		cutsceneSpawns.append(NewCameraPair(<-13217.0469, 24311.4375, -3157.30908>,<0, 97.8569489, 0>))
 		break
 		
-		case "mp_rr_canyonlands_staging":
-		case "mp_rr_ashs_redemption":
+		case eMaps.mp_rr_canyonlands_staging:
+		case eMaps.mp_rr_ashs_redemption:
 		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
 		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
 		cutsceneSpawns.append(NewCameraPair(<30038.0254, -1036.81982, -23369.6035>, <55, -24.2035522, 0>))
 		break
 		
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		cutsceneSpawns.append(NewCameraPair(<-7984.68408, -16770.2031, 3972.28271>, <0, -158.605301, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-19691.1621, 5229.45264, 4238.53125>, <0, -54.6054993, 0>))
 		cutsceneSpawns.append(NewCameraPair(<13270.0576, -20413.9023, 2999.29468>, <0, 98.6180649, 0>))
@@ -534,25 +534,25 @@ void function CoolCamera()
 		cutsceneSpawns.append(NewCameraPair(<32170.3008, -1944.38562, 3590.89258>,<0, 27.8040161, 0>))
 		break
 		
-		case "mp_rr_party_crasher":
-		case "mp_rr_party_crasher_new":
+		case eMaps.mp_rr_party_crasher:
+		case eMaps.mp_rr_party_crasher_new:
 		cutsceneSpawns.append(NewCameraPair(<-1363.75867, -2183.58081, 1354.65466>, <0, 72.5054092, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<2378.75439, 1177.52783, 1309.69019>, <0, 146.118546, 0>))
 		break
 		
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 		cutsceneSpawns.append(NewCameraPair(<2343.25171, 4311.43896, 829.289917>, <0, -139.293152, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-1661.23608, 2852.71924, 657.674316>, <0, -56.0820427, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-640.810059, 1039.97424, 514.500793>, <0, -23.5162239, 0>)) 
 		break
 		
-		case "mp_rr_aqueduct":
-		case "mp_rr_aqueduct_night":
+		case eMaps.mp_rr_aqueduct:
+		case eMaps.mp_rr_aqueduct_night:
 		cutsceneSpawns.append(NewCameraPair(<1593.85205, -3274.99365, 1044.39099>, <0, -126.270805, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<1489.99255, -6570.93262, 741.996887>, <0, 133.833832, 0>))
 		break 
 		
-		case "mp_rr_arena_skygarden":
+		case eMaps.mp_rr_arena_skygarden:
 		cutsceneSpawns.append(NewCameraPair(<-9000, 3274.99365, 4044.39099>, <0, -126.270805, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<1489.99255, -6570.93262, 4041.996887>, <0, 133.833832, 0>)) 
 		break
@@ -581,7 +581,7 @@ void function CoolCamera()
 		{
 			thread function() : (player, cutsceneMover, camera, cutsceneSpawns)
 			{
-				if(GameRules_GetGameMode() == "fs_snd")
+				if( Gamemode() == eGamemodes.fs_snd )
 				{
 					GetLocalClientPlayer().ClearMenuCameraEntity()
 					cutsceneMover.Destroy()
@@ -810,7 +810,7 @@ void function ServerCallback_SendProphuntHuntersScoreboardToClient(int eHandle, 
 
 void function ServerCallback_ClearScoreboardOnClient()
 {
-	if(GameRules_GetGameMode() == "fs_prophunt")
+	if( Gamemode() == eGamemodes.fs_prophunt )
 		RunUIScript( "ClearProphuntScoreboardOnUI")
 	else
 		RunUIScript( "ClearScoreboardOnUI")
@@ -863,7 +863,7 @@ void function CreateChampionUI(int skinindex)
     entity targetBackground = GetEntByScriptName( "target_char_sel_bg_new" )
     entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
 	
-	if(file.teamwon != 3 && GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "flowstate_pkknockback")
+	if(file.teamwon != 3 && Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.flowstate_pkknockback )
 	{
 		//Clear Winning Squad Data
 		AddWinningSquadData( -1, -1)
@@ -955,7 +955,7 @@ void function ServerCallback_FSDM_SetScreen(int screen, int team, int mapid, int
         case eFSDMScreen.ScoreboardUI: //Sets the screen to the winners screen
 			DestroyChampionUI()
 			
-			if(GameRules_GetGameMode() == "fs_prophunt")
+			if( Gamemode() == eGamemodes.fs_prophunt )
 				RunUIScript("Set_FSDM_ProphuntScoreboardScreen")
 			else
 				RunUIScript("Set_FSDM_ScoreboardScreen")
@@ -1112,12 +1112,12 @@ void function Show_FSDM_VictorySequence(int skinindex)
 
 	try { GetWinnerPropCameraEntities()[0].ClearParent(); GetWinnerPropCameraEntities()[0].Destroy(); GetWinnerPropCameraEntities()[1].Destroy() } catch (exceptio2n){ }
 
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 	{
 		file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 		file.victorySequenceAngles = file.selectedLocation.victorypos.angles
 	}
-	else if(GetMapName() == "mp_rr_canyonlands_mu1")
+	else if( MapName() == eMaps.mp_rr_canyonlands_mu1 )
 	{
 		file.victorySequencePosition = <-19443.75, -26319.9316, 9915.63965>	
 		file.victorySequenceAngles = <0, 0, 0>
@@ -1144,20 +1144,20 @@ void function Show_FSDM_VictorySequence(int skinindex)
 
 		foreach( int i, SquadSummaryPlayerData data in file.winnerSquadSummaryData.playerData )
 		{
-			if ( i >= maxPlayersToShow && GameRules_GetGameMode() != "fs_prophunt")
+			if ( i >= maxPlayersToShow && Gamemode() != eGamemodes.fs_prophunt )
 				break
 			
-			if ( file.teamwon != 3 && i >= maxPlayersToShow && GameRules_GetGameMode() == "fs_prophunt")
+			if ( file.teamwon != 3 && i >= maxPlayersToShow && Gamemode() == eGamemodes.fs_prophunt )
 				break
 
-			if ( file.teamwon == 3 && i >= maxPropsToShow && GameRules_GetGameMode() == "fs_prophunt")
+			if ( file.teamwon == 3 && i >= maxPropsToShow && Gamemode() == eGamemodes.fs_prophunt )
 				break
 			
 			string playerName = ""
 			if ( EHIHasValidScriptStruct( data.eHandle ) )
 				playerName = EHI_GetName( data.eHandle )
 			
-			if(file.teamwon == 3 && GameRules_GetGameMode() == "fs_prophunt")
+			if(file.teamwon == 3 && Gamemode() == eGamemodes.fs_prophunt )
 				{
 					if ( !LoadoutSlot_IsReady( data.eHandle, loadoutSlotCharacter ) )
 						continue
@@ -1416,7 +1416,7 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 3:
-		if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		{
 			Obituary_Print_Localized( "Made by mkos and @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )

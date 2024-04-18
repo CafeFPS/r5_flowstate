@@ -305,26 +305,26 @@ void function ServerCallback_ResetMoney()
 
 void function SetCameraStartPointForMap()
 {
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 			file.cameraStart = <-1830.57922, 7155.41406, 1150.48047>
 			file.cameraAnglesStart = <0, 28, 0>
 		break
 
-		case "mp_rr_desertlands_64k_x_64k":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
 			file.cameraStart = <24961.9648, 23251.0977, -3110.40308>
 			file.cameraAnglesStart = <0, -170.236649, 0>
 		break
 		
-		case "mp_rr_arena_skygarden":
+		case eMaps.mp_rr_arena_skygarden:
 			file.cameraStart = <499.259277, 2014.12402, 3020.03125>
 			file.cameraAnglesStart = <0, -122.591728, 0>
 		break
 		
-		case "mp_rr_olympus_mu1":
-		case "mp_rr_arena_empty":
-		case "mp_rr_party_crasher_new":
+		case eMaps.mp_rr_olympus_mu1:
+		case eMaps.mp_rr_arena_empty:
+		case eMaps.mp_rr_party_crasher_new:
 			file.cameraStart = <238.288742, 94.6433334, 11841.7451>
 			file.cameraAnglesStart = <0, -177.9431, 0>
 		break
@@ -2023,7 +2023,7 @@ void function SetSNDKnifeColor(int color)
 void function SND_ForceUpdatePlayerCount() //getting rid of networked int for this game mode, so we can show proper enemy player count (each team should have a different value, networked int will show only one value) Colombia
 {
 	var statusRui = ClGameState_GetRui()
-	if(statusRui != null && GameRules_GetGameMode() == "fs_snd" )
+	if(statusRui != null && Gamemode() == eGamemodes.fs_snd )
 	{
 		RuiSetInt( statusRui, "livingPlayerCount", GetPlayerArrayOfEnemies_Alive( GetLocalClientPlayer().GetTeam() ).len() )
 		RuiSetInt( statusRui, "squadsRemainingCount", GetPlayerArrayOfEnemies_Alive( GetLocalClientPlayer().GetTeam() ).len() )

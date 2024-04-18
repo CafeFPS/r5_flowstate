@@ -325,7 +325,7 @@ void function ClMinimap_Init()
 	// create unitframe ruis for the fullmap screen
 	// Taking off one of these to save memory. If we ever need to go above a 3 person team, add it back.
 	//file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
@@ -906,7 +906,7 @@ void function UpdatePlayerRuiTracking( entity player )
 
 	entity viewPlayer = GetLocalViewPlayer()
 	
-	if(GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() )
 	{
 		thread HACK_TrackPlayerPositionOnScript( file.minimap_base, viewPlayer, false )
 	} else 
@@ -1829,7 +1829,7 @@ void function UpdateMapFeatures()
 		return
 	}
 	
-	if ( GameRules_GetGameMode() != SURVIVAL )
+	if ( Gamemode() != eGamemodes.SURVIVAL )
 		return
 	
 	if ( file.fullmap_legendRui == null )

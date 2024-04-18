@@ -50,7 +50,10 @@ void function SV_CL_Init()
 	  SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
 	#endif
 	
+	
 	INIT_Flowstate_Localization_Strings()
+	PlayListsMapnames_Init()
+	
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
 	CodeCallbacksShared_Init()
@@ -223,11 +226,11 @@ void function SV_CL_Init()
 		// RegisterNetworkedVariableChangeCallback_time( "FSIntro_StartTime", Flowstate_IntroTimeChanged )
 		// RegisterNetworkedVariableChangeCallback_time( "FSIntro_EndTime", Flowstate_IntroEndTimeChanged )
 		// RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_EndTime", Flowstate_VoteTeamEndTimeChanged )
-		if( GameRules_GetGameMode() == "fs_dm" )
+		if( Gamemode() == eGamemodes.fs_dm )
 			RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )		
 	}
 	
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSCTF_GameStateChanged )
 	}

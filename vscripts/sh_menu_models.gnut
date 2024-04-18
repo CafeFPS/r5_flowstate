@@ -1197,10 +1197,11 @@ void function InitMenuEntities()
 	WeaponCosmetics_Apply( model, weaponSkin, null )
 
 	vector x = <7176, 345, 53>
-	switch(GetMapName()) {
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+	switch( MapName() ) 
+	{
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 			x = <18169, -22000, 7844>
 			break
   	}
@@ -3107,17 +3108,17 @@ void function UIToClient_PreviewModel( string root, bool isLoop ) {
 
 #if CLIENT
 vector function GetMapPosition() {
-	switch(GetMapName()) {
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+	switch( MapName() ) {
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 			return <18169, -21781, 7844>
-		case "mp_rr_party_crasher":
+		case eMaps.mp_rr_party_crasher:
 			return <-259, 179, 2806>
-		case "mp_rr_habitat":
+		case eMaps.mp_rr_habitat:
 			return <-2865, 1000, 2500>
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 			return <7168,0,56>
 		default:
 			return <7168,0,56>

@@ -145,45 +145,47 @@ void function Hud_SetModeEmblem()
 
 void function SetCommonScoreRUIVars( var rui )
 {	
-	if ( GameRules_GetGameMode() != SURVIVAL )
+	if ( Gamemode() != eGamemodes.SURVIVAL )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
 		
-		switch( GetCurrentPlaylistName() )
+		int pl = Playlist()
+		
+		switch( pl )
 		{
-			case "fs_1v1":
+			case ePlaylists.fs_1v1:
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			break
 
-			case "fs_lgduels_1v1":
+			case ePlaylists.fs_lgduels_1v1:
 			RuiSetString( rui, "gameModeString", "FS LGDUELS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			break
 			
-			case "fs_scenarios":
+			case ePlaylists.fs_scenarios:
 			RuiSetString( rui, "gameModeString", "FS SCENARIOS" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			break
 			
-			case "fs_movementgym":
+			case ePlaylists.fs_movementgym:
 			RuiSetString( rui, "gameModeString", "FS MOVEMENT GYM" )
 			break
 			
-			case "fs_dm":
+			case ePlaylists.fs_dm:
 			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
 			break
 			
-			case "fs_survival_solos":
+			case ePlaylists.fs_survival_solos:
 			RuiSetString( rui, "gameModeString", "APEX SOLO" )
 			break
 
-			case "fs_haloMod_oddball":	
+			case ePlaylists.fs_haloMod_oddball:	
 			RuiSetString( rui, "gameModeString", "ODDBALL" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
@@ -191,7 +193,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)
 			break
 		
-			case "fs_dm_fast_instagib":
+			case ePlaylists.fs_dm_fast_instagib:
 			RuiSetString( rui, "gameModeString", "FS INSTAGIB" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
@@ -199,7 +201,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)
 			break
 
-			case "fs_infected":
+			case ePlaylists.fs_infected:
 			RuiSetString( rui, "gameModeString", "FS INFECTED" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
@@ -208,7 +210,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "squadsRemaining2TextPlural", "INFECTED" )
 			break
 			
-			case "fs_prophunt":
+			case ePlaylists.fs_prophunt:
 			RuiSetString( rui, "gameModeString", "FS PROPHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PROP ALIVE" )
@@ -216,7 +218,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)
 			break
 			
-			case "fs_duckhunt":
+			case ePlaylists.fs_duckhunt:
 			RuiSetString( rui, "gameModeString", "FS DUCKHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "DUCK ALIVE" )
@@ -224,7 +226,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)	
 			break
 				
-			case "fs_snd":
+			case ePlaylists.fs_snd:
 			RuiSetString( rui, "gameModeString", "SEARCH AND DESTROY" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
@@ -232,7 +234,7 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetVisible(rui, true)	
 			break
 	
-			case "custom_ctf":
+			case ePlaylists.custom_ctf:
 			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
@@ -241,7 +243,7 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 		}
 		
-		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		if( Flowstate_IsHaloMode() )
 			RuiSetString( rui, "gameModeString", "HALO DM" )
 	}
 	else

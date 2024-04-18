@@ -148,7 +148,7 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
 
-	if( GetCurrentPlaylistName() != "fs_1v1" && GetCurrentPlaylistName() != "fs_lgduels_1v1"  && GetCurrentPlaylistName() != "fs_scenarios" )
+	if( Playlist() != ePlaylists.fs_1v1 && Playlist() != ePlaylists.fs_lgduels_1v1  && Playlist() != ePlaylists.fs_scenarios )
 		MpWeaponEmoteProjector_Init()
 
 	MpWeaponDoubletake_Init()
@@ -1943,7 +1943,7 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		aVal = a.GetPlayerNetInt( "defused" )
 		bVal = b.GetPlayerNetInt( "defused" )
@@ -1964,7 +1964,7 @@ int function CompareKills( entity a, entity b )
 		return 0
 	}
 
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		aVal = a.GetPlayerNetInt( "captures" )
 		bVal = b.GetPlayerNetInt( "captures" )
@@ -1985,7 +1985,7 @@ int function CompareKills( entity a, entity b )
 		return 0
 	}
 
-	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 	{
 		aVal = a.GetPlayerNetInt( "oddball_ballHeldTime" )
 		bVal = b.GetPlayerNetInt( "oddball_ballHeldTime" )
@@ -2009,7 +2009,7 @@ int function CompareKills( entity a, entity b )
 	else if ( aVal < bVal )
 		return -1
 
-	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 	{
 		aVal = a.GetPlayerNetInt( "kills" )
 		bVal = b.GetPlayerNetInt( "kills" )

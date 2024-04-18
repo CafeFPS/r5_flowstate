@@ -283,10 +283,10 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" )
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" )
 		return true
 	
-	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementgym )
 		return false
 
 	if ( attacker == target )
@@ -298,13 +298,13 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 	if ( !target.CanBeMeleed() )
 		return false
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_snd" && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
 		return false	
 
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_snd" && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
 		return false	
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_duckhunt" )
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_duckhunt )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -716,7 +716,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	if ( !IsValid( target ) )
 		return
 	
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
 	{
 		target = target.GetParent()
 	

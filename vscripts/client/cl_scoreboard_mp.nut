@@ -357,7 +357,7 @@ void function ShowScoreboardMP()
 	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
 	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
 	
-	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
+	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_aimtrainer ) return
 
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	
@@ -447,7 +447,8 @@ void function ShowScoreboardMP()
 
 		Assert( clGlobal.isScoreboardShown )
 
-		if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		//if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		if( IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod_ctf || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod_oddball || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_1v1 && Playlist() == ePlaylists.fs_lgduels_1v1 )
 		{
 			Hud_SetVisible( file.hintCustom, true )
 		}
@@ -716,9 +717,9 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore3Header = headers[ 2 ]
 			if (IsValid( player ))
 			{
-				if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+				if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 					playerScore3 = player.GetPlayerNetInt( "oddball_ballHeldTime" )
-				else if( GameRules_GetGameMode() == "fs_snd" ) 
+				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore3 = player.GetPlayerNetInt( "defused" )
 				else
 					playerScore3 = player.GetPlayerNetInt( "damage" )
@@ -729,11 +730,11 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore2Header = headers[ 1 ]
 			if (IsValid( player ))
 			{
-				if( GameRules_GetGameMode() == "custom_ctf" )
+				if( Gamemode() == eGamemodes.CUSTOM_CTF )
 					playerScore2 = player.GetPlayerNetInt( "returns" )
-				else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+				else if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 					playerScore2 = player.GetPlayerNetInt( "accuracy" )
-				else if( GameRules_GetGameMode() == "fs_snd" ) 
+				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore2 = player.GetPlayerNetInt( "planted" )
 				else
 					playerScore2 = player.GetPlayerNetInt( "deaths" )
@@ -744,9 +745,9 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore1Header = headers[ 0 ]
 			if (IsValid( player ))
 			{
-				if( GameRules_GetGameMode() == "custom_ctf" )
+				if( Gamemode() == eGamemodes.CUSTOM_CTF )
 					playerScore1 = player.GetPlayerNetInt( "captures" )
-				else if( GetCurrentPlaylistName() == "fs_scenarios" )
+				else if( Playlist() == ePlaylists.fs_scenarios )
 					playerScore1 = player.GetPlayerNetInt( "kills" )
 			}
 			playerScore1NumDigits = numDigits[ 0 ]

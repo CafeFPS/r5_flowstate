@@ -53,7 +53,7 @@ void function Bleedout_Init()
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
 	
-	if(GameRules_GetGameMode() == SURVIVAL) //FIXME
+	if( Gamemode() == eGamemodes.SURVIVAL ) //FIXME    ~mkos: what?
 		AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
 
 	PrecacheParticleSystem( FX_BLOODTRAIL )
@@ -174,7 +174,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	if ( Bleedout_GetSelfResEnabled( player ) )
 		thread EnablePlayerSelfRes( player )
 	
-	if ( Bleedout_GetDeathOnTeamBleedout( player ) && GameRules_GetGameMode() != "fs_duckhunt" ) //FIXME add signals
+	if ( Bleedout_GetDeathOnTeamBleedout( player ) && Gamemode() != eGamemodes.fs_duckhunt ) //FIXME add signals
 		thread Bleedout_CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
@@ -552,7 +552,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	
 	float firstAidTime = playerHealer.GetSequenceDuration( healerAnimation )
 	
-	if(GameRules_GetGameMode() == "fs_duckhunt")
+	if( Gamemode() == eGamemodes.fs_duckhunt )
 	{
 		playbackRate = 1.35
 		firstAidTime = firstAidTime*0.65
@@ -623,7 +623,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 						if(!IsValid(playerToRes)) return
 						playerToRes.UnforceStand()
 						
-						if(GameRules_GetGameMode() == "fs_duckhunt")
+						if( Gamemode() == eGamemodes.fs_duckhunt )
 						{
 							Highlight_SetFriendlyHighlight( playerToRes, "prophunt_teammate" )
 							GivePassive(playerToRes, ePassives.PAS_PILOT_BLOOD)
@@ -684,7 +684,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	playerToRes.SetHealth( playerToRes.GetMaxHealth() * firstAidHealPercent )
 	file.isBleeding[ playerToRes ] = false
 	file.lastAttacker[ playerToRes ] = svGlobal.worldspawn
-	if ( IsPilotEliminationBased() && GameRules_GetGameMode() != "fs_duckhunt" )
+	if ( IsPilotEliminationBased() && Gamemode() != eGamemodes.fs_duckhunt )
 		ClearPlayerEliminated( playerToRes )
 
 	if ( IsValid( file.Callback_OnPlayerGiveFirstAid ) )
@@ -728,7 +728,7 @@ void function BloodTrail( entity player )
 
 void function PlayerDiesFromBleedout( entity player, entity attacker )
 {
-	if( IsValid( player ) && GameRules_GetGameMode() != "fs_duckhunt")
+	if( IsValid( player ) && Gamemode() != eGamemodes.fs_duckhunt )
 		SetPlayerEliminated( player )
 
 

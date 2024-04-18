@@ -1043,15 +1043,15 @@ bool function bIs1v1Mode()
 	if ( !flowstateSettings.flowstate_1v1mode )
 		return false
 
-	switch (GetMapName())
+	switch ( MapName() )
 	{
-		case "mp_rr_arena_composite":
-		case "mp_rr_aqueduct":
-		case "mp_rr_canyonlands_64k_x_64k":
-		case "mp_rr_canyonlands_staging":
-		case "mp_rr_party_crasher":
-		case "mp_rr_olympus_mu1":
-		isChineseServer()
+		case eMaps.mp_rr_arena_composite:
+		case eMaps.mp_rr_aqueduct:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
+		case eMaps.mp_rr_canyonlands_staging:
+		case eMaps.mp_rr_party_crasher:
+		case eMaps.mp_rr_olympus_mu1:
+		//isChineseServer() //not needed?
 		return true
 		default:
 		return false
@@ -1100,7 +1100,7 @@ void function _CustomTDM_Init()
 		PrecacheLockout()
 		PrecacheBeavercreek()
 		PrecacheChill()
-		if( GetMapName() == "mp_flowstate" )
+		if( MapName() == eMaps.mp_flowstate )
 		{
 			VOTING_PHASE_ENABLE = false
 		}
@@ -1215,7 +1215,7 @@ void function _CustomTDM_Init()
 	if( is1v1EnabledAndAllowed() )
 	{
 		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
-		_soloModeInit(GetMapName())
+		_soloModeInit(GetMapName()) //Todo: change to MapName() enums
 
 		if( !is3v3Mode() )
 			AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )	
@@ -1257,9 +1257,9 @@ void function _CustomTDM_Init()
 
 void function __OnEntitiesDidLoadCTF()
 {
-	switch(GetMapName())
+	switch( MapName() )
     {	
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
 			file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
 		break
@@ -1268,15 +1268,15 @@ void function __OnEntitiesDidLoadCTF()
 
 void function DM__OnEntitiesDidLoad()
 {
-	if( GameRules_GetGameMode() == "custom_ctf" && GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF && Flowstate_IsHaloMode() )
 	{
 		__OnEntitiesDidLoadCTF()
 		return
 	}
 
-	switch(GetMapName())
+	switch( MapName() )
     {
-    	case "mp_rr_canyonlands_staging":
+    	case eMaps.mp_rr_canyonlands_staging:
     	{
     		if( Flowstate_IsLGDuels() )
 			{
@@ -1287,7 +1287,7 @@ void function DM__OnEntitiesDidLoad()
     			SpawnMapPropsFR()
     		break
     	}
-    	case "mp_rr_arena_composite":
+    	case eMaps.mp_rr_arena_composite:
 		{
 			if( flowstateSettings.patch_for_dropoff )
 			{			
@@ -1304,18 +1304,18 @@ void function DM__OnEntitiesDidLoad()
 			break
 		}
 		
-		case "mp_rr_aqueduct":
+		case eMaps.mp_rr_aqueduct:
 			if( flowstateSettings.patch_waiting_area )
 			{
 				Patch_Barrier_Overflow()
 			} 
 			break
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
 			file.ogSkyboxOrigin = skyboxCamera.GetOrigin()
 		break
 		
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 
 		if( flowstateSettings.is_halo_gamemode )
 		{
@@ -1329,7 +1329,7 @@ void function DM__OnEntitiesDidLoad()
 		}
 		break
 		
-		case "mp_rr_desertlands_64k_x_64k":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
 
 		if( flowstateSettings.is_halo_gamemode )
 		{
@@ -1341,7 +1341,7 @@ void function DM__OnEntitiesDidLoad()
 			MapEditor_CreateRespawnableWeaponRack( <-10954.4912, -14820.9619, 3111.98145> , <0, 45, 0>, "mp_weapon_halobattlerifle", 0.5 )
 		}
 		break
-		case "mp_rr_party_crasher":
+		case eMaps.mp_rr_party_crasher:
 
 		Patch_Partycrasher_Restarea()
 		break
@@ -1356,34 +1356,34 @@ void function _RegisterLocation(LocationSettings locationSettings)
 
 LocPair function _GetVotingLocation()
 {
-    switch(GetMapName())
+    switch( MapName() )
     {
-		case "mp_rr_aqueduct_night":
-        case "mp_rr_aqueduct":
+		case eMaps.mp_rr_aqueduct_night:
+        case eMaps.mp_rr_aqueduct:
              return NewLocPair(<4885, -4076, 400>, <0, -157, 0>)
         //case "mp_rr_canyonlands_staging":
         //     return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
-        case "mp_rr_canyonlands_64k_x_64k":
+        case eMaps.mp_rr_canyonlands_64k_x_64k:
 			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
-		case "mp_rr_ashs_redemption":
+		case eMaps.mp_rr_ashs_redemption:
             return NewLocPair(<-20917, 5852, -26741>, <0, -90, 0>)
-        case "mp_rr_canyonlands_mu1":
-        case "mp_rr_canyonlands_mu1_night":
+        case eMaps.mp_rr_canyonlands_mu1:
+        case eMaps.mp_rr_canyonlands_mu1_night:
 		    return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
-        case "mp_rr_desertlands_64k_x_64k":
-        case "mp_rr_desertlands_64k_x_64k_nx":
+        case eMaps.mp_rr_desertlands_64k_x_64k:
+        case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 			return NewLocPair(<-19459, 2127, 6404>, <0, 180, 0>)
-        case "mp_rr_arena_composite":
+        case eMaps.mp_rr_arena_composite:
             return NewLocPair(<0, 4780, 220>, <0, -90, 0>)
-		case "mp_rr_desertlands_64k_x_64k_tt":
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
             return NewLocPair(<-25197, -4278, -2138>, <0, -34, 0>)
-		case "mp_rr_arena_skygarden":
+		case eMaps.mp_rr_arena_skygarden:
 			return NewLocPair(<4284.88037, -102.993355, 2671.03125>, <0, -179.447098, 0>)
-		case "mp_rr_party_crasher":
+		case eMaps.mp_rr_party_crasher:
 			return NewLocPair(<1729.17407, -3585.65137, 581.736206>, <0, 103.168709, 0>)
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 			return NewLocPair(<0,0,0>, <0, -179.447098, 0>)
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 			return NewLocPair( <7008.73047, 7627.40234, -4623.99805>, <0,63,0> )
         default:
 			Assert(false, "No voting location for the map!")
@@ -1408,7 +1408,7 @@ int function GetTDMState(){
 void function SetTdmStateToNextRound(){
 	file.tdmState = eTDMState.NEXT_ROUND_NOW
 
-	if( GameRules_GetGameMode() != "fs_prophunt" )
+	if( Gamemode() != eGamemodes.fs_prophunt )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
@@ -1428,7 +1428,7 @@ void function SetTdmStateToInProgress()
 	}
 	file.tdmState = eTDMState.IN_PROGRESS
 	
-	if( GameRules_GetGameMode() != "fs_prophunt" )
+	if( Gamemode() != eGamemodes.fs_prophunt )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
@@ -1589,7 +1589,7 @@ void function _OnPlayerConnected(entity player)
 		AssignCharacter(player, characterslist.getrandom())
 	}
 
-	if(GetMapName() == "mp_rr_aqueduct")
+	if( MapName() == eMaps.mp_rr_aqueduct )
 	{
 	    CreatePanelText( player, "Flowstate", "", <3705.10547, -4487.96484, 470.03302>, <0, 190, 0>, false, 2 )
 	    CreatePanelText( player, "Flowstate", "", <1111.36584, -5447.26221, 655.479858>, <0, -90, 0>, false, 2 )
@@ -1708,7 +1708,7 @@ void function _OnPlayerConnected(entity player)
 						Remote_CallFunction_Replay(player, "FS_ForceAdjustSunFlareParticleOnClient", 2 )
 					}
 					
-					if( GetMapName() == "mp_flowstate" )
+					if( MapName() == eMaps.mp_flowstate )
 					{
 						Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 					}
@@ -2228,7 +2228,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
-	if( GetMapName() == "mp_flowstate" )
+	if( MapName() == eMaps.mp_flowstate )
 		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	else
 		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
@@ -3173,9 +3173,9 @@ void function CreateShipRoomFallTriggers()
 	trigger.SetAboveHeight( 25 ) //Still not quite a sphere, will see if close enough
 	trigger.SetBelowHeight( 25 )
 
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 		trigger.SetOrigin( <-19459, 2127, 5404> )
-	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k )
 		trigger.SetOrigin( <-19459, 2127, 17404> )
 
 	DispatchSpawn( trigger )
@@ -3195,9 +3195,9 @@ void function CreateShipRoomFallTriggers()
 		{
 			if( touchingEnt.IsPlayer() )
 			{
-				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+				if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 					touchingEnt.SetOrigin( <-19459, 2127, 6404> )
-				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+				else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k )
 					touchingEnt.SetOrigin( <-19459, 2127, 18404> )
 			}
 		}
@@ -3656,7 +3656,15 @@ void function SimpleChampionUI()
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
 	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	array<int> fallTriggersEnabledForMaps = [
+		eMaps.mp_rr_desertlands_64k_x_64k,
+		eMaps.mp_rr_desertlands_64k_x_64k_nx,
+		eMaps.mp_rr_canyonlands_mu1,
+		eMaps.mp_rr_canyonlands_mu1_night,
+		eMaps.mp_rr_canyonlands_64k_x_64k
+	];
+
+	if( fallTriggersEnabledForMaps.contains( MapName() ) )
 	{
 		thread CreateShipRoomFallTriggers()
 	}
@@ -3886,7 +3894,7 @@ void function SimpleChampionUI()
 					if( !IsValid( player ) || !IsAlive( player ) )
 						return
 					
-					if( GetMapName() == "mp_flowstate" )
+					if( MapName() == eMaps.mp_flowstate )
 						Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 					else //if( GetMapName() != "mp_flowstate" )
 						Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
@@ -6634,7 +6642,7 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 {
 	vector startingpos = Vector(42000, -10000, -19900)
 
-	if( GetMapName() != "mp_flowstate" )
+	if( MapName() != eMaps.mp_flowstate )
 		startingpos = Vector(0, 0, 9000)
 
 	vector startingang = Vector(0,-90,0)
@@ -6672,7 +6680,7 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 	cyberdyneCollisionModel.extend( Cyberdyne_Load(startingpos + Vector(-3400,-6623,0) ) )
 	cyberdyneCollisionModel.extend( Cyberdyne_Load2(startingpos + Vector(-3400,-6623,0) ) )
 	
-	if( GetMapName() == "mp_flowstate" )
+	if( MapName() == eMaps.mp_flowstate )
 		file.playerSpawnedProps.append( AddOutOfBoundsTriggerWithParams( <41977.8359, -10601.9141, -19263.0371>, 5000 ) )
 	else
 		file.playerSpawnedProps.append( AddOutOfBoundsTriggerWithParams( <-2.35747147, -574.164307, 9636.9624>, 5000 ) )
@@ -6685,7 +6693,7 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 		ForceSaveOgSkyboxOrigin()
 		#endif
 		
-		if( GetMapName() == "mp_flowstate" )
+		if( MapName() == eMaps.mp_flowstate )
 		{
 			//Rotate skybox for The Pit map.
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
@@ -6724,7 +6732,7 @@ void function SpawnCyberdyne() //Halo 3 The Pit
 
 void function SpawnLockout() //Halo 2 Encerrona
 {
-	if( GetMapName() != "mp_flowstate" )
+	if( MapName() != eMaps.mp_flowstate )
 		return
 
 	vector startingpos = Vector(42000, -10000, -19900)
@@ -6818,7 +6826,7 @@ void function SpawnLockout() //Halo 2 Encerrona
 
 void function SpawnChill()
 {
-	if( GetMapName() != "mp_flowstate" )
+	if( MapName() != eMaps.mp_flowstate )
 		return
 
 	vector startingpos = Vector(42000, -10000, -26000) //Vector( 0,0,2000 ) // 
@@ -6945,7 +6953,7 @@ void function SpawnChill()
 			Remote_CallFunction_Replay( player, "FS_ForceAdjustSunFlareParticleOnClient", 2 ) //chill 
 		}
 
-		if( GetMapName() == "mp_flowstate" )
+		if( MapName() == eMaps.mp_flowstate )
 		{
 			//Rotate skybox for Chill map.
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
@@ -6957,7 +6965,7 @@ void function SpawnChill()
 
 void function SpawnBeavercreek()
 {
-	if( GetMapName() != "mp_flowstate" )
+	if( MapName() != eMaps.mp_flowstate )
 		return
 
 	vector startingpos = Vector(42000, -10000, -26000) //Vector( 0,0,2000 ) // 
@@ -7035,7 +7043,7 @@ void function SpawnBeavercreek()
 			Remote_CallFunction_Replay( player, "FS_ForceAdjustSunFlareParticleOnClient", 2 ) //chill 
 		}
 
-		if( GetMapName() == "mp_flowstate" )
+		if( MapName() == eMaps.mp_flowstate )
 		{
 			//Rotate skybox for Chill map.
 			entity skyboxCamera = GetEnt( "skybox_cam_level" )
