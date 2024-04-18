@@ -548,7 +548,7 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed && lungeTarget.DoesShareRealms( attacker ) ) //!FIXME TraceLine does not check for realm Cafe
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 			
@@ -593,7 +593,7 @@ void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAt
 			return
 
 		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
-		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() || IsValid( lungeTarget ) && lungeTarget.IsNPC())
+		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() && lungeTarget.DoesShareRealms( attacker ) || IsValid( lungeTarget ) && lungeTarget.IsNPC() && lungeTarget.DoesShareRealms( attacker ))
 		{
 			bool lungeStartWasSuccessful
 			

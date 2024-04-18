@@ -942,6 +942,11 @@ vector function GetBlockableDoorDesiredAngles( entity door, int goalNotch )
 #if SERVER
 void function OnCodeDoorSpawned( entity door )
 {
+	if( is3v3Mode() && door.GetScriptName() != "flowstate_door_realms" )
+	{
+		FS_Scenarios_SaveDoorData( door )
+		return
+	}
 	door.SetMaxHealth( GetCurrentPlaylistVarInt( "blockable_door_health", 30 ) )
 	door.SetHealth( door.GetMaxHealth() )
 	door.SetTakeDamageType( DAMAGE_YES )
@@ -954,7 +959,8 @@ void function OnCodeDoorSpawned( entity door )
 	SetObjectCanBeMeleed( door, true )
 	SetVisibleEntitiesInConeQueriableEnabled( door, true )
 	
-	AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
+	if( door.GetScriptName() != "flowstate_door_realms" )
+		AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 
 	AddCallback_OnUseEntity( door, OnCodeDoorUsed )
 }

@@ -193,7 +193,6 @@ void function Sh_RespawnBeacon_Init()
 		{
 			AddCallback_OnDeathBoxSpawned( OnDeathBoxSpawned )
 		}
-		RegisterSignal( "PlayerDroppedFromDropship" )
 	#endif
 	
 	ShRespawnBeacon_RegisterAinAnalysisFuncs()
@@ -1188,13 +1187,10 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 					RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 
-					if( !FS_Scenarios_GetInventoryEmptyEnabled() )
-						GiveWeaponsToGroup( [ player ] ) //!FIXME send whole group
+					thread FS_Scenarios_GiveWeaponsToGroup( [ player ] )
 
 					if( FS_Scenarios_GetSkydiveFromDropshipEnabled() )
 						thread PlayerSkydiveFromCurrentPosition( player )
-
-					Signal( player, "PlayerDroppedFromDropship" )
 				}
 			}
 		}

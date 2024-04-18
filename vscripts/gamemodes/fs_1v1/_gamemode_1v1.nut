@@ -48,7 +48,7 @@ global function FS_1v1_GetPlayersWaiting
 global function FS_1v1_GetPlayersResting
 global function is3v3Mode
 global function _CleanupPlayerEntities
-
+global function FS_Scenarios_GiveWeaponsToGroup
 //DEV 
 #if DEVELOPER
 global function DEV_printlegends
@@ -4198,6 +4198,66 @@ void function GiveWeaponsToGroup( array<entity> players )
 		
 		
 	}()
+}
+
+
+void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
+{
+	printt( "FS_Scenarios_GiveWeaponsToGroup" )
+	foreach( player in players )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		TakeAllWeapons(player)
+	}
+
+	wait 0.2
+
+	string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+	string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+
+	foreach( player in players )
+	{
+		if( !IsValid( player ) )
+			continue
+		
+		CharacterSelect_AssignCharacter( ToEHI( player ), characters[characterslist[RandomIntRangeInclusive(0,9)]] )
+
+		DeployAndEnableWeapons( player )
+
+		TakeAllWeapons(player)
+
+		if( !FS_Scenarios_GetInventoryEmptyEnabled() )
+		{
+			GivePrimaryWeapon_1v1( player, primaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+			GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		}
+
+		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+		Survival_SetInventoryEnabled( player, true )
+		SetPlayerInventory( player, [] )
+
+		thread RechargePlayerAbilities( player )
+
+		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
+
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
+		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+		foreach(item in loot)
+			SURVIVAL_AddToPlayerInventory(player, item, 2)
+
+		DeployAndEnableWeapons( player )
+		EnableOffhandWeapons( player )
+		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())			
+	}
 }
 
 void function GivePrimaryWeapon_1v1(entity player, string weapon, int slot )

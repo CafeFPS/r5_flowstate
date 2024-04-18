@@ -15,6 +15,7 @@ global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
+global function FS_Scenarios_SaveDoorData
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -42,6 +43,18 @@ global struct scenariosGroupStruct
 	// realm based ground loot system
 	array<entity> groundLoot
 	array<entity> lootbins
+	array<entity> doors
+}
+
+struct doorsData
+{
+	entity door
+	vector origin
+	vector angles
+
+	bool linked
+	vector linkOrigin
+	vector linkAngles
 }
 
 struct lootbinsData
@@ -56,6 +69,8 @@ struct {
 	
 	array<vector> allLootSpawnsLocations
 	array<lootbinsData> allMapLootbins
+	array<doorsData> allMapDoors
+
 	array<entity> aliveDropships
 	array<entity> aliveDeathboxes
 } file
@@ -103,6 +118,104 @@ void function Init_FS_Scenarios()
 	
 	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+}
+
+void function FS_Scenarios_SaveDoorData( entity door )
+{
+	doorsData mapDoor
+	mapDoor.door = door
+	mapDoor.origin = door.GetOrigin()
+	mapDoor.angles = door.GetAngles()
+	mapDoor.linked = IsValid( door.GetLinkEnt() )
+	mapDoor.linkOrigin = mapDoor.linked == true ? door.GetLinkEnt().GetOrigin() : <0,0,0>
+	mapDoor.linkAngles = mapDoor.linked == true ? door.GetLinkEnt().GetAngles() : <0,0,0>
+	
+	file.allMapDoors.append( mapDoor )
+}
+
+void function FS_Scenarios_FinishSavingDoorsData()
+{
+	foreach( i, doorsData data in file.allMapDoors )
+	{
+		foreach( j, doorsData data2 in file.allMapDoors )
+		{
+			if( data.linked && IsValid( data.door ) && IsValid( data2.door ) && data.door.GetLinkEnt() == data2.door )
+			{
+				file.allMapDoors.removebyvalue( data2 )
+				data2.door.Destroy() // save edicts even more
+			}
+		}
+		
+		if( IsValid( data.door ) )
+			data.door.Destroy() //save edicts even more
+	}
+}
+
+void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector center = groupLocStruct.Center
+	int realm = group.slotIndex
+
+	array< doorsData > chosenSpawns
+	
+	foreach( i, doorsData data in file.allMapDoors )
+	{
+		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+			chosenSpawns.append( data )
+	}
+	
+	foreach( i, doorsData data in chosenSpawns )
+	{
+		entity singleDoor = CreateEntity("prop_door")
+		singleDoor.SetValueForModelKey( $"mdl/door/canyonlands_door_single_02.rmdl" )
+		singleDoor.SetScriptName( "flowstate_door_realms" )
+		singleDoor.SetOrigin( data.origin )
+		singleDoor.SetAngles( data.angles )
+
+		singleDoor.RemoveFromAllRealms()
+		singleDoor.AddToRealm( realm )
+
+		DispatchSpawn( singleDoor )
+		
+		if( data.linked )
+		{
+			entity doubleDoor = CreateEntity("prop_door")
+			doubleDoor.SetValueForModelKey( $"mdl/door/canyonlands_door_single_02.rmdl" )
+			doubleDoor.SetScriptName( "flowstate_door_realms" )
+			doubleDoor.SetOrigin( data.linkOrigin )
+			doubleDoor.SetAngles( data.linkAngles )
+
+			doubleDoor.RemoveFromAllRealms()
+			doubleDoor.AddToRealm( realm )
+			doubleDoor.LinkToEnt( singleDoor )
+
+			DispatchSpawn( doubleDoor )
+			group.doors.append( doubleDoor )
+		}
+
+		group.doors.append( singleDoor )
+	}
+	printt( "spawned", group.doors.len(), "doors for realm", realm )
+}
+
+void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	int count = 0
+	foreach( door in group.doors )
+		if( IsValid( door ) )
+		{
+			count++
+			door.Destroy()
+		}
+
+	printt( "destroyed", count, "doors for group", group.groupHandle )
 }
 
 bool function FS_Scenarios_GetDeathboxesEnabled()
@@ -578,6 +691,7 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 	}
 
 	FS_Scenarios_DestroyRingsForGroup( groupToRemove )
+	FS_Scenarios_DestroyDoorsForGroup( groupToRemove )
 
 	if( settings.fs_scenarios_ground_loot )
 	{
@@ -751,63 +865,19 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	}
 
 	// if dropship enabled
-	if( settings.fs_scenarios_dropshipenabled && fromDropship )
-	{
-		WaitSignal( player, "PlayerDroppedFromDropship" )
-	} else if( !settings.fs_scenarios_dropshipenabled && fromDropship )
+	if( !settings.fs_scenarios_dropshipenabled && fromDropship )
 	{
 		soloLocStruct groupLocStruct = group.groupLocStruct
 		maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
 	}
 
 	Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
-
-	#if DEVELOPER
-	#else
-	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
-	#endif
-
-	if(!IsValid(player)) return
-	
-	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
-
-	if ( g_bLGmode )
-	{
-		PlayerRestoreHP_1v1(player, 100, 0 ) //lg
-	}
-	else 
-	{
-		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
-	}
-	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-	Survival_SetInventoryEnabled( player, true )
-	SetPlayerInventory( player, [] )
-
-	if( FS_Scenarios_GetGroundLootEnabled() )
-	{
-		thread RechargePlayerAbilities( player )
-
-		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		player.TakeOffhandWeapon( OFFHAND_MELEE )
-		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-
-		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
-		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
-
-		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
-		foreach(item in loot)
-			SURVIVAL_AddToPlayerInventory(player, item, 2)
-
-		DeployAndEnableWeapons( player )
-		EnableOffhandWeapons( player )
-	}
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 {
     WaitForGameState(eGameState.Playing)
+	FS_Scenarios_FinishSavingDoorsData()
 
 	OnThreadEnd(
 		function() : (  )
@@ -959,7 +1029,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 			if( !IsAlive(restingPlayerEntity)  )
 			{	
-				thread FS_Scenarios_RespawnIn3v3Mode(restingPlayerEntity)
+				FS_Scenarios_RespawnIn3v3Mode(restingPlayerEntity)
 			}
 			
 			//TakeAllWeapons( restingPlayer )
@@ -1048,11 +1118,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			player.p.destroynotify = true
 			FS_SetRealmForPlayer( player, newGroup.slotIndex )
 
-			thread FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+			FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
 
 			if( settings.fs_scenarios_dropshipenabled )
 				Message_New( player, "Game is starting",  5 )
 		}
+
+		thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
 
 		if( settings.fs_scenarios_ground_loot )
 		{
@@ -1065,9 +1137,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
 			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
-		} else if( !settings.fs_scenarios_inventory_empty )
+		} else
 		{
-			GiveWeaponsToGroup( players )
+			thread FS_Scenarios_GiveWeaponsToGroup( players )
 		}
 	}//while(true)
 
