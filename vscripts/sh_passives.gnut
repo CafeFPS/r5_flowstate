@@ -593,7 +593,7 @@ void function PilotBlood_Passive_Body( entity player )
 
 	EndSignal( player, "EndPilotBloodThread" )
 	
-	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || Playlist() == ePlaylists.fs_movementgym )
+	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym )
 		tickTime = 0.05
 	
 	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Playlist() == ePlaylists.fs_movementgym )

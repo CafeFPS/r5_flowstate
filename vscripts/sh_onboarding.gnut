@@ -888,7 +888,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
 	victim.SetPlayerGameStat( PGS_DEATHS, victim.GetPlayerGameStat( PGS_DEATHS ) + 1 )
-	if( Gamemode() != eGamemodes.custom_ctf && Gamemode() != eGamemodes.fs_snd )
+	if( Gamemode() != eGamemodes.CUSTOM_CTF && Gamemode() != eGamemodes.fs_snd )
 		victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
 	
 	victim.FreezeControlsOnServer()

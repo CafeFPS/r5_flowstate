@@ -416,7 +416,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheWeapon( $"melee_oddball" )
 	}
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 	{
 		PrecacheParticleSystem( $"P_snow_atmo_512" )
 		PrecacheWeapon( $"mp_ability_grapple_master_chief" )

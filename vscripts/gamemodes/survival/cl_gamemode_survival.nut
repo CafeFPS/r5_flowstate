@@ -2034,7 +2034,7 @@ void function Sur_OnScoreboardShow()
 	if ( RadialMenu_IsShowing() )
 		RadialMenu_Destroy()
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd || Playlist() == ePlaylists.fs_scenarios )
+	if( Flowstate_IsHaloMode() && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd || Playlist() == ePlaylists.fs_scenarios )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2071,7 +2071,7 @@ void function Sur_OnScoreboardHide()
 {
 	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd )
+	if( Flowstate_IsHaloMode() && GetGameState() == eGameState.Playing || Gamemode() == eGamemodes.CUSTOM_CTF && GetGameState() == eGameState.Playing || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1  || Playlist() == ePlaylists.fs_snd )
 	{
 		if( IsAlive( GetLocalClientPlayer() ) )
 			ScoreboardToggleFocus( GetLocalClientPlayer() )
@@ -2592,7 +2592,7 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 
 void function AddMinimapLabel( string title, float xPos, float yPos, float width = 200, float scale = 1.0 )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 		return
 
 	foreach ( topo in file.minimapTopos )

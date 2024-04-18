@@ -1821,7 +1821,7 @@ MapFeature function SetMapFeatureItem( int priority, string titleText, string de
 const int MAX_MAP_FEATURES = 5
 void function UpdateMapFeatures()
 {
-	if ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && file.fullmap_legendRui != null )
+	if ( Flowstate_IsHaloMode() && file.fullmap_legendRui != null )
 	{
 		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Halo Mod" )
 		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Master Chief is Cool, HisWattson too. \n\nMade in Colombia with love by @CafeFPS and Darkes65." )
