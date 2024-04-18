@@ -64,7 +64,6 @@ global bool g_bPassivesAllowed
 
 #if TRACKER
 	global const bool STUB = false
-	global const bool PRINT_DEBUGZ = false
 #else
 	global const bool STUB = true 
 #endif 
@@ -238,7 +237,7 @@ const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 const int MAX_SAY_MSG = 255;
 global const int SQ_MAX_INT_32 = 2147483647;
 global const int SQ_MIN_INT_32 = -2147483647;
-const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to Player_Has_Access()
+const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAccess()
 const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
 
@@ -1008,24 +1007,8 @@ void function __CONTROLLED_LogInit()
 	}
 }
 
-void function PRINT_ALL_INIT_DEBUG()
-{
-	if( Playlist() == ePlaylists.fs_1v1 )
-	{
-		sqprint( format("Playlist is 1v1, enum #: %d", getPlaylistEnumFromName( GetCurrentPlaylistName() ) ) )
-	}
-	else 
-	{
-		sqprint("Playlist is not 1v1")
-	}
-}
-
 void function PIN_Init()
-{	
-	#if PRINT_DEBUGZ
-		PRINT_ALL_INIT_DEBUG()
-	#endif 
-	
+{		
 	if( IsLobby() ){ return }
 	INIT_fastComputes()
 	INIT_IntervalMessages()
@@ -1704,7 +1687,7 @@ void function Init_NewGame()
 		}
 	}
 	
-	int function Player_Has_Access( entity player )
+	int function CheckIfPlayerHasAccess( entity player )
 	{	
 		string player_UID = player.GetPlatformUID()
 		
@@ -1814,7 +1797,7 @@ void function Init_NewGame()
 		}
 
 		//this int must be set after stats have loaded
-		int access_status = Player_Has_Access( player )
+		int access_status = CheckIfPlayerHasAccess( player )
 		
 		wait 2
 		
@@ -3214,10 +3197,10 @@ void function IntervalThread()
 	}
 	
 	while(true)
-	{	
-		if(file.bKillIntervalThread){ break }
+	{		
+		wait 10	
+		if( KillIntervalThread() ){ break }
 		
-		wait 10
 		threadCycleCount += 1;
 		
 		//events
@@ -3240,6 +3223,16 @@ void function IntervalThread()
 	}
 	
 	file.bIntervalThreadRunning = false
+}
+
+bool function KillIntervalThread()
+{
+	if ( !file.bKillIntervalThread && IsValid( file.eBotEnt ) )
+	{
+		return false
+	}
+	
+	return true
 }
 
 int function SendLoopMessage( int threadCycleCount, int loopMsgCount  )

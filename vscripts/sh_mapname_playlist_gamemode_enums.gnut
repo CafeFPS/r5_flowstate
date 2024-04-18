@@ -1,5 +1,11 @@
-globalize_all_functions
+//script:
+global function PlayLists_Mapnames_Gamemodes_Init
 
+//public:
+global function mAssert
+global function MapName
+global function Playlist
+global function Gamemode
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 // 									MAPNAME / PLAYLIST INIT								//
@@ -66,6 +72,7 @@ global enum ePlaylists
 	fs_haloMod, //24
 	fs_aimtrainer, //25
 	menufall, //26
+	flowstate_pkknockback, //27
 	
 	
 	_PLAYLISTS_COUNT //LAST
@@ -154,6 +161,7 @@ struct
 		"fs_haloMod", //24
 		"fs_aimtrainer", //25
 		"menufall", //26
+		"flowstate_pkknockback", //27
 		
 		
 		"_PLAYLISTS_COUNT" //LAST

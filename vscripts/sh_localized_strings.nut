@@ -7,6 +7,7 @@ global function Flowstate_FetchToken
 	global function Flowstate_FetchTokenID
 	global function LocalMsg
 	global function LocalVarMsg
+	global function MessageLong
 #endif
 
 #if CLIENT 	
@@ -24,7 +25,7 @@ global function Flowstate_FetchToken
 		global function DEV_printLocalizedTokenByID
 	#endif 
 #endif
-	global const DEBUG_VARMSG = true
+	global const DEBUG_VARMSG = false
 
 struct {
 
@@ -174,11 +175,17 @@ struct {
 		"#FS_COULD_NOT_SPECTATE",
 		"#FS_NO_PLAYERS_TO_SPEC",
 		"#FS_WAIT_TIME_CC",
-		"#FS_AFK_KICK"
+		"#FS_AFK_KICK",
+		"#FS_PUSHDOWN",
+		"#FS_SPACE",
+		"#FS_OVERFLOW_TEST"
+		
 	]
 	
 } file
 
+//local script vars
+const array<int> longUiTypes = [1]
 
 //########################################################
 //							init						//
@@ -276,7 +283,7 @@ string function StringReplaceLimited( string baseString, string searchString, st
 //########################################################
 
 #if SERVER
-void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "" )
+void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = false )
 {
 	//original by @Cafe
 	
@@ -285,12 +292,59 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	if ( !player.p.isConnected ) return
 	
 	int datalen = varString.len() + varSubstring.len()
+	int varStringLen = varString.len()
+	int varSubStringLen = varSubstring.len()
 	
-	// this check is ui based and 
-	// should be changed based on ui type
-	if ( ( datalen ) >= 599 ) return 
-
-	string sendMessage
+	string appendSubstring;
+	string appendString;
+	bool uiTypeValidLong;
+	string sendMessage;
+	
+	if ( ( datalen ) >= 599 )
+	{
+		long = true
+		uiTypeValidLong = longUiTypes.contains(uiType)
+	}
+	
+	if( long )
+	{
+		if( varStringLen + varSubstring.len() > 1199 )
+		{
+			#if DEVELOPER
+				sqerror("Variable strings were too long.")
+			#endif
+			return 	
+		}
+		
+		if( varStringLen > 599 && !uiTypeValidLong )
+		{
+			#if DEVELOPER
+				sqerror("Title for LocalMsg variable string was too long for uiType.")
+			#endif
+			return 			
+		}
+		
+		if( uiTypeValidLong )
+		{
+			if( varStringLen > 1 )
+			{	
+				int slicePoint = 599 - varStringLen
+				appendString = varString.slice( slicePoint, varStringLen )
+				varString = varString.slice( 0, slicePoint )
+			}	
+		}
+		else 
+		{
+			if( varSubStringLen > 1 )
+			{	
+				int slicePoint = 599 - varStringLen
+				appendSubstring = varSubstring.slice( slicePoint, varSubStringLen )
+				varSubstring = varSubstring.slice( 0, slicePoint )
+			}
+			
+			
+		}
+	}	
 	
 	if ( datalen > 0 )
 	{
@@ -304,7 +358,20 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 			}
 		}
 	}
-	//if decide threading: else  {  }
+	
+	if ( long )
+	{
+		if( uiTypeValidLong )
+		{
+			thread MessageLong( player, ref, subref, uiType, duration, appendString, "", sound, false )
+		}
+		else 
+		{
+			thread MessageLong( player, ref, subref, uiType, duration, "", appendSubstring, sound, false )
+		}
+		
+		return
+	}
 	
 	int tokenID = Flowstate_FetchTokenID(ref)
 	int subTokenID = 0
@@ -320,6 +387,12 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	{
 		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 	}
+}
+
+void function MessageLong( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = true )
+{
+	wait 0.5
+	LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
 }
 
 void function LocalVarMsg( entity player, string ref, int uiType = 2, float duration = 5, ... )
@@ -459,13 +532,14 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	{
 		case 0: DisplayOldMessage( Msg, SubMsg, duration ); break
 		case 1: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
+		case 2: DisplayOldMessage( Msg, SubMsg, duration, 2 ); break
 	}
 	
 	file.fs_variableString = ""
 	file.fs_variableSubString = ""
 }
 
-void function DisplayOldMessage( string str1, string str2, float duration )
+void function DisplayOldMessage( string str1, string str2, float duration, int uiType = 0 )
 {
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )
@@ -478,46 +552,66 @@ void function DisplayOldMessage( string str1, string str2, float duration )
 	//string mode = GameRules_GetGameMode()
 	int mode = Gamemode()
 	
-	switch(mode)
+	if( uiType < 2 )
 	{
-		case eGamemodes.fs_dm:
-		case eGamemodes.fs_prophunt:
-		case eGamemodes.fs_duckhunt:
-		case eGamemodes.fs_snd:
+		switch(mode)
+		{
+			case eGamemodes.fs_dm:
+			case eGamemodes.fs_prophunt:
+			case eGamemodes.fs_duckhunt:
+			case eGamemodes.fs_snd:
+			
+				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+				Announcement_SetTitleColor( announcement, Vector(0,0,0) )	
 		
-			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-			Announcement_SetTitleColor( announcement, Vector(0,0,0) )	
-	
-		break;
-		
-		default: break;
+			break;
+			
+			default: break;
+		}
 	}
 	
-	//string playlist = GetCurrentPlaylistName()
-	int playlist = Playlist()
 	
-	switch(playlist)
+	if( uiType < 2 )
 	{
-		case ePlaylists.fs_movementgym:
-		case ePlaylists.fs_scenarios:
-		case ePlaylists.fs_1v1:
-		case ePlaylists.fs_survival_solos:
-		case ePlaylists.fs_lgduels_1v1:
-		case ePlaylists.fs_snd:
+		//string playlist = GetCurrentPlaylistName()
+		int playlist = Playlist()
 		
-		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
-		Announcement_SetTitleColor( announcement, Vector(0,0,1) )
-		
-		if(duration == 8.420)
+		switch(playlist)
 		{
-			Announcement_SetDuration( announcement, 5 )
-			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-			Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+			case ePlaylists.fs_movementgym:
+			case ePlaylists.fs_scenarios:
+			case ePlaylists.fs_1v1:
+			case ePlaylists.fs_survival_solos:
+			case ePlaylists.fs_lgduels_1v1:
+			case ePlaylists.fs_snd:
+			
+			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
+			Announcement_SetTitleColor( announcement, Vector(0,0,1) )
+			
+			if(duration == 8.420)
+			{
+				Announcement_SetDuration( announcement, 5 )
+				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+				Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+			}
+			
+			break;
+			
+			default: break;
 		}
-		
-		break;
-		
-		default: break;
+	}
+	else 
+	{
+		switch( uiType)
+		{
+			case 2:
+				Announcement_SetDuration( announcement, 5 )
+				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+				Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+				
+			default: 
+				break
+		}
 	}
 	
 	AnnouncementFromClass( player, announcement )
@@ -619,6 +713,8 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 		case 0: DisplayOldMessage( Msg, " ", duration ); break
 		case 1: DisplayOldMessage( " ", Msg, duration ); break
 		case 2: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
+		case 3: DisplayOldMessage( Msg, " ", duration, 2 ); break //type 2 big text
+		case 4: DisplayOldMessage(" ", Msg, duration, 2 ); break //type 2 big text, subtext slot
 		default:
 			printt("Server tried to call ui that doesn't exist.")
 			break
