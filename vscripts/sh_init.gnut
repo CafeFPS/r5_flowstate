@@ -6,6 +6,7 @@ void function SV_CL_Shared_Init()
 	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
 #endif
 
+	PlayListsMapnames_Init()
 	GameModes_Init()
 	Settings_Init()
 	if ( IsLobby() )
@@ -52,7 +53,6 @@ void function SV_CL_Init()
 	
 	
 	INIT_Flowstate_Localization_Strings()
-	PlayListsMapnames_Init()
 	
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()

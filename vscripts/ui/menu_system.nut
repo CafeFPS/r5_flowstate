@@ -113,7 +113,7 @@ void function OpenWeaponSelector()
 }
 
 void function InitSystemPanel( var panel )
-{
+{	
 	var menu = Hud_GetParent( panel )
 	file.buttons[ panel ] <- GetElementsByClassname( menu, "SystemButtonClass" )
 	file.buttonDatas[ panel ] <- []
@@ -241,6 +241,11 @@ void function OnSystemMenu_Open()
 
 void function UpdateSystemPanel( var panel )
 {
+	if ( Playlist() == -1 ) //I have no clue why this has to be here
+	{
+		PlayListsMapnames_Init()
+	}
+	
 	entity player = GetLocalClientPlayer()
 	//temp workaround, not the best place for this tbh
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
@@ -269,6 +274,10 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
+		}
+		else 
+		{
+			printt("wtf?")
 		}
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )

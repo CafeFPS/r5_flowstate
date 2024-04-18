@@ -197,7 +197,7 @@ struct{
 }file
 
 void function CodeCallback_MapSpawn() // original script entry point
-{
+{	
 	ShWeapons_LevelInit()
 	//seterrorhandler(void function() {})
 	//ScriptCompilerTest()
@@ -336,19 +336,19 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
 
-	switch( Gamemode() )
+	switch( GameRules_GetGameMode() )
 	{
-		case eGamemodes.CUSTOM_CTF:
+		case "CUSTOM_CTF":
 			PrecacheWeapon( $"melee_flagpole" )
 			PrecacheWeapon( $"mp_weapon_flagpole_primary" )
 			break
-		case eGamemodes.fs_prophunt:
+		case "fs_prophunt":
 			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
 			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
 			break
-		case eGamemodes.fs_dm:
+		case "fs_dm":
 			break
-		case eGamemodes.fs_aimtrainer:
+		case "fs_aimtrainer":
 			break
 		default:
 			LoadModelsFromEditor()
@@ -457,7 +457,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		#endif
 	SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
 	#endif
-
+	
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 	

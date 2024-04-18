@@ -1153,7 +1153,7 @@ void function _CustomTDM_Init()
 		}
 		
 		// init for IBMM
-		if ( g_bIs1v1 && !player.p.bIsChatbot )
+		if ( g_bIs1v1 || g_bLGmode && !player.p.bIsChatbot )
 		{	
 			Init_IBMM ( player )
 			

@@ -64,6 +64,8 @@ global enum ePlaylists
 	survival_firingrange, //22
 	fs_haloMod_ctf, //23
 	fs_haloMod, //24
+	fs_aimtrainer, //25
+	menufall, //26
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -147,6 +149,8 @@ struct
 		"survival_firingrange", //22
 		"fs_haloMod_ctf", //23
 		"fs_haloMod", //24
+		"fs_aimtrainer", //25
+		"menufall", //26
 		
 		
 		"_PLAYLISTS_COUNT" //LAST
@@ -154,11 +158,11 @@ struct
 	
 	array<string> gamemodes = [
 	
-		"MENUFALL", //0
-		"TEAM_DEATHMATCH", //1
-		"SURVIVAL", //2
-		"FREELANCE", //3
-		"CUSTOM_CTF", //4
+		"menufall", //0
+		"team_deathmatch", //1
+		"survival", //2
+		"freelance", //3
+		"custom_ctf", //4
 		"fs_dm", //5
 		"fs_aimtrainer", //6
 		"fs_prophunt", //7
@@ -212,9 +216,11 @@ void function PlayListsMapnames_Init()
 
 int function getMapEnumFromName( string mapString ) 
 {
+	string mapStringLower = mapString.tolower()
+	
 	for ( int i = 0; i < eMaps._MAP_COUNT; ++i ) 
 	{
-		if ( SH_globals.mapNames[i] == mapString ) 
+		if ( SH_globals.mapNames[i].tolower() == mapStringLower ) 
 		{
 			return i;
 		}
@@ -225,9 +231,11 @@ int function getMapEnumFromName( string mapString )
 
 int function getPlaylistEnumFromName( string playlistString ) 
 {
+	string playlistStringLower = playlistString.tolower()
+	
 	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; ++i ) 
 	{
-		if ( SH_globals.playlists[i] == playlistString ) 
+		if ( SH_globals.playlists[i].tolower() == playlistStringLower ) 
 		{
 			return i;
 		}
