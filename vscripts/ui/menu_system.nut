@@ -240,12 +240,7 @@ void function OnSystemMenu_Open()
 
 
 void function UpdateSystemPanel( var panel )
-{
-	if ( Playlist() == -1 ) //I have no clue why this has to be here
-	{
-		PlayListsMapnames_Init()
-	}
-	
+{	
 	entity player = GetLocalClientPlayer()
 	//temp workaround, not the best place for this tbh
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )

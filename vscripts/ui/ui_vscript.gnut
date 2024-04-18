@@ -323,6 +323,8 @@ void function UICodeCallback_UIInit()
 
 	ShUtilityAll_Init()
 	LevelVarInit()
+	
+	AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
 
 	VPKNotifyFile( "media/intro_captions.txt" )
 	VPKNotifyFile( "cfg/startup.cfg" )
@@ -378,6 +380,7 @@ void function UICodeCallback_UIInit()
 		{
 		}
 	#endif
+	
 }
 
 

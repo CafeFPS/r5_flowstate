@@ -5,7 +5,6 @@ globalize_all_functions
 // 									MAPNAME / PLAYLIST INIT								//
 //																						//
 //		keep these in order with arrays below											//
-//		NEVER REMOVE, replace with NULL01, NULL02. Always append to end of list. 		//
 //																						//
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +32,7 @@ global enum eMaps
 	mp_lobby, //19
 	mp_rr_habitat, //20
 	mp_rr_arena_phase_runner, //21
+	
 	
 	_MAP_COUNT //LAST
 }
@@ -67,6 +67,7 @@ global enum ePlaylists
 	fs_aimtrainer, //25
 	menufall, //26
 	
+	
 	_PLAYLISTS_COUNT //LAST
 }
 
@@ -85,6 +86,7 @@ global enum eGamemodes
 	fs_snd, //10
 	flowstate_pkknockback, //11
 	map_editor_deprecated, //12
+	
 	
 	_GAMEMODES_COUNT //LAST
 }
@@ -118,6 +120,7 @@ struct
 		"mp_lobby", //19
 		"mp_rr_habitat", //20
 		"mp_rr_arena_phase_runner", //21
+		
 		
 		"_MAP_COUNT" //LAST
 	]
@@ -172,6 +175,7 @@ struct
 		"flowstate_pkknockback", //11
 		"map_editor_deprecated", //12
 		
+		
 		"_GAMEMODES_COUNT" //LAST
 	
 	]
@@ -183,7 +187,7 @@ struct
 } SH_globals
 
 
-void function PlayListsMapnames_Init()
+void function PlayLists_Mapnames_Gamemodes_Init()
 {
 	int playlistsArrayCount = SH_globals.playlists.len()
 	int playlistsEnumsCount = ( ePlaylists._PLAYLISTS_COUNT + 1 )

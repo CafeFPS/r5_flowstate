@@ -6,7 +6,7 @@ void function SV_CL_Shared_Init()
 	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
 #endif
 
-	PlayListsMapnames_Init()
+	PlayLists_Mapnames_Gamemodes_Init()
 	GameModes_Init()
 	Settings_Init()
 	if ( IsLobby() )
