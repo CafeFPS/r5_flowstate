@@ -62,6 +62,8 @@ global enum ePlaylists
 	fs_dm_oddball, //20
 	fs_fallingforever, //21
 	survival_firingrange, //22
+	fs_haloMod_ctf, //23
+	fs_haloMod, //24
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -143,6 +145,8 @@ struct
 		"fs_dm_oddball", //20
 		"fs_fallingforever", //21
 		"survival_firingrange", //22
+		"fs_haloMod_ctf", //23
+		"fs_haloMod", //24
 		
 		
 		"_PLAYLISTS_COUNT" //LAST
@@ -183,8 +187,12 @@ void function PlayListsMapnames_Init()
 	int mapnamesArrayCount = SH_globals.mapNames.len()
 	int mapnamesEnumsCount = ( eMaps._MAP_COUNT + 1 )
 	
+	int gamemodesArrayCount = SH_globals.gamemodes.len()
+	int gamemodesEnumsCount = ( eGamemodes._GAMEMODES_COUNT + 1 )
+	
 	mAssert( playlistsArrayCount == playlistsEnumsCount, format( "Playlists not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", playlistsArrayCount, playlistsEnumsCount ) )
 	mAssert( mapnamesArrayCount == mapnamesEnumsCount, format( "Maps not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", mapnamesArrayCount, mapnamesEnumsCount ) )
+	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gaemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
 	
 	#if SERVER || CLIENT
 	

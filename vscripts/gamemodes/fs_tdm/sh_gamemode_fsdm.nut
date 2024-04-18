@@ -1823,6 +1823,7 @@ struct {
 	bool Flowstate_Is_PartyCrasher
 	bool Flowstate_Is_Canyon_Staging
 	bool Flowstate_IsHaloMode
+	bool Flowstate_DisableAllMapTriggers
 	
 } SH_flowstateSettings
 
@@ -1913,6 +1914,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( MapName() == eMaps.mp_rr_party_crasher )
 	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
 }
 
 // Playlist GET
@@ -1991,6 +1993,7 @@ bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSet
 int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
 bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
+bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
 
 //these remain but should eventually change to use MapName() & PlaylistName() compared with eMap.mapname and ePlaylist.playlistname respectively
 bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }

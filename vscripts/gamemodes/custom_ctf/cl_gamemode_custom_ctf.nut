@@ -156,7 +156,7 @@ void function Cl_CustomCTF_Init()
 	RegisterSignal( "ChangeCameraToSelectedLocation" )
 	RegisterSignal( "VoteTeam_EndModelFocus" )
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 		SetCommsDialogueEnabled( false )
 }
 
@@ -616,7 +616,7 @@ void function ShowScoreRUI(bool show)
 
 	entity player = GetLocalClientPlayer()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( !Flowstate_IsHaloMode() )
 	{
 		localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstatecustom/imc" : $"rui/flowstatecustom/militia"
 		enemyteamIcon = localteamIcon == "rui/flowstatecustom/imc" ? $"rui/flowstatecustom/militia" : $"rui/flowstatecustom/imc"
@@ -1363,7 +1363,7 @@ void function FSIntro_StartIntroScreen()
 	float stime = Time()
 	FSIntro_Destroy()
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "imcFlag" ) ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "milFlag" ) ) )
+	if( Flowstate_IsHaloMode() && !IsValid( GetGlobalNetEnt( "imcFlag" ) ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "milFlag" ) ) )
 		return
 
 	entity player = GetLocalClientPlayer()
@@ -1371,7 +1371,7 @@ void function FSIntro_StartIntroScreen()
 	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 	{
 		if( player.GetTeam() == TEAM_IMC )
 		{

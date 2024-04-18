@@ -20,8 +20,11 @@ global function Flowstate_FetchToken
 	global function DEV_GenerateTable
 	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
 	global function DEV_printLocalizationTable
+	#if CLIENT 
+		global function DEV_printLocalizedTokenByID
+	#endif 
 #endif
-	global const DEBUG_VARMSG = false
+	global const DEBUG_VARMSG = true
 
 struct {
 
@@ -169,7 +172,9 @@ struct {
 		"#FS_ERROR_OCCURED2",
 		"#FS_COOLDOWN",
 		"#FS_COULD_NOT_SPECTATE",
-		"#FS_NO_PLAYERS_TO_SPEC"
+		"#FS_NO_PLAYERS_TO_SPEC",
+		"#FS_WAIT_TIME_CC",
+		"#FS_AFK_KICK"
 	]
 	
 } file
@@ -317,7 +322,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	}
 }
 
-void function LocalVarMsg( entity player, string ref, int uiType = 3, float duration = 5, ... )
+void function LocalVarMsg( entity player, string ref, int uiType = 2, float duration = 5, ... )
 {
 	if ( !IsValid( player ) ) return
 	if ( !player.IsPlayer() ) return
@@ -399,10 +404,13 @@ void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
 
 int function countStringArgs( string str )
 {
-	//return RegexpFindAll( str, "%s" ).len()
-	var pattern = MakeRegexp( "%s" )
-	int found = Regexp_Match( pattern, str ).len()
-	printt( "okay found: ", found )
+	int found = RegexpFindAll( str, "%s" ).len()
+	// var pattern = MakeRegexp( "%s" )
+	// int found = Regexp_Match( pattern, str ).len()
+		#if DEVELOPER && DEBUG_VARMSG
+			printt( "REGEX FOUND %s: ", found )
+		#endif
+
 	return found
 }
 
@@ -413,22 +421,39 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	string localToken = Flowstate_FetchToken( token )
 	string localSubToken = Flowstate_FetchToken( subtoken )
 
-	string Msg = "";
-	string SubMsg = "";
+	string Msg = " ";
+	string SubMsg = " ";
 
-	string add_placeholder_to_msg = countStringArgs( localToken ) > 0 ? "" : "%s";
-	string add_placeholder_to_submsg = countStringArgs( localSubToken ) > 0 ? "" : "%s";
+	string add_placeholder_to_msg = countStringArgs( Localize( localToken ) ) == 0 ? "%s" : "";
+	string add_placeholder_to_submsg = countStringArgs( Localize( localSubToken ) ) == 0 ? "%s" : "";
+	
+	#if DEVELOPER && DEBUG_VARMSG
+		printt("msg placeholder: ", add_placeholder_to_msg, " ; submsg placeholder: ", add_placeholder_to_submsg )
+		printt("S: ", S, " SubS: ", SubS )
+	#endif
 	
 	try 
 	{
 		Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ) , S )
-		SubMsg = format( ( Localize( localSubToken ) + add_placeholder_to_submsg ) , SubS )
-		printt("Showing msg: ", Msg )
 	}
 	catch(e)
 	{
-		printt("Error " + e + " ;Invalid format qualifiers in message ID: ", token )
+		printt("Error ", e ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", token )
 	}
+	
+	try
+	{
+		SubMsg = format( ( Localize( localSubToken ) + add_placeholder_to_submsg ) , SubS )
+	}
+	catch(e2)
+	{
+		printt("Error ", e2 ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", subtoken )
+	}
+	
+	#if DEVELOPER && DEBUG_VARMSG
+		printt("msg: ", Msg, " ;SubMsg: ", SubMsg )
+	#endif
+	
 
 	switch(uiType)
 	{
@@ -553,20 +578,27 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 	string Msg = "";	
 	
 	//find me a variadic method, ty. 
-	switch( varCount )
+	try 
 	{
-		case 0: break;
-		case 1: Msg = format( localTokenString, file.variableVars[0] ); break;
-		case 2: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1] ); break;
-		case 3: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2] ); break;
-		case 4: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3] ); break;
-		case 5: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4] ); break;
-		case 6: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5] ); break;
-		case 7: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6] ); break;
-		case 8: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7] ); break;
-		case 9: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8] ); break;
-		case 10: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8], file.variableVars[9] ); break;
-		default: break
+		switch( varCount )
+		{
+			case 0: break;
+			case 1: Msg = format( localTokenString, file.variableVars[0] ); break;
+			case 2: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1] ); break;
+			case 3: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2] ); break;
+			case 4: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3] ); break;
+			case 5: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4] ); break;
+			case 6: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5] ); break;
+			case 7: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6] ); break;
+			case 8: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7] ); break;
+			case 9: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8] ); break;
+			case 10: Msg = format( localTokenString, file.variableVars[0], file.variableVars[1], file.variableVars[2], file.variableVars[3], file.variableVars[4], file.variableVars[5], file.variableVars[6], file.variableVars[7], file.variableVars[8], file.variableVars[9] ); break;
+			default: break
+		}
+	} 
+	catch (e)
+	{
+		printt("Error " + e + " ;Invalid format qualifiers in message ID: ", token )
 	}
 	
 	#if DEVELOPER && DEBUG_VARMSG
@@ -654,4 +686,12 @@ void function DEV_printLocalizationTable()
 		printt( key, value )
 	}
 }
+
+	#if CLIENT 
+		void function DEV_printLocalizedTokenByID( int id )
+		{
+			printt("wtf?")
+			printt( Localize( Flowstate_FetchToken( id ) ) )
+		}
+	#endif
 #endif

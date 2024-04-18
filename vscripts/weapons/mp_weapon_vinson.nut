@@ -58,7 +58,7 @@ void function OnWeaponActivate_HaloAR( entity weapon )
 void function OnWeaponDeactivate_HaloAR( entity weapon )
 {
 	#if CLIENT
- 	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+ 	if( !Flowstate_IsHaloMode() )
 	{
 		Minimap_EnableDraw()
 	}

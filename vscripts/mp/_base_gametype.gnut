@@ -98,7 +98,7 @@ void function Flowstate_CheckForMapTriggers()
 	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_Killzone" ) )
 	file.allTriggers.extend( GetEntArrayByScriptName( "WallTrigger_oob_timer" ) )
 
-	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) || MapName() == eMaps.mp_rr_arena_skygarden && Gamemode() == eGamemodes.fs_dm )
+	if( Flowstate_DisableAllMapTriggers() || MapName() == eMaps.mp_rr_arena_skygarden && Gamemode() == eGamemodes.fs_dm )
 	{
 		int i = 0
 		foreach( trigger in file.allTriggers )
@@ -1594,7 +1594,7 @@ function TriggerHurtSetup()
 {
 	file.hurtTriggers.extend( GetEntArrayByClass_Expensive( "trigger_hurt" ) )
 	
-	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+	if( Flowstate_DisableAllMapTriggers() )
 		return
 
 	foreach( trigger in file.hurtTriggers )
@@ -1623,7 +1623,7 @@ function OutOfBoundsSetup()
 {
 	file.outOfBoundsTriggers.extend( GetEntArrayByClass_Expensive( "trigger_out_of_bounds" ) )
 
-	if( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+	if( Flowstate_DisableAllMapTriggers() )
 		return
 
 	foreach( trigger in file.outOfBoundsTriggers )

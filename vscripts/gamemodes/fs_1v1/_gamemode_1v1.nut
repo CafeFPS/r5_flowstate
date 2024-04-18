@@ -2651,8 +2651,8 @@ void function soloModefixDelayStart(entity player)
 		return
 	
 	#if HAS_TRACKER_DLL && TRACKER
-		//LocalMsg( player, "#FS_1V1_Tracker" )
-		LocalVarMsg( player, "#FS_1V1_Tracker", 1, 5, "var 1", "var2", "var3", 4 )
+		LocalMsg( player, "#FS_1V1_Tracker" )
+		//LocalVarMsg( player, "#FS_1V1_Tracker", 1, 5, "var 1", "var2", "var3", 4 )
 	#else 
 		LocalMsg( player, "#FS_1v1_Banner" )
 	#endif

@@ -715,7 +715,7 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 
 	player.p.messagetime = Time()
 	
-	string param = "";
+	string param = ""; 
 	int limit = flowstateSettings.ibmm_wait_limit
 	
 	if (args.len() > 0)
@@ -725,14 +725,14 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 	
 		if  ( args.len() < 1 )
 		{		
-			string status = "";
+			string status = " "; //needs to be a char or var is treated as empty
 			if (player.p.IBMM_grace_period == 0)
 			{
 				status = " (disabled)";
 			}
 		
-			Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
-			//LocalVarMsg()
+			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
+			LocalVarMsg( player, "#FS_WAIT_TIME_CC", 1, 15, limit.tostring(), player.p.IBMM_grace_period, status )
 			return true
 		}				
 					
@@ -1794,7 +1794,8 @@ void function __HighPingCheck(entity player)
 		HolsterAndDisableWeapons( player )
 		
 		//TODO: LocalVarMsg()
-		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+		//Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+		LocalVarMsg( player, "#FS_AFK_KICK", 1, 3, FlowState_MaxPingAllowed(), (int(player.GetLatency()* 1000) - 40)  )
 		
 		wait 3
 
