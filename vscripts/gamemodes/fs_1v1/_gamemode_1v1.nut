@@ -4724,7 +4724,7 @@ void function ClearAllNotifications()
 
 void function _CleanupPlayerEntities( entity player )
 {
-	foreach ( trap in target.e.activeTraps )
+	foreach ( trap in player.e.activeTraps )
 	{
 		if( IsValid( trap ) )
 			trap.Destroy()
