@@ -2397,30 +2397,7 @@ void function soloModePlayerToWaitingList( entity player )
 		}
 
 		SetTeam( player, TEAM_IMC )
-
-		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
 		
-		foreach( splayer in playerGroup.team1Players )
-		{
-			if( splayer == player )
-			{
-				printt( "removed player from team 1 ", player )
-				playerGroup.team1Players.removebyvalue( player )
-			}
-		}
-		
-		foreach( splayer in playerGroup.team2Players )
-		{
-			if( splayer == player )
-			{
-				printt( "removed player from team 2 ", player )
-				playerGroup.team2Players.removebyvalue( player )
-			}
-		}
-
-		if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
-			delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
-
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
 	}
@@ -4724,21 +4701,12 @@ void function ClearAllNotifications()
 
 void function _CleanupPlayerEntities( entity player )
 {
-	foreach ( trap in player.e.activeTraps )
-	{
-		if( IsValid( trap ) )
-			trap.Destroy()
-	}
+	PROTO_CleanupTrackedProjectiles( player )
 
 	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) ) //todo signal
 	{
 		GetPlayerOutOfCamera( player )// why isn't this set up? -> Signal( "ExitCameraView" )
 		CryptoDrone_GetPlayerDrone( player ).Destroy()
-	}
-	
-	if( IsValid(player.p.lastDecoy) )
-	{
-		player.p.lastDecoy.Destroy()
 	}
 
 	PhaseTunnel_CancelPlacement( player )

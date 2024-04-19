@@ -107,8 +107,12 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 
 	entity traceBlocker
 
-	// if ( smokescreen.blockLOS )
-		// traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+	if ( smokescreen.blockLOS )
+	{
+		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+		traceBlocker.RemoveFromAllRealms()
+		traceBlocker.AddToOtherEntitysRealms( player )
+	}
 
 #if DEVELOPER
 	if ( SMOKESCREEN_DEBUG )
@@ -289,6 +293,9 @@ array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, Smokescreen
 		if ( !smokescreen.shouldHibernate )
 			fxEnt.DisableHibernation()
 
+		fxEnt.RemoveFromAllRealms()
+		fxEnt.AddToOtherEntitysRealms( smokescreen.attacker )
+
 		fxEntities.append( fxEnt )
 	}
 
@@ -331,6 +338,7 @@ void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime,
 			{
 				if ( IsValid( fxEnt ) )
 				{
+					EffectStop( fxEnt )
 					fxEnt.Destroy()
 				}
 			}
@@ -369,7 +377,10 @@ void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime,
 	foreach ( fxEnt in fxEntities )
 	{
 		if ( IsValid( fxEnt ) )
+		{
+			EffectStop( fxEnt )
 			fxEnt.Destroy()
+		}
 	}
 }
 

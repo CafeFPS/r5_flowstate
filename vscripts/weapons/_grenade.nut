@@ -356,6 +356,7 @@ entity function Grenade_Launch( entity weapon, vector attackPos, vector throwVel
 				frag.RemoveFromAllRealms()
 				frag.AddToOtherEntitysRealms( owner )
 			}
+			AddToTrackedEnts( owner, frag )
 		}
 	#endif
 

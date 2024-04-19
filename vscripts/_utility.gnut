@@ -4498,7 +4498,13 @@ void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, strin
 
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
 {
-	//stub
+	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+
+	if( !IsValid( ultimateAbility ) )
+		return
+
+	offhandWeapon.RemoveFromAllRealms()
+	offhandWeapon.AddToOtherEntitysRealms( ultimateAbility )
 }
 
 void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string sound )

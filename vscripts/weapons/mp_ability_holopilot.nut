@@ -444,7 +444,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 		if ( IsValid( player ) )
 			HoloPiliot_OnDecoyDamaged( decoy, player, damageInfo )
 	})
-
+	AddToTrackedEnts( player, decoy )
 	SetupDecoy_Common( player, decoy )
 	thread MonitorDecoyActiveForPlayer( decoy, player )
 	return decoy
@@ -682,7 +682,7 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 				Assert( player in file.playerToDecoysActiveTable )
 				--file.playerToDecoysActiveTable[ player ]
 				
-				if( g_bIs1v1 && IsValid( decoy ) )
+				if( g_bIs1v1 && IsValid( decoy ) || is3v3Mode() && IsValid( decoy ) )
 				{
 					decoy.Destroy() //could use fancy cleanup function as well for cleaner effect
 				}

@@ -130,6 +130,7 @@ global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
 global function ApplyBurnDamageTick
 
+global function AddToTrackedEnts
 #if DEVELOPER
 global function ToggleZeroingMode
 #endif
@@ -2625,7 +2626,8 @@ void function PROTO_CleanupTrackedProjectiles( entity player )
 	array<entity> traps = GetScriptManagedEntArray( player.s.activeTrapArrayId )
 	foreach ( ent in traps )
 	{
-		ent.Destroy()
+		if( IsValid( ent ) )
+			ent.Destroy()
 	}
 }
 

@@ -118,6 +118,15 @@ void function Init_FS_Scenarios()
 	
 	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
+}
+
+void function FS_Scenarios_OnPlayerDisconnected( entity player )
+{
+	_CleanupPlayerEntities( player )
+
+	if( player.p.handle in file.scenariosPlayerToGroupMap )
+		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 }
 
 void function FS_Scenarios_SaveDoorData( entity door )
@@ -684,49 +693,11 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 }
 
 void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove ) 
-{ 
+{
 	if( !IsValid(groupToRemove) )
 	{
 		sqerror("Logic flow error:  groupToRemove is invalid")
 		return
-	}
-
-	FS_Scenarios_DestroyRingsForGroup( groupToRemove )
-	FS_Scenarios_DestroyDoorsForGroup( groupToRemove )
-
-	if( settings.fs_scenarios_ground_loot )
-	{
-		FS_Scenarios_DestroyLootForGroup( groupToRemove )
-		FS_Scenarios_DestroyLootbinsForGroup( groupToRemove )
-	}
-
-	FS_Scenarios_DestroyAllAliveDeathboxesForRealm( groupToRemove.slotIndex )
-
-	array<entity> players
-	players.extend( groupToRemove.team1Players )
-	players.extend( groupToRemove.team2Players )	
-	try
-	{
-		foreach( player in players )
-		{
-			if( !IsValid( player ) )
-				continue
-
-			_CleanupPlayerEntities( player )
-			if( player.p.handle in file.scenariosPlayerToGroupMap )
-			{
-				#if DEVELOPER
-				sqprint(format("removing player in progress: %d", player) )
-				#endif
-				delete file.scenariosPlayerToGroupMap[ player.p.handle ]
-			}
-		}
-	}
-	catch(e)
-	{	
-		#if DEVELOPER
-		sqprint( "remove player in progress crash: " + e )
-		#endif
 	}
 	
 	try{
@@ -953,11 +924,21 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
 			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
 			{
-				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
+				FS_Scenarios_DestroyRingsForGroup( group )
+				FS_Scenarios_DestroyDoorsForGroup( group )
 
+				if( settings.fs_scenarios_ground_loot )
+				{
+					FS_Scenarios_DestroyLootForGroup( group )
+					FS_Scenarios_DestroyLootbinsForGroup( group )
+				}
+
+				FS_Scenarios_DestroyAllAliveDeathboxesForRealm( group.slotIndex )
+				ClearActiveProjectilesForRealm( group.slotIndex )
+
+				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team2Index, false )
-				ClearActiveProjectilesForRealm( group.slotIndex )
 
 				foreach( player in players )
 				{
@@ -969,6 +950,15 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						Signal( player, "PlayerSkyDive" )
 					}
 
+					_CleanupPlayerEntities( player )
+
+					try{
+						if( player.p.handle in file.scenariosPlayerToGroupMap )
+							delete file.scenariosPlayerToGroupMap[ player.p.handle ]
+					}catch(e)
+					{
+						printt( "error removing player from in progress list" )
+					}
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}

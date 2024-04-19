@@ -24,13 +24,15 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 {
 	wait delay
 	
-	if(!IsValid(weapon))
+	if( !IsValid(weapon) )
 		return
 		
 	entity owner = weapon.GetOwner()
 	
-	if(!IsValid(owner))
+	if ( !IsValid(owner) )
 		return
+
+	EndSignal( owner, "CleanUpPlayerAbilities" )
 	
 	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
 	string sound_incoming = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "sound_incoming")
@@ -63,6 +65,10 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		
 		entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
 		if(!IsValid(projectile)) return
+
+		AddToUltimateRealm( owner, projectile )
+		AddToTrackedEnts( owner, projectile )
+
 		if (isFirst)
 		{
 			EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
@@ -104,6 +110,8 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	
 	if ( !IsValid(owner) )
 		return
+
+	EndSignal( owner, "CleanUpPlayerAbilities" )
 	
 	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
     // todo sound effects for warnings ("incoming!")
@@ -138,6 +146,10 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
 			
 			if(!IsValid(projectile)) return
+		
+			AddToUltimateRealm( owner, projectile )
+			AddToTrackedEnts( owner, projectile )
+
 			if (isFirst)
 			{
 				EmitSoundOnEntity( projectile, fire_sound_1_player_3p )

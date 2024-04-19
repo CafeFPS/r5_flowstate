@@ -85,24 +85,39 @@ void function AirdropItems( vector origin, vector angles, array<string> contents
 
 void function AirdropItems_Lifeline( vector origin, vector angles, array<string> contents, entity fxToStop, string animationName, entity owner, int skin, string sourceWeaponClassName )
 {
+	EndSignal( owner, "CleanUpPlayerAbilities" )
+
 	entity dropPod = CreateDropPod( origin, angles, sourceWeaponClassName )
+	dropPod.RemoveFromAllRealms()
+	dropPod.AddToOtherEntitysRealms( owner )
+	AddToTrackedEnts( owner, dropPod )
+
+	entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
+	threatProxy.RemoveFromAllRealms()
+	threatProxy.AddToOtherEntitysRealms( owner )
+
+	OnThreadEnd(
+		function() : ( threatProxy, fxToStop )
+			{
+				if( IsValid( threatProxy ) )
+					threatProxy.Destroy()
+
+				if( IsValid(fxToStop) )
+					fxToStop.Destroy()
+			}
+	)
+
 	dropPod.SetSkin( skin )
     dropPod.SetScriptName( "lifeline_care_package" )
-	
-    entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
+
     thread DropPodBeamWaitForUse(dropPod, origin, angles)
 	
     thread WaitForDropFX(dropPod, animationName, origin, angles)
 	
 	waitthread LaunchAnimDropPod( dropPod, animationName, OriginToGround( origin ), angles )
-	    if(IsValid(threatProxy))
-        threatProxy.Destroy()
 
 	InitDropPod( dropPod )
-    
-    if(IsValid(fxToStop))
-        fxToStop.Destroy()
-	
+   
 	AddMultipleLootItemsToDropPod_Lifeline(dropPod, contents)
 
 }
@@ -130,6 +145,8 @@ void function AirDropFireteam( vector origin, vector angles, string animationNam
 
 void function WaitForDropFX(entity dropPod, string animationName, vector origin, vector angles)
 { 
+	EndSignal( dropPod, "OnDestroy" )
+
     float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
 	wait scaledTime 
 	

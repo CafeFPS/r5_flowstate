@@ -89,7 +89,7 @@ global function CodeCallback_OnWeaponAttack
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
-	player.s.activeTrapArrayId <- 0
+	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
 
 	ShGRX_OnClientConnectionCompleted( player )
 
