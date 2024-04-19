@@ -14,6 +14,10 @@ global function IsCodeDoor
 global function IsDoorOpen
 global function GetAllPropDoors
 
+#if SERVER
+global function RemoveDoorFromManagedEntArray
+#endif
+
 #if SERVER && DEVELOPER
 global function DEV_RestartAllDoorThinks
 #endif
@@ -144,6 +148,13 @@ array<entity> function GetAllPropDoors()
 		return file.allPropDoors
 	#endif //CLIENT
 }
+
+#if SERVER
+void function RemoveDoorFromManagedEntArray( entity door )
+{
+	RemoveFromScriptManagedEntArray( file.propDoorArrayIndex, door )
+}
+#endif
 
 #if SERVER && DEVELOPER
 bool function ClientCommand_dev_spawn_blockable_door( entity player, array<string> args )
@@ -958,9 +969,8 @@ void function OnCodeDoorSpawned( entity door )
 	AddEntityCallback_OnPostDamaged( door, BlockableDoor_OnDamage )
 	SetObjectCanBeMeleed( door, true )
 	SetVisibleEntitiesInConeQueriableEnabled( door, true )
-	
-	if( door.GetScriptName() != "flowstate_door_realms" )
-		AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
+
+	AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 
 	AddCallback_OnUseEntity( door, OnCodeDoorUsed )
 }

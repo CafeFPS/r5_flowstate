@@ -540,15 +540,29 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 		vector eyeTraceHitPos
 		if ( doorLungeEnabled && !IsValid( lungeTarget ) )
 		{
+			//Cafe was here
+			array<entity> ignoreEnts = [ attacker ]
+			
+			foreach( door in GetAllPropDoors() )
+			{
+				if( !IsValid( door ) )
+					continue
+
+				if( !door.DoesShareRealms( attacker ) )
+				{
+					ignoreEnts.append( door )
+				}
+			}
+
 			TraceResults eyeTrace = TraceLine(
 				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
-				[ attacker ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
+				ignoreEnts, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
 			)
 			lungeTarget = eyeTrace.hitEnt
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed && lungeTarget.DoesShareRealms( attacker ) ) //!FIXME TraceLine does not check for realm Cafe
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed && lungeTarget.DoesShareRealms( attacker ) )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 			

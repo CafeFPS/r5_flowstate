@@ -212,6 +212,7 @@ void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
 		if( IsValid( door ) )
 		{
 			count++
+			RemoveDoorFromManagedEntArray( door )
 			door.Destroy()
 		}
 
