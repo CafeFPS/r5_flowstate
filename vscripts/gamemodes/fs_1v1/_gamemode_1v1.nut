@@ -4724,6 +4724,12 @@ void function ClearAllNotifications()
 
 void function _CleanupPlayerEntities( entity player )
 {
+	foreach ( trap in target.e.activeTraps )
+	{
+		if( IsValid( trap ) )
+			trap.Destroy()
+	}
+
 	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) ) //todo signal
 	{
 		GetPlayerOutOfCamera( player )// why isn't this set up? -> Signal( "ExitCameraView" )

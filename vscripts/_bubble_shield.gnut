@@ -290,6 +290,7 @@ entity function CreateBubbleShieldWithSettings_MasterChief( int team, vector ori
 void function CleanupBubbleShield( entity bubbleShield, array<entity> bubbleShieldFXs, float fadeTime )
 {
 	bubbleShield.EndSignal( "OnDestroy" )
+	bubbleShield.EndSignal( "CleanUpPlayerAbilities" )
 
 	OnThreadEnd(
 		function () : ( bubbleShield, bubbleShieldFXs )
