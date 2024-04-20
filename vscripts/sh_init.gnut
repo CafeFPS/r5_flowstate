@@ -213,7 +213,7 @@ void function SV_CL_Init()
 		Cl_DeathScreen_Init()
 	#endif
 
-	Sh_PersistentDamageLayer_Init()
+	//Sh_PersistentDamageLayer_Init()
 
 	#if DEVSCRIPTS
 	Dev_RemoteFunctions_Init()

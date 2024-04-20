@@ -123,6 +123,7 @@ void function Init_FS_Scenarios()
 
 void function FS_Scenarios_OnPlayerDisconnected( entity player )
 {
+	printt( "[+] OnPlayerDisconnected Scenarios -", player )
 	_CleanupPlayerEntities( player )
 
 	if( player.p.handle in file.scenariosPlayerToGroupMap )
@@ -924,6 +925,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
 			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
 			{
+				printt( "Group has finished!", group.groupHandle )
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -950,15 +952,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						Signal( player, "PlayerSkyDive" )
 					}
 
-					_CleanupPlayerEntities( player )
-
-					try{
-						if( player.p.handle in file.scenariosPlayerToGroupMap )
-							delete file.scenariosPlayerToGroupMap[ player.p.handle ]
-					}catch(e)
-					{
-						printt( "error removing player from in progress list" )
-					}
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}

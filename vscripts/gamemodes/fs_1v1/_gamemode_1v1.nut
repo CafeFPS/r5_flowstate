@@ -2396,8 +2396,36 @@ void function soloModePlayerToWaitingList( entity player )
 			Signal( player, "PlayerSkyDive" )
 		}
 
+		_CleanupPlayerEntities( player )
+
 		SetTeam( player, TEAM_IMC )
+
+		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
 		
+		if( IsValid( playerGroup ) )
+		{
+			foreach( splayer in playerGroup.team1Players )
+			{
+				if( splayer == player )
+				{
+					printt( "removed player from team 1 ", player )
+					playerGroup.team1Players.removebyvalue( player )
+				}
+			}
+			
+			foreach( splayer in playerGroup.team2Players )
+			{
+				if( splayer == player )
+				{
+					printt( "removed player from team 2 ", player )
+					playerGroup.team2Players.removebyvalue( player )
+				}
+			}
+
+			if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
+				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
+		}
+
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
 	}

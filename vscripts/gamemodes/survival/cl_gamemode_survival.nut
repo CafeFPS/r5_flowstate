@@ -798,6 +798,11 @@ void function Cl_Survival_AddClient( entity player )
 	RuiSetBool( file.pilotRui, "isVisible", GetHudDefaultVisibility() )
 	RuiSetBool( file.pilotRui, "useShields", true )
 
+	WaitingForPlayersOverlay_Setup( player )
+
+	if( GetCurrentPlaylistName() == "fs_scenarios" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		return
+
 	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
 	RuiTrackFloat3( file.compassRui, "playerAngles", player, RUI_TRACK_CAMANGLES_FOLLOW )
 	RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "gameState" ) )
@@ -807,8 +812,6 @@ void function Cl_Survival_AddClient( entity player )
 	
 	//SetConVarFloat( "dof_variable_blur", 0.0 )
 
-	WaitingForPlayersOverlay_Setup( player )
-	
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 	{
 		RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, 0 )
