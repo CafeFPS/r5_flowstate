@@ -461,6 +461,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 	
+	//Server only init for custom stuff
 	switch( GetCurrentPlaylistName() )
 	{
 		case "fs_fallingforever":

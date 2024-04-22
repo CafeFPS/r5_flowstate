@@ -219,6 +219,11 @@ void function SV_CL_Init()
 	Dev_RemoteFunctions_Init()
 	#endif
 
+	if( GetCurrentPlaylistName() == "fs_movementrecorder" )
+	{
+		Sh_FS_MovementRecorder_Init()
+	}
+
 	#if CLIENT	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{

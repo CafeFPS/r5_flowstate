@@ -976,7 +976,7 @@ Scripts:
 	gamemodes/util/sh_custom_zombie_mystery_box.nut
 	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
-	
+	mp/sh_movement_recorder.nut
 	sh_hover_vehicle.gnut
 ]
 
@@ -995,7 +995,6 @@ Scripts:
 	gamemodes/fs_snd/_gamemode_snd.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
-	mp/_movement_recorder.nut
 	
 	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut

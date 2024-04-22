@@ -1,11 +1,23 @@
 //Made by @CafeFPS
+#if SERVER
 global function StartMovementRecorder
 global function DestroyDummys
+#endif
+
+global function Sh_FS_MovementRecorder_Init
 
 struct{
+	#if SERVER
 	array<var> recordingAnims
+	#endif
 }file
 
+void function Sh_FS_MovementRecorder_Init()
+{
+	
+}
+
+#if SERVER
 array<entity> dummyList;
 bool continueLoop = true;
 
@@ -214,3 +226,4 @@ void function DestroyDummys()
             dummy.Destroy()
     }
 }
+#endif //IF SERVER

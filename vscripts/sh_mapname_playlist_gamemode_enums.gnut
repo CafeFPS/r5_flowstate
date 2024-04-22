@@ -73,7 +73,8 @@ global enum ePlaylists
 	fs_aimtrainer, //25
 	menufall, //26
 	flowstate_pkknockback, //27
-	
+	fs_movementrecorder,
+	dev_default,
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -161,6 +162,8 @@ struct
 		"fs_aimtrainer", //25
 		"menufall", //26
 		"flowstate_pkknockback", //27
+		"fs_movementrecorder", //28
+		"dev_default",
 		
 		
 		"_PLAYLISTS_COUNT" //LAST
