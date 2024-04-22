@@ -849,6 +849,8 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 {
 	Assert( IsValid( player ) )
 
+	EndSignal( player, "OnDestroy" )
+
 	if ( GetCurrentPlaylistVarBool( "flowstate_enable_editor_hud", false ) )
 	{
 		RuiTrackInt( rui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
