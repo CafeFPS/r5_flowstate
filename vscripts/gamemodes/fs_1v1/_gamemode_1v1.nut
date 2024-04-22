@@ -3016,7 +3016,7 @@ void function GivePlayerCustomPlayerModel( entity ent )
 	}
 }
 
-void function _soloModeInit(string mapName)
+void function _soloModeInit( int eMap )
 {	
 	//RegisterSignal("On1v1Death") //TODO
 	RegisterSignal( "NotificationChanged" )
@@ -3039,8 +3039,7 @@ void function _soloModeInit(string mapName)
 	{
 		Weapons = [
 			"mp_weapon_lightninggun" //Lg_Duel
-		]
-		
+		]	
 	} 
 	else 
 	{	
@@ -3048,8 +3047,7 @@ void function _soloModeInit(string mapName)
 	}
 			
 	if ( Weapons.len() <= 0 )
-	{
-		
+	{		
 		Weapons = [
 				//default R5R.DEV selection
 				"mp_weapon_r97 optic_cq_hcog_classic stock_tactical_l1 bullets_mag_l2",	
@@ -3071,17 +3069,15 @@ void function _soloModeInit(string mapName)
 	
 	
 	//INIT SECONDARY WEAPON SELECTION	
-	if ( g_bLGmode ) {
-
+	if ( g_bLGmode ) 
+	{
 		WeaponsSecondary = [
 			"mp_weapon_lightninggun" //Lg_Duel beta
-		]
-		
-	} else
-	{
-		
-		WeaponsSecondary = custom_weapons_secondary;
-	
+		]		
+	} 
+	else
+	{		
+		WeaponsSecondary = custom_weapons_secondary;	
 	}
 	
 	if ( WeaponsSecondary.len() <= 0 )
@@ -3107,40 +3103,40 @@ void function _soloModeInit(string mapName)
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	switch(mapName)
+	switch( eMap )
 	{
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 			WaitingRoom.origin = <-7.62,200,184.57>
 			WaitingRoom.angles = <0,90,0>
 			break;
 			
-		case "mp_rr_aqueduct":
+		case eMaps.mp_rr_aqueduct:
 			WaitingRoom.origin = <719.94,-5805.13,494.03>
 			WaitingRoom.angles = <0,90,0>
 			break;
 			
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 			WaitingRoom.origin = <-762.59,20485.05,4626.03>
 			WaitingRoom.angles = <0,45,0>
 			break;
 			
-		case "mp_rr_canyonlands_staging":
+		case eMaps.mp_rr_canyonlands_staging:
 			WaitingRoom.origin = < 3477.69, -8364.02, -10252 >
 			WaitingRoom.angles = <356.203, 269.459, 0>
 			break;		
 			
-		case "mp_rr_party_crasher":
+		case eMaps.mp_rr_party_crasher:
 			WaitingRoom.origin = < 1881.75, -4210.87, 626.106 > 
 			WaitingRoom.angles = < 359.047, 104.246, 0 >
 			break;
 			
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 			WaitingRoom.origin = <318.434906, -19474.4141, -4947.88867> 
 			WaitingRoom.angles = <0, 32.8506927, 0>
 			break;
 	}
 	
-	array<LocPair> allSoloLocations = ReturnAllSoloLocations( mapName )
+	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()
 	
 	

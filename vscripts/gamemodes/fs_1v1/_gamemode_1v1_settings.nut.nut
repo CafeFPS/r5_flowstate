@@ -4,9 +4,9 @@ global function ReturnAllSoloLocations
 global function ReturnAllPanelLocations
 global LocPair &waitingRoomPanelLocation
 
-array<LocPair> function ReturnAllSoloLocations( string mapName )
+array<LocPair> function ReturnAllSoloLocations( int eMap )
 {
-	return FetchReturnAllSoloLocations( mapName )
+	return FetchReturnAllSoloLocations( eMap )
 }
 
 array<LocPair> function ReturnAllPanelLocations()
@@ -14,12 +14,12 @@ array<LocPair> function ReturnAllPanelLocations()
 	return FetchReturnAllPanelLocations()
 }
 
-array<LocPair> function FetchReturnAllSoloLocations( string mapName )
+array<LocPair> function FetchReturnAllSoloLocations( int eMap )
 {
 	array<LocPair> allSoloLocations
 	
 	// LocPair waitingRoomLocation
-	if (mapName == "mp_rr_arena_composite")
+	if ( eMap == eMaps.mp_rr_arena_composite )
 	{			
 		// waitingRoomLocation = NewLocPair( <-7.62,200,184.57>, <0,90,0>)
 		waitingRoomPanelLocation = NewLocPair( <-3.0,645,125>, <0,0,0>)//休息区观战面板
@@ -96,7 +96,7 @@ array<LocPair> function FetchReturnAllSoloLocations( string mapName )
 		
 		return allSoloLocations
 	}
-	else if (mapName == "mp_rr_aqueduct")
+	else if ( eMap == eMaps.mp_rr_aqueduct )
 	{
 		// waitingRoomLocation = NewLocPair( <719.94,-5805.13,494.03>, <0,90,0>)
 		waitingRoomPanelLocation = NewLocPair( <718.29,-5496.74,430>, <0,0,0>) //休息区观战面板
@@ -148,7 +148,7 @@ array<LocPair> function FetchReturnAllSoloLocations( string mapName )
 			
 		return allSoloLocations
 	}
-	else if (mapName == "mp_rr_canyonlands_64k_x_64k")
+	else if ( eMap == eMaps.mp_rr_canyonlands_64k_x_64k )
 	{
 		// waitingRoomLocation = NewLocPair( <-795.58,20362.78,4570.03>, <0,90,0>)   //休息区出生点
 		waitingRoomPanelLocation = NewLocPair( <-607.59,20640.05,4570.03>, <0,-45,0>) //休息区观战面板
@@ -227,7 +227,7 @@ array<LocPair> function FetchReturnAllSoloLocations( string mapName )
 		
 		return allSoloLocations
 	}	
-	else if ( mapName == "mp_rr_canyonlands_staging" && g_bLGmode ) //_LG_duels
+	else if ( eMap == eMaps.mp_rr_canyonlands_staging && g_bLGmode ) //_LG_duels
 	{
 		//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  
 		waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >) //休息区观战面板
@@ -357,7 +357,7 @@ array<LocPair> function FetchReturnAllSoloLocations( string mapName )
 		
 		return allSoloLocations
 	}
-	else if (mapName == "mp_rr_party_crasher")
+	else if ( eMap == eMaps.mp_rr_party_crasher )
 	{
 		//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  
 		waitingRoomPanelLocation = NewLocPair( < 1822, -3977, 626 >, < 0, 15, 0 > ) //休息区观战面板
@@ -407,7 +407,7 @@ array<LocPair> function FetchReturnAllSoloLocations( string mapName )
 		
 		return allSoloLocations
 	}
-	else if (mapName == "mp_rr_olympus_mu1")
+	else if ( eMap == eMaps.mp_rr_olympus_mu1 )
 	{
 		//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  
 		waitingRoomPanelLocation = NewLocPair( <665.5224, -19241.1816, -4947.88916>, <0, -97.6569595, 0> ) //休息区观战面板

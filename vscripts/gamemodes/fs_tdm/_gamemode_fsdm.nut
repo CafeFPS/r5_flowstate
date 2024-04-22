@@ -1216,7 +1216,7 @@ void function _CustomTDM_Init()
 	if( is1v1EnabledAndAllowed() )
 	{
 		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
-		_soloModeInit(GetMapName()) //Todo: change to MapName() enums
+		_soloModeInit( MapName() ) //enum
 
 		if( !is3v3Mode() )
 			AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )	
