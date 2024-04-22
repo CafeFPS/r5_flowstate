@@ -1175,7 +1175,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						continue
 	
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility" false )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false )
 				}
 			}
 		}()
