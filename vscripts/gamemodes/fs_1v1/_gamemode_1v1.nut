@@ -2398,6 +2398,8 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	if( file.is3v3Mode )
 	{
+		Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false )
+
 		if( player.Player_IsFreefalling() )
 		{
 			Signal( player, "PlayerSkyDive" )

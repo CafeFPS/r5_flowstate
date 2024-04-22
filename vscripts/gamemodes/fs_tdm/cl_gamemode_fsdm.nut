@@ -49,6 +49,13 @@ global function fs_NewBoxShowMessage
 global function fs_ServerMsgsToChatBox_BuildMessage
 global function fs_ServerMsgsToChatBox_ShowMessage
 
+global function FS_Scenarios_TogglePlayersCardsVisibility
+
+global function FS_Scenarios_AddAllyHandle
+global function FS_Scenarios_AddEnemyHandle
+
+global function FS_Scenarios_SetupPlayersCards
+
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
 struct {
@@ -74,7 +81,14 @@ struct {
 	
 	string fs_newServerMsgsToChatBoxString        = ""
 	string fs_newServerMsgsToChatBoxSubString     = ""
-	
+
+	//Scenarios cards
+	var vsBasicImage
+	array<var> allyTeamCards
+	array<var> enemyTeamCards
+	bool buildingTeam = true
+	array<int> allyTeamHandles
+	array<int> enemyTeamHandles
 } file
 
 struct VictoryCameraPackage
@@ -107,6 +121,16 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
+	
+	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	{
+		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+	}
+}
+
+void function FS_Scenarios_OnClientScriptInit( entity player ) 
+{
+	FS_Scenarios_InitPlayersCards()
 }
 
 void function CL_FSDM_RegisterNetworkFunctions()
@@ -278,6 +302,13 @@ void function ForceShow1v1Scoreboard()
 
 void function Cl_OnResolutionChanged()
 {
+	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	{
+		if( !file.buildingTeam )
+			FS_Scenarios_TogglePlayersCardsVisibility( true )
+		else
+			FS_Scenarios_TogglePlayersCardsVisibility( false )
+	}
 	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
 	{
 		Flowstate_ShowRoundEndTimeUI( -1 )
@@ -1701,3 +1732,131 @@ void function FS_NewBox_Msg( float duration = 3 )
 	wait 0.24
 }
 
+void function FS_Scenarios_InitPlayersCards()
+{
+	file.allyTeamCards.clear()
+	file.enemyTeamCards.clear()
+
+	printt( "FS_Scenarios_InitPlayersCards" )
+	file.vsBasicImage = HudElement( "ScenariosVS" )
+	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterL" + i )
+		file.allyTeamCards.append( button )
+
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+	}
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterR" + i )
+		file.enemyTeamCards.append( button )
+		
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+	}
+	file.buildingTeam = true
+}
+
+void function FS_Scenarios_AddEnemyHandle( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( enemyPlayer ) )
+		return
+
+	file.enemyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_AddAllyHandle( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity allyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( allyPlayer ) )
+		return
+
+	file.allyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_SetupPlayersCards()
+{
+	file.buildingTeam = false
+
+	foreach( i, handle in file.enemyTeamHandles )
+	{
+		if( i > file.enemyTeamCards.len() )
+			continue
+
+		entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+		
+		if( !IsValid( enemyPlayer ) )
+			continue
+
+		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+		RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", true )
+		RuiSetString( Hud_GetRui( file.enemyTeamCards[i] ), "buttonText", enemyPlayer.GetPlayerName() )
+		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
+	}
+
+	foreach( i, handle in file.allyTeamHandles )
+	{
+		if( i > file.allyTeamCards.len() )
+			continue
+
+		entity allyPlayer = GetEntityFromEncodedEHandle( handle )
+		
+		if( !IsValid( allyPlayer ) )
+			continue
+
+		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+		RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", true )
+		RuiSetString( Hud_GetRui( file.allyTeamCards[i] ), "buttonText", allyPlayer.GetPlayerName() )
+		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
+	}
+
+	FS_Scenarios_TogglePlayersCardsVisibility( true )
+}
+
+void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
+{
+	if( file.vsBasicImage != null )
+		Hud_SetVisible( file.vsBasicImage, show )
+
+	foreach( button in file.allyTeamCards )
+	{
+		Hud_SetVisible( button, show )
+	}
+
+	foreach( button in file.enemyTeamCards )
+	{
+		Hud_SetVisible( button, show )
+	}
+		
+	if( !show )
+	{
+		file.allyTeamHandles.clear()
+		file.enemyTeamHandles.clear()
+		FS_Scenarios_InitPlayersCards()
+	}
+}

@@ -1125,6 +1125,60 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			thread FS_Scenarios_GiveWeaponsToGroup( players )
 		}
+		
+		// Setup HUD
+		foreach( player in newGroup.team1Players )
+		{
+			foreach( splayer in newGroup.team1Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+			}
+			foreach( splayer in newGroup.team2Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+			}
+		}
+		
+		foreach( player in newGroup.team2Players )
+		{
+			foreach( splayer in newGroup.team1Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+			}
+			foreach( splayer in newGroup.team2Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+			}
+		}
+
+		thread function() : ( players, newGroup )
+		{
+			wait 1 // Find a better method to wait for the client to be updated. Cafe
+
+			if( IsValid( newGroup ) && !newGroup.IsFinished )
+			{
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+				}
+			} else
+			{
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+	
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility" false )
+				}
+			}
+		}()
 	}//while(true)
 
 }//thread
