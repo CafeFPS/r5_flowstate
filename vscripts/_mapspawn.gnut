@@ -546,7 +546,7 @@ void function FS_TrackPlayersPositionInScoreboard()
 			i++
 		}
 		
-		wait 0.5
+		wait 1
 	}
 }
 

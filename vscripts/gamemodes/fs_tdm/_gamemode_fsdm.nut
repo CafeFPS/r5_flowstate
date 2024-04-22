@@ -79,7 +79,7 @@ global function ServerMsgToBox
 global function SetPlayerCustomModel
 global function ResetLoadedWeapons //tracker override
 
-//LGDuels
+//LGDuels //TODO: move..somewhere.. 
 const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
 const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
 const string HIT_2 = "NONE"
@@ -139,7 +139,7 @@ const table<string, string> WeaponNameMap = {
     ["deathField"] = "(ZONE)",
     ["melee_pilot_emptyhanded"] = "Punch/Kick",
     ["melee_bolo_sword"] = "Bolo Melee",
-    ["damagedef_unknown"] = "Lightning Gun"
+	["mp_weapon_lightninggun"] = "Lightning Gun"
 };
 
 const string WHITE_SHIELD = "armor_pickup_lv1"
@@ -1158,7 +1158,7 @@ void function _CustomTDM_Init()
 			Init_IBMM ( player )
 			
 			#if !TRACKER
-				INIT_playerChallengesStruct( player )
+				INIT_playerChallengesStruct( player ) //normally init after persistence loads
 			#endif
 		}
 		
@@ -1177,7 +1177,8 @@ void function _CustomTDM_Init()
 	if ( FlowState_SURF() )
 	{
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
-	} else
+	} 
+	else
 	{
 		if( !Flowstate_IsMovementGym() && !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() ){
 			AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
@@ -5874,7 +5875,14 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		{	
 			string sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )
 			//Message( player, "WEAPON " + sWepName + " SAVED")
-			LocalMsg( player, "#FS_WEAPONSAVED", "", 0, 5, sWepName )
+			string subToken = ""
+			
+			if( !isCustomWeaponAllowed() )
+			{
+				subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
+			}
+			
+			LocalMsg( player, "#FS_WEAPONSAVED", subToken, 0, 5, sWepName )
 		}	
 			
 		if (bRestFlag)

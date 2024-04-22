@@ -178,7 +178,8 @@ struct {
 		"#FS_AFK_KICK",
 		"#FS_PUSHDOWN",
 		"#FS_SPACE",
-		"#FS_OVERFLOW_TEST"
+		"#FS_OVERFLOW_TEST",
+		"#FS_CUSTOM_WEAPON_CHAL_ONLY"
 		
 	]
 	
@@ -533,6 +534,10 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 		case 0: DisplayOldMessage( Msg, SubMsg, duration ); break
 		case 1: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
 		case 2: DisplayOldMessage( Msg, SubMsg, duration, 2 ); break
+		
+		default:
+			printt("Server tried to call ui that doesn't exist.")
+		break
 	}
 	
 	file.fs_variableString = ""

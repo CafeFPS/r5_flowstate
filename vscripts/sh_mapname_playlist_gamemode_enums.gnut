@@ -10,7 +10,7 @@ global function Gamemode
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 // 									MAPNAME / PLAYLIST INIT								//
 //																						//
-//		keep these in order with arrays below											//
+//		keep these in order with arrays below between shipped builds										//
 //																						//
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +100,6 @@ global enum eGamemodes
 
 
 //keep these in order with enum structs above
-//replace with NULL if removing, append to end of list.
 struct
 {
 	array<string> mapNames = [

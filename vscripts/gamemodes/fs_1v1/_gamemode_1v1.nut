@@ -30,6 +30,7 @@ global function ForceAllRoundsToFinish_solomode
 global function addStatsToGroup
 global function getBotSpawn
 global function RechargePlayerAbilities
+global function isCustomWeaponAllowed
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -158,19 +159,20 @@ struct {
 
 struct {
 
-	int ibmm_wait_limit
-	float default_ibmm_wait
+	int ibmm_wait_limit = 30
+	float default_ibmm_wait = 0
 	bool enableChallenges = false
+	int groupID = 112250000
+	bool bGiveSameRandomLegendToBothPlayers = false
+	bool bAllowLegend = false
+	bool bAllowAbilities = false
+	bool bChalServerMsg = false
+	bool bNoCustomWeapons = false
+	
 } settings
 
 //script vars 
 global bool mGroupMutexLock
-int groupID = 112250000;
-bool bMap_mp_rr_party_crasher
-bool bGiveSameRandomLegendToBothPlayers
-bool bAllowLegend
-bool bAllowAbilities
-bool bChalServerMsg
 
 array<string> Weapons = []
 array<string> WeaponsSecondary = []
@@ -350,21 +352,26 @@ bool function isPlayerInProgress( entity player )
 
 void function INIT_Flags()
 {
-	bGiveSameRandomLegendToBothPlayers	= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
-	bIsKarma 							= GetCurrentPlaylistVarBool( "karma_server", false )
-	bAllowLegend 						= GetCurrentPlaylistVarBool( "give_legend", true )
-	bAllowAbilities 					= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
-	bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
-	settings.ibmm_wait_limit 			= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
-	settings.default_ibmm_wait 			= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
-	settings.enableChallenges			= GetCurrentPlaylistVarBool( "enable_challenges", true )
-	file.is3v3Mode						= Playlist() == ePlaylists.fs_scenarios
+	settings.bGiveSameRandomLegendToBothPlayers		= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
+	bIsKarma 										= GetCurrentPlaylistVarBool( "karma_server", false )
+	settings.bAllowLegend 							= GetCurrentPlaylistVarBool( "give_legend", true )
+	settings.bAllowAbilities 						= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
+	settings.bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
+	settings.ibmm_wait_limit 						= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
+	settings.default_ibmm_wait 						= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
+	settings.enableChallenges						= GetCurrentPlaylistVarBool( "enable_challenges", true )
+	file.is3v3Mode									= Playlist() == ePlaylists.fs_scenarios
+	settings.bNoCustomWeapons						= GetCurrentPlaylistVarBool( "custom_weapons_challenge_only", false )
 }
 
+bool function isCustomWeaponAllowed()
+{
+	return !settings.bNoCustomWeapons
+}
 
 int function GetUniqueID() 
 {
-    return groupID++;
+    return settings.groupID++;
 }
 
 bool function Fetch_IBMM_Timeout_For_Player( entity player ) 
@@ -1331,7 +1338,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 		case "legend":
 		
-			if(!bAllowLegend)
+			if( !settings.bAllowLegend )
 			{
 				//Message( player, "Admin has disabled legends" )
 				LocalMsg( player, "#FS_DisabledLegends")
@@ -1415,7 +1422,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				ItemFlavor select_character = characters[characterslist[index]]
 				CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
 				
-				if( !bAllowAbilities )
+				if( !settings.bAllowAbilities )
 				{
 					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				}
@@ -1425,7 +1432,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				SetPlayerCustomModel( player, index )
 			}
 			
-			if( bAllowAbilities )
+			if( settings.bAllowAbilities )
 			{
 				RechargePlayerAbilities( player )
 			}
@@ -2002,7 +2009,7 @@ void function sendGroupRecapsToPlayers( soloGroupStruct group )
 	bool tied = false
 	
 	#if TRACKER
-	if( bChalServerMsg )
+	if( settings.bChalServerMsg )
 	{
 		if( player1.kills > player2.kills )
 		{
@@ -2989,7 +2996,7 @@ void function _decideLegend( soloGroupStruct group )
 		}
 	}	
 	
-	if( !bAllowAbilities )
+	if( !settings.bAllowAbilities )
 	{
 		group.player1.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
@@ -4144,7 +4151,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 		int random_character_index 
 		ItemFlavor random_character
 		
-		if (bGiveSameRandomLegendToBothPlayers)
+		if ( settings.bGiveSameRandomLegendToBothPlayers )
 		{
 			random_character_index = RandomIntRangeInclusive(0,characterslist.len()-1)
 			
@@ -4154,12 +4161,20 @@ void function GiveWeaponsToGroup( array<entity> players )
 			}
 		}
 		
+		bool bInChallenge = false
+		soloGroupStruct group = returnSoloGroupOfPlayer( players[0] )
+		
+		if( isGroupValid( group ) && group.IsKeep )
+		{
+			bInChallenge = true
+		}
+		
 		foreach( player in players )
 		{
 			if( !IsValid( player ) )
 				continue
 			
-			if (bGiveSameRandomLegendToBothPlayers && random_character_index <= 10 )
+			if ( settings.bGiveSameRandomLegendToBothPlayers && random_character_index <= 10 )
 			{	
 				CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
 			}
@@ -4167,7 +4182,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			
 			DeployAndEnableWeapons( player )
 
-			if ( !(player.p.name in weaponlist))//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
+			if ( ( settings.bNoCustomWeapons && !bInChallenge ) ||  !(player.p.name in weaponlist))//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
 			{
 				TakeAllWeapons(player)
 
@@ -4183,7 +4198,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			
-			if (!g_bLGmode)
+			if (!g_bLGmode) //TODO: set bool during init based on array of game modes where melee is allowed, repeat for more. 
 			{	
 				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
@@ -4191,14 +4206,9 @@ void function GiveWeaponsToGroup( array<entity> players )
 				
 		}
 		
-		isPlayerPendingChallenge( players[0] )
+		if( bInChallenge )
 		{
-			soloGroupStruct group = returnSoloGroupOfPlayer( players[0] )
-			
-			if(group.IsKeep)
-			{
-				_decideLegend( group )	
-			}
+			_decideLegend( group )	
 		}
 		
 		
