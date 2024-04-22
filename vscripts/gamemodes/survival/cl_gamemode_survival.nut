@@ -833,7 +833,7 @@ void function InitSurvivalHealthBar()
 		function() : ( player )
 		{
 			if(IsValid(player))
-				SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
+				thread SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
 			
 			if( Playlist() == ePlaylists.fs_movementgym )
 					MG_CustomPilotRUI( player, file.pilotRui )

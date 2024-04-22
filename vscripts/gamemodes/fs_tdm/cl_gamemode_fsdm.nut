@@ -1797,42 +1797,52 @@ void function FS_Scenarios_SetupPlayersCards()
 {
 	file.buildingTeam = false
 
-	foreach( i, handle in file.enemyTeamHandles )
+	foreach( int i, int handle in file.enemyTeamHandles )
 	{
 		if( i > file.enemyTeamCards.len() )
 			continue
 
-		entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
-		
-		if( !IsValid( enemyPlayer ) )
-			continue
+		thread function() : ( i, handle )
+		{
+			entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( enemyPlayer ) )
+				return
 
-		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+			EndSignal( enemyPlayer, "OnDestroy" )
 
-		RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", true )
-		RuiSetString( Hud_GetRui( file.enemyTeamCards[i] ), "buttonText", enemyPlayer.GetPlayerName() )
-		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
-		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
-		RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.enemyTeamCards[i] ), "buttonText", enemyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
+		}()
 	}
 
-	foreach( i, handle in file.allyTeamHandles )
+	foreach( int i, int handle in file.allyTeamHandles )
 	{
 		if( i > file.allyTeamCards.len() )
 			continue
 
-		entity allyPlayer = GetEntityFromEncodedEHandle( handle )
-		
-		if( !IsValid( allyPlayer ) )
-			continue
+		thread function() : ( i, handle )
+		{
+			entity allyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( allyPlayer ) )
+				return
 
-		ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+			EndSignal( allyPlayer, "OnDestroy" )
 
-		RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", true )
-		RuiSetString( Hud_GetRui( file.allyTeamCards[i] ), "buttonText", allyPlayer.GetPlayerName() )
-		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
-		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
-		RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.allyTeamCards[i] ), "buttonText", allyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
+		}()
 	}
 
 	FS_Scenarios_TogglePlayersCardsVisibility( true )

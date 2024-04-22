@@ -1040,7 +1040,7 @@ void function RotateMap()
 //moved this to be initialized once instead of constantly computed...
 bool function bIs1v1Mode()
 {
-	if ( !flowstateSettings.flowstate_1v1mode )
+	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
 		return false
 
 	switch ( MapName() )

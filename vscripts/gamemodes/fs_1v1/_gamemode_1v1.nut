@@ -1434,7 +1434,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( settings.bAllowAbilities )
 			{
-				RechargePlayerAbilities( player )
+				thread RechargePlayerAbilities( player )
 			}
 			
 			return true
@@ -3005,8 +3005,8 @@ void function _decideLegend( soloGroupStruct group )
 	}
 	else 
 	{
-		RechargePlayerAbilities( group.player1 )
-		RechargePlayerAbilities( group.player2 )
+		thread RechargePlayerAbilities( group.player1 )
+		thread RechargePlayerAbilities( group.player2 )
 	}
 }
 
