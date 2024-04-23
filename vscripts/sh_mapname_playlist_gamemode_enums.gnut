@@ -38,6 +38,7 @@ global enum eMaps
 	mp_lobby, //19
 	mp_rr_habitat, //20
 	mp_rr_arena_phase_runner, //21
+	mp_rr_desertlands_mu3, //22
 	
 	
 	_MAP_COUNT //LAST
@@ -127,6 +128,7 @@ struct
 		"mp_lobby", //19
 		"mp_rr_habitat", //20
 		"mp_rr_arena_phase_runner", //21
+		"mp_rr_desertlands_mu3", //22
 		
 		
 		"_MAP_COUNT" //LAST
