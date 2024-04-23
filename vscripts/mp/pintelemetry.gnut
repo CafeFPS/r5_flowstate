@@ -241,7 +241,7 @@ const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAcc
 const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
 
-const array<string> EventTypes = [
+const array<string> ServerMsgEventTypes = [
 
 		"start",
 		"end"
@@ -3084,7 +3084,7 @@ void function INIT_IntervalMessages()
 						sqerror(format("Cannot add msg #[ %d ] to MessageEvents, improper format", iMessageNum ))
 					}
 				}
-				else if( EventTypes.contains( sm0Match ) && sM1.len() > 0 && sM1.len() < 1000 )
+				else if( ServerMsgEventTypes.contains( sm0Match ) && sM1.len() > 0 && sM1.len() < 1000 )
 				{
 					switch( sm0Match )
 					{
@@ -3852,8 +3852,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		
 		//This for loop is fine, it should never really exceed 2-5 attackers on the same victim. Even if it's server limit, it's relatively close to O(1)	
 		for ( int i = 0; i < player_handles.len(); ++i ) 
-		{
-			
+		{		
 			attackerShots = 0
 			attackerSuperglides = 0
 			attackerJumps = 0
@@ -3887,36 +3886,35 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 			logString += format("{%s}{%s} dealt:Recap: {%.2f} total damage in {%d} hits with weapon(s), headshots: {%d}, Total Jumps: {%d}, Total Shots: {%d}, Superglides: {%d};",
 								GetPlayerIdFromHandle(player_handles[i]), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i], playerTotalHeadshots[i], attackerJumps, attackerShots, attackerSuperglides);
 								
-								//DEBUG
-								//sqprint(format("Total shots for fight: %d", attackerShots));
-								
-								AddToPlayerDamage( GetPlayerIdFromHandle(player_handles[i]), playerTotalDamages[i] )
-								
-								//*move to gametype specific in future
-								if ( g_bLGmode )
-								{
-									if (IsValid( attacker ) && IsValid( victim ) )
-									{
-										RecapStats( attacker, playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat(), victim.p.name, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat()  )
-									}
-								}
-								
-								if( g_bIs1v1 )
-								{
-									if( IsValid( attacker ) )
-									{
-										soloGroupStruct group = returnSoloGroupOfPlayer( attacker )
-									
-										if ( IsValid( group ) )
-										{
-											if( group.IsKeep )
-											{
-												addStatsToGroup( attacker, group, playerTotalDamages[i], playerTotalHits[i], playerTotalShots[i], true )
-											}
-										}
-									}
-								}
-								
+			//DEBUG
+			//sqprint(format("Total shots for fight: %d", attackerShots));
+			
+			AddToPlayerDamage( GetPlayerIdFromHandle(player_handles[i]), playerTotalDamages[i] )
+			
+			//*move to gametype specific in future
+			if ( g_bLGmode )
+			{
+				if (IsValid( attacker ) && IsValid( victim ) )
+				{
+					RecapStats( attacker, playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat(), victim.p.name, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat()  )
+				}
+			}
+			
+			if( g_bIs1v1 )
+			{
+				if( IsValid( attacker ) )
+				{
+					soloGroupStruct group = returnSoloGroupOfPlayer( attacker )
+				
+					if ( IsValid( group ) )
+					{
+						if( group.IsKeep )
+						{
+							addStatsToGroup( attacker, group, playerTotalDamages[i], playerTotalHits[i], playerTotalShots[i], true )
+						}
+					}
+				}
+			}						
 		}
 		
 		
@@ -4631,9 +4629,9 @@ int function GetPlayerMetricsIndex( entity player )
 		return -1;
 	}
 	
-    if ( player.GetPlatformUID() in PlayerIdMap ) 
+    if ( player.p.UID in PlayerIdMap ) 
 	{
-        return PlayerIdMap[player.GetPlatformUID()];
+        return PlayerIdMap[player.p.UID];
     }
 	
     return -1; 
@@ -4660,8 +4658,7 @@ int function UpdatePlayerMap( string uid )
 
 int function InitializePlayerMetricsStructForPlayerByUID( string playerID )
 {
-	entity p;
-	
+	entity p;	
 	return InitializePlayerMetricsStructForPlayer( p, playerID )
 }
 

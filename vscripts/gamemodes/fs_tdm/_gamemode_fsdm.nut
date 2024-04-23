@@ -5741,6 +5741,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		LocalMsg( player, "#FS_NotAllowedWaiting" )
 		return false
 	}
+	
+	if( is1v1EnabledAndAllowed() && !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
+	{
+		LocalMsg( player, "#FS_CustomWepChalOnly" )
+		return false
+	}
 
 	if( is1v1EnabledAndAllowed() && args[0] != "p" && args[0] != "s" )
 		return false

@@ -31,6 +31,7 @@ global function addStatsToGroup
 global function getBotSpawn
 global function RechargePlayerAbilities
 global function isCustomWeaponAllowed
+global function isPlayerInChallenge
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -178,7 +179,6 @@ array<string> Weapons = []
 array<string> WeaponsSecondary = []
 vector IBMM_COORDINATES
 vector IBMM_ANGLES
-bool bIsKarma
 float REST_GRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
@@ -353,7 +353,6 @@ bool function isPlayerInProgress( entity player )
 void function INIT_Flags()
 {
 	settings.bGiveSameRandomLegendToBothPlayers		= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
-	bIsKarma 										= GetCurrentPlaylistVarBool( "karma_server", false )
 	settings.bAllowLegend 							= GetCurrentPlaylistVarBool( "give_legend", true )
 	settings.bAllowAbilities 						= GetCurrentPlaylistVarBool( "give_legend_tactical", true ) //challenge only
 	settings.bChalServerMsg 						= bBotEnabled() ? GetCurrentPlaylistVarBool( "challenge_recap_server_message", true ) : false;
@@ -516,8 +515,7 @@ void function INIT_1v1_sbmm()
 		//base values
 		file.lifetime_kd_weight = 1
 		file.current_kd_weight = 1
-		file.SBMM_kd_difference = 3
-	
+		file.SBMM_kd_difference = 3	
 	}
 
 }
@@ -2115,6 +2113,18 @@ void function groupRecapStats(entity player, float damage, int hits, int shots, 
 	}
 }
 
+bool function isPlayerInChallenge( entity player )
+{
+	soloGroupStruct group = returnSoloGroupOfPlayer( player )
+	
+	if( !isGroupValid( group ) || !group.IsKeep )
+	{
+		return false
+	}
+	
+	return true
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2219,12 +2229,12 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 					}
 					
 					//string sTryAgain = format("Or.. try again in: %d seconds", floor( fTryAgainIn.tointeger() ) )
-					string sTryAgain = format( " %s", floor( fTryAgainIn.tointeger() ) )
+					string sTryAgain = format( " %d", floor( fTryAgainIn.tointeger() ) )
 					#if DEVELOPER
 						sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
 					//Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
-					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", 3, 0, "", sTryAgain )
+					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", 0, 5, "", sTryAgain )
 					player.p.rest_request = true;
 					return true
 				}
@@ -2252,10 +2262,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 		}
 		else 
 		{
-			LocalMsg( player, "#FS_YouAreResting", restText, 5, 0, "", restFlag )
+			LocalMsg( player, "#FS_YouAreResting", restText, 0, 5, "", restFlag )
 		}
 		
 		thread soloModePlayerToRestingList(player)
+		
 		try
 		{
 			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
@@ -2516,7 +2527,7 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	LocalMsg( player, "#FS_WaitingForPlayers", "", 1, 300 )
+	LocalMsg( player, "#FS_IN_QUEUE", "", 1, 300 )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 
@@ -2528,7 +2539,8 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 	{  
         return;
     }
-	if(player == opponent)
+	
+	if( player == opponent )
 	{
 		// Warning("Try to add same players to InProgress list:" + player.GetPlayerName())
 		player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
@@ -2537,7 +2549,7 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 	
     player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent);
     opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player);
-	//Message_New( player, "", 1 ) //??? ""  ?????
+	//Message_New( player, "", 1 ) //
 	LocalMsg( player, "#FS_NULL", "", 1, 1 )
 
     if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
@@ -2651,6 +2663,7 @@ void function soloModePlayerToRestingList(entity player)
 
 	//deleteSoloPlayerResting( player ) // ??why do we do this (replaced with my functions as well)
 	addSoloPlayerResting( player ) // ??
+	LocalMsg( player, "#FS_RESTING", "", 1, 300 )
 }
 
 void function soloModefixDelayStart(entity player)
@@ -2823,7 +2836,7 @@ void function PlayerRestoreHP_1v1(entity player, float health, float shields)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
 	else if(shields <= 100)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-	else if( !bIsKarma && shields <= 125 )
+	else if(shields <= 125 )
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv5", "armor")
 
 	player.SetShieldHealth( shields )
@@ -3973,13 +3986,14 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				newGroup.GROUP_INPUT_LOCKED = false;
 			}
 			
-			thread soloModePlayerToInProgressList(newGroup)
+			thread soloModePlayerToInProgressList( newGroup )
 
-			foreach (index,eachPlayer in players )
+			foreach ( index, eachPlayer in players )
 			{
+				LocalMsg( eachPlayer, "#FS_MATCHED", "", 1, 1 ) //reset in queue msg
 				EnableOffhandWeapons( eachPlayer )
 				DeployAndEnableWeapons( eachPlayer )
-				thread respawnInSoloMode(eachPlayer, index)
+				thread respawnInSoloMode( eachPlayer, index )
 			}
 			
 			GiveWeaponsToGroup( players )
@@ -4387,7 +4401,6 @@ void function ForceAllRoundsToFinish_solomode()
 
 vector function Return_Loc_Data( string _type )
 {
-	
 	//string map = GetMapName(); //better set as global string
 	int map = MapName()
 	vector coordinates = < 0,0,0 >
@@ -4396,7 +4409,7 @@ vector function Return_Loc_Data( string _type )
 	if ( _type == "matching_inputs_coordinates" ) 
 	{
 	
-		switch(map)
+		switch( map )
 		{
 			
 			case eMaps.mp_rr_arena_composite:
@@ -4404,8 +4417,7 @@ vector function Return_Loc_Data( string _type )
 				coordinates = < 6.94531, 687.949, 286.174 >
 				return coordinates
 				break
-			
-			
+					
 			case eMaps.mp_rr_aqueduct:
 				
 				coordinates = < 717.151, -5387.85, 580.00 >
@@ -4438,34 +4450,34 @@ vector function Return_Loc_Data( string _type )
 	else if ( _type == "matching_inputs_angles" ) 
 	{
 
-		switch(map)
+		switch( map )
 		{
 			
-			case "mp_rr_arena_composite":
+			case eMaps.mp_rr_arena_composite:
 			
 				angles = < 5.64701, 87.8268, 0 >
 				return angles
 				break
 			
 			
-			case "mp_rr_aqueduct":
+			case eMaps.mp_rr_aqueduct:
 			
 				angles = < 355.891, 88.4579, 0 >
 				return angles
 				break
 			
-			case "mp_rr_canyonlands_staging":
+			case eMaps.mp_rr_canyonlands_staging:
 			
 				angles = < 358.91, 268.637, 0 >
 				return angles
 				break
 				
-			case "mp_rr_canyonlands_64k_x_64k":
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
 				angles = < 356.297, 45.561, 0 >
 				return angles
 				break
 				
-			case "mp_rr_party_crasher":
+			case eMaps.mp_rr_party_crasher:
 				angles = < 1822.39, -3977.1, 626.106 >
 				return angles
 				break
@@ -4485,32 +4497,32 @@ vector function Return_Loc_Data( string _type )
 		switch(map)
 		{
 			
-			case "mp_rr_arena_composite":
+			case eMaps.mp_rr_arena_composite:
 			
 				coordinates = < -3, 687.949, 300.174 >
 				return coordinates
 				break
 			
 			
-			case "mp_rr_aqueduct":
+			case eMaps.mp_rr_aqueduct:
 				
 				coordinates = < 717.151, -5387.85, 600.00 >
 				return coordinates
 				break
 			
-			case "mp_rr_canyonlands_staging":
+			case eMaps.mp_rr_canyonlands_staging:
 				
 				coordinates = < 3480.93, -8729.28, -10144.3 >
 				return coordinates
 				break
 			
 			
-			case "mp_rr_canyonlands_64k_x_64k":
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
 				coordinates = < -532.278, 20713.6, 4850.00 >
 				return coordinates
 				break
 				
-			case "mp_rr_party_crasher":
+			case eMaps.mp_rr_party_crasher:
 				coordinates = < 1785, -3835.48, 810.953 >
 				return coordinates 
 				break
@@ -4531,30 +4543,30 @@ vector function Return_Loc_Data( string _type )
 		switch(map)
 		{
 			
-			case "mp_rr_arena_composite":
+			case eMaps.mp_rr_arena_composite:
 			
 				angles = < 0, 90, 0 >;
 				return angles
 				break
 			
-			case "mp_rr_aqueduct":
+			case eMaps.mp_rr_aqueduct:
 			
 				angles = < 355.891, 88.4579, 0 >
 				return angles
 				break
 			
-			case "mp_rr_canyonlands_staging":
+			case eMaps.mp_rr_canyonlands_staging:
 			
 				angles = < 358.91, 268.637, 0 >
 				return angles
 				break
 			
-			case "mp_rr_canyonlands_64k_x_64k":
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
 				angles = < 356.297, 45.561, 0 >
 				return angles
 				break
 				
-			case "mp_rr_party_crasher":
+			case eMaps.mp_rr_party_crasher:
 				angles = < 0, 105, 0 >
 				return angles 
 				break
@@ -4752,7 +4764,8 @@ void function _CleanupPlayerEntities( entity player )
 
 LocPair function getBotSpawn()
 {	
-	LocPair move;
+	LocPair move
+	
 	switch( MapName() )
 	{
 		case eMaps.mp_rr_arena_composite:
@@ -4776,6 +4789,20 @@ LocPair function getBotSpawn()
 	return move
 }
 
+/*{
+"725342087": "Bangalore",
+"898565421": "Bloodhound",
+"1111853120": "Caustic",
+"80232848": "Crypto",
+"182221730": "Gibraltar",
+"1409694078": "Lifeline",
+"2045656322": "Mirage",
+"843405508": "Octane",
+"1464849662": "Pathfinder",
+"187386164": "Wattson",
+"827049897": "Wraith",
+}*/
+
 const array<int> LegendGUID_EnabledPassives = [
 	
 	725342087, //ref character_bangalore
@@ -4787,7 +4814,9 @@ const array<int> LegendGUID_EnabledUltimates = [
 	898565421, //ref character_bloodhound
 	187386164, //ref character_wattson
 	2045656322, //ref character_mirage
-	843405508 //ref character_octane
+	843405508, //ref character_octane
+	827049897, //ref character_wraith
+	1464849662, //ref character_pathfinder
 
 ]
 
@@ -4800,7 +4829,6 @@ void function RechargePlayerAbilities( entity player )
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))
 	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
 	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )	
-	ReloadTacticalAbility( player )
 	
 	int charID = ItemFlavor_GetGUID( character )
 	
@@ -4815,21 +4843,38 @@ void function RechargePlayerAbilities( entity player )
 		*/
 	}
 
-	if( LegendGUID_EnabledUltimates.contains( charID ) || is3v3Mode() ) 
+	wait 0.5
+	
+	if( is3v3Mode() || LegendGUID_EnabledUltimates.contains( charID ) ) 
 	{
 		ItemFlavor ultiamteAbility = CharacterClass_GetUltimateAbility( character )
 		player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultiamteAbility ), OFFHAND_ULTIMATE, [] )
 	}
-
 	
-	if(IsValid(player.GetOffhandWeapon( OFFHAND_INVENTORY )))
-	player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
-
-	if(IsValid(player.GetOffhandWeapon( OFFHAND_LEFT )))
+	entity wep = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	
+	if( IsValid( wep ) )
 	{
-		player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
-		
-		//Fix for grapple not recharging after grappling server created props
+		wep.SetWeaponPrimaryClipCount( wep.GetWeaponPrimaryClipCountMax() )
+	}
+	
+	ReloadTactical( player )
+}
+
+void function ReloadTactical( entity player )
+{	
+	entity weapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+	
+	if ( IsValid( weapon ) )
+	{
+		int max = weapon.GetWeaponPrimaryClipCountMax()
+		weapon.SetNextAttackAllowedTime( Time() )
+
+		if ( weapon.IsChargeWeapon() )
+			weapon.SetWeaponChargeFractionForced( 0 )
+		else if ( max > 0 )
+			weapon.SetWeaponPrimaryClipCount( max )
+			
 		player.SetSuitGrapplePower(100)
 	}
 }

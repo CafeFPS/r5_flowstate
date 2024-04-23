@@ -179,7 +179,11 @@ struct {
 		"#FS_PUSHDOWN",
 		"#FS_SPACE",
 		"#FS_OVERFLOW_TEST",
-		"#FS_CUSTOM_WEAPON_CHAL_ONLY"
+		"#FS_CUSTOM_WEAPON_CHAL_ONLY",
+		"#FS_CustomWepChalOnly",
+		"#FS_IN_QUEUE",
+		"#FS_MATCHED",
+		"#FS_RESTING"
 		
 	]
 	
