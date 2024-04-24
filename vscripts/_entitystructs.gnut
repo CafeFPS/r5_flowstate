@@ -1019,6 +1019,7 @@ global struct ServerPlayerStruct
 	vector currentAngles
 	bool recorderHideHud
 	bool continueLoop = true
+	array<entity> dummyList
 }
 
 global struct ChallengeScore

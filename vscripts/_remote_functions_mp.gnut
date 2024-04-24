@@ -87,6 +87,7 @@ void function RemoteFunctions_Init_Begin()
 		case eGamemodes.fs_dm:
 			if( Playlist() == ePlaylists.fs_scenarios )
 			{
+				Remote_RegisterClientFunction( "FS_Scenarios_ChangeAliveStateForPlayer", "int", INT_MIN, INT_MAX, "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_TogglePlayersCardsVisibility", "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_SetupPlayersCards" )
 				
