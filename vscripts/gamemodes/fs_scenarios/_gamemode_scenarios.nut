@@ -974,6 +974,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					soloModePlayerToWaitingList( player )
 					DecideRespawnPlayer( player, false )
 					HolsterAndDisableWeapons( player )
+
+					foreach( splayer in players )
+						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
+
 					printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
 					continue
 				}
