@@ -25,12 +25,6 @@ global enum eTDMState
 	NEXT_ROUND_NOW = 1
 }
 
-global struct LocPair
-{
-    vector origin = <0, 0, 0>
-    vector angles = <0, 0, 0>
-}
-
 global struct LocationSettings
 {
     string name

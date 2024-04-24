@@ -69,7 +69,6 @@ void function GamemodeSurvival_Init()
 	AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
 	AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
 	AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
-	AddClientCommandCallback("startMovementRecorder", ClientCommand_MovementRecorder)
 	// #endif
 
 	FillSkyWithClouds()
@@ -83,18 +82,6 @@ void function GamemodeSurvival_Init()
 	)
 
 	thread SURVIVAL_RunArenaDeathField()
-}
-
-bool function ClientCommand_MovementRecorder(entity player, array<string> args)
-{
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return false
-	
-	if( args.len() == 0 )
-		return false
-
-	thread StartMovementRecorder( player, args[0].tofloat() )
-	return true
 }
 
 bool function ClientCommand_GiveSword(entity player, array<string> args)
@@ -1213,8 +1200,8 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
 		return
-	} else if ( IsSurvivalTraining() )
-	{
+		} else if ( IsSurvivalTraining() )
+		{
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return

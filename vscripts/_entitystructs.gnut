@@ -1008,6 +1008,17 @@ global struct ServerPlayerStruct
 	bool startingSuperAlready
 	
 	bool IsBot = false
+
+	int movementRecorderCharacter = 0
+	array< var > recordingAnims
+	array< LocPair > recordingAnimsCoordinates
+	array< int > recordingAnimsChosenCharacters
+
+	bool isRecording = false
+	vector currentOrigin
+	vector currentAngles
+	bool recorderHideHud
+	bool continueLoop = true
 }
 
 global struct ChallengeScore

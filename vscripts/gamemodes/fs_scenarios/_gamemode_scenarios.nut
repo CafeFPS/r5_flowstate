@@ -110,6 +110,7 @@ void function Init_FS_Scenarios()
 	teamSlots[ 0 ] = true
 	teamSlots[ 1 ] = true
 	teamSlots[ 2 ] = true
+	
 	for (int i = 1; i < teamSlots.len(); i++)
 	{
 		teamSlots[ i ] = false
