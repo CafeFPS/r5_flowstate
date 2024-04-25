@@ -1112,16 +1112,17 @@ void function ClearActiveProjectilesForTeam( int team, vector searchOrigin = <0,
 void function ClearActiveProjectilesForRealm( int realm )
 {
 	array<entity> projectiles = GetProjectileArray()
-
-	printt( "cleaning up", projectiles.len(), "weapon projectiles for realm", realm )
-
+	int count = 0
 	foreach ( proj in projectiles )
 	{
 		if( !IsValid( proj ) || !proj.IsInRealm( realm ) )
 			continue
 
 		proj.Destroy()
+		count++
 	}
+
+	printt( "cleaning up", count, "weapon projectiles for realm", realm )
 }
 
 void function RestockPlayerAmmo_Silent( entity player = null )

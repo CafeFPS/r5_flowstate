@@ -2618,7 +2618,18 @@ void function PROTO_InitTrackedProjectile( entity projectile )
 
 void function AddToTrackedEnts( entity player, entity ent )
 {
-	AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
+	if( is3v3Mode() )
+	{
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 	
+		if( IsValid( group ) )
+		{
+			AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
+			printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+		}
+	} else
+	{
+		AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
+	}
 }
 
 void function PROTO_CleanupTrackedProjectiles( entity player )

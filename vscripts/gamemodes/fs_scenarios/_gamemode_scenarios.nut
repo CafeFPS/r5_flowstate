@@ -44,6 +44,8 @@ global struct scenariosGroupStruct
 	array<entity> groundLoot
 	array<entity> lootbins
 	array<entity> doors
+	
+	int trackedEntsArrayIndex
 }
 
 struct doorsData
@@ -943,6 +945,21 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team2Index, false )
 
+				//Some abilities designed to stay like, bombardments, zipline, care package, decoy, grenades
+				//should be destroyed when the scenarios round ends and not when the player dies
+
+				array<entity> ents = GetScriptManagedEntArray( group.trackedEntsArrayIndex )
+				foreach ( ent in ents )
+				{
+					if( IsValid( ent ) )
+					{
+						printt( "tracked ent", ent, "destroyed" )
+						ent.Destroy()
+					}
+				}
+
+				DestroyScriptManagedEntArray( group.trackedEntsArrayIndex )
+
 				foreach( player in players )
 				{
 					if( !IsValid( player ) )
@@ -1094,6 +1111,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			continue
 		}
 		
+		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
+		printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
 		//Send teams to fight
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
