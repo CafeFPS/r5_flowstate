@@ -55,6 +55,7 @@ global function FS_Scenarios_AddAllyHandle
 global function FS_Scenarios_AddEnemyHandle
 
 global function FS_Scenarios_SetupPlayersCards
+global function FS_Scenarios_ChangeAliveStateForPlayer
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -1777,6 +1778,7 @@ void function FS_Scenarios_AddEnemyHandle( int handle )
 	if( !IsValid( enemyPlayer ) )
 		return
 
+	// printt( "added handle for enemy team player", handle )
 	file.enemyTeamHandles.append( handle )
 }
 
@@ -1790,6 +1792,7 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 	if( !IsValid( allyPlayer ) )
 		return
 
+	// printt( "added handle for ally team player", handle )
 	file.allyTeamHandles.append( handle )
 }
 
@@ -1868,5 +1871,26 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 		file.allyTeamHandles.clear()
 		file.enemyTeamHandles.clear()
 		FS_Scenarios_InitPlayersCards()
+	}
+}
+
+void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
+{
+	foreach( int i, int handle in file.allyTeamHandles )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", alive )
+			return
+		}
+	}
+	
+	foreach( int i, int handle in file.enemyTeamHandles )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
+			return
+		}
 	}
 }

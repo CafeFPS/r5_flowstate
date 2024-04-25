@@ -167,11 +167,11 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	file.inputHintLines.append( hintRui8 )
 
 	var hintRui9 = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
-	RuiSetString( hintRui9, "buttonText", "%F11%" )
-	RuiSetString( hintRui9, "gamepadButtonText", "%F11%" )
-	RuiSetString( hintRui9, "hintText", "Character: Wraith" )
+	RuiSetString( hintRui9, "buttonText", "%F12%" )
+	RuiSetString( hintRui9, "gamepadButtonText", "%F12%" )
+	RuiSetString( hintRui9, "hintText", "Loop Anim: ON" )
 	RuiSetString( hintRui9, "altHintText", "" )
-	RuiSetInt( hintRui9, "hintOffset", 7 )
+	RuiSetInt( hintRui9, "hintOffset", 8 )
 	RuiSetBool( hintRui9, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui9 )
 
@@ -180,7 +180,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 	RuiSetString( hintRui10, "gamepadButtonText", "%$rui/menu/buttons/tip%" )
 	RuiSetString( hintRui10, "hintText", "Crouch + Slot to clear" )
 	RuiSetString( hintRui10, "altHintText", "" )
-	RuiSetInt( hintRui10, "hintOffset", 8 )
+	RuiSetInt( hintRui10, "hintOffset", 9 )
 	RuiSetBool( hintRui10, "hideWithMenus", false )
 	file.inputHintLines.append( hintRui10 )
 }
@@ -223,12 +223,24 @@ void function FS_MovementRecorder_UpdateHints( int hint, bool state, float durat
 
 			default:
 			characterToUse = "Wraith"
+			break
 		}
 		RuiSetString( file.inputHintLines[hint], "hintText", "Character: " + characterToUse )
 		return
 	}
 
-	if( state )
+	if( hint == 8 && state )
+	{
+		RuiSetString( file.inputHintLines[hint], "hintText", "Loop Anim: ON" )
+		return
+	}
+	else if( hint == 8 && !state )
+	{
+		RuiSetString( file.inputHintLines[hint], "hintText", "Loop Anim: OFF" )
+		return
+	}
+
+	if( state )	
 	{
 		DisplayTime dt = SecondsToDHMS( duration.tointeger() )
 		RuiSetString( file.inputHintLines[hint], "hintText", "Slot " + hint + " - Play " + format( "%.2d:%.2d", dt.minutes, dt.seconds ) )
@@ -379,11 +391,11 @@ bool function ClientCommand_ToggleContinueLoop(entity player, array<string> args
 	if( player.p.continueLoop )
 	{
 		player.p.continueLoop = false
-		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, true, -1 )
+		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, false, -1 )
 	} else if( !player.p.continueLoop )
 	{
 		player.p.continueLoop = true
-		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, false, -1 )
+		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, true, -1 )
 	}
 	return true
 }
@@ -483,10 +495,9 @@ void function StopRecordingAnimation( entity player )
 	}
 }
 
-array<entity> dummyList;
 void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 {
-	player.EndSignal("EndDummyThread")
+	svGlobal.levelEnt.EndSignal("EndDummyThread")
 
 	printt( "playaniminslot", slot )
 
@@ -574,21 +585,22 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
 		// dummy.SetRecordedAnimationPlaybackRate( 1.0 )
 		dummy.Show()
-		
-		waitthread function () : ( anim, dummy )
+
+		if( IsValid( player ) )
+			player.p.dummyList.append( dummy )
+
+		waitthread function () : ( player, anim, dummy )
 		{
 			EndSignal(dummy, "OnDeath")
 			EndSignal(dummy, "OnDestroy")
-			
-			dummyList.append(dummy)
-			
+
 			wait GetRecordedAnimationDuration( anim )
 			
 			if(!IsValid(dummy)) return
 			
-			if(dummyList.contains(dummy))
-				dummyList.removebyvalue(dummy)
-			
+			if( IsValid( player ) && player.p.dummyList.contains( dummy ) )
+				player.p.dummyList.removebyvalue( dummy )
+
 			dummy.Destroy()
 		}()
 
@@ -664,20 +676,9 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 
 void function DestroyDummys()
 {
-	entity player = GetPlayerArray()[0]
-	
-	if( IsValid( player ))
+	if( IsValid( svGlobal.levelEnt ))
 	{
-		player.Signal("EndDummyThread")
+		svGlobal.levelEnt.Signal("EndDummyThread")
 	}
-	
-    player.p.continueLoop = false
-
-    while (dummyList.len() > 0)
-    {
-        entity dummy = dummyList.pop()
-        if (IsValid(dummy))
-            dummy.Destroy()
-    }
 }
 #endif //IF SERVER
