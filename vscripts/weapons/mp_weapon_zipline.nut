@@ -249,6 +249,7 @@ void function CreateGunZipline( entity weapon, vector startPos, vector endPos, v
 	zipline_start.kv.ZiplineBreakableBasePosition = startBasePos.x + " " + startBasePos.y + " " + startBasePos.z
 	zipline_start.kv.ZiplineVertical = isSteep
 	zipline_start.kv.ZiplinePreserveVelocity = isSteep
+	zipline_start.kv.ZiplineSpeedScale = 1.666666 //retail value
 
 	zipline_start.SetParent( startModel, "ATTACH_TOP_ROPE", false, 0.0 )
 
