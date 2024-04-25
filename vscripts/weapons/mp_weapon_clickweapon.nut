@@ -44,15 +44,16 @@ bool modifyingLocalBeam = true
 
 const asset TheBestAssetInTheGame = $"P_tesla_trap_link_CP"
 
-struct BeamSettings {
-#if CLIENT 
+struct BeamSettings 
+{
+	#if CLIENT 
 
-	float offset = -30
-	int R = 0
-	int G = 0
-	int B = 0
+		float offset = -30
+		int R = 0
+		int G = 0
+		int B = 0
 
-#endif 
+	#endif 
 }
 
 struct{
@@ -61,7 +62,7 @@ struct{
 		table<entity, entity> handmover
 		table<entity, entity> beammover
 		table<entity, entity> healthBars
-		table<string, BeamSettings > allBeamSettings = {} // string local/enemy
+		table<string, BeamSettings > allBeamSettings = {} // string: local/enemy
 	#endif
 }file
 
@@ -77,6 +78,10 @@ void function DEV_PrintBeams()
 void function LGDuels_UpdateSettings( bool isLocal = true, ... )
 {
 	CheckBeamSettingsExist() //maybe only init in playercreated
+	
+	// The following code assumes float is used for offset and passed to this function by itself
+	// It also assumes RGB are passed as int arguments and in the correct order in passed parameters
+	// as vargs 0, 1, 2
 	
 	for ( int i = 0; i <= vargc - 1; i++)
 	{
@@ -478,7 +483,8 @@ void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity 
 	
 	while( true )
 	{
-		WaitFrame()
+		WaitFrame() //possibly revisit poll time ? ~mkos
+		//wait 0.005
 
 		if( !IsValid( player ) )
 			break
@@ -490,7 +496,7 @@ void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity 
 			file.healthBars[player] = vgui
 		}
 
-		if( !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
+		if( !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) || !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
 		{
 			foreground.Hide()
 			background.Hide()

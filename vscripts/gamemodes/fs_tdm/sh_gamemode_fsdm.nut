@@ -1818,6 +1818,7 @@ struct {
 	bool Flowstate_Is_Canyon_Staging
 	bool Flowstate_IsHaloMode
 	bool Flowstate_DisableAllMapTriggers
+	bool Flowstate_Is_gamemode_1v1_type
 	
 } SH_flowstateSettings
 
@@ -1909,6 +1910,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
 }
 
 // Playlist GET
@@ -1988,8 +1990,6 @@ int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstate
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
 bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
 bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
-
-//these remain but should eventually change to use MapName() & PlaylistName() compared with eMap.mapname and ePlaylist.playlistname respectively
 bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
 bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
 bool function Flowstate_IsDmOddball()							{ return SH_flowstateSettings.Flowstate_dm_oddball }
@@ -1999,7 +1999,7 @@ bool function Flowstate_IsFastInstaGib()						{ return SH_flowstateSettings.Flow
 bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_fs_dm }
 bool function Flowstate_IsMapPartyCrasher()						{ return SH_flowstateSettings.Flowstate_Is_PartyCrasher }
 bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettings.Flowstate_Is_Canyon_Staging }
-
+bool function Flowstate_IsGame1v1Type() 						{ return SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type }
 
 #if SERVER   
 bool function Equipment_GetRespawnKitEnabled()                       { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }

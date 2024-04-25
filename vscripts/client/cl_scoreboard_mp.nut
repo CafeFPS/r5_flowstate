@@ -441,7 +441,7 @@ void function ShowScoreboardMP()
 	int maxPlayerDisplaySlots = GetNumPlayersToDisplayAsATeam()
 	bool firstUpdate = true
 
-	while( true )
+	while( true ) //TODO : revisit
 	{
 		localPlayer = GetLocalClientPlayer()
 

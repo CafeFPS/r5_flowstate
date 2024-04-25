@@ -259,20 +259,17 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
+		
 		if( Playlist() == ePlaylists.fs_dm )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 
-		if( Playlist() == ePlaylists.fs_1v1 )
+		if( uiGlobal.is1v1GameType ) //initialized after level load
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
-		}
-		else 
-		{
-			printt("wtf?")
 		}
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )
@@ -294,7 +291,7 @@ void function UpdateSystemPanel( var panel )
 				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
 			}
 		}
-		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		if ( IsFiringRangeGameMode() && !uiGlobal.isAimTrainer )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
 			//SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
@@ -302,7 +299,7 @@ void function UpdateSystemPanel( var panel )
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
-		if( Playlist() == ePlaylists.fs_dm && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		if( Playlist() == ePlaylists.fs_dm && !uiGlobal.playlistbool_flowstate_1v1mode )
 		{
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
@@ -343,7 +340,7 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if(IsConnected() && Playlist() == ePlaylists.fs_aimtrainer)
+	if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")

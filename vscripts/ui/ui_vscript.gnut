@@ -304,6 +304,10 @@ global struct UIGlobals
 	bool isOptInEnabled = false
 
 	table	matchPinData = {}
+	
+	bool 	is1v1GameType
+	bool 	isAimTrainer
+	bool 	playlistbool_flowstate_1v1mode
 }
 
 global UIGlobals uiGlobal
@@ -325,6 +329,7 @@ void function UICodeCallback_UIInit()
 	LevelVarInit()
 	
 	AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
+	AddUICallback_OnLevelInit( Load_Level_based_UIGlobals )
 
 	VPKNotifyFile( "media/intro_captions.txt" )
 	VPKNotifyFile( "cfg/startup.cfg" )
@@ -478,4 +483,16 @@ void function AddUICallback_InputModeChanged( void functionref( bool ) callbackF
 void function AddUICallback_KeyBindSet( void functionref( string, string ) callbackFunc )
 {
 	uiGlobal.keyBindSetCallbacks.append( callbackFunc )
+}
+
+
+void function Load_Level_based_UIGlobals()
+{
+	#if UI 
+	
+		uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
+		uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
+		uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
+	
+	#endif 
 }

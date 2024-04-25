@@ -268,17 +268,25 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 	UpdateDevMenuButtons()
 }
 
+array<int> allowedWeaponChangeModes = [
+	
+	ePlaylists.fs_dm,
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_scenarios
+]
+
 void function SetupDefaultDevCommandsMP()
 {
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
 	
-	if( Playlist() == ePlaylists.fs_dm || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_scenarios )
+	if( allowedWeaponChangeModes.contains( Playlist() ) )
 	{
-		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
-		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
-		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
-		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
+		SetupDevMenu( "FSDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
+		SetupDevMenu( "FSDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
+		SetupDevCommand( "FSDM: Save Current Weapons", "saveguns" )
+		SetupDevCommand( "FSDM: Reset Saved Weapons", "resetguns" )
 	}
 
 	if(GetCheatsState()){

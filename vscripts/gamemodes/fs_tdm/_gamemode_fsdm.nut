@@ -332,7 +332,7 @@ int function GetCurrentRound()
 
 void function INIT_LGDuels_Player( entity player )
 {
-	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged ) //was thread?why?
+	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
 	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
 	
@@ -422,17 +422,16 @@ void function Thread_CheckInput( entity player )
 					isCheckerRunning = false
 					timesCheckedForNewInput = 0
 
-					if ( InvalidInput( typeOfInput, player.p.movevalue ) ) {
-					
-                       // HandlePlayer( player ); 
-					   player.p.input = 1
-						
-                    } else {
-					
+					if ( InvalidInput( typeOfInput, player.p.movevalue ) ) 
+					{				
+                       // HandlePlayer( player ) //not used yet
+					   player.p.input = 1					
+                    }
+					else
+					{
                         //sqprint("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
                         player.p.input = typeOfInput;
-						player.Signal("InputChanged") //registered signal in CPlayer class
-						
+						player.Signal("InputChanged") //registered signal in CPlayer class		
                     }
 					continue
 				}
@@ -2510,7 +2509,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	}
 	
 		
-	if( FlowState_ChosenCharacter() > 10 && !GetCurrentPlaylistVarBool( "give_random_custom_models_toall", false ) )
+	if( FlowState_ChosenCharacter() > 10 && !flowstateSettings.give_random_custom_models_toall )
 	{
 		SetPlayerCustomModel( player, FlowState_ChosenCharacter() )
 	} 
@@ -5877,7 +5876,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	player.p.lastTgiveUsedTime = Time()
 	
 	
-		if( ClientCommand_SaveCurrentWeapons( player, [] ) )
+		if( ClientCommand_SaveCurrentWeapons( player, ["1"] ) )
 		{	
 			string sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )
 			//Message( player, "WEAPON " + sWepName + " SAVED")
@@ -5916,6 +5915,13 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 {	
 	if ( !IsValid( player ) ) return false
 	
+	bool single_save = false 
+	
+	if( args.len() > 0 )
+	{
+		single_save = true
+	}
+	
 	entity weapon1
 	entity weapon2
 	string optics1
@@ -5946,7 +5952,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 		else 
 		{	
 			#if DEVELOPER
-			sqerror("Player: " + player.GetPlatformUID() + " Weapon 1 invalid, setting to empty ") 
+				sqerror("Player: " + player.GetPlatformUID() + " Weapon 1 invalid, setting to empty ") 
 			#endif
 			
 			weaponname1 = " ";
@@ -5959,7 +5965,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 		else 
 		{	
 			#if DEVELOPER
-			sqerror("Player: " + player.GetPlatformUID() + " Weapon 2 invalid, setting to empty")
+				sqerror("Player: " + player.GetPlatformUID() + " Weapon 2 invalid, setting to empty")
 			#endif		
 			
 			weaponname2 = "";
@@ -5970,17 +5976,17 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	catch(error)
 	{	
 		#if DEVELOPER
-		sqerror("Error: " + error )
+			sqerror("Error: " + error )
 		#endif
 	}
 	
 	if ( !isPlayerInRestingList( player ) )
 	{
-		if(weaponname1 == "" || weaponname2 == "")
+		if( trim( weaponname1 ) == "" || trim( weaponname2 ) == "" )
 		{	
 			#if DEVELOPER
-			if (weaponname1 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname1 empty") }
-			if (weaponname2 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname2 empty") }
+				if (weaponname1 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname1 empty") }
+				if (weaponname2 == ""){ sqerror("Player: " + player.GetPlatformUID() + " weaponname2 empty") }
 			#endif
 			
 			//Message( player, "FAILED TO SAVE" )
@@ -5990,13 +5996,29 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	}
 	
 	#if DEVELOPER 
-	sqprint( "Player: " + player.GetPlatformUID() + " weaponname1: " + weaponname1 + " weaponname2: " + weaponname2 )
+		sqprint( "Player: " + player.GetPlatformUID() + " weaponname1: " + weaponname1 + " weaponname2: " + weaponname2 )
 	#endif 
 	
 	string concatenate_weps = weaponname1 + "; " + weaponname2;
 	
-	weaponlist[player.GetPlayerName()] <- concatenate_weps;
-	SavePlayer_saved_weapons( player, concatenate_weps )
+	if( !single_save && trim( weaponname1 ) == "" && trim( weaponname2 ) == "" )
+	{
+		LocalMsg( player, "#FS_FAILEDSAVE" )
+		return true
+	}
+	else if ( !single_save )
+	{
+		string subToken = "";
+		if( !isCustomWeaponAllowed() )
+		{
+			subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
+		}
+			
+		LocalMsg( player, "#FS_ALL_WEPS_SAVED", subToken )
+	}
+	
+		weaponlist[player.GetPlayerName()] <- concatenate_weps;
+		SavePlayer_saved_weapons( player, concatenate_weps )
 	
 	return true
 }
@@ -6091,7 +6113,7 @@ void function LoadCustomWeapon(entity player)
 		foreach (index,rweapon in weapons)
 		{	
 			#if DEVELOPER && HAS_TRACKER_DLL
-			sqprint(rweapon)
+				sqprint(rweapon)
 			#endif
 			
 			if ( trim(rweapon) == "" ) continue
@@ -6124,7 +6146,7 @@ void function LoadCustomWeapon(entity player)
 		else 
 		{
 			#if DEVELOPER && HAS_TRACKER_DLL
-			sqerror("Player: " + player.GetPlatformUID() + " has no valid weapon to set: Active" )
+				sqerror("Player: " + player.GetPlatformUID() + " has no valid weapon to set: Active" )
 			#endif
 		}
 		
@@ -6135,15 +6157,17 @@ void function LoadCustomWeapon(entity player)
 //Reset TDM Saved Weapons
 bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 {
-	if (!CheckRate( player )) return false
+	if ( !CheckRate( player ) ) return false
 
-	if (player.GetPlayerName() in weaponlist)
+	if ( player.GetPlayerName() in weaponlist )
 	{
 		delete weaponlist[player.GetPlayerName()]
 	}
 	
 	SavePlayer_saved_weapons( player, "NA" )
 	player.p.weapon_loadout = "NA";
+	
+	LocalMsg( player, "#FS_WEAPONS_RESET" )
 	
 	return true
 }

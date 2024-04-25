@@ -1,4 +1,4 @@
-//script:
+//script init:
 global function PlayLists_Mapnames_Gamemodes_Init
 
 //public:
@@ -7,10 +7,16 @@ global function MapName
 global function Playlist
 global function Gamemode
 
+//utility:
+global function is1v1GameType
+global function AllMapsArray
+global function AllGamemodesArray
+global function AllPlaylistsArray
+
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 // 									MAPNAME / PLAYLIST INIT								//
 //																						//
-//		keep these in order with arrays below between shipped builds										//
+//		keep these in order with arrays below between shipped builds					//
 //																						//
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +45,7 @@ global enum eMaps
 	mp_rr_habitat, //20
 	mp_rr_arena_phase_runner, //21
 	mp_rr_desertlands_mu3, //22
+	mp_rr_construct, //23
 	
 	
 	_MAP_COUNT //LAST
@@ -129,6 +136,7 @@ struct
 		"mp_rr_habitat", //20
 		"mp_rr_arena_phase_runner", //21
 		"mp_rr_desertlands_mu3", //22
+		"mp_rr_construct", //23
 		
 		
 		"_MAP_COUNT" //LAST
@@ -198,6 +206,17 @@ struct
 	
 } SH_globals
 
+
+//this is the global location for defining a mode that is 1v1 based
+const array<int> playlist1v1Types = [
+	
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+]
+
+const array<int> gamemode1v1Types = [
+
+]
 
 void function PlayLists_Mapnames_Gamemodes_Init()
 {
@@ -288,6 +307,30 @@ int function Gamemode()
 	return SH_globals.currentGamemode
 }
 
+array<string> function AllMapsArray()
+{
+	return SH_globals.mapNames
+}
+
+array<string> function AllGamemodesArray()
+{
+	return SH_globals.gamemodes
+}
+
+array<string> function AllPlaylistsArray()
+{
+	return SH_globals.playlists
+}
+
+bool function is1v1GameType() //use for init
+{
+	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
+	{
+		return true
+	}
+	
+	return false
+}
 
 //////////////////////////////////////////
 // placing this here temp (mkos Assert) //
