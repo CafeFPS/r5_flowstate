@@ -442,8 +442,8 @@ void function Sh_CustomTDM_Init()
 	
 	break
 		
-	case "mp_rr_canyonlands_mu1_night":		
-	case "mp_rr_canyonlands_mu1":
+	case eMaps.mp_rr_canyonlands_mu1_night:	
+	case eMaps.mp_rr_canyonlands_mu1:
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Skull Town",
@@ -693,7 +693,7 @@ void function Sh_CustomTDM_Init()
         )		
 
 	break
-	case "mp_rr_canyonlands_64k_x_64k":
+	case eMaps.mp_rr_canyonlands_64k_x_64k:
 		Shared_RegisterLocation(
 				NewLocationSettings(
 					"Skull Town",
@@ -959,7 +959,7 @@ void function Sh_CustomTDM_Init()
 	
 		break
 
-		case "mp_rr_desertlands_64k_x_64k_tt":
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Mirage Voyage",
@@ -979,7 +979,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         //break
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
 			// In development
@@ -1072,8 +1072,8 @@ void function Sh_CustomTDM_Init()
 			// return
 		}
 		break
-        case "mp_rr_desertlands_64k_x_64k":
-        case "mp_rr_desertlands_64k_x_64k_nx":
+        case eMaps.mp_rr_desertlands_64k_x_64k:
+        case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 		    
 		if(FlowState_EnableMovementGym()){
 		
