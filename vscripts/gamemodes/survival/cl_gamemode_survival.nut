@@ -834,13 +834,10 @@ void function InitSurvivalHealthBar()
 		{
 			if(IsValid(player))
 				thread SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
-			
-			if( Playlist() == ePlaylists.fs_movementgym )
-					MG_CustomPilotRUI( player, file.pilotRui )
 		}
 	)
 	
-	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
+	while( !IsValid(player) )
 		WaitFrame()
 }
 

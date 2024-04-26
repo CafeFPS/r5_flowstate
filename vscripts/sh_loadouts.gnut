@@ -473,8 +473,25 @@ void function ShLoadouts_LevelInit_Finish()
 	//	if ( DEV_resendAllCacheData )
 	//		RunClientScript( "UIToClient_ResendAllCacheData" ) // for uiscript_reset
 	//#endif
+
+	//Flowstate custom
+	#if CLIENT
+		LoadoutEntry charC = Loadout_CharacterClass()
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( charC, FS_OnLocalCharacterChanged, false )
+	#endif
 }
 
+
+#if CLIENT
+void function FS_OnLocalCharacterChanged( EHI playerEHI, ItemFlavor unused )
+{
+	// printt( "FS_OnLocalCharacterChanged" )
+	if ( playerEHI != LocalClientEHI() )
+		return
+
+	thread InitSurvivalHealthBar()
+}
+#endif
 
 #if UI
 void function ShLoadouts_LevelShutdown()
@@ -1448,6 +1465,12 @@ void function RefreshLoadoutSlotInternal( EHI playerEHI, LoadoutEntry entry, tab
 		if ( IsLoadoutSlotActive( playerEHI, entry ) )
 		{
 			CallItemFlavorLoadoutSlotDidChangeCallbacks( playerEHI, entry, slotContents )
+
+			// printt( "changed item flavor", ItemFlavor_GetHumanReadableRef( slotContents ) )
+			#if SERVER
+			entity player = FromEHI( playerEHI )
+			Remote_CallFunction_NonReplay( player, "ServerToClient_LoadoutSlotDidChange", playerEHI.GetEncodedEHandle(), entry._____INTERNAL_entryIndex )
+			#endif
 
 			#if SERVER || CLIENT // not required in UI because CLIENT will call ClientToUI_RefreshLoadoutSlot for each dependent anyway
 				if ( slotContents in entry._____INTERNAL_dependentsByItemFlav )
