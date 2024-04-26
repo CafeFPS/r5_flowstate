@@ -13,6 +13,7 @@ global function FS_Scenarios_GetGroundLootEnabled
 global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
+global function FS_Scenarios_GetDropshipEnabled
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveDoorData
@@ -80,12 +81,13 @@ struct {
 struct {
 	bool fs_scenarios_dropshipenabled = false
 	int fs_scenarios_playersPerTeam = 3
+	int fs_scenarios_teamAmount = 2
 
 	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
-	float fs_scenarios_max_queuetime = 150
-	int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
-	int fs_scenarios_maximum_team_allowed = 3
+	// float fs_scenarios_max_queuetime = 150
+	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
+	// int fs_scenarios_maximum_team_allowed = 3
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
@@ -99,9 +101,11 @@ void function Init_FS_Scenarios()
 {
 	settings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
 	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
-	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
-	settings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
-	settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
+	settings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
+	settings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
+	// settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
+	// settings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
+	// settings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
 
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
@@ -119,6 +123,7 @@ void function Init_FS_Scenarios()
 	}
 	SurvivalFreefall_Init()
 	
+	RegisterSignal( "FS_EndDelayedThread" )
 	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
@@ -564,6 +569,11 @@ bool function FS_Scenarios_GetGroundLootEnabled()
 bool function FS_Scenarios_GetInventoryEmptyEnabled()
 {
 	return settings.fs_scenarios_inventory_empty
+}
+
+bool function FS_Scenarios_GetDropshipEnabled()
+{
+	return settings.fs_scenarios_dropshipenabled
 }
 
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
@@ -1046,7 +1056,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				continue
 
 		// Hay suficientes jugadores para crear un equipo?
-		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
+		if( FS_1v1_GetPlayersWaiting().len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 			continue		
 
 		scenariosGroupStruct newGroup
@@ -1070,10 +1080,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 
 		// Hay suficientes jugadores para crear un equipo?
-		if( waitingPlayers.len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
+		if( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 			continue	
 
-		Assert( waitingPlayers.len() < ( settings.fs_scenarios_maximum_team_allowed * 2 ) )
+		Assert( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 
 		printt("------------------MATCHING GROUP------------------")
 
@@ -1127,9 +1137,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			FS_SetRealmForPlayer( player, newGroup.slotIndex )
 
 			FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
-
-			if( settings.fs_scenarios_dropshipenabled )
-				Message_New( player, "Game is starting",  5 )
 		}
 
 		thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
@@ -1178,31 +1185,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
 			}
 		}
-
-		thread function() : ( players, newGroup )
-		{
-			wait 1 // Find a better method to wait for the client to be updated. Cafe
-
-			if( IsValid( newGroup ) && !newGroup.IsFinished )
-			{
-				foreach( player in players )
-				{
-					if( !IsValid( player ) )
-						continue
-
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-				}
-			} else
-			{
-				foreach( player in players )
-				{
-					if( !IsValid( player ) )
-						continue
-	
-					Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false )
-				}
-			}
-		}()
 	}//while(true)
 
 }//thread
@@ -1288,6 +1270,7 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 			group.IsFinished = true //tell solo thread this round has finished
 		}
 	}
+	Signal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 }
 
 #if DEVELOPER

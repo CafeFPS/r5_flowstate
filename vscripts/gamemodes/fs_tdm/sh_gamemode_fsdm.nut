@@ -693,6 +693,35 @@ void function Sh_CustomTDM_Init()
         )		
 
 	break
+	case eMaps.mp_rr_canyonlands_mu2: //todo add more
+		Shared_RegisterLocation(
+				NewLocationSettings(
+					"Slum Lakes",
+					[
+						NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
+						NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
+						NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
+						NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>),
+						NewLocPair(<-25030, 24670, 2410>, <0, -75, 0>),
+						NewLocPair(<-23125, 25320, 2410>, <0, -20, 0>),
+						NewLocPair(<-21925, 21120, 2390>, <0, 180, 0>)
+					],
+					<0, 0, 3000>,$"rui/flowstatelocations/slumlakes"
+				)
+			)
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Airbase",
+                [
+                    NewLocPair(<-24140, -4510, 2583>, <0, 90, 0>),
+                    NewLocPair(<-28675, 612, 2600>, <0, 18, 0>),
+                    NewLocPair(<-24688, 1316, 2583>, <0, 180, 0>),
+                    NewLocPair(<-26492, -5197, 2574>, <0, 50, 0>)
+                ],
+                <0, 0, 3000>,$"rui/flowstatelocations/airbase"
+            )
+        )
+	break
 	case eMaps.mp_rr_canyonlands_64k_x_64k:
 		Shared_RegisterLocation(
 				NewLocationSettings(

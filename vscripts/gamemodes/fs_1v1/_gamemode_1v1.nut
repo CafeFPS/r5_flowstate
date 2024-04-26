@@ -3127,7 +3127,12 @@ void function _soloModeInit( int eMap )
 			WaitingRoom.origin = <-762.59,20485.05,4626.03>
 			WaitingRoom.angles = <0,45,0>
 			break;
-			
+
+		case eMaps.mp_rr_canyonlands_mu2:
+			WaitingRoom.origin = <-6492.4541, -13920.0273, 3520.0625>
+			WaitingRoom.angles = <0, -0.338155389, 0>
+			break;
+
 		case eMaps.mp_rr_canyonlands_staging:
 			WaitingRoom.origin = < 3477.69, -8364.02, -10252 >
 			WaitingRoom.angles = <356.203, 269.459, 0>
@@ -4223,6 +4228,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 
 void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 {
+	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 	printt( "FS_Scenarios_GiveWeaponsToGroup" )
 	foreach( player in players )
 	{
@@ -4231,6 +4237,25 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 
 		TakeAllWeapons(player)
 	}
+
+	thread function() : ( players )
+	{
+		EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+
+		// if( !FS_Scenarios_GetDropshipEnabled() )
+			wait 1 // Find a better method to wait for the client to be updated. Cafe
+
+		foreach( player in players )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 
+
+			if( IsValid( group ) && !group.IsFinished )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+		}
+	}()
 
 	wait 0.2
 

@@ -1752,6 +1752,7 @@ void function FS_Scenarios_InitPlayersCards()
 		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
 		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
 		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button, false )
 	}
 
 	for(int i = 0; i<3; i++ )
@@ -1764,6 +1765,7 @@ void function FS_Scenarios_InitPlayersCards()
 		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
 		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
 		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button , false )
 	}
 	file.buildingTeam = true
 }
@@ -1821,6 +1823,8 @@ void function FS_Scenarios_SetupPlayersCards()
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.enemyTeamCards[i], true )
 		}()
 	}
 
@@ -1845,6 +1849,8 @@ void function FS_Scenarios_SetupPlayersCards()
 			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
 			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.allyTeamCards[i], true )
 		}()
 	}
 
@@ -1856,18 +1862,18 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 
-	foreach( button in file.allyTeamCards )
-	{
-		Hud_SetVisible( button, show )
-	}
-
-	foreach( button in file.enemyTeamCards )
-	{
-		Hud_SetVisible( button, show )
-	}
-		
 	if( !show )
 	{
+		foreach( button in file.allyTeamCards )
+		{
+			Hud_SetVisible( button, show )
+		}
+
+		foreach( button in file.enemyTeamCards )
+		{
+			Hud_SetVisible( button, show )
+		}
+
 		file.allyTeamHandles.clear()
 		file.enemyTeamHandles.clear()
 		FS_Scenarios_InitPlayersCards()
@@ -1881,6 +1887,7 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		if( handle == eHandle )
 		{
 			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
 			return
 		}
 	}
@@ -1890,6 +1897,7 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		if( handle == eHandle )
 		{
 			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
 			return
 		}
 	}

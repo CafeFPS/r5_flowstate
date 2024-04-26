@@ -1047,6 +1047,7 @@ bool function bIs1v1Mode()
 		case eMaps.mp_rr_arena_composite:
 		case eMaps.mp_rr_aqueduct:
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
+		case eMaps.mp_rr_canyonlands_mu2:
 		case eMaps.mp_rr_canyonlands_staging:
 		case eMaps.mp_rr_party_crasher:
 		case eMaps.mp_rr_olympus_mu1:
@@ -4490,7 +4491,10 @@ void function SimpleChampionUI()
 	SetDeathFieldParams( <0,0,0>, 100000, 0, 90000, 99999 )
 	
 	if( is3v3Mode() )
+	{
+		FS_DM.scoreboardShowing = true
 		FS_Scenarios_ForceAllRoundsToFinish()
+	}
 	else if( is1v1EnabledAndAllowed() )
 		ForceAllRoundsToFinish_solomode()
 	

@@ -260,6 +260,9 @@ void function CleanupEnt( entity ent )
 
 void function Flowstate_InitWarpGateTrigger( entity ent )
 {
+	if( Gamemode() != eGamemodes.SURVIVAL )
+		return
+
 	Flowstate_WarpTunnel_SetupEnterTrigger( ent )
 
 	ent.e.warpEntrancePath.clear()
