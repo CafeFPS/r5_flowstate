@@ -544,14 +544,14 @@ void function SetInput_IN_FORWARD( entity player )
 }
 
 //LGDuel
-void function LGDuel_OnPlayerDamaged(entity victim, var damageInfo)
+void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 {
 	
 	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
 		return
 
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
-	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	//int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) )
 	{
@@ -1201,9 +1201,13 @@ void function _CustomTDM_Init()
 	if( !FlowState_AdminTgive() && !Flowstate_IsMovementGym()	 )
 	{
 		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
-		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
 		AddClientCommandCallback("saveskills", ClientCommand_Maki_SaveCurSkill)
 		AddClientCommandCallback("resetskills", ClientCommand_Maki_ResetSkills)
+	}
+	
+	if( !Flowstate_IsMovementGym() )
+	{
+		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
 	}
 	
 	if( flowstateSettings.hackersVsPros )
@@ -1426,6 +1430,7 @@ void function SetTdmStateToInProgress()
 	{
 		resetChallenges()
 	}
+	
 	file.tdmState = eTDMState.IN_PROGRESS
 	
 	if( Gamemode() != eGamemodes.fs_prophunt )
@@ -2542,67 +2547,67 @@ void function SetPlayerCustomModel( entity player, int index )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 		
-		case 14:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
-		break
+		// case 14:
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+		// break
 		
-		case 15:
+		case 14:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
 		break
 		
-		case 16:
+		case 15:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
 		break
 		
-		case 17:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
+		// case 17:
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		// break
 		
-		case 18:
+		case 16:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
 		break
 
-		case 19:
+		case 17:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
 		break
 		
-		case 20:
+		case 18:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 		break
 
-		case 21: //loba ss
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
-		break
+		// case 21: //loba ss
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+		// break
 		
-		case 22: // ballistic
+		case 19: // ballistic
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
 		break
 		
-		case 23: // mrvn
+		case 20: // mrvn
 		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 
-		case 24: // gojo
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
-		break
+		// case 24: // gojo
+		// player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+		// break
 
-		case 25: // naruto
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
-		break
+		// case 25: // naruto
+		// player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+		// break
 
-		case 26: // pete
+		case 21: // pete
 		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 		break

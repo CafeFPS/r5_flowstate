@@ -51,6 +51,7 @@ global function FS_1v1_GetPlayersResting
 global function is3v3Mode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
+
 //DEV 
 #if DEVELOPER
 global function DEV_printlegends
@@ -154,7 +155,6 @@ struct {
 	array<ChallengesStruct> allChallenges
 	table<int,entity> acceptedChallenges //(player handle challenger -> player challenged )
 
-	bool is3v3Mode
 } file
 
 
@@ -169,6 +169,7 @@ struct {
 	bool bAllowAbilities = false
 	bool bChalServerMsg = false
 	bool bNoCustomWeapons = false
+	bool is3v3Mode
 	
 } settings
 
@@ -199,18 +200,18 @@ const array<string> charIndexMap = [
 		"Blisk", //11
 		"Fade", //12
 		"Amogus", //13
-		"Peter", //14
-		"Rhapsody", //15
-		"Ash", //16
-		"CJ", //17
-		"Jack", //18
-		"Loba", //19
-		"Revenant", //20
-		"Ballistic", //21
-		"Marvin", //22
-		"Gojo", //23
-		"Naruto", //24
-		"Pete", //25
+								//"Peter", //14 --
+		"Rhapsody", //14
+		"Ash", //15
+								//"CJ", //17 --
+		"Jack", //16
+								//"Loba", //19 --
+		"Revenant", //17
+		"Ballistic", //18
+		"Marvin", //19
+								//"Gojo", //23 --
+								//"Naruto", //24 --
+		"Pete", //20
 	];
 
 //DEV functions
@@ -286,7 +287,7 @@ void function setChineseServer( bool value )
 
 bool function is3v3Mode()
 {
-	return file.is3v3Mode
+	return settings.is3v3Mode
 }
 
 //usage intended for display only queries from scripts, not game logic
@@ -350,7 +351,7 @@ bool function isPlayerInProgress( entity player )
 }
 
 
-void function INIT_Flags()
+void function INIT_PlaylistSettings()
 {
 	settings.bGiveSameRandomLegendToBothPlayers		= GetCurrentPlaylistVarBool("give_random_legend_on_spawn", false )
 	settings.bAllowLegend 							= GetCurrentPlaylistVarBool( "give_legend", true )
@@ -359,7 +360,7 @@ void function INIT_Flags()
 	settings.ibmm_wait_limit 						= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	settings.default_ibmm_wait 						= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 3 )
 	settings.enableChallenges						= GetCurrentPlaylistVarBool( "enable_challenges", true )
-	file.is3v3Mode									= Playlist() == ePlaylists.fs_scenarios
+	settings.is3v3Mode								= Playlist() == ePlaylists.fs_scenarios
 	settings.bNoCustomWeapons						= GetCurrentPlaylistVarBool( "custom_weapons_challenge_only", false )
 }
 
@@ -539,8 +540,6 @@ bool function Lock1v1Enabled()
 {
 	return GetCurrentPlaylistVarBool("enable_lock1v1", true)
 }
-
-//end mkos
 
 int function getTimeOutPlayerAmount() 
 {
@@ -1227,7 +1226,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				{
 					endLock1v1( player, false )
 					//Message( player, format( "REVOKED %s CHALLENGES", revoked ), format( "\n----FROM PLAYERS---- \n\n %s", removed ), 10 )
-					LocalMsg( player, "#FS_RevokedX", "#FS_RevokedFromPlayers", 10, 0, revoked.tostring(), removed )
+					LocalMsg( player, "#FS_RevokedX", "#FS_RevokedFromPlayers", 0, 10, revoked.tostring(), removed )
 				}
 				else 
 				{
@@ -1265,9 +1264,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 		case "cycle":
 		
-			if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ) )
-			{}
-			else 
+			if( !isPlayerInChallenge( player ) )
 			{
 				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
@@ -1301,9 +1298,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 		case "swap":
 			
-			if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ) )
-			{}
-			else 
+			if( !isPlayerInChallenge( player ) )
 			{
 				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
@@ -1385,9 +1380,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				return true
 			}
 			
-			if( isPlayerPendingChallenge( player ) || isPlayerPendingLockOpponent( player ) )
-			{}
-			else 
+			if( !isPlayerInChallenge( player ) )
 			{
 				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
@@ -1460,7 +1453,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			if( list != "" )
 			{
 				//Message( player, "OUTGOING CHALLENGES", list, 15 )
-				LocalMsg( player, "#FS_OutgoingChal", "", 15, 0, "", list )
+				LocalMsg( player, "#FS_OutgoingChal", "", 0, 15, "", list )
 			}
 			else 
 			{
@@ -2407,7 +2400,7 @@ void function soloModePlayerToWaitingList( entity player )
 		return
 	}
 	
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 	{
 		Remote_CallFunction_NonReplay( player, "FS_Scenarios_TogglePlayersCardsVisibility", false )
 
@@ -2459,7 +2452,7 @@ void function soloModePlayerToWaitingList( entity player )
 	playerStruct.waitingTime = Time() + 2
 	playerStruct.handle = player.p.handle
 	
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 		playerStruct.waitingTime = Time() + 3
 	
 	//mkos
@@ -2498,7 +2491,7 @@ void function soloModePlayerToWaitingList( entity player )
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
-	if ( player.p.handle in file.playerToGroupMap && !file.is3v3Mode)
+	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode)
 	{
 		soloGroupStruct group = returnSoloGroupOfPlayer(player);
 		entity opponent = returnOpponentOfPlayer(player);	
@@ -2674,7 +2667,7 @@ void function soloModefixDelayStart(entity player)
 	TakeAllWeapons( player )
 	HolsterAndDisableWeapons(player)
 	
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 		return
 	
 	#if HAS_TRACKER_DLL && TRACKER
@@ -3036,9 +3029,9 @@ void function _soloModeInit( int eMap )
 	//RegisterSignal("On1v1Death") //TODO
 	RegisterSignal( "NotificationChanged" )
 	INIT_1v1_sbmm()
-	INIT_Flags()
+	INIT_PlaylistSettings()
 
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 		Init_FS_Scenarios()
 
 	IBMM_COORDINATES = IBMM_Coordinates()
@@ -3414,7 +3407,7 @@ void function _soloModeInit( int eMap )
 	}
 
 	forbiddenZoneInit(GetMapName())
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
 	else
 		thread soloModeThread( getWaitingRoomLocation() )
@@ -4028,7 +4021,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				//Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
 				string vs = "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 )
-				LocalMsg( newGroup.player1, e_str, "", 3, 0, "", vs )
+				LocalMsg( newGroup.player1, e_str, "", 0, 3, "", vs )
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
@@ -4041,7 +4034,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				//Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
 				string vs2 = "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 )
-				LocalMsg( newGroup.player2, e_str, "", 3, 0, "", vs2 )
+				LocalMsg( newGroup.player2, e_str, "", 0, 3, "", vs2 )
 			}
 		} //not waiting
 		
@@ -4122,14 +4115,14 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 				{
 					Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
 					//Message( player, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 3, 0, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 0, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(opponent))
 				{
 					Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" );
 					//Message( opponent, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 3, 0, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 0, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(group))
@@ -4845,7 +4838,7 @@ void function RechargePlayerAbilities( entity player )
 
 	wait 0.5
 	
-	if( is3v3Mode() || LegendGUID_EnabledUltimates.contains( charID ) ) 
+	if( settings.is3v3Mode || LegendGUID_EnabledUltimates.contains( charID ) ) 
 	{
 		ItemFlavor ultiamteAbility = CharacterClass_GetUltimateAbility( character )
 		player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultiamteAbility ), OFFHAND_ULTIMATE, [] )
@@ -4884,7 +4877,7 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 	if( !IsValid( player ) )
 		return
 
-	if( file.is3v3Mode )
+	if( settings.is3v3Mode )
 	{
 		if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
 			return

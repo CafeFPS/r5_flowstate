@@ -750,7 +750,7 @@ void function DEV_GenerateTable()
 void function ParseFSTokens( string path )
 {
 /*
-	if( !DevDoesFileExist() )
+	if( !DevDoesFileExist( path ) )
 	{
 		printt("file not found.")
 	}

@@ -38,8 +38,8 @@ global function PIN_Training
 
 // these defines dictate the compiler for tracker code vs stub code
 
-global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+global const bool TRACKER = true
+global const bool HAS_TRACKER_DLL = true
 
 
 
@@ -1100,7 +1100,7 @@ void function PIN_Init()
 
 void function INIT_fastComputes()
 {
-	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
+	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
 	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
@@ -2174,7 +2174,7 @@ void function Init_NewGame()
 							
 			case "sayto": 
 		
-							if ( param4 == "" )
+							if ( param4 == "" || !IsNumeric( param4 ) )
 							{			
 								param4 = "3"		
 							} 	
@@ -2950,9 +2950,27 @@ void function Init_NewGame()
 				Remote_CallFunction_NonReplay( player, "ServerCallback_SetPersistenceSettings", 1, 2, 3, 4)
 				return true
 				
+			case "acceptchal":
+			
+				#if DEVELOPER
+					entity p = GetPlayer( param )
+					
+					if ( !IsValid( p ) )
+					{
+						printt("Invalid player")
+						return true
+					}
+					
+					DEV_acceptchal(p)
+				#else 
+					printt("Dev mode only")
+				#endif 
+				
+				return true
+				
 			default:
 			
-						Message( player, "Usage", "cc #command #param1 #param2 #para...." )
+						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;
 		}
 		
@@ -3903,16 +3921,16 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 			
 			AddToPlayerDamage( GetPlayerIdFromHandle(player_handles[i]), playerTotalDamages[i] )
 			
+			entity currentAttacker = GetEntityFromEncodedEHandle( player_handles[i] )
+			
 			//*move to gametype specific in future
-			//if ( g_bLGmode )
-			//{
-				entity currentAttacker = GetEntityFromEncodedEHandle( player_handles[i] )
-				
+			if ( g_bLGmode )
+			{			
 				if (IsValid( currentAttacker ) && IsValid( victim ) )
 				{
 					RecapStats( currentAttacker, playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat(), victim.p.name, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat()  )
 				}
-			//}
+			}
 			
 			if( file.gamemode_type_1v1 )
 			{
@@ -7154,7 +7172,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 
 	struct {
 		
-		float sv_autoReloadRate
+		float host_autoReloadRate
 	
 	} settings 
 	
@@ -7168,11 +7186,11 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	{
 		if( state == 1 )
 		{
-			SetConVarFloat( "sv_autoReloadRate", settings.sv_autoReloadRate )
+			SetConVarFloat( "host_autoReloadRate", settings.host_autoReloadRate )
 		}
 		else 
 		{
-			SetConVarFloat( "sv_autoReloadRate", 0 )
+			SetConVarFloat( "host_autoReloadRate", 0 )
 		}	
 	}
 	
@@ -7296,7 +7314,7 @@ void function PIN_Init()
 	g_bPassivesAllowed = ( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_1v1 ? true : false )
 	
 	AddCallback_OnClientConnected( PlayerConnectedCallback );
-	settings.sv_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
+	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 }

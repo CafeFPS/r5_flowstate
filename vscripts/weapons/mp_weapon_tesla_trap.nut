@@ -2454,11 +2454,16 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 		return
 
 	EndSignal( ownerPlayer, "CleanUpPlayerAbilities" )
+	
+	if( is1v1GameType() )
+	{
+		EndSignal( ownerPlayer, "OnDestroy" ) //remove traps when players are destroyed in non-survival modes
+	}
 
 	OnThreadEnd( function() : ( trigger, start, end )
 		{
 			if( IsValid( trigger ) )
-				start.Destroy()
+				trigger.Destroy()
 
 			if( IsValid( start ) )
 				start.Destroy()
@@ -2556,8 +2561,10 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	if( Time() <= ent.p.lastTimeDamagedByTeslaTrap + 4.0 )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
-	} else
+	}
+	else
 	{
+		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ( ent.p.lastTimeDamagedByTeslaTrap + 4 ) ) )
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()
 	}

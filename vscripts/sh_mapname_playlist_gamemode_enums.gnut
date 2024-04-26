@@ -46,6 +46,7 @@ global enum eMaps
 	mp_rr_arena_phase_runner, //21
 	mp_rr_desertlands_mu3, //22
 	mp_rr_construct, //23
+	mp_rr_desertlands_mu1, //24
 	
 	
 	_MAP_COUNT //LAST
@@ -137,6 +138,7 @@ struct
 		"mp_rr_arena_phase_runner", //21
 		"mp_rr_desertlands_mu3", //22
 		"mp_rr_construct", //23
+		"mp_rr_desertlands_mu1", //24
 		
 		
 		"_MAP_COUNT" //LAST

@@ -767,7 +767,7 @@ global struct ServerPlayerStruct
 	bool has_notify = false
 	bool destroynotify = false
 	float last_input_time
-	float IBMM_grace_period = -1 // 0=disabled
+	float IBMM_grace_period = -1 // <=0  is disabled
 	float messagetime = 0
 	int movevalue = 0
 	int p_damage = 3 //for lgduel default dmg/heal 
@@ -948,7 +948,7 @@ global struct ServerPlayerStruct
   
 	float lastTgiveUsedTime
 	float lastRestUsedTime
-	float lastLockEnemyUsedTime
+	//float lastLockEnemyUsedTime //???
 
 	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
