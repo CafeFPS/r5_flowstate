@@ -2255,6 +2255,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			Highlight_SetFriendlyHighlight( poleFence, "sp_friendly_hero" )
 			poleFence.SetOrigin( origin )
 			poleFence.SetAngles( angles )
+			AddToTrackedEnts( player, poleFence )
 			DispatchSpawn( poleFence )
 			poleFence.AllowMantle()
 
@@ -2418,7 +2419,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 
 			trigger.RemoveFromAllRealms()
 			trigger.AddToOtherEntitysRealms( player )
-
+			AddToTrackedEnts( player, trigger )
 			DispatchSpawn( trigger )
 		}
 
@@ -2452,26 +2453,6 @@ void function TeslaTrap_TracesToCheckForOtherEntities(entity trigger, entity sta
 
 	if( !IsValid(ownerPlayer) )
 		return
-
-	EndSignal( ownerPlayer, "CleanUpPlayerAbilities" )
-	
-	if( is1v1GameType() )
-	{
-		EndSignal( ownerPlayer, "OnDestroy" ) //remove traps when players are destroyed in non-survival modes
-	}
-
-	OnThreadEnd( function() : ( trigger, start, end )
-		{
-			if( IsValid( trigger ) )
-				trigger.Destroy()
-
-			if( IsValid( start ) )
-				start.Destroy()
-
-			if( IsValid( end ) )
-				end.Destroy()
-		}	
-	)
 
 	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_tactical" )
 
