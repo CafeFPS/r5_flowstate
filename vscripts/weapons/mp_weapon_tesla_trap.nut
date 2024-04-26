@@ -2564,7 +2564,7 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	}
 	else
 	{
-		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ( ent.p.lastTimeDamagedByTeslaTrap + 4 ) ) )
+		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()
 	}
