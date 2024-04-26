@@ -146,8 +146,8 @@ const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
-const int Flowstate_StartTimeDelay = 10
-bool debugging = true
+const int Flowstate_StartTimeDelay = 5
+bool debugging = false
 global bool VOTING_PHASE_ENABLE = true
 global bool SCOREBOARD_ENABLE = true
 
@@ -3855,10 +3855,10 @@ void function SimpleChampionUI()
 					
 					Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
 					
-					#if !DEVELOPER
+					// #if !DEVELOPER
 					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
 						wait Flowstate_StartTimeDelay
-					#endif
+					// #endif
 
 					if( flowstateSettings.enable_oddball_gamemode )
 					{
@@ -4076,10 +4076,10 @@ void function SimpleChampionUI()
 			// i++
 		}
 	}
-	#if !DEVELOPER
+	// #if !DEVELOPER
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 		wait Flowstate_StartTimeDelay
-	#endif
+	// #endif
 	//SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
 	
