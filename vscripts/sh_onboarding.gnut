@@ -171,13 +171,6 @@ void function Sequence_WaitingForPlayers()
 			}
 		}
 	}
-	
-	if( Gamemode() != eGamemodes.SURVIVAL )
-	{
-		wait 1
-		SetGameState( eGameState.Playing )
-		return	
-	}
 
 	// Set champion randomly from among all players
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) && GetPlayerArray().len() > 0 )
@@ -194,7 +187,7 @@ void function Sequence_WaitingForPlayers()
 
 void function Sequence_PickLoadout()
 {
-	if ( !Survival_CharacterSelectEnabled() ) 
+	if ( !Survival_CharacterSelectEnabled() || Gamemode() != eGamemodes.SURVIVAL ) 
 	{
 		foreach ( player in GetPlayerArray() )
 		{

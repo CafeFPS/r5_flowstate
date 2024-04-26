@@ -59,6 +59,9 @@ void function RemoteFunctions_Init_Begin()
 		Remote_RegisterClientFunction( "FS_MovementRecorder_CreateInputHintsRUI", "bool" )
 	}
 
+	//Cool fp fx
+	Remote_RegisterClientFunction( "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+
 	// #if DEVELOPER
 	// if( IsDevGamemode() )
 	// {

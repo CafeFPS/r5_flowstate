@@ -792,6 +792,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
     }
 
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+	Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 
    	if( isPlayerInRestingList( player ) )
 	{	
@@ -1123,6 +1124,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		
 		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
 		printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
+
 		//Send teams to fight
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
@@ -1137,6 +1139,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			FS_SetRealmForPlayer( player, newGroup.slotIndex )
 
 			FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
 
 		thread FS_Scenarios_SpawnDoorsForGroup( newGroup )

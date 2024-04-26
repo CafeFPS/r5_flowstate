@@ -56,6 +56,7 @@ global function FS_Scenarios_AddEnemyHandle
 
 global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
+global function FS_CreateTeleportFirstPersonEffectOnPlayer
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -113,7 +114,8 @@ void function Cl_CustomTDM_Init()
 
 	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
-	
+	PrecacheParticleSystem($"P_training_teleport_FP")
+
 	RegisterSignal("ChallengeStartRemoveCameras")
 	RegisterSignal("ChangeCameraToSelectedLocation")
 	RegisterSignal("FSDM_EndTimer")
@@ -1900,5 +1902,16 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
 			return
 		}
+	}
+}
+
+void function FS_CreateTeleportFirstPersonEffectOnPlayer()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( IsValid( player.GetCockpit() ) )
+	{
+		int fxHandle = StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_training_teleport_FP" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		EffectSetIsWithCockpit( fxHandle, true )
 	}
 }
