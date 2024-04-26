@@ -321,20 +321,21 @@ void function UICodeCallback_SmokeTestRunning( string param )
 
 void function UICodeCallback_UIInit()
 {
+	AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
+	AddUICallback_OnLevelInit( Load_Level_based_UIGlobals )
+	
 	PIN_Init()
 
 	//ScriptCompilerTest()
 
 	ShUtilityAll_Init()
 	LevelVarInit()
-	
-	AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
-	AddUICallback_OnLevelInit( Load_Level_based_UIGlobals )
+	//AddUICallback_OnLevelInit(  )
 
 	VPKNotifyFile( "media/intro_captions.txt" )
 	VPKNotifyFile( "cfg/startup.cfg" )
 	VPKNotifyFile( "cfg/startup_retail.cfg" )
-
+	
 	UtilityUI_Init()
 	ShAssets_Init()
 	Settings_Init() // UI script doesn't need everything in this, reorganize
@@ -385,7 +386,6 @@ void function UICodeCallback_UIInit()
 		{
 		}
 	#endif
-	
 }
 
 
@@ -487,12 +487,8 @@ void function AddUICallback_KeyBindSet( void functionref( string, string ) callb
 
 
 void function Load_Level_based_UIGlobals()
-{
-	#if UI 
-	
-		uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
-		uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
-		uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
-	
-	#endif 
+{	
+	uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
+	uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
+	uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
 }

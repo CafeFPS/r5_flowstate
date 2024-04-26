@@ -543,7 +543,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( !GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false ) || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_scenarios )
+	if( !Flowstate_GivePassive() || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_scenarios )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )

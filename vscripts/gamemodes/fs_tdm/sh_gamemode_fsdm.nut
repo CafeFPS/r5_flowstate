@@ -1819,6 +1819,7 @@ struct {
 	bool Flowstate_IsHaloMode
 	bool Flowstate_DisableAllMapTriggers
 	bool Flowstate_Is_gamemode_1v1_type
+	bool Flowstate_GivePassive
 	
 } SH_flowstateSettings
 
@@ -1911,6 +1912,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
 	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
+	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
 }
 
 // Playlist GET
@@ -2000,6 +2002,7 @@ bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_
 bool function Flowstate_IsMapPartyCrasher()						{ return SH_flowstateSettings.Flowstate_Is_PartyCrasher }
 bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettings.Flowstate_Is_Canyon_Staging }
 bool function Flowstate_IsGame1v1Type() 						{ return SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type }
+bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowstate_GivePassive }
 
 #if SERVER   
 bool function Equipment_GetRespawnKitEnabled()                       { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }

@@ -101,7 +101,7 @@ void function Open_FSDM_VotingPhase()
 
 			case ePlaylists.fs_1v1:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS 1v1" )
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by __makimakima__, maintained by @CafeFPS" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by __makimakima__, maintained by @CafeFPS & mkos" )
 			break
 			
 			case ePlaylists.fs_lgduels_1v1:

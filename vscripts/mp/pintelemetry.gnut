@@ -1007,7 +1007,11 @@ void function __CONTROLLED_LogInit()
 }
 
 void function PIN_Init()
-{		
+{	
+	#if !SERVER
+		return
+	#endif 
+	
 	if( IsLobby() ){ return }
 	INIT_fastComputes()
 	INIT_IntervalMessages()
@@ -2947,7 +2951,9 @@ void function Init_NewGame()
 				
 			case "testremote":
 			
-				Remote_CallFunction_NonReplay( player, "ServerCallback_SetPersistenceSettings", 1, 2, 3, 4)
+				#if DEVELOPER
+					Remote_CallFunction_NonReplay( player, "ServerCallback_SetPersistenceSettings", 1, 2, 3, 4)
+				#endif
 				return true
 				
 			case "acceptchal":
@@ -2967,6 +2973,34 @@ void function Init_NewGame()
 				#endif 
 				
 				return true
+				
+			case "draw":
+			
+				#if DEVELOPER 
+				
+					printt("Drawing...")
+					foreach( s_player in GetPlayerArray() )
+					{
+						Remote_CallFunction_NonReplay( s_player, "Minimap_EnableDraw_Internal")
+					}
+					
+				#endif 
+				
+				return true 
+				
+			case "disabledraw":
+			
+				#if DEVELOPER 
+				
+					printt("Drawing...")
+					foreach( s_player in GetPlayerArray() )
+					{
+						Remote_CallFunction_NonReplay( s_player, "Minimap_DisableDraw_Internal")
+					}
+					
+				#endif 
+				
+				return true 
 				
 			default:
 			
