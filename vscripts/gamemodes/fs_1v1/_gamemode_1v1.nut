@@ -4267,7 +4267,7 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		if( !IsValid( player ) )
 			continue
 		
-		CharacterSelect_AssignCharacter( ToEHI( player ), characters[characterslist[RandomIntRangeInclusive(0,9)]] )
+		Flowstate_AssignUniqueCharacterForPlayer( player, true )
 
 		DeployAndEnableWeapons( player )
 
