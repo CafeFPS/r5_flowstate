@@ -821,6 +821,9 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
+	if( IsLobby() )
+		return 
+		
 	Signal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
 	EndSignal( clGlobal.levelEnt, "InitSurvivalHealthBarReset" )
 

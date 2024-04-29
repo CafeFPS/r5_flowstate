@@ -62,12 +62,12 @@ global function SavePlayerData
 
 global bool g_bPassivesAllowed
 
+
 #if TRACKER
 	global const bool STUB = false
 #else
 	global const bool STUB = true 
 #endif 
-
 
 #if STUB
 	//const

@@ -197,10 +197,15 @@ void function CodeCallback_OnPrecache()
 	level.ui.disableDev = IsMatchmakingServer()
 }
 
+const array<int> nonFlinchModes = [
+	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_1v1
+]
+
 function AddFlinch( entity attackedEnt, damageInfo )
 {
 	//if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_1v1" )
-	if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_1v1 )
+	if( nonFlinchModes.contains( Playlist() ) )
 	{
 		// DamageInfo_SetFlinchDirection( damageInfo, <0,0,0> )
 		return

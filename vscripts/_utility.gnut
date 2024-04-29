@@ -1710,7 +1710,7 @@ void function POS_CC( entity player, string name )
 	
 	Message( player, "SAVED SPAWN: " + name , returnStr)
 	#if HAS_TRACKER_DLL
-	sqprint(format("Pos: %s", returnStr))
+	printt( format( "Pos: %s", returnStr ) )
 	#endif
 }
 

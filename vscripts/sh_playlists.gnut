@@ -351,25 +351,25 @@ asset function GetModeEmblemImage( string playlistName )
 		// break
 	}
 	
-	switch( Playlist() )
+	switch( playlistName )
 	{
-		case ePlaylists.fs_movementgym:
+		case "fs_movementgym":
 		emblemImage = $"rui/flowstatecustom/movementgym"
 		break
 		
-		case ePlaylists.fs_1v1:
+		case "fs_1v1":
 		emblemImage = $"rui/flowstatecustom/1v1"
 		break
 		
-		case ePlaylists.fs_lgduels_1v1:
+		case "fs_lgduels_1v1":
 		emblemImage = $"rui/flowstatecustom/1v1"
 		break
 
-		case ePlaylists.fs_survival_duos:
+		case "fs_survival_duos":
 		emblemImage = $"rui/menu/gamemode_emblem/duos"
 		break
 		
-		case ePlaylists.fs_survival_solos:
+		case "fs_survival_solos":
 		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
 	}

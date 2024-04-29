@@ -520,6 +520,12 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	TakeAllPassives( player )
 }
 
+const array<int> nonPassiveModes = [
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_scenarios
+]
+
 void function GiveLoadoutRelatedWeapons( entity player )
 {
 	TakeLoadoutRelatedWeapons(player)
@@ -536,7 +542,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( !Flowstate_GivePassive() || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_scenarios )
+	if( !Flowstate_GivePassive() || nonPassiveModes.contains( Playlist() )  )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )

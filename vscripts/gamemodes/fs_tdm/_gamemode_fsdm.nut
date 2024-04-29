@@ -4233,7 +4233,8 @@ void function SimpleChampionUI()
 				break
 			}
 
-			WaitFrame()
+			//WaitFrame()
+			wait 1
 		}
 	}
 	else if ( !FlowState_Timer() )
@@ -4249,7 +4250,8 @@ void function SimpleChampionUI()
 				break
 			}
 
-			WaitFrame()
+			//WaitFrame()
+			wait 1
 		}
 	}
 
