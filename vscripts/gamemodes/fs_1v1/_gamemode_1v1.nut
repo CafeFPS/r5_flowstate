@@ -3147,12 +3147,40 @@ void function _soloModeInit( int eMap )
 			WaitingRoom.origin = <318.434906, -19474.4141, -4947.88867> 
 			WaitingRoom.angles = <0, 32.8506927, 0>
 			break;
+
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+			WaitingRoom.origin = <9616.44434, 5900.57129, -3695.96875>
+			WaitingRoom.angles = <0, -92.6108322, 0>
+			break;
 	}
 	
 	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()
 	
-	
+	for (int i = 0; i < allSoloLocations.len(); i=i+2)
+	{
+		soloLocStruct p
+
+		p.respawnLocations.append(allSoloLocations[i])
+		p.respawnLocations.append(allSoloLocations[i+1])
+
+		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
+
+		soloLocations.append(p)
+	}
+	realmSlots.resize( MAX_REALM + 1 )
+	realmSlots[ 0 ] = true
+	for (int i = 1; i < realmSlots.len(); i++)
+	{
+		realmSlots[ i ] = false
+	}
+
+	if( settings.is3v3Mode )
+	{
+		forbiddenZoneInit(GetMapName())
+		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
+		return
+	}	
 	
 	//resting room init ///////////////////////////////////////////////////////////////////////////////////////
 	
@@ -3381,24 +3409,6 @@ void function _soloModeInit( int eMap )
 		
 		ClientCommand_Maki_SoloModeRest( user, [] )
 	})
-
-	for (int i = 0; i < allSoloLocations.len(); i=i+2)
-	{
-		soloLocStruct p
-
-		p.respawnLocations.append(allSoloLocations[i])
-		p.respawnLocations.append(allSoloLocations[i+1])
-
-		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
-
-		soloLocations.append(p)
-	}
-	realmSlots.resize( MAX_REALM + 1 )
-	realmSlots[ 0 ] = true
-	for (int i = 1; i < realmSlots.len(); i++)
-	{
-		realmSlots[ i ] = false
-	}
 
 	string buttonText2
 	

@@ -1051,6 +1051,7 @@ bool function bIs1v1Mode()
 		case eMaps.mp_rr_canyonlands_staging:
 		case eMaps.mp_rr_party_crasher:
 		case eMaps.mp_rr_olympus_mu1:
+		case eMaps.mp_rr_desertlands_64k_x_64k:
 		//isChineseServer() //not needed?
 		return true
 		default:

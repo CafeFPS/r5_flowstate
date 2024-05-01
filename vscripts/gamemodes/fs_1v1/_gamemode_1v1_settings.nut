@@ -439,6 +439,31 @@ array<LocPair> function FetchReturnAllSoloLocations( int eMap )
 			]
 		}
 	}
+	else if ( eMap == eMaps.mp_rr_desertlands_64k_x_64k )
+	{
+		waitingRoomPanelLocation = NewLocPair( <9614.28125, 5631.50684, -3695.96875>, <0, 89.9950562, 0> ) //休息区观战面板
+
+		if( is3v3Mode() )
+		{
+			allSoloLocations = [
+				NewLocPair( <8235.01855, 5995.85303, -3888.96875>, <0, 2.91183138, 0> ),
+				NewLocPair( <13029.2324, 3012.58594, -4101.52979>, <0, 90.5241089, 0> ),
+
+				NewLocPair( <2978.36255, -24568.3438, -3107.96875>, <0, 40.7871628, 0> ),
+				NewLocPair( <7897.48535, -21208.3906, -3727.96875>, <0, -135.121094, 0> )
+
+			]
+			 
+
+		}
+		else
+		{
+			allSoloLocations = [
+				NewLocPair( <10035.9492, 6384.8374, -4295.96875>, <0, -91.0993118, 0> ),
+				NewLocPair( <10021.5088, 4968.38623, -4303.90625>, <0, 88.8588943, 0> )
+			]
+		}
+	}
 	else if ( eMap == eMaps.mp_rr_canyonlands_mu2 )
 	{
 		//waitingRoomLocation = NewLocPair( < 3477.74, -8544.55, -10252 >, < 356.203, 269.459, 0 >)  

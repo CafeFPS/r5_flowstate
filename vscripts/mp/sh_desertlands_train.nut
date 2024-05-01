@@ -268,6 +268,9 @@ void function Flowstate_Train_SetupBinsAtStation()
 			}
 		}
 		
+		if( !IsValid( lootBin ) )
+			continue
+
 		// hack, why the original ent won't play the anim?
 		vector originfordoor = doors.GetOrigin()
 		vector anglesfordoor = doors.GetAngles()
@@ -307,6 +310,9 @@ void function Flowstate_OpenLootBinsAtStation( entity station )
 					}
 				}
 				
+				if( !IsValid( door ) )
+					return
+
 				PlayAnim( door, "loot_bin_02_open" )
 				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * 80, 5, 0, 0 )
 			}
@@ -335,7 +341,10 @@ void function Flowstate_CloseLootBinsAtStation( entity station )
 						lootBin = entLinkedToBinMover
 					}
 				}
-				
+
+				if( !IsValid( door ) )
+					return
+					
 				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * -80, 5, 0, 0 )
 				
 				wait 5
