@@ -70,7 +70,7 @@ void function Open_FSDM_VotingPhase()
 	Hud_SetAboveBlur( Hud_GetChild( file.menu, "VotingPhaseChatBox"), false )
 	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "VotingPhaseChatBox"), "ChatInputLine" ), false)
 	
-	if(IsConnected() )
+	if( IsConnected() )
 	{
 		switch( Playlist() )
 		{

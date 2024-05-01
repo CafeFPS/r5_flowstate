@@ -3,6 +3,7 @@
 // CafeFPS -- Server/client/ui Rework and multiple code fixes
 // Rexx and IcePixelx -- Help with code improvments
 // sal#3261 -- base custom_tdm mode to work off
+// mkos -- added healing
 // everyone else -- advice
 
 global function _CustomCTF_Init
@@ -33,6 +34,13 @@ struct {
 	int winnerTeam
 	
 	bool VoteTeamEnabled = false
+	
+	bool bHeals = false //heals mode
+	float fBubbleRadius //added for setting init
+	int cellAmount = 0
+	int batteryAmount = 0
+	int healthkitAmount = 0
+	int medkitAmount = 0
 	
 } file;
 
@@ -84,8 +92,20 @@ struct
 	bool roundover
 } ServerTimer;
 
+void function LoadPlaylistSettings()
+{
+	file.bHeals = GetCurrentPlaylistVarBool( "enable_heals", false )
+	file.fBubbleRadius = GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+	file.cellAmount = GetCurrentPlaylistVarInt( "spawn_with_number_cells", 0 )
+	file.batteryAmount = GetCurrentPlaylistVarInt( "spawn_with_number_batteries", 0 )
+	file.healthkitAmount = GetCurrentPlaylistVarInt( "spawn_with_number_healthkit", 0 )
+	file.medkitAmount = GetCurrentPlaylistVarInt( "spawn_with_number_medkit", 0 )
+}
+
 void function _CustomCTF_Init()
 {
+	LoadPlaylistSettings()
+
 	PrecacheParticleSystem($"P_survival_radius_CP_1x100")
 	PrecacheModel( CTF_FLAG_MODEL )
 	PrecacheModel( CTF_FLAG_MODEL_RED )
@@ -548,7 +568,8 @@ void function StartRound()
 		// SwitchPlayerToOrdnance( player, "mp_weapon_frag_grenade" )
 
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-		Survival_SetInventoryEnabled( player, false )
+		
+		Survival_SetInventoryEnabled( player, file.bHeals )
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
@@ -1450,6 +1471,12 @@ void function GiveBackWeapons(entity player)
 	player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 	player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
 
+	if( file.bHeals)
+	{
+		GivePlayerConsumableSlot( player )
+		GiveCustomHeals( player )
+	}
+	
 	//restore movement
 	StatusEffect_StopAllOfType( player, eStatusEffect.move_slow)
 	player.SetMoveSpeedScale( 1 )
@@ -1895,6 +1922,39 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 
 }
 
+// Purpose: Assign User-Configured Playlist heal options (mkos 4/8/2024)
+
+void function GiveCustomHeals( entity player )
+{		
+	GiveConsumableAmount( player, "health_pickup_combo_small", file.cellAmount )
+	GiveConsumableAmount( player, "health_pickup_combo_large", file.batteryAmount )
+	GiveConsumableAmount( player, "health_pickup_health_small", file.healthkitAmount )
+	GiveConsumableAmount( player, "health_pickup_health_large", file.medkitAmount ) 
+}
+
+void function GiveConsumableAmount( entity player, string ref, int amount )
+{
+	if( amount <= 0 ){ return }
+
+	for ( int i = 0 ; i < amount; i++)
+	{
+		SURVIVAL_AddToPlayerInventory( player, ref )
+	}
+}
+
+void function GivePlayerConsumableSlot( entity player )
+{
+	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3","backpack")
+	
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )))
+	{
+		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+	}
+	
+	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
+	SetPlayerInventory( player, [ ] )
+}
+
 // Purpose: Create The RingBoundary
 entity function CreateRingBoundary(LocationSettingsCTF location)
 {
@@ -1916,7 +1976,7 @@ entity function CreateRingBoundary(LocationSettingsCTF location)
 		bubbleRadius = Distance(spawn.origin, bubbleCenter)
 	}
 
-	bubbleRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+	bubbleRadius += file.fBubbleRadius
 
 	CTF.ringCenter = bubbleCenter
 	CTF.ringRadius = bubbleRadius

@@ -665,6 +665,11 @@ void function UICodeCallback_LevelShutdown()
 	UiNewnessQueries_LevelShutdown()
 
 	TEMP_CircularReferenceCleanup()
+	
+	#if TRACKER && HAS_TRACKER_DLL
+	//TODO: state !ready waitframe 
+	//while( SQ_GetLogstate() )
+	#endif
 }
 
 

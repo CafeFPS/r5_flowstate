@@ -338,17 +338,17 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	switch( GameRules_GetGameMode() )
 	{
-		case "CUSTOM_CTF":
+		case CUSTOM_CTF:
 			PrecacheWeapon( $"melee_flagpole" )
 			PrecacheWeapon( $"mp_weapon_flagpole_primary" )
 			break
-		case "fs_prophunt":
+		case fs_prophunt:
 			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
 			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
 			break
-		case "fs_dm":
+		case fs_dm:
 			break
-		case "fs_aimtrainer":
+		case fs_aimtrainer:
 			break
 		default:
 			LoadModelsFromEditor()

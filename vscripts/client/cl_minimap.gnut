@@ -178,7 +178,7 @@ void function RegisterMinimapPackage( string entityClassname, int customStateInd
 void function RegisterDefaultMinimapPackage( string entityClassname, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
 	Assert( !(entityClassname in minimapAssetMap) )
-
+	
 	MinmapPackage minimapPackage
 	minimapPackage.minimapAsset = minimapAsset
 	minimapPackage.initFunction = initFunction
@@ -421,10 +421,14 @@ asset function GetMinimapAsset( string className, int customState )
 asset function GetFullmapAsset( string className, int customState )
 {
 	if ( !(className in minimapAssetMap) )
+	{
 		return $""
+	}
 
 	if ( customState > minimapAssetMap[className].len() - 1 )
+	{
 		return $""
+	}
 
 	return minimapAssetMap[className][customState].fullmapAsset
 }
@@ -452,10 +456,10 @@ void function AddMinimapObject( entity ent )
 	int customState  = ent.Minimap_GetCustomState()
 
 	asset minimapAsset = GetMinimapAsset( className, customState )
+	
 	if ( minimapAsset == $"" )
-	{
 		return
-	}
+
 
 	#if DEVELOPER
 		int eHandle = ent.GetEncodedEHandle()
@@ -472,6 +476,7 @@ void function AddMinimapObject( entity ent )
 
 			foreach ( eHandleIter in eHandlesToRemove )
 			{
+				printt("Deleting invalid minimap handle: ", eHandleIter )
 				delete file.minimapHandles[eHandleIter]
 			}
 		}
@@ -733,7 +738,7 @@ void function Minimap_RingPulseCleanup( var rui, float lifeTime )
 {
 	if ( lifeTime > 0 )
 		wait lifeTime
-
+	
 	file.minimapOtherRuis.fastremovebyvalue( rui )
 	RuiDestroy( rui )
 }

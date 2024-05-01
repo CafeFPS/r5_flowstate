@@ -544,7 +544,7 @@ void function SetButtonSettings( entity panel )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
 	
 	if ( Gamemode() == eGamemodes.fs_dm )
-		WaitForever()
+		WaitForever() //shouldn't this simply return... ?
 	else
 		wait 2
 	panel.SetUsable()

@@ -268,7 +268,7 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 	UpdateDevMenuButtons()
 }
 
-array<int> allowedWeaponChangeModes = [
+const array<int> allowedWeaponChangeModes = [
 	
 	ePlaylists.fs_dm,
 	ePlaylists.fs_1v1,
@@ -768,7 +768,7 @@ void function SetupTDMPrimaryWeapons()
 	SetupDevCommand( "EVA-8", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
 	SetupDevCommand( "Peacekeeper", "tgive p mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
 	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 sniper_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
@@ -809,7 +809,7 @@ void function SetupTDMSecondaryWeapons()
 	SetupDevCommand( "EVA-8", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
 	SetupDevCommand( "Peacekeeper", "tgive s mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive s mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "Mastiff","tgive s mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
 	SetupDevCommand( "Longbow", "tgive s mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive s mp_weapon_defender optic_sniper_threat stock_sniper_l3" )

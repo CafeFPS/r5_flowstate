@@ -125,7 +125,8 @@ void function Cl_CustomTDM_Init()
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
 	
-	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	//if( GetCurrentPlaylistName() == "fs_scenarios" )
+	if( Playlist() == ePlaylists.fs_scenarios )
 	{
 		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
 	}
@@ -870,7 +871,9 @@ void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 
 void function ServerCallback_SetLGDuelPesistenceSettings( float s1, int s2, int s3, int s4, float s5, int s6, int s7, int s8 )
 {
-	printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
+	#if DEVELOPER 
+		printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
+	#endif
 	RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
 }
 
@@ -937,7 +940,6 @@ void function FSDM_CloseVotingPhase()
 
     RunUIScript( "Close_FSDM_VoteMenu" )
     GetLocalClientPlayer().Signal("ChallengeStartRemoveCameras")
-
 }
 
 void function UpdateUIVoteTimer(int team)

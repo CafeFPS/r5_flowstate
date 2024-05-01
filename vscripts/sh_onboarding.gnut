@@ -1107,6 +1107,7 @@ void function UpdatePlayerCounts()
 	The conditional functions usually get the value from the current playlist.
 */
 
+
 // General
 bool function OnboardingEnabled() 								{ return !GetCurrentPlaylistVarBool( "custom_onboarding", false ) }
 

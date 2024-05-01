@@ -112,6 +112,8 @@ global function SetDpadMenuHidden
 global function UpdateImageAndScaleOnFullmapRUI
 global function GetFullMapScale
 
+global function Cl_Survival_AddClient
+
 global struct NextCircleDisplayCustomData
 {
 	float  circleStartTime
@@ -747,6 +749,11 @@ var function AddInWorldMinimapTopo( entity ent, float width, float height )
 	return topo
 }
 
+const array<int> nonCompassModes = [
+	ePlaylists.fs_scenarios,
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+]
 
 void function Cl_Survival_AddClient( entity player )
 {
@@ -800,8 +807,14 @@ void function Cl_Survival_AddClient( entity player )
 
 	WaitingForPlayersOverlay_Setup( player )
 
-	if( GetCurrentPlaylistName() == "fs_scenarios" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	//if( GetCurrentPlaylistName() == "fs_scenarios" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( nonCompassModes.contains( Playlist() ) )
+	{	
+		#if DEVELOPER 
+			printt("non compass mode")
+		#endif 
 		return
+	}
 
 	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
 	RuiTrackFloat3( file.compassRui, "playerAngles", player, RUI_TRACK_CAMANGLES_FOLLOW )
@@ -904,10 +917,10 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 	RuiTrackFloat( rui, "playerTargetShieldFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_shields )
 	RuiTrackFloat( rui, "playerTargetHealthFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_health )
 	RuiTrackFloat( rui, "playerTargetHealthFracTemp", player, RUI_TRACK_HEAL_TARGET )
-
+	
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if( Gamemode() != eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
+	if( Gamemode() != eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) ) //TODO playlist init to struct
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <255, 0, 119> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )

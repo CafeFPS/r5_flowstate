@@ -37,11 +37,12 @@ global function PIN_Training
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // these defines dictate the compiler for tracker code vs stub code
+//MOVED TO: sh_consts.gnut
 
-global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
+//global const bool TRACKER = true
+//global const bool HAS_TRACKER_DLL = true
 
-
+//TODO: split script into smaller managable, localized scripts
 
 
 
@@ -1068,7 +1069,7 @@ void function PIN_Init()
 	file.DISCORD_PLAYERS_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_PLAYERS_WEBHOOK", ""))
 	file.DISCORD_MATCHES_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_MATCHES_WEBHOOK", ""))
 	
-	//initialize array/table values
+	//initialize array/table maps
 	INIT_GameTypes()
 	INIT_MapNames()
 	INIT_playeradmins()
@@ -4973,7 +4974,7 @@ void function ThrowValidSaveType( ... )
 			
 		default:
 			
-			throw format( "Invalid variable type of: [%s] passed to SavePlayerData(); Expects: [string,bool,int,float]", type );
+			throw format( "Invalid variable type of: [%s] passed to %s(); Expects: [string,bool,int,float]", type, FUNC_NAME() );
 	}
 	
 	unreachable
@@ -5316,6 +5317,7 @@ void function UpdateSavedWeapons( entity player, string data )
 {	
 	if ( empty( data ) ) { return }
 	if ( data == "NA" ) { return }
+	if( FlowState_AdminTgive() ){ return }
 	
 	weaponlist[player.GetPlayerName()] <- data
 	player.p.weapon_loadout = data
@@ -7218,6 +7220,9 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	
 	void function SetServerReloadReadyState( int state )
 	{
+		//TODO: ( after internal implementation is done )
+		//SetAutoReloadState( state ) 
+		
 		if( state == 1 )
 		{
 			SetConVarFloat( "host_autoReloadRate", settings.host_autoReloadRate )
@@ -7247,7 +7252,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 				
 				if ( max >= 50 )
 				{
-					sqerror("Timeout while waiting for log to finish...")
+					sqerror( format("Timeout while waiting for log to finish in %s()...", FUNC_NAME() ) )
 					break
 				}
 			}

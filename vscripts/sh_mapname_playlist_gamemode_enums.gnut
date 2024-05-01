@@ -326,7 +326,7 @@ array<string> function AllPlaylistsArray()
 	return SH_globals.playlists
 }
 
-bool function is1v1GameType() //use for init
+bool function is1v1GameType() //use for initializing a local bool setting during startup
 {
 	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 	{
