@@ -978,7 +978,7 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 {
 	entity player = deathbox.GetOwner()
 	
-	if( Gamemode() == eGamemodes.fs_aimtrainer )
+	if( Gamemode() == eGamemodes.fs_aimtrainer || Playlist() == ePlaylists.fs_scenarios )
 		return
 	
 	if ( !IsValid( player ) )

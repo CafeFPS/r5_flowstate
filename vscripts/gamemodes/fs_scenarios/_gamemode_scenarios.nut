@@ -295,14 +295,18 @@ void function FS_Scenarios_CleanupDeathboxes()
 
 void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 {
+	int count = 0
 	foreach( deathbox in file.aliveDeathboxes )
-		if( IsValid( deathbox ) && deathbox.IsInRealm( realm ) || IsValid( deathbox ) && realm == -1 )
+		if( IsValid( deathbox ) && realm == -1 || IsValid( deathbox ) && deathbox.IsInRealm( realm )  )
 		{
 			if( IsValid( deathbox.GetParent() ) )
 				deathbox.GetParent().Destroy() // Destroy physics
 
 			deathbox.Destroy()
+			
+			count++
 		}
+	printt( "removed", count, "deathboxes for realm", realm )
 }
 
 void function FS_Scenarios_StoreAliveDropship( entity dropship )
@@ -1271,7 +1275,6 @@ void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
 void function FS_Scenarios_ForceAllRoundsToFinish()
 {
 	FS_Scenarios_DestroyAllAliveDropships()
-	FS_Scenarios_DestroyAllAliveDeathboxesForRealm( -1 )
 
 	foreach(player in GetPlayerArray())
 	{
