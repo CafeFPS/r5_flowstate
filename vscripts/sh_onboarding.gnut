@@ -1054,6 +1054,13 @@ void function UpdatePlayerCounts()
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
 		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
+	
+		if( nonPassiveModes.contains( Playlist() ) )
+		{
+			connectedPlayers = GetPlayerArray()
+			SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+			SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
+		}
 		break
 
 		case eGamemodes.CUSTOM_CTF:
