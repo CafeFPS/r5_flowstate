@@ -39,6 +39,7 @@ global struct scenariosGroupStruct
 	bool IsFinished = false
 	float endTime
 	bool showedEndMsg = false
+	bool isReady = false
 
 	// realm based ground loot system
 	array<entity> groundLoot
@@ -162,7 +163,7 @@ void function FS_Scenarios_SaveDoorsData()
 			if( data.linked && IsValid( data.door ) && IsValid( data2.door ) && data.door.GetLinkEnt() == data2.door )
 			{
 				file.allMapDoors.remove( j )
-				printt( "removed double door" )
+				// printt( "removed double door" )
 				data2.door.Destroy() //save edicts even more
 			}
 		}
@@ -827,7 +828,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
     }
 
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-	Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 
    	if( isPlayerInRestingList( player ) )
 	{	
@@ -951,7 +951,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		foreach( groupHandle, group in file.scenariosGroupsInProgress ) 
 		{
-			if( !IsValid( group ) )
+			if( !IsValid( group ) || !group.isReady )
 				continue
 
 			array<entity> players
@@ -1160,41 +1160,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
 		printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
 
-		//Send teams to fight
-		soloLocStruct groupLocStruct = newGroup.groupLocStruct
-		newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
-
-		foreach ( entity player in players )
-		{
-			if( !IsValid( player ) )
-				return
-
-			player.p.notify = false
-			player.p.destroynotify = true
-			FS_SetRealmForPlayer( player, newGroup.slotIndex )
-
-			FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
-			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
-		}
-
-		thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
-
-		if( settings.fs_scenarios_ground_loot )
-		{
-			thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
-			thread FS_Scenarios_SpawnLootForGroup( newGroup )
-		} else
-			printt( "ground loot is disabled from playlist!" )
-
-		if( settings.fs_scenarios_dropshipenabled )
-		{
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
-			thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
-		} else
-		{
-			thread FS_Scenarios_GiveWeaponsToGroup( players )
-		}
-		
 		// Setup HUD
 		foreach( player in newGroup.team1Players )
 		{
@@ -1223,6 +1188,56 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
 			}
 		}
+
+		thread function () : ( newGroup, players )
+		{
+			EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+
+			soloLocStruct groupLocStruct = newGroup.groupLocStruct
+			newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
+
+			//Play fx on players screen
+			foreach ( entity player in players )
+			{
+				if( !IsValid( player ) )
+					return
+
+				Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+			}
+
+			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
+
+			if( settings.fs_scenarios_ground_loot )
+			{
+				thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
+				thread FS_Scenarios_SpawnLootForGroup( newGroup )
+			} else
+				printt( "ground loot is disabled from playlist!" )
+
+			wait 0.5
+
+			foreach ( entity player in players )
+			{
+				if( !IsValid( player ) )
+					return
+
+				player.p.notify = false
+				player.p.destroynotify = true
+				FS_SetRealmForPlayer( player, newGroup.slotIndex )
+
+				FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+			}
+
+			if( settings.fs_scenarios_dropshipenabled )
+			{
+				thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
+				thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
+			} else
+			{
+				thread FS_Scenarios_GiveWeaponsToGroup( players )
+			}
+			newGroup.isReady = true
+		}()
 	}//while(true)
 
 }//thread
