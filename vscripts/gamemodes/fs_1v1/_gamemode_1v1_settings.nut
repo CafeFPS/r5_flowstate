@@ -441,7 +441,7 @@ array<LocPair> function FetchReturnAllSoloLocations( int eMap )
 	}
 	else if ( eMap == eMaps.mp_rr_desertlands_64k_x_64k )
 	{
-		waitingRoomPanelLocation = NewLocPair( <9614.28125, 5631.50684, -3695.96875>, <0, 89.9950562, 0> ) //休息区观战面板
+		waitingRoomPanelLocation = NewLocPair( <-19790.7949, 13821.9893, -3760.8186>, <0, 125.147415, 0> ) //休息区观战面板
 
 		if( is3v3Mode() )
 		{

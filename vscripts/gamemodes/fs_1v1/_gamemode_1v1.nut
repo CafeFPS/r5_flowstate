@@ -3149,8 +3149,8 @@ void function _soloModeInit( int eMap )
 			break;
 
 		case eMaps.mp_rr_desertlands_64k_x_64k:
-			WaitingRoom.origin = <9616.44434, 5900.57129, -3695.96875>
-			WaitingRoom.angles = <0, -92.6108322, 0>
+			WaitingRoom.origin = <-19830.3633, 14081.7314, -3759.98901>
+			WaitingRoom.angles = <0, -83.0441132, 0>
 			break;
 	}
 	
