@@ -132,6 +132,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 {
 	printt( "[+] OnPlayerDisconnected Scenarios -", player )
 	_CleanupPlayerEntities( player )
+	HandleGroupIsFinished( player, null )
 
 	if( player.p.handle in file.scenariosPlayerToGroupMap )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]

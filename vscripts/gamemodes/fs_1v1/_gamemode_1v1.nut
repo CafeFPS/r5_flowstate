@@ -4914,7 +4914,7 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 
 	if( settings.is3v3Mode )
 	{
-		if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
+		if( damageInfo != null && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
 			return
 
 		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
@@ -4947,7 +4947,7 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 			int droppableItems = GetAllDroppableItems( player ).len()
 
 			if ( droppableItems > 0 && !group.IsFinished )
-				CreateSurvivalDeathBoxForPlayer( player, DamageInfo_GetAttacker( damageInfo ), damageInfo )
+				CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
 		}
 	} 
 	else
