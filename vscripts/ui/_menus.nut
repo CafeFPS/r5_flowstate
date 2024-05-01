@@ -512,7 +512,12 @@ void function UICodeCallback_FullyConnected( string levelname )
 	//		InitStatsTables()
 	//	}
 	//}
-
+	
+	#if DEVELOPER
+		printt( "UI Loading level:", levelname )
+	#endif 
+	
+	PlayLists_Mapnames_Gamemodes_Init()
 	InitXPData()
 
 	//#if DEVELOPER // For convenience

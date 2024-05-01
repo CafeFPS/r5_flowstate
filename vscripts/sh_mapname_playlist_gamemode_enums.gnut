@@ -210,6 +210,10 @@ struct
 	
 } SH_globals
 
+//-----make global with----
+//
+// global SH_globals shGlobal
+//
 
 //this is the global location for defining a mode that is 1v1 based
 const array<int> playlist1v1Types = [
@@ -238,19 +242,33 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gaemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
 	
 	#if SERVER || CLIENT
-	
-		SH_globals.currentMap = getMapEnumFromName( GetMapName() )
-		mAssert( SH_globals.currentMap != -1, format( "Current map \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetMapName() ) )
+		string level = GetMapName()
+	#elseif UI 
+		string level = uiGlobal.loadedLevel
 	#endif
+	
+		SH_globals.currentMap = getMapEnumFromName( level )
+		mAssert( SH_globals.currentMap != -1, format( "Current map \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", level ) )
 		
 	SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )	
 	mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
 
-	#if SERVER || CLIENT
 	
-		SH_globals.currentGamemode = getGamemodeEnumFromName( GameRules_GetGameMode() )	
-		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GameRules_GetGameMode() ) )
-	#endif
+	#if SERVER || CLIENT	
+		int currentGamemodeEnum = getGamemodeEnumFromName( GameRules_GetGameMode() )
+		string curentGamemodeName = GameRules_GetGameMode()
+	#elseif UI 
+		string curentGamemodeName = GetConVarString( "mp_gamemode" )
+		int currentGamemodeEnum = getGamemodeEnumFromName( curentGamemodeName )
+			
+			#if DEVELOPER
+				printt( "UI Gamemode: ", curentGamemodeName )
+			#endif
+	#endif 
+		
+		SH_globals.currentGamemode = currentGamemodeEnum
+		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
+	
 }
 
 int function getMapEnumFromName( string mapString ) 

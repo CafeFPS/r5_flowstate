@@ -112,8 +112,6 @@ global function SetDpadMenuHidden
 global function UpdateImageAndScaleOnFullmapRUI
 global function GetFullMapScale
 
-global function Cl_Survival_AddClient
-
 global struct NextCircleDisplayCustomData
 {
 	float  circleStartTime

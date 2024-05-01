@@ -308,6 +308,7 @@ global struct UIGlobals
 	bool 	is1v1GameType
 	bool 	isAimTrainer
 	bool 	playlistbool_flowstate_1v1mode
+	int 	currentGamemodeEnum
 }
 
 global UIGlobals uiGlobal
@@ -321,7 +322,7 @@ void function UICodeCallback_SmokeTestRunning( string param )
 
 void function UICodeCallback_UIInit()
 {
-	AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
+	//AddUICallback_OnLevelInit( PlayLists_Mapnames_Gamemodes_Init )
 	AddUICallback_OnLevelInit( Load_Level_based_UIGlobals )
 	
 	PIN_Init()
@@ -488,6 +489,7 @@ void function AddUICallback_KeyBindSet( void functionref( string, string ) callb
 
 void function Load_Level_based_UIGlobals()
 {	
+	mAssert( Playlist() != -1 && Gamemode() != -1 && MapName() != -1, "INVALID INIT enums IN func: " + FUNC_NAME() + " PlaylistEnumIdx: " + Playlist().tostring() + " GamemodeEnumIdx: " + Gamemode().tostring() + " MapNameEnumIdx: " + MapName().tostring() )
 	uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
 	uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
 	uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
