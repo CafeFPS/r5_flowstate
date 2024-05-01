@@ -16,7 +16,6 @@ global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_GetDropshipEnabled
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
-global function FS_Scenarios_SaveDoorData
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -138,32 +137,38 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 }
 
-void function FS_Scenarios_SaveDoorData( entity door )
+void function FS_Scenarios_SaveDoorsData()
 {
-	doorsData mapDoor
-	mapDoor.door = door
-	mapDoor.origin = door.GetOrigin()
-	mapDoor.angles = door.GetAngles()
-	mapDoor.linked = IsValid( door.GetLinkEnt() )
-	mapDoor.linkOrigin = mapDoor.linked == true ? door.GetLinkEnt().GetOrigin() : <0,0,0>
-	mapDoor.linkAngles = mapDoor.linked == true ? door.GetLinkEnt().GetAngles() : <0,0,0>
-	
-	file.allMapDoors.append( mapDoor )
-}
+	foreach( door in GetAllPropDoors() )
+	{
+		doorsData mapDoor
+		mapDoor.door = door
+		mapDoor.origin = door.GetOrigin()
+		mapDoor.angles = door.GetAngles()
+		mapDoor.linked = IsValid( door.GetLinkEnt() )
 
-void function FS_Scenarios_FinishSavingDoorsData()
-{
+		mapDoor.linkOrigin = mapDoor.linked == true ? door.GetLinkEnt().GetOrigin() : <0,0,0>
+		mapDoor.linkAngles = mapDoor.linked == true ? door.GetLinkEnt().GetAngles() : <0,0,0>
+		
+		file.allMapDoors.append( mapDoor )
+		RemoveDoorFromManagedEntArray( door )
+	}
+
 	foreach( i, doorsData data in file.allMapDoors )
 	{
 		foreach( j, doorsData data2 in file.allMapDoors )
 		{
 			if( data.linked && IsValid( data.door ) && IsValid( data2.door ) && data.door.GetLinkEnt() == data2.door )
 			{
-				file.allMapDoors.removebyvalue( data2 )
-				data2.door.Destroy() // save edicts even more
+				file.allMapDoors.remove( j )
+				printt( "removed double door" )
+				data2.door.Destroy() //save edicts even more
 			}
 		}
-		
+	}
+	
+	foreach( i, doorsData data in file.allMapDoors )
+	{
 		if( IsValid( data.door ) )
 			data.door.Destroy() //save edicts even more
 	}
@@ -216,6 +221,31 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 		}
 
 		group.doors.append( singleDoor )
+	}
+
+	//bro
+	bool skip = false
+	foreach( door in group.doors )
+	{
+		skip = false
+		foreach( door2 in group.doors )
+		{
+			if( skip )
+				continue
+
+			if( door == door2 )
+				continue
+
+			if( door.GetOrigin() == door2.GetOrigin() )
+			{
+				if( IsValid( door ) && IsValid( door.GetLinkEnt() ) )
+					door2.Destroy()
+				else if( IsValid( door ) )
+					door.Destroy()
+
+				skip = true
+			}
+		}
 	}
 	printt( "spawned", group.doors.len(), "doors for realm", realm )
 }
@@ -864,7 +894,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 {
     WaitForGameState(eGameState.Playing)
-	FS_Scenarios_FinishSavingDoorsData()
+	FS_Scenarios_SaveDoorsData()
 
 	OnThreadEnd(
 		function() : (  )

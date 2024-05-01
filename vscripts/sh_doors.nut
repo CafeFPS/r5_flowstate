@@ -955,7 +955,7 @@ void function OnCodeDoorSpawned( entity door )
 {
 	if( is3v3Mode() && door.GetScriptName() != "flowstate_door_realms" )
 	{
-		FS_Scenarios_SaveDoorData( door )
+		AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 		return
 	}
 	door.SetMaxHealth( GetCurrentPlaylistVarInt( "blockable_door_health", 30 ) )
