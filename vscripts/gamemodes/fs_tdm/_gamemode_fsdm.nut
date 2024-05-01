@@ -3853,9 +3853,7 @@ void function SimpleChampionUI()
 					player.DeployWeapon()
 					player.LockWeaponChange()
 					player.FreezeControlsOnServer()
-					
-					Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
-					
+
 					// #if !DEVELOPER
 					if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode && !flowstateSettings.enable_oddball_gamemode )
 						wait Flowstate_StartTimeDelay
