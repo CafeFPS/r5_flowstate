@@ -2493,7 +2493,7 @@ void function soloModePlayerToWaitingList( entity player )
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
-	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode)
+	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode )
 	{
 		soloGroupStruct group = returnSoloGroupOfPlayer(player);
 		entity opponent = returnOpponentOfPlayer(player);	
@@ -2661,13 +2661,24 @@ void function soloModePlayerToRestingList(entity player)
 	LocalMsg( player, "#FS_RESTING", "", 1, 300 )
 }
 
-void function soloModefixDelayStart(entity player)
+void function soloModefixDelayStart( entity player )
 {	
 	string tracker = "";
 
-	TakeAllPassives( player )
-	TakeAllWeapons( player )
-	HolsterAndDisableWeapons(player)
+	thread( void function() : ( player )
+	{	
+		player.EndSignal( "OnDestroy" )
+		player.WaitSignal( "OnRespawned" )
+		
+		if( !IsValid ( player ) )
+			return 
+			
+		TakeUltimate( player )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		TakeAllPassives( player )
+		TakeAllWeapons( player )
+		HolsterAndDisableWeapons( player )
+	}())
 	
 	if( settings.is3v3Mode )
 		return
@@ -2679,12 +2690,8 @@ void function soloModefixDelayStart(entity player)
 		LocalMsg( player, "#FS_1v1_Banner" )
 	#endif
 	
-	wait 12
-	
-	if(!IsValid(player))
-	{
-		return
-	}
+	if( GetGameState() >= eGameState.Playing ){ wait 7 } else { wait 12 }	
+	if( !IsValid( player ) ){ return }
 	
 	if(!isPlayerInRestingList(player))
 	{
@@ -4961,4 +4968,10 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 		if(!group.IsKeep)
 			group.IsFinished = true //tell solo thread this round has finished
 	}
+}
+
+void function TakeUltimate( entity player )
+{
+	if( IsValid( player.GetOffhandWeapon( OFFHAND_ULTIMATE ) ) )
+		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 }

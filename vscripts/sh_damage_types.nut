@@ -463,6 +463,10 @@ void function DamageTypes_Init()
 	foreach ( name, number in eDamageSourceId )
 	{
 		file.damageSourceIDToString[ number ] <- name
+		
+		#if SERVER 
+			RegisterTrackerWeaponIdentifier()[name] <- number
+		#endif 
 	}
 
 	PrecacheWeapon( $"mp_weapon_rspn101" ) // used by npc_soldier ><

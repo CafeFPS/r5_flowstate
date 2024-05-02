@@ -70,9 +70,6 @@ global function SetAfkToRest
 #endif 
 
 #if STUB
-	//const
-	global const int SQ_MAX_INT_32 = 2147483647;
-	global const int SQ_MIN_INT_32 = -2147483647;
 	
 	//flags
 	global function bAfkToRest
@@ -210,8 +207,6 @@ global float COMMAND_RATE_LIMIT = 0.200 //used in all client commands
 const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
 const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 const int MAX_SAY_MSG = 255;
-global const int SQ_MAX_INT_32 = 2147483647;
-global const int SQ_MIN_INT_32 = -2147483647;
 const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAccess()
 const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
@@ -3281,13 +3276,15 @@ string function PrintAllPlayerMetrics( bool trigger = false )
         bool wep_first = true;
 		
 		string replace = "";
-        foreach (weaponSource, timestamps in metrics.WeaponShotsTimestamps) 
+		
+        foreach ( weaponSource, timestamps in metrics.WeaponShotsTimestamps ) 
 		{					
-            if (!wep_first) {
+            if ( !wep_first ) 
+			{
                 json += ", ";
             }
 			
-			if(!exclude(weaponSource))
+			if( !exclude(weaponSource) )
 			{
 				replace = DamageSourceIDToString(weaponSource)
 			}

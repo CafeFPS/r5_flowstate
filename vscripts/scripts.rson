@@ -202,6 +202,15 @@ Scripts:
 	_remote_functions_mp.gnut
 ]
 
+//must be before sh_damage_types.nut
+// www.r5r.dev Tracker
+When: "SERVER"
+Scripts:
+[
+	mp/tracker/chateffects.nut
+	mp/tracker/utility.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [
@@ -1065,14 +1074,6 @@ Scripts:
     mp/_zipline_utility/_zipline_utility.gnut
     mp/_zipline_utility/_zipline_func.gnut
     mp/_zipline_utility/_zipline_debug.gnut
-]
-
-// www.r5r.dev Tracker
-When: "SERVER"
-Scripts:
-[
-	mp/tracker/chateffects.nut
-	mp/tracker/utility.nut
 ]
 
 When: "SERVER || CLIENT"

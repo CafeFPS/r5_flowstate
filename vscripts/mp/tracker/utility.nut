@@ -33,9 +33,16 @@ global function SetDefaultIBMM
 global function IsTrackerAdmin
 global function PlayTime
 global function truncate
+global function DEV_PrintTrackerWeapons
+global function RegisterTrackerWeaponIdentifier
+
+//const
+global const int SQ_MAX_INT_32 = 2147483647;
+global const int SQ_MIN_INT_32 = -2147483647;
 
 //tables 
 table<string, string> player_admins
+table<string,int> WeaponIdentifiers = {}
 
 //arrays 
 array< array< string > > list_maps
@@ -2318,16 +2325,16 @@ void function printarray( array<string> args )
 {
 	try 
 	{
-		string test = ""
+		string test = "\n\n------ PRINT ARRAY ------\n\n"
 		
 		foreach( arg in args )
 		{
-			test += format( "%s \n", arg )
+			test += format( "	\"%s\", \n", arg )
 		}
 		
 		sqprint(test)
 	}
-	catch(badType)
+	catch(badType) //?how
 	{
 		sqprint("Error: " + badType )
 	}
@@ -2400,276 +2407,21 @@ bool function IsWeaponValid( string weaponref )
 	return ( weaponref in WeaponIdentifiers )
 }
 
-table<string,int> WeaponIdentifiers = {
-    ["damagedef_unknown"] = 1,
-    ["damagedef_unknownBugIt"] = 2,
-    ["damagedef_suicide"] = 3,
-    ["damagedef_despawn"] = 4,
-    ["damagedef_titan_step"] = 5,
-    ["damagedef_crush"] = 6,
-    ["damagedef_sonic_blast"] = 7,
-    ["damagedef_nuclear_core"] = 8,
-    ["damagedef_titan_fall"] = 9,
-    ["damagedef_titan_hotdrop"] = 10,
-    ["damagedef_reaper_fall"] = 11,
-    ["damagedef_trip_wire"] = 12,
-    ["damagedef_wrecking_ball"] = 13,
-    ["damagedef_reaper_groundslam"] = 14,
-    ["damagedef_reaper_nuke"] = 15,
-    ["damagedef_frag_drone_explode"] = 16,
-    ["damagedef_frag_drone_explode_FD"] = 17,
-    ["damagedef_frag_drone_throwable_PLAYER"] = 18,
-    ["damagedef_frag_drone_throwable_NPC"] = 19,
-    ["damagedef_stalker_powersupply_explosion_small"] = 20,
-    ["damagedef_stalker_powersupply_explosion_large"] = 21,
-    ["damagedef_stalker_powersupply_explosion_large_at"] = 22,
-    ["damagedef_shield_captain_arc_shield"] = 23,
-    ["damagedef_fd_explosive_barrel"] = 24,
-    ["damagedef_fd_tether_trap"] = 25,
-    ["damagedef_pilot_slam"] = 26,
-    ["damagedef_ticky_arc_blast"] = 27,
-    ["damagedef_grenade_gas"] = 28,
-    ["damagedef_gas_exposure"] = 29,
-    ["damagedef_dirty_bomb_explosion"] = 30,
-    ["damagedef_sonic_boom"] = 31,
-    ["damagedef_bangalore_smoke_explosion"] = 32,
-    ["damagedef_creeping_bombardment_detcord_explosion"] = 33,
-    ["damagedef_tank_bombardment_detcord_explosion"] = 34,
-    ["damagedef_defensive_bombardment"] = 35,
-    ["damagedef_loot_drone_explosion"] = 36,
-    ["damagedef_DocDrone"] = 37,
-    ["mp_weapon_grenade_decoyaudio"] = 38,
-    ["mp_weapon_grenade_cryonade"] = 39,
-    ["mp_weapon_hemlok"] = 40,
-    ["mp_weapon_lmg"] = 41,
-    ["mp_weapon_rspn101"] = 42,
-    ["mp_weapon_vinson"] = 43,
-    ["mp_weapon_lstar"] = 44,
-    ["mp_weapon_g2"] = 45,
-    ["mp_weapon_r97"] = 46,
-    ["mp_weapon_dmr"] = 47,
-    ["mp_weapon_wingman"] = 48,
-    ["mp_weapon_wingmanelite"] = 49,
-    ["mp_weapon_semipistol"] = 50,
-    ["mp_weapon_autopistol"] = 51,
-    ["mp_weapon_sniper"] = 52,
-    ["mp_weapon_sentinel"] = 53,
-    ["mp_weapon_shotgun"] = 54,
-    ["mp_weapon_mastiff"] = 55,
-    ["mp_weapon_frag_grenade"] = 56,
-    ["mp_weapon_grenade_emp"] = 57,
-    ["mp_weapon_arc_blast"] = 58,
-    ["mp_weapon_thermite_grenade"] = 59,
-    ["mp_weapon_nuke_satchel"] = 60,
-    ["mp_extreme_environment"] = 61,
-    ["mp_weapon_shotgun_pistol"] = 62,
-    ["mp_weapon_doubletake"] = 63,
-    ["mp_weapon_alternator_smg"] = 64,
-    ["mp_weapon_esaw"] = 65,
-    ["mp_weapon_wrecking_ball"] = 66,
-    ["mp_weapon_melee_survival"] = 67,
-    ["mp_weapon_pdw"] = 68,
-    ["mp_weapon_energy_ar"] = 69,
-    ["mp_weapon_volt_smg"] = 70,
-    ["mp_weapon_defender"] = 71,
-    ["mp_weapon_warmachine"] = 72,
-    ["mp_weapon_car"] = 73,
-    ["mp_weapon_3030"] = 74,
-    ["mp_weapon_dragon_lmg"] = 75,
-    ["mp_weapon_throwingknife"] = 76,
-    ["mp_weapon_grenade_electric_smoke"] = 77,
-    ["mp_weapon_grenade_gravity"] = 78,
-    // Melee
-    ["melee_pilot_emptyhanded"] = 79,
-    ["melee_pilot_arena"] = 80,
-    ["melee_pilot_sword"] = 81,
-    ["melee_titan_punch"] = 82,
-    ["melee_titan_punch_ion"] = 83,
-    ["melee_titan_punch_tone"] = 84,
-    ["melee_titan_punch_legion"] = 85,
-    ["melee_titan_punch_scorch"] = 86,
-    ["melee_titan_punch_northstar"] = 87,
-    ["melee_titan_punch_fighter"] = 88,
-    ["melee_titan_punch_vanguard"] = 89,
-    ["melee_titan_punch_stealth"] = 90,
-    ["melee_titan_punch_rocket"] = 91,
-    ["melee_titan_punch_drone"] = 92,
-    ["melee_titan_sword"] = 93,
-    ["melee_titan_sword_aoe"] = 94,
-    ["melee_boxing_ring"] = 95,
-    ["mp_weapon_melee_boxing_ring"] = 96,
-    ["melee_data_knife"] = 97,
-    ["mp_weapon_data_knife_primary"] = 98,
-    ["melee_wraith_kunai"] = 99,
-    ["mp_weapon_wraith_kunai_primary"] = 100,
-	["melee_bolo_sword"] = 101,
-	["mp_weapon_bolo_sword_primary"] = 102,
-	["melee_bloodhound_axe"] = 103,
-	["mp_weapon_bloodhound_axe_primary"] = 104,
-	["melee_lifeline_baton"] = 105,
-	["mp_weapon_lifeline_baton_primary"] = 106,
-	["melee_shadowsquad_hands"] = 107,
-	["melee_shadowroyale_hands"] = 108,
-	["mp_weapon_shadow_squad_hands_primary"] = 109,
-	["mp_weapon_tesla_trap"] = 110,
-	// Turret Weapons
-	["mp_weapon_yh803"] = 111,
-	["mp_weapon_yh803_bullet"] = 112,
-	["mp_weapon_yh803_bullet_overcharged"] = 113,
-	["mp_weapon_mega_turret"] = 114,
-	["mp_weapon_mega_turret_aa"] = 115,
-	["mp_turretweapon_rockets"] = 116,
-	["mp_turretweapon_blaster"] = 117,
-	["mp_turretweapon_plasma"] = 118,
-	["mp_turretweapon_sentry"] = 119,
-	["mp_weapon_smart_pistol"] = 120,
-	// Character Abilities
-	["mp_weapon_defensive_bombardment_weapon"] = 121,
-	["mp_weapon_creeping_bombardment_weapon"] = 122,
-	["mp_ability_octane_stim"] = 123,
-	["mp_ability_crypto_drone_emp"] = 124,
-	["mp_ability_crypto_drone_emp_trap"] = 125,
-	// AI only Weapons
-	["mp_weapon_super_spectre"] = 126,
-	["mp_weapon_dronebeam"] = 127,
-	["mp_weapon_dronerocket"] = 128,
-	["mp_weapon_droneplasma"] = 129,
-	["mp_weapon_turretplasma"] = 130,
-	["mp_weapon_turretrockets"] = 131,
-	["mp_weapon_turretplasma_mega"] = 132,
-	["mp_weapon_gunship_launcher"] = 133,
-	["mp_weapon_gunship_turret"] = 134,
-	["mp_weapon_gunship_missile"] = 135,
-	// Misc
-	["rodeo"] = 136,
-	["rodeo_forced_titan_eject"] = 137,
-	["rodeo_execution"] = 138,
-	["human_melee"] = 139,
-	["auto_titan_melee"] = 140,
-	["berserker_melee"] = 141,
-	["mind_crime"] = 142,
-	["charge_ball"] = 143,
-	["grunt_melee"] = 144,
-	["spectre_melee"] = 145,
-	["prowler_melee"] = 146,
-	["super_spectre_melee"] = 147,
-	["titan_execution"] = 148,
-	["human_execution"] = 149,
-	["eviscerate"] = 150,
-	["wall_smash"] = 151,
-	["ai_turret"] = 152,
-	["team_switch"] = 153,
-	["rocket"] = 154,
-	["titan_explosion"] = 155,
-	["flash_surge"] = 156,
-	["sticky_time_bomb"] = 157,
-	["vortex_grenade"] = 158,
-	["droppod_impact"] = 159,
-	["ai_turret_explosion"] = 160,
-	["rodeo_trap"] = 161,
-	["round_end"] = 162,
-	["bubble_shield"] = 163,
-	["evac_dropship_explosion"] = 164,
-	["sticky_explosive"] = 165,
-	["titan_grapple"] = 166,
-	// Environmental
-	["fall"] = 167,
-	["splat"] = 168,
-	["crushed"] = 169,
-	["burn"] = 170,
-	["lasergrid"] = 171,
-	["outOfBounds"] = 172,
-	["deathField"] = 173,
-	["indoor_inferno"] = 174,
-	["submerged"] = 175,
-	["switchback_trap"] = 176,
-	["floor_is_lava"] = 177,
-	["suicideSpectreAoE"] = 178,
-	["titanEmpField"] = 179,
-	["stuck"] = 180,
-	["deadly_fog"] = 181,
-	["exploding_barrel"] = 182,
-	["electric_conduit"] = 183,
-	["turbine"] = 184,
-	["harvester_beam"] = 185,
-	["toxic_sludge"] = 186,
-	["mp_weapon_spectre_spawner"] = 187,
-	// development
-	["weapon_cubemap"] = 188,
-	// Prototype
-	["mp_weapon_zipline"] = 189,
-	["at_turret_override"] = 190,
-	["rodeo_battery_removal"] = 191,
-	["phase_shift"] = 192,
-	["gamemode_bomb_detonation"] = 193,
-	["nuclear_turret"] = 194,
-	["proto_viewmodel_test"] = 195,
-	["mp_titanweapon_heat_shield"] = 196,
-	["mp_titanweapon_sonar_pulse"] = 197,
-	["mp_titanability_slow_trap"] = 198,
-	["mp_titanability_gun_shield"] = 199,
-	["mp_titanability_power_shot"] = 200,
-	["mp_titanability_ammo_swap"] = 201,
-	["mp_titanability_sonar_pulse"] = 202,
-	["mp_titanability_rearm"] = 203,
-	["mp_titancore_upgrade"] = 204,
-	["mp_titanweapon_xo16_vanguard"] = 205,
-	["mp_weapon_arc_trap"] = 206,
-	["mp_weapon_arc_launcher"] = 207,
-	["core_overload"] = 208,
-	["mp_titanweapon_stasis"] = 209,
-	["mp_titanweapon_stealth_titan"] = 210,
-	["mp_titanweapon_rocket_titan"] = 211,
-	["mp_titanweapon_drone_titan"] = 212,
-	["mp_titanweapon_stealth_sword"] = 213,
-	["mp_ability_consumable"] = 214,
-	["snd_bomb"] = 215,
-	["bombardment"] = 216,
-	["bleedout"] = 217,
-	["mp_weapon_energy_shotgun"] = 218,
-	["fire"] = 219,
-	// Custom
-	["mp_weapon_raygun"] = 220,
-	["mp_weapon_haloshotgun"] = 221,
-	["mp_weapon_halosmg"] = 222,
-	["mp_weapon_halomagnum"] = 223,
-	["mp_weapon_halobattlerifle"] = 224,
-	["mp_weapon_haloassaultrifle"] = 225,
-	["mp_weapon_halosniperrifle"] = 226,
-	["mp_weapon_haloneedler"] = 227,
-	["mp_weapon_energysword"] = 228,
-	["mp_weapon_frag_grenade_halomod"] = 229,
-	["mp_weapon_plasma_grenade_halomod"] = 230,
-	["mp_weapon_oddball_primary"] = 231,
-	["melee_oddball"] = 232,
-	["mp_weapon_lightninggun"] = 233,
-	// lies
-	["mp_weapon_grenade_creeping_bombardment"] = 234,
-	["mp_ability_area_sonar_scan"] = 235,
-	["mp_ability_hunt_mode"] = 236,
-	["mp_weapon_dirty_bomb"] = 237,
-	["mp_weapon_grenade_gas"] = 238,
-	["mp_ability_crypto_drone"] = 239,
-	["mp_ability_crypto_drone_emp"] = 240,
-	["mp_ability_gibraltar_shield"] = 241,
-	["mp_weapon_bubble_bunker"] = 242,
-	["mp_weapon_grenade_defensive_bombardment"] = 243,
-	["mp_weapon_deployable_medic"] = 244,
-	["mp_ability_care_package"] = 245,
-	["mp_ability_holopilot"] = 246,
-	["mp_ability_mirage_ultimate"] = 247,
-	["mp_ability_heal"] = 248,
-	["mp_weapon_jump_pad"] = 249,
-	["mp_ability_grapple"] = 250,
-	["mp_weapon_zipline"] = 251,
-	["mp_weapon_tesla_trap"] = 252,
-	["mp_weapon_trophy_defense_system"] = 253,
-	["mp_ability_phase_walk"] = 254,
-	["mp_weapon_phase_tunnel"] = 255,
-	["mp_weapon_grenade_bangalore"] = 256
-	
-	//ADDING TO THIS LIST REQUIRES CHANGES TO EXCLUSION LIST
+table<string,int> function RegisterTrackerWeaponIdentifier()
+{
+	return WeaponIdentifiers
+}
 
+void function DEV_PrintTrackerWeapons()
+{
+	string prnt = "\n\n ---------- TRACKER WEAPON IDENTIFIERS --------- \n\n";
+	
+	foreach( weapon, id in WeaponIdentifiers )
+	{
+		prnt += format( "[\"%s\"] = %d, \n", weapon, id )
+	}
+	
+	printt( prnt )
 }
 
 table<string, int> function TrackerWepTable() 
@@ -2677,48 +2429,10 @@ table<string, int> function TrackerWepTable()
     return WeaponIdentifiers
 }
 
-array<int> function exclusions()
-{
-	const array<int> exclude = [
-		233,
-		234,
-		235,
-		236,
-		237,
-		238,
-		239,
-		240,
-		241,
-		242,
-		243,
-		244,
-		245,
-		246,
-		247,
-		248,
-		249,
-		250,
-		251,
-		252,
-		253,
-		254,
-		255,
-		256
-	];
-
-	return exclude;
-}
-
 bool function exclude( int weaponSource )
 {
-	if(exclusions().find(weaponSource) != -1)
-	{
-		return true	
-	}
-	
-	return false
+	return DamageSourceIDHasString( weaponSource )
 }
-
 
 string function ParseWeapon( string weaponString )
 {

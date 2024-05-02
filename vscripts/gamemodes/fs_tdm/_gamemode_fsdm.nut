@@ -67,11 +67,9 @@ global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function Thread_CheckInput
 global function ClientCommand_mkos_LGDuel_IBMM_wait
-
 global function ClientCommand_mkos_lock1v1_setting
-global bool IS_1V1_MODE_ENABLED
-
 global function RotateMap
+
 
 global function Message_New
 global function ServerMsgToBox
@@ -258,6 +256,7 @@ struct {
 	bool allow_cfgs
 	bool fs_lgduels_1v1
 	bool give_random_custom_models_toall
+	bool IS_1V1_MODE_ENABLED
 	
 	//string settings 
 	string custom_match_ending_title
@@ -1052,7 +1051,6 @@ bool function bIs1v1Mode()
 		case eMaps.mp_rr_party_crasher:
 		case eMaps.mp_rr_olympus_mu1:
 		case eMaps.mp_rr_desertlands_64k_x_64k:
-		//isChineseServer() //not needed?
 		return true
 		default:
 		return false
@@ -1108,7 +1106,7 @@ void function _CustomTDM_Init()
 	}
 
 	
-	IS_1V1_MODE_ENABLED = bIs1v1Mode()
+	flowstateSettings.IS_1V1_MODE_ENABLED = bIs1v1Mode()
 
 	if( flowstateSettings.enable_oddball_gamemode )
 	{
@@ -1738,7 +1736,8 @@ void function _OnPlayerConnected(entity player)
 	if( Flowstate_IsLGDuels()	 )
 	{
 		AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
-	} else if( Flowstate_IsFastInstaGib() )
+	} 
+	else if( Flowstate_IsFastInstaGib() )
 	{
 		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
 	}	
@@ -1777,7 +1776,7 @@ void function _OnPlayerConnected(entity player)
 
 bool function is1v1EnabledAndAllowed()
 {
-	return IS_1V1_MODE_ENABLED
+	return flowstateSettings.IS_1V1_MODE_ENABLED
 }
 
 void function isChineseServer()
@@ -2288,12 +2287,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
             {
 				DecideRespawnPlayer(player, false)
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
-            }
-			
-			if( g_bIs1v1 )
-			{
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-			}		
+            }		
         }
     }
 
@@ -3909,7 +3903,7 @@ void function SimpleChampionUI()
 					player.UnlockWeaponChange()
 					player.Server_TurnOffhandWeaponsDisabledOff()
 					player.UnfreezeControlsOnServer()
-
+				
 					entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 					entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 					entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )

@@ -88,6 +88,7 @@ void function SV_CL_Onboarding_Init()
 	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 	FlagInit( "MinPlayersReached", false )
 
+	RespawnBehavior_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 
@@ -555,22 +556,39 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	}
 }
 
-void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
-{
-	if ( !IsValid( player ) ) return;
-	
-	if ( IsAlive( player ) )
-	 	TakeLoadoutRelatedWeapons( player )
 
+array<string> enabledMods = []
+bool script_bHighlight = true
+bool script_bGiveskins = false
+bool script_bRespawnInitComplete = false
+
+void function RespawnBehavior_Init()
+{
+	script_bHighlight = ( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_snd || Playlist() == ePlaylists.fs_scenarios )
+	script_bGiveskins = GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false )
+	
 	table<string, string> possibleMods = {
 		survival_jumpkit_enabled = "enable_doublejump",
 		survival_wallrun_enabled = "enable_wallrun"
 	}
 
-	array<string> enabledMods = []
 	foreach ( playlistVar, modName in possibleMods )
 		if ( GetCurrentPlaylistVarBool( playlistVar, false ) || GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) == 1 )
 			enabledMods.append( modName )
+		
+	script_bRespawnInitComplete = true
+}
+
+void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
+{
+	#if DEVELOPER
+		mAssert( script_bRespawnInitComplete, "RespawnBehavior_Init() --- wasn't ready in DecideRespawnPlayer()" )
+	#endif
+	
+	if ( !IsValid( player ) ) return;
+	
+	if ( IsAlive( player ) )
+	 	TakeLoadoutRelatedWeapons( player )
 		
 	DoRespawnPlayer( player, null )
 
@@ -625,7 +643,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	#endif
 
 	//Set highlight to mantain retail behavior
-	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_snd || Playlist() == ePlaylists.fs_scenarios )
+	if( script_bHighlight )
 	{
 		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
 	}
@@ -639,11 +657,13 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	{
 		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
 	}
-	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
+	if( script_bGiveskins )
 	{
 		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
 		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
 	}
+	
+	player.Signal("OnRespawned")
 }
 
 void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index )

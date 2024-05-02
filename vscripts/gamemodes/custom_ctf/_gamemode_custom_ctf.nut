@@ -1934,12 +1934,8 @@ void function GiveCustomHeals( entity player )
 
 void function GiveConsumableAmount( entity player, string ref, int amount )
 {
-	if( amount <= 0 ){ return }
-
-	for ( int i = 0 ; i < amount; i++)
-	{
-		SURVIVAL_AddToPlayerInventory( player, ref )
-	}
+	if( amount <= 0 ){ return }	
+	SURVIVAL_AddToPlayerInventory( player, ref, amount )
 }
 
 void function GivePlayerConsumableSlot( entity player )
