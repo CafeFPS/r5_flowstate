@@ -66,7 +66,7 @@ global enum eDamageSourceId
 	mp_weapon_grenade_decoyaudio
 	mp_weapon_grenade_cryonade
 	
-	// Pilot Weapons
+	// Pilot Weapons - S3 Defaults. Cafe
 	mp_weapon_hemlok
 	mp_weapon_lmg
 	mp_weapon_rspn101
@@ -76,8 +76,6 @@ global enum eDamageSourceId
 	mp_weapon_r97
 	mp_weapon_dmr
 	mp_weapon_wingman
-	//mp_weapon_wingman_n
-	mp_weapon_wingmanelite
 	mp_weapon_semipistol
 	mp_weapon_autopistol
 	mp_weapon_sniper
@@ -86,32 +84,34 @@ global enum eDamageSourceId
 	mp_weapon_mastiff
 	mp_weapon_frag_grenade
 	mp_weapon_grenade_emp
-	mp_weapon_arc_blast
 	mp_weapon_thermite_grenade
-	mp_weapon_nuke_satchel
-	//mp_weapon_satchel
-	mp_extreme_environment
 	mp_weapon_shotgun_pistol
 	mp_weapon_doubletake
 	mp_weapon_alternator_smg
 	mp_weapon_esaw
-	mp_weapon_wrecking_ball
-	mp_weapon_melee_survival
 	mp_weapon_pdw
 	mp_weapon_energy_ar
-	mp_weapon_nemesis
-	mp_weapon_bow
 	mp_weapon_volt_smg
 	mp_weapon_defender
-	mp_weapon_warmachine
+	// End S3 Defaults
+
+	mp_weapon_melee_survival
 	mp_weapon_car
 	mp_weapon_3030
 	mp_weapon_dragon_lmg
-	//mp_weapon_energysword
-	//mp_ability_birds
 	mp_weapon_throwingknife
 	mp_weapon_fs_sheila
+	mp_weapon_bow
+	mp_weapon_nemesis
 	mp_weapon_softball
+	mp_weapon_warmachine
+	//mp_weapon_wingman_n
+	mp_weapon_wingmanelite
+	mp_weapon_arc_blast
+	mp_weapon_nuke_satchel
+	//mp_weapon_satchel
+	mp_extreme_environment
+	mp_weapon_wrecking_ball
 	//mp_weapon_epg
 	//mp_weapon_smr
 	//mp_weapon_rocket_launcher
