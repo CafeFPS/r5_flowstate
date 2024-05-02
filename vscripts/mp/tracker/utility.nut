@@ -89,10 +89,6 @@ struct {
 			["survivaldev", "survival_dev"]
 		];
 	}
-
-	#if !HAS_TRACKER_DLL		
-		void function SendServerMessage( string _ ){}
-	#endif 
 	
 	//client command: show
 		bool function ClientCommand_mkos_return_data(entity player, array<string> args)
@@ -351,6 +347,8 @@ struct {
 					
 				case "id":
 				
+				#if TRACKER && HAS_TRACKER_DLL
+					
 					string data = "";
 					string inputmsg = ":::: Match ID ::::";
 					
@@ -376,6 +374,8 @@ struct {
 								
 					}
 					
+				#endif 
+				
 					return true;
 
 					
@@ -802,6 +802,8 @@ struct {
 			
 			case "banid":
 			
+				#if TRACKER && HAS_TRACKER_DLL
+				
 						if ( args.len() < 2 )
 						{
 							Message( player, "Failed", "Command 'banid' requires oid for 1st param of command")
@@ -845,6 +847,9 @@ struct {
 								Message(player, "Failed", "Command failed because of: \n\n " + errbanid )
 								return false
 							}
+							
+					#endif 
+						return true
 					
 			case "unban":
 			
@@ -1250,19 +1255,24 @@ struct {
 					
 			case "cleanuplogs":
 				
-						CleanupLogs(); //sdk function 
+					#if TRACKER && HAS_TRACKER_DLL	
+						CleanupLogs() //sdk function 
+					#endif
 							
 						return true
 			
 			case "reload_config":
 			
+					#if TRACKER && HAS_TRACKER_DLL	
 						SQ_ReloadConfig() //sdk function
+					#endif
 						
 						return true
 						
 			case "setting":
 						
-			
+					#if TRACKER && HAS_TRACKER_DLL	
+					
 						if ( args.len() < 2)
 						{
 							Message( player, "Failed", "Param 1 of command 'setting' requires key name")
@@ -1284,6 +1294,8 @@ struct {
 							Message( player, "Failed", "Command failed because of: \n\n " + errset )
 							return true		
 						}
+					
+					#endif
 						
 					break;
 					
@@ -1441,6 +1453,7 @@ struct {
 							return true 
 						}
 						
+						Message( player, "INTERVAL THREAD STARTING" )
 						DEV_StartIntervalThread()
 					#endif
 					

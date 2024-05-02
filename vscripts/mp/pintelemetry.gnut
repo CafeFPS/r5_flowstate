@@ -1631,7 +1631,7 @@ void function DEV_StartIntervalThread()
 
 void function IntervalThread()
 {
-	if(file.bIntervalThreadRunning)
+	if( file.bIntervalThreadRunning )
 	{
 		sqerror( "Interval thread is already running." )
 		return
@@ -1651,7 +1651,10 @@ void function IntervalThread()
 		bLoopServerMessages = false
 	}
 	
-	
+	OnThreadEnd( void function() : () 
+	{
+		file.bIntervalThreadRunning = false
+	})
 	
 	while(true)
 	{		
@@ -4593,7 +4596,7 @@ void function SavePlayer_enable_input_banner( entity ent, bool setting ){}
 void function SavePlayer_saved_weapons( entity ent, string setting ){}
 
 //utility
-void function SendServerMessage( string msg ){}
+void function SendServerMessage( string _ ){}
 DamageEvent function getEventByPlayerHandle( int handle ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }
 bool function isRestrictedServer(){ return false }
 void function setRestrictedServer( bool _ ){}
