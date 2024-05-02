@@ -49,7 +49,6 @@ struct {
 } file
 
 
-
 	void function INIT_CC_MapNames()
 	{
 	
@@ -71,7 +70,6 @@ struct {
 	
 	}
 	
-	
 	void function INIT_CC_GameTypes()
 	{
 	
@@ -92,6 +90,10 @@ struct {
 		];
 	}
 
+	#if !HAS_TRACKER_DLL		
+		void function SendServerMessage( string _ ){}
+	#endif 
+	
 	//client command: show
 		bool function ClientCommand_mkos_return_data(entity player, array<string> args)
 		{

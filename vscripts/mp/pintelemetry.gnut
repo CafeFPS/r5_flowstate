@@ -4614,6 +4614,11 @@ void function PIN_Init()
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
+	
+	INIT_CC_MapNames()
+	INIT_CC_GameTypes()
+	INIT_CC_playeradmins()
+	if ( GetCurrentPlaylistVarBool("cc_administration", false) ){ AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) }	
 }
 
 void function PIN_GameStart(){}
