@@ -188,12 +188,15 @@ global function isIntervalThreadRunning
 
 global function isRestrictedServer
 global function setRestrictedServer
+global function TrackerSupportedMode
 
 #if DEVELOPER 
 	global function DEV_GetPlayerMetricsIndexByUID
 #endif 
 
 global function DEV_StartIntervalThread
+global function DEV_ManualLogStart
+global function DEV_ManualLogKill
 
 //TODO: REMOVE THESE FROM HERE, use Playlist() or Gamemode()
 
@@ -338,6 +341,7 @@ struct {
 
 	bool LogOn
 	bool LogE
+	bool scriptLogthreadRunning = false
 	bool FETCH_BATCH_COMPLETE = false
 	bool restricted_server
 	bool bSyncedGlobal
@@ -347,6 +351,8 @@ struct {
 	bool update_discord_player_counts
 	bool gamemode_type_1v1 // tell stat calculations only one attacker
 	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
+	bool superglideDetect = false
+	bool trackerSupportedMode = false
 	
 	bool sg_counter_msg
 	float FS_MaxHealth
@@ -394,24 +400,69 @@ struct {
 	
 } file
 
+
 array<PlayerMetrics> function GetPlayerMetricsArray()
 {
 	return PlayerMetricsArray
 }
 
-const array<int> supportedTrackerPlaylists = [
-	
-]
 
-const array<int> supportedTrackerGamemodes = [
-	
-]
-
-bool function IsTrackerSupportedMode()
+bool function IsTrackerSupportedMode( bool bypass )
 {
-	return true
+	if( bypass){ return true }
+	
+	array<int> supportedTrackerPlaylists = [
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_dm,
+		ePlaylists.fs_tdm,
+		ePlaylists.fs_lgduels_1v1,
+		ePlaylists.fs_scenarios,
+		ePlaylists.fs_survival,
+		ePlaylists.SURVIVAL,
+		ePlaylists.fs_haloMod,
+		ePlaylists.fs_survival_solos,
+		//ePlaylists.fs_survival_duos,
+		//ePlaylists.fs_survival_trios,
+	]
+
+	array<int> supportedTrackerGamemodes = [
+		eGamemodes.fs_dm,
+		eGamemodes.SURVIVAL,
+		eGamemodes.TEAM_DEATHMATCH
+	]
+		
+	bool result = ( supportedTrackerGamemodes.contains( Gamemode() ) 
+	&& supportedTrackerPlaylists.contains( Playlist() ) )
+	
+	#if DEVELOPER
+		if( !result )
+		{
+			sqprint( format( "Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", Gamemode(), AllGamemodesArray()[Gamemode()], Playlist(), AllPlaylistsArray()[Playlist()] ) )
+		}
+	#endif 
+	
+	file.trackerSupportedMode = result
+	
+	return result 
 }
 
+bool function TrackerSupportedMode()
+{
+	return file.trackerSupportedMode
+}
+
+void function DEV_ManualLogStart()
+{
+	FlagSet( "START_LOG" )
+	thread __CONTROLLED_LogInit()
+}
+
+void function DEV_ManualLogKill( bool ship )
+{
+	file.PIN_GameState_Start = false
+	svGlobal.levelEnt.Signal( "TrackerNoLog" )
+	stopLogging( ship )
+}
 
 bool function bLog()
 {
@@ -919,6 +970,21 @@ void function DestroyStats()
 
 void function __CONTROLLED_LogInit()
 {
+	if( file.scriptLogthreadRunning )
+	{
+		sqerror("Thread is already running")
+		return
+	}
+	
+	file.scriptLogthreadRunning = true
+	RegisterSignal( "TrackerNoLog" )
+	EndSignal( svGlobal.levelEnt, "TrackerNoLog")
+	
+	OnThreadEnd( void function() : ()
+	{
+		file.scriptLogthreadRunning = false
+	})
+	
 	while(true)
 	{
 		FlagWait("START_LOG")	
@@ -933,6 +999,8 @@ void function PIN_Init()
 		return
 	#endif 
 	
+	bool bRunTracker = IsTrackerSupportedMode(false)
+	
 	if( IsLobby() ){ return }
 	
 	INIT_fastComputes()
@@ -946,7 +1014,7 @@ void function PIN_Init()
 		thread __LoadServerBot()
 	}
 	
-	if( file.LogOn )
+	if( file.LogOn && bRunTracker )
 	{
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
@@ -971,7 +1039,7 @@ void function PIN_Init()
 			AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
 		}
 		
-		if ( file.LogOn )
+		if ( file.LogOn && bRunTracker )
 		{
 			string message = format("R5R.DEV metrics initialized at:  %d ", GetUnixTimestamp())
 			sqprint(message)
@@ -981,8 +1049,8 @@ void function PIN_Init()
 				AddClientCommandCallback( "ea_verify", ClientCommand_mkos_ea_verify ) 
 			} 
 			
-			AddCallback_OnWeaponAttack(WeaponAttack);
-			RegisterSignal( "SuperglideDetectionResetStats" )		
+			AddCallback_OnWeaponAttack(WeaponAttack)
+			RegisterSignal( "SuperglideDetectionResetStats" ); file.superglideDetect = true;	
 			file.FS_MaxHealth = ( GetCurrentPlaylistVarFloat("default_shield_hp", 0 )) + 100;
 		}
 	
@@ -1084,7 +1152,7 @@ void function PlayerConnectedCallback( entity player )
 	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
-	if(!file.LogOn){ return }
+	if( !file.LogOn ){ return }
 	/////////////////////////////////////////////////////////////////////////////////////////
 	
 	//init player map
@@ -1095,8 +1163,12 @@ void function PlayerConnectedCallback( entity player )
 	
 	AddEntityCallback_OnDamaged( player, R5R_OnPlayerDamaged )
     thread PIN_AddPlayer(player);
-	AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, OnJumped);
-	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection_Stats ) //credit cafe
+	
+	if( file.superglideDetect )
+	{
+		AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, OnJumped);
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection_Stats ) //credit cafe
+	}
 	
 	string count = GetNumHumanPlayers().tostring();
 	string OID = player.GetPlatformUID();

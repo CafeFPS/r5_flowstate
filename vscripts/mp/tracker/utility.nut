@@ -1569,6 +1569,47 @@ struct {
 				
 				return true 
 				
+			case "stoplog":
+			
+				#if TRACKER && HAS_TRACKER_DLL
+				
+					bool ship = false 
+					
+					switch( param )
+					{
+						case "1":
+						case "true":
+						case "ship":
+							ship = true 
+							break
+						
+						default:
+							break
+					}
+				
+					DEV_ManualLogKill( ship )
+					Message( player, "TRACKER LOG TERMINATED" )
+					
+				#endif
+				
+				return true
+				
+			case "startlog":
+			
+				#if TRACKER && HAS_TRACKER_DLL
+					if( bLog() )
+					{
+						DEV_ManualLogStart()
+						Message( player, "LOG INITIALIZED" )
+					}
+					else 
+					{
+						Message( player, "LOG IS DISABLED IN PLAYLISTS" )
+					}
+				#endif
+				
+				return true
+				
 			default:
 			
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )

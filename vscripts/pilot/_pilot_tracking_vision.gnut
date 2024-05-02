@@ -13,11 +13,14 @@ void function TrackingVision_Init()
 	RegisterSignal( "SuperglideDetectionReset" )
 }
 
+
 void function TrackingVision_OnPlayerConnected( entity player ) 
-{
-	if( g_bIs1v1 ){ return } //needs proper specific init
+{	
+	if( !TrackerSupportedMode() )
+	{ 
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
+	}
 	
-	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.BEGIN_WALLRUN, Flowstate_TrackingVision_WalljumpDetection )
 
 	thread Flowstate_TrackingVision_PlayerFootprintsThread( player )
