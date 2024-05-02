@@ -382,6 +382,10 @@ bool function ShouldShowSpawnAsTitanHint( entity player )
 void function ServerCallback_PlayerConnectedOrDisconnected( int player_eHandle, int state )
 {
 	entity player = GetEntityFromEncodedEHandle( player_eHandle )
+	
+	if( !IsValid( player ) )
+		return
+
 	PlayerConnectedOrDisconnected( player, state )
 
 	if ( !IsLobby() || !IsConnected() )
