@@ -812,8 +812,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 	if ( !player.p.isConnected )
 		return
 
-	// EndSignal( player, "OnDeath" )
-
    	if( player.p.isSpectating )
     {
 		player.SetPlayerNetInt( "spectatorTargetCount", 0 )
@@ -870,21 +868,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 
 	if ( respawnSlotIndex == -1 ) 
 		return
-
-	if( !settings.fs_scenarios_dropshipenabled )
-	{
-		try
-		{
-			DecideRespawnPlayer(player, true)
-		}
-		catch (error)
-		{
-			#if DEVELOPER
-			sqprint("Caught an error that would crash the server")
-			#endif
-			// Warning("fail to respawn")
-		}
-	}
 
 	// if dropship enabled
 	if( !settings.fs_scenarios_dropshipenabled && fromDropship )
@@ -1203,6 +1186,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					return
 
 				Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+				Flowstate_AssignUniqueCharacterForPlayer( player, true )
 			}
 
 			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
@@ -1226,6 +1210,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )
 
 				FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
+				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 			}
 
 			if( settings.fs_scenarios_dropshipenabled )

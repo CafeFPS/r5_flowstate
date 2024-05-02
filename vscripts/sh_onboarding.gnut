@@ -625,12 +625,15 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	#endif
 
 	//Set highlight to mantain retail behavior
-	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_snd )
+	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_snd || Playlist() == ePlaylists.fs_scenarios )
 	{
 		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
 	}
 	
 	Flowstate_ApplyModifiedMovementToPlayer( player )
+
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
 
 	if( player.p.assignedCustomModel != -1 )
 	{

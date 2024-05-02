@@ -2439,8 +2439,10 @@ void function soloModePlayerToWaitingList( entity player )
 				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 		}
 
+		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
+		TakeAllPassives( player )
 	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
@@ -4276,8 +4278,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 	{
 		if( !IsValid( player ) )
 			continue
-		
-		Flowstate_AssignUniqueCharacterForPlayer( player, true )
 
 		DeployAndEnableWeapons( player )
 
@@ -4289,7 +4289,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 			GivePrimaryWeapon_1v1( player, secondaryWeaponWithAttachments, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		}
 
-		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 		Survival_SetInventoryEnabled( player, true )
 		SetPlayerInventory( player, [] )
 
@@ -4297,11 +4296,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 
 		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
-
-		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		player.TakeOffhandWeapon( OFFHAND_MELEE )
-		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
@@ -4311,7 +4305,13 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 
 		DeployAndEnableWeapons( player )
 		EnableOffhandWeapons( player )
-		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())			
+		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
+		Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
+
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )		
 	}
 }
 
@@ -4851,16 +4851,20 @@ const array<int> LegendGUID_EnabledUltimates = [
 void function RechargePlayerAbilities( entity player )
 {
 	if( !IsValid( player ) ){ return }
-	
+
 	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	
+
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))
 	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
 	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )	
-	
+
 	int charID = ItemFlavor_GetGUID( character )
-	
-	if( LegendGUID_EnabledPassives.contains( charID ) )
+
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
+		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+	} else if( LegendGUID_EnabledPassives.contains( charID ) )
 	{
 		GivePassive( player, 0 ) //bangalore is only legend current in list
 		

@@ -1191,7 +1191,7 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("ungod", ClientCommand_UnGod)
 		AddClientCommandCallback("next_round", ClientCommand_NextRound)
 
-		if( !Flowstate_IsMovementGym() )
+		if( !Flowstate_IsMovementGym() && Playlist() != ePlaylists.fs_scenarios )
 			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
 

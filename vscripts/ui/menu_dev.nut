@@ -272,8 +272,7 @@ const array<int> allowedWeaponChangeModes = [
 	
 	ePlaylists.fs_dm,
 	ePlaylists.fs_1v1,
-	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_scenarios
+	ePlaylists.fs_lgduels_1v1
 ]
 
 void function SetupDefaultDevCommandsMP()
