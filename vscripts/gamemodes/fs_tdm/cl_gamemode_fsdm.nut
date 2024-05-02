@@ -1858,7 +1858,8 @@ void function FS_Scenarios_SetupPlayersCards()
 		}()
 	}
 
-	FS_Scenarios_TogglePlayersCardsVisibility( true )
+	if( file.enemyTeamHandles.len() > 0 && file.allyTeamHandles.len() > 0 )
+		FS_Scenarios_TogglePlayersCardsVisibility( true )
 }
 
 void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
