@@ -175,7 +175,6 @@ bool function ClientCommand_dev_spawn_blockable_door( entity player, array<strin
 	return true
 }
 #endif
-
 //#if SERVER && DEVELOPER
 //void function CreateDoor( vector hingeEdgeBottomPos, vector angleToGap, entity existingEnt = null )
 //{

@@ -42,10 +42,7 @@ global function PIN_Training
 //global const bool TRACKER = true
 //global const bool HAS_TRACKER_DLL = true
 
-//TODO: split script into smaller managable, localized scripts
-
-
-
+//TODO: split script into smaller, managable, localized scripts
 
 
 
@@ -56,6 +53,10 @@ global function PIN_Training
 
 //do not edit below this line
 
+
+// ╔══════╗
+// ║ mkos ║
+// ╚══════╝
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 global function PIN_Callback_CheckReload
 global function FetchPlayerData

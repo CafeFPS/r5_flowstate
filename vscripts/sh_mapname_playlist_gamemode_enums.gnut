@@ -239,12 +239,16 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 	
 	mAssert( playlistsArrayCount == playlistsEnumsCount, format( "Playlists not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", playlistsArrayCount, playlistsEnumsCount ) )
 	mAssert( mapnamesArrayCount == mapnamesEnumsCount, format( "Maps not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", mapnamesArrayCount, mapnamesEnumsCount ) )
-	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gaemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
+	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gamemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
 	
 	#if SERVER || CLIENT
 		string level = GetMapName()
 	#elseif UI 
 		string level = uiGlobal.loadedLevel
+		
+			#if DEVELOPER
+				printt( "UI Mapname: ", level )
+			#endif
 	#endif
 	
 		SH_globals.currentMap = getMapEnumFromName( level )
