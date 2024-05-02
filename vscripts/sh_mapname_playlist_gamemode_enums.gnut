@@ -8,10 +8,18 @@ global function Playlist
 global function Gamemode
 
 //utility:
-global function is1v1GameType
 global function AllMapsArray
 global function AllGamemodesArray
 global function AllPlaylistsArray
+
+//const:
+global const PRINT_GAMEMODE_DEBUGS = true
+
+//mode functions:
+global function is1v1GameType
+global function Flowstate_PassivesAllowedForMode
+global function Flowstate_IsTrackerSupportedMode
+
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
 // 									MAPNAME / PLAYLIST INIT								//
@@ -108,7 +116,6 @@ global enum eGamemodes
 	
 	_GAMEMODES_COUNT //LAST
 }
-
 
 //keep these in order with enum structs above
 struct
@@ -210,6 +217,7 @@ struct
 	
 } SH_globals
 
+
 //-----make global with----
 //
 // global SH_globals shGlobal
@@ -225,6 +233,10 @@ const array<int> playlist1v1Types = [
 const array<int> gamemode1v1Types = [
 
 ]
+
+//////////////////////////////////////////
+// 			internal functions			//
+//////////////////////////////////////////
 
 void function PlayLists_Mapnames_Gamemodes_Init()
 {
@@ -273,6 +285,7 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		SH_globals.currentGamemode = currentGamemodeEnum
 		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
 	
+	AllModeConditionals_Init()
 }
 
 int function getMapEnumFromName( string mapString ) 
@@ -318,6 +331,10 @@ int function getGamemodeEnumFromName( string gamemodeString )
 	return -1
 }
 
+//////////////////////////////////////////
+// 		global script functions			//
+//////////////////////////////////////////
+
 int function MapName()
 {
 	return SH_globals.currentMap
@@ -333,6 +350,10 @@ int function Gamemode()
 	return SH_globals.currentGamemode
 }
 
+//////////////////////////////////////////
+// 			utility functions			//
+//////////////////////////////////////////
+
 array<string> function AllMapsArray()
 {
 	return SH_globals.mapNames
@@ -347,8 +368,14 @@ array<string> function AllPlaylistsArray()
 {
 	return SH_globals.playlists
 }
+	
+	
 
-bool function is1v1GameType() //use for initializing a local bool setting during startup
+//////////////////////////////////////////
+//	gamemode conditional INIT functions	//
+//////////////////////////////////////////
+
+bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
 {
 	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 	{
@@ -357,6 +384,106 @@ bool function is1v1GameType() //use for initializing a local bool setting during
 	
 	return false
 }
+
+ 
+//add init functions here
+void function AllModeConditionals_Init()
+{
+	TrackerSupportedMode_Init()
+	PassivesAllowed_Init()
+}
+
+
+
+///////////////////////////////////////
+//.. define init functions here
+
+struct  
+{
+	bool passivesAllowed = false
+	bool trackerSupportedMode = false
+	
+} modeSettings
+
+
+void function PassivesAllowed_Init()
+{
+	array<int> allowedPassiveGamemodes = [
+		eGamemodes.SURVIVAL,
+		eGamemodes.fs_dm
+	]
+	
+	array<int> allowedPassivePlaylists = [
+		ePlaylists.fs_1v1
+	]
+	
+	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	
+}
+
+
+void function TrackerSupportedMode_Init()
+{	
+	array<int> supportedTrackerPlaylists = [
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_dm,
+		ePlaylists.fs_tdm,
+		ePlaylists.fs_lgduels_1v1,
+		ePlaylists.fs_scenarios,
+		ePlaylists.fs_survival,
+		ePlaylists.SURVIVAL,
+		ePlaylists.fs_haloMod,
+		ePlaylists.fs_survival_solos,
+		//ePlaylists.fs_survival_duos,
+		//ePlaylists.fs_survival_trios,
+	]
+
+	array<int> supportedTrackerGamemodes = [
+		eGamemodes.fs_dm,
+		eGamemodes.SURVIVAL,
+		eGamemodes.TEAM_DEATHMATCH
+	]
+		
+	bool result = ( supportedTrackerGamemodes.contains( Gamemode() ) 
+	&& supportedTrackerPlaylists.contains( Playlist() ) )
+	
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		if( !result )
+		{
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", Gamemode(), AllGamemodesArray()[Gamemode()], Playlist(), AllPlaylistsArray()[Playlist()] ) )
+		}
+	#endif 
+	
+	modeSettings.trackerSupportedMode = result
+	
+}
+
+//////////////////////////////////////////
+//	 gamemode conditional functions		//
+//////////////////////////////////////////
+// define functions to be called as conditionals 
+
+
+
+bool function Flowstate_PassivesAllowedForMode()
+{
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		printt("PRINT_GAMEMODE_DEBUGS: Gamemode not defined as allowed for passives in: sh_mapname_playlist_gamemode_enums.gnut")
+	#endif 
+	return modeSettings.passivesAllowed
+}
+
+bool function Flowstate_IsTrackerSupportedMode()
+{
+	return modeSettings.trackerSupportedMode
+}
+
+
+
+
+
+
+
+
 
 //////////////////////////////////////////
 // placing this here temp (mkos Assert) //

@@ -51,7 +51,7 @@ const float ADRENALINE_RADIUS = 128 // ??
 
 void function Flowstate_GrantAdrenaline( entity player )
 {
-	if(!IsValid(player) || !player.IsPlayer() || !player.HasPassive( ePassives.PAS_ADRENALINE ) || g_bPassivesAllowed ) 
+	if(!IsValid(player) || !player.IsPlayer() || !player.HasPassive( ePassives.PAS_ADRENALINE ) || !Flowstate_PassivesAllowedForMode() ) 
 		return
 
 	entity vortexSphere = CreateEntity( "vortex_sphere" )

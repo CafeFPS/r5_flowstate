@@ -16,7 +16,7 @@ void function TrackingVision_Init()
 
 void function TrackingVision_OnPlayerConnected( entity player ) 
 {	
-	if( !TrackerSupportedMode() )
+	if( !Flowstate_IsTrackerSupportedMode() )
 	{ 
 		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
 	}

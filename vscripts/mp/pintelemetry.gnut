@@ -63,9 +63,6 @@ global function FetchPlayerData
 global function SavePlayerData
 global function SetAfkToRest
 
-global bool g_bPassivesAllowed
-
-
 #if TRACKER
 	global const bool STUB = false
 #else
@@ -188,7 +185,6 @@ global function isIntervalThreadRunning
 
 global function isRestrictedServer
 global function setRestrictedServer
-global function TrackerSupportedMode
 
 #if DEVELOPER 
 	global function DEV_GetPlayerMetricsIndexByUID
@@ -352,7 +348,6 @@ struct {
 	bool gamemode_type_1v1 // tell stat calculations only one attacker
 	bool afk_to_rest_enabled = true // bool to reflect state of cc (chat command) cc afk 1/0
 	bool superglideDetect = false
-	bool trackerSupportedMode = false
 	
 	bool sg_counter_msg
 	float FS_MaxHealth
@@ -404,51 +399,6 @@ struct {
 array<PlayerMetrics> function GetPlayerMetricsArray()
 {
 	return PlayerMetricsArray
-}
-
-
-bool function IsTrackerSupportedMode( bool bypass )
-{
-	if( bypass){ return true }
-	
-	array<int> supportedTrackerPlaylists = [
-		ePlaylists.fs_1v1,
-		ePlaylists.fs_dm,
-		ePlaylists.fs_tdm,
-		ePlaylists.fs_lgduels_1v1,
-		ePlaylists.fs_scenarios,
-		ePlaylists.fs_survival,
-		ePlaylists.SURVIVAL,
-		ePlaylists.fs_haloMod,
-		ePlaylists.fs_survival_solos,
-		//ePlaylists.fs_survival_duos,
-		//ePlaylists.fs_survival_trios,
-	]
-
-	array<int> supportedTrackerGamemodes = [
-		eGamemodes.fs_dm,
-		eGamemodes.SURVIVAL,
-		eGamemodes.TEAM_DEATHMATCH
-	]
-		
-	bool result = ( supportedTrackerGamemodes.contains( Gamemode() ) 
-	&& supportedTrackerPlaylists.contains( Playlist() ) )
-	
-	#if DEVELOPER
-		if( !result )
-		{
-			sqprint( format( "Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", Gamemode(), AllGamemodesArray()[Gamemode()], Playlist(), AllPlaylistsArray()[Playlist()] ) )
-		}
-	#endif 
-	
-	file.trackerSupportedMode = result
-	
-	return result 
-}
-
-bool function TrackerSupportedMode()
-{
-	return file.trackerSupportedMode
 }
 
 void function DEV_ManualLogStart()
@@ -999,7 +949,7 @@ void function PIN_Init()
 		return
 	#endif 
 	
-	bool bRunTracker = IsTrackerSupportedMode(false)
+	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
 	
 	if( IsLobby() ){ return }
 	
@@ -4683,17 +4633,19 @@ void function PIN_Init()
 	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
-	g_bPassivesAllowed = ( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_1v1 ? true : false )
 	
 	AddCallback_OnClientConnected( PlayerConnectedCallback );
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	
-	INIT_CC_MapNames()
-	INIT_CC_GameTypes()
-	INIT_CC_playeradmins()
-	if ( GetCurrentPlaylistVarBool("cc_administration", false) ){ AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) }	
+	if ( GetCurrentPlaylistVarBool("cc_administration", false) )
+	{ 
+		INIT_CC_MapNames()
+		INIT_CC_GameTypes()
+		INIT_CC_playeradmins()
+		AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
+	}	
 }
 
 void function PIN_GameStart(){}
