@@ -1067,6 +1067,14 @@ Scripts:
     mp/_zipline_utility/_zipline_debug.gnut
 ]
 
+// www.r5r.dev Tracker
+When: "SERVER"
+Scripts:
+[
+	mp/tracker/chateffects.nut
+	mp/tracker/utility.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [	
