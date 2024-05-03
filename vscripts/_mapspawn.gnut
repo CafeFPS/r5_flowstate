@@ -555,19 +555,21 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
 	if(args[0] == "VModEnable" || args[0] == "vban" ) return
 	
+	#if !SCRIPT_GAME_VERSION__RELEASE && !DEVELOPER
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
 		foreach( key, value in args )
 			printl( key + " : " + value )
 		printl( "############ ClientCommand End" )
+	#endif
 
 	string commandString = args.remove( 0 )
 
 	//TODO: Track down Why VModEnable is being called from code?
 
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
-	if(commandString in svGlobal.clientCommandCallbacksNew)
+	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
 		printt("CodeCallback_ClientCommand", commandString)
 		svGlobal.clientCommandCallbacksNew[ commandString ]( player, args )
@@ -579,7 +581,9 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
+		#if !SCRIPT_GAME_VERSION__RELEASE && !DEVELOPER
+			printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
+		#endif
 		return false
 	}
 }

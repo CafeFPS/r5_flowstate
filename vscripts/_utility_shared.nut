@@ -5695,3 +5695,17 @@ bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
 
 	return false
 }
+
+void function DEV_PrintClientCommands( table< string, void functionref( entity, array< string > ) > callbackTable )
+{
+	string data = "\n\n ------ CLIENTCOMMAND CALLBACK TABLE ------ \n\n"
+	int idx = 0
+	
+	foreach ( string command, ref in callbackTable )
+	{
+		data += idx.tostring() + " = Command: [ " + command + " ]  callbackFunc: [ " + string( ref ) + " ] \n";
+		idx++
+	}
+	
+	printt(data)
+}

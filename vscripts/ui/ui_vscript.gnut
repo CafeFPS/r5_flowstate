@@ -308,7 +308,6 @@ global struct UIGlobals
 	bool 	is1v1GameType
 	bool 	isAimTrainer
 	bool 	playlistbool_flowstate_1v1mode
-	int 	currentGamemodeEnum
 }
 
 global UIGlobals uiGlobal

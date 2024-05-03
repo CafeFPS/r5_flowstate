@@ -564,7 +564,6 @@ void function AddCallback_OnTouchHealthKit( string className, bool functionref( 
 		Assert( !svGlobal.onTouchHealthKitCallbacks[className].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTouchHealthKit to class " + className )
 		svGlobal.onTouchHealthKitCallbacks[className].append( callbackFunc )
 	}
-
 }
 
 void function AddCallback_OnPlayerRespawned( void functionref( entity ) callbackFunc )

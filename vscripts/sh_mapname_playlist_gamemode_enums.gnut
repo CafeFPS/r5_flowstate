@@ -212,7 +212,7 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 			#if DEVELOPER
 				printt( "UI Gamemode: ", curentGamemodeName )
 			#endif
-	#endif 
+	#endif
 		
 		SH_globals.currentGamemode = currentGamemodeEnum
 		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
@@ -399,8 +399,9 @@ void function TrackerSupportedMode_Init()
 bool function Flowstate_PassivesAllowedForMode()
 {
 	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
-		printt("PRINT_GAMEMODE_DEBUGS: Gamemode not defined as allowed for passives in: sh_mapname_playlist_gamemode_enums.gnut")
+		if( !modeSettings.passivesAllowed ){ printt("PRINT_GAMEMODE_DEBUGS: Gamemode not defined as allowed for passives in: sh_mapname_playlist_gamemode_enums.gnut") }
 	#endif 
+	
 	return modeSettings.passivesAllowed
 }
 
