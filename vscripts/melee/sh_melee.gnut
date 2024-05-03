@@ -543,7 +543,11 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 			//Cafe was here
 			array<entity> ignoreEnts = [ attacker ]
 			
-			foreach( door in GetAllPropDoors() )
+			array<entity> tocheck
+			tocheck.extend( GetAllPropDoors() )
+			tocheck.extend( GetAllPropDoors_BigOnes() )
+
+			foreach( door in tocheck )
 			{
 				if( !IsValid( door ) )
 					continue

@@ -13,6 +13,7 @@ global function IsDoor
 global function IsCodeDoor
 global function IsDoorOpen
 global function GetAllPropDoors
+global function GetAllPropDoors_BigOnes
 
 #if SERVER
 global function RemoveDoorFromManagedEntArray
@@ -52,6 +53,7 @@ struct
 	#if SERVER && DEVELOPER
 		table<entity, int> allDoors
 	#endif
+	array<entity> bigPropDoors
 
 	#if SERVER
 		int propDoorArrayIndex
@@ -222,6 +224,11 @@ bool function DoorsAreEnabled()
 #if SERVER
 void function OnDoorSpawned( entity door )
 {
+	if( is3v3Mode() && door.GetTargetName() != "flowstate_realms_doors_by_cafe" )
+	{
+		FS_Scenarios_SaveBigDoorData( door )
+		return
+	}
 	//printt( "DOOR!", door.GetScriptName(), door.GetModelName(), door.GetOrigin() )
 
 	if ( !DoorsAreEnabled() )
@@ -229,9 +236,9 @@ void function OnDoorSpawned( entity door )
 		door.Destroy()
 		return
 	}
-
+	
 	string scriptName = door.GetScriptName()
-
+	// printt( "Cafe. Big Door spawned!", scriptName, door.GetOrigin(), door.GetModelName() )
 	int doorType
 	switch( scriptName )
 	{
@@ -501,8 +508,16 @@ void function OnDoorSpawned( entity door )
 	#if DEVELOPER
 		file.allDoors[door] <- doorType
 	#endif
+
+	ArrayRemoveInvalid( file.bigPropDoors )
+	file.bigPropDoors.append( door )
 }
 #endif
+
+array<entity> function GetAllPropDoors_BigOnes()
+{
+	return file.bigPropDoors
+}
 
 #if SERVER && DEVELOPER
 void function DEV_RestartAllDoorThinks()
@@ -546,6 +561,12 @@ void function OnSomePropCreated( entity prop )
 
 	if ( prop.GetScriptName() == "survival_door_blockable" )
 		OnBlockableDoorSpawned( prop )
+
+	if ( prop.GetScriptName() == "survival_door_model" || prop.GetScriptName() == "survival_door_plain" )
+	{
+		ArrayRemoveInvalid( file.bigPropDoors )
+		file.bigPropDoors.append( prop )
+	}
 }
 
 void function OnCodeDoorCreated_Client( entity door )

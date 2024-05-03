@@ -16,6 +16,7 @@ global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_GetDropshipEnabled
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
+global function FS_Scenarios_SaveBigDoorData
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
@@ -60,6 +61,14 @@ struct doorsData
 	vector linkAngles
 }
 
+struct bigDoorsData
+{
+	vector origin
+	vector angles
+	asset model
+	string scriptname
+}
+
 struct lootbinsData
 {
 	vector origin
@@ -73,6 +82,7 @@ struct {
 	array<vector> allLootSpawnsLocations
 	array<lootbinsData> allMapLootbins
 	array<doorsData> allMapDoors
+	array<bigDoorsData> allBigMapDoors
 
 	array<entity> aliveDropships
 	array<entity> aliveDeathboxes
@@ -139,6 +149,61 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
 }
 
+void function FS_Scenarios_SaveBigDoorData( entity door )
+{
+	bigDoorsData bigDoor
+	bigDoor.origin = door.GetOrigin()
+	bigDoor.angles = door.GetAngles()
+	bigDoor.model = door.GetModelName()
+	bigDoor.scriptname = door.GetScriptName()
+	
+	file.allBigMapDoors.append( bigDoor )
+
+	door.Destroy()
+}
+
+
+void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector center = groupLocStruct.Center
+	int realm = group.slotIndex
+
+	array< bigDoorsData > chosenSpawns
+	int count = 0
+
+	foreach( i, bigDoorsData data in file.allBigMapDoors )
+	{
+		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+			chosenSpawns.append( data )
+	}
+	
+	foreach( i, bigDoorsData data in chosenSpawns )
+	{
+	    entity door = CreateEntity( "prop_dynamic" )
+        {
+            door.SetValueForModelKey( data.model )
+            door.SetOrigin( data.origin )
+            door.SetAngles( data.angles )
+            door.SetScriptName( data.scriptname )
+			SetTargetName( door, "flowstate_realms_doors_by_cafe" )
+			door.kv.solid = SOLID_VPHYSICS
+			door.AllowMantle()
+			door.RemoveFromAllRealms()
+			door.AddToRealm( realm )
+
+            DispatchSpawn( door )
+
+			group.doors.append( door )
+			count++
+        }
+	}
+	printt( "created", count, "big doors for group", group.groupHandle )
+}
+
 void function FS_Scenarios_SaveDoorsData()
 {
 	foreach( door in GetAllPropDoors() )
@@ -165,6 +230,7 @@ void function FS_Scenarios_SaveDoorsData()
 				file.allMapDoors.remove( j )
 				// printt( "removed double door" )
 				data2.door.Destroy() //save edicts even more
+				j--
 			}
 		}
 	}
@@ -1190,6 +1256,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 
 			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
+			thread FS_Scenarios_SpawnBigDoorsForGroup( newGroup )
 
 			if( settings.fs_scenarios_ground_loot )
 			{
