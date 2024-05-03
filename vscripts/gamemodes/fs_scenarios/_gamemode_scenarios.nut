@@ -1278,6 +1278,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
 				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+
+				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 			}
 
 			if( settings.fs_scenarios_dropshipenabled )
