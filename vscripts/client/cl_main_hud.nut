@@ -947,14 +947,27 @@ void function UpdateChatHUDVisibility()
 {
 	local chat = HudElement( "IngameTextChat" )
 
+	if( isMuted() )
+	{
+		chat.Hide()
+		return
+	}
+	else
+	{
+		chat.Show()
+	}
+	
 	//Saves what you typed to a global string
 	//used for all chat if they want to implement it into their gamemode
-	var chatTextEntry = Hud_GetChild( Hud_GetChild( chat, "ChatInputLine" ), "ChatInputTextEntry" )
-    CHAT_TEXT = Hud_GetUTF8Text(chatTextEntry)
+	if( !isMuted() )
+	{
+		var chatTextEntry = Hud_GetChild( Hud_GetChild( chat, "ChatInputLine" ), "ChatInputTextEntry" )
+		CHAT_TEXT = Hud_GetUTF8Text(chatTextEntry)
+	}
 
 	Hud_SetAboveBlur( chat, true )
 
-	if ( IsLobby() || clGlobal.isMenuOpen )
+	if ( isMuted() || IsLobby() || clGlobal.isMenuOpen )
 		chat.Hide()
 	else
 		chat.Show()

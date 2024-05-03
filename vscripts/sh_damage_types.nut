@@ -4,8 +4,11 @@ global function GetObitFromDamageSourceID
 global function GetObitImageFromDamageSourceID
 global function DamageSourceIDToString
 global function DamageSourceIDHasString
-global function GetRefFromDamageSourceID
+global function GetRefFromDamageSourceID //duplicate of DamageSourceIDToString
 global function PIN_GetDamageCause
+global function DamageSourceIDToStringTable
+
+global function DEV_PrintRegisteredWeapons
 
 struct
 {
@@ -643,18 +646,18 @@ void function DamageTypes_Init()
 		//[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
 		//[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
 		[ eDamageSourceId.mp_weapon_throwingknife ] 				= "Throwing Knife",
-		//[ eDamageSourceId.mp_weapon_satchel ] 	 					= "Satchel",
+		//[ eDamageSourceId.mp_weapon_satchel ] 	 				= "Satchel",
 		//[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
 		[ eDamageSourceId.mp_weapon_sentinel ] 						= "Sentinel",
 		//[ eDamageSourceId.mp_weapon_mobile_hmg ] 					= "Sheila",
 		[ eDamageSourceId.mp_weapon_softball ] 						= "Softball",
-		//[ eDamageSourceId.mp_weapon_epg ] 							= "EPG",
-		//[ eDamageSourceId.mp_weapon_smr ] 							= "Sidewinder SMR",
-		//[ eDamageSourceId.mp_weapon_rocket_launcher ] 				= "Softball",
+		//[ eDamageSourceId.mp_weapon_epg ] 						= "EPG",
+		//[ eDamageSourceId.mp_weapon_smr ] 						= "Sidewinder SMR",
+		//[ eDamageSourceId.mp_weapon_rocket_launcher ] 			= "Softball",
 		[ eDamageSourceId.mp_weapon_car ] 							= "Car SMG",
 		//[ eDamageSourceId.mp_ability_birds ] 						= "Arthur's Revenge",
 		[ eDamageSourceId.mp_weapon_3030 ] 							= "30-30 Repeater",
-		//[ eDamageSourceId.mp_weapon_energysword ] 					= "Energy Sword",
+		//[ eDamageSourceId.mp_weapon_energysword ] 				= "Energy Sword",
 		[ eDamageSourceId.mp_weapon_dragon_lmg ] 					= "Rampage LMG",		
 		[ eDamageSourceId.mp_weapon_smart_pistol ] 	 				= "Smart Pistol",
 		[ eDamageSourceId.mp_weapon_grenade_electric_smoke ] 	 	= "Electric Smoke",
@@ -665,10 +668,11 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_flagpole_primary ] 	 			= "Ball",
 		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball", 
 		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
-		//[ eDamageSourceId.sp_weapon_arc_tool] 	 					= "Arc Tool"
-		[ eDamageSourceId.mp_weapon_titan_sword ] 	 						= "Sword", 
-		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 						= "Sword",
-		[ eDamageSourceId.melee_titan_sword ] 	 						= "Sword"
+		//[ eDamageSourceId.sp_weapon_arc_tool] 	 				= "Arc Tool"
+		[ eDamageSourceId.mp_weapon_titan_sword ] 	 				= "Sword", 
+		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 			= "Sword",
+		[ eDamageSourceId.melee_titan_sword ] 	 					= "Sword",
+		[ eDamageSourceId.mp_weapon_lightninggun ]					= "Lightning Gun"
 	}
 
 	#if DEVELOPER
@@ -676,7 +680,7 @@ void function DamageTypes_Init()
 		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknownBugIt ] 			= "UNKNOWN! BUG IT!"
 		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknown ] 				= "Unknown"
 		file.damageSourceIDToName[ eDamageSourceId.weapon_cubemap ] 					= "Cubemap"
-		//file.damageSourceIDToName[ eDamageSourceId.invalid ] 						= "INVALID (BUG IT!)"
+		//file.damageSourceIDToName[ eDamageSourceId.invalid ] 					= "INVALID (BUG IT!)"
 		file.damageSourceIDToName[ eDamageSourceId.stuck ]		 					= "NPC got Stuck (Don't Bug it!)"
 	#endif
 }
@@ -697,6 +701,11 @@ bool function DamageSourceIDHasString( int index )
 string function DamageSourceIDToString( int index )
 {
 	return file.damageSourceIDToString[ index ]
+}
+
+table<int,string> function DamageSourceIDToStringTable() //for adding invalids in stat calc ~mkos
+{
+	return file.damageSourceIDToString
 }
 
 string function GetObitFromDamageSourceID( int damageSourceID )
@@ -749,4 +758,16 @@ string function PIN_GetDamageCause( var damageInfo )
 	//int id = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	return ""
+}
+
+void function DEV_PrintRegisteredWeapons()
+{
+	string data = "\n\n ------ REGISTERED WEAPON TABLE ------";
+	
+	foreach( int idx, ref in file.damageSourceIDToString )
+	{
+		data += format( "[%d] = \"%s\", \n", idx, ref )
+	}
+	
+	printt( data )
 }

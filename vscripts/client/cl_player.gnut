@@ -50,6 +50,9 @@ global function GetHideCrosshairHitIndicatorOverride
 global function SetHideCrosshairHitIndicatorOverride
 global function PlayerFieryDeath
 
+global function FS_Toggle_Mute
+global function FS_Silence
+
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
 #endif
@@ -1939,4 +1942,47 @@ bool function GetHideCrosshairHitIndicatorOverride()
 void function SetHideCrosshairHitIndicatorOverride( bool value )
 {
 	file.hideCrosshairHitIndicatorOverride = value
+}
+
+void function FS_Toggle_Mute( int chal, bool toggle )
+{
+	//#if CLIENT
+		entity player = GetLocalClientPlayer()
+		string uid = player.GetPlatformUID()
+		string cmd = "FS_TT " + chal.tostring()
+		
+		if( toggle )// )&& !IsPlayerTextMutedForUID(uid) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+			mute(true)
+			UpdateChatHUDVisibility()
+		}
+		else // ( !toggle && IsPlayerTextMutedForUID(uid) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+			mute(false)
+			UpdateChatHUDVisibility()
+		}	
+		
+		player.ClientCommand(cmd)
+	//#endif
+}
+
+void function FS_Silence( bool toggle, int eHandle )
+{
+	//#if CLIENT
+		entity player = GetEntityFromEncodedEHandle( eHandle )
+		if( !IsValid( player ) ){ return }
+		
+		string uid = player.GetPlatformUID()
+		
+		if( toggle && !IsPlayerTextMutedForUID(uid) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}
+		else if ( !toggle && IsPlayerTextMutedForUID(uid) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}	
+	//#endif
 }

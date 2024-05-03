@@ -15,6 +15,10 @@ global function ServerCallback_OpenStatisticsUI
 //Persistence
 global function ServerCallback_SetLGDuelPesistenceSettings
 
+//Chat 
+global function mute
+global function isMuted
+
 // Voting
 global function ServerCallback_FSDM_OpenVotingPhase
 global function ServerCallback_FSDM_ChampionScreenHandle
@@ -91,6 +95,9 @@ struct {
 	bool buildingTeam = true
 	array<int> allyTeamHandles
 	array<int> enemyTeamHandles
+	
+	bool muted = false
+	
 } file
 
 struct VictoryCameraPackage
@@ -130,6 +137,16 @@ void function Cl_CustomTDM_Init()
 	{
 		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
 	}
+}
+
+void function mute( bool set )
+{
+	file.muted = set
+}
+
+bool function isMuted()
+{
+	return file.muted
 }
 
 void function FS_Scenarios_OnClientScriptInit( entity player ) 
@@ -501,7 +518,7 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 
 void function ClientReportChat(var button)
 {
-	if(CHAT_TEXT  == "") return
+	if( CHAT_TEXT == "" || file.muted ) return
 	
 	string text = "say " + CHAT_TEXT
 	GetLocalClientPlayer().ClientCommand(text)

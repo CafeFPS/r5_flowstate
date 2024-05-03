@@ -185,7 +185,9 @@ struct {
 		"#FS_MATCHED",
 		"#FS_RESTING",
 		"#FS_WEAPONS_RESET",
-		"#FS_ALL_WEPS_SAVED"
+		"#FS_ALL_WEPS_SAVED",
+		"#FS_MUTED",
+		"#FS_UNMUTED"
 		
 	]
 	

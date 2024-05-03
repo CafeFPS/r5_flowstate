@@ -787,6 +787,15 @@ global struct ServerPlayerStruct
 	bool waitingFor1v1 = false
 	bool bIsChatbot = false
 	
+	//framework for confirm
+	bool bInRetry = false
+	bool bRelayChallengeState = false
+	int relayChallengeCode = 0
+	
+	bool bTextmute = false
+	
+	
+	
 	//MovementGym
 	bool isTimerActive = false
 	int startTime = 0

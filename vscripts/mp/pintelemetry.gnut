@@ -36,17 +36,7 @@ global function PIN_Training
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-// these defines dictate the compiler for tracker code vs stub code
-//MOVED TO: sh_consts.gnut
-
-//global const bool TRACKER = true
-//global const bool HAS_TRACKER_DLL = true
-
-//TODO: split script into smaller, managable, localized scripts
-
-
-
-
+global const LOG_ERRORS = true
 
 
 
@@ -182,6 +172,10 @@ global function isIntervalThreadRunning
 
 global function isRestrictedServer
 global function setRestrictedServer
+
+#if LOG_ERRORS
+	global function DEV_PrintAllTrackerErrors
+#endif
 
 #if DEVELOPER 
 	global function DEV_GetPlayerMetricsIndexByUID
@@ -388,6 +382,9 @@ struct {
 	string restricted_whitelist_message = "You are whitelisted to play on this restricted server."
 	string restricted_admin_message = "You are an admin."
 	
+	//debug 
+	array<string> errorArray
+	
 } file
 
 
@@ -404,6 +401,19 @@ void function DEV_ManualLogStart()
 
 void function DEV_ManualLogKill( bool ship )
 {
+	if( ship )
+	{
+		LogEvent( PrintAllPlayerMetrics(true), file.LogE )
+		UpdateLiveStats( PrintAllPlayerMetrics(true) )
+	}
+	
+	#if LOG_ERRORS
+		DEV_PrintAllTrackerErrors()
+		#if DEVELOPER 
+			PrintAllPlayerMetrics(false) //console
+		#endif 
+	#endif 
+	
 	file.PIN_GameState_Start = false
 	svGlobal.levelEnt.Signal( "TrackerNoLog" )
 	stopLogging( ship )
@@ -2580,7 +2590,7 @@ void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
     // early exits
     if (!IsValid(victim) || Bleedout_IsBleedingOut(victim)) return;
 
-    entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+    entity attacker = DamageInfo_GetAttacker( damageInfo ) //InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
     int weaponSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
     // exclude this damage type
@@ -2601,7 +2611,8 @@ void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
 	else 
 	{
 		#if DEVELOPER 
-			sqerror("Attacker not player")
+			sqerror( "Attacker not player" )
+			printt("Attacker: ", attacker )
 		#endif 
 		attackerHandle = DamageInfo_GetDamageSourceIdentifier( damageInfo ) //TODO , find owner
     }
@@ -3249,12 +3260,13 @@ string function PrintAllPlayerMetrics( bool trigger = false )
                 json += ", ";
             }
 			
-			if( !exclude(weaponSource) )
+			if( !exclude( weaponSource ) )
 			{
-				replace = DamageSourceIDToString(weaponSource)
+				replace = DamageSourceIDToString( weaponSource )
 			}
-			else 
+			else
 			{
+				printt( GetRefFromDamageSourceID(weaponSource) )
 				replace = weaponSource.tostring()
 			}
 			
@@ -3272,7 +3284,8 @@ string function PrintAllPlayerMetrics( bool trigger = false )
 	} 
 	else 
 	{	
-		sqprint("^|," + json + "\n");		
+		sqprint("^|," + json + "\n")
+		return "" 		
 	}
 	
 	unreachable
@@ -3784,7 +3797,75 @@ void function OnJumped( entity player )
 
 void function WeaponAttack(entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir) 
 {
-	RecordPlayerShot( player, TrackerWepTable()[weaponName] );	
+	if( weaponName in TrackerWepTable() )
+	{	
+		RecordPlayerShot( player, TrackerWepTable()[weaponName] )
+	}
+	else 
+	{
+		RegisterDamageDef( weaponName, weapon )
+		RecordPlayerShot( player, TrackerWepTable()[weaponName] )
+	}
+}
+
+void function RegisterDamageDef( string weaponName, entity weapon )
+{
+	string nameFromClass = "";
+	
+	if( IsValid( weapon ) )
+	{
+		nameFromClass = weapon.GetWeaponClassName()
+	}
+	
+	if( empty( weaponName ) )
+	{
+		sqerror( format("weaponName was empty in call to %s()", FUNC_NAME() ) )
+		
+		if( !empty( nameFromClass ) )
+		{
+			weaponName = nameFromClass
+		}
+		else 
+		{
+			return
+		}	
+	}
+	
+	if( weaponName in TrackerWepTable() )
+	{
+		sqerror( format("Weapon %s already exists in TrackerWepTable", weaponName ) )
+		return
+	}
+	
+	int newIndex = TrackerWepTable().len()
+	
+	if( newIndex in DamageSourceIDToStringTable() )
+	{
+		sqerror( format("Index %d already exists in DamageSourceIDToStringTable, aborting", newIndex ) )
+		return
+	}
+	
+	string errorString = format( "Appending new DamageDef with data: index[%d] = \"%s\" ----DEBUG: weaponName = %s, nameFromClass = %s ", newIndex, weaponName, weaponName, nameFromClass )
+	file.errorArray.append( errorString )
+	printt(errorString)
+	
+	TrackerWepTable()[weaponName] <- newIndex
+	DamageSourceIDToStringTable()[newIndex] <- weaponName
+}
+
+void function DEV_PrintAllTrackerErrors()
+{
+	string data = "\n\n|#error------ PRINTING ERRORS ------\n\n";
+	
+	foreach ( error in file.errorArray )
+	{
+		data += format( "|#error %s \n", error )
+	}
+	
+	if( file.LogOn && isLogging() )
+	{
+		LogEvent( data, false )
+	}
 }
 
 
@@ -3846,11 +3927,15 @@ void function FinishGameStatsRound()
 						
 								if(!file.bSafeLog){ stopLogging(false); return; }
 								
+								#if LOG_ERRORS
+									DEV_PrintAllTrackerErrors()
+								#endif
+								
 								//mkos: log winner placement - && denotes placement entry for parser
 								LogEvent(
 								format("\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true)),
 								file.LogE
-								);
+								)
 
 										if(!Logging_ShipStats()){
 											sqprint("Shipping to stats server DISABLED -- check playlists file to enable --");
@@ -3859,18 +3944,18 @@ void function FinishGameStatsRound()
 										if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 										{
 											sqprint("No stats to ship...\n");
-											stopLogging(false);
+											stopLogging(false)
 										} 
 										else 
 										{
 											stopLogging(Logging_ShipStats()); //IMPORTANT
 											
 											//update live global stats for match making (verified only)
-											string metrics = PrintAllPlayerMetrics(true);
-											UpdateLiveStats( metrics );
+											string metrics = PrintAllPlayerMetrics(true)
+											UpdateLiveStats( metrics )
 											
 											//send to discord:
-											string recap = PIN_WinnerByKillsAndDamage();
+											string recap = PIN_WinnerByKillsAndDamage()
 											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK );
 											
 											if (Logging_ShipStats())

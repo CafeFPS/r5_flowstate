@@ -1617,6 +1617,25 @@ struct {
 				
 				return true
 				
+			case "mute":
+			
+				entity p = GetPlayer( param )				
+				if( !IsValid(p) ){ return true }	
+				ToggleMute( p, true )
+				LocalMsg( p, "#FS_MUTED", "", 0, 5, "", param2 )
+				
+				return true
+			
+			case "unmute":
+			
+				entity p = GetPlayer( param )				
+				if( !IsValid(p) ){ return true }	
+				ToggleMute( p, false )
+				LocalMsg( p, "#FS_UNMUTED" )
+				
+				return true
+				
+				
 			default:
 			
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
@@ -2348,7 +2367,7 @@ bool function CheckRate( entity player )
 			
 	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
 	{
-		Message( player, "COMMANDS COOLDOWN")
+		//Message( player, "COMMANDS COOLDOWN")
 		return false
 	}
 	
@@ -2431,7 +2450,7 @@ table<string, int> function TrackerWepTable()
 
 bool function exclude( int weaponSource )
 {
-	return DamageSourceIDHasString( weaponSource )
+	return !DamageSourceIDHasString( weaponSource )
 }
 
 string function ParseWeapon( string weaponString )
@@ -2500,4 +2519,3 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	
 	return debug
 }
-

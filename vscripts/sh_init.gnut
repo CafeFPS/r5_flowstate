@@ -355,6 +355,7 @@ void function Server_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
 	ObjectiveResourceSystem_ServerInit()
+	ChatUtility_Init()
 
     // ReMap Live
     if ( IsDevGamemode() )
