@@ -341,6 +341,9 @@ function CodeCallback_RegisterClass_CPlayer()
 	function CPlayer::ToggleMute( toggle )
 	{	
 		entity player = expect entity( this )	
+		
+		if( !IsValid( player )){ return }
+		
 		player.p.bTextmute = expect bool ( toggle )
 		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
 		player.p.bRelayChallengeState = false
@@ -354,10 +357,7 @@ function CodeCallback_RegisterClass_CPlayer()
 			EndSignal( player, "OnDestroy" )
 			WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
 			
-			if( !IsValid( player ) )
-			{
-				return
-			}
+			if( !IsValid( player ) ){ return }
 			
 			if ( !player.p.bRelayChallengeState )
 			{

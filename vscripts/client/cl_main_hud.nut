@@ -946,16 +946,6 @@ void function InitChatHUD()
 void function UpdateChatHUDVisibility()
 {
 	local chat = HudElement( "IngameTextChat" )
-
-	if( isMuted() )
-	{
-		chat.Hide()
-		return
-	}
-	else
-	{
-		chat.Show()
-	}
 	
 	//Saves what you typed to a global string
 	//used for all chat if they want to implement it into their gamemode

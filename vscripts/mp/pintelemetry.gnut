@@ -1042,7 +1042,7 @@ void function PIN_Init()
 	
 	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
 	{
-		AddClientCommandCallback( "say", ClientCommand_ParseSay )
+		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
 	
 }
@@ -4692,7 +4692,12 @@ void function PIN_Init()
 		INIT_CC_GameTypes()
 		INIT_CC_playeradmins()
 		AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
-	}	
+	}
+
+	if( GetCurrentPlaylistVarBool( "enable_chat_commands", true ) )
+	{
+		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
+	}
 }
 
 void function PIN_GameStart(){}

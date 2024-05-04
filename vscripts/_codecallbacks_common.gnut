@@ -42,6 +42,7 @@ global function AddCallback_OnPlayerInventoryChanged
 // r5 stuff
 global function AddCallback_OnWeaponAttack
 global function AddClientCommandCallbackNew
+global function RemoveClientCommandCallbackFunc
 global function AddCallback_OnPreClientDisconnected
 global function AddCallback_OnDeathBoxSpawned
 global function AddCallback_OnGetBestObserverTarget
@@ -697,8 +698,30 @@ void function AddCallback_OnWeaponAttack( void functionref( entity, entity, stri
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
 	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
-	Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
-	svGlobal.clientCommandCallbacksNew[ commandString ] <- callbackFunc
+	//Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
+	
+	//mkos - modified to support multiple functions for a single command
+	
+	if( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		mAssert( !(svGlobal.clientCommandCallbacksNew[ commandString ].contains( callbackFunc )), "Already added " + string( callbackFunc ) + "()" + " with " + FUNC_NAME() + "()" )
+		svGlobal.clientCommandCallbacksNew[ commandString ].append( callbackFunc )
+	}
+	else 
+	{
+		svGlobal.clientCommandCallbacksNew[ commandString ] <- [callbackFunc]
+	}
+}
+
+void function RemoveClientCommandCallbackFunc( string commandString ,void functionref( entity player, array<string> args ) callbackFunc )
+{
+	if( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		if ( svGlobal.clientCommandCallbacksNew[ commandString ].contains(callbackFunc) )
+		{
+			svGlobal.clientCommandCallbacksNew[ commandString ].removebyvalue(callbackFunc)
+		}
+	}
 }
 
 void function AddCallback_OnPreClientDisconnected( void functionref( entity player ) callbackFunc )

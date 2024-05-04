@@ -4,6 +4,7 @@ global function DEV_PrintAllChatEffects
 global function SetRelayChallenge
 global function ChatUtility_Init
 global function CheckOnConnect
+global function ToggleMuteForAll
 
 //CHAT EFFECTS
 global struct Chat {
@@ -51,7 +52,7 @@ struct {
 void function ChatUtility_Init()
 {
 	AddClientCommandCallback( "FS_TT", SetRelayChallenge )
-	AddClientCommandCallback( "say", ChatWatchdog )
+	AddClientCommandCallbackNew( "say", ChatWatchdog )
 	AddCallback_OnClientConnected( CheckOnConnect )
 	
 	#if TRACKER && HAS_TRACKER_DLL
@@ -61,44 +62,58 @@ void function ChatUtility_Init()
 
 void function MuteFromPersistence( entity player, string setting )
 {
+	if( !IsValid( player ) ) return 
+	
 	if( setting == "1" )
 	{
-		file.mutedPlayers.append( player.p.UID )
-		ToggleMute( player, true )
-		CheckAllMutes( player.p.handle, player.p.UID )
+		if ( !file.mutedPlayers.contains( player.p.UID ) )
+		{
+			file.mutedPlayers.append( player.p.UID )
+		}
+		
+		CheckOnConnect( player )
 	}
 }
 
 void function CheckOnConnect( entity player )
 {
-	CheckAllMutes( player.p.handle, player.p.UID ) //may need rawget
-}
-
-void function CheckAllMutes( int ehandle, string uid )
-{
-	if( file.mutedPlayers.contains( uid ) )
+	if( !IsValid( player ) ){ return }
+	
+	if( file.mutedPlayers.contains( player.p.UID ) )
 	{
-		foreach( s_player in GetPlayerArray() )
-		{
-			if( !IsValid( s_player ) ) continue		
-			Remote_CallFunction_NonReplay( s_player, "FS_Silence", true, ehandle )	
-		}
+		ToggleMuteForAll( player )
 	}
 }
 
-void function UnmuteForAll( entity player )
+void function ToggleMuteForAll( entity player, bool toggle = true )
 {
 	if( !IsValid( player ) ){ return }
 	
 	int eHandle = player.p.handle	
+	string uid = player.p.UID
 	
-	ToggleMute( player, false )
+	if ( toggle == true )
+	{
+		if( !file.mutedPlayers.contains(uid) )
+		{
+			file.mutedPlayers.append(uid)
+		}
+	}
+	else
+	{
+		if( file.mutedPlayers.contains(uid) )
+		{
+			file.mutedPlayers.fastremovebyvalue(uid)
+		}
+	}
+	
+	ToggleMute( player, toggle )
 	
 	foreach ( s_player in GetPlayerArray() )
 	{
-		if( !IsValid( s_player ) ) continue 
+		if( !IsValid( s_player ) || player == s_player ){ continue } 
 		
-		Remote_CallFunction_NonReplay( s_player, "FS_Silence", false, eHandle )
+		Remote_CallFunction_NonReplay( s_player, "FS_Silence", toggle, eHandle )
 	}
 }
 
@@ -157,6 +172,10 @@ bool function SetRelayChallenge( entity player, array<string> args )
 				return
 			}())
 		}
+		else 
+		{
+			return false
+		}
 	}
 	
 	if( args.len() < 1 ){ return true }
@@ -188,14 +207,13 @@ bool function SetRelayChallenge( entity player, array<string> args )
 	return true
 }
 
-bool function ChatWatchdog( entity player, array<string> args )
+void function ChatWatchdog( entity player, array<string> args )
 {
-	if( !IsValid( player ) ){ return true }	
+	if( !IsValid( player ) ){ return }	
 	if( player.p.bTextmute && args.len() > 0 )
 	{ 
-		//printt("should be muted")
-		//printarray( args )
-		KickPlayerById( player.GetPlatformUID(), "Chat Error" ) 
+		KickPlayerById( player.GetPlatformUID(), "Attempted to bypass chat mute" ) 
 	}
-	return true
+	
+	return
 }

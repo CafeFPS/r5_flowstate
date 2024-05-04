@@ -3465,13 +3465,23 @@ bool function IsTitanNPC( entity ent )
 	return ent.IsTitan() && ent.IsNPC()
 }
 
+//
 entity function InflictorOwner( entity inflictor )
-{
+{	
 	if ( IsValid( inflictor ) )
 	{
-		entity inflictorOwner = inflictor.GetOwner()
+		entity ornull inflictorOwner = inflictor.GetOwner()
+		
 		if ( IsValid( inflictorOwner ) )
-			inflictor = inflictorOwner
+		{	
+			printt("Valid: ", inflictorOwner )
+			inflictor = expect entity( inflictorOwner )
+		}
+		else if ( IsValid( inflictor.GetBossPlayer() ) )
+		{
+			inflictor = inflictor.GetBossPlayer()
+			printt("Valid2: ", inflictor )
+		}	
 	}
 
 	return inflictor

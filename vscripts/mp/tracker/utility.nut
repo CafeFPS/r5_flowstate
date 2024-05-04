@@ -20,6 +20,7 @@ global function IsWeaponValid
 global function ClientCommand_mkos_return_data
 global function ClientCommand_mkos_admin
 global function ClientCommand_ParseSay
+global function Commands
 global function INIT_CC_MapNames
 global function INIT_CC_GameTypes
 global function INIT_CC_playeradmins
@@ -34,7 +35,7 @@ global function IsTrackerAdmin
 global function PlayTime
 global function truncate
 global function DEV_PrintTrackerWeapons
-global function RegisterTrackerWeaponIdentifier
+global function GetTrackerWeaponIdentifierTable
 
 //const
 global const int SQ_MAX_INT_32 = 2147483647;
@@ -1621,7 +1622,7 @@ struct {
 			
 				entity p = GetPlayer( param )				
 				if( !IsValid(p) ){ return true }	
-				ToggleMute( p, true )
+				ToggleMuteForAll( p, true )
 				LocalMsg( p, "#FS_MUTED", "", 0, 5, "", param2 )
 				
 				return true
@@ -1630,9 +1631,14 @@ struct {
 			
 				entity p = GetPlayer( param )				
 				if( !IsValid(p) ){ return true }	
-				ToggleMute( p, false )
+				ToggleMuteForAll( p, false )
 				LocalMsg( p, "#FS_UNMUTED" )
 				
+				return true
+				
+			case "killme":
+			
+				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 				return true
 				
 				
@@ -1648,13 +1654,13 @@ struct {
 
 
 //chat commands
-bool function ClientCommand_ParseSay( entity player, array<string> args )
+void function ClientCommand_ParseSay( entity player, array<string> args )
 {		
     if ( !IsValid(player) || args.len() == 0 )
-		return true
+		return
 	
 	Commands( player, args )
-		return true 		
+		return		
 }
 
 void function Commands( entity player, array<string> args )
@@ -2426,7 +2432,7 @@ bool function IsWeaponValid( string weaponref )
 	return ( weaponref in WeaponIdentifiers )
 }
 
-table<string,int> function RegisterTrackerWeaponIdentifier()
+table<string,int> function GetTrackerWeaponIdentifierTable()
 {
 	return WeaponIdentifiers
 }

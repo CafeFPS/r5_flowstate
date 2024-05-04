@@ -468,7 +468,7 @@ void function DamageTypes_Init()
 		file.damageSourceIDToString[ number ] <- name
 		
 		#if SERVER 
-			RegisterTrackerWeaponIdentifier()[name] <- number
+			GetTrackerWeaponIdentifierTable()[name] <- number
 		#endif 
 	}
 

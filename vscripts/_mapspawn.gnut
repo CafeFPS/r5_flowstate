@@ -113,7 +113,7 @@ global struct SvGlobals
 	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
 
 	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
-	table<string, void functionref( entity player, array<string>args )> clientCommandCallbacksNew
+	table<string, array< void functionref( entity player, array<string>args ) > > clientCommandCallbacksNew
 	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
 
 	bool allowPointsOverLimit = false
@@ -555,7 +555,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
 	if(args[0] == "VModEnable" || args[0] == "vban" ) return
 	
-	#if !SCRIPT_GAME_VERSION__RELEASE && !DEVELOPER
+	#if !SCRIPT_GAME_VERSION__RELEASE && DEVELOPER
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
@@ -571,8 +571,15 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
+		#if DEVELOPER 
 		printt("CodeCallback_ClientCommand", commandString)
-		svGlobal.clientCommandCallbacksNew[ commandString ]( player, args )
+		#endif 
+		
+		foreach ( callbackFunc in svGlobal.clientCommandCallbacksNew[ commandString ] )
+		{
+			callbackFunc( player, args )
+		}
+		
 		return true
 	}
 	if ( commandString in svGlobal.clientCommandCallbacks  )
