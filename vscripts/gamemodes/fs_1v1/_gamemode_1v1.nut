@@ -1357,7 +1357,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			string legend = "undefined";
 			int index = -1;
-			int indexMapLen = charIndexMap.len();
+			int indexMapLen = charIndexMap.len()
 			
 			if( IsNumeric( param, 0, indexMapLen ) )
 			{
@@ -4875,7 +4875,8 @@ void function RechargePlayerAbilities( entity player )
 	{
 		ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
 		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-	} else if( LegendGUID_EnabledPassives.contains( charID ) )
+	} 
+	else if( LegendGUID_EnabledPassives.contains( charID ) )
 	{
 		GivePassive( player, 0 ) //bangalore is only legend current in list
 		
@@ -4917,9 +4918,9 @@ void function ReloadTactical( entity player )
 			weapon.SetWeaponChargeFractionForced( 0 )
 		else if ( max > 0 )
 			weapon.SetWeaponPrimaryClipCount( max )
-			
-		player.SetSuitGrapplePower(100)
 	}
+	
+	player.SetSuitGrapplePower(100)
 }
 
 void function HandleGroupIsFinished( entity player, var damageInfo )

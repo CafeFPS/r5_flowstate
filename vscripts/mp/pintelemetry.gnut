@@ -184,6 +184,8 @@ global function setRestrictedServer
 global function DEV_StartIntervalThread
 global function DEV_ManualLogStart
 global function DEV_ManualLogKill
+global function LogError
+global function GetTrackerErrorArray
 
 //TODO: REMOVE THESE FROM HERE, use Playlist() or Gamemode()
 
@@ -2581,22 +2583,29 @@ void function HandleDamage(DamageEvent event, entity attacker, int weaponSource,
 	//sqprint(format("Handling damage for an event with isNew: %s and existing damage: %.2f\n", event.isNew ? "true" : "false", event.damage));
 }
 
-
+array<int> validEventDamageSource = [
+	eDamageSourceId.deathField
+]
 
 void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
 {	
-	float actionTimestamp = Time();
-	//sqprint("on player damaged called") //DEBUG
+	float actionTimestamp = Time()
     // early exits
-    if (!IsValid(victim) || Bleedout_IsBleedingOut(victim)) return;
+    if ( !IsValid(victim) || Bleedout_IsBleedingOut(victim)) return
 
-    entity attacker = DamageInfo_GetAttacker( damageInfo ) //InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+    entity attacker = DamageInfo_GetAttacker( damageInfo )//InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
     int weaponSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
-    // exclude this damage type
+    
+	// exclude this damage type
     if (weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution){ return }
 
     float damageAmount = DamageInfo_GetDamage(damageInfo)
+	
+	printt("raw getattacker: ",DamageInfo_GetAttacker( damageInfo ))
+	printt("raw getinflictor: ", DamageInfo_GetInflictor( damageInfo ))
+	printt("damageAmount: ", damageAmount)
+	printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )
+	printt("weaponSource: ", weaponSource )
 
 	#if DEVELOPER
 		//sqprint(format("Weapon Source: %d, Damage Amount: %.2f", weaponSource, damageAmount));
@@ -2606,15 +2615,33 @@ void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
 	if ( attacker.IsPlayer() ) 
 	{
 		attackerHandle = attacker.p.handle
-		//sqprint("Valid attacker is player");
     } 
 	else 
 	{
 		#if DEVELOPER 
-			sqerror( "Attacker not player" )
-			printt("Attacker: ", attacker )
+			printt("Attacker not player")
 		#endif 
-		attackerHandle = DamageInfo_GetDamageSourceIdentifier( damageInfo ) //TODO , find owner
+		
+		attacker = InflictorOwner( DamageInfo_GetInflictor( damageInfo ) )
+		
+		if( !IsValid(attacker) || !attacker.IsPlayer() )
+		{	
+			if( validEventDamageSource.contains( weaponSource ) ) 
+			{
+				attackerHandle = weaponSource
+			}
+			else 
+			{
+				#if DEVELOPER 
+				sqerror("STATS:: invalid owner for damage event, returning")
+				#endif
+				return
+			}
+		}
+		else 
+		{
+			attackerHandle = attacker.p.handle
+		}
     }
 
 	// find existing event and its index
@@ -3846,15 +3873,27 @@ void function RegisterDamageDef( string weaponName, entity weapon )
 	}
 	
 	string errorString = format( "Appending new DamageDef with data: index[%d] = \"%s\" ----DEBUG: weaponName = %s, nameFromClass = %s ", newIndex, weaponName, weaponName, nameFromClass )
-	file.errorArray.append( errorString )
+	LogError( errorString )
 	printt(errorString)
 	
 	TrackerWepTable()[weaponName] <- newIndex
 	DamageSourceIDToStringTable()[newIndex] <- weaponName
 }
 
+void function LogError( string errorString )
+{
+	file.errorArray.append( errorString )
+}
+
+array<string> function GetTrackerErrorArray()
+{
+	return file.errorArray
+}
+
 void function DEV_PrintAllTrackerErrors()
 {
+	if( file.errorArray.len() <= 0 ){return}
+	
 	string data = "\n\n|#error------ PRINTING ERRORS ------\n\n";
 	
 	foreach ( error in file.errorArray )
