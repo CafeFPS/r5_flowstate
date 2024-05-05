@@ -850,8 +850,8 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 	//RunUIScript( "SetupDevCommand", "Spawn " + data.pickupString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, 1 )" )
 	//#endif
 	
-	#if DEVELOPER
-	printt( format("\n\n --- Registered Custom Weapon as --- \n className: %s \n name: %s \n tier: %d \n baseMods: %s \n supportedAttachments: %s \n pickupSound1p: %s \n pickupSound3p: %s \n weaponType: %s \n lowWeaponChance: %.2f \n medWeaponChance: %.2f \n highWeaponChance: %s \n hudIcon: %s ",
+	#if DEVELOPER //mkos~ added for modders' sanity
+	printt( format("\n\n --- Registered Custom Weapon as --- \n\n className: %s \n name: %s \n tier: %d \n baseMods: %s \n supportedAttachments: %s \n pickupSound1p: %s \n pickupSound3p: %s \n weaponType: %s \n lowWeaponChance: %.2f \n medWeaponChance: %.2f \n highWeaponChance: %s \n hudIcon: %s ",
 			weaponData.className,
 			weaponData.name,
 			weaponData.tier,

@@ -5,6 +5,7 @@ global function SetRelayChallenge
 global function ChatUtility_Init
 global function CheckOnConnect
 global function ToggleMuteForAll
+global function ChatWatchdog
 
 //CHAT EFFECTS
 global struct Chat {
