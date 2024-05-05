@@ -525,15 +525,20 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	Assert ( dmgMult >= 1.0 )
 
 	target.e.gasLastDamageTime = Time()
-
+	
+	printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	DamageInfo_ScaleDamage( damageInfo, dmgMult )
+	
 	if ( target.IsPlayer() )
 	{
 		EmitSoundOnEntityExceptToPlayer( target, target, "flesh_causticgas_damage_3p" )
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
+		
+		#if TRACKER
+			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+		#endif
 	}
 	
-	printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
-	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	attacker.e.sharedGasDamageHelper[ target ] = Time()
 }
 
@@ -589,15 +594,20 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 	Assert ( dmgMult >= 1.0 )
 
 	target.e.gasLastDamageTime = Time()
-
+	
+	printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	DamageInfo_ScaleDamage( damageInfo, dmgMult )
+	
 	if ( target.IsPlayer() )
 	{
 		EmitSoundOnEntityExceptToPlayer( target, target, "flesh_causticgas_damage_3p" )
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
+		
+		#if TRACKER
+			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+		#endif
 	}
 	
-	printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
-	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	attacker.e.sharedGasDamageHelper[ target ] = Time()
 }
 
@@ -771,7 +781,10 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	gasDmgInflictor.SetScriptName( "caustic_trap_gas" )
 	
 	if( IsValid( smokescreen.attacker ) )
+	{
 		gasDmgInflictor.SetBossPlayer( smokescreen.attacker )
+		printt("gas smoke screen inflictor attacker: ", smokescreen.attacker )
+	}
 	
 	DispatchSpawn( gasDmgInflictor )
 	

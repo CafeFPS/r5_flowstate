@@ -62,11 +62,46 @@ struct
 	#if CLIENT
 		array<entity> allPropDoors
 	#endif //CLIENT
+	
+	bool doorsEnabled
+	bool useBlockableDoors
+	bool useCodeDoors
+	bool forceSlidingDoors
+	int blockableDoorHealth
+	float blockableDoorOperationDuration
+	bool blockableDoorHurtBySpecialKick
+	int blockableDoorGuaranteedKickKillCount
+	bool blockableDoorHurtByMelee
+	float blockableDoorExplosibeDamageMultiplier
+	bool blockableDoorHurtByNormalWeapons
+	bool blockableDoorShowDamageNumbers
+	bool blockableDoorRegenEnabled
+	bool flowstateDoorRegen
+	float blockableDoorRegenStartDelay
+	float blockableDoorRegenDuration
+	
 
 } file
 
 void function ShDoors_Init()
 {
+	file.doorsEnabled 							= GetCurrentPlaylistVarBool( "survival_enable_doors", true ) // todo(dw): rename this playlist var to be non-survival specific
+	file.useBlockableDoors 						= GetCurrentPlaylistVarBool( "survival_force_blockable_doors", false )
+	file.useCodeDoors 							= GetCurrentPlaylistVarBool( "survival_force_code_doors", false )//TODO: FIX THIS ASAP
+	file.forceSlidingDoors 						= GetCurrentPlaylistVarBool( "survival_force_sliding_doors", false )
+	file.blockableDoorHealth 					= GetCurrentPlaylistVarInt( "blockable_door_health", 30 )
+	file.blockableDoorOperationDuration			= GetCurrentPlaylistVarFloat( "blockable_door_operation_duration", 0.61 )
+	file.blockableDoorHurtBySpecialKick 		= GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true )
+	file.blockableDoorGuaranteedKickKillCount 	= GetCurrentPlaylistVarInt( "blockable_door_guaranteed_kick_kill_count", 2 )
+	file.blockableDoorHurtByMelee 				= GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_melee", false )
+	file.blockableDoorExplosibeDamageMultiplier = GetCurrentPlaylistVarFloat( "blockable_door_explosive_damage_mutiplier", 1.0 )
+	file.blockableDoorHurtByNormalWeapons 		= GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_normal_weapons", false )
+	file.blockableDoorShowDamageNumbers 		= GetCurrentPlaylistVarBool( "blockable_door_show_damage_numbers", false )
+	file.blockableDoorRegenEnabled 				= GetCurrentPlaylistVarBool( "blockable_door_regen_enabled", false )
+	file.flowstateDoorRegen 					= GetCurrentPlaylistVarBool( "flowstateDoorsRegen", false )
+	file.blockableDoorRegenStartDelay 			= GetCurrentPlaylistVarFloat( "blockable_door_regen_start_delay", 1.8 )
+	file.blockableDoorRegenDuration 			= GetCurrentPlaylistVarFloat( "blockable_door_regen_duration", 4.2 )
+	
 	#if SERVER
 		RegisterSignal( "PlayerEnteredDoorTrigger" )
 		RegisterSignal( "PlayerLeftDoorTrigger" )
@@ -217,7 +252,7 @@ bool function ClientCommand_dev_spawn_blockable_door( entity player, array<strin
 
 bool function DoorsAreEnabled()
 {
-	return GetCurrentPlaylistVarBool( "survival_enable_doors", true ) // todo(dw): rename this playlist var to be non-survival specific
+	return file.doorsEnabled
 }
 
 
@@ -246,8 +281,8 @@ void function OnDoorSpawned( entity door )
 			// Special legacy case for a specific door model
 			// Faster to do these experiments in script than to keep changing models in leveled and recompiling
 			// TODO: Should eventually delete
-			bool useBlockableDoors = GetCurrentPlaylistVarBool( "survival_force_blockable_doors", false )
-			bool useCodeDoors = GetCurrentPlaylistVarBool( "survival_force_code_doors", false )//TODO: FIX THIS ASAP
+			bool useBlockableDoors = file.useBlockableDoors
+			bool useCodeDoors = file.useCodeDoors
 			if ( useCodeDoors )
 			{
 				bool makeLeftDoor  = false, makeRightDoor = false
@@ -392,7 +427,7 @@ void function OnDoorSpawned( entity door )
 			}
 			else
 			{
-				if ( GetCurrentPlaylistVarBool( "survival_force_sliding_doors", false ) )
+				if ( file.forceSlidingDoors )
 				{
 					entity ent
 					if ( door.GetModelName() == "mdl/door/door_108x60x4_generic_right_animated.rmdl" )
@@ -978,7 +1013,7 @@ void function OnCodeDoorSpawned( entity door )
 		AddToScriptManagedEntArray( file.propDoorArrayIndex, door )
 		return
 	}
-	door.SetMaxHealth( GetCurrentPlaylistVarInt( "blockable_door_health", 30 ) )
+	door.SetMaxHealth( file.blockableDoorHealth )
 	door.SetHealth( door.GetMaxHealth() )
 	door.SetTakeDamageType( DAMAGE_YES )
 	door.SetDamageNotifications( true )
@@ -1019,7 +1054,7 @@ void function BlockableDoorThink( entity door )
 
 	door.SetPusher( true )
 
-	door.SetMaxHealth( GetCurrentPlaylistVarInt( "blockable_door_health", 30 ) )
+	door.SetMaxHealth( file.blockableDoorHealth )
 	door.SetHealth( door.GetMaxHealth() )
 	door.SetTakeDamageType( DAMAGE_YES )
 	door.SetDamageNotifications( true )
@@ -1058,7 +1093,7 @@ void function BlockableDoorThink( entity door )
 			thread OperateBlockableDoor( door, goalNotch, door.e.usePlayer, otherDoor, true )
 		}
 
-		thread DelayedSetDoorUsable( door, GetCurrentPlaylistVarFloat( "blockable_door_operation_duration", 0.61 ) + BLOCKABLE_DOOR_EXTRA_USE_DEBOUNCE )
+		thread DelayedSetDoorUsable( door, file.blockableDoorOperationDuration + BLOCKABLE_DOOR_EXTRA_USE_DEBOUNCE )
 
 		table useData = WaitSignal( door, "OnPlayerUse", "OperateLinkedDoor" )
 		// time passes
@@ -1279,7 +1314,7 @@ void function OperateBlockableDoor( entity door, int goalNotch, entity operator,
 	} )
 
 	float startTime         = Time()
-	float operationDuration = GetCurrentPlaylistVarFloat( "blockable_door_operation_duration", 0.61 )
+	float operationDuration = file.blockableDoorOperationDuration
 	float degreesPerSecond  = 90.0 / operationDuration
 
 	vector hingeEdgeFloorPos = door.GetOrigin()
@@ -1507,21 +1542,21 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 	if ( IsValid( attacker ) && attacker.IsPlayer() )
 		weapon = attacker.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
-	if ( GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true ) && IsValid( weapon ) && weapon.HasMod( "proto_door_kick" ) )
+	if ( file.blockableDoorHurtBySpecialKick && IsValid( weapon ) && weapon.HasMod( "proto_door_kick" ) )
 	{
-		int guaranteedKickCount = GetCurrentPlaylistVarInt( "blockable_door_guaranteed_kick_kill_count", 2 )
+		int guaranteedKickCount = file.blockableDoorGuaranteedKickKillCount
 		damageInflicted = float( door.GetMaxHealth() ) / (float( guaranteedKickCount ) - 0.5)
 		DamageInfo_SetDamage( damageInfo, damageInflicted )
 	}
-	else if ( bool(DamageInfo_GetCustomDamageType( damageInfo ) & DF_MELEE) && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_melee", false ) )
+	else if ( bool(DamageInfo_GetCustomDamageType( damageInfo ) & DF_MELEE) && file.blockableDoorHurtByMelee )
 	{
-		int guaranteedMeleeCount = GetCurrentPlaylistVarInt( "blockable_door_guaranteed_melee_kill_count", 2 )
+		int guaranteedMeleeCount = file.blockableDoorGuaranteedKickKillCount
 		damageInflicted = float( door.GetMaxHealth() ) / (float( guaranteedMeleeCount ) - 0.5)
 		DamageInfo_SetDamage( damageInfo, damageInflicted )
 	}
 	else if ( bool(DamageInfo_GetCustomDamageType( damageInfo ) & DF_EXPLOSION) )
 	{
-		DamageInfo_ScaleDamage( damageInfo, GetCurrentPlaylistVarFloat( "blockable_door_explosive_damage_mutiplier", 1.0 ) )
+		DamageInfo_ScaleDamage( damageInfo, file.blockableDoorExplosibeDamageMultiplier )
 		if ( DamageInfo_GetDamage( damageInfo ) >= door.GetHealth() && door.GetHealth() > 1 )
 		{
 			// delay the last point of damage one frame so that the door blocks damage to other entities
@@ -1535,13 +1570,13 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 	else if (DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.mp_weapon_thermite_grenade ) {
 		damageInflicted = DamageInfo_GetDamage( damageInfo )
 	}
-	else if ( !GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_normal_weapons", false ) )
+	else if ( !file.blockableDoorHurtByNormalWeapons )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
 		return
 	}
 
-	if ( attacker.IsPlayer() && GetCurrentPlaylistVarBool( "blockable_door_show_damage_numbers", false ) )
+	if ( attacker.IsPlayer() && file.blockableDoorShowDamageNumbers )
 	{
 		attacker.NotifyDidDamage(
 			door, DamageInfo_GetHitBox( damageInfo ),
@@ -1586,7 +1621,7 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 		EmitSoundOnEntity( door, "Door_Impact_Breach" )
 		EmitSoundOnEntity( door, "tone_jog_stress_3p" )
 		//EmitSoundOnEntity( door, "door_stop" )
-		if ( GetCurrentPlaylistVarBool( "blockable_door_regen_enabled", false ) || GetCurrentPlaylistVarBool( "flowstateDoorsRegen", false ))
+		if ( file.blockableDoorRegenEnabled || file.flowstateDoorRegen )
 			thread BlockableDoor_ThreadedRegen( door )
 
 		if ( newHealth < door.GetMaxHealth() * 0.5 )
@@ -1676,11 +1711,11 @@ void function BlockableDoor_ThreadedRegen( entity door )
 	door.Signal( "BlockableDoor_ThreadedRegen" )
 	door.EndSignal( "BlockableDoor_ThreadedRegen" )
 
-	wait GetCurrentPlaylistVarFloat( "blockable_door_regen_start_delay", 1.8 )
+	wait file.blockableDoorRegenStartDelay
 
 	float startTime         = Time()
 	float startHealth       = float(door.GetHealth())
-	float fullRegenDuration = GetCurrentPlaylistVarFloat( "blockable_door_regen_duration", 4.2 )
+	float fullRegenDuration = file.blockableDoorRegenDuration
 	while ( door.GetHealth() < door.GetMaxHealth() )
 	{
 		door.SetHealth( min( door.GetMaxHealth(), int(startHealth + (Time() - startTime) / fullRegenDuration * float(door.GetMaxHealth())) ) )

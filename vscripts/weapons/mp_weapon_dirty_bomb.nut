@@ -731,6 +731,8 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	)
 	//If the owner is alive we should use the owner, otherwise world is attacker
 	entity attacker = IsValid( owner ) ? owner : svGlobal.worldspawn
+	
+	canisterProxy.SetOwner( attacker )
 
 	if ( !IsValid( attacker ) )
 		return
@@ -754,7 +756,7 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	canisterProxy.SetDamageNotifications( true )
 	
 	RemoveEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged )
-	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged_Activated) 
+	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged_Activated ) 
 	
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, canisterProxy, canisterProxy.GetOrigin(), attacker.GetTeam(), attacker )
 	CreateGasCloudMediumAtOrigin( canisterProxy, attacker, canisterProxy.GetOrigin() + <0,0,DIRTY_BOMB_GAS_CLOUD_HEIGHT>, DIRTY_BOMB_GAS_DURATION )
@@ -835,8 +837,8 @@ bool function PickUpCanister( entity player )
 {
 	entity weapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 
-	string className = weapon.GetWeaponClassName()
-	if ( className != "mp_weapon_dirty_bomb" )
+	//string className = weapon.GetWeaponClassName()
+	if ( weapon.GetWeaponClassName() != "mp_weapon_dirty_bomb" )
 		return false
 
 	if ( Bleedout_IsBleedingOut( player ) )

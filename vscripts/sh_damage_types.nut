@@ -181,6 +181,7 @@ global enum eDamageSourceId
 	mp_ability_octane_stim
 	mp_ability_crypto_drone_emp
 	mp_ability_crypto_drone_emp_trap
+	mp_weapon_dirty_bomb
 	// AI only Weapons
 	mp_weapon_super_spectre
 	mp_weapon_dronebeam
@@ -319,6 +320,10 @@ global enum eDamageSourceId
 	mp_weapon_titan_sword
 	mp_weapon_titan_sword_slam
 	melee_titan_sword
+	
+	mp_ability_heal //added for stats (triggers ondamaged callback ?)
+	mp_ability_holopilot //triggers ondamaged..?
+	mp_weapon_grenade_gas //triggers ondamaged
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
