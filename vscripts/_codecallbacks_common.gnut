@@ -43,8 +43,9 @@ global function AddCallback_OnPlayerInventoryChanged
 global function AddCallback_OnWeaponAttack
 
 global function AddClientCommandCallbackNew
-global function RemoveClientCommandCallbackFunc
+global function RemoveClientCommandCallbackNewFunc
 global function ClientCommandCallbackNewExists
+global function RemoveClientCommandCallback
 
 global function AddCallback_OnPreClientDisconnected
 global function AddCallback_OnDeathBoxSpawned
@@ -721,7 +722,30 @@ bool function ClientCommandCallbackNewExists( string commandString )
 	return ( commandString in svGlobal.clientCommandCallbacksNew )
 }
 
-void function RemoveClientCommandCallbackFunc( string commandString ,void functionref( entity player, array<string> args ) callbackFunc )
+void function RemoveClientCommandCallback( string commandString, bool newOnly = false )
+{
+	bool found = false
+	
+	if ( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		found = true
+		delete svGlobal.clientCommandCallbacksNew[ commandString ]
+	}
+	
+	if( !newOnly && commandString in svGlobal.clientCommandCallbacks )
+	{
+		found = true
+		delete svGlobal.clientCommandCallbacks[ commandString ]
+	}
+	
+	if( !found )
+	{
+		string callbackStruct = newOnly ? "clientCommandCallbacksNew" : "any clientcommand callbacks";
+		printf( "Tried to remove client command with [ %s() ] but command [ %s ] does not exist in %s", FUNC_NAME(), commandString, callbackStruct )
+	}
+}
+
+void function RemoveClientCommandCallbackNewFunc( string commandString ,void functionref( entity player, array<string> args ) callbackFunc )
 {
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
@@ -731,12 +755,12 @@ void function RemoveClientCommandCallbackFunc( string commandString ,void functi
 		}
 		else 
 		{
-			printf("Tried to remove a callbackFunc with [ %s() ] but callbackFunc [ %s() ] does not exist for command [ %s ] in clientCommandCallbacksNew", FUNC_NAME(), string( callbackFunc ), commandString )
+			printf( "Tried to remove a callbackFunc with [ %s() ] but callbackFunc [ %s() ] does not exist for command [ %s ] in clientCommandCallbacksNew", FUNC_NAME(), string( callbackFunc ), commandString )
 		}
 	}
 	else 
 	{
-		printf("Tried to remove callbackFunc [ %s() ] with [ %s() ] but command [ %s ] does not exist in clientCommandCallbacksNew", string( callbackFunc ), FUNC_NAME(), commandString )
+		printf( "Tried to remove callbackFunc [ %s() ] with [ %s() ] but command [ %s ] does not exist in clientCommandCallbacksNew", string( callbackFunc ), FUNC_NAME(), commandString )
 	}
 }
 
