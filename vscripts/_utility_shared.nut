@@ -148,7 +148,7 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
 
-	if( GetCurrentPlaylistName() != "fs_1v1" || GetCurrentPlaylistName() != "fs_lgduels_1v1" )
+	if( Playlist() != ePlaylists.fs_1v1 && Playlist() != ePlaylists.fs_lgduels_1v1  && Playlist() != ePlaylists.fs_scenarios )
 		MpWeaponEmoteProjector_Init()
 
 	MpWeaponDoubletake_Init()
@@ -1943,7 +1943,7 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		aVal = a.GetPlayerNetInt( "defused" )
 		bVal = b.GetPlayerNetInt( "defused" )
@@ -1964,7 +1964,7 @@ int function CompareKills( entity a, entity b )
 		return 0
 	}
 
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		aVal = a.GetPlayerNetInt( "captures" )
 		bVal = b.GetPlayerNetInt( "captures" )
@@ -1985,7 +1985,7 @@ int function CompareKills( entity a, entity b )
 		return 0
 	}
 
-	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 	{
 		aVal = a.GetPlayerNetInt( "oddball_ballHeldTime" )
 		bVal = b.GetPlayerNetInt( "oddball_ballHeldTime" )
@@ -2009,7 +2009,7 @@ int function CompareKills( entity a, entity b )
 	else if ( aVal < bVal )
 		return -1
 
-	if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+	if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 	{
 		aVal = a.GetPlayerNetInt( "kills" )
 		bVal = b.GetPlayerNetInt( "kills" )
@@ -3465,13 +3465,23 @@ bool function IsTitanNPC( entity ent )
 	return ent.IsTitan() && ent.IsNPC()
 }
 
+//
 entity function InflictorOwner( entity inflictor )
-{
+{	
 	if ( IsValid( inflictor ) )
 	{
-		entity inflictorOwner = inflictor.GetOwner()
+		entity ornull inflictorOwner = inflictor.GetOwner()
+		
 		if ( IsValid( inflictorOwner ) )
-			inflictor = inflictorOwner
+		{	
+			printt("Valid: ", inflictorOwner )
+			inflictor = expect entity( inflictorOwner )
+		}
+		else if ( IsValid( inflictor.GetBossPlayer() ) )
+		{
+			inflictor = inflictor.GetBossPlayer()
+			printt("Valid2: ", inflictor )
+		}	
 	}
 
 	return inflictor
@@ -3594,10 +3604,22 @@ void function SetTeam( entity ent, int team )
 		}
 		else
 		{
+			int oldTeam = ent.GetTeam()
 			ent.Code_SetTeam( team )
-			
-			if( ent.IsPlayer() && IsAlive(ent) && ent.p.isConnected )
-				Remote_CallFunction_NonReplay( ent, "UpdateRUITest")
+
+			if( ent.IsPlayer() )
+			{
+				foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
+				{
+					if( IsValid( player ) && player.p.isConnected )
+						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				}
+				foreach ( player in GetPlayerArrayOfTeam( team ) )
+				{
+					if( IsValid( player ) && player.p.isConnected )
+						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				}
+			}
 		}
 	#endif
 }
@@ -5682,4 +5704,18 @@ bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
 	}
 
 	return false
+}
+
+void function DEV_PrintClientCommands( table< string, void functionref( entity, array< string > ) > callbackTable )
+{
+	string data = "\n\n ------ CLIENTCOMMAND CALLBACK TABLE ------ \n\n"
+	int idx = 0
+	
+	foreach ( string command, ref in callbackTable )
+	{
+		data += idx.tostring() + " = Command: [ " + command + " ]  callbackFunc: [ " + string( ref ) + " ] \n";
+		idx++
+	}
+	
+	printt(data)
 }

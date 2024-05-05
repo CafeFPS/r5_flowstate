@@ -31,16 +31,28 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 
 void function StimEnd( entity weapon, float duration)
 {
-	entity player = weapon.GetWeaponOwner()
-	wait duration-2
 	if ( !IsValid( weapon ) )
 		return
+
+	EndSignal( weapon, "OnDestroy" )
+
+	wait duration-2
+
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_deactivate_1P", "octane_stimpack_deactivate_3P" )
 }
 
 void function OnWeaponChargeEnd_ability_heal( entity weapon )
 {
+	if ( !IsValid( weapon ) )
+		return
+
 	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	if( !IsValid( player ) || player != GetLocalClientPlayer() )
+		return
+	#endif
+
 	weapon.SetWeaponPrimaryClipCount( 0 )
 }
 

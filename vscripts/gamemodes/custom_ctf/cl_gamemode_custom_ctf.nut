@@ -156,7 +156,7 @@ void function Cl_CustomCTF_Init()
 	RegisterSignal( "ChangeCameraToSelectedLocation" )
 	RegisterSignal( "VoteTeam_EndModelFocus" )
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 		SetCommsDialogueEnabled( false )
 }
 
@@ -616,7 +616,7 @@ void function ShowScoreRUI(bool show)
 
 	entity player = GetLocalClientPlayer()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( !Flowstate_IsHaloMode() )
 	{
 		localteamIcon = player.GetTeam() == TEAM_IMC ? $"rui/flowstatecustom/imc" : $"rui/flowstatecustom/militia"
 		enemyteamIcon = localteamIcon == "rui/flowstatecustom/imc" ? $"rui/flowstatecustom/militia" : $"rui/flowstatecustom/imc"
@@ -1363,7 +1363,7 @@ void function FSIntro_StartIntroScreen()
 	float stime = Time()
 	FSIntro_Destroy()
 	
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "imcFlag" ) ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "milFlag" ) ) )
+	if( Flowstate_IsHaloMode() && !IsValid( GetGlobalNetEnt( "imcFlag" ) ) || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && !IsValid( GetGlobalNetEnt( "milFlag" ) ) )
 		return
 
 	entity player = GetLocalClientPlayer()
@@ -1371,7 +1371,7 @@ void function FSIntro_StartIntroScreen()
 	file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 	file.victorySequenceAngles = file.selectedLocation.victorypos.angles
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 	{
 		if( player.GetTeam() == TEAM_IMC )
 		{
@@ -1482,6 +1482,7 @@ void function FSIntro_StartIntroScreen()
 	vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
 
 	//Create camera and mover
+	GetLocalClientPlayer().ClearMenuCameraEntity()
 	file.FSIntro_CameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
 	file.FSIntro_Camera	  = CreateClientSidePointCamera( camera_start_pos, camera_start_angles, 40 )
 	entity cameraMover = file.FSIntro_CameraMover
@@ -1516,7 +1517,7 @@ void function FSIntro_StartIntroScreen()
 		//Move camera to end pos
 		cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
 		cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
-
+		printt( "Moving camera" )
 		wait 1
 
 		if( i == charactersModels.len() )

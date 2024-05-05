@@ -304,7 +304,7 @@ float function Bleedout_GetFirstAidHealPercent( entity player )
 bool function Bleedout_GetForceWeaponHolster( entity player )
 {
 	int type = player.GetPlayerNetInt( "bleedoutType" )
-	return file.bleedoutTypes[ type ].forceHolster
+	return file.bleedoutTypes[ type ].forceHolster && !GetCurrentPlaylistVarBool( "lsm_mod2", false )
 }
 
 
@@ -363,7 +363,7 @@ bool function Bleedout_IsBleedingOut( entity player )
 	if ( !player.IsPlayer() )
 		return false
 
-	return BleedoutState_GetPlayerBleedoutState( player ) != BS_NOT_BLEEDING_OUT
+	return BleedoutState_GetPlayerBleedoutState( player ) != BS_NOT_BLEEDING_OUT && !GetCurrentPlaylistVarBool( "lsm_mod2", false )
 }
 
 

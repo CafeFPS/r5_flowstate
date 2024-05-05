@@ -323,26 +323,28 @@ asset function GetModeEmblemImage( string playlistName )
 		// else
 			// Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
 	// }
+	
+	
 	#if CLIENT
-	switch(GameRules_GetGameMode())
+	switch( Gamemode() )
 	{
-		case "fs_prophunt":
+		case eGamemodes.fs_prophunt:
 		emblemImage = $"rui/flowstatecustom/prophunt"
 		break
 		
-		case "fs_duckhunt":
+		case eGamemodes.fs_duckhunt:
 		emblemImage = $"rui/flowstatecustom/duckhunt"
 		break
 		
-		case "fs_dm":
+		case eGamemodes.fs_dm:
 		emblemImage = $"rui/flowstatecustom/dm"
 		break
 
-		case "flowstate_pkknockback":
+		case eGamemodes.flowstate_pkknockback:
 		emblemImage = $"rui/flowstatecustom/pkpushback2"
 		break
 		
-		case "fs_snd":
+		case eGamemodes.fs_snd:
 		emblemImage = $"rui/flowstatecustom/sndgamemode"
 		break
 		
@@ -351,7 +353,7 @@ asset function GetModeEmblemImage( string playlistName )
 		// break
 	}
 	
-	switch( GetCurrentPlaylistName() )
+	switch( playlistName )
 	{
 		case "fs_movementgym":
 		emblemImage = $"rui/flowstatecustom/movementgym"

@@ -125,28 +125,28 @@ void function _GamemodeSND_Init()
 
 void function Sv_EntitiesDidLoad()
 {
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 			FS_SND.lobbyLocation = <-6940.96924, 21153.9219, -6147.95166>
 			FS_SND.lobbyAngles = <0, -101.100929, 0>
 			
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 			break
-		case "mp_rr_arena_empty":
+		case eMaps.mp_rr_arena_empty:
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-		case "mp_flowstate":
-		case "mp_rr_arena_phase_runner":
-		case "mp_rr_arena_composite":
+		case eMaps.mp_flowstate:
+		case eMaps.mp_rr_arena_phase_runner:
+		case eMaps.mp_rr_arena_composite:
 			entity startEnt = GetEnt( "info_player_start" )
 			
 			FS_SND.lobbyLocation = startEnt.GetOrigin()
 			FS_SND.lobbyAngles = startEnt.GetAngles()
 		break
 
-		case "mp_rr_desertlands_64k_x_64k":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
 			FS_SND.lobbyLocation = <17791.3203, 10835.2314, -2985.83618>
 			FS_SND.lobbyAngles = <0, -114.427933, 0>
 		break
@@ -156,7 +156,7 @@ void function Sv_EntitiesDidLoad()
 			// FS_SND.lobbyAngles = <0, 122, 0>
 		// break
 
-		case "mp_rr_party_crasher_new":
+		case eMaps.mp_rr_party_crasher_new:
 			FS_SND.lobbyLocation = <-1399.06775, 427.32309, 1298.39697>
 			FS_SND.lobbyAngles = <0, 22, 0>
 			
@@ -654,7 +654,7 @@ void function SND_Lobby()
 		SND_DestroyCircleFXEntity()
 		
 		//add check for map
-		if( GetMapName() == "mp_rr_arena_empty" )
+		if( MapName() == eMaps.mp_rr_arena_empty )
 		{
 			switch(FS_SND.currentLocation)
 			{

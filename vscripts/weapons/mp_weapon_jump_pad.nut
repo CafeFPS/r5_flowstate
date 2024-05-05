@@ -4,6 +4,10 @@ global function OnWeaponTossReleaseAnimEvent_weapon_jump_pad
 global function OnWeaponAttemptOffhandSwitch_weapon_jump_pad
 global function OnWeaponTossPrep_weapon_jump_pad
 
+#if CLIENT
+global function Flowstate_YouNeedToUpdate
+#endif
+
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
 
 bool function OnWeaponAttemptOffhandSwitch_weapon_jump_pad( entity weapon )
@@ -54,7 +58,8 @@ void function OnWeaponTossPrep_weapon_jump_pad( entity weapon, WeaponTossPrepPar
 void function OnJumpPadPlanted( entity projectile )
 {
 	#if SERVER
-	string gameMode = GameRules_GetGameMode()
+	//string gameMode = GameRules_GetGameMode()
+	int gameMode = Gamemode()
 
 	Assert( IsValid( projectile ) )
 
@@ -98,7 +103,7 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.AddToOtherEntitysRealms( projectile )
 	projectile.Destroy()
 
-	if(gameMode != "fs_dm")
+	if( gameMode != eGamemodes.fs_dm )
 	{
 		newProjectile.SetTakeDamageType( DAMAGE_YES )
 		newProjectile.SetMaxHealth( 100 )
@@ -116,8 +121,25 @@ void function OnJumpPadPlanted( entity projectile )
 	newProjectile.EndSignal( "OnDestroy" )
 	newProjectile.SetScriptName("jump_pad")
 
-	if(gameMode != "fs_dm")
-		thread TrapDestroyOnRoundEnd( owner, newProjectile )
+	if( gameMode != eGamemodes.fs_dm )
+	{
+		thread function () : ( newProjectile, owner )
+		{
+			EndSignal( newProjectile, "OnDestroy" )
+			EndSignal( owner, "CleanUpPlayerAbilities" )
+
+			OnThreadEnd( function() : ( newProjectile )
+				{
+					if( IsValid( newProjectile ) )
+					{
+						newProjectile.Destroy()
+					}
+				}	
+			)
+
+			WaitForever()
+		}()
+	}
 
 	if ( IsValid( traceResult.hitEnt ) )
 	{
@@ -148,18 +170,42 @@ void function OnJumpPadPlanted( entity projectile )
 	jumpPadProxy.SetOwner( owner )
 	JumpPad_CreatedCallback( newProjectile )
 
-	if(gameMode == "fs_dm"){
-	thread JumpPadWatcher(newProjectile)
+	if( gameMode == eGamemodes.fs_dm )
+	{
+		thread JumpPadWatcher(newProjectile)
 	}
 	
 	#endif
 }
 
 #if SERVER
-void function JumpPadWatcher(entity jumpPad)
+
+	void function JumpPadWatcher(entity jumpPad)
+	{
+		entity owner = jumpPad.GetOwner()
+		owner.EndSignal( "CleanUpPlayerAbilities" )
+		owner.EndSignal( "OnDestroy" )
+		jumpPad.EndSignal( "OnDestroy" )
+		
+		OnThreadEnd( function() : ( jumpPad )
+			{
+				if( IsValid(jumpPad) )
+				{
+					jumpPad.Destroy()
+				}
+			}	
+		)
+	
+		wait 15
+		if(IsValid(jumpPad))
+		{
+			jumpPad.Destroy()
+		}
+	}
+#endif
+
+#if CLIENT
+void function Flowstate_YouNeedToUpdate()
 {
-wait 15
-if(IsValid(jumpPad)){
-jumpPad.Destroy()}
 }
 #endif

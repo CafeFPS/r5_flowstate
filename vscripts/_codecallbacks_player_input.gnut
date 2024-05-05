@@ -37,8 +37,6 @@ void function AddOptionalButtonPressedPlayerInputCallback( entity player, int bu
 
 void function CodeCallback_OnPlayerInputCommandChanged( entity player, int cmdsHeld, int cmdsPressed, int cmdsReleased )
 {
-	//printt( "COMMAND INPUT CHANGED: ", player, cmdsHeld, cmdsPressed, cmdsReleased )
-
 	foreach( callbackStruct in player.p.playerInputEventCallbacks )
 	{
 		if ( PlayerInputsMatchCallbackInputs( cmdsHeld, cmdsPressed, cmdsReleased, callbackStruct )  )
@@ -65,7 +63,8 @@ void function CodeCallback_OnPlayerInputAxisChanged( entity player, float horizA
 {
 	//printt( "AXIS CHANGED: ", player, horizAxis, vertAxis )
 	//printt( "Axis Changed: X: " + horizAxis + " Y: " + vertAxis )
-
+	/* //commented out for now - mkos (rewrite)
+	
 	if (!IsValid(player)) 
 			return
 
@@ -81,14 +80,15 @@ void function CodeCallback_OnPlayerInputAxisChanged( entity player, float horizA
         //sqprint("Axis Changed: X: " + horizAxis + " Y: " + vertAxis);
 	}
 		
+	*/
 	
-	/*
+	//was commented out
 	foreach( callbackStruct in player.p.playerInputAxisEventCallbacks )
 	{
 		if ( ShouldRunPlayerInputAxisCallbackFunc( horizAxis, vertAxis, callbackStruct )  )
 			RunPlayerInputAxisCallbackFunc( player, callbackStruct )
 	}
-	*/
+	
 }
 
 void function AddPlayerInputEventCallback_Internal( entity player, PlayerInputEventCallbackStruct inputCallbackStruct ) //Not really meant to be used directly unless you know what you're doing! Use utility functions like AddButtonPressedPlayerInputCallback instead
@@ -216,13 +216,34 @@ void function AddButtonReleasedPlayerInputCallback( entity player, int buttonEnu
 	AddPlayerInputEventCallback_Internal( player, callbackStruct )
 }
 
+
+string function sTimeToString( float time, bool msec = false, bool msecExpanded = false )
+{
+	int minsleft = int( time / 60 )
+	int secsleft = int( time ) % 60
+	if ( msec )
+	{
+		float msecsleft = time - int( time )
+		if ( msecExpanded )
+			return format( "%02d:%02d:%02d", minsleft, secsleft, msecsleft * 100 )
+		else
+			return format( "%02d:%02d", secsleft, msecsleft * 100 )
+	}
+
+	return format( "%02d:%02d", minsleft, secsleft )
+}
+
 void function RemoveButtonReleasedPlayerInputCallback( entity player, int buttonEnum, void functionref( entity player ) callbackFunc )
 {
+	//float timestart = Time()
 	PlayerInputEventCallbackStruct callbackStruct
 	callbackStruct.cmdsReleasedBitMask = buttonEnum
 	callbackStruct.callbackFunc = callbackFunc
 
 	RemovePlayerInputEventCallback_Internal( player, callbackStruct )
+	//float timeend = Time()
+	
+	//sqprint(format("[RemoveButtonReleasedPlayerInputCallback] execution time: %.15f", timeend - timestart))
 }
 
 
@@ -328,20 +349,24 @@ PlayerInputAxisEventCallbackStruct function MakePressedForwardCallbackStruct()
 	return callbackStruct
 }
 
-void function AddPlayerPressedForwardCallback( entity player, void functionref( entity player ) callbackFunc, float debounceTime = 2.0, bool b0 = false )
+void function AddPlayerPressedForwardCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0, bool b0 = false )
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	
+	//was commented out 
+	callbackStruct.callbackFunc = callbackFunc //
 
 	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
 }
 
-void function RemovePlayerPressedForwardCallback( entity player, void functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
+void function RemovePlayerPressedForwardCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	
+	//was commented out
+	callbackStruct.callbackFunc = callbackFunc //
 
 	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
 }
@@ -357,11 +382,14 @@ PlayerInputAxisEventCallbackStruct function MakePressedBackCallbackStruct()
 	return callbackStruct
 }
 
-void function AddPlayerPressedBackCallback( entity player, void functionref( entity player ) callbackFunc, float debounceTime = 2.0, bool b0 = false )
+//changed functionref to bool
+void function AddPlayerPressedBackCallback( entity player, bool functionref( entity player ) callbackFunc, float debounceTime = 2.0, bool b0 = false )
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	
+	//was commented out - mkos
+	callbackStruct.callbackFunc = callbackFunc
 
 	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
 
@@ -556,14 +584,16 @@ bool function IsValidPlayerInputAxisEventCallbackStruct( PlayerInputAxisEventCal
 
 void function RunPlayerInputAxisCallbackFunc( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
 {
-	// bool callbackResult = callbackStruct.callbackFunc( player ) // TODO: FIX "SCRIPT ERROR: [SERVER] attempt to call 'null'"
-	// if ( callbackResult )
-	// {
-	// 	callbackStruct.lastTriggeredTime = Time()
+	//un commented - mkos
 
-	// 	if ( callbackStruct.debounceTime > 0 )
-	// 		thread RunInputAxisCallbackAfterTimePasses( player, callbackStruct ) //Note that this has the potential to call RunPlayerInputAxisCallbackFunc again
-	// }
+	 bool callbackResult = callbackStruct.callbackFunc( player ) // TODO: FIX "SCRIPT ERROR: [SERVER] attempt to call 'null'"
+	 if ( callbackResult )
+	 {
+	 	callbackStruct.lastTriggeredTime = Time()
+
+	 	if ( callbackStruct.debounceTime > 0 )
+	 		thread RunInputAxisCallbackAfterTimePasses( player, callbackStruct ) //Note that this has the potential to call RunPlayerInputAxisCallbackFunc again
+	 }
 }
 
 void function RunInputAxisCallbackAfterTimePasses( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )

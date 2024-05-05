@@ -18,7 +18,7 @@ WeaponData
 	"viewmodel"   									"mdl/Weapons/vctblue/vctblue_ptpov.rmdl"
 	"playermodel" 									"mdl/Weapons/vctblue_w/vctblue_w.rmdl"
 	
-	//"OnWeaponActivate"							"OnWeaponActivate_vctblue"
+	"OnWeaponActivate"							"OnWeaponActivate_vctblue"
 	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword"
 
 	// FX

@@ -7,6 +7,12 @@
 global function printl
 global function CodeCallback_Precompile
 
+global struct LocPair
+{
+    vector origin = <0, 0, 0>
+    vector angles = <0, 0, 0>
+}
+
 global struct EchoTestStruct
 {
 	int test1

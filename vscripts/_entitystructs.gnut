@@ -383,6 +383,8 @@ global struct ServerEntityStruct
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
 	
+	//Flowstate
+
 	//Trophy Structs
 	float pylonhealth
 	
@@ -454,7 +456,17 @@ global struct ServerEntityStruct
 	//extra survival int property ( max shield for infinite shield )
 	int extraSurvivalProperty = -1
 	
+	//Crypto
 	bool droneRecalling = false
+
+	//Warp tunnel path
+	array<entity> warpEntrancePath
+	array<vector> warpEntranceSmoothedPath
+
+	bool IsFalling = false
+	vector FallDamageJumpOrg
+	float currentDiveGoalAngle
+	entity botFakeModel
 }
 
 global struct MeritData
@@ -741,22 +753,48 @@ global struct ServerPlayerStruct
 	int ziplineUsages = 0
 	float lastmoved
 	
-	//mkos /or/ r5r stats
+	//mkos /or/ r5r stats /r5r.dev
 	
+	int handle
+	string UID
+	string name
 	string hitsound
 	int input
 	string inputmode
+	bool challengenotify = false //need to make a notify system
+	entity eLastChallenger
 	bool notify = false
 	bool has_notify = false
 	bool destroynotify = false
-	float IBMM_grace_period = 0 // disabled default
+	float last_input_time
+	float IBMM_grace_period = -1 // <=0  is disabled
 	float messagetime = 0
 	int movevalue = 0
 	int p_damage = 3 //for lgduel default dmg/heal 
 	int lifetime_kills = 0
 	int lifetime_deaths = 0
 	int lifetime_glides = 0
-	float last_input_time
+	int lifetime_playtime = 0
+	int lifetime_gamesplayed = 0
+	int lifetime_score = 0
+	string weapon_loadout = "NA"
+	bool lock1v1_setting = true
+	bool stats_done_loading = false
+	bool start_in_rest_setting = false
+	bool enable_input_banner = false
+	float ratelimit
+	bool rest_request = false
+	bool waitingFor1v1 = false
+	bool bIsChatbot = false
+	
+	//framework for confirm
+	bool bInRetry = false
+	bool bRelayChallengeState = false
+	int relayChallengeCode = 0
+	
+	bool bTextmute = false
+	
+	
 	
 	//MovementGym
 	bool isTimerActive = false
@@ -919,6 +957,7 @@ global struct ServerPlayerStruct
   
 	float lastTgiveUsedTime
 	float lastRestUsedTime
+	//float lastLockEnemyUsedTime //???
 
 	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
@@ -955,6 +994,8 @@ global struct ServerPlayerStruct
 	array< string > storedPlayerSettingsMods
 	array< int > storedPlayerHealth // { health, shieldHealth }
 	array< int > storedPlayerPassives
+
+	bool usingJumpPad = false
 	
 	//LGDuels
 	int totalLGShots = 0
@@ -974,6 +1015,20 @@ global struct ServerPlayerStruct
 	entity launcherVictim
 	bool launcherStarted
 	bool startingSuperAlready
+	
+	bool IsBot = false
+
+	int movementRecorderCharacter = 0
+	array< var > recordingAnims
+	array< LocPair > recordingAnimsCoordinates
+	array< int > recordingAnimsChosenCharacters
+
+	bool isRecording = false
+	vector currentOrigin
+	vector currentAngles
+	bool recorderHideHud
+	bool continueLoop = true
+	array<entity> dummyList
 }
 
 global struct ChallengeScore

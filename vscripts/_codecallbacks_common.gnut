@@ -41,7 +41,12 @@ global function AddCallback_OnPlayerInventoryChanged
 
 // r5 stuff
 global function AddCallback_OnWeaponAttack
+
 global function AddClientCommandCallbackNew
+global function RemoveClientCommandCallbackNewFunc
+global function ClientCommandCallbackNewExists
+global function RemoveClientCommandCallback
+
 global function AddCallback_OnPreClientDisconnected
 global function AddCallback_OnDeathBoxSpawned
 global function AddCallback_OnGetBestObserverTarget
@@ -89,7 +94,7 @@ global function CodeCallback_OnWeaponAttack
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
-	player.s.activeTrapArrayId <- 0
+	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
 
 	ShGRX_OnClientConnectionCompleted( player )
 
@@ -112,14 +117,17 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	CodeCallback_OnClientReloadConnectionCompleted( player )
 	
 	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
-		player.p.assignedCustomModel = RandomIntRangeInclusive(1,10)
+		player.p.assignedCustomModel = RandomIntRangeInclusive(1,13)
 	
-	if( GameRules_GetGameMode() == "fs_snd" )
+	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
+	#if DEVELOPER
+	printt( "CodeCallback_OnPlayerRespawned", player )
+	#endif
 	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
 		cb( player )
 }
@@ -165,10 +173,6 @@ struct
 
 entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
 {
-	#if DEVELOPER
-	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
-	#endif
-	
 	if( !IsValid( observer ) )
 		return null
 	
@@ -178,9 +182,13 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 			observer.StartObserverMode( OBS_MODE_CHASE )
 		return observer.p.respawnPod
 	}
-	
+
+	#if DEVELOPER
+	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
+	#endif
+		
 	//Force teammate observer target when spec_next and spec_prev are used
-	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || GameRules_GetGameMode() == SURVIVAL )
+	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || Gamemode() == eGamemodes.SURVIVAL )
 	{
 		int team = observer.GetTeam()
 		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
@@ -416,6 +424,9 @@ void function SendEntityKilledEvent( entity ent, var damageInfo )
 
 	foreach ( player in players )
 	{
+		if( is3v3Mode() && ent.IsPlayer() && !ent.DoesShareRealms( player ) )
+			continue
+
 		Remote_CallFunction_NonReplay( player, "ServerCallback_OnEntityKilled", attacker, ent, scriptDamageType, damageSourceId )
 	}
 }
@@ -558,7 +569,6 @@ void function AddCallback_OnTouchHealthKit( string className, bool functionref( 
 		Assert( !svGlobal.onTouchHealthKitCallbacks[className].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnTouchHealthKit to class " + className )
 		svGlobal.onTouchHealthKitCallbacks[className].append( callbackFunc )
 	}
-
 }
 
 void function AddCallback_OnPlayerRespawned( void functionref( entity ) callbackFunc )
@@ -692,8 +702,66 @@ void function AddCallback_OnWeaponAttack( void functionref( entity, entity, stri
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
 	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
-	Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
-	svGlobal.clientCommandCallbacksNew[ commandString ] <- callbackFunc
+	//Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
+	
+	//mkos - modified to support multiple functions for a single command
+	
+	if( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		mAssert( !(svGlobal.clientCommandCallbacksNew[ commandString ].contains( callbackFunc )), "Already added " + string( callbackFunc ) + "()" + " with " + FUNC_NAME() + "()" )
+		svGlobal.clientCommandCallbacksNew[ commandString ].append( callbackFunc )
+	}
+	else 
+	{
+		svGlobal.clientCommandCallbacksNew[ commandString ] <- [callbackFunc]
+	}
+}
+
+bool function ClientCommandCallbackNewExists( string commandString )
+{
+	return ( commandString in svGlobal.clientCommandCallbacksNew )
+}
+
+void function RemoveClientCommandCallback( string commandString, bool newOnly = false )
+{
+	bool found = false
+	
+	if ( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		found = true
+		delete svGlobal.clientCommandCallbacksNew[ commandString ]
+	}
+	
+	if( !newOnly && commandString in svGlobal.clientCommandCallbacks )
+	{
+		found = true
+		delete svGlobal.clientCommandCallbacks[ commandString ]
+	}
+	
+	if( !found )
+	{
+		string callbackStruct = newOnly ? "clientCommandCallbacksNew" : "any clientcommand callbacks";
+		printf( "Tried to remove client command with [ %s() ] but command [ %s ] does not exist in %s", FUNC_NAME(), commandString, callbackStruct )
+	}
+}
+
+void function RemoveClientCommandCallbackNewFunc( string commandString ,void functionref( entity player, array<string> args ) callbackFunc )
+{
+	if( commandString in svGlobal.clientCommandCallbacksNew )
+	{
+		if ( svGlobal.clientCommandCallbacksNew[ commandString ].contains(callbackFunc) )
+		{
+			svGlobal.clientCommandCallbacksNew[ commandString ].removebyvalue(callbackFunc)
+		}
+		else 
+		{
+			printf( "Tried to remove a callbackFunc with [ %s() ] but callbackFunc [ %s() ] does not exist for command [ %s ] in clientCommandCallbacksNew", FUNC_NAME(), string( callbackFunc ), commandString )
+		}
+	}
+	else 
+	{
+		printf( "Tried to remove callbackFunc [ %s() ] with [ %s() ] but command [ %s ] does not exist in clientCommandCallbacksNew", string( callbackFunc ), FUNC_NAME(), commandString )
+	}
 }
 
 void function AddCallback_OnPreClientDisconnected( void functionref( entity player ) callbackFunc )
@@ -774,6 +842,9 @@ void function RemoveEntityCallback_OnDamaged( entity ent, void functionref( enti
 {
 	int index = ent.e.entDamageCallbacks.find( callbackFunc )
 
+	if( index == -1 )
+		return
+
 	Assert( index != -1, "Requested DamageCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entDamageCallbacks.fastremove( index )
 
@@ -792,7 +863,8 @@ void function AddEntityCallback_OnPostDamaged( entity ent, void functionref( ent
 void function RemoveEntityCallback_OnPostDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
 {
 	int index = ent.e.entPostDamageCallbacks.find( callbackFunc )
-
+	if( index == -1 )
+		return
 	Assert( index != -1, "Requested PostDamageCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entPostDamageCallbacks.fastremove( index )
 
@@ -816,7 +888,8 @@ void function AddEntityCallback_OnKilled( entity ent, void functionref( entity, 
 void function RemoveEntityCallback_OnKilled( entity ent, void functionref( entity, var ) callbackFunc )
 {
 	int index = ent.e.entKilledCallbacks.find( callbackFunc )
-
+	if( index == -1 )
+		return
 	Assert( index != -1, "Requested KilledCallback " + string( callbackFunc ) + " to be removed not found! " )
 	ent.e.entKilledCallbacks.fastremove( index )
 

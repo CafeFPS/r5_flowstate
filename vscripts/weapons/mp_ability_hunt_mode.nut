@@ -118,6 +118,7 @@ void function HuntMode_Start( entity player )
 	
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "HuntMode_ForceAbilityStop" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 	//EmitSoundOnEntityOnlyToPlayer( player, player, "beastofthehunt_activate_1P" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "beastofthehunt_activate_3P" )
 	
@@ -327,12 +328,6 @@ void function HuntMode_PlayActivationScreenFX( entity clientPlayer )
 }
 
 #endif //CLIENT
-
-void function ForceStopBlackAndWhiteScreenPls()
-{
-		foreach ( player in GetPlayerArray() ){
-		player.Signal( "HuntMode_ForceAbilityStop" )}
-}
 
 void function StopHuntMode()
 {

@@ -1912,7 +1912,7 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 
 void function Waypoints_DestroyPingsForSkydiveEnding( entity player )
 {
-	if(GameRules_GetGameMode() == "flowstate_pkknockback") return
+	if( Gamemode() == eGamemodes.flowstate_pkknockback ) return
 	
 	array<entity> deadPings
 

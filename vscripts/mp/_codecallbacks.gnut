@@ -58,13 +58,16 @@ void function OnClientConnected( entity player )
 
 	printt( "[+] New player connected! ", player )
 
-	//CafeFPS
-	//Wraith Q fix. Colombia
-	player.SetForceVisibleInPhaseShift(true)
+	//By CafeFPS
+
+	//Wraith Q fix
+	player.SetForceVisibleInPhaseShift( true )
+
 	//Phase Rewind Record Positions
-	thread RecordPositions(player)
+	thread RecordPositions( player )
+
 	//Record a networked int for Latency to show in scoreboard
-	thread NetworkedIntLatencyThingy(player)	
+	thread NetworkedIntLatencyThingy( player )	
 
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
@@ -87,13 +90,16 @@ void function NetworkedIntLatencyThingy( entity player )
 			player.SetPlayerNetInt( "latency", latency )
 		}
 
-		wait 0.1
+		wait 0.5
 	}
 }
 
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.
 void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 {
+	if( !IsValid( ent ) )
+		return
+
 	bool entIsPlayer = ent.IsPlayer()
 	bool entIsTitan = ent.IsTitan()
 	bool entIsNPC = ent.IsNPC()
@@ -146,8 +152,8 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			&& inflictor.GetClassName() == "trigger_hurt"
 			&& inflictor.HasKey( "damageSourceName" ) )
 		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
-	
-	if( IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == 169 )
+
+	if( IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.burn )
 		attackerIsNPC = true //force lava to damage shields
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -478,7 +484,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				{
 					int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 					
-					if ( sourceId == eDamageSourceId.damagedef_suicide )
+					if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn )
 						return
 				}
 				
@@ -488,7 +494,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 			}
 
-			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
+			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && Gamemode() == eGamemodes.SURVIVAL )
 				EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
@@ -897,7 +903,7 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 		attackerOrigin = attacker.GetOrigin()
 		
 		//Fake evo shields
-		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && GameRules_GetGameMode() == SURVIVAL )
+		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && Gamemode() == eGamemodes.SURVIVAL )
 		{
 			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}

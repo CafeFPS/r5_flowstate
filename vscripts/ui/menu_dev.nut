@@ -268,17 +268,24 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 	UpdateDevMenuButtons()
 }
 
+const array<int> allowedWeaponChangeModes = [
+	
+	ePlaylists.fs_dm,
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1
+]
+
 void function SetupDefaultDevCommandsMP()
 {
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
 	
-	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( allowedWeaponChangeModes.contains( Playlist() ) )
 	{
-		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
-		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
-		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
-		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
+		SetupDevMenu( "FSDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
+		SetupDevMenu( "FSDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
+		SetupDevCommand( "FSDM: Save Current Weapons", "saveguns" )
+		SetupDevCommand( "FSDM: Reset Saved Weapons", "resetguns" )
 	}
 
 	if(GetCheatsState()){
@@ -364,8 +371,6 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
 		SetupDevCommand( "Toggle HUD", "ToggleHUD" )
 
-		SetupDevCommand( "Melee: Equip Bolo Sword", "script thread SetupHeirloom()" )
-		SetupDevCommand( "Melee: Equip Shadow Hands", "script thread SetupShadowHands()" )
 		// SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
 		
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
@@ -381,6 +386,11 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
 
 		SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
+
+		SetupDevCommand( "Melee: Shadow Hands", "script thread SetupHeirloom(3)" )
+		SetupDevCommand( "Melee: Boxing Hands", "script thread SetupHeirloom(4)" )
+		SetupDevCommand( "Custom Melee: Bolo Sword", "script thread SetupHeirloom(0)" )
+		SetupDevCommand( "Custom Melee: VCTBlue Knife", "script thread SetupHeirloom(2)" )
 
 		// This adds CAPTURE MODE every time you load a level.
 		// Capture mode doesn't work, so I am commenting this out.
@@ -431,11 +441,11 @@ void function SetDevMenu_Weapons( var _ )
 }
 void function SetDevMenu_TDMPrimaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMPrimaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMPrimaryWeapons )
 }
 void function SetDevMenu_TDMSecondaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMSecondaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMSecondaryWeapons )
 }
 void function SetDevMenu_SurvivalCharacter( var _ )
 {
@@ -729,7 +739,7 @@ void function SetupRespawnPlayersDevMenu()
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
 }
-void function SetupTDMPrimaryWeapsons()
+void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -757,7 +767,7 @@ void function SetupTDMPrimaryWeapsons()
 	SetupDevCommand( "EVA-8", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
 	SetupDevCommand( "Peacekeeper", "tgive p mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
 	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 sniper_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
@@ -770,7 +780,7 @@ void function SetupTDMPrimaryWeapsons()
 	//}
 }
 
-void function SetupTDMSecondaryWeapsons()
+void function SetupTDMSecondaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -798,7 +808,7 @@ void function SetupTDMSecondaryWeapsons()
 	SetupDevCommand( "EVA-8", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
 	SetupDevCommand( "Peacekeeper", "tgive s mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive s mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "Mastiff","tgive s mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
 	SetupDevCommand( "Longbow", "tgive s mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
 	SetupDevCommand( "Charge Rifle", "tgive s mp_weapon_defender optic_sniper_threat stock_sniper_l3" )

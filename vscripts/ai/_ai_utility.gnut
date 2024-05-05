@@ -2,14 +2,77 @@ untyped
 
 globalize_all_functions
 int bots = 1
-void function SpawnBot( bool customModel = false )
+
+void function GiveGrappleTest()
+{
+	entity player = gp()[0]
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+}
+
+void function PutPlayersInOneTeam()
+{
+	foreach( player in GetPlayerArray() )
+		SetTeam( player, 2 )
+}
+
+void function DEV_SpawnSkydivingBots( int amount = 1 )
+{
+	for( int i = 0; i<amount; i++)
+	{
+		ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+		wait 0.1
+	}
+	
+	// array<entity> circleLocations = GetEntArrayByScriptName( "jump_tower" )
+
+	// foreach( jumptower in circleLocations )
+	// {
+		// printt( jumptower, jumptower.GetOrigin() )
+		// if( jumptower.GetModelName() != $"mdl/props/zipline_balloon/zipline_balloon.rmdl" )	
+		// {
+			// circleLocations.fastremovebyvalue( jumptower ) // NavMesh_RandomPositions( gp()[0].GetOrigin(), HULL_HUMAN, amount + 1, 3000, 30000  )
+		// }
+	// }
+
+	wait 2
+	vector origin = gp()[0].GetOrigin() + AnglesToForward ( gp()[0].GetAngles() ) * 2000 + <0,0,4000>
+	foreach( int j, entity bot in GetPlayerArray() )
+	{
+		if( j == 0 )
+			continue
+
+		bot.p.IsBot = true
+
+		thread function () : ( origin, j, bot )
+		{
+			EndSignal( bot, "OnDeath" )
+			while( true )
+			{
+				bot.SetOrigin( origin )
+				thread PlayerSkydiveFromCurrentPosition( bot )
+				
+				WaitFrame()
+				WaitSignal( bot, "FreefallEnded" )
+				wait 0.1
+			}
+		}()
+	}
+}
+
+void function SpawnBot( bool customModel = false, bool startSkydive = false, bool makeAlly = false )
 {
 	ClientCommand( gp()[0], "sv_addbot flowstate -1" )
 	
-	thread function () : ( customModel )
+	thread function () : ( customModel, startSkydive, makeAlly )
 	{
 		wait 0.25
 		entity newBot = GetPlayerArray()[ GetPlayerArray().len() - 1 ]
+		if( makeAlly )
+		{
+			SetTeam( newBot, gp()[0].GetTeam() )
+		}
+		newBot.p.IsBot = true
 		vector origin = GetPlayerCrosshairOrigin( gp()[0] )
 		newBot.SetOrigin( origin )
 		vector org2 = gp()[0].GetOrigin()
@@ -17,12 +80,18 @@ void function SpawnBot( bool customModel = false )
 		vector angles1 = VectorToAngles( vec1 )
 		newBot.SetAngles( <0, angles1.y, 0> )
 
+		if( startSkydive )
+		{
+			printt( "should start skydive" )
+			newBot.SetOrigin( newBot.GetOrigin() + <0,0,20000> )
+			thread PlayerSkydiveFromCurrentPosition( newBot )
+		}
+
 		if( !customModel )
 			return
 
 		entity player = newBot
 		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
-
 		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 		player.SetPlayerSettingsWithMods( characterSetFile, [] )
@@ -217,12 +286,12 @@ void function Flowstate_DebugGameEntities()
 	// finding ents by classname
 
 	array<entity> badents
-	entity startBadEnt = Entities_FindByClassname( null, "prop_dynamic" )
+	entity startBadEnt = Entities_FindByClassname( null, "script_ref" )
 
 	while( IsValid( startBadEnt ) )
 	{
 		badents.append( startBadEnt )
-		startBadEnt = Entities_FindByClassname( startBadEnt, "prop_dynamic" )
+		startBadEnt = Entities_FindByClassname( startBadEnt, "script_ref" )
 	}
 	
 	int i = 0
@@ -231,7 +300,7 @@ void function Flowstate_DebugGameEntities()
 		if( !IsValid( ent ) || ent.IsMarkedForDeletion() )
 			continue
 
-		printt( "detected trigger: ", ent, ent.GetOrigin(), ent.GetModelName())
+		printt( "detected ent: ", ent, ent.GetOrigin(), ent.GetModelName(), GetEditorClass( ent ), ent.GetScriptName(), ent.GetTargetName() )
 		// if( ent.GetScriptName() == "" && GetEditorClass( ent ) == "" || GetEditorClass( ent ) == "info_hover_tank_node" ) // fixear desde el lado de los hovertanks, una vez calculados los puntos a usar, eliminar el resto. //|| ent.GetScriptName() == "" ) //|| GetEditorClass( ent ) == "info_hover_tank_node" || 
 		// {
 			// ent.Destroy()
@@ -1386,7 +1455,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	vector vec1 = org2 - origin
 	vector angles1 = VectorToAngles( vec1 )
 	angles1.x = 0
-
+	
 	entity dummy = CreateDummy( 99, origin, angles1 )
 	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
@@ -1432,7 +1501,8 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
 	dummy.SetEfficientMode( false )
-	
+	dummy.RemoveFromAllRealms()
+	dummy.AddToOtherEntitysRealms( player )
 	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		thread PlayAnimOnTrainingDummy(dummy)
 

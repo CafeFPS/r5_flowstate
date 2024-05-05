@@ -196,7 +196,7 @@ void function PassiveVoices_WaitForPlaneJump( entity player )
 
 	while ( !Survival_HasPlayerJumpedOutOfPlane( player ) )
 	{
-		if ( !player.HasPassive( ePassives.PAS_VOICES ) || GameRules_GetGameMode() != SURVIVAL )
+		if ( !player.HasPassive( ePassives.PAS_VOICES ) || Gamemode() != eGamemodes.SURVIVAL )
 			return
 
 		WaitFrame()

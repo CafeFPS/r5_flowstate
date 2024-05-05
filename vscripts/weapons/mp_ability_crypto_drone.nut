@@ -18,6 +18,9 @@ global function OnWeaponRegenEnd_ability_crypto_drone
 global function IsPlayerInCryptoDroneCameraView
 global function CryptoDrone_SetMaxZ
 global function CryptoDrone_GetPlayerDrone
+#if SERVER
+global function GetPlayerOutOfCamera
+#endif
 
 #if CLIENT
 global function OnClientAnimEvent_ability_crypto_drone
@@ -146,7 +149,7 @@ void function MpAbilityCryptoDrone_Init()
 		AddDestroyCallback( "player_vehicle", CryptoDrone_OnPropScriptDestroyed )
 		AddCallback_OnPlayerChangedTeam( CryptoDrone_OnPlayerTeamChanged )
 
-		if( !GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && GameRules_GetGameMode() != "custom_ctf" &&  GameRules_GetGameMode() != "fs_snd" )
+		if( !GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) && Gamemode() != eGamemodes.CUSTOM_CTF &&  Gamemode() != eGamemodes.fs_snd )
 			RegisterConCommandTriggeredCallback( "+scriptCommand5", AttemptDroneRecall )
 
 		AddCallback_OnWeaponStatusUpdate( CryptoDrone_WeaponStatusCheck )

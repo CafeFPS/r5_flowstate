@@ -49,15 +49,15 @@ struct{
 
 void function _GamemodeProphunt_Init()
 {
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 			FS_PROPHUNT.lobbyLocation = <-19459, 2127, 6404>
 			FS_PROPHUNT.lobbyAngles = <0, RandomIntRangeInclusive(-180,180), 0>
 		break
 
-		case "mp_rr_canyonlands_mu1":
+		case eMaps.mp_rr_canyonlands_mu1:
 			FS_PROPHUNT.lobbyLocation = <3599.2793, 24244.5723, 7255.3667>
 			FS_PROPHUNT.lobbyAngles = <0, -103.838669, 0>
 		break
@@ -117,7 +117,7 @@ void function _GamemodeProphunt_Init()
 
 void function _OnEntitiesDidLoadPROPHUNT()
 {
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k")
+	if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k )
 		SpawnFlowstateLobbyProps()
 
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT) //it should be after spawn lobby props so they won't be deleted
@@ -646,7 +646,7 @@ void function PROPHUNT_GiveAndManageProp(entity player, bool giveOldProp = false
 		return
 	}
 
-	entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), player.GetAngles(), 6, -1)
+	entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), <0,0,0>, 6, -1)
 	player.p.PROPHUNT_LastPropEntity = prop
 	prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 	prop.kv.solid = 6
@@ -1956,7 +1956,7 @@ void function ClientCommand_ChangeProp(entity player)
 
 void function ClientCommand_MatchSlope(entity player)
 {
-	if(!IsValid(player) || IsValid(player) && player.GetTeam() != TEAM_MILITIA || GetGameState() != eGameState.Playing) return
+	if(!IsValid(player) || IsValid(player) && player.GetTeam() != TEAM_MILITIA || GetGameState() != eGameState.Playing || !player.IsOnGround() ) return
 
 	vector testOrg = player.GetOrigin()
 	vector mins = player.GetPlayerMins()

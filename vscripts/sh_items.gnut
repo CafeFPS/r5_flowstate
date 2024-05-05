@@ -358,13 +358,13 @@ void function ShItems_LevelInit_Finish()
 	#if SERVER || CLIENT
 		Remote_RegisterClientFunction( "ServerToClient_ItemFlavorConsistencyCheckFailed", "bool", "int", INT_MIN, INT_MAX )
 	#endif
-	#if(ASSERTING)
+	#if ASSERTING
 		DoItemFlavorCrossVMCheck()
 	#endif
 }
 
 
-#if(ASSERTING)
+#if ASSERTING
 void function DoItemFlavorCrossVMCheck()
 {
 	//
@@ -372,42 +372,26 @@ void function DoItemFlavorCrossVMCheck()
 
 	string crossVMCheckString = fileLevel.ASSERTING_crossVMCheckStringArr.join( ", " )
 	//
-	int crossVMCheckHash      = StringHash( crossVMCheckString )
+	int crossVMCheckHash = StringHash( crossVMCheckString )
 	fileLevel.ASSERTING_crossVMCheckHash = crossVMCheckHash
 
-	#if(false)
+	#if SERVER
 
-//
-//
-//
-//
-//
-//
-
-
-
-
-
-
-//
-
-
-
-#elseif(CLIENT)
+	#elseif CLIENT
 		thread (void function() {
 			WaitForLocalClientEHI()
 			GetLocalClientPlayer().ClientCommand( format( "itemflavors_consistency CL %d", fileLevel.ASSERTING_crossVMCheckHash ) )
 		})()
-	#elseif(UI)
+	#elseif UI
 		ClientCommand( format( "itemflavors_consistency UI %d", fileLevel.ASSERTING_crossVMCheckHash ) )
 	#endif
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function ServerToClient_ItemFlavorConsistencyCheckFailed( bool isUI, int serverHash )
 {
-	#if(ASSERTING)
+	#if ASSERTING
 		if ( isUI )
 		{
 			RunUIScript( "ClientToUI_ItemFlavorConsistencyCheckFailed", serverHash )
@@ -472,7 +456,9 @@ void function RegisterTags()
 //////////////////////////
 void function AddCallback_RegisterRootItemFlavors( RegisterItemFlavorsCallbackType cb )
 {
+	#if DEVELOPER
 	Assert( !fileLevel.DEV_hasItemRegistrationStarted )
+	#endif
 	Assert( !fileLevel.registerRootItemFlavorsCallbacks.contains( cb ), "Callback already registered" )
 	fileLevel.registerRootItemFlavorsCallbacks.append( cb )
 }
@@ -480,7 +466,9 @@ void function AddCallback_RegisterRootItemFlavors( RegisterItemFlavorsCallbackTy
 
 void function AddCallback_OnItemFlavorRegistered( int itemType, OnItemFlavorRegisteredCallbackType cb )
 {
+	#if DEVELOPER
 	Assert( !fileLevel.DEV_hasItemRegistrationStarted )
+	#endif
 
 	if ( !(itemType in fileLevel.itemTypeOnItemFlavorRegisteredCallbackListMap) )
 		fileLevel.itemTypeOnItemFlavorRegisteredCallbackListMap[itemType] <- []
@@ -1115,8 +1103,10 @@ array<ItemFlavor> function RegisterReferencedItemFlavorsFromArray( ItemFlavor pa
 			string featureFlagRef = GetSettingsBlockString( entryBlock, expect string(featureFlagFieldNameOrNull) )
 			if ( featureFlagRef != "" )
 			{
+				#if ASSERTING
 				Assert( ForAssertingOnly_IsValidFeatureFlagString( featureFlagRef ),
 					format( "Reference to '%s' in '%s' is gated by unknown feature flag: %s", string(entryAsset), string(ItemFlavor_GetAsset( parentFlavor )), featureFlagRef ) )
+				#endif
 				if ( !GetFeatureFlagByString( featureFlagRef ) )
 				{
 					//printf( "Skipping reference to '%s' in '%s' because feature flag %s is off.", string(entryAsset), string(ItemFlavor_GetAsset( parentFlavor )), featureFlagRef )

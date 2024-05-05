@@ -225,8 +225,9 @@ void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector
 			return
 
 		grappleWeapon.e.lastGrappleTime = Time()
-
-		thread GrappleDecreaseAmmo( player, grappleWeapon )
+		
+		if( !GetCurrentPlaylistVarBool( "lsm_mod7", false ) )
+			thread GrappleDecreaseAmmo( player, grappleWeapon )
 
 		int flags = grappleWeapon.GetScriptFlags0()
 		if ( ! (flags & GRAPPLEFLAG_CHARGED) )
@@ -344,7 +345,28 @@ void function CodeCallback_OnGrappleDetach( entity player )
 			thread callbackFunc( player )
 		}
 		
-		//Signal( player, "OnGrappleDetach" )
+		// Signal( player, "OnGrappleDetach" )
+
+		if( GetCurrentPlaylistVarBool( "lsm_mod7", false ) )
+		{
+			array<entity> weapons = player.GetOffhandWeapons()
+			entity grappleWeapon
+			foreach ( index, weapon in clone weapons )
+			{
+				if ( !IsValid( weapon ) )
+					continue
+				if ( !weapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+					continue
+				else
+					grappleWeapon = weapon
+			}
+
+			grappleWeapon.SetWeaponPrimaryClipCount( grappleWeapon.GetWeaponPrimaryClipCount() )
+			player.SetSuitGrapplePower(100)
+			int oldFlags = grappleWeapon.GetScriptFlags0()
+			grappleWeapon.SetScriptTime0( Time() )
+			grappleWeapon.SetScriptFlags0( oldFlags & ~GRAPPLEFLAG_CHARGED )
+		}
 	#endif
 }
 

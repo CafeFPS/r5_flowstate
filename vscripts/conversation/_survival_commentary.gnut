@@ -78,7 +78,7 @@ entity function GetChampion()
 int function GetMinKillsForKillLeader()
 {
 	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
-	if( GameRules_GetGameMode() == "fs_dm" )
+	if( Gamemode() == eGamemodes.fs_dm )
 		minKill = 2
 	else if( minKill < 1 )
 		minKill = KILL_LEADER_MIN_KILL_REQUIREMENT // From sh_survival_commentary.gnut
@@ -288,7 +288,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 				responseName = "bc_newCircle_wholeSquadNotInCircle"
 			else if ( SURVIVAL_IsFinalDeathFieldStage() && RandomInt( 100 ) <= CHANCE_FOR_END_CIRCLE_CHANTING )
 				responseName = "bc_circleTimerStartFinal"
-			else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
+			else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 17500 )
 				responseName = "bc_nextCircleFar"
 			else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
 				responseName = "bc_insideNextCircle"

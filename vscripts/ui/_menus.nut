@@ -232,7 +232,7 @@ void function UICodeCallback_ToggleInGameMenu()
 
 	var activeMenu = GetActiveMenu()
 	bool isLobby   = IsLobby()
-	string playlistName = GetCurrentPlaylistName()
+	string playlistName = GetCurrentPlaylistName() //??????????????
 
 	if ( isLobby )
 	{
@@ -512,7 +512,8 @@ void function UICodeCallback_FullyConnected( string levelname )
 	//		InitStatsTables()
 	//	}
 	//}
-
+	
+	PlayLists_Mapnames_Gamemodes_Init()
 	InitXPData()
 
 	//#if DEVELOPER // For convenience
@@ -665,6 +666,11 @@ void function UICodeCallback_LevelShutdown()
 	UiNewnessQueries_LevelShutdown()
 
 	TEMP_CircularReferenceCleanup()
+	
+	#if TRACKER && HAS_TRACKER_DLL
+	//TODO: state !ready waitframe 
+	//while( SQ_GetLogstate() )
+	#endif
 }
 
 
@@ -1558,6 +1564,7 @@ void function InitMenus()
 
 	//Settings
 	AddMenu( "FRLGDuelsSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu", InitLGDuelsSettings )
+	// AddMenu( "ValkSimulatorSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_valksimulator_settings.menu", InitValkSimulatorSettings )
 
 	//CTF UI
 	var controlmenu = AddMenu( "CTFRespawnMenu", $"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu", InitCTFRespawnMenu )

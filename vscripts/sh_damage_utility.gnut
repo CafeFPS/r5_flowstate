@@ -175,7 +175,7 @@ float function GetCriticalScaler( entity ent, var damageInfo )
 
 bool function IsValidHeadShot( var damageInfo = null, entity victim = null, entity attacker = null, entity weapon = null, int hitGroup = -1, float attackDist = -1.0, entity inflictor = null )
 {
-	if(GameRules_GetGameMode() == "fs_prophunt")
+	if( Gamemode() == eGamemodes.fs_prophunt )
 		return false
 	
 	// Pass this function damageInfo if you can, otherwise you'll have to fill out all the other params. If using damageInfo you dont need to.

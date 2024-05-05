@@ -573,7 +573,7 @@ void function SURVIVAL_Loot_InitShared()
 		file.healthPickups[ eHealthPickupType.HEALTH_SMALL ] <- healthPickup
 	}
 
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		HealthPickup healthPickup
 		{
@@ -1678,7 +1678,7 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 		if ( reallyAdd )
 		{
 			SetPlayerInventory( player, playerInventory )
-			if(GameRules_GetGameMode() == "fs_snd")
+			if( Gamemode() == eGamemodes.fs_snd )
 			{
 				foreach ( func in file.healingItemChangeCallbacks )
 					func( player, SURVIVAL_GetPlayerInventory( player ) )
@@ -2645,7 +2645,7 @@ bool function PlayerInValidState( entity player )
 {
 	#if SERVER
 	//printt("PlayerInValidState NOT - ", !IsAlive( player ), player.ContextAction_IsActive(), Bleedout_IsBleedingOut( player ), SURVIVAL_IsPlayerCarryingLoot( player ))
-	if( GetCurrentPlaylistName() == "fs_haloMod_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_dm_oddball" && GetBallCarrier() == player || GetCurrentPlaylistName() == "fs_haloMod_ctf" && GetGlobalNetEnt( "milFlag" ) == player || GetCurrentPlaylistName() == "fs_haloMod_ctf" && GetGlobalNetEnt( "imcFlag" ) == player )
+	if( Playlist() == ePlaylists.fs_haloMod_oddball && GetBallCarrier() == player || Playlist() == ePlaylists.fs_dm_oddball && GetBallCarrier() == player || Playlist() == ePlaylists.fs_haloMod_ctf && GetGlobalNetEnt( "milFlag" ) == player || Playlist() == ePlaylists.fs_haloMod_ctf && GetGlobalNetEnt( "imcFlag" ) == player )
 		return false
 	#endif
 	if ( !IsAlive( player ) )
@@ -4244,7 +4244,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 			}
 
 			pickup.e.lastUseTime = Time()
-			if( GameRules_GetGameMode() == "fs_snd" && lootRef.lootData.ref == "snd_bomb" )
+			if( Gamemode() == eGamemodes.fs_snd && lootRef.lootData.ref == "snd_bomb" )
 			{
 				thread function () : (player)
 				{
@@ -4268,7 +4268,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 
 		SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
 
-		if( GameRules_GetGameMode() == "fs_snd" && lootRef.lootData.ref == "snd_bomb" )
+		if( Gamemode() == eGamemodes.fs_snd && lootRef.lootData.ref == "snd_bomb" )
 		{
 			thread function () : (player)
 			{

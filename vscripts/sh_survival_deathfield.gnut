@@ -281,7 +281,7 @@ float function SURVIVAL_Deathfield_GetStartRadius()
 {
 	float startRadius = GetCurrentPlaylistVarFloat( "survival_death_field_start_radius", 65000 )
 	
-	if( file.deathFieldStartStage == 0 && GetMapName() == "mp_rr_desertlands_64k_x_64k" )
+	if( file.deathFieldStartStage == 0 && MapName() == eMaps.mp_rr_desertlands_64k_x_64k )
 		startRadius = 70000
 
 	if ( file.deathFieldStartStage > 0 )
@@ -412,7 +412,7 @@ void function SURVIVAL_RunArenaDeathField()
 	DeathFieldData data = file.deathFieldData
 	vector lastCenter   = file.deathFieldStages[file.deathFieldStartStage].endPos
 	
-	if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
+	if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ) || GetCurrentPlaylistVarBool( "lsm_mod8", false ) )
 		lastCenter   = <GetPlayerArray()[0].GetOrigin().x, GetPlayerArray()[0].GetOrigin().y, 0>
 	
 	data.center = lastCenter
@@ -609,7 +609,7 @@ void function SURVIVAL_RunArenaDeathField()
 		{
 			DeathFieldStageData nextStage = file.deathFieldStages[deathFieldStage + 1]
 			float frac                    = 1.0 - (nextStage.endRadius / stage.endRadius)
-			if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
+			if( GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ) || GetCurrentPlaylistVarBool( "lsm_mod8", false ) )
 				data.nextCenter = GetRandomCenter( data.center, 0, data.currentRadius * frac )
 			else
 				data.nextCenter = nextStage.endPos // GetRandomCenter( data.center, 0, data.currentRadius * frac )
@@ -963,6 +963,16 @@ vector function GetFinalDeathFieldLocation()
 			break
         }
 			
+	}
+
+    array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+        
+    foreach( lzEnt in lzEnts )
+    {
+        if( GetEditorClass( lzEnt ) != "info_survival_invalid_end_zone" )
+            continue
+           
+        lzEnt.Destroy() // save edicts
 	}
 	// endPoint = Vector( 0,0,0)
 	//printt( "final location before navmesh" + endPoint )

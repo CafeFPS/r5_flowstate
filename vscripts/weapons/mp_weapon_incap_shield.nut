@@ -79,9 +79,18 @@ bool function OnWeaponChargeBegin_weapon_incap_shield( entity weapon )
 
 	if ( player.IsPlayer() )
 	{
+		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "incapshield" )
+		string ref = es.getEquippedRefFunc( player, "incapshield" )
+
+		if( ref == "" || ref == " " || ref == "  " )
+		{
+			weapon.SetScriptInt0( -1 )
+		}
+
 #if SERVER
 		PIN_PlayerUse( player, weapon.GetWeaponClassName(), "INCAP_SHIELD" )
 
+		printt( "started shield charge", weapon.GetScriptInt0(), ref )
 		if( !IsValid( weapon.GetWeaponUtilityEntity() ) && !Bleedout_IsReceivingFirstAid( player ) && weapon.GetScriptInt0() > 0 )
 			CreateIncapShield( player, weapon )
 #endif // #if SERVER
@@ -139,6 +148,12 @@ void function UpdateFirstPersonIncapShieldColor_Thread( entity weapon, int fxHan
 	entity weaponOwner = weapon.GetOwner()
 	weaponOwner.EndSignal( "OnDeath" )
 	weaponOwner.EndSignal( "OnDestroy" )
+	
+	if( EffectDoesExist( fxHandle ) && weapon.GetScriptInt0() == -1 )
+	{
+		EffectStop( fxHandle, true, false )
+		return
+	}
 
 	while ( EffectDoesExist( fxHandle ) )
 	{

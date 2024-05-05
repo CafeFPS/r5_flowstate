@@ -6,6 +6,7 @@ global function PlayerDropsScriptedItems
 global function IsDemigod
 global function EnableDemigod
 global function DisableDemigod
+global function ToggleMute
 
 int __nextInputHandle = 0
 
@@ -41,6 +42,9 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.cloakedForever <- false
 	CPlayer.stimmedForever <- false
 
+	RegisterSignal( "CleanUpPlayerAbilities" )
+	RegisterSignal( "ChallengeReceived" )
+	RegisterSignal( "InputChanged" )
 	RegisterSignal( "OnRespawnPlayer" )
 	RegisterSignal( "NewViewAnimEntity" )
 	RegisterSignal( "PlayerDisconnected" )
@@ -328,6 +332,40 @@ function CodeCallback_RegisterClass_CPlayer()
 		//	}
 		//}
 	}
+	
+	function CPlayer::IsTextMuted()
+	{	
+		return expect entity(this).p.bTextmute
+	}
+	
+	function CPlayer::ToggleMute( toggle )
+	{	
+		entity player = expect entity( this )	
+		
+		if( !IsValid( player )){ return }
+		
+		player.p.bTextmute = expect bool ( toggle )
+		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
+		player.p.bRelayChallengeState = false
+		
+		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
+		
+		printt( "Sent challenge as", player.p.relayChallengeCode )
+		
+		thread( void function() : ( player )
+		{
+			EndSignal( player, "OnDestroy" )
+			WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
+			
+			if( !IsValid( player ) ){ return }
+			
+			if ( !player.p.bRelayChallengeState )
+			{
+				printt("Player acknowledgment failed.")
+				KickPlayerById( player.GetPlatformUID(), "Chat State Error" )
+			}
+		}())
+	}
 }
 
 void function PlayerDropsScriptedItems( entity player )
@@ -353,3 +391,11 @@ void function DisableDemigod( entity player )
 	player.p.demigod = false
 }
 
+void function ToggleMute( entity player, bool toggle )
+{
+	player.ToggleMute( toggle )
+	
+	#if TRACKER && HAS_TRACKER_DLL
+		SavePlayerData( player.p.UID, "muted", toggle )
+	#endif
+}

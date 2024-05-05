@@ -52,9 +52,9 @@ void function Sh_GamemodeInfection_Init()
 
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	
-    switch(GetMapName())
+    switch( MapName() )
     {
-		case "mp_rr_canyonlands_mu1":
+		case eMaps.mp_rr_canyonlands_mu1:
 		RegisterLocationINFECTION(
             NewLocationSettings(
                 "Labs",
@@ -71,7 +71,7 @@ void function Sh_GamemodeInfection_Init()
             )
         )
 
-	    case "mp_rr_canyonlands_mu1_night":
+	    case eMaps.mp_rr_canyonlands_mu1_night:
 		RegisterLocationINFECTION(
             NewLocationSettings(
                 "Hillside Outspot",
@@ -332,8 +332,8 @@ void function Sh_GamemodeInfection_Init()
         )
 	    break
 
-	    case "mp_rr_desertlands_64k_x_64k_nx":		
-	    case "mp_rr_desertlands_64k_x_64k":
+	    case eMaps.mp_rr_desertlands_64k_x_64k_nx:		
+	    case eMaps.mp_rr_desertlands_64k_x_64k:
 
 		RegisterLocationINFECTION(
 				NewLocationSettings(

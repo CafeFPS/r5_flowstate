@@ -135,6 +135,12 @@ void function DefensiveBombardment_DamagedTarget( entity victim, var damageInfo 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if ( IsValid( attacker ) )
 	{
+		if( !victim.DoesShareRealms( attacker ) )
+		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+			return
+		}
+
 		if ( IsFriendlyTeam( attacker.GetTeam(), victim.GetTeam() ) && (attacker != victim) )
 			DamageInfo_ScaleDamage( damageInfo, 0 )
 	}
@@ -150,6 +156,8 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 	if ( !IsValid( owner ) )
 		return
 
+	EndSignal( owner, "CleanUpPlayerAbilities" )
+
 	entity bombardmentWeapon = VerifyBombardmentWeapon( owner, DEFENSIVE_BOMBARDMENT_MISSILE_WEAPON )
 	if ( !IsValid( bombardmentWeapon ) )
 		return
@@ -160,7 +168,25 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 
 	int smokeFxId = GetParticleSystemIndex( fx )
 	entity smokeFX = StartParticleEffectOnEntity_ReturnEntity( projectile, smokeFxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+	smokeFX.RemoveFromAllRealms()
+	smokeFX.AddToOtherEntitysRealms( owner )
+	
+	//Create a threat zone for the passive voices and store the ID so we can clean it up later.
+	int threatZoneID = ThreatDetection_CreateThreatZone( owner, eThreatDetectionZoneType.BOMBARDMENT, origin, owner.GetTeam(), DEFENSIVE_BOMBARDMENT_RADIUS, DEFENSIVE_BOMBARDMENT_RADIUS/2, 0.1, 0.1, 0)
 
+	OnThreadEnd(
+		function() : ( smokeFX, threatZoneID )
+		{
+			if ( IsValid( smokeFX ) )
+			{
+				if ( IsValid( smokeFX ) )
+					EffectStop( smokeFX )
+				
+				//Remove the threat zone for this bombardment.
+				ThreatDetection_DestroyThreatZone( threatZoneID )
+			}
+		}
+	)
 	EmitSoundOnEntity( projectile, sound_incoming_first)
 
 	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, origin,
@@ -168,16 +194,7 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 		DEFENSIVE_BOMBARDMENT_DENSITY,
 		DEFENSIVE_BOMBARDMENT_DURATION,
 		DEFENSIVE_BOMBARDMENT_DELAY )
-	
-	//Create a threat zone for the passive voices and store the ID so we can clean it up later.
-	int threatZoneID = ThreatDetection_CreateThreatZone( owner, eThreatDetectionZoneType.BOMBARDMENT, origin, owner.GetTeam(), DEFENSIVE_BOMBARDMENT_RADIUS, DEFENSIVE_BOMBARDMENT_RADIUS/2, 0.1, 0.1, 0)
-	
-	wait DEFENSIVE_BOMBARDMENT_DURATION + DEFENSIVE_BOMBARDMENT_DELAY
 
-	if ( IsValid( smokeFX ) )
-		EffectStop( smokeFX )
-	
-	//Remove the threat zone for this bombardment.
-	ThreatDetection_DestroyThreatZone( threatZoneID )
+	wait DEFENSIVE_BOMBARDMENT_DURATION + DEFENSIVE_BOMBARDMENT_DELAY
 }
 #endif

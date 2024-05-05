@@ -264,11 +264,11 @@ void function ClientToUI_UpdateSquadMute( bool muteState )
 void function CharacterSelectNewMenu_Init()
 {
 	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
-		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 		{
 			PrecacheModel( BACKGROUND_GEO_MODEL )
 		}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging" )
+		else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k || MapName() == eMaps.mp_rr_canyonlands_staging )
 		{
 			PrecacheModel( BACKGROUND_GEO_MODEL_KC)
 		}
@@ -1385,7 +1385,7 @@ void function CreateCharacterSelectClientEnts()
 		vector cameraAngles
 		entity targetPilot
 
-			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_olympus_mu1" )
+			if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || MapName() == eMaps.mp_rr_olympus_mu1 )
 			{
 				targetCamera = GetEntByScriptName( CAMERA_ENT_NAME )
 				fileLevel.camera = CreateClientSidePointCamera( <1958, 26647, 14422>, <47, -65, 0>, 100 )
@@ -1394,7 +1394,7 @@ void function CreateCharacterSelectClientEnts()
 				asset defaultModel = GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
 				CreateNewCharacterModel( defaultModel )
 			}
-			else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging" )
+			else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k || MapName() == eMaps.mp_rr_canyonlands_staging )
 			{
 				targetCamera = GetEntByScriptName( CAMERA_ENT_NAME )
 				fileLevel.camera = CreateClientSidePointCamera( <-7570, -29658, 18553>, <32, 69, 0>, 100 )
@@ -1434,11 +1434,11 @@ void function CreateCharacterSelectClientEnts()
 			Chroma_BeginCharacterSelect()
 			vector r5reloadedOrigin
 			
-			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"  || GetMapName() == "mp_rr_olympus_mu1" )
+			if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx  || MapName() == eMaps.mp_rr_olympus_mu1 )
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 + fileLevel.camera.GetRightVector() * 40
 			}
-			else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging" )
+			else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k || MapName() == eMaps.mp_rr_canyonlands_staging )
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 - fileLevel.camera.GetRightVector() * 40
 			}
@@ -2799,6 +2799,7 @@ array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter(ItemFl
 //Don't try this at home
 {
 	array<ItemFlavor> actualGoodAnimsForThisCharacter
+	
 	switch(ItemFlavor_GetHumanReadableRef( character )){
 			case "character_pathfinder":
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00267302733" ) ) )
@@ -2825,7 +2826,7 @@ array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter(ItemFl
 		return actualGoodAnimsForThisCharacter
 		
 			case "character_caustic":
-		if(GetMapName() != "mp_rr_canyonlands_mu1" && GetMapName() != "mp_rr_canyonlands_mu1_night" && GetMapName() != "mp_rr_canyonlands_64k_x_64k") 
+		if( MapName() != eMaps.mp_rr_canyonlands_mu1 && MapName() != eMaps.mp_rr_canyonlands_mu1_night && MapName() != eMaps.mp_rr_canyonlands_64k_x_64k ) 
 		{actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01037940994" ) ) )}
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01924098215" ) ) )
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00844387739" ) ) )
@@ -2879,12 +2880,12 @@ array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter(ItemFl
 			case "character_wattson":
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01198897745" ) ) )
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01638491567" ) ) )
-		if(GetMapName() != "mp_rr_canyonlands_mu1" && GetMapName() != "mp_rr_canyonlands_mu1_night" && GetMapName() != "mp_rr_canyonlands_64k_x_64k") 
+		if( MapName() != eMaps.mp_rr_canyonlands_mu1 && MapName() != eMaps.mp_rr_canyonlands_mu1_night && MapName() != eMaps.mp_rr_canyonlands_64k_x_64k ) 
 		{actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01313080345" ) ) )}
 		return actualGoodAnimsForThisCharacter
 		
 			case "character_crypto":
-		if(GetMapName() != "mp_rr_canyonlands_mu1" && GetMapName() != "mp_rr_canyonlands_mu1_night" && GetMapName() != "mp_rr_canyonlands_64k_x_64k") 
+		if( MapName() != eMaps.mp_rr_canyonlands_mu1 && MapName() != eMaps.mp_rr_canyonlands_mu1_night && MapName() != eMaps.mp_rr_canyonlands_64k_x_64k ) 
 		{actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00269538572" ) ) )}
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00814728196" ) ) )
 		actualGoodAnimsForThisCharacter.append( GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01157264561" ) ) )
@@ -2912,13 +2913,13 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		EndSignal( fileLevel.signalDummy, "UpdatingAnim" )
 		EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
 
-		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_olympus_mu1" )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx || GetMapName() == "mp_rr_olympus_mu1" )
 				{
 					fileLevel.characterModel.SetLocalOrigin( <-70, 0, 0> )
 				}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging" )
+		else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k || MapName() == eMaps.mp_rr_canyonlands_staging )
 				{
-					if(GetMapName() == "mp_rr_canyonlands_staging")
+					if( MapName() == eMaps.mp_rr_canyonlands_staging )
 						fileLevel.characterModel.SetLocalOrigin( <33295.4766, -8546.50879, -23723.8008> )
 					else
 						fileLevel.characterModel.SetLocalOrigin( <8000, -10000, 5000> )
@@ -2927,7 +2928,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		if (IsValid(fileLevel.backgroundModelGeo)) 
 			fileLevel.backgroundModelGeo.Destroy()
 
-		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 		{
 			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL )
 			fileLevel.backgroundModelGeo.kv.solid = 6
@@ -2937,9 +2938,9 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
 			fileLevel.camera.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin() + <60, -10, 10>)
 		}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_staging"  || GetMapName() == "mp_rr_olympus_mu1" )
+		else if( MapName() == eMaps.mp_rr_canyonlands_mu1 || MapName() == eMaps.mp_rr_canyonlands_mu1_night || MapName() == eMaps.mp_rr_canyonlands_64k_x_64k || MapName() == eMaps.mp_rr_canyonlands_staging || MapName() == eMaps.mp_rr_olympus_mu1 )
 		{
-			if(GetMapName() == "mp_rr_canyonlands_staging")
+			if( MapName() == eMaps.mp_rr_canyonlands_staging )
 				fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL_KC )
 			else
 				fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL_KC )
@@ -2949,7 +2950,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			fileLevel.characterNode.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin())
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
 			fileLevel.camera.SetOrigin(fileLevel.characterModel.GetOrigin() + <-10, 40, 60>)
-			if(GetMapName() == "mp_rr_canyonlands_staging")
+			if( MapName() == eMaps.mp_rr_canyonlands_staging )
 				fileLevel.camera.SetOrigin(fileLevel.camera.GetOrigin() + <0, 0, 20>)
 		}
 		

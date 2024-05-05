@@ -387,7 +387,7 @@ void function GroundAction( int lootAction, string guid, bool isAltAction, bool 
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return
 
-	if( GameRules_GetGameMode() == "fs_aimtrainer" ) //&& 
+	if( Gamemode() == eGamemodes.fs_aimtrainer ) //&& 
 	{
 		LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootEnt.GetSurvivalInt() )
 		
@@ -595,13 +595,6 @@ bool function CanSwapWeapons( entity player )
 
 void function OpenSurvivalInventory( entity player, entity deathBox = null )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetGameState() == eGameState.Playing || GameRules_GetGameMode() == "custom_ctf" && GetGameState() == eGameState.Playing || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1"  || GetCurrentPlaylistName() == "fs_snd" )
-	{
-		if( IsAlive( player ) )
-			ScoreboardToggleFocus( player )
-		return
-	}
-
 	if ( !player.GetPlayerNetBool( "inventoryEnabled" )	)
 		return
 
@@ -626,7 +619,7 @@ void function SurvivalMenu_Internal( entity player, string uiScript, entity deat
 
 	if ( IsValid( deathBox ) )
 	{
-		if(GameRules_GetGameMode() == "fs_aimtrainer")
+		if( Gamemode() == eGamemodes.fs_aimtrainer )
 			thread StartUpdatingArmorSwapLastTime()
 		
 		thread TrackDistanceFromDeathBox( player, deathBox )
@@ -658,7 +651,7 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 	OnThreadEnd(
 		function() : (player)
 		{
-			if(GameRules_GetGameMode() == "fs_aimtrainer")
+			if( Gamemode() == eGamemodes.fs_aimtrainer )
 				Signal(player, "StopArmorSwapStopwatch")
 			
 			if ( Survival_IsGroundlistOpen() )

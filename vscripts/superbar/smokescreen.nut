@@ -107,8 +107,12 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 
 	entity traceBlocker
 
-	// if ( smokescreen.blockLOS )
-		// traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+	if ( smokescreen.blockLOS )
+	{
+		traceBlocker = Smokescreen_CreateTraceBlockerVol( smokescreen, fxInfo )
+		traceBlocker.RemoveFromAllRealms()
+		traceBlocker.AddToOtherEntitysRealms( player )
+	}
 
 #if DEVELOPER
 	if ( SMOKESCREEN_DEBUG )
@@ -128,10 +132,10 @@ void function Smokescreen( SmokescreenStruct smokescreen, entity player )
 
 	array<entity> fxEntities = SmokescreenFX( smokescreen, fxInfo )
 	if ( smokescreen.isElectric )
-		thread SmokescreenAffectsEntitiesInArea( smokescreen, fxInfo )
+		thread SmokescreenAffectsEntitiesInArea( smokescreen, fxInfo, player )
 	//thread CreateSmokeSightTrigger( fxInfo.center, smokescreen.ownerTeam, smokescreen.lifetime ) // disabling for now, this should use the calculated radius if reenabled
 
-	thread DestroySmokescreen( smokescreen, smokescreen.lifetime, fxInfo, traceBlocker, fxEntities )
+	thread DestroySmokescreen( smokescreen, smokescreen.lifetime, fxInfo, traceBlocker, fxEntities, player )
 }
 
 SmokescreenFXStruct function Smokescreen_CalculateFXStruct( SmokescreenStruct smokescreen )
@@ -193,8 +197,10 @@ SmokescreenFXStruct function Smokescreen_CalculateFXStruct( SmokescreenStruct sm
 	return fxInfo
 }
 
-void function SmokescreenAffectsEntitiesInArea( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo )
+void function SmokescreenAffectsEntitiesInArea( SmokescreenStruct smokescreen, SmokescreenFXStruct fxInfo, entity owner )
 {
+	owner.EndSignal( "CleanUpPlayerAbilities" )
+	
 	float startTime = Time()
 	float tickRate = 0.1
 
@@ -287,14 +293,58 @@ array<entity> function SmokescreenFX( SmokescreenStruct smokescreen, Smokescreen
 		if ( !smokescreen.shouldHibernate )
 			fxEnt.DisableHibernation()
 
+		fxEnt.RemoveFromAllRealms()
+		fxEnt.AddToOtherEntitysRealms( smokescreen.attacker )
+
 		fxEntities.append( fxEnt )
 	}
 
 	return fxEntities
 }
 
-void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime, SmokescreenFXStruct fxInfo, entity traceBlocker, array<entity> fxEntities )
+void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime, SmokescreenFXStruct fxInfo, entity traceBlocker, array<entity> fxEntities, entity player )
 {
+	player.EndSignal( "CleanUpPlayerAbilities" )
+	
+	OnThreadEnd( function() : ( fxEntities, fxInfo, traceBlocker, smokescreen )
+		{
+			smokescreen.lifetime = 0
+			
+			if ( IsValid( traceBlocker ) )
+			{
+				traceBlocker.Destroy()
+			}
+			
+			file.allSmokescreenFX.fastremovebyvalue( fxInfo )
+			
+			StopSoundAtPosition( fxInfo.center, smokescreen.deploySound1p )
+			StopSoundAtPosition( fxInfo.center, smokescreen.deploySound3p )
+			
+			if ( IsValid( smokescreen.attacker ) && smokescreen.attacker.IsPlayer() )
+			{
+				if ( smokescreen.stopSound3p != "" )
+					EmitSoundAtPositionExceptToPlayer( TEAM_ANY, fxInfo.center, smokescreen.attacker, smokescreen.stopSound3p )
+
+				if ( smokescreen.stopSound1p != "" )
+					EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, fxInfo.center, smokescreen.attacker, smokescreen.stopSound1p)
+			}
+			else
+			{
+				if ( smokescreen.stopSound3p != "" )
+					EmitSoundAtPosition( TEAM_ANY, fxInfo.center, smokescreen.stopSound3p )
+			}
+				
+			foreach ( fxEnt in fxEntities )
+			{
+				if ( IsValid( fxEnt ) )
+				{
+					EffectStop( fxEnt )
+					fxEnt.Destroy()
+				}
+			}
+		}
+	)
+	
 	float timeToWait = 0.0
 
 	timeToWait = max( lifetime - 0.5, 0.0 )
@@ -327,7 +377,10 @@ void function DestroySmokescreen( SmokescreenStruct smokescreen, float lifetime,
 	foreach ( fxEnt in fxEntities )
 	{
 		if ( IsValid( fxEnt ) )
+		{
+			EffectStop( fxEnt )
 			fxEnt.Destroy()
+		}
 	}
 }
 

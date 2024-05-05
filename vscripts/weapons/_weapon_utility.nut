@@ -90,7 +90,6 @@ global function PROTO_InitTrackedProjectile
 global function PROTO_PlayTrapLightEffect
 global function Satchel_PostFired_Init
 global function StartClusterExplosions
-global function TrapDestroyOnRoundEnd
 global function TrapExplodeOnDamage
 global function PROTO_DelayCooldown
 global function PROTO_FlakCannonMissiles
@@ -131,6 +130,7 @@ global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
 global function ApplyBurnDamageTick
 
+global function AddToTrackedEnts
 #if DEVELOPER
 global function ToggleZeroingMode
 #endif
@@ -287,7 +287,6 @@ void function WeaponUtility_Init()
 	RegisterSignal( "OnKnifeStick" )
 	RegisterSignal( "EMP_FX" )
 	RegisterSignal( "ArcStunned" )
-	RegisterSignal( "CleanupPlayerPermanents" )
 	RegisterSignal( "PlayerChangedClass" )
 	RegisterSignal( "OnSustainedDischargeEnd" )
 	RegisterSignal( "EnergyWeapon_ChargeStart" )
@@ -1771,22 +1770,6 @@ bool function WeaponIsSmartPistolVariant( entity weapon )
 	return (isSP == 1)
 }
 
-// NOTE: we should stop using this
-void function TrapDestroyOnRoundEnd( entity player, entity trapEnt )
-{
-	trapEnt.EndSignal( "OnDestroy" )
-	waitthread WaitForTrapDestroyTriggers( player, trapEnt )
-	if ( IsValid( trapEnt ) )
-		trapEnt.Destroy()
-}
-
-void function WaitForTrapDestroyTriggers( entity player, entity trapEnt )
-{
-	player.EndSignal( "CleanupPlayerPermanents" )
-
-	svGlobal.levelEnt.WaitSignal( "ClearedPlayers" )
-}
-
 void function AddPlayerScoreForTrapDestruction( entity player, entity trapEnt )
 {
 	// don't get score for killing your own trap
@@ -2635,7 +2618,18 @@ void function PROTO_InitTrackedProjectile( entity projectile )
 
 void function AddToTrackedEnts( entity player, entity ent )
 {
-	AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
+	if( is3v3Mode() )
+	{
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 	
+		if( IsValid( group ) )
+		{
+			AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
+			printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+		}
+	} else
+	{
+		AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
+	}
 }
 
 void function PROTO_CleanupTrackedProjectiles( entity player )
@@ -2643,7 +2637,8 @@ void function PROTO_CleanupTrackedProjectiles( entity player )
 	array<entity> traps = GetScriptManagedEntArray( player.s.activeTrapArrayId )
 	foreach ( ent in traps )
 	{
-		ent.Destroy()
+		if( IsValid( ent ) )
+			ent.Destroy()
 	}
 }
 

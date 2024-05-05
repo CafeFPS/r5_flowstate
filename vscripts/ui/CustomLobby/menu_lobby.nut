@@ -54,6 +54,7 @@ global table<string, asset> MapAssets = {
 	[ "mp_rr_arena_composite" ] = $"rui/menu/maps/mp_rr_arena_composite",
 	[ "mp_rr_arena_skygarden" ] = $"rui/menu/maps/mp_rr_arena_skygarden",
 	[ "mp_rr_party_crasher" ] = $"rui/menu/maps/mp_rr_party_crasher",
+	[ "mp_rr_olympus_mu1" ] = $"rui/menu/maps/mp_rr_olympus_mu1",
 	[ "mp_lobby" ] = $"rui/menu/maps/mp_lobby"
 }
 

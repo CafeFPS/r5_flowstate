@@ -19,6 +19,7 @@ GAMEMODE_at		True of the given game mode is being loaded
 When: " SERVER || CLIENT || UI "
 Scripts:
 [
+	sh_mapname_playlist_gamemode_enums.gnut //init this early ~mkos
 	feature_flags_script.gnut
 	root_asset_lists.gnut
 ]
@@ -72,6 +73,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	
 	gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 
@@ -200,6 +202,15 @@ Scripts:
 	_remote_functions_mp.gnut
 ]
 
+//must be before sh_damage_types.nut
+// www.r5r.dev Tracker
+When: "SERVER"
+Scripts:
+[
+	mp/tracker/chateffects.nut
+	mp/tracker/utility.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [
@@ -248,6 +259,8 @@ Scripts:
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
 	weapons/mp_weapon_smart_pistol.nut
+	weapons/mp_weapon_softball.nut
+	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
 	
 
@@ -315,7 +328,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	_sh_init.gnut
+	sh_init.gnut
 	sh_sp_dialogue.gnut
 
 	sh_info_cords.gnut
@@ -380,6 +393,7 @@ Scripts:
 	sh_onboarding.gnut
 
 	sh_loot_vault_panel.nut
+	mp/sh_charge_pylons.gnut
 	mp/sh_loot_drones.nut
 	mp/sh_loot_rollers.nut
 
@@ -824,6 +838,7 @@ Scripts:
 	ui/FRChallenges/panel_buymenu5.nut
 	
 	ui/FRChallenges/flowstate_lgduels_settings.nut
+	ui/FRChallenges/flowstate_valksimulator_settings.nut
 	//Movement Gym
 	ui/MovementGym/movementgym_settings.nut
 	//KillReplay
@@ -870,6 +885,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	weapons/mp_weapon_portalgun_approach.nut
 	weapons/mp_weapon_grenade_gravity.nut
 	weapons/mp_ability_phase_rewind.nut
 	weapons/mp_ability_space_elevator_tac.nut
@@ -969,6 +985,8 @@ Scripts:
 	gamemodes/util/sh_custom_zombie_mystery_box.nut
 	gamemodes/util/sh_custom_zombie_mystery_box_weapon.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
+	mp/sh_movement_recorder.nut
+	sh_hover_vehicle.gnut
 ]
 
 When: "SERVER"
@@ -976,7 +994,9 @@ Scripts:
 [
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
+	gamemodes/fs_1v1/_gamemode_1v1_settings.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
+	gamemodes/fs_scenarios/_gamemode_scenarios.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
 	gamemodes/fs_prophunt/_gamemode_prophunt.nut
@@ -984,7 +1004,6 @@ Scripts:
 	gamemodes/fs_snd/_gamemode_snd.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
-	mp/_movement_recorder.nut
 	
 	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut
@@ -1059,7 +1078,8 @@ Scripts:
 
 When: "SERVER || CLIENT"
 Scripts:
-[
+[	
+	sh_localized_strings.nut
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
 ]

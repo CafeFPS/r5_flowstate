@@ -172,7 +172,7 @@ WeaponData
     "projectile_drag_coefficient"                   "0.0025"
 
 	"bolt_gravity_enabled"							"1"
-	"projectile_gravity_scale"						"1.15"
+	"projectile_gravity_scale"						"1.2"
 	"bolt_zero_distance"                            "1378.0"  // 35m
 
     "pass_through_depth"							"0"

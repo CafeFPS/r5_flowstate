@@ -36,8 +36,8 @@ void function EntitiesDidLoad()
 	if ( !IsPathTTEnabled() )
 		return
 
-	PrecacheWeapon( $"mp_weapon_melee_boxing_ring" )
-	PrecacheWeapon( $"melee_boxing_ring" )
+	// PrecacheWeapon( $"mp_weapon_melee_boxing_ring" )
+	// PrecacheWeapon( $"melee_boxing_ring" )
 
 	// InitPathTTBoxingRing()
 	InitPathTTBoxingRingEntities()
@@ -49,7 +49,7 @@ void function InitPathTTBoxingRingEntities()
 	if ( enterTrigArr.len() == 1 )
 	{
 		#if SERVER
-			PathTT_SetupManTrigger( enterTrigArr[ 0 ] )
+			PathTT_SetupMainTrigger( enterTrigArr[ 0 ] )
 		#elseif CLIENT
 			thread Cl_PathTT_MonitorIsPlayerInBoxingRing( enterTrigArr[ 0 ] )
 		#endif
@@ -58,7 +58,7 @@ void function InitPathTTBoxingRingEntities()
 }
 
 #if SERVER
-void function PathTT_SetupManTrigger( entity trigger )
+void function PathTT_SetupMainTrigger( entity trigger )
 {
 	trigger.kv.triggerFilterUseNew = 1
 	trigger.kv.triggerFilterPlayer = "all"

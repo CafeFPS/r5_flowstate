@@ -414,7 +414,7 @@ void function CreateDeathBoxRui( entity deathBox )
 
 	expect EHI( ehi )
 	
-	if( GameRules_GetGameMode() != "fs_aimtrainer" )
+	if( Gamemode() != eGamemodes.fs_aimtrainer )
 	{
 		clGlobal.levelEnt.Signal( "CreateDeathBoxRui" )
 		clGlobal.levelEnt.EndSignal( "CreateDeathBoxRui" )
@@ -645,7 +645,7 @@ void function Sur_OnUseEntGainFocus( entity ent )
 	}
 	else if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
 	{
-		if( GameRules_GetGameMode() != "fs_aimtrainer" )
+		if( Gamemode() != eGamemodes.fs_aimtrainer )
 		{
 			thread CreateDeathBoxRui( ent )
 		}
@@ -1663,6 +1663,9 @@ void function SetupCustomLoot( var categories, bool isAttachment = false)
 			continue
 
 		if ( !catTypes.contains( data.lootType ) )
+			continue
+		
+		if( ref == "mp_weapon_titan_sword" )
 			continue
 		
 		if (data.lootType == eLootType.ATTACHMENT && !IsCustomAttachment(data)) continue

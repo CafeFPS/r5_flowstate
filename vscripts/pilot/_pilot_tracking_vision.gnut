@@ -13,9 +13,14 @@ void function TrackingVision_Init()
 	RegisterSignal( "SuperglideDetectionReset" )
 }
 
+
 void function TrackingVision_OnPlayerConnected( entity player ) 
-{
-	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
+{	
+	if( !Flowstate_IsTrackerSupportedMode() )
+	{ 
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection )
+	}
+	
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.BEGIN_WALLRUN, Flowstate_TrackingVision_WalljumpDetection )
 
 	thread Flowstate_TrackingVision_PlayerFootprintsThread( player )
@@ -66,7 +71,9 @@ void function Flowstate_TrackingVision_TryToTrackSuperglide( entity player )
 			
 			if(wasmantle == true && !player.IsOnGround() && playerVel > 480 &&  player.IsSliding() && airtime <= 0.5)
 			{
+				#if DEVELOPER
 				printt( "Superglide detected for player " + player.GetPlayerName() + " at " + player.GetOrigin() )
+				#endif
 				TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_SUPERGLIDE, player, player.GetOrigin(), player.GetTeam(), player )	
 				break
 			}

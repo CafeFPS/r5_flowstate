@@ -354,12 +354,12 @@ bool function IsCanyonlandsMap() // Used as mp_rr_canyonlands does not have ZIPL
 {
     bool isCanyonlandsMap
 
-    switch ( GetMapName() )
+    switch ( MapName() )
     {
-        case "mp_rr_canyonlands_staging":
-        case "mp_rr_canyonlands_64k_x_64k":
-        case "mp_rr_canyonlands_mu1":
-        case "mp_rr_canyonlands_mu1_night":
+        case eMaps.mp_rr_canyonlands_staging:
+        case eMaps.mp_rr_canyonlands_64k_x_64k:
+        case eMaps.mp_rr_canyonlands_mu1:
+        case eMaps.mp_rr_canyonlands_mu1_night:
             isCanyonlandsMap = true
         break
         

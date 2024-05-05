@@ -985,7 +985,7 @@ if (user.GetPersistentVarAsInt("gen") != reset) {
         user.SetPersistentVar("gen", reset)
     }
 } else {
-    Message(user, "Congratulations! You finished the Easy course!")
+    Message(user, "Congratulations!", "You finished the Easy course!")
     user.SetOrigin(file.first_cp)
     user.SetVelocity(<0,0,0>)
 }
@@ -1052,7 +1052,7 @@ if (user.GetPersistentVarAsInt("gen") != reset) {
         user.SetPersistentVar("gen", reset)
     }
 } else {
-    Message(user, "Congratulations! You finished the Hard course!")
+    Message(user, "Congratulations!", "You finished the Hard course!")
     user.SetOrigin(file.first_cp)
     user.SetVelocity(<0,0,0>)
 }

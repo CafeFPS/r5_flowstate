@@ -264,7 +264,7 @@ void function PlayerDeathfieldSoundThread()
 
 void function PlayerPainSoundThread()
 {
-	if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		return
 
 	// Each layer has:

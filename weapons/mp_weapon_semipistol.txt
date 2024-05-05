@@ -1,9 +1,6 @@
 #base "_base_handgun.txt"
 #base "_base_mags_light.txt"
 #base "_base_laser_sights_small.txt"
-                  
-                            
-      
 
 WeaponData
 {
@@ -88,7 +85,7 @@ WeaponData
 	
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_attach"						""
 	
 	// Damage - When Used by NPCs
 	"npc_damage_near_value"   						"13"

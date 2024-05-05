@@ -162,11 +162,11 @@ bool function ScoreboardEnabled()
 void function InitScoreboardMP()
 {
 	entity localPlayer = GetLocalClientPlayer()
-	int myTeam = localPlayer.GetTeam()
-	if ( myTeam == TEAM_SPECTATOR ) //To handle demos
-	{
-		myTeam = GetDefaultNonSpectatorTeam()
-	}
+	int myTeam = TEAM_MULTITEAM_FIRST //localPlayer.GetTeam()
+	// if ( myTeam == TEAM_SPECTATOR ) //To handle demos
+	// {
+		// myTeam = GetDefaultNonSpectatorTeam()
+	// }
 	string mapName = GetMapDisplayName( GetMapName() )
 
 	var scoreboard = HudElement( "Scoreboard" )
@@ -357,8 +357,8 @@ void function ShowScoreboardMP()
 	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
 	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
 	
-	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == fs_aimtrainer ) return
-		
+	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_aimtrainer ) return
+
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
@@ -368,17 +368,17 @@ void function ShowScoreboardMP()
 	
 	Hud_SetVisible( file.backgroundCustom, true )
 	Hud_SetVisible( file.titleCustom, true )
-	if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	{
-		Hud_SetVisible( file.hintCustom, true )
-	}
-	else
+	// if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	// {
+		// Hud_SetVisible( file.hintCustom, true )
+	// }
+	// else
 		Hud_SetVisible( file.hintCustom, false )
 	
 	//file.scoreboardBg = RuiCreate( $"ui/scoreboard_background.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
-	int myTeam = localPlayer.GetTeam()
+	int myTeam = TEAM_MULTITEAM_FIRST // localPlayer.GetTeam()
 
 	array<int> enemyTeams = GetAllEnemyTeams( myTeam )
 
@@ -441,13 +441,14 @@ void function ShowScoreboardMP()
 	int maxPlayerDisplaySlots = GetNumPlayersToDisplayAsATeam()
 	bool firstUpdate = true
 
-	while( true )
+	while( true ) //TODO : revisit
 	{
 		localPlayer = GetLocalClientPlayer()
 
 		Assert( clGlobal.isScoreboardShown )
 
-		if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		//if( IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_ctf" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_haloMod_oddball" || IsAlive( GetLocalClientPlayer() ) && GetCurrentPlaylistName() == "fs_1v1" && GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+		if( IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod_ctf || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_haloMod_oddball || IsAlive( GetLocalClientPlayer() ) && Playlist() == ePlaylists.fs_1v1 && Playlist() == ePlaylists.fs_lgduels_1v1 )
 		{
 			Hud_SetVisible( file.hintCustom, true )
 		}
@@ -500,7 +501,8 @@ void function ShowScoreboardMP()
 		if ( UseOnlyMyTeamScoreboard() || UseSingleTeamScoreboard() )
 		{
 			file.header.gametypeAndMap.SetY( scoreboardYOffset )
-			file.teamElems[winningTeam].logo.SetY( winningTeamYOffset )
+			if( winningTeam in file.teamElems )
+				file.teamElems[winningTeam].logo.SetY( winningTeamYOffset )
 			file.footer.SetY( footerYOffset )
 		}
 		else
@@ -715,9 +717,9 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore3Header = headers[ 2 ]
 			if (IsValid( player ))
 			{
-				if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+				if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 					playerScore3 = player.GetPlayerNetInt( "oddball_ballHeldTime" )
-				else if( GameRules_GetGameMode() == "fs_snd" ) 
+				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore3 = player.GetPlayerNetInt( "defused" )
 				else
 					playerScore3 = player.GetPlayerNetInt( "damage" )
@@ -728,11 +730,11 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore2Header = headers[ 1 ]
 			if (IsValid( player ))
 			{
-				if( GameRules_GetGameMode() == "custom_ctf" )
+				if( Gamemode() == eGamemodes.CUSTOM_CTF )
 					playerScore2 = player.GetPlayerNetInt( "returns" )
-				else if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+				else if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 					playerScore2 = player.GetPlayerNetInt( "accuracy" )
-				else if( GameRules_GetGameMode() == "fs_snd" ) 
+				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore2 = player.GetPlayerNetInt( "planted" )
 				else
 					playerScore2 = player.GetPlayerNetInt( "deaths" )
@@ -743,8 +745,10 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 			playerScore1Header = headers[ 0 ]
 			if (IsValid( player ))
 			{
-				if( GameRules_GetGameMode() == "custom_ctf" )
+				if( Gamemode() == eGamemodes.CUSTOM_CTF )
 					playerScore1 = player.GetPlayerNetInt( "captures" )
+				else if( Playlist() == ePlaylists.fs_scenarios )
+					playerScore1 = player.GetPlayerNetInt( "kills" )
 			}
 			playerScore1NumDigits = numDigits[ 0 ]
 	}
@@ -868,9 +872,9 @@ bool function UseSingleTeamScoreboard()
 
 bool function UseOnlyMyTeamScoreboard()
 {
-	bool scoreboard_onlyMyTeam = bool( GetCurrentPlaylistVarInt( "scoreboard_onlyMyTeam", 0 ) )
-	if ( scoreboard_onlyMyTeam )
-		return true
+	// bool scoreboard_onlyMyTeam = bool( GetCurrentPlaylistVarInt( "scoreboard_onlyMyTeam", 0 ) )
+	// if ( scoreboard_onlyMyTeam )
+		// return true
 
 	return false
 }

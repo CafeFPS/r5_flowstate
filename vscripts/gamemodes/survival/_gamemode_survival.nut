@@ -28,6 +28,7 @@ global function TakingFireDialogue
 global function GetAllDroppableItems
 global function ResetDeathRecapBlock
 global function CreateShipPath
+global function Flowstate_CheckForLv4MagazinesAndRefillAmmo
 
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
@@ -47,8 +48,6 @@ void function GamemodeSurvival_Init()
 	SurvivalFreefall_Init()
 	Sh_ArenaDeathField_Init()
 	SurvivalShip_Init()
-	
-	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
@@ -66,6 +65,10 @@ void function GamemodeSurvival_Init()
 	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
 	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+	AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
+	AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
+	AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
+	AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
 	// #endif
 
 	FillSkyWithClouds()
@@ -79,6 +82,49 @@ void function GamemodeSurvival_Init()
 	)
 
 	thread SURVIVAL_RunArenaDeathField()
+}
+
+bool function ClientCommand_GiveSword(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	GiveSword( player )
+	return true
+}
+
+bool function ClientCommand_bleedout(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	Bleedout_StartPlayerBleedout( player, player )
+	return true
+}
+
+bool function ClientCommand_restartServer(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	GameRules_ChangeMap( GetMapName(), GetCurrentPlaylistName() )
+	return true
+}
+
+bool function ClientCommand_deathbox(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	vector origin = OriginToGround( GetPlayerCrosshairOrigin( player ) )
+
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+	
+	CreateAimtrainerDeathbox( gp()[0], origin )
+	return true
 }
 
 void function OnSurvivalMapEntsDidLoad()
@@ -131,10 +177,10 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 
-		case "4":
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
-		break
+		// case "4":
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+		// break
 		
 		case "5":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
@@ -146,10 +192,10 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
 		break
 		
-		case "7":
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
+		// case "7":
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		// break
 		
 		case "8":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
@@ -164,6 +210,36 @@ bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity playe
 		case "10":
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+		break
+
+		// case "11": //loba ss
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+		// break
+		
+		case "12": // ballistic
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+		break
+		
+		case "13": // mrvn
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+		break
+
+		// case "14": // gojo
+		// player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+		// break
+
+		// case "15": // naruto
+		// player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+		// break
+
+		case "16": // pete
+		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 		break
 	}
 
@@ -380,10 +456,21 @@ void function Sequence_Playing()
 	wait 5.0
 
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
+	{
 		FlagSet( "DeathCircleActive" )
+		thread CircleRemainingTimeChatter_Think()
+	}
 
-	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
+	if( GetCurrentPlaylistVarBool( "lsm_mod11", false ) )
+	{
+		while( GetPlayerArray().len() < 2 )
+		{
+			WaitFrame()
+		}
+	} else if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
+	{
 		WaitForever() // match never ending
+	}
 	
 	while ( GetGameState() == eGameState.Playing )
 	{
@@ -403,6 +490,67 @@ void function Sequence_Playing()
 	}
 
 	thread Sequence_WinnerDetermined()
+}
+
+void function CircleRemainingTimeChatter_Think()
+{
+	while( true )
+	{
+		wait 1.0
+
+		int remainingTime = int( GetGlobalNetTime( "nextCircleStartTime" ) - Time() )
+
+		if( remainingTime < 0 )
+			continue
+		
+		string line = ""
+		array< int > alreadySaidTeam = []
+
+		switch( remainingTime )
+		{
+			case 60:
+				line = "bc_circleMovesNag1Min"
+				break
+
+			case 45:
+				line = "bc_circleMovesNag45Sec"
+				break
+
+			case 30:
+				line = "bc_circleMovesNag30Sec"
+				break
+
+			case 10:
+				line = "bc_circleMovesNag10Sec"
+				break
+		}
+
+		if( line == "" )
+			continue
+
+		foreach( player in GetPlayerArray_Alive() )
+		{
+			if( !IsValid( player ) )
+				continue
+
+			if( alreadySaidTeam.contains( player.GetTeam() ) )
+				continue
+
+			alreadySaidTeam.append( player.GetTeam() )
+			string distance = ""
+			entity speaker = GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom()
+
+			if( SURVIVAL_PosInSafeZone( speaker.GetOrigin() ) )
+				continue
+
+			if( Distance( SURVIVAL_GetSafeZoneCenter(), speaker.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 17500 )
+				distance = "_far"
+			else
+				distance = "_close"
+
+			PlayBattleChatterLineToSpeakerAndTeam( speaker, line + distance )
+		}
+	}
 }
 
 void function Sequence_WinnerDetermined()
@@ -1038,8 +1186,13 @@ void function OnClientConnected( entity player )
 	playerTeam.fastremovebyvalue( player )
 	player.p.squadRank = 0
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod4", false ) )
+	{
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, LSM_OnPlayerTouchGround )
+		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.LEAVE_GROUND, LSM_OnPlayerLeaveGround )
+	}
+
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 	
 	if ( IsFiringRangeGameMode() )
 	{
@@ -1047,12 +1200,12 @@ void function OnClientConnected( entity player )
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
 		return
-	} else if ( IsSurvivalTraining() )
-	{
+		} else if ( IsSurvivalTraining() )
+		{
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
-	} else if ( GetCurrentPlaylistName() == "survival_dev" || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+	} else if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 	{
 		vector origin
 		if( GetPlayerArray_Alive().len() > 0 )
@@ -1099,12 +1252,23 @@ void function OnClientConnected( entity player )
 			}
 			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
 			{
+				array<entity> players = clone GetPlayerArray_Alive()
+				players.fastremovebyvalue( player )
+
+				if( players.len() == 0 )
+					return
+
+				entity target = players.getrandom()
+
+				if( !ShouldSetObserverTarget( target ) )
+					return
+
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
-				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray_Alive().len() )
+				player.SetPlayerNetInt( "spectatorTargetCount", players.len() )
 				player.SetSpecReplayDelay( 1 )
 				player.StartObserverMode( OBS_MODE_IN_EYE )
-				player.SetObserverTarget( GetPlayerArray_Alive().getrandom() )
+				player.SetObserverTarget( target )
 				player.SetPlayerCanToggleObserverMode( false )
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 			}
@@ -1203,8 +1367,6 @@ void function SURVIVAL_CalculateAirdropPositions()
     array<vector> previousAirdrops
 
     array<DeathFieldStageData> deathFieldData = SURVIVAL_GetDeathFieldStages()
-	
-	float timeOut = Time() + 10
 
     for ( int i = deathFieldData.len() - 1; i >= 0; i-- )
     {
@@ -1235,9 +1397,6 @@ void function SURVIVAL_CalculateAirdropPositions()
         for (int j = 0; j < numAirdropsForThisRound; j++)
         {
             Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
-			
-			if( Time() > timeOut )
-				return
 
             if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y % 360 ))
             {
@@ -1384,4 +1543,45 @@ void function Flowstate_Lv4MagazinesRefillAmmo_Thread( entity player, entity wea
 	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 	weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_POOL, min( SURVIVAL_CountItemsInInventory( player, ammoRef ), weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_POOL ) ) )
 	EmitSoundOnEntityOnlyToPlayer( player, player, "HUD_Boost_Card_Earned_1P" )
+}
+
+float MaxFallDistanceForDamage = 400.0
+
+void function LSM_OnPlayerTouchGround( entity player )
+{
+	if( !player.e.IsFalling )
+		return
+
+	if ( player.IsNoclipping() )
+		return
+
+	player.e.IsFalling = false
+
+	vector landingdist = <player.e.FallDamageJumpOrg.x, player.e.FallDamageJumpOrg.y, player.GetOrigin().z>
+	float fallDist = Distance(player.e.FallDamageJumpOrg, landingdist)
+
+	printf("Fall Distance: " + fallDist)
+
+	if(fallDist < MaxFallDistanceForDamage)
+		return
+
+	float Damagemultiplier = 0.035
+
+	if(fallDist > 1000)
+		Damagemultiplier = 0.05
+	
+	player.TakeDamage( Damagemultiplier * fallDist, null, null, { damageSourceId=damagedef_suicide } )
+}
+
+void function LSM_OnPlayerLeaveGround( entity player )
+{
+	if( player.e.IsFalling )
+		return
+
+	if( player.IsNoclipping() )
+		return
+
+	player.e.IsFalling = true
+
+	player.e.FallDamageJumpOrg = player.GetOrigin()
 }

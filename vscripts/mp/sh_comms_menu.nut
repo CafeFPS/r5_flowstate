@@ -123,7 +123,7 @@ void function ShCommsMenu_Init()
 
 		AddCallback_OnPlayerMatchStateChanged( OnPlayerMatchStateChanged )
 
-		if(GameRules_GetGameMode() != "fs_snd")
+		if( Gamemode() != eGamemodes.fs_snd )
 		{
 			RegisterConCommandTriggeredCallback( CHAT_MENU_BIND_COMMAND, ChatMenuButton_Down )
 			RegisterConCommandTriggeredCallback( "-" + CHAT_MENU_BIND_COMMAND.slice( 1 ), ChatMenuButton_Up )
@@ -581,7 +581,7 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 			if ( GetCurrentPlaylistVarBool( "auto_heal_option", false ) )
 				results.append( MakeOption_UseHealItem( WHEEL_HEAL_AUTO ) )
 			{
-				if(player.GetTeam() == Sh_GetAttackerTeam() && GameRules_GetGameMode() == "fs_snd" )
+				if(player.GetTeam() == Sh_GetAttackerTeam() && Gamemode() == eGamemodes.fs_snd )
 					results.append( MakeOption_UseHealItem( eHealthPickupType.SND_BOMB ) )
 				
 				results.append( MakeOption_UseHealItem( eHealthPickupType.COMBO_FULL ) )

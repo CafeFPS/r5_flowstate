@@ -141,6 +141,7 @@ void function RegisterCustomComs()
 	RegisterCustomCom( eCommsAction.PING_WEAPON_VOLT, "ping_foundVoltSmg")
 	RegisterCustomCom( eCommsAction.PING_WEAPON_SMART_PISTOL, "ping_foundPistol")
 	RegisterCustomCom( eCommsAction.PING_WEAPON_SENTINEL, "ping_foundSentinel")
+	RegisterCustomCom( eCommsAction.PING_WEAPON_3030, "ping_found3030")
 
     // npcs
 	asset icon = $"rui/hud/ping/icon_ping_enemy"

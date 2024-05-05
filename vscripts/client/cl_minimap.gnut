@@ -178,7 +178,7 @@ void function RegisterMinimapPackage( string entityClassname, int customStateInd
 void function RegisterDefaultMinimapPackage( string entityClassname, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
 	Assert( !(entityClassname in minimapAssetMap) )
-
+	
 	MinmapPackage minimapPackage
 	minimapPackage.minimapAsset = minimapAsset
 	minimapPackage.initFunction = initFunction
@@ -325,7 +325,7 @@ void function ClMinimap_Init()
 	// create unitframe ruis for the fullmap screen
 	// Taking off one of these to save memory. If we ever need to go above a 3 person team, add it back.
 	//file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
-	if(GameRules_GetGameMode() == "fs_snd")
+	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
 		file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
@@ -421,10 +421,14 @@ asset function GetMinimapAsset( string className, int customState )
 asset function GetFullmapAsset( string className, int customState )
 {
 	if ( !(className in minimapAssetMap) )
+	{
 		return $""
+	}
 
 	if ( customState > minimapAssetMap[className].len() - 1 )
+	{
 		return $""
+	}
 
 	return minimapAssetMap[className][customState].fullmapAsset
 }
@@ -452,10 +456,10 @@ void function AddMinimapObject( entity ent )
 	int customState  = ent.Minimap_GetCustomState()
 
 	asset minimapAsset = GetMinimapAsset( className, customState )
+	
 	if ( minimapAsset == $"" )
-	{
 		return
-	}
+
 
 	#if DEVELOPER
 		int eHandle = ent.GetEncodedEHandle()
@@ -472,6 +476,7 @@ void function AddMinimapObject( entity ent )
 
 			foreach ( eHandleIter in eHandlesToRemove )
 			{
+				printt("Deleting invalid minimap handle: ", eHandleIter )
 				delete file.minimapHandles[eHandleIter]
 			}
 		}
@@ -733,7 +738,7 @@ void function Minimap_RingPulseCleanup( var rui, float lifeTime )
 {
 	if ( lifeTime > 0 )
 		wait lifeTime
-
+	
 	file.minimapOtherRuis.fastremovebyvalue( rui )
 	RuiDestroy( rui )
 }
@@ -906,7 +911,7 @@ void function UpdatePlayerRuiTracking( entity player )
 
 	entity viewPlayer = GetLocalViewPlayer()
 	
-	if(GameRules_GetGameMode() == "fs_snd" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() )
 	{
 		thread HACK_TrackPlayerPositionOnScript( file.minimap_base, viewPlayer, false )
 	} else 
@@ -1821,7 +1826,7 @@ MapFeature function SetMapFeatureItem( int priority, string titleText, string de
 const int MAX_MAP_FEATURES = 5
 void function UpdateMapFeatures()
 {
-	if ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && file.fullmap_legendRui != null )
+	if ( Flowstate_IsHaloMode() && file.fullmap_legendRui != null )
 	{
 		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Halo Mod" )
 		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Master Chief is Cool, HisWattson too. \n\nMade in Colombia with love by @CafeFPS and Darkes65." )
@@ -1829,7 +1834,7 @@ void function UpdateMapFeatures()
 		return
 	}
 	
-	if ( GameRules_GetGameMode() != SURVIVAL )
+	if ( Gamemode() != eGamemodes.SURVIVAL )
 		return
 	
 	if ( file.fullmap_legendRui == null )

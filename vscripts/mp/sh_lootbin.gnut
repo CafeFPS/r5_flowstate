@@ -22,6 +22,7 @@ global function Thread_DissolveMovableLootBin
 global function RefreshLootBin
 global function ClearLootBinContents
 global function LootBin_PlayCloseSequence
+global function FS_Scenarios_InitLootBin
 #elseif CLIENT
 global function ServerCallback_RefreshLootbinHighlight
 #endif
@@ -33,6 +34,7 @@ global function LootBin_IsOpen
 
 global const string LOOT_BIN_MARKER_SCRIPTNAME = "survival_lootbin"
 global const string LOOT_BIN_SCRIPTNAME = "survival_lootbin_spawned"
+global const string LOOT_BIN_SCRIPTNAME_CUSTOM_REALMS = "survival_lootbin_custom_realms"
 
 global const asset LOOT_BIN_MODEL = $"mdl/props/loot_bin/loot_bin_01_animated.rmdl"
 global const bool LOOT_BIN_CLOSABLE = false // note that they will always be closable if playlist var lootbins_infinite is set to 1
@@ -77,6 +79,7 @@ void function ShLootBin_Init()
 		//AddClientCommandCallback( "dev_spawn_lootbin", ClientCommand_spawn_lootbin )
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		PrecacheParticleSystem( $"P_impact_exp_artillery" )
 	#endif
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
@@ -113,7 +116,13 @@ void function EntitiesDidLoad()
 
 void function InitLootBinFromMap( entity lootbin )
 {
-	if(GameRules_GetGameMode() == "fs_infected")
+	if( is3v3Mode() )
+	{
+		FS_Scenarios_SaveLootbinData( lootbin )
+		return
+	}
+
+	if( Gamemode() == eGamemodes.fs_infected )
 	{
 		if ( file.lootBinList.contains( lootbin ) )
 			return
@@ -194,7 +203,14 @@ void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems
 	if ( LootBin_IsOpen( lootBin ) )
 		waitthread LootBin_PlayCloseSequence( lootBin )
 
-	if(GameRules_GetGameMode() == "fs_snd" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_pkknockback" || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
+	//todo: change to array.contains( Gamemode() ) ~mkos
+	array<int> returnFromModes = [
+		eGamemodes.fs_snd,
+		eGamemodes.fs_prophunt,
+		eGamemodes.fs_duckhunt,
+		eGamemodes.flowstate_pkknockback
+	]
+	if( returnFromModes.contains( Gamemode() ) || GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )) return
 	
 	// New refs
 	file.lootBinsLootInside[ lootBin ] = []
@@ -277,11 +293,38 @@ void function InitLootBin( entity lootbin )
 		//lootbin.SetSkin(2)
 		return
 	}
-	
-	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && GameRules_GetGameMode() != "fs_snd" )
+	array<string> Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
+
+	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && Gamemode() != eGamemodes.fs_snd )
 	{
-		AddMultipleLootItemsToLootBin( lootbin, SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3, 4) ) )
+		AddMultipleLootItemsToLootBin( lootbin, Refs )
 	}
+}
+
+void function FS_Scenarios_InitLootBin( entity lootbin )
+{
+	if ( file.lootBinList.contains( lootbin ) )
+		return
+
+	lootbin.e.isOpen = false
+	lootbin.e.isBusy = false
+	lootbin.e.hasBeenOpened = false
+	lootbin.e.shouldSpawnLoot = true
+
+	lootbin.AllowMantle()
+	lootbin.SetForceVisibleInPhaseShift( true )
+	lootbin.SetUsable()
+	lootbin.SetFadeDistance( 100000 )
+	lootbin.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	lootbin.SetUsablePriority( USABLE_PRIORITY_LOW )
+	AddCallback_OnUseEntity( lootbin, OnLootBinUse )
+
+	file.lootBinsSpawnedLootMap[lootbin] <- []
+	file.lootBinsLootInside[lootbin] <- []
+
+	file.lootBinList.append( lootbin )
+
+	SetCallback_CanUseEntityCallback( lootbin, LootBin_CanUse )
 }
 
 // the loop doesn't play without a delay involved for some reason
@@ -507,6 +550,8 @@ void function HandleLootbinUse( entity lootbin, entity player )
 		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, lootbin, lootbin.GetWorldSpaceCenter(), player.GetTeam(), player )
 }
 
+int opened = 0
+
 void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 {
 	lootbin.EndSignal( "OnDestroy" )
@@ -543,12 +588,31 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 
 	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) && Gamemode() == eGamemodes.SURVIVAL )
+	{
+		printt( "Lootbin opened ", opened )
+		opened++
+		
+		if( opened == 25 )
+			thread function () : ( lootbin, player )
+			{
+				wait 1
+
+				entity hotZoneBeam = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_impact_exp_artillery" ), lootbin.GetOrigin(), <0,90,0> )
+				EmitSoundAtPosition( 99, lootbin.GetOrigin(), "weapon_explosion_med" )
+				lootbin.Destroy()
+				player.TakeDamage( player.GetHealth() + 1 , null, null, { damageSourceId = eDamageSourceId.titan_explosion, damageType = DMG_BURN } )
+			}()
+	}
+
 	entity lootbinParent = lootbin.GetParent()
 	if ( IsValid( lootbinParent ) )
 		waitthread PlayAnim( lootbin, "loot_bin_01_open", lootbinParent, "ref" )
 	else
 		waitthread PlayAnim( lootbin, "loot_bin_01_open" )
-
+	
+	if( !IsValid( lootbin ) )
+		return
 
 	GradeFlagsClear( lootbin, eGradeFlags.IS_BUSY )
 }
@@ -629,15 +693,15 @@ bool function LootBin_IsBusy( entity lootbin )
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
 {
-	if(GameRules_GetGameMode() == "fs_infected")
+	if( lootbin.GetScriptName() == "smartbin" && Gamemode() == eGamemodes.fs_infected )
 	{
 		AddMysteryBox( lootbin )
 		SetMysteryBoxUsable( lootbin )		
 		file.lootBinList.append( lootbin )
 		return
 	}
-	
-	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME && lootbin.GetScriptName() != "smartbin")
+
+	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME && lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME_CUSTOM_REALMS )
 		return
 
 	AddEntityCallback_GetUseEntOverrideText( lootbin, GetLootBinUseTextOverride )

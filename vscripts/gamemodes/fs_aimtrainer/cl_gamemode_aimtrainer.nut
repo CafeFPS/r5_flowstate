@@ -118,7 +118,7 @@ void function Cl_ChallengesByColombia_Init()
 {
 	//Increase client command limit to 60
 	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-	SetConVarInt("net_processTimeBudget", 2000)
+	SetConVarInt("net_processTimeBudget", 0)
 
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
@@ -399,11 +399,11 @@ void function CoolCameraOnMenu()
 	
     if(!IsValid(player)) return
 	
-	switch( GetMapName() )
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-		case "mp_rr_desertlands_64k_x_64k_tt":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
 		cutsceneSpawns.append(NewCameraPair(<10881.2295, 5903.09863, -3176.7959>, <0, -143.321213, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<9586.79199, 24404.5898, -2019.6366>, <0, -52.6216431, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<630.249573, 13375.9219, -2736.71948>, <0, -43.2706299, 0>))
@@ -411,23 +411,23 @@ void function CoolCameraOnMenu()
 		cutsceneSpawns.append(NewCameraPair(<1133.25562, -20102.9648, -2488.08252>, <0, -24.9140873, 0>))
 		break
 		
-		case "mp_rr_canyonlands_staging":
+		case eMaps.mp_rr_canyonlands_staging:
 		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
 		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
 		cutsceneSpawns.append(NewCameraPair(<30038.0254, -1036.81982, -23369.6035>, <55, -24.2035522, 0>))
 		break
 
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		cutsceneSpawns.append(NewCameraPair(<-7984.68408, -16770.2031, 3972.28271>, <0, -158.605301, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-19691.1621, 5229.45264, 4238.53125>, <0, -54.6054993, 0>))
 		cutsceneSpawns.append(NewCameraPair(<13270.0576, -20413.9023, 2999.29468>, <0, 98.6180649, 0>))
 		cutsceneSpawns.append(NewCameraPair(<-25250.0391, -723.554199, 3427.51831>, <0, -55.5126762, 0>))
 		break
 
-		case "mp_rr_olympus_mu1":
+		case eMaps.mp_rr_olympus_mu1:
 		cutsceneSpawns.append(NewCameraPair(<-34747.9766, 16697.9922, -3418.06567>, <0, -25, 0>))
 		cutsceneSpawns.append(NewCameraPair(<-22534.2168, 3191.64282, -4614.2583>, <0, -96.9278641, 0>))
 		cutsceneSpawns.append(NewCameraPair(<-43278.6406, -13421.3818, -2568.48071>, <0, 60.0252533, 0>))

@@ -123,7 +123,7 @@ void function Cl_MovementGym_Init()
 		thread Cl_Classic_Movement()
 	}
 	
-	if (GetCurrentPlaylistName() == "fs_movementgym"){
+	if ( Playlist() == ePlaylists.fs_movementgym ){
 		//Very Cool Cam
 		if(isIntroOn == true)
 			thread MG_CoolCamera()
@@ -135,7 +135,7 @@ void function Cl_MovementGym_Init()
 		MG_Spawn_PB_Timers()
 	}
 	
-	if(isIntroOn == false || GetCurrentPlaylistName() != "fs_movementgym"){
+	if(isIntroOn == false || Playlist() != ePlaylists.fs_movementgym ){
 		if(isSpeedoOn == true)
 			MG_Speedometer_toggle(true)
 		
@@ -905,6 +905,13 @@ void function MG_Pet_Follower(){
 		petMover.NonPhysicsMoveTo(targetPosition + petOffsetOrigin, petHz, 0, 0)
 		
 		yaw = atan2(direction.y, direction.x) * (180.0 / 3.1415)
+		if (yaw > 360) {
+			yaw = 0
+		}
+		if (yaw < -360) {
+			yaw = 0
+		}
+
 		pitch = atan2(direction.z, sqrt(direction.x * direction.x + direction.y * direction.y)) * (180.0 / 3.1415)
 		petMover.NonPhysicsRotateTo(<pitch, yaw, 0> + petOffsetAngle, petHz, 0, 0)
 		positions = positions.slice(1);

@@ -283,10 +283,10 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" )
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" )
 		return true
 	
-	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementgym )
 		return false
 
 	if ( attacker == target )
@@ -298,13 +298,13 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 	if ( !target.CanBeMeleed() )
 		return false
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_snd" && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
 		return false	
 
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_snd" && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
 		return false	
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_duckhunt" )
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_duckhunt )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -540,15 +540,33 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 		vector eyeTraceHitPos
 		if ( doorLungeEnabled && !IsValid( lungeTarget ) )
 		{
+			//Cafe was here
+			array<entity> ignoreEnts = [ attacker ]
+			
+			array<entity> tocheck
+			tocheck.extend( GetAllPropDoors() )
+			tocheck.extend( GetAllPropDoors_BigOnes() )
+
+			foreach( door in tocheck )
+			{
+				if( !IsValid( door ) )
+					continue
+
+				if( !door.DoesShareRealms( attacker ) )
+				{
+					ignoreEnts.append( door )
+				}
+			}
+
 			TraceResults eyeTrace = TraceLine(
 				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
-				[ attacker ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
+				ignoreEnts, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
 			)
 			lungeTarget = eyeTrace.hitEnt
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed && lungeTarget.DoesShareRealms( attacker ) )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 			
@@ -593,7 +611,7 @@ void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAt
 			return
 
 		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
-		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() || IsValid( lungeTarget ) && lungeTarget.IsNPC())
+		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() && lungeTarget.DoesShareRealms( attacker ) || IsValid( lungeTarget ) && lungeTarget.IsNPC() && lungeTarget.DoesShareRealms( attacker ))
 		{
 			bool lungeStartWasSuccessful
 			
@@ -716,7 +734,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	if ( !IsValid( target ) )
 		return
 	
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
 	{
 		target = target.GetParent()
 	
