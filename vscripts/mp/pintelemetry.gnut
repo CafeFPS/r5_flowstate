@@ -2537,6 +2537,11 @@ table<int,bool> weaponBypassesHitCount = {
 	[eDamageSourceId.damagedef_bangalore_smoke_explosion] = true
 }
 
+bool function WeaponBypassesHits( int weaponSource )
+{
+	return ( weaponSource in weaponBypassesHitCount )
+}
+
 void function HandleDamage(DamageEvent event, entity attacker, int weaponSource, float damageAmount, var damageInfo, entity victim) 
 {
 	if (!IsValid(victim) || !IsValid(attacker)) return;
@@ -3318,7 +3323,7 @@ string function PrintAllPlayerMetrics( bool trigger = false )
 		
         foreach ( weaponSource, timestamps in metrics.WeaponShotsTimestamps ) 
 		{
-			if( weaponSource in weaponBypassesHitCount )
+			if( WeaponBypassesHits( weaponSource ) )
 				continue
 			
             if ( !wep_first ) 

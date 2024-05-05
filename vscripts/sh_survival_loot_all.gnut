@@ -516,12 +516,32 @@ struct CustomWeaponData
 	float lowWeaponChance,
 	float medWeaponChance,
 	float highWeaponChance,
+	string hudIcon,
+	string name,
 	bool isCP
 }
 
 void function RegisterCustomWeapons()
-{
+{	
 	array<string> customWeaponClassNames = split(GetCurrentPlaylistVarString("custom_weapon_list", ""), " ")
+	
+	#if DEVELOPER //mkos~ added for confirmation, added hudIcon, added name, added registering damagedef	
+		
+		int customWepCount = customWeaponClassNames.len()
+		
+		if ( customWepCount > 0 )
+		{
+			string pr = "\n\n ---- customWeaponClassNames ---- \n\n"
+			foreach( item in customWeaponClassNames )
+			{
+				pr += item + "\n"
+			}
+			printt( pr )
+		}
+		printt( "customWeaponClassNames count: ", customWepCount )	
+		
+	#endif 
+	
 	foreach (string className in customWeaponClassNames)
 	{
 		CustomWeaponData data
@@ -545,7 +565,10 @@ void function RegisterCustomWeapons()
 		data.lowWeaponChance = GetCurrentPlaylistVarFloat(className + "_low_chance", 5.0)
 		data.medWeaponChance = GetCurrentPlaylistVarFloat(className + "_med_chance", 10.0)
 		data.highWeaponChance = GetCurrentPlaylistVarFloat(className + "_high_chance", 25.0)
-
+		
+		data.hudIcon =	GetCurrentPlaylistVarString(className + "_hud_icon", "$\"\"" )
+		data.name = GetCurrentPlaylistVarString(className + "_name", "Custom Weapon" )
+		
 		data.isCP = GetCurrentPlaylistVarBool(className + "_cp_weapon", false)
 		RegisterWeapon(data)
 		RegisterCustomAttachments(GetCustomHopupsForWeapon(className))
@@ -750,6 +773,7 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 	// This would be nice if changed, but it's good as is for now,
 	// as the game is not fully functioning yet.
 	//RegisterWeaponForUse( data.baseWeapon )
+	RegisterCustomWeaponDamageDef( weaponData.className, weaponData.name, weaponData.hudIcon ) //~mkos
 
 	// precache the weapon, obviously.
 	#if !UI
@@ -825,6 +849,23 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 	//#if CLIENT
 	//RunUIScript( "SetupDevCommand", "Spawn " + data.pickupString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, 1 )" )
 	//#endif
+	
+	#if DEVELOPER
+	printt( format("\n\n --- Registered Custom Weapon as --- \n className: %s \n name: %s \n tier: %d \n baseMods: %s \n supportedAttachments: %s \n pickupSound1p: %s \n pickupSound3p: %s \n weaponType: %s \n lowWeaponChance: %.2f \n medWeaponChance: %.2f \n highWeaponChance: %s \n hudIcon: %s ",
+			weaponData.className,
+			weaponData.name,
+			weaponData.tier,
+			ArrayToString( weaponData.baseMods ),
+			ArrayToString( weaponData.supportedAttachments ),
+			weaponData.pickupSound1p,
+			weaponData.pickupSound3p,
+			weaponData.weaponType,
+			weaponData.lowWeaponChance,
+			weaponData.medWeaponChance,
+			weaponData.highWeaponChance,
+			weaponData.hudIcon
+		))
+	#endif 
 }
 
 void function CreateCustomHopup(CustomHopupData hopupData)

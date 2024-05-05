@@ -7,6 +7,7 @@ global function DamageSourceIDHasString
 global function GetRefFromDamageSourceID //duplicate of DamageSourceIDToString
 global function PIN_GetDamageCause
 global function DamageSourceIDToStringTable
+global function RegisterCustomWeaponDamageDef
 
 global function DEV_PrintRegisteredWeapons
 
@@ -703,14 +704,34 @@ bool function DamageSourceIDHasString( int index )
 	return (index in file.damageSourceIDToString)
 }
 
+//for adding invalids in stat calc ~mkos
 string function DamageSourceIDToString( int index )
 {
 	return file.damageSourceIDToString[ index ]
 }
 
-table<int,string> function DamageSourceIDToStringTable() //for adding invalids in stat calc ~mkos
+table<int,string> function DamageSourceIDToStringTable() 
 {
 	return file.damageSourceIDToString
+}
+
+// for adding custom wep ~mkos
+void function RegisterCustomWeaponDamageDef( string weaponRef, string name = "Unknown", string imgAssetString = "$\"\"" )
+{
+	int sourceID = file.damageSourceIDToString.len()
+	
+	mAssert( !(sourceID in file.damageSourceIDToName) && !(sourceID in file.damageSourceIDToImage) && !(sourceID in file.damageSourceIDToString), "Error registering custom weapon: " + weaponRef + " [already exists]" )
+	
+	file.damageSourceIDToString[ sourceID ] <- weaponRef
+	file.damageSourceIDToName[ sourceID ] <- name
+	
+	#if CLIENT || UI
+		file.damageSourceIDToImage[ sourceID ] <- GetAssetFromString( imgAssetString )
+	#endif
+	
+	#if SERVER 
+		file.damageSourceIDToImage[ sourceID ] <- $""
+	#endif 
 }
 
 string function GetObitFromDamageSourceID( int damageSourceID )

@@ -2473,3 +2473,20 @@ bool function IsDevGamemode()
 
     unreachable
 }
+
+string function ArrayToString( array<string> arr ) //~mkos
+{
+	string result = ""
+	
+	int iter = 0
+	int last = arr.len() - 1
+	
+	foreach ( item in arr )
+	{
+		string notlast = iter < last ? " " : "";
+		result += item + notlast;
+		iter++;
+	}
+	
+	return result
+}
