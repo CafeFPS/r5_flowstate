@@ -1032,6 +1032,7 @@ Scripts:
 	custom_maps/_custom_deafps_defuse_maps.nut
 	custom_maps/_custom_firstmap.nut
 	custom_maps/_custom_gymmovementmap.nut
+	custom_maps/_custom_ithurtsmap.nut
 	
 	//map editor props
 	_place_map_editor_props_here.nut
