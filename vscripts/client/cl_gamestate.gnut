@@ -94,8 +94,6 @@ const DEV_COUNTDOWNTIMER = 0//turn on to see the countdown timer to match starts
 
 
 
-
-
 void function ClGameState_Init()
 {
 	RegisterSignal( "GameStateChanged" )
@@ -283,6 +281,7 @@ void function UpdateCommonScoreRuiTracking( var rui, entity player )
 
 	if ( IsRankedGame() )
 		RuiTrackInt( rui, "assistCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "assists" ) )
+		
 
 }
 
@@ -352,7 +351,7 @@ void function ClGameState_AddClient( entity player )
 	#else
 		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_BAD_REPUTATION" )
 	#endif
-
+	
 	// player.cv.hudCheaterMessage <- HudElement( "HudCheaterMessage" )
 	// if ( !Durango_IsDurango() && !IsLobby() && player.HasBadReputation() )
 		// player.cv.hudCheaterMessage.Show()

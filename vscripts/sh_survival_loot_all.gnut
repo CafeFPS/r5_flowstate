@@ -773,11 +773,11 @@ void function RegisterWeapon( CustomWeaponData weaponData )
 	// This would be nice if changed, but it's good as is for now,
 	// as the game is not fully functioning yet.
 	//RegisterWeaponForUse( data.baseWeapon )
-	RegisterCustomWeaponDamageDef( weaponData.className, weaponData.name, weaponData.hudIcon ) //~mkos
 
 	// precache the weapon, obviously.
 	#if !UI
 		PrecacheWeapon(weaponData.className)
+		RegisterCustomWeaponDamageDef( weaponData.className, weaponData.name, weaponData.hudIcon ) //~mkos
 		//RegisterCustomWeaponDamageSource(weaponData.className)
 	#endif
 	// rarity

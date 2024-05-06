@@ -127,6 +127,8 @@ struct
 	int currentPlaylist = -1
 	int currentGamemode = -1
 	
+	bool errorCheck = false
+	
 } SH_globals
 
 
@@ -210,6 +212,7 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		int currentGamemodeEnum = getGamemodeEnumFromName( curentGamemodeName )
 			
 			#if DEVELOPER
+				printt( "UI Playlist: ", SH_globals.currentPlaylist )
 				printt( "UI Gamemode: ", curentGamemodeName )
 			#endif
 	#endif
@@ -218,6 +221,8 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
 	
 	AllModeConditionals_Init()
+	
+	SH_globals.errorCheck = true
 }
 
 int function getMapEnumFromName( string mapString ) 
@@ -381,7 +386,12 @@ void function TrackerSupportedMode_Init()
 	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
 		if( !result )
 		{
-			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", Gamemode(), AllGamemodesArray()[Gamemode()], Playlist(), AllPlaylistsArray()[Playlist()] ) )
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", 
+				Gamemode(), 
+				Gamemode() > -1 ? AllGamemodesArray()[Gamemode()] : "_INVALID", 
+				Playlist(), 
+				Playlist() > - 1 ? AllPlaylistsArray()[Playlist()]  : "_INVALID"
+			))
 		}
 	#endif 
 	
@@ -415,9 +425,6 @@ bool function Flowstate_IsTrackerSupportedMode()
 
 
 
-
-
-
 //////////////////////////////////////////
 // placing this here temp (mkos Assert) //
 //////////////////////////////////////////
@@ -431,7 +438,7 @@ void function mAssert( bool condition, string errorMsg = "" )
 		#endif 
 		
 		#if SERVER 		
-			ErrorServer( errorMsg )
+			ErrorServer( errorMsg + "\n\n" + DBG_INFO( 5 ) )
 		#endif
 	}
 }
@@ -439,18 +446,15 @@ void function mAssert( bool condition, string errorMsg = "" )
 #if CLIENT
 void function ErrorClientPlayer( string errorMsg )
 {
-	thread WaitValidPlayerThenError( errorMsg )
+	entity player = GetLocalClientPlayer()
+	thread WaitValidPlayerThenError( player, errorMsg )
 }
 
-void function WaitValidPlayerThenError( string errorMsg )
+void function WaitValidPlayerThenError( entity player, string errorMsg )
 {
-	while( !IsValid( GetLocalClientPlayer() ) )
-	{
-		WaitFrame()
-	}
-	
-	RunUIScript("OpenErrorDialog", errorMsg )
-	GetLocalClientPlayer().ClientCommand("disconnect")
+	GetLocalClientPlayer().ClientCommand("disconnect " + errorMsg )
+	WaitSignalOrTimeout( player, 2, "_disconnectedInternal" )	
+	RunUIScript( "OpenErrorDialog", errorMsg )
 }
 #endif
 
@@ -462,14 +466,8 @@ void function ErrorServer( string errorMsg )
 
 void function WaitValidStateThenClose( string errorMsg )
 {
-	wait 1
-	/* OnThreadEnd( function() : ( errorMsg )
-		{
-			throw errorMsg 
-		}
-	)
-	
-	WaitForever() */
+	if(!SH_globals.errorCheck)
+		wait 1 //Todo(dw): Needs proper ~mkos
 	
 	if ( GetPlayerArray().len() > 0 )
 	{
@@ -479,7 +477,8 @@ void function WaitValidStateThenClose( string errorMsg )
 		}
 	}
 	
-	throw errorMsg
+	ScriptError( errorMsg, DBG_INFO() )
+	//throw errorMsg
 }
 #endif 
 ///

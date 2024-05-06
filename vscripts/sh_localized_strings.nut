@@ -2,12 +2,15 @@
 
 global function INIT_Flowstate_Localization_Strings
 global function Flowstate_FetchToken
+global function ClientLocalizedTokenExists
 
 #if SERVER
 	global function Flowstate_FetchTokenID
 	global function LocalMsg
 	global function LocalVarMsg
 	global function MessageLong
+	global function LocalEventMsg //wrapper for LocalMsg ui type 1
+	global function LocalizedTokenExists
 #endif
 
 #if CLIENT 	
@@ -20,12 +23,16 @@ global function Flowstate_FetchToken
 #if DEVELOPER 
 	global function DEV_GenerateTable
 	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
-	global function DEV_printLocalizationTable
+	#if CLIENT || SERVER
+		global function DEV_printLocalizationTable
+	#endif
 	#if CLIENT 
 		global function DEV_printLocalizedTokenByID
 	#endif 
 #endif
-	global const DEBUG_VARMSG = false
+
+	const ASSERT_LOCALIZATION = true 
+	const DEBUG_VARMSG = false
 
 struct {
 
@@ -187,7 +194,18 @@ struct {
 		"#FS_WEAPONS_RESET",
 		"#FS_ALL_WEPS_SAVED",
 		"#FS_MUTED",
-		"#FS_UNMUTED"
+		"#FS_UNMUTED",
+		"#FS_ADMIN_RECORDER_ENDALL",
+		"#FS_RECORDER_ENDALL",
+		"#FS_MOVEMENT_RECORDER",
+		"#FS_PLAYBACK_LIMIT",
+		"#FS_PLAYING_ALL_ANIMS",
+		"#FS_CANT_SWITCH_LEGEND",
+		"#FS_RECORDINGANIM_CUSTOM",
+		"#FS_NO_SLOTS",
+		"#FS_MOVEMENT_SAVED",
+		"#FS_ANIM_NOT_FOUND",
+		"#FS_ANIM_REMOVED_SLOT",
 		
 	]
 	
@@ -270,10 +288,20 @@ string function StringReplaceLimited( string baseString, string searchString, st
 
 	return newString
 }
+
+bool function ClientLocalizedTokenExists( int tokenRef )
+{
+	return ( tokenRef in file.FS_LocalizedStrings )
+}
 // /SHARED
 
 #if SERVER
 
+	bool function LocalizedTokenExists( string token )
+	{
+		return ( token in file.FS_LocalizedStringMap )
+	}
+	
 	int function Flowstate_FetchTokenID( string ref )
 	{
 		if ( ref in file.FS_LocalizedStringMap )
@@ -286,6 +314,26 @@ string function StringReplaceLimited( string baseString, string searchString, st
 	
 #endif
 
+#if CLIENT
+string function trim( string str ) 
+{
+    int start = 0;
+    int end = str.len() - 1;
+    string whitespace = " \t\n\r";
+
+    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	{
+        start++;
+    }
+
+    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	{
+        end--;
+    }
+
+    return str.slice(start, end + 1);
+}
+#endif
 
 //########################################################
 //					 SERVER FUNCTIONS					//
@@ -294,7 +342,14 @@ string function StringReplaceLimited( string baseString, string searchString, st
 #if SERVER
 void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = false )
 {
-	//original by @Cafe
+	#if DEVELOPER && ASSERT_LOCALIZATION
+		if( !empty(ref) )
+		{
+			mAssert( ref.find("#") != -1, "Reference missing # symbol  ref: [ " + ref + " ] in calling func: " + FUNC_NAME( 2 ) + "()" )
+			mAssert( LocalizedTokenExists( ref ), "Localized Token Reference does not exist for [ " + ref + " ] \n in calling func: " + FUNC_NAME( 2 ) + "()" )
+		}
+	#endif 
+	//original template by @Cafe
 	
 	if ( !IsValid( player ) ) return
 	if ( !player.IsPlayer() ) return
@@ -458,6 +513,11 @@ bool function ValidateType( ... )
 	
 	return false
 }
+
+void function LocalEventMsg( entity player, string ref, string varString = "", float duration = 5 )
+{
+	LocalMsg( player, ref, "", 1, duration, varString, "", "", false )
+}
 #endif
 
 //########################################################
@@ -516,11 +576,16 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	
 	try 
 	{
-		Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ) , S )
+		Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ) , " " + S )
 	}
 	catch(e)
 	{
 		printt("Error ", e ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", token )
+		Msg = Localize( trim( localToken ) ) + " " + S
+		
+		#if DEVELOPER && DEBUG_VARMSG 
+			printt("New msg:", Msg )
+		#endif
 	}
 	
 	try
@@ -788,13 +853,36 @@ int function DEV_getTokenIdFromRef( string ref ) //deprecated
 	return -1
 }
 
+#if CLIENT || SERVER
 void function DEV_printLocalizationTable()
 {
+	
+	#if CLIENT 
+		string kvFormat = "";
+	#endif 
+	
 	foreach ( key, value in file.FS_LocalizedStrings )
-	{
-		printt( key, value )
+	{		
+#endif
+		#if CLIENT 
+			string vFormat = StringReplaceLimited( Localize(value), "\n", "\\n", 100 )
+			string kFormat = StringReplaceLimited( value, "#", "", 1 )
+			int kOffset = 30 - kFormat.len()
+			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n";				
+		#endif 
+			
+		#if SERVER 
+			printt( key, value )
+		#endif 
+#if CLIENT || SERVER
 	}
+	
+	#if CLIENT 
+		printt( "\n\n --- LOCALIZATION TOKENS --- \n\n" + kvFormat + "\n" )
+		printt( "Token count:", file.FS_LocalizedStrings.len(), "\n\n" )
+	#endif
 }
+#endif 
 
 	#if CLIENT 
 		void function DEV_printLocalizedTokenByID( int id )
@@ -803,3 +891,7 @@ void function DEV_printLocalizationTable()
 		}
 	#endif
 #endif
+
+
+/////////////////////////////////////////
+// reload command: reload_localization //

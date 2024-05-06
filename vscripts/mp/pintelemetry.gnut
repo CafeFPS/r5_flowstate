@@ -1295,14 +1295,15 @@ void function Init_NewGame()
 	format("|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n",T_VERS, GetCurrentRound(), GetUnixTimestamp() ),
 	file.LogE
 	);
-	
-	
+		
 	//sqprint(format("Current round: %s ; isLogging: %s",GetCurrentRound().tostring(), isLogging().tostring()));
 
 	foreach( player in GetPlayerArray() )
 	{
 		CheckPlayerStartInRest( player )
 	}
+	
+	PrintMatchIDtoAll()
 	
 	file.PIN_GameState_Start = true;
 	//END .DEV
@@ -4764,7 +4765,7 @@ void function PIN_Init()
 	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
 	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
 	
-	AddCallback_OnClientConnected( PlayerConnectedCallback );
+	AddCallback_OnClientConnected( PlayerConnectedCallback )
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )
 	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )

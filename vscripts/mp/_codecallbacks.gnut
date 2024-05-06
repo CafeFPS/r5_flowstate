@@ -33,12 +33,14 @@ struct
 	void functionref( entity, entity, TitanDamage, float ) earnMeterOnDamageGameModeRulesCallback
 
 	table<entity, AccumulatedDamageData> playerAccumulatedDamageData
+	
+	bool phaseRewindEnabled
 } file
 
 // r5 stuff
 void function SvCodeCallbacksCommon_Init()
 {
-	// stubbystuvb
+	file.phaseRewindEnabled = GetCurrentPlaylistVarBool( "phaseRewindEnabled", true )
 }
 
 void function CodeCallback_Init()
@@ -62,9 +64,10 @@ void function OnClientConnected( entity player )
 
 	//Wraith Q fix
 	player.SetForceVisibleInPhaseShift( true )
-
+	
 	//Phase Rewind Record Positions
-	thread RecordPositions( player )
+	if( file.phaseRewindEnabled )
+		thread RecordPositions( player )
 
 	//Record a networked int for Latency to show in scoreboard
 	thread NetworkedIntLatencyThingy( player )	
@@ -79,13 +82,16 @@ void function NetworkedIntLatencyThingy( entity player )
 	while ( IsValid(player) )
 	{
 		latency = int( player.GetLatency() * 1000 ) - 45
+		
 		if( latency >= 500 )
 		{
 			player.SetPlayerNetInt( "latency", 500 )
-		} else if( latency < 0 )
+		} 
+		else if( latency < 0 )
 		{
 			player.SetPlayerNetInt( "latency", -1 )
-		} else
+		} 
+		else
 		{
 			player.SetPlayerNetInt( "latency", latency )
 		}

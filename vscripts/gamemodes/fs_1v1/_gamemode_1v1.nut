@@ -154,6 +154,8 @@ struct {
 	
 	array<ChallengesStruct> allChallenges
 	table<int,entity> acceptedChallenges //(player handle challenger -> player challenged )
+	
+	array<ItemFlavor> characters
 
 } file
 
@@ -185,7 +187,6 @@ float REST_GRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
 
-array<ItemFlavor> characters
 const array<string> charIndexMap = [
 		"Bangalore", //0
 		"Bloodhound", //1
@@ -229,7 +230,7 @@ void function DEV_legend( entity player, int id )
 {
 	if( id < GetAllCharacters().len() )
 	{
-		ItemFlavor select_character = characters[characterslist[id]]
+		ItemFlavor select_character = file.characters[characterslist[id]]
 		CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
 	}
 	else
@@ -1412,7 +1413,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( index <= 10 )
 			{
-				ItemFlavor select_character = characters[characterslist[index]]
+				ItemFlavor select_character = file.characters[characterslist[index]]
 				CharacterSelect_AssignCharacter( ToEHI( player ), select_character )
 				
 				if( !settings.bAllowAbilities )
@@ -1427,7 +1428,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( settings.bAllowAbilities )
 			{
-				thread RechargePlayerAbilities( player )
+				RechargePlayerAbilities( player, index )
 			}
 			
 			return true
@@ -2995,7 +2996,7 @@ void function _decideLegend( soloGroupStruct group )
 	{
 		if( group.p1LegendIndex <= 10 )
 		{
-			select_character = characters[characterslist[group.p1LegendIndex]]
+			select_character = file.characters[characterslist[group.p1LegendIndex]]
 			CharacterSelect_AssignCharacter( ToEHI( group.player1 ), select_character )
 		}
 		else 
@@ -3008,7 +3009,7 @@ void function _decideLegend( soloGroupStruct group )
 	{
 		if( group.p2LegendIndex <= 10 )
 		{
-			select_character = characters[characterslist[group.p2LegendIndex]]
+			select_character = file.characters[characterslist[group.p2LegendIndex]]
 			CharacterSelect_AssignCharacter( ToEHI( group.player2 ), select_character )
 		}
 		else 
@@ -3024,8 +3025,8 @@ void function _decideLegend( soloGroupStruct group )
 	}
 	else 
 	{
-		thread RechargePlayerAbilities( group.player1 )
-		thread RechargePlayerAbilities( group.player2 )
+		RechargePlayerAbilities( group.player1, group.p1LegendIndex )
+		RechargePlayerAbilities( group.player2, group.p2LegendIndex )
 	}
 }
 
@@ -3052,7 +3053,7 @@ void function _soloModeInit( int eMap )
 	
 	REST_GRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
 	
-	characters = GetAllCharacters()
+	file.characters = GetAllCharacters()
 	characterslist = [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
 	
 	//INIT PRIMARY WEAPON SELECTION
@@ -3197,46 +3198,19 @@ void function _soloModeInit( int eMap )
 	
 	//resting room init ///////////////////////////////////////////////////////////////////////////////////////
 	
-	string buttonText
-	
-	if(file.IS_CHINESE_SERVER)
-		buttonText = "%&use% 开始观战"
-	else
-		buttonText = "%&use% Start spectating"
-
-	string buttonText3
-	
-	if(file.IS_CHINESE_SERVER)
-		buttonText3 = "%&use% 开始休息"
-	else
-		buttonText3 = "%&use% Rest (or) Enter Queue"
-	
-	//mkos 
-	string buttonText4
-	
-		buttonText4 = "%&use% Toggle IBMM";
-		
-	string buttonText5
-	
-		buttonText5 = "%&use% Enable/Disable 1v1 Challenges";
-		
-	string buttonText6
-	
-		buttonText6 = "%&use% Toggle \"Start In Rest\" Setting";
-		
-	string buttonText7 
-	
-		buttonText7 = "%&use% Toggle Input Banner";
-	//endkos, - initialized in case we want to dynamically change it for chinese server
+	string buttonText = "%&use% Start spectating"
+	string buttonText3 = "%&use% Rest (or) Enter Queue"
+	string buttonText4 = "%&use% Toggle IBMM";		
+	string buttonText5 = "%&use% Enable/Disable 1v1 Challenges";		
+	string buttonText6 = "%&use% Toggle \"Start In Rest\" Setting";		
+	string buttonText7 = "%&use% Toggle Input Banner";		
 	
 	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin + AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText )
 	entity restingRoomPanel_RestButton = CreateFRButton( waitingRoomPanelLocation.origin - AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText3 )
 	
-	//mkos 
 	entity restingRoomPanel_IBMM_button = CreateFRButton( waitingRoomPanelLocation.origin - (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <0,25,0>, waitingRoomPanelLocation.angles + <0,45,0>, buttonText4 )
 	entity restingRoomPanel_lock1v1_button = CreateFRButton( waitingRoomPanelLocation.origin + (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <0,25,0>, waitingRoomPanelLocation.angles - <0,45,0>, buttonText5 )
-	
-	
+		
 	float rest_offset = -20;
 	float nothing_offset = 20;
 	
@@ -3295,7 +3269,7 @@ void function _soloModeInit( int eMap )
 			thread CheckForObservedTarget(user)
 			user.p.lastTimeSpectateUsed = Time()
 
-	/* 		if(file.IS_CHINESE_SERVER)
+			/* 		if(file.IS_CHINESE_SERVER)
 				Message(user,"按一下空格后结束观战")
 			else
 				Message(user,"Jump to stop spectating") */
@@ -3307,6 +3281,7 @@ void function _soloModeInit( int eMap )
 	    }
 	    catch (error333)
 	    {}
+		
 	    AddButtonPressedPlayerInputCallback( user, IN_JUMP,endSpectate  )
 	})
 	
@@ -3423,23 +3398,11 @@ void function _soloModeInit( int eMap )
 		ClientCommand_Maki_SoloModeRest( user, [] )
 	})
 
-	string buttonText2
-	
-	if(file.IS_CHINESE_SERVER)
-	{
-		buttonText2 = "%&use% 不再更换对手"
-	}
-	else
-	{
-		buttonText2 = "%&use% Never change your opponent"
-	}
+	string buttonText2 = "%&use% Never change your opponent"
 
 	forbiddenZoneInit(GetMapName())
-	if( settings.is3v3Mode )
-		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
-	else
-		thread soloModeThread( getWaitingRoomLocation() )
-
+	
+	thread soloModeThread( getWaitingRoomLocation() )
 }
 
 void function soloModeThread(LocPair waitingRoomLocation)
@@ -4119,13 +4082,9 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 	sqprint( format("THREAD FOR GROUP STARTED" ))
 	#endif
 	
-	EndSignal( player, "InputChanged" )
-	EndSignal( opponent, "InputChanged" )
-	EndSignal( player, "OnDeath" )
-	EndSignal( opponent, "OnDeath" )
-	EndSignal( player, "PlayerDisconnected" )
-	EndSignal( opponent, "PlayerDisconnected" )
-		
+	EndSignal( player, "InputChanged", "OnDeath", "PlayerDisconnected" )
+	EndSignal( opponent, "InputChanged", "OnDeath", "PlayerDisconnected" )
+
 		#if DEVELOPER
 		sqprint("Waiting for input to change");
 		#endif
@@ -4190,7 +4149,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			
 			if( random_character_index <= 10 )
 			{
-				random_character = characters[characterslist[random_character_index]]
+				random_character = file.characters[characterslist[random_character_index]]
 			}
 		}
 		
@@ -4266,7 +4225,7 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 
 		// if( !FS_Scenarios_GetDropshipEnabled() )
-			wait 1 // Find a better method to wait for the client to be updated. Cafe
+			wait 1 // Find a better method to wait for the client to be updated. Cafe  || What about WaitSignal in this thread combined with calling it as waitthread?
 
 		foreach( player in players )
 		{
@@ -4303,14 +4262,14 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		Survival_SetInventoryEnabled( player, true )
 		SetPlayerInventory( player, [] )
 
-		thread RechargePlayerAbilities( player )
+		RechargePlayerAbilities( player )
 
 		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"]
+		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"] //this should be const script var?
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
@@ -4859,12 +4818,23 @@ const array<int> LegendGUID_EnabledUltimates = [
 
 ]
 
-void function RechargePlayerAbilities( entity player )
+void function RechargePlayerAbilities( entity player, int index = -1 )
 {
 	if( !IsValid( player ) ){ return }
-
-	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-
+	
+	mAssert( index > -1 , "RechargePlayerAbilities() was changed to use character index instead of using waitforitemflavor. Comment this assert out if you dont want to change method in scenarios." )
+	
+	ItemFlavor character;
+	
+	if( index > -1 )
+	{
+		character = file.characters[characterslist[index]]
+	}
+	else 
+	{
+		character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	}
+	
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))
 	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
 	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )	
@@ -4887,7 +4857,7 @@ void function RechargePlayerAbilities( entity player )
 		*/
 	}
 
-	wait 0.5
+	//wait 0.5
 	
 	if( settings.is3v3Mode || LegendGUID_EnabledUltimates.contains( charID ) ) 
 	{

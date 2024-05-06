@@ -12,6 +12,7 @@ global function UICodeCallback_SmokeTestRunning
 global function AddUICallback_InputModeChanged
 global function AddUICallback_KeyBindSet
 global function AddUICallback_UIShutdown
+global function UICallback_AdminStatus
 
 global function SetShowingMap
 global function IsShowingMap
@@ -308,6 +309,8 @@ global struct UIGlobals
 	bool 	is1v1GameType
 	bool 	isAimTrainer
 	bool 	playlistbool_flowstate_1v1mode
+	
+	bool 	bIsServerAdmin = false
 }
 
 global UIGlobals uiGlobal
@@ -330,7 +333,8 @@ void function UICodeCallback_UIInit()
 
 	ShUtilityAll_Init()
 	LevelVarInit()
-	//AddUICallback_OnLevelInit(  )
+	
+	AddUICallback_OnLevelInit( ResetDefaults )
 
 	VPKNotifyFile( "media/intro_captions.txt" )
 	VPKNotifyFile( "cfg/startup.cfg" )
@@ -492,4 +496,32 @@ void function Load_Level_based_UIGlobals()
 	uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
 	uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
 	uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
+}
+
+void function UICallback_AdminStatus( bool status )
+{
+	uiGlobal.bIsServerAdmin = status
+}
+
+/* 
+void function RefreshAdminStatus()
+{
+	entity player = GetLocalClientPlayer()
+	thread( void function () : ( player )
+		{
+			EndSignal( player, "OnDestroy" )
+			
+			while( !IsFullyConnected() )
+				WaitFrame()
+			
+			RunClientScript("FS_RegisterAdmin" , player )
+		
+		}())
+} 
+*/
+
+void function ResetDefaults()
+{
+	uiGlobal.bIsServerAdmin = false
+	RunClientScript( "FS_Toggle_Mute", 0, false )
 }

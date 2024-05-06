@@ -774,8 +774,12 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "FS_BuildLocalizedTokenWithVariableString" ) //only for variable string
 	Remote_RegisterClientFunction( "FS_DisplayLocalizedToken", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "float", 0.0, 5000.0, 32 )
 
+	// Experiment
 	Remote_RegisterClientFunction( "FS_Toggle_Mute", "int", INT_MIN, INT_MAX, "bool" )
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
+	
+	// Client-side helper (not permissive)
+	RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	
 	if ( IsLobby())
 	{

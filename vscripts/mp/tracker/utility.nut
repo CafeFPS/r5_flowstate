@@ -37,6 +37,10 @@ global function truncate
 global function DEV_PrintTrackerWeapons
 global function GetTrackerWeaponIdentifierTable
 
+#if TRACKER && HAS_TRACKER_DLL
+	global function PrintMatchIDtoAll
+#endif
+
 //const
 global const int SQ_MAX_INT_32 = 2147483647;
 global const int SQ_MIN_INT_32 = -2147483647;
@@ -419,6 +423,7 @@ struct {
 		
 		if ( empty( admins_list ) ){ return }
 		
+		AddCallback_OnClientConnected( CheckAdmin_OnConnect )
 		
 		try 
 		{
@@ -2204,6 +2209,15 @@ entity function GetPlayerEntityByName( string name )
 	return p;
 }
 
+void function CheckAdmin_OnConnect( entity player )
+{
+	if( !IsValid( player ) ) 
+		return 
+	
+	if( IsTrackerAdmin( player.GetPlatformUID() ) ){}
+		player.SetPlayerNetBool( "IsAdmin", true )
+}
+
 bool function IsTrackerAdmin( string CheckPlayer )
 {
 	foreach ( Player, OID in player_admins) 
@@ -2348,21 +2362,14 @@ string function truncate( string str, int limit )
 
 void function printarray( array<string> args )
 {
-	try 
+	string test = "\n\n------ PRINT ARRAY ------\n\n"
+	
+	foreach( arg in args )
 	{
-		string test = "\n\n------ PRINT ARRAY ------\n\n"
-		
-		foreach( arg in args )
-		{
-			test += format( "	\"%s\", \n", arg )
-		}
-		
-		sqprint(test)
+		test += format( "	\"%s\", \n", arg )
 	}
-	catch(badType) //?how
-	{
-		sqprint("Error: " + badType )
-	}
+	
+	sqprint(test)
 }
 
 
@@ -2373,7 +2380,7 @@ bool function CheckRate( entity player )
 			
 	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
 	{
-		//Message( player, "COMMANDS COOLDOWN")
+		Message( player, "COMMANDS COOLDOWN")
 		return false
 	}
 	
@@ -2525,3 +2532,11 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	
 	return debug
 }
+
+#if TRACKER && HAS_TRACKER_DLL
+	void function PrintMatchIDtoAll()
+	{
+		string matchID = format( "\n\n Server stats enabled @ www.r5r.dev, \n round: %d - MatchID: %s \n ", GetCurrentRound(), SQMatchID() )
+		CenterPrintAll( matchID )
+	}	
+#endif

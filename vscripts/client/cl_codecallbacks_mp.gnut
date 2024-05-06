@@ -50,11 +50,11 @@ void function ClientCodeCallbacks_Init()
     RegisterSignal( "KillReplayEnded" )
 }
 
+
 void function ClientCodeCallback_OnLinkedButtonPairPressed( int binding )
 {
 	Ping_Interrupt()
 }
-
 
 void function ClientCodeCallback_HotDropImpactTimeChanged( entity player )
 {

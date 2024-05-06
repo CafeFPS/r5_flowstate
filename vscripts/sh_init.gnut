@@ -57,6 +57,9 @@ void function SV_CL_Init()
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
 	CodeCallbacksShared_Init()
+		#if SERVER 
+			CodeCallbacksCommon_Init()
+		#endif 
 	Flags_Init()
 	RemoteFunctions_Init_Begin()
 	ShGamepad_LevelInit()
@@ -219,7 +222,7 @@ void function SV_CL_Init()
 	Dev_RemoteFunctions_Init()
 	#endif
 
-	if( GetCurrentPlaylistName() == "fs_movementrecorder" )
+	if( Playlist() == ePlaylists.fs_movementrecorder )
 	{
 		Sh_FS_MovementRecorder_Init()
 	}

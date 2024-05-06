@@ -44,6 +44,8 @@ struct
 	table<var, ButtonData > OpenValkSimulatorSettingsData
 	table<var, ButtonData > LockCurrent1v1Enemy
 	table<var, ButtonData > ToggleRest
+	table<var, ButtonData > DestroyDummies
+	table<var, ButtonData > DestroyDummiesAdmin
 
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
@@ -152,6 +154,8 @@ void function InitSystemPanel( var panel )
 	file.OpenValkSimulatorSettingsData[ panel ] <- clone data
 	file.LockCurrent1v1Enemy[ panel ] <- clone data
 	file.ToggleRest[ panel ] <- clone data
+	file.DestroyDummies[ panel ] <- clone data
+	file.DestroyDummiesAdmin[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -222,6 +226,13 @@ void function InitSystemPanel( var panel )
 	file.ToggleRest[ panel ].label = "TOGGLE REST"
 	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
 	
+	file.DestroyDummies[ panel ].label = "Destroy Dummies"
+	file.DestroyDummies[ panel ].activateFunc = DestroyDummys_MovementRecorder
+	
+	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
+	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
+	
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -234,14 +245,14 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
-
 	UpdateOptInFooter()
 }
 
 
 void function UpdateSystemPanel( var panel )
 {	
-	entity player = GetLocalClientPlayer()
+	//entity player = GetLocalClientPlayer()
+	
 	//temp workaround, not the best place for this tbh
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
@@ -255,6 +266,8 @@ void function UpdateSystemPanel( var panel )
 	int buttonIndex = 0
 	if ( IsConnected() && !IsLobby() )
 	{
+		RunClientScript( "FS_RegisterAdmin" )
+		
 		UISize screenSize = GetScreenSize()
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
@@ -308,6 +321,15 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
+		}
+		if( Playlist() == ePlaylists.fs_movementrecorder )
+		{
+			SetButtonData( panel, buttonIndex++, file.DestroyDummies[ panel ] )
+			
+			if( uiGlobal.bIsServerAdmin )
+			{	
+				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
+			}
 		}
 
 		// if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
@@ -464,6 +486,16 @@ void function ToggleRest_1v1()
 	ClientCommand( "rest" )
 }
 
+void function DestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys" )
+}
+
+void function AdminDestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys Admin" )
+}
+
 #if CONSOLE_PROG
 void function ReturnToMain_OnActivate( var button )
 {
@@ -529,5 +561,6 @@ bool function ShouldShowDevMenu()
 	
 	return true
 }
+
 
 

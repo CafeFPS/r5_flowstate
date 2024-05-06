@@ -95,24 +95,86 @@ string function VM_NAME()
 	#endif
 }
 
-string function FUNC_NAME( int up = 0 )
+string function FUNC_NAME( int up = 0 ) //mkos~ this is required inorder to prevent null accessing of func in raw debug
 {
-	return string( getstackinfos( 2 + up ).func )
+	if( getstackinfos( 2 + up ) != null )
+	{
+		return string( getstackinfos( 2 + up ).func )
+	}
+	else 
+	{
+		int i = 2 + up;
+		
+		do
+		{
+			--i
+		}
+		while( getstackinfos( i ) == null || i <= 0 )
+		
+		if( i >= 0 )
+		{
+			return string( getstackinfos( i ).func )
+		}
+	}
+	
+	return "UnknownFunc"
 }
 
 string function FILE_NAME( int up = 0 )
 {
-	return string( getstackinfos( 2 + up ).src )
+	if( getstackinfos( 2 + up ) != null )
+	{
+		return string( getstackinfos( 2 + up ).src )
+	}
+	else 
+	{
+		int i = 2 + up;
+		
+		do
+		{
+			--i
+		}
+		while( getstackinfos( i ) == null || i <= 0 )
+		
+		if( i >= 0 )
+		{
+			return string( getstackinfos( i ).src )
+		}
+	}
+	
+	return "UnknownFile"
 }
 
-string function DBG_INFO()
+string function DBG_INFO( int up = 2 )
 {
+	var stackInfos
+	
+	if( getstackinfos( up ) != null )
+	{
+		stackInfos = getstackinfos( up ) 
+	}
+	else 
+	{
+		int i = up;
+		
+		do
+		{
+			--i
+		}
+		while( getstackinfos( i ) == null || i <= 0 )
+		
+		if( i >= 0 )
+		{
+			stackInfos = getstackinfos( i ) 
+		}
+	}
+	
 	string vmName   = VM_NAME()
-	var stackInfos  = getstackinfos( 2 )
+	//var stackInfos  = getstackinfos( up )
 	string fileName = expect string(stackInfos.src)
 	int lineNum  = expect int(stackInfos.line)
 	string funcName = expect string(stackInfos.func)
-	return "[" + VM_NAME() + ":" + fileName + ":" + lineNum + ":" + funcName + "]"
+	return "[ " + VM_NAME() + " ] :  FILE: " + fileName + "  LINE:" + lineNum + ":  FUNC: " + funcName + "() ]"
 }
 
 void function printt_spamLog( ... )

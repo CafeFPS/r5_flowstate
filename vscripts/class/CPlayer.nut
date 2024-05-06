@@ -350,7 +350,9 @@ function CodeCallback_RegisterClass_CPlayer()
 		
 		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
 		
-		printt( "Sent challenge as", player.p.relayChallengeCode )
+		#if DEVELOPER
+			printt( "Sent challenge as", player.p.relayChallengeCode )
+		#endif
 		
 		thread( void function() : ( player )
 		{

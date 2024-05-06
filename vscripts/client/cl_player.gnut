@@ -52,6 +52,7 @@ global function PlayerFieryDeath
 
 global function FS_Toggle_Mute
 global function FS_Silence
+global function FS_RegisterAdmin
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -1972,7 +1973,8 @@ void function FS_Toggle_Mute( int chal, bool toggle )
 		UpdateChatHUDVisibility()
 	}	
 	
-	player.ClientCommand(cmd)
+	if( chal != 0 )
+		player.ClientCommand(cmd)
 }
 
 void function FS_Silence( bool toggle, int eHandle )
@@ -1997,4 +1999,14 @@ void function FS_Silence( bool toggle, int eHandle )
 		}
 	}	
 
+}
+
+void function FS_RegisterAdmin()
+{	
+	entity player = GetLocalClientPlayer() 
+	
+	if( !IsValid( player ) || !player.IsPlayer() )
+		return 
+		
+	RunUIScript( "UICallback_AdminStatus", player.GetPlayerNetBool("IsAdmin") )	
 }

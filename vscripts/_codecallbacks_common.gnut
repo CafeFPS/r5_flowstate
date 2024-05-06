@@ -1,5 +1,7 @@
 untyped
 
+global function CodeCallbacksCommon_Init
+
 global function CodeCallback_DamageEntity
 global function HandleFootstepDamage
 global function CodeCallback_OnEntityKilled
@@ -171,6 +173,17 @@ struct
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
 } file
 
+struct 
+{
+	bool flowstate_spectator_team_only
+} settings
+
+
+void function CodeCallbacksCommon_Init()
+{
+	settings.flowstate_spectator_team_only = GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false )
+}
+
 entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
 {
 	if( !IsValid( observer ) )
@@ -188,7 +201,7 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 	#endif
 		
 	//Force teammate observer target when spec_next and spec_prev are used
-	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || Gamemode() == eGamemodes.SURVIVAL )
+	if( settings.flowstate_spectator_team_only || Gamemode() == eGamemodes.SURVIVAL )
 	{
 		int team = observer.GetTeam()
 		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
@@ -197,6 +210,11 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 				
 		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
 			players.removebyvalue( observer )
+			
+		#if TRACKER
+			if( players.contains( eMessageBot() ) )
+				players.fastremovebyvalue( eMessageBot() ) 
+		#endif 
 
 		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
 		{
