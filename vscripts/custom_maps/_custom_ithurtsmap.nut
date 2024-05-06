@@ -1,7 +1,8 @@
 untyped
 globalize_all_functions
 
-// Made by Loy. 
+// Code by: loy_ (Discord).
+// Map by: loy_ (Discord).
 
 void function ithurtsmap_precache() {
     PrecacheModel( $"mdl/beacon/construction_scaff_128_32.rmdl" )
