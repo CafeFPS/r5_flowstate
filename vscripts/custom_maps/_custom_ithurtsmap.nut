@@ -129,7 +129,7 @@ void function ithurtsmap_load() {
     prop = MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_03.rmdl", < 30064.12, 2648.303, 50227.2 >, < 90, -89.9992, 0 >, false, 50000, -1, 1 )
     prop.kv.solid = 3; prop.MakeInvisible()
     prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_frame_128_01.rmdl", < 35335, 6917.735, 52732.2 >, < 0, -179.9985, 0 >, true, 50000, -1, 1 )
-    prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 35335, 6798.035, 52980 >, < 90, -89.9985, 0 >, true, 50000, -1, 1 )
+    prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 35335, 6798.035, 52978 >, < 90, -89.9985, 0 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/firstgen/firstgen_pipe_128_darkcloth_01.rmdl", < 29951, 6463.002, 50426.5 >, < 0, -179.999, 90 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 35431, 5119, 51135.8 >, < 0, 90.0012, -179.9997 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/desertlands/city_steps_metal_grate_double_128_01.rmdl", < 35331.89, 8112.982, 51612.9 >, < 0, -179.9977, 0 >, true, 50000, -1, 1 )
@@ -175,7 +175,7 @@ void function ithurtsmap_load() {
     prop = MapEditor_CreateProp( $"mdl/slum_city/slumcity_fencewall_32x72_dirty.rmdl", < 33873.5, 8049.25, 50650.9 >, < -90, -89.9985, 0 >, false, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl", < 35396, 5530, 53223 >, < 0, 0, 0 >, false, 50000, -1, 1 )
     prop.kv.solid = 3
-    prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 35335.09, 7107.028, 52438 >, < 90, -89.9979, 0 >, true, 50000, -1, 1 )
+    prop = MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 35335.09, 7107.028, 52437 >, < 90, -89.9979, 0 >, true, 50000, -1, 1 )
     prop = MapEditor_CreateProp( $"mdl/beacon/construction_scaff_segment_128_64.rmdl", < 33727, 8119.986, 50545 >, < -90, 90.0018, 0 >, false, 50000, -1, 1 )
     prop.kv.solid = 3
     prop = MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl", < 35336.92, 7317.467, 51477.8 >, < 0, 90.0018, 0 >, true, 50000, -1, 1 )
