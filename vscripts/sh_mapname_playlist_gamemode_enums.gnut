@@ -193,16 +193,25 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		string level = uiGlobal.loadedLevel
 		
 			#if DEVELOPER
-				printt( "UI Mapname: ", level )
+				printt( "UI Mapname:", level )
 			#endif
 	#endif
 	
 		SH_globals.currentMap = getMapEnumFromName( level )
 		mAssert( SH_globals.currentMap != -1, format( "Current map \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", level ) )
 		
-		SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )	
-		mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
-
+		#if UI 
+			if( level != "" )
+			{
+		#endif
+			
+			SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )
+			mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
+		
+		#if UI 
+			}
+		#endif 
+	
 	
 	#if SERVER || CLIENT	
 		int currentGamemodeEnum = getGamemodeEnumFromName( GameRules_GetGameMode() )
@@ -453,7 +462,7 @@ void function ErrorClientPlayer( string errorMsg )
 void function WaitValidPlayerThenError( entity player, string errorMsg )
 {
 	GetLocalClientPlayer().ClientCommand("disconnect " + errorMsg )
-	WaitSignalOrTimeout( player, 2, "_disconnectedInternal" )	
+	waitthread WaitSignalOrTimeout( player, 2, "_disconnectedInternal" )	
 	RunUIScript( "OpenErrorDialog", errorMsg )
 }
 #endif

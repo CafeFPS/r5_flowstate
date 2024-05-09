@@ -40,20 +40,20 @@ playlists
 				use_global_stats								1
 
 				// restricted servers	
-				restricted_server 0			// 1 = restrictions enabled
-				restricted_join_message "Welcome to the R5R.DEV elite server. \n\n You meet the minimum requirements to play on this server."
-				restricted_whitelist_message "You're whitelisted for the R5R.DEV elite server"
-				restricted_kills 500		// minimum kills required to play
-				restricted_kd 0.7  			// minimum kd ratio
-				restricted_playtime 10000 	// minimum play time in seconds
-				restricted_gamesplayed 10 // minimum games played
-				restricted_rank 200  		//minimum rank allowed to join	
-				restricted_kick_log 1
+				restricted_server 				1			// 1 = restrictions enabled
+				restricted_join_message 		"Welcome to the R5R.DEV elite server. \n\n You meet the minimum requirements to play on this server."
+				restricted_whitelist_message 	"You're whitelisted for the R5R.DEV elite server"
+				restricted_kills 				500		// minimum kills required to play
+				restricted_kd 					0.7  			// minimum kd ratio
+				restricted_playtime 			10000 	// minimum play time in seconds
+				restricted_gamesplayed 			10 // minimum games played
+				restricted_rank 				200  		//minimum rank allowed to join	
+				restricted_kick_log 			1
 					
 					
-				//ADMINS for cc command
+				//ADMINS for cc command (reccomended to list in r5r.dev_config file if has tracker dll)
 				// usage: "adminname-oid,anotheradmin-oid"	
-				admins_list ""		
+				admins_list "R5mkos-1007946891142"		
 				stats_discord_webhook_player_count		0 // Sends player join and disconnect data to a discord channel
 				stats_discord_webhook_matches_enabled	0
 				
@@ -526,6 +526,8 @@ playlists
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_limit_playback_per_slot_amount		-1	//-1 for unlimited (up to server limit)		
 			}
 			gamemodes { survival { maps {
 				mp_rr_party_crasher                     		1
@@ -1509,7 +1511,7 @@ playlists
 				flowstateAutoChangeLevelEnable			1
 				flowstateRoundsBeforeChangeLevel		2
 				
-				flowstateAdminTgive 					0 // 1 will enable dev menu weapons for players
+				flowstateAdminTgive 					0 // 0 will enable dev menu weapons for players
 				flowstate1v1MatchLoadout					0
 				
 				flowstate_disable_all_map_triggers									1
@@ -1521,6 +1523,13 @@ playlists
 				/////////////////////////
 				// mkos added features //
 				/////////////////////////
+				
+				enable_motd 		1  
+				use_online_motd 	0  // 1 for online, 0 for local		
+				
+				// for local motd:
+				custom_MOTD "var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
+				
 				
 				COMMAND_RATE_LIMIT						0.200 //Rate limiting for all custom client commands
 				
@@ -2986,6 +2995,8 @@ playlists
 				lsm_mod8 0 //final ring closing in player 0 pos
 				lsm_mod9 0 // all loot is mozambique
 				lsm_mod10 1
+				
+				
 				
 			}
 			gamemodes { survival { maps {

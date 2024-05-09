@@ -179,8 +179,8 @@ struct {
 								}
 								
 								p_input = l_player.p.input > 0 ? "Controller" : "MnK"; 
-								kills = l_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
-								deaths = l_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								kills = l_player.p.season_kills + player.GetPlayerNetInt( "kills" )
+								deaths = l_player.p.season_deaths + player.GetPlayerNetInt( "deaths" )
 								l_name = l_player.GetPlayerName()
 								l_oid = l_player.GetPlatformUID()
 								l_wait = l_player.p.IBMM_grace_period
@@ -195,9 +195,9 @@ struct {
 								data += "Input:  " + p_input + stringHandicap + "\n"; 
 								data += "wait time:  " + l_wait.tostring() + "\n"; 
 								data += GetScore(l_player) + "\n";
-								data += "Season playtime: " + PlayTime(l_player.p.lifetime_playtime) + "\n";
-								data += "Season games: " + l_player.p.lifetime_gamesplayed + "\n";
-								data += "Season score: " + l_player.p.lifetime_score;
+								data += "Season playtime: " + PlayTime(l_player.p.season_playtime) + "\n";
+								data += "Season games: " + l_player.p.season_gamesplayed + "\n";
+								data += "Season score: " + l_player.p.season_score;
 								
 								if( (inputmsg.len() + data.len()) > 599 )
 								{
@@ -293,8 +293,8 @@ struct {
 						
 							foreach ( active_player in GetPlayerArray() )
 							{
-								kills = active_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
-								deaths = active_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								kills = active_player.p.season_kills + player.GetPlayerNetInt( "kills" )
+								deaths = active_player.p.season_deaths + player.GetPlayerNetInt( "deaths" )
 								
 								if (deaths > 0) 
 								{
@@ -367,7 +367,7 @@ struct {
 					try 
 					{
 						
-						data += format("\n\n %s ", SQMatchID() );
+						data += format("\n\n %s ", SQMatchID__internal() );
 								
 						if( (inputmsg.len() + data.len()) > 599 )
 						{	
@@ -407,7 +407,7 @@ struct {
 		string pair;
 		
 		#if TRACKER && HAS_TRACKER_DLL
-			admins_list = SQ_GetSetting("settings.ADMINS")
+			admins_list = SQ_GetSetting__internal("settings.ADMINS")
 		#endif
 		
 		if( admins_list != "" )
@@ -656,11 +656,9 @@ struct {
 								EmitSoundOnEntityOnlyToPlayer( player, player, args[1] )	
 							} 
 							catch ( erra )
-							{
-									
+							{			
 								Message(player, "Failed", "Command failed because of: \n\n " + erra )
-								return false
-									
+								return false	
 							}
 							
 							return true
@@ -671,7 +669,6 @@ struct {
 							
 							foreach (connected_player in GetPlayerArray())
 							{
-							
 								try 
 								{
 									EmitSoundOnEntityOnlyToPlayer( connected_player, connected_player, args[1] )
@@ -692,8 +689,8 @@ struct {
 			case "stopplayall":
 						
 							
-							foreach (connected_player in GetPlayerArray()){
-							
+							foreach (connected_player in GetPlayerArray())
+							{					
 								try 
 								{
 									StopSoundOnEntity( connected_player, args[1] )
@@ -704,7 +701,6 @@ struct {
 									Message(player, "Failed", "Command failed because of: \n\n " + errb )
 									return false
 								}
-							
 							}
 
 							return true
@@ -722,7 +718,6 @@ struct {
 							
 							foreach ( say_to_player in GetPlayerArray())
 							{
-							
 								try	
 								{	
 									Message( say_to_player, param, param2, param3.tofloat())	
@@ -742,7 +737,6 @@ struct {
 							{			
 								param4 = "3"		
 							} 	
-							
 								try	
 								{	
 									entity to_player = GetPlayer(param)	
@@ -762,20 +756,17 @@ struct {
 									Message(player, "Failed", "Command failed because of: \n\n " + errst )			
 								}
 
-					
 							return true
 			case "ban":
-							
-							
-							if ( args.len() < 2 ){
-						
+									
+							if ( args.len() < 2 )
+							{		
 								Message( player, "Failed", "Command 'ban' requires name/id for 1st param of command" )
 								return false
 							}			
 							
 							try 
 							{		
-							
 								entity b_player;
 								string b_playeroid;
 								string b_reason = param2;	
@@ -801,12 +792,10 @@ struct {
 								UpdatePlayerCounts()
 								
 								Message( player, "Success", "Player: " + param + "\n\n was banned for: \n\n" + b_reason )
-								return true
-								
+								return true		
 							} 
 							catch ( erre )
 							{
-							
 								Message(player, "Failed", "Command failed because of: \n\n " + erre )
 								return false
 							}
@@ -825,7 +814,6 @@ struct {
 
 							try 
 							{
-								
 								if ( IsTrackerAdmin(param) )
 								{		
 									Message( player, "Failed", param + " is an admin. Ban rejected.", 10 )
@@ -868,54 +856,46 @@ struct {
 			
 					
 					
-						if ( args.len() < 2 ){
-						
+						if ( args.len() < 2 )
+						{		
 							Message( player, "Failed", "Command 'unban' requires id for 1st param of command as string" )
-							return false
-						
+							return false	
 						}
 						
-						try {
+						try 
+						{
+							UnbanPlayer( args[1])					
+							Message( player, "Success", "ID: " + args[1] + " was supposedly unbanned" )				
+							return true
+								
+						} 
+						catch ( erre )
+						{	
+							Message(player, "Failed", "Command failed because of: \n\n " + erre )
+							return false
+						}
 						
-								UnbanPlayer( args[1])
-								
-								Message( player, "Success", "ID: " + args[1] + " was supposedly unbanned" )
-								
-								return true
-								
-							} catch ( erre ){
-							
-								Message(player, "Failed", "Command failed because of: \n\n " + erre )
-								return false
-							}
-					
-						
-					
 						return true;
-						
-						
-						
+								
 			case "playerinfo":
 			
-						try {
-							
+						try 
+						{				
 							string nputmsg = "Current Stats:"
 							
 							string info = PrintAllPlayerMetrics(true);
 							
 							if( (nputmsg.len() + info.len()) > 599 )
 							{
-						
 								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
 								return true;
-						
 							}
 							
 							Message( player, nputmsg, LineBreak(info), 20);
-							return true;
-						
-						} catch (errf){
-							
+							return true;	
+						} 
+						catch (errf)
+						{	
 							Message( player, "Failed", "Command failed because of: \n\n " + errf )
 							return false;
 						}
@@ -972,15 +952,14 @@ struct {
 						
 			case "playerinput":
 						
-						if ( args.len() < 1){
-						
+						if ( args.len() < 1)
+						{	
 							Message( player, "Failed", "Param 1 of command 'playerinput' requires player name/oid.")
-							return true
-							
+							return true		
 						}
 						
-						try {
-							
+						try 
+						{		
 							entity a_player;
 							string mode;
 							
@@ -991,18 +970,17 @@ struct {
 								Message( player, "Failed", "Player: " + param + " -- is invalid" );
 								return true
 							}
-					
 							
 							mode = a_player.p.input == 0 ? "Mouse and keyboard" : "Controller";
 							
 							Message( player, "Success: ", "Current inputmode: " + mode );
 							return true
 							
-						} catch (errh) {
-							
+						} 
+						catch (errh) 
+						{		
 							Message( player, "Failed", "Command failed because of: \n\n " + errh )
-							return true
-							
+							return true		
 						}
 					
 					return true
@@ -1010,64 +988,61 @@ struct {
 						
 			case "input":	
 
-						if ( args.len() < 1){
-						
+						if ( args.len() < 1)
+						{		
 							Message( player, "Failed", "Param 1 of command 'input' requires player name/oid.")
-							return true
-							
+							return true		
 						}
 						
 						
-						if ( args.len() < 2){
-						
+						if ( args.len() < 2)
+						{	
 							Message( player, "Failed", "Param 2 of command 'input' requires type 0/1.")
-							return true
-							
+							return true		
 						}
 								
-						try {	
-						
-								string str = args[2]
-								string a_str = str;
-								
-								if (str == "false"){ a_str = "0" }
-								if (str == "true"){ a_str = "1" }
-								if (str == "mnk" ){ a_str = "0" }
-								if (str == "controller" ) { a_str = "1" }
-								
-								if ( !Is_Bool(a_str) ){
-								
-									Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
-									return false;
-								
-								}
-								
-								entity select_player =  GetPlayer( param )
-								
-								if ( !IsValid(select_player) )
-								{
-									Message( player, "Failed", "Player: " + param + " - is invalid. ")
-									return true;
-								}
-								
-								select_player.p.input = a_str.tointeger();
-								
-								string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
-								
-								Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
+						try 
+						{	
+							string str = args[2]
+							string a_str = str;
+							
+							if (str == "false"){ a_str = "0" }
+							if (str == "true"){ a_str = "1" }
+							if (str == "mnk" ){ a_str = "0" }
+							if (str == "controller" ) { a_str = "1" }
+							
+							if ( !Is_Bool(a_str) )
+							{	
+								Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
+								return false;	
+							}
+							
+							entity select_player =  GetPlayer( param )
+							
+							if ( !IsValid(select_player) )
+							{
+								Message( player, "Failed", "Player: " + param + " - is invalid. ")
 								return true;
+							}
+							
+							select_player.p.input = a_str.tointeger();
+							
+							string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
+							
+							Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
+							return true;
 						
-						} catch (errj) {
-						
+						} 
+						catch (errj) 
+						{		
 							Message( player, "Failed", "Command failed because of: \n\n " + errj )
 							return false;
-						
 						}
 						
 			case "listhandles":
 						
-						try {
-						
+						try 
+						{
 							string statement = "\n ";
 							
 							foreach ( list_player in GetPlayerArray() )
@@ -1075,8 +1050,7 @@ struct {
 								int handle = list_player.GetEncodedEHandle()
 								string p_name = list_player.GetPlayerName()
 								
-								statement += " Player: " + p_name + "   Handle: " + handle + "\n";
-								
+								statement += " Player: " + p_name + "   Handle: " + handle + "\n";	
 							}
 							
 							sqprint(statement);
@@ -1084,11 +1058,11 @@ struct {
 							
 							return true;
 						
-						} catch (errk) {
-						
+						} 
+						catch (errk) 
+						{
 							Message( player, "Failed", "Command failed because of: \n\n " + errk )
-							return true;
-						
+							return true;		
 						}
 						
 					return true
@@ -1109,42 +1083,32 @@ struct {
 					
 			case "score":
 			
-						if ( args.len() < 1){
-							
-								Message( player, "Info", "Param 1 of command 'score' requires player name/oid/*/current/lifetime/difference. \n\n Usage: score player | score * | score current")
-								return true
-								
+						if ( args.len() < 1)
+						{		
+							Message( player, "Info", "Param 1 of command 'score' requires player name/oid/*/current/season/difference. \n\n Usage: score player | score * | score current")
+							return true			
 						}
 						
 						if ( param == "current" )
-						{
-							
+						{	
 							Message( player, "Success", "'Current KD' server weight setting is:   " + getSbmmSetting( "current_kd_weight" ) )
-							return true
-							
+							return true		
 						}
-						else if ( param == "lifetime" )
-						{
-							
-							Message( player, "Success", "'lifetime KD' server weight setting is:   " + getSbmmSetting( "lifetime_kd_weight" ) )
+						else if ( param == "season" )
+						{	
+							Message( player, "Success", "'season KD' server weight setting is:   " + getSbmmSetting( "season_kd_weight" ) )
 							return true
-						
 						}
 						else if ( param == "difference" )
-						{
-							
+						{	
 							Message( player, "Success", "'KD matchmaking difference' server setting is:   " + getSbmmSetting( "SBMM_kd_difference" ) )
 							return true
-						
 						}
 					
 						if ( param == "*")
-						{
-							
-							
+						{			
 							try 
 							{
-							
 								string putmsg = "Success";
 								string s_data;
 								
@@ -1153,31 +1117,26 @@ struct {
 									if ( !IsValid( score_player ) ) continue
 									
 									s_data += GetScore( score_player ) + "\n";
-							
 								}
 								
 								if( ( putmsg.len() + s_data.len() ) > 599 )
-								{
-							
+								{	
 									Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
 									return true;
-							
 								}
-							
 							
 								Message( player, putmsg, s_data, 20 );
 							
-							} catch (errallscore) {
-							
+							}
+							catch (errallscore) 
+							{
 								Message( player, "Failed", "Command failed because of: \n\n " + errallscore )
 								return true;
-							
 							}
 						
 						}
 						else
 						{
-						
 							entity s_player;
 									
 							s_player = GetPlayer( param )
@@ -1190,16 +1149,12 @@ struct {
 							
 							try 
 							{
-							
-								Message( player, "Success", GetScore( s_player ) );
-							
+								Message( player, "Success", GetScore( s_player ) );		
 							} 
 							catch (errscore) 
 							{
-							
 								Message( player, "Failed", "Command failed because of: \n\n " + errscore )
-								return true;
-							
+								return true;			
 							}
 						
 						}
@@ -1210,7 +1165,7 @@ struct {
 			
 						if ( args.len() < 2)
 						{
-							Message( player, "Failed", "Param 1 of command 'scoreconfig' requires type: current/lifetime/difference.")
+							Message( player, "Failed", "Param 1 of command 'scoreconfig' requires type: current/season/difference.")
 							return true
 						}
 						
@@ -1222,8 +1177,8 @@ struct {
 						
 						
 						
-						try {
-						
+						try 
+						{			
 							if ( !IsFloat( param2 ) )
 							{
 								Message( player, "Failed", "param 3 of command 'scoreconfig' must be numeric type float, \n\n example: 0.8 --            '" + param2 + "' was provided" )
@@ -1231,37 +1186,30 @@ struct {
 							}
 							
 							if ( param == "current" )
-							{
-							
-								setSbmmSetting( "current_kd_weight", param2.tofloat() )
-							
+							{	
+								setSbmmSetting( "current_kd_weight", param2.tofloat() )		
 							}
-							else if ( param == "lifetime" )
-							{
-							
-								setSbmmSetting( "lifetime_kd_weight", param2.tofloat() )
-							
+							else if ( param == "season" )
+							{		
+								setSbmmSetting( "season_kd_weight", param2.tofloat() )				
 							}
 							else if ( param == "difference" )
-							{
-							
-								setSbmmSetting( "SBMM_kd_difference", param2.tofloat() )
-							
+							{	
+								setSbmmSetting( "SBMM_kd_difference", param2.tofloat() )	
 							}
 							else
 							{
 								Message( player, "Failed", "Invalid scoreconfig type: " + param )
 								return true
-							}
-							
+							}	
 							
 							Message( player, "Success", "Weight for " + param + " KD -- was set to: " + param2 , 5 );
 						
-						} catch (errsetweight) {
-						
+						} 
+						catch (errsetweight) 
+						{
 							Message( player, "Failed", "Command failed because of: \n\n " + errsetweight )
-							return true;
-						
+							return true;			
 						}
 						
 					return true
@@ -1269,7 +1217,7 @@ struct {
 			case "cleanuplogs":
 				
 					#if TRACKER && HAS_TRACKER_DLL	
-						CleanupLogs() //sdk function 
+						CleanupLogs__internal()
 					#endif
 							
 						return true
@@ -1277,7 +1225,7 @@ struct {
 			case "reload_config":
 			
 					#if TRACKER && HAS_TRACKER_DLL	
-						SQ_ReloadConfig() //sdk function
+						SQ_ReloadConfig__internal()
 					#endif
 						
 						return true
@@ -1296,7 +1244,7 @@ struct {
 						try 
 						{	
 							string return_str = "";
-							return_str = SQ_GetSetting(param);	
+							return_str = SQ_GetSetting__internal(param);	
 							
 							Message( player, param + ":", return_str)
 							return true
@@ -1628,7 +1576,7 @@ struct {
 				entity p = GetPlayer( param )				
 				if( !IsValid(p) ){ return true }	
 				ToggleMuteForAll( p, true )
-				LocalMsg( p, "#FS_MUTED", "", 0, 5, "", param2 )
+				LocalMsg( p, "#FS_MUTED", "", eMsgUI.DEFAULT, 5, "", param2 )
 				
 				return true
 			
@@ -1646,9 +1594,12 @@ struct {
 				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 				return true
 				
-				
-			default:
+			case "gamerules":
 			
+				//TODO: mini framework for parsing valid map/playlist combos
+				//CreateServer("","","mp_rr_desertlands_64k_x_64k","fs_survival_solos", 0)		
+				
+			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;
 		}
@@ -2411,7 +2362,7 @@ array<string> function GetPlaylistMaps( PlaylistName playlistName )
 
 	return mapsArray
 }
-#endif
+#endif //SERVER
 
 int function WeaponToIdentifier( string weaponName )
 {
@@ -2420,9 +2371,9 @@ int function WeaponToIdentifier( string weaponName )
 		string err = format( "#^ Unknown weaponName !DEBUG IT! -- weapon: %s", weaponName )
 		
 		#if TRACKER && HAS_TRACKER_DLL
-			if( bLog() && isLogging() )
+			if( bLog() && isLogging__internal() )
 			{
-				LogEvent( err, bEnc() )
+				LogEvent__internal( err, bEnc() )
 			}
 		#endif
 		
@@ -2536,7 +2487,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 #if TRACKER && HAS_TRACKER_DLL
 	void function PrintMatchIDtoAll()
 	{
-		string matchID = format( "\n\n Server stats enabled @ www.r5r.dev, \n round: %d - MatchID: %s \n ", GetCurrentRound(), SQMatchID() )
+		string matchID = format( "\n\n Server stats enabled @ www.r5r.dev, \n round: %d - MatchID: %s \n ", GetCurrentRound(), SQMatchID__internal() )
 		CenterPrintAll( matchID )
 	}	
 #endif

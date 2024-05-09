@@ -46,6 +46,7 @@ struct
 	table<var, ButtonData > ToggleRest
 	table<var, ButtonData > DestroyDummies
 	table<var, ButtonData > DestroyDummiesAdmin
+	table<var, ButtonData > OpenWeaponsMenu
 
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
@@ -111,7 +112,13 @@ void function SetHunterFunct()
 
 void function OpenWeaponSelector()
 {
+	var menu = GetMenu("FRChallengesSettingsWpnSelector")
+	var child = Hud_GetChild( menu , "Title" )
+	Hud_SetColor( menu, 255, 255, 0, 255 )
+	thread FancyLabelFadeIn( menu, child, 200, 1000, true, .40, false, 0, "", false )
+	Hud_SetColorBG( menu, 0, 0, 0, 0 )		
 	RunClientScript("OpenTDMWeaponSelectorUI")
+	thread PulsateElem( menu, child, 255, 25, 2.0 )
 }
 
 void function InitSystemPanel( var panel )
@@ -156,6 +163,7 @@ void function InitSystemPanel( var panel )
 	file.ToggleRest[ panel ] <- clone data
 	file.DestroyDummies[ panel ] <- clone data
 	file.DestroyDummiesAdmin[ panel ] <- clone data
+	file.OpenWeaponsMenu[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -232,6 +240,9 @@ void function InitSystemPanel( var panel )
 	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
 	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
 	
+	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
+	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
+	
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -282,6 +293,7 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 

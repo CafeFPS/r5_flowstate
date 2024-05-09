@@ -4383,7 +4383,9 @@ void function PrintFirstPersonSequenceStruct( FirstPersonSequenceStruct fpsStruc
 
 void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "" )
 {
-	Assert( IsValid( ent ) )
+	//Assert( IsValid( ent ) )
+	if( !IsValid( ent ) )
+		return
 
 	ent.EndSignal( signal1 )
 
@@ -4394,6 +4396,10 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 		ent.EndSignal( signal3 )
 
 	wait( timeout )
+	
+	#if DEVELOPER
+		Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, func: %s", signal1, signal2, signal3, FUNC_NAME( 3 ) ) )
+	#endif 
 }
 
 void function AddWaitMultipleSignal( table signalTable, string signalToWait, string signalToReturn )

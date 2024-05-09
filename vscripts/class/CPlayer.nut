@@ -7,6 +7,8 @@ global function IsDemigod
 global function EnableDemigod
 global function DisableDemigod
 global function ToggleMute
+global function CommandsEnabled
+global function IsCommandsEnabled
 
 int __nextInputHandle = 0
 
@@ -41,13 +43,14 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.watchingKillreplayEndTime <- 0.0
 	CPlayer.cloakedForever <- false
 	CPlayer.stimmedForever <- false
+	CPlayer.ClientCommandsEnabled <- true
 
 	RegisterSignal( "CleanUpPlayerAbilities" )
 	RegisterSignal( "ChallengeReceived" )
 	RegisterSignal( "InputChanged" )
 	RegisterSignal( "OnRespawnPlayer" )
 	RegisterSignal( "NewViewAnimEntity" )
-	RegisterSignal( "PlayerDisconnected" )
+	RegisterSignal( "OnDisconnected" )
 
 	function CPlayer::constructor()
 	{
@@ -160,7 +163,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	function CPlayer::Disconnected()
 	{
 		this.Signal( "_disconnectedInternal" )
-		svGlobal.levelEnt.Signal( "PlayerDisconnected" )
+		svGlobal.levelEnt.Signal( "OnDisconnected" )
 
 		if ( HasSoul( expect entity( this ) ) )
 		{
@@ -347,6 +350,7 @@ function CodeCallback_RegisterClass_CPlayer()
 		player.p.bTextmute = expect bool ( toggle )
 		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
 		player.p.bRelayChallengeState = false
+		player.p.ratelimit = 0
 		
 		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
 		
@@ -356,8 +360,8 @@ function CodeCallback_RegisterClass_CPlayer()
 		
 		thread( void function() : ( player )
 		{
-			EndSignal( player, "OnDestroy" )
-			WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
+			EndSignal( player, "OnDestroy", "OnDisconnected" )
+			waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
 			
 			if( !IsValid( player ) ){ return }
 			
@@ -368,6 +372,26 @@ function CodeCallback_RegisterClass_CPlayer()
 			}
 		}())
 	}
+	
+	function CPlayer::CommandsEnabled( toggle )
+	{
+		this.ClientCommandsEnabled = expect bool ( toggle )
+	}
+	
+	function CPlayer::IsCommandsEnabled()
+	{
+		return this.ClientCommandsEnabled
+	}
+}
+
+bool function IsCommandsEnabled( entity player )
+{
+	return bool ( player.IsCommandsEnabled() )
+}
+
+void function CommandsEnabled( entity player, bool toggle )
+{
+	player.CommandsEnabled( toggle )
 }
 
 void function PlayerDropsScriptedItems( entity player )

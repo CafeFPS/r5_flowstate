@@ -1,7 +1,7 @@
 //Flowstate 1v1 gamemode
 //made by __makimakima__
 //integrated and maintained by @CafeFPS
-//redesigned by mkos [r5r.dev stats system/ibmm/sbmm]
+//redesigned by mkos + [r5r.dev stats system/ibmm/sbmm]
 
 global const INVALID_ACCESS_DEBUG = false
 
@@ -131,9 +131,9 @@ global array <soloLocStruct> soloLocations //all respawn location stored here
 array <string> custom_weapons_primary = [] 
 array <string> custom_weapons_secondary = [] 
 
-struct {
-
-	float lifetime_kd_weight
+struct 
+{
+	float season_kd_weight
 	float current_kd_weight
 	float SBMM_kd_difference
 	
@@ -156,12 +156,14 @@ struct {
 	table<int,entity> acceptedChallenges //(player handle challenger -> player challenged )
 	
 	array<ItemFlavor> characters
+	int minLegendRange = 0
+	int maxLegendRange = 10
 
 } file
 
 
-struct {
-
+struct 
+{
 	int ibmm_wait_limit = 30
 	float default_ibmm_wait = 0
 	bool enableChallenges = false
@@ -173,6 +175,8 @@ struct {
 	bool bNoCustomWeapons = false
 	bool is3v3Mode
 	string MOTD = ""
+	float roundTime
+	bool bAllowWeaponsMenu
 	
 } settings
 
@@ -297,8 +301,8 @@ float function getSbmmSetting( string setting )
 {
 	switch(setting)
 	{
-		case "lifetime_kd_weight":
-			return file.lifetime_kd_weight
+		case "season_kd_weight":
+			return file.season_kd_weight
 		case "current_kd_weight":
 			return file.current_kd_weight
 		case "SBMM_kd_difference":
@@ -315,8 +319,8 @@ bool function setSbmmSetting( string setting, float value )
 {
 	switch(setting)
 	{
-		case "lifetime_kd_weight":
-			file.lifetime_kd_weight = value
+		case "season_kd_weight":
+			file.season_kd_weight = value
 			return true
 			
 		case "current_kd_weight":
@@ -365,6 +369,8 @@ void function INIT_PlaylistSettings()
 	settings.is3v3Mode								= Playlist() == ePlaylists.fs_scenarios
 	settings.bNoCustomWeapons						= GetCurrentPlaylistVarBool( "custom_weapons_challenge_only", false )
 	settings.MOTD									= GetCurrentPlaylistVarString( "custom_MOTD", "Welcome to my server" )
+	settings.roundTime								= float ( FlowState_RoundTime() )
+	settings.bAllowWeaponsMenu						= !FlowState_AdminTgive()
 }
 
 bool function isCustomWeaponAllowed()
@@ -423,18 +429,23 @@ string function GetScore( entity player )
 		return "INVALID_PLAYER";
 	}
 	
-	float lt_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.lifetime_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.lifetime_deaths) )
+	float lt_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.season_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.season_deaths) )
 	float cur_kd = getkd( player.GetPlayerNetInt( "kills" ) , player.GetPlayerNetInt( "deaths" )  )
-	float score = (  ( lt_kd * file.lifetime_kd_weight ) + ( cur_kd * file.current_kd_weight ) )
+	float score = (  ( lt_kd * file.season_kd_weight ) + ( cur_kd * file.current_kd_weight ) )
 	string name = player.p.name	
 	
-	return format("Player: %s, Lifetime KD: %.2f, Current KD: %.2f, Round Score: %.2f ", name, lt_kd, cur_kd, score )
+	return format("Player: %s, season KD: %.2f, Current KD: %.2f, Round Score: %.2f ", name, lt_kd, cur_kd, score )
 }
 
 void function INIT_1v1_sbmm()
 {
-
-	//convert strings from playlist into array and add to array memory structure -- mkos
+	#if TRACKER && HAS_TRACKER_DLL
+		if( bGlobalStats() )
+		{
+			AddCallback_PlayerDataFullyLoaded( INIT_playerChallengesStruct )
+		}
+	#endif 
+	//convert strings from playlist into array and add to script -- mkos
 	if ( Playlist_1v1_Primary_Array() != "" )
 	{	
 		
@@ -443,7 +454,7 @@ void function INIT_1v1_sbmm()
 		try 
 		{	
 			#if DEVELOPER 
-			sqprint("Checking: custom_weapons_primary")
+				sqprint("Checking: custom_weapons_primary")
 			#endif
 			
 			custom_weapons_primary = StringToArray( concatenate )
@@ -479,7 +490,7 @@ void function INIT_1v1_sbmm()
 		try 
 		{	
 			#if DEVELOPER 
-			sqprint("Checking: custom_weapons_secondary")
+				sqprint("Checking: custom_weapons_secondary")
 			#endif
 			custom_weapons_secondary = StringToArray( concatenate )
 			
@@ -510,14 +521,14 @@ void function INIT_1v1_sbmm()
 	//initialize defaults for SBMM
 	if ( bGlobalStats() )
 	{
-		file.lifetime_kd_weight = GetCurrentPlaylistVarFloat( "lifetime_kd_weight", 0.90 )
+		file.season_kd_weight = GetCurrentPlaylistVarFloat( "season_kd_weight", 0.90 )
 		file.current_kd_weight = GetCurrentPlaylistVarFloat( "current_kd_weight", 1.3 )
 		file.SBMM_kd_difference = GetCurrentPlaylistVarFloat( "kd_difference", 1.5 )
 	} 
 	else
 	{
 		//base values
-		file.lifetime_kd_weight = 1
+		file.season_kd_weight = 1
 		file.current_kd_weight = 1
 		file.SBMM_kd_difference = 3	
 	}
@@ -673,11 +684,11 @@ void function addGroup(soloGroupStruct newGroup)
 			{
 				file.playerToGroupMap[newGroup.player1.p.handle] <- newGroup;
 				#if DEVELOPER
-				sqprint(format("player 1 added to group: %s", newGroup.player1.p.name ))
+					sqprint(format("player 1 added to group: %s", newGroup.player1.p.name ))
 				#endif
 				file.playerToGroupMap[newGroup.player2.p.handle] <- newGroup;
 				#if DEVELOPER
-				sqprint(format("player 2 added to group: %s", newGroup.player2.p.name ))
+					sqprint(format("player 2 added to group: %s", newGroup.player2.p.name ))
 				#endif
 			}
 			else 
@@ -836,21 +847,13 @@ bool function isPlayerInWaitingList(entity player)
 // lg_duel mkos
 bool function return_rest_state( entity player )
 {
-	if(!IsValid (player) )
-	{	
-		#if DEVELOPER
-		sqprint("return_rest_state entity was invalid")
-		#endif
-		return false 
-	}
+	if( !IsValid (player) || !g_bIs1v1  )
+		return false
 	
-	if ( !g_bIs1v1 ) return false
+	if ( isPlayerInRestingList( player ) )
+		return true
 	
-	if (isPlayerInRestingList( player ))
-	{
-		return true;
-	}
-	return false;
+	return false
 }
 
 bool function isPlayerInRestingList( entity player )
@@ -895,7 +898,14 @@ void function addSoloPlayerResting( entity player )
 	
 	try 
 	{
-		file.soloPlayersResting[player.p.handle] <- true
+		if( player.p.handle in file.soloPlayersResting )//TODO: init oncon and use =
+		{
+			file.soloPlayersResting[player.p.handle] = true
+		} 
+		else 
+		{
+			file.soloPlayersResting[player.p.handle] <- true
+		}
 	}
 	catch(e)
 	{
@@ -913,7 +923,7 @@ void function deleteWaitingPlayer( int handle )
 	}
 }
 
-void function AddPlayerToWaitingList(soloPlayerStruct playerStruct) 
+void function AddPlayerToWaitingList( soloPlayerStruct playerStruct ) 
 {
 	try 
 	{
@@ -923,7 +933,7 @@ void function AddPlayerToWaitingList(soloPlayerStruct playerStruct)
 		}
 		else 
 		{
-			if( IsValid(playerStruct.player) )
+			if( IsValid( playerStruct.player ) )
 			{
 				file.soloPlayersWaiting[playerStruct.player.p.handle] <- playerStruct
 			}
@@ -1032,7 +1042,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			if( args.len() < 2 )
 			{
 				//Message( player, "CHALLENGES", "\n\n\n/chal [playername/id] -challenges a player to 1v1\n/chal player -challenges current fight player\n/accept [playername/id] -accepts a specific challenge or the most recent if none specified\n/list -incoming challenges\n/outlist -outgoing challenges\n/end -ends and removes current challenge\n/remove [playername/id] -removes challenge from list\n/clear -clears all incoming challenges\n/revoke [playername/id/all] -Revokes a challenge sent to a player or all players\n/cycle -random spawn\n/swap -random side of spawn\n/legend -choose legend by number or name", 30 )			
-				LocalMsg( player, "#FS_Challenges", "#FS_Challenge_usage_2", 0, 30 )
+				LocalMsg( player, "#FS_Challenges", "#FS_Challenge_usage_2", eMsgUI.DEFAULT, 30 )
 			}
 			else 
 			{	
@@ -1078,7 +1088,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 							
 							//string details = format("Player: %s wants to 1v1. \n Type /accept to accept the most recent challenge \n or /accept [playername] to accept a specific 1v1 ", player.p.name  )
 							//Message( challengedPlayer, "NEW REQUEST", details , 10 )
-							LocalMsg( challengedPlayer, "#FS_NEW_REQUEST", "#FS_ChalRequest", 0, 10, "", player.p.name )
+							LocalMsg( challengedPlayer, "#FS_NEW_REQUEST", "#FS_ChalRequest", eMsgUI.DEFAULT, 10, "", player.p.name )
 							
 							break; 
 						
@@ -1102,7 +1112,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					if(result > 1)
 					{
 						//Message( player, "FAILED", "Couldn't add challenge: " + error, 5)
-						LocalMsg( player, "#FS_FAILED", "", 0, 5, "", "Couldn't add challenge: " + error )
+						LocalMsg( player, "#FS_FAILED", "", eMsgUI.DEFAULT, 5, "", "Couldn't add challenge: " + error )
 					}
 					
 				}
@@ -1172,7 +1182,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if (removeChallenger( player, challenger.p.handle ))
 				{
 					//Message( player, "REMOVED " + challenger.p.name )
-					LocalMsg( player, "#FS_RemovedChallenger", "", 0, 5, challenger.p.name )
+					LocalMsg( player, "#FS_RemovedChallenger", "", eMsgUI.DEFAULT, 5, challenger.p.name )
 				}
 				else 
 				{
@@ -1229,7 +1239,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				{
 					endLock1v1( player, false )
 					//Message( player, format( "REVOKED %s CHALLENGES", revoked ), format( "\n----FROM PLAYERS---- \n\n %s", removed ), 10 )
-					LocalMsg( player, "#FS_RevokedX", "#FS_RevokedFromPlayers", 0, 10, revoked.tostring(), removed )
+					LocalMsg( player, "#FS_RevokedX", "#FS_RevokedFromPlayers", eMsgUI.DEFAULT, 10, revoked.tostring(), removed )
 				}
 				else 
 				{
@@ -1409,7 +1419,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			legend = index != -1 ? charIndexMap[index] : "undefined";
 			//Message( player, "PLAYING AS: " + legend )
-			LocalMsg( player, "#FS_PlayingAs", "", 0, 5, legend, "" )
+			LocalMsg( player, "#FS_PlayingAs", "", eMsgUI.DEFAULT, 5, legend, "" )
 			
 			if( index <= 10 )
 			{
@@ -1456,7 +1466,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			if( list != "" )
 			{
 				//Message( player, "OUTGOING CHALLENGES", list, 15 )
-				LocalMsg( player, "#FS_OutgoingChal", "", 0, 15, "", list )
+				LocalMsg( player, "#FS_OutgoingChal", "", eMsgUI.DEFAULT, 15, "", list )
 			}
 			else 
 			{
@@ -1513,7 +1523,14 @@ int function addToChallenges( entity challenger, entity challengedPlayer )
 	}
 	
 	//add challenger to table
-	chalStruct.challengers[challenger.p.handle] <- Time()
+	if( challenger.p.handle in challenger.p.handle )
+	{
+		chalStruct.challengers[challenger.p.handle] = Time()
+	}
+	else 
+	{
+		chalStruct.challengers[challenger.p.handle] <- Time()
+	}
 	
 	return 1;
 }
@@ -1781,8 +1798,8 @@ void function SetUpChallengeNotifications( entity player, entity challenger ) //
 	LocalMsg( player, "#FS_ChalAccepted" )
 	LocalMsg( challenger, "#FS_ChalAccepted" )
 	SetChallengeNotifications( [player,challenger], true )
-	player.p.eLastChallenger = challenger
-	challenger.p.eLastChallenger = player
+	player.p.entLastChallenger = challenger
+	challenger.p.entLastChallenger = player
 	player.p.destroynotify = true
 	challenger.p.destroynotify = true
 	RemovePanelText( player, player.p.handle )
@@ -2230,7 +2247,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 						sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
 					//Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
-					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", 0, 5, "", sTryAgain )
+					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", eMsgUI.DEFAULT, 5, "", sTryAgain )
 					player.p.rest_request = true;
 					return true
 				}
@@ -2258,7 +2275,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 		}
 		else 
 		{
-			LocalMsg( player, "#FS_YouAreResting", restText, 0, 5, "", restFlag )
+			LocalMsg( player, "#FS_YouAreResting", restText, eMsgUI.DEFAULT, 5, "", restFlag )
 		}
 		
 		thread soloModePlayerToRestingList(player)
@@ -2467,14 +2484,14 @@ void function soloModePlayerToWaitingList( entity player )
 	//sqprint(format("Queue time set for %s AT: %f ", playerStruct.player.GetPlayerName(), playerStruct.queue_time ))
 	//sqprint(format("Setting player %s inputmode to: %s", player.GetPlayerName(), player.p.inputmode ))
 	
-	float lifetime_kd;
+	float season_kd;
 	float current_kd;
 	
 	if(IsValid(player))
 	{// weighted scoring
-		lifetime_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.lifetime_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.lifetime_deaths) )
+		season_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.season_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.season_deaths) )
 		current_kd = getkd( player.GetPlayerNetInt( "kills" ) , player.GetPlayerNetInt( "deaths" )  )	
-		playerStruct.kd = (  ( lifetime_kd * file.lifetime_kd_weight ) + ( current_kd * file.current_kd_weight ) )
+		playerStruct.kd = (  ( season_kd * file.season_kd_weight ) + ( current_kd * file.current_kd_weight ) )
 	}
 	else
 	{
@@ -2525,7 +2542,7 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	LocalMsg( player, "#FS_IN_QUEUE", "", 1, 300 )
+	LocalMsg( player, "#FS_IN_QUEUE", "", eMsgUI.EVENT, settings.roundTime )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 
@@ -2548,7 +2565,7 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
     player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent);
     opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player);
 	//Message_New( player, "", 1 ) //
-	LocalMsg( player, "#FS_NULL", "", 1, 1 )
+	LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
 
     if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
 	{	
@@ -2661,7 +2678,7 @@ void function soloModePlayerToRestingList(entity player)
 
 	//deleteSoloPlayerResting( player ) // ??why do we do this (replaced with my functions as well)
 	addSoloPlayerResting( player ) // ??
-	LocalMsg( player, "#FS_RESTING", "", 1, 300 )
+	LocalMsg( player, "#FS_RESTING", "", eMsgUI.EVENT, settings.roundTime )
 }
 
 void function soloModefixDelayStart( entity player )
@@ -2686,13 +2703,11 @@ void function soloModefixDelayStart( entity player )
 	if( settings.is3v3Mode )
 		return
 	
-	#if HAS_TRACKER_DLL && TRACKER
-	
-		MessageLong( player, "", "", 1 , 10, LineBreak( settings.MOTD, 100 ) )		
-		//LocalMsg( player, "#FS_1V1_Tracker" )
+	#if HAS_TRACKER_DLL && TRACKER		
+		LocalMsg( player, "#FS_1V1_Tracker", "", eMsgUI.RESULTS )
 		//LocalVarMsg( player, "#FS_1V1_Tracker", 1, 5, "var 1", "var2", "var3", 4 )
 	#else 
-		LocalMsg( player, "#FS_1v1_Banner" )
+		LocalMsg( player, "#FS_1v1_Banner", "", eMsgUI.RESULTS )
 	#endif
 	
 	if( GetGameState() >= eGameState.Playing ){ wait 7 } else { wait 12 }	
@@ -3038,12 +3053,25 @@ void function GivePlayerCustomPlayerModel( entity ent )
 	}
 }
 
+void function INIT_WeaponsMenu()
+{
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot)
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector)
+	
+}
+
 void function _soloModeInit( int eMap )
 {	
 	//RegisterSignal("On1v1Death") //TODO
 	RegisterSignal( "NotificationChanged" )
 	INIT_1v1_sbmm()
 	INIT_PlaylistSettings()
+	
+	if( settings.bAllowWeaponsMenu )
+	{
+		INIT_WeaponsMenu()
+	}
 
 	if( settings.is3v3Mode )
 		Init_FS_Scenarios()
@@ -3055,6 +3083,7 @@ void function _soloModeInit( int eMap )
 	
 	file.characters = GetAllCharacters()
 	characterslist = [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+	Init_ValidLegendRange()
 	
 	//INIT PRIMARY WEAPON SELECTION
 	if ( g_bLGmode ) 
@@ -3974,7 +4003,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			foreach ( index, eachPlayer in players )
 			{
-				LocalMsg( eachPlayer, "#FS_MATCHED", "", 1, 1 ) //reset in queue msg
+				LocalMsg( eachPlayer, "#FS_MATCHED", "", eMsgUI.EVENT, 1 ) //reset in queue msg
 				EnableOffhandWeapons( eachPlayer )
 				DeployAndEnableWeapons( eachPlayer )
 				thread respawnInSoloMode( eachPlayer, index )
@@ -4012,7 +4041,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				//Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
 				string vs = "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 )
-				LocalMsg( newGroup.player1, e_str, "", 0, 3, "", vs )
+				LocalMsg( newGroup.player1, e_str, "", eMsgUI.DEFAULT, 3, "", vs )
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
@@ -4025,7 +4054,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				//Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
 				string vs2 = "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 )
-				LocalMsg( newGroup.player2, e_str, "", 0, 3, "", vs2 )
+				LocalMsg( newGroup.player2, e_str, "", eMsgUI.DEFAULT, 3, "", vs2 )
 			}
 		} //not waiting
 		
@@ -4082,8 +4111,8 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 	sqprint( format("THREAD FOR GROUP STARTED" ))
 	#endif
 	
-	EndSignal( player, "InputChanged", "OnDeath", "PlayerDisconnected" )
-	EndSignal( opponent, "InputChanged", "OnDeath", "PlayerDisconnected" )
+	EndSignal( player, "InputChanged", "OnDeath", "OnDisconnected" )
+	EndSignal( opponent, "InputChanged", "OnDeath", "OnDisconnected" )
 
 		#if DEVELOPER
 		sqprint("Waiting for input to change");
@@ -4102,14 +4131,14 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 				{
 					Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
 					//Message( player, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 0, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(opponent))
 				{
 					Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" );
 					//Message( opponent, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", 0, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
 				}
 				
 				if(IsValid(group))
@@ -4615,7 +4644,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 		return //this is threaded off so we want to check again
 	}
 	
-	EndSignal( player, "PlayerDisconnected" )
+	EndSignal( player, "OnDisconnected" )
 	
 	int id = player.p.handle + 1
 	int iChallengeTextID = id + 1
@@ -4680,7 +4709,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 				continue
 			}
 			
-			entity challenged = player.p.eLastChallenger
+			entity challenged = player.p.entLastChallenger
 			
 			if( !IsValid (challenged) )
 			{
@@ -4716,9 +4745,9 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 void function UpdateChallengeText( entity player, int id, string text )
 {
 	wait .2
-	entity opponent = player.p.eLastChallenger
+	entity opponent = player.p.entLastChallenger
 	EndSignal( player, "NotificationChanged" )
-	EndSignal( opponent, "PlayerDisconnected" )
+	EndSignal( opponent, "OnDisconnected" )
 	CreatePanelText( player, "", text, IBMM_COORDINATES, IBMM_ANGLES, false, 2, id )
 	
 	OnThreadEnd( function() : ( player, id )
@@ -4818,15 +4847,37 @@ const array<int> LegendGUID_EnabledUltimates = [
 
 ]
 
+
+void function Init_ValidLegendRange()
+{
+	int min = 0
+	int max = file.characters.len()
+	
+	if( max <= 0 )
+	{
+		min = -1
+		max = -1
+	}
+		
+	file.minLegendRange = min
+	file.maxLegendRange = max 
+}
+
+bool function InValidLegendRange( int i )
+{
+	return i >= file.minLegendRange && i <= file.maxLegendRange
+}
+
 void function RechargePlayerAbilities( entity player, int index = -1 )
 {
 	if( !IsValid( player ) ){ return }
 	
-	mAssert( index > -1 , "RechargePlayerAbilities() was changed to use character index instead of using waitforitemflavor. Comment this assert out if you dont want to change method in scenarios." )
+	//printt( "player:", player, "index:", index )
+	//mAssert( index > -1 , "RechargePlayerAbilities() was changed to use character index instead of using waitforitemflavor. Comment this assert out if you dont want to change method in scenarios." )
 	
 	ItemFlavor character;
 	
-	if( index > -1 )
+	if( InValidLegendRange( index ) )
 	{
 		character = file.characters[characterslist[index]]
 	}

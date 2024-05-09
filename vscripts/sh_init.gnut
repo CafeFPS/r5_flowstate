@@ -6,7 +6,10 @@ void function SV_CL_Shared_Init()
 	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
 #endif
 
-	PlayLists_Mapnames_Gamemodes_Init()	
+	#if SERVER || CLIENT
+		PlayLists_Mapnames_Gamemodes_Init()
+	#endif 
+	
 	GameModes_Init()
 	Settings_Init()
 	

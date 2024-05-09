@@ -3144,13 +3144,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
-		Message(player, "WEAPON WHITELISTED")
+		Message(player, "WEAPON NOT WHITELISTED")
 		return false
 	}
 
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
-		Message(player, "ABILITY WHITELISTED")
+		Message(player, "ABILITY NOT WHITELISTED")
 		return false
 	}
 
@@ -3474,6 +3474,8 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	if(!IsValid(weaponent)) return true
 
+	bool bIs1v1 = is1v1GameType() //idc, conditional.
+
 	if( IsAlive( player ) ) // This is for TDM
 	{
 		string weapon1
@@ -3488,13 +3490,22 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weapon1 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_0 ) // This function returns weapon class name if there's weapon, otherwise returns empty string
 		weapon2 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
+		bool bPrimary = false
+		bool bSecondary = false
+		
 		if( weapon1 != "" ) // Primary slot
 		{
 			mods1 = GetWeaponMods( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) )
 			foreach (mod in mods1)
 				optics1 = mod + " " + optics1
 			
-			weaponname1 = "tgive p " + weapon1 + " " + optics1 + "; "
+			weaponname1 = "tgive p " + weapon1 + " " + optics1 + ( bIs1v1 ? "" : "; " )
+			
+			bPrimary = true
+		}
+		else 
+		{
+			bSecondary = true
 		}
 
 		if( weapon2 != "" ) // Secondary Slot
@@ -3505,8 +3516,54 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		
 			weaponname2 = "tgive s " + weapon2 + " " + optics2
 		}
+		else 
+		{
+			bSecondary = false
+		}
 
-		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
+		if( bIs1v1 ) 
+		{
+			//printt_spam( 15, weaponname1, weaponname2 )
+			
+			if( bPrimary )
+			{	
+				array<string> wep1Array = split( weaponname1, " " )
+			
+				if( wep1Array[1] == "p" )
+				{
+					player.p.ratelimit = 0.0;				
+				
+						wep1Array[0] = "wepmenu"; printarray( wep1Array )
+					
+							ClientCommand_GiveWeapon( player, wep1Array )
+								
+								return true
+				}
+				else if ( bSecondary)
+				{		
+					array<string> wep2Array = split( weaponname2, " " )
+					
+						if ( wep2Array[1] == "s" )
+						{
+							player.p.ratelimit = 0;	
+						
+								wep2Array[0] = "wepmenu";		
+							
+									ClientCommand_GiveWeapon( player, wep2Array )	
+										
+										return true
+						}												
+				}
+				else 
+				{
+					return true
+				}
+			}
+		}
+		else 
+		{
+			weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
+		}
 	}
 
 	int weaponSkin = -1

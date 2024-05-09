@@ -755,44 +755,45 @@ global struct ServerPlayerStruct
 	
 	//mkos /or/ r5r stats /r5r.dev
 	
-	int handle
-	string UID
-	string name
-	string hitsound
-	int input
-	string inputmode
-	bool challengenotify = false //need to make a notify system
-	entity eLastChallenger
-	bool notify = false
-	bool has_notify = false
-	bool destroynotify = false
+	int handle 					= -1
+	string UID 					= ""
+	string name 				= ""
+	string hitsound 			= ""
+	int input 					= 0
+	string inputmode 			= ""
+	bool challengenotify 		= false //need to make a notify system
+	entity entLastChallenger
+	bool notify 				= false
+	bool has_notify 			= false
+	bool destroynotify 			= false
 	float last_input_time
-	float IBMM_grace_period = -1 // <=0  is disabled
-	float messagetime = 0
-	int movevalue = 0
-	int p_damage = 3 //for lgduel default dmg/heal 
-	int lifetime_kills = 0
-	int lifetime_deaths = 0
-	int lifetime_glides = 0
-	int lifetime_playtime = 0
-	int lifetime_gamesplayed = 0
-	int lifetime_score = 0
-	string weapon_loadout = "NA"
-	bool lock1v1_setting = true
-	bool stats_done_loading = false
-	bool start_in_rest_setting = false
-	bool enable_input_banner = false
-	float ratelimit
-	bool rest_request = false
-	bool waitingFor1v1 = false
-	bool bIsChatbot = false
+	float IBMM_grace_period 	= -1 // <=0  is disabled
+	float messagetime			= 0
+	int movevalue 				= 0
+	int p_damage 				= 3 //for lgduel default dmg/heal 
+	int season_kills 			= 0
+	int season_deaths 			= 0
+	int season_glides 			= 0
+	int season_playtime 		= 0
+	int season_gamesplayed 		= 0
+	int season_score 			= 0
+	string weapon_loadout 		= "NA"
+	bool lock1v1_setting 		= true
+	bool stats_done_loading 	= false
+	bool start_in_rest_setting 	= false
+	bool enable_input_banner 	= false
+	float ratelimit 			= 0.2
+	bool rest_request 			= false
+	bool waitingFor1v1			= false
+	bool bIsChatbot 			= false
+	bool ClientCommandsEnabled 	= true
 	
 	//framework for confirm
-	bool bInRetry = false
-	bool bRelayChallengeState = false
-	int relayChallengeCode = 0
+	bool bInRetry 				= false
+	bool bRelayChallengeState 	= false
+	int relayChallengeCode 		= 0
 	
-	bool bTextmute = false
+	bool bTextmute 				= false
 	
 	
 	

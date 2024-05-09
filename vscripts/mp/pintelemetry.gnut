@@ -48,6 +48,7 @@ global const LOG_ERRORS = true
 // ║ mkos ║
 // ╚══════╝
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
+
 global function PIN_Callback_CheckReload
 global function FetchPlayerData
 global function SavePlayerData
@@ -141,20 +142,32 @@ global function SetAfkToRest
 
 #if TRACKER
 //shared
+global function AddCallback_PlayerDataFullyLoaded
 global function AddCallback_PlayerData
 global function getEventByPlayerHandle
 global function PrintAllPlayerMetrics
 global function GetPlayerMetricsArray
 global function __TrackerStatsHook_AddEvent_DamageMult
 
+//custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
 global function SavePlayer_wait_time
 global function SavePlayer_saved_weapons
 global function SavePlayer_lock1v1_setting
 global function SavePlayer_start_in_rest_setting
 global function SavePlayer_enable_input_banner
-
 global function GetDefaultLock1v1Setting
 global function GetDefaultEnableInputBannerSetting
+
+///////////////////////////// QUERIES ////////////////////////////////////////////
+// usage=   AddCallback_QueryString("category:query", resultHandleFunction )	//
+// 			see r5r.dev/info for details about available categories.		 	//
+// 			verfified hosts: Add custom queries from host cp				 	//
+//																				//
+//			EX: restricted_rank:500   returns minimum player score for var "500"//
+//////////////////////////////////////////////////////////////////////////////////
+global function AddCallback_QueryString
+
+//For getting settings via query system by key. 
 global function GetStringSetting
 global function GetFloatSetting
 global function GetIntSetting
@@ -182,11 +195,15 @@ global function setRestrictedServer
 	global function DEV_GetPlayerMetricsIndexByUID
 #endif 
 
+const DEBUGDMG = true
+
 global function DEV_StartIntervalThread
 global function DEV_ManualLogStart
 global function DEV_ManualLogKill
 global function LogError
 global function GetTrackerErrorArray
+global function CodeCallback_BatchStatsLoaded
+global function CodeCallback_PlayerStatsReady
 
 //TODO: REMOVE THESE FROM HERE, use Playlist() or Gamemode()
 
@@ -265,7 +282,6 @@ global struct DeleteEvents
 };
 
 // array of player structs containing various new metrics
-// Add settings that you want synced online here. 
 
 struct PlayerMetrics 
 {
@@ -318,6 +334,10 @@ struct {
 	
 	table<int,PlayerData> HandleToPlayerData
 	
+	//queries 
+	bool bQueryComplete = false
+	table <string, array<void functionref( string retData )> > queryStringInitFuncs
+	table <string, array<void functionref( string retData )> > queryStringCallbackFuncs
 	table <string,string> Global_R5RDEV_StringSettings
 	table <string,float> Global_R5RDEV_FloatSettings
 	table <string,int> Global_R5RDEV_IntSettings
@@ -350,7 +370,12 @@ struct {
 	string superglide_msg
 	string superglidetitle
 	
-	//ServerMessages
+	// ServerMessages
+	bool bMotdEnabled = false
+	bool bUseOnlineMOTD = false
+	string localFlowstate_MOTD = "" //configure in playlist.
+	
+	// Chatbot Messages
 	array<string> BotAllowedModes = ["fs_1v1","lg_duel_mode"]
 	bool bBotAllowed
 	bool bChatbotEnabled
@@ -374,8 +399,9 @@ struct {
 	
 	table <string, array<void functionref( entity player, string data )> > PlayerSettingsMap = {}
 	table<string, table<string,string> > PlayerData // playerUID = setting,value
+	array< void functionref( entity player ) > syncDataFullyLoadedCallbacks
 	
-	//restricted settings ( init in playlists file )
+	//restricted settings ( configure in playlists file )
 	int restricted_gamesplayed = 0
 	int restricted_kills = 0
 	int restricted_playtime = 0
@@ -390,6 +416,28 @@ struct {
 	
 } file
 
+void function CodeCallback_BatchStatsLoaded()
+{
+	svGlobal.levelEnt.Signal( "BatchFetchComplete" )
+	
+	#if DEVELOPER
+		printt("CodeCallback_BatchStatsLoaded")
+	#endif
+}
+
+void function CodeCallback_PlayerStatsReady( string uid )
+{
+	entity player = GetPlayer( uid )
+	
+	if( !IsValid( player ) )
+		return 
+		
+	player.Signal( "PlayerStatsReady" )	
+	
+	#if DEVELOPER
+		printt("CodeCallback_PlayerStatsReady: ",player)
+	#endif
+}
 
 array<PlayerMetrics> function GetPlayerMetricsArray()
 {
@@ -406,7 +454,7 @@ void function DEV_ManualLogKill( bool ship )
 {
 	if( ship )
 	{
-		LogEvent( PrintAllPlayerMetrics(true), file.LogE )
+		LogEvent__internal( PrintAllPlayerMetrics(true), file.LogE )
 		UpdateLiveStats( PrintAllPlayerMetrics(true) )
 	}
 	
@@ -419,7 +467,7 @@ void function DEV_ManualLogKill( bool ship )
 	
 	file.PIN_GameState_Start = false
 	svGlobal.levelEnt.Signal( "TrackerNoLog" )
-	stopLogging( ship )
+	stopLogging__internal( ship )
 }
 
 bool function bLog()
@@ -479,9 +527,9 @@ table <string,bool> function GetAllBoolSettings()
 
 string function GetStringSetting( string setting, string none = "" )
 {
-	if ( setting in GetAllStringSettings())
+	if ( setting in file.Global_R5RDEV_StringSettings)
 	{
-		return GetAllStringSettings()[setting];
+		return file.Global_R5RDEV_StringSettings[setting]
 	}
 	
 	return none;
@@ -489,9 +537,9 @@ string function GetStringSetting( string setting, string none = "" )
 
 float function GetFloatSetting( string setting, float none = 0.0 )
 {
-	if ( setting in GetAllFloatSettings())
+	if ( setting in file.Global_R5RDEV_FloatSettings )
 	{
-		return GetAllFloatSettings()[setting];
+		return file.Global_R5RDEV_FloatSettings[setting]
 	}
 	
 	return none;
@@ -499,9 +547,9 @@ float function GetFloatSetting( string setting, float none = 0.0 )
 
 int function GetIntSetting( string setting, int none = 0 )
 {
-	if ( setting in GetAllIntSettings())
+	if ( setting in file.Global_R5RDEV_IntSettings )
 	{
-		return GetAllIntSettings()[setting];
+		return file.Global_R5RDEV_IntSettings[setting]
 	}
 	
 	return none;
@@ -509,32 +557,93 @@ int function GetIntSetting( string setting, int none = 0 )
 
 bool function GetBoolSetting( string setting, bool none = false )
 {
-	if ( setting in GetAllBoolSettings())
+	if ( setting in file.Global_R5RDEV_BoolSettings )
 	{
-		return GetAllBoolSettings()[setting];
+		return file.Global_R5RDEV_BoolSettings[setting]
 	}
 	
 	return none;
 }
 
+
 ////////////////////////////////////////////
 ////////		QUERY Data			////////
+
+void function _RegisterAllQueries()
+{
+	////// INIT FUNCTIONS FOR GAMEMODES //////
+	
+	Pin_Query_Init()
+	//CustomGamemodeQueries_Init()
+	//Gamemode1v1Queries_Init()
+	//etc...etc..
+}
+
+void function __QueryString_Callbacks( string setting, string value )
+{	
+	if( !( setting in file.queryStringCallbackFuncs ) )
+		return 
+		
+	foreach ( callbackFunc in file.queryStringCallbackFuncs[setting] )
+			callbackFunc( value )
+}
+
+//usage=   AddCallback_QueryString("category:query", resultHandleFunction ) // see r5r.dev/info for details about available categories.
+bool function AddCallback_QueryString( string query, void functionref( string retData ) callbackFunc )
+{
+	if( file.bQueryComplete )
+	{
+		sqerror( "Tried to add callback with " + FUNC_NAME( 2 ) + " for callbackFunc " + string( callbackFunc ) + "() but server has already executed the query list." )
+		return false 
+	}
+	
+	if( !( query in file.queryStringInitFuncs ) )
+		file.queryStringInitFuncs[query] <- []
+	
+	if( file.queryStringInitFuncs[query].contains( callbackFunc ) )
+	{
+		sqerror( "Tried to add callback with " + FUNC_NAME( 2 ) + " but callbackFunc " + string( callbackFunc ) + "() already exists in queryStringInitFuncs" )
+		return false
+	}
+	
+		file.queryStringInitFuncs[query].append( callbackFunc )
+			return true
+}
 
 string function GetQueryDataString()
 {
 	string query_data_string;
 
-	query_data_string += "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring();
-	//more += later
+	int omitFinalCommaOn = file.queryStringInitFuncs.len() //number of queries as keys
+	
+	int iter = 0
+	foreach( string query, callbackArray in file.queryStringInitFuncs )
+	{
+		iter++;
+		
+		string queryFormatted = StringReplace( query, ",", "" )
+		
+		if( queryFormatted.find(":") == -1 )
+		{
+			queryFormatted += ":"
+		}
+		
+		query_data_string += queryFormatted + ( iter != omitFinalCommaOn ? "," : "" )
+		
+		int querySlice = query.find(":")
+		file.queryStringCallbackFuncs[query.slice( 0, querySlice )] <- callbackArray //returns setting and sets as key 
+	}
 	
 	return query_data_string
 }
 
 void function INIT_Global_R5RDEV_VarTable()
 {	
-	string QueryDataString = GetQueryDataString()
+	_RegisterAllQueries()
 	
-	string settings_string = FetchGlobalSettingsFromR5RDEV(QueryDataString)
+	file.bQueryComplete = true
+	string QueryDataString = GetQueryDataString()	
+	string settings_string = FetchGlobalSettingsFromR5RDEV__internal(QueryDataString)
 	
 	#if DEVELOPER 
 		sqprint( "QueryDataString: " + QueryDataString )
@@ -563,8 +672,11 @@ void function INIT_Global_R5RDEV_VarTable()
 						
 						if( setting.len() > 1 )
 						{	
-							bool val = ( trim(setting[1]) == "true" || trim(setting[1]) == "1" ) ? true : false;
-							file.Global_R5RDEV_BoolSettings[setting[0]] <- val;
+							string data0 = setting[0]
+							string data1 = trim(setting[1])		
+							
+							bool val = ( data1 == "true" || data1 == "1" ) ? true : false;
+							file.Global_R5RDEV_BoolSettings[data0] <- val;
 						}
 						break
 					
@@ -627,7 +739,10 @@ void function INIT_Global_R5RDEV_VarTable()
 						#endif 
 						break 
 						
-				}//switch for setting data type
+				}//switch for setting data type	
+
+				__QueryString_Callbacks( setting[0], setting[1] )	
+				
 			}//for loop length of settings in category
 		}//value len check
 	}//foreach category
@@ -636,14 +751,83 @@ void function INIT_Global_R5RDEV_VarTable()
 	
 }//init global settings
 
-void function INIT_BATCH_FETCH() 
+////////////////////////////////////////////
+////////	Custom Query Callbacks	////////
+
+void function DummyFunction_ProofOfConcept( string retData )
 {
+	printt("\n\n\n\n\n\n\n restricted_rank LOADED with data: ", retData, "\n\n\n\n\n\n\n\n" )
+}
+
+void function ShowPlayerOnlineMOTD( string retData )
+{
+	foreach( player in GetPlayerArray() )
+	{
+		AddCallback_OnClientConnected( void function( entity player ) : ( retData, player ) 
+		{
+			thread( void function() : ( retData, player )
+			{
+				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+				
+					if( IsValid( player ))
+					{	
+						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+						//run ui script for motd
+						//MessageLong( player, "", "", 1 , 10, LineBreak( retData, 100 ) )
+					}
+			}())
+		})
+	} 
+}
+
+void function ShowPlayerLocalMOTD( entity player )
+{	
+	thread( void function() : ( player )
+			{
+				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+				
+					if( IsValid( player ))
+					{
+						wait 2.5
+						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+						//run ui script for motd
+						//MessageLong( player, "Welcome %s", "", eMsgUI.QUICK, 10, "test", LineBreak( file.localFlowstate_MOTD, 100 ) )
+					}
+			}())
+}
+
+
+void function Pin_Query_Init()
+{
+	if( file.restricted_server )
+	{
+		AddCallback_QueryString( "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring(), DummyFunction_ProofOfConcept )
+	}
 	
+	if( file.bMotdEnabled )
+	{
+		if ( file.bUseOnlineMOTD )
+		{
+			AddCallback_QueryString( "MOTD", ShowPlayerOnlineMOTD )
+		}
+		else 
+		{
+			AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+		}
+	}
+}
+
+////////////////////////////////////////////
+////////	Bulk stats fetch		////////
+
+
+void function INIT_BATCH_FETCH() 
+{	
 	file.FETCH_BATCH_COMPLETE = false
 	array<string> oids
 	string oid_list = "";
 	
-	wait 9 //allow players to load
+	wait 7 //allow players to load
 	//sqprint("Calling init batch")
 	
 	foreach ( player in GetPlayerArray() )
@@ -687,31 +871,32 @@ void function INIT_BATCH_FETCH()
 			
         }
 	
-        LoadBatchKDStrings( oid_list )
+        LoadBatchSyncData__internal( oid_list )
 		
     }
-		
-	file.FETCH_BATCH_COMPLETE = true
 	
+	file.FETCH_BATCH_COMPLETE = true	
 }
 
-void function SQ_LoadPlayerKD( entity player )
+void function __LoadPlayerSyncData( entity player )
 {
-	LoadKDString( player.GetPlatformUID() )
+	LoadSyncData__internal( player.GetPlatformUID() )
 }
 
-void function SetPlayerKD( entity player )
+void function __SetPlayerSyncData( entity player )
 {	
-	
-	while ( file.FETCH_BATCH_COMPLETE == false )
+	if( file.FETCH_BATCH_COMPLETE == false )
 	{
 		#if DEVELOPER
-			sqprint("waiting for batch fetch to complete")
+			printt( player, " = Waiting for batch fetch to complete" )
 		#endif
-		wait 1
+		
+		waitthread WaitSignalOrTimeout( svGlobal.levelEnt, 15, "BatchFetchComplete" )
 	}
-	
-	wait 1;
+	else 
+	{
+		waitthread WaitSignalOrTimeout( player, 5, "PlayerStatsReady", "OnDestroy", "OnDisconnected" )
+	}
 	
 	string OID;
 	int attempts = 0;
@@ -723,23 +908,23 @@ void function SetPlayerKD( entity player )
 			
 	OID = player.GetPlatformUID()
 	
-	int player_lifetime_kills = 0;
-	int player_lifetime_deaths = 0;
-	int player_lifetime_glides = 0;
-	int player_lifetime_playtime = 0;
-	int player_lifetime_gamesplayed = 0;
-	int player_lifetime_score = 0;
-	
+	int player_season_kills = 0;
+	int player_season_deaths = 0;
+	int player_season_glides = 0;
+	int player_season_playtime = 0;
+	int player_season_gamesplayed = 0;
+	int player_season_score = 0;
 	
 	while ( IsValid( player ) )
-	{
+	{		
+		string stat_data = GetSyncData__internal( OID )
 		
-		wait 1.2 + ( attempts * 0.09 ); //IMPORTANT
+		if ( !IsValid( player ) )
+			return 
 		
-		string stat_data = GetKDString( OID )
-		
-		if ( attempts > 10 )
+		if ( attempts > 2 )
 		{	
+			sqerror("Timeout loading stats for " + string( player ) )
 			break
 		}	
 		if ( stat_data == "NA" )
@@ -749,9 +934,10 @@ void function SetPlayerKD( entity player )
 		if ( stat_data == "" )
 		{	
 			attempts++;
+			wait 1.2 + ( attempts * 0.09 )
 			continue
 		}
-		if ( stat_data != "" || stat_data != "NA" )
+		if ( stat_data != "NA" )
 		{	
 			
 			#if DEVELOPER 
@@ -804,32 +990,32 @@ void function SetPlayerKD( entity player )
 			
 			if ( IsNumeric( kills ) )
 			{
-				player_lifetime_kills = kills.tointeger()
+				player_season_kills = kills.tointeger()
 			}
 			
 			if( IsNumeric( deaths ) )
 			{
-				player_lifetime_deaths = deaths.tointeger()
+				player_season_deaths = deaths.tointeger()
 			}			
 			
 			if ( IsNumeric( glides ) )
 			{
-				player_lifetime_glides = glides.tointeger()
+				player_season_glides = glides.tointeger()
 			}
 			
 			if ( IsNumeric( playtime ) )
 			{
-				player_lifetime_playtime = playtime.tointeger()
+				player_season_playtime = playtime.tointeger()
 			}	
 			
 			if ( IsNumeric( gamesplayed ) )
 			{
-				player_lifetime_gamesplayed = gamesplayed.tointeger()
+				player_season_gamesplayed = gamesplayed.tointeger()
 			}
 			
 			if ( IsNumeric( synced_score ) )
 			{
-				player_lifetime_score = synced_score.tointeger()
+				player_season_score = synced_score.tointeger()
 			}
 						
 								
@@ -837,13 +1023,21 @@ void function SetPlayerKD( entity player )
 				sqprint( "kills: " + kills + " deaths: " + deaths + " glides: " + glides + " playtime: " + playtime + " gamesplayed: " + gamesplayed + " synced_score: " + synced_score )
 			#endif
 			
+			//Todo: Stats struct in table   table<int, R5RPlayerStats> //hande -> PlayerStats struct
+			player.p.season_score = player_season_score;
+			player.p.season_kills = player_season_kills;
+			player.p.season_deaths = player_season_deaths; 
+			player.p.season_glides = player_season_glides;
+			player.p.season_playtime = player_season_playtime;
+			player.p.season_gamesplayed = player_season_gamesplayed;
+			//player.p.season_wins = player_season_wins //TODO
 			
-			player.p.lifetime_kills = player_lifetime_kills;
-			player.p.lifetime_deaths = player_lifetime_deaths; 
-			player.p.lifetime_glides = player_lifetime_glides;
-			player.p.lifetime_playtime = player_lifetime_playtime;
-			player.p.lifetime_gamesplayed = player_lifetime_gamesplayed;
-			player.p.lifetime_score = player_lifetime_score;
+			player.SetPlayerNetInt( "SeasonScore", player_season_score )
+			player.SetPlayerNetInt( "SeasonKills", player_season_kills )
+			player.SetPlayerNetInt( "SeasonDeaths", player_season_deaths )
+			player.SetPlayerNetInt( "SeasonPlaytime", player_season_playtime )
+			player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
+			//player.SetPlayerNetInt( "SeasonWins", player_limetime_wins ) //TODO
 			
 			break
 		}
@@ -852,18 +1046,24 @@ void function SetPlayerKD( entity player )
 		
 	}
 	
-	player.p.stats_done_loading = true;
-
-	if( file.gamemode_type_1v1 )
+	player.Signal( "SyncDataFullyLoaded" )
+	player.p.stats_done_loading = true; //TODO: remove where possible
+	
+	foreach ( callbackFunc in file.syncDataFullyLoadedCallbacks )
 	{
-		INIT_playerChallengesStruct( player )
-	}		
-			
+		callbackFunc( player )
+	}
+	
 	wait 0.2
-	SQ_ResetStats( OID )
+	SQ_ResetStats__internal( OID )
 	
 }
 
+void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player ) callbackFunc )
+{
+	if( !file.syncDataFullyLoadedCallbacks.contains( callbackFunc ) )
+		file.syncDataFullyLoadedCallbacks.append( callbackFunc ) 
+}
 
 void function AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
 {
@@ -961,15 +1161,20 @@ void function PIN_Init()
 	
 	if( IsLobby() ){ return }
 	
+	RegisterSignal( "BatchFetchComplete" )
+	RegisterSignal( "SyncDataFullyLoaded" )
+	RegisterSignal( "PlayerStatsReady" )
+	
 	INIT_fastComputes()
-	INIT_IntervalMessages()
 	INIT_PlayerDataCallbacks()
 	
 	SetServerReloadReadyState( ReloadState.BUSY )
 	
 	if( file.bChatbotEnabled && file.bBotAllowed )
 	{
-		thread __LoadServerBot()
+		INIT_IntervalMessages()
+		AddCallback_EntitiesDidLoad( PIN_OnEntitiesLoaded_Chatbot )
+		AddCallback_GameStateEnter( eGameState.Playing, __executeEventStart_messages )
 	}
 	
 	if( file.LogOn && bRunTracker )
@@ -988,8 +1193,7 @@ void function PIN_Init()
 	//FlagInit("DeleteEvents")
 	//thread EventManager()
 	
-		AddCallback_GameStateEnter( eGameState.Playing, __executeEventStart_messages )
-		AddCallback_OnClientConnected(PlayerConnectedCallback);
+		AddCallback_OnClientConnected( PlayerConnectedCallback )
 		AddClientCommandCallback( "show", ClientCommand_mkos_return_data )
 		
 		if ( Enable_CC_Administration() )
@@ -1000,7 +1204,7 @@ void function PIN_Init()
 		if ( file.LogOn && bRunTracker )
 		{
 			string message = format("R5R.DEV metrics initialized at:  %d ", GetUnixTimestamp())
-			sqprint(message)
+			printt(message)
 			
 			AddCallback_OnClientDisconnected(PlayerDisconnectedCallback);			
 			if (Ea_Verify_Server()){
@@ -1054,43 +1258,47 @@ void function INIT_fastComputes()
 {
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
-	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
-	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
-	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false)
-	file.LogOn = GetCurrentPlaylistVarBool("logging_enabled", false)
-	file.LogE = GetCurrentPlaylistVarBool("logging_encryption", false)
-	file.bChatbotEnabled = !IsLobby() && SQ_GetSetting("settings.ENABLE_CHATBOT") == "true" ? true : false;
-	file.flowstateRoundtime = FS_RoundTime()
-	file.afk_to_rest_enabled = GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
-	file.update_discord_player_counts = GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
-	file.ibmm_wait_limit = GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
-	file.bBotAllowed = file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
-	file.gamemode_type_1v1 = is1v1GameType()
+	g_bIs1v1 							= Playlist() == ePlaylists.fs_1v1 ? true : false;
+	g_bLGmode 							= GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
+	g_bRestMsg 							= GetCurrentPlaylistVarBool( "rest_msg", false)
+	file.LogOn 							= GetCurrentPlaylistVarBool("logging_enabled", false)
+	file.LogE 							= GetCurrentPlaylistVarBool("logging_encryption", false)
+	file.bChatbotEnabled				= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
+	file.flowstateRoundtime 			= FS_RoundTime()
+	file.afk_to_rest_enabled 			= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
+	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
+	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
+	file.bBotAllowed 					= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
+	file.gamemode_type_1v1 				= is1v1GameType() //returns true if mode is confifugred as 1v1 type
 	
 	if(file.bChatbotEnabled)
 	{
-		file.sBotName = SQ_GetSetting("settings.CHATBOT_PREFIX")
+		file.sBotName = SQ_GetSetting__internal("settings.CHATBOT_PREFIX")
 	}	
 	
 	COMMAND_RATE_LIMIT = GetCurrentPlaylistVarFloat( "COMMAND_RATE_LIMIT", 0.200 )
 	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	
 	//init stat bools (must be before string inits)
-	file.global_stats = GetCurrentPlaylistVarBool( "use_global_stats", false )
-	file.restricted_server = GetCurrentPlaylistVarBool( "restricted_server", false )
-	file.DefaultLock1v1Setting = GetCurrentPlaylistVarBool("default_lock1v1_setting", true)
-	file.DefaultEnableInputBannerSetting = GetCurrentPlaylistVarBool("default_enable_input_banner_setting", false)
-	file.DefaultStartInRestSetting = GetCurrentPlaylistVarBool("default_start_in_rest_setting", false)
+	file.global_stats 						= GetCurrentPlaylistVarBool( "use_global_stats", false )
+	file.restricted_server 					= GetCurrentPlaylistVarBool( "restricted_server", false )
+	file.DefaultLock1v1Setting 				= GetCurrentPlaylistVarBool("default_lock1v1_setting", true)
+	file.DefaultEnableInputBannerSetting 	= GetCurrentPlaylistVarBool("default_enable_input_banner_setting", false)
+	file.DefaultStartInRestSetting 			= GetCurrentPlaylistVarBool("default_start_in_rest_setting", false)
 
 	//restricted init 
-	file.restricted_gamesplayed = GetCurrentPlaylistVarInt( "restricted_gamesplayed", 0 )
-	file.restricted_kills = GetCurrentPlaylistVarInt( "restricted_kills", 0 )
-	file.restricted_playtime = GetCurrentPlaylistVarInt( "restricted_playtime", 0 )
-	file.restricted_rank = GetCurrentPlaylistVarInt( "restricted_rank", 0 )
-	file.restricted_kd = GetCurrentPlaylistVarFloat( "restricted_kd", 0.0 )
-	file.restricted_join_message = GetCurrentPlaylistVarString( "restricted_join_message", "You are able to play on this restricted server." )
-	file.restricted_whitelist_message = GetCurrentPlaylistVarString( "restricted_whitelist_message", "You are whitelisted to play on this restricted server." )
-	file.restricted_admin_message = GetCurrentPlaylistVarString( "restricted_admin_message", "You are an admin." )
+	file.restricted_gamesplayed 			= GetCurrentPlaylistVarInt( "restricted_gamesplayed", 0 )
+	file.restricted_kills 					= GetCurrentPlaylistVarInt( "restricted_kills", 0 )
+	file.restricted_playtime 				= GetCurrentPlaylistVarInt( "restricted_playtime", 0 )
+	file.restricted_rank 					= GetCurrentPlaylistVarInt( "restricted_rank", 0 )
+	file.restricted_kd 						= GetCurrentPlaylistVarFloat( "restricted_kd", 0.0 )
+	file.restricted_join_message 			= GetCurrentPlaylistVarString( "restricted_join_message", "You are able to play on this restricted server." )
+	file.restricted_whitelist_message 		= GetCurrentPlaylistVarString( "restricted_whitelist_message", "You are whitelisted to play on this restricted server." )
+	file.restricted_admin_message 			= GetCurrentPlaylistVarString( "restricted_admin_message", "You are an admin." )
+
+	file.bUseOnlineMOTD 					= GetCurrentPlaylistVarBool( "use_online_motd", false )
+	file.bMotdEnabled						= GetCurrentPlaylistVarBool( "enable_motd", false )
+	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "" )
 }
 
 //initplayer
@@ -1119,8 +1327,14 @@ void function PlayerConnectedCallback( entity player )
 	Data.playerUID = playerUID;	
 	file.HandleToPlayerData[playerHandle] <- Data
 	
+    thread PIN_AddPlayer(player)
+	
+	if( Data.playerName.find("[") != -1 )
+		return
+		
+	printt( player, playerUID )
+	
 	AddEntityCallback_OnDamaged( player, R5R_OnPlayerDamaged )
-    thread PIN_AddPlayer(player);
 	
 	if( file.superglideDetect )
 	{
@@ -1128,32 +1342,38 @@ void function PlayerConnectedCallback( entity player )
 		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection_Stats ) //credit cafe
 	}
 	
-	string count = GetNumHumanPlayers().tostring();
-	string OID = player.GetPlatformUID();
-	string name = sanitize( player.GetPlayerName() );
-	
 	if ( file.update_discord_player_counts )
 	{
-		PlayerCounts("Connected", name, OID, count )
+		PlayerCounts
+		( 
+			"Connected", 
+			sanitize( player.GetPlayerName() ), 
+			player.GetPlatformUID(), 
+			GetNumHumanPlayers().tostring()
+		)
 	}
-	
 	
 	if ( file.global_stats && file.FETCH_BATCH_COMPLETE )
 	{
-		thread SQ_LoadPlayerKD( player )
+		thread __LoadPlayerSyncData( player )
 	}
 	
 	if ( file.global_stats )
 	{
-		thread SetPlayerKD( player )
+		thread __SetPlayerSyncData( player )
 	}
+}
+
+void function PIN_OnEntitiesLoaded_Chatbot()
+{
+	thread __LoadServerBot()
 }
 
 void function PlayerCounts( string state, string name, string OID, string count )
 {
 	if ( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS || GetNumHumanPlayers() == 1 )
 	{
-		_STATSHOOK_UpdatePlayerCount( state, name, OID, count, file.DISCORD_PLAYERS_WEBHOOK )
+		_STATSHOOK_UpdatePlayerCount__internal( state, name, OID, count, file.DISCORD_PLAYERS_WEBHOOK )
 	}
 }
 
@@ -1162,7 +1382,7 @@ void function EndOfMatch( string recap, string DISCORD_MATCHES_WEBHOOK )
 {
 	if ( GetCurrentPlaylistVarBool("stats_discord_webhook_matches_enabled", false ) )
 	{
-		_STATSHOOK_EndOfMatch( recap, DISCORD_MATCHES_WEBHOOK )
+		_STATSHOOK_EndOfMatch__internal( recap, DISCORD_MATCHES_WEBHOOK )
 	}
 }
 
@@ -1215,7 +1435,7 @@ void function Init_NewGame()
 	///////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////
 	int waitlimit = 0;
-	while( SQ_GetLogState( state.BUSY ) )
+	while( SQ_GetLogState__internal( state.BUSY ) )
 	{
 		wait 0.5;
 		waitlimit++;
@@ -1235,10 +1455,10 @@ void function Init_NewGame()
 	}
 	
 	
-	InitializeLogThread_internal( file.LogE )
+	InitializeLogThread__internal( file.LogE )
 	
 	waitlimit = 0;
-	while( !SQ_GetLogState( state.READY ) )
+	while( !SQ_GetLogState__internal( state.READY ) )
 	{
 		wait 0.5;
 		waitlimit++;
@@ -1253,14 +1473,14 @@ void function Init_NewGame()
 	
 		#if DEVELOPER
 		
-			if( SQ_GetLogState( state.READY ) )
+			if( SQ_GetLogState__internal( state.READY ) )
 			{
 				sqprint("Log thread state: ready.")
 			}		
 		#endif
 	
 	waitlimit = 0;
-	while( !SQ_GetLogState( state.SAFE ) )
+	while( !SQ_GetLogState__internal( state.SAFE ) )
 	{
 		wait 0.5;
 		waitlimit++;
@@ -1291,13 +1511,11 @@ void function Init_NewGame()
 	///////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////
 	// Round started, make a new log. r5r.dev
-	LogEvent(
+	LogEvent__internal(
 	format("|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n",T_VERS, GetCurrentRound(), GetUnixTimestamp() ),
 	file.LogE
 	);
-		
-	//sqprint(format("Current round: %s ; isLogging: %s",GetCurrentRound().tostring(), isLogging().tostring()));
-
+	
 	foreach( player in GetPlayerArray() )
 	{
 		CheckPlayerStartInRest( player )
@@ -1323,7 +1541,7 @@ void function Init_NewGame()
 	
 	void function INIT_player_whitelist()
 	{
-		string string_whitelist = SQ_GetSetting( "settings.PLAYER_WHITELIST" )
+		string string_whitelist = SQ_GetSetting__internal( "settings.PLAYER_WHITELIST" )
 		
 		if (string_whitelist != "")
 		{	
@@ -1352,28 +1570,28 @@ void function Init_NewGame()
 			return 7
 		}
 		
-		if ( player.p.lifetime_score < GetIntSetting("restricted_rank") )
+		if ( player.p.season_score < GetIntSetting("restricted_rank") )
 		{
 			return 6
 		}
 		
-		if ( player.p.lifetime_gamesplayed < file.restricted_gamesplayed )
+		if ( player.p.season_gamesplayed < file.restricted_gamesplayed )
 		{
 			return 4
 		}
 		
-		if ( player.p.lifetime_kills < file.restricted_kills )
+		if ( player.p.season_kills < file.restricted_kills )
 		{	
-			//sqprint(format("Kills at time of check: %d",player.p.lifetime_kills));
+			//sqprint(format("Kills at time of check: %d",player.p.season_kills));
 			return 3
 		}
 		
-		if ( getkd( player.p.lifetime_kills, player.p.lifetime_deaths ) < GetCurrentPlaylistVarFloat( "restricted_kd", 0 ) )
+		if ( getkd( player.p.season_kills, player.p.season_deaths ) < GetCurrentPlaylistVarFloat( "restricted_kd", 0 ) )
 		{
 			return 2
 		}
 		
-		if ( player.p.lifetime_playtime < file.restricted_playtime )
+		if ( player.p.season_playtime < file.restricted_playtime )
 		{
 			return 1
 		}
@@ -1395,19 +1613,19 @@ void function Init_NewGame()
 				return LineBreak( file.restricted_admin_message )
 				
 			case 6: 
-				return "Your Rank is too low to play on this server. \n\n Your Score: " + player.p.lifetime_score.tostring() + ". \nLowest rank allowed: " + file.restricted_rank.tostring() + " (Score: " + GetIntSetting("restricted_rank").tostring() + ")"; //this GetIntSetting() setting should be named restricted_score for clarity
+				return "Your Rank is too low to play on this server. \n\n Your Score: " + player.p.season_score.tostring() + ". \nLowest rank allowed: " + file.restricted_rank.tostring() + " (Score: " + GetIntSetting("restricted_rank").tostring() + ")"; //this GetIntSetting() setting should be named restricted_score for clarity
 			
 			case 4:
-				return "You do not have enough games played to play on this server. \n Your total games played: " + player.p.lifetime_gamesplayed.tostring() + " \n Server required minimum: " + file.restricted_gamesplayed.tostring() + "\n You need to play " + ( file.restricted_gamesplayed - player.p.lifetime_gamesplayed ).tostring() + " more games to play on this server.";
+				return "You do not have enough games played to play on this server. \n Your total games played: " + player.p.season_gamesplayed.tostring() + " \n Server required minimum: " + file.restricted_gamesplayed.tostring() + "\n You need to play " + ( file.restricted_gamesplayed - player.p.season_gamesplayed ).tostring() + " more games to play on this server.";
 			
 			case 3:
-				return "You do not have enough kills to play on this server. \n Your kills: " + player.p.lifetime_kills.tostring() + " \n Server required minimum: " + file.restricted_kills.tostring() + "\n You need " + ( file.restricted_kills - player.p.lifetime_kills ).tostring() + " more kills to play on this server.";
+				return "You do not have enough kills to play on this server. \n Your kills: " + player.p.season_kills.tostring() + " \n Server required minimum: " + file.restricted_kills.tostring() + "\n You need " + ( file.restricted_kills - player.p.season_kills ).tostring() + " more kills to play on this server.";
 			
 			case 2:
-				return "Your K/D ratio is too low to play on this server. \n Your K/D: " + getkd( player.p.lifetime_kills, player.p.lifetime_deaths ) + " \n Server required minimum: " + file.restricted_kd.tostring() + "\n You need to increase your K/D ratio by:  " + ( file.restricted_kd - getkd( player.p.lifetime_kills, player.p.lifetime_deaths )).tostring() + " to play on this server.";
+				return "Your K/D ratio is too low to play on this server. \n Your K/D: " + getkd( player.p.season_kills, player.p.season_deaths ) + " \n Server required minimum: " + file.restricted_kd.tostring() + "\n You need to increase your K/D ratio by:  " + ( file.restricted_kd - getkd( player.p.season_kills, player.p.season_deaths )).tostring() + " to play on this server.";
 				
 			case 1:
-				return "Your play time does not meet this server's required minimum play time of: " + PlayTime( file.restricted_playtime ) + "\n Your playtime: " + PlayTime(player.p.lifetime_playtime) + "\n\n You need to play for at least: " + PlayTime(( file.restricted_playtime - player.p.lifetime_playtime)) + " more time.";
+				return "Your play time does not meet this server's required minimum play time of: " + PlayTime( file.restricted_playtime ) + "\n Your playtime: " + PlayTime(player.p.season_playtime) + "\n\n You need to play for at least: " + PlayTime(( file.restricted_playtime - player.p.season_playtime)) + " more time.";
 			
 			default:
 				return "Error 404";
@@ -1418,6 +1636,8 @@ void function Init_NewGame()
 	
 	void function force_rest( entity player )
 	{
+		EndSignal( player, "OnDisconnected", "OnDestroy" )
+		
 		player.FreezeControlsOnServer()
 		player.ForceStand()
 		
@@ -1430,16 +1650,19 @@ void function Init_NewGame()
 	
 	void function Alert_Player_Access( entity player )
 	{	
-		while( IsValid(player) && file.FETCH_BATCH_COMPLETE == false)
+		EndSignal( player, "OnDisconnected", "OnDestroy" )
+		CommandsEnabled( player, false )
+		
+		mkos_Force_Rest( player, [] )
+		
+		if( IsValid( player ) && file.FETCH_BATCH_COMPLETE == false )
 		{	
-			mkos_Force_Rest( player, [] )
-			wait 1
+			WaitSignal( svGlobal.levelEnt, "BatchFetchComplete" )
 		}
 		
-		while( IsValid(player) && player.p.stats_done_loading == false)
+		if( IsValid( player ) && player.p.stats_done_loading == false )
 		{	
-			mkos_Force_Rest( player, [] )
-			wait 1
+			WaitSignal( player, "SyncDataFullyLoaded" )
 		}
 		
 		if( !IsValid( player) )
@@ -1455,7 +1678,8 @@ void function Init_NewGame()
 		if ( IsValid(player) && access_status >= RESTRICTED_ACCESS_STATUS_REQUIRED )
 		{	
 			mkos_Force_Rest( player, [] )
-			Message( player, "Welcome " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30)
+			Message( player, "Welcome " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30 )
+			CommandsEnabled( player, true )
 		}
 		else 
 		{	
@@ -1463,7 +1687,7 @@ void function Init_NewGame()
 			{
 				thread force_rest( player )
 				
-				Message( player, "Sorry " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30)
+				Message( player, "Sorry " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30 )
 				wait 7	
 				
 				if(IsValid( player ))
@@ -1495,7 +1719,7 @@ bool function SendServerMessage( string _msg )
 		status = false;
 	}
 	
-	SQ_ServerMsg( sanitize( _msg ), file.iBotID )
+	SQ_ServerMsg__internal( sanitize( _msg ), file.iBotID )
 	
 	//if cafe's save chat log enabled
 	//ReturnChatArray().append(_msg)
@@ -1504,7 +1728,7 @@ bool function SendServerMessage( string _msg )
 
 void function INIT_IntervalMessages()
 {
-	string msg_ArrayString = trim( SQ_GetSetting("settings.INTERVAL_MESSAGES") )
+	string msg_ArrayString = trim( SQ_GetSetting__internal("settings.INTERVAL_MESSAGES") )
 	bool gotoLoopMessage = false 
 	
 	if( msg_ArrayString.len() == 0 )
@@ -1584,7 +1808,7 @@ void function INIT_IntervalMessages()
 	
 	//loop messages (every x seconds)
 	
-	string loopTime = SQ_GetSetting( "settings.LOOP_MESSAGES_INTERVAL" )
+	string loopTime = SQ_GetSetting__internal( "settings.LOOP_MESSAGES_INTERVAL" )
 	
 	if( loopTime != "" && IsNumeric( loopTime ) )
 	{
@@ -1607,7 +1831,7 @@ void function INIT_IntervalMessages()
 		sqprint(format("file.iLoopMessagesTime is: %d ", file.iLoopMessagesTime ))
 	#endif
 		
-	string getLoopMessages = SQ_GetSetting( "settings.LOOP_MESSAGES" )
+	string getLoopMessages = SQ_GetSetting__internal( "settings.LOOP_MESSAGES" )
 
 	if( getLoopMessages != "" && getLoopMessages.find("|") )
 	{
@@ -1657,10 +1881,10 @@ void function InitPlayerWelcomeMessage()
 
 void function DEV_StartIntervalThread()
 {
-	thread IntervalThread()
+	thread MessageIntervalThread()
 }
 
-void function IntervalThread()
+void function MessageIntervalThread()
 {
 	if( file.bIntervalThreadRunning )
 	{
@@ -1745,7 +1969,9 @@ void function __LoadServerBot()
 {
 	wait 3
 	
-	array<int> result = SQ_CreateServerBot(file.sBotName)
+	printt("\n\n\n\n\n loaded server bot \n\n\n\n\n")
+	
+	array<int> result = SQ_CreateServerBot__internal(file.sBotName)
 	
 	if( result.len() < 1 )
 	{
@@ -2402,7 +2628,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 
 			if (REPORT_STATS && file.bSafeLog)
 			{
-				LogEvent(logString, file.LogE);
+				LogEvent__internal(logString, file.LogE);
 				#if DEVELOPER
 					sqprint(logString);
 				#endif
@@ -2634,14 +2860,16 @@ void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
 	if( damageAmount == 1 )
 		return
 	
-	printt("raw getattacker: ",DamageInfo_GetAttacker( damageInfo ))
-	printt("raw getinflictor: ", DamageInfo_GetInflictor( damageInfo ))
-	printt("damageAmount: ", damageAmount)
-	printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )
-	printt("weaponSource: ", weaponSource )
-
-	#if DEVELOPER
-		sqprint(format("Weapon Source: %d, Damage Amount: %.2f", weaponSource, damageAmount));
+	#if DEVELOPER && DEBUGDMG
+		DebugDamageInfo( victim, damageInfo )
+		printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )	
+	/* 
+		printt("raw getattacker: ",DamageInfo_GetAttacker( damageInfo ))
+		printt("raw getinflictor: ", DamageInfo_GetInflictor( damageInfo ))
+		printt("damageAmount: ", damageAmount)
+		printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )
+		printt("weaponSource: ", weaponSource ) 
+	*/
 	#endif
 
 	int attackerHandle = 0  
@@ -2873,7 +3101,7 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 	{	
 		SetConVarInt( "net_processTimeBudget", 5100 )
 		WaitFrame()
-		int VERIFY = EA_Verify( token, OID, ea_acc )
+		int VERIFY = EA_Verify__internal( token, OID, ea_acc )
 		SetConVarInt( "net_processTimeBudget", 200 )
 
 		switch (VERIFY) 
@@ -2976,7 +3204,7 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 
 int function GetPlayerMetricsIndex( entity player ) 
 {	
-	if(!IsValid( player ))
+	if( !IsValid( player ) )
 	{
 		return -1;
 	}
@@ -3158,7 +3386,7 @@ void function SavePlayerData( string UID, string setting, ... )
 	if( vargc < 1 )
 	{
 		#if DEVELOPER 
-			sqprint("No argument was passed to SavePlayerData() ")
+			Warning( "No argument was passed to SavePlayerData()" )
 		#endif 
 		return 
 	}
@@ -3377,18 +3605,18 @@ void function UpdateRoundStats_GlobalsCarryOver()
 		if ( IsValid( player ) )
 		{
 		
-			int lifetime_kills = player.p.lifetime_kills
-			int lifetime_deaths = player.p.lifetime_deaths
-			int lifetime_glides = player.p.lifetime_glides
+			int season_kills = player.p.season_kills
+			int season_deaths = player.p.season_deaths
+			int season_glides = player.p.season_glides
 		
 			string player_oid = player.GetPlatformUID()
 			int current_kills = GetPlayerKills( player ) 
 			int current_deaths = GetPlayerDeaths( player )
 			int current_glides = GetGlides( player )
 			
-			player.p.lifetime_kills = current_kills + lifetime_kills
-			player.p.lifetime_deaths = current_deaths + lifetime_deaths
-			player.p.lifetime_glides = current_glides + lifetime_glides
+			player.p.season_kills = current_kills + season_kills
+			player.p.season_deaths = current_deaths + season_deaths
+			player.p.season_glides = current_glides + season_glides
 			
 		}	
 	}
@@ -3826,7 +4054,7 @@ void function Flowstate_TrackingVision_TryToTrackSuperglide_Stats( entity player
 			RecordPlayerSuperglides( player )
 			if ( file.sg_counter_msg )
 			{	
-				Message ( player, format("%s: %d", file.superglidetitle, ( GetGlides(player) + player.p.lifetime_glides ) ), file.superglide_msg )
+				Message ( player, format("%s: %d", file.superglidetitle, ( GetGlides(player) + player.p.season_glides ) ), file.superglide_msg )
 			}
 			break;	
 		} 			
@@ -3940,9 +4168,9 @@ void function DEV_PrintAllTrackerErrors()
 		data += format( "|#error %s \n", error )
 	}
 	
-	if( file.LogOn && isLogging() )
+	if( file.LogOn && isLogging__internal() )
 	{
-		LogEvent( data, false )
+		LogEvent__internal( data, false )
 	}
 }
 
@@ -3957,7 +4185,7 @@ void function DEV_PrintAllTrackerErrors()
 
 void function PlayerDisconnectedCallback( entity player ) 
 {	
-	player.Signal( "PlayerDisconnected" )
+	player.Signal( "OnDisconnected" )
     string reason = "Disconnection";
     PIN_PlayerLeft(player, reason);
 }
@@ -3990,7 +4218,7 @@ void function UpdateLiveStats( string metrics )
 	
 	if ( metrics != "" )
 	{
-		SQ_UpdateLiveStats( metrics )
+		SQ_UpdateLiveStats__internal( metrics )
 	}
 	
 }
@@ -4006,17 +4234,17 @@ void function FinishGameStatsRound()
 		//sqprint(message)
 
 						//R5R.DEV
-						if ( file.LogOn && isLogging() )
+						if ( file.LogOn && isLogging__internal() )
 						{
 						
-								if(!file.bSafeLog){ stopLogging(false); return; }
+								if(!file.bSafeLog){ stopLogging__internal(false); return; }
 								
 								#if LOG_ERRORS
 									DEV_PrintAllTrackerErrors()
 								#endif
 								
 								//mkos: log winner placement - && denotes placement entry for parser
-								LogEvent(
+								LogEvent__internal(
 								format("\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true)),
 								file.LogE
 								)
@@ -4028,11 +4256,11 @@ void function FinishGameStatsRound()
 										if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 										{
 											sqprint("No stats to ship...\n");
-											stopLogging(false)
+											stopLogging__internal(false)
 										} 
 										else 
 										{
-											stopLogging(Logging_ShipStats()); //IMPORTANT
+											stopLogging__internal(Logging_ShipStats()); //IMPORTANT
 											
 											//update live global stats for match making (verified only)
 											string metrics = PrintAllPlayerMetrics(true)
@@ -4089,7 +4317,7 @@ void function PIN_AddPlayer( entity player )
 			mkos_Force_Rest( file.eBotEnt, [] )
 			file.eBotEnt.p.start_in_rest_setting = true;
 			thread BotInvis( player )
-			thread IntervalThread()
+			thread MessageIntervalThread()
 		}
 		else 
 		{
@@ -4114,10 +4342,12 @@ void function PIN_AddPlayer( entity player )
 	}
 	else 
 	{	
-		int i = 0;
-		while( IsValid(player) && !player.p.stats_done_loading )
+		if( !player.p.stats_done_loading )
 		{	
-			i++; wait 1; if(i==30){	break }
+			waitthread WaitSignalOrTimeout( player, 15, "SyncDataFullyLoaded", "OnDestroy", "OnDisconnected" )
+			
+			if( !IsValid( player ) )
+				return
 		}
 		
 		//deprecated
@@ -4143,7 +4373,7 @@ void function PIN_AddPlayer( entity player )
 		}
 	}
 	
-	if ( file.LogOn && isLogging() && IsValid( player ) )
+	if ( file.LogOn && isLogging__internal() && IsValid( player ) )
 	{	
 		string p_ea_name = player.GetPlayerName();
 		Message(player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10)	
@@ -4178,7 +4408,7 @@ void function PIN_AddPlayer( entity player )
 				
 				if (IsValid(player)) 
 				{
-					LogEvent(format("^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
+					LogEvent__internal(format("^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
 					   UID,
 					   GetNumTeamsRemaining().tostring(),
 					   GetUnixTimestamp(),
@@ -4218,7 +4448,7 @@ void function PIN_PlayerLeft( entity player, string reason )
 
 	if (file.LogOn && file.bSafeLog) 
 	{
-		if (isLogging()) 
+		if ( isLogging__internal() ) 
 		{
 			if ( GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false ) )
 			{		
@@ -4251,7 +4481,7 @@ void function PIN_PlayerLeft( entity player, string reason )
 				timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
 			}
 
-			LogEvent(
+			LogEvent__internal(
 				format("|&,%s,%i,%d,%s",
 					   OID,
 					   timeRemaining,
@@ -4304,7 +4534,7 @@ void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	float deathtime = Time();
 
-	if ( file.LogOn && isLogging() && IsValid(victim) && victim.IsPlayer() )
+	if ( file.LogOn && isLogging__internal() && IsValid(victim) && victim.IsPlayer() )
 	{
 		//TODO: Call function with additional flag
 		// for attackers from non player sources
@@ -4653,7 +4883,7 @@ void function PIN_Training( entity player, string status, string trainingStatus 
 		if( file.LogOn )
 		{
 			int max = 0
-			while( !SQ_GetLogState( state.READY ) )
+			while( !SQ_GetLogState__internal( state.READY ) )
 			{
 				wait 0.1
 				max++;
@@ -4685,33 +4915,32 @@ bool function bAfkToRest(){ return file.afk_to_rest_enabled }
 #if HAS_TRACKER_DLL
 //do nothing
 #else
-		array<int> function SQ_CreateServerBot(){ return [-1] }
+		array<int> function SQ_CreateServerBot__internal(){ return [-1] }
 		
-		int function EA_Verify(){ return 0 }
+		int function EA_Verify__internal(){ return 0 }
 		
-		bool function isLogging(){ return false }
-		bool function SQ_GetLogState( int state ){ return false }
+		bool function isLogging__internal(){ return false }
+		bool function SQ_GetLogState__internal( int state ){ return false }
 	
-		string function SQMatchID(){ return "" }
-		string function GetKDString( string UID ){ return "NA" }
-		string function SQ_GetSetting( string key ){ return "" }
-		string function FetchGlobalSettingsFromR5RDEV( string query ){ return "" }
+		string function SQMatchID__internal(){ return "" }
+		string function GetSyncData__iternal( string UID ){ return "NA" }
+		string function SQ_GetSetting__iternal( string key ){ return "" }
+		string function FetchGlobalSettingsFromR5RDEV__iternal( string query ){ return "" }
 			
-		void function InitializeLogThread_internal(){}
-		void function LogEvent( string data, bool encrypt ){}
-		void function stopLogging(){}	
+		void function InitializeLogThread__internal(){}
+		void function LogEvent__internal( string data, bool encrypt ){}
+		void function stopLogging__internal(){}	
 		void function sqprint( string data ){ printt(data) }
-		void function sqerror( string data ){ printt(data) }		
-		void function testbool(){}		
-		void function _STATSHOOK_UpdatePlayerCount(){}
-		void function _STATSHOOK_EndOfMatch(){}
-		void function LoadKDString( string UID ){}
-		void function SQ_UpdateLiveStats(){}
-		void function SQ_ResetStats(){}
-		void function LoadBatchKDStrings(){}
-		void function CleanupLogs(){}	
-		void function SQ_ReloadConfig(){}		
-		void function SQ_ServerMsg( string msg, int id ){}	
+		void function sqerror( string data ){ printt(data) }	
+		void function _STATSHOOK_UpdatePlayerCount__internal(){}
+		void function _STATSHOOK_EndOfMatch__internal(){}
+		void function LoadSyncData__internal( string UID ){}
+		void function SQ_UpdateLiveStats__internal(){}
+		void function SQ_ResetStats__internal(){}
+		void function LoadBatchSyncData__internal(){}
+		void function CleanupLogs__internal(){}	
+		void function SQ_ReloadConfig__internal(){}		
+		void function SQ_ServerMsg__internal( string msg, int id ){}	
 #endif
 
 #if STUB

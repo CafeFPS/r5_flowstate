@@ -490,12 +490,25 @@ void function CodeCallback_MapSpawn() // original script entry point
 		
 		case "fs_lgduels_1v1":
 		case "fs_1v1":
-		thread FS_TrackPlayersPositionInScoreboard()
+		
+		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash
+			thread FS_TrackPlayersPositionInScoreboard()
 		break
 	}
 	
 	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
 }
+
+const array<string> InvalidModesForTrackScoreBoard = //const values
+[
+	SURVIVAL,
+	MENUFALL,
+	CUSTOM_CTF,
+	TEAM_DEATHMATCH,
+	fs_prophunt,
+	fs_duckhunt,
+	fs_infected	,
+]
 
 void function FS_RestartServerAfterSomeTimeWithoutPlayers()
 {
@@ -553,9 +566,10 @@ void function FS_TrackPlayersPositionInScoreboard()
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "VModEnable" || args[0] == "vban" ) return
+	if( !IsCommandsEnabled( player ) ) return 
+	if( args[0] == "VModEnable" || args[0] == "vban" ) return
 	
-	#if !SCRIPT_GAME_VERSION__RELEASE && DEVELOPER
+	#if DEVELOPER
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
@@ -572,7 +586,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
 		#if DEVELOPER 
-		printt("CodeCallback_ClientCommand", commandString)
+			printt( "CodeCallback_ClientCommand", commandString )
 		#endif 
 		
 		foreach ( callbackFunc in svGlobal.clientCommandCallbacksNew[ commandString ] )
@@ -588,7 +602,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		#if !SCRIPT_GAME_VERSION__RELEASE && !DEVELOPER
+		#if DEVELOPER
 			printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
 		#endif
 		return false

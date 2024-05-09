@@ -128,7 +128,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
-	printt( "CodeCallback_OnPlayerRespawned", player )
+		printt( "CodeCallback_OnPlayerRespawned", player )
 	#endif
 	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
 		cb( player )

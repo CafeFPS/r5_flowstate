@@ -153,6 +153,8 @@ global function OpenDevMenu
 
 global function OpenModelMenu
 
+global function UILevelLoadCallback
+
 struct
 {
 	array<void functionref()>                   partyUpdatedCallbacks
@@ -483,9 +485,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 
 void function UICodeCallback_LevelInit( string levelname )
-{
-	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
-	
+{	
 	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
 	{	
 		if ( RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
@@ -1527,6 +1527,26 @@ void function InitGamepadConfigs()
 	SetStandardAbilityBindingsForPilot( GetLocalClientPlayer() )
 }
 
+void function UILevelLoadCallback()
+{
+	if( is1v1GameType() )
+	{	
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y + 155 )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 171, 132, 14, 220 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x - 30, wepmenuBasePos.y - 40 )	
+		Hud_SetText( wepmenu, "Flowstate 1v1" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 180, 114, 41, 255 )
+	}
+}
 
 void function InitMenus()
 {
@@ -1587,7 +1607,7 @@ void function InitMenus()
 	AddPanel( weaponselector, "BuyMenu3", InitArenasBuyPanel3 )
 	AddPanel( weaponselector, "BuyMenu4", InitArenasBuyPanel4 )
 	AddPanel( weaponselector, "BuyMenu5", InitArenasBuyPanel5 )
-
+	
 	//results
 	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/challenges_results.menu", InitFRChallengesResultsMenu ) //results
 	

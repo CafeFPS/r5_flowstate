@@ -77,6 +77,9 @@ global function ServerMsgToBox
 global function SetPlayerCustomModel
 global function ResetLoadedWeapons //tracker override
 
+global function ClientCommand_SaveCurrentWeapons
+global function ClientCommand_GiveWeapon
+
 //LGDuels //TODO: move..somewhere.. 
 const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
 const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
@@ -630,7 +633,7 @@ bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> a
 			player.p.hitsound = IntToSound( param );
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 			//Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
-			LocalMsg( player, "#FS_SUCCESS", "#FS_HitsoundChanged", 0, 3, "", param )
+			LocalMsg( player, "#FS_SUCCESS", "#FS_HitsoundChanged", eMsgUI.DEFAULT, 3, "", param )
 			return true	
 		} 
 		catch ( hiterr )
@@ -658,7 +661,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 		if ( args.len() < 1 || param == "" )
 		{
 			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
-			LocalMsg( player, "#FS_HandicapTitle", "#FS_HandicapSubstr", 0, 15 )
+			LocalMsg( player, "#FS_HandicapTitle", "#FS_HandicapSubstr", eMsgUI.DEFAULT, 15 )
 			return true
 		}				
 		
@@ -673,7 +676,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 						player.p.p_damage = 2;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						//Message( player, "Success", "Damage and healing was set to 2.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOnSubstr", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOnSubstr", eMsgUI.DEFAULT, 3 )
 						return true
 					
 					} 
@@ -691,7 +694,7 @@ bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> a
 						player.p.p_damage = 3;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						//Message( player, "Success", "Damage and healing was set to 3.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOffSubstr", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOffSubstr", eMsgUI.DEFAULT, 3 )
 						return true
 					
 					} 
@@ -730,14 +733,14 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			}
 		
 			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
-			LocalVarMsg( player, "#FS_WAIT_TIME_CC", 1, 15, limit.tostring(), player.p.IBMM_grace_period, status )
+			LocalVarMsg( player, "#FS_WAIT_TIME_CC", eMsgUI.VAR_SUBTEXT_SLOT, 15, limit.tostring(), player.p.IBMM_grace_period, status )
 			return true
 		}				
 					
 		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
 		{
 			//Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
-			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", 0, 5, "", limit.tostring() )
+			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", eMsgUI.DEFAULT, 5, "", limit.tostring() )
 			return true
 		} 
 		
@@ -756,7 +759,7 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 			//Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
 			
-			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", 0, 3, "", user_value.tostring() )
+			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
 			return true
 		} 
 		catch ( hiterr )
@@ -818,7 +821,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_lock1v1_setting( player, true )
 						//Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
 						return true
 					
 					} 
@@ -840,7 +843,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_lock1v1_setting( player, false )
 						//Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
 						return true
 					} 
 					catch ( lock1v1_err_2 )
@@ -896,7 +899,7 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_start_in_rest_setting( player, true )
 						//Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
 						return true
 					
 					} 
@@ -973,7 +976,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_enable_input_banner( player, true )
 						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
 						return true				
 					} 
 					catch ( rest_setting_err_1 )
@@ -994,7 +997,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 						SavePlayer_enable_input_banner( player, false )
 						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", 0, 3 )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
 						return true
 					} 
 					catch ( rest_setting_err_2 )
@@ -1801,9 +1804,9 @@ void function __HighPingCheck(entity player)
 		
 		//TODO: LocalVarMsg()
 		//Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
-		LocalVarMsg( player, "#FS_AFK_KICK", 1, 3, FlowState_MaxPingAllowed(), (int(player.GetLatency()* 1000) - 40)  )
+		LocalVarMsg( player, "#FS_AFK_KICK", eMsgUI.VAR_EVENT, 5, FlowState_MaxPingAllowed(), (int(player.GetLatency()* 1000) - 40)  )
 		
-		wait 3
+		wait 5
 
 		if ( !IsValid( player ) ) return
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
@@ -3395,7 +3398,7 @@ void function UpgradeShields(entity player, bool died)
 			case 5:
 				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", 0, 4, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", eMsgUI.DEFAULT, 4, "", player.p.name )
 					//Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
             break
             case 6:
@@ -3404,32 +3407,32 @@ void function UpgradeShields(entity player, bool died)
             break
 			case 8:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 8 kill streak and extra shield!", 5, "")
 			break
 			case 15:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak!", 5, "")
 			break
 			case 20:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 5, "")
 			break
 			case 25:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_30_KILL_STREAK_TITLE", "#FS_30_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_30_KILL_STREAK_TITLE", "#FS_30_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 5, "")
 			break
 			case 35:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_PRED_SUMPREMACY_TITLE", "#FS_35_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_PRED_SUMPREMACY_TITLE", "#FS_35_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 5, "")
 			break
 			case 50:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_50_KILL_STREAK_TITLE", "#FS_50_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_50_KILL_STREAK_TITLE", "#FS_50_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 5, "")
             break
 			default:
@@ -3456,29 +3459,29 @@ void function KillStreakAnnouncer(entity player, bool died) {
         switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
 			case 5:
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", 0, 4, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_KILL_STREAK", "#FS_5_KILL_STREAK", eMsgUI.DEFAULT, 4, "", player.p.name )
 					//Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
 			case 10:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_EXTRA_KILL_STREAK_TITLE", "#FS_EXTRA_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
             break
 			case 15:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_15_KILL_STREAK_TITLE", "#FS_15_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak and extra shield!", 5, "")
 			case 20:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", 0, 5, "", player.p.name )
+				    LocalMsg( sPlayer, "#FS_20_KILL_STREAK_TITLE", "#FS_20_KILL_STREAK_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 					//Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb and extra shield!", 5, "")
             break
 			case 25:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray())
-					LocalMsg( sPlayer, "FS_PRED_SUMPREMACY_TITLE", "#FS_25_PREDATORY_SUPREMACY", 0, 5, "", player.p.name )
+					LocalMsg( sPlayer, "FS_PRED_SUMPREMACY_TITLE", "#FS_25_PREDATORY_SUPREMACY", eMsgUI.DEFAULT, 5, "", player.p.name )
 				//Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 25 kill streak and extra shield!", 5, "")
             break
 			default:
@@ -3494,7 +3497,7 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	player.SetShieldHealth( FlowState_ExtrashieldValue() )
 	if(isOvershieldFromGround){
 			foreach(sPlayer in GetPlayerArray()){
-			LocalMsg( sPlayer, "#FS_EXTRA_SHIELD_TITLE", "#FS_EXTRA_SHIELD_SUBSTR", 0, 5, "", player.p.name )
+			LocalMsg( sPlayer, "#FS_EXTRA_SHIELD_TITLE", "#FS_EXTRA_SHIELD_SUBSTR", eMsgUI.DEFAULT, 5, "", player.p.name )
 			//Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
 		}
 	}
@@ -3871,7 +3874,7 @@ void function SimpleChampionUI()
 						}
 
 						//Message( player, "Oddball", file.selectedLocation.name, 5, "" )
-						LocalMsg( player, "#FS_Oddball", "", 0, 5, "", file.selectedLocation.name )
+						LocalMsg( player, "#FS_Oddball", "", eMsgUI.DEFAULT, 5, "", file.selectedLocation.name )
 						// Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 2, 0)
 						thread function ( ) : ( player )
 						{
@@ -3883,12 +3886,12 @@ void function SimpleChampionUI()
 							thread ResetBallInBallSpawner()
 
 							foreach( player in GetPlayerArray() )
-								LocalMsg( player, "#FS_OddballReady", "", 0, 3, "", "", "UI_InGame_FD_SliderExit" )
+								LocalMsg( player, "#FS_OddballReady", "", eMsgUI.DEFAULT, 3, "", "", "UI_InGame_FD_SliderExit" )
 								//Message( player, "BALL READY", "", 3, "UI_InGame_FD_SliderExit" )
 						}()
 					}
 					else if( !is1v1EnabledAndAllowed() )
-						LocalMsg( player, "#FS_Deathmatch", "", 0, 5, "", file.selectedLocation.name )
+						LocalMsg( player, "#FS_Deathmatch", "", eMsgUI.DEFAULT, 5, "", file.selectedLocation.name )
 						//Message( player, "Deathmatch", file.selectedLocation.name, 5, "" )
 
 					if( !IsValid( player ) || !IsAlive( player ) )
@@ -5719,17 +5722,27 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {	
 	bool bRestFlag = false
 	
-	if( !IsValid( player ) || !IsAlive( player ) )
-		return false
+	if( !IsValid( player ) || !IsAlive( player ) || args.len() < 2 )
+		return true
+	
+	int uiType = eMsgUI.DEFAULT
+	
+	if( args[0] == "wepmenu" )
+	{
+		args.remove(0)
+		uiType = eMsgUI.WAVE
+	}
+	
+	printarray( args )
 
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
 		//Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
-		LocalMsg( player, "#FS_ERROR", "#FS_DisabledTDMWeps" )
-		return false
+		LocalMsg( player, "#FS_ERROR", "#FS_DisabledTDMWeps", uiType )
+		return true
 	}
 
-	if(args.len() < 2) return false
+	if(args.len() < 2) return true
 
 	if( is1v1EnabledAndAllowed() && isPlayerInRestingList( player ) )
 	{	
@@ -5741,50 +5754,51 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) )
 	{
 		//Message( player, "NOT ALLOWED IN WAITING MODE" )
-		LocalMsg( player, "#FS_NotAllowedWaiting" )
-		return false
+		LocalMsg( player, "#FS_NotAllowedWaiting", "", uiType )
+		return true
 	}
 	
 	if( is1v1EnabledAndAllowed() && !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
 	{
-		LocalMsg( player, "#FS_CustomWepChalOnly" )
-		return false
+		LocalMsg( player, "#FS_CustomWepChalOnly", "", uiType )
+		return true
 	}
 
 	if( is1v1EnabledAndAllowed() && args[0] != "p" && args[0] != "s" )
-		return false
+		return true
 
 	if( !SURVIVAL_Loot_IsRefValid( args[1] ) || IsForcedlyDisabledWeapon( args[1] ) )
 	{
 		//Message( player, "WEAPON NOT ALLOWED :(" )
-		LocalMsg( player, "#FS_WepNotAllowed" )
-		return false
+		LocalMsg( player, "#FS_WepNotAllowed", "", uiType )
+		return true
 	}
 
     if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
 	{
 		//Message(player, "WEAPON BLACKLISTED")
-		LocalMsg( player, "#FS_WepBlacklisted" )
-		return false
+		LocalMsg( player, "#FS_WepBlacklisted", "", uiType )
+		return true
 	}
 
 	if( file.blacklistedAbilities.len() && file.blacklistedAbilities.find(args[1]) != -1 )
 	{
 		//Message(player, "ABILITY BLACKLISTED")
-		LocalMsg( player, "FS_AbilityBlacklisted" )
-		return false
+		LocalMsg( player, "FS_AbilityBlacklisted", "", uiType )
+		return true
 	}
 
 	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
 	{
 		//Message(player, "TGIVE COOLDOWN")
-		LocalMsg( player, "#FS_TgiveCooldown" )
-		return false
+		LocalMsg( player, "#FS_TgiveCooldown", "", uiType )
+		return true
 	}
 	
 	entity weapon
 
-	try {
+	try 
+	{
 		switch(args[0])
 		{
 			case "p":
@@ -5792,7 +5806,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
 				if ( data.lootType != eLootType.MAINWEAPON )
-					return false
+					return true
 
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				if( IsValid( primary ) )
@@ -5807,7 +5821,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( args[1] )
 				if ( data.lootType != eLootType.MAINWEAPON )
-					return false
+					return true
 
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 				if( IsValid( secondary ) )
@@ -5834,9 +5848,11 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				ultimate = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
 			break
 		}
-	} catch( e420 ) {
-           // printt("Invalid weapon name for tgive command.")
-        }
+	} 
+	catch( e420 ) 
+	{
+		// printt("Invalid weapon name for tgive command.")
+    }
 
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() && args.len() > 2 )
     {
@@ -5891,7 +5907,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 				subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
 			}
 			
-			LocalMsg( player, "#FS_WEAPONSAVED", subToken, 0, 5, sWepName )
+			LocalMsg( player, "#FS_WEAPONSAVED", subToken, uiType, 5, sWepName )
 		}	
 			
 		if (bRestFlag)
