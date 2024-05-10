@@ -4108,40 +4108,28 @@ void function soloModeThread(LocPair waitingRoomLocation)
 void function InputWatchdog( entity player, entity opponent, soloGroupStruct group )
 {
 	#if DEVELOPER
-	sqprint( format("THREAD FOR GROUP STARTED" ))
+		sqprint( format("THREAD FOR GROUP STARTED - Waiting for input to change" ))
 	#endif
 	
 	EndSignal( player, "InputChanged", "OnDeath", "OnDisconnected" )
 	EndSignal( opponent, "InputChanged", "OnDeath", "OnDisconnected" )
-
-		#if DEVELOPER
-		sqprint("Waiting for input to change");
-		#endif
 	
 	OnThreadEnd(
 		function() : ( player, opponent, group )
 		{
 			#if DEVELOPER
-			sqprint( format("THREAD FOR GROUP ENDED" ))
+				sqprint( format("THREAD FOR GROUP ENDED" ))
 			#endif
 			
-			if ( player.p.input != opponent.p.input )
+			if ( IsValid( player ) && IsValid(opponent) && player.p.input != opponent.p.input )
 			{	
-				if(IsValid(player))
-				{
-					Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
-					//Message( player, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
-				}
-				
-				if(IsValid(opponent))
-				{
-					Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" );
-					//Message( opponent, "INPUT CHANGED", "A player's input changed during the fight", 3, "weapon_vortex_gun_explosivewarningbeep" )
-					LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
-				}
-				
-				if(IsValid(group))
+				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
+				LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+
+				Remote_CallFunction_NonReplay( opponent, "ForceScoreboardLoseFocus" );
+				LocalMsg( opponent, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
+			
+				if(IsValid( group ))
 				{
 					group.IsFinished = true
 				}
@@ -4644,7 +4632,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 		return //this is threaded off so we want to check again
 	}
 	
-	EndSignal( player, "OnDisconnected" )
+	EndSignal( player, "OnDisconnected", "OnDestroy" )
 	
 	int id = player.p.handle + 1
 	int iChallengeTextID = id + 1
