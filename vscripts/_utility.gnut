@@ -4924,3 +4924,18 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
     })
 
 }
+
+/*
+void function OneThousand()
+{
+	thread(	void function() : ()
+		{
+			for( int i = 0; i < 1000; i++ )
+			{
+				DEV_SpawnLootBinAtCrosshair()
+				WaitFrame()
+			}
+		}				
+	)()
+}
+*/

@@ -177,6 +177,7 @@ struct
 	string MOTD = ""
 	float roundTime
 	bool bAllowWeaponsMenu
+	table<string,bool> spawnOptions
 	
 } settings
 
@@ -191,6 +192,7 @@ float REST_GRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
 
+//TODO: unite this in a singular modular framework
 const array<string> charIndexMap = [
 		"Bangalore", //0
 		"Bloodhound", //1
@@ -371,6 +373,26 @@ void function INIT_PlaylistSettings()
 	settings.MOTD									= GetCurrentPlaylistVarString( "custom_MOTD", "Welcome to my server" )
 	settings.roundTime								= float ( FlowState_RoundTime() )
 	settings.bAllowWeaponsMenu						= !FlowState_AdminTgive()
+}
+
+void function INIT_SpawnPakOptions()
+{
+	bool use_sets = GetCurrentPlaylistVarBool( "spawnpaks_use_sets", false )
+	bool use_random = GetCurrentPlaylistVarBool( "spawnpaks_use_random", false )
+	bool prefer = GetCurrentPlaylistVarBool( "spawnpaks_prefer", false )
+	int preferred = GetCurrentPlaylistVarInt( "spawnpaks_preferred_pak", 1 )
+	
+	settings.spawnOptions["use_sets"] <- use_sets
+	settings.spawnOptions["use_random"] <- use_random
+	settings.spawnOptions["prefer"] <- prefer
+	
+	if( preferred > 1 )
+	{
+		SetPreferredSpawnPak( preferred )
+		#if DEVELOPER
+			printt("Preferred spawnpak set to:", preferred )
+		#endif 
+	}
 }
 
 bool function isCustomWeaponAllowed()
@@ -3063,10 +3085,10 @@ void function INIT_WeaponsMenu()
 
 void function _soloModeInit( int eMap )
 {	
-	//RegisterSignal("On1v1Death") //TODO
 	RegisterSignal( "NotificationChanged" )
 	INIT_1v1_sbmm()
 	INIT_PlaylistSettings()
+	INIT_SpawnPakOptions()
 	
 	if( settings.bAllowWeaponsMenu )
 	{
@@ -3197,8 +3219,14 @@ void function _soloModeInit( int eMap )
 			break;
 	}
 	
-	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap )
+	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap, settings.spawnOptions )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()
+	
+	if( allSoloLocations.len() == 0 )
+	{
+		SetPreferredSpawnPak( 1 )
+		allSoloLocations = ReturnAllSoloLocations( eMap )
+	}
 	
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
 	{

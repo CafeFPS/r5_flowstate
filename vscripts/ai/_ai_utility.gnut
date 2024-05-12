@@ -1715,3 +1715,38 @@ bool function WithinEngagementRange( entity npc, vector origin )
 
 	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
 }
+
+/*
+void function SpawnLootbinCount( int count )
+{
+	thread(void function() : ( count )
+	{
+		entity player = GetPlayerArray()[0]
+		vector origin = GetPlayerCrosshairOrigin(player)
+		
+		for ( int i = 0; i < count; i++ )
+		{
+			float angle = 360.0 * ( i / float( count ) )
+			float spread = 5.0 * i
+			vector offset = Vector( cos( angle ), sin( angle ), 0 ) * spread;
+			
+			DEV_SpawnLootBinAtOffset(origin + offset, player)
+			//WaitFrame()
+		}
+	})()
+}
+
+void function DEV_SpawnLootBinAtOffset( vector origin, entity player )
+{
+    vector org1 = origin
+    vector org2 = player.GetOrigin()
+    vector vec1 = org2 - org1
+    vector angles1 = VectorToAngles( vec1 )
+    angles1.x = 0
+
+    entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
+    SetTargetName( ent_lootbin, "LootBin" )
+    ent_lootbin.SetOrigin( origin )
+    ent_lootbin.SetAngles( angles1 )
+}
+*/

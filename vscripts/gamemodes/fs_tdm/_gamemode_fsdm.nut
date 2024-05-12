@@ -1034,6 +1034,33 @@ void function RotateMap()
 	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 }
 
+
+LocPairData function Init_DropoffPatchSpawns()
+{
+	array<LocPair> dropoff_patch = [
+		
+			//removed skyroom
+			//NewLocPair( <-1378.05, 559.458, 1026.54 >, < 359.695, 307.314, 0 >),//13
+			//NewLocPair( <-1469.03, -117.677, 1026.54 >, < 1.34318, 60.0746, 0 >),
+			
+			NewLocPair( < -2824.9, 2868.1, -111.969 >, < 0.354577, 31.8209, 0 >), //13
+			NewLocPair( < -2541.81, 3919.45, -111.969 >, < 358.65, 315.899, 0 >),
+		
+			NewLocPair( < -2958.52, 183.899, 190.063 >, < 0.905181, 353.701, 0 >),//14
+			NewLocPair( < -1693.05, -663.034, 190.063 >, < 0.514909, 140.627, 0 >),
+			
+			NewLocPair( <2544.54, 3934.15, -111.969 >, < 3.3168, 218.85, 0>), //15
+			NewLocPair( <3196.49, 3010.24, -111.969 >, < 1.33276, 134.094, 0>),
+			
+			NewLocPair( < 2551.65, 515.938, 193.337 >, < 0.894581, 215.161, 0>), //16
+			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
+		];
+			
+			
+	LocPairData extendSpawns = CreateLocPairData( dropoff_patch, false, null )
+	return extendSpawns
+}
+
 //////////////////////////////////////////////////// 
 ///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////// 
@@ -1221,6 +1248,12 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
+		//custom spawn extension using the implemented abstracted callback :) ~mkos 
+		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
+		{
+			AddCallback_FlowstateSpawnsInit( Init_DropoffPatchSpawns )
+		}
+	
 		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
 		_soloModeInit( MapName() ) //enum
 
@@ -1284,7 +1317,7 @@ void function DM__OnEntitiesDidLoad()
 	switch( MapName() )
     {
     	case eMaps.mp_rr_canyonlands_staging:
-    	{
+		
     		if( Flowstate_IsLGDuels() )
 			{
     			SpawnLGProps()
@@ -1293,12 +1326,12 @@ void function DM__OnEntitiesDidLoad()
     		else
     			SpawnMapPropsFR()
     		break
-    	}
+
     	case eMaps.mp_rr_arena_composite:
-		{
+		
 			if( flowstateSettings.patch_for_dropoff )
-			{			
-				Patch_Dropoff();
+			{	
+				Patch_Dropoff()
 			} 
 			else if( flowstateSettings.patch_waiting_area )
 			{
@@ -1309,7 +1342,6 @@ void function DM__OnEntitiesDidLoad()
 			foreach(mover in badMovers)
 				if( IsValid(mover) ) mover.Destroy()
 			break
-		}
 		
 		case eMaps.mp_rr_aqueduct:
 			if( flowstateSettings.patch_waiting_area )
@@ -1454,8 +1486,6 @@ void function Flowstate_ServerSaveChat()
 		i++
 	}
 
-	DevP4Checkout( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
-	DevTextBufferDumpToFile( "FlowstateDM_GlobalChat/FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
 	
 	file.allChatLines.clear()
 	Warning("[!] CHAT WAS SAVED in /r5reloaded/platform/, CHAT LINES: " + i)

@@ -1,11 +1,14 @@
-struct {
+struct 
+{
   table<string, array<asset> > we_assets = {}
   table<string, array<asset> > kc_assets = {}
   table<string, array<asset> > range_assets = {}
+  
   // manually written, might not work lmao
   array<string> we_sections = []
   array<string> kc_sections = []
   array<string> range_sections = []
+  
 } file
 
 global function GetAssets
@@ -48,7 +51,8 @@ void function Sh_MapEditor_Init()
 }
 #endif
 
-void function ShAssets_Init() {
+void function ShAssets_Init() 
+{
 array<asset> base_models = [$"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", $"mdl/Humans/class/medium/combat_dummie_medium.rmdl"]
 file.we_assets ["mdl/base_models"] <- base_models
 file.kc_assets ["mdl/base_models"] <- base_models
@@ -253,6 +257,7 @@ foreach(string key, array<asset> assets in GetAssets()) {
 #endif
 
 }
+
 
 table<string, array<asset> > function GetAssets() {
   #if !UI

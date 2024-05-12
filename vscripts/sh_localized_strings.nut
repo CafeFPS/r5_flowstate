@@ -3,6 +3,7 @@
 global function INIT_Flowstate_Localization_Strings
 global function Flowstate_FetchToken
 global function ClientLocalizedTokenExists
+global function StringReplaceLimited
 
 #if SERVER
 	global function Flowstate_FetchTokenID
