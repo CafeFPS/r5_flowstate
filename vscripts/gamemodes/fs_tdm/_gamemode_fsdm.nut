@@ -1081,6 +1081,7 @@ bool function bIs1v1Mode()
 		case eMaps.mp_rr_party_crasher:
 		case eMaps.mp_rr_olympus_mu1:
 		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_arena_phase_runner:
 		return true
 		default:
 		return false

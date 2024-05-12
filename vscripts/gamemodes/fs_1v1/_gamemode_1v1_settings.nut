@@ -29,6 +29,8 @@ global function GetCurrentSpawnAsset
 		bool bOverrideSpawns = false
 	}
 
+	const vector MASTER_ORIGIN_OFFSET = <0,450,-5>
+	
 	struct
 	{
 		array<LocPairData functionref()> onSpawnInitCallbacks
@@ -43,21 +45,21 @@ global function GetCurrentSpawnAsset
 			
 			table<string,string> DEV_POS_COMMANDS = {
 				
-				["DEV_PosType( string setToType = \"\" )"] = "Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided.",
-				["DEV_AddSpawnPoint( string pid, int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
-				["DEV_PrintPosArray()"] = "Prints the current made spawn positions array",
-				["DEV_del_pos( int index )"] = "Deletes a spawn from array by index",
-				["DEV_ClearPos()"] = "Deletes all saved spawns",
-				["DEV_tp_to_pos( string pid, int index )"] = "Teleport specified player by name/uid to a saved spawn by index",
-				["DEV_WritePosOut()"] = "Write current locations to file in the current format, use printt( DEV_PosType() ) to see current type.",
-				["DEV_pos_help()"] = "Prints this help msg...",
+				["script DEV_PosType( string setToType = \"\" )"] = "Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided.",
+				["script DEV_AddSpawnPoint( string pid, int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
+				["script DEV_PrintPosArray()"] = "Prints the current made spawn positions array",
+				["script DEV_del_pos( int index )"] = "Deletes a spawn from array by index",
+				["script DEV_ClearPos()"] = "Deletes all saved spawns",
+				["script DEV_tp_to_pos( string pid, int index )"] = "Teleport specified player by name/uid to a saved spawn by index",
+				["script DEV_WritePosOut()"] = "Write current locations to file in the current format, use printt( DEV_PosType() ) to see current type.",
+				["script DEV_pos_help()"] = "Prints this help msg...",
 				
 			}
 		#endif
 
 	} file 
 
-
+	
 
 array<LocPair> function ReturnAllSoloLocations( int eMap, table<string,bool> options = {}  )
 {
@@ -201,26 +203,32 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_aqueduct:
 		
 			waitingRoomPanelLocation = NewLocPair( <718.29,-5496.74,430>, <0,0,0>)
-			
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0,90,0>
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_arena_composite:
 		
 			waitingRoomPanelLocation = NewLocPair( <-3.0,645,125>, <0,0,0>)
-			
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0,90,0>
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		
 			waitingRoomPanelLocation = NewLocPair( <-607.59,20640.05,4570.03>, <0,-45,0>)
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0,45,0>
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_staging:
 		
-		
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <356.203, 269.459, 0>
+			
 			if( Playlist() == ePlaylists.lg_duels_1v1 )
 			{
 				waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >)
@@ -231,12 +239,24 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_party_crasher:
 		
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = < 359.047, 104.246, 0 >
 			waitingRoomPanelLocation = NewLocPair( < 1822, -3977, 626 >, < 0, 15, 0 > ) 
+		
+		break ////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////	
+		case eMaps.mp_rr_arena_phase_runner:
+		
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0,90,0>
+			waitingRoomPanelLocation = NewLocPair( < 1681.91, -3394.63, 579.031 >, < 355.361, 105.53, 0 > )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_olympus_mu1:
 
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0, 32.8506927, 0>
 			waitingRoomPanelLocation = NewLocPair( <-6315.25244, -13926.8232, 3520.0625> , <0, 178.616882, 0> )
 		
 			if( is3v3Mode() ) //TODO: abstract into rpak when locations are complete
@@ -271,6 +291,9 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 
+
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0, -83.0441132, 0>
 			waitingRoomPanelLocation = NewLocPair( <-19790.7949, 13821.9893, -3760.8186>, <0, 125.147415, 0> ) //休息区观战面板
 
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
@@ -298,7 +321,10 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_mu2:
-			
+		
+
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0, -0.338155389, 0>
 			waitingRoomPanelLocation = NewLocPair( <17975.7773, 4763.23242, 5105.12451> , <0, 104.105606, 0> )
 			
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
@@ -538,8 +564,8 @@ void function DEV_convert_array_to_csv_from_squirrel()
 {
 	for( int i = 0; i < file.dev_positions.len(); i++ )
 	{
-		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "NewLocPair( < ", "\"<", 1 )
-		file.dev_positions[i] = StringReplace( file.dev_positions[i], " >, < ", " \",\" " )
+		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "NewLocPair( < ", "\"< ", 1 )
+		file.dev_positions[i] = StringReplace( file.dev_positions[i], " >, < ", ">\",\"< " )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], " > ),", ">\" " )
 	}
 	
@@ -553,7 +579,7 @@ void function DEV_convert_array_to_squirrel_from_csv()
 	for( int i = 0; i < file.dev_positions.len(); i++ )
 	{
 		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "\"< ", "NewLocPair( < ", 1 )
-		file.dev_positions[i] = StringReplace( file.dev_positions[i], ">\",\"<", ">, <" )
+		file.dev_positions[i] = StringReplace( file.dev_positions[i], ">\",\"< " , " >, < " )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], ">\" ", " > )," )
 	}
 	

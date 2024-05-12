@@ -987,6 +987,12 @@ entity function CreateFRButton(vector pos, vector ang, string prompt)
 	button.kv.solid = 6
 	button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
 	button.SetOrigin(pos)
+	
+	if( ang.y > 360 )
+	{
+		ang.y = 360
+	}
+	
 	button.SetAngles(ang)
 	DispatchSpawn(button)
 	button.SetUsable()

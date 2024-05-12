@@ -10,6 +10,7 @@ global function StringReplaceLimited
 	global function LocalMsg
 	global function LocalVarMsg
 	global function MessageLong
+	global function LocalEventMsgDelayed
 	global function LocalEventMsg //wrapper for LocalMsg ui type 1
 	global function LocalizedTokenExists
 #endif
@@ -225,7 +226,8 @@ struct
 		"#FS_MOVEMENT_SAVED",
 		"#FS_ANIM_NOT_FOUND",
 		"#FS_ANIM_REMOVED_SLOT",
-		"#FS_WELCOME"
+		"#FS_WELCOME",
+		"#FS_MOVEMENT_RECORDER_2"
 		
 	]
 	
@@ -544,6 +546,15 @@ bool function ValidateType( ... )
 void function LocalEventMsg( entity player, string ref, string varString = "", float duration = 5 )
 {
 	LocalMsg( player, ref, "", eMsgUI.EVENT, duration, varString, "", "", false )
+}
+
+void function LocalEventMsgDelayed( float eventdelay, entity player, string ref, string varString = "", float duration = 5 )
+{
+	thread( void function() : ( eventdelay, player, ref, varString, duration )
+			{
+				wait eventdelay
+				LocalEventMsg( player, ref, varString, duration )
+			})()
 }
 #endif //SERVER
 

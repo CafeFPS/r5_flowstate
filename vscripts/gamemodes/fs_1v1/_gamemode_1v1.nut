@@ -612,6 +612,7 @@ entity function getTimeOutPlayer()
 	return p
 }
 
+
 LocPair function getWaitingRoomLocation()
 {
 	return WaitingRoom
@@ -3176,7 +3177,7 @@ void function _soloModeInit( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	switch( eMap )
+	/* switch( eMap )
 	{
 		case eMaps.mp_rr_arena_composite:
 			WaitingRoom.origin = <-7.62,200,184.57>
@@ -3217,7 +3218,7 @@ void function _soloModeInit( int eMap )
 			WaitingRoom.origin = <-19830.3633, 14081.7314, -3759.98901>
 			WaitingRoom.angles = <0, -83.0441132, 0>
 			break;
-	}
+	} */
 	
 	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap, settings.spawnOptions )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()

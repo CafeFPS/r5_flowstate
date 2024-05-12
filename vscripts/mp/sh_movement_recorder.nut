@@ -320,8 +320,10 @@ void function _HandlePlayerDisconnect( entity player )
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
 {
 	if( !player.p.recorderHideHud )
+	{
 		LocalEventMsg( player, "#FS_MOVEMENT_RECORDER", "", 10 )
-		//Message_New( player, "Flowstate Movement Recorder \n\n Made by CafeFPS", 10 )
+		LocalEventMsgDelayed( 10, player, "#FS_MOVEMENT_RECORDER_2", "", 2 )
+	}
 
 	player.p.recordingAnims.resize( MAX_SLOT )
 	player.p.recordingAnimsCoordinates.resize( MAX_SLOT )
