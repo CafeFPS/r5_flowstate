@@ -236,7 +236,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_olympus_mu1:
-			
+
 			waitingRoomPanelLocation = NewLocPair( <-6315.25244, -13926.8232, 3520.0625> , <0, 178.616882, 0> )
 		
 			if( is3v3Mode() ) //TODO: abstract into rpak when locations are complete
@@ -538,8 +538,8 @@ void function DEV_convert_array_to_csv_from_squirrel()
 {
 	for( int i = 0; i < file.dev_positions.len(); i++ )
 	{
-		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "NewLocPair( < ", "\" <", 1 )
-		file.dev_positions[i] = StringReplace( file.dev_positions[i], " >, < ", " \".\" " )
+		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "NewLocPair( < ", "\"<", 1 )
+		file.dev_positions[i] = StringReplace( file.dev_positions[i], " >, < ", " \",\" " )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], " > ),", ">\" " )
 	}
 	

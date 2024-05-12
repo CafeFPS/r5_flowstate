@@ -1591,7 +1591,10 @@ struct {
 				
 			case "killme":
 			
-				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+				if( IsAlive( player ) )
+				{
+					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+				}
 				return true
 				
 			case "gamerules":
