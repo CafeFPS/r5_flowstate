@@ -13,13 +13,14 @@ global function GetCurrentSpawnAsset
 
 #if DEVELOPER
 	global function DEV_PosType
-	global function DEV_AddSpawnPoint
+	global function DEV_AddSpawn
 	global function DEV_PrintPosArray
 	global function DEV_del_pos
 	global function DEV_ClearPos
 	global function DEV_tp_to_pos
 	global function DEV_WritePosOut
 	global function DEV_pos_help
+	global function DEV_SetTeamSize
 #endif 
 
 	global struct LocPairData
@@ -36,6 +37,7 @@ global function GetCurrentSpawnAsset
 		array<LocPairData functionref()> onSpawnInitCallbacks
 		int preferredSpawnPak = 1
 		string currentSpawnPak = ""
+		int size = 2
 		
 		#if DEVELOPER
 			array<string> dev_positions = []
@@ -46,14 +48,14 @@ global function GetCurrentSpawnAsset
 			table<string,string> DEV_POS_COMMANDS = {
 				
 				["script DEV_PosType( string setToType = \"\" )"] = "Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided.",
-				["script DEV_AddSpawnPoint( string pid, int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
+				["script DEV_AddSpawn( string pid, int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
 				["script DEV_PrintPosArray()"] = "Prints the current made spawn positions array",
 				["script DEV_del_pos( int index )"] = "Deletes a spawn from array by index",
 				["script DEV_ClearPos()"] = "Deletes all saved spawns",
 				["script DEV_tp_to_pos( string pid, int index )"] = "Teleport specified player by name/uid to a saved spawn by index",
 				["script DEV_WritePosOut()"] = "Write current locations to file in the current format, use printt( DEV_PosType() ) to see current type.",
 				["script DEV_pos_help()"] = "Prints this help msg...",
-				
+				["script DEV_SetTeamSize( int size )"] = "Sets the size of a team formatting the PrintPosArray()",
 			}
 		#endif
 
@@ -226,38 +228,46 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_staging:
 		
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <356.203, 269.459, 0>
 			
 			if( Playlist() == ePlaylists.lg_duels_1v1 )
 			{
 				waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >)
 			}
 		
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <356.203, 269.459, 0>
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_party_crasher:
 		
+			waitingRoomPanelLocation = NewLocPair( < 1822, -3977, 626 >, < 0, 15, 0 > ) 
 			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = < 359.047, 104.246, 0 >
-			waitingRoomPanelLocation = NewLocPair( < 1822, -3977, 626 >, < 0, 15, 0 > ) 
+			
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
 		case eMaps.mp_rr_arena_phase_runner:
 		
+			waitingRoomPanelLocation = NewLocPair( < 1681.91, -3394.63, 579.031 >, < 355.361, 105.53, 0 > )
 			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = <0,90,0>
-			waitingRoomPanelLocation = NewLocPair( < 1681.91, -3394.63, 579.031 >, < 355.361, 105.53, 0 > )
+		break ////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////	
+		case eMaps.mp_rr_arena_skygarden:
+		
+			waitingRoomPanelLocation = NewLocPair( < 10.2077, -1710.32, 2877.03  >, < 357.399, 269.58, 0 > )
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().angles = <0,90,0>
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_olympus_mu1:
 
+			waitingRoomPanelLocation = NewLocPair( <-6315.25244, -13926.8232, 3520.0625> , <0, 178.616882, 0> )
 			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = <0, 32.8506927, 0>
-			waitingRoomPanelLocation = NewLocPair( <-6315.25244, -13926.8232, 3520.0625> , <0, 178.616882, 0> )
 		
 			if( is3v3Mode() ) //TODO: abstract into rpak when locations are complete
 			{
@@ -292,9 +302,9 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 
 
+			waitingRoomPanelLocation = NewLocPair( <-19790.7949, 13821.9893, -3760.8186>, <0, 125.147415, 0> ) //休息区观战面板
 			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = <0, -83.0441132, 0>
-			waitingRoomPanelLocation = NewLocPair( <-19790.7949, 13821.9893, -3760.8186>, <0, 125.147415, 0> ) //休息区观战面板
 
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
 			{
@@ -304,7 +314,6 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 
 					NewLocPair( <2978.36255, -24568.3438, -3107.96875>, <0, 40.7871628, 0> ),
 					NewLocPair( <7897.48535, -21208.3906, -3727.96875>, <0, -135.121094, 0> )
-
 				]
 				 
 
@@ -322,10 +331,9 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_mu2:
 		
-
+			waitingRoomPanelLocation = NewLocPair( <17975.7773, 4763.23242, 5105.12451> , <0, 104.105606, 0> )
 			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = <0, -0.338155389, 0>
-			waitingRoomPanelLocation = NewLocPair( <17975.7773, 4763.23242, 5105.12451> , <0, 104.105606, 0> )
 			
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
 			{
@@ -341,7 +349,6 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 
 					NewLocPair( <34933.0859, 20244.8984, 4202.85254> , <0, 35.38274, 0> ),
 					NewLocPair( <37117.9102, 23769.4707, 4019.0625> , <0, -122.349365, 0> )
-
 				]
 				 
 
@@ -530,9 +537,15 @@ void function DEV_PrintPosArray( string sFormat = "" )
 	{
 		foreach( index, posString in file.dev_positions )
 		{		
-			string AorB = IsOdd( index ) ? "B" : "A";
 			
-			if( ( index + 1 ) % 2 == 1 )
+			string AorB = ""
+			
+			if( file.size <= 2 )
+			{
+				AorB = IsOdd( index ) ? "B" : "A";
+			}
+			
+			if( ( index + 1 ) % file.size == 1 )
 			{
 				string style = index > 1 ? "\n" : "";
 				spawnPairCount++; 
@@ -619,7 +632,7 @@ string function DEV_PosType( string setToType = "" )
 	return file.dev_positions_type
 }
 
-void function DEV_AddSpawnPoint( string pid, int replace = -1 )
+void function DEV_AddSpawn( string pid, int replace = -1 )
 {	
 	if( empty( pid ) )
 	{
@@ -785,6 +798,12 @@ void function DEV_WritePosOut()
 	}
 }
 
+void function DEV_SetTeamSize( int size )
+{
+	file.size = size
+	printt( "Team size set to", size )
+}
+
 #endif
 
 //util
@@ -823,3 +842,5 @@ asset function GetCurrentSpawnAsset()
 	
 	return returnAsset
 }
+
+//modify locpairdata to include offset data, and no-spawn zones. (for more customization in init callback)

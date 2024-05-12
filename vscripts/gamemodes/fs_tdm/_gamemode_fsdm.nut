@@ -1082,6 +1082,7 @@ bool function bIs1v1Mode()
 		case eMaps.mp_rr_olympus_mu1:
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 		case eMaps.mp_rr_arena_phase_runner:
+		case eMaps.mp_rr_arena_skygarden:
 		return true
 		default:
 		return false
@@ -1642,7 +1643,8 @@ void function _OnPlayerConnected(entity player)
 	// else if (FlowState_Gungame())
 	    // Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
 	// else 
-	if (FlowState_EnableMovementGym()){
+	if (FlowState_EnableMovementGym())
+	{
 	    _MG_OnPlayerConnected( player )
 		_HandleRespawn(player)
 		return
@@ -1707,6 +1709,7 @@ void function _OnPlayerConnected(entity player)
 						_HandleRespawn(player)
 					else
 					{
+						printt_spam( 25, "EHHHHHH??????????")
 						if(file.thisroundDroppodSpawns.len() > 0){
 							player.p.isPlayerSpawningInDroppod = true
 							thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
@@ -3680,11 +3683,15 @@ void function SimpleChampionUI()
 
 	if( !VOTING_PHASE_ENABLE )
 	{
-		file.selectedLocation = file.locationSettings[ choice ]
+		if( choice in file.locationSettings )
+		{
+			file.selectedLocation = file.locationSettings[ choice ]
+		}
 		
 		if( FlowState_LockPOI() )
 			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
-	} else
+	} 
+	else
 	{
 		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
 	}
@@ -4842,7 +4849,7 @@ entity function CreateRingBoundary(LocationSettings location)
         ringCenter += spawn.origin
     }
 
-    ringCenter /= spawns.len()
+    ringCenter /= spawns.len() > 0 ? spawns.len() : 1 ;
 
     float ringRadius = 0
 
