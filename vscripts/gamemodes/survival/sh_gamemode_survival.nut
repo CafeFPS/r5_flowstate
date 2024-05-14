@@ -152,7 +152,7 @@ void function GamemodeSurvivalShared_Init()
 		AddCallback_PlayerCanUseZipline( Sur_CanUseZipline )
 		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 		
-		if( GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "flowstate_snd" ) return
+		if( Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.fs_snd ) return
 	
 		BleedoutShared_Init()
 		Sh_RespawnBeacon_Init()
@@ -710,6 +710,6 @@ bool function PlayerIsMarkedAsCanBeRespawned( entity player )
 
 bool function IsSurvivalMode()
 {
-	return GameRules_GetGameMode() == SURVIVAL
+	return Gamemode() == eGamemodes.SURVIVAL
 }
 #endif

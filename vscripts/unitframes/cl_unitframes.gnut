@@ -56,8 +56,10 @@ void function OnPlayerCreated( entity player )
 
 void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 {
+	#if DEVELOPER
 	printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
-	
+	#endif
+
 	if ( PlayerShouldHaveUnitFrame( player ) )
 	{
 		CreateTeamUnitFrame( player )
@@ -92,7 +94,7 @@ void function OnPlayerClassChanged( entity player )
 void function OnGameStateEnterPlaying()
 {
 	entity viewPlayer = GetLocalViewPlayer()
-	RefrechUnitframesForPlayer( viewPlayer )
+	RefreshUnitframesForPlayer( viewPlayer )
 }
 
 
@@ -100,22 +102,22 @@ void function OnGameStateEnterPlaying()
 // OnPlayerCreated() is also called on prevTarget at the same time, so a unitframe may also already exist for that player as well
 void function OnSpectatorTargetChanged( entity spectator, entity prevTarget, entity newTarget )
 {
-	RefrechUnitframesForPlayer( newTarget )
+	RefreshUnitframesForPlayer( newTarget )
 }
 
 
 void function OnViewPlayerChanged( entity newViewPlayer )
 {
-	RefrechUnitframesForPlayer( newViewPlayer )
+	RefreshUnitframesForPlayer( newViewPlayer )
 }
 
 void function UpdateRUITest()
 {
-	RefrechUnitframesForPlayer(GetLocalClientPlayer())
+	RefreshUnitframesForPlayer( GetLocalViewPlayer() )
 	thread InitSurvivalHealthBar()
 }
 
-void function RefrechUnitframesForPlayer( entity player )
+void function RefreshUnitframesForPlayer( entity player )
 {
 	if ( player == null ) // Can happen at the end of a match
 		return
@@ -129,8 +131,10 @@ void function RefrechUnitframesForPlayer( entity player )
 
 	foreach ( unitframePlayer, unitFrame in file.teamUnitFrames )
 	{
-		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && GameRules_GetGameMode() == "flowstate_snd" || unitframePlayer.GetTeam() != playerTeam )
+		if ( !IsValid( unitframePlayer ) || !IsAlive( unitframePlayer ) && Gamemode() == eGamemodes.fs_snd || unitframePlayer.GetTeam() != playerTeam )
+		{
 			playersToRemove.append( unitframePlayer )
+		}
 	}
 
 	foreach ( unitframePlayer in playersToRemove )
@@ -201,7 +205,7 @@ void function CreateTeamUnitFrame( entity player )
 
 asset function GetUnitFrameAssetForGameMode()
 {
-	if ( IsFallLTM() || GetCurrentPlaylistVarBool( "minified_unitframes_enabled", false ) || GameRules_GetGameMode() == "fs_prophunt"  || GameRules_GetGameMode() == "fs_duckhunt")
+	if ( IsFallLTM() || GetCurrentPlaylistVarBool( "minified_unitframes_enabled", false ) || Gamemode() == eGamemodes.fs_prophunt  || Gamemode() == eGamemodes.fs_duckhunt )
 		return $"ui/unitframe_shadow_squad.rpak"
 
 	return $"ui/unitframe_survival_v3.rpak"
@@ -422,13 +426,13 @@ bool function PlayerShouldHaveUnitFrame( entity player )
 	if ( playerTeam == TEAM_UNASSIGNED )
 		return false
 
-	if ( playerTeam == TEAM_SPECTATOR )
+	if ( playerTeam == TEAM_SPECTATOR && GetCurrentPlaylistName() != "fs_scenarios" )
 		return false
 
 	if ( playerTeam != viewer.GetTeam() )
 		return false
 	
-	if( GameRules_GetGameMode() == "flowstate_snd" && !IsAlive(player) )
+	if( Gamemode() == eGamemodes.fs_snd && !IsAlive(player) )
 		return false
 	
 	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )

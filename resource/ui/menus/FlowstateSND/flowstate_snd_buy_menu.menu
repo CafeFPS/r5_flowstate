@@ -1,0 +1,275 @@
+"scripts/resource/ui/menus/FlowstateSND/flowstate_snd_buy_menu.menu"
+{
+	"menu"
+	{
+		"ControlName"						"Frame"
+		"xpos"								"0"
+		"ypos"								"0"
+		"zpos"								"3"
+		"wide"								"f0"
+		"tall"								"f0"
+		"autoResize"						"0"
+		"pinCorner"							"0"
+		"visible"							"1"
+		"enabled"							"1"
+		"tabPosition"						"0"
+		"PaintBackgroundType"				"0"
+		"infocus_bgcolor_override"			"0 0 0 0"
+		"outoffocus_bgcolor_override"		"0 0 0 0"
+		"modal"								"1"
+
+		"DarkenBackground"
+		{
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"%100"
+			"tall"					"%100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 150"
+			"visible"				"1"
+			"paintbackground"		"1"
+		}
+
+		"TextCredits2"
+		{
+			"ControlName"				"Label"
+			"xpos"						"-30"
+			"ypos"						"-40"
+			"zpos" 						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"30"
+			"visible"					"1"
+			"fontHeight"				"35"
+			"labelText"					"SEARCH AND DESTROY"
+			"font"						"TitleBoldFont"
+			"allcaps"					1
+			"fgcolor_override"			"255 0 119 255"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
+		}
+		
+
+		"SelectTeamText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-30
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				40
+			labelText				"SELECT A TEAM"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"SelectTeamFrame"
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+		
+		"RemainingTimeToSelectTeamText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-20
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				38
+			labelText				"15"
+			//font					"TitleBoldFont"
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"SelectTeamFrame"
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		"SelectTeamFrame"
+		{
+			ControlName				RuiPanel
+			rui                     "ui/basic_border_box.rpak"
+			drawColor				"0 0 0 50"
+			"wide"						"1000"
+			"tall"						"450"
+			"xpos"						"25"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			pin_to_sibling          DarkenBackground
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
+		
+		"TeamIMCButton"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					350
+			tall					250
+			"visible"					"1"
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+
+			ruiArgs
+			{
+				isSelected 0
+				buttonText ""
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			
+			textAlignment			center
+			xpos                    -70
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          "SelectTeamFrame"
+			pin_corner_to_sibling   LEFT
+			pin_to_sibling_corner   LEFT
+		}
+		
+		"IMCText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-25
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				30
+			labelText				"TEAM IMC"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamIMCButton"
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+		
+		"IMCVotesText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					45
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				20
+			labelText				"Players: 0"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamIMCButton"
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		"MILITIAVotesText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					45
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				20
+			labelText				"Players: 0"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamMILITIAButton"
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		"TeamMILITIAButton"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					350
+			tall					250
+			"visible"					"1"
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText ""
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    -70
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          "SelectTeamFrame"
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+		
+		"MILITIAText"
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-25
+			zpos 20
+			auto_wide_tocontents	1
+			tall					50
+			"visible"					"1"
+			fontHeight				30
+			labelText				"TEAM MILITIA"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			"TeamMILITIAButton"
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+		
+		MILITIATeamIcon
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"128"
+			"tall"						"128"
+			"xpos"						"0"
+			"ypos"						"130"
+			"zpos"						"25"
+			"visible"					"1"
+			"scaleImage"				"1"
+
+			"pin_to_sibling"			"MILITIAText"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		
+		IMCTeamIcon
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"128"
+			"tall"						"128"
+			"xpos"						"0"
+			"ypos"						"130"
+			"zpos"						"25"
+			"visible"					"1"
+			"scaleImage"				"1"
+
+			"pin_to_sibling"			"IMCText"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+	}
+}

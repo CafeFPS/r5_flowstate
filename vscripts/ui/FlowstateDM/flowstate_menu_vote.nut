@@ -70,38 +70,43 @@ void function Open_FSDM_VotingPhase()
 	Hud_SetAboveBlur( Hud_GetChild( file.menu, "VotingPhaseChatBox"), false )
 	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "VotingPhaseChatBox"), "ChatInputLine" ), false)
 	
-	if(IsConnected() )
+	if( IsConnected() )
 	{
-		switch(GetCurrentPlaylistName())
+		switch( Playlist() )
 		{
-			case "fs_prophunt":
+			case ePlaylists.fs_prophunt:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS PROPHUNT" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
 
-			case "fs_dm":
+			case ePlaylists.fs_dm:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FLOWSTATE DM" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
 			
-			case "flowstate_snd":
+			case ePlaylists.fs_snd:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS SEARCH AND DESTROY" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
 			
-			case "flowstate_pkknockback":
+			case ePlaylists.flowstate_pkknockback:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS PK PUSHBACK" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
 						
-			case "fs_infected":
+			case ePlaylists.fs_infected:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS INFECTED" )
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by @CafeFPS. Powered by R5Reloaded." )
 			break
-			
-			case "fs_1v1":
+
+			case ePlaylists.fs_1v1:
 				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS 1v1" )
-				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by __makimakima__, maintained by @CafeFPS" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by __makimakima__, maintained by @CafeFPS & mkos" )
+			break
+			
+			case ePlaylists.fs_lgduels_1v1:
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits2" ), "FS LG DUELS" )
+				Hud_SetText( Hud_GetChild( file.menu, "TextCredits" ), "Made by mkos and @CafeFPS" )
 			break
 
 			default:
@@ -450,7 +455,7 @@ void function SetVoteHudElems(bool MapVote, bool TimerFrame, bool TimerText2, bo
 		Hud_SetVisible( Hud_GetChild( file.menu, "MapVoteLabelNameFrame" + i ), MapVote )
 	}
 	
-	if(GetCurrentPlaylistName() != "fs_prophunt")
+	if( Playlist() != ePlaylists.fs_prophunt )
 	{
 		array<var> ScoreboardUI = GetElementsByClassname( file.menu, "ScoreboardUI" )
 		foreach ( var elem in ScoreboardUI )
@@ -500,7 +505,7 @@ void function SetVoteHudElems(bool MapVote, bool TimerFrame, bool TimerText2, bo
 	Hud_SetVisible( Hud_GetChild( file.menu, "MapVoteFrame2" ), MapVoteFrame2 )
 	Hud_SetVisible( Hud_GetChild( file.menu, "VotedForLbl" ), VotedForLbl )
 	
-	if(GetCurrentPlaylistName() != "fs_prophunt")
+	if( Playlist() != ePlaylists.fs_prophunt )
 		MapVote = false	
 	
 	Hud_SetVisible( Hud_GetChild( file.menu, "SelectTeamText" ), MapVote )

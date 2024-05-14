@@ -44,6 +44,7 @@ function Wallrun_EnforceWeaponDefaults( player )
 
 function Wallrun_OnPlayerSpawn( player )
 {
+	printt( "ClassWallrun - OnPlayerSpawn" )
 }
 
 
@@ -63,16 +64,22 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	// Bullet slow reduces your velocity by 40% for 0.25 seconds, and cannot proc again for 3.0 seconds.
-	if( GameRules_GetGameMode() == SURVIVAL && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 && damageSourceId != eDamageSourceId.deathField)
+	LootData data0 
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	
+	if( IsValid( weapon ) && SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
+		data0 = SURVIVAL_Loot_GetLootDataByRef( weapon.GetWeaponClassName() )
+
+	if( GetCurrentPlaylistVarBool( "flowstate_enable_bullet_slow", false ) && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 && IsValid( weapon ) && data0.lootType == eLootType.MAINWEAPON )
 	{
 		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.4, 0.25, 0.25 )
 		player.p.lastTimeShotSlowApplied_Global = Time()
 	}
-	
+
 	//Super dumb headshots gamemode
 	if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
 	{
-		DamageInfo_SetDamage( damageInfo, 420.0)
+		DamageInfo_SetDamage( damageInfo, 42069.0)
 		return 0.0
 	}
 	else if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && !IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
@@ -80,8 +87,8 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		DamageInfo_SetDamage( damageInfo, 0.0)
 		return 0.0
 	}
-	
-	//Helmets fix By Retículo Endoplasmático#5955 (CafeFPS)
+
+	//Helmets fix By @CafeFPS (CafeFPS)
 	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
 		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
@@ -101,7 +108,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 				break
 		}
 	}
-	
+
 	if ( player.GetShieldHealthMax() > 0 && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 	{
 		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )

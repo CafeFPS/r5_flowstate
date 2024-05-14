@@ -169,18 +169,18 @@ WeaponData
     "viewmodel_jolt_roll"                            "0 4.5 0.0"
     "viewmodel_jolt_side"                            "0 0.05 0"
 
-	"viewkick_pitch_base" 							"1.0"
-	"viewkick_pitch_random"   						"1.0"
+	"viewkick_pitch_base" 							"0.8"
+	"viewkick_pitch_random"   						"0.3"
 	"viewkick_pitch_softScale"						"1.75"
 	"viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
-	"viewkick_yaw_random" 							"1.0"
+	"viewkick_yaw_random" 							"0.3"
 	"viewkick_yaw_softScale"  						"0.8"
 	"viewkick_yaw_hardScale"  						"0.33"
 
-	"viewkick_roll_base"  							"-0.8"
-    "viewkick_roll_randomMin" 						"-0.8"
+	"viewkick_roll_base"  							"0"
+    "viewkick_roll_randomMin" 						"0"
     "viewkick_roll_randomMax" 						"1.6"
     "viewkick_roll_softScale" 						"0.9"
     "viewkick_roll_hardScale" 						"0.5"

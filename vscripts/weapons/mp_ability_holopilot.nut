@@ -278,7 +278,7 @@ void function CreateDecoysHint( entity decoy, string msg, float endTime )
 
 #if SERVER
 bool function ClientCommand_ToggleDecoys( entity player, array<string> args )
-//By Ret�culo Endoplasm�tico#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	if ( !IsAlive( player ) )
 		return true
@@ -424,7 +424,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 		vector endvec = VectorToAngles( player.GetOrigin() - endPosition )
 		decoy = player.CreateMimicPlayerDecoy( ShortestRotation( startvec, endvec ).y ) //retail accurate ultimate mimic decoy :) Colombia
 		decoy.SetOrigin( endPosition )
-		thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
+		//thread Test_ForceDecoysOnGround( player, decoy ) // I hate this. Colombia
 	}
 	
 	CharacterSkin_Apply( decoy, skin )
@@ -444,7 +444,7 @@ entity function Flowstate_CreateDecoy( vector endPosition, asset settingsName, a
 		if ( IsValid( player ) )
 			HoloPiliot_OnDecoyDamaged( decoy, player, damageInfo )
 	})
-
+	AddToTrackedEnts( player, decoy )
 	SetupDecoy_Common( player, decoy )
 	thread MonitorDecoyActiveForPlayer( decoy, player )
 	return decoy
@@ -672,15 +672,20 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 
 	decoy.EndSignal( "OnDestroy" ) //Note that we do this OnDestroy instead of the inbuilt OnHoloPilotDestroyed() etc functions so there is a bit of leeway after the holopilot starts to die/is fully invisible before being destroyed
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "CleanupPlayerPermanents" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 
 	OnThreadEnd(
-	function() : ( player )
+	function() : ( player, decoy )
 		{
 			if ( IsValid( player ) )
 			{
 				Assert( player in file.playerToDecoysActiveTable )
 				--file.playerToDecoysActiveTable[ player ]
+				
+				if( g_bIs1v1 && IsValid( decoy ) || is3v3Mode() && IsValid( decoy ) )
+				{
+					decoy.Destroy() //could use fancy cleanup function as well for cleaner effect
+				}
 			}
 		}
 	)

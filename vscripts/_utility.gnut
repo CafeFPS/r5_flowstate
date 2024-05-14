@@ -1068,7 +1068,7 @@ void function LoadDiamond()
     printl( "|    |___ |__| |_|_| ___]  |  |  |  |  |___")
     printl( " " )
     printl( "Flowstate Scripts " + FLOWSTATE_VERSION + " - Maintained by @CafeFPS and collaborators." )
-    printl( "r5sdk v2.3 developed by amos1368 and collaborators." )
+    printl( "r5sdk v2.4 developed by amos1368 and collaborators." )
     printl( " " )
     printl( "----------------------------" )
     printl( " " )
@@ -1107,6 +1107,22 @@ void function ClearActiveProjectilesForTeam( int team, vector searchOrigin = <0,
 
 		proj.Destroy()
 	}
+}
+
+void function ClearActiveProjectilesForRealm( int realm )
+{
+	array<entity> projectiles = GetProjectileArray()
+	int count = 0
+	foreach ( proj in projectiles )
+	{
+		if( !IsValid( proj ) || !proj.IsInRealm( realm ) )
+			continue
+
+		proj.Destroy()
+		count++
+	}
+
+	printt( "cleaning up", count, "weapon projectiles for realm", realm )
 }
 
 void function RestockPlayerAmmo_Silent( entity player = null )
@@ -1656,11 +1672,54 @@ bool function IsDisconnected( entity player )
 	return player.p.isDisconnected
 }
 
-/****************************************************************************************************\
-/*
-|*											PLAY FX
-\*
-\****************************************************************************************************/
+
+#if !DEVELOPER
+table function GetPlayerPos( entity player = null )
+{
+	if ( !player )
+		player = gp()[0]
+
+	vector org = player.GetOrigin()
+	vector vec = player.GetViewVector()
+	vector ang = VectorToAngles( vec )
+
+	return { origin = org, angles = ang }
+}
+
+
+string function CreateOriginAnglesString( vector origin, vector angles )
+{
+	string returnStr = "< " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " >"
+	return returnStr
+}
+#endif
+
+string function CreateOriginAnglesString_CC( string name, vector origin, vector angles )
+{		
+	string returnStr = name + ": NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ),";
+	return returnStr
+}
+
+void function POS_CC( entity player, string name )
+{	
+	table playerPos = GetPlayerPos( player )
+	vector origin = expect vector( playerPos.origin )
+	vector angles = expect vector( playerPos.angles )
+
+	string returnStr = CreateOriginAnglesString_CC( player.GetPlayerName() + " addspawn name: " + name, origin, <angles.x, angles.y, angles.z> )
+	
+	Message( player, "SAVED SPAWN: " + name , returnStr)
+	#if HAS_TRACKER_DLL
+	printt( format( "Pos: %s", returnStr ) )
+	#endif
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//											PLAY FX											//
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 
 entity function PlayFX( asset effectName, vector org, vector ornull optionalAng = null, vector ornull overrideAngle = null )
 {
@@ -4009,7 +4068,7 @@ int function GameTime_TimeLimitSeconds()
 
 int function GetSuddenDeathTimeLimit_ForGameMode()
 {
-	string mode = GameRules_GetGameMode()
+	string mode = GameRules_GetGameMode() //wtf? not even used.. ? ~mkos
 	string playlistString = "suddendeath_timelimit"
 
 	return GetCurrentPlaylistVarInt( playlistString, 4 )
@@ -4348,7 +4407,12 @@ void function TakeAllWeapons( entity ent )
 {
 try{
 	if ( ent.IsPlayer() )
-	{
+	{	
+		if(g_bGiveTactical)
+		{
+			ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		}
+		
 		ent.RemoveAllItems()
 		array<entity> weapons = ent.GetMainWeapons()
 		foreach ( weapon in weapons )
@@ -4435,7 +4499,13 @@ void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, strin
 
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
 {
-	//stub
+	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+
+	if( !IsValid( ultimateAbility ) )
+		return
+
+	offhandWeapon.RemoveFromAllRealms()
+	offhandWeapon.AddToOtherEntitysRealms( ultimateAbility )
 }
 
 void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string sound )
@@ -4801,3 +4871,71 @@ array<entity> function ArrayEntSphere(vector origin, float radius) {
     }
     return entities
 }
+
+entity function Create_Invis_Button(vector pos, vector ang, bool up)
+{
+    string prompt = "%use% Back"
+    if (up) {
+        prompt = "%use% Next"
+    }
+    entity button = CreateEntity("prop_dynamic")
+    button.kv.solid = 0
+    button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
+    button.SetOrigin(pos)
+    button.SetAngles(ang)
+    DispatchSpawn(button)
+    button.SetUsable()
+    button.SetUsableByGroup("pilot")
+    button.MakeInvisible()
+    button.SetUsePrompts(prompt, prompt)
+    return button
+}
+
+void function Invis_Button(vector pos, vector ang, bool up, vector destination, vector direction, string message = "") {
+    // arrow
+    vector offset_pos = <0,0,100>
+    vector offset_angle = <90,-90,0>
+    if (up) {
+        offset_pos = <0,0,-25>
+        offset_angle = <-90, 90, 0>
+    }
+
+    MapEditor_CreateProp( $"mdl/Weapons/bullets/damage_arrow.rmdl", pos + offset_pos, ang + offset_angle, false, 300, -1, 10)
+
+    // button
+    entity panel = Create_Invis_Button(pos, ang, up)
+
+    AddCallback_OnUseEntity( panel, void function(entity panel, entity ent, int input) : (destination, direction, message)
+    {
+        if (!IsValid(ent) || !ent.IsPlayer())
+            return
+
+        if (ent.p.isTimerActive) {
+          Message(ent, "Can't use it while timer is running")
+          return
+        }
+
+        ent.SetOrigin(destination)
+        ent.SetAngles(direction)
+        ent.SetVelocity(<0, 0, 0>)
+
+        if (message.len())
+            Message(ent, message)
+    })
+
+}
+
+/*
+void function OneThousand()
+{
+	thread(	void function() : ()
+		{
+			for( int i = 0; i < 1000; i++ )
+			{
+				DEV_SpawnLootBinAtCrosshair()
+				WaitFrame()
+			}
+		}				
+	)()
+}
+*/

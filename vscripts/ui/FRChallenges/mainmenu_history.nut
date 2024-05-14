@@ -260,7 +260,7 @@ void function PrintToConsole(var button)
 	DevP4Checkout( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
 	DevTextBufferDumpToFile( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
 	
-	Warning("[!] CSV RESULTS SAVED IN /r5reloaded/r2/ === ")
+	Warning("[!] CSV RESULTS SAVED IN /r5reloaded/ === ")
 }
 
 void function ChallengesButtonFunct(var button)

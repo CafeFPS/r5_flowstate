@@ -4,7 +4,7 @@ globalize_all_functions
 #endif
 globalize_all_functions
 
-void function CreatePanelText( entity player, string title, string text, vector origin, vector angles, bool showPin, float textScale )
+void function CreatePanelText( entity player, string title, string text, vector origin, vector angles, bool showPin, float textScale, id = 0 )
 {
     string sendPanelText
     for ( int textType = 0 ; textType < 2 ; textType++ )
@@ -16,8 +16,23 @@ void function CreatePanelText( entity player, string title, string text, vector 
             Remote_CallFunction_NonReplay( player, "Dev_BuildTextInfoPanel", textType, sendPanelText[i] )
         }
     }
+	
+	if ( id != 0 ){
+	
+		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanelWithID", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale, id )
+	
+	} else {
+		
+		// This allows old calls to the function without adding ID - mkos
+		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )
+	
+	}
+}
 
-    Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )
+void function RemovePanelText( entity player, int id ){
+
+	Remote_CallFunction_NonReplay( player, "Dev_DestroyTextInfoPanelWithID", id )
+	
 }
 
 array<vector> function GetNewFFADropShipLocations(string locationname, string mapname)
@@ -298,7 +313,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 
 void function PrecacheCustomMapsProps()
 {
-if(GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
+if( MapName() == eMaps.mp_rr_canyonlands_64k_x_64k ){
 //white forest
 PrecacheModel( $"mdl/foliage/tree_green_forest_med_01.rmdl")
 PrecacheModel( $"mdl/rocks/rock_white_chalk_sand_modular_flat_03.rmdl")
@@ -472,7 +487,7 @@ PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl")
 PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_256_01.rmdl")
 
 }
-if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){
+if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx ){
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_couch_05.rmdl" )
@@ -903,7 +918,7 @@ void function CreateFloor(int x, int y, int z, int width, int length)
 
 void function CreateWall(int x, int y, int z, int length, int height, int angle, bool gates = true)
 //a gate = block without prop
-//By michae\l/#1125 & Retículo Endoplasmático#5955
+//By michae\l/#1125 & @CafeFPS
 // incredibly optimized. i am speed
 {
     int i;
@@ -928,7 +943,7 @@ void function CreateWall(int x, int y, int z, int length, int height, int angle,
   }
 }
 
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
+//By @CafeFPS CafeFPS. Tomado del firing range.
 entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = true, float fade = -1)
 {
 	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,15000)
@@ -942,7 +957,7 @@ entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = true
 	return e
 }
 
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
+//By @CafeFPS CafeFPS. Tomado del firing range.
 entity function CreateFRProp2(asset a, vector pos, vector ang, bool mantle = true, float fade = -1)
 {
 	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,15000)
@@ -957,7 +972,7 @@ entity function CreateFRProp2(asset a, vector pos, vector ang, bool mantle = tru
 }
 
 void function TeleportFRPlayer(entity player, vector pos, vector ang)
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
+//By @CafeFPS CafeFPS. Tomado del firing range.
 {
 	player.SetOrigin(pos)
 	player.SetAngles(ang)
@@ -966,12 +981,18 @@ void function TeleportFRPlayer(entity player, vector pos, vector ang)
 }
 
 entity function CreateFRButton(vector pos, vector ang, string prompt)
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
+//By @CafeFPS CafeFPS. Tomado del firing range.
 {
 	entity button = CreateEntity("prop_dynamic")
 	button.kv.solid = 6
 	button.SetValueForModelKey($"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl")
 	button.SetOrigin(pos)
+	
+	if( ang.y > 360 )
+	{
+		ang.y = 360
+	}
+	
 	button.SetAngles(ang)
 	DispatchSpawn(button)
 	button.SetUsable()
@@ -981,7 +1002,7 @@ entity function CreateFRButton(vector pos, vector ang, string prompt)
 }
 
 void function SpawnSingleDoor(vector doorpos, vector doorang)
-//By Retículo Endoplasmático#5955 CafeFPS. Adaptado del firing range.
+//By @CafeFPS CafeFPS. Adaptado del firing range.
  {
 	entity singleDoor = CreateEntity("prop_door")
 	singleDoor.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
@@ -990,7 +1011,7 @@ void function SpawnSingleDoor(vector doorpos, vector doorang)
 	DispatchSpawn(singleDoor)
 }
 
-//By Retículo Endoplasmático#5955 CafeFPS. Adaptado del firing range.
+//By @CafeFPS CafeFPS. Adaptado del firing range.
 void function SpawnDoubleDoor(vector doorpos, vector doorang)
  {
 	entity ddl = CreateEntity("prop_door")
@@ -1054,12 +1075,12 @@ void function SetTargetNameAAA( entity ent, string name )
 
 void function SkillTrainerLoad()
 //////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 //////////////////////////////////////////////////
 {
 
 ////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 ////////////////////////////////////////////////
 //Piso
 CreateFloor(13800, 29000, -869, 25, 25)
@@ -1140,7 +1161,7 @@ CreateCustomLight( <19264, 33520, -550>, <0,-89,0>, "0 128 0", 1 )
 CreateCustomLight( <19264, 30016, -550>, <0,-89,0>, "0 128 0", 1 )
 
 //////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 //////////////////////////////////////////////////
 
 //Plataforma
@@ -1232,7 +1253,7 @@ CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <1748
 CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <17745, 33047, -357>, <0,0,0>)
 CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <18001, 33047, -357>, <0,0,0>)
 //////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 //////////////////////////////////////////////////
 //Objetos
 CreateEditorProp( $"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl", <17184,30416,-870>, <0,0,0>, true, 8000 )
@@ -1469,7 +1490,7 @@ CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <
 CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <14560,29600,-460>, <0,-135,0>, true, 8000 )
 CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", <14576,33920,-64>, <0,135,0>, true, 8000 )
 //////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 //////////////////////////////////////////////////
 //Pasto-Grass
 CreateEditorProp( $"mdl/foliage/icelandic_moss_grass_02.rmdl", <19168,33120,-850>, <0,-45,0>, true, 8000 )
@@ -2091,7 +2112,7 @@ CreateEditorProp( $"mdl/pipes/slum_pipe_large_blue_512_01.rmdl", <17952,31904,-8
 CreateEditorProp( $"mdl/pipes/slum_pipe_large_blue_512_01.rmdl", <17856,32832,-850>, <0,135,0>, true, 8000 )
 CreateEditorProp( $"mdl/pipes/slum_pipe_large_blue_512_01.rmdl", <16544,30848,-850>, <0,90,0>, true, 8000 )
 //////////////////////////////////////////////////
-//Retículo Endoplasmático#5955 CafeFPS//
+//@CafeFPS CafeFPS//
 //////////////////////////////////////////////////
 //Lámparas
 CreateEditorProp( $"mdl/vehicle/dropship/dropship_afterburner.rmdl", <14672,29600,-560>, <0,-90,0>, true, 8000 )

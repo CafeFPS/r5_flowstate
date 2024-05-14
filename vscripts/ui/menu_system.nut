@@ -40,6 +40,14 @@ struct
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
 	table<var, ButtonData > Toggle1v1ScoreboardFocus
+	table<var, ButtonData > OpenLGDuelsSettingsData
+	table<var, ButtonData > OpenValkSimulatorSettingsData
+	table<var, ButtonData > LockCurrent1v1Enemy
+	table<var, ButtonData > ToggleRest
+	table<var, ButtonData > DestroyDummies
+	table<var, ButtonData > DestroyDummiesAdmin
+	table<var, ButtonData > OpenWeaponsMenu
+
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
 } file
@@ -104,11 +112,17 @@ void function SetHunterFunct()
 
 void function OpenWeaponSelector()
 {
+	var menu = GetMenu("FRChallengesSettingsWpnSelector")
+	var child = Hud_GetChild( menu , "Title" )
+	Hud_SetColor( menu, 255, 255, 0, 255 )
+	thread FancyLabelFadeIn( menu, child, 200, 1000, true, .40, false, 0, "", false )
+	Hud_SetColorBG( menu, 0, 0, 0, 0 )		
 	RunClientScript("OpenTDMWeaponSelectorUI")
+	thread PulsateElem( menu, child, 255, 25, 2.0 )
 }
 
 void function InitSystemPanel( var panel )
-{
+{	
 	var menu = Hud_GetParent( panel )
 	file.buttons[ panel ] <- GetElementsByClassname( menu, "SystemButtonClass" )
 	file.buttonDatas[ panel ] <- []
@@ -143,7 +157,14 @@ void function InitSystemPanel( var panel )
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
 	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
-	
+	file.OpenLGDuelsSettingsData[ panel ] <- clone data
+	file.OpenValkSimulatorSettingsData[ panel ] <- clone data
+	file.LockCurrent1v1Enemy[ panel ] <- clone data
+	file.ToggleRest[ panel ] <- clone data
+	file.DestroyDummies[ panel ] <- clone data
+	file.DestroyDummiesAdmin[ panel ] <- clone data
+	file.OpenWeaponsMenu[ panel ] <- clone data
+
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
@@ -201,6 +222,28 @@ void function InitSystemPanel( var panel )
 	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
+	file.OpenLGDuelsSettingsData[ panel ].label = "LG DUELS SETTINGS"
+	file.OpenLGDuelsSettingsData[ panel ].activateFunc = OpenLGDuelsSettings_System
+
+	file.OpenValkSimulatorSettingsData[ panel ].label = "VALK ULT SIM SETTINGS"
+	file.OpenValkSimulatorSettingsData[ panel ].activateFunc = OpenValkSimulatorSettings_System
+	
+	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK"
+	file.LockCurrent1v1Enemy[ panel ].activateFunc = OpenLockCurrent1v1Enemy_System
+	
+	file.ToggleRest[ panel ].label = "TOGGLE REST"
+	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
+	
+	file.DestroyDummies[ panel ].label = "Destroy Dummies"
+	file.DestroyDummies[ panel ].activateFunc = DestroyDummys_MovementRecorder
+	
+	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
+	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
+	
+	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
+	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
+	
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -213,17 +256,18 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
-
 	UpdateOptInFooter()
 }
 
 
 void function UpdateSystemPanel( var panel )
-{
+{	
+	//entity player = GetLocalClientPlayer()
+	
 	//temp workaround, not the best place for this tbh
-	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
+	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
-	else if( IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer" )
+	else if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
@@ -233,34 +277,51 @@ void function UpdateSystemPanel( var panel )
 	int buttonIndex = 0
 	if ( IsConnected() && !IsLobby() )
 	{
+		RunClientScript( "FS_RegisterAdmin" )
+		
 		UISize screenSize = GetScreenSize()
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" )
+		
+		if( Playlist() == ePlaylists.fs_dm )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() == "fs_1v1" )
+		if( uiGlobal.is1v1GameType ) //initialized after level load
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
+			
+			if( Playlist() != ePlaylists.fs_lgduels_1v1 && Playlist() != ePlaylists.fs_dm_fast_instagib )
+			{
+				SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+			}
+			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 
-		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
+			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
+
+		if( Playlist() != ePlaylists.fs_aimtrainer )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
 			else
 				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
-		} else
+		} 
+		else
 		{
 			if(ISAIMTRAINER)
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
 			else
+			{
+				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
 				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+			}
 		}
-		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		if ( IsFiringRangeGameMode() && !uiGlobal.isAimTrainer )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
 			//SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
@@ -268,15 +329,24 @@ void function UpdateSystemPanel( var panel )
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "fs_dm" && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
+		if( Playlist() == ePlaylists.fs_dm && !uiGlobal.playlistbool_flowstate_1v1mode )
 		{
 			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
 		}
-		if( GetCurrentPlaylistName() == "fs_movementgym" )
+		if( Playlist() == ePlaylists.fs_movementgym )
 		{
 			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
+		}
+		if( Playlist() == ePlaylists.fs_movementrecorder )
+		{
+			SetButtonData( panel, buttonIndex++, file.DestroyDummies[ panel ] )
+			
+			if( uiGlobal.bIsServerAdmin )
+			{	
+				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
+			}
 		}
 
 		// if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
@@ -309,7 +379,7 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
+	if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
@@ -336,7 +406,7 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
+	if( ISAIMTRAINER && IsConnected() && Playlist() == ePlaylists.fs_aimtrainer ){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -347,7 +417,7 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
-	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer"){
+	if( ISAIMTRAINER && IsConnected() && Playlist() == ePlaylists.fs_aimtrainer ){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -398,6 +468,21 @@ void function Toggle1v1Scoreboard_System()
 	RunClientScript( "Toggle1v1Scoreboard" )
 }
 
+void function OpenLGDuelsSettings_System()
+{
+	OpenLGDuelsSettings()
+}
+
+void function OpenValkSimulatorSettings_System()
+{
+	OpenValkSimulatorSettings()
+}
+
+void function OpenLockCurrent1v1Enemy_System()
+{
+	ClientCommand( "lockenemy_1v1" )
+}
+
 void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
@@ -411,6 +496,21 @@ void function RunHub()
 void function RunMGsettings()
 {
 	RunClientScript("MG_Settings_UI")
+}
+
+void function ToggleRest_1v1()
+{
+	ClientCommand( "rest" )
+}
+
+void function DestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys" )
+}
+
+void function AdminDestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys Admin" )
 }
 
 #if CONSOLE_PROG
@@ -478,5 +578,6 @@ bool function ShouldShowDevMenu()
 	
 	return true
 }
+
 
 

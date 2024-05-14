@@ -19,7 +19,7 @@ global function MainWeapon_GetIsShippingWeapon
 
 #if SERVER || CLIENT
 global function ShowDefaultBodygroupsOnFakeWeapon
-#endif
+#endif 
 
 
 //////////////////////

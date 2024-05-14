@@ -61,6 +61,8 @@ var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrim
 
         //Start the ground circle particle
 		entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), origin, angles)
+		fx.RemoveFromAllRealms()
+		fx.AddToOtherEntitysRealms( ownerPlayer )
 
 		thread CreateCarePackageAirdrop(
 			origin, angles,

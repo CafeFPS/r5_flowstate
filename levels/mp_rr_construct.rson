@@ -1,0 +1,26 @@
+IsTestMap: false
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_rr_construct/mp_rr_construct_server.nut
+	mp/levels/survival_preprocess/mp_rr_desertlands_64k_x_64k.nut
+	mp/_lasermesh.gnut
+]
+When: "CLIENT"
+Scripts:
+[
+	mp/cl_lasermesh.gnut
+]
+When: "CLIENT || UI"
+Scripts:
+[
+	mp/levels/mp_rr_construct/mp_rr_construct_client.nut
+]
+When: "SERVER || CLIENT"
+Scripts:
+[
+	mp/levels/mp_rr_construct/mp_rr_construct_common.nut
+	mp/levels/mp_rr_construct/mp_rr_construct_mapdata.nut
+	mp/levels/mp_rr_construct/mp_rr_construct_mapscripting.nut
+	mp/levels/mp_rr_construct/mp_rr_construct_weaponscripting.nut
+]

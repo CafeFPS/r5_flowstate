@@ -2541,7 +2541,7 @@ void function WorldEntities()
     entity spike = GenerateRings($"mdl/foliage/plant_desert_yucca_01.rmdl",<-28671.8,38912.3,3070>,4 + speed_multiplier ,300 + size_multiplier) // spikes
     ///////////////////////////////////////////////////////////////// FX
 
-    if(GetMapName() == "mp_rr_desertlands_64k_x_64k_nx") // light for night time
+    if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx ) // light for night time
     {
         CreateFX(FX_07,<-24448.5,35327.1,-3327.99> + <0,0,20>, <0,0,0>)
         CreateFX(FX_07,<-24319.1,35199.5,-3327.98> + <0,0,20>, <0,90,0>)

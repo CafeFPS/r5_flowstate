@@ -132,9 +132,6 @@ void function ClientCodeCallback_MapSpawn()
 	CreateHUDRuiTopologies()
 
 	SV_CL_Shared_Init()
-	
-	//RequestPakFile( "ui_flowstate" )
-	//for custom ui/textures by @CafeFPS
 }
 
 
@@ -165,6 +162,7 @@ void function PrecacheResFiles()
 	PrecacheRes( "vgui_enemy_announce" )
 	PrecacheRes( "Coop_TeamScoreEventNotification" )
 	PrecacheRes( "control_panel_generic_screen" )
+	PrecacheRes( "flowstate_health_bar" )
 
 	PrecacheRes( "vgui_callsign_menu" )
 }
@@ -379,6 +377,7 @@ void function Init_PlayerScripts( entity player )
 
 void function CodeCallback_EntityVarChanged( entity ent, varName, newValue, oldValue )
 {
+	// printt( "entity var changed", varName, newValue, ent )
 	string className = expect string( ent.GetNetworkedClassName() )
 
 	if ( !(className in _entityClassVarChangeCallbacks) )
@@ -457,7 +456,7 @@ void function FinisherTestIdk(
 	// CharacterSkin_Apply( attacker, attackerSkin )
 	// attacker.SetModel( $"mdl/Humans/pilots/w_selentatsuki.rmdl" )
 	
-	attacker.SetModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
+	attacker.SetModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
 	// attacker.SetModel( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
 	//CharacterSkin_Apply( victim, victimSkin )
 	victim.SetModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )

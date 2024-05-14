@@ -107,7 +107,9 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 
 			if ( IsValid( ent ) )
 			{
-				ent.e.isBusy = false
+				if ( ent.GetScriptName() != "charge_pylon_button" || ent.GetScriptName() == "charge_pylon_button" && !e["success"] )
+					ent.e.isBusy = false
+
 				if ( settings.loopSound != "" )
 					StopSoundOnEntity( ent, settings.loopSound )
 			}
@@ -126,10 +128,10 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 					{
 						player.MovementEnable()
 					}
-					if(GameRules_GetGameMode() == "flowstate_snd")
-					{
-						Highlight_ClearFriendlyHighlight( player )
-					}
+					// if(GameRules_GetGameMode() == "fs_snd")
+					// {
+						// Highlight_ClearFriendlyHighlight( player )
+					// }
 				}
 
 				if ( settings.exclusiveUse )
@@ -146,6 +148,11 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 	)
 
 	waitthread ExtendedUse_TrackContinuousUse( player, ent, settings.duration, settings.useInputFlag, settings.requireMatchingUseEnt )
+
+	if ( ent.GetScriptName() == "charge_pylon_button" )
+	{
+		thread SetButtonNoBusyDelayed( ent, player )
+	}
 
 	if ( settings.successFunc != null )
 		thread settings.successFunc( ent, player, settings )
@@ -186,14 +193,14 @@ void function ExtendedUse_TrackContinuousUse( entity player, entity useTarget, f
 
 	OnThreadEnd
 	(
-		function() : ( player, useTarget, result )
+		function() : ( player, result ) //useTarget, 
 		{
 			if ( !result.success )
 			{
-				#if SERVER
-				if( IsVaultPanel( useTarget ) )
-					SetVaultPanelState( useTarget, ePanelState.LOCKED )
-				#endif
+				//#if SERVER
+				//if( IsVaultPanel( useTarget ) )
+				//	SetVaultPanelState( useTarget, ePanelState.LOCKED )
+				//#endif
 				player.Signal( "OnContinousUseStopped" )
 			}
 		}

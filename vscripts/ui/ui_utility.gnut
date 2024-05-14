@@ -770,4 +770,3 @@ bool function IsElitePlaylist( string playlist )
 {
 	return GetPlaylistVarBool( playlist, "is_elite_game", false )
 }
-

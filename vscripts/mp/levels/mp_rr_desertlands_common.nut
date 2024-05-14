@@ -55,7 +55,7 @@ void function Desertlands_PreMapInit_Common()
 
 void function Desertlands_MapInit_Common()
 {
-	if ( GetMapName() == "mp_rr_desertlands_mu3" )
+	if ( MapName() == eMaps.mp_rr_desertlands_mu3 )
 		return
 
 	//printt( "Desertlands_MapInit_Common" )
@@ -68,7 +68,7 @@ void function Desertlands_MapInit_Common()
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
-		if ( GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
+		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k_tt )
 			thread MirageVoyageSetup()
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		SURVIVAL_SetPlaneHeight( 15250 )
@@ -111,7 +111,7 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() == SURVIVAL && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
+	if( Gamemode() == eGamemodes.SURVIVAL && MapName() != eMaps.mp_rr_desertlands_64k_x_64k_tt ) 
 	{
 		thread function () : ()
 		{
@@ -445,7 +445,7 @@ void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity pla
 #if SERVER
 void function AddTrainToMinimap( entity mover )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 		return
 
 	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", mover.GetOrigin() )
@@ -543,8 +543,8 @@ void function SetButtonSettings( entity panel )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_Streamer" )
 	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
 	
-	if ( GameRules_GetGameMode() == "fs_dm" )
-		WaitForever()
+	if ( Gamemode() == eGamemodes.fs_dm )
+		WaitForever() //shouldn't this simply return... ?
 	else
 		wait 2
 	panel.SetUsable()
@@ -600,7 +600,7 @@ entity function SpawnBigTrainingTarget(vector pos, vector ang, void functionref(
 
 #if SERVER
 void function RespawnItem(entity item, string ref, int amount = 1, int wait_time=6)
-//By Retículo Endoplasmático#5955 CafeFPS. Tomado del firing range.
+//By @CafeFPS CafeFPS. Tomado del firing range.
 
 {
 	vector pos = item.GetOrigin()
@@ -615,7 +615,7 @@ void function RespawnItem(entity item, string ref, int amount = 1, int wait_time
 
 #if SERVER
 void function FillLootTable()
-//By Retículo Endoplasmático#5955 CafeFPS. Adaptado del firing range.
+//By @CafeFPS CafeFPS. Adaptado del firing range.
 {
 	file.ordnance.extend(SURVIVAL_Loot_GetByType( eLootType.ORDNANCE ))
 	file.weapons.extend(SURVIVAL_Loot_GetByType( eLootType.MAINWEAPON ))
@@ -624,7 +624,7 @@ void function FillLootTable()
 
 #if SERVER
 void function SpawnGrenades(vector pos, vector ang, int wait_time = 6, array which_nades = ["thermite", "frag", "arc"], int num_rows = 1)
-//By michae\l/#1125 & Retículo Endoplasmático#5955
+//By michae\l/#1125 & @CafeFPS
 {
     vector posfixed = pos
 	int i;

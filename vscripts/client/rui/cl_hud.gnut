@@ -10,6 +10,8 @@ global function AddCallback_ModifyDamageFlyoutForScriptName
 
 global function DEV_DamageFlyout
 
+global function Flowstate_AddCustomScoreEventMessage
+
 const bool RUI_ENABLED = true
 
 /*
@@ -90,7 +92,8 @@ struct
 	table<entity, DamageFlyoutData> entityDamageFlyouts
 
 	var rui_hitIndicator
-
+	var flowstateSmallServerMsg
+	var flowstateSmallServerMsg_Topo
 	table< string, vector functionref( entity, vector ) > modifyDamageFlyoutForScriptNameCallbacks
 } file
 
@@ -570,6 +573,33 @@ void function AddScoreEventMessage( ScoreEvent scoreEvent, EHI associatedEHI, in
 	thread QueueMessageThink()
 }
 
+void function Flowstate_AddCustomScoreEventMessage( string eventText, float duration )
+{
+	if(file.flowstateSmallServerMsg != null || eventText == "" && file.flowstateSmallServerMsg != null )
+	{
+		RuiDestroyIfAlive( file.flowstateSmallServerMsg )
+		file.flowstateSmallServerMsg = null
+	}
+	
+	if ( file.flowstateSmallServerMsg_Topo != null ||  eventText == "" && file.flowstateSmallServerMsg_Topo != null )
+	{
+		RuiTopology_Destroy( file.flowstateSmallServerMsg_Topo )
+		file.flowstateSmallServerMsg_Topo = null
+	}
+
+	UISize screenSize = GetScreenSize()
+	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0),( screenSize.height * -0.618 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
+	var rui = RuiCreate( $"ui/centerevent_info.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
+
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetFloat( rui, "duration", duration )
+	RuiSetString( rui, "messageText", Localize( " " + eventText + " " ) )
+	RuiSetBool( rui, "isBigText", true )
+	RuiSetFloat( rui, "messageOffsetScale", 1.0 )
+	RuiSetGameTime( rui, "updateTime", Time() )	
+	file.flowstateSmallServerMsg = rui
+	file.flowstateSmallServerMsg_Topo = topo
+}
 
 string function GetFormattedEventText( ScoreEvent scoreEvent, int pointValue, EHI associatedEHI, float valueA, float valueB )
 {

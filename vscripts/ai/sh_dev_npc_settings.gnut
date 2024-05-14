@@ -27,10 +27,23 @@ void function SetupChangeSurvivalCharacterClass()
 			} )
 		}
 		
-		//Custom
-		SetupDevCommand( "Blisk [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 1")
-		SetupDevCommand( "Fade [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 2")
-		SetupDevCommand( "Among Us Crewmate [Custom - Model Only]", "Flowstate_AssignCustomCharacterFromMenu 3")
+		//Custom by @CafeFPS :)
+		SetupDevCommand( "TF2 Ash [Custom]", "Flowstate_AssignCustomCharacterFromMenu 6")
+		SetupDevCommand( "TF2 Blisk [Custom]", "Flowstate_AssignCustomCharacterFromMenu 1")
+		SetupDevCommand( "TF2 Jack Cooper [Custom]", "Flowstate_AssignCustomCharacterFromMenu 8")
+		SetupDevCommand( "Revenant [Custom]", "Flowstate_AssignCustomCharacterFromMenu 10")
+		SetupDevCommand( "Loba [Custom]", "Flowstate_AssignCustomCharacterFromMenu 9")
+		//SetupDevCommand( "Loba Swimsuit [Custom]", "Flowstate_AssignCustomCharacterFromMenu 11")
+		SetupDevCommand( "Ballistic [Custom]", "Flowstate_AssignCustomCharacterFromMenu 12")
+		SetupDevCommand( "Fade [Custom]", "Flowstate_AssignCustomCharacterFromMenu 2")
+		SetupDevCommand( "Rhapsody [Custom]", "Flowstate_AssignCustomCharacterFromMenu 5")
+		SetupDevCommand( "Crewmate [Custom - 3p only]", "Flowstate_AssignCustomCharacterFromMenu 3")
+		//SetupDevCommand( "Peter Griffing [Custom]", "Flowstate_AssignCustomCharacterFromMenu 4")
+		//SetupDevCommand( "CJ [Custom - 3p only]", "Flowstate_AssignCustomCharacterFromMenu 7")
+		SetupDevCommand( "MRVN [Custom - 3p only]", "Flowstate_AssignCustomCharacterFromMenu 13")
+		//SetupDevCommand( "Satoru Gojo [Custom]", "Flowstate_AssignCustomCharacterFromMenu 14" )
+		//SetupDevCommand( "Naruto [Custom]", "Flowstate_AssignCustomCharacterFromMenu 15" )
+		SetupDevCommand( "Pete [Custom]", "Flowstate_AssignCustomCharacterFromMenu 16" )
 	#endif
 }
 
@@ -104,7 +117,7 @@ void function SetupWeapons()
 	//SetupDevCommand( "Dev: Smart Pistol (disabled)", "give mp_weapon_smart_pistol" )
 	SetupDevCommand( "Dev: Dev Cubemap ", "give weapon_cubemap" )
 	SetupDevCommand( "Dev: Throwing Knife", "give mp_weapon_throwingknife" )
-	
+	SetupDevCommand( "Dev: Titan Sword", "playerRequestsSword")
 	#endif
 }
 

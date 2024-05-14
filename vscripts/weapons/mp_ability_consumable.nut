@@ -30,6 +30,8 @@ global function Consumable_CancelHeal
 global function Consumable_IsCurrentSelectedConsumableTypeUseful
 
 global function Consumable_SetClientTypeOnly
+global function AddModAndFireWeapon_Thread
+global function GetConsumableInfoFromRef
 #endif // CLIENT
 
 #if SERVER
@@ -47,7 +49,8 @@ global enum eConsumableType
 	COMBO_FULL
 
 	ULTIMATE
-
+	SND_BOMB
+	
 	_count
 }
 
@@ -178,7 +181,7 @@ void function Consumable_Init()
 {
 	RegisterWeaponForUse( CONSUMABLE_WEAPON_NAME )
 	RegisterSignal( "ConsumableDestroyRui" ) // idk really, from S7 or so...
-
+	RegisterSignal( "VCTBlueFX" )
 	//Remote_RegisterUntypedFunction_deprecated( "ClientCallback_SetSelectedConsumableTypeNetInt") //, "int", INT_MIN, INT_MAX )
 	//Remote_RegisterUntypedFunction_deprecated( "ClientCallback_SetNextHealModType") //, "string" )
 
@@ -268,19 +271,40 @@ void function Consumable_Init()
 		file.consumableTypeToInfo[ eConsumableType.ULTIMATE ] <- ultimateBattery
 	}
 
+	if( Gamemode() == eGamemodes.fs_snd )
+	{
+		// Bomb
+		ConsumableInfo bomb
+		{
+			bomb.ultimateAmount = 0.0
+			bomb.healAmount = 0.0
+			bomb.healTime = 0.0
+			bomb.lootData = SURVIVAL_Loot_GetLootDataByRef( "snd_bomb" )
+			bomb.chargeSoundName = "Wattson_Xtra_A"
+			bomb.cancelSoundName = "ui_lobby_rankchip_disable"//"UI_Networks_Invitation_Canceled"
+			bomb.modName = "snd_bomb"
+		}
+		file.consumableTypeToInfo[ eConsumableType.SND_BOMB ] <- bomb
+	}
+	
 	file.modNameToConsumableType[ "health_small" ] <-        eConsumableType.HEALTH_SMALL
 	file.modNameToConsumableType[ "health_large" ] <-        eConsumableType.HEALTH_LARGE
 	file.modNameToConsumableType[ "shield_small" ] <-        eConsumableType.SHIELD_SMALL
 	file.modNameToConsumableType[ "shield_large" ] <-        eConsumableType.SHIELD_LARGE
 	file.modNameToConsumableType[ "phoenix_kit" ] <-        eConsumableType.COMBO_FULL
 	file.modNameToConsumableType[ "ultimate_battery" ] <-    eConsumableType.ULTIMATE
-
+	
+	if( Gamemode() == eGamemodes.fs_snd )
+		file.modNameToConsumableType[ "snd_bomb" ] <-    eConsumableType.SND_BOMB
+	
 	file.consumableUseOrder.append( eConsumableType.SHIELD_LARGE )
 	file.consumableUseOrder.append( eConsumableType.SHIELD_SMALL )
 	file.consumableUseOrder.append( eConsumableType.COMBO_FULL )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_LARGE )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_SMALL )
-
+	if( Gamemode() == eGamemodes.fs_snd )
+		file.consumableUseOrder.append( eConsumableType.SND_BOMB )
+	
 	#if SERVER
 		AddCallback_OnClientConnected( OnClientConnected )
 
@@ -294,6 +318,8 @@ void function Consumable_Init()
 		AddCallback_OnPlayerConsumableInventoryChanged( SwitchSelectedConsumableIfEmptyAndPushClientSelectionToServer ) //client authoritative selection
 
 		SetCallback_UseConsumable( Consumable_HandleConsumableUseCommand )
+		AddTargetNameCreateCallback( "flowstate_bomb", BombCreated )
+		RegisterSignal("OnlyOneBombSound")
 	#endif
 }
 
@@ -394,6 +420,9 @@ void function OnWeaponActivate_Consumable( entity weapon )
 	string modName
 
 	#if SERVER
+		weaponOwner.p.playerIsPlantingBomb = true
+		// EmitSoundOnEntityExceptToPlayer(player, player, "Wraith_PhaseGate_Portal_Open") todo find electric sound from bomb
+		
 		weapon.SetScriptTime0( Time() ) // sets heal start time for rui
 
 		modName = file.playerToNextMod[ weaponOwner ]
@@ -429,10 +458,14 @@ void function OnWeaponActivate_Consumable( entity weapon )
 	#endif // SERVER
 
 	#if CLIENT
-		if ( weapon.GetOwner() != GetLocalClientPlayer() || !InPrediction() )
+		if ( weapon.GetOwner() != GetLocalClientPlayer() )
 			return
+		
+		weaponOwner.p.playerIsPlantingBomb = true
 
-		weapon.SetScriptTime0( Time() ) // sets heal start time for rui
+		if ( !InPrediction() )
+			return
+				weapon.SetScriptTime0( Time() ) // sets heal start time for rui
 
 		modName = file.clientPlayerNextMod
 		weapon.SetMods( [ file.clientPlayerNextMod ] )
@@ -512,7 +545,7 @@ void function OnWeaponActivate_Consumable( entity weapon )
 	weapon.SetScriptInt0( consumableRecoveryType )
 
 	#if CLIENT
-		thread Consumable_DisplayProgressBar( weaponOwner, weapon, consumableRecoveryType )
+		thread Consumable_DisplayProgressBar( weaponOwner, weapon, consumableRecoveryType, modName )
 	#endif
 }
 
@@ -522,6 +555,8 @@ void function OnWeaponDeactivate_Consumable( entity weapon )
 		entity weaponOwner = weapon.GetOwner()
 
 	#if SERVER
+		weaponOwner.p.playerIsPlantingBomb = false
+		
 		weaponOwner.SetPlayerNetBool( "isHealing", false )
 		weaponOwner.SetPlayerNetInt( "healingKitTypeCurrentlyBeingUsed", -1 )
 
@@ -548,7 +583,9 @@ void function OnWeaponDeactivate_Consumable( entity weapon )
 	#if CLIENT
 		if ( weapon.GetOwner() != GetLocalClientPlayer() )
 			return
-
+		
+		weaponOwner.p.playerIsPlantingBomb = false
+		
 		Signal( weaponOwner, "ConsumableDestroyRui" )
 		Chroma_ConsumableEnd()
 
@@ -609,7 +646,7 @@ void function OnWeaponRaise_Consumable( entity weapon )
 
 
 #if CLIENT
-void function Consumable_DisplayProgressBar( entity player, entity weapon, int consumableRecoveryType )
+void function Consumable_DisplayProgressBar( entity player, entity weapon, int consumableRecoveryType, string modName)
 {
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnChargeEnd" )
@@ -618,17 +655,34 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 	string consumableName = weapon.GetWeaponSettingString( eWeaponVar.printname )
 	asset hudIcon = weapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
 	float raiseTime = weapon.GetWeaponSettingFloat( eWeaponVar.raise_time )
+	if(modName == "snd_bomb")
+		raiseTime = 0.4
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 
 	var rui = CreateCockpitPostFXRui( $"ui/consumable_progress.rpak" )
 
-	RuiSetGameTime( rui, "healStartTime", Time() )
-	RuiSetString( rui, "consumableName", consumableName )
-	RuiSetFloat( rui, "raiseTime", raiseTime )
-	RuiSetFloat( rui, "chargeTime", chargeTime )
-	RuiSetImage( rui, "hudIcon", hudIcon )
-	RuiSetInt( rui, "consumableType", consumableRecoveryType )
 
+	if(modName == "snd_bomb")
+	{
+		chargeTime -= 2
+		raiseTime -= 2
+		RuiSetGameTime( rui, "healStartTime", Time() )
+		RuiSetString( rui, "consumableName", consumableName )
+		RuiSetFloat( rui, "raiseTime", raiseTime )
+		RuiSetFloat( rui, "chargeTime", chargeTime )
+		RuiSetImage( rui, "hudIcon", $"rui/flowstatecustom/bombicon" )
+		RuiSetInt( rui, "consumableType", 0 )
+	}
+	else 
+	{
+		RuiSetGameTime( rui, "healStartTime", Time() )
+		RuiSetString( rui, "consumableName", consumableName )
+		RuiSetFloat( rui, "raiseTime", raiseTime )
+		RuiSetFloat( rui, "chargeTime", chargeTime )
+		RuiSetImage( rui, "hudIcon", hudIcon )
+		RuiSetInt( rui, "consumableType", consumableRecoveryType )
+	}
+	
 	OnThreadEnd(
 		function() : ( rui, player )
 		{
@@ -636,7 +690,30 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 		}
 	)
 
-	wait raiseTime + chargeTime
+	float startTime = Time()
+	float endTime = startTime + raiseTime + chargeTime
+	
+	while ( Time() < endTime )
+	{
+		RuiSetString( rui, "hintController", "PRESS %attack% TO STOP PLANTING" )
+		RuiSetString( rui, "hintKeyboardMouse", "PRESS %attack% TO STOP PLANTING" )
+
+		if( chargeTime != weapon.GetWeaponSettingFloat( eWeaponVar.charge_time ) )
+		{
+			if(modName == "snd_bomb")
+				raiseTime = 0.4
+			else
+				raiseTime = weapon.GetWeaponSettingFloat( eWeaponVar.raise_time )
+			
+			chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
+			endTime = startTime + raiseTime + chargeTime
+
+			RuiSetFloat( rui, "raiseTime", raiseTime )
+			RuiSetFloat( rui, "chargeTime", chargeTime )
+		}
+
+		wait 0.1
+	}
 }
 
 
@@ -672,7 +749,10 @@ void function OnCreateChargeEffect_Consumable( entity weapon, int fxHandle )
 
 	if ( modName == "health_large" )
 		return
-
+	
+	if ( modName == "snd_bomb" )
+		return
+	
 	int armorTier   = EquipmentSlot_GetEquipmentTier( weapon.GetOwner(), "armor" )
 	vector colorVec = GetFXRarityColorForTier( armorTier )
 
@@ -700,8 +780,18 @@ bool function OnWeaponChargeBegin_Consumable( entity weapon )
 
 	#if SERVER
 		ConsumablePersistentData useData = file.weaponPersistentData[ weapon ]
+		
+		if(itemName == "snd_bomb")
+		{
+			player.SetVelocity(Vector(0,0,0))
+			player.MovementDisable()
+			player.SetMoveSpeedScale(0)
+			player.ForceCrouch() 
+			thread UseConsumable_Bomb( player, info )			
+		}
+		else
+			thread UseConsumable( player, info, useData )
 
-		thread UseConsumable( player, info, useData )
 	#endif // SERVER
 
 	#if CLIENT
@@ -775,6 +865,23 @@ void function OnWeaponChargeEnd_Consumable( entity weapon )
 				EntityHealResource_Remove( player, useData.healthKitResourceId )
 			}
 		}
+	
+		if(itemName == "snd_bomb")
+		{
+			player.SetMoveSpeedScale(1)
+			player.UnforceCrouch()
+			player.MovementEnable()
+			
+			thread function() : (player)
+			{
+				player.ForceStand()
+
+				WaitFrame()
+
+				if ( IsValid( player ) && IsAlive( player ) )
+					player.UnforceStand()
+			}()
+		}
 	#endif // SERVER
 }
 
@@ -810,8 +917,8 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 
 		if( info.ultimateAmount > 0 )
 			UltimatePackUse( player, info )
-		
-		if( GameRules_GetGameMode() == SURVIVAL )
+
+		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
 		{
 			int dropAmount = 1
 			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
@@ -911,7 +1018,9 @@ void function Consumable_HandleConsumableUseCommand( entity player, string consu
 		consumableType = eConsumableType.SHIELD_LARGE
 	if ( consumableCommand == "PHOENIX_KIT" )
 		consumableType = eConsumableType.COMBO_FULL
-
+	if ( consumableCommand == "snd_bomb" )
+		consumableType = eConsumableType.CUSTOMPICKUP
+	
 	if ( consumableType == eConsumableType._count )
 		return
 
@@ -1432,6 +1541,7 @@ void function SetSelectedConsumableTypeNetInt( entity player, int consumableType
 		case eConsumableType.SHIELD_SMALL:
 		case eConsumableType.HEALTH_LARGE:
 		case eConsumableType.HEALTH_SMALL:
+		case eConsumableType.SND_BOMB:
 			player.SetPlayerNetInt( "selectedHealthPickupType", consumableType )
 			return
 
@@ -1465,17 +1575,9 @@ void function Consumable_AddCallback_OnPlayerHealingEnded( void functionref(enti
 	Assert( !file.Callbacks_OnPlayerHealingEnded.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Consumable_AddCallback_OnPlayerHealingStarted" )
 	file.Callbacks_OnPlayerHealingEnded.append( callbackFunc )
 }
+
 #endif // SERVER
 
-// ======================================================================================================================
-//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
-// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
-// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
-//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
-//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
-// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
-//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
-// ======================================================================================================================
 bool function Consumable_IsValidModCommand( entity player, entity weapon, string mod, bool isAdd )
 {
 	if ( weapon.GetWeaponClassName() != CONSUMABLE_WEAPON_NAME )
@@ -1492,6 +1594,331 @@ bool function Consumable_IsValidModCommand( entity player, entity weapon, string
 
 	return true
 }
+void function UseConsumable_Bomb( entity player, ConsumableInfo info )//, ConsumablePersistentData useData )
+{
+	if( !IsValid(player) || player.GetTeam() != Sh_GetAttackerTeam() || GetGameState() != eGameState.Playing ) return
+	
+	if( Gamemode() == eGamemodes.fs_snd )
+		PlayBattleChatterToSelfOnClientAndTeamOnServer( player,"bc_super" )
+
+	#if SERVER
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnChargeEnd" )
+
+	string itemName = info.lootData.ref
+
+	float delayScale = 1.0
+	float delayTime = ( info.chargeTime * delayScale )
+
+	float endTime = Time() + delayTime
+	
+	while ( Time() < endTime )
+		WaitFrame()
+
+	if( !IsValid(player) || player.GetTeam() != Sh_GetAttackerTeam() || GetGameState() != eGameState.Playing ) return
+	
+	player.SetPlayerNetInt("planted", player.GetPlayerNetInt("planted") + 1 )
+	player.p.playerHasBomb = false
+
+	entity bomb = CreatePropDynamic($"mdl/Weapons/bomb/w_bomb.rmdl", player.GetOrigin() + Vector(0,0,2), Vector(0,0,0))
+
+	if(!IsValid(bomb)) return
+	
+	// foreach( sPlayer in GetPlayerArray() )
+	// {
+		// if(!IsValid(sPlayer)) continue
+	
+		// Message(sPlayer, "Bomb planted", "Exploding in " + EXPLODE_BOMB_TIME.tostring() + " seconds")
+	// }
+
+	foreach ( entity sPlayer in GetPlayerArrayOfTeam(Sh_GetDefenderTeam()) )
+	{
+		thread function() : (sPlayer)
+		{
+			wait 1
+			if(!IsValid(sPlayer)) return
+			
+			Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog", 10, 0)
+		}()
+	}
+	
+	foreach ( sPlayer in GetPlayerArrayOfTeam(Sh_GetAttackerTeam()) )
+	{
+		if(!IsValid(sPlayer)) continue
+		
+		int moneytoGive = 500
+		sPlayer.p.availableMoney += moneytoGive
+		Remote_CallFunction_NonReplay( sPlayer, "ServerCallback_OnMoneyAdded",moneytoGive )
+		Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog", 9, moneytoGive)
+	}
+	
+	bomb.SetOwner( player )
+	bomb.kv.fadedist = 99999
+	// EmitSoundOnEntity(bomb, "HUD_MP_BountyHunt_BankBonusPts_Deposit_End_Successful_3P")
+
+	thread HandleBombExplosion(bomb)
+	
+	if( IsValid( GetPlantedBombEntity() ) )
+		GetPlantedBombEntity().Destroy()
+	
+	SetPlantedBombEntity(bomb)
+	SetBombState(bombState.ONGROUND_PLANTED)
+	
+	SetTargetName(bomb, "flowstate_bomb")
+	bomb.SetUsable()
+	bomb.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	bomb.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	bomb.SetUsePrompts( "Press %use%to defuse the bomb", "Press %use% to defuse the bomb" )
+	
+	Highlight_SetNeutralHighlight( bomb, "sp_objective_entity" )
+
+	SetCallback_CanUseEntityCallback( bomb, Bomb_CanUse )
+	AddCallback_OnUseEntity( bomb, Bomb_OnUse )
+
+	thread function() : (player)
+	{
+		player.ForceStand()
+		WaitFrame()
+		if ( IsValid( player ) && IsAlive( player ) )
+			player.UnforceStand()
+	}()
+	#endif
+}
+
+#if SERVER
+void function HandleBombExplosion(entity bomb)
+{
+	EndSignal(bomb, "OnDestroy")
+
+	float endTime = Time() + EXPLODE_BOMB_TIME
+	
+	foreach ( player in GetPlayerArray() )
+	{
+		if(!IsValid(player)) continue
+		
+		Remote_CallFunction_Replay( player, "ServerCallback_OnBombPlantedInGameHint", bomb, endTime)
+	}
+	
+	// if( endTime >= GetRoundEndTime() )
+		UpdateRoundEndTime( endTime + 1 ) // just adding a bit of extra time to guarantee the bomb to explode or being defused (time won't ran over)
+	
+	while( Time() < endTime && IsValid(bomb) )
+		WaitFrame()
+	
+	if(!IsValid(bomb) || GetGameState() != eGameState.Playing ) return
+	
+	SetBombState( bombState.ONGROUND_EXPLODED )
+	
+	foreach ( player in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ) )
+	{
+		if(!IsValid(player)) continue
+		
+		player.p.availableMoney += 3500
+		Remote_CallFunction_NonReplay(player, "ServerCallback_OnMoneyAdded", 3500)
+	}
+	
+	StartParticleEffectInWorld( PrecacheParticleSystem( $"P_xo_exp_nuke_3P" ), bomb.GetOrigin(), <0,0,0> )
+	EmitSoundAtPosition( TEAM_UNASSIGNED, bomb.GetOrigin(), "bangalore_ultimate_explosion_concrete" )
+	
+	foreach ( player in GetPlayerArray_Alive() )
+	{
+		if(!IsValid(player)) continue
+		
+		float playerDist = Distance2D( player.GetOrigin(), bomb.GetOrigin() )
+		if ( playerDist <= 700 )
+		{
+			entity attacker
+			
+			if( IsValid(bomb.GetOwner()) && IsAlive(bomb.GetOwner()) )
+				attacker = bomb.GetOwner()
+			else
+				attacker = null
+			
+			player.TakeDamage( player.GetMaxHealth() + 1, attacker, attacker, { damageSourceId = eDamageSourceId.snd_bomb, scriptType=DF_BYPASS_SHIELD } )
+		}
+	}
+	
+	bomb.Destroy()
+}
+
+#endif
+
+#if CLIENT
+void function HandleBombSound(entity bomb)
+{
+	EndSignal(bomb, "OnDestroy")
+
+	Signal(GetLocalClientPlayer(), "OnlyOneBombSound")
+	EndSignal(GetLocalClientPlayer(), "OnlyOneBombSound")
+	
+	// P_thermite_spark
+	// P_thermite_igniter_dlight_FP
+	
+	float startTime = Time()
+	float endTime = Time() + EXPLODE_BOMB_TIME
+	string soundtoplay = "HUD_match_start_timer_tick_1P" 
+	float waittime
+	float timePercentage
+	
+	while( Time() < endTime && IsValid(bomb) ) //sorry for this it was a desperate action
+	{
+		if(endTime - Time() <= 2)
+		{
+			// soundtoplay = "ui_ingame_markedfordeath_countdowntoyouaremarked"
+			// EmitSoundOnEntity( bomb, soundtoplay )
+			// wait 2
+			// break
+			waittime = 0.05
+		}
+		else if(endTime - Time() <= 5)
+		{
+			waittime = 0.1
+		}
+		else if(endTime - Time() <= 10)
+		{
+			waittime = 0.2
+		}
+		else if(endTime - Time() <= 15)
+		{
+			waittime = 0.4
+		}
+		else if(endTime - Time() <= 20)
+		{
+			waittime = 0.7
+		}
+		else
+		{
+			waittime = 1
+		}
+		
+		//lerp will update waittime each second, do we want that?
+		
+		// timePercentage = (Time() - startTime) / ((endTime+5) - Time())	
+		// waittime = LerpFloat( 1, 0.15, timePercentage )
+		
+		StopSoundOnEntity( bomb, soundtoplay )
+		EmitSoundOnEntity( bomb, soundtoplay )
+		wait waittime
+	}
+}
+
+void function BombCreated( entity ent )
+{
+	SetCallback_CanUseEntityCallback( ent, Bomb_CanUse )
+	AddCallback_OnUseEntity( ent, Bomb_OnUse )
+	
+	thread HandleBombSound(ent)
+}
+#endif
+
+bool function Bomb_CanUse( entity player, entity bomb)
+{
+	if(!IsValid(player) || !IsValid(bomb)) return false
+	#if SERVER
+		player.Server_TurnOffhandWeaponsDisabledOff()
+	#endif
+	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
+		return false
+	
+	if ( player.GetTeam() == Sh_GetAttackerTeam() )
+		return false
+	
+	return true
+}
+
+void function Bomb_OnUse( entity bomb, entity player, int useInputFlags )
+{
+	if ( !(useInputFlags & USE_INPUT_LONG ) )
+		return
+
+	#if CLIENT
+	HidePlayerHint( "Press %use% to defuse the bomb" )
+	#endif
+
+	ExtendedUseSettings settings
+	settings.successSound = "UI_InGame_HalftimeText_Enter"
+	#if CLIENT
+		settings.loopSound = "HUD_MP_BountyHunt_BankBonusPts_Ticker_Loop_1P"
+		settings.displayRui = $"ui/consumable_progress.rpak"
+		settings.displayRuiFunc = DisplayRuiForBomb
+		settings.icon = $"rui/flowstatecustom/bombicon"
+		settings.hint = "Defusing Bomb"
+	#elseif SERVER
+		//settings.startFunc = RespawnBeaconStartUse
+		//settings.endFunc = RespawnBeaconStopUse
+		settings.successFunc = BombDefused
+		settings.exclusiveUse = true
+		settings.movementDisable = true
+		settings.holsterWeapon = true
+		#endif
+	settings.duration = DEFUSE_BOMB_TIME
+	settings.useInputFlag = IN_USE_LONG
+	
+	#if SERVER
+		if( Gamemode() == eGamemodes.fs_snd )
+		{
+			Highlight_SetFriendlyHighlight( player, "hackers_wallhack" )
+		}
+	#endif
+	
+	thread ExtendedUse( bomb, player, settings )
+	
+}
+
+#if CLIENT
+void function DisplayRuiForBomb( entity ent, entity player, var rui, ExtendedUseSettings settings )
+{
+	DisplayRuiForBomb_Internal( rui, settings.icon, Time(), Time() + settings.duration, settings.hint )
+}
+
+void function DisplayRuiForBomb_Internal( var rui, asset icon, float startTime, float endTime, string hint )
+{
+	RuiSetGameTime( rui, "healStartTime", Time() )
+	RuiSetString( rui, "consumableName", "Defusing bomb" )
+	RuiSetFloat( rui, "raiseTime", 0 )
+	RuiSetFloat( rui, "chargeTime", endTime - Time() )
+	RuiSetImage( rui, "hudIcon", $"rui/flowstatecustom/bombicon" )
+	RuiSetInt( rui, "consumableType", 0 )
+
+	RuiSetString( rui, "hintController", "" )
+	RuiSetString( rui, "hintKeyboardMouse", "" )
+}
+#endif
+
+void function BombDefused( entity bomb, entity player, ExtendedUseSettings settings )
+{
+	//player has bomb?
+	#if CLIENT
+	Signal(GetLocalClientPlayer(), "OnlyOneBombSound")
+	#endif
+	
+	#if SERVER
+	foreach ( sPlayer in GetPlayerArrayOfTeam(Sh_GetDefenderTeam()) )
+	{
+		if(!IsValid(sPlayer)) continue
+		
+		sPlayer.p.availableMoney += 3500
+		Remote_CallFunction_NonReplay(sPlayer, "ServerCallback_OnMoneyAdded", 3500)
+	}
+	
+	SetPlantedBombEntity(null)
+	SetBombState(bombState.ONGROUND_DEFUSED)
+	bomb.Destroy()
+	player.SetPlayerNetInt("defused", player.GetPlayerNetInt("defused") + 1 )
+	//Message(player, "You've defused the bomb", "Poggers")
+	#endif
+}
+
+
+// ======================================================================================================================
+//  #####  #     #    #    ######  ####### ######     ####### #     # #     #  #####  ####### ### ####### #     #  #####
+// #     # #     #   # #   #     # #       #     #    #       #     # ##    # #     #    #     #  #     # ##    # #     #
+// #       #     #  #   #  #     # #       #     #    #       #     # # #   # #          #     #  #     # # #   # #
+//  #####  ####### #     # ######  #####   #     #    #####   #     # #  #  # #          #     #  #     # #  #  #  #####
+//       # #     # ####### #   #   #       #     #    #       #     # #   # # #          #     #  #     # #   # #       #
+// #     # #     # #     # #    #  #       #     #    #       #     # #    ## #     #    #     #  #     # #    ## #     #
+//  #####  #     # #     # #     # ####### ######     #        #####  #     #  #####     #    ### ####### #     #  #####
+// ======================================================================================================================
 
 bool function Consumable_IsValidConsumableInfo( int consumableType )
 {
@@ -1574,8 +2001,12 @@ bool function Consumable_CanUseConsumable( entity player, int consumableType, bo
 	if ( IsFallLTM() && IsPlayerShadowSquad( player ) )
 		return false
 
-
 	int canUseResult = TryUseConsumable( player, consumableType )
+
+	if( consumableType == eConsumableType.SND_BOMB && canUseResult == eUseConsumableResult.ALLOW )
+	{
+		return CanPlantBombHere(player)
+	}
 
 	if ( canUseResult == eUseConsumableResult.ALLOW )
 	{
@@ -1620,7 +2051,8 @@ bool function Consumable_CanUseConsumable( entity player, int consumableType, bo
 			{
 				reason = Localize( "#SWITCH_HEALTH_KIT_ENTIRE", Localize ( GetCanUseResultString( canUseResult ) ), Localize( "#SWITCH_HEALTH_KIT" ) )
 			}
-			AnnouncementMessageRight( player, reason )
+			//AnnouncementMessageRight( player, reason )
+			SND_QuickHint(reason, false)
 			return false
 		}
 	#endif
@@ -1664,10 +2096,11 @@ int function TryUseConsumable( entity player, int consumableType )
 	if ( player.IsTitan() )
 		return eUseConsumableResult.DENY_NONE
 
-
-
-
-
+	if ( consumableType == eConsumableType.SND_BOMB )
+	{
+		return eUseConsumableResult.ALLOW
+	}
+	
 	if ( consumableType == eConsumableType.ULTIMATE )
 	{
 		ConsumableInfo info = file.consumableTypeToInfo[ consumableType ]

@@ -264,6 +264,9 @@ void function PlayerDeathfieldSoundThread()
 
 void function PlayerPainSoundThread()
 {
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		return
+
 	// Each layer has:
 	//: begin threshold (health falls below XX)
 	//: end threshold (health has risen back up above YY)

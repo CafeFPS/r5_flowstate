@@ -284,6 +284,7 @@ void function BeginFire( entity owner, entity inflictor, vector pos, vector dir,
 void function BurnSequence( entity owner, entity inflictor, array<SegmentData> segmentsArray, BurnDamageSettings burnSettings )
 {
 	owner.EndSignal( "OnDestroy" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	foreach ( segment in segmentsArray )
 	{
@@ -295,6 +296,7 @@ void function BurnSequence( entity owner, entity inflictor, array<SegmentData> s
 void function DoSegment( entity owner, entity inflictor, SegmentData segment, BurnDamageSettings burnSettings )
 {
 	owner.EndSignal( "OnDestroy" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	entity preburnEffect = CreateSegmentEffect( PREBURN_EFFECT_ASSET, owner, segment.startPos, segment.endPos, segment.angles, burnSettings.preburnDuration )
 
@@ -433,6 +435,7 @@ entity function CreateSegmentEffect( asset effectAsset, entity owner, vector sta
 	entity effect = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effectAsset ), endPos, angles )
 	effect.SetOwner( owner )
 	AddToUltimateRealm( owner, effect )
+	AddToTrackedEnts( owner, effect )
 
 	EffectSetControlPointVector( effect, 1, startPos )
 
@@ -451,6 +454,7 @@ void function FireSegment_DamageThink( entity effect, entity owner, entity infli
 	entity trig = CreateTriggerCylinderMultiple( effect.GetOrigin(), burnSettings.burnDamageRadius, topDelta, bottomDelta, [], TRIG_FLAG_NONE )
 	trig.RemoveFromAllRealms()
 	trig.AddToOtherEntitysRealms( owner )
+	AddToTrackedEnts( owner, trig )
 	ScriptTriggerSetEnabled( trig, true )
 
 	effect.EndSignal( "OnDestroy" )

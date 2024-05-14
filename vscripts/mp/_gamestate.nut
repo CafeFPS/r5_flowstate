@@ -49,8 +49,6 @@ function GameState_Init()
 	RegisterSignal( "GameEnd" )
 	RegisterSignal( "GameStateChanged" )
 	RegisterSignal( "CatchUpFallBehindVO" )
-	RegisterSignal( "ClearedPlayers" )
-
 
 	level.devForcedWin <- false  //For dev purposes only. Used to check if we forced a win through dev command
 	level.devForcedTimeLimit <- false

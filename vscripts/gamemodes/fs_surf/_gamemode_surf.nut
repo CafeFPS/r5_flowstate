@@ -49,40 +49,52 @@ void function _OnPlayerConnectedSURF(entity player)
     if(!IsValid(player)) return
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	DecideRespawnPlayer( player)
-	player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
-	player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
-	player.SetSkin(RandomInt(6))
-	Message(player, "WELCOME TO APEX SURF", "Surf maps made by the community - Game mode implementation by Colombia", 10)
+
+	Message(player, "FS SURF", "Featuring surf maps made by the community", 10)
     player.TakeOffhandWeapon(OFFHAND_TACTICAL)
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     TakeAllWeapons( player )
     SetPlayerSettings(player, SURF_SETTINGS)
     MakeInvincible(player)
-    player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
+
+	player.TakeOffhandWeapon(OFFHAND_MELEE)
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
+
 	SetTeam(player, TEAM_IMC )
     switch(GetGameState())
     {
 
     case eGameState.WaitingForPlayers:
-        player.UnfreezeControlsOnServer()
-		        if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
-        break
 	case eGameState.MapVoting:
         player.UnfreezeControlsOnServer()
-		        if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
+		switch( MapName() )
+		{
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
+			case eMaps.mp_rr_canyonlands_mu1:
+			case eMaps.mp_rr_canyonlands_mu1_night:				
+				player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
+				player.SetAngles( <0, 65.3776093, 0> )
+			break
+			
+			case eMaps.mp_rr_desertlands_64k_x_64k:
+			case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+			case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			case eMaps.mp_rr_desertlands_mu1:
+				player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
+				player.SetAngles( <0, -136.298843, 0> )
+			break
+			
+			default:
+				entity startEnt = GetEnt( "info_player_start" )
+				player.SetOrigin( startEnt.GetOrigin() )
+				player.SetAngles( startEnt.GetAngles() )
+			break
+		}
         break
     case eGameState.Playing:
-        player.UnfreezeControlsOnServer();
+        player.UnfreezeControlsOnServer()
 		
 		if(IsValid(player))
 		{	TpPlayerToSpawnPoint(player)
@@ -99,14 +111,7 @@ void function _OnPlayerConnectedSURF(entity player)
 
 void function _OnPlayerDiedSURF(entity victim, entity attacker, var damageInfo) 
 {
-    switch(GetGameState())
-    {
-    case eGameState.Playing:
-
-        break
-    default:
-
-    }
+   _HandleRespawnSURF( victim )
 }
 
 void function _HandleRespawnSURF(entity player, bool forceGive = false)
@@ -120,18 +125,22 @@ void function _HandleRespawnSURF(entity player, bool forceGive = false)
 
     if(!IsAlive(player))
     {
+		DecideRespawnPlayer(player, false)
+		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		TakeAllWeapons( player )
+		SetPlayerSettings(player, SURF_SETTINGS)
+		MakeInvincible(player)
 
-                DecideRespawnPlayer(player, false)
-                player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-                player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-                TakeAllWeapons( player )
-                SetPlayerSettings(player, SURF_SETTINGS)
-                MakeInvincible(player)
-                player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
+		player.TakeOffhandWeapon(OFFHAND_MELEE)
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveWeapon( "mp_weapon_vctblue_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_vctblue", OFFHAND_MELEE, [] )
     }
     player.SetHealth( 100 )
-	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-	player.SetShieldHealth( 100 )
+	Inventory_SetPlayerEquipment(player, "armor_pickup_lv5", "armor")
+	player.SetShieldHealthMax( 125 )
+	player.SetShieldHealth( 125 )
     TpPlayerToSpawnPoint(player)
 	SetTeam(player, TEAM_IMC )
 }
@@ -157,9 +166,6 @@ void function DestroyPlayerPropsSURF()
 }
 
 void function ActualSURFLobby()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
-///////////////////////////////////////////////////////
 {
 	printt("Flowstate DEBUG - Starting Lobby")
 	DestroyPlayerPropsSURF()
@@ -186,12 +192,29 @@ void function ActualSURFLobby()
     foreach(player in GetPlayerArray()) 
     {
         if(!IsValid(player)) continue;
-        		        if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
+		switch( MapName() )
+		{
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
+			case eMaps.mp_rr_canyonlands_mu1:
+			case eMaps.mp_rr_canyonlands_mu1_night:				
+				player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
+				player.SetAngles( <0, 65.3776093, 0> )
+			break
+			
+			case eMaps.mp_rr_desertlands_64k_x_64k:
+			case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+			case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			case eMaps.mp_rr_desertlands_mu1:
+				player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
+				player.SetAngles( <0, -136.298843, 0> )
+			break
+			
+			default:
+				entity startEnt = GetEnt( "info_player_start" )
+				player.SetOrigin( startEnt.GetOrigin() )
+				player.SetAngles( startEnt.GetAngles() )
+			break
+		}
         MakeInvincible(player)
         player.UnfreezeControlsOnServer();      
     }
@@ -225,9 +248,6 @@ WaitFrame()
 }
 
 void function ActualSURFGameLoop()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
-///////////////////////////////////////////////////////
 {
 printt("Flowstate DEBUG - Surf map and game started.")
 surf.tdmState = eTDMState.IN_PROGRESS
@@ -374,6 +394,7 @@ void function TeleportFRPlayerSurf(entity player, vector pos, vector ang)
     if(IsValid(player))
     {
 		printt("Flowstate DEBUG - Tping player with TeleportFRPlayerSurf - " + player.GetPlayerName())
+		player.SetVelocity( <0,0,0> )
 	    player.SetOrigin(pos)
 	    player.SetAngles(ang)
     }
@@ -493,7 +514,7 @@ void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity play
 }
 
 //Thanks Archtux#9300
-//Modified by Retículo Endoplasmático#5955 and michae\l/#1125
+//Modified by @CafeFPS and michae\l/#1125
 bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 {
     if ( !IsValid( player ) )

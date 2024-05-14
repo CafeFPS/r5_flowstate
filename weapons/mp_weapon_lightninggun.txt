@@ -1,0 +1,185 @@
+WeaponData
+{
+	// General
+	
+	"printname"   									"Lightning Gun"
+	"shortprintname"   								"Lightning Gun"
+	"description" 									"Lightning Gun"
+	"longdesc"										"Lightning Gun"
+
+	"weapon_type_flags"								"WPT_PRIMARY"
+
+	"menu_icon"										""
+	"hud_icon"										""
+
+	"is_semi_auto"									"0"
+	"ballistic_type"								"hitscan"
+	"ammo_pool_type"								"special"
+	"fire_mode"   									"automatic"
+	// Models
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_lightninggun.rmdl"
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+	"holster_type"									"anti_titan"
+
+	"OnWeaponActivate"								"OnWeaponActivate_Clickweapon"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_Clickweapon"
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_Clickweapon"
+
+	"zoom_effects" 									"0"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""	
+	"projectile_launch_speed" 						"99999999999"	
+	"bolt_hitsize"									"1"
+	"vortex_absorb_effect"							""
+	"vortex_absorb_effect_third_person"				""
+	"vortex_impact_sound_3p"						""
+	"vortex_refire_behavior"  						""
+
+	// Effects	
+	"show_pre_modded_tracer"						"0"
+	"tracer_effect"   								"" 
+	"tracer_effect_first_person"  					""
+	"projectile_trail_effect_0"						""
+	"impact_effect_table"							"lightninggun"
+	"projectile_drag_coefficient"                   "0.0"
+    "bolt_gravity_enabled"							"0"
+    "projectile_gravity_scale"						"0"
+    "bolt_zero_distance"                            "-1"
+	"projectile_adjust_to_gun_barrel"				"0"	
+    "projectile_do_predict_impact_effects"          "0"
+    "pass_through_depth"							"0"
+    "pass_through_damage_preserved_scale"			"0"
+
+	//idk
+	"viewmodel_offset_hip"							"0 0 0"
+
+	// Sounds
+	"sound_trigger_pull"							""
+	"sound_trigger_release" 						""
+	"sound_zoom_in"									""
+	"sound_zoom_out"								""
+	"sound_pickup"									""
+	"fire_sound_1_player_1p"						""
+	"fire_sound_1_player_3p"						""
+	"fire_sound_1_npc"								""
+
+	"damage_type" 									"none"
+	"impulse_force"   								"0"
+	"critical_hit"									"1"
+
+	"ammo_stockpile_max"							"69"
+	"ammo_clip_size"   								"69"
+	"ammo_default_total"							"69"
+	"ammo_per_shot"									"1"
+	"ammo_min_to_fire"								"0"
+	"ammo_no_remove_from_stockpile" 				"1"
+	"uses_ammo_pool"                				"0"
+	
+	// Regen Ammo
+	"regen_ammo_refill_rate"						"999"
+	"regen_ammo_refill_start_delay"					"0"
+	"fire_rate"   									"30"
+	"reload_enabled"  								"0"
+	"deployfirst_time"                              "0.1"
+	"deploy_time" 									"0.1"
+	"holster_time"									"0.1"
+	"raise_time"  									"0.1" //"0.3"
+	"lower_time"  									"0.1" //"0.25"
+	
+    // Damage - When Used by Players
+    "damage_near_value"   							"3"
+    "damage_far_value"								"3"
+    "damage_very_far_value"							"3"
+    "damage_near_value_titanarmor"					"3"
+    "damage_far_value_titanarmor" 					"3"
+    "damage_very_far_value_titanarmor" 				"3"
+	"damage_near_distance"							"9999"  // 100m
+	"damage_far_distance" 							"9999"  // 150m
+	"damage_very_far_distance"						"9999" // 400m
+
+    "damage_leg_scale"                              "1.0"
+	"damage_headshot_scale"							"1"
+	"headshot_distance" 							"1378"  // 300m
+
+	"critical_hit_damage_scale"                     "0"
+
+	
+	"primary_attack_ignores_spread"					"1"
+	"spread_stand_hip"								"0"
+	"spread_stand_hip_run"							"0"
+	"spread_stand_hip_sprint"                       "0"
+	"spread_crouch_hip"   							"0"
+	"spread_air_hip"  								"0"
+	"spread_stand_ads"								"0.0"
+	"spread_crouch_ads"   							"0.0"
+	"spread_air_ads"  								"0.0"
+
+	"projectile_first_person_offset_fraction"		"-50"	
+	"damage_flags" 					                ""
+    "pass_through_depth"                            "0"
+	"viewkick_spring" 								""
+	"fire_rumble" 									""
+	"projectile_ignores_vortex"						"fall_vortex"
+	"sway_move_forward_translate_x"   				"-3"
+	"sway_move_forward_translate_z"   				"-3"
+	"sway_move_back_translate_x"  					"-3"
+	"sway_move_back_translate_z"  					"-3"
+	"sway_move_left_translate_y"  					"-3"
+	"sway_move_left_translate_x"  					"-3"
+	"sway_move_left_translate_z"  					"-3"
+	"sway_move_left_rotate_roll"  					"-3"
+	"sway_move_right_translate_y" 					"-3"
+	"sway_move_right_translate_x" 					"-3"
+	"sway_move_right_translate_z" 					"-3"
+	"sway_move_right_rotate_roll" 					"-3"
+	"sway_move_up_translate_z"						"-3"
+	"sway_move_down_translate_z"  					"-3"
+	"sway_move_angle_factor"  						"-3"
+	"sway_move_origin_factor" 						"-3"
+	"sway_move_angle_factor_zoomed"   				"-3"
+	"sway_move_origin_factor_zoomed"  				"-3"
+	"projectile_adjust_to_hand"						"1"
+	"move_speed_modifier"                    		"1.25"
+	
+	Mods
+	{
+		gold
+		{
+		}
+		
+        noauto
+        {
+			"fire_mode"   									""
+			"is_semi_auto"									"1"
+			"fire_rate"   									"5"
+			"move_speed_modifier"                    		"1.4"
+        }
+		
+	}
+	
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_plus_dot"
+			"base_spread"				"-3.15"
+		}
+	}
+}

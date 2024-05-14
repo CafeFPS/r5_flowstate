@@ -17,6 +17,8 @@ global function SetItemSpawnSource
 global function AddToDeathBox
 global function SURVIVAL_CreateDeathBox
 global function FakePhysicsThrow
+global function FakePhysicsThrow_NewTest
+global function FakePhysicsThrow_NewTestBomb
 global function SURVIVAL_GivePlayerEquipment
 global function SpawnWeaponAndAmmo
 global function SpawnArmor
@@ -69,6 +71,9 @@ struct {
 
 bool function InfiniteAmmoEnabled()
 {
+	if( is3v3Mode() && FS_Scenarios_GetGroundLootEnabled() )
+		return false
+
 	return GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
 }
 
@@ -153,6 +158,7 @@ void function LoadLootZonesForMap()
 		}
 
 		file.lootZones.append( zone )
+		lzEnt.Destroy() // save edicts
 	}
 
 	if ( file.lootZones.len() == 0 )
@@ -182,6 +188,7 @@ void function LoadLootZonesForMap()
 		zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 
 		hotZones.append( zone )
+		lzEnt.Destroy() // save edicts
 	}
 
 	if ( hotZones.len() == 0 )
@@ -427,7 +434,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
 		return true
 
-	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) && GameRules_GetGameMode() != "fs_aimtrainer")
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) && Gamemode() != eGamemodes.fs_aimtrainer )
 		return true
 
 	entity deathBox = null
@@ -447,7 +454,7 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
 			return true
 		
-		if( GameRules_GetGameMode() == "fs_aimtrainer" )
+		if( Gamemode() == eGamemodes.fs_aimtrainer )
 		{
 			thread function() : (deathBox)
 			{
@@ -610,14 +617,26 @@ void function SURVIVAL_PlaceGroundItems()
 		startLootEnt = Entities_FindByClassname( startLootEnt, "script_ref" )
 	}
 
-	if ( GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
-		foreach( ent in itemEnts )
+	
+	foreach( ent in itemEnts )
+	{
+		if( is3v3Mode() )
 		{
-			if( GetEditorClass( ent ) != "info_survival_weapon_location" )
-				continue
-
-			OnGroundLootSpawned( ent )
+			FS_Scenarios_SaveLocationFromLootSpawn( ent )
+			continue
 		}
+
+		if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
+		{
+			ent.Destroy() // save even more edicts
+			continue
+		}
+
+		if( GetEditorClass( ent ) != "info_survival_weapon_location" )
+			continue
+
+		OnGroundLootSpawned( ent )
+	}
 
 	FlagSet( "Survival_LootSpawned" )
 }
@@ -678,6 +697,7 @@ void function OnGroundLootSpawned( entity ent )
 		else
 			file.vaultLootSpawned[zoneOrigin] <- alreadySpawnedLoot
 		itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+
 		while(alreadySpawnedLoot.contains(itemRef))
 		{
 			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
@@ -687,18 +707,42 @@ void function OnGroundLootSpawned( entity ent )
 	}
 	else
 	{
-		itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+		for(int i = 0; i < 1; i++)
+		{
+			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+			LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+
+			if( GetCurrentPlaylistVarBool( "lsm_mod1", false ) )
+			{
+				if (  lootData.lootType == eLootType.ARMOR || lootData.lootType == eLootType.MAINWEAPON || lootData.tier >= 2 )
+				{
+					i--
+					continue
+				}
+			}
+
+			if(  lootData.lootType == eLootType.ARMOR || itemRef == "blank" || itemRef == "mp_weapon_raygun" ) //todo add more restricted loot
+			{
+				i--
+				continue
+			}
+		}
 	}
 
-	if(itemRef == "blank" || itemRef == "mp_weapon_raygun")
-		return
-
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod9", false ) )
+	{
+		itemRef = "mp_weapon_shotgun_pistol"
+		itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+	}
 	LootTypeData lt = GetLootTypeData( itemData.lootType)
 
-	vector spawnOrigin = OriginToGround( origin )
+	TraceResults traceResult = TraceLine( origin + < 0, 0, 32 >, origin - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
-	spawnOrigin.z += 1.5
+	vector spawnOrigin = traceResult.endPos
+
+	// spawnOrigin.z += 1
 
 	if( itemRef == "armor_pickup_lv5" || itemRef == "armor_pickup_lv6" || itemRef == "armor_pickup_lv7" )
 		itemRef = "armor_pickup_lv3"
@@ -709,8 +753,17 @@ void function OnGroundLootSpawned( entity ent )
 			itemRef = "armor_pickup_lv1"
 	}
 	
+	// printt( "spawning ", itemRef )
+
 	if(lt.specialCaseSpawnFunction != null)
 	{
+		if( GetCurrentPlaylistVarBool( "lsm_mod9", false ) && RandomInt(3) == 1)
+		{
+			int angleZ = 0
+			entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+			return
+		}
+
 		lt.specialCaseSpawnFunction(itemRef, spawnOrigin)
 		return
 	}
@@ -718,6 +771,8 @@ void function OnGroundLootSpawned( entity ent )
 	int angleZ = 0
 
 	entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180, 180 ), angleZ>, itemData.countPerDrop )
+	vector angles = AnglesOnSurface( traceResult.surfaceNormal, AnglesToForward( loot.GetAngles() ) )
+	loot.SetAngles( angles )
 	
 	if( isHoverTankLoot )
 	{
@@ -834,7 +889,7 @@ string function GetRandomLootItem( int mapZone = -1 )
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
 {
 	if ( !GetCurrentPlaylistVarBool( "survival_drop_equipment", true ) )
-		return true
+		return true	
 
 	if ( !IsValid( player ) )
 		return true
@@ -1309,40 +1364,28 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 
 	pickup.Signal( "OnItemPickup", { player = player } )
 
-	// if( pickupData.ref == "snd_bomb" && GameRules_GetGameMode() == "flowstate_snd" && GetGameState() == eGameState.Playing )
-	// {
-		// player.p.playerHasBomb = true
-		// SetBombState(bombState.CARRIED)
-		// SetBombEntity(null)
+	if( pickupData.ref == "snd_bomb" && Gamemode() == eGamemodes.fs_snd && GetGameState() == eGameState.Playing )
+	{
+		player.p.playerHasBomb = true
+		SetBombState(bombState.CARRIED)
+		SetBombEntity(null)
 		
-		// printt("new bomb carrier " + player + player.p.playerHasBomb)
-		
-		// thread SND_ThreadThatChecksIfPlayerDisconnects(player)
-		
-		// foreach(sPlayer in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ))
-		// {
-			// if(!IsValid(sPlayer)) continue
+		printt("new bomb carrier " + player + player.p.playerHasBomb)
+
+		foreach(sPlayer in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ))
+		{
+			if( !IsValid(sPlayer) || sPlayer == player ) continue
 			
-			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 0, player) //a player have the bomb
-		// }
-	// }
+			Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 0, player) //a player have the bomb
+		}
+		
+		Remote_CallFunction_NonReplay( player, "SND_HintCatalog", 14, 0 )
+	}
 	
 	if( pickupData.ref == "fs_ball" && GetGameState() == eGameState.Playing )
 	{
-		// player.p.playerHasBomb = true
 		SetBallEntity( null )
 		SetBallCarrier( player )
-
-		printt("New ball carrier " + player)
-
-		//thread SND_ThreadThatChecksIfPlayerDisconnects(player)
-
-		// foreach(sPlayer in GetPlayerArrayOfTeam( Sh_GetAttackerTeam() ))
-		// {
-			// if(!IsValid(sPlayer)) continue
-			
-			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 0, player) //a player have the bomb
-		// }
 	}
 	if (!shouldKeepAlive)
 	{
@@ -1363,25 +1406,24 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	if( ref == "snd_bomb" )
 	{
 		printt("bomb dropped by " + player)
-		// player.p.playerHasBomb = false
-		// Signal(player, "ForceEndBombCheckThread")
+		player.p.playerHasBomb = false
 		
-		// if(IsValid(GetBombEntity())) 
-			// GetBombEntity().Destroy()
+		if(IsValid(GetBombEntity())) 
+			GetBombEntity().Destroy()
 		
-		// loot = SpawnGenericLoot( ref, origin, angles, count )
+		loot = SpawnGenericLoot( ref, origin, angles, count )
 		
-		// SetBombEntity(loot)
+		SetBombEntity(loot)
 
-		// SetBombState(bombState.ONGROUND_IDLE)
-		// loot.SetOrigin(player.GetOrigin())
+		SetBombState(bombState.ONGROUND_IDLE)
+		loot.SetOrigin(player.GetOrigin())
 		
-		// foreach( sPlayer in GetPlayerArrayOfTeam(Sh_GetAttackerTeam()) )
-		// {
-			// if(!IsValid(sPlayer)) continue
+		foreach( sPlayer in GetPlayerArrayOfTeam(Sh_GetAttackerTeam()) )
+		{
+			if(!IsValid(sPlayer)) continue
 			
-			// Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 2, player) //a player dropped the bomb
-		// }
+			Remote_CallFunction_NonReplay( sPlayer, "SND_HintCatalog_WithEntity", 2, player) //a player dropped the bomb
+		}
 	} else if( ref == "fs_ball" )
 	{
 		printt("Ball dropped by " + player)
@@ -1398,13 +1440,17 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	else
 		loot = SpawnGenericLoot( ref, origin, angles, count )
 
+	loot.RemoveFromAllRealms()
+	loot.AddToOtherEntitysRealms( player )	
 	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 	
-	if( !fromBackpackLimit )
-		FakePhysicsThrow( player, loot, fwd )
-	else
-		FakePhysicsThrow( player, loot, AnglesToForward( player.EyeAngles() ) * RandomIntRange( 100, 300 ) ) // This is just a workaround for items from backpack limit check dropping in same pos as backpack and not allowing to grab backpack. In retail, the items are attached to the backpack and spawned in a circle when the backpack reaches the ground, fix this
-	
+	if( ref != "snd_bomb" )
+	{
+		if( !fromBackpackLimit )
+			FakePhysicsThrow( player, loot, fwd )
+		else
+			FakePhysicsThrow( player, loot, AnglesToForward( player.EyeAngles() ) * RandomIntRange( 100, 300 ) ) // This is just a workaround for items from backpack limit check dropping in same pos as backpack and not allowing to grab backpack. In retail, the items are attached to the backpack and spawned in a circle when the backpack reaches the ground, fix this
+	}
 	BroadcastItemDrop( player, ref )
 	
 	thread function() : ( player, loot )
@@ -1652,6 +1698,13 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	string newEquip     = newEquipData.ref
 
+	if( newEquip == "mp_weapon_titan_sword" || newEquip == "melee_titan_sword" )
+	{
+		foreach( weaponOk in player.GetMainWeapons() )
+			if( weaponOk.GetWeaponClassName() == newEquip )
+				return
+	}
+	
 	LootData oldEquipData
 
 	if ( IsValid( activeWeapon ) && SURVIVAL_Loot_IsRefValid( GetWeaponClassName( activeWeapon ) ) )
@@ -1785,84 +1838,80 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			}
 		}
 	}
+	
+	int clipCount = pickup.GetClipCount()
+	int lastAmmo = pickup.e.crateWeaponLastAmmo
+	int lastClip = pickup.e.crateWeaponLastAmmoClip
 
-	thread function () : ( player, newEquipData, mods, pickup, dropCurrentWeapon, weaponSlot ) 
+	player.AmmoPool_SetCapacity( 65535 )
+
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
+
+	if( IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
+	{
+		weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
+	}
+	player.DeployWeapon()
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+
+	if( Gamemode() == eGamemodes.fs_duckhunt && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
+		weapon.AddMod("duckhunt")
+	
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+
+	int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+	int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
+
+	if( newEquipData.baseMods.contains( "crate" ) )
+	{
+		if( lastAmmo != -1 )
+			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
+		else
+			weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
+		
+		if( weapon.UsesClipsForAmmo() && lastClip != -1 )
+		{
+			weapon.SetWeaponPrimaryClipCount( lastClip )
+		}
+	} else if( weapon.UsesClipsForAmmo() )
+		weapon.SetWeaponPrimaryClipCount( ammoToGive )
+
+	if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
+	{
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+		int requiredAmmo = maxAmmo - currentAmmo
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+
+		player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+	}
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+		weapon.SetLegendaryModelIndex(RandomInt(4))
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
 	{		
-		int clipCount = pickup.GetClipCount()
-		int lastAmmo = pickup.e.crateWeaponLastAmmo
-		int lastClip = pickup.e.crateWeaponLastAmmoClip
-
-		player.AmmoPool_SetCapacity( 65535 )
-
-		entity weapon = player.GiveWeapon( newEquipData.baseWeapon, weaponSlot, mods, true )
-
-		if( IsValid(weapon) && weapon.Anim_HasActivity( "ACT_VM_DRAW" ) )
-		{
-			weapon.OverrideNextAttackTime( Time() + weapon.GetSequenceDuration( "ACT_VM_DRAW" ) ) // This seems to avoid player to shoot instantly when in fast deploy bug (sprinting), will keep for now
-		}
-		player.DeployWeapon()
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
-
-		if(GameRules_GetGameMode() == "fs_duckhunt" && weapon.GetWeaponClassName() == "mp_weapon_sniper" )
-			weapon.AddMod("duckhunt")
+		int charmIndex = RandomInt( 2 )
 		
-		int ammoType = weapon.GetWeaponAmmoPoolType()
-
-		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
-
-		if( newEquipData.baseMods.contains( "crate" ) )
+		switch( charmIndex )
 		{
-			if( lastAmmo != -1 )
-				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, lastAmmo )
-			else
-				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, weapon.GetWeaponPrimaryAmmoCountMax( AMMOSOURCE_STOCKPILE ) )
-			
-			if( weapon.UsesClipsForAmmo() && lastClip != -1 )
-			{
-				weapon.SetWeaponPrimaryClipCount( lastClip )
-			}
-		} else if( weapon.UsesClipsForAmmo() )
-			weapon.SetWeaponPrimaryClipCount( ammoToGive )
-
-		if ( InfiniteAmmoEnabled() && weapon.UsesClipsForAmmo() )
-		{
-			string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-			int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-			int maxAmmo = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
-			int requiredAmmo = maxAmmo - currentAmmo
-			int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-			player.AmmoPool_SetCount( ammoType, ammoInInventory + requiredAmmo + maxClipSize )
+			case 0:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
+				//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
+			break
+			case 1:
+				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
+			break
 		}
-
-		if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
-			weapon.SetLegendaryModelIndex(RandomInt(4))
-
-		if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
-		{		
-			int charmIndex = RandomInt( 2 )
-			
-			switch( charmIndex )
-			{
-				case 0:
-					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
-					//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
-				break
-				case 1:
-					weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
-				break
-			}
-		}
-		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-	}()
-
+	}
+	
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.EyePosition() + player.GetForwardVector() * 12
+	return player.EyePosition() + player.GetForwardVector() * 25
 }
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
@@ -1941,6 +1990,9 @@ void function SetItemSpawnSource( entity drop, int spawnSource, entity owner )
 
 void function AddToDeathBox( entity drop, entity deathBox )
 {
+	drop.RemoveFromAllRealms()
+	drop.AddToOtherEntitysRealms( deathBox )
+
 	drop.Hide()
 	drop.UnsetUsable()
 
@@ -1969,7 +2021,6 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 
 	box.SetOwner( player )
 	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
-	box.AllowMantle()
 	
 	if ( hasCard )
 	{
@@ -2015,9 +2066,9 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 	{
 		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 		Highlight_ClearNeutralHighlight( box )
-
-		thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 	}
+
+	thread Flowstate_DeathboxPhysics( box, player.GetVelocity() )
 
 	return box
 }
@@ -2025,8 +2076,11 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 {
 	entity prop_physics = CreateEntity( "prop_physics" )
+
+	prop_physics.RemoveFromAllRealms()
+	prop_physics.AddToOtherEntitysRealms( deathbox )
+
 	prop_physics.SetValueForModelKey( $"mdl/props/death_box/death_box_01.rmdl" )
-	prop_physics.kv.solid = 0
 	prop_physics.kv.spawnflags = SF_PHYSPROP_DEBRIS
 	prop_physics.kv.fadedist = -1
 	prop_physics.kv.renderamt = 255
@@ -2039,18 +2093,32 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 	prop_physics.SetAngles( deathbox.GetAngles() )
 	DispatchSpawn( prop_physics )
 
+	prop_physics.PhysicsSetFriction( 1000 )
+	prop_physics.PhysicsSetDamping( 1, 1000 )
+
 	playerVelocity += deathbox.GetUpVector() * 300 // player velocity probably needs a limit, needs more testing, same for deathbox inertia scale. Seems to work fine for now
 	deathbox.SetParent( prop_physics )
 	prop_physics.Hide()
-	prop_physics.NotSolid()
+
 	prop_physics.SetVelocity( playerVelocity )
 	
-	thread Flowstate_CheckForPhysicsMemoryLeak( deathbox, prop_physics )
+	thread function () : ( deathbox, prop_physics )
+	{
+		EndSignal( deathbox, "OnDestroy" )
+
+		wait 1
+		
+		deathbox.AllowMantle()
+	}()
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
 {
 	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
+
+	physics.RemoveFromAllRealms()
+	physics.AddToOtherEntitysRealms( player )
+
 	vector velocity = forward * 1000
 
 	// physics.PhysicsSetFriction( 50 )
@@ -2067,22 +2135,108 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, floa
 	physics.NotSolid()
 
 	physics.SetVelocity( forward )
+}
 
-	// thread Flowstate_CheckForPhysicsMemoryLeak( drop, physics )
-	// physics sometimes will stuck even if item seems to be static already
+void function FakePhysicsThrow_NewTest( entity player, entity drop, entity drop2, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
+{
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( drop.GetModelName() )
+	prop_physics.kv.spawnflags = 0
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	SetTeam( prop_physics, TEAM_BOTH )	// need to have a team other then 0 or it won't take impact damage
+
+	prop_physics.SetOrigin( drop.GetOrigin() )
+	prop_physics.SetAngles( drop.GetAngles() )
+	DispatchSpawn( prop_physics )
+
+	entity physics = prop_physics
+	vector velocity = player.GetVelocity() * 1.25 + forward
+
+	physics.PhysicsSetFriction( 1000 )
+	physics.PhysicsSetDamping( 1, 1000 )
+	physics.PhysicsSetAutoDisableNotifications( false )
+	physics.SetRollSoundName( "LootBall_Roll_Default" )
+
+	drop.SetParent( physics )
+	if( IsValid( drop2 ) )
+		drop2.SetParent( physics )
+
+	physics.Hide()
+
+	drop.NotSolid()
+	physics.NotSolid()
+
+	physics.SetVelocity( velocity )
+
+	thread Flowstate_CheckFlagPhysics( drop, drop2, physics )
 
 }
 
-void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
+void function FakePhysicsThrow_NewTestBomb( entity player, entity drop, vector forward )
+{
+	entity prop_physics = CreateEntity( "prop_physics" )
+	prop_physics.SetValueForModelKey( drop.GetModelName() )
+	prop_physics.kv.spawnflags = 0
+	prop_physics.kv.fadedist = -1
+	prop_physics.kv.physdamagescale = 0.1
+	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.kv.renderamt = 255
+	prop_physics.kv.rendercolor = "255 255 255"
+	SetTeam( prop_physics, TEAM_BOTH )	// need to have a team other then 0 or it won't take impact damage
+
+	prop_physics.SetOrigin( drop.GetOrigin() )
+	prop_physics.SetAngles( drop.GetAngles() )
+	DispatchSpawn( prop_physics )
+
+	entity physics = prop_physics
+	vector velocity = player.GetVelocity() * 1.25 + forward
+
+	physics.PhysicsSetFriction( 1000 )
+	physics.PhysicsSetDamping( 1, 1000 )
+	physics.PhysicsSetAutoDisableNotifications( false )
+	physics.SetRollSoundName( "LootBall_Roll_Default" )
+
+	drop.SetParent( physics )
+
+	physics.Hide()
+
+	drop.NotSolid()
+	physics.NotSolid()
+
+	physics.SetVelocity( velocity )
+
+	thread Flowstate_CheckBombPhysics( drop, physics )
+
+}
+
+void function Flowstate_CheckFlagPhysics( entity drop, entity drop2, entity physics )
 {
 	EndSignal( drop, "OnDestroy" )
-	EndSignal( physics, "OnDestroy" )
+	// EndSignal( physics, "OnDestroy" )
 
 	OnThreadEnd(
-		function() : ( drop, physics )
+		function() : ( drop, drop2, physics )
 		{
-			if ( !IsValid( drop ) && IsValid( physics ) )
+			if ( IsValid( drop ) )
+			{
+				ClearChildren( drop, true )
+				drop.ClearParent()
+			}
+			
+			if ( IsValid( drop2 ) )
+			{
+				ClearChildren( drop2, true )
+				drop2.ClearParent()
+			}
+
+			if ( IsValid( physics ) )
 				physics.Destroy()
+			
+			Signal( drop, "FlagPhysicsEnd" )
 		}
 	)
 
@@ -2093,32 +2247,66 @@ void function Flowstate_CheckForPhysicsMemoryLeak( entity drop, entity physics )
 
 	while( IsValid( physics ) && vel > 0 )
 	{
-		
+		if( IsValid( drop ) )
+			drop.SetAngles( <0,0,0> )
+			
+		if( IsValid( drop2 ) )
+			drop2.SetAngles( <0,0,0> )
 		velVector = physics.GetVelocity()
 		vel = velVector.Length()
-		// printt( vel )
-
-		if( vel == lastVel )
+		printt( vel )
+		
+		if( vel < 0.8 )
 		{
-			numTicksSameSpeed++
-			
-			if( numTicksSameSpeed >= 25 )
-			{
-				break
-			}
+			physics.StopPhysics()
+			break
 		}
-		else
-			numTicksSameSpeed = 0
 
-		lastVel = vel
 		WaitFrame()
 	}
+}
 
-	if ( IsValid( drop ) )
-		drop.ClearParent()
+void function Flowstate_CheckBombPhysics( entity drop, entity physics )
+{
+	EndSignal( drop, "OnDestroy" )
+	// EndSignal( physics, "OnDestroy" )
 
-	if ( IsValid( physics ) )
-		physics.Destroy()
+	OnThreadEnd(
+		function() : ( drop, physics )
+		{
+			if ( IsValid( drop ) )
+			{
+				ClearChildren( drop, true )
+				drop.ClearParent()
+			}
+			
+			if ( IsValid( physics ) )
+				physics.Destroy()
+			
+			Signal( drop, "FlagPhysicsEnd" )
+		}
+	)
+
+	vector velVector = physics.GetVelocity()
+	float vel = velVector.Length()
+	float lastVel = vel
+	float numTicksSameSpeed
+
+	while( IsValid( physics ) && vel > 0 && IsValid( drop ) )
+	{
+		drop.SetAngles( <0,0,0> )
+		velVector = physics.GetVelocity()
+		vel = velVector.Length()
+		printt( vel )
+		
+		if( vel < 0.8 )
+		{
+			physics.StopPhysics()
+			break
+		}
+
+		WaitFrame()
+	}
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value, int extravalue = -1)
@@ -2171,12 +2359,13 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 	string ammoType = itemData.ammoType
 	
-	array<vector> circlePositions
+	array<TraceResults> circlePositions
 	
 	for(int i = 0; i < 8; i++)
 	{
 		float r = float(i) / float( 8 ) * 2 * PI
-		circlePositions.append( origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0> )
+		vector start = origin + RandomFloatRange( 35, 45 ) * <sin( r ), cos( r ), 0.0>
+		circlePositions.append( TraceLine( start + < 0, 0, 32 >, start - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE ) )
 	}
 	
 	circlePositions.randomize()
@@ -2186,50 +2375,29 @@ entity function SpawnWeaponAndAmmo( string ref, vector origin )
 	{
 		itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
 
-		vector nextOrigin = circlePositions.getrandom()
-		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		circlePositions.fastremovebyvalue( nextOrigin )
+		//Add two ammo stacks per weapon
+		TraceResults traceAmmo1 = circlePositions.getrandom()
+		entity ammo1 = SpawnGenericLoot( ammoType, traceAmmo1.endPos, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop )
 
-		nextOrigin = circlePositions.getrandom()
-		file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		circlePositions.fastremovebyvalue( nextOrigin )
+		circlePositions.fastremovebyvalue( traceAmmo1 )
+		TraceResults traceAmmo2 = circlePositions.getrandom()
 		
-		//This will add sometimes two, sometimes one ammo stack
+		entity ammo2 = SpawnGenericLoot( ammoType, traceAmmo2.endPos, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop )
 
-		// foreach( ammo in file.spawnedAmmoStacks )
-		// {
-			// foreach( possiblePos in circlePositions )
-			// {
-				// if( Distance2D( ammo.GetOrigin(), possiblePos ) < 25 )
-					// circlePositions.fastremovebyvalue( possiblePos )
-			// }
-		// }
-	
-		// if( circlePositions.len() == 0 )
-		// {
-			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			// return ent
-		// }
+		vector anglesA = AnglesOnSurface( traceAmmo1.surfaceNormal, AnglesToForward( ammo1.GetAngles() ) )
+		ammo1.SetAngles( anglesA )
+		anglesA = AnglesOnSurface( traceAmmo2.surfaceNormal, AnglesToForward( ammo2.GetAngles() ) )
+		ammo2.SetAngles( anglesA )
 		
-		// vector nextOrigin = circlePositions.getrandom()
-		
-		// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		// circlePositions.fastremovebyvalue( nextOrigin )
-		
-		// if( circlePositions.len() == 0 )
-		// {
-			// ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
-			// return ent
-		// }
-
-		// if( CoinFlip() )
-		// {
-			// nextOrigin = circlePositions.getrandom()
-			// file.spawnedAmmoStacks.append( SpawnGenericLoot(ammoType, nextOrigin, <0, RandomFloatRange( -180, 180 ), 1>, itemData.countPerDrop ) )
-		// }
+		//TODO add randomized 1 or 2 stacks
 	}
 
-	ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+	ent = SpawnGenericLoot(ref, origin + <0, 0, 2>, <0, RandomFloatRange( -180, 180 ), 90>, 1)
+
+	TraceResults traceResult = TraceLine( ent.GetOrigin() + < 0, 0, 32 >, ent.GetOrigin() - < 0, 0, 32 >, [], TRACE_MASK_SHOT | TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector angles = AnglesOnSurface( traceResult.surfaceNormal, AnglesToForward( ent.GetAngles() ) )
+	ent.SetAngles( < angles.x, angles.y, AnglesCompose( angles, <0,0,90> ).z > )
+
 	return ent
 }
 
@@ -2322,6 +2490,9 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 
 	if ( !IsValid( weaponToDrop ) )
 		return false
+		
+	// if( weaponToDrop.GetWeaponClassName() == "mp_weapon_lightninggun" ) //verboose hack until physics exist. see: REV_001
+		// return false
 	
 	array<entity> lootToDrop = CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, origin )
 	array<string> mods = GetWeaponMods( weaponToDrop )
@@ -2340,8 +2511,41 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	return true
 }
 
+const array<string> fs_snd_drop_exclusions_array = [
+
+	"health_pickup_ultimate",
+	"health_pickup_combo_full",
+	"health_pickup_health_large",
+	"health_pickup_health_small",
+	"health_pickup_combo_large",
+	"health_pickup_combo_small",
+
+];
+
+bool function FlowstateCheckItemDropableFor__fs_snd( string ref, entity player )
+{
+	if( Gamemode() != eGamemodes.fs_snd )
+		return true
+		
+	if ( fs_snd_drop_exclusions_array.contains( ref ) )
+		return false
+	
+	if( ref == "snd_bomb" && player.p.playerIsPlantingBomb && GetGameState() == eGameState.Playing ) 
+		return false
+	
+	#if SERVER
+	if( ref == "snd_bomb" && IsValid( GetPlantedBombEntity() ) )
+		return false
+	#endif
+	
+	return true
+} 
+
 void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, bool fromBackpackLimit = false )
 {
+	if ( !FlowstateCheckItemDropableFor__fs_snd( ref, player ) )
+		return
+	
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	SURVIVAL_RemoveFromPlayerInventory( player, ref, count )
@@ -2392,8 +2596,7 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count, b
 				foreach( minimapObj in VaultPanel_GetBestMinimapObjs() )
 					SetMinimapObjectVisibleToPlayer( mate, minimapObj, true )
 			}
-		}	
-		
+		}		
 	}
 
 	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryDrop,

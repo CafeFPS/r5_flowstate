@@ -166,7 +166,8 @@ void function ClWeaponStatus_AddClient( entity player )
 
 		RuiTrackFloat( rui, "bleedoutEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 		RuiTrackFloat( rui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
-		RuiTrackInt( rui, "ultimateCredits", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "ultimateCredits" ) )
+		RuiSetInt( rui, "ultimateCredits", -1 )
+		//RuiTrackInt( rui, "ultimateCredits", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "ultimateCredits" ) )
 		file.ability_left_hud = rui
 	}
 
@@ -1077,7 +1078,7 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 int currentUltimateState = eUltimateState.CHARGING
 void function UltimateWeaponStateSet( int ultimateWeaponState )
 {
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 		return
 
 	int lastUltimateState = currentUltimateState

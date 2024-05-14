@@ -382,6 +382,8 @@ global struct ServerEntityStruct
 	float lastGrappleTime
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
+	
+	//Flowstate
 
 	//Trophy Structs
 	float pylonhealth
@@ -453,8 +455,18 @@ global struct ServerEntityStruct
 
 	//extra survival int property ( max shield for infinite shield )
 	int extraSurvivalProperty = -1
-
+	
+	//Crypto
 	bool droneRecalling = false
+
+	//Warp tunnel path
+	array<entity> warpEntrancePath
+	array<vector> warpEntranceSmoothedPath
+
+	bool IsFalling = false
+	vector FallDamageJumpOrg
+	float currentDiveGoalAngle
+	entity botFakeModel
 }
 
 global struct MeritData
@@ -740,6 +752,53 @@ global struct ServerPlayerStruct
 	bool isAdmin = false
 	int ziplineUsages = 0
 	float lastmoved
+	
+	//mkos /or/ r5r stats /r5r.dev
+	
+	int handle 					= -1
+	string UID 					= ""
+	string name 				= ""
+	string hitsound 			= ""
+	int input 					= 0
+	string inputmode 			= ""
+	bool challengenotify 		= false //need to make a notify system
+	entity entLastChallenger
+	bool notify 				= false
+	bool has_notify 			= false
+	bool destroynotify 			= false
+	float last_input_time
+	float IBMM_grace_period 	= -1 // <=0  is disabled
+	float messagetime			= 0
+	int movevalue 				= 0
+	int p_damage 				= 3 //for lgduel default dmg/heal 
+	int season_kills 			= 0
+	int season_deaths 			= 0
+	int season_glides 			= 0
+	int season_playtime 		= 0
+	int season_gamesplayed 		= 0
+	int season_score 			= 0
+	string weapon_loadout 		= "NA"
+	bool lock1v1_setting 		= true
+	bool stats_done_loading 	= false
+	bool start_in_rest_setting 	= false
+	bool enable_input_banner 	= false
+	float ratelimit 			= 0.2
+	bool rest_request 			= false
+	bool waitingFor1v1			= false
+	bool bIsChatbot 			= false
+	bool ClientCommandsEnabled 	= true
+	
+	//framework for confirm
+	bool bInRetry 				= false
+	bool bRelayChallengeState 	= false
+	int relayChallengeCode 		= 0
+	
+	bool bTextmute 				= false
+	
+
+	
+	
+	
 
 	//MovementGym
 	bool isTimerActive = false
@@ -902,6 +961,7 @@ global struct ServerPlayerStruct
 
 	float lastTgiveUsedTime
 	float lastRestUsedTime
+	//float lastLockEnemyUsedTime //???
 
 	//bullet slow
 	float lastTimeShotSlowApplied_Global = 0
@@ -938,7 +998,41 @@ global struct ServerPlayerStruct
 	array< string > storedPlayerSettingsMods
 	array< int > storedPlayerHealth // { health, shieldHealth }
 	array< int > storedPlayerPassives
+
 	bool usingJumpPad = false
+	
+	//LGDuels
+	int totalLGShots = 0
+	int totalLGHits = 0
+	
+	//Custom models
+	int assignedCustomModel
+	
+	//R5R Sword
+	array<VisibleEntityInCone> targetsForAoeDamage
+	bool isRunningFuelThread
+	float lastFuelRemainingTime = -1
+	bool isPlayerSlamming = false
+	array<entity> slamLastInnerPlayers
+	bool isSecondaryMeleeAttack = false
+	
+	entity launcherVictim
+	bool launcherStarted
+	bool startingSuperAlready
+	
+	bool IsBot = false
+
+	int movementRecorderCharacter = 0
+	array< var > recordingAnims
+	array< LocPair > recordingAnimsCoordinates
+	array< int > recordingAnimsChosenCharacters
+
+	bool isRecording = false
+	vector currentOrigin
+	vector currentAngles
+	bool recorderHideHud
+	bool continueLoop = true
+	array<entity> dummyList
 }
 
 global struct ChallengeScore

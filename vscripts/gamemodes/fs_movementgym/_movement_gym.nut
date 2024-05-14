@@ -365,7 +365,7 @@ function ClientCommand_Hub(entity user, array < string > args) {
   }
   
   //Force Default Player Settings
-  SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
+  // SetPlayerSettings(user, TDM_PLAYER_SETTINGS)
   
   user.p.lastHub = Time()
   return true
@@ -801,7 +801,7 @@ function MovementGym_Hub() {
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
-          SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+          // SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
 
 		TakeAllPassives( ent )
 		if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
@@ -842,7 +842,7 @@ function MovementGym_Hub() {
 
           ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
           ent.SetPlayerNetBool("pingEnabled", false)
-          SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
+          // SetPlayerSettings(ent, TDM_PLAYER_SETTINGS)
 
 		TakeAllPassives( ent )
 		if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )

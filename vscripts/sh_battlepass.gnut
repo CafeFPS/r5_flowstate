@@ -355,7 +355,7 @@ ItemFlavor ornull function GetActiveBattlePass()
 #if SERVER || CLIENT || UI
 ItemFlavor ornull function GetPlayerActiveBattlePass( EHI playerEHI )
 {
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -367,7 +367,7 @@ ItemFlavor ornull function GetPlayerActiveBattlePass( EHI playerEHI )
 #if SERVER || CLIENT || UI
 ItemFlavor ornull function GetPlayerLastActiveBattlePass( EHI playerEHI )
 {
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -408,7 +408,7 @@ bool function DoesPlayerOwnBattlePass( entity player, ItemFlavor pass )
 int function GetPlayerBattlePassXPProgress( EHI playerEHI, ItemFlavor pass, bool getPreviousProgress = false )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -430,7 +430,7 @@ int function GetPlayerBattlePassXPProgress( EHI playerEHI, ItemFlavor pass, bool
 int function GetPlayerBattlePassLastSeenXP( EHI playerEHI, ItemFlavor pass )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -451,7 +451,7 @@ int function GetPlayerBattlePassLastSeenXP( EHI playerEHI, ItemFlavor pass )
 int function GetPlayerBattlePassPurchasedXP( EHI playerEHI, ItemFlavor pass, bool getPreviousProgress = false )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -475,7 +475,7 @@ int function GetPlayerBattlePassPurchasedXP( EHI playerEHI, ItemFlavor pass, boo
 int function GetPlayerBattlePassEarnedXP( EHI playerEHI, ItemFlavor pass, bool getPreviousProgress = false )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -493,7 +493,7 @@ int function GetPlayerBattlePassEarnedXP( EHI playerEHI, ItemFlavor pass, bool g
 bool function GetPlayerBattlePassLastSeenPremium( EHI playerEHI, ItemFlavor pass )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
@@ -512,7 +512,7 @@ bool function GetPlayerBattlePassLastSeenPremium( EHI playerEHI, ItemFlavor pass
 int function GetPlayerBattlePassPurchasedLevels( EHI playerEHI, ItemFlavor pass )
 {
 	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
-	#if SERVER || CLIENT || UI
+	#if CLIENT || UI
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 

@@ -689,6 +689,7 @@ void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacem
 	thread Trophy_Watcher( pylon )
 	thread Trophy_Anims( pylon )
 	waitthread Trophy_CreateTriggerArea( pylon )
+	
 }
 
 void function Trophy_Watcher( entity trophy )
@@ -696,6 +697,8 @@ void function Trophy_Watcher( entity trophy )
 	EndSignal( trophy, "OnDestroy" )
 	
 	entity player = trophy.GetBossPlayer()
+	player.EndSignal( "CleanUpPlayerAbilities" )
+	
 	// EndSignal( player, "OnDeath" )
 	// EndSignal( player, "OnDestroy" )
 	
@@ -772,7 +775,7 @@ void function Trophy_CreateTriggerArea( entity pylon ) {
 	vortexSphere.kv.spawnflags = spawnFlags
 	vortexSphere.kv.enabled = 1
 	vortexSphere.kv.radius = TROPHY_INTERCEPT_PROJECTILE_RANGE
-	vortexSphere.kv.bullet_fov = 105
+	vortexSphere.kv.bullet_fov = 180
 	vortexSphere.kv.physics_pull_strength = 25
 	vortexSphere.kv.physics_side_dampening = 6
 	vortexSphere.kv.physics_fov = 360

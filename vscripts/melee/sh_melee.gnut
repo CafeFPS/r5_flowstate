@@ -34,6 +34,8 @@ global function CodeCallback_OnMeleeHeld
 global function CodeCallback_OnMeleeReleased
 global function CodeCallback_IsValidMeleeAttackTarget
 global function CodeCallback_OnMeleeAttackAnimEvent
+global function Melee_Attack
+global function GetMeleeAttackLungeTarget
 #endif
 
 #if SERVER
@@ -54,6 +56,9 @@ const float MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_NOT_ENEMY = 0.5
 
 const float MELEE_KNOCKBACK_SCALE = 350.0
 const float MELEE_KNOCKBACK_DURATION = 0.25
+
+const float TITANSWORD_MELEE_KNOCKBACK_SCALE = 150.0
+const float TITANSWORD_LAUNCHER_MELEE_KNOCKBACK_SCALE = 50.0	
 
 //global const KNIFE_MODEL = $"mdl/weapons/combat_knife/w_combat_knife.rmdl"
 //global const BIRD_MODEL = $"mdl/creatures/bird/bird.rmdl"
@@ -278,10 +283,10 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" )
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" )
 		return true
 	
-	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+	if( GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementgym )
 		return false
 
 	if ( attacker == target )
@@ -293,13 +298,13 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 	if ( !target.CanBeMeleed() )
 		return false
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "flowstate_snd" && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.playerIsPlantingBomb) //avoid punching teammates while planting (qol)
 		return false	
 
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "flowstate_snd" && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_snd && target.p.isInExtendedUse) //avoid punching teammates while defusing (qol)
 		return false	
 	
-	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && GameRules_GetGameMode() == "fs_duckhunt" )
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) && Gamemode() == eGamemodes.fs_duckhunt )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -340,7 +345,14 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 #if SERVER || CLIENT
 entity function GetMeleeAttackLungeTarget( entity attacker, entity meleeAttackWeapon )
 {
-	return PlayerMelee_LungeConeTrace( attacker, meleeAttackWeapon, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
+	entity lungeTarget
+	try{
+		lungeTarget = PlayerMelee_LungeConeTrace( attacker, meleeAttackWeapon, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
+	}catch(e420)
+	{
+		printt( "R5R Sword Made by @CafeFPS and Respawn - Jan 15 2024 <3" )
+	}
+	return lungeTarget
 }
 #endif
 
@@ -401,6 +413,9 @@ bool function CodeCallback_IsValidMeleeAttackTarget( entity attacker, entity tar
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWeapon )
 {
+	#if SERVER
+	// Warning( "//NEW MELEE ATTACK// CodeCallback_OnMeleePressed" )
+	#endif
 	if( !IsValid( attacker ) || !IsValid( meleeInputWeapon ) )
 		return
 
@@ -408,12 +423,73 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 
 	entity meleeAttackWeapon = GetPlayerMeleeAttackWeapon( attacker )
 
-	if( !IsValid( IsValid( meleeAttackWeapon ) ) )
+	if( !IsValid( meleeAttackWeapon ) || !meleeAttackWeapon.IsReadyToFire() )
 		return
-	
+
+	int currentUsedSlot = SURVIVAL_GetActiveWeaponSlot( gp()[0] )
+
+	entity weaponx
+	if( currentUsedSlot != -1 )
+		weaponx = attacker.GetNormalWeapon( currentUsedSlot  )
+
 	if ( !AttackerCanStartMelee( attacker, meleeInputWeapon, meleeAttackWeapon ) )
 		return
-	
+
+	bool shouldstartattack = false
+	if( IsValid( weaponx ) && weaponx.GetWeaponClassName() == "mp_weapon_titan_sword" && !attacker.p.isSecondaryMeleeAttack )
+	{
+		printt( "CUSTOM MELEE PRIMARY - CodeCallback_OnMeleePressed" )
+		if( TitanSword_Dash_TryDash( attacker, weaponx ) )
+		{
+			attacker.PlayerMelee_EndAttack()
+			weaponx.Raise()
+			return
+		} else if ( TitanSword_Slam_TrySlam( attacker, weaponx ) )
+		{
+		} else if ( TitanSword_Heavy_TryHeavyAttack( attacker, weaponx ) )
+		{
+			TitanSword_TryMultiAttack( attacker, weaponx )
+		}
+
+		attacker.PlayerMelee_StartAttack( PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
+		#if SERVER
+			meleeAttackWeapon.EmitWeaponNpcSound_DontUpdateLastFiredTime( 200, 0.2 )
+		#endif
+		attacker.SetSelectedOffhand( eActiveInventorySlot.mainHand, meleeAttackWeapon )
+		attacker.p.isSecondaryMeleeAttack = false
+		return
+	}else if( IsValid( weaponx ) && weaponx.GetWeaponClassName() == "mp_weapon_titan_sword" && attacker.p.isSecondaryMeleeAttack )
+	{
+		if( !weaponx.IsReadyToFire() )
+			return
+
+		printt( "CUSTOM MELEE SECONDARY - CodeCallback_OnMeleePressed" )
+		if( TitanSword_Launcher_TryLauncher( attacker, weaponx ) )
+		{
+			shouldstartattack = true
+		} else
+		{
+			//Light attack
+			weaponx.RemoveMod( "heavy_melee" )
+			meleeAttackWeapon.RemoveMod( "heavy_melee"  )
+			weaponx.AddMod( "super_melee" )
+			meleeAttackWeapon.AddMod( "super_melee" )
+
+			shouldstartattack = true
+		}
+
+		if( !shouldstartattack )
+			return
+
+		attacker.PlayerMelee_StartAttack( PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
+		#if SERVER
+			meleeAttackWeapon.EmitWeaponNpcSound_DontUpdateLastFiredTime( 200, 0.2 )
+		#endif
+		attacker.SetSelectedOffhand( eActiveInventorySlot.mainHand, meleeAttackWeapon )
+		attacker.p.isSecondaryMeleeAttack = false
+		return
+	}		
+
 	#if SERVER
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 	{
@@ -464,21 +540,42 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 		vector eyeTraceHitPos
 		if ( doorLungeEnabled && !IsValid( lungeTarget ) )
 		{
+			//Cafe was here
+			array<entity> ignoreEnts = [ attacker ]
+			
+			array<entity> tocheck
+			tocheck.extend( GetAllPropDoors() )
+			tocheck.extend( GetAllPropDoors_BigOnes() )
+
+			foreach( door in tocheck )
+			{
+				if( !IsValid( door ) )
+					continue
+
+				if( !door.DoesShareRealms( attacker ) )
+				{
+					ignoreEnts.append( door )
+				}
+			}
+
 			TraceResults eyeTrace = TraceLine(
 				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
-				[ attacker ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
+				ignoreEnts, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
 			)
 			lungeTarget = eyeTrace.hitEnt
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed && lungeTarget.DoesShareRealms( attacker ) )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
-
-			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z - 52 > ) //
-			attacker.Lunge_SetSmoothTime( 0.7 )
-			attacker.Lunge_EnableFlying()
+			
+			if( meleeAttackWeapon.GetWeaponClassName() != "melee_titan_sword" )
+			{
+				attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z - 52 > ) //
+				attacker.Lunge_SetSmoothTime( 0.7 )
+				attacker.Lunge_EnableFlying()
+			}
 		}
 		else if ( meleeAttackWeapon.HasMod( "proto_door_kick" ) )
 		{
@@ -498,23 +595,27 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAttackWeapon )
 {
+	// printt( "CodeCallback_OnMeleeStartActivity ", Time() )
 	if ( GetBugReproNum() == 53982 )
 		Assert( attacker.PlayerMelee_IsAttackActive() )
-	else if ( !attacker.PlayerMelee_IsAttackActive() )
+	else if ( !IsValid( attacker ) || !IsValid( meleeAttackWeapon ) || !attacker.PlayerMelee_IsAttackActive() ) 
 		return // todo(dw): workaround for R5DEV-53982
 
+	#if SERVER
 	const float STUN_EFFECT_CUTOFF = 0.05
 	float movestunEffect = StatusEffect_GetSeverity( attacker, eStatusEffect.move_slow )
 	bool movestunBlocked = (movestunEffect > STUN_EFFECT_CUTOFF)
 	if ( !movestunBlocked )
 	{
+		if( meleeAttackWeapon.GetWeaponClassName() == "melee_titan_sword" && !FS_TitanSword_ModsShouldTriggerLunge( attacker, meleeAttackWeapon ) )
+			return
+
 		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
-		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() || IsValid( lungeTarget ) && lungeTarget.IsNPC())
+		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() && lungeTarget.DoesShareRealms( attacker ) || IsValid( lungeTarget ) && lungeTarget.IsNPC() && lungeTarget.DoesShareRealms( attacker ))
 		{
-			printt(meleeAttackWeapon.GetWeaponClassName(), meleeAttackWeapon.HasMod( "energysword" ), attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName())
 			bool lungeStartWasSuccessful
 			
-			if(!meleeAttackWeapon.HasMod( "energysword" ))
+			if(!meleeAttackWeapon.HasMod( "energysword" ) )
 			{
 				lungeStartWasSuccessful = attacker.Lunge_SetTargetEntity( lungeTarget )
 				if ( lungeStartWasSuccessful && attacker.IsOnGround() )
@@ -536,6 +637,7 @@ void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAt
 			}
 		}
 	}
+	#endif
 }	
 #endif
 
@@ -544,7 +646,7 @@ void function DoDamage_EnergySword(entity attacker, entity meleeAttackWeapon, en
 {
 	while(attacker.Lunge_IsLungingToPosition() && Distance2D( lungeTarget.GetOrigin(), attacker.GetOrigin() ) > 100)
 	{
-		printt(Distance2D( lungeTarget.GetOrigin(), attacker.GetOrigin()))
+		// printt(Distance2D( lungeTarget.GetOrigin(), attacker.GetOrigin()))
 		WaitFrame()
 	}
 	
@@ -577,6 +679,9 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
+	// printt( "CodeCallback_OnMeleeAttackAnimEvent ", Time() )
+	meleeAttackWeapon = GetPlayerMeleeAttackWeapon( attacker )
+	// return
 	Assert( IsValid( attacker ) )
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )
@@ -584,7 +689,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	
 	if ( attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() == "mp_weapon_energysword" )//|| attacker.GetActiveWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName() == "mp_weapon_lightsaber") 
 		return
-	
+
 	Assert( attacker.PlayerMelee_GetState() == PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
 	Assert( !attacker.PlayerMelee_GetAttackHitEntity() )
 
@@ -598,6 +703,22 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	table legacyTraceResults = PlayerMelee_AttackTrace( attacker, attackRange, (bool function( entity attacker, entity target ) : (meleeAttackWeapon) {
 		return IsValidMeleeAttackTarget( attacker, null, meleeAttackWeapon, target )
 	}) )
+
+	//Titan sword hook
+	if ( GetPlayerMeleeOffhandWeapon( attacker ) ) //Gets titan sword offhand
+	{
+		int currentUsedSlot = SURVIVAL_GetActiveWeaponSlot( attacker )
+		entity weaponx
+		if( currentUsedSlot != -1 )
+			weaponx = attacker.GetNormalWeapon( currentUsedSlot  )
+
+		if( !IsValid( weaponx ) || weaponx.GetWeaponClassName() != "mp_weapon_titan_sword" )
+			return
+
+		printt( "Sent to Melee_Attack() - Sh_melee - Titan Sword" )
+		Melee_Attack( attacker, meleeAttackWeapon, legacyTraceResults )
+		return
+	}
 
 	entity target         = expect entity(legacyTraceResults.ent)
 	vector endPosition    = expect vector(legacyTraceResults.position)
@@ -613,7 +734,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	if ( !IsValid( target ) )
 		return
 	
-	if( GameRules_GetGameMode() == "fs_prophunt" && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
+	if( Gamemode() == eGamemodes.fs_prophunt && target.GetNetworkedClassName() == "prop_dynamic" && IsValid(target.GetParent()))
 	{
 		target = target.GetParent()
 	
@@ -661,20 +782,12 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		vector damageOrigin  = endPosition
 		vector damageForce   = AnglesToForward( attacker.EyeAngles() ) * meleeAttackWeapon.GetWeaponDamageForce()
 
-		if ( target.IsNPC() && target.CanBeGroundExecuted() )
-		{
-			damageAmount = target.GetHealth()
-			damageScriptType = damageScriptType | DF_RAGDOLL
-			damageForce = <0, 0, 0>
-		}
-
-		// (dw): I'm commenting this out because it's stateful and will stick around on the entity, even if that entity
-		// doesn't die to this melee attack.
-		//if ( IsHumanSized( target ) )
-		//	target.SetContinueAnimatingAfterRagdoll( true )
-
-		// int TEMP_targetHealthBefore         = target.GetHealth() // todo(dw): remove
-		// bool TEMP_isTargetBleedingOutBefore = Bleedout_IsBleedingOut( target ) // todo(dw): remove
+		// if ( target.IsNPC() && target.CanBeGroundExecuted() )
+		// {
+			// damageAmount = target.GetHealth()
+			// damageScriptType = damageScriptType | DF_RAGDOLL
+			// damageForce = <0, 0, 0>
+		// }
 
 		table damageTable = {
 			scriptType = meleeAttackWeapon.GetWeaponDamageFlags(),
@@ -689,8 +802,15 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 
 	// knockback
 	{
+		float  knockbackMagnitude	= MELEE_KNOCKBACK_SCALE
+		
+		if( meleeAttackWeapon.HasMod( "heavy_melee" ) )
+			knockbackMagnitude	= TITANSWORD_MELEE_KNOCKBACK_SCALE
+		else if( meleeAttackWeapon.HasMod( "launcher" ) )
+			knockbackMagnitude	= TITANSWORD_LAUNCHER_MELEE_KNOCKBACK_SCALE
+
 		vector lookDirection    = attacker.GetViewForward()
-		vector pushBackVelocity = lookDirection * MELEE_KNOCKBACK_SCALE
+		vector pushBackVelocity	= knockbackMagnitude * lookDirection
 
 		if ( target.IsPlayer() || target.IsNPC() || target.IsPlayerDecoy() )
 		{
@@ -703,34 +823,259 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		{
 			target.KnockBack( pushBackVelocity, MELEE_KNOCKBACK_DURATION )
 		}
-		else if ( !IsWorldSpawn( target ) )
-		{
-			#if SERVER
-				float pushbackScale = target.IsOnGround() ? 1.0 : 0.1
-				PushEnt( target, pushBackVelocity * pushbackScale )
-			#endif
-		}
+		// else if ( !IsWorldSpawn( target ) )
+		// {
+			// #if SERVER
+				// float pushbackScale = target.IsOnGround() ? 1.0 : 0.1
+				// PushEnt( target, pushBackVelocity * pushbackScale )
+			// #endif
+		// }
 
 		// Must end the attack or the melee lunge (which is active during the attack) will cancel our the knock back
 		attacker.PlayerMelee_EndAttack()
+		if( meleeAttackWeapon.GetWeaponClassName() != "melee_titan_sword" )
+			attacker.Lunge_ClearTarget()
 
 		vector attackerKnockBackVelocity = -pushBackVelocity
-		bool isAttackingGround           = endPosition.z <= attacker.GetOrigin().z
+		const float GroundOffset = 10
+		bool isAttackingGround           = (endPosition.z - GroundOffset) <= attacker.GetOrigin().z
 		attackerKnockBackVelocity.z = 0.0
 		attackerKnockBackVelocity *= 0.5
-		
+		float currentVelDotInKnockbackDir = -1.0
+
 		if( GetCurrentPlaylistVarBool( "flowstate_enable_punch_boosting", false ) )
 			attackerKnockBackVelocity += attacker.GetVelocity()
-		
-		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround )
+
+		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround && meleeAttackWeapon.GetWeaponClassName() != "melee_titan_sword" )
 		{
-			attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
+			vector currentVel = attacker.GetVelocity()
+			currentVelDotInKnockbackDir = DotProduct(Normalize(attackerKnockBackVelocity), Normalize(currentVel))
+			if( currentVelDotInKnockbackDir <= 0.0  ) 
+			{
+				attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
+			}
 		}
 
 		attacker.GrappleDetach()
 	}
 }
-#endif
+
+void function Melee_Attack( entity attacker, entity meleeAttackWeapon, table legacyTraceResults )
+{
+	entity target         = expect entity(legacyTraceResults.ent)
+	vector endPosition    = expect vector(legacyTraceResults.position)
+	int surfaceProp       = expect int(legacyTraceResults.surfaceProp)
+	int staticPropID      = expect int(legacyTraceResults.staticPropID)
+	int impactEffectFlags = expect int(legacyTraceResults.impactEffectFlags)
+	int codeDamageType    = expect int(legacyTraceResults.damageType)
+	vector startPosition  = expect vector(legacyTraceResults.startPosition)
+	vector hitNormal      = Normalize( startPosition - endPosition )
+	int meleeAttackWeaponImpactTableIndex = meleeAttackWeapon.GetImpactTableIndex()
+
+	int currentUsedSlot = SURVIVAL_GetActiveWeaponSlot( gp()[0] )
+	entity weaponx
+	if( currentUsedSlot != -1 )
+		weaponx = attacker.GetNormalWeapon( currentUsedSlot  )
+	
+	if( !IsValid( weaponx ) || weaponx.GetWeaponClassName() != "mp_weapon_titan_sword" )
+		return
+
+	entity lungeTarget
+
+	if ( attacker.p.targetsForAoeDamage.len() <= 1 )
+	{
+		lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
+		if ( IsValid( lungeTarget ) && lungeTarget.IsPlayer() || IsValid( lungeTarget ) && lungeTarget.IsNPC())
+		{
+			VisibleEntityInCone lungeTargetConeStruct
+			lungeTargetConeStruct.ent = lungeTarget
+			vector visiblePosition = lungeTarget.GetOrigin()
+
+			attacker.p.targetsForAoeDamage.clear()
+			attacker.p.targetsForAoeDamage.append( lungeTargetConeStruct )
+			printt( "Lunge Target will receive damage" )
+		}
+	}
+
+	if ( attacker.p.targetsForAoeDamage.len() == 0 )
+	{
+		if( IsValid( target ) )
+			attacker.DispatchImpactEffects( target, startPosition, endPosition, hitNormal, surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(), attacker, impactEffectFlags )
+
+		attacker.Lunge_ClearTarget()
+		attacker.PlayerMelee_EndAttack()
+		attacker.GrappleDetach()
+		attacker.p.launcherStarted = false
+		return
+	}
+	#if SERVER
+	string weaponName = meleeAttackWeapon.GetWeaponClassName()
+
+	int damageAmount     = -1
+	int damageScriptType = meleeAttackWeapon.GetWeaponDamageFlags()
+	int damageType       = DMG_MELEE_ATTACK
+	int damageSourceId   = (weaponName in eDamageSourceId ? eDamageSourceId[weaponName] : eDamageSourceId.damagedef_unknownBugIt)
+	vector damageForce   = AnglesToForward( attacker.EyeAngles() ) * meleeAttackWeapon.GetWeaponDamageForce()
+
+	if( weaponx.GetWeaponClassName() == "mp_weapon_titan_sword" )
+	{
+		weaponName = weaponx.GetWeaponClassName()
+		damageScriptType = weaponx.GetWeaponDamageFlags()
+		damageSourceId   = (weaponName in eDamageSourceId ? eDamageSourceId[weaponName] : eDamageSourceId.damagedef_unknownBugIt)
+		damageForce   = AnglesToForward( attacker.EyeAngles() ) * weaponx.GetWeaponDamageForce()
+	}
+	#endif
+	
+	attacker.PlayerMelee_SetAttackRecoveryShouldBeQuick( true )
+
+	if ( !attacker.PlayerMelee_IsAttackActive() )
+		return
+
+	foreach( tracedEntStruct in attacker.p.targetsForAoeDamage )
+	{
+		target = tracedEntStruct.ent
+		endPosition = target.GetOrigin()
+
+		if( !IsValid( target ) )
+			continue
+		
+		if( target.IsPlayer() && !IsAlive( target ) )
+			continue
+
+		if( !CodeCallback_IsValidMeleeAttackTarget( attacker, target ) )
+			continue
+
+		if( target.LookupAttachment( "CHESTFOCUS" ) != 0 )
+			endPosition = target.GetAttachmentOrigin( target.LookupAttachment( "CHESTFOCUS" ) )
+
+		bool shouldCut = false
+		bool isLightAttack = false
+		if( weaponx.HasMod( "launcher" ) )
+		{
+			printt( "LAUNCHER VICTIM OVERRIDE", Time(), attacker.p.launcherStarted )
+			if( target.IsPlayer() )
+			{
+				target.GrappleDetach()
+			}
+
+			TitanSword_Launcher_VictimHitOverride( weaponx, attacker, target, endPosition )
+			attacker.p.targetsForAoeDamage.clear()
+			return
+		}
+
+		if( !target.IsOnGround() && !attacker.IsOnGround() && weaponx.HasMod( "slam" ) )
+		{
+			printt( "SLAM VICTIM OVERRIDE ON AIR" )
+			TitanSword_Slam_VictimHitOverride( weaponx, attacker, target, false )
+
+			attacker.PlayerMelee_EndAttack()
+			attacker.GrappleDetach()
+			return
+		}
+
+		if( meleeAttackWeapon.HasMod( "super_melee" ) && !meleeAttackWeapon.HasMod( "heavy_melee" ) )
+		{
+			printt( "SUPER MELEE VICTIM OVERRIDE" )
+			if( target.IsPlayer() )
+			{
+				target.GrappleDetach()
+			}
+
+			TitanSword_Light_VictimHitOverride( weaponx, attacker, target, <0,0,0> )
+
+			#if SERVER
+			damageForce   = <0,0,0> // AnglesToForward( attacker.EyeAngles() ) * weaponx.GetWeaponDamageForce()
+			#endif
+
+			shouldCut = true
+		}		
+
+		if( IsDoor( target ) )
+		{
+			printt( "Destroying Door in Aoe Sword Logic" )
+		}
+		#if SERVER
+		damageAmount = weaponx.GetDamageAmountForArmorType( target.GetArmorType() )
+		#endif
+
+		// Impact effects
+		attacker.DispatchImpactEffects( target,
+		startPosition, endPosition, hitNormal,
+		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+		attacker, impactEffectFlags )
+		
+		// Melee state - Reenable if we want to freezelook
+		if( !IsValid( attacker.PlayerMelee_GetAttackHitEntity() ) )
+			attacker.PlayerMelee_SetAttackHitEntity( target )
+
+		// Melee hit confirmation
+		bool targetIsEnemy  = IsEnemyTeam( attacker.GetTeam(), target.GetTeam() )
+		float severityScale = (targetIsEnemy ? MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_ENEMY : MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_NOT_ENEMY)
+		meleeAttackWeapon.DoMeleeHitConfirmation( severityScale )
+
+		// Damage (server only)
+		#if SERVER
+		table damageTable = {
+			scriptType = meleeAttackWeapon.GetWeaponDamageFlags(),
+			damageType = damageType,
+			damageSourceId = damageSourceId,
+			origin = target.GetOrigin(),
+			force = damageForce
+		}
+		target.TakeDamage( damageAmount, attacker, attacker, damageTable )
+		printt( "ENT DAMAGED ", damageAmount, target, " - From Sh_Melee" )
+
+		// attacker.TraceAttackToTriggers( damageAmount, attacker, attacker, damageTable, startPosition, endPosition, hitNormal )
+		#endif
+
+		//knockback logic
+		if( !weaponx.HasMod( "super_melee" ) && !weaponx.HasMod( "super" ) )
+		{
+			float  knockbackMagnitude = MELEE_KNOCKBACK_SCALE
+
+			if( weaponx.HasMod( "heavy_melee" ) )
+			{
+				knockbackMagnitude	= TITANSWORD_MELEE_KNOCKBACK_SCALE
+				#if SERVER
+				if ( !IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
+					FS_TitanSword_ReduceSuperCooldown( attacker, 2 )
+				#endif
+			}
+			else if( weaponx.HasMod( "launcher" ) )
+			{
+				knockbackMagnitude	= TITANSWORD_LAUNCHER_MELEE_KNOCKBACK_SCALE
+			}
+
+			vector lookDirection    = attacker.GetViewForward()
+			vector pushBackVelocity	= knockbackMagnitude * lookDirection
+
+			if ( target.IsPlayer() || target.IsNPC() || target.IsPlayerDecoy() )
+			{
+				vector targetDirection = target.GetWorldSpaceCenter() - attacker.GetWorldSpaceCenter()
+				if ( DotProduct( lookDirection, targetDirection ) < 0 )
+					pushBackVelocity = -pushBackVelocity
+			}
+
+			if ( target.IsPlayer() )
+			{
+				if ( LengthSqr( pushBackVelocity ) > 0.0 )
+				{
+					target.KnockBack( pushBackVelocity, MELEE_KNOCKBACK_DURATION )
+				}
+			}
+		}
+		
+		if( shouldCut )
+			break
+	}
+
+	attacker.p.targetsForAoeDamage.clear()
+	attacker.PlayerMelee_EndAttack()
+	attacker.GrappleDetach()
+
+	// printt( "[+] Sh_melee - End" )
+}
+#endif	
 
 
 #if SERVER

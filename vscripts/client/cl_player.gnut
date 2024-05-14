@@ -48,6 +48,11 @@ global function ClientPlayerClassChanged
 
 global function GetHideCrosshairHitIndicatorOverride
 global function SetHideCrosshairHitIndicatorOverride
+global function PlayerFieryDeath
+
+global function FS_Toggle_Mute
+global function FS_Silence
+global function FS_RegisterAdmin
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -147,6 +152,16 @@ void function ClientCodeCallback_PlayerSpawned( entity player )
 {
 	if ( !IsValid( player ) )
 		return
+
+	if ( player == GetLocalClientPlayer() )
+	{
+		if( GetCurrentPlaylistVarBool( "flowstate_force_softened_locale", false ) )
+			SetConVarBool( "cl_is_softened_locale", true )
+
+		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
+
+		Flowstate_ApplyModifiedMovementToPlayer( player )
+	}
 
 	if ( IsMenuLevel() )
 		return
@@ -371,6 +386,10 @@ bool function ShouldShowSpawnAsTitanHint( entity player )
 void function ServerCallback_PlayerConnectedOrDisconnected( int player_eHandle, int state )
 {
 	entity player = GetEntityFromEncodedEHandle( player_eHandle )
+	
+	if( !IsValid( player ) )
+		return
+
 	PlayerConnectedOrDisconnected( player, state )
 
 	if ( !IsLobby() || !IsConnected() )
@@ -622,8 +641,7 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	if ( victim.IsTitan() && isKillShot )
 		ClientScreenShake( 8, 10, 1, <0, 0, 0> )
 
-	if ( GameRules_GetGameMode() != "fs_prophunt" )
-		BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
+	BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
 
 	if ( isShieldBreak )
 		PlayShieldBreakEffect( victim )
@@ -758,6 +776,10 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
 {
+	//if ( GameRules_GetGameMode() == "fs_prophunt" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_prophunt )
+		return
+
 	if ( IsSoftenedLocale() || !Flag( "EnableBloodSprayDecals" ) )
 		return
 
@@ -1434,35 +1456,17 @@ bool function SpawnFleshGibs( entity victim, vector attackDir )
 	vector flingDir = attackDir * RandomIntRange( 80, 200 )
 
 	int fxID
-	bool isSoftenedLocale = IsSoftenedLocale()
 
-	if ( isSoftenedLocale )
+	if ( victim.GetModelName() == FLYER_MODEL )
 	{
-		if ( victim.GetModelName() == FLYER_MODEL )
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
-		else
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_nochunk" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
+		fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 	}
 	else
 	{
-		if ( victim.GetModelName() == FLYER_MODEL )
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist_LG" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
-		else
-		{
-			fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-		}
+		fxID = StartParticleEffectOnEntity( victim, GetParticleSystemIndex( $"death_pinkmist" ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 	}
 
 	EffectSetControlPointVector( fxID, 1, flingDir )
-
-	if ( isSoftenedLocale )
-		return true
 
 	vector angularVel = <0, 0, 0>
 	float lifeTime    = 10.0
@@ -1593,7 +1597,7 @@ void function PlayShieldBreakEffect( entity ent )
 
 	int attachID = shieldEnt.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
@@ -1622,7 +1626,7 @@ void function PlayShieldActivateEffect( entity ent )
 
 	int attachID = ent.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
@@ -1641,7 +1645,7 @@ void function PlayIt( entity victim )
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
 	int attachID = victim.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
 		EffectSetControlPointVector( shieldFXHandle, 1, GetShieldEffectCurrentColor( 1 - shieldHealthFrac ) )
@@ -1676,7 +1680,7 @@ void function PlayShieldHitEffect( PlayerDidDamageParams params, vector shieldCo
 	int shieldbodyFX = GetParticleSystemIndex( SHIELD_BODY_FX )
 	int attachID = victim.LookupAttachment( "ref" )
 	
-	if ( GameRules_GetGameMode() == "fs_prophunt" )
+	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldbodyFX, victim.GetOrigin(), victim.GetAngles() )
 		vector color
@@ -1939,4 +1943,70 @@ bool function GetHideCrosshairHitIndicatorOverride()
 void function SetHideCrosshairHitIndicatorOverride( bool value )
 {
 	file.hideCrosshairHitIndicatorOverride = value
+}
+
+void function FS_Toggle_Mute( int chal, bool toggle )
+{
+	entity player = GetLocalClientPlayer()
+	string uid = player.GetPlatformUID()
+	string cmd = "FS_TT " + chal.tostring()
+	
+	if( toggle  )
+	{
+		
+		if( !IsPlayerTextMutedForUID( uid ) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}
+		
+		mute(true)
+		UpdateChatHUDVisibility()
+	}
+	else
+	{
+		if( IsPlayerTextMutedForUID( uid ) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}
+		
+		mute(false)
+		UpdateChatHUDVisibility()
+	}	
+	
+	if( chal != 0 )
+		player.ClientCommand(cmd)
+}
+
+void function FS_Silence( bool toggle, int eHandle )
+{
+	entity player = GetEntityFromEncodedEHandle( eHandle )
+	if( !IsValid( player ) ){ return }
+	
+	string uid = player.GetPlatformUID()
+	
+	if( toggle )
+	{
+		if( !IsPlayerTextMutedForUID( uid ) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}
+	}
+	else
+	{
+		if( IsPlayerTextMutedForUID( uid ) )
+		{
+			TogglePlayerTextMutedForUID( uid )
+		}
+	}	
+
+}
+
+void function FS_RegisterAdmin()
+{	
+	entity player = GetLocalClientPlayer() 
+	
+	if( !IsValid( player ) || !player.IsPlayer() )
+		return 
+		
+	RunUIScript( "UICallback_AdminStatus", player.GetPlayerNetBool("IsAdmin") )	
 }

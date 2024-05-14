@@ -25,12 +25,6 @@ global enum eTDMState
 	NEXT_ROUND_NOW = 1
 }
 
-global struct LocPair
-{
-    vector origin = <0, 0, 0>
-    vector angles = <0, 0, 0>
-}
-
 global struct LocationSettings
 {
     string name
@@ -84,10 +78,45 @@ void function Sh_CustomTDM_Init()
 
     // Map locations
 
-    switch(GetMapName())
+    switch( MapName() )
     {
-   case "mp_rr_aqueduct":
-   case "mp_rr_aqueduct_night":
+	case eMaps.mp_rr_olympus_mu1:
+        Shared_RegisterLocation(
+            NewLocationSettings(
+               "Olympus Test Location",
+                [
+                    NewLocPair(<1769.48132, 6416.47363, -5323.96875> , <0, 161.619949, 0>),
+                    NewLocPair(<944.609436, 7768.79688, -5127.98193> , <0, 26.7121983, 0>),
+                    NewLocPair(<1672.01257, 9753.1709, -5127.98438> , <0, -107.021523, 0>),
+                    NewLocPair(<3604.0752, 9955.06445, -5325.9375> , <0, 156.444427, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+	break
+	case eMaps.mp_rr_arena_phase_runner:
+        Shared_RegisterLocation(
+            NewLocationSettings(
+               "Phase Runner",
+                [
+                    NewLocPair(<26118.4551, 16751.2969, -1279.96875> , <0, 89.4115295, 0>),
+                    NewLocPair(<23497.5859, 20112.5137, -1151.96875> , <0, -45.1068459, 0>),
+                    NewLocPair(<25032.3184, 21795.0313, -927.96875> , <0, -13.0043278, 0>),
+                    NewLocPair(<27145.8184, 21711.4082, -927.96875> , <0, -155.027145, 0>),
+					NewLocPair(<30564.7754, 17781.6094, -895.97345> , <0, -154.644897, 0>),
+					NewLocPair(<24197.9258, 14329.3359, -1027.36292> , <0, -5.09298944, 0>),
+					NewLocPair(<26418.9688, 13381.127, -1023.96875> , <0, 41.6298714, 0>),
+					NewLocPair(<28780.25, 16014.9004, -1033.47864> , <0, 171.618332, 0>),
+					NewLocPair(<30562.041, 13306.3379, -906.315552> , <0, 115.207245, 0>),
+					NewLocPair(<21345.25, 13560.7031, -448.967621> , <0, 40.8450966, 0>),
+					NewLocPair(<20491.3262, 17548.2148, -882.265808> , <0, 0.0175942089, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+	break
+   case eMaps.mp_rr_aqueduct:
+   case eMaps.mp_rr_aqueduct_night:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Overflow",
@@ -102,7 +131,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-   case "mp_rr_canyonlands_staging":
+   case eMaps.mp_rr_canyonlands_staging:
         Shared_RegisterLocation(
             NewLocationSettings(
                "Deathbox by Ayezee",
@@ -129,7 +158,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-    case "mp_rr_ashs_redemption":
+    case eMaps.mp_rr_ashs_redemption:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Ash's Redemption",
@@ -144,7 +173,7 @@ void function Sh_CustomTDM_Init()
         )
 
         break
-    case "mp_rr_arena_composite":
+    case eMaps.mp_rr_arena_composite:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Drop-Off",
@@ -170,7 +199,7 @@ void function Sh_CustomTDM_Init()
         )
         break
 		
-	case "mp_rr_party_crasher":
+	case eMaps.mp_rr_party_crasher:
 	Shared_RegisterLocation(
 		NewLocationSettings(
 				"Party Crasher",
@@ -196,7 +225,7 @@ void function Sh_CustomTDM_Init()
 		)
 		break
 		
-	case "mp_rr_arena_skygarden":
+	case eMaps.mp_rr_arena_skygarden:
 	if(FlowState_EnableEncore()){
 	Shared_RegisterLocation(
 		NewLocationSettings(
@@ -413,8 +442,8 @@ void function Sh_CustomTDM_Init()
 	
 	break
 		
-	case "mp_rr_canyonlands_mu1_night":		
-	case "mp_rr_canyonlands_mu1":
+	case eMaps.mp_rr_canyonlands_mu1_night:	
+	case eMaps.mp_rr_canyonlands_mu1:
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Skull Town",
@@ -664,7 +693,36 @@ void function Sh_CustomTDM_Init()
         )		
 
 	break
-	case "mp_rr_canyonlands_64k_x_64k":
+	case eMaps.mp_rr_canyonlands_mu2: //todo add more
+		Shared_RegisterLocation(
+				NewLocationSettings(
+					"Slum Lakes",
+					[
+						NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
+						NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
+						NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
+						NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>),
+						NewLocPair(<-25030, 24670, 2410>, <0, -75, 0>),
+						NewLocPair(<-23125, 25320, 2410>, <0, -20, 0>),
+						NewLocPair(<-21925, 21120, 2390>, <0, 180, 0>)
+					],
+					<0, 0, 3000>,$"rui/flowstatelocations/slumlakes"
+				)
+			)
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Airbase",
+                [
+                    NewLocPair(<-24140, -4510, 2583>, <0, 90, 0>),
+                    NewLocPair(<-28675, 612, 2600>, <0, 18, 0>),
+                    NewLocPair(<-24688, 1316, 2583>, <0, 180, 0>),
+                    NewLocPair(<-26492, -5197, 2574>, <0, 50, 0>)
+                ],
+                <0, 0, 3000>,$"rui/flowstatelocations/airbase"
+            )
+        )
+	break
+	case eMaps.mp_rr_canyonlands_64k_x_64k:
 		Shared_RegisterLocation(
 				NewLocationSettings(
 					"Skull Town",
@@ -930,7 +988,7 @@ void function Sh_CustomTDM_Init()
 	
 		break
 
-		case "mp_rr_desertlands_64k_x_64k_tt":
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Mirage Voyage",
@@ -950,48 +1008,33 @@ void function Sh_CustomTDM_Init()
             )
         )
         //break
-		case "mp_flowstate":
+		case eMaps.mp_flowstate:
 		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		{
-
-			Shared_RegisterLocation(
-				NewLocationSettings(
-					"Narrows",
-					[
-						//a
-						NewLocPair(<44283.6914, -10554.7461, -20494.6563> , <0, 180, 0>)
-						NewLocPair(<44034.75, -9440.18555, -20431.0566> , <0, 180, 0>)
-						
-						//b
-						NewLocPair(<39965.9688, -9465.57813, -20431.0566> , <0, 0, 0>)
-						NewLocPair(<39809.4609, -10554.8604, -20494.6563> , <0, 0, 0>)
-
-					],
-					<0, 0, 3000>
-				)
-			)		
-		
-			Shared_RegisterLocation(
-				NewLocationSettings(
-					"The Pit",
-					[
-						NewLocPair( <40595.6406, -9405.83203, -19682.0371> , <0, 168.875229, 0> ),
-						NewLocPair( <40457.9844, -10337.167, -19928.1563> , <0, -128.833832, 0> ),
-						NewLocPair( <40228.3242, -11431.1162, -19776.1563> , <0, 0.608541489, 0> ),
-						NewLocPair( <41253.0508, -11386.7236, -19756.6738> , <0, 170.002029, 0> ),
-						NewLocPair( <41500.2109, -9852.54004, -19775.1563> , <0, -38.9899902, 0> )						
-						NewLocPair( <42007.3086, -10576.4512, -19726.1563> , <0, -0.443716526, 0> ),
-						NewLocPair( <42778.3945, -11427.3486, -19773.918> , <0, -3.03944969, 0> ),
-						NewLocPair( <43738.7305, -11488.7549, -19776.1563> , <0, 176.17157, 0> ),
-						NewLocPair( <43547.082, -10703.1445, -19928.1563> , <0, 57.0178871, 0> ),
-						NewLocPair( <43632.8711, -9161.77832, -19775.8379> , <0, 178.778931, 0> )
-						NewLocPair( <42038, -8746.55273, -20156.1563> , <0, -94.6983109, 0> ),
-						NewLocPair( <42025.793, -8780.33887, -19852.9375> , <0, 93.6029053, 0> )
-					],
-					<0, 0, 3000>, $"rui/flowstatelocations/halomod_thepit"
-				)
-			)
-
+			// In development
+			// Shared_RegisterLocation(
+				// NewLocationSettings(
+					// "Beaver Creek", //Change spawns
+					// [
+						// NewLocPair(<41543.8711, -9008.27539, -20890.7383> , <0, -35.8867874, 0>),
+						// NewLocPair(<41369.6289, -8793.39746, -20764.0371> , <0, -62.614399, 0>),
+						// NewLocPair(<41649.9414, -9338.88477, -20592.8379> , <0, -87.7791977, 0>),
+						// NewLocPair(<41318.5234, -11336.6641, -20704.9375> , <0, 44.4568977, 0>),
+						// NewLocPair(<41974.5977, -10676.3115, -20795.6367> , <0, -141.929703, 0>),
+						// NewLocPair(<42184.8945, -11325.4092, -20704.9375> , <0, 110.566208, 0>),
+						// NewLocPair(<41919.082, -11060.9668, -20528.5371> , <0, 129.327072, 0>),
+						// NewLocPair(<41910.6367, -9918.69629, -21009.1367> , <0, 122.589836, 0>),
+						// NewLocPair(<42701.9297, -9711.44824, -21169.2617> , <0, -61.6680984, 0>),
+						// NewLocPair(<41733.707, -9838.34668, -21368.4609> , <0, 1.02161503, 0>),
+						// NewLocPair(<43069.2578, -9967.16016, -20763.8594> , <0, 89.3030472, 0>),
+						// NewLocPair(<41170.4883, -10825.1191, -21136.7383> , <0, 39.0051041, 0>),
+						// NewLocPair(<41951.875, -10721.0967, -21030.5371> , <0, -147.949905, 0>),
+						// NewLocPair(<41230.1133, -10046.1729, -20795.8379> , <0, -91.0725632, 0>),
+						// NewLocPair(<41946.5195, -9054.60156, -20763.9609> , <0, -179.685928, 0>)
+					// ],
+					// <0, 0, 3000>
+				// )
+			// )
 
 			Shared_RegisterLocation(
 				NewLocationSettings(
@@ -1017,11 +1060,49 @@ void function Sh_CustomTDM_Init()
 				)
 			)
 
+		
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"The Pit",
+					[
+						NewLocPair( <40595.6406, -9405.83203, -19682.0371> , <0, 168.875229, 0> ),
+						NewLocPair( <40457.9844, -10337.167, -19928.1563> , <0, -128.833832, 0> ),
+						NewLocPair( <40228.3242, -11431.1162, -19776.1563> , <0, 0.608541489, 0> ),
+						NewLocPair( <41253.0508, -11386.7236, -19756.6738> , <0, 170.002029, 0> ),
+						NewLocPair( <41500.2109, -9852.54004, -19775.1563> , <0, -38.9899902, 0> )						
+						NewLocPair( <42007.3086, -10576.4512, -19726.1563> , <0, -0.443716526, 0> ),
+						NewLocPair( <42778.3945, -11427.3486, -19773.918> , <0, -3.03944969, 0> ),
+						NewLocPair( <43738.7305, -11488.7549, -19776.1563> , <0, 176.17157, 0> ),
+						NewLocPair( <43547.082, -10703.1445, -19928.1563> , <0, 57.0178871, 0> ),
+						NewLocPair( <43632.8711, -9161.77832, -19775.8379> , <0, 178.778931, 0> )
+						NewLocPair( <42038, -8746.55273, -20156.1563> , <0, -94.6983109, 0> ),
+						NewLocPair( <42025.793, -8780.33887, -19852.9375> , <0, 93.6029053, 0> )
+					],
+					<0, 0, 3000>, $"rui/flowstatelocations/halomod_thepit"
+				)
+			)
+			Shared_RegisterLocation(
+				NewLocationSettings(
+					"Narrows",
+					[
+						//a
+						NewLocPair(<44283.6914, -10554.7461, -20494.6563> , <0, 180, 0>)
+						NewLocPair(<44034.75, -9440.18555, -20431.0566> , <0, 180, 0>)
+						
+						//b
+						NewLocPair(<39965.9688, -9465.57813, -20431.0566> , <0, 0, 0>)
+						NewLocPair(<39809.4609, -10554.8604, -20494.6563> , <0, 0, 0>)
+
+					],
+					<0, 0, 3000>
+				)
+			)		
+
 			// return
 		}
 		break
-        case "mp_rr_desertlands_64k_x_64k":
-        case "mp_rr_desertlands_64k_x_64k_nx":
+        case eMaps.mp_rr_desertlands_64k_x_64k:
+        case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 		    
 		if(FlowState_EnableMovementGym()){
 		
@@ -1598,6 +1679,13 @@ void function Sh_CustomTDM_Init()
 	///////////////////////////////////////////////////
 	//EXCLUSIVE SURF LOCATIONS FOR WORLD'S EDGE////////	
 	
+
+        default:
+            Assert(false, "No TDM locations found for map!")
+    }
+	
+	if( FlowState_SURF() )
+	{
 		RegisterLocationSURF(
                 NewLocationSettings(
                     "surf_purgatory",
@@ -1625,11 +1713,8 @@ void function Sh_CustomTDM_Init()
                     ],
                     <0, 0, 3000>
                 )
-            )
-        default:
-            Assert(false, "No TDM locations found for map!")
-    }
-
+            )	
+	}
     //Client Signals
     RegisterSignal( "CloseScoreRUI" )
 }
@@ -1674,90 +1759,286 @@ void function RegisterLocationSURF(LocationSettings locationSettings)
     #endif
 
 }
+
+struct {
+	
+	float Deathmatch_GetIntroCutsceneNumSpawns
+	float Deathmatch_GetIntroCutsceneSpawnDuration
+	float Deathmatch_GetIntroSpawnSpeed
+	bool Spectator_GetReplayIsEnabled
+	float Spectator_GetReplayDelay
+	float Deathmatch_GetRespawnDelay
+	float Equipment_GetDefaultShieldHP
+	float Deathmatch_GetOOBDamagePercent
+	float Deathmatch_GetVotingTime
+	string FlowState_Hoster
+	string FlowState_Admin1
+	string FlowState_Admin2
+	string FlowState_Admin3
+	string FlowState_Admin4
+	int FlowState_RoundTime
+	string FlowState_RingColor
+	string FlowState_BubbleColor
+	bool FlowState_ResetKillsEachRound
+	bool FlowState_Timer
+	bool FlowState_LockPOI
+	int FlowState_LockedPOI
+	bool FlowState_AdminTgive
+	float FlowState_TgiveDelay
+	bool FlowState_ForceCharacter
+	int FlowState_ChosenCharacter
+	bool FlowState_ForceAdminCharacter
+	int FlowState_ChosenAdminCharacter
+	bool FlowState_DummyOverride
+	bool FlowState_AutoreloadOnKillPrimary	
+	bool FlowState_AutoreloadOnKillSecondary
+	bool FlowState_RandomGuns
+	bool FlowState_RandomTactical
+	bool FlowState_RandomUltimate
+	bool FlowState_RandomGunsEverydie
+	bool FlowState_FIESTAShieldsStreak
+	bool FlowState_FIESTADeathboxes
+	bool FlowState_RandomGunsMetagame
+	bool FlowState_KillshotEnabled
+	bool FlowState_Droppods
+	bool FlowState_ExtrashieldsEnabled
+	float FlowState_ExtrashieldsSpawntime
+	float FlowState_ExtrashieldValue
+	bool FlowState_Gungame
+	bool FlowState_GungameRandomAbilities
+	bool FlowState_SURF
+	int FlowState_SURFRoundTime
+	bool FlowState_SURFLockPOI
+	int FlowState_SURFLockedPOI
+	bool Flowstate_EnableAutoChangeLevel
+	int Flowstate_AutoChangeLevelRounds
+	bool FlowState_EnableSkillTrainerByColombia
+	bool FlowState_EnableCustomMapByBiscutz
+	bool FlowState_EnableWhiteForestByZero
+	bool FlowState_EnableBrightWaterByZero
+	bool FlowState_EnableCaveByBlessedSeal
+	bool FlowState_EnableShipmentByAyeZee
+	bool FlowState_EnableKillhouseByAyeZee
+	bool FlowState_EnableNuketownByAyeZee	
+	bool Flowstate_DoorsEnabled
+	int FlowState_MaxPingAllowed
+	bool FlowState_KickHighPingPlayer
+	bool FlowState_EnableEncore
+	bool FlowState_EnableKillyardByDEAFPS
+	bool FlowState_EnableDustmentByDEAFPS
+	bool FlowState_EnableShoothouseByDEAFPS
+	bool FlowState_EnableRustByDEAFPS
+	bool FlowState_EnableNCanalsByDEAFPS
+	bool FlowState_EnableEncoreNuketownByAyeZee
+	bool FlowState_EnableMovementGym
+	bool FlowState_EnableMovementGymLogs
+	bool Flowstate_MovementGym_ClassicMovement
+	int Flowstate_MovementGym_ClassicMovement_Type
+	bool Flowstate_MovementGym_ClassicMovement_AutoBHOP	
+	bool Equipment_GetRespawnKitEnabled
+	bool Flowstate_movementgym
+	bool Flowstate_dm_oddball
+	bool Flowstate_haloMod_oddball
+	bool Flowstate_fs_1v1
+	bool Flowstate_fs_lgduels_1v1
+	bool Flowstate_fs_dm_fast_instagib
+	bool Flowstate_fs_dm
+	bool Flowstate_Is_PartyCrasher
+	bool Flowstate_Is_Canyon_Staging
+	bool Flowstate_IsHaloMode
+	bool Flowstate_DisableAllMapTriggers
+	bool Flowstate_Is_gamemode_1v1_type
+	bool Flowstate_GivePassive
+	
+} SH_flowstateSettings
+
+
+void function Initialize_SH_FlowstateSettings()
+{
+	SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns 			= GetCurrentPlaylistVarFloat( "intro_cutscene_num_spawns", 0 )
+	SH_flowstateSettings.Deathmatch_GetIntroCutsceneSpawnDuration 		= GetCurrentPlaylistVarFloat( "intro_cutscene_spawn_duration", 5 )
+	SH_flowstateSettings.Deathmatch_GetIntroSpawnSpeed 					= GetCurrentPlaylistVarFloat( "intro_cutscene_spawn_speed", 40 )
+	SH_flowstateSettings.Spectator_GetReplayIsEnabled 					= GetCurrentPlaylistVarBool( "replay_enabled", true )
+	SH_flowstateSettings.Spectator_GetReplayDelay 						= GetCurrentPlaylistVarFloat( "replay_delay", 5 )
+	SH_flowstateSettings.Deathmatch_GetRespawnDelay						= GetCurrentPlaylistVarFloat( "respawn_delay", 3.5 )
+	SH_flowstateSettings.Equipment_GetDefaultShieldHP 					= GetCurrentPlaylistVarFloat( "default_shield_hp", 100 )
+	SH_flowstateSettings.Deathmatch_GetOOBDamagePercent 				= GetCurrentPlaylistVarFloat( "oob_damage_percent", 10 )
+	SH_flowstateSettings.Deathmatch_GetVotingTime 						= GetCurrentPlaylistVarFloat( "voting_time", 5 )
+	SH_flowstateSettings.FlowState_Hoster 								= GetCurrentPlaylistVarString( "flowstateHoster", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin1 								= GetCurrentPlaylistVarString( "flowstateAdmin1", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin2 								= GetCurrentPlaylistVarString( "flowstateAdmin2", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin3 								= GetCurrentPlaylistVarString( "flowstateAdmin3", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin4 								= GetCurrentPlaylistVarString( "flowstateAdmin4", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_RoundTime 							= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
+	SH_flowstateSettings.FlowState_RingColor 							= GetCurrentPlaylistVarString( "flowstateBubble", "120, 26, 56" )
+	SH_flowstateSettings.FlowState_BubbleColor 							= GetCurrentPlaylistVarString( "flowstateBubble", "120, 26, 56" )
+	SH_flowstateSettings.FlowState_ResetKillsEachRound 					= GetCurrentPlaylistVarBool( "flowstateResetKills", true )
+	SH_flowstateSettings.FlowState_Timer 								= GetCurrentPlaylistVarBool( "flowstateTimer", true )
+	SH_flowstateSettings.FlowState_LockPOI 								= GetCurrentPlaylistVarBool( "flowstateLockPOI", false )
+	SH_flowstateSettings.FlowState_LockedPOI 							= GetCurrentPlaylistVarInt( "flowstateLockeedPOI", 0)
+	SH_flowstateSettings.FlowState_AdminTgive 							= GetCurrentPlaylistVarBool( "flowstateAdminTgive", true )
+	SH_flowstateSettings.FlowState_TgiveDelay 							= GetCurrentPlaylistVarFloat( "flowstateTgiveDelay", 1.0 )
+	SH_flowstateSettings.FlowState_ForceCharacter 						= GetCurrentPlaylistVarBool( "flowstateForceCharacter", true )
+	SH_flowstateSettings.FlowState_ChosenCharacter 						= GetCurrentPlaylistVarInt( "flowstateChosenCharacter", 8 )
+	SH_flowstateSettings.FlowState_ForceAdminCharacter 					= GetCurrentPlaylistVarBool( "flowstateForceAdminCharacter", true )
+	SH_flowstateSettings.FlowState_ChosenAdminCharacter 				= GetCurrentPlaylistVarInt( "flowstateChosenAdminCharacter", 8 )
+	SH_flowstateSettings.FlowState_DummyOverride 						= GetCurrentPlaylistVarBool( "flowstateDummyOverride", false )
+	SH_flowstateSettings.FlowState_AutoreloadOnKillPrimary 				= GetCurrentPlaylistVarBool( "flowstateAutoreloadPrimary", true )
+	SH_flowstateSettings.FlowState_AutoreloadOnKillSecondary 			= GetCurrentPlaylistVarBool( "flowstateAutoreloadSecondary", true )
+	SH_flowstateSettings.FlowState_RandomGuns 							= GetCurrentPlaylistVarBool( "flowstateRandomGuns", false )
+	SH_flowstateSettings.FlowState_RandomTactical 						= GetCurrentPlaylistVarBool( "flowstateRandomTactical", false )
+	SH_flowstateSettings.FlowState_RandomUltimate 						= GetCurrentPlaylistVarBool( "flowstateRandomUltimate", false )
+	SH_flowstateSettings.FlowState_RandomGunsEverydie 					= GetCurrentPlaylistVarBool( "flowstateFiesta", false )
+	SH_flowstateSettings.FlowState_FIESTAShieldsStreak 					= GetCurrentPlaylistVarBool( "flowstateFiestaShieldsUpgrade", true )
+	SH_flowstateSettings.FlowState_FIESTADeathboxes 					= GetCurrentPlaylistVarBool( "flowstateFiestaDeathboxes", true )
+	SH_flowstateSettings.FlowState_RandomGunsMetagame 					= GetCurrentPlaylistVarBool( "flowstateRandomGunsMetagame", false )
+	SH_flowstateSettings.FlowState_KillshotEnabled 						= GetCurrentPlaylistVarBool( "flowstateKillshotEnabled", true )
+	SH_flowstateSettings.FlowState_Droppods 							= GetCurrentPlaylistVarBool( "flowstateDroppodsOnPlayerConnected", false )
+	SH_flowstateSettings.FlowState_ExtrashieldsEnabled 					= GetCurrentPlaylistVarBool( "flowstateExtrashieldsEnabled", true )
+	SH_flowstateSettings.FlowState_ExtrashieldsSpawntime 				= GetCurrentPlaylistVarFloat( "flowstateExtrashieldsSpawntime", 240 )
+	SH_flowstateSettings.FlowState_ExtrashieldValue 					= GetCurrentPlaylistVarFloat( "flowstateExtrashieldValue", 150 )
+	SH_flowstateSettings.FlowState_Gungame 								= GetCurrentPlaylistVarBool( "flowstateGungame", false )
+	SH_flowstateSettings.FlowState_GungameRandomAbilities 				= GetCurrentPlaylistVarBool( "flowstateGUNGAMERandomAbilities", false )
+	SH_flowstateSettings.FlowState_SURF 								= GetCurrentPlaylistVarBool( "flowstateSurf", false )
+	SH_flowstateSettings.FlowState_SURFRoundTime 						= GetCurrentPlaylistVarInt( "flowstateSURFRoundtime", 800 )
+	SH_flowstateSettings.FlowState_SURFLockPOI 							= GetCurrentPlaylistVarBool( "flowstateSURFLockPOI", false )
+	SH_flowstateSettings.FlowState_SURFLockedPOI 						= GetCurrentPlaylistVarInt( "flowstateSURFLockeedPOI", 0 )
+	SH_flowstateSettings.Flowstate_EnableAutoChangeLevel 				= GetCurrentPlaylistVarBool( "flowstateAutoChangeLevelEnable", false )
+	SH_flowstateSettings.Flowstate_AutoChangeLevelRounds 				= GetCurrentPlaylistVarInt( "flowstateRoundsBeforeChangeLevel", 2 )
+	SH_flowstateSettings.FlowState_EnableSkillTrainerByColombia 		= GetCurrentPlaylistVarBool( "flowstate_Enable_SKILLTRAINER_By_Colombia", true )
+	SH_flowstateSettings.FlowState_EnableCustomMapByBiscutz 			= GetCurrentPlaylistVarBool( "flowstate_Enable_CUSTOMMAP_By_Biscutz", false )
+	SH_flowstateSettings.FlowState_EnableWhiteForestByZero 				= GetCurrentPlaylistVarBool( "flowstate_Enable_WHITEFOREST_By_Zero", true )
+	SH_flowstateSettings.FlowState_EnableBrightWaterByZero 				= GetCurrentPlaylistVarBool( "flowstate_Enable_BRIGHWATER_By_Zero", false )
+	SH_flowstateSettings.FlowState_EnableCaveByBlessedSeal 				= GetCurrentPlaylistVarBool( "flowstate_Enable_CAVE_By_BlessedSeal", false )
+	SH_flowstateSettings.FlowState_EnableShipmentByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Shipment_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableKillhouseByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Killhouse_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableNuketownByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Nuketown_By_AyeZee", false )
+	SH_flowstateSettings.Flowstate_DoorsEnabled 						= GetCurrentPlaylistVarBool( "flowstateDoorsEnabled", true )
+	SH_flowstateSettings.FlowState_MaxPingAllowed 						= GetCurrentPlaylistVarInt( "flowstateMaxPingAllowed", 200 )
+	SH_flowstateSettings.FlowState_KickHighPingPlayer 					= GetCurrentPlaylistVarBool( "flowstateKickHighPingPlayer", true )
+	SH_flowstateSettings.FlowState_EnableEncore 						= GetCurrentPlaylistVarBool( "flowstate_Enable_Encore", true )
+	SH_flowstateSettings.FlowState_EnableKillyardByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Killyard_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableDustmentByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Dustment_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableShoothouseByDEAFPS 			= GetCurrentPlaylistVarBool( "flowstate_Enable_Shoothouse_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableRustByDEAFPS 					= GetCurrentPlaylistVarBool( "flowstate_Enable_Rust_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableNCanalsByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_NCanals_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableEncoreNuketownByAyeZee 		= GetCurrentPlaylistVarBool( "flowstate_Enable_Encore_Nuketown_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableMovementGym 					= GetCurrentPlaylistVarBool( "flowstate_Enable_MovementGym", false )
+	SH_flowstateSettings.FlowState_EnableMovementGymLogs 				= GetCurrentPlaylistVarBool( "flowstate_Enable_MovementGym_Logs", false )
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement 			= GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement", false)
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type 	= GetCurrentPlaylistVarInt( "flowstate_MovementGym_ClassicMovement_Type", 0 )
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP = GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement_AutoBHOP", false )
+	SH_flowstateSettings.Equipment_GetRespawnKitEnabled					= GetCurrentPlaylistVarBool("respawn_kit_enabled", false)
+	SH_flowstateSettings.Flowstate_movementgym 							= ( Playlist() == ePlaylists.fs_movementgym )
+	SH_flowstateSettings.Flowstate_dm_oddball							= ( Playlist() == ePlaylists.fs_dm_oddball )
+	SH_flowstateSettings.Flowstate_haloMod_oddball						= ( Playlist() == ePlaylists.fs_haloMod_oddball )
+	SH_flowstateSettings.Flowstate_fs_1v1								= ( Playlist() == ePlaylists.fs_1v1 )
+	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( Playlist() == ePlaylists.fs_lgduels_1v1 )
+	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( Playlist() == ePlaylists.fs_dm_fast_instagib )
+	SH_flowstateSettings.Flowstate_fs_dm								= ( Playlist() == ePlaylists.fs_dm )
+	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( MapName() == eMaps.mp_rr_party_crasher )
+	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
+	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
+	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
+}
+
 // Playlist GET
 
-float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
-float function Deathmatch_GetIntroCutsceneSpawnDuration()            { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_duration", 5)}
-float function Deathmatch_GetIntroSpawnSpeed()                       { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_speed", 40)}
-bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", true ) } 
-float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 5 ) } 
-float function Deathmatch_GetRespawnDelay()                          { return GetCurrentPlaylistVarFloat("respawn_delay", 3.5) }
-float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
-float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
-float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
-
-string function FlowState_Hoster() { return GetCurrentPlaylistVarString("flowstateHoster", "ColombiaFPS") }
-string function FlowState_Admin1() { return GetCurrentPlaylistVarString("flowstateAdmin1", "ColombiaFPS") }
-string function FlowState_Admin2() { return GetCurrentPlaylistVarString("flowstateAdmin2", "ColombiaFPS") }
-string function FlowState_Admin3() { return GetCurrentPlaylistVarString("flowstateAdmin3", "ColombiaFPS") }
-string function FlowState_Admin4() { return GetCurrentPlaylistVarString("flowstateAdmin4", "ColombiaFPS") }
-int function FlowState_RoundTime() { return GetCurrentPlaylistVarInt("flowstateRoundtime", 1800) }
-string function FlowState_RingColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
-string function FlowState_BubbleColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
-bool function FlowState_ResetKillsEachRound()                         { return GetCurrentPlaylistVarBool("flowstateResetKills", true ) } 
-bool function FlowState_Timer()                         { return GetCurrentPlaylistVarBool("flowstateTimer", true ) } 
-bool function FlowState_LockPOI()                         { return GetCurrentPlaylistVarBool("flowstateLockPOI", false ) } 
-int function FlowState_LockedPOI() { return GetCurrentPlaylistVarInt("flowstateLockeedPOI", 0) }
-bool function FlowState_AdminTgive()                         { return GetCurrentPlaylistVarBool("flowstateAdminTgive", true ) }
-float function FlowState_TgiveDelay()                         { return GetCurrentPlaylistVarFloat("flowstateTgiveDelay", 5.0 ) }
-bool function FlowState_ForceCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceCharacter", true ) } 
-int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenCharacter", 8) }
-bool function FlowState_ForceAdminCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceAdminCharacter", true ) } 
-int function FlowState_ChosenAdminCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenAdminCharacter", 8) }
-bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
-bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
-bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 
-bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", false ) } 
-bool function FlowState_RandomTactical()                         { return GetCurrentPlaylistVarBool("flowstateRandomTactical", false ) } 
-bool function FlowState_RandomUltimate()                         { return GetCurrentPlaylistVarBool("flowstateRandomUltimate", false ) }
-bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateFiesta", false ) }
-bool function FlowState_FIESTAShieldsStreak() { return GetCurrentPlaylistVarBool("flowstateFiestaShieldsUpgrade", true ) } 
-bool function FlowState_FIESTADeathboxes() { return GetCurrentPlaylistVarBool("flowstateFiestaDeathboxes", true ) } 
-bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) }
-bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
-bool function FlowState_Droppods()                         { return GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) }
-bool function FlowState_ExtrashieldsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateExtrashieldsEnabled", true ) }
-float function FlowState_ExtrashieldsSpawntime()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldsSpawntime", 240 ) }
-float function FlowState_ExtrashieldValue()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldValue", 150 ) }
-bool function FlowState_Gungame()                         { return GetCurrentPlaylistVarBool("flowstateGungame", false ) }
-bool function FlowState_GungameRandomAbilities()                         { return GetCurrentPlaylistVarBool("flowstateGUNGAMERandomAbilities", false ) }
-bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
-int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowstateSURFRoundtime", 800) }
-bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
-int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
-bool function Flowstate_EnableAutoChangeLevel() { return GetCurrentPlaylistVarBool("flowstateAutoChangeLevelEnable", false ) }
-int function Flowstate_AutoChangeLevelRounds() { return GetCurrentPlaylistVarInt("flowstateRoundsBeforeChangeLevel", 2 ) }
-bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }
-bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", false ) }
-bool function FlowState_EnableWhiteForestByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_WHITEFOREST_By_Zero", true ) }
-bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
-bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
-bool function FlowState_EnableShipmentByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Shipment_By_AyeZee", false ) }
-bool function FlowState_EnableKillhouseByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Killhouse_By_AyeZee", false ) }
-bool function FlowState_EnableNuketownByAyeZee()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_Nuketown_By_AyeZee", false ) }
-bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
-int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 200) }
-bool function FlowState_KickHighPingPlayer()                         { return GetCurrentPlaylistVarBool("flowstateKickHighPingPlayer", true ) }
-
-bool function FlowState_EnableEncore()                         			{ return GetCurrentPlaylistVarBool("flowstate_Enable_Encore", true ) } //enable encore by default unless stated false in playlist
-
-bool function FlowState_EnableKillyardByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Killyard_By_DEAFPS", false ) }
-bool function FlowState_EnableDustmentByDEAFPS()                        	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Dustment_By_DEAFPS", false ) }
-bool function FlowState_EnableShoothouseByDEAFPS()                       	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Shoothouse_By_DEAFPS", false ) }
-bool function FlowState_EnableRustByDEAFPS()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_Rust_By_DEAFPS", false ) }
-bool function FlowState_EnableNCanalsByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_NCanals_By_DEAFPS", false ) }
-bool function FlowState_EnableEncoreNuketownByAyeZee()                          { return GetCurrentPlaylistVarBool("flowstate_Enable_Encore_Nuketown_By_AyeZee", false ) }
-bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
-bool function FlowState_EnableMovementGymLogs()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym_Logs", false ) }
-
-bool function Flowstate_MovementGym_ClassicMovement() 				{return GetCurrentPlaylistVarBool("flowstate_MovementGym_ClassicMovement", false) }
-int function Flowstate_MovementGym_ClassicMovement_Type()			{return GetCurrentPlaylistVarInt("flowstate_MovementGym_ClassicMovement_Type", 0) }
-bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP() 			{return GetCurrentPlaylistVarBool("flowstate_MovementGym_ClassicMovement_AutoBHOP", false) }
+float function Deathmatch_GetIntroCutsceneNumSpawns()			{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns }
+float function Deathmatch_GetIntroCutsceneSpawnDuration()		{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneSpawnDuration }
+float function Deathmatch_GetIntroSpawnSpeed()					{ return SH_flowstateSettings.Deathmatch_GetIntroSpawnSpeed }
+bool function Spectator_GetReplayIsEnabled()					{ return SH_flowstateSettings.Spectator_GetReplayIsEnabled } 
+float function Spectator_GetReplayDelay()						{ return SH_flowstateSettings.Spectator_GetReplayDelay } 
+float function Deathmatch_GetRespawnDelay()						{ return SH_flowstateSettings.Deathmatch_GetRespawnDelay }
+float function Equipment_GetDefaultShieldHP()					{ return SH_flowstateSettings.Equipment_GetDefaultShieldHP }
+float function Deathmatch_GetOOBDamagePercent()					{ return SH_flowstateSettings.Deathmatch_GetOOBDamagePercent }
+float function Deathmatch_GetVotingTime()						{ return SH_flowstateSettings.Deathmatch_GetVotingTime }
+string function FlowState_Hoster()								{ return SH_flowstateSettings.FlowState_Hoster }
+string function FlowState_Admin1()								{ return SH_flowstateSettings.FlowState_Admin1 }
+string function FlowState_Admin2()								{ return SH_flowstateSettings.FlowState_Admin2 }
+string function FlowState_Admin3()								{ return SH_flowstateSettings.FlowState_Admin3 }
+string function FlowState_Admin4()								{ return SH_flowstateSettings.FlowState_Admin4 }
+int function FlowState_RoundTime()								{ return SH_flowstateSettings.FlowState_RoundTime }
+string function FlowState_RingColor()							{ return SH_flowstateSettings.FlowState_RingColor }
+string function FlowState_BubbleColor()							{ return SH_flowstateSettings.FlowState_BubbleColor }
+bool function FlowState_ResetKillsEachRound()					{ return SH_flowstateSettings.FlowState_ResetKillsEachRound } 
+bool function FlowState_Timer()									{ return SH_flowstateSettings.FlowState_Timer } 
+bool function FlowState_LockPOI()								{ return SH_flowstateSettings.FlowState_LockPOI } 
+int function FlowState_LockedPOI()								{ return SH_flowstateSettings.FlowState_LockedPOI }
+bool function FlowState_AdminTgive()							{ return SH_flowstateSettings.FlowState_AdminTgive }
+float function FlowState_TgiveDelay()							{ return SH_flowstateSettings.FlowState_TgiveDelay }
+bool function FlowState_ForceCharacter()						{ return SH_flowstateSettings.FlowState_ForceCharacter } 
+int function FlowState_ChosenCharacter()						{ return SH_flowstateSettings.FlowState_ChosenCharacter }
+bool function FlowState_ForceAdminCharacter()					{ return SH_flowstateSettings.FlowState_ForceAdminCharacter } 
+int function FlowState_ChosenAdminCharacter()					{ return SH_flowstateSettings.FlowState_ChosenAdminCharacter }
+bool function FlowState_DummyOverride()							{ return SH_flowstateSettings.FlowState_DummyOverride } 
+bool function FlowState_AutoreloadOnKillPrimary()				{ return SH_flowstateSettings.FlowState_AutoreloadOnKillPrimary } 
+bool function FlowState_AutoreloadOnKillSecondary()				{ return SH_flowstateSettings.FlowState_AutoreloadOnKillSecondary } 
+bool function FlowState_RandomGuns()							{ return SH_flowstateSettings.FlowState_RandomGuns } 
+bool function FlowState_RandomTactical()						{ return SH_flowstateSettings.FlowState_RandomTactical } 
+bool function FlowState_RandomUltimate()						{ return SH_flowstateSettings.FlowState_RandomUltimate }
+bool function FlowState_RandomGunsEverydie()					{ return SH_flowstateSettings.FlowState_RandomGunsEverydie }
+bool function FlowState_FIESTAShieldsStreak()					{ return SH_flowstateSettings.FlowState_FIESTAShieldsStreak } 
+bool function FlowState_FIESTADeathboxes()						{ return SH_flowstateSettings.FlowState_FIESTADeathboxes } 
+bool function FlowState_RandomGunsMetagame()					{ return SH_flowstateSettings.FlowState_RandomGunsMetagame }
+bool function FlowState_KillshotEnabled()						{ return SH_flowstateSettings.FlowState_KillshotEnabled }
+bool function FlowState_Droppods()								{ return SH_flowstateSettings.FlowState_Droppods }
+bool function FlowState_ExtrashieldsEnabled()					{ return SH_flowstateSettings.FlowState_ExtrashieldsEnabled }
+float function FlowState_ExtrashieldsSpawntime()				{ return SH_flowstateSettings.FlowState_ExtrashieldsSpawntime }
+float function FlowState_ExtrashieldValue()						{ return SH_flowstateSettings.FlowState_ExtrashieldValue }
+bool function FlowState_Gungame()								{ return SH_flowstateSettings.FlowState_Gungame }
+bool function FlowState_GungameRandomAbilities()				{ return SH_flowstateSettings.FlowState_GungameRandomAbilities }
+bool function FlowState_SURF()									{ return SH_flowstateSettings.FlowState_SURF }
+int function FlowState_SURFRoundTime()							{ return SH_flowstateSettings.FlowState_SURFRoundTime }
+bool function FlowState_SURFLockPOI()							{ return SH_flowstateSettings.FlowState_SURFLockPOI } 
+int function FlowState_SURFLockedPOI()							{ return SH_flowstateSettings.FlowState_SURFLockedPOI }
+bool function Flowstate_EnableAutoChangeLevel()					{ return SH_flowstateSettings.Flowstate_EnableAutoChangeLevel }
+int function Flowstate_AutoChangeLevelRounds() 					{ return SH_flowstateSettings.Flowstate_AutoChangeLevelRounds }
+bool function FlowState_EnableSkillTrainerByColombia()			{ return SH_flowstateSettings.FlowState_EnableSkillTrainerByColombia }
+bool function FlowState_EnableCustomMapByBiscutz()				{ return SH_flowstateSettings.FlowState_EnableCustomMapByBiscutz }
+bool function FlowState_EnableWhiteForestByZero()				{ return SH_flowstateSettings.FlowState_EnableWhiteForestByZero }
+bool function FlowState_EnableBrightWaterByZero()				{ return SH_flowstateSettings.FlowState_EnableBrightWaterByZero }
+bool function FlowState_EnableCaveByBlessedSeal()				{ return SH_flowstateSettings.FlowState_EnableCaveByBlessedSeal }
+bool function FlowState_EnableShipmentByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableShipmentByAyeZee }
+bool function FlowState_EnableKillhouseByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableKillhouseByAyeZee }
+bool function FlowState_EnableNuketownByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableNuketownByAyeZee }
+bool function Flowstate_DoorsEnabled()							{ return SH_flowstateSettings.Flowstate_DoorsEnabled }
+int function FlowState_MaxPingAllowed() 						{ return SH_flowstateSettings.FlowState_MaxPingAllowed }
+bool function FlowState_KickHighPingPlayer()					{ return SH_flowstateSettings.FlowState_KickHighPingPlayer }
+bool function FlowState_EnableEncore()							{ return SH_flowstateSettings.FlowState_EnableEncore } //enable encore by default unless stated false in playlist
+bool function FlowState_EnableKillyardByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableKillyardByDEAFPS }
+bool function FlowState_EnableDustmentByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableDustmentByDEAFPS }
+bool function FlowState_EnableShoothouseByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableShoothouseByDEAFPS }
+bool function FlowState_EnableRustByDEAFPS()					{ return SH_flowstateSettings.FlowState_EnableRustByDEAFPS }
+bool function FlowState_EnableNCanalsByDEAFPS()					{ return SH_flowstateSettings.FlowState_EnableNCanalsByDEAFPS }
+bool function FlowState_EnableEncoreNuketownByAyeZee()			{ return SH_flowstateSettings.FlowState_EnableEncoreNuketownByAyeZee }
+bool function FlowState_EnableMovementGym()						{ return SH_flowstateSettings.FlowState_EnableMovementGym }
+bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSettings.FlowState_EnableMovementGymLogs }
+bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
+int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
+bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
+bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
+bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
+bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
+bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
+bool function Flowstate_IsDmOddball()							{ return SH_flowstateSettings.Flowstate_dm_oddball }
+bool function Flowstate_IsHalomodeOddball()						{ return SH_flowstateSettings.Flowstate_haloMod_oddball }
+bool function Flowstate_IsFS1v1()								{ return SH_flowstateSettings.Flowstate_fs_1v1 }
+bool function Flowstate_IsFastInstaGib()						{ return SH_flowstateSettings.Flowstate_fs_dm_fast_instagib }
+bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_fs_dm }
+bool function Flowstate_IsMapPartyCrasher()						{ return SH_flowstateSettings.Flowstate_Is_PartyCrasher }
+bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettings.Flowstate_Is_Canyon_Staging }
+bool function Flowstate_IsGame1v1Type() 						{ return SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type }
+bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowstate_GivePassive }
 
 #if SERVER   
-
-
-bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
+bool function Equipment_GetRespawnKitEnabled()                       { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }
+string function Playlist_1v1_Primary_Array()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_primary", "" ) }
+string function Playlist_1v1_Primary_Array_continue()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_primary_continue", "" ) }
+string function Playlist_1v1_Secondary_Array()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_secondary", "" ) }
+string function Playlist_1v1_Secondary_Array_continue()						{ return GetCurrentPlaylistVarString( "custom_1v1_weapons_secondary_continue", "" ) }
 
 StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
 {

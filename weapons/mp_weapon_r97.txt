@@ -225,7 +225,7 @@ WeaponData
         }
 
 		laser_sight_l1
-		{
+        {
 			"spread_stand_hip"								"*0.90"
 			"spread_stand_hip_run"							"*0.90"
 			"spread_stand_hip_sprint"                       "*0.90"
@@ -246,10 +246,10 @@ WeaponData
 			"spread_kick_on_fire_stand_hip"   				"*0.90"
 			"spread_kick_on_fire_crouch_hip"  				"*0.90"
 			"spread_kick_on_fire_air_hip" 					"*0.90"
-		}
+        }
 
 		laser_sight_l2
-		{
+        {
 			"spread_stand_hip"								"*0.80"
 			"spread_stand_hip_run"							"*0.80"
 			"spread_stand_hip_sprint"                       "*0.80"
@@ -270,7 +270,7 @@ WeaponData
 			"spread_kick_on_fire_stand_hip"   				"*0.80"
 			"spread_kick_on_fire_crouch_hip"  				"*0.80"
 			"spread_kick_on_fire_air_hip" 					"*0.80"
-		}
+        }
 
 		laser_sight_l3
 		{

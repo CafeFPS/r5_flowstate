@@ -5,9 +5,9 @@ global function LoadMovementMap
 void function LoadModelsFromEditor()
 {
 
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		//PASTE HERE FOR KINGS CANYON PROPS
 		
 		
@@ -20,8 +20,8 @@ void function LoadModelsFromEditor()
 		
 		
 		break // DON'T REMOVE	
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 		//PASTE HERE FOR WORLDS EDGE PROPS
 		
 		
@@ -45,9 +45,9 @@ void function LoadModelsFromEditor()
 void function LoadMovementMap()
 {
 
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		//PASTE HERE FOR KINGS CANYON PROPS
 		
 		
@@ -60,8 +60,8 @@ void function LoadMovementMap()
 		
 		
 		break // DON'T REMOVE	
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 		//PASTE HERE FOR WORLDS EDGE PROPS
 		
 		

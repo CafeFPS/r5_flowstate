@@ -1,0 +1,285 @@
+//Made by ColombiaFPS
+#base "_base_handgun.txt"
+#base "_base_mags_heavy.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"PORTALGUN"
+	"shortprintname"								"PORTALGUN"
+	"description" 									"Idk"
+	"longdesc" 										"Idk"
+
+	"ammo_pool_type"								"highcal"
+
+	"menu_icon"										"rui/weapon_icons/r5/weapon_wingman"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_wingman"
+
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
+
+	"weapon_type_flags"								"WPT_PRIMARY"
+	"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+
+	// Menu
+	"menu_category"                                 "pistol"
+	"menu_anim_class"                               "small"
+	"stat_damage" 									"88"
+	"stat_range"  									"40"
+	"stat_accuracy"   								"36"
+	"stat_rof"										"27"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
+	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
+	
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_portalgun"
+	"OnProjectileCollision"                         "OnProjectileCollision_portalgun"
+	"OnWeaponActivate"								"OnWeaponActivate_portalgun"
+	"OnWeaponDeactivate"                            "OnWeaponDeactivate_portalgun"
+	
+	"zoom_effects"									"0"
+	
+    // FX - Muzzle Flash
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+
+
+	// FX - Shell Eject
+	"fx_shell_eject_view"							""
+	"fx_shell_eject_world"							""
+
+	"chroma_color"									".3 1 .7"
+
+	// Sounds
+	"fire_sound_1"									"Weapon_bulletCasings.Bounce"
+	"fire_sound_2_player_1p"						"Weapon_Wingman_Fire_1P"
+	"fire_sound_2_player_3p"						"Weapon_Wingman_Fire_3P"
+	"fire_sound_2_npc"								"Weapon_Wingman_Fire_NPC"
+	"sound_zoom_in"									"Weapon_Wingman_ADS_In"
+	"sound_zoom_out"								"Weapon_Wingman_ADS_Out"
+
+	"low_ammo_sound_name_1"							"Wingman_LowAmmo_Shot1"
+	"low_ammo_sound_name_2"							"Wingman_LowAmmo_Shot2"
+	"low_ammo_sound_name_3"							"Wingman_LowAmmo_Shot3"
+
+	"damage_type" 									"bullet"
+
+	"ammo_clip_size"   								"9999"
+
+	"dof_zoom_focusArea_horizontal"					"0.06"
+	"dof_zoom_focusArea_top"						"0.070"
+	"dof_zoom_focusArea_bottom"						"-0.011"
+
+	"ammo_default_total"			"99999"
+    "ammo_stockpile_max"			"99999"
+    "ammo_no_remove_from_stockpile"	"1"
+    "low_ammo_fraction" 			"0"
+	"uses_ammo_pool"				"0"
+			
+    // Damage - When Used by Players
+    "damage_near_value"   							"0"
+    "damage_far_value"								"0"
+    "damage_very_far_value"							"0"
+    "damage_near_value_titanarmor"					"0"
+    "damage_far_value_titanarmor" 					"0"
+    "damage_very_far_value_titanarmor" 				"0"
+    "damage_rodeo" 									"0"
+    "damage_headshot_scale"                         "0"
+    "damage_near_distance"							"0"
+    "damage_far_distance" 							"0"
+    "damage_very_far_distance"						"0"
+
+	"viewmodel_offset_ads"							"0 1.0 0"
+	"dof_zoom_nearDepthStart"						"1.0"
+	"dof_zoom_nearDepthEnd"							"10.7"
+	"dof_nearDepthStart"							"0.0"
+	"dof_nearDepthEnd"								"0.0"
+
+	// Behavior
+	"reload_enabled" "0"
+	"fire_rate"   									"5"
+	"reload_time" 									"0"
+	"reload_time_late1" 							"0"
+	"reload_time_late2" 							"0.60"
+	"reloadempty_time"								"0"
+	"reloadempty_time_late1"						"0"
+	"reloadempty_time_late2"						"0"
+	"deploy_time" 									"0.4"   //"0.45" Quickdraw buff integration after removal. 10% faster handling from base
+	"holster_time"									"0.36"  //"0.4"
+	"raise_time"  									"0.315" //"0.35"
+	"lower_time"  									"0.27"  //"0.3"
+    "zoom_time_in"					            	"0"
+    "zoom_time_out"   				            	"0"
+
+	// Projectile
+	"projectile_launch_speed"                  		"18000"
+	"projectile_lifetime" 							"10"
+
+	"headshot_distance" 							"10000"
+
+	"impulse_force"   								"5000"
+
+	// View Kick
+	"viewkick_spring" 								""
+
+	"viewkick_pitch_base" 							"0"
+	"viewkick_pitch_random"   						"0"
+	"viewkick_pitch_softScale"						"0"
+	"viewkick_pitch_hardScale"						"0"
+
+	"viewkick_yaw_base"   							"0"
+	"viewkick_yaw_random" 							"0"
+	"viewkick_yaw_softScale"  						"0"
+	"viewkick_yaw_hardScale"  						"0"
+
+	"viewkick_roll_base"  							"0"
+	"viewkick_roll_randomMin" 						"0"
+	"viewkick_roll_randomMax" 						"0"
+	"viewkick_roll_softScale" 						"0"
+	"viewkick_roll_hardScale" 						"0"
+
+	"viewkick_hipfire_weaponFraction" 				"0"
+	"viewkick_hipfire_weaponFraction_vmScale" 		"0"
+	"viewkick_ads_weaponFraction" 					"0"
+	"viewkick_ads_weaponFraction_vmScale" 			"0"
+
+	"viewkick_perm_pitch_base"				 		"0.0"
+	"viewkick_perm_pitch_random"   					"0.0"
+	"viewkick_perm_yaw_base"   						"0.0"
+	"viewkick_perm_yaw_random" 						"0.0"
+
+	"viewkick_scale_firstshot_hipfire"		 		"0.0"
+	"viewkick_scale_min_hipfire"  					"0.0"
+	"viewkick_scale_max_hipfire"  					"0.0"
+	"viewkick_scale_firstshot_ads"					"0.0"
+	"viewkick_scale_min_ads"  						"0.0"
+	"viewkick_scale_max_ads"  						"0.0"
+	"viewkick_scale_valuePerShot" 					"0.0"
+	"viewkick_scale_pitch_valueLerpStart"   		"0"
+	"viewkick_scale_pitch_valueLerpEnd" 			"0"
+	"viewkick_scale_yaw_valueLerpStart"   			"0"
+	"viewkick_scale_yaw_valueLerpEnd" 				"0"
+	"viewkick_scale_valueDecayDelay"  				"0"
+	"viewkick_scale_valueDecayRate"   				"0"
+
+	//
+	"viewmodel_shake_forward"						"0"
+	"viewmodel_shake_up"							"0"
+	"viewmodel_shake_right"							"0"
+
+	// Rumble
+	"fire_rumble"									"rumble_pistol_heavy"
+
+	// Spread
+	"spread_stand_hip" 								"0"
+	"spread_stand_hip_run" 							"0"
+	"spread_stand_hip_sprint"						"0"
+	"spread_crouch_hip"								"0"
+	"spread_air_hip"	   							"0"
+
+	"spread_kick_on_fire_stand_hip"					"0"
+	"spread_kick_on_fire_crouch_hip"				"0"
+	"spread_kick_on_fire_air_hip"					"0"
+
+	"spread_max_kick_stand_hip"						"0"
+	"spread_max_kick_crouch_hip"					"0"
+	"spread_max_kick_air_hip"						"0"
+
+	"spread_decay_rate"   							"0"
+	"spread_decay_delay"  							"0"
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	//setting to "0" so it's tunable in Bakery
+	"sprintcycle_time"								"0"
+	"deployfirst_time"								"1.45"
+	"activitymodifier"								"pistol"
+	"holster_type"									"pistol"
+
+	// Sway
+    "sway_min_pitch_zoomed"  						"0"  //"-0.015"
+    "sway_max_pitch_zoomed"  						"0"  //"0.02"
+
+
+    "clip_bodygroup"						"b3wing_magazine"
+    "clip_bodygroup_index_shown"			"0"
+    "clip_bodygroup_index_hidden"			"1"
+    "clip_bodygroup_show_for_milestone_0"	"1"
+    "clip_bodygroup_show_for_milestone_1"	"0"
+    "clip_bodygroup_show_for_milestone_2"	"1"
+    "clip_bodygroup_show_for_milestone_3"	"1"
+
+	Mods
+	{
+	    gold
+	    {
+	    }
+
+		survival_finite_ammo
+        {
+            "ammo_default_total"			"99999"
+            "ammo_stockpile_max"			"99999"
+            "ammo_no_remove_from_stockpile"	"1"
+
+            "low_ammo_fraction" 			"0"
+
+	   		"uses_ammo_pool"				"0"
+        }
+
+	}
+
+	"ui1_enable"		"1"
+	"ui1_draw_cloaked"	"1"
+	UiData1
+	{
+		"ui"							"ui/wingman_rui_upper"
+		"mesh"							"models/weapons/attachments/re45_rui_upper"
+		Args
+		{
+			vis							player_zoomfrac
+		}
+	}
+
+	"ui2_enable"		"1"
+	"ui2_draw_cloaked"	"1"
+	UiData2
+	{
+		"ui"							"ui/wingman_rui_lower"
+		"mesh"							"models/weapons/attachments/b3wing_rui_lower"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+		}
+	}
+
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_plus"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+	}
+}

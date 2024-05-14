@@ -1,7 +1,6 @@
 // Made by @CafeFPS
 
 //-todo
-// fix TRAIN_POI_BEAM
 // recreate smooth points for next node from stop node
 // clean up installed stopmover and created smooth points in path chain ?, connect lastnode to next path again and remove the new smooth points
 // add timeout to manual stop, like, after being manually stopped some time it should restart auto after a while
@@ -169,7 +168,7 @@ void function Train_StartTrainMovement()
 			if(distance > 300)
 				continue
 
-			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && GameRules_GetGameMode() == SURVIVAL)
+			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && Gamemode() == eGamemodes.SURVIVAL )
 			{
 				ClearLootBinContents( bin )
 				AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_HotZone", 4 ) )
@@ -234,7 +233,7 @@ void function Train_OnPlayerConnected( entity player )
 
 void function Flowstate_Train_SetupBinsAtStation()
 {
-	if( GameRules_GetGameMode() == "fs_infected" )
+	if( Gamemode() == eGamemodes.fs_infected )
 		return
 	
 	entity funcBrush
@@ -269,6 +268,9 @@ void function Flowstate_Train_SetupBinsAtStation()
 			}
 		}
 		
+		if( !IsValid( lootBin ) )
+			continue
+
 		// hack, why the original ent won't play the anim?
 		vector originfordoor = doors.GetOrigin()
 		vector anglesfordoor = doors.GetAngles()
@@ -308,6 +310,9 @@ void function Flowstate_OpenLootBinsAtStation( entity station )
 					}
 				}
 				
+				if( !IsValid( door ) )
+					return
+
 				PlayAnim( door, "loot_bin_02_open" )
 				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * 80, 5, 0, 0 )
 			}
@@ -336,7 +341,10 @@ void function Flowstate_CloseLootBinsAtStation( entity station )
 						lootBin = entLinkedToBinMover
 					}
 				}
-				
+
+				if( !IsValid( door ) )
+					return
+					
 				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * -80, 5, 0, 0 )
 				
 				wait 5

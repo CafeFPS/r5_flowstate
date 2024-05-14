@@ -6,8 +6,13 @@ void function SV_CL_Shared_Init()
 	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
 #endif
 
+	#if SERVER || CLIENT
+		PlayLists_Mapnames_Gamemodes_Init()
+	#endif 
+	
 	GameModes_Init()
 	Settings_Init()
+	
 	if ( IsLobby() )
 	{
 		Shared_Lobby_Init()
@@ -49,10 +54,15 @@ void function SV_CL_Init()
 	#if SERVER
 	  SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
 	#endif
-
+	
+	INIT_Flowstate_Localization_Strings()
+	
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
 	CodeCallbacksShared_Init()
+		#if SERVER 
+			CodeCallbacksCommon_Init()
+		#endif 
 	Flags_Init()
 	RemoteFunctions_Init_Begin()
 	ShGamepad_LevelInit()
@@ -87,8 +97,6 @@ void function SV_CL_Init()
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
-	if(GameRules_GetGameMode() == "map_editor_deprecated")
-		ShAssets_Init()
 
 	//#if DEVELOPER
 		ShDevUtility_Init()
@@ -165,7 +173,7 @@ void function SV_CL_Init()
 	ShWarpGates_Init()
 
 	Sh_Loot_Vault_Panel_Init()
-
+	ChargePylons_Init()
 
 	ShLootDrones_Init()
 
@@ -179,6 +187,7 @@ void function SV_CL_Init()
 	CharacterSelectNewMenu_Init()
 
 	//ShHoverBike_Init()
+	ShHoverVehicle_Init()
 	ShLootBin_Init()
 
 	ShFlyers_Init()
@@ -190,7 +199,12 @@ void function SV_CL_Init()
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
 	ShPassiveAdrenaline_Init()
+	Clickweapon_Init()
 	
+	//R5R Sword
+	MpWeaponTitanSword_Init()
+	MpWeaponPortalGun_Init()
+
     // Zipline Utility
     #if SERVER
         ZiplineUtility_Init()
@@ -205,21 +219,29 @@ void function SV_CL_Init()
 		Cl_DeathScreen_Init()
 	#endif
 
-	Sh_PersistentDamageLayer_Init()
+	//Sh_PersistentDamageLayer_Init()
 
 	#if DEVSCRIPTS
 	Dev_RemoteFunctions_Init()
 	#endif
 
+	if( Playlist() == ePlaylists.fs_movementrecorder )
+	{
+		Sh_FS_MovementRecorder_Init()
+	}
+
 	#if CLIENT	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
 		RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
-		if( GameRules_GetGameMode() == "fs_dm" )
+		// RegisterNetworkedVariableChangeCallback_time( "FSIntro_StartTime", Flowstate_IntroTimeChanged )
+		// RegisterNetworkedVariableChangeCallback_time( "FSIntro_EndTime", Flowstate_IntroEndTimeChanged )
+		// RegisterNetworkedVariableChangeCallback_time( "FSVoteTeam_EndTime", Flowstate_VoteTeamEndTimeChanged )
+		if( Gamemode() == eGamemodes.fs_dm )
 			RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )		
 	}
 	
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSCTF_GameStateChanged )
 	}
@@ -339,11 +361,12 @@ void function Server_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
 	ObjectiveResourceSystem_ServerInit()
+	ChatUtility_Init()
 
 	LiveAPI_Init()
 
     // ReMap Live
-    if ( GetCurrentPlaylistName() == "survival_dev" )
+    if ( IsDevGamemode() )
         ReMapLive_Init()
 
 	#if DEVELOPER

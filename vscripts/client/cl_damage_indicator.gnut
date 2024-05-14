@@ -314,6 +314,10 @@ void function DamageIndicators( vector origin, entity attacker, int damageSource
 
 bool function ShouldShowDamageArrows( int damageSourceId )
 {
+	//if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+			return false
+
 	switch ( damageSourceId )
 	{
 		case eDamageSourceId.outOfBounds:

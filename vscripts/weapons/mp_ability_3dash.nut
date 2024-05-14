@@ -49,7 +49,7 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 void function DashPlayer(entity player, float chargeTime)
 {
 	player.Zipline_Stop()
-	if ( GetMapName() == "mp_rr_ashs_redemption" ) return
+	if ( MapName() == eMaps.mp_rr_ashs_redemption ) return
 	player.Zipline_Stop()
 	vector yes
 	if(player.GetInputAxisForward() || player.GetInputAxisRight()) yes = Normalize(player.GetInputAxisForward() * player.GetViewForward() + player.GetInputAxisRight() * player.GetViewRight())

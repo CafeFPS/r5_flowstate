@@ -215,7 +215,7 @@ global function GetSkydiveSmokeColorForTeam
 
 void function SurvivalFreefall_Init()
 {
-	if(GameRules_GetGameMode() == "fs_prophunt")
+	if( Gamemode() == eGamemodes.fs_prophunt )
 		return
 	
 	#if SERVER
@@ -240,8 +240,8 @@ void function SurvivalFreefall_Init()
 		AddCallback_OnClientDisconnected( OnPlayerDisconnected )
 		AddClientCommandCallback( "StopFreefallFollowMode", ClientCommand_StopFreefallFollowMode )
 
-		AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
-		AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
+		// AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
+		// AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
 		file.skydiveSmokeColors.randomize()
 	#endif
 
@@ -464,12 +464,12 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 				}
 
 				player.p.skydiveFreelookEnabled = 0
-				if ( player.Player_IsFreefalling() && player.Player_IsFreefallAnticipating() )
-				{
+				if( player.Player_IsFreefallAnticipating() )
 					player.Player_EndFreefallAnticipate()
+
+				if ( player.Player_IsFreefalling() )
 					player.Player_EndFreefall()
-					player.Anim_Stop()
-				}
+
 				player.p.isSkydiving = false
 
 				HeatMapStat( player, "Sur_Skydive_Landing", player.GetOrigin() )
@@ -1972,7 +1972,7 @@ void function StopFollowExtendedUse( entity player )
 void function CodeCallback_PlayerFreefallBegin( entity player )
 {
 	#if DEVELOPER
-		printt("CodeCallback_PlayerFreefallBegin for player " + player)
+		// printt("CodeCallback_PlayerFreefallBegin for player " + player)
 	#endif
 	
 	#if SERVER
@@ -1999,7 +1999,7 @@ void function CodeCallback_PlayerFreefallBegin( entity player )
 void function CodeCallback_PlayerFreefallEnd( entity player )
 {
 	#if DEVELOPER
-		printt("CodeCallback_PlayerFreefallEnd for player " + player)
+		// printt("CodeCallback_PlayerFreefallEnd for player " + player)
 	#endif
 	
 	player.Anim_Stop()
@@ -2053,7 +2053,7 @@ void function CodeCallback_PlayerFreefallMove( entity player )
 void function CodeCallback_PlayerFreefallAnticipateBegin( entity player )
 {
 	#if DEVELOPER
-		printt("CodeCallback_PlayerFreefallAnticipateBegin for player " + player)
+		// printt("CodeCallback_PlayerFreefallAnticipateBegin for player " + player)
 	#endif
 	
 	#if SERVER
@@ -2066,7 +2066,7 @@ void function CodeCallback_PlayerFreefallAnticipateBegin( entity player )
 void function CodeCallback_PlayerFreefallAnticipateEnd( entity player )
 {
 	#if DEVELOPER
-		printt("CodeCallback_PlayerFreefallAnticipateEnd for player " + player)
+		// printt("CodeCallback_PlayerFreefallAnticipateEnd for player " + player)
 	#endif
 	
 	#if SERVER

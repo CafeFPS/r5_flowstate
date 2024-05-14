@@ -77,6 +77,8 @@ global enum eMinimapObject_prop_script
 	SND_A,
 	SND_B,
 	BOMB,
+	FLAG_MIL,
+	FLAG_IMC,
 	COUNT
 }
 

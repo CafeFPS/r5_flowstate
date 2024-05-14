@@ -128,6 +128,12 @@ void function CreepingBombardment_DamagedTarget( entity victim, var damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if ( IsValid( attacker ) )
 	{
+		if( !victim.DoesShareRealms( attacker ) )
+		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+			return
+		}
+
 		if ( IsFriendlyTeam( attacker.GetTeam(), victim.GetTeam() ) && (attacker != victim) )
 			DamageInfo_ScaleDamage( damageInfo, 0 )
 		else if ( DamageInfo_GetDamage( damageInfo ) > 0 )
@@ -145,6 +151,8 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 	if ( !IsValid( owner ) )
 		return
 
+	EndSignal( owner, "CleanUpPlayerAbilities" )
+
 	entity bombardmentWeapon = VerifyBombardmentWeapon( owner, CREEPING_BOMBARDMENT_MISSILE_WEAPON )
 	if ( !IsValid( bombardmentWeapon ) )
 		return
@@ -153,10 +161,48 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 
 	int fxid = GetParticleSystemIndex( fx )
 	entity signalFX = StartParticleEffectOnEntityWithPos_ReturnEntity( projectile, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, projectile.LookupAttachment( "FX_TRAIL" ), <0,0,0>, <0,0,0> )
+	signalFX.RemoveFromAllRealms()
+	signalFX.AddToOtherEntitysRealms( owner )
+
+	OnThreadEnd(
+		function() : ( signalFX )
+		{
+			if ( IsValid( signalFX ) )
+			{
+				if ( IsValid( signalFX ) )
+					EffectStop( signalFX )
+			}
+		}
+	)
+
 	vector dir = Normalize ( FlattenVector ( projectile.GetOrigin() - owner.GetOrigin() ) )
 	//float explosionRadius = bombardmentWeapon.GetWeaponSettingFloat( eWeaponVar.explosionradius )
 
 	EmitSoundOnEntity( projectile, CREEPING_BOMBARDMENT_FLARE_SOUND )
+
+	if( GetCurrentPlaylistVarBool( "lsm_mod5", false ) )
+	{
+		
+		for (int cur = 0; cur < 60; cur++) {
+			wait 1
+			thread function () : ( bombardmentWeapon, dir, origin, signalFX )
+			{
+				thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, origin,
+					CREEPING_BOMBARDMENT_WIDTH,
+					CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP,
+					CREEPING_BOMBARDMENT_STEP_COUNT,
+					CREEPING_BOMBARDMENT_STEP_INTERVAL,
+					CREEPING_BOMBARDMENT_DELAY )
+
+				float duration = CREEPING_BOMBARDMENT_STEP_COUNT * CREEPING_BOMBARDMENT_STEP_INTERVAL
+				wait duration + CREEPING_BOMBARDMENT_DELAY
+
+				if ( IsValid( signalFX ) )
+					EffectStop( signalFX )
+			}()
+		}
+		return
+	}
 
 	thread Bombardment_MortarBarrageDetCord( bombardmentWeapon, $"", dir, origin + <0,0,10000>, projectile.GetOrigin(),
 		CREEPING_BOMBARDMENT_WIDTH,
@@ -167,8 +213,5 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 
 	float duration = CREEPING_BOMBARDMENT_STEP_COUNT * CREEPING_BOMBARDMENT_STEP_INTERVAL
 	wait duration + CREEPING_BOMBARDMENT_DELAY
-
-	if ( IsValid( signalFX ) )
-		EffectStop( signalFX )
 }
 #endif

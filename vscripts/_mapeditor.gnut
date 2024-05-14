@@ -15,6 +15,7 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function ReMapCreateJumpTower
+global function ReMapCreateEvacTower
 global function ReMapCreateRespawnableHeal
 global function ReMapCreateSpeedBoost
 global function ReMapCreateCamera
@@ -55,8 +56,11 @@ global enum eReMapHealType
 global array< entity > MapEditorEnts;
 
 // Jump Tower
-const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
-const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+global const asset BALLON_BASE_MDL = $"mdl/props/zipline_balloon/zipline_balloon_base.rmdl"
+global const asset BALLON_MDL = $"mdl/props/zipline_balloon/zipline_balloon.rmdl"
+
+global const asset EVAC_BALLON_MDL = $"mdl/flowstate_custom/evac_tower_balloon.rmdl"
+global const asset EVAC_BASE_MDL = $"mdl/flowstate_custom/evac_tower_weight.rmdl"
 
 // Respawnable MedKit
 const asset MEDKIT_MDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_large.rmdl"
@@ -119,41 +123,41 @@ void function ReMap_Init()
 
 void function MapTriggers_Init()
 {
-    if(GameRules_GetGameMode() == "fs_duckhunt")
+    if( Gamemode() == eGamemodes.fs_duckhunt )
         return
     
-    switch (GetMapName())
+    switch ( MapName() )
     {
-        case "mp_rr_aqueduct_night":
-        case "mp_rr_aqueduct":
+        case eMaps.mp_rr_aqueduct_night:
+        case eMaps.mp_rr_aqueduct:
         {
             CreateWallTrigger( <425, -1590, -1689>, 1, 30000 )
             CreateWallTrigger( <732, -4456, 840>, 2 , 6000)
             CreateWallTrigger( <774, -6394, 2067>, 1 )
             break
         }
-        case "mp_rr_arena_skygarden":
-        {
-            CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
-            CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
-            CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
-            break
-        }
-        case "mp_rr_arena_composite":
+        // case eMaps.mp_rr_arena_skygarden:
+        // {
+            // CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
+            // CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
+            // CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
+            // break
+        // }
+        case eMaps.mp_rr_arena_composite:
         {
             CreateWallTrigger( <5, 2587, -520>, 1, 30000)
             CreateWallTrigger( <5, 5379, 860> , 0 )
             CreateWallTrigger( <5, 5379, 1160> , 1 )
             break
         }
-        case "mp_rr_ashs_redemption":
+        case eMaps.mp_rr_ashs_redemption:
         {
             CreateWallTrigger( <-20857, 5702, -25746> , 0 )
             CreateWallTrigger( <-20857, 5702, -25246> , 1, 30000 )
             CreateWallTrigger( <-20857, 5702, -28500> , 1, 30000 )
             break
         }
-        case "mp_rr_party_crasher":
+        case eMaps.mp_rr_party_crasher:
         {
             CreateWallTrigger( <811, 911, 2434>, 0 , 30000 )
             CreateWallTrigger( <811, 911, -537>, 1 , 30000 )
@@ -219,7 +223,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
                 EntityOutOfBounds( trigger, ent, null, null )
             break
 
-            default:
+            default: if (GetCurrentPlaylistVarBool( "patch_for_dropoff", false )) return;
                 vector lookDir = ent.GetSmoothedVelocity()
                 vector pushBackVel = lookDir * 2.5
 
@@ -261,6 +265,8 @@ void function WallTriggerEnter( entity trigger , entity ent )
 
 entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false )
 {
+	// printt( a )
+	// return null
     entity e = CreatePropDynamic( a, pos, ang, SOLID_VPHYSICS, fade )
     e.kv.fadedist = fade
     e.kv.rendermode = 0
@@ -286,12 +292,12 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
 		if( a == $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
 			e.SetScriptName( "map_editor_jumppad" )
 		
-		if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+		if( Flowstate_IsHaloMode() )
 		{
             if( a == $"mdl/imc_base/imc_fan_large_case_01.rmdl" )
                 thread HaloMod_Cyberdyne_CreateFanPusher( e.GetOrigin() + Vector( -60, 0, 15 ), e.GetAngles() )
 		}
-        if( GameRules_GetGameMode() == "fs_duckhunt" )
+        if( Gamemode() == eGamemodes.fs_duckhunt )
         {
             if( a == $"mdl/foliage/plant_leafy_02.rmdl" && IsValid( e ) || a == $"mdl/foliage/plant_tropical_green_large_02.rmdl" && IsValid( e ) )
             {
@@ -487,7 +493,7 @@ entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin 
 {
     entity lootbin = CreateEntity( "prop_dynamic" )
 
-	if( GameRules_GetGameMode() == "fs_infected" )
+	if( Gamemode() == eGamemodes.fs_infected )
 		lootbin.SetScriptName( MYSTERY_BOX_SCRIPT_NAME )
 	else
 		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
@@ -701,6 +707,52 @@ void function ReMapCreateJumpTower( vector origin, vector angles, float height, 
     vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, -1.75, -2.75, 64 )
 
     MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
+
+    entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
+    trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
+
+    DispatchSpawn( trigger )
+}
+
+void function ReMapCreateEvacTower( vector origin, vector angles, float height, bool addToArray = false ) //faster and use different models
+{
+	origin += <0,0,-24>
+    entity ballon_base = CreateEntity( "prop_dynamic" )
+    ballon_base.SetOrigin( origin )
+    ballon_base.SetAngles( < 0, 0, 0 > )
+    ballon_base.SetModelScale( 1 )
+    ballon_base.SetValueForModelKey( EVAC_BASE_MDL )
+    ballon_base.kv.solid = 0
+	ballon_base.kv.fadedist = 99999
+    ballon_base.AllowMantle()
+
+    entity ballon_top = CreateEntity( "prop_dynamic" )
+    ballon_top.SetOrigin( origin + < 0, 0, height > )
+    ballon_top.SetAngles( < 0, angles.y, 90 > )
+    ballon_top.SetModelScale( 1 )
+    ballon_top.SetValueForModelKey( EVAC_BALLON_MDL )
+	ballon_top.kv.fadedist = 99999
+    ballon_top.kv.solid = 0
+
+    array < entity > ballonArr = [ ballon_base, ballon_top ]
+
+    foreach ( ent in ballonArr )
+    {
+        ent.kv.fadedist = -1
+        ent.kv.renderamt = 255
+        ent.kv.rendercolor = "255 255 255"
+        ent.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+        ent.SetScriptName( "jump_tower" )
+
+        if( addToArray ) MapEditorEnts.append( ent )
+
+        DispatchSpawn( ent )
+    }
+
+    vector zipline_start_origin_offset = PositionOffsetFromEnt( ballon_top, -1.75, -2.75, 0 )
+    vector zipline_end_origin_offset = PositionOffsetFromEnt( ballon_base, 0, 0, 60 )
+
+    MapEditor_CreateZiplineFromUnity( zipline_start_origin_offset, < 0, angles.y, 0 >, zipline_end_origin_offset, < 0, angles.y, 0 >, true, -1, 1, 2, 1.4, 1, 1, 1, 200, 200, true, 0, false, 0, 0, [], [], [], 0, 0, 0, addToArray )
 
     entity trigger = MapEditor_CreateTrigger( origin + < 0, 0, height - 20 >, < 0, angles.y, 0 >, 200, 200, false, addToArray )
     trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )

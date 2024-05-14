@@ -1,0 +1,32 @@
+#base "melee_pilot_emptyhanded_halo.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/flowstate_custom/oddball_white"
+	"hud_icon"									"rui/flowstate_custom/oddball_white"
+
+	"weapon_type_flags"							"WPT_MELEE"
+
+	"melee_angle"									"20"
+	"melee_attack_animtime"							"0"
+	"melee_damage"									"250"
+	"melee_damage_heavyarmor"						"250"
+	
+	// Models
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_flagpole.rmdl"
+	"playermodel" 									"mdl/signs/flag_base_pole_ctf_red.rmdl"
+	
+	//"OnWeaponActivate"							"OnWeaponActivate_vctblue"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword"
+
+	// FX
+	"impact_effect_table"							"melee_bolo"
+}
+

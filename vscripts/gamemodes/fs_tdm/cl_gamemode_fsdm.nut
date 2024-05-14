@@ -1,3 +1,5 @@
+untyped
+
 global function Cl_CustomTDM_Init
 global function Cl_RegisterLocation
 global function OpenTDMWeaponSelectorUI
@@ -9,6 +11,13 @@ global function NotifyRingTimer
 	
 //Statistics
 global function ServerCallback_OpenStatisticsUI
+
+//Persistence
+global function ServerCallback_SetLGDuelPesistenceSettings
+
+//Chat 
+global function mute
+global function isMuted
 
 // Voting
 global function ServerCallback_FSDM_OpenVotingPhase
@@ -27,11 +36,6 @@ global function UI_To_Client_VoteForMap_FSDM
 //networked vars callbacks
 global function CL_FSDM_RegisterNetworkFunctions
 
-//custom minimap
-global function HACK_TrackPlayerPositionOnScript
-global function RefreshImageAndScaleOnMinimapAndFullmap
-global function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap
-
 global function FSHaloMod_CreateKillStreakAnnouncement
 
 global function Flowstate_ShowRoundEndTimeUI
@@ -39,6 +43,24 @@ global function Flowstate_PlayStartRoundSounds
 global function Flowstate_ShowStartTimeUI
 global function FS_1v1_ToggleUIVisibility
 global function Toggle1v1Scoreboard
+global function ForceHide1v1Scoreboard
+global function ForceShow1v1Scoreboard
+global function FS_NewBox_Msg
+
+global function fs_NewBoxBuildMessage
+global function fs_NewBoxShowMessage
+
+global function fs_ServerMsgsToChatBox_BuildMessage
+global function fs_ServerMsgsToChatBox_ShowMessage
+
+global function FS_Scenarios_TogglePlayersCardsVisibility
+
+global function FS_Scenarios_AddAllyHandle
+global function FS_Scenarios_AddEnemyHandle
+
+global function FS_Scenarios_SetupPlayersCards
+global function FS_Scenarios_ChangeAliveStateForPlayer
+global function FS_CreateTeleportFirstPersonEffectOnPlayer
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -59,6 +81,23 @@ struct {
 	asset currentMapImage
 	float mapscale
 	bool show1v1Scoreboard = true
+
+	string fs_newMsgBoxString        = ""
+	string fs_newMsgBoxSubString     = ""
+	
+	string fs_newServerMsgsToChatBoxString        = ""
+	string fs_newServerMsgsToChatBoxSubString     = ""
+
+	//Scenarios cards
+	var vsBasicImage
+	array<var> allyTeamCards
+	array<var> enemyTeamCards
+	bool buildingTeam = true
+	array<int> allyTeamHandles
+	array<int> enemyTeamHandles
+	
+	bool muted = false
+	
 } file
 
 struct VictoryCameraPackage
@@ -82,14 +121,37 @@ void function Cl_CustomTDM_Init()
 
 	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
-	
+	PrecacheParticleSystem($"P_training_teleport_FP")
+
 	RegisterSignal("ChallengeStartRemoveCameras")
 	RegisterSignal("ChangeCameraToSelectedLocation")
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
+	RegisterSignal("FS_CloseNewMsgBox")
 	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
+	
+	//if( GetCurrentPlaylistName() == "fs_scenarios" )
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+	}
+}
+
+void function mute( bool set )
+{
+	file.muted = set
+}
+
+bool function isMuted()
+{
+	return file.muted
+}
+
+void function FS_Scenarios_OnClientScriptInit( entity player ) 
+{
+	FS_Scenarios_InitPlayersCards()
 }
 
 void function CL_FSDM_RegisterNetworkFunctions()
@@ -104,7 +166,7 @@ void function CL_FSDM_RegisterNetworkFunctions()
 
 void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
 {
-	if( GetCurrentPlaylistName() != "fs_1v1" )
+	if( Playlist() != ePlaylists.fs_1v1 && Playlist() != ePlaylists.fs_lgduels_1v1 )
 		return
 	
 	entity localPlayer = GetLocalClientPlayer()
@@ -182,7 +244,7 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 	Signal( player, "StopCurrentEnemyThread" )
 	EndSignal( player, "StopCurrentEnemyThread" )
 	
-	while( file.show1v1Scoreboard )
+	while( file.show1v1Scoreboard && IsValid( newEnt ) && IsValid( player ) )
 	{
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyKills"), newEnt.GetPlayerNetInt( "kills" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_EnemyDeaths"), newEnt.GetPlayerNetInt( "deaths" ) .tostring()) 
@@ -195,7 +257,7 @@ void function FS_1v1_StartUpdatingValues( entity newEnt )
 		Hud_SetText( HudElement( "FS_1v1_UI_Damage"), player.GetPlayerNetInt( "damage" ).tostring() ) 
 		Hud_SetText( HudElement( "FS_1v1_UI_Latency"), player.GetPlayerNetInt( "latency" ).tostring() )
 		Hud_SetText( HudElement( "FS_1v1_UI_Position"), player.GetPlayerNetInt( "FSDM_1v1_PositionInScoreboard" ).tostring() ) 
-		wait 0.1
+		wait 0.5
 	}
 }
 
@@ -211,17 +273,63 @@ void function Toggle1v1Scoreboard()
 	}
 	else
 	{
-		file.show1v1Scoreboard = true
-		
 		if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
 		{
+			file.show1v1Scoreboard = true
 			FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
 		}
 	}
 }
 
+void function ForceHide1v1Scoreboard() 
+{
+	entity player = GetLocalClientPlayer()
+
+	// if( file.show1v1Scoreboard )
+	// {
+		// file.show1v1Scoreboard = false
+		Signal( player, "StopCurrentEnemyThread" )
+		FS_1v1_ToggleUIVisibility( false, null )
+	// }
+	// else
+	// {
+		// file.show1v1Scoreboard = true
+		
+		// if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null )
+		// {
+			// FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		// }
+	// }
+}
+
+void function ForceShow1v1Scoreboard() 
+{
+	entity player = GetLocalClientPlayer()
+
+	// if( file.show1v1Scoreboard )
+	// {
+		// file.show1v1Scoreboard = false
+		// Signal( player, "StopCurrentEnemyThread" )
+		// FS_1v1_ToggleUIVisibility( false, null )
+	// }
+	// else
+	// {
+		if( GetGlobalNetInt( "FSDM_GameState" ) == eTDMState.IN_PROGRESS && player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) != null  && file.show1v1Scoreboard )
+		{
+			FS_1v1_ToggleUIVisibility( true, player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		}
+	// }
+}
+
 void function Cl_OnResolutionChanged()
 {
+	if( GetCurrentPlaylistName() == "fs_scenarios" )
+	{
+		if( !file.buildingTeam )
+			FS_Scenarios_TogglePlayersCardsVisibility( true )
+		else
+			FS_Scenarios_TogglePlayersCardsVisibility( false )
+	}
 	if( GetGlobalNetInt( "FSDM_GameState" ) != eTDMState.IN_PROGRESS )
 	{
 		Flowstate_ShowRoundEndTimeUI( -1 )
@@ -261,7 +369,7 @@ void function Flowstate_ShowRoundEndTimeUI( float new )
 	#if DEVELOPER
 	printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
-	if( new == -1 || GetCurrentPlaylistName() == "fs_movementgym" )
+	if( new == -1 || Playlist() == ePlaylists.fs_movementgym )
 	{
 		//force to hide
 		Signal( GetLocalClientPlayer(), "FSDM_EndTimer")
@@ -345,7 +453,7 @@ void function Flowstate_StartTime_Thread( float endtime )
 	
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		msg = "Oddball Starting in "
-	else if( GameRules_GetGameMode() == "custom_ctf" )
+	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
 
 	while ( Time() <= endtime )
@@ -373,14 +481,14 @@ void function Flowstate_PlayStartRoundSounds()
 	if ( Time() > GetGlobalNetTime( "flowstate_DMStartTime" ) )
 		return
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 	{
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 	
-	if( GameRules_GetGameMode() == "custom_ctf" )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF )
 	{
 		Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
@@ -410,7 +518,7 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 
 void function ClientReportChat(var button)
 {
-	if(CHAT_TEXT  == "") return
+	if( CHAT_TEXT == "" || file.muted ){return}
 	
 	string text = "say " + CHAT_TEXT
 	GetLocalClientPlayer().ClientCommand(text)
@@ -439,11 +547,11 @@ void function CoolCamera()
 	
     if(!IsValid(player)) return
 	
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-		case "mp_rr_desertlands_64k_x_64k_tt":		
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:		
 		cutsceneSpawns.append(NewCameraPair(<10915.0039, 6811.3418, -3539.73657>,<0, -100.5355, 0>))
 		cutsceneSpawns.append(NewCameraPair(<9586.79199, 24404.5898, -2019.6366>, <0, -52.6216431, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-29335.9199, 11470.1729, -2374.77954>,<0, -2.17369795, 0>))
@@ -455,17 +563,17 @@ void function CoolCamera()
 		cutsceneSpawns.append(NewCameraPair(<-13217.0469, 24311.4375, -3157.30908>,<0, 97.8569489, 0>))
 		break
 		
-		case "mp_rr_canyonlands_staging":
-		case "mp_rr_ashs_redemption":
+		case eMaps.mp_rr_canyonlands_staging:
+		case eMaps.mp_rr_ashs_redemption:
 		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
 		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
 		cutsceneSpawns.append(NewCameraPair(<30038.0254, -1036.81982, -23369.6035>, <55, -24.2035522, 0>))
 		break
 		
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		cutsceneSpawns.append(NewCameraPair(<-7984.68408, -16770.2031, 3972.28271>, <0, -158.605301, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-19691.1621, 5229.45264, 4238.53125>, <0, -54.6054993, 0>))
 		cutsceneSpawns.append(NewCameraPair(<13270.0576, -20413.9023, 2999.29468>, <0, 98.6180649, 0>))
@@ -478,25 +586,25 @@ void function CoolCamera()
 		cutsceneSpawns.append(NewCameraPair(<32170.3008, -1944.38562, 3590.89258>,<0, 27.8040161, 0>))
 		break
 		
-		case "mp_rr_party_crasher":
-		case "mp_rr_party_crasher_new":
+		case eMaps.mp_rr_party_crasher:
+		case eMaps.mp_rr_party_crasher_new:
 		cutsceneSpawns.append(NewCameraPair(<-1363.75867, -2183.58081, 1354.65466>, <0, 72.5054092, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<2378.75439, 1177.52783, 1309.69019>, <0, 146.118546, 0>))
 		break
 		
-		case "mp_rr_arena_composite":
+		case eMaps.mp_rr_arena_composite:
 		cutsceneSpawns.append(NewCameraPair(<2343.25171, 4311.43896, 829.289917>, <0, -139.293152, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-1661.23608, 2852.71924, 657.674316>, <0, -56.0820427, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-640.810059, 1039.97424, 514.500793>, <0, -23.5162239, 0>)) 
 		break
 		
-		case "mp_rr_aqueduct":
-		case "mp_rr_aqueduct_night":
+		case eMaps.mp_rr_aqueduct:
+		case eMaps.mp_rr_aqueduct_night:
 		cutsceneSpawns.append(NewCameraPair(<1593.85205, -3274.99365, 1044.39099>, <0, -126.270805, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<1489.99255, -6570.93262, 741.996887>, <0, 133.833832, 0>))
 		break 
 		
-		case "mp_rr_arena_skygarden":
+		case eMaps.mp_rr_arena_skygarden:
 		cutsceneSpawns.append(NewCameraPair(<-9000, 3274.99365, 4044.39099>, <0, -126.270805, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<1489.99255, -6570.93262, 4041.996887>, <0, 133.833832, 0>)) 
 		break
@@ -525,7 +633,7 @@ void function CoolCamera()
 		{
 			thread function() : (player, cutsceneMover, camera, cutsceneSpawns)
 			{
-				if(GameRules_GetGameMode() == "flowstate_snd")
+				if( Gamemode() == eGamemodes.fs_snd )
 				{
 					GetLocalClientPlayer().ClearMenuCameraEntity()
 					cutsceneMover.Destroy()
@@ -754,7 +862,7 @@ void function ServerCallback_SendProphuntHuntersScoreboardToClient(int eHandle, 
 
 void function ServerCallback_ClearScoreboardOnClient()
 {
-	if(GameRules_GetGameMode() == "fs_prophunt")
+	if( Gamemode() == eGamemodes.fs_prophunt )
 		RunUIScript( "ClearProphuntScoreboardOnUI")
 	else
 		RunUIScript( "ClearScoreboardOnUI")
@@ -776,6 +884,14 @@ void function ServerCallback_FSDM_OpenVotingPhase(bool shouldOpen)
 	else
 		thread FSDM_CloseVotingPhase()
 	
+}
+
+void function ServerCallback_SetLGDuelPesistenceSettings( float s1, int s2, int s3, int s4, float s5, int s6, int s7, int s8 )
+{
+	#if DEVELOPER 
+		printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
+	#endif
+	RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
 }
 
 void function ServerCallback_FSDM_ChampionScreenHandle(bool shouldOpen, int TeamWon, int skinindex)
@@ -801,7 +917,7 @@ void function CreateChampionUI(int skinindex)
     entity targetBackground = GetEntByScriptName( "target_char_sel_bg_new" )
     entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
 	
-	if(file.teamwon != 3 && GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "flowstate_pkknockback")
+	if(file.teamwon != 3 && Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.flowstate_pkknockback )
 	{
 		//Clear Winning Squad Data
 		AddWinningSquadData( -1, -1)
@@ -841,7 +957,6 @@ void function FSDM_CloseVotingPhase()
 
     RunUIScript( "Close_FSDM_VoteMenu" )
     GetLocalClientPlayer().Signal("ChallengeStartRemoveCameras")
-
 }
 
 void function UpdateUIVoteTimer(int team)
@@ -893,7 +1008,7 @@ void function ServerCallback_FSDM_SetScreen(int screen, int team, int mapid, int
         case eFSDMScreen.ScoreboardUI: //Sets the screen to the winners screen
 			DestroyChampionUI()
 			
-			if(GameRules_GetGameMode() == "fs_prophunt")
+			if( Gamemode() == eGamemodes.fs_prophunt )
 				RunUIScript("Set_FSDM_ProphuntScoreboardScreen")
 			else
 				RunUIScript("Set_FSDM_ScoreboardScreen")
@@ -973,7 +1088,7 @@ string function GetWinningTeamText(int team)
 
 array<ItemFlavor> function GetAllGoodAnimsFromGladcardStancesForCharacter_ChampionScreen(ItemFlavor character)
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 /////////////////////////////////////////////////////// 
 //Don't try this at home
 {
@@ -1050,12 +1165,12 @@ void function Show_FSDM_VictorySequence(int skinindex)
 
 	try { GetWinnerPropCameraEntities()[0].ClearParent(); GetWinnerPropCameraEntities()[0].Destroy(); GetWinnerPropCameraEntities()[1].Destroy() } catch (exceptio2n){ }
 
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 	{
 		file.victorySequencePosition = file.selectedLocation.victorypos.origin - < 0, 0, 52>
 		file.victorySequenceAngles = file.selectedLocation.victorypos.angles
 	}
-	else if(GetMapName() == "mp_rr_canyonlands_mu1")
+	else if( MapName() == eMaps.mp_rr_canyonlands_mu1 )
 	{
 		file.victorySequencePosition = <-19443.75, -26319.9316, 9915.63965>	
 		file.victorySequenceAngles = <0, 0, 0>
@@ -1082,20 +1197,20 @@ void function Show_FSDM_VictorySequence(int skinindex)
 
 		foreach( int i, SquadSummaryPlayerData data in file.winnerSquadSummaryData.playerData )
 		{
-			if ( i >= maxPlayersToShow && GameRules_GetGameMode() != "fs_prophunt")
+			if ( i >= maxPlayersToShow && Gamemode() != eGamemodes.fs_prophunt )
 				break
 			
-			if ( file.teamwon != 3 && i >= maxPlayersToShow && GameRules_GetGameMode() == "fs_prophunt")
+			if ( file.teamwon != 3 && i >= maxPlayersToShow && Gamemode() == eGamemodes.fs_prophunt )
 				break
 
-			if ( file.teamwon == 3 && i >= maxPropsToShow && GameRules_GetGameMode() == "fs_prophunt")
+			if ( file.teamwon == 3 && i >= maxPropsToShow && Gamemode() == eGamemodes.fs_prophunt )
 				break
 			
 			string playerName = ""
 			if ( EHIHasValidScriptStruct( data.eHandle ) )
 				playerName = EHI_GetName( data.eHandle )
 			
-			if(file.teamwon == 3 && GameRules_GetGameMode() == "fs_prophunt")
+			if(file.teamwon == 3 && Gamemode() == eGamemodes.fs_prophunt )
 				{
 					if ( !LoadoutSlot_IsReady( data.eHandle, loadoutSlotCharacter ) )
 						continue
@@ -1354,8 +1469,16 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 3:
-		Obituary_Print_Localized( "Made by __makimakima__ - Maintained in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		{
+			Obituary_Print_Localized( "Made by mkos and @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+
+		} else
+		{
+			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		}
 		break
 
 		case -1:
@@ -1388,53 +1511,6 @@ void function DM_QuickHint( string hintText, bool blueText = false, float durati
 }
 
 array<void functionref( entity, ItemFlavor, int )> s_callbacks_OnVictoryCharacterModelSpawned
-
-void function SetCustomXYOffsetsMapScaleAndImageOnFullmapAndMinimap(asset image, float mapscale, float xoffset, float yoffset)
-{
-	file.currentMapImage = image 
-	file.mapscale = mapscale
-	
-	UpdateImageAndScaleOnFullmapRUI( image, mapscale ) //fullmap
-	UpdateImageAndScaleOnMinimapRUI( image, mapscale ) //minimap
-	
-	file.currentY_Offset = yoffset * mapscale
-	file.currentX_Offset = xoffset * mapscale
-}
-
-void function RefreshImageAndScaleOnMinimapAndFullmap()
-{
-	UpdateImageAndScaleOnFullmapRUI( file.currentMapImage, file.mapscale ) //fullmap
-	UpdateImageAndScaleOnMinimapRUI( file.currentMapImage, file.mapscale ) //minimap
-}
-
-void function HACK_TrackPlayerPositionOnScript(var rui, entity player, bool isFullmap)
-//used by fullmap and minimap to show player arrows on them without using RuiTrack so we can add offsets and use it with custom prop maps placed anywhere in the sky. Colombia
-{
-	if( !IsValid(player) ) return
-	
-	//EndSignal( player, "OnDeath" )
-
-	string ruiname1
-	string ruiname2
-	
-	if(isFullmap)
-	{
-		ruiname1 = "objectPos"
-		ruiname2 = "objectAngles"
-	} else 
-	{
-		ruiname1 = "playerPos"
-		ruiname2 = "playerAngles"
-	}
-	
-	while(IsValid(player))
-	{
-		RuiSetFloat3( rui, ruiname1, Vector( player.GetOrigin().x + file.currentX_Offset, player.GetOrigin().y + file.currentY_Offset, 0 ) )
-		RuiSetFloat3( rui, ruiname2, Vector( player.CameraAngles().x, player.CameraAngles().y, 0 ) )
-		
-		WaitFrame()
-	}
-}
 
 array< string > SurvivorQuoteCatalog = [ //this is so bad maybe change it to datatable?
 	"",
@@ -1549,4 +1625,313 @@ void function FSHaloMod_KillStreak_FadeOut( var label, var label2, int xOffset =
 	Hud_MoveOverTime( label, currentPos.x + xOffset, currentPos.y + yOffset, duration )
 	
 	wait duration
+}
+
+void function fs_ServerMsgsToChatBox_BuildMessage( Type, ... )
+{
+	// clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+	
+	if( file.fs_newServerMsgsToChatBoxString == "" )
+		file.fs_newServerMsgsToChatBoxString += "[SERVER] "
+
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newServerMsgsToChatBoxString += format("%c", vargv[i] )
+	}
+	else if ( Type == 1 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newServerMsgsToChatBoxSubString += format("%c", vargv[i] )
+	}
+}
+
+void function fs_ServerMsgsToChatBox_ShowMessage( Width, Duration, ... )
+{
+	RunUIScript( "Open_FS_MsgsChatBox" )
+
+	string toSend = file.fs_newServerMsgsToChatBoxString
+	array separateLines = split(toSend, "\n")
+	int totalLines = separateLines.len()
+	
+	int highestcharts = -1
+	foreach( line in separateLines )
+	{
+		int thislinecharacters = 0
+		foreach( character in line )
+		{
+			thislinecharacters++
+		}
+		if( thislinecharacters > highestcharts )
+			highestcharts = thislinecharacters
+	}
+
+	float height = float( 40 * totalLines )
+	float width = 7.9 * highestcharts
+	RunUIScript( "FS_MsgsChatBox_SetText", file.fs_newServerMsgsToChatBoxString, width, height )
+
+	file.fs_newServerMsgsToChatBoxString = ""
+	file.fs_newServerMsgsToChatBoxSubString = ""
+}
+
+void function fs_NewBoxBuildMessage( Type, ... )
+{
+	// clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newMsgBoxString += format("%c", vargv[i] )
+	}
+	else if ( Type == 1 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+			file.fs_newMsgBoxSubString += format("%c", vargv[i] )
+	}
+}
+
+void function fs_NewBoxShowMessage( float duration )
+{
+	Flowstate_AddCustomScoreEventMessage(  file.fs_newMsgBoxString, duration )
+
+	file.fs_newMsgBoxString = ""
+	file.fs_newMsgBoxSubString = ""
+	// thread FS_NewBox_Msg( duration )
+}
+
+
+//Unused :C Cafe
+void function FS_NewBox_Msg( float duration = 3 )
+{
+	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
+	clGlobal.levelEnt.EndSignal( "FS_CloseNewMsgBox" )
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgBg" ), false )
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgText" ), false )
+			Hud_SetVisible( HudElement( "FS_IBMM_MsgSubText" ), false )
+
+			Hud_SetText( HudElement( "FS_IBMM_MsgText" ), "" )
+			Hud_SetText( HudElement( "FS_IBMM_MsgSubText" ), "" )
+			Hud_SetAlpha( HudElement( "FS_IBMM_MsgText" ), 255 )
+			Hud_SetAlpha( HudElement( "FS_IBMM_MsgSubText" ), 255 )
+
+			file.fs_newMsgBoxString = ""
+			file.fs_newMsgBoxSubString = ""
+		}
+	)
+	// printt( "trying to show message:", file.fs_newMsgBoxString, file.fs_newMsgBoxSubString )
+
+	Hud_SetText( HudElement( "FS_IBMM_MsgText"), file.fs_newMsgBoxString )
+	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), file.fs_newMsgBoxSubString )
+	
+	RuiSetImage( Hud_GetRui( HudElement( "FS_IBMM_MsgBg") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
+
+	Hud_ReturnToBasePos( HudElement( "FS_IBMM_MsgBg" ) )
+	Hud_SetSize( HudElement( "FS_IBMM_MsgBg" ), 0, 0 )
+
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgBg" ), true )
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgText" ), true )
+	Hud_SetVisible( HudElement( "FS_IBMM_MsgSubText" ), true )
+
+	Hud_ScaleOverTime( HudElement( "FS_IBMM_MsgBg" ), 1.35, 1.35, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	wait 0.15
+
+	Hud_ScaleOverTime( HudElement( "FS_IBMM_MsgBg" ), 1, 1, 0.20, INTERPOLATOR_SIMPLESPLINE)
+
+	wait duration - 0.6
+
+	UIPos currentPos = REPLACEHud_GetPos( HudElement( "FS_IBMM_MsgBg" ) )
+
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgBg" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgText" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_FadeOverTime( HudElement( "FS_IBMM_MsgSubText" ), 0, duration/2, INTERPOLATOR_ACCEL )
+	Hud_MoveOverTime( HudElement( "FS_IBMM_MsgBg" ), currentPos.x + 1000, currentPos.y + 0, 0.15 )
+
+	wait 0.24
+}
+
+void function FS_Scenarios_InitPlayersCards()
+{
+	file.allyTeamCards.clear()
+	file.enemyTeamCards.clear()
+
+	printt( "FS_Scenarios_InitPlayersCards" )
+	file.vsBasicImage = HudElement( "ScenariosVS" )
+	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterL" + i )
+		file.allyTeamCards.append( button )
+
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button, false )
+	}
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterR" + i )
+		file.enemyTeamCards.append( button )
+		
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button , false )
+	}
+	file.buildingTeam = true
+}
+
+void function FS_Scenarios_AddEnemyHandle( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( enemyPlayer ) )
+		return
+
+	// printt( "added handle for enemy team player", handle )
+	file.enemyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_AddAllyHandle( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity allyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( allyPlayer ) )
+		return
+
+	// printt( "added handle for ally team player", handle )
+	file.allyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_SetupPlayersCards()
+{
+	file.buildingTeam = false
+
+	foreach( int i, int handle in file.enemyTeamHandles )
+	{
+		if( i > file.enemyTeamCards.len() )
+			continue
+
+		thread function() : ( i, handle )
+		{
+			entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( enemyPlayer ) )
+				return
+
+			EndSignal( enemyPlayer, "OnDestroy" )
+
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.enemyTeamCards[i] ), "buttonText", enemyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.enemyTeamCards[i], true )
+		}()
+	}
+
+	foreach( int i, int handle in file.allyTeamHandles )
+	{
+		if( i > file.allyTeamCards.len() )
+			continue
+
+		thread function() : ( i, handle )
+		{
+			entity allyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( allyPlayer ) )
+				return
+
+			EndSignal( allyPlayer, "OnDestroy" )
+
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.allyTeamCards[i] ), "buttonText", allyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.allyTeamCards[i], true )
+		}()
+	}
+
+	if( file.enemyTeamHandles.len() > 0 && file.allyTeamHandles.len() > 0 )
+		FS_Scenarios_TogglePlayersCardsVisibility( true )
+}
+
+void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
+{
+	if( file.vsBasicImage != null )
+		Hud_SetVisible( file.vsBasicImage, show )
+
+	if( !show )
+	{
+		foreach( button in file.allyTeamCards )
+		{
+			Hud_SetVisible( button, show )
+		}
+
+		foreach( button in file.enemyTeamCards )
+		{
+			Hud_SetVisible( button, show )
+		}
+
+		file.allyTeamHandles.clear()
+		file.enemyTeamHandles.clear()
+		FS_Scenarios_InitPlayersCards()
+	}
+}
+
+void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
+{
+	foreach( int i, int handle in file.allyTeamHandles )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.allyTeamCards[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.allyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			return
+		}
+	}
+	
+	foreach( int i, int handle in file.enemyTeamHandles )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			return
+		}
+	}
+}
+
+void function FS_CreateTeleportFirstPersonEffectOnPlayer()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( IsValid( player.GetCockpit() ) )
+	{
+		int fxHandle = StartParticleEffectOnEntity( player.GetCockpit(), GetParticleSystemIndex( $"P_training_teleport_FP" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		EffectSetIsWithCockpit( fxHandle, true )
+	}
 }

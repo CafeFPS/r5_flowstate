@@ -1,0 +1,193 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"#WPN_TITAN_SWORD"
+	"shortprintname"							"#WPN_TITAN_SWORD_SHORT"
+	"description" 								"#WPN_TITAN_SWORD_DESC"
+	"longdesc"									"#WPN_TITAN_SWORD_LONGDESC"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+	
+	// "viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
+	// "playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
+	
+	// Models
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
+
+	"OnWeaponActivate"							"OnWeaponActivate_weapon_titan_sword"
+    "OnWeaponDeactivate"						"OnWeaponDeactivate_weapon_titan_sword"
+
+	"is_heirloom"								"0"
+
+	// Melee
+	"fire_rate"										"3"
+
+	"melee_angle"									"80"
+	"melee_range"									"100"
+
+	"melee_attack_animtime"							"0.5"
+	"melee_damage"									"30"
+	"melee_damage_heavyarmor"						"30"
+
+	"melee_knockback_velocity_magnitude"		    "150"
+
+	"melee_raise_recovery_animtime_normal"			"0.15"
+	"melee_raise_recovery_animtime_quick"			"0.15"
+	"melee_can_hit_humansized"						"1"
+	"melee_can_hit_titans"							"1" //ha
+	"melee_freezelook_on_hit"						"0.25"
+
+	//LUNGE
+	"melee_lunge_time"								"0.6"//"0.5"
+	"melee_lunge_target_range"						"75"//"250"
+    "melee_lunge_target_angle"						"45"//"60"
+    "melee_lunge_no_target_range"					"0"//"250.0"
+
+	"damage_flags"									"DF_MELEE | DF_KNOCK_BACK | DF_GIB | DF_EXPLOSION"
+	"impact_effect_table"							"titan_sword"
+	"impulse_force"   								"5000"
+
+	"deployfirst_time"								"1.25"
+
+	//
+    "ammo_suck_behavior"							"melee_weapons"
+    "viewkick_spring" 								"pistol"
+
+    "viewkick_pitch_base" 							"0.0"
+    "viewkick_pitch_random"   						"0.0"
+    "viewkick_pitch_softScale"						"0.0"
+    "viewkick_pitch_hardScale"						"0.0"
+
+    "viewkick_yaw_base"   							"0.0"
+    "viewkick_yaw_random" 							"0.0"
+    "viewkick_yaw_softScale"  						"0.0"
+    "viewkick_yaw_hardScale"  						"0.0"
+
+    "viewkick_roll_base"  							"0"
+    "viewkick_roll_randomMin" 						"0.0"
+    "viewkick_roll_randomMax" 						"0.0"
+    "viewkick_roll_softScale" 						"0.0"
+    "viewkick_roll_hardScale" 						"0.0"
+
+    //
+    "damage_rodeo" 									"100"
+    "aimassist_disable_hipfire"						"1"
+    "aimassist_disable_ads"							"1"
+
+    // Bob
+    "bob_cycle_time"  								"0.7"
+    "bob_vert_dist"   								"1.5"
+    "bob_horz_dist"   								"2.5"
+    "bob_max_speed"   								"150"
+    "bob_pitch"   									"1"
+    "bob_yaw" 										"0.80"
+    "bob_roll"										"-2.25"
+
+    // View Drift
+    "viewdrift_hipfire_stand_scale_pitch" 			"0.5"
+    "viewdrift_hipfire_crouch_scale_pitch"			"0.1"
+    "viewdrift_hipfire_air_scale_pitch"   			"0.1"
+    "viewdrift_hipfire_stand_scale_yaw"   			"0.5"
+    "viewdrift_hipfire_crouch_scale_yaw"  			"0.075"
+    "viewdrift_hipfire_air_scale_yaw" 				"0.075"
+    "viewdrift_hipfire_speed_pitch"   				"0.6"
+    "viewdrift_hipfire_speed_yaw" 					"0.5"
+
+    // Sway
+    "sway_rotate_attach"  							"SWAY_ROTATE"
+    "sway_min_x"  									"-0.3"
+    "sway_min_y"  									"-0.5"
+    "sway_min_z"  									"-0.5"
+    "sway_max_x"  									"0.3"
+    "sway_max_y"  									"0.5"
+    "sway_max_z"  									"0.1"
+    "sway_min_pitch"  								"-3"
+    "sway_min_yaw"									"-3.5"
+    "sway_min_roll"   								"-1"
+    "sway_max_pitch"  								"3"
+    "sway_max_yaw"									"3.5"
+    "sway_max_roll"   								"2"
+    "sway_translate_gain" 							"10"
+    "sway_rotate_gain"								"12"
+    "sway_move_forward_translate_x"   				"0"
+    "sway_move_forward_translate_z"   				"-0.5"
+    "sway_move_back_translate_x"  					"-2"
+    "sway_move_back_translate_z"  					"-1"
+    "sway_move_left_translate_y"  					"-1"
+    "sway_move_left_translate_z"  					"-0.5"
+    "sway_move_left_rotate_roll"  					"-1"
+    "sway_move_right_translate_y" 					"1"
+    "sway_move_right_translate_z" 					"-0.5"
+    "sway_move_right_rotate_roll" 					"2"
+    "sway_move_up_translate_z"						"-1"
+    "sway_move_down_translate_z"  					"1"
+    "sway_turn_left_rotate_yaw"   					"-2"
+    "sway_turn_right_rotate_yaw"  					"2"
+    "sway_turn_up_rotate_pitch"   					"2"
+    "sway_turn_down_rotate_pitch" 					"-2"
+
+	mods
+	{
+		super
+		{
+			"move_speed_modifier"                       "*1.2"
+		}
+
+		super_melee
+		{
+			"melee_attack_animtime"							"*0.8"
+		}
+
+		heavy_melee
+		{
+			"fire_rate"										"3"
+
+            "melee_angle"									"70"
+            "melee_range"									"125"
+
+            "melee_attack_animtime"							"1.0"
+            "melee_damage"									"60"
+            "melee_damage_heavyarmor"						"60"
+
+            "melee_raise_recovery_animtime_normal"			"0.15"
+            "melee_raise_recovery_animtime_quick"			"0.15"
+            "melee_can_hit_humansized"						"1"
+            "melee_can_hit_titans"							"1" //ha
+            "melee_freezelook_on_hit"						"0.25"
+
+            //LUNGE
+            "melee_lunge_time"								"0.1"//"0.5"
+            "melee_lunge_target_range"						"0"//"250"
+            "melee_lunge_target_angle"						"1"//"60"
+            "melee_lunge_no_target_range"					"0"//"250.0"
+		}
+
+		launcher
+		{
+			"fire_rate"										"3"
+			"melee_angle"									"60"
+			"melee_range"									"150"
+
+			"melee_attack_animtime"							"1.2"
+			"melee_damage"									"40`"
+			"melee_damage_heavyarmor"						"40"
+
+			"melee_raise_recovery_animtime_normal"			"0.5"
+			"melee_raise_recovery_animtime_quick"			"0.5"
+			"melee_can_hit_humansized"						"1"
+			"melee_can_hit_titans"							"1" //ha
+			"melee_freezelook_on_hit"						"0.35"
+
+			//LUNGE
+			"melee_lunge_time"								"1.0"
+			"melee_lunge_target_range"						"300"
+		    "melee_lunge_target_angle"						"45"
+		    "melee_lunge_no_target_range"					"300"
+		}
+	}
+}

@@ -243,6 +243,8 @@ void function CodeCallback_ServerVarChanged( string varName )
 	if ( !(varName in file._serverVarChangeCallbacks) )
 		return
 
+	// printt( "Server var changed:", varName )
+
 	foreach ( callbackFunc in file._serverVarChangeCallbacks[varName] )
 	{
 		thread callbackFunc()
@@ -298,6 +300,7 @@ void function InitEntityVars( entity ent )
 
 			foreach ( varName, value in _entityClassVars[className] )
 			{
+				// printt( "debug entity class var", varName, value )
 				ent._entityVars[varName] <- value
 			}
 		}
@@ -309,6 +312,9 @@ void function InitEntityVars( entity ent )
 		string className = ent.GetClassName()
 
 		foreach ( varName, value in _entityClassVars[className] )
+		{
+			// printt( "debug entity class var", varName, value )
 			ent._entityVars[varName] <- value
+		}
 	#endif
 }

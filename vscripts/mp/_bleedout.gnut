@@ -52,20 +52,20 @@ void function Bleedout_Init()
 
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
-
-	if(GameRules_GetGameMode() == SURVIVAL) //FIXME
+	
+	if( Gamemode() == eGamemodes.SURVIVAL ) //FIXME    ~mkos: what?
 		AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
 
 	PrecacheParticleSystem( FX_BLOODTRAIL )
 	PrecacheParticleSystem( $"P_drone_medic_shield_beam" )
 	PrecacheParticleSystem( $"P_drone_medic_shield" )
-	PrecacheParticleSystem( $"P_LL_med_drone_jet_loop" )
+	PrecacheParticleSystem( $"P_LL_med_drone_jet_loop" ) 
 	PrecacheParticleSystem( $"P_LL_med_drone_eye" )
 	PrecacheParticleSystem( $"P_LL_med_drone_jet_ctr_loop" )
 	PrecacheParticleSystem($"P_drone_shield_hit_enemy")
 
 	FlagInit( "BleedoutDebug", false )
-
+	
 }
 
 void function Bleedout_SetBleedoutEffects( entity target )
@@ -101,16 +101,16 @@ void function Bleedout_OnClientDisconnected( entity player )
 {
 	if( player in file.isBleeding )
 		delete file.isBleeding[ player ]
-
+	
 	if( player in file.hasSelfRes )
 		delete file.hasSelfRes[ player ]
-
+	
 	if( player in file.IsGettingFirstAidFrom )
 		delete file.IsGettingFirstAidFrom[ player ]
-
+	
 	if( player in file.IsGivingFirstAidTo )
 		delete file.IsGivingFirstAidTo[ player ]
-
+	
 	if( player in file.lastAttacker )
 		delete file.lastAttacker[ player ]
 }
@@ -130,10 +130,10 @@ void function Bleedout_AddCallback_OnPlayerGiveFirstAid( void functionref(entity
 	file.Callback_OnPlayerGiveFirstAid = callback
 }
 
-void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var damageInfo )
+void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 {
 	if(!IsValid(player) || !IsValid(attacker)) return
-
+	
 	//if the player is already bleeding don't restart bleeding logic.
 	if ( file.isBleeding[ player ] )
 		return
@@ -142,7 +142,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var 
 	player.Signal( "BleedOut_OnStartDying" )
 
 	file.lastAttacker[ player ] = attacker
-
+	
 	thread Bleedout_DeathProtection( player )
 
 	//for reference
@@ -150,11 +150,12 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var 
 	// const float BLEEDOUT_TIME_LV2 = 60.0
 	// const float BLEEDOUT_TIME_LV3 = 30.0
 	// const float BLEEDOUT_TIME_LV4 = 15.0
-
+	
 	player.SetPlayerNetInt( "bleedoutType",  EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) // 0 is BLEEDOUT_TIME_LV1. how many times have player died? why was EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ?? it doesn't make sense of you having better incap shield and you're dying quickly
 	player.SetHealth( 100 )
+	player.SetShieldHealth( 0 )
 	player.DisableMantle()
-
+	
 	if( IsValid( attacker ) && attacker.IsPlayer() )
 		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
 	else
@@ -163,17 +164,17 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker, var 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
 
 	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
-		file.Callback_OnPlayerStartBleedout( player, attacker, damageInfo )
+		file.Callback_OnPlayerStartBleedout( player, attacker, null )
 
 	// thread BloodTrail( player )
 	thread PlayerDying( player )
 	thread EnablePlayerRes( player )
-
+	
 	//Start selfhealing thread if enabled.
 	if ( Bleedout_GetSelfResEnabled( player ) )
 		thread EnablePlayerSelfRes( player )
-
-	if ( Bleedout_GetDeathOnTeamBleedout( player ) && GameRules_GetGameMode() != "fs_duckhunt" ) //FIXME
+	
+	if ( Bleedout_GetDeathOnTeamBleedout( player ) && Gamemode() != eGamemodes.fs_duckhunt ) //FIXME add signals
 		thread Bleedout_CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
@@ -193,11 +194,12 @@ void function Bleedout_DeathProtection( entity player )
 void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
 {
 	if(!IsValid(player)) return
-
+		
 	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
 	bool hasPlayed = false
 
-	HolsterAndDisableWeapons( player )
+	// HolsterAndDisableWeapons( player )
+	player.HolsterWeapon()
 
 	while( IsValid(player) && file.isBleeding[ player ] )
 	{
@@ -207,9 +209,11 @@ void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback t
 			thread function() : ( player )
 			{
 				player.SetVelocity( < 0, 0, 0 > )
-				HolsterAndDisableWeapons( player )
+				// HolsterAndDisableWeapons( player )
+				player.HolsterWeapon()
 				wait 1.0 // TODO: Find a function that can get animation duration
-				DeployAndEnableWeapons( player )
+				player.DeployWeapon()
+				// DeployAndEnableWeapons( player )
 			}()
 			PlayFirstPersonAnimation( player, "ptpov_downed_transition" )
 			hasPlayed = true
@@ -227,10 +231,10 @@ void function PlayerDying( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "BleedOut_OnRevive" )
 	player.EndSignal( "BleedOut_OnStartDying" )
-
+	
 	float bleedoutTime = Bleedout_GetBleedoutTime( player )
 	bool forceHolster = Bleedout_GetForceWeaponHolster( player )
-
+	
 	array<int> ids = []
 	ids.append( StatusEffect_AddEndless( player, eStatusEffect.move_slow, 0.25 ) )
 	ids.append( StatusEffect_AddEndless( player, eStatusEffect.turn_slow, 0.3 ) )
@@ -254,21 +258,24 @@ void function PlayerDying( entity player )
 		StorePilotWeapons( player )
 
 	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
+
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "incapshield" )
+	string ref = es.getEquippedRefFunc( player, "incapshield" )
+
 	string oldWeapon = ""
-	if ( shieldTier > 0 )
+
+	entity currentWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	if ( IsValid( currentWeapon ) )
 	{
-		entity currentWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		if ( IsValid( currentWeapon ) )
-		{
-			oldWeapon = currentWeapon.GetWeaponClassName()
-			player.TakeWeaponByEntNow( currentWeapon )
-		}
-
-		entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( shieldTier ) )
-
-		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		oldWeapon = currentWeapon.GetWeaponClassName()
+		player.TakeWeaponByEntNow( currentWeapon )
 	}
+
+	entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	if( ref != "" )
+		incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( EquipmentSlot_GetEquipmentTier( player, "incapshield" ) ) )
+
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 
 	OnThreadEnd(
 	function() : ( player, ids, forceHolster, bleedoutWp, oldWeapon )
@@ -427,7 +434,7 @@ void function PlayDocAnims(entity droneMedic, entity medicWall)
 //by Colombia
 {
 	droneMedic.EndSignal( "OnDestroy" )
-
+	
 	int fxID_VENT   = droneMedic.LookupAttachment( "VENT_BOT" )
 	int fxID_EYE    = droneMedic.LookupAttachment( "EYEGLOW" )
 	int fxID_RF     = droneMedic.LookupAttachment( "VENT_RF" )
@@ -441,7 +448,7 @@ void function PlayDocAnims(entity droneMedic, entity medicWall)
 	beamfx.DisableHibernation()
 	// EffectSetControlPointVector( beamfx, 0, droneMedic.GetOrigin()) //beam start point
 	EffectSetControlPointVector( beamfx, 1, owner.GetOrigin() + <0,0,45> + owner.GetForwardVector()*70 + owner.GetRightVector()*30) //beam endpoint
-
+	
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_EYE ), FX_PATTACH_POINT_FOLLOW, fxID_EYE )
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_CTR ), FX_PATTACH_POINT_FOLLOW, fxID_VENT )
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_CTR ), FX_PATTACH_POINT_FOLLOW, fxID_VENT )
@@ -449,7 +456,7 @@ void function PlayDocAnims(entity droneMedic, entity medicWall)
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_LF )
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_RR )
 	StartParticleEffectOnEntity_ReturnEntity( droneMedic, GetParticleSystemIndex( FX_DRONE_MEDIC_JET_LOOP ), FX_PATTACH_POINT_FOLLOW, fxID_LR )
-
+	
 	// Anim
 	float animTime = droneMedic.GetSequenceDuration( "lifeline_drone_revive" )
 	PlayAnim(droneMedic, "lifeline_drone_revive")
@@ -485,13 +492,13 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	string characterRef = ItemFlavor_GetHumanReadableRef( character )
 	entity medicWall
 	entity docdrone
-
+	
 	switch( characterRef )
 	{
 		case "character_lifeline":
 			healerAnimation = "mp_pt_light_revive_quick_healthy"
 			toResAnimation = "Pilot_doomed_revive_quick_injured"
-
+			
 			vector angles = AnglesCompose( playerHealer.GetAngles(), <0,180,0> )
 			medicWall = CreatePropDynamic( $"mdl/fx/medic_shield_wall.rmdl", playerHealer.GetOrigin() + <0,0,0> + playerHealer.GetForwardVector()*20 + playerHealer.GetRightVector()*30 , angles, SOLID_VPHYSICS )
 			medicWall.kv.contents = (CONTENTS_WINDOW)
@@ -508,24 +515,24 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 				medicWall.Hide()
 			//medicWall.SetMaxHealth( 350 )
 			//medicWall.SetHealth( 350 )
-
+			
 			EmitSoundOnEntity(medicWall, "Lifeline_ReviveShield_Sustain_3P")
-
+			
 			docdrone = CreatePropDynamic( $"mdl/props/lifeline_drone/lifeline_drone.rmdl", medicWall.GetOrigin() + <0,0,0>, angles, SOLID_VPHYSICS )
 			docdrone.SetOwner(playerHealer)
-
-			thread PlayDocAnims(docdrone, medicWall)
-
+			
+			thread PlayDocAnims(docdrone, medicWall) 
+			
 			if(!LIFELINE_RGB_SHIELD)
 				{
 				entity shieldfx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex($"P_drone_medic_shield"), medicWall.GetOrigin(), playerHealer.GetAngles() )
 				shieldfx2.SetParent(medicWall)
 				}
-
-			SetVisibleEntitiesInConeQueriableEnabled( medicWall, true )
+				
+			SetVisibleEntitiesInConeQueriableEnabled( medicWall, true )			
 			SetTeam( medicWall, TEAM_BOTH )
 			medicWall.SetPassThroughThickness( 0 )
-			medicWall.SetPassThroughDirection( -0.30 )
+			medicWall.SetPassThroughDirection( -0.30 )	
 				break
 		case "character_wattson":
 			healerAnimation = "Pilot_doomed_revive_shock_healthy"
@@ -539,18 +546,18 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 
 	if ( selfRes )
 		healerAnimation = "mp_pt_" + toResRigWeight + "_self_revive_crouch"
-
+	
 	float playbackRate = 1.0
-
-
+	
+	
 	float firstAidTime = playerHealer.GetSequenceDuration( healerAnimation )
-
-	if(GameRules_GetGameMode() == "fs_duckhunt")
+	
+	if( Gamemode() == eGamemodes.fs_duckhunt )
 	{
 		playbackRate = 1.35
 		firstAidTime = firstAidTime*0.65
 	}
-
+	
 	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( playerHealer )
 
 	float endTime = Time() + firstAidTime
@@ -568,14 +575,14 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 
 	playerToRes.SetPlayerNetEnt( "revivePlayerHealer", playerHealer )
 	playerToRes.SetPlayerNetTime( "reviveEndTime", Time() + firstAidTime )
-
+	
 	OnThreadEnd(
 	function() : ( playerHealer, playerToRes, attemptID, medicWall, characterRef, docdrone )
 		{
 			playerToRes.SetPlayerNetEnt( "revivePlayerHealer", null )
 			playerToRes.SetPlayerNetTime( "reviveEndTime", 0.0 )
 
-
+	
 			if ( IsValid( playerHealer ) )
 			{
 				switch( characterRef )
@@ -615,8 +622,8 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 						WaitFrame()
 						if(!IsValid(playerToRes)) return
 						playerToRes.UnforceStand()
-
-						if(GameRules_GetGameMode() == "fs_duckhunt")
+						
+						if( Gamemode() == eGamemodes.fs_duckhunt )
 						{
 							Highlight_SetFriendlyHighlight( playerToRes, "prophunt_teammate" )
 							GivePassive(playerToRes, ePassives.PAS_PILOT_BLOOD)
@@ -641,7 +648,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	reviverSequence.thirdPersonCameraVisibilityChecks = true
 	reviverSequence.playerPushable = true
 	reviverSequence.snapPlayerFeetToEyes = false
-
+	
 	FirstPersonSequenceStruct toResSequence
 	toResSequence.blendTime = 0.25
 	toResSequence.attachment = "ref"
@@ -657,15 +664,15 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 		reviverSequence.noParent = true
 		reviverSequence.useAnimatedRefAttachment = false
 	}
-
+	
 	thread FirstPersonSequence( reviverSequence, playerHealer )
-
+	
 	if ( !selfRes )
 	{
 		PlayBattleChatterLineToSpeakerAndTeam( playerHealer, "bc_revivingPlayer" )
 		thread FirstPersonSequence( toResSequence, playerToRes, playerHealer )
 	}
-
+	
 	if(playbackRate != 1.0)
 	{
 		playerHealer.Anim_SetPlaybackRate(playbackRate)
@@ -677,7 +684,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	playerToRes.SetHealth( playerToRes.GetMaxHealth() * firstAidHealPercent )
 	file.isBleeding[ playerToRes ] = false
 	file.lastAttacker[ playerToRes ] = svGlobal.worldspawn
-	if ( IsPilotEliminationBased() && GameRules_GetGameMode() != "fs_duckhunt" )
+	if ( IsPilotEliminationBased() && Gamemode() != eGamemodes.fs_duckhunt )
 		ClearPlayerEliminated( playerToRes )
 
 	if ( IsValid( file.Callback_OnPlayerGiveFirstAid ) )
@@ -721,7 +728,7 @@ void function BloodTrail( entity player )
 
 void function PlayerDiesFromBleedout( entity player, entity attacker )
 {
-	if( IsValid( player ) && GameRules_GetGameMode() != "fs_duckhunt")
+	if( IsValid( player ) && Gamemode() != eGamemodes.fs_duckhunt )
 		SetPlayerEliminated( player )
 
 
@@ -759,7 +766,9 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 	int team = player.GetTeam()
 
 	if( !Bleedout_AreThereAlivingMates( team, player ) )
+	{
 		foreach( targetPlayer in GetPlayerArrayOfTeam_Alive( team ) )
+		{
 			if( targetPlayer != excludePlayer )
 			{
 				wait 0.2
@@ -767,6 +776,8 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 				if( IsValid( targetPlayer ) && GetGameState() != eGameState.WinnerDetermined ) // Don't kill player after winner decided
 					PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
 			}
+		}
+	}
 }
 
 bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = null )

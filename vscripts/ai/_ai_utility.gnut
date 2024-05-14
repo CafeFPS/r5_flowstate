@@ -1,7 +1,191 @@
 untyped
 
 globalize_all_functions
+int bots = 1
 
+void function GiveGrappleTest()
+{
+	entity player = gp()[0]
+	player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+}
+
+void function PutPlayersInOneTeam()
+{
+	foreach( player in GetPlayerArray() )
+		SetTeam( player, 2 )
+}
+
+void function DEV_SpawnSkydivingBots( int amount = 1 )
+{
+	for( int i = 0; i<amount; i++)
+	{
+		ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+		wait 0.1
+	}
+	
+	// array<entity> circleLocations = GetEntArrayByScriptName( "jump_tower" )
+
+	// foreach( jumptower in circleLocations )
+	// {
+		// printt( jumptower, jumptower.GetOrigin() )
+		// if( jumptower.GetModelName() != $"mdl/props/zipline_balloon/zipline_balloon.rmdl" )	
+		// {
+			// circleLocations.fastremovebyvalue( jumptower ) // NavMesh_RandomPositions( gp()[0].GetOrigin(), HULL_HUMAN, amount + 1, 3000, 30000  )
+		// }
+	// }
+
+	wait 2
+	vector origin = gp()[0].GetOrigin() + AnglesToForward ( gp()[0].GetAngles() ) * 2000 + <0,0,4000>
+	foreach( int j, entity bot in GetPlayerArray() )
+	{
+		if( j == 0 )
+			continue
+
+		bot.p.IsBot = true
+
+		thread function () : ( origin, j, bot )
+		{
+			EndSignal( bot, "OnDeath" )
+			while( true )
+			{
+				bot.SetOrigin( origin )
+				thread PlayerSkydiveFromCurrentPosition( bot )
+				
+				WaitFrame()
+				WaitSignal( bot, "FreefallEnded" )
+				wait 0.1
+			}
+		}()
+	}
+}
+
+void function SpawnBot( bool customModel = false, bool startSkydive = false, bool makeAlly = false )
+{
+	ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+	
+	thread function () : ( customModel, startSkydive, makeAlly )
+	{
+		wait 0.25
+		entity newBot = GetPlayerArray()[ GetPlayerArray().len() - 1 ]
+		if( makeAlly )
+		{
+			SetTeam( newBot, gp()[0].GetTeam() )
+		}
+		newBot.p.IsBot = true
+		vector origin = GetPlayerCrosshairOrigin( gp()[0] )
+		newBot.SetOrigin( origin )
+		vector org2 = gp()[0].GetOrigin()
+		vector vec1 = org2 - origin
+		vector angles1 = VectorToAngles( vec1 )
+		newBot.SetAngles( <0, angles1.y, 0> )
+
+		if( startSkydive )
+		{
+			printt( "should start skydive" )
+			newBot.SetOrigin( newBot.GetOrigin() + <0,0,20000> )
+			thread PlayerSkydiveFromCurrentPosition( newBot )
+		}
+
+		if( !customModel )
+			return
+
+		entity player = newBot
+		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
+		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+		player.SetPlayerSettingsWithMods( characterSetFile, [] )
+
+		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		TakeAllPassives(player)
+
+		switch( bots )
+		{
+			case 1:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
+			break
+			
+			case 2:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
+			break
+			
+			case 3:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_amogino.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+
+			case 4:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+			break
+			
+			case 5:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+			break
+			
+			case 6:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+			break
+			
+			case 7:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+			break
+			
+			case 8:
+			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+			break
+
+			// case 9:
+			// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+			// player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+			// break
+			
+			// case 10:
+			// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+			// player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+			// break
+		}
+	}()
+	bots++
+}
+
+void function SpawnSword()
+{
+	SpawnGenericLoot( "mp_weapon_titan_sword", gp()[0].GetOrigin() + <0, 0, 50>, <-180, 0, 0>, 1 )
+}
+
+void function GiveSword( entity player )
+{
+	if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_MELEE )))
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+
+	player.GiveOffhandWeapon( "melee_titan_sword", OFFHAND_MELEE, [] )
+	entity weapon = player.GiveWeapon( "mp_weapon_titan_sword", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_titan_sword" )
+}
+
+void function printtalloffhands()
+{
+	for(int i=0;i<6;i++) //offhand range is [0,5]
+	{
+		if( IsValid( gp()[0].GetOffhandWeapon(i) ) )
+			printt(gp()[0].GetOffhandWeapon(i).GetWeaponClassName())
+		else
+			printt( "null in ", i )
+	}
+}
 void function SpawnFogParticleTest()
 {
 	// StartParticleEffectInWorld( GetParticleSystemIndex( $"P_env_room_fog_512" ), gp()[0].GetOrigin(), Vector(0,0,0) )
@@ -31,7 +215,42 @@ void function ForceReloadAnimTest()
 	weapon.OverrideNextAttackTime( Time() + (weapon.GetSequenceDuration("ACT_VM_DRAWFIRST") - weapon.GetSequenceDuration("ACT_VM_DRAWFIRST")*0.1) - 1 )
 	}catch(e420){}
 }
-	
+
+// useful for finding out what ents are in a level. Should only be used for debugging.
+int function TotalEntsInRadius( float radius = 1000 )
+{
+	array<entity> entities
+
+	entity ent = Entities_FindInSphere( null, gp()[0].GetOrigin(), radius )
+	string name
+	string name2
+	vector name3
+
+	for ( ;; )
+	{
+		if ( ent == null )
+			break
+
+		entities.append( ent )
+
+		name = ent.GetTargetName()
+		name2 = ent.GetScriptName()
+		name3 = ent.GetOrigin()
+
+		string strPostfix = ""
+		if ( name != "" )
+			strPostfix = " \"" + name + "\"" + name2 + "\"" + name3 + "\""
+
+		printl( ent + strPostfix )
+
+		ent = Entities_FindInSphere( ent, < 0, 0, 0 >, radius )
+	}
+
+	printl( "Total entities " + entities.len() )
+
+	return entities.len()
+}
+
 void function Flowstate_DebugGameEntities()
 //By @CafeFPS
 {
@@ -67,12 +286,12 @@ void function Flowstate_DebugGameEntities()
 	// finding ents by classname
 
 	array<entity> badents
-	entity startBadEnt = Entities_FindByClassname( null, "info_target" )
+	entity startBadEnt = Entities_FindByClassname( null, "script_ref" )
 
 	while( IsValid( startBadEnt ) )
 	{
 		badents.append( startBadEnt )
-		startBadEnt = Entities_FindByClassname( startBadEnt, "info_target" )
+		startBadEnt = Entities_FindByClassname( startBadEnt, "script_ref" )
 	}
 	
 	int i = 0
@@ -81,12 +300,12 @@ void function Flowstate_DebugGameEntities()
 		if( !IsValid( ent ) || ent.IsMarkedForDeletion() )
 			continue
 
-		
-		if( ent.GetScriptName() == "" && GetEditorClass( ent ) == "" || GetEditorClass( ent ) == "info_hover_tank_node" ) // fixear desde el lado de los hovertanks, una vez calculados los puntos a usar, eliminar el resto. //|| ent.GetScriptName() == "" ) //|| GetEditorClass( ent ) == "info_hover_tank_node" || 
-		{
-			ent.Destroy()
-			i++
-		}
+		printt( "detected ent: ", ent, ent.GetOrigin(), ent.GetModelName(), GetEditorClass( ent ), ent.GetScriptName(), ent.GetTargetName() )
+		// if( ent.GetScriptName() == "" && GetEditorClass( ent ) == "" || GetEditorClass( ent ) == "info_hover_tank_node" ) // fixear desde el lado de los hovertanks, una vez calculados los puntos a usar, eliminar el resto. //|| ent.GetScriptName() == "" ) //|| GetEditorClass( ent ) == "info_hover_tank_node" || 
+		// {
+			// ent.Destroy()
+			// i++
+		// }
 	}
 	
 	printt( "[+] Removed " + i + " ents.")
@@ -102,26 +321,27 @@ void function AnimNameTest()
 	// // // vm.SetModelScale(3.0)
 	
 
-	// try{
-	// // player.SetBodyModelOverride($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
-	// // //player.SetModel($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
+	try{
+	// player.SetBodyModelOverride($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
+	// //player.SetModel($"mdl/Humans/class/medium/pilot_medium_loba.rmdl")
+	vm = weapon.GetWeaponViewmodel()
+	vm.Anim_PlayOnly("animseq/weapons/bloodhound_axe/ptpov_axe_bloodhound/idle_crouch.rseq")
+	}catch(e420){}
 	
-	// vm.Anim_PlayOnly("animseq/weapons/revenant_grenade/ptpov_revenant_silencer/toss_hold.rseq")
-	// }catch(e420){}
-	
-	
+	// return
+// 3p Anim: animseq/humans/class/heavy/pilot_heavy_caustic/caustic_crouch_rifle.rseq
+ // 1p Anim: animseq/weapons/bloodhound_axe/ptpov_axe_bloodhound/idle_crouch.rseq
 	// entity weapon
 	// entity vm
     while(IsValid(player)){
-		// weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-		// if(IsValid(weapon))
-		// {
-			weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if(IsValid(weapon))
+		{
 			if( IsValid( weapon ) )
-			vm = weapon.GetWeaponViewmodel()
+				vm = weapon.GetWeaponViewmodel()
 			if( IsValid( vm ) )
-			printt("NAME: " + vm.GetCurrentSequenceName())
-		// }
+				printt("3p Anim: " + player.GetCurrentSequenceName() + "\n 1p Anim: " + vm.GetCurrentSequenceName() )
+		}
         WaitFrame()
     }
 	
@@ -1235,7 +1455,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	vector vec1 = org2 - origin
 	vector angles1 = VectorToAngles( vec1 )
 	angles1.x = 0
-
+	
 	entity dummy = CreateDummy( 99, origin, angles1 )
 	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
@@ -1281,7 +1501,8 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
 	dummy.SetEfficientMode( false )
-	
+	dummy.RemoveFromAllRealms()
+	dummy.AddToOtherEntitysRealms( player )
 	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
 		thread PlayAnimOnTrainingDummy(dummy)
 
@@ -1494,3 +1715,38 @@ bool function WithinEngagementRange( entity npc, vector origin )
 
 	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
 }
+
+/*
+void function SpawnLootbinCount( int count )
+{
+	thread(void function() : ( count )
+	{
+		entity player = GetPlayerArray()[0]
+		vector origin = GetPlayerCrosshairOrigin(player)
+		
+		for ( int i = 0; i < count; i++ )
+		{
+			float angle = 360.0 * ( i / float( count ) )
+			float spread = 5.0 * i
+			vector offset = Vector( cos( angle ), sin( angle ), 0 ) * spread;
+			
+			DEV_SpawnLootBinAtOffset(origin + offset, player)
+			//WaitFrame()
+		}
+	})()
+}
+
+void function DEV_SpawnLootBinAtOffset( vector origin, entity player )
+{
+    vector org1 = origin
+    vector org2 = player.GetOrigin()
+    vector vec1 = org2 - org1
+    vector angles1 = VectorToAngles( vec1 )
+    angles1.x = 0
+
+    entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
+    SetTargetName( ent_lootbin, "LootBin" )
+    ent_lootbin.SetOrigin( origin )
+    ent_lootbin.SetAngles( angles1 )
+}
+*/

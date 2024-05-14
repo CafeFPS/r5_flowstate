@@ -98,16 +98,37 @@ global struct GamemodeSettings
 // DO NOT CHANGE THESE VALUES AFTER THEY HAVE GONE LIVE
 global enum eGameModes
 {
-	invalid =							-1,
+invalid =             -1,
 
-	SURVIVAL_ID =						0,
-	TEAM_DEATHMATCH_ID =				1,
-	//GAMEMODE_SP_ID =					2,
+	SURVIVAL_ID =          0,
+	TEAM_DEATHMATCH_ID =   1,
+	GAMEMODE_SP_ID =       2,
+
+	MENUFALL_ID =          3,
+	CUSTOM_CTF_ID =        4,
+
+	FS_DM_ID =             5,
+	FS_AIMTRAINER_ID =     6,
+	FS_PROPHUNT_ID =       7,
+	FS_DUCKHUNT_ID =       8,
+	FS_INFECTED_ID =       9,
+	FS_SND_ID =            10,
 }
 
 const table<string, int> gameModesStringToIdMap = {
-	[ TEAM_DEATHMATCH ] 					= eGameModes.TEAM_DEATHMATCH_ID,
-	[ SURVIVAL ]							= eGameModes.SURVIVAL_ID,
+    [ TEAM_DEATHMATCH ]   = eGameModes.TEAM_DEATHMATCH_ID,
+	[ SURVIVAL ]          = eGameModes.SURVIVAL_ID,
+	[ FREELANCE ]         = eGameModes.GAMEMODE_SP_ID,
+
+	[ MENUFALL ]          = eGameModes.MENUFALL_ID,
+	[ CUSTOM_CTF ]        = eGameModes.CUSTOM_CTF_ID,
+
+	[ fs_dm ]             = eGameModes.FS_DM_ID,
+	[ fs_aimtrainer ]     = eGameModes.FS_AIMTRAINER_ID,
+	[ fs_prophunt ]       = eGameModes.FS_PROPHUNT_ID,
+	[ fs_duckhunt ]       = eGameModes.FS_DUCKHUNT_ID,
+	[ fs_infected ]       = eGameModes.FS_INFECTED_ID,
+	[ fs_snd ]            = eGameModes.FS_SND_ID,
 }
 
 struct
@@ -174,10 +195,16 @@ void function GameModes_Init()
 	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	
+	#if !UI
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		GameMode_AddScoreboardColumnData( gameMode, "Accuracy", PGS_DEATHS, 3 )
+	else
+		GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	#endif
 
 	#if !UI
-		if( GetCurrentPlaylistName() == "fs_dm_oddball" || GetCurrentPlaylistName() == "fs_haloMod_oddball" )
+		if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 			GameMode_AddScoreboardColumnData( gameMode, "Oddball Score", PGS_ASSISTS, 5 )
 		else
 			GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
@@ -195,28 +222,15 @@ void function GameModes_Init()
 	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
 	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
 	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "Captures", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "Returns", PGS_DEATHS, 2 )
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 	#if !UI
 		GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
 		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 3 )
 	#endif
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
-	
-	gameMode = map_editor_deprecated
-	GameMode_Create( gameMode )
-	GameMode_SetName( gameMode, "map_editor_deprecated" )
-	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
-	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
-	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
-	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
-	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
-	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
-	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
-	
+
 	gameMode = fs_aimtrainer
 	GameMode_Create( gameMode )
 	GameMode_SetName( gameMode, "fs_aimtrainer" )
@@ -271,6 +285,24 @@ void function GameModes_Init()
 	
 	#if DEVSCRIPTS
 	DevGameModes_Init()
+	#endif
+
+	gameMode = fs_snd
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "fs_snd" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "Planted", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
+	#if !UI
+		GameMode_AddScoreboardColumnData( gameMode, "Defused", PGS_ASSISTS, 2 )
+		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 2 )
 	#endif
 
 	#if SERVER || CLIENT

@@ -20,7 +20,11 @@ const asset DIRTY_BOMB_CANISTER_MODEL = $"mdl/props/caustic_gas_tank/caustic_gas
 const asset DIRTY_BOMB_CANISTER_EXP_FX = $"P_meteor_trap_EXP"
 const asset DIRTY_BOMB_CANISTER_FX_ALL = $"P_gastrap_start"
 
-const int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
+int DIRTY_BOMB_MAX_GAS_CANISTERS = 6
+const float DIRTY_BOMB_SPAWN_MIN = 1 			 //Min Spawn Delay
+const float DIRTY_BOMB_SPAWN_MAX = 2 			 //Max Spawn Delay
+const float DIRTY_BOMB_SPAWN_FORCE_MIN = 0.2 	 //Min Spawning Vel Force
+const float DIRTY_BOMB_SPAWN_FORCE_MAX = 1 	 //Max Spawning Vel Force
 
 const string DIRTY_BOMB_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep"
 
@@ -73,6 +77,11 @@ struct
 void function MpWeaponDirtyBomb_Init()
 {
 	DirtyBombPrecache()
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod6", false ) )
+	{
+		DIRTY_BOMB_MAX_GAS_CANISTERS = 300
+	}
 }
 
 void function DirtyBombPrecache()
@@ -213,6 +222,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	vector angles = placementInfo.angles
 
 	owner.EndSignal( "OnDestroy" )
+	owner.EndSignal( "CleanUpPlayerAbilities" )
 
 	int team = owner.GetTeam()
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
@@ -254,7 +264,6 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	string noSpawnIdx = CreateNoSpawnArea( TEAM_INVALID, team, origin, -1.0, DIRTY_BOMB_GAS_RADIUS )
 	SetObjectCanBeMeleed( canisterProxy, true )
 	SetVisibleEntitiesInConeQueriableEnabled( canisterProxy, false )
-	//thread TrapDestroyOnRoundEnd( owner, canisterProxy )
 
 	//make npc's fire at their own traps to cut off lanes
 	if ( owner.IsNPC() )
@@ -341,9 +350,72 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 			entToDelete.Destroy()
 		}
 	}
+	
+	if( GetCurrentPlaylistVarBool( "lsm_mod6", false ) )
+	{
+		while(true){
+			wait RandomFloatRange(DIRTY_BOMB_SPAWN_MIN,DIRTY_BOMB_SPAWN_MAX)
+
+			vector attackPos = placementInfo.origin + <0,0,80>
+			float angle = RandomFloatRange(0,360)
+			vector dir = Normalize( <deg_sin(angle),deg_cos(angle),1> )
+			entity weapon = owner.GetOffhandWeapon(OFFHAND_LEFT)
+
+			thread Mitosis(attackPos, dir, weapon, owner)
+		}
+	}
 
 	WaitForever()
 }
+
+void function Mitosis(vector attackPos, vector dir, entity weapon, entity owner)
+{
+	if(weapon == null || !IsValid(weapon))
+	{
+		print("Weapon Invalid?")
+		return
+	}
+
+	WeaponFireGrenadeParams fireGrenadeParams
+	fireGrenadeParams.pos = attackPos
+	fireGrenadeParams.vel = dir*RandomFloatRange(DIRTY_BOMB_SPAWN_FORCE_MIN,DIRTY_BOMB_SPAWN_FORCE_MAX)
+	fireGrenadeParams.angVel = <600, RandomFloatRange( -300, 300 ), 0>
+	fireGrenadeParams.fuseTime = 0
+	fireGrenadeParams.scriptTouchDamageType = damageTypes.explosive
+	fireGrenadeParams.scriptExplosionDamageType = damageTypes.explosive
+	fireGrenadeParams.clientPredicted = false
+	fireGrenadeParams.lagCompensated = true
+	fireGrenadeParams.useScriptOnDamage = true
+
+	entity deployable = weapon.FireWeaponGrenade( fireGrenadeParams )
+
+	#if SERVER
+		if ( deployable )
+		{
+			if ( IsValid( owner ) )
+			{
+				deployable.RemoveFromAllRealms()
+				deployable.AddToOtherEntitysRealms( owner )
+			}
+
+			//deployable.proj.savedAngles = <0, angles.y, 0>
+			Grenade_Init( deployable, weapon )
+			thread OnProjectilePlanted( deployable, OnDirtyBombPlanted )
+		}
+	#endif
+}
+
+#if SERVER
+//some reason using the global OnProjectilePlanted wasn't working so
+void function OnProjectilePlanted( entity projectile, void functionref(entity) deployFunc )
+{
+	projectile.EndSignal( "OnDestroy" )
+	projectile.WaitSignal( "Planted" )
+	projectile.proj.isPlanted = true
+	thread deployFunc( projectile )
+}
+#endif
+
 
 void function CausticTrap_OnDamaged_Activated(entity ent, var damageInfo)
 {
@@ -646,8 +718,21 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	canisterProxy.Signal( "DirtyBomb_Active" )
 
 	entity owner = canisterProxy.GetBossPlayer()
+	
+	owner.EndSignal( "CleanUpPlayerAbilities" )
+	
+	OnThreadEnd( function() : ( canisterProxy )
+		{
+			if( IsValid(canisterProxy) )
+			{
+				canisterProxy.Signal( "OnDestroy" )
+			}
+		}
+	)
 	//If the owner is alive we should use the owner, otherwise world is attacker
 	entity attacker = IsValid( owner ) ? owner : svGlobal.worldspawn
+	
+	canisterProxy.SetOwner( attacker )
 
 	if ( !IsValid( attacker ) )
 		return
@@ -671,7 +756,7 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	canisterProxy.SetDamageNotifications( true )
 	
 	RemoveEntityCallback_OnDamaged( canisterProxy, OnDirtyBombCanisterDamaged )
-	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged_Activated) 
+	AddEntityCallback_OnDamaged( canisterProxy, CausticTrap_OnDamaged_Activated ) 
 	
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_GAS, canisterProxy, canisterProxy.GetOrigin(), attacker.GetTeam(), attacker )
 	CreateGasCloudMediumAtOrigin( canisterProxy, attacker, canisterProxy.GetOrigin() + <0,0,DIRTY_BOMB_GAS_CLOUD_HEIGHT>, DIRTY_BOMB_GAS_DURATION )
@@ -752,8 +837,8 @@ bool function PickUpCanister( entity player )
 {
 	entity weapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 
-	string className = weapon.GetWeaponClassName()
-	if ( className != "mp_weapon_dirty_bomb" )
+	//string className = weapon.GetWeaponClassName()
+	if ( weapon.GetWeaponClassName() != "mp_weapon_dirty_bomb" )
 		return false
 
 	if ( Bleedout_IsBleedingOut( player ) )

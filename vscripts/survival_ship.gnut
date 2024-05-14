@@ -69,31 +69,6 @@ entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
 	return selectedMember
 }
 
-float function GetDropshipClearance( vector origin )
-{
-	vector endOrigin = origin - < 0, 0, 50000 >
-	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-	vector endPos = traceResult.endPos
-	float zDelta = ( origin.z - endPos.z )
-
-	return zDelta
-}
-
-vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
-{
-	vector result = start
-	float startClearance = GetDropshipClearance( start )
-
-	while ( GetDropshipClearance( result ) - startClearance < file.maxDelta )
-    {
-		result += forward * multiplier
-        if(result.x > REALBIG_CIRCLE_END_RADIUS || result.x < -REALBIG_CIRCLE_END_RADIUS || result.y > REALBIG_CIRCLE_END_RADIUS || result.y < -REALBIG_CIRCLE_END_RADIUS)
-            break
-    }    
-
-	return result
-}
-
 void function SURVIVAL_SetMapCenter( vector center )
 {
 	file.mapCenter = center
@@ -120,8 +95,33 @@ entity function Survival_CreatePlane( vector origin, vector angles )
 	return script_mover
 }
 
+float function GetDropshipClearance( vector origin )
+{
+	vector endOrigin = origin - < 0, 0, 50000 >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector endPos = traceResult.endPos
+	float zDelta = ( origin.z - endPos.z )
+
+	return zDelta
+}
+
+vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
+{
+	vector result = start
+	float startClearance = GetDropshipClearance( start )
+
+	while ( GetDropshipClearance( result ) - startClearance < file.maxDelta )
+    {
+		printt( "Dropship clearence ", GetDropshipClearance( result ), startClearance, GetDropshipClearance( result ) - startClearance, file.maxDelta )
+		result += forward * multiplier
+        if(result.x > REALBIG_CIRCLE_END_RADIUS || result.x < -REALBIG_CIRCLE_END_RADIUS || result.y > REALBIG_CIRCLE_END_RADIUS || result.y < -REALBIG_CIRCLE_END_RADIUS)
+            break
+    }    
+
+	return result
+}
 // Why does this work?
-array<vector> function Survival_GeneratePlaneFlightPath()
+array<vector> function Survival_GeneratePlaneFlightPath() //Modified by @CafeFPS
 {
 	const float CENTER_DEVIATION = 2.0
 	const float POINT_FINDER_MULTIPLIER = 200
@@ -133,10 +133,16 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
 	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
 
-	vector startPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
-	vector endPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
+	vector startPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward*45000 ) //TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
+	vector endPos = ClampToWorldspace( dropshipCenterPoint - dropshipMovingForward*45000 ) // TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
+	
+	// #if DEVELOPER
+	// DebugDrawSphere( startPos, 128, 255, 255, 255, true, 999.0 )
+	// DebugDrawSphere( endPos, 128, 255, 0, 255, true, 999.0 )
+	// startPos = TraceInBoundPoint( startPos, AnglesToForward( VectorToAngles( startPos - endPos ) ), 5000 )
+	// #endif
 
-    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
+    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
 	float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
 	float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
     
@@ -152,11 +158,17 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 
     startPos = <startPos.x + (-dropshipMovingForward.x * velocity * DROP_WAIT_TIME), startPos.y + (-dropshipMovingForward.y * velocity * DROP_WAIT_TIME), startPos.z>
     endPos = <endPos.x + (dropshipMovingForward.x * velocity * DROP_TIMEOUT_TIME), endPos.y + (dropshipMovingForward.y * velocity * DROP_TIMEOUT_TIME), endPos.z>
-	
 
 	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
 	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
 	// printt( "Survival_GeneratePlaneFlightPath: dropshipMovingAngle", dropshipMovingAngle )
+	// printt( "Survival_GeneratePlaneFlightPath: dropship distance", Distance2D(endPos, startPos) )
+
+	// #if DEVELOPER
+	// DebugDrawSphere( startPos, 512, 0, 255, 255, true, 999.0 )
+	// DebugDrawSphere( endPos, 512, 255, 0, 255, true, 999.0 )
+	// DebugDrawLine( startPos, endPos, 255, 0, 0, true, 999.0 )
+	// #endif
 
 	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
 }
@@ -240,7 +252,7 @@ void function CommonPlayerDropLines(entity player)
 
 void function GiveBasicSurvivalItems( entity player )
 {
-	if( !IsValid( player ) )
+	if( !IsValid( player ) || Playlist() == ePlaylists.fs_scenarios )
 		return
 	
 	//add white shield, white knockdown shield, white helmet, two syringes and two cells

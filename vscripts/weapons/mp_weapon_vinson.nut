@@ -18,6 +18,9 @@ global function OnWeaponZoomOut_HaloModMagnum
 global function OnWeaponZoomIn_HaloModSniper
 global function OnWeaponZoomOut_HaloModSniper
 
+global function OnWeaponZoomIn_ModdedPistol
+global function OnWeaponZoomOut_ModdedPistol
+
 #if CLIENT
 global function FS_ForceDestroyCustomAdsOverlay
 global function FS_ForceDestroyCustomAdsOverlay_Callback
@@ -55,7 +58,7 @@ void function OnWeaponActivate_HaloAR( entity weapon )
 void function OnWeaponDeactivate_HaloAR( entity weapon )
 {
 	#if CLIENT
- 	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+ 	if( !Flowstate_IsHaloMode() )
 	{
 		Minimap_EnableDraw()
 	}
@@ -193,7 +196,7 @@ void function OnWeaponZoomIn_HaloModBattleRifle( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -221,7 +224,7 @@ void function OnWeaponZoomOut_HaloModBattleRifle( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
@@ -250,7 +253,7 @@ void function OnWeaponZoomIn_HaloModMagnum( entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -278,7 +281,7 @@ void function OnWeaponZoomOut_HaloModMagnum( entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
@@ -307,7 +310,7 @@ void function OnWeaponZoomIn_HaloModSniper(  entity weapon )
 
 	weapon.HideWeapon()
 	
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_DisableDraw()
 	}
@@ -335,10 +338,80 @@ void function OnWeaponZoomOut_HaloModSniper(  entity weapon )
 
 	weapon.ShowWeapon()
 
-	if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	if( !Flowstate_IsHaloMode() && MapName() == eMaps.mp_flowstate )
 	{
 		Minimap_EnableDraw()
 	}
+	
+	//Show the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", false )
+	PlayerHudSetWeaponInspect( false )
+	WeaponStatusSetWeaponInspect( false )
+	#endif
+
+	weapon.w.isInAdsCustom = false
+}
+
+void function OnWeaponZoomIn_ModdedPistol(  entity weapon )
+{
+	if( weapon.w.isInAdsCustom )
+		return
+
+	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	asset overlayToShow = $"rui/flowstate_custom/modded_pistol_overlay"
+	
+	foreach( mod in weapon.GetMods() )
+	{
+		if( mod == "optic_cq_threat" )
+		{
+			overlayToShow = $"rui/flowstate_custom/modded_pistol_overlay_threat"
+			continue
+		}
+	}
+
+	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
+	RuiSetImage( Hud_GetRui( BRAds ), "basicImage", overlayToShow )
+	Hud_SetVisible( BRAds, true )
+
+	weapon.HideWeapon()
+	
+	//use Flowstate_IsHaloMode() ~mkos
+	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// {
+		Minimap_DisableDraw()
+	// }
+	
+	//Hide the HUD.
+	var gamestateRui = ClGameState_GetRui()
+	RuiSetBool( gamestateRui, "weaponInspect", true )
+	PlayerHudSetWeaponInspect( true )
+	WeaponStatusSetWeaponInspect( true )
+	#endif
+	
+	weapon.w.isInAdsCustom = true
+}
+
+void function OnWeaponZoomOut_ModdedPistol(  entity weapon )
+{
+	if( !weapon.w.isInAdsCustom )
+		return
+
+	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
+	Hud_SetVisible( BRAds, false )
+
+	weapon.ShowWeapon()
+
+	//use Flowstate_IsHaloMode() ~mkos
+	// if( !GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) && GetMapName() == "mp_flowstate" )
+	// {
+		Minimap_EnableDraw()
+	// }
 	
 	//Show the HUD.
 	var gamestateRui = ClGameState_GetRui()
@@ -375,7 +448,7 @@ void function FS_ForceDestroyCustomAdsOverlay()
 
 void function FS_ForceDestroyCustomAdsOverlay_Callback( entity attacker, float healthFrac, int damageSourceId, float recentHealthDamage )
 {
-	if( GameRules_GetGameMode() == "fs_dm" )
+	if( Gamemode() == eGamemodes.fs_dm )
 		return
 
 	printt( "You died! Removing custom overlay and restoring HUD visibility. - From callback." )

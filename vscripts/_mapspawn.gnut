@@ -113,7 +113,7 @@ global struct SvGlobals
 	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
 
 	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
-	table<string, void functionref( entity player, array<string>args )> clientCommandCallbacksNew
+	table<string, array< void functionref( entity player, array<string>args ) > > clientCommandCallbacksNew
 	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
 
 	bool allowPointsOverLimit = false
@@ -197,7 +197,7 @@ struct{
 }file
 
 void function CodeCallback_MapSpawn() // original script entry point
-{
+{	
 	ShWeapons_LevelInit()
 	//seterrorhandler(void function() {})
 	//ScriptCompilerTest()
@@ -320,8 +320,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
-	// PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
-	// PrecacheWeapon( $"melee_boxing_ring")
 	PrecacheWeapon( $"mp_weapon_throwingknife" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"melee_bolo_sword" )
@@ -334,26 +332,27 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
 	PrecacheWeapon( $"mp_ability_emote_projector" )
+	PrecacheWeapon( $"mp_weapon_3030" )
+	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
+	PrecacheWeapon( $"melee_vctblue" )
 
-	switch(GameRules_GetGameMode())
+	switch( GameRules_GetGameMode() )
 	{
-		case "fs_prophunt":
+		case CUSTOM_CTF:
+			PrecacheWeapon( $"melee_flagpole" )
+			PrecacheWeapon( $"mp_weapon_flagpole_primary" )
+			break
+		case fs_prophunt:
 			PrecacheWeapon( $"mp_weapon_flashbang_fakeultimate" )
 			PrecacheWeapon( $"mp_weapon_changeprops_fakeultimate" )
 			break
-		case "fs_dm":
+		case fs_dm:
 			break
 		case fs_aimtrainer:
-			PrecacheWeapon( $"mp_weapon_clickweapon")
-			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			break
-		case "map_editor_deprecated":
-			PrecacheWeapon( $"mp_weapon_editor" )	
 		default:
 			LoadModelsFromEditor()
 
-			PrecacheWeapon( $"mp_weapon_clickweapon")
-			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			//PrecacheWeapon( $"mp_weapon_grenade_gravity" )			
 			break
 	}
@@ -364,14 +363,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 		LoadMovementMap()
 	}
 
-	if(GameRules_GetGameMode() == "map_editor_deprecated" )
-		PutLoadedPropsIntoSaveArray() //needs to be called after the props were loaded
-	
 	PrecacheWeapon( $"mp_ability_cloak" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
-	//PrecacheWeapon( $"mp_weapon_sentinel" ) //sights don't work, it's bad
 	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
+	PrecacheWeapon( $"mp_weapon_melee_boxing_ring" )
+	PrecacheWeapon( $"melee_boxing_ring" )
 
 	PrecacheModel( $"mdl/Humans/pilots/w_blisk.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_blisk.rmdl" )
@@ -379,6 +376,39 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_cj.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_gojo.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_naruto.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
+	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_marvin.rmdl" )
+	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_arrows_mn.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/evac_tower_balloon.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/evac_tower_weight.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
+	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+
+	PrecacheWeapon( $"melee_titan_sword" )
+	PrecacheWeapon( $"mp_weapon_titan_sword" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{
@@ -386,7 +416,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheWeapon( $"melee_oddball" )
 	}
 
-	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	if( Flowstate_IsHaloMode() )
 	{
 		PrecacheParticleSystem( $"P_snow_atmo_512" )
 		PrecacheWeapon( $"mp_ability_grapple_master_chief" )
@@ -422,35 +452,16 @@ void function CodeCallback_MapSpawn() // original script entry point
 	}
 
 	#if DEVELOPER
-	if( GetCurrentPlaylistName() == "survival_dev" && GetMapName() == "mp_flowstate" )
-	{
-		PrecacheModel( $"mdl/custom_maps/mp_rr_lockout.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_anillo.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion1.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion2.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion3.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion4.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion5.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion6.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion7.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion8.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion9.rmdl" )
-		PrecacheModel( $"mdl/custom_maps/mp_rr_chill/mp_rr_chill_seccion10.rmdl" )
-		
-		RegisterSignal( "FS_ForceDestroyAllLifts" )
-		//	SpawnLockout()
-		//	SpawnCyberdyne()
-		SpawnChill()
-	}
+		#if LISTEN_SERVER
+		SetConVarInt( "sv_onlineAuthEnable", 0 )
+		#endif
+	SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
+	#endif
 	
-	#if LISTEN_SERVER
-	SetConVarInt( "sv_onlineAuthEnable", 0 )
-	#endif
-	#endif
-
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 	
+	//Server only init for custom stuff
 	switch( GetCurrentPlaylistName() )
 	{
 		case "fs_fallingforever":
@@ -468,13 +479,66 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "fs_mantlejumppractice":
 		mantlejumpmap_init()
 		break
-	
+
+		case "fs_firstmovementmappractice":
+		Firstmap_init()
+		break
+
+		case "fs_gymmovementmappractice":
+		Gymmovementmap_init()
+		break
+		
+		case "fs_lgduels_1v1":
 		case "fs_1v1":
-		thread FS_TrackPlayersPositionInScoreboard()
+		
+		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash
+			thread FS_TrackPlayersPositionInScoreboard()
 		break
 	}
+	
+	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
 }
 
+const array<string> InvalidModesForTrackScoreBoard = //const values
+[
+	SURVIVAL,
+	MENUFALL,
+	CUSTOM_CTF,
+	TEAM_DEATHMATCH,
+	fs_prophunt,
+	fs_duckhunt,
+	fs_infected	,
+]
+
+void function FS_RestartServerAfterSomeTimeWithoutPlayers()
+{
+	int timeWithoutPlayers
+	int previousPlayerCount
+	int timeToWaitWithoutPlayers = GetCurrentPlaylistVarInt( "flowstate_seconds_to_wait_without_players_before_restarting", 3600 )
+
+	while( true )
+	{
+		int playerCount = GetPlayerArray().len()
+		
+		if( playerCount == 0 && previousPlayerCount == 0 )
+		{
+			timeWithoutPlayers++
+		} else
+		{
+			timeWithoutPlayers = 0
+		}
+		
+		if( timeWithoutPlayers >= timeToWaitWithoutPlayers )
+		{
+			Warning( "Timeout without players has been reached - Reloading server to the same map" )
+			GameRules_ChangeMap( GetMapName(), GetCurrentPlaylistName() )
+			break
+		}
+
+		previousPlayerCount = playerCount
+		wait 1
+	}
+}
 void function FS_TrackPlayersPositionInScoreboard()
 {
 	array<entity> players
@@ -496,30 +560,40 @@ void function FS_TrackPlayersPositionInScoreboard()
 			i++
 		}
 		
-		wait 0.25
+		wait 1
 	}
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "VModEnable" || args[0] == "vban" ) return
+	if( !IsCommandsEnabled( player ) ) return 
+	if( args[0] == "VModEnable" || args[0] == "vban" ) return
 	
+	#if DEVELOPER
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
 		foreach( key, value in args )
 			printl( key + " : " + value )
 		printl( "############ ClientCommand End" )
+	#endif
 
 	string commandString = args.remove( 0 )
 
 	//TODO: Track down Why VModEnable is being called from code?
 
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
-	if(commandString in svGlobal.clientCommandCallbacksNew)
+	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
-		printt("CodeCallback_ClientCommand", commandString)
-		svGlobal.clientCommandCallbacksNew[ commandString ]( player, args )
+		#if DEVELOPER 
+			printt( "CodeCallback_ClientCommand", commandString )
+		#endif 
+		
+		foreach ( callbackFunc in svGlobal.clientCommandCallbacksNew[ commandString ] )
+		{
+			callbackFunc( player, args )
+		}
+		
 		return true
 	}
 	if ( commandString in svGlobal.clientCommandCallbacks  )
@@ -528,7 +602,9 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
+		#if DEVELOPER
+			printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
+		#endif
 		return false
 	}
 }

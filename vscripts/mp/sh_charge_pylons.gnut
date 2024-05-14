@@ -1,0 +1,251 @@
+//By @CafeFPS
+
+global function ChargePylons_Init
+global function SetButtonNoBusyDelayed
+
+global const asset CHARGE_PYLON_PING_MODEL = $"mdl/test/davis_test/charge_pylong_ping_proxy.rmdl"
+
+struct
+{
+	#if SERVER
+	array<entity> allTriggers
+	#endif
+
+	float chargePylonUseTime = 5.0
+} file
+
+void function ChargePylons_Init()
+{
+	if ( GetCurrentPlaylistVarBool( "charge_pylons_enabled", true ) )
+	{
+		#if CLIENT
+			AddCreateCallback( "prop_dynamic", ChargePylon_Cl_SetButtonUsable )
+		#endif
+
+		#if SERVER
+			AddSpawnCallback( "prop_dynamic", ChargePylon_SetButtonUsable )
+			AddSpawnCallback( "trigger_multiple", ChargePylonTrigger_SetUp )
+		#endif
+
+		file.chargePylonUseTime = GetCurrentPlaylistVarFloat( "charge_pylons_use_time_override", 5.0 )
+	}
+}
+
+#if CLIENT
+void function ChargePylon_Cl_SetButtonUsable( entity prop )
+{
+	if ( prop.GetScriptName() == "charge_pylon_button" )
+	{
+		ChargePylon_SetButtonUsable( prop )
+	}
+}
+#endif
+
+const int CHARGEPYLON_MAX_VIEW_ANGLE_TO_AXIS = 60
+void function ChargePylon_SetButtonUsable( entity button )
+{
+	#if SERVER
+		if ( button.GetScriptName() != "charge_pylon_button" )
+		return
+
+	button.SetSkin(0) // green
+	button.kv.solid = 0 //fixes crash
+	button.SetUsable()
+	button.SetUsableByGroup( "pilot" )
+	button.AddUsableValue( CHARGEPYLON_MAX_VIEW_ANGLE_TO_AXIS )
+	button.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	#endif // SERVER
+
+	AddCallback_OnUseEntity( button, ChargePylon_OnUse )
+	SetCallback_CanUseEntityCallback( button, ChargePylon_CanUse )
+
+	#if CLIENT
+	AddEntityCallback_GetUseEntOverrideText( button, ChargePylon_TextOverride )
+	#endif // CLIENT
+}
+
+void function ChargePylon_OnUse( entity panel, entity user, int useInputFlags )
+{
+	if ( !(useInputFlags & USE_INPUT_LONG) )
+		return
+
+	ExtendedUseSettings settings
+
+	settings.duration = file.chargePylonUseTime
+	settings.useInputFlag = IN_USE_LONG
+	settings.successSound = "lootVault_Access"
+
+	#if CLIENT
+		settings.loopSound = "survival_titan_linking_loop"
+		settings.displayRuiFunc = DisplayRUIForChargePylonExtdUse
+		settings.displayRui = $"ui/health_use_progress.rpak"
+		settings.icon = $"rui/hud/gametype_icons/survival/data_knife"
+		settings.hint = "Activating Charge Tower"
+	#endif
+		
+	#if SERVER
+		settings.holsterWeapon = true
+		settings.movementDisable = true
+		settings.exclusiveUse = true
+		settings.successFunc = ChargePylonUseSuccess
+	#endif // SERVER
+
+	thread ExtendedUse( panel, user, settings )
+}
+
+#if CLIENT
+string function ChargePylon_TextOverride( entity panel )
+{
+	return "Hold %use% to use"
+}
+
+void function DisplayRUIForChargePylonExtdUse( entity ent, entity player, var rui, ExtendedUseSettings settings )
+{
+	DisplayRuiForLootVaultPanel_Internal( rui, settings.icon, Time(), Time() + settings.duration, settings.hint )
+}
+
+void function DisplayRuiForLootVaultPanel_Internal( var rui, asset icon, float startTime, float endTime, string hint )
+{
+	RuiSetBool( rui, "isVisible", true )
+	RuiSetImage( rui, "icon", icon )
+	RuiSetGameTime( rui, "startTime", startTime )
+	RuiSetGameTime( rui, "endTime", endTime )
+	RuiSetString( rui, "hintKeyboardMouse", hint )
+	RuiSetString( rui, "hintController", hint )
+}
+#endif
+
+bool function ChargePylon_CanUse( entity user, entity button )
+{
+	if ( Bleedout_IsBleedingOut( user ) )
+		return false
+
+	if ( user.ContextAction_IsActive() )
+		return false
+
+	entity activeWeapon = user.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	if ( IsValid( activeWeapon ) )
+	{
+		var offhandAllowsPickups = activeWeapon.GetWeaponInfoFileKeyField("offhand_allow_player_interact")
+		
+		if ( activeWeapon.IsWeaponOffhand() && !offhandAllowsPickups)
+			return false
+	}
+
+	if ( button.e.isBusy )
+		return false
+
+	return true
+}
+
+#if SERVER
+void function ChargePylonTrigger_SetUp( entity trigger )
+{
+	if( !IsValid( trigger ) || trigger.GetScriptName() != "capacitor_charge_field" )
+		return
+
+	file.allTriggers.append( trigger )
+}
+
+entity function ChargePylon_GetTriggerForButton( entity button ) 
+{
+	foreach( trigger in file.allTriggers )
+		foreach( link in trigger.GetLinkEntArray() )
+			if( link == button )
+				return trigger
+
+	return null
+}
+
+entity function ChargePylon_GetPropForTrigger( entity trigger ) 
+{
+	foreach( link in trigger.GetLinkEntArray() )
+		if( link.GetScriptName()  == "charge_pylon_battery_geo" )
+			return link
+
+	return null
+}
+
+entity function ChargePylon_GetMoverForTrigger( entity trigger ) 
+{
+	foreach( link in trigger.GetLinkEntArray() )
+		if( link.GetClassName() == "script_mover" )
+			return link
+
+	return null
+}
+
+entity function ChargePylon_GetEmptyPosTargetForTrigger( entity trigger )
+{
+	foreach( link in trigger.GetLinkEntArray() )
+		if( link.GetScriptName() == "empty_pos_target" )
+			return link
+
+	return null
+}
+
+entity function ChargePylon_GetFullPosTargetForTrigger( entity trigger )
+{
+	foreach( link in trigger.GetLinkEntArray() )
+		if( link.GetScriptName() == "full_pos_target" )
+			return link
+
+	return null
+}
+
+void function ChargePylonUseSuccess( entity button, entity player, ExtendedUseSettings settings )
+{
+	button.SetSkin(1)
+
+	entity trigger = ChargePylon_GetTriggerForButton( button )
+
+	foreach( sPlayer in trigger.GetTouchingEntities() )
+		if( trigger.IsTouching( sPlayer ) ) //redudant?
+		{
+			ChargePylon_RechargePlayerOffhand( player )
+			printt(player.GetPlayerName(), "is touching trigger: ", trigger, " - should reload ultimate")
+		}
+
+	thread ChargePylon_StartPropMovement_Thread( trigger )
+}
+
+void function ChargePylon_StartPropMovement_Thread( entity trigger )
+{
+	vector emptyPos = ChargePylon_GetEmptyPosTargetForTrigger( trigger ).GetOrigin()
+	vector fullPos = ChargePylon_GetFullPosTargetForTrigger( trigger ).GetOrigin()
+
+	entity prop = ChargePylon_GetPropForTrigger( trigger )
+	entity mover = ChargePylon_GetMoverForTrigger( trigger )
+
+	prop.SetParent( mover )
+	mover.NonPhysicsMoveTo( emptyPos, 0.5, 0.5, 0.0  )
+	wait 0.5
+	mover.NonPhysicsMoveTo( fullPos, 20, 0.0, 0.0  )
+	// printt( "Debug Movement: ", emptyPos, fullPos, prop, mover )
+	
+}
+
+void function ChargePylon_RechargePlayerOffhand( entity player )
+{
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_INVENTORY )))
+		player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+	// if(IsValid(player.GetOffhandWeapon( OFFHAND_LEFT ))){
+		// player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+		
+		// //Fix for grapple not recharging after grappling server created props
+		// player.SetSuitGrapplePower(100)
+	// }
+}
+
+#endif
+
+void function SetButtonNoBusyDelayed( entity button, entity player)
+{
+	wait 21
+	button.e.isBusy = false
+
+	#if SERVER
+	button.SetSkin(0)
+	#endif
+}

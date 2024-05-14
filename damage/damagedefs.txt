@@ -398,6 +398,20 @@ DamageDefs
     	"impact_effect_table"		"exp_creeping_barrage" //exp_artillery_lg
     }
 
+    damagedef_tank_bombardment_detcord_explosion
+    {
+       	"damage" 					"2"
+       	"damage_heavy_armor"		"2"
+       	"inner_radius"				"400"
+       	"radius"					"400"
+       	"impulse_force"				"20000"
+       	"explosion_flags"			"SF_ENVEXPLOSION_UPWARD_FORCE"
+
+       	"obituary"					"#DEATH_CREEPING_BARRAGE"
+       	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+       	"impact_effect_table"		"exp_plasma_LG"
+    }
+
     damagedef_creeping_bombardment_detcord_explosion
     {
        	"damage" 					"40"

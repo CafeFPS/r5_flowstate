@@ -1,0 +1,493 @@
+//script init:
+global function PlayLists_Mapnames_Gamemodes_Init
+
+//public:
+global function mAssert
+global function MapName
+global function Playlist
+global function Gamemode
+
+//utility:
+global function AllMapsArray
+global function AllGamemodesArray
+global function AllPlaylistsArray
+
+//const:
+global const PRINT_GAMEMODE_DEBUGS = true
+
+//mode functions:
+global function is1v1GameType
+global function Flowstate_PassivesAllowedForMode
+global function Flowstate_IsTrackerSupportedMode
+
+
+////////////////////////////////////////////////////////////////////////////////////mkos//
+//																						//
+// 								MAPNAME / PLAYLIST INIT									//
+//																						//
+//////////////////////////////////////////////////////////////////////////////////////////
+
+global enum eMaps
+{
+	mp_rr_arena_composite, //0
+	mp_rr_aqueduct, //1
+	mp_rr_canyonlands_staging, //2
+	mp_rr_canyonlands_64k_x_64k, //3
+	mp_rr_canyonlands_mu1, //4
+	mp_rr_canyonlands_mu1_night, //5
+	mp_rr_desertlands_64k_x_64k, //6
+	mp_rr_desertlands_64k_x_64k_nx, //7
+	mp_rr_desertlands_64k_x_64k_tt, //8
+	mp_rr_party_crasher, //9
+	mp_rr_arena_skygarden, //10
+	mp_rr_ashs_redemption, //11
+	mp_rr_aqueduct_night, //12
+	mp_rr_party_crasher_new, //13
+	mp_rr_arena_empty, //14
+	mp_flowstate, //15
+	mp_rr_olympus_mu1, //16
+	mp_rr_thepit, //17
+	mp_rr_construct_night, //18
+	mp_lobby, //19
+	mp_rr_habitat, //20
+	mp_rr_arena_phase_runner, //21
+	mp_rr_desertlands_mu3, //22
+	mp_rr_construct, //23
+	mp_rr_desertlands_mu1, //24
+	mp_rr_canyonlands_mu2, //25
+	
+	
+	_MAP_COUNT //LAST
+}
+
+global enum ePlaylists
+{
+	fs_1v1, //0
+	fs_dm, //1
+	fs_tdm, //2
+	fs_prophunt, //3
+	fs_duckhunt, //4
+	fs_survival_solos, //5
+	fs_survival_duos, //6
+	fs_survival_trios, //7
+	fs_surf, //8
+	fs_movementgym, //9
+	fs_infected, //10
+	fs_survival, //11
+	survival_dev, //12
+	custom_ctf, //13
+	fs_lgduels_1v1, //14
+	fs_scenarios, //15
+	fs_haloMod_oddball, //16
+	fs_dm_fast_instagib, //17
+	fs_snd, //18
+	SURVIVAL, //19
+	fs_dm_oddball, //20
+	fs_fallingforever, //21
+	survival_firingrange, //22
+	fs_haloMod_ctf, //23
+	fs_haloMod, //24
+	fs_aimtrainer, //25
+	menufall, //26
+	flowstate_pkknockback, //27
+	fs_movementrecorder, //28
+	dev_default, //29
+	
+	
+	_PLAYLISTS_COUNT //LAST
+}
+
+global enum eGamemodes
+{
+	MENUFALL, //0
+	TEAM_DEATHMATCH, //1
+	SURVIVAL, //2
+	FREELANCE, //3
+	CUSTOM_CTF, //4
+	fs_dm, //5
+	fs_aimtrainer, //6
+	fs_prophunt, //7
+	fs_duckhunt, //8
+	fs_infected, //9
+	fs_snd, //10
+	flowstate_pkknockback, //11
+	map_editor_deprecated, //12
+	
+	
+	_GAMEMODES_COUNT //LAST
+}
+
+struct
+{
+	array<string> mapNames = []	
+	array<string> playlists = []
+	array<string> gamemodes = []
+	
+	int currentMap = -1
+	int currentPlaylist = -1
+	int currentGamemode = -1
+	
+	bool errorCheck = false
+	
+} SH_globals
+
+
+//-----make global with----
+//
+// global SH_globals shGlobal
+//
+
+//this is the global location for defining a mode that is 1v1 based
+const array<int> playlist1v1Types = [
+	
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+]
+
+const array<int> gamemode1v1Types = [
+
+]
+
+//////////////////////////////////////////
+// 			internal functions			//
+//////////////////////////////////////////
+
+void function __EnumsToArrays_Init()
+{
+	foreach( string strname, int num in eMaps )
+	{
+		SH_globals.mapNames.append( strname.tolower() )
+	}
+	
+	foreach( string strname, int num in ePlaylists )
+	{
+		SH_globals.playlists.append( strname.tolower() )
+	}
+	
+	foreach( string strname, int num in eGamemodes )
+	{
+		SH_globals.gamemodes.append( strname.tolower() )
+	}
+}
+
+void function PlayLists_Mapnames_Gamemodes_Init()
+{
+	__EnumsToArrays_Init()
+	
+	int playlistsArrayCount = SH_globals.playlists.len() - 1
+	int playlistsEnumsCount = ePlaylists._PLAYLISTS_COUNT
+	
+	int mapnamesArrayCount = SH_globals.mapNames.len() - 1
+	int mapnamesEnumsCount = eMaps._MAP_COUNT
+	
+	int gamemodesArrayCount = SH_globals.gamemodes.len() - 1
+	int gamemodesEnumsCount = eGamemodes._GAMEMODES_COUNT
+	
+	mAssert( playlistsArrayCount == playlistsEnumsCount, format( "Playlists not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", playlistsArrayCount, playlistsEnumsCount ) )
+	mAssert( mapnamesArrayCount == mapnamesEnumsCount, format( "Maps not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", mapnamesArrayCount, mapnamesEnumsCount ) )
+	mAssert( gamemodesArrayCount == gamemodesEnumsCount, format( "Gamemodes not properly configured in enum/array structs: sh_mapname_playlist_gamemode_enums.nut - Array: %d ;Enum: %d ", gamemodesArrayCount, gamemodesEnumsCount ) )
+	
+	#if SERVER || CLIENT
+		string level = GetMapName()
+	#elseif UI 
+		string level = uiGlobal.loadedLevel
+		
+			#if DEVELOPER
+				printt( "UI Mapname:", level )
+			#endif
+	#endif
+	
+		SH_globals.currentMap = getMapEnumFromName( level )
+		mAssert( SH_globals.currentMap != -1, format( "Current map \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", level ) )
+		
+		#if UI 
+			if( level != "" )
+			{
+		#endif
+			
+			SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )
+			mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
+		
+		#if UI 
+			}
+		#endif 
+	
+	
+	#if SERVER || CLIENT	
+		int currentGamemodeEnum = getGamemodeEnumFromName( GameRules_GetGameMode() )
+		string curentGamemodeName = GameRules_GetGameMode()
+	#elseif UI 
+		string curentGamemodeName = GetConVarString( "mp_gamemode" )
+		int currentGamemodeEnum = getGamemodeEnumFromName( curentGamemodeName )
+			
+			#if DEVELOPER
+				printt( "UI Playlist: ", SH_globals.currentPlaylist )
+				printt( "UI Gamemode: ", curentGamemodeName )
+			#endif
+	#endif
+		
+		SH_globals.currentGamemode = currentGamemodeEnum
+		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
+	
+	AllModeConditionals_Init()
+	
+	SH_globals.errorCheck = true
+}
+
+int function getMapEnumFromName( string mapString ) 
+{
+	string mapStringLower = mapString.tolower()
+	
+	for ( int i = 0; i < eMaps._MAP_COUNT; ++i ) 
+	{
+		if ( SH_globals.mapNames[i].tolower() == mapStringLower ) 
+		{
+			return i;
+		}
+	}
+	
+	return -1
+}
+
+int function getPlaylistEnumFromName( string playlistString ) 
+{
+	string playlistStringLower = playlistString.tolower()
+	
+	for ( int i = 0; i < ePlaylists._PLAYLISTS_COUNT; ++i ) 
+	{
+		if ( SH_globals.playlists[i].tolower() == playlistStringLower ) 
+		{
+			return i;
+		}
+	}
+	
+	return -1
+}
+
+int function getGamemodeEnumFromName( string gamemodeString ) 
+{
+	for ( int i = 0; i < eGamemodes._GAMEMODES_COUNT; ++i ) 
+	{
+		if ( SH_globals.gamemodes[i] == gamemodeString ) 
+		{
+			return i;
+		}
+	}
+	
+	return -1
+}
+
+//////////////////////////////////////////
+// 		global script functions			//
+//////////////////////////////////////////
+
+int function MapName()
+{
+	return SH_globals.currentMap
+}
+
+int function Playlist()
+{
+	return SH_globals.currentPlaylist
+}
+
+int function Gamemode()
+{
+	return SH_globals.currentGamemode
+}
+
+//////////////////////////////////////////
+// 			utility functions			//
+//////////////////////////////////////////
+
+array<string> function AllMapsArray()
+{
+	return SH_globals.mapNames
+}
+
+array<string> function AllGamemodesArray()
+{
+	return SH_globals.gamemodes
+}
+
+array<string> function AllPlaylistsArray()
+{
+	return SH_globals.playlists
+}
+	
+	
+
+//////////////////////////////////////////
+//	gamemode conditional INIT functions	//
+//////////////////////////////////////////
+
+bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
+{
+	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
+	{
+		return true
+	}
+	
+	return false
+}
+
+ 
+//add init functions here
+void function AllModeConditionals_Init()
+{
+	TrackerSupportedMode_Init()
+	PassivesAllowed_Init()
+}
+
+
+
+///////////////////////////////////////
+//.. define init functions here
+
+struct  
+{
+	bool passivesAllowed = false
+	bool trackerSupportedMode = false
+	
+} modeSettings
+
+
+void function PassivesAllowed_Init()
+{
+	array<int> allowedPassiveGamemodes = [
+		eGamemodes.SURVIVAL,
+		eGamemodes.fs_dm
+	]
+	
+	array<int> allowedPassivePlaylists = [
+		ePlaylists.fs_1v1
+	]
+	
+	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	
+}
+
+
+void function TrackerSupportedMode_Init()
+{	
+	array<int> supportedTrackerPlaylists = [
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_dm,
+		ePlaylists.fs_tdm,
+		ePlaylists.fs_lgduels_1v1,
+		ePlaylists.fs_scenarios,
+		ePlaylists.fs_survival,
+		ePlaylists.SURVIVAL,
+		ePlaylists.fs_haloMod,
+		ePlaylists.fs_survival_solos,
+		//ePlaylists.fs_survival_duos,
+		//ePlaylists.fs_survival_trios,
+	]
+
+	array<int> supportedTrackerGamemodes = [
+		eGamemodes.fs_dm,
+		eGamemodes.SURVIVAL,
+		eGamemodes.TEAM_DEATHMATCH
+	]
+		
+	bool result = ( supportedTrackerGamemodes.contains( Gamemode() ) 
+	&& supportedTrackerPlaylists.contains( Playlist() ) )
+	
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		if( !result )
+		{
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", 
+				Gamemode(), 
+				Gamemode() > -1 ? AllGamemodesArray()[Gamemode()] : "_INVALID", 
+				Playlist(), 
+				Playlist() > - 1 ? AllPlaylistsArray()[Playlist()]  : "_INVALID"
+			))
+		}
+	#endif 
+	
+	modeSettings.trackerSupportedMode = result
+	
+}
+
+//////////////////////////////////////////
+//	 gamemode conditional functions		//
+//////////////////////////////////////////
+// define functions to be called as conditionals 
+
+
+
+bool function Flowstate_PassivesAllowedForMode()
+{
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		if( !modeSettings.passivesAllowed ){ printt("PRINT_GAMEMODE_DEBUGS: Gamemode not defined as allowed for passives in: sh_mapname_playlist_gamemode_enums.gnut") }
+	#endif 
+	
+	return modeSettings.passivesAllowed
+}
+
+bool function Flowstate_IsTrackerSupportedMode()
+{
+	return modeSettings.trackerSupportedMode
+}
+
+
+
+
+
+
+//////////////////////////////////////////
+// placing this here temp (mkos Assert) //
+//////////////////////////////////////////
+
+void function mAssert( bool condition, string errorMsg = "" )
+{
+	if ( !condition )
+	{
+		#if CLIENT
+			ErrorClientPlayer( errorMsg )
+		#endif 
+		
+		#if SERVER 		
+			ErrorServer( errorMsg + "\n\n" + DBG_INFO( 5 ) )
+		#endif
+	}
+}
+
+#if CLIENT
+void function ErrorClientPlayer( string errorMsg )
+{
+	entity player = GetLocalClientPlayer()
+	thread WaitValidPlayerThenError( player, errorMsg )
+}
+
+void function WaitValidPlayerThenError( entity player, string errorMsg )
+{
+	GetLocalClientPlayer().ClientCommand("disconnect " + errorMsg )
+	waitthread WaitSignalOrTimeout( player, 2, "_disconnectedInternal" )	
+	RunUIScript( "OpenErrorDialog", errorMsg )
+}
+#endif
+
+#if SERVER
+void function ErrorServer( string errorMsg )
+{
+	thread WaitValidStateThenClose( errorMsg )
+}
+
+void function WaitValidStateThenClose( string errorMsg )
+{
+	if(!SH_globals.errorCheck)
+		wait 1 //Todo(dw): Needs proper ~mkos
+	
+	if ( GetPlayerArray().len() > 0 )
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			KickPlayerById( player.GetPlatformUID(), errorMsg )
+		}
+	}
+	
+	ScriptError( errorMsg, DBG_INFO() )
+	//throw errorMsg
+}
+#endif 
+///

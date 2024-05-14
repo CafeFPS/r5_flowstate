@@ -1,5 +1,5 @@
 //FLOWSTATE PROPHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS (@CafeFPS)
 
 // AyeZee#6969 -- Ctf voting phase to work off
 // _RitzKing#1715 -- Gamemode Icon
@@ -40,9 +40,9 @@ void function GamemodeProphuntShared_Init()
 {	
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	
-    switch(GetMapName())
+    switch( MapName() )
     {
-	    case "mp_rr_canyonlands_mu1":
+	    case eMaps.mp_rr_canyonlands_mu1:
 
 		prophuntAssets = [
 			$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
@@ -395,8 +395,8 @@ void function GamemodeProphuntShared_Init()
         )
 	    break
 
-	    case "mp_rr_desertlands_64k_x_64k_nx":		
-	    case "mp_rr_desertlands_64k_x_64k":
+	    case eMaps.mp_rr_desertlands_64k_x_64k_nx:		
+	    case eMaps.mp_rr_desertlands_64k_x_64k:
 		
 		prophuntAssets = [
 			$"mdl/barriers/concrete/concrete_barrier_01.rmdl",

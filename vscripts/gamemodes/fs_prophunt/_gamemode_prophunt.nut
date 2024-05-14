@@ -1,5 +1,5 @@
 //FLOWSTATE PROPHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS (@CafeFPS)
 
 // AyeZee#6969 -- Ctf voting phase to work off
 // _RitzKing#1715 -- Gamemode Icon
@@ -49,15 +49,15 @@ struct{
 
 void function _GamemodeProphunt_Init()
 {
-	switch(GetMapName())
+	switch( MapName() )
 	{
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
 			FS_PROPHUNT.lobbyLocation = <-19459, 2127, 6404>
 			FS_PROPHUNT.lobbyAngles = <0, RandomIntRangeInclusive(-180,180), 0>
 		break
 
-		case "mp_rr_canyonlands_mu1":
+		case eMaps.mp_rr_canyonlands_mu1:
 			FS_PROPHUNT.lobbyLocation = <3599.2793, 24244.5723, 7255.3667>
 			FS_PROPHUNT.lobbyAngles = <0, -103.838669, 0>
 		break
@@ -117,7 +117,7 @@ void function _GamemodeProphunt_Init()
 
 void function _OnEntitiesDidLoadPROPHUNT()
 {
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k")
+	if( MapName() == eMaps.mp_rr_desertlands_64k_x_64k )
 		SpawnFlowstateLobbyProps()
 
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT) //it should be after spawn lobby props so they won't be deleted
@@ -146,7 +146,7 @@ void function PROPHUNT_StartGameThread()
 }
 
 void function PROPHUNT_CharSelect( entity player)
-//By Retículo Endoplasmático#5955 (CafeFPS)//
+//By @CafeFPS (CafeFPS)//
 {
 	if(FlowState_ForceCharacter())
 	{

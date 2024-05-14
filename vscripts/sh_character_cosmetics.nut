@@ -416,7 +416,7 @@ void function CharacterSkin_Apply( entity ent, ItemFlavor skin )
 	}
 
 	ent.SetSkin( skinIndex )
-	ent.SetCamo( camoIndex )
+	ent.SetCamo( -1 ) //camoIndex
 
 	#if SERVER
 		if ( ent.IsPlayer() )
@@ -718,6 +718,12 @@ array<ItemFlavor> function GetAllSkydiveEmotesForCharacter(entity player)
 table<int,ItemFlavor> function GetValidPlayerSkydiveEmotes( entity player )
 {
 	table<int,ItemFlavor> emotes
+
+	#if CLIENT || SERVER
+	if( Gamemode() != eGamemodes.SURVIVAL )
+		return emotes
+	#endif
+
 	array<ItemFlavor> emotes2 = GetAllSkydiveEmotesForCharacter(player)
 	
 	for ( int i=0; i<emotes2.len(); i++ )

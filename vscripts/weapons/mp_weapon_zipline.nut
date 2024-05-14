@@ -77,6 +77,9 @@ void function OnZiplineGrenadeDestroyed( entity weapon, entity projectile )
 	EndSignal( weapon, "OnDestroy" )
 	EndSignal( projectile, "OnDestroy" )
 
+	entity weaponOwner = weapon.GetWeaponOwner()
+	EndSignal( weaponOwner, "CleanUpPlayerAbilities" )
+
 	WaitForever()
 }
 #endif
@@ -197,6 +200,9 @@ void function OnZiplineDestroyed( entity weapon, entity startModel, entity endMo
 			}
 		}
 	)
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( IsValid( startModel ) )
+		EndSignal( weaponOwner, "CleanUpPlayerAbilities" )
 
 	if ( IsValid( startModel ) )
 	{
@@ -243,6 +249,7 @@ void function CreateGunZipline( entity weapon, vector startPos, vector endPos, v
 	zipline_start.kv.ZiplineBreakableBasePosition = startBasePos.x + " " + startBasePos.y + " " + startBasePos.z
 	zipline_start.kv.ZiplineVertical = isSteep
 	zipline_start.kv.ZiplinePreserveVelocity = isSteep
+	zipline_start.kv.ZiplineSpeedScale = 1.666666 //retail value
 
 	zipline_start.SetParent( startModel, "ATTACH_TOP_ROPE", false, 0.0 )
 
@@ -262,6 +269,12 @@ void function CreateGunZipline( entity weapon, vector startPos, vector endPos, v
 
 	DispatchSpawn( zipline_start )
 	DispatchSpawn( zipline_end )
+	entity player = weapon.GetWeaponOwner()
+	if( IsValid( player ) )
+	{
+		AddToTrackedEnts( player, zipline_start )
+		AddToTrackedEnts( player, zipline_end )
+	}
 
 	thread OnZiplineDestroyed( weapon, startModel, endModel, zipline_start, zipline_end )
 }
@@ -313,6 +326,7 @@ void function OnProjectileCollision_weapon_zipline( entity projectile, vector po
 									ziplineEndModel.AddToOtherEntitysRealms( owner )
 									ziplineEndModel.SetParent( spots.endStationMoveParent, "", true, 0.0 )
 									ziplineEndModel.RemoveOnMovement() // This will make the station destroy itself if it is moved (i.e., its parent moved)
+									AddToTrackedEnts( owner, ziplineEndModel )
 									CreateGunZipline( weapon, spots.beginZiplineOrigin, spots.endZiplineOrigin, spots.beginStationOrigin, spots.endStationOrigin, ziplineStartModel, ziplineEndModel )
 									if ( spots.endStationAnimation.len() > 0 )
 									{
@@ -410,6 +424,7 @@ void function WeaponMakesZipline( entity weapon, entity grenade )
 	beginStation.SetParent( groundEntity, "", true, 0.0 )
 	beginStation.RemoveOnMovement() // This will make the station destroy itself if it is moved (i.e., its parent moved)
 	beginStation.Anim_PlayOnly( "prop_pathfinder_zipline_release" )
+	AddToTrackedEnts( player, beginStation )
 	EmitSoundOnEntity( beginStation, "pathfinder_zipline_expand" )
 	int beginStationRopeIndex = beginStation.LookupAttachment( "ATTACH_TOP_ROPE" )
 	vector startPos           = beginStation.GetAttachmentOrigin( beginStationRopeIndex )

@@ -9,6 +9,7 @@ global function OnWeaponChargeEnd_weapon_phase_tunnel
 global function OnWeaponPrimaryAttack_ability_phase_tunnel
 #if SERVER
 global function OnWeaponNPCPrimaryAttack_ability_phase_tunnel
+global function PhaseTunnel_CancelPlacement
 #endif
 
 const float CROUCH_HEIGHT = 48
@@ -675,7 +676,7 @@ void function WaitForPhaseTunnelExpiration( entity player )
 {
 	if ( IsValid( player ) )
 	{
-		player.EndSignal( "CleanupPlayerPermanents" )
+		player.EndSignal( "CleanUpPlayerAbilities" )
 	}
 
 	wait PHASE_TUNNEL_LIFETIME
@@ -760,8 +761,8 @@ void function PhaseTunnel_CreateTriggerArea( entity tunnelEnt, PhaseTunnelPortal
 	DrawAngledBox( origin - Vector( 0,0,30 ), angles + <0,-90,-90>, <-20, -20, -16>, <20, 20, 70>, 255, 0, 0, true, 15 )
 	#endif
 
-	//traceBlocker.RemoveFromAllRealms()
-	//traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
+	traceBlocker.RemoveFromAllRealms()
+	traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
 
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_OPEN )
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_LOOP )
@@ -977,6 +978,7 @@ void function PhaseTunnel_PhaseEntity( entity ent, entity tunnelEnt, entity trig
 void function PhaseTunnel_MoveEntAlongPath( entity player, PhaseTunnelPathData pathData )
 {
 	player.EndSignal( "OnDeath" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
 
 	//printt( "MOVING PLAYER " + player + " ALONG PATH!!!" )
 

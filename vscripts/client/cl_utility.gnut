@@ -43,6 +43,7 @@ struct
 	table<int,array<var> > textPanels
 	table<int,array<var> > worldRUI
 	int showButtonHintsInt = 1
+	array< entity > clientLightsFromServer
 } file
 
 /***************************************************
@@ -70,6 +71,44 @@ enum Crosshair_State
 }
 
 ***************************************************/
+
+void function TryTrackAIAnimDataFromClient()
+{	
+	array<entity> AI = GetNPCArray()
+
+	
+	for(;;)
+	{
+		AI.clear()
+		AI = GetNPCArray()
+		// // printt( "we have", AI.len(), "ai." )
+		
+		if( AI.len() > 0 )
+		{
+			DevTextBufferClear()
+			DevTextBufferWrite("untyped\n\n")
+
+			while( IsValid( AI[0] ) )
+			{
+				vector origin = AI[0].GetOrigin()
+				vector ang = AI[0].GetAngles()
+				string animName = AI[0].GetCurrentSequenceName()
+				
+				string todo = origin + ", " + ang + ", " + animName
+
+				DevTextBufferWrite( todo + "\n" )
+				WaitFrame()
+			}
+
+			DevP4Add("test_idk.nut")
+			DevTextBufferDumpToFile("scripts/vscripts/test_idk.nut")
+			Warning("[!] SOME ANIM DATA SAVED")
+			// printt( AI[0].GetCurrentSequenceName(), AI[0].GetOrigin(), AI[0].GetAngles() ) // , AI[0].GetVelocity() )
+		}
+		
+		WaitFrame()
+	}
+}
 
 array function StringToColorArray( string colorString, string delimiter = " " )
 {
@@ -666,14 +705,15 @@ void function Dev_PrintClientMessage( float duration )
 	Announcement_SetHideOnDeath( announcement, false )
 	Announcement_SetDuration( announcement, duration )
 	Announcement_SetPurge( announcement, true )
-	
-	if(GameRules_GetGameMode() == "fs_dm" || GameRules_GetGameMode() == "fs_prophunt" || GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_snd")
+	// Announcement_SetSoundAlias( announcement, "" )
+
+	if( Gamemode() == eGamemodes.fs_dm || Gamemode() == eGamemodes.fs_prophunt || Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_snd )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
 		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
 	}
 	
-	if( GetCurrentPlaylistName() == "fs_movementgym" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_survival_solos")
+	if( Playlist() == ePlaylists.fs_movementgym || Playlist() == ePlaylists.fs_scenarios || Playlist() == ePlaylists.fs_1v1 || Playlist() == ePlaylists.fs_survival_solos || Playlist() == ePlaylists.fs_lgduels_1v1 || Gamemode() == eGamemodes.fs_snd )
 	{
 		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
 		Announcement_SetTitleColor( announcement, Vector(0,0,1) )
@@ -1563,6 +1603,7 @@ void function MapConVar_Init()
 	{
 		case "mp_rr_aqueduct_night":
 		case "mp_rr_desertlands_64k_x_64k_nx":
+		// case "mp_rr_olympus_mu1":
 			SetConVarFloat( "mat_autoexposure_max", 1.0 )
 			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
 			SetConVarFloat( "mat_autoexposure_min", 0.1 )
@@ -1749,6 +1790,67 @@ void function DynamicLight_Init()
 	}
 }
 
+void function ServerCallback_SpawnClientSideDynamicLight( vector pos, vector ang, int color, float brightness, float exponent )
+{
+	vector vColor
+
+	switch( color )
+	{
+		case 0:
+			vColor = DLIGHT_WHITE
+		break
+		
+		case 1:
+			vColor = DLIGHT_RED
+		break
+
+		case 2:
+			vColor = DLIGHT_GREEN
+		break
+		
+		case 3:
+			vColor = DLIGHT_BLUE
+		break
+
+		case 4:
+			vColor = DLIGHT_LIGHTBLUE
+		break
+		
+		case 5:
+			vColor = DLIGHT_YELLOW
+		break
+
+		case 6:
+			vColor = DLIGHT_PURPLE
+		break
+		
+		case 7:
+			vColor = DLIGHT_SEAGREEN
+		break
+
+		case 8:
+			vColor = DLIGHT_LIGHTGREEN
+		break
+		
+		case 9:
+			vColor = DLIGHT_RICH_BROWN
+		break		
+	}
+
+	entity light = CreateClientSideDynamicLight( pos, ang, vColor, brightness )
+	light.SetLightExponent( exponent )
+	file.clientLightsFromServer.append( light )
+}
+
+
+void function ServerCallback_DeleteSpawnedClientSideDynamicLights()
+{
+	foreach( ent in file.clientLightsFromServer )
+		if( IsValid( ent ) )
+			ent.Destroy()
+		
+	file.clientLightsFromServer.clear()
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#if 1

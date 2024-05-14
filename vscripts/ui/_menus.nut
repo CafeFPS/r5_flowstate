@@ -153,6 +153,8 @@ global function OpenDevMenu
 
 global function OpenModelMenu
 
+global function UILevelLoadCallback
+
 struct
 {
 	array<void functionref()>                   partyUpdatedCallbacks
@@ -232,7 +234,7 @@ void function UICodeCallback_ToggleInGameMenu()
 
 	var activeMenu = GetActiveMenu()
 	bool isLobby   = IsLobby()
-	string playlistName = GetCurrentPlaylistName()
+	string playlistName = GetCurrentPlaylistName() //??????????????
 
 	if ( isLobby )
 	{
@@ -483,9 +485,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 
 void function UICodeCallback_LevelInit( string levelname )
-{
-	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
-	
+{	
 	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
 	{	
 		if ( RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
@@ -512,7 +512,8 @@ void function UICodeCallback_FullyConnected( string levelname )
 	//		InitStatsTables()
 	//	}
 	//}
-
+	
+	PlayLists_Mapnames_Gamemodes_Init()
 	InitXPData()
 
 	//#if DEVELOPER // For convenience
@@ -665,6 +666,11 @@ void function UICodeCallback_LevelShutdown()
 	UiNewnessQueries_LevelShutdown()
 
 	TEMP_CircularReferenceCleanup()
+	
+	#if TRACKER && HAS_TRACKER_DLL
+	//TODO: state !ready waitframe 
+	//while( SQ_GetLogstate() )
+	#endif
 }
 
 
@@ -1521,6 +1527,26 @@ void function InitGamepadConfigs()
 	SetStandardAbilityBindingsForPilot( GetLocalClientPlayer() )
 }
 
+void function UILevelLoadCallback()
+{
+	if( is1v1GameType() )
+	{	
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y + 155 )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 171, 132, 14, 220 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x - 30, wepmenuBasePos.y - 40 )	
+		Hud_SetText( wepmenu, "Flowstate 1v1" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 180, 114, 41, 255 )
+	}
+}
 
 void function InitMenus()
 {
@@ -1554,13 +1580,17 @@ void function InitMenus()
 
 	AddMenu( "R5RNews", $"scripts/resource/ui/menus/CustomLobby/news.res", InitR5RNews )
 	AddMenu( "R5RGamemodeSelectV2Dialog", $"scripts/resource/ui/menus/CustomLobby/gamemode_select.res", InitR5RGamemodeSelectDialog )
-	////////
+
+
+	//Settings
+	AddMenu( "FRLGDuelsSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu", InitLGDuelsSettings )
+	// AddMenu( "ValkSimulatorSettings", $"scripts/resource/ui/menus/FRChallenges/flowstate_valksimulator_settings.menu", InitValkSimulatorSettings )
 
 	//CTF UI
 	var controlmenu = AddMenu( "CTFRespawnMenu", $"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu", InitCTFRespawnMenu )
 	var ctfvotemenu = AddMenu( "CTFVoteMenu", $"scripts/resource/ui/menus/CTF/ctfvotemenu.menu", InitCTFVoteMenu )
-	////////
-	//AIM TRAINER
+
+	//Flowstate Aim Trainer
 	//Main Menu
 	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu", InitFRChallengesMainMenu )
 	
@@ -1577,28 +1607,36 @@ void function InitMenus()
 	AddPanel( weaponselector, "BuyMenu3", InitArenasBuyPanel3 )
 	AddPanel( weaponselector, "BuyMenu4", InitArenasBuyPanel4 )
 	AddPanel( weaponselector, "BuyMenu5", InitArenasBuyPanel5 )
-
+	
 	//results
 	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/challenges_results.menu", InitFRChallengesResultsMenu ) //results
 	
 	//Custom KillReplayHud
 	var killreplayhud = AddMenu( "KillReplayHud", $"scripts/resource/ui/menus/KillReplay/replayhud.menu", InitKillReplayHud )
-	///////
+
+	//Custom msgs to chat box
+	AddMenu( "FS_ServerMsgs_To_ChatBox", $"scripts/resource/ui/menus/FlowstateDM/flowstate_msgs_to_chatbox.menu", InitServerMSGSToChatBox )
 
 	//FLOWSTATE DM
 	//Statistics
 	AddMenu( "StatisticsUI", $"scripts/resource/ui/menus/FlowstateDM/flowstate_statistics.menu", InitStatisticsUI )
 	AddMenu( "FSDMVoteMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_menu_vote.menu", Init_FSDM_VoteMenu )
+	
+	AddMenu( "FSVoteTeamMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_menu_voteteam.menu", Init_FS_VoteTeamMenu )//Halo mod and others probably
+
 	AddMenu( "FSProphuntScoreboardMenu", $"scripts/resource/ui/menus/FlowstateDM/flowstate_prophunt_scoreboard.menu", Init_FSDM_ProphuntScoreboardMenu )
 
 	//Custom Weapon Mods Menu
 	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
-	///////
+
 	
 	//FLOWSTATE MOVEMENT GYM
 	//Settings
 	AddMenu( "MGSettingsMenu", $"scripts/resource/ui/menus/MovementGym/movementgym_settings.menu", InitMGSettings )
-	///////
+
+	//FLOWSTATE SND
+	//Buy Menu
+	AddMenu( "FSSND_BuyMenu", $"scripts/resource/ui/menus/FlowstateSND/flowstate_snd_buy_menu.menu", Init_FSSND_BuyMenu )
 	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )

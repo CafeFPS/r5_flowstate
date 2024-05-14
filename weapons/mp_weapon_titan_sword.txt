@@ -1,0 +1,327 @@
+//By @CafeFPS and Respawn
+
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"R5R Sword"
+	"shortprintname"								"R5R Sword"
+	"description" 									"Made by @CafeFPS and Respawn"
+	"longdesc"										"Made by @CafeFPS and Respawn"
+
+	"weapon_type_flags"								"WPT_GRENADE"
+	"weaponClass" 									"human"
+	"weaponType"									"anti_titan"
+	"attack_button_presses_melee"					"1"
+
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
+
+	"primary_fire_does_not_block_sprint"			"1"
+
+    // UI/HUD
+	"menu_icon"										""//"rui/weapon_icons/r5/weapon_goldenhorse_sword"
+	"hud_icon"										""//"rui/weapon_icons/r5/weapon_goldenhorse_sword"
+	"menu_category"                                 "special"
+	"menu_anim_class"                               "medium"
+	"stat_damage" 									"75"
+	"stat_range"  									"65"
+	"stat_accuracy"   								"80"
+	"stat_rof"										"80"
+	//"viewmodel"									"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl"
+	//"playermodel"								"mdl/Weapons/lightsaber/w_lightsaber.rmdl"
+	
+	// Models
+	"viewmodel"   									"mdl/flowstate_custom/ptpov_flowstate_sword.rmdl"
+	"playermodel" 									"mdl/flowstate_custom/w_flowstate_sword.rmdl"
+
+	"holster_type"									"rifle"
+	"holster_offset"						    	"2 0 2"//"-8 0 8"
+	"holster_angles_offset"						    "280 90 86"  // "pitch roll yaw"
+    "viewmodel_offset_hip"							"0 2.5 0"
+	"viewmodel_offset_ads"							"0 2.5 0"
+
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_titan_sword"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_titan_sword"
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_titan_sword"
+    "OnWeaponCustomActivityEnd"                     "OnWeaponCustomActivityEnd_weapon_titan_sword"
+	"OnWeaponStartZoomIn"                           "OnWeaponStartZoomIn_weapon_titan_sword"
+	"OnWeaponStartZoomOut"                          "OnWeaponStartZoomOut_weapon_titan_sword"
+
+	//FAKE PROJECTILE
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+	"projectile_lifetime"                           "0.1"
+	"projectile_launch_speed"                       "1500"
+	"projectile_gravity_scale"						"0"
+	"bolt_hitsize"									"12.0"
+
+	"is_heirloom"									"0"
+	//emissive ramp up for charging
+    "entity_color_from_charge"						"1"
+
+	//Zoom
+    "zoom_effects"                                  "1"
+	"ads_move_speed_scale"							"1.0"
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+	"bone_merge_world_model"						"0"
+
+	//no_ammo_used_on_primary_attack
+	"allow_empty_fire"								"0"
+	"charge_time" 									"2.0" //need a charge time or the charge frac hack won't work -pmcd
+
+	// Ammo
+    "cooldown_type"                                 "ammo_instant"
+    "ammo_display"									"count"
+    "ammo_clip_size"   								"150"
+    "ammo_stockpile_max"							"150"
+    "ammo_per_shot"									"150"
+    "ammo_default_total"							"0"
+    "ammo_drains_to_empty_on_fire"					"0"
+    "ammo_no_remove_from_clip"						"0"
+    "ammo_no_remove_from_stockpile" 				"0"
+    "uses_ammo_pool" 								"0"
+	"ammo_min_to_fire"                        		 "1"
+
+    //Regen Ammo
+    "regen_ammo_refill_rate"						"10"
+    "regen_ammo_refill_start_delay"					"0.0"
+
+	"reload_enabled"                           "0"
+	"reload_time"                              "2.33"
+	"reloadempty_time"                         "2.33"
+	"allow_empty_click"                        "0"
+	"empty_reload_only"                        "1"
+
+	//Custom Vars
+	"fuel_cooldown_sec"                             "15.0"
+
+	"super_max"                                     "1200.0"
+	"super_cooldown_sec"                            "10.0" //200
+	"super_active_sec"                              "20.0"
+
+	"melee_block_min_damage"                        "1"
+	"melee_block_max_damage"                        "999"
+	"melee_block_charge_scale"                      "0.3"
+	"melee_block_sword_knockback"                   "1150.0"
+
+	"owner_damage_scale"                            "0.85"
+	"owner_damage_scale_super"                      "0.7"
+	"owner_damage_scale_fort"                       "1.0"
+	"owner_damage_scale_super_fort"                 "0.82"
+
+	"slam_height_required"                          "200.0"
+	"slam_force_min"                                "250.0"
+	"slam_force_max"                                "600.0"
+	"slam_radius_inner"                             "65.0"
+	"slam_radius_outer"                             "350.0"
+	"slam_damage_min"                               "60.0"
+	"slam_damage_max"                               "60.0"
+	"slam_damage_scale"                             "0.0"
+	"slam_vel_z"                                    "-2200.0"
+
+	"launcher_vel_z"                                "800.0"
+
+	//MELEE
+	"fire_rate"										"3" //Affects dash/full auto fire rate
+
+    "melee_can_hit_humansized"						"1"
+    "melee_angle"									"80"
+    "melee_range"									"100"
+
+    "melee_attack_animtime"							"0.5"
+    "melee_raise_recovery_animtime_normal"			"0.2"
+    "melee_raise_recovery_animtime_quick"			"0.2"
+
+    "melee_damage"									"25"
+    "melee_damage_heavyarmor"						"25"
+    "melee_freezelook_on_hit"						"0.25"
+
+	"rumble"  										"4"
+    "melee_allow_held"                              "1"
+
+    //LUNGE
+    "melee_lunge_time"								"0.4"
+    "melee_lunge_target_range"						"100"
+    "melee_lunge_target_angle"						"45"
+    "melee_lunge_no_target_range"					"0"
+
+    "damage_flags"									"DF_MELEE | DF_KNOCK_BACK | DF_GIB | DF_EXPLOSION | DF_RAGDOLL"
+    "impact_effect_table"							"titan_sword"
+    "impulse_force"   								"5000"
+    "ammo_suck_behavior"							"melee_weapons"
+    "viewkick_spring" 								"pistol"
+
+    "viewkick_pitch_base" 							"0.0"
+    "viewkick_pitch_random"   						"0.0"
+    "viewkick_pitch_softScale"						"0.0"
+    "viewkick_pitch_hardScale"						"0.0"
+
+    "viewkick_yaw_base"   							"0.0"
+    "viewkick_yaw_random" 							"0.0"
+    "viewkick_yaw_softScale"  						"0.0"
+    "viewkick_yaw_hardScale"  						"0.0"
+
+    "viewkick_roll_base"  							"0"
+    "viewkick_roll_randomMin" 						"0.0"
+    "viewkick_roll_randomMax" 						"0.0"
+    "viewkick_roll_softScale" 						"0.0"
+    "viewkick_roll_hardScale" 						"0.0"
+	"damage_rodeo" 									"100"
+
+	// Behavior
+	"deployfirst_time"								"2.15"
+	"sprintcycle_time"								".55"
+
+	// Bob - Hip
+	"bob_cycle_time"                           "0.4"
+	"bob_max_speed"                            "300"
+	"bob_vert_dist"                            "0.09"
+	"bob_horz_dist"                            "0.05"
+	"bob_pitch"                                "0.33"
+	"bob_yaw"                                  "-0.8"
+	"bob_roll"                                 "0.6"
+
+	// Sway - General
+	"sway_rotate_attach"                       "SWAY_ROTATE"
+	"sway_min_x"                               "-0.05"
+	"sway_min_y"                               "-0.05"
+	"sway_min_z"                               "-0.05"
+	"sway_max_x"                               "0.05"
+	"sway_max_y"                               "0.05"
+	"sway_max_z"                               "0.05"
+	"sway_min_pitch"                           "-1"
+	"sway_min_yaw"                             "-1.5"
+	"sway_min_roll"                            "-1"
+	"sway_max_pitch"                           "1"
+	"sway_max_yaw"                             "1.5"
+	"sway_max_roll"                            "1"
+	"sway_translate_gain"                      "2"
+	"sway_rotate_gain"                         "2"
+
+	mods
+	{
+		infinite_ammo_clips
+		{
+		}
+
+		super
+		{
+			//Have fun <3
+			"move_speed_modifier"                       "*1.4"
+		}
+
+		blocking
+		{
+			//"viewmodel"   								"mdl/weapons/titan_sword/atpov_titan_sword_block.rmdl"
+			//"move_speed_modifier"                       "0.817"
+			//"deflect_missile_impacts"                      "1"
+		}
+
+		slam_ready
+		{
+            // "activitymodifier"						    	"titansword_slam_ready"
+            "melee_raise_recovery_animtime_normal"			"0.5"
+            "melee_raise_recovery_animtime_quick"			"0.5"
+		}
+
+		slam
+		{
+			// "melee_anim_1p_number"							"1"
+			// "melee_anim_3p"									"ACT_MP_MELEE"
+            // "melee_anim_1p"							        "ACT_VM_MELEE_SLAM"
+            // "melee_anim_3p"								    "ACT_MP_MELEE_SLAM"
+
+            "melee_damage"									"60"
+            "melee_damage_heavyarmor"						"60"
+
+		    "melee_lunge_time"								"0.4"//"0.5"
+		    "melee_lunge_target_range"						"100"//"250"
+		    "melee_lunge_target_angle"						"75"//"60"
+		    "melee_lunge_no_target_range"					"0"//"250.0"
+		}
+
+        super_melee
+        {
+            "melee_attack_animtime"							"*0.8"
+        }
+
+        heavy_melee
+        {
+            "fire_rate"										"3"
+
+            "melee_angle"									"70"
+            "melee_range"									"125"
+
+            "melee_attack_animtime"							"1.0"
+            "melee_damage"									"60"
+            "melee_damage_heavyarmor"						"60"
+
+            "melee_raise_recovery_animtime_normal"			"0.15"
+			"melee_raise_recovery_animtime_quick"			    "0.15"
+            "melee_can_hit_humansized"						"1"
+            "melee_can_hit_titans"							"1" //ha
+            "melee_freezelook_on_hit"						"0.25"
+
+			"melee_anim_1p_number"							"2"
+			"melee_anim_3p"									"ACT_MP_MELEE_KNIFE_FIRST"
+
+            //LUNGE
+            "melee_lunge_time"								"0.1"//"0.5"
+            "melee_lunge_target_range"						"0"//"250"
+            "melee_lunge_target_angle"						"1"//"60"
+            "melee_lunge_no_target_range"					"0"//"250.0"
+        }
+
+        launcher
+        {
+            "fire_rate"										"3"
+            "melee_angle"									"60"
+            "melee_range"									"150"
+
+            "melee_attack_animtime"							"1.2"
+            "melee_damage"									"40"
+            "melee_damage_heavyarmor"						"40"
+
+            "melee_raise_recovery_animtime_normal"			"0.5"
+            "melee_raise_recovery_animtime_quick"			"0.5"
+            "melee_can_hit_humansized"						"1"
+            "melee_can_hit_titans"							"1" //ha
+            "melee_freezelook_on_hit"						"0.35"
+
+            //LUNGE
+            "melee_lunge_time"								"1.0"
+            "melee_lunge_target_range"						"300"
+            "melee_lunge_target_angle"						"75"
+            "melee_lunge_no_target_range"					"300"
+        }
+	}
+
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_dot"
+			"base_spread"				"0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+	}
+}

@@ -495,7 +495,7 @@ bool function IsPVEMode()
 	#if UI
 		{
 			string playlistName = GetCurrentPlaylistName()
-			if ( playlistName.find( "freelance" ) == 0 )
+			if ( playlistName.find( "freelance" ) == 0 ) //wtf ~mkos
 				return true
 
 			return false
@@ -2468,4 +2468,35 @@ string function StripRuiStringFormatting( string text )
 	}
 
 	return newText
+}
+
+bool function IsDevGamemode()
+{
+	switch(GetCurrentPlaylistName())
+	{
+		case "survival_dev":
+		case "dev_default":
+            return true
+
+        default: return false
+	}
+
+    unreachable
+}
+
+string function ArrayToString( array<string> arr ) //~mkos
+{
+	string result = ""
+	
+	int iter = 0
+	int last = arr.len() - 1
+	
+	foreach ( item in arr )
+	{
+		string notlast = iter < last ? " " : "";
+		result += item + notlast;
+		iter++;
+	}
+	
+	return result
 }
