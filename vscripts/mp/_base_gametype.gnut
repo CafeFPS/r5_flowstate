@@ -684,7 +684,7 @@ entity function GetAttackerPlayerOrBossPlayer( entity attacker )
 	return bossPlayer
 }
 
-entity function GetAttackerOrLastAttacker( entity ent, damageInfo )
+entity function GetAttackerOrLastAttacker( entity ent, var damageInfo )
 {
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 

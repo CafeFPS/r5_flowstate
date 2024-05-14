@@ -653,12 +653,24 @@ void function UpdateMatchSummaryPersistentVars( int team )
 void function HandleSquadElimination( int team )
 {
 	RespawnBeacons_OnSquadEliminated( team )
-	//StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
+	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
 
 	UpdateMatchSummaryPersistentVars( team )
 
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadEliminated", team )
+
+	array< table< int, var > > squadData
+	array< entity > squadList = GetPlayerArrayOfTeam( team )
+
+	foreach ( squadPlayer in squadList )
+	{
+		squadData.append( LiveAPI_GetPlayerIdentityTable( squadPlayer ) )
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.squadEliminated,
+		[ squadData ], [ 3/*players*/ ]
+	)
 }
 
 // Fully doomed, no chance to respawn, game over
@@ -667,7 +679,7 @@ void function PlayerFullyDoomed( entity player )
 	player.p.respawnChanceExpiryTime = Time()
 	player.p.squadRank = 0 // Survival_GetCurrentRank( player )
 
-	//StatsHook_RecordPlacementStats( player )
+	StatsHook_RecordPlacementStats( player )
 }
 
 void function OnPlayerDamaged( entity victim, var damageInfo )
@@ -694,6 +706,8 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	entity weapon = DamageInfo_GetWeapon( damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
+
+	LiveAPI_OnPlayerDamaged( victim, damageInfo )
 
 	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
 	{
@@ -1111,7 +1125,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 	}
 
-	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victim.GetTeam() )
+	int victimTeamNum = victim.GetTeam()
+	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNum )
 	bool teamEliminated = victimTeam.len() == 0
 	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
 
@@ -1125,7 +1140,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( teamEliminated )
 	{
-		thread PlayerStartSpectating( victim, attacker, true, victim.GetTeam(), false, attackerEHandle)	
+		HandleSquadElimination( victimTeamNum )
+		thread PlayerStartSpectating( victim, attacker, true, victimTeamNum, false, attackerEHandle)	
 	} else
 		thread PlayerStartSpectating( victim, attacker, false, 0, false, attackerEHandle)	
 	
@@ -1138,7 +1154,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( canPlayerBeRespawned || droppableItems > 0 )
 		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
 
-	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+	thread EnemyKilledDialogue( attacker, victimTeamNum, victim )
 }
 
 void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victim )
@@ -1322,7 +1338,7 @@ void function Survival_PlayerRespawnedTeammate( entity playerWhoRespawned, entit
 	respawnedPlayer.p.respawnChanceExpiryTime = 0.0
 	ClearPlayerEliminated( respawnedPlayer )
 
-	//StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
+	StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
 }
 
 void function UpdateDeathBoxHighlight( entity box )

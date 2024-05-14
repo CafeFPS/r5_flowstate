@@ -26,7 +26,7 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 
 void function JumpPad_Init()
 {
-	RegisterSignal("JumpPadStart")
+	RegisterSignal( "JumpPadStart" )
 	PrecacheParticleSystem( TEAM_JUMPJET_DBL )
 	PrecacheParticleSystem( ENEMY_JUMPJET_DBL )
 	PrecacheParticleSystem( $"P_s2s_flap_wind" )
@@ -42,13 +42,13 @@ void function JumpPad_GiveDoubleJump( entity player )
 
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	
+
 	// while( IsValid( player ) && player.IsOnGround() )
 		// WaitFrame()
 	wait 0.1
 
 	if(!IsValid(player)) return
-	
+
 	string doubleJump = "enable_doublejump"
 
 	if ( !player.IsOnGround() )
@@ -66,7 +66,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 			player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, newMods )
 			player.SetHealth( player.p.storedPlayerHealth[0] )
 			player.SetShieldHealth( player.p.storedPlayerHealth[1] )
-			
+
 			foreach( passive in player.p.storedPlayerPassives )
 			{
 				if( !player.HasPassive( passive ) )
@@ -75,7 +75,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 		}
 	}
 	AddButtonPressedPlayerInputCallback( player, IN_JUMP, JumpPad_consumeDoubleJump  )
-	
+
 	OnThreadEnd( function() : ( player )
 	{
 		if ( !IsValid( player ) )
@@ -138,11 +138,13 @@ void function RestorePlayerSettings( entity player )
 		return
 
 	player.p.storedPlayerHealth = [ player.GetHealth(), player.GetShieldHealth() ]
+
 	// Restore player settings
 	if( !IsValid( player.p.storedPlayerSettings ) || player.p.storedPlayerSettings == $"" )
 		player.p.storedPlayerSettings = player.GetPlayerSettings()
 
 	player.SetPlayerSettingsWithMods( player.p.storedPlayerSettings, player.p.storedPlayerSettingsMods )
+
 	player.SetHealth( player.p.storedPlayerHealth[0] )
 	player.SetShieldHealth( player.p.storedPlayerHealth[1] )
 
@@ -177,13 +179,13 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 		mover.SetParent( jumpPad.GetParent() )
 	}
 	jumpPad.SetParent( mover )
-	
+
 	waitthread JumpPad_PlayAnims( jumpPad, mover )
-	
+
 	if( !IsValid( jumpPad ) || jumpPad.IsMarkedForDeletion() )
 		return
 
-	entity trigger = CreateEntity( "trigger_cylinder_heavy" )	
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
 	trigger.SetOwner( jumpPad )
 	trigger.SetRadius( JUMP_PAD_PUSH_RADIUS )
 	trigger.SetAboveHeight( 32 )
@@ -207,12 +209,13 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 	entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_UNASSIGNED, JUMP_PAD_TARGETNAME )
 	traceBlocker.SetBox( jumpPad.GetBoundingMins(), jumpPad.GetBoundingMaxs())
 	traceBlocker.SetParent( trigger )
+
 	traceBlocker.RemoveFromAllRealms()
 	traceBlocker.AddToOtherEntitysRealms( jumpPad )
 	
 	if( GetEditorClass( jumpPad) == "script_survival_jumppad" )
 		return
-	
+
 	// #if DEVELOPER
 	// DrawAngledBox( trigger.GetOrigin(), Vector( 0,0,0 ), jumpPad.GetBoundingMins(), jumpPad.GetBoundingMaxs(), 255, 0, 0, true, 15 )
 	// #endif
@@ -222,7 +225,7 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 	jumpPad.SetDamageNotifications( false )
 	jumpPad.SetDeathNotifications( false )
 	//jumpPad.SetArmorType( ARMOR_TYPE_HEAVY )
-	
+
 	AddEntityCallback_OnDamaged( jumpPad, JumpPad_OnTakeDamage )
 	AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
 }
@@ -245,12 +248,12 @@ void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
 		// (
 			// ent,
 			// DamageInfo_GetHitBox( damageInfo ),
-			// DamageInfo_GetDamagePosition( damageInfo ), 
+			// DamageInfo_GetDamagePosition( damageInfo ),
 			// DamageInfo_GetCustomDamageType( damageInfo ),
 			// DamageInfo_GetDamage( damageInfo ),
-			// DamageInfo_GetDamageFlags( damageInfo ), 
+			// DamageInfo_GetDamageFlags( damageInfo ),
 			// DamageInfo_GetHitGroup( damageInfo ),
-			// DamageInfo_GetWeapon( damageInfo ), 
+			// DamageInfo_GetWeapon( damageInfo ),
 			// DamageInfo_GetDistFromAttackOrigin( damageInfo )
 		// )
 	// }
@@ -262,7 +265,7 @@ void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
 		ent.SetHealth(nextHealth)
 		return
 	}
-	
+
 	// "Died"
 	// Don't take damage anymore
 	ent.SetTakeDamageType( DAMAGE_NO )
@@ -275,7 +278,7 @@ void function JumpPad_PlayAnims( entity jumpPad, entity mover )
 {
   EmitSoundOnEntity( jumpPad, "JumpPad_Deploy_Unpack" )
   PlayAnim( jumpPad, "prop_octane_jump_pad_deploy", mover )
-  thread PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )   
+  thread PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )
 }
 
 void function JumpPad_PlayLaunchAnim( entity trigger )
@@ -293,7 +296,7 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 
 	ent.kv.gravity = 0.75 //seems to be a thing in retail
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_LAUNCH_PAD, ent, ent.GetOrigin(), ent.GetTeam(), ent )
-	
+
 	thread JumpPad_PlayLaunchAnim( trigger )
 	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 
@@ -305,14 +308,14 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 		PlayBattleChatterLineToSpeakerAndTeam( ent, "bc_octane_jumppad_launch" )
 		ent.p.lastJumpPadChatterTime = Time()
 	}
-	
-	thread function () : ( ent ) 
+
+	thread function () : ( ent )
 	{
 		bool crouch = ent.IsInputCommandHeld( IN_DUCKTOGGLE ) || ent.IsInputCommandHeld( IN_DUCK ) || ent.IsCrouched()
-		
+
 		WaitFrame() //have to wait a frame
-		
-		if( !IsValid( ent ) || !IsAlive( ent ) || ent.IsOnGround() ) 
+
+		if( !IsValid( ent ) || !IsAlive( ent ) || ent.IsOnGround() )
 			return
 
 		vector cameraAnglesStart = ent.CameraAngles()
@@ -329,17 +332,17 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 	}()
 }
 
-void function JumpPadAirborne( entity player ) 
+void function JumpPadAirborne( entity player )
 {
 	if ( !IsValid( player ) || !player.IsPlayer() )
 		return
-	
+
 	//1p sound playing in cl_jump_pads
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_Ascent_Windrush" )
-	
+
 	EmitSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
-	
+
 	OnThreadEnd(
 		function() : ( player )
 		{
@@ -351,7 +354,7 @@ void function JumpPadAirborne( entity player )
 			}
 		}
 	)
-	
+
 	WaitFrame()
 	wait 0.1
 	while( IsValid(player) && !player.IsOnGround() )
@@ -373,7 +376,7 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 				{
 					thread JumpPad_GiveDoubleJump( ent )
 				}
-				
+
 				int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
 				StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 			}
@@ -411,7 +414,7 @@ bool function JumpPad_ShouldPushPlayerOrNPC( entity target )
 
 entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 {
-	entity trigger = CreateEntity( "trigger_cylinder_heavy" )	
+	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
 	trigger.SetRadius( pushRadius )
 	trigger.SetAboveHeight( 32 )
 	trigger.SetBelowHeight( 16 ) //need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
@@ -424,9 +427,9 @@ entity function FSCannon_Create( vector origin, float pushRadius, vector dir )
 	trigger.kv.triggerFilterNonCharacter = "0"
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( OnFSCannonAreaEnter )
-	
+
 	EmitSoundOnEntity( trigger, "HoverTank_Emit_EdgeWind")
-	
+
 	return trigger
 }
 
@@ -436,12 +439,12 @@ void function OnFSCannonAreaEnter( entity trigger, entity ent )
 		return
 
 	ent.kv.gravity = 0.45 //seems to be a thing in retail
-	DisableOffhandWeapons( ent) 
+	DisableOffhandWeapons( ent)
 
 	FSCannonPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 }
 
-void function FSCannonAirborne( entity player ) 
+void function FSCannonAirborne( entity player )
 {
 	if ( !IsValid( player ) || !player.IsPlayer() )
 		return
@@ -452,9 +455,9 @@ void function FSCannonAirborne( entity player )
 	//1p sound playing in cl_jump_pads
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_Ascent_Windrush" )
-	
+
 	EmitSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
-	
+
 	OnThreadEnd(
 		function() : ( player )
 		{
@@ -466,9 +469,9 @@ void function FSCannonAirborne( entity player )
 			}
 		}
 	)
-	
+
 	WaitFrame()
-	
+
 	while( IsValid(player) && !player.IsOnGround() )
 	{
 		WaitFrame()
@@ -552,7 +555,7 @@ void function FSCannonPushEnt( entity trigger, entity ent, vector origin, vector
 				// {
 					// thread JumpPad_GiveDoubleJump( ent )
 				// }
-				
+
 				// int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
 				// StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 			// }

@@ -180,6 +180,7 @@ int function Grenade_OnWeaponToss( entity weapon, WeaponPrimaryAttackParams atta
 		grenade.proj.savedDir = weaponOwner.GetViewForward()
 	
 #if SERVER
+	LiveAPI_GrenadeThrown( weaponOwner, weapon )
 
 	#if BATTLECHATTER_ENABLED
 		TryPlayWeaponBattleChatterLine( weaponOwner, weapon )

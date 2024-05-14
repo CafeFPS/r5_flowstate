@@ -363,6 +363,8 @@ void function Server_Init()
 	ObjectiveResourceSystem_ServerInit()
 	ChatUtility_Init()
 
+	LiveAPI_Init()
+
     // ReMap Live
     if ( IsDevGamemode() )
         ReMapLive_Init()

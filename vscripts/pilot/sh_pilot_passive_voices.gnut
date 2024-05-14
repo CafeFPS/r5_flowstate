@@ -452,7 +452,7 @@ void function PassiveVoices_PlayRandomDescriptorFromCategory( entity player, int
 
 
 		Remote_CallFunction_Replay( player, "ServerCallback_PlayPassiveVoice", catId )
-		//StatsHook_PassiveVoices_VoiceHeard( player )
+		StatsHook_PassiveVoices_VoiceHeard( player )
 	#else
 		string category = passiveEnumToStringMap[ catId ]
 		array<string> descriptors = file.voiceData[ category ].voiceDescriptors

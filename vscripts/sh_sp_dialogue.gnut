@@ -771,10 +771,10 @@ void function PlayDialogueForPlayer( string name, entity player, entity speaker,
 
 	if ( delay > 0 )
 		wait delay
-	
-	if( !IsValid( player ) ) 
+
+	if( !IsValid( player ) )
 		return
-	
+
 	if ( ! ShouldPlayDialogueIfSolo( file.registeredDialog[aliasID], speaker ) )
 	{
 		return
@@ -1173,7 +1173,7 @@ void function PlayClientDialogue_Internal( int aliasID, int dialogueFlags, array
 {
 	if ( !IsBattleChatterEnabled() )
 		return
-	
+
 	DialogueData data = GetDataForAliasId( aliasID )
 
 	string milesAlias = data.alias

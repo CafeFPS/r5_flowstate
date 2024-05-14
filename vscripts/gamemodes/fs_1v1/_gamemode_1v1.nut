@@ -3024,7 +3024,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	if(!IsValid(player)) return
 
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-	
+
 	if ( g_bLGmode )
 	{
 		PlayerRestoreHP_1v1(player, 100, 0 ) //lg

@@ -92,6 +92,9 @@ global function CodeCallback_GetBestObserverTarget
 global function CodeCallback_OnClientDisconnected
 global function CodeCallback_OnWeaponAttack
 
+global function CodeCallback_OnNavMeshHotSwapBegin
+global function CodeCallback_OnNavMeshHotSwapEnd
+
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
@@ -352,6 +355,16 @@ void function CodeCallback_OnWeaponAttack( entity player, entity weapon, string 
 {
 	foreach ( callbackFunc in svGlobal.onWeaponAttackCallbacks )
 		callbackFunc( player, weapon, weaponName, ammoUsed, origin, dir )
+}
+
+void function CodeCallback_OnNavMeshHotSwapBegin()
+{
+	//printf("CodeCallback_OnNavMeshHotSwapBegin()")
+}
+
+void function CodeCallback_OnNavMeshHotSwapEnd()
+{
+	//printf("CodeCallback_OnNavMeshHotSwapEnd()")
 }
 
 bool function TrySpectreVirus( entity victim, var damageInfo )

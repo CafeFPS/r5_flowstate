@@ -727,7 +727,7 @@ void function __IncrementStat_Int( entity player, StatEntry entry, int increment
 	Assert( entry.type == eStatType.INT )
 	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
-	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+	if(player.p.statValues_Int.len() <= entry.indexWithinType)
 		return
 
 	//player.p.statValues_Int[entry.indexWithinType] += incrementAmount
@@ -781,7 +781,7 @@ void function __SetStat_Bool( entity player, StatEntry entry, bool newValue, boo
 	Assert( entry.type == eStatType.BOOL )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || (entry.type == eStatType.BOOL && entry.behavior == eStatBehavior.ACCUMULATED && newValue) || DEV_alwaysAllowSet, "Cannot set a bool to false unless its behavior is VARIABLE" )
 
-	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+	if(player.p.statValues_Bool.len() <= entry.indexWithinType)
 		return
 
 	//player.p.statValues_Bool[entry.indexWithinType] = newValue
@@ -807,7 +807,7 @@ void function __SetStat_Int( entity player, StatEntry entry, int newValue, bool 
 	Assert( entry.type == eStatType.INT )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || DEV_alwaysAllowSet )
 
-	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+	if(player.p.statValues_Int.len() <= entry.indexWithinType)
 		return
 
 	//player.p.statValues_Int[entry.indexWithinType] = newValue
@@ -897,33 +897,42 @@ void function OnDependentStatDependencyChanged( entity player, StatEntry depende
 {
 	if ( dependent.type == eStatType.BOOL )
 	{
+		bool oldValue = false
+		bool newValue = GetStat_Bool( player, dependent )
+
 		if ( dependent.indexWithinType in player.p.statEntryChangeCallbacks_Bool )
 		{
-			bool oldValue = false
-			bool newValue = GetStat_Bool( player, dependent )
 			foreach( StatChangedCallbackType_Bool cb in player.p.statEntryChangeCallbacks_Bool[dependent.indexWithinType] )
 				cb( player, oldValue, newValue )
 		}
+
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 	else if ( dependent.type == eStatType.INT )
 	{
+		int oldValue = 0
+		int newValue = GetStat_Int( player, dependent ) // todo(dw): do we really need oldValue? edit(amos): probably not LMAO!
+
 		if ( dependent.indexWithinType in player.p.statEntryChangeCallbacks_Int )
 		{
-			int oldValue = 0
-			int newValue = GetStat_Int( player, dependent ) // todo(dw): do we really need oldValue?
 			foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[dependent.indexWithinType] )
 				cb( player, oldValue, newValue )
 		}
+
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 	else if ( dependent.type == eStatType.FLOAT )
 	{
+		float oldValue = 0.0
+		float newValue = GetStat_Float( player, dependent )
+
 		if ( dependent.indexWithinType in player.p.statEntryChangeCallbacks_Float )
 		{
-			float oldValue = 0.0
-			float newValue = GetStat_Float( player, dependent )
 			foreach( StatChangedCallbackType_Float cb in player.p.statEntryChangeCallbacks_Float[dependent.indexWithinType] )
 				cb( player, oldValue, newValue )
 		}
+
+		LiveAPI_OnPlayerStatChanged( player, dependent.persistenceFullKey_Current, newValue )
 	}
 }
 #endif

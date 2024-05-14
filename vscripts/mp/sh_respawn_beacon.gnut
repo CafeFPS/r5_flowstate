@@ -778,6 +778,7 @@ void function RespawnTeamPlayers( entity ent, int team, entity respawnCaller )
 		}
 	}
 
+	LiveAPI_OnRespawnTeamPlayers( respawnCaller, playersToSpawn )
 	thread RespawnPlayersInDropship( playersToSpawn, ent )
 }
 #endif
@@ -1078,6 +1079,11 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 		PingNearestRespawnBeacon( owner, playerUser.GetOrigin() )
 
 		PlayBattleChatterLineToSpeakerAndTeam( playerUser, "bc_gotFriendlyBanner" )
+
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.bannerCollected,
+			[ LiveAPI_GetPlayerIdentityTable( playerUser ), LiveAPI_GetPlayerIdentityTable( owner ) ],
+			[ 3/*player*/,                                  4/*collected*/ ]
+		)
 
 		dna.Destroy()
 	}

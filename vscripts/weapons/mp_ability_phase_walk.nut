@@ -72,7 +72,7 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 			LockWeaponsAndMelee( player )
 			thread PhaseWalkUnphaseTell( player, chargeTime )
 			PlayerUsedOffhand( player, weapon )
-			//StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )                                         
+			StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )                                         
 			#endif
 		}
 	}

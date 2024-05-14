@@ -313,7 +313,15 @@ void function GibraltarShield_OnDamaged( entity ent, var damageInfo )
 		if ( IsValid( attacker ) && attacker.IsPlayer() )
 		{
 			attacker.NotifyDidDamage( ent, 0, damageOrigin, 0, damage, DF_NO_HITBEEP | DAMAGEFLAG_VICTIM_HAS_VORTEX, 0, null, 0 )
-			StatsHook_GibraltarGunShield_OnDamageAbsorbed( owner, attacker, int(damage) ) // todo(dw): should damage be treated as a float or int?
+			StatsHook_GibraltarGunShield_OnDamageAbsorbed( owner, attacker, int( damage ) ) // todo(dw): should damage be treated as a float or int?
+
+			if ( IsValid( owner ) )
+			{
+				LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.gibraltarShieldAbsorbed,
+					[ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( owner ), int( damage ) ],
+					[ 3/*attacker*/,                              4/*victim*/,                             5/*damageInflicted*/ ]
+				)
+			}
 		}
 
 		if ( IsValid( owner ) )

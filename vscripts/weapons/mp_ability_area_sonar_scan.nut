@@ -273,7 +273,7 @@ void function AreaSonarScan_OnSonarTriggerEnter( entity trigger, entity ent )
 	if ( ent.IsPlayer() )
 		Remote_CallFunction_Replay( ent, "ServerCallback_SonarAreaScanTarget", ent, owner )
 
-	//StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
+	StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
 }
 
 void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger )

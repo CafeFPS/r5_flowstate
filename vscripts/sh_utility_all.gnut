@@ -1604,6 +1604,16 @@ int function SortByTeamMemberIndex( entity a, entity b )
 	return 0
 }
 
+int function SortPlayersByName( entity a, entity b )
+{
+	if( a.GetPlayerName() > b.GetPlayerName() )
+		return 1
+
+	if( a.GetPlayerName() < b.GetPlayerName() )
+		return -1
+
+	return 0
+}
 
 #if !UI
 bool function AllegianceCheck( int req, entity entA, entity entB )

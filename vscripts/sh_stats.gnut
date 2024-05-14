@@ -27,6 +27,7 @@ global function StatsHook_OnDoomingDamage
 global function StatsHook_PlayerRespawnedTeammate
 global function StatsHook_PlayerEquip
 global function StatsHook_PlayerUsedResource
+global function StatsHook_PlayerUsedMapFeature
 
 // Bloodhound
 global function StatsHook_AreaSonarScan_EnemyDetected
@@ -864,7 +865,7 @@ bool function ShouldGatherStats( entity player )
 {
 	Assert( IsValid( player ) )
 
-	return false
+	return true
 }
 #endif
 
@@ -1572,6 +1573,12 @@ void function StatsHook_PlayerUsedResource( entity player, entity itemEnt, strin
 
 	if ( SURVIVAL_NumItemsInInventory( player, itemRef ) == 0 )
 		PIN_PlayerOutResource( player, itemRef )
+}
+void function StatsHook_PlayerUsedMapFeature( entity player, string mapFeature )
+{
+	PIN_PlayerUse( player, mapFeature )
+
+	// TODO
 }
 #endif
 

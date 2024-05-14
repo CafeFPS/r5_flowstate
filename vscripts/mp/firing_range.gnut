@@ -544,7 +544,7 @@ void function SpawnAttachments()
 	{
 		foreach(string ammoType2, array<string> refs in file.attachmentsPerAmmoType)
 		{
-			if(ammoType != ammoType2 || ammoType == "sniper" )
+			if( ammoType != ammoType2 || ammoType == "sniper" )
 				continue
 
 			entity r = file.rackSpawns[ammoIndex].point

@@ -913,6 +913,7 @@ void function MG_Pet_Follower(){
 		}
 
 		pitch = atan2(direction.z, sqrt(direction.x * direction.x + direction.y * direction.y)) * (180.0 / 3.1415)
+
 		petMover.NonPhysicsRotateTo(<pitch, yaw, 0> + petOffsetAngle, petHz, 0, 0)
 		positions = positions.slice(1);
         }

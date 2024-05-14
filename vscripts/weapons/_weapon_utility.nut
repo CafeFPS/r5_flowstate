@@ -4233,14 +4233,19 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 				player.p.lastPilotOffhandUseTime[ index ] = Time()
 			StoreOffhandData( player, true, [index] )
 
-			// PIN
-			if ( sendPINEvent )
+			if ( index == OFFHAND_TACTICAL )
 			{
-				string weaponName = offhandWeapon.GetWeaponClassName()
-				if ( index == OFFHAND_TACTICAL )
-					PIN_PlayerAbility( player, weaponName, ABILITY_TYPE.TACTICAL, trackedProjectile, pinAdditionalData )
-				else if ( index == OFFHAND_ULTIMATE )
-					PIN_PlayerAbility( player, weaponName, ABILITY_TYPE.ULTIMATE, trackedProjectile, pinAdditionalData )
+				if ( sendPINEvent ) // PIN
+					PIN_PlayerAbility( player, offhandWeapon.GetWeaponClassName(), ABILITY_TYPE.TACTICAL, trackedProjectile, pinAdditionalData )
+
+				LiveAPI_PlayerAbilityUsed( player, offhandWeapon )
+			}
+			else if ( index == OFFHAND_ULTIMATE )
+			{
+				if (sendPINEvent) // PIN
+					PIN_PlayerAbility( player, offhandWeapon.GetWeaponClassName(), ABILITY_TYPE.ULTIMATE, trackedProjectile, pinAdditionalData )
+				
+				LiveAPI_PlayerAbilityUsed( player, offhandWeapon )
 			}
 
 			return
