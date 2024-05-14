@@ -3396,7 +3396,6 @@ void function WaitingForPlayers_CreateCustomCameras()
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), true)
-		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
 	}
 	
@@ -3420,7 +3419,6 @@ void function DisableCustomMapAndGamemodeNameFrames()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), false)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), false)
 	
 }
