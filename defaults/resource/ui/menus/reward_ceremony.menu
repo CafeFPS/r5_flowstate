@@ -1,0 +1,152 @@
+resource/ui/menus/reward_ceremony.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+            labelText               ""
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Header
+        {
+            ControlName				RuiPanel
+            classname               "MenuButton"
+            wide					1080
+            tall					128
+            ypos                    -50
+            visible				    1
+            rui                     "ui/featured_header.rpak"
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   TOP
+            pin_to_sibling_corner   TOP
+        }
+
+        AwardsList
+        {
+            ControlName				GridButtonListPanel
+            xpos                    0
+            ypos                    -310
+            tall                    128
+            columns                 5
+            rows                    2
+            buttonSpacing           8
+            scrollbarSpacing        8
+            scrollbarOnLeft         0
+            visible					1
+            tabPosition             1
+
+            ButtonSettings
+            {
+                rui					    "ui/battle_pass_reward_button_v2.rpak"
+                clipRui                 1
+                wide					128
+                tall					128
+                cursorVelocityModifier  0.7
+                sound_focus             "UI_Menu_BattlePass_Level_Focus"
+                sound_accept            ""
+                rightClickEvents		1
+                doubleClickEvents       1
+            }
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	BOTTOM
+        }
+
+        LoadscreenImage
+        {
+            ControlName             RuiPanel
+            xpos				    0
+            ypos				    50
+            zpos				    90
+            wide                    818
+            tall                    460
+            visible				    0
+            rui                     "ui/custom_loadscreen_image.rpak"
+
+            pin_to_sibling			AwardsList
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	TOP
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        ContinueButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            wide					384
+            tall					66
+            ypos                    -54
+            rui                     "ui/generic_button.rpak"
+            labelText               ""
+            visible					1
+            cursorVelocityModifier  0.7
+            zpos                    100
+
+            proportionalToParent    1
+
+            ruiArgs
+            {
+                buttonText          "#A_BUTTON_CONTINUE"
+            }
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+			zpos                    1
+		}
+	}
+}

@@ -1,0 +1,15 @@
+"mp_rr_overflow"
+{
+	assets
+	{
+		minimap overviews\mp_rr_desertlands_64k_x_64k
+	}
+
+	pos_x -4788
+	pos_y 689
+	scale 2.7
+	displayDist 2048
+	threatMaxDist 2500
+	threatNearDist 500
+	threatFarDist 2000
+}

@@ -1,0 +1,739 @@
+resource/ui/menus/gamepadlayout.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		visible					1
+		enabled					1
+		tabPosition             1
+		pinCorner				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenBlur
+        {
+            ControlName				RuiPanel
+            wide					%100
+            tall					%100
+            visible					1
+            rui                     "ui/screen_blur.rpak"
+
+            cursorPriority			10
+        }
+
+        Cover
+        {
+            ControlName				ImagePanel
+            wide                    %100
+            tall					%100
+            visible					1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"0 0 0 200"
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		DialogFrame
+		{
+			ControlName				RuiPanel
+			wide					%100
+            ypos					128
+            tall					804
+			rui                     "ui/gamepad_dialog_content.rpak"
+			visible					1
+		}
+
+        PanelFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					128
+            wide					%100
+            tall					804
+            labelText				""
+            visible				    0
+            bgcolor_override        "70 70 70 255"
+            paintbackground         1
+        }
+
+        Sizer
+        {
+            ControlName				Label
+            wide					1728
+            tall					804
+            labelText				""
+            visible				    0
+            bgcolor_override        "70 70 00 255"
+            paintbackground         1
+
+            proportionalToParent    1
+
+            pin_to_sibling			PanelFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+        }
+
+		BtnPreset0
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			tabPosition             1
+
+			pin_to_sibling			Sizer
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+			ypos                    -108
+
+			navRight				BtnPilotBind00
+			navUp 				    BtnCustomizeLayout
+			navDown					BtnPreset1
+			scriptID				0
+
+			cursorPriority			11
+		}
+		BtnPreset1
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			pin_to_sibling			BtnPreset0
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnPreset0
+			navRight				BtnPilotBind00
+			navDown					BtnPreset2
+			scriptID				1
+
+			cursorPriority			11
+		}
+		BtnPreset2
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			pin_to_sibling			BtnPreset1
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnPreset1
+			navRight				BtnPilotBind00
+			navDown					BtnPreset3
+			scriptID				2
+
+			cursorPriority			11
+		}
+		BtnPreset3
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			pin_to_sibling			BtnPreset2
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnPreset2
+			navRight				BtnPilotBind00
+			navDown					BtnPreset4
+			scriptID				3
+
+			cursorPriority			11
+		}
+		BtnPreset4
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			pin_to_sibling			BtnPreset3
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnPreset3
+			navRight				BtnPilotBind00
+			navDown					BtnPreset5
+			scriptID				4
+
+			cursorPriority			11
+		}
+		BtnPreset5
+		{
+			ControlName				RuiButton
+			InheritProperties		ThinButton
+			pin_to_sibling			BtnPreset4
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			navUp					BtnPreset4
+			navRight				BtnPilotBind00
+			navDown					BtnCustomizeLayout
+			scriptID				5
+
+			cursorPriority			11
+		}
+        BtnCustomizeLayout
+        {
+            ControlName				RuiButton
+            InheritProperties		ThinButton
+            pin_to_sibling			BtnPreset5
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+            navUp					BtnPreset5
+			navDown					BtnPreset0
+            navRight				BtnPilotBind00
+            scriptID				6
+
+			cursorPriority			11
+        }
+
+		lblControllerDescription
+		{
+			ControlName				RuiPanel
+			pin_to_sibling			Sizer
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			tall					300
+			wide 					528
+
+			ypos                    -16
+
+            rui                     "ui/controller_description.rpak"
+		}
+
+
+/////// Button layout
+
+		GamepadButtonLayoutBGRui
+		{
+			ControlName				RuiPanel
+			xpos 					0
+			ypos 					0
+			wide					1200
+			tall					800
+			zpos                    200
+
+			pin_to_sibling			Sizer
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+
+            rui                     "ui/controller_layout.rpak"
+		}
+
+		PilotControlsBG
+		{
+			ControlName				RuiPanel
+			wide					1030
+			tall					530
+			xpos 					-200
+			ypos 					-40
+			labelText				""
+			visible				    1
+			bgcolor_override        "0 0 0 0"
+			paintbackground         1
+			rui                     "ui/basic_border_box.rpak"
+
+			pin_to_sibling			Vignette
+			pin_corner_to_sibling	LEFT
+			pin_to_sibling_corner	CENTER
+		}
+
+		GamepadLayoutWarningMessage
+        {
+            ControlName             RuiButton
+            rui                     "ui/gamepad_bindlist_message.rpak"
+            xpos                    0
+            ypos                    0
+            zpos                    101
+            wide                    1030
+            tall                    100
+
+            pin_to_sibling			PilotControlsBG
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+
+            visible                 1
+            enabled                 0
+        }
+
+		BtnPilotBind00
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind08
+			navDown					BtnPilotBind01
+			scriptID				0
+
+			pin_to_sibling			PilotControlsBG
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+			xpos					-10
+			ypos					-20
+			cursorPriority			11
+		}
+		BtnPilotBind01
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind00
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind09
+			navDown					BtnPilotBind02
+			scriptID				1
+
+			pin_to_sibling			BtnPilotBind00
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind02
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind01
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind10
+			navDown					BtnPilotBind03
+			scriptID				2
+
+			pin_to_sibling			BtnPilotBind01
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind03
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind02
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind11
+			navDown					BtnPilotBind04
+			scriptID				3
+
+			pin_to_sibling			BtnPilotBind02
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind04
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind03
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind12
+			navDown					BtnPilotBind05
+			scriptID				4
+
+			pin_to_sibling			BtnPilotBind03
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind05
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind04
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind13
+			navDown					BtnPilotBind06
+			scriptID				5
+
+			pin_to_sibling			BtnPilotBind04
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind06
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind05
+			navLeft					BtnCustomizeLayout
+			navRight				BtnPilotBind14
+			navDown					BtnPilotBind07
+			scriptID				6
+
+			pin_to_sibling			BtnPilotBind05
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind07
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind06
+			navLeft					BtnCustomizeLayout
+			scriptID				7
+
+			pin_to_sibling			BtnPilotBind06
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind08
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navLeft				    BtnPilotBind00
+			navDown					BtnPilotBind09
+			scriptID				8
+
+			pin_to_sibling			BtnPilotBind00
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_RIGHT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind09
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind08
+			navLeft					BtnPilotBind01
+			navDown					BtnPilotBind10
+			scriptID				9
+
+			pin_to_sibling			BtnPilotBind08
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind10
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind09
+			navLeft					BtnPilotBind02
+			navDown					BtnPilotBind11
+			scriptID				10
+
+			pin_to_sibling			BtnPilotBind09
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind11
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind10
+			navLeft					BtnPilotBind03
+			navDown					BtnPilotBind12
+			scriptID				11
+
+			pin_to_sibling			BtnPilotBind10
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind12
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind11
+			navLeft					BtnPilotBind04
+			navDown					BtnPilotBind13
+			scriptID				12
+
+			pin_to_sibling			BtnPilotBind11
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind13
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiGamepadBindButton
+			navUp					BtnPilotBind12
+			navLeft					BtnPilotBind05
+			navDown					BtnPilotBind14
+			scriptID				13
+
+			pin_to_sibling			BtnPilotBind12
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+			ypos					0
+			cursorPriority			11
+		}
+		BtnPilotBind14
+		{
+		    ControlName				RuiButton
+            InheritProperties		RuiGamepadBindButton
+            navUp					BtnPilotBind13
+			navLeft					BtnPilotBind06
+            scriptID				14
+
+            pin_to_sibling			BtnPilotBind13
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+            ypos                    0
+			cursorPriority			11
+		}
+		BtnPilotBindUltimate
+		{
+		    ControlName				RuiButton
+            InheritProperties		RuiGamepadBindButton
+            navUp					BtnPilotBind14
+			navLeft					BtnPilotBind07
+			navDown					BtnPilotBind08
+            scriptID				15
+
+            pin_to_sibling			BtnPilotBind14
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+            ypos                    0
+			cursorPriority			11
+		}
+
+
+//		TitanControlsBG
+//		{
+//			ControlName				RuiPanel
+//			pin_to_sibling			PilotControlsBG
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	TOP_RIGHT
+//			wide					520
+//			tall					860
+//			xpos					30
+//			ypos					0
+//			labelText				""
+//			visible				    1
+//			bgcolor_override        "0 0 0 0"
+//			paintbackground         1
+//			rui                     "ui/basic_border_box.rpak"
+//		}
+//		LblTitanControls
+//		{
+//			ControlName				Label
+//			InheritProperties		SubheaderText
+//			pin_to_sibling			TitanControlsBG
+//			pin_corner_to_sibling	BOTTOM
+//			pin_to_sibling_corner	TOP
+//
+//			fgcolor_override		"237 186 92 255"
+//			labelText				"#TITAN_CONTROLS"
+//			allcaps					0
+//		}
+//		BtnTitanBind00
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navLeft					BtnPilotBind00
+//			navDown					BtnTitanBind01
+//			scriptID				0
+//
+//			pin_to_sibling			TitanControlsBG
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	TOP_LEFT
+//			xpos					-10
+//			ypos					-10
+//		}
+//		BtnTitanBind01
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind00
+//			navLeft					BtnPilotBind01
+//			navDown					BtnTitanBind02
+//			scriptID				1
+//
+//			pin_to_sibling			BtnTitanBind00
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind02
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind01
+//			navLeft					BtnPilotBind02
+//			navDown					BtnTitanBind03
+//			scriptID				2
+//
+//			pin_to_sibling			BtnTitanBind01
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind03
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind02
+//			navLeft					BtnPilotBind03
+//			navDown					BtnTitanBind04
+//			scriptID				3
+//
+//			pin_to_sibling			BtnTitanBind02
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind04
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind03
+//			navLeft					BtnPilotBind04
+//			navDown					BtnTitanBind05
+//			scriptID				4
+//
+//			pin_to_sibling			BtnTitanBind03
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind05
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind04
+//			navLeft					BtnPilotBind05
+//			navDown					BtnTitanBind06
+//			scriptID				5
+//
+//			pin_to_sibling			BtnTitanBind04
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind06
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind05
+//			navLeft					BtnPilotBind06
+//			navDown					BtnTitanBind07
+//			scriptID				6
+//
+//			pin_to_sibling			BtnTitanBind05
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind07
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind06
+//			navLeft					BtnPilotBind07
+//			navDown					BtnTitanBind08
+//			scriptID				7
+//
+//			pin_to_sibling			BtnTitanBind06
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind08
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind07
+//			navLeft					BtnPilotBind08
+//			navDown					BtnTitanBind09
+//			scriptID				8
+//
+//			pin_to_sibling			BtnTitanBind07
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind09
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind08
+//			navLeft					BtnPilotBind09
+//			navDown					BtnTitanBind10
+//			scriptID				9
+//
+//			pin_to_sibling			BtnTitanBind08
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind10
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind09
+//			navLeft					BtnPilotBind10
+//			navDown					BtnTitanBind11
+//			scriptID				10
+//
+//			pin_to_sibling			BtnTitanBind09
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind11
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind10
+//			navLeft					BtnPilotBind11
+//			navDown					BtnTitanBind12
+//			scriptID				11
+//
+//			pin_to_sibling			BtnTitanBind10
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind12
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind11
+//			navLeft					BtnPilotBind12
+//			navDown					BtnTitanBind13
+//			scriptID				12
+//
+//			pin_to_sibling			BtnTitanBind11
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+//		BtnTitanBind13
+//		{
+//			ControlName				RuiButton
+//			InheritProperties		RuiGamepadBindButton
+//			navUp					BtnTitanBind12
+//			navLeft					BtnPilotBind13
+//			scriptID				13
+//
+//			pin_to_sibling			BtnTitanBind12
+//			pin_corner_to_sibling	TOP_LEFT
+//			pin_to_sibling_corner	BOTTOM_LEFT
+//			ypos					0
+//		}
+
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}

@@ -1,0 +1,188 @@
+resource/ui/menus/ranked_info.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		disableDpad             1
+
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+        ScreenFrame
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            visible					1
+            enabled 				1
+			scaleImage				1
+			image					"vgui/HUD/white"
+            drawColor				"0 0 0 220"
+        }
+
+		MenuFrame
+		{
+			ControlName				Label
+			xpos					0
+			ypos					c-420
+			wide					%100
+			tall					906
+			labelText				""
+			bgcolor_override		"70 70 70 0"
+			visible					1
+			paintbackground			1
+		}
+
+        InfoMain
+        {
+            ControlName				RuiPanel
+            wide					%100
+            tall					%100
+            ypos                    00
+            xpos                    00
+            rui                     "ui/ranked_info_page.rpak"
+            labelText               ""
+            visible					1
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        InfoScoring
+        {
+            ControlName				RuiPanel
+            rui                     "ui/xp_earned_box.rpak"
+            xpos                    -100
+            ypos                    150
+            wide                    380
+            tall                    280
+            visible					0
+
+            ruiARgs
+            {
+                headerText          "#RANKED_PAGE_COST"
+	            subHeaderText       "#RANKED_PAGE_SCORING"
+            }
+
+            zpos                    500
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   TOP_LEFT
+            pin_to_sibling_corner   LEFT
+        }
+
+
+
+        RewardsPanel
+        {
+            ControlName				CNestedPanel
+			xpos					0
+			ypos					-100
+			wide					1920
+			tall					500
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/ranked_rewards.res"
+			zpos                    2
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+        RankedProgressBar
+        {
+            ControlName				RuiPanel
+            wide					650
+            tall					130
+            zpos                    10
+            ypos                    -250
+            xpos                    0
+            rui                     "ui/ranked_progress_bar.rpak"
+            labelText               ""
+            visible					1
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+        RankedScoringTable
+        {
+            ControlName				RuiPanel
+            wide					550
+            tall					170
+            zpos                    10
+            ypos                    -110
+            xpos                    45
+            rui                     "ui/ranked_scoring_table.rpak"
+            labelText               ""
+            visible					1
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+// FOOTER //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+    }
+}

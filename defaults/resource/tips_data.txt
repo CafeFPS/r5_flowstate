@@ -1,0 +1,21 @@
+Tips
+{
+	// The last index of the TIP_XXX entries to find in the localization files (e.g. base_english.txt)
+	// Code will pick tips between 1 and this index
+	LastTipIndex			12
+
+	// Tips can be unlocked based on the local client player's level. All tips with a level requirement at or below the player's level are unlocked
+
+	// New tips are unlocked tips that have a level requirement difference from the player's that is less than or equal to NewTipLevelDifference
+	// The larger this value is, the more amount tips will be considered new
+	NewTipLevelDifference	1
+
+	// Chance that when a tip is generated it will be a new tip. This value should be in the interval [0, 1] (i.e 0% to 100% chance)
+	NewTipDisplayChance		0.7
+
+	// All tips have no level requirement unless specified here
+	LevelRequirements
+	{
+		//"TIP_001"		"2"
+	}
+}

@@ -1,0 +1,13 @@
+"mp_rr_construct"
+{
+	assets
+	{
+		minimap overviews/mp_rr_construct
+	}
+
+	pos_x 23500
+	pos_y 19490
+	scale 4.2
+	displayDist 2048
+	minimapSizeScale 1.5
+}

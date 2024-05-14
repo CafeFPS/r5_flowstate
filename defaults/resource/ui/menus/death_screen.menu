@@ -1,0 +1,187 @@
+resource/ui/menus/death_screen.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		deathScreen 		    1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			visible					1
+			rui                     "ui/death_screen_background.rpak"
+		}
+
+		Vignette
+		{
+			ControlName             ImagePanel
+			InheritProperties       MenuVignette
+		}
+
+		Header
+		{
+			ControlName             RuiPanel
+			xpos					0
+			ypos					0
+			wide 					%100
+			tall					%100
+			rui 					"ui/death_screen_header.rpak"
+			visible					1
+			zpos					3
+
+			pin_to_sibling			ScreenFrame
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		ToolTip
+		{
+			ControlName				RuiPanel
+			InheritProperties       ToolTip
+		}
+
+		Anchor
+		{
+			ControlName				ImagePanel
+			xpos					0
+			ypos					0
+			wide					%100
+			tall					%100
+			visible					1
+			enabled 				1
+			drawColor				"0 0 0 0"
+		}
+
+		TabsCommon
+		{
+			ControlName				CNestedPanel
+			classname				"TabsCommonClass"
+			ypos                    0
+			xpos                    0
+			zpos					100
+			wide					f0
+			tall					84
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/tabs_inventory.res"
+
+			pin_to_sibling			MenuVignette
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		DeathScreenRecap
+		{
+			ControlName				CNestedPanel
+			wide			        %100
+			tall			        %100
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible                 0
+			enabled                 1
+			controlSettingsFile		"resource/ui/menus/panels/death_screen_recap.res"
+
+
+			xcounterscroll			0.0
+			ycounterscroll			0.0
+		}
+
+		DeathScreenSpectate
+		{
+			ControlName				CNestedPanel
+			wide			        %100
+			tall			        %100
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible                 0
+			enabled                 1
+			controlSettingsFile		"resource/ui/menus/panels/death_screen_spectate.res"
+
+			scriptID				1
+
+			xcounterscroll			0.0
+			ycounterscroll			0.0
+		}
+
+		DeathScreenSquadSummary
+		{
+			ControlName				CNestedPanel
+			wide			        %100
+			tall			        %100
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible                 0
+			enabled                 1
+			controlSettingsFile		"resource/ui/menus/panels/death_screen_squad_summary.res"
+
+			scriptID				2
+
+			xcounterscroll			0.0
+			ycounterscroll			0.0
+		}
+
+// FOOTER //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterBackerBlack
+		{
+			ControlName				ImagePanel
+			xpos					0
+			ypos					0
+			zpos					2
+			wide					%100
+			tall					64
+			visible					1
+			enabled 				1
+			scaleImage				1
+			image                   "vgui/HUD/white"
+			drawColor				"0 0 0 255"
+
+			pin_to_sibling			Anchor
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			zpos					20
+			wide					f0
+			tall					24
+			ypos 					-25
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/footer_buttons.res"
+
+			pin_to_sibling			Anchor
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		HoldToUseElem
+		{
+			ControlName				RuiPanel
+			wide					64
+			tall					64
+			visible					0
+			enabled 				1
+			scaleImage				1
+			rui                     "ui/extended_use_hint_menu.rpak"
+			zpos                    2000
+		}
+	}
+}

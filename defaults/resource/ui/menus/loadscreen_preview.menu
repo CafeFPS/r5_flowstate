@@ -1,0 +1,53 @@
+resource/ui/menus/loadscreen_preview.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+		Screen
+		{
+			ControlName				Label
+		    wide			        %100
+		    tall			        %100
+			labelText				""
+			visible					1
+
+			labelText				""
+			paintbackground			1
+			bgcolor_override	"0 0 0 255"
+		}
+
+	    LoadscreenImage
+		{
+            ControlName             RuiPanel
+			xpos				    0
+	        ypos				    0
+            wide                    1920
+            tall                    1080
+            visible                 0
+            rui                     "ui/custom_loadscreen_image.rpak"
+
+            pin_to_sibling			Screen
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}

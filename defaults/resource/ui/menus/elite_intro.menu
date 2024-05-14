@@ -1,0 +1,221 @@
+resource/ui/menus/elite_intro.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+            labelText ""
+        }
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+        EliteBadge
+        {
+            ControlName				RuiPanel
+            wide					%100
+            tall					%100
+            ypos                    0
+            xpos                    0
+            rui                     "ui/elite_intro_bg.rpak"
+            labelText               ""
+            visible					1
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+        Text1
+        {
+            ControlName				RuiPanel
+            wide					600
+            tall					800
+            ypos                    -150
+            xpos                    50
+            rui                     "ui/elite_info_text.rpak"
+            labelText               ""
+            visible					1
+
+            ruiArgs
+            {
+                title       "#ELITE_INTRO_TITLE_1"
+                body        "#ELITE_INTRO_BODY_1"
+            }
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	CENTER
+        }
+
+        Text2
+        {
+            ControlName				RuiPanel
+            wide					600
+            tall					800
+            ypos                    0
+            xpos                    50
+            rui                     "ui/elite_info_text.rpak"
+            labelText               ""
+            visible					1
+
+            ruiArgs
+            {
+                title       "#ELITE_INTRO_TITLE_2"
+                body        "#ELITE_INTRO_BODY_2"
+            }
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	CENTER
+        }
+
+        Text3
+        {
+            ControlName				RuiPanel
+            wide					600
+            tall					800
+            ypos                    100
+            xpos                    50
+            rui                     "ui/elite_info_text.rpak"
+            labelText               ""
+            visible					1
+
+            ruiArgs
+            {
+                title       " "
+                body        "#ELITE_INTRO_BODY_3"
+            }
+
+            proportionalToParent    1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	CENTER
+        }
+
+        ClickOverlay
+        {
+            ControlName             RuiButton
+
+            wide					%100
+            tall					%100
+
+            scriptID                1
+
+            rui                     "ui/basic_image.rpak"
+            ruiArgs
+            {
+                basicImageAlpha     0.0
+            }
+
+            xpos                    0
+            ypos                    0
+            zpos                    100
+
+            rightClickEvents        1
+
+            visible                 1
+            enabled                 1
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   CENTER
+            pin_to_sibling_corner   CENTER
+
+            sound_accept            ""
+        }
+
+        EquipButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            wide					282
+            tall					84
+
+            xpos					50
+            ypos					360
+            zpos                    200
+
+            rui						"ui/elite_badge_equip_button.rpak"
+            labelText				""
+            visible					1
+            enabled					1
+            tabPosition             1
+
+            ruiArgs
+            {
+                buttonText "#EQUIP_ELITE_BADGE"
+            	descText ""
+            }
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	LEFT
+            pin_to_sibling_corner	CENTER
+
+            sound_accept ""
+        }
+
+
+        CloseButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            wide					282
+            tall					84
+
+            xpos					10
+            ypos					0
+            zpos                    200
+
+            rui						"ui/generic_bar_desc_button.rpak"
+            labelText				""
+            visible					1
+            enabled					1
+
+            ruiArgs
+            {
+                buttonText "#CLOSE"
+            	descText ""
+            }
+
+            pin_to_sibling			EquipButton
+            pin_corner_to_sibling	LEFT
+            pin_to_sibling_corner	RIGHT
+        }
+	}
+}

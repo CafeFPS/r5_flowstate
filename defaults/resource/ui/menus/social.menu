@@ -1,0 +1,367 @@
+resource/ui/menus/social.menu
+{
+	menu
+	{
+		ControlName				Frame
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+            labelText               ""
+        }
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+            zpos                    999
+        }
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+        MenuHeader
+        {
+            ControlName				RuiPanel
+			ypos					-48
+            wide					1800
+            tall					208
+            visible				    1
+            rui                     "ui/friend_menu_header.rpak"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+		Decoration
+		{
+			ControlName             RuiPanel
+   			wide					f0
+   			tall                    f0
+	        rui                     "ui/customize_character_menu_decoration.rpak"
+		}
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+		PanelFrame
+		{
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					1800
+            tall					660
+            labelText				""
+            visible				    0
+            bgcolor_override        "255 255 0 100"
+            paintbackground         1
+
+            pin_to_sibling          MenuHeader
+            pin_corner_to_sibling   TOP
+            pin_to_sibling_corner   BOTTOM
+		}
+
+		MyGridButton
+		{
+            ControlName			    RuiButton
+            InheritProperties	    FriendGridButton
+            visible			        1
+            tabPosition             1
+
+            navDown                 PartyPrivacyButton
+            navRight                GridButton0x0
+
+            pin_to_sibling          PanelFrame
+            pin_corner_to_sibling   TOP_LEFT
+            pin_to_sibling_corner   TOP_LEFT
+		}
+
+        PartyPrivacyButton
+        {
+            ControlName             RuiButton
+            classname               "MenuButton"
+            wide                    400
+            tall                    80
+            xpos                    0
+            ypos                    16
+            rui                     "ui/generic_left_icon_button.rpak"
+            labelText               ""
+            visible                 1
+            cursorVelocityModifier  0.7
+
+            navUp                   MyGridButton
+            navRight                GridButton1x0
+
+            pin_to_sibling          MyGridButton
+            pin_corner_to_sibling   TOP_RIGHT
+            pin_to_sibling_corner   BOTTOM_RIGHT
+        }
+
+        LeavePartyButton
+        {
+            ControlName             RuiButton
+            classname               "MenuButton"
+            wide                    400
+            tall                    80
+            ypos                    16
+            rui                     "ui/generic_left_icon_button.rpak"
+            labelText               ""
+            visible                 1
+            cursorVelocityModifier  0.7
+
+            navUp                   PartyPrivacyButton
+            navDown                 LastSquadInvitePrivacyButton
+            navRight                GridButton2x0
+
+            pin_to_sibling          PartyPrivacyButton
+            pin_corner_to_sibling   TOP_RIGHT
+            pin_to_sibling_corner   BOTTOM_RIGHT
+        }
+
+        LastSquadInvitePrivacyButton
+        {
+            ControlName             RuiButton
+            classname               "MenuButton"
+            wide                    400
+            tall                    80
+            ypos                    16
+            rui                     "ui/generic_left_icon_button.rpak"
+            labelText               ""
+            visible                 1
+            cursorVelocityModifier  0.7
+
+            navUp                   LeavePartyButton
+            navDown                 SteamLink [!$GAMECONSOLE]
+            navRight                GridButton3x0
+
+            pin_to_sibling          LeavePartyButton
+            pin_corner_to_sibling   TOP_RIGHT
+            pin_to_sibling_corner   BOTTOM_RIGHT
+        }
+
+        AddFriendButton
+        {
+            ControlName             RuiButton
+            classname               "MenuButton"
+            wide                    400
+            tall                    80
+            ypos                    0//96//16
+            rui                     "ui/generic_left_icon_button.rpak"
+            labelText               ""
+            visible                 0
+            cursorVelocityModifier  0.7
+
+            pin_to_sibling			PanelFrame
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        SteamLink [!$GAMECONSOLE]
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            ypos					16
+            wide					400
+            tall					80
+            visible					1
+
+            navUp                   LeavePartyButton
+            navRight                GridButton5x0
+
+            rui                     "ui/generic_left_icon_button.rpak"
+
+            pin_to_sibling			AddFriendButton
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        DividerLine
+        {
+            ControlName				RuiPanel
+            rui                     "ui/basic_image.rpak"
+            xpos					48
+            wide					1
+            tall					660
+            visible					1
+
+            pin_to_sibling			FriendGrid
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        FriendGridBackground
+        {
+            ControlName				RuiPanel
+            rui                     "ui/grid_spinner.rpak"
+            wide                    1300
+            tall                    660
+            visible					1
+
+            pin_to_sibling			FriendGrid
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+        }
+
+        FriendGrid
+        {
+            ControlName				CNestedPanel
+            wide                    1300
+            tall                    660
+            visible					1
+
+			controlSettingsFile		"resource/ui/menus/panels/friend_list_grid.res"
+
+            pin_to_sibling          PanelFrame
+            pin_corner_to_sibling   TOP_RIGHT
+            pin_to_sibling_corner   TOP_RIGHT
+        }
+
+        PageButton7
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                7
+            ypos                    16
+
+            pin_to_sibling			FriendGrid
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        PageButton6
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                6
+            xpos                    8
+
+            pin_to_sibling			PageButton7
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton5
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                5
+            xpos                    8
+
+            pin_to_sibling			PageButton6
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton4
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                4
+            xpos                    8
+
+            pin_to_sibling			PageButton5
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton3
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                3
+            xpos                    8
+
+            pin_to_sibling			PageButton4
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton2
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                2
+            xpos                    8
+
+            pin_to_sibling			PageButton3
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton1
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                1
+            xpos                    8
+
+            pin_to_sibling			PageButton2
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+
+        PageButton0
+        {
+            ControlName				RuiButton
+            InheritProperties       PaginationButton
+            scriptID                0
+            xpos                    8
+
+            pin_to_sibling			PageButton1
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+        }
+	}
+}

@@ -1,0 +1,294 @@
+resource/ui/menus/dialog.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+		DarkenBackground
+		{
+			ControlName				Label
+			xpos					0
+			ypos					0
+			zpos                    -1
+			wide					%100
+			tall					%100
+			labelText				""
+			bgcolor_override		"0 0 0 150"
+			visible					0
+			paintbackground			1
+		}
+
+		DialogFrame
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					664
+			rui                     "ui/basic_image.rpak"
+			visible					1
+
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		DialogHeader
+		{
+			ControlName				Label
+			xpos					-368
+			ypos                    -40
+			auto_wide_tocontents	1
+			tall					41
+			visible					1
+			labelText				""
+			font					DefaultRegularFont
+			fontHeight				41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP
+		}
+
+		DialogMessage
+		{
+			ControlName				Label
+			classname 				DialogMessageClass
+			ypos					28
+			wide					736
+			auto_tall_tocontents	1
+			visible					1
+			labelText				""
+			font					DefaultRegularFont
+			fontHeight				28
+			textAlignment			north-west
+			wrap					1
+
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		DialogMessageRui
+		{
+			ControlName				RuiPanel
+			classname 				DialogMessageRuiClass
+			ypos					28
+			wide					736
+			tall                    196
+			visible					1
+			rui                     "ui/dialog_message_area.rpak"
+
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		DialogImage
+		{
+			ControlName				RuiPanel
+			classname 				DialogImageClass
+			xpos                    30
+			ypos                    -8
+			wide					160
+			tall					160
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		DialogSpinner
+		{
+			ControlName				RuiPanel
+			InheritProperties		RuiDialogSpinner
+			classname 				DialogSpinnerClass
+			xpos					30
+			ypos					-8
+
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		Button0
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				0
+			navUp					Button8
+			navDown					Button1
+			tabPosition				1
+
+			pin_to_sibling			Button1
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button1
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				1
+			navUp					Button0
+			navDown					Button2
+
+			pin_to_sibling			Button2
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button2
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				2
+			navUp					Button1
+			navDown					Button3
+
+			pin_to_sibling			Button3
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button3
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				3
+			navUp					Button2
+			navDown					Button4
+
+			pin_to_sibling			Button4
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button4
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				4
+			navUp					Button3
+			navDown					Button5
+
+			pin_to_sibling			Button5
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button5
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				5
+			navUp					Button4
+			navDown					Button6
+
+			pin_to_sibling			Button6
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button6
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				6
+			navUp					Button5
+			navDown					Button7
+
+			pin_to_sibling			Button7
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button7
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				7
+			navUp					Button6
+			navDown					Button8
+
+			pin_to_sibling			Button8
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button8
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				8
+			navUp					Button7
+			navDown					Button9
+
+			pin_to_sibling			Button9
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Button9
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname				DialogButtonClass
+			scriptID				9
+			navUp					Button8
+			navDown					Button0
+
+			pin_to_sibling			DialogFooterButtons
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        DialogFooterButtons
+        {
+			ControlName				CNestedPanel
+			InheritProperties       DialogFooterButtonsR2
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM
+        }
+	}
+}

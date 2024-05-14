@@ -1,0 +1,269 @@
+resource/ui/menus/customize_character.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		ScreenBlur
+		{
+			ControlName				Label
+		    labelText				""
+		}
+
+        Title
+        {
+            ControlName				RuiPanel
+			ypos					-48
+            wide					912
+            tall					65
+            visible				    1
+            rui                     "ui/menu_title.rpak"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+		TabsCommon
+		{
+			ControlName				CNestedPanel
+			classname				"TabsCommonClass"
+			ypos                    -132
+			zpos					1
+			wide					f0
+			tall					44
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/tabs_character_customize.res"
+
+			pin_to_sibling			ScreenFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		UserInfo
+		{
+			ControlName             RuiButton
+			InheritProperties       UserInfo
+	        xpos                    "%-2.5"
+	        zpos                    4
+
+	        pin_to_sibling			ScreenFrame
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+
+		Decoration
+		{
+			ControlName             RuiPanel
+   			wide					f0
+   			tall                    f0
+	        rui                     "ui/customize_character_menu_decoration.rpak"
+		}
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	    CharacterSkinsPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_skins.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharacterCardsPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_banners.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharacterCardsPanelV2
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_banners_v2.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharacterQuipsPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_quips.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharacterEmotesPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_emotes.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharacterExecutionsPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+			wide					1728
+			tall					820
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/character_executions.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        PrevButton
+        {
+            ControlName				RuiButton
+            wide					100
+            tall					%100
+            rui                     "ui/switch_button.rpak"
+            labelText               ""
+            visible					0 //1
+            cursorVelocityModifier  0.7
+
+            proportionalToParent    1
+
+            pin_to_sibling			Vignette
+            pin_corner_to_sibling	LEFT
+            pin_to_sibling_corner	LEFT
+        }
+
+        NextButton
+        {
+            ControlName				RuiButton
+            wide					100
+            tall					%100
+            rui                     "ui/switch_button.rpak"
+            labelText               ""
+            visible					0 //1
+            cursorVelocityModifier  0.7
+
+            proportionalToParent    1
+
+            pin_to_sibling			Vignette
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	RIGHT
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+
+//        Guide // TEMP
+//        {
+//            ControlName				RuiPanel
+//            zpos					10
+//            wide					%100
+//            tall					%100
+//            visible					1
+//            enabled					1
+//            proportionalToParent    1
+//            rui 					"ui/guide.rpak"
+//        }
+	}
+}

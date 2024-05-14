@@ -1,0 +1,29 @@
+resource/ui/menus/notifications.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos                    c-340
+		ypos                    r140
+		zpos					100
+		wide					560
+		tall					140
+		autoResize				0
+		pinCorner				0
+		visible					0
+		enabled					0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        NotificationBox
+        {
+            ControlName		RuiPanel
+            wide			680
+            tall			140
+            visible			1
+            enabled         0
+            rui                     "ui/notification_box.rpak"
+        }
+	}
+}

@@ -1,0 +1,241 @@
+resource/ui/menus/post_game_ranked.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		disableDpad             1
+
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            visible				    1
+            bgcolor_override        "0 0 0 160"
+            paintbackground         1
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+            labelText               ""
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		Decoration
+		{
+			ControlName             RuiPanel
+   			wide					f0
+   			tall                    f0
+	        rui                     "ui/customize_character_menu_decoration.rpak"
+	        visible 0
+		}
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        MenuHeader
+        {
+            ControlName				RuiPanel
+			ypos					-48
+            wide					1800
+            tall					208
+            visible				    1
+            rui                     "ui/generic_menu_header.rpak"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+        MatchRank
+        {
+            ControlName				RuiPanel
+            rui                     "ui/match_rank.rpak"
+            xpos                    -122
+
+            wide					850 //800
+            tall					850 //800
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP
+        }
+
+		MenuFrame
+		{
+			ControlName				Label
+			xpos					0
+			ypos					c-420
+			wide					%100
+			tall					906
+			labelText				""
+			bgcolor_override		"70 70 70 0"
+			visible					1
+			paintbackground			1
+		}
+
+        SummaryBox
+        {
+            ControlName				RuiPanel
+            rui                     "ui/match_summary_bg.rpak"
+            xpos                    0
+            ypos                    50
+            wide                    900
+            tall                    700
+            visible					1
+
+            zpos                    400
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   CENTER
+            pin_to_sibling_corner   CENTER
+        }
+
+        XPEarned1
+        {
+            ControlName				RuiPanel
+            rui                     "ui/xp_earned_box.rpak"
+            xpos                    0
+            ypos                    -90
+            wide                    380
+            tall                    280
+            visible					1
+
+            ruiARgs
+            {
+            }
+
+            zpos                    500
+
+            pin_to_sibling          SummaryBox
+            pin_corner_to_sibling   TOP
+            pin_to_sibling_corner   TOP
+        }
+
+        RankedScoreAdjustment
+        {
+            ControlName				RuiPanel
+            rui                     "ui/ranked_score_adjustment.rpak"
+            xpos                    0
+            ypos                    -80
+            wide					300
+            tall					100
+            visible					1
+
+            zpos                    500
+
+            pin_to_sibling          XPEarned1
+            pin_corner_to_sibling   TOP_LEFT
+            pin_to_sibling_corner   BOTTOM
+        }
+
+        RankedProgressBar
+        {
+            ControlName				RuiPanel
+            rui                     "ui/ranked_progress_bar.rpak"
+            xpos                    -20
+            ypos                    30
+            wide					625
+            tall					125
+            visible					1
+
+            zpos                    500
+
+            pin_to_sibling          RankedScoreAdjustment
+            pin_corner_to_sibling   TOP
+            pin_to_sibling_corner   BOTTOM_LEFT
+        }
+
+        ContinueButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            wide					384
+            tall					66
+            rui                     "ui/generic_button.rpak"
+            labelText               ""
+            visible					1
+            cursorVelocityModifier  0.7
+            zpos                    300
+
+            proportionalToParent    1
+
+            ruiArgs
+            {
+                buttonText          "#A_BUTTON_CONTINUE"
+            }
+
+            pin_to_sibling			MenuFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+		MovingBoxBG
+		{
+		    ControlName             RuiPanel
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            rui                     "ui/rank_shift_bg_anim.rpak"
+            zpos                    501
+            visible 0
+		}
+
+        RewardDisplay
+        {
+            ControlName             RuiPanel
+            rui                     "ui/ranked_level_up_container.rpak"
+            wide                    %100
+            tall                    %100
+            visible                 1
+
+            zpos                    501
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   CENTER
+            pin_to_sibling_corner   CENTER
+        }
+        
+// FOOTER //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+    }
+}

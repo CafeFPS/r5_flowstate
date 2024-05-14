@@ -1,0 +1,767 @@
+scripts/resource/ui/menus/FRChallenges/flowstate_valksimulator_settings.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/invisible.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+		}	
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%50//%70
+			xpos                    %50//%15
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.9
+            }
+		}
+
+		Title
+		{
+			ControlName				Label
+			xpos                    -30
+			ypos					-30
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				60
+			labelText				"FLOWSTATE VALK ULT SIMULATOR"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"191 13 13 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		Line
+		{
+			ControlName				ImagePanel
+			wide			660
+			tall            2
+			fillColor		"52 255 41 200"
+			drawColor		"52 255 41 200"
+			visible					0
+			ypos					0
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		Background
+		{
+			ControlName				RuiPanel
+			wide					%50
+			tall					85
+			xpos					0
+			visible					1
+			enabled					1
+			proportionalToParent    1
+			rui 					"ui/tabs_background.rpak"
+			
+			pin_to_sibling				Line
+		}
+
+		Settings
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"205"
+			"scriptID"					"0"
+			"ypos" "0"
+			ruiArgs
+			{
+				isSelected 1
+				buttonText "SETTINGS"
+			}
+
+			"pin_to_sibling"			"Line"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+
+		Logo
+        {
+            ControlName					RuiPanel
+			InheritProperties       	Logo
+			ypos -1
+			xpos -50
+			wide 110
+			tall 132
+            pin_to_sibling				Line
+            pin_corner_to_sibling		TOP_LEFT
+            pin_to_sibling_corner		TOP_LEFT
+        }
+		
+		MadeBy
+		{
+			ControlName				Label
+			xpos                    -40
+			ypos					-60
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"v1.0 | Made by @CafeFPS. %$rui/flowstate_custom/colombia_flag_papa%"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+
+		MadeBy2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					20
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"Powered by R5Reloaded - ©Respawn Entertainment"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			MadeBy
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+//
+
+		NumBotsText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Mode"
+				visible                 1
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    160
+				xpos					-210
+				pin_to_sibling          Background
+				pin_corner_to_sibling   CENTER
+				pin_to_sibling_corner   CENTER
+		}
+
+		Mode1_Button
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					130
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Jump Tower"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    190
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          NumBotsText
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		Mode2_Button
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					100
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "EVAC"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    130
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          Mode1_Button
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		Mode3_Button
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					130
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Valk Team"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    160
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          Mode2_Button
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		Mode4_Button
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					140
+			tall					40
+			sound_focus           	"UI_Menu_Focus_Small"
+			sound_accept          	"ui_rankedsummary_circletick_reached"
+			cursorPriority        	"-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Valk Unfollow"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    160
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          Mode3_Button
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}				
+//
+
+
+//
+		FlyHeightButtonText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Height"
+				visible                 1
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    100
+				xpos					0
+				pin_to_sibling          NumBotsText
+				pin_corner_to_sibling   BOTTOM_LEFT
+				pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		FlyHeightButton
+		{
+			ControlName				SliderControl
+			InheritProperties		SliderControl
+			xpos 535
+			wide 360
+			zpos 5
+			showlabel 0
+			tabPosition				0
+			style					DialogListButton
+			classname				"SettingsBtn"
+			conCommand				"hud_setting_accessibleChat"
+			minValue				1000
+			maxValue				10000
+			stepSize				1
+			showConVarAsFloat		0
+			pin_to_sibling			FlyHeightButtonText
+			pin_corner_to_sibling	RIGHT
+			pin_to_sibling_corner	RIGHT
+		}
+
+		PositionOffsetTextBox
+		{
+			wide 55
+			ControlName				TextEntry
+			InheritProperties       SliderControlTextEntry
+			syncedConVar            "hud_setting_accessibleChat"
+			classname				"SettingsBtn"
+			showConVarAsInt			1
+
+			pin_to_sibling			FlyHeightButton
+			pin_corner_to_sibling	RIGHT
+			pin_to_sibling_corner	RIGHT
+		}
+//
+		SelectBeamToModifyText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Skydive Strafe Pattern"
+				visible                 1
+				// wide 500
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				xpos                    70
+				ypos                    100
+				zpos                    15
+
+				pin_to_sibling          FlyHeightButtonText
+				pin_corner_to_sibling   BOTTOM_LEFT
+				pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		SelectBeamToModifyButton_Local
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					100
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Disabled"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    160
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          SelectBeamToModifyText
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		SelectBeamToModifyButton_Enemy
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					100
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Fixed"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    130
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          SelectBeamToModifyButton_Local
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		SelectBeamToModifyButton_Enemy2
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/generic_friend_button.rpak"
+			wide					100
+			tall					40
+			sound_focus           "UI_Menu_Focus_Small"
+			sound_accept          "ui_rankedsummary_circletick_reached"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "Variable"
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			textAlignment			center
+			xpos                    130
+			ypos                    0
+			zpos                    15
+
+			pin_to_sibling          SelectBeamToModifyButton_Enemy
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		RButtonText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Dive Angle"
+				visible                 1
+				// wide 500
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    100
+				xpos					-75
+				pin_to_sibling          SelectBeamToModifyText
+				pin_corner_to_sibling   BOTTOM_LEFT
+				pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		RButton
+		{
+			ControlName				SliderControl
+			InheritProperties		SliderControl
+			// xpos 400
+			wide 360
+			zpos 5
+			showlabel 0
+			tabPosition				0
+			style					DialogListButton
+			classname				"SettingsBtn"
+			conCommand				"hud_setting_adsDof"
+			minValue				1.0
+			maxValue				90.0
+			stepSize				1.0
+			showConVarAsFloat		1
+
+			ypos                    100
+			xpos					0
+			pin_to_sibling          SelectBeamToModifyButton_Local
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		RTextBox
+		{
+			wide 55
+			ControlName				TextEntry
+			InheritProperties       SliderControlTextEntry
+			syncedConVar            "hud_setting_adsDof"
+			classname				"SettingsBtn"
+			showConVarAsFloat		1
+			// ypos                    100
+			xpos					-8
+			pin_to_sibling			RButton
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+		
+		GButtonText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Strafe Fixed Time"
+				visible                 0
+				// wide 500
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    100
+				xpos					0
+				pin_to_sibling          RButtonText
+				pin_corner_to_sibling   BOTTOM
+				pin_to_sibling_corner   BOTTOM
+		}
+
+		GButton
+		{
+			ControlName				SliderControl
+			InheritProperties		SliderControl
+			visible                 0
+			// xpos 400
+			wide 360
+			zpos 5
+			showlabel 0
+			tabPosition				0
+			style					DialogListButton
+			classname				"SettingsBtn"
+			conCommand				"damage_indicator_style_titan"
+			minValue				0.1
+			maxValue				3.0
+			stepSize				0.1
+			showConVarAsFloat		1
+
+			ypos                    100
+			xpos					0
+			pin_to_sibling          RButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		GTextBox
+		{
+			wide 55
+			ControlName				TextEntry
+			InheritProperties       SliderControlTextEntry
+			visible                 0
+			syncedConVar            "damage_indicator_style_titan"
+			classname				"SettingsBtn"
+			showConVarAsFloat		1
+			// ypos                    100
+			xpos					-8
+			pin_to_sibling			GButton
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+		GButtonText2
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Strafe Min Time"
+				visible                 0
+				// wide 500
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    100
+				xpos					0
+				pin_to_sibling          RButtonText
+				pin_corner_to_sibling   BOTTOM
+				pin_to_sibling_corner   BOTTOM
+		}
+
+		GButton2
+		{
+			ControlName				SliderControl
+			InheritProperties		SliderControl
+			// xpos 400
+			wide 360
+			visible                 0
+			zpos 5
+			showlabel 0
+			tabPosition				0
+			style					DialogListButton
+			classname				"SettingsBtn"
+			conCommand				"hud_setting_pingAlpha"
+			minValue				0.1
+			maxValue				5.0
+			stepSize				0.1
+			showConVarAsFloat		1
+
+			ypos                    100
+			xpos					0
+			pin_to_sibling          RButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		GTextBox2
+		{
+			wide 55
+			ControlName				TextEntry
+			InheritProperties       SliderControlTextEntry
+			syncedConVar            "hud_setting_pingAlpha"
+			classname				"SettingsBtn"
+			visible                 0
+			showConVarAsFloat		1
+			// ypos                    100
+			xpos					-8
+			pin_to_sibling			GButton
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+		
+		BButtonText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Strafe Max Time"
+				visible                 0
+				// wide 500
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn"
+				ypos                    100
+				xpos					0
+				pin_to_sibling          GButtonText
+				pin_corner_to_sibling   BOTTOM
+				pin_to_sibling_corner   BOTTOM
+		}
+
+		BButton
+		{
+			ControlName				SliderControl
+			InheritProperties		SliderControl
+			visible                 0
+			// xpos 400
+			wide 360
+			zpos 5
+			showlabel 0
+			tabPosition				0
+			style					DialogListButton
+			classname				"SettingsBtn"
+			conCommand				"hud_setting_showCallsigns"
+			minValue				0.1
+			maxValue				5.0
+			stepSize				0.1
+			showConVarAsFloat		1
+
+			ypos                    100
+			xpos					0
+			pin_to_sibling          GButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		BTextBox
+		{
+			wide 55
+			ControlName				TextEntry
+			InheritProperties       SliderControlTextEntry
+			syncedConVar            "hud_setting_showCallsigns"
+			visible                 0
+			classname				"SettingsBtn"
+			showConVarAsFloat		1
+			// ypos                    100
+			xpos					-8
+			pin_to_sibling			BButton
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+
+
+		// FormationText
+		// {
+				// ControlName				Label
+				// auto_wide_tocontents    1
+				// labelText				"Formation"
+				// visible                 1
+				// // wide 500
+				// zpos 15
+				// tall					60
+				// fontHeight				30
+				// font					Default
+				// fgcolor_override		"255 255 255 255"
+				// "classname"					"SettingsBtn"
+				// ypos                    100
+				// xpos					-32
+				// pin_to_sibling          NumBotsText
+				// pin_corner_to_sibling   BOTTOM_LEFT
+				// pin_to_sibling_corner   BOTTOM_LEFT
+		// }
+		
+		// FormationSingle_Button
+		// {
+			// "ControlName" 			"RuiButton"
+			// "rui"					"ui/generic_friend_button.rpak"
+			// wide					100
+			// tall					40
+			// sound_focus           "UI_Menu_Focus_Small"
+			// sound_accept          "ui_rankedsummary_circletick_reached"
+			// cursorPriority        "-1"	
+			
+			// ruiArgs
+			// {
+				// isSelected 0
+				// buttonText "Single"
+				// basicImageColor     "255 255 255"
+                // basicImageAlpha     1
+			// }
+			// textAlignment			center
+			// xpos                    235
+			// ypos                    0
+			// zpos                    15
+
+			// pin_to_sibling          FormationText
+			// pin_corner_to_sibling   RIGHT
+			// pin_to_sibling_corner   RIGHT
+		// }
+
+		// FormationSquad_Button
+		// {
+			// "ControlName" 			"RuiButton"
+			// "rui"					"ui/generic_friend_button.rpak"
+			// wide					100
+			// tall					40
+			// sound_focus           "UI_Menu_Focus_Small"
+			// sound_accept          "ui_rankedsummary_circletick_reached"
+			// cursorPriority        "-1"	
+			
+			// ruiArgs
+			// {
+				// isSelected 0
+				// buttonText "Squad"
+				// basicImageColor     "255 255 255"
+                // basicImageAlpha     1
+			// }
+			// textAlignment			center
+			// xpos                    130
+			// ypos                    0
+			// zpos                    15
+
+			// pin_to_sibling          FormationSingle_Button
+			// pin_corner_to_sibling   RIGHT
+			// pin_to_sibling_corner   RIGHT
+		// }
+	}
+}
