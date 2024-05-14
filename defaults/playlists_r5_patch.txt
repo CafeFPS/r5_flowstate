@@ -512,12 +512,7 @@ playlists
 				max_players                                    120
 				min_players                                    1
 
-				//Some features added by CafeFPS
-
-				flowstate_give_hiswattson_charm					0
-				is_hiswattson_ltm								0 //Add hiswattson ltm logo, removes beta watermark
-				flowstate_armed_and_dangerous_ltm				0
-				flowstate_disable_all_map_triggers				0
+				flowstate_disable_all_map_triggers				1
 
 				enable_global_chat								1
 				flowstate_enable_punch_boosting					0
@@ -1954,7 +1949,6 @@ playlists
 				flowstate_afk_kick_enable				0
 		
 				//visuals
-				is_hiswattson_ltm						1
 				flowstate_evo_shields					0
 				battlechatter_enabled					0
 				flowstateRandomCharacterOnSpawn			0
@@ -2033,7 +2027,6 @@ playlists
 				
 				is_halo_gamemode					1
 				enable_oddball_gamemode				1
-				is_hiswattson_ltm					1
 
 				//For FFA classic mode
 				//specific weapons and abilities settings
@@ -2087,7 +2080,6 @@ playlists
 				flowstate_afk_kick_enable				0
 		
 				//visuals
-				is_hiswattson_ltm						1
 				flowstate_evo_shields					0
 				battlechatter_enabled					0
 				flowstateRandomCharacterOnSpawn			0
@@ -2136,8 +2128,7 @@ playlists
 				max_team_size									8
 				max_players                                    8
 				min_players                                    8
-				
-				is_hiswattson_ltm	1
+
 				// General Settings:
 				survival_shields                               1
 				skydive_ziplines_enabled                       0
@@ -2971,8 +2962,6 @@ playlists
 
 				//Some features added by CafeFPS
 
-				flowstate_give_hiswattson_charm					0
-				is_hiswattson_ltm								0 //Add hiswattson ltm logo, removes beta watermark
 				flowstate_armed_and_dangerous_ltm				0
 				flowstate_disable_all_map_triggers				0
 

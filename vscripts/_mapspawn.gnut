@@ -250,9 +250,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/props/charm/charm_nessy_ghost.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_clown.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_witch.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl" )
 	
 	PrecacheParticleSystem( $"train_far_beam_far_blink" )
 	

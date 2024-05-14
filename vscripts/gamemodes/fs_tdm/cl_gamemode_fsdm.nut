@@ -484,7 +484,7 @@ void function Flowstate_PlayStartRoundSounds()
 	if( Flowstate_IsHaloMode() )
 	{
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		// Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 	

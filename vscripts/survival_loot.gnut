@@ -1890,22 +1890,6 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
 		weapon.SetLegendaryModelIndex(RandomInt(4))
 
-	if ( GetCurrentPlaylistVarBool( "flowstate_give_hiswattson_charm", false ) )
-	{		
-		int charmIndex = RandomInt( 2 )
-		
-		switch( charmIndex )
-		{
-			case 0:
-				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl", "CHARM")
-				//weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl", "CHARM")
-			break
-			case 1:
-				weapon.SetWeaponCharm( $"mdl/flowstate_custom/charm_hiswattson.rmdl", "CHARM")
-			break
-		}
-	}
-	
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 

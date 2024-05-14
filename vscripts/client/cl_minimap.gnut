@@ -1828,9 +1828,9 @@ void function UpdateMapFeatures()
 {
 	if ( Flowstate_IsHaloMode() && file.fullmap_legendRui != null )
 	{
-		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Halo Mod" )
-		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Master Chief is Cool, HisWattson too. \n\nMade in Colombia with love by @CafeFPS and Darkes65." )
-		RuiSetImage( file.fullmap_legendRui, "itemIcon1", $"rui/flowstatecustom/hiswattson_ltms" )
+		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Flowstate Halo Mod" )
+		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Made in Colombia with love by @CafeFPS and Darkes65." )
+		RuiSetImage( file.fullmap_legendRui, "itemIcon1", $"" )
 		return
 	}
 	
