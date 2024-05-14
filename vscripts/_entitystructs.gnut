@@ -795,6 +795,8 @@ global struct ServerPlayerStruct
 	
 	bool bTextmute 				= false
 	
+
+	
 	
 	
 	//MovementGym

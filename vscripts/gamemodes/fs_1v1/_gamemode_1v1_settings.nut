@@ -1,15 +1,17 @@
 //1v1 locations/panels SHARED with 3v3 mode
 
-global function ReturnAllSoloLocations
+global function ReturnAllSpawnLocations
 global function ReturnAllPanelLocations
 global LocPair &waitingRoomPanelLocation
 
-global function CreateLocPairData
+global function CreateLocPairObject
 global function AddCallback_FlowstateSpawnsInit
 global function SetPreferredSpawnPak
 
 global function GetCurrentSpawnSet
 global function GetCurrentSpawnAsset
+global function SetCustomSpawnPak
+global function SetCustomPlaylist
 
 #if DEVELOPER
 	global function DEV_PosType
@@ -37,7 +39,9 @@ global function GetCurrentSpawnAsset
 		array<LocPairData functionref()> onSpawnInitCallbacks
 		int preferredSpawnPak = 1
 		string currentSpawnPak = ""
-		int size = 2
+		string customSpawnpak = ""
+		string customPlaylist = ""
+		int teamsize = 2
 		
 		#if DEVELOPER
 			array<string> dev_positions = []
@@ -63,71 +67,79 @@ global function GetCurrentSpawnAsset
 
 	
 
-array<LocPair> function ReturnAllSoloLocations( int eMap, table<string,bool> options = {}  )
+array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {}  )
 {
 	string defaultpak = "_set_1";
 	string spawnSet = defaultpak
+	string customRpak = "";
 	
-	if ( options.len() >= 3 && ValidateOptions( options ) )
+	if ( options.len() >= 5 && ValidateOptions( options ) )
 	{	
-		if( options.use_sets )
+		if( options.use_custom_rpak )
 		{
-			string mapSpawnString = "spawnsets_" + AllMapsArray()[ MapName() ]
-			string currentMapSpawnSets = GetCurrentPlaylistVarString( mapSpawnString, "" )
-			
-			array<string> setpaks = []
-			bool success = false
-			
-			try
-			{
-				setpaks = StringToArray( currentMapSpawnSets )
-				for( int i = 0; i < setpaks.len(); i++ )
-				{
-					if( !IsNumeric( setpaks[i] ) )
-					{
-						throw " error: " + setpaks[i] + " is not numeric..";
-					}
-					setpaks[i] = "_set_" + setpaks[i];
-				}
-				success = true
-			}
-			catch(e)
-			{
-				Warning( "Warning: " + e )
-				
-				spawnSet = defaultpak
-				success = false
-			}
-			
-			if( success )
-			{
-				string prefferred = "_set_" + string ( file.preferredSpawnPak )
-				if( options.prefer && setpaks.contains( prefferred ) )
-				{
-					int j = setpaks.find( prefferred )			
-					if( j == -1 )
-					{
-						Warning("Preferred spawnpak: " + prefferred + " not found!")
-						spawnSet = defaultpak
-					}
-					else
-					{
-						spawnSet = setpaks[j]
-					}	
-				}
-				else if( options.use_random )
-				{
-					spawnSet = setpaks.getrandom()
-				}
-				else 
-				{
-					printt("Invalid options configuraiton in spawnpaks")
-				}
-			}
+			customRpak = file.customSpawnpak
 		}
+		else 
+		{
+			if( options.use_sets )
+			{
+				string mapSpawnString = "spawnsets_" + AllMapsArray()[ MapName() ]
+				string currentMapSpawnSets = GetCurrentPlaylistVarString( mapSpawnString, "" )
+				
+				array<string> setpaks = []
+				bool success = false
+				
+				try
+				{
+					setpaks = StringToArray( currentMapSpawnSets )
+					for( int i = 0; i < setpaks.len(); i++ )
+					{
+						if( !IsNumeric( setpaks[i] ) )
+						{
+							throw " error: " + setpaks[i] + " is not numeric..";
+						}
+						setpaks[i] = "_set_" + setpaks[i];
+					}
+					success = true
+				}
+				catch(e)
+				{
+					Warning( "Warning: " + e )
+					
+					spawnSet = defaultpak
+					success = false
+				}
+				
+				if( success )
+				{
+					string prefferred = "_set_" + string ( file.preferredSpawnPak )
+					if( options.prefer && setpaks.contains( prefferred ) )
+					{
+						int j = setpaks.find( prefferred )			
+						if( j == -1 )
+						{
+							Warning("Preferred spawnpak: " + prefferred + " not found!")
+							spawnSet = defaultpak
+						}
+						else
+						{
+							spawnSet = setpaks[j]
+						}	
+					}
+					else if( options.use_random )
+					{
+						spawnSet = setpaks.getrandom()
+					}
+					else 
+					{
+						printt("Invalid options configuraiton in spawnpaks")
+					}
+				}
+			}
+		} //custom rpak override
 	}
 	
-	return FetchReturnAllLocations( eMap, spawnSet )
+	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )
 }
 
 array<LocPair> function ReturnAllPanelLocations() //TODO: remove (deprecated)
@@ -135,7 +147,7 @@ array<LocPair> function ReturnAllPanelLocations() //TODO: remove (deprecated)
 	return FetchReturnAllPanelLocations()
 }
 
-LocPairData function CreateLocPairData( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null )
+LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null )
 {
 	LocPairData data
 	
@@ -229,7 +241,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_canyonlands_staging:
 		
 			
-			if( Playlist() == ePlaylists.lg_duels_1v1 )
+			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 			{
 				waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >)
 			}
@@ -417,36 +429,47 @@ vector function GenerateMapGamemodeBasedOffset( int eMap )
 	return baseOffset
 }
 
-string function GenerateAssetStringForMapAndGamemode( int eMap, string set )
+string function GenerateAssetStringForMapAndGamemode( int eMap, string set, string customRpak = "", string playlistOverride = "" )
 {
-	string dtbl_MapRef 			= AllMapsArray()[eMap]
-	string dtbl_PlaylistRef 	= AllPlaylistsArray()[Playlist()]
+	string spawnset = ""
 	
-	//pre conditionals
-	if( is1v1GameType() ){ dtbl_PlaylistRef = AllPlaylistsArray()[ePlaylists.fs_1v1] }//1v1 override
-	
-	// set spawnset
-	string spawnset 			= "datatable/fs_spawns_" + dtbl_PlaylistRef + "_" + dtbl_MapRef + set + ".rpak"	
-	file.currentSpawnPak		= spawnset
-	
-	//post conditionals
-	
-	if( eMap == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+	if ( !empty( customRpak ) )
 	{
-		spawnset = "datatable/fs_spawns_lgduels.rpak"
+		#if DEVELOPER 
+			printt("Custom spawns rpak is defined and set to be used: ", customRpak )
+		#endif 
+		spawnset = customRpak
+	}
+	else 
+	{
+		string dtbl_MapRef 			= AllMapsArray()[eMap]
+		string dtbl_PlaylistRef 	= AllPlaylistsArray()[Playlist()]
+		
+		//pre conditionals
+		if ( !empty( playlistOverride ) )
+		{
+			#if DEVELOPER 
+				printt( "Using playlist override ref", playlistOverride, "to load spawn set." )
+			#endif 
+			dtbl_PlaylistRef = playlistOverride
+		}
+		
+		// set spawnset
+		spawnset 					= "datatable/fs_spawns_" + dtbl_PlaylistRef + "_" + dtbl_MapRef + set + ".rpak"	
+		file.currentSpawnPak		= spawnset	
 	}
 	
 	return spawnset
 }
 
-array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1" )
+array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1", string customRpak = "", string customPlaylist = "" )
 {
 	array<LocPair> allSoloLocations
 	bool terminate = false
 	
 	try
 	{
-		string spawnset 	= GenerateAssetStringForMapAndGamemode( eMap, set )
+		string spawnset 	= GenerateAssetStringForMapAndGamemode( eMap, set, customRpak, customPlaylist )
 		vector originOffset = GenerateMapGamemodeBasedOffset( eMap )
 		
 		asset fetchasset 	= CastStringToAsset( spawnset )
@@ -532,27 +555,22 @@ void function DEV_PrintPosArray( string sFormat = "" )
 {
 	string printstring = "\n\n ----- POSITIONS ARRAY ----- \n\n"
 	
-	int spawnPairCount = 0
+	int spawnSetCount = 0
 	if( file.dev_positions.len() > 0 )
 	{
 		foreach( index, posString in file.dev_positions )
 		{		
 			
-			string AorB = ""
+			string identifier = GetIdentifier( index, file.teamsize )
 			
-			if( file.size <= 2 )
-			{
-				AorB = IsOdd( index ) ? "B" : "A";
-			}
-			
-			if( ( index + 1 ) % file.size == 1 )
+			if( ( index + 1 ) % file.teamsize == 1 )
 			{
 				string style = index > 1 ? "\n" : "";
-				spawnPairCount++; 
-				printstring += style + "Spawn pair " + spawnPairCount + "\n############\n"
+				spawnSetCount++; 
+				printstring += style + "Spawn set " + spawnSetCount + "\n############\n"
 			}
 			
-			printstring += string( index ) + " = " + posString + ":Player: " + AorB + "\n";
+			printstring += string( index ) + " = " + posString + ":Player: " + identifier + "\n";
 		}
 	}
 	else 
@@ -561,6 +579,17 @@ void function DEV_PrintPosArray( string sFormat = "" )
 	}
 	
 	printt( printstring )
+}
+
+array<string> letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+const int LETTER_COUNT = 26
+
+string function GetIdentifier( int index, int teamsize )
+{
+    int setIndex = index % teamsize
+    int letterIndex = setIndex % LETTER_COUNT
+    int cycle = setIndex / LETTER_COUNT
+    return letters[letterIndex] + ( cycle > 0 ? cycle.tostring() : "" )
 }
 
 string function DEV_append_pos_array_squirrel( vector origin, vector angles )
@@ -800,7 +829,7 @@ void function DEV_WritePosOut()
 
 void function DEV_SetTeamSize( int size )
 {
-	file.size = size
+	file.teamsize = size
 	printt( "Team size set to", size )
 }
 
@@ -811,15 +840,48 @@ void function DEV_SetTeamSize( int size )
 bool function ValidateOptions( table<string,bool> options )
 {
 	return ( 
-		"use_sets" 		in options &&
-		"use_random" 	in options &&
-		"prefer"		in options
+		"use_sets" 				in options &&
+		"use_random" 			in options &&
+		"prefer"				in options &&
+		"use_custom_rpak"		in options &&
+		"use_custom_playlist" 	in options
 	)
 }
 
 void function SetPreferredSpawnPak( int preference )
 {
 	file.preferredSpawnPak = preference
+}
+
+bool function SetCustomSpawnPak( string custom_rpak )
+{
+	bool success = false 
+	
+	if( !empty ( custom_rpak ) )
+	{
+		try 
+		{
+			string test = CastStringToAsset( custom_rpak )
+			success = true
+		}
+		catch(e)
+		{
+			Warning( "Custom Rpak Error: " + e )
+			Warning( "Skipping custom spawn rpak" )
+		}
+		
+		if( success )
+		{
+			file.customSpawnpak = custom_rpak
+		}
+	}
+	
+	return success
+}
+
+void function SetCustomPlaylist( string playlistref )
+{
+	file.customPlaylist = playlistref
 }
 
 string function GetCurrentSpawnSet()

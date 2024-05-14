@@ -293,11 +293,15 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
-			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+			
+			if( Playlist() != ePlaylists.fs_lgduels_1v1 && Playlist() != ePlaylists.fs_dm_fast_instagib )
+			{
+				SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+			}
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
 
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
 			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
 
 		if( Playlist() != ePlaylists.fs_aimtrainer )
@@ -306,7 +310,8 @@ void function UpdateSystemPanel( var panel )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
 			else
 				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
-		} else
+		} 
+		else
 		{
 			if(ISAIMTRAINER)
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )

@@ -80,6 +80,8 @@ global function ResetLoadedWeapons //tracker override
 global function ClientCommand_SaveCurrentWeapons
 global function ClientCommand_GiveWeapon
 
+global function ValidateWeaponTgiveSettings
+
 //LGDuels //TODO: move..somewhere.. 
 const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
 const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
@@ -1057,7 +1059,7 @@ LocPairData function Init_DropoffPatchSpawns()
 		];
 			
 			
-	LocPairData extendSpawns = CreateLocPairData( dropoff_patch, false, null )
+	LocPairData extendSpawns = CreateLocPairObject( dropoff_patch, false, null )
 	return extendSpawns
 }
 
@@ -1709,7 +1711,6 @@ void function _OnPlayerConnected(entity player)
 						_HandleRespawn(player)
 					else
 					{
-						printt_spam( 25, "EHHHHHH??????????")
 						if(file.thisroundDroppodSpawns.len() > 0){
 							player.p.isPlayerSpawningInDroppod = true
 							thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
@@ -5771,7 +5772,9 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		uiType = eMsgUI.WAVE
 	}
 	
-	printarray( args )
+	#if DEVELOPER 
+		printarray( args )
+	#endif
 
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
@@ -5933,25 +5936,19 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 	player.p.lastTgiveUsedTime = Time()
 	
+		string subToken = ""
+		string sWepName = ""
+	
+		if( !isCustomWeaponAllowed() )
+			subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
 	
 		if( ClientCommand_SaveCurrentWeapons( player, ["1"] ) )
-		{	
-			string sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )
-			//Message( player, "WEAPON " + sWepName + " SAVED")
-			string subToken = ""
-			
-			if( !isCustomWeaponAllowed() )
-			{
-				subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
-			}
-			
-			LocalMsg( player, "#FS_WEAPONSAVED", subToken, uiType, 5, sWepName )
-		}	
+			sWepName = GetWepName_FromClassName( weapon.GetWeaponClassName() )		
+		
+		LocalMsg( player, "#FS_WEAPONSAVED", subToken, uiType, 5, sWepName )
 			
 		if (bRestFlag)
-		{	
 			HolsterAndDisableWeapons( player )
-		}
 
     return true
 }
@@ -7233,3 +7230,52 @@ void function ServerMsgToBox( entity player, string text, float Width = 600, flo
 		return
 }
 	
+	
+bool function ValidateWeaponTgiveSettings( entity player, string weaponRef )
+{
+	int uiType = eMsgUI.WAVE
+	
+	if ( FlowState_AdminTgive() && !IsAdmin(player) )
+	{
+		LocalMsg( player, "#FS_ERROR", "#FS_DisabledTDMWeps", uiType )
+		return false
+	}
+	
+	if( is1v1EnabledAndAllowed() && isPlayerInWaitingList( player ) )
+	{
+		LocalMsg( player, "#FS_NotAllowedWaiting", "", uiType )
+		return false
+	}
+	
+	if( is1v1EnabledAndAllowed() && !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
+	{
+		LocalMsg( player, "#FS_CustomWepChalOnly", "", uiType )
+		return false
+	}
+
+	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
+	{
+		LocalMsg( player, "#FS_TgiveCooldown", "", uiType )
+		return false
+	}
+	
+	if( !SURVIVAL_Loot_IsRefValid( weaponRef ) || IsForcedlyDisabledWeapon( weaponRef ) )
+	{
+		LocalMsg( player, "#FS_WepNotAllowed", "", uiType )
+		return false
+	}
+
+    if( file.blacklistedWeapons.len() && file.blacklistedWeapons.find( weaponRef ) != -1 )
+	{
+		LocalMsg( player, "#FS_WepBlacklisted", "", uiType )
+		return false
+	}
+
+	if( file.blacklistedAbilities.len() && file.blacklistedAbilities.find( weaponRef ) != -1 )
+	{
+		LocalMsg( player, "FS_AbilityBlacklisted", "", uiType )
+		return false
+	}
+	
+	return true
+}

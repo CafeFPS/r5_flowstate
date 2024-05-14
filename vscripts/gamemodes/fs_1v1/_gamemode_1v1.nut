@@ -377,14 +377,32 @@ void function INIT_PlaylistSettings()
 
 void function INIT_SpawnPakOptions()
 {
-	bool use_sets = GetCurrentPlaylistVarBool( "spawnpaks_use_sets", false )
-	bool use_random = GetCurrentPlaylistVarBool( "spawnpaks_use_random", false )
-	bool prefer = GetCurrentPlaylistVarBool( "spawnpaks_prefer", false )
-	int preferred = GetCurrentPlaylistVarInt( "spawnpaks_preferred_pak", 1 )
+	bool use_sets 				= GetCurrentPlaylistVarBool( "spawnpaks_use_sets", false )
+	bool use_random 			= GetCurrentPlaylistVarBool( "spawnpaks_use_random", false )
+	bool prefer 				= GetCurrentPlaylistVarBool( "spawnpaks_prefer", false )
+	bool use_custom_playlist 	= GetCurrentPlaylistVarBool( "spawnpaks_playlist_override", false )
+	int preferred 				= GetCurrentPlaylistVarInt( "spawnpaks_preferred_pak", 1 )
+	string customRpak 			= GetCurrentPlaylistVarString( "custom_spawnpak", "" )
 	
 	settings.spawnOptions["use_sets"] <- use_sets
 	settings.spawnOptions["use_random"] <- use_random
 	settings.spawnOptions["prefer"] <- prefer
+	settings.spawnOptions["use_custom_rpak"] <- SetCustomSpawnPak( customRpak )
+	settings.spawnOptions["use_custom_playlist"] <- use_custom_playlist
+	
+	if( is1v1GameType() )
+	{ 
+		SetCustomPlaylist( AllPlaylistsArray()[ePlaylists.fs_1v1] ) 
+		settings.spawnOptions["use_custom_playlist"] = true
+	}
+	
+	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+	{	
+		if ( SetCustomSpawnPak( "datatable/fs_spawns_lgduels.rpak" ) )
+		{
+			settings.spawnOptions["use_custom_rpak"] = true
+		}
+	}
 	
 	if( preferred > 1 )
 	{
@@ -3062,7 +3080,7 @@ void function _decideLegend( soloGroupStruct group )
 		group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
 	}
 	else 
-	{
+	{	
 		RechargePlayerAbilities( group.player1, group.p1LegendIndex )
 		RechargePlayerAbilities( group.player2, group.p2LegendIndex )
 	}
@@ -3220,13 +3238,13 @@ void function _soloModeInit( int eMap )
 			break;
 	} */
 	
-	array<LocPair> allSoloLocations = ReturnAllSoloLocations( eMap, settings.spawnOptions )
+	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap, settings.spawnOptions )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()
 	
 	if( allSoloLocations.len() == 0 )
 	{
 		SetPreferredSpawnPak( 1 )
-		allSoloLocations = ReturnAllSoloLocations( eMap )
+		allSoloLocations = ReturnAllSpawnLocations( eMap )
 	}
 	
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
@@ -4905,7 +4923,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	
 	//sqprint( format("LEGEND: %s, GUID: %d", ItemFlavor_GetHumanReadableRef( character ), ItemFlavor_GetGUID( character ) ))
 	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
-	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL, [] )	
+	player.GiveOffhandWeapon(CharacterAbility_GetWeaponClassname(tacticalAbility), OFFHAND_TACTICAL )	
 
 	int charID = ItemFlavor_GetGUID( character )
 
@@ -4950,7 +4968,7 @@ void function ReloadTactical( entity player )
 	if ( IsValid( weapon ) )
 	{
 		int max = weapon.GetWeaponPrimaryClipCountMax()
-		weapon.SetNextAttackAllowedTime( Time() )
+		weapon.SetNextAttackAllowedTime( Time() - 1 )
 
 		if ( weapon.IsChargeWeapon() )
 			weapon.SetWeaponChargeFractionForced( 0 )
