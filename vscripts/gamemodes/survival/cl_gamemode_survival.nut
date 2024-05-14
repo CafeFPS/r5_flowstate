@@ -751,6 +751,7 @@ const array<int> nonCompassModes = [
 	ePlaylists.fs_scenarios,
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_snd
 ]
 
 void function Cl_Survival_AddClient( entity player )

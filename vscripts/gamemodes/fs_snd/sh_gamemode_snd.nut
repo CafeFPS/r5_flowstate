@@ -164,7 +164,7 @@ void function Sh_GamemodeSND_Init()
 {
 	SURVIVAL_Loot_All_InitShared()
 	SURVIVAL_Loot_InitShared()
-	Consumable_Init()
+	// Consumable_Init()
 	
 	PrecacheModel($"mdl/fx/ar_edge_sphere_512.rmdl")
 	
