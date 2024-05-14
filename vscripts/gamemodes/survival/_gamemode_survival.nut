@@ -731,7 +731,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 	
 		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, attacker, damageInfo )
+		Bleedout_StartPlayerBleedout( victim, attacker )
 
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))
