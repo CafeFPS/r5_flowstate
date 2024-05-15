@@ -901,7 +901,7 @@ void function __SetPlayerSyncData( entity player )
 	string OID;
 	int attempts = 0;
 	
-	if( !IsValid( player )) 
+	if( !IsValid( player ) ) 
 	{
 		return
 	}
@@ -1037,7 +1037,7 @@ void function __SetPlayerSyncData( entity player )
 			player.SetPlayerNetInt( "SeasonDeaths", player_season_deaths )
 			player.SetPlayerNetInt( "SeasonPlaytime", player_season_playtime )
 			player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
-			//player.SetPlayerNetInt( "SeasonWins", player_limetime_wins ) //TODO
+			//player.SetPlayerNetInt( "SeasonWins", player_season_wins ) //TODO
 			
 			break
 		}

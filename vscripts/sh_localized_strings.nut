@@ -35,7 +35,7 @@ global function StringReplaceLimited
 #endif
 
 	const ASSERT_LOCALIZATION = true 
-	const DEBUG_VARMSG = true
+	const DEBUG_VARMSG = false
 
 global enum eMsgUI
 {

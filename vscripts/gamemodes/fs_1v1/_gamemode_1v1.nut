@@ -383,6 +383,7 @@ void function INIT_SpawnPakOptions()
 	bool use_custom_playlist 	= GetCurrentPlaylistVarBool( "spawnpaks_playlist_override", false )
 	int preferred 				= GetCurrentPlaylistVarInt( "spawnpaks_preferred_pak", 1 )
 	string customRpak 			= GetCurrentPlaylistVarString( "custom_spawnpak", "" )
+	string customSpawnPlaylist	= GetCurrentPlaylistVarString( "custom_playlist_spawnpak", "" )
 	
 	settings.spawnOptions["use_sets"] <- use_sets
 	settings.spawnOptions["use_random"] <- use_random
@@ -390,10 +391,16 @@ void function INIT_SpawnPakOptions()
 	settings.spawnOptions["use_custom_rpak"] <- SetCustomSpawnPak( customRpak )
 	settings.spawnOptions["use_custom_playlist"] <- use_custom_playlist
 	
+	
 	if( is1v1GameType() )
 	{ 
 		SetCustomPlaylist( AllPlaylistsArray()[ePlaylists.fs_1v1] ) 
 		settings.spawnOptions["use_custom_playlist"] = true
+	}
+	
+	if( use_custom_playlist && !empty( customSpawnPlaylist ) )
+	{
+		SetCustomPlaylist( customSpawnPlaylist )
 	}
 	
 	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
@@ -705,18 +712,18 @@ void function addGroup(soloGroupStruct newGroup)
 		sqerror("[addGroup]: Logic Flow Error: group is invalid during creation")
 		return
 	}
+	
 	mGroupMutexLock = true
 	
-	try 
-	{
 		int groupHandle = GetUniqueID();
 		
 		newGroup.groupHandle = groupHandle
 		newGroup.startTime = Time()
 		
 		#if DEVELOPER
-		sqprint(format("adding group: %d", groupHandle ))
+			sqprint(format("adding group: %d", groupHandle ))
 		#endif
+		
 		if( !( groupHandle in file.groupsInProgress ) )
 		{
 			bool success = true
@@ -748,18 +755,9 @@ void function addGroup(soloGroupStruct newGroup)
 		else 
 		{	
 			#if DEVELOPER
-			sqerror(format("Logic flow error, group: [%d] already exists", groupHandle))
+				sqerror(format("Logic flow error, group: [%d] already exists", groupHandle))
 			#endif
 		}
-		
-		
-	}
-	catch(e)
-	{
-		#if DEVELOPER
-		sqprint("addGroup crash: " + e)
-		#endif
-	}
 	
 	mGroupMutexLock = false
 }
@@ -796,42 +794,34 @@ void function removeGroup(soloGroupStruct groupToRemove)
 		return
 	}
 	
-	try
-	{	
-		if ( IsValid(groupToRemove.player1) && groupToRemove.player1.p.handle in file.playerToGroupMap )
-		{	
-			#if DEVELOPER
-			sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
-			#endif
-			delete file.playerToGroupMap[groupToRemove.player1.p.handle]
-		}
-			
-		if ( IsValid(groupToRemove.player2) && groupToRemove.player2.p.handle in file.playerToGroupMap )
-		{	
-			#if DEVELOPER
-			sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
-			#endif
-			delete file.playerToGroupMap[groupToRemove.player2.p.handle];
-		}
-		
-		if( groupToRemove.groupHandle in file.groupsInProgress )
-		{
-			#if DEVELOPER
-			sqprint(format("removing group: %d", groupToRemove.groupHandle) )
-			#endif
-			delete file.groupsInProgress[groupToRemove.groupHandle]
-		}
-		else 
-		{
-			#if DEVELOPER
-			sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
-			#endif
-		}
-	}
-	catch(e)
+	
+	if ( IsValid(groupToRemove.player1) && groupToRemove.player1.p.handle in file.playerToGroupMap )
 	{	
 		#if DEVELOPER
-		sqprint( "removeGroup crash: " + e )
+		sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
+		#endif
+		delete file.playerToGroupMap[groupToRemove.player1.p.handle]
+	}
+		
+	if ( IsValid(groupToRemove.player2) && groupToRemove.player2.p.handle in file.playerToGroupMap )
+	{	
+		#if DEVELOPER
+		sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
+		#endif
+		delete file.playerToGroupMap[groupToRemove.player2.p.handle];
+	}
+	
+	if( groupToRemove.groupHandle in file.groupsInProgress )
+	{
+		#if DEVELOPER
+		sqprint(format("removing group: %d", groupToRemove.groupHandle) )
+		#endif
+		delete file.groupsInProgress[groupToRemove.groupHandle]
+	}
+	else 
+	{
+		#if DEVELOPER
+		sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
 		#endif
 	}
 	
@@ -912,18 +902,9 @@ bool function isPlayerInRestingList( entity player )
 
 void function deleteSoloPlayerResting( entity player )
 {
-	try 
+	if ( player.p.handle in file.soloPlayersResting )
 	{
-		if ( player.p.handle in file.soloPlayersResting )
-		{
-			delete file.soloPlayersResting[player.p.handle]
-		}
-	}
-	catch(e)
-	{	
-		#if DEVELOPER
-		sqprint( "crash in deleteSoloPlayerResting: " + e )
-		#endif
+		delete file.soloPlayersResting[player.p.handle]
 	}
 }
 
@@ -937,22 +918,13 @@ void function addSoloPlayerResting( entity player )
 		return
 	}
 	
-	try 
+	if( player.p.handle in file.soloPlayersResting )//TODO: init oncon and use =
 	{
-		if( player.p.handle in file.soloPlayersResting )//TODO: init oncon and use =
-		{
-			file.soloPlayersResting[player.p.handle] = true
-		} 
-		else 
-		{
-			file.soloPlayersResting[player.p.handle] <- true
-		}
-	}
-	catch(e)
+		file.soloPlayersResting[player.p.handle] = true
+	} 
+	else 
 	{
-		#if DEVELOPER
-		sqprint("crass in addSoloPlayerResting: " + e )
-		#endif
+		file.soloPlayersResting[player.p.handle] <- true
 	}
 }
 
@@ -966,29 +938,20 @@ void function deleteWaitingPlayer( int handle )
 
 void function AddPlayerToWaitingList( soloPlayerStruct playerStruct ) 
 {
-	try 
+	if( !IsValid(playerStruct) )
 	{
-		if( !IsValid(playerStruct) )
+		sqerror( "[AddPlayerToWaitingList] playerStruct was invalid" )
+	}
+	else 
+	{
+		if( IsValid( playerStruct.player ) )
 		{
-			sqerror( "[AddPlayerToWaitingList] playerStruct was invalid" )
+			file.soloPlayersWaiting[playerStruct.player.p.handle] <- playerStruct
 		}
 		else 
 		{
-			if( IsValid( playerStruct.player ) )
-			{
-				file.soloPlayersWaiting[playerStruct.player.p.handle] <- playerStruct
-			}
-			else 
-			{
-				sqerror( "[AddPlayerToWaitingList] player to add was invalid" )
-			}
+			sqerror( "[AddPlayerToWaitingList] player to add was invalid" )
 		}
-	}
-	catch(e)
-	{
-		#if DEVELOPER
-		sqprint("crash in AddPlayerToWaitingList: " + e )
-		#endif
 	}
 }
 
@@ -4166,7 +4129,7 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 				sqprint( format("THREAD FOR GROUP ENDED" ))
 			#endif
 			
-			if ( IsValid( player ) && IsValid(opponent) && player.p.input != opponent.p.input )
+			if ( IsValid( player ) && IsValid( opponent ) && player.p.input != opponent.p.input )
 			{	
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );			
 				LocalMsg( player, "#FS_INPUT_CHANGED", "#FS_INPUT_CHANGED_SUBSTR", eMsgUI.DEFAULT, 3, "", "", "weapon_vortex_gun_explosivewarningbeep" )
@@ -4273,7 +4236,11 @@ void function GiveWeaponsToGroup( array<entity> players )
 void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 {
 	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
-	printt( "FS_Scenarios_GiveWeaponsToGroup" )
+	
+	#if DEVELOPER 
+		printt( "FS_Scenarios_GiveWeaponsToGroup" )
+	#endif
+	
 	foreach( player in players )
 	{
 		if( !IsValid( player ) )
@@ -4438,12 +4405,8 @@ void function ForceAllRoundsToFinish_solomode()
 	
 	foreach( challengeStruct in file.allChallenges )
 	{
-		if( !IsValid( challengeStruct ) ){ continue }
-		
-		if( IsValid (challengeStruct.player) )
-		{
-			endLock1v1( challengeStruct.player )
-		}
+		if( !isChalValid( challengeStruct ) ){ continue }	
+		endLock1v1( challengeStruct.player )
 	}
 	
 	if(GetCurrentRound() > 0)

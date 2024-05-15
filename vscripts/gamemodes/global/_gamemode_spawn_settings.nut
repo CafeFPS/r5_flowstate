@@ -133,7 +133,7 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 					}
 					else 
 					{
-						printt("Invalid options configuraiton in spawnpaks")
+						printt("spawnpaks: Use sets was enabeld with no valid options in playlists")
 					}
 				}
 			}
