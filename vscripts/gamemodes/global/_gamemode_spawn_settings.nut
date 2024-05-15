@@ -1,4 +1,4 @@
-//1v1 locations/panels SHARED with 3v3 mode
+// flowstate spawn system
 
 global function ReturnAllSpawnLocations
 global function ReturnAllPanelLocations
@@ -29,10 +29,11 @@ global function SetCustomPlaylist
 	{
 		array<LocPair> spawns
 		LocPair ornull waitingRoom = null
+		LocPair ornull panels = null
 		bool bOverrideSpawns = false
 	}
 
-	const vector MASTER_ORIGIN_OFFSET = <0,450,-5>
+	const vector MASTER_PANEL_ORIGIN_OFFSET = <0,450,0>
 	
 	struct
 	{
@@ -147,11 +148,9 @@ array<LocPair> function ReturnAllPanelLocations() //TODO: remove (deprecated)
 	return FetchReturnAllPanelLocations()
 }
 
-LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null )
+LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null )
 {
 	LocPairData data
-	
-	bool waitingRoomOverride = false
 	
 	if( spawns.len() <= 0 )
 	{
@@ -159,20 +158,27 @@ LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideS
 		return data
 	}
 	
-	if( waitingRoom != null )
+	data.spawns = spawns
+	data.bOverrideSpawns = bOverrideSpawns
+
+	if ( waitingRoom != null )
 	{
 		#if DEVELOPER
 			Warning( "LocPairData object set to override waitingroom location in " + FUNC_NAME() + "()" )
 		#endif
-		waitingRoomOverride = true
-	}
 		
-	data.spawns = spawns
-
-	if ( waitingRoomOverride )
-	{
 		LocPair varWaitingRoom = expect LocPair ( waitingRoom )
 		data.waitingRoom = varWaitingRoom
+	}
+	
+	if( panels != null )
+	{
+		#if DEVELOPER 
+			Warning( "LocPairData object set to override panel location in " + FUNC_NAME() + "()" )
+		#endif 
+		
+		LocPair varPanels = expect LocPair ( panels )
+		data.panels = varPanels
 	}
 	
 	return data
@@ -211,75 +217,71 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 {														//ideally only default waiting
 	array<LocPair> customSpawns = []					// rooms are saved here. use :
 														// AddCallback_FlowstateSpawnsInit()
+														
+	LocPair defaultWaitingRoom
+	
 	switch( eMap )
 	{
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_aqueduct:
-		
-			waitingRoomPanelLocation = NewLocPair( <718.29,-5496.74,430>, <0,0,0>)
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0,90,0>
+			
+			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_arena_composite:
 		
-			waitingRoomPanelLocation = NewLocPair( <-3.0,645,125>, <0,0,0>)
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0,90,0>
+			defaultWaitingRoom = NewLocPair( < -7.62, 200, 184.57 >, < 0, 90 ,0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		
-			waitingRoomPanelLocation = NewLocPair( <-607.59,20640.05,4570.03>, <0,-45,0>)
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0,45,0>
+			defaultWaitingRoom = NewLocPair( < -762.59, 20485.05, 4626.03>, < 0, 45, 0> )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
-		case eMaps.mp_rr_canyonlands_staging:
+		case eMaps.mp_rr_canyonlands_staging: //TODO: FIX ME
 		
-			
 			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 			{
 				waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >)
 			}
 		
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
+			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_PANEL_ORIGIN_OFFSET
 			getWaitingRoomLocation().angles = <356.203, 269.459, 0>
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_party_crasher:
 		
-			waitingRoomPanelLocation = NewLocPair( < 1822, -3977, 626 >, < 0, 15, 0 > ) 
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = < 359.047, 104.246, 0 >
+			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
-		case eMaps.mp_rr_arena_phase_runner:
+		case eMaps.mp_rr_arena_phase_runner: //TODO: FIX ME
 		
-			waitingRoomPanelLocation = NewLocPair( < 1681.91, -3394.63, 579.031 >, < 355.361, 105.53, 0 > )
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0,90,0>
+			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
 		case eMaps.mp_rr_arena_skygarden:
 		
-			waitingRoomPanelLocation = NewLocPair( < 10.2077, -1710.32, 2877.03  >, < 357.399, 269.58, 0 > )
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0,90,0>
+			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_olympus_mu1:
 
-			waitingRoomPanelLocation = NewLocPair( <-6315.25244, -13926.8232, 3520.0625> , <0, 178.616882, 0> )
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0, 32.8506927, 0>
+			defaultWaitingRoom = NewLocPair( < 318.434906, -19474.4141, -4947.88867 > , < 0, 32.8506927, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 			if( is3v3Mode() ) //TODO: abstract into rpak when locations are complete
 			{
@@ -314,9 +316,8 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 
 
-			waitingRoomPanelLocation = NewLocPair( <-19790.7949, 13821.9893, -3760.8186>, <0, 125.147415, 0> ) //休息区观战面板
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0, -83.0441132, 0>
+			defaultWaitingRoom = NewLocPair( < -19830.3633, 14081.7314, -3759.98901 >, < 0, -83.0441132, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
 			{
@@ -343,9 +344,8 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_mu2:
 		
-			waitingRoomPanelLocation = NewLocPair( <17975.7773, 4763.23242, 5105.12451> , <0, 104.105606, 0> )
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <0, -0.338155389, 0>
+			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
 			{
@@ -400,7 +400,13 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 			if( data.waitingRoom != null )
 			{
 				LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
-				waitingRoomPanelLocation = varWaitingRoom
+			}
+			
+			if( data.panels != null )
+			{
+				LocPair varPanels = expect LocPair( data.panels )
+				getWaitingRoomLocation().origin = <varPanels.origin.x,varPanels.origin.y,varPanels.origin.z>
+				getWaitingRoomLocation().angles = <varPanels.angles.x,varPanels.angles.y,varPanels.angles.z>
 			}
 		}
 	}
@@ -412,6 +418,20 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 	}
 	
 	return customSpawns
+}
+
+
+LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom )
+{
+	LocPair defaultPanels
+	
+	vector panelsOffset = < defaultWaitingRoom.origin.x, defaultWaitingRoom.origin.y, defaultWaitingRoom.origin.z > + MASTER_PANEL_ORIGIN_OFFSET
+	defaultPanels = NewLocPair( panelsOffset, defaultWaitingRoom.angles )
+	
+	getWaitingRoomLocation().origin = defaultWaitingRoom.origin
+	getWaitingRoomLocation().angles = defaultWaitingRoom.angles
+	
+	return defaultPanels
 }
 
 
@@ -480,7 +500,7 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		int anglesCol 		= GetDataTableColumnByName( datatable, "angles" )
 		
 		#if DEVELOPER
-			string print_data = "\n spawnset: " + spawnset + "\n--- LOCATIONS ---\n\n"
+			string print_data = "\n\n spawnset: " + spawnset + "\n--- LOCATIONS ---\n\n"
 		#endif
 		for ( int i = 0; i < spawnsCount; i++ )
 		{		
@@ -793,17 +813,30 @@ void function DEV_WritePosOut()
 	
 	DevTextBufferClear()
 
+	//////////////
+	// 	 OPEN	//
+	//////////////
 	if( DEV_PosType() == "csv" )
-		DevTextBufferWrite("origin,angles\n")
+		DevTextBufferWrite( "origin,angles\n" )
 		
+	if( DEV_PosType() == "sq" )
+		DevTextBufferWrite( "array<LocPair> spawns = \n[ \n" )
+		
+	string spacing = DEV_PosType() == "sq" ? TableIndent(15) : "";
+	
 	foreach( position in file.dev_positions )
 	{
-		DevTextBufferWrite( position + "\n" )
+		DevTextBufferWrite( spacing + position + "\n" )
 	}
 	
+	//////////////
+	//	CLOSURE	//
+	//////////////
 	if( DEV_PosType() == "csv" )
-		DevTextBufferWrite("vector,vector\n")
+		DevTextBufferWrite( "vector,vector\n" )
 		
+	if( DEV_PosType() == "sq" )
+		DevTextBufferWrite( "];" )
 	
 	if( DEV_PosType() == "csv" )
 	{
@@ -861,7 +894,8 @@ bool function SetCustomSpawnPak( string custom_rpak )
 	{
 		try 
 		{
-			string test = CastStringToAsset( custom_rpak )
+			asset test = CastStringToAsset( custom_rpak )
+			GetDataTable( test )
 			success = true
 		}
 		catch(e)
@@ -896,6 +930,7 @@ asset function GetCurrentSpawnAsset()
 	try 
 	{
 		returnAsset = CastStringToAsset( file.currentSpawnPak )
+		GetDataTable( returnAsset )
 	}
 	catch(e)
 	{
@@ -904,5 +939,3 @@ asset function GetCurrentSpawnAsset()
 	
 	return returnAsset
 }
-
-//modify locpairdata to include offset data, and no-spawn zones. (for more customization in init callback)

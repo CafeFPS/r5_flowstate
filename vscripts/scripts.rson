@@ -33,6 +33,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	flowstate_globals.gnut
 	sh_damage_history.gnut // needs to come before _entitystructs
 ]
 
@@ -73,7 +74,6 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	
 	gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 
@@ -971,6 +971,13 @@ Scripts:
 // END DEVSCRIPTS CONTENT
 
 // Custom
+
+When: "SERVER"
+Scripts:
+[
+	gamemodes/global/_gamemode_spawn_settings.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [
@@ -993,7 +1000,6 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	gamemodes/fs_1v1/_gamemode_1v1_settings.nut
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut

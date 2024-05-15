@@ -1059,7 +1059,7 @@ LocPairData function Init_DropoffPatchSpawns()
 		];
 			
 			
-	LocPairData extendSpawns = CreateLocPairObject( dropoff_patch, false, null )
+	LocPairData extendSpawns = CreateLocPairObject( dropoff_patch, false, null, null )
 	return extendSpawns
 }
 
@@ -1095,7 +1095,6 @@ bool function bIs1v1Mode()
 void function _CustomTDM_Init()
 {
 	//these must be executed first
-	Initialize_SH_FlowstateSettings() 
 	InitializePlaylistSettings() 
 	file.scriptversion = FLOWSTATE_VERSION
 	
