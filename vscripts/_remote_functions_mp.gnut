@@ -70,7 +70,7 @@ void function RemoteFunctions_Init_Begin()
 	// }
 	// #endif
 
-	if( Flowstate_IsHaloMode() )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		Remote_RegisterClientFunction( "FS_ForceDestroyCustomAdsOverlay" )
 		Remote_RegisterClientFunction( "FS_ForceAdjustSunFlareParticleOnClient", "int", 0, 50 ) 

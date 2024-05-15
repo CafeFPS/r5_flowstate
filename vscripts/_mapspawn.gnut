@@ -332,6 +332,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
+	PrecacheModel( $"mdl/custom_maps/mp_rr_dust2.rmdl" )
 
 	switch( GameRules_GetGameMode() )
 	{
@@ -413,7 +414,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheWeapon( $"melee_oddball" )
 	}
 
-	if( Flowstate_IsHaloMode() )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		PrecacheParticleSystem( $"P_snow_atmo_512" )
 		PrecacheWeapon( $"mp_ability_grapple_master_chief" )
@@ -448,13 +449,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
 	}
 
-	#if DEVELOPER
-		#if LISTEN_SERVER
-		SetConVarInt( "sv_onlineAuthEnable", 0 )
-		#endif
-	SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
-	#endif
-	
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 	
