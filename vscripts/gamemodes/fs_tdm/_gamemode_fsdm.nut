@@ -345,8 +345,8 @@ void function INIT_LGDuels_Player( entity player )
 	#endif
 	
 	player.p.hitsound = HIT_0
-	// CreatePanelText(player, "", "LG Duels by:", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
-	// CreatePanelText(player, "mkos and @CafeFPS", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
+	CreatePanelText(player, "", "LG Duels by @CafeFPS and..", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
+	CreatePanelText(player, "mkos ", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
 }
 
 void function LgDuelLoadSettings( entity player, string data )
@@ -1036,6 +1036,11 @@ void function RotateMap()
 	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 }
 
+LocPairData function Init_LGDuels_Spawns()
+{
+	LocPair panels = NewLocPair( < 3480.92, -9218.92, -10252 >, < 360, 270, 0 > )	
+	return CreateLocPairObject( [], false, null, panels )
+}
 
 LocPairData function Init_DropoffPatchSpawns()
 {
@@ -1256,8 +1261,12 @@ void function _CustomTDM_Init()
 		{
 			AddCallback_FlowstateSpawnsInit( Init_DropoffPatchSpawns )
 		}
-	
-		// AddClientCommandCallback("lockenemy_1v1", ClientCommand_1v1_LockEnemy )
+		
+		if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+		{
+			AddCallback_FlowstateSpawnsInit( Init_LGDuels_Spawns )
+		}
+		
 		_soloModeInit( MapName() ) //enum
 
 		if( !is3v3Mode() )
@@ -5162,9 +5171,9 @@ void function Message( entity player, string text, string subText = "", float du
 //By @CafeFPS (CafeFPS)//
 {
 	if( !IsValid( player )) return
-	if( !player.IsPlayer() ) return //mkos
+	if( !player.IsPlayer() ) return //mkos ( crash fix )
 	if ( !player.p.isConnected ) return
-	if ( ( text.len() + subText.len() ) >= 599 ) return //mkos
+	if ( ( text.len() + subText.len() ) >= 599 ) return //mkos (added code rock prevention)
 
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )

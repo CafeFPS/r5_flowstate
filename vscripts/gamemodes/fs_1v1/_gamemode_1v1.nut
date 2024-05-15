@@ -3195,51 +3195,14 @@ void function _soloModeInit( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	/* switch( eMap )
-	{
-		case eMaps.mp_rr_arena_composite:
-			WaitingRoom.origin = <-7.62,200,184.57>
-			WaitingRoom.angles = <0,90,0>
-			break;
-			
-		case eMaps.mp_rr_aqueduct:
-			WaitingRoom.origin = <719.94,-5805.13,494.03>
-			WaitingRoom.angles = <0,90,0>
-			break;
-			
-		case eMaps.mp_rr_canyonlands_64k_x_64k:
-			WaitingRoom.origin = <-762.59,20485.05,4626.03>
-			WaitingRoom.angles = <0,45,0>
-			break;
-
-		case eMaps.mp_rr_canyonlands_mu2:
-			WaitingRoom.origin = <-6492.4541, -13920.0273, 3520.0625>
-			WaitingRoom.angles = <0, -0.338155389, 0>
-			break;
-
-		case eMaps.mp_rr_canyonlands_staging:
-			WaitingRoom.origin = < 3477.69, -8364.02, -10252 >
-			WaitingRoom.angles = <356.203, 269.459, 0>
-			break;		
-			
-		case eMaps.mp_rr_party_crasher:
-			WaitingRoom.origin = < 1881.75, -4210.87, 626.106 > 
-			WaitingRoom.angles = < 359.047, 104.246, 0 >
-			break;
-			
-		case eMaps.mp_rr_olympus_mu1:
-			WaitingRoom.origin = <318.434906, -19474.4141, -4947.88867> 
-			WaitingRoom.angles = <0, 32.8506927, 0>
-			break;
-
-		case eMaps.mp_rr_desertlands_64k_x_64k:
-			WaitingRoom.origin = <-19830.3633, 14081.7314, -3759.98901>
-			WaitingRoom.angles = <0, -83.0441132, 0>
-			break;
-	} */
-	
 	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap, settings.spawnOptions )
 	array<LocPair> panelLocations = ReturnAllPanelLocations()
+	
+	if( !IsEven( allSoloLocations.len() ) )
+	{
+		Warning("Incorrectly configured spawns in " + FILE_NAME() + " ( locpair must be an even amount )")
+		allSoloLocations.resize(0)
+	}
 	
 	if( allSoloLocations.len() == 0 )
 	{
@@ -3273,212 +3236,247 @@ void function _soloModeInit( int eMap )
 	}	
 	
 	//resting room init ///////////////////////////////////////////////////////////////////////////////////////
-	
-	string buttonText = "%&use% Start spectating"
-	string buttonText3 = "%&use% Rest (or) Enter Queue"
-	string buttonText4 = "%&use% Toggle IBMM";		
-	string buttonText5 = "%&use% Enable/Disable 1v1 Challenges";		
-	string buttonText6 = "%&use% Toggle \"Start In Rest\" Setting";		
-	string buttonText7 = "%&use% Toggle Input Banner";		
-	
-	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin + AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText )
-	entity restingRoomPanel_RestButton = CreateFRButton( waitingRoomPanelLocation.origin - AnglesToForward( waitingRoomPanelLocation.angles ) * 40, waitingRoomPanelLocation.angles, buttonText3 )
-	
-	entity restingRoomPanel_IBMM_button = CreateFRButton( waitingRoomPanelLocation.origin - (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <0,25,0>, waitingRoomPanelLocation.angles + <0,45,0>, buttonText4 )
-	entity restingRoomPanel_lock1v1_button = CreateFRButton( waitingRoomPanelLocation.origin + (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <0,25,0>, waitingRoomPanelLocation.angles - <0,45,0>, buttonText5 )
-		
-	float rest_offset = -20;
-	float nothing_offset = 20;
-	
-	if( Flowstate_IsMapPartyCrasher() )
-	{
-		rest_offset = -40;
-		nothing_offset = 10;
-	}
-	
-	entity restingRoomPanel_start_in_rest_setting_button = CreateFRButton( waitingRoomPanelLocation.origin + (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <rest_offset,80,0>, waitingRoomPanelLocation.angles - <0,90,0>, buttonText6 )
-	entity restingRoomPanel_toggle_input_banner = CreateFRButton( waitingRoomPanelLocation.origin - (AnglesToForward( waitingRoomPanelLocation.angles ) * 100) - <nothing_offset,80,0>, waitingRoomPanelLocation.angles - <0,-90,0>, buttonText7 )
-	//endkos
-	
-	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
-	{
-		if(!IsValid(user)) return
-		if(!isPlayerInRestingList(user))
-		{
-			/* if(file.IS_CHINESE_SERVER)
-				Message(user,"您必须在休息模式中才能使用观战功能您","请在控制台中输入'rest'进入休息模式")
-			else
-				Message(user,"You must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
-			 */
-			LocalMsg( user, "#FS_MustBeInRest", "#FS_MustBeInRest_SUBSTR" )
-			 
-			return //不在休息队列中不能使用观战功能
-		}
-		if( GetTDMState() != eTDMState.IN_PROGRESS )
-		{
-			//Message( user, "Game is not playing" )
-			LocalMsg( user, "#FS_GameNotPlaying" )
-			return
-		}
-
-
-
-	    try
-	    {
-	    	array<entity> enemiesArray = GetPlayerArray_Alive()
-			enemiesArray.fastremovebyvalue( user )
 			
-			#if TRACKER
-			if( bBotEnabled() && IsValid ( eMessageBot() ) && IsAlive( eMessageBot() ) )
-			{
-				enemiesArray.fastremovebyvalue( eMessageBot() )
-			}
-			#endif
-			
-		    entity specTarget = enemiesArray.getrandom()
-
-	    	user.p.isSpectating = true
-			user.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray().len() )
-			user.SetObserverTarget( specTarget )
-			user.SetSpecReplayDelay( 0.5 )
-			user.StartObserverMode( OBS_MODE_IN_EYE )
-			thread CheckForObservedTarget(user)
-			user.p.lastTimeSpectateUsed = Time()
-
-			/* 		if(file.IS_CHINESE_SERVER)
-				Message(user,"按一下空格后结束观战")
-			else
-				Message(user,"Jump to stop spectating") */
-				
-			LocalMsg( user, "#FS_JumpToStopSpec" )
-			
-			user.MakeInvisible()
-
-	    }
-	    catch (error333)
-	    {}
-		
-	    AddButtonPressedPlayerInputCallback( user, IN_JUMP,endSpectate  )
-	})
-	
-	//mkos
-	AddCallback_OnUseEntity( restingRoomPanel_IBMM_button, void function(entity panel, entity user, int input)
+	table<string, entity> panels = 
 	{
-		if( !IsValid( user ) ){ return }
-		
-		if( user.p.IBMM_grace_period > 0 )
-		{
-			user.p.IBMM_grace_period = 0;
-			SavePlayer_wait_time( user, 0.0 )
-			//Message( user, "IBMM set to ANY INPUT (disabled).");
-			LocalMsg( user, "#FS_IBMM_Any" )
-		}
-		else
-		{	
-			if ( settings.ibmm_wait_limit >= 3)
-			{	
-				if ( settings.default_ibmm_wait == 0)
-				{
-					user.p.IBMM_grace_period = 3;
-					SavePlayer_wait_time( user, 3.0 )
-				}
-				else
-				{
-					SetDefaultIBMM( user )
-				}
-				
-				//Message( user, "IBMM set to search for same input type.");
-				LocalMsg( user, "#FS_IBMM_SAME" )
-			}
-			else 
-			{
-				//Message( user, "Server does not allow this setting.");
-				LocalMsg( user, "#FS_SettingNotAllowed" )
-			}
-		}
-		
-	})
+		["%&use% Start spectating"] 					= null,
+		["%&use% Rest (or) Enter Queue"] 				= null,
+		["%&use% Toggle IBMM"] 							= null,
+		["%&use% Enable/Disable 1v1 Challenges"] 		= null,
+		["%&use% Toggle \"Start In Rest\" Setting"] 	= null,
+		["%&use% Toggle Input Banner"] 					= null,
+		//["add another"] = null
+	};
 	
-	
-	AddCallback_OnUseEntity( restingRoomPanel_lock1v1_button, void function(entity panel, entity user, int input)
-	{
-		if(!IsValid(user)) return
-		
-		if(user.p.lock1v1_setting == true)
-		{
-			user.p.lock1v1_setting = false;
-			SavePlayer_lock1v1_setting( user, false )
-			//Message( user, "ACCEPT CHALLENGES DISABLED.");
-			LocalMsg( user, "#FS_ChalDisabled" )
-		}
-		else
-		{	
-			user.p.lock1v1_setting = true;
-			SavePlayer_lock1v1_setting( user, true )
-			//Message( user, "ACCEPT CHALLENGES ENABLED.");
-			LocalMsg( user, "#FS_ChalEnabled")
-		}
-		
-	})
-	
-	
-	AddCallback_OnUseEntity( restingRoomPanel_start_in_rest_setting_button, void function(entity panel, entity user, int input)
-	{
-		if(!IsValid(user)) return
-		
-		if(user.p.start_in_rest_setting == true)
-		{
-			user.p.start_in_rest_setting = false;
-			SavePlayer_start_in_rest_setting( user, false )
-			//Message( user, "START_IN_REST Disabled");
-			LocalMsg( user, "#FS_StartInRestDisabled" )
-		}
-		else
-		{	
-			user.p.start_in_rest_setting = true;
-			SavePlayer_start_in_rest_setting( user, true )
-			//Message( user, "START_IN_REST Enabled.");
-			LocalMsg( user, "#FS_StartInRestEnabled" )
-		}
-		
-	})
-	
-	AddCallback_OnUseEntity( restingRoomPanel_toggle_input_banner, void function(entity panel, entity user, int input)
-	{
-		if(!IsValid(user)) return
-		
-		if(user.p.enable_input_banner == true)
-		{
-			user.p.enable_input_banner = false;
-			SavePlayer_enable_input_banner( user, false )
-			//Message( user, "INPUT_BANNER Disabled");
-			LocalMsg( user, "#FS_InputBannerDisabled" )
-		}
-		else
-		{	
-			user.p.enable_input_banner = true;
-			SavePlayer_enable_input_banner( user, true )
-			//Message( user, "INPUT_BANNER Enabled.");
-			LocalMsg( user, "#FS_InputBannerEnabled" )
-		}
-		
-	})
-	
-	
-	//endkos
-	
-	AddCallback_OnUseEntity( restingRoomPanel_RestButton, void function(entity panel, entity user, int input)
-	{
-		if(!IsValid(user)) return
-		
-		ClientCommand_Maki_SoloModeRest( user, [] )
-	})
+	CreatePanels( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, panels )
+	DefinePanelCallbacks( panels )
 
-	string buttonText2 = "%&use% Never change your opponent"
-
-	forbiddenZoneInit(GetMapName())
+	forbiddenZoneInit( GetMapName() )
 	
 	thread soloModeThread( getWaitingRoomLocation() )
+}
+
+
+void function CreatePanels( vector origin, vector angles, table<string, entity> panels )
+{
+	angles =  < ceil( angles.x ), ceil( angles.y ), ( angles.z * 0 ) > 
+	vector baseAngles = angles - <0,90,0> //Normalize( angles )
+	
+	//really just a bounds check.
+	baseAngles.x = NormalizeAngle( baseAngles.x )
+	baseAngles.y = NormalizeAngle( baseAngles.y )
+	baseAngles.z = NormalizeAngle( baseAngles.z )
+
+	array<string> keys = []
+
+	foreach ( title, panelEntity in panels )
+	{
+		keys.append( title )
+	}
+
+	const float FORWARD_OFFSET = 40
+	const float SIDE_OFFSET = 100
+	const float SIDE_ANGLE_ADJUST = 40
+	const float FAR_OFFSET_INITIAL = 120
+	const float RIGHT_OFFSET_INITIAL = 80
+	const float POSITION_INCREMENT = 60
+
+	int panelCount = keys.len()
+	vector panelPos
+	vector panelAngle
+
+	for ( int i = 0; i < panelCount; ++i )
+	{
+		if ( i < 2 )
+		{
+			panelPos = origin + AnglesToForward( baseAngles ) * FORWARD_OFFSET * ( i % 2 == 0 ? 1 : -1 )
+			panelAngle = baseAngles
+		}
+		else if ( i < 4 )
+		{
+			panelPos = origin + AnglesToForward( baseAngles ) * SIDE_OFFSET * ( i % 2 == 0 ? -1 : 1 ) + AnglesToRight( baseAngles ) * 25
+			panelAngle = baseAngles + <0, SIDE_ANGLE_ADJUST * ( i % 2 == 0 ? 1 : -1 ), 0>
+		}
+		else
+		{
+			int groupIndex = ( i - 4 ) / 2
+			float rightOffset = RIGHT_OFFSET_INITIAL + POSITION_INCREMENT * groupIndex;
+			panelPos = origin + AnglesToForward( baseAngles ) * FAR_OFFSET_INITIAL * ( i % 2 == 0 ? -1 : 1 ) + AnglesToRight( baseAngles ) * rightOffset
+			panelAngle = baseAngles + <0, 90 * ( i % 2 == 0 ? 1 : -1 ), 0>
+		}
+
+		entity panel = CreateFRButton( panelPos, panelAngle, keys[i] )
+		panels[ keys[i] ] = panel
+	}
+}
+
+float function NormalizeAngle( float angle )
+{
+    while ( angle < 0 ) 
+		angle += 360
+		
+    while ( angle >= 360 ) 
+		angle -= 360
+		
+    return angle
+}
+
+
+void function DefinePanelCallbacks( table<string, entity> panels )
+{
+    // Resting room panel
+    AddCallback_OnUseEntity( panels["%&use% Start spectating"], void function(entity panel, entity user, int input )
+    {
+        if ( !IsValid( user ) ) return
+        
+		if ( !isPlayerInRestingList( user ) )
+        {
+            LocalMsg( user, "#FS_MustBeInRest", "#FS_MustBeInRest_SUBSTR" )
+            return
+        }
+        
+		if ( GetTDMState() != eTDMState.IN_PROGRESS )
+        {
+            LocalMsg( user, "#FS_GameNotPlaying" )
+            return
+        }
+
+        try
+        {
+            array<entity> enemiesArray = GetPlayerArray_Alive()
+            enemiesArray.fastremovebyvalue( user )
+            
+            #if TRACKER
+            if ( bBotEnabled() && IsValid( eMessageBot() ) && IsAlive( eMessageBot() ) )
+            {
+                enemiesArray.fastremovebyvalue( eMessageBot() )
+            }
+            #endif
+            
+            entity specTarget = enemiesArray.getrandom()
+
+            user.p.isSpectating = true
+            user.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray().len() )
+            user.SetObserverTarget( specTarget )
+            user.SetSpecReplayDelay( 0.5 )
+            user.StartObserverMode( OBS_MODE_IN_EYE )
+            thread CheckForObservedTarget( user )
+            user.p.lastTimeSpectateUsed = Time()
+
+            LocalMsg( user, "#FS_JumpToStopSpec" )
+
+            user.MakeInvisible()
+        }
+        catch (error333)
+        {}
+        
+        AddButtonPressedPlayerInputCallback( user, IN_JUMP, endSpectate )
+    })
+
+    // IBMM button
+    AddCallback_OnUseEntity( panels["%&use% Toggle IBMM"], void function(entity panel, entity user, int input )
+    {
+        if ( !IsValid( user ) ) return
+        
+        if ( user.p.IBMM_grace_period > 0 )
+        {
+            user.p.IBMM_grace_period = 0
+            SavePlayer_wait_time( user, 0.0 )
+            LocalMsg( user, "#FS_IBMM_Any" )
+        }
+        else
+        {   
+            if ( settings.ibmm_wait_limit >= 3 )
+            {   
+                if ( settings.default_ibmm_wait == 0 )
+                {
+                    user.p.IBMM_grace_period = 3
+                    SavePlayer_wait_time( user, 3.0 )
+                }
+                else
+                {
+                    SetDefaultIBMM( user )
+                }
+                
+                LocalMsg( user, "#FS_IBMM_SAME" )
+            }
+            else 
+            {
+                LocalMsg( user, "#FS_SettingNotAllowed" )
+            }
+        }
+    })
+
+    // Lock 1v1 button
+    AddCallback_OnUseEntity( panels["%&use% Enable/Disable 1v1 Challenges"], void function( entity panel, entity user, int input )
+    {
+        if ( !IsValid( user )) return
+        
+        if ( user.p.lock1v1_setting == true )
+        {
+            user.p.lock1v1_setting = false
+            SavePlayer_lock1v1_setting( user, false )
+            LocalMsg( user, "#FS_ChalDisabled" )
+        }
+        else
+        {   
+            user.p.lock1v1_setting = true
+            SavePlayer_lock1v1_setting( user, true )
+            LocalMsg( user, "#FS_ChalEnabled" )
+        }
+    })
+
+    // Start in rest setting button
+    AddCallback_OnUseEntity( panels["%&use% Toggle \"Start In Rest\" Setting"], void function( entity panel, entity user, int input )
+    {
+        if ( !IsValid(user) ) return
+        
+        if ( user.p.start_in_rest_setting == true )
+        {
+            user.p.start_in_rest_setting = false
+            SavePlayer_start_in_rest_setting( user, false )
+            LocalMsg(user, "#FS_StartInRestDisabled")
+        }
+        else
+        {   
+            user.p.start_in_rest_setting = true
+            SavePlayer_start_in_rest_setting( user, true )
+            LocalMsg( user, "#FS_StartInRestEnabled" )
+        }
+    })
+
+    // Toggle input banner button
+    AddCallback_OnUseEntity( panels["%&use% Toggle Input Banner"], void function( entity panel, entity user, int input )
+    {
+        if ( !IsValid( user ) ) return
+        
+        if ( user.p.enable_input_banner == true )
+        {
+            user.p.enable_input_banner = false
+            SavePlayer_enable_input_banner( user, false )
+            LocalMsg( user, "#FS_InputBannerDisabled" )
+        }
+        else
+        {   
+            user.p.enable_input_banner = true
+            SavePlayer_enable_input_banner( user, true )
+            LocalMsg( user, "#FS_InputBannerEnabled" )
+        }
+    })
+
+    // Rest button
+    AddCallback_OnUseEntity( panels["%&use% Rest (or) Enter Queue"], void function(entity panel, entity user, int input )
+    {
+        if ( !IsValid( user ) ) 
+			return     
+			
+        ClientCommand_Maki_SoloModeRest(user, [])
+    })
+	
+	
+	//Designers: Define your custom panel behavior here
+	//...
+	
 }
 
 void function soloModeThread(LocPair waitingRoomLocation)
@@ -4459,218 +4457,35 @@ void function ForceAllRoundsToFinish_solomode()
 	
 }
 
-//mkos
-
-vector function Return_Loc_Data( string _type )
-{
-	//string map = GetMapName(); //better set as global string
-	int map = MapName()
-	vector coordinates = < 0,0,0 >
-	vector angles = < 0,0,0 >
-	
-	if ( _type == "matching_inputs_coordinates" ) 
-	{
-	
-		switch( map )
-		{
-			
-			case eMaps.mp_rr_arena_composite:
-			
-				coordinates = < 6.94531, 687.949, 286.174 >
-				return coordinates
-				break
-					
-			case eMaps.mp_rr_aqueduct:
-				
-				coordinates = < 717.151, -5387.85, 580.00 >
-				return coordinates
-				break
-			
-			case eMaps.mp_rr_canyonlands_staging:
-				
-				coordinates = < 3480.93, -8729.28, -10144.3 >
-				return coordinates
-				break
-			
-			case eMaps.mp_rr_canyonlands_64k_x_64k:
-				coordinates = < -532.278, 20713.6, 4746.85 >
-				return coordinates
-				break
-				
-			//TODO add party crasher?
-				
-			default: 
-			
-				coordinates = <0,0,0>;
-				return coordinates
-				break
-		} 
-		
-		
-	} 	
-	
-	else if ( _type == "matching_inputs_angles" ) 
-	{
-
-		switch( map )
-		{
-			
-			case eMaps.mp_rr_arena_composite:
-			
-				angles = < 5.64701, 87.8268, 0 >
-				return angles
-				break
-			
-			
-			case eMaps.mp_rr_aqueduct:
-			
-				angles = < 355.891, 88.4579, 0 >
-				return angles
-				break
-			
-			case eMaps.mp_rr_canyonlands_staging:
-			
-				angles = < 358.91, 268.637, 0 >
-				return angles
-				break
-				
-			case eMaps.mp_rr_canyonlands_64k_x_64k:
-				angles = < 356.297, 45.561, 0 >
-				return angles
-				break
-				
-			case eMaps.mp_rr_party_crasher:
-				angles = < 1822.39, -3977.1, 626.106 >
-				return angles
-				break
-				
-			default: 
-			
-				angles = < 0,0,0 >;
-				return angles
-				break
-		} 
-	
-	}
-	
-	else if ( _type == "waiting_for_players_coordinates" )
-	{
-	
-		switch(map)
-		{
-			
-			case eMaps.mp_rr_arena_composite:
-			
-				coordinates = < -3, 687.949, 300.174 >
-				return coordinates
-				break
-			
-			
-			case eMaps.mp_rr_aqueduct:
-				
-				coordinates = < 717.151, -5387.85, 600.00 >
-				return coordinates
-				break
-			
-			case eMaps.mp_rr_canyonlands_staging:
-				
-				coordinates = < 3480.93, -8729.28, -10144.3 >
-				return coordinates
-				break
-			
-			
-			case eMaps.mp_rr_canyonlands_64k_x_64k:
-				coordinates = < -532.278, 20713.6, 4850.00 >
-				return coordinates
-				break
-				
-			case eMaps.mp_rr_party_crasher:
-				coordinates = < 1785, -3835.48, 810.953 >
-				return coordinates 
-				break
-				
-			default: 
-			
-				coordinates = <0,0,0>;
-				return coordinates
-				break
-		} 
-		
-		
-	}
-	
-	else if ( _type == "waiting_for_players_angles" ) 
-	{
-
-		switch(map)
-		{
-			
-			case eMaps.mp_rr_arena_composite:
-			
-				angles = < 0, 90, 0 >;
-				return angles
-				break
-			
-			case eMaps.mp_rr_aqueduct:
-			
-				angles = < 355.891, 88.4579, 0 >
-				return angles
-				break
-			
-			case eMaps.mp_rr_canyonlands_staging:
-			
-				angles = < 358.91, 268.637, 0 >
-				return angles
-				break
-			
-			case eMaps.mp_rr_canyonlands_64k_x_64k:
-				angles = < 356.297, 45.561, 0 >
-				return angles
-				break
-				
-			case eMaps.mp_rr_party_crasher:
-				angles = < 0, 105, 0 >
-				return angles 
-				break
-				
-			default: 
-			
-				angles = < 0,0,0 >;
-				return angles
-				break
-		} 
-	
-	}
-		
-	//unreachable
-	return < 0,0,0 >;
-}
-
-
-/*TODO: Create a singular modular funciton 
-to calculate display locations based on 
-waiting location spawns - mkos */
-
 vector function IBMM_Coordinates()
 {
-	return Return_Loc_Data("matching_inputs_coordinates")
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 && MapName() == eMaps.mp_rr_canyonlands_staging )
+	{
+		return WaitingRoom.origin + <0,-200,130> 
+	}
+	
+	return waitingRoomPanelLocation.origin + <0,50,155> 	
 }
 
 vector function IBMM_Angles()
 {	
-	return Return_Loc_Data("matching_inputs_angles")
+	return waitingRoomPanelLocation.angles
 }
 
 vector function IBMM_WFP_Coordinates()
 {
-	return Return_Loc_Data("waiting_for_players_coordinates")
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 && MapName() == eMaps.mp_rr_canyonlands_staging )
+	{
+		return WaitingRoom.origin + <0,-200,130> 
+	}
+	
+	return waitingRoomPanelLocation.origin + <0,50,155> 	
 }
 
 vector function IBMM_WFP_Angles()
 {
-	return Return_Loc_Data("waiting_for_players_angles")
+	return waitingRoomPanelLocation.angles 
 }
-
 
 void function notify_thread( entity player ) //whole thing is convoluted as fuck
 {	
@@ -4828,7 +4643,7 @@ LocPair function getBotSpawn()
 {	
 	LocPair move
 	
-	switch( MapName() )
+	switch( MapName() ) //Todo: dynamic offset based on waitingroomloc (ideally remove ent based bot alltogether)
 	{
 		case eMaps.mp_rr_arena_composite:
 			move.origin = < 4.00458, -219.602, 202.3 >

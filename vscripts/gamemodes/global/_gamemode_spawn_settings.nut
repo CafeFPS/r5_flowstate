@@ -33,7 +33,7 @@ global function SetCustomPlaylist
 		bool bOverrideSpawns = false
 	}
 
-	const vector MASTER_PANEL_ORIGIN_OFFSET = <0,450,0>
+	const vector MASTER_PANEL_ORIGIN_OFFSET = <0,400,0>
 	
 	struct
 	{
@@ -152,12 +152,6 @@ LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideS
 {
 	LocPairData data
 	
-	if( spawns.len() <= 0 )
-	{
-		Warning( "array<LocPair> spawns were empty in call to " + FUNC_NAME() + "()" )
-		return data
-	}
-	
 	data.spawns = spawns
 	data.bOverrideSpawns = bOverrideSpawns
 
@@ -225,15 +219,15 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_aqueduct:
 			
-			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			defaultWaitingRoom = NewLocPair( < 705, -5885, 432 >, < 0, 90, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_arena_composite:
 		
-			defaultWaitingRoom = NewLocPair( < -7.62, 200, 184.57 >, < 0, 90 ,0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			defaultWaitingRoom = NewLocPair( < -2.46021, 291.152, 129.574 >, < 0, 90, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, <0,0,-5> )
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
@@ -244,15 +238,10 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
-		case eMaps.mp_rr_canyonlands_staging: //TODO: FIX ME
+		case eMaps.mp_rr_canyonlands_staging: 
 		
-			if( Playlist() == ePlaylists.fs_lgduels_1v1 )
-			{
-				waitingRoomPanelLocation = NewLocPair( < 3486.38, -9283.15, -10252 >, < 0, 180, 0 >)
-			}
-		
-			getWaitingRoomLocation().origin = <waitingRoomPanelLocation.origin.x,waitingRoomPanelLocation.origin.y,waitingRoomPanelLocation.origin.z> - MASTER_PANEL_ORIGIN_OFFSET
-			getWaitingRoomLocation().angles = <356.203, 269.459, 0>
+			defaultWaitingRoom = NewLocPair( < 3477.69, -8364.02, -10252 >, < 356.203, 269.459, 0 > )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
@@ -396,40 +385,35 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 			{
 				customSpawns.extend( data.spawns )
 			}	
-			
-			if( data.waitingRoom != null )
-			{
-				LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
-			}
-			
-			if( data.panels != null )
-			{
-				LocPair varPanels = expect LocPair( data.panels )
-				getWaitingRoomLocation().origin = <varPanels.origin.x,varPanels.origin.y,varPanels.origin.z>
-				getWaitingRoomLocation().angles = <varPanels.angles.x,varPanels.angles.y,varPanels.angles.z>
-			}
 		}
-	}
-	
-	if( !IsEven( customSpawns.len() ) )
-	{
-		Warning("Incorrectly configured customSpawns in " + FILE_NAME() + " ( locpair must be an even amount )")
-		customSpawns.resize(0)
+			
+		if( data.waitingRoom != null )
+		{
+			LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
+			getWaitingRoomLocation().origin = varWaitingRoom.origin
+			getWaitingRoomLocation().angles = varWaitingRoom.angles
+		}
+		
+		if( data.panels != null )
+		{
+			LocPair varPanels = expect LocPair( data.panels )
+			waitingRoomPanelLocation = NewLocPair( varPanels.origin, varPanels.angles )
+		}
 	}
 	
 	return customSpawns
 }
 
 
-LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom )
+LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom, vector panelOffset = <0,0,0>, vector originOffset = <0,0,0>, vector anglesOffset = <0,0,0> )
 {
 	LocPair defaultPanels
 	
-	vector panelsOffset = < defaultWaitingRoom.origin.x, defaultWaitingRoom.origin.y, defaultWaitingRoom.origin.z > + MASTER_PANEL_ORIGIN_OFFSET
+	vector panelsOffset = < defaultWaitingRoom.origin.x, defaultWaitingRoom.origin.y, defaultWaitingRoom.origin.z > + panelOffset + MASTER_PANEL_ORIGIN_OFFSET
 	defaultPanels = NewLocPair( panelsOffset, defaultWaitingRoom.angles )
 	
-	getWaitingRoomLocation().origin = defaultWaitingRoom.origin
-	getWaitingRoomLocation().angles = defaultWaitingRoom.angles
+	getWaitingRoomLocation().origin = defaultWaitingRoom.origin + originOffset
+	getWaitingRoomLocation().angles = defaultWaitingRoom.angles + anglesOffset
 	
 	return defaultPanels
 }
