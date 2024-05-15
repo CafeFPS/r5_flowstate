@@ -5,6 +5,9 @@ global function UpdateSystemPanel
 global function ToggleSetHunter
 global function OpenSystemMenu
 
+global function SetMotdText
+global function OpenMOTD
+
 global function ShouldDisplayOptInOptions
 
 struct ButtonData
@@ -47,9 +50,15 @@ struct
 	table<var, ButtonData > DestroyDummies
 	table<var, ButtonData > DestroyDummiesAdmin
 	table<var, ButtonData > OpenWeaponsMenu
+	table<var, ButtonData > OpenMOTD
 
 	InputDef& qaFooter
+	
 	bool SETHUNTERALLOWED
+	
+	string motdText = ""
+	table<string,bool> seenMotdForServer = {}
+	
 } file
 
 void function InitSystemMenu( var newMenuArg ) //
@@ -164,6 +173,7 @@ void function InitSystemPanel( var panel )
 	file.DestroyDummies[ panel ] <- clone data
 	file.DestroyDummiesAdmin[ panel ] <- clone data
 	file.OpenWeaponsMenu[ panel ] <- clone data
+	file.OpenMOTD[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -243,6 +253,8 @@ void function InitSystemPanel( var panel )
 	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
 	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
 	
+	file.OpenMOTD[ panel ].label = "SERVER MOTD"
+	file.OpenMOTD[ panel ].activateFunc = OpenMOTD	
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -348,7 +360,9 @@ void function UpdateSystemPanel( var panel )
 				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
 			}
 		}
-
+		
+		SetButtonData( panel, buttonIndex++, file.OpenMOTD[ panel ] )
+		
 		// if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
 		// {
 			// SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
@@ -554,6 +568,39 @@ bool function ShouldDisplayOptInOptions()
 	return GetGlobalNetBool( "isOptInServer" )
 }
 
+void function SetMotdText( string text )
+{
+	file.motdText = text
+	
+	if( !("server" in file.seenMotdForServer) )
+	{
+		OpenMOTD()
+	}
+}
+
+void function OpenMOTD()
+{
+	string motd = ""
+	
+	if ( file.motdText != "" )
+	{ 
+		motd = file.motdText
+	} 
+	else if( Localize("#FS_PLAYLIST_MOTD") != "" )
+	{
+		motd = Localize("#FS_PLAYLIST_MOTD")
+	}
+	
+	DialogData dialog
+	dialog.header = "Server Message of the Day"
+	dialog.message = motd
+	dialog.darkenBackground = true
+	dialog.showPCBackButton = true
+	dialog.useFullMessageHeight = true
+	dialog.ruiMessage.message = "sure thing bud"
+	dialog.ruiMessage.style1FontScale = 0.2
+	OpenDialog( dialog )
+}
 
 void function UpdateOptInFooter()
 {

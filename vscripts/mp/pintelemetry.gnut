@@ -374,6 +374,7 @@ struct {
 	bool bMotdEnabled = false
 	bool bUseOnlineMOTD = false
 	string localFlowstate_MOTD = "" //configure in playlist.
+	string onlineMOTD = ""
 	
 	// Chatbot Messages
 	array<string> BotAllowedModes = ["fs_1v1","lg_duel_mode"]
@@ -740,8 +741,9 @@ void function INIT_Global_R5RDEV_VarTable()
 						break 
 						
 				}//switch for setting data type	
-
-				__QueryString_Callbacks( setting[0], setting[1] )	
+				
+				if( setting.len() > 1 )
+					__QueryString_Callbacks( setting[0], setting[1] )	
 				
 			}//for loop length of settings in category
 		}//value len check
@@ -763,24 +765,30 @@ void function DummyFunction_ProofOfConcept( string retData )
 
 void function ShowPlayerOnlineMOTD( string retData )
 {
+	file.onlineMOTD = retData	
+	AddCallback_OnClientConnected( ShowOnlineMOTD )
+	
 	foreach( player in GetPlayerArray() )
 	{
-		AddCallback_OnClientConnected( void function( entity player ) : ( retData, player ) 
+		ShowOnlineMOTD( player )
+	}
+}
+
+void function ShowOnlineMOTD( entity player )
+{
+	thread( void function() : ( player )
 		{
-			thread( void function() : ( retData, player )
-			{
-				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
-				
-					if( IsValid( player ))
-					{	
-						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
-						//run ui script for motd
-						wait 5
-						MessageLong( player, "", "", eMsgUI.QUICK , 10, LineBreak( retData, 80 ) )
-					}
-			}())
-		})
-	} 
+			waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+			
+				if( IsValid( player ))
+				{	
+					wait 3.5
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+					//run ui script for motd
+					wait 5
+					MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE , 10, LineBreak( file.onlineMOTD, 80 ) )
+				}
+		})()
 }
 
 void function ShowPlayerLocalMOTD( entity player )
@@ -791,11 +799,11 @@ void function ShowPlayerLocalMOTD( entity player )
 				
 					if( IsValid( player ) )
 					{
-						wait 2.5
+						wait 3.5
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 						//run ui script for motd
 						wait 5
-						MessageLong( player, "", "", eMsgUI.QUICK, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
+						MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
 					}
 			})()
 }
@@ -4963,6 +4971,7 @@ struct {
 	bool bChatbotEnabled = false
 	bool global_stats = false
 	bool afk_to_rest_enabled = false
+	string localFlowstate_MOTD = ""
 
 } file
 
@@ -5015,6 +5024,26 @@ void function PIN_Init()
 	{
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
+	
+	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "No message" )
+	AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+}
+
+void function ShowPlayerLocalMOTD( entity player )
+{	
+	thread( void function() : ( player )
+			{
+				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+				
+					if( IsValid( player ) )
+					{
+						wait 3.5
+						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+						//run ui script for motd
+						wait 5
+						MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
+					}
+			})()
 }
 
 void function PIN_GameStart(){}

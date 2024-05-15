@@ -51,7 +51,8 @@ global enum eMsgUI
 	WAVE, //9
 	VAR_TITLE_SLOT, //10
 	VAR_SUBTEXT_SLOT, //11
-	VAR_EVENT //12
+	VAR_EVENT, //12
+	VAR_DIALOGUE //13
 }
 
 struct 
@@ -237,7 +238,8 @@ struct
 const array<int> longUiTypes = 
 [
 	eMsgUI.EVENT,
-	eMsgUI.QUICK
+	eMsgUI.QUICK,
+	eMsgUI.VAR_DIALOGUE
 ]
 
 //########################################################
@@ -734,6 +736,9 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 				//Announcement_SetOptionalTextArgsArray( announcement, [ player.GetPlayerNetInt("SeasonScore").tostring() ] )
 				break;	
 			case eMsgUI.WAVE:	iCustomUI = ANNOUNCEMENT_STYLE_WAVE; break;
+			case eMsgUI.VAR_DIALOGUE:
+				RunUIScript( "SetMotdText", str1 + str2 )
+				return
 				
 			default:
 				#if DEVELOPER
