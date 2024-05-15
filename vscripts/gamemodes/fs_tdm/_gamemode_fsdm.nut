@@ -1064,9 +1064,9 @@ LocPairData function Init_DropoffPatchSpawns()
 		];
 			
 			
-	LocPairData extendSpawns = CreateLocPairObject( dropoff_patch, false, null, null )
-	return extendSpawns
+	return CreateLocPairObject( dropoff_patch, false, null, null )
 }
+
 
 //////////////////////////////////////////////////// 
 ///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
@@ -1256,6 +1256,7 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
+		
 		//custom spawn extension using the implemented abstracted callback :) ~mkos 
 		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
 		{

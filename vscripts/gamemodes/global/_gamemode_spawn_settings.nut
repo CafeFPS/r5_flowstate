@@ -43,6 +43,7 @@ global function SetCustomPlaylist
 		string customSpawnpak = ""
 		string customPlaylist = ""
 		int teamsize = 2
+		bool overrideSpawns = false
 		
 		#if DEVELOPER
 			array<string> dev_positions = []
@@ -379,10 +380,17 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		{
 			if( data.bOverrideSpawns )
 			{
+				#if DEVELOPER 
+					Warning("Spawns overriden with custom spawns count: [" + string( data.spawns.len() ) + "]" )
+				#endif 
 				customSpawns = data.spawns
+				file.overrideSpawns = true
 			}
 			else 
 			{
+				#if DEVELOPER 
+					Warning("Spawns extended with custom spawns count: [" + string( data.spawns.len() ) + "]" )
+				#endif 
 				customSpawns.extend( data.spawns )
 			}	
 		}
@@ -511,10 +519,17 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 	
 	if( extraSpawnLocations.len() > 0 )
 	{
-		allSoloLocations.extend( extraSpawnLocations )
-		#if DEVELOPER
-			printt("Added: [",extraSpawnLocations.len(),"] locations from custom spawns.")
-		#endif 
+		if( file.overrideSpawns )
+		{
+			allSoloLocations = extraSpawnLocations
+		}
+		else 
+		{
+			allSoloLocations.extend( extraSpawnLocations )
+			#if DEVELOPER
+				printt("Added: [",extraSpawnLocations.len(),"] locations from custom spawns.")
+			#endif 
+		}
 	}
 	
 	return allSoloLocations
