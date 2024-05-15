@@ -459,10 +459,10 @@ string function GenerateAssetStringForMapAndGamemode( int eMap, string set, stri
 		}
 		
 		// set spawnset
-		spawnset 					= "datatable/fs_spawns_" + dtbl_PlaylistRef + "_" + dtbl_MapRef + set + ".rpak"	
-		file.currentSpawnPak		= spawnset	
+		spawnset 					= "datatable/fs_spawns_" + dtbl_PlaylistRef + "_" + dtbl_MapRef + set + ".rpak"		
 	}
 	
+	file.currentSpawnPak = spawnset
 	return spawnset
 }
 
@@ -822,26 +822,24 @@ void function DEV_WritePosOut()
 	if( DEV_PosType() == "sq" )
 		DevTextBufferWrite( "];" )
 	
+	string fType = ".txt";
+	
 	if( DEV_PosType() == "csv" )
 	{
-		int uTime 			= GetUnixTimestamp()
-		string file 		= "spawns_" + string( uTime ) + ".csv"
-		string directory 	= "output/"
-		
-		DevP4Checkout( file )
-		DevTextBufferDumpToFile( directory + file )
-		printt("Wrote file to: ", directory + file )
+		fType = ".csv"
 	}
-	else 
+	else if( DEV_PosType() == "sq" ) 
 	{
-		int uTime 			= GetUnixTimestamp()
-		string file 		= "spawns_" + string( uTime ) + ".nut"
-		string directory 	= "output/"
-		
-		DevP4Checkout( file )
-		DevTextBufferDumpToFile( directory + file )
-		printt("Wrote file to: ", directory + file )
+		fType = ".nut"
 	}
+
+	int uTime 			= GetUnixTimestamp()
+	string file 		= "spawns_" + string( uTime ) + fType
+	string directory 	= "output/"
+	
+	DevP4Checkout( file )
+	DevTextBufferDumpToFile( directory + file )
+	printt("Wrote file to: ", directory + file )
 }
 
 void function DEV_SetTeamSize( int size )
