@@ -320,14 +320,26 @@ array<string> function AllPlaylistsArray()
 //////////////////////////////////////////
 //	gamemode conditional INIT functions	//
 //////////////////////////////////////////
+
+bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
+{
+	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
+	{
+		return true
+	}
+	
+	return false
+}
+
  
 //add init functions here
 void function AllModeConditionals_Init()
 {
 	TrackerSupportedMode_Init()
 	PassivesAllowed_Init()
-	Is1v1GameType_Init()
 }
+
+
 
 ///////////////////////////////////////
 //.. define init functions here
@@ -336,20 +348,9 @@ struct
 {
 	bool passivesAllowed = false
 	bool trackerSupportedMode = false
-	bool is1v1GameType = false
 	
 } modeSettings
 
-
-void function Is1v1GameType_Init()
-{
-	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
-	{
-		modeSettings.is1v1GameType = true
-	}
-	
-	modeSettings.is1v1GameType = false
-}
 
 void function PassivesAllowed_Init()
 {
@@ -428,10 +429,7 @@ bool function Flowstate_IsTrackerSupportedMode()
 	return modeSettings.trackerSupportedMode
 }
 
-bool function is1v1GameType()
-{
-	return modeSettings.is1v1GameType
-}
+
 
 
 

@@ -234,7 +234,11 @@ struct
 } file
 
 //local script vars
-const array<int> longUiTypes = [1]
+const array<int> longUiTypes = 
+[
+	eMsgUI.EVENT,
+	eMsgUI.QUICK
+]
 
 //########################################################
 //							init						//

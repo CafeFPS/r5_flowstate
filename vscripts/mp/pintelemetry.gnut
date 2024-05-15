@@ -756,7 +756,9 @@ void function INIT_Global_R5RDEV_VarTable()
 
 void function DummyFunction_ProofOfConcept( string retData )
 {
-	printt("\n\n\n\n\n\n\n restricted_rank LOADED with data: ", retData, "\n\n\n\n\n\n\n\n" )
+	#if DEVELOPER
+		printt("\n\n\n\n\n\n\n restricted_rank LOADED with data: ", retData, "\n\n\n\n\n\n\n\n" )
+	#endif
 }
 
 void function ShowPlayerOnlineMOTD( string retData )
@@ -773,7 +775,8 @@ void function ShowPlayerOnlineMOTD( string retData )
 					{	
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 						//run ui script for motd
-						//MessageLong( player, "", "", 1 , 10, LineBreak( retData, 100 ) )
+						wait 5
+						MessageLong( player, "", "", eMsgUI.QUICK , 10, LineBreak( retData, 80 ) )
 					}
 			}())
 		})
@@ -786,14 +789,15 @@ void function ShowPlayerLocalMOTD( entity player )
 			{
 				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
 				
-					if( IsValid( player ))
+					if( IsValid( player ) )
 					{
 						wait 2.5
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 						//run ui script for motd
-						//MessageLong( player, "Welcome %s", "", eMsgUI.QUICK, 10, "test", LineBreak( file.localFlowstate_MOTD, 100 ) )
+						wait 5
+						MessageLong( player, "", "", eMsgUI.QUICK, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
 					}
-			}())
+			})()
 }
 
 
