@@ -2099,9 +2099,12 @@ void function Flowstate_DeathboxPhysics( entity deathbox, vector playerVelocity)
 void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1, bool isCargoBot = false )
 {
 	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
-
-	physics.RemoveFromAllRealms()
-	physics.AddToOtherEntitysRealms( player )
+	
+	if( IsValid( player ) )
+	{
+		physics.RemoveFromAllRealms()
+		physics.AddToOtherEntitysRealms( player )
+	}
 
 	vector velocity = forward * 1000
 
