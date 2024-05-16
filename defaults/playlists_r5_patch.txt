@@ -1121,7 +1121,7 @@ playlists
 				flowstate_Enable_Shipment_By_AyeZee				1
 				flowstate_Enable_Killhouse_By_AyeZee			1
 				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							1
+				flowstate_Enable_Encore							0 //if disabled, it will try to load Rust first
 				flowstate_Enable_Killyard_By_DEAFPS				1
 				flowstate_Enable_Dustment_By_DEAFPS				1
 				flowstate_Enable_Shoothouse_By_DEAFPS			1
