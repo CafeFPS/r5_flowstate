@@ -20,7 +20,6 @@ global function notify_thread
 global function _soloModeInit
 global function resetChallenges
 global function soloModefixDelayStart
-global function setChineseServer
 global function isPlayerInWaitingList
 global function getWaitingRoomLocation
 global function maki_tp_player
@@ -32,6 +31,7 @@ global function getBotSpawn
 global function RechargePlayerAbilities
 global function isCustomWeaponAllowed
 global function isPlayerInChallenge
+global function SetWaitingRoomRadius
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -133,6 +133,7 @@ array <string> custom_weapons_secondary = []
 
 struct 
 {
+	float waitingRoomRadius = 600
 	float season_kd_weight
 	float current_kd_weight
 	float SBMM_kd_difference
@@ -149,7 +150,6 @@ struct
 	//playerHandle -> struct resting
 	table <int,bool> soloPlayersResting = {}
 	
-	bool IS_CHINESE_SERVER = false
 	bool APlayerHasMessage = false
 	
 	array<ChallengesStruct> allChallenges
@@ -288,14 +288,14 @@ table<int,bool> function FS_1v1_GetPlayersResting()
 	return file.soloPlayersResting
 }
 
-void function setChineseServer( bool value )
-{
-	file.IS_CHINESE_SERVER = value
-}
-
 bool function is3v3Mode()
 {
 	return settings.is3v3Mode
+}
+
+void function SetWaitingRoomRadius( float radius )
+{
+	file.waitingRoomRadius = radius
 }
 
 //usage intended for display only queries from scripts, not game logic
@@ -2266,12 +2266,6 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				}
 			}
 		}
-	
-		
-		/* if(file.IS_CHINESE_SERVER)
-			Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
-		else
-			Message(player,"You are resting now", restText ) */
 			
 		if ( restFlag == "" )
 		{		
@@ -2327,12 +2321,6 @@ void function expliciteRest( entity player )
 	{
 		return 
 	}
-	
-	/* 	if(file.IS_CHINESE_SERVER)
-		Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
-	else
-		Message(player,"You are resting now", "Type rest in console to pew pew again.")
-	 */
 	 
 	LocalMsg( player, "#FS_YouAreResting", "#FS_BASE_RestText" )
 	
@@ -2981,7 +2969,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 
 	#if DEVELOPER
 	#else
-	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
+		wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
 	#endif
 
 	if(!IsValid(player)) return
@@ -3159,7 +3147,6 @@ void function _soloModeInit( int eMap )
 	}
 	
 	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap, settings.spawnOptions )
-	array<LocPair> panelLocations = ReturnAllPanelLocations()
 	
 	if( !IsEven( allSoloLocations.len() ) )
 	{
@@ -3225,11 +3212,6 @@ void function CreatePanels( vector origin, vector angles, table<string, entity> 
 	angles =  < ceil( angles.x ), ceil( angles.y ), ( angles.z * 0 ) > 
 	vector baseAngles = angles - <0,90,0> //Normalize( angles )
 	
-	//really just a bounds check.
-	baseAngles.x = NormalizeAngle( baseAngles.x )
-	baseAngles.y = NormalizeAngle( baseAngles.y )
-	baseAngles.z = NormalizeAngle( baseAngles.z )
-
 	array<string> keys = []
 
 	foreach ( title, panelEntity in panels )
@@ -3272,18 +3254,6 @@ void function CreatePanels( vector origin, vector angles, table<string, entity> 
 		panels[ keys[i] ] = panel
 	}
 }
-
-float function NormalizeAngle( float angle )
-{
-    while ( angle < 0 ) 
-		angle += 360
-		
-    while ( angle >= 360 ) 
-		angle -= 360
-		
-    return angle
-}
-
 
 void function DefinePanelCallbacks( table<string, entity> panels )
 {
@@ -3442,20 +3412,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
 	
 }
 
-void function soloModeThread(LocPair waitingRoomLocation)
+void function soloModeThread( LocPair waitingRoomLocation )
 {
 	//printt("solo mode thread start!")
 
 	string Text5 = "#FS_OpponentDisconnect"
-
-/* 	if(file.IS_CHINESE_SERVER)
-	{
-		Text5 = "您的对手已断开连接"
-	}
-	else
-	{
-		Text5 = "Your opponent has disconnected!"
-	} */
 	
 	wait 8
 	while(true)
@@ -3727,19 +3688,13 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			if( isPlayerInSoloMode( player ) )
 				continue
 			
-			//mkos LG_Duel
-			float t_radius = 600;
-			if ( Flowstate_IsMapCanyonlandsStaging() )
-			{ 
-				//sqprint("map set radius 2400");
-				t_radius = 2400 
-			} 
-			
-			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
-			{
-				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons( player )
-			}
+			#if !DEVELOPER 
+				if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > file.waitingRoomRadius )
+				{
+					maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+					HolsterAndDisableWeapons( player )
+				}
+			#endif
 		}
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3975,29 +3930,28 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			}//foreach
 		}//else
 
-		if ( !IsValid(newGroup.player1) || !IsValid(newGroup.player2) ) 
+		if ( !IsValid( newGroup.player1 ) || !IsValid( newGroup.player2 ) ) 
 		{
-			SetIsUsedBoolForRealmSlot(newGroup.slotIndex, false);
-			if (IsValid(newGroup.player1)) 
+			SetIsUsedBoolForRealmSlot( newGroup.slotIndex, false )
+			if ( IsValid( newGroup.player1 ) ) 
 			{
-				soloModePlayerToWaitingList(newGroup.player1);
+				soloModePlayerToWaitingList( newGroup.player1 )
 			}
 			
-			if (IsValid(newGroup.player2)) 
+			if ( IsValid( newGroup.player2 ) ) 
 			{
-				soloModePlayerToWaitingList(newGroup.player2);
+				soloModePlayerToWaitingList( newGroup.player2 )
 			}
-			continue;
+			
+			continue
 		}
 		
 		//don't pair players if they are waiting for their chal player
 		if( !newGroup.player1.p.waitingFor1v1 && !newGroup.player2.p.waitingFor1v1 )
 		{		
-
 			//already matched two players
 			array<entity> players = [newGroup.player1,newGroup.player2]
 		
-			//mkos
 			if ( Fetch_IBMM_Timeout_For_Player( newGroup.player1 ) == false || Fetch_IBMM_Timeout_For_Player( newGroup.player2 ) == false && newGroup.player1.p.input == newGroup.player2.p.input )
 			{			
 				newGroup.GROUP_INPUT_LOCKED = true;
@@ -4011,7 +3965,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 
 			foreach ( index, eachPlayer in players )
 			{
-				LocalMsg( eachPlayer, "#FS_MATCHED", "", eMsgUI.EVENT, 1 ) //reset in queue msg
+				LocalEventMsg( eachPlayer, "", "", 1 ) //reset in queue msg
 				EnableOffhandWeapons( eachPlayer )
 				DeployAndEnableWeapons( eachPlayer )
 				thread respawnInSoloMode( eachPlayer, index )
@@ -4022,47 +3976,36 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			FS_SetRealmForPlayer( newGroup.player1, newGroup.slotIndex )
 			FS_SetRealmForPlayer( newGroup.player2, newGroup.slotIndex )		
 			
-			//mkos
-			
-			string e_str = "";
+			string ibmmLockTypeToken = "";
 			
 			if ( newGroup.GROUP_INPUT_LOCKED == true )
 			{	
-				//sqprint(format("Starting watch thread for: %s", newGroup.player1.GetPlayerName() ))
 				thread InputWatchdog( newGroup.player1, newGroup.player2, newGroup ); 
-				//e_str = " INPUT LOCKED " 
-				e_str = "#FS_InputLocked";
+				ibmmLockTypeToken = "#FS_InputLocked";
 			}
 			else 
 			{ 	
-				//e_str = "COULDNT LOCK SAME INPUT " 
-				e_str = "#FS_CouldNotLock";
+				ibmmLockTypeToken = "#FS_CouldNotLock";
 			}
 			
 			if ( newGroup.player1.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
 			{ 
-				//e_str = "ANY INPUT"; 
-				e_str = "#FS_AnyInput";
+				ibmmLockTypeToken = "#FS_AnyInput";
 			}
 			
 			if(newGroup.player1.p.enable_input_banner && !bMatchFound )
 			{
-				//Message( newGroup.player1 , e_str, "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 ) , 2.5)
-				string vs = "VS: " + newGroup.player2.p.name + "   USING -> " + FetchInputName( newGroup.player2 )
-				LocalMsg( newGroup.player1, e_str, "", eMsgUI.DEFAULT, 3, "", vs )
+				IBMM_Notify( newGroup.player1, ibmmLockTypeToken, newGroup.player2.p.input, newGroup.player2.p.name )
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
 			{ 
-				//e_str = "ANY INPUT"; 
-				e_str = "#FS_AnyInput";
+				ibmmLockTypeToken = "#FS_AnyInput";
 			}
 			
-			if(newGroup.player2.p.enable_input_banner && !bMatchFound )
+			if( newGroup.player2.p.enable_input_banner && !bMatchFound )
 			{
-				//Message( newGroup.player2 , e_str, "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 ) , 2.5)
-				string vs2 = "VS: " + newGroup.player1.p.name + "   USING -> " + FetchInputName( newGroup.player1 )
-				LocalMsg( newGroup.player2, e_str, "", eMsgUI.DEFAULT, 3, "", vs2 )
+				IBMM_Notify( newGroup.player2, ibmmLockTypeToken, newGroup.player1.p.input, newGroup.player1.p.name )
 			}
 		} //not waiting
 		
@@ -4076,7 +4019,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			if ( !IsValid(player1) || !IsValid(player2) ) 
 			{
 				
-				if( IsValid(player1 ) )
+				if( IsValid( player1 ) )
 				{
 					player1.p.waitingFor1v1 = false
 				}
@@ -4086,7 +4029,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 					player2.p.waitingFor1v1 = false
 				}
 				
-				deletions.append(player1_eHandle);
+				deletions.append(player1_eHandle)
 			}
 		}
 		
@@ -4094,7 +4037,10 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		{
 			foreach( playerKey in deletions ) 
 			{
-				delete file.acceptedChallenges[playerKey];
+				if( playerKey in file.acceptedChallenges )
+				{
+					delete file.acceptedChallenges[playerKey]
+				}
 			}
 			
 			deletions.resize(0)
@@ -4427,7 +4373,7 @@ vector function IBMM_Coordinates()
 		return WaitingRoom.origin + <0,-200,130> 
 	}
 	
-	return waitingRoomPanelLocation.origin + <0,50,155> 	
+	return waitingRoomPanelLocation.origin + <0,0,155> 	
 }
 
 vector function IBMM_Angles()
@@ -4442,7 +4388,7 @@ vector function IBMM_WFP_Coordinates()
 		return WaitingRoom.origin + <0,-200,130> 
 	}
 	
-	return waitingRoomPanelLocation.origin + <0,50,155> 	
+	return waitingRoomPanelLocation.origin + <0,0,155> 	
 }
 
 vector function IBMM_WFP_Angles()
@@ -4557,7 +4503,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 
 void function UpdateChallengeText( entity player, int id, string text )
 {
-	wait .2
+	wait 0.2
 	entity opponent = player.p.entLastChallenger
 	EndSignal( player, "NotificationChanged" )
 	EndSignal( opponent, "OnDisconnected" )
@@ -4676,7 +4622,7 @@ void function Init_ValidLegendRange()
 	file.maxLegendRange = max 
 }
 
-bool function InValidLegendRange( int i )
+bool function ValidLegendRange( int i )
 {
 	return i >= file.minLegendRange && i <= file.maxLegendRange
 }
@@ -4690,7 +4636,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	
 	ItemFlavor character;
 	
-	if( InValidLegendRange( index ) )
+	if( ValidLegendRange( index ) )
 	{
 		character = file.characters[characterslist[index]]
 	}

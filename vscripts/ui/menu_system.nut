@@ -572,14 +572,19 @@ void function SetMotdText( string text )
 {
 	file.motdText = text
 	
-	if( !("server" in file.seenMotdForServer) )
-	{
-		OpenMOTD()
-	}
+	// auto-opening motd disabled as per amos request
+	
+	// if( !("server" in file.seenMotdForServer) )
+	// {
+		// OpenMOTD()
+	// }
 }
 
 void function OpenMOTD()
 {
+	if ( IsLobby() )
+		return
+		
 	string motd = ""
 	
 	if ( file.motdText != "" )
@@ -597,8 +602,6 @@ void function OpenMOTD()
 	dialog.darkenBackground = true
 	dialog.showPCBackButton = true
 	dialog.useFullMessageHeight = true
-	dialog.ruiMessage.message = "sure thing bud"
-	dialog.ruiMessage.style1FontScale = 0.2
 	OpenDialog( dialog )
 }
 

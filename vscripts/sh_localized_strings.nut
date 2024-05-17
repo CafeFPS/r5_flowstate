@@ -12,6 +12,7 @@ global function StringReplaceLimited
 	global function MessageLong
 	global function LocalEventMsgDelayed
 	global function LocalEventMsg //wrapper for LocalMsg ui type 1
+	global function IBMM_Notify
 	global function LocalizedTokenExists
 #endif
 
@@ -39,20 +40,21 @@ global function StringReplaceLimited
 
 global enum eMsgUI
 {
-	DEFAULT, //0
-	EVENT, //1
-	CIRCLE_WARNING, //2
-	BIG, //3
-	QUICK, //4
-	SWEEP, //5
-	RESULTS, //6
-	OBJECTIVE, //7
-	ELITE, //8
-	WAVE, //9
-	VAR_TITLE_SLOT, //10
-	VAR_SUBTEXT_SLOT, //11
-	VAR_EVENT, //12
-	VAR_DIALOGUE //13
+	DEFAULT, 			//0
+	EVENT, 				//1
+	CIRCLE_WARNING, 	//2
+	BIG, 				//3
+	QUICK, 				//4
+	SWEEP, 				//5
+	RESULTS, 			//6
+	OBJECTIVE, 			//7
+	ELITE, 				//8
+	WAVE, 				//9
+	VAR_TITLE_SLOT, 	//10
+	VAR_SUBTEXT_SLOT, 	//11
+	VAR_EVENT, 			//12
+	VAR_DIALOGUE, 		//13
+	IBMM 				//14
 }
 
 struct 
@@ -228,7 +230,10 @@ struct
 		"#FS_ANIM_NOT_FOUND",
 		"#FS_ANIM_REMOVED_SLOT",
 		"#FS_WELCOME",
-		"#FS_MOVEMENT_RECORDER_2"
+		"#FS_MOVEMENT_RECORDER_2",
+		"#FS_INPUT_VS",
+		"#FS_CONTROLLER",
+		"#FS_MKB"
 		
 	]
 	
@@ -489,7 +494,7 @@ void function MessageLong( entity player, string ref, string subref = "", int ui
 {
 	thread( void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
 	{
-		wait 0.5
+		wait 0.5 //HACKFIX: avoid code rock
 		LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
 	})()
 }
@@ -561,6 +566,19 @@ void function LocalEventMsgDelayed( float eventdelay, entity player, string ref,
 				wait eventdelay
 				LocalEventMsg( player, ref, varString, duration )
 			})()
+}
+
+void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPlayerInputType, string enemyName, float duration = 5.0 )
+{
+	string inputTypeToken = "";
+	
+	switch( enemyPlayerInputType )
+	{
+		case 0: inputTypeToken = "#FS_MKB"; break;
+		case 1: inputTypeToken = "#FS_CONTROLLER"; break;
+	}
+	
+	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", enemyName, "", false )
 }
 #endif //SERVER
 
@@ -647,19 +665,19 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 
 	switch(uiType)
 	{
-		case eMsgUI.DEFAULT: DisplayOldMessage( Msg, SubMsg, duration ); break
+		case eMsgUI.DEFAULT: DisplayMessage( Msg, SubMsg, duration ); break
 		case eMsgUI.EVENT: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
-		// > 2 is handled by enum: eMsgUI and DisplayOldMessage()
+		// > 2 is handled by enum: eMsgUI and DisplayMessage()
 		
 		default:
-			DisplayOldMessage( Msg, SubMsg, duration, uiType ); break
+			DisplayMessage( Msg, SubMsg, duration, uiType ); break
 	}
 	
 	file.fs_variableString = ""
 	file.fs_variableSubString = ""
 }
 
-void function DisplayOldMessage( string str1, string str2, float duration, int uiType = 0 )
+void function DisplayMessage( string str1, string str2, float duration, int uiType = 0 )
 {
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )
@@ -738,6 +756,10 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 			case eMsgUI.WAVE:	iCustomUI = ANNOUNCEMENT_STYLE_WAVE; break;
 			case eMsgUI.VAR_DIALOGUE:
 				RunUIScript( "SetMotdText", str1 + str2 )
+				return
+			
+			case eMsgUI.IBMM:
+				thread FS_IBMM_Msg( str1, str2, duration )
 				return
 				
 			default:
@@ -854,8 +876,8 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 	
 	switch( uiType )
 	{
-		case eMsgUI.VAR_TITLE_SLOT: DisplayOldMessage( Msg, " ", duration ); break;
-		case eMsgUI.VAR_SUBTEXT_SLOT: DisplayOldMessage( " ", Msg, duration ); break;
+		case eMsgUI.VAR_TITLE_SLOT: DisplayMessage( Msg, " ", duration ); break;
+		case eMsgUI.VAR_SUBTEXT_SLOT: DisplayMessage( " ", Msg, duration ); break;
 		case eMsgUI.VAR_EVENT: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break;
 
 		default:

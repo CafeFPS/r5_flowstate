@@ -5001,6 +5001,8 @@ void function PIN_Init()
 {
 	//These global bools are initialized here and used in all scripts
 	//TODO: Use only sh file bools instead of globals
+	if( IsLobby() )
+		return
 	
 	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;

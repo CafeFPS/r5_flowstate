@@ -1,7 +1,6 @@
 // flowstate spawn system
 
 global function ReturnAllSpawnLocations
-global function ReturnAllPanelLocations
 global LocPair &waitingRoomPanelLocation
 
 global function CreateLocPairObject
@@ -23,6 +22,7 @@ global function SetCustomPlaylist
 	global function DEV_WritePosOut
 	global function DEV_pos_help
 	global function DEV_SetTeamSize
+	global function DEV_tp_to_panels
 #endif 
 
 	global struct LocPairData
@@ -33,7 +33,7 @@ global function SetCustomPlaylist
 		bool bOverrideSpawns = false
 	}
 
-	const vector MASTER_PANEL_ORIGIN_OFFSET = <0,400,0>
+	const int MASTER_PANEL_ORIGIN_OFFSET = 400
 	
 	struct
 	{
@@ -45,7 +45,9 @@ global function SetCustomPlaylist
 		int teamsize = 2
 		bool overrideSpawns = false
 		
+		
 		#if DEVELOPER
+			LocPair &panelsloc
 			array<string> dev_positions = []
 			string dev_positions_type = ""
 			array<string> validPosTypes = ["sq","csv"]
@@ -144,11 +146,6 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )
 }
 
-array<LocPair> function ReturnAllPanelLocations() //TODO: remove (deprecated)
-{
-	return FetchReturnAllPanelLocations()
-}
-
 LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null )
 {
 	LocPairData data
@@ -222,7 +219,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 			
 			defaultWaitingRoom = NewLocPair( < 705, -5885, 432 >, < 0, 90, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
-		
+			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_arena_composite:
@@ -234,7 +231,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		
-			defaultWaitingRoom = NewLocPair( < -762.59, 20485.05, 4626.03>, < 0, 45, 0> )
+			defaultWaitingRoom = NewLocPair( < -906.22, 20306.5, 4570.03 >, < 0, 45, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
@@ -249,7 +246,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_party_crasher:
 		
 			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )
 			
 		
 		break ////////////////////////////////////////////////////////////////////////////
@@ -263,7 +260,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////	
 		case eMaps.mp_rr_arena_skygarden:
 		
-			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			defaultWaitingRoom = NewLocPair( < -7.8126, -1320.75, 2877.51 >, < 359.849, 270.32, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
@@ -334,7 +331,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_mu2:
 		
-			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			defaultWaitingRoom = NewLocPair( < -915.356, 20298.4, 4570.03 >, < 3.22824, 44.1054, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 			if( is3v3Mode() )//TODO: abstract into rpak when locations are complete
@@ -413,12 +410,18 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 }
 
 
-LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom, vector panelOffset = <0,0,0>, vector originOffset = <0,0,0>, vector anglesOffset = <0,0,0> )
+LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom, vector panelOffset = <0,0,0>, int panelDistance = MASTER_PANEL_ORIGIN_OFFSET, vector originOffset = <0,0,0>, vector anglesOffset = <0,0,0> )
 {
 	LocPair defaultPanels
 	
-	vector panelsOffset = < defaultWaitingRoom.origin.x, defaultWaitingRoom.origin.y, defaultWaitingRoom.origin.z > + panelOffset + MASTER_PANEL_ORIGIN_OFFSET
-	defaultPanels = NewLocPair( panelsOffset, defaultWaitingRoom.angles )
+	vector panelsOffset = < defaultWaitingRoom.origin.x, defaultWaitingRoom.origin.y, defaultWaitingRoom.origin.z > + panelOffset
+	vector endPos = defaultWaitingRoom.origin + ( AnglesToForward( defaultWaitingRoom.angles ) * panelDistance ) //ty zee
+	
+	defaultPanels = NewLocPair( <endPos.x, endPos.y, panelsOffset.z >, defaultWaitingRoom.angles )
+	
+	#if DEVELOPER
+		file.panelsloc = defaultPanels
+	#endif
 	
 	getWaitingRoomLocation().origin = defaultWaitingRoom.origin + originOffset
 	getWaitingRoomLocation().angles = defaultWaitingRoom.angles + anglesOffset
@@ -426,14 +429,13 @@ LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom,
 	return defaultPanels
 }
 
-
 vector function GenerateMapGamemodeBasedOffset( int eMap )
 {
 	vector baseOffset = <0,0,0>
 	
 	if( eMap == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
 	{
-		return LG_DUELS_OFFSET_ORIGIN
+		return LG_DUELS_OFFSET_ORIGIN //prop based map can be moved based on this offset, therefore spawns are dynamically adjusted
 	}
 	
 	//if(){}
@@ -534,14 +536,6 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 	
 	return allSoloLocations
 }
-
-
-array<LocPair> function FetchReturnAllPanelLocations()
-{
-	array<LocPair> panelLocations = []
-	return panelLocations
-}
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -750,7 +744,7 @@ void function DEV_ClearPos()
 {
 	file.dev_positions.clear()
 	file.dev_positions_LocPair.clear()
-	printt( "Celared all saved positions" )
+	printt( "Cleared all saved positions" )
 }
 
 void function DEV_tp_to_pos( string pid = "", int posIndex = 0 )
@@ -863,7 +857,12 @@ void function DEV_SetTeamSize( int size )
 	printt( "Team size set to", size )
 }
 
-#endif
+LocPair function DEV_tp_to_panels()
+{
+	return file.panelsloc
+}
+
+#endif //DEVELOPER
 
 //util
 

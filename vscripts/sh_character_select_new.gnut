@@ -3085,7 +3085,9 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 	if ( updateLoadoutSlot && ItemFlavor_GetHumanReadableRef( playerCharacter ) != ItemFlavor_GetHumanReadableRef( character ) )
 	{
 		SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), character )
-		printt( "AssignCharacter: player", player, "is now", ItemFlavor_GetHumanReadableRef( character ) )
+		#if DEVELOPER
+			printt( "AssignCharacter: player", player, "is now", ItemFlavor_GetHumanReadableRef( character ) )
+		#endif
 	}
 
 	player.SetPlayerNetBool( "hasLockedInCharacter", true )

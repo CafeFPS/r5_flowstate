@@ -1719,9 +1719,10 @@ void function Sh_CustomTDM_Init()
     RegisterSignal( "CloseScoreRUI" )
 }
 
-LocPair function NewLocPair(vector origin, vector angles)
+LocPair function NewLocPair( vector origin, vector angles )
 {
     LocPair locPair
+	
     locPair.origin = origin
     locPair.angles = angles
 

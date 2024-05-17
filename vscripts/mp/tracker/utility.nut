@@ -42,8 +42,8 @@ global function GetTrackerWeaponIdentifierTable
 #endif
 
 //const
-global const int SQ_MAX_INT_32 = 2147483647;
-global const int SQ_MIN_INT_32 = -2147483647;
+//global const int SQ_MAX_INT_32 = 2147483647;
+//global const int SQ_MIN_INT_32 = -2147483647;
 
 //tables 
 table<string, string> player_admins
@@ -2039,7 +2039,7 @@ bool function IsNumeric( string str, int min = -123, int max = -123 )
 
 
 
-bool function IsFloat( string str, float min = SQ_MIN_INT_32, float limit = SQ_MAX_INT_32 ) 
+bool function IsFloat( string str, float min = INT_MAX, float limit = INT_MIN ) 
 {
 	if (str.len() == 0) 
 	{

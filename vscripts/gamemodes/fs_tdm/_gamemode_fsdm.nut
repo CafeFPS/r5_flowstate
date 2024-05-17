@@ -241,7 +241,6 @@ struct {
 	bool GiveAllOpticsToPlayer
 	bool hackersVsPros
 	bool enable_afk_thread
-	bool flowstate_1v1mode_is_chinese_server
 	bool enable_ping_kick
 	bool BattleLogEnable
 	bool BattleLog_Linux
@@ -289,7 +288,6 @@ void function InitializePlaylistSettings()
 	flowstateSettings.GiveAllOpticsToPlayer 				= GetCurrentPlaylistVarBool( "flowstateGiveAllOpticsToPlayer", false )
 	flowstateSettings.hackersVsPros 						= GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false )
 	flowstateSettings.enable_afk_thread 					= GetCurrentPlaylistVarBool( "enable_afk_thread", false )
-	flowstateSettings.flowstate_1v1mode_is_chinese_server 	= GetCurrentPlaylistVarBool( "flowstate_1v1mode_is_chinese_server", false )
 	flowstateSettings.enable_ping_kick 						= GetCurrentPlaylistVarBool( "enable_ping_kick", false )
 	flowstateSettings.aimassist_magnet_pc 					= GetCurrentPlaylistVarFloat( "aimassist_magnet_pc", 0.0 )
 	flowstateSettings.BattleLogEnable 						= GetCurrentPlaylistVarBool( "flowstateBattleLogEnable", false )
@@ -1038,7 +1036,8 @@ void function RotateMap()
 
 LocPairData function Init_LGDuels_Spawns()
 {
-	LocPair panels = NewLocPair( < 3480.92, -9218.92, -10252 >, < 360, 270, 0 > )	
+	LocPair panels = NewLocPair( < 3480.92, -9218.92, -10252 >, < 360, 270, 0 > )
+	SetWaitingRoomRadius( 2400 )
 	return CreateLocPairObject( [], false, null, panels )
 }
 
@@ -1256,7 +1255,6 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
-		
 		//custom spawn extension using the implemented abstracted callback :) ~mkos 
 		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
 		{
@@ -1824,14 +1822,6 @@ void function _OnPlayerConnected(entity player)
 bool function is1v1EnabledAndAllowed()
 {
 	return flowstateSettings.IS_1V1_MODE_ENABLED
-}
-
-void function isChineseServer()
-{
-	if ( flowstateSettings.flowstate_1v1mode_is_chinese_server )
-	{
-		setChineseServer( true )
-	}
 }
 
 void function __HighPingCheck(entity player)

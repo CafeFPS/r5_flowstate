@@ -45,7 +45,7 @@ global function FS_1v1_ToggleUIVisibility
 global function Toggle1v1Scoreboard
 global function ForceHide1v1Scoreboard
 global function ForceShow1v1Scoreboard
-global function FS_NewBox_Msg
+global function FS_IBMM_Msg
 
 global function fs_NewBoxBuildMessage
 global function fs_NewBoxShowMessage
@@ -1700,11 +1700,14 @@ void function fs_NewBoxShowMessage( float duration )
 }
 
 
-//Unused :C Cafe
-void function FS_NewBox_Msg( float duration = 3 )
+//Unused :C Cafe ----- used now :) ~Mkos
+void function FS_IBMM_Msg( string msgString, string subMsgString, float duration = 5 )
 {
+	entity player = GetLocalClientPlayer()
+
 	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
 	clGlobal.levelEnt.EndSignal( "FS_CloseNewMsgBox" )
+	player.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( )
@@ -1717,15 +1720,12 @@ void function FS_NewBox_Msg( float duration = 3 )
 			Hud_SetText( HudElement( "FS_IBMM_MsgSubText" ), "" )
 			Hud_SetAlpha( HudElement( "FS_IBMM_MsgText" ), 255 )
 			Hud_SetAlpha( HudElement( "FS_IBMM_MsgSubText" ), 255 )
-
-			file.fs_newMsgBoxString = ""
-			file.fs_newMsgBoxSubString = ""
 		}
 	)
 	// printt( "trying to show message:", file.fs_newMsgBoxString, file.fs_newMsgBoxSubString )
 
-	Hud_SetText( HudElement( "FS_IBMM_MsgText"), file.fs_newMsgBoxString )
-	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), file.fs_newMsgBoxSubString )
+	Hud_SetText( HudElement( "FS_IBMM_MsgText"), msgString )
+	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), subMsgString )
 	
 	RuiSetImage( Hud_GetRui( HudElement( "FS_IBMM_MsgBg") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
 

@@ -7,9 +7,9 @@ global const int BOOSTZONE_ALIVE_TIME = 15
 global const SCRIPT_GAME_VERSION__RELEASE = false
 
 //r5r.dev
-global const bool TRACKER = false
-global const bool HAS_TRACKER_DLL = false
-
+global const bool TRACKER 			= false
+global const bool HAS_TRACKER_DLL 	= false
+global const vector NULL_VEC 		= <0,0,0>
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
