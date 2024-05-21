@@ -23,26 +23,6 @@ resource/ui/menus/panels/tabs_inventory.res
         rui 					"ui/tabs_background.rpak"
     }
 
-	Title
-	{
-		ControlName				Label
-		xpos                    -10
-		ypos					0
-		zpos 5
-		auto_wide_tocontents	1
-		tall					50
-		enabled					1
-		visible					1
-		fontHeight				50
-		labelText				"R5Reloaded FLOWSTATE"
-		font					"TitleBoldFont"
-		allcaps					1
-		fgcolor_override		"191 13 13 255"
-		pin_to_sibling			Background
-		pin_corner_to_sibling	RIGHT
-		pin_to_sibling_corner	RIGHT
-	}
-
 	LeftNavButton
 	{
 		ControlName				RuiPanel
