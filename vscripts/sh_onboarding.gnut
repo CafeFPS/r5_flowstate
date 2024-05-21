@@ -174,6 +174,8 @@ void function Sequence_WaitingForPlayers()
 	}
 
 	// Set champion randomly from among all players
+	// TODO: tracker modification to get last winner for server if player still exists
+	// If not, use next closest , etc
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) && GetPlayerArray().len() > 0 )
 	{
 		entity champion = GetPlayerArray().getrandom()
@@ -725,10 +727,10 @@ void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 		break
 
-		case 11: //loba ss
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
-		break
+		// case 11: //loba ss
+		// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
+		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
+		// break
 		
 		case 12: // ballistic
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
@@ -1019,6 +1021,7 @@ void function OnClientConnected( entity player )
 	}
 	
 	player.p.isConnected = true
+	player.Signal( "OnConnected" )
 
 	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 }

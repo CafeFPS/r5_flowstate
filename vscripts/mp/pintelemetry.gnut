@@ -148,6 +148,7 @@ global function getEventByPlayerHandle
 global function PrintAllPlayerMetrics
 global function GetPlayerMetricsArray
 global function __TrackerStatsHook_AddEvent_DamageMult
+global function RegisterStat
 
 //custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
 global function SavePlayer_wait_time
@@ -343,6 +344,12 @@ struct {
 	table <string,int> Global_R5RDEV_IntSettings
 	table <string,bool> Global_R5RDEV_BoolSettings
 	
+	table<string, array<void functionref( entity player, string data )> > PlayerSettingsMap = {}
+	table<string, table<string,string> > PlayerData = {}// playerUID = setting,value
+	array< void functionref( entity player ) > syncDataFullyLoadedCallbacks = []
+	table<string, array< void functionref(entity player) > > registeredStatCallbackFuncs = {}
+	string requestedStatsList = ""
+	
 	int fightIdCounter = 0
 	bool PIN_GameState_Start = false
 	bool global_stats
@@ -397,10 +404,6 @@ struct {
 	bool DefaultStartInRestSetting
 	
 	int flowstateRoundtime
-	
-	table <string, array<void functionref( entity player, string data )> > PlayerSettingsMap = {}
-	table<string, table<string,string> > PlayerData // playerUID = setting,value
-	array< void functionref( entity player ) > syncDataFullyLoadedCallbacks
 	
 	//restricted settings ( configure in playlists file )
 	int restricted_gamesplayed = 0
@@ -591,7 +594,13 @@ void function __QueryString_Callbacks( string setting, string value )
 
 //usage=   AddCallback_QueryString("category:query", resultHandleFunction ) // see r5r.dev/info for details about available categories.
 bool function AddCallback_QueryString( string query, void functionref( string retData ) callbackFunc )
-{
+{	
+	if( query.find(":") == -1 || split( query, ":" ).len() < 2 )
+	{
+		sqerror( "Tried to add query without criteria. Query = " + query )
+		return false
+	}
+	
 	if( file.bQueryComplete )
 	{
 		sqerror( "Tried to add callback with " + FUNC_NAME( 2 ) + " for callbackFunc " + string( callbackFunc ) + "() but server has already executed the query list." )
@@ -644,6 +653,15 @@ void function INIT_Global_R5RDEV_VarTable()
 	
 	file.bQueryComplete = true
 	string QueryDataString = GetQueryDataString()	
+	
+	if( empty( QueryDataString ))
+	{
+		#if DEVELOPER
+			printt("No querydatastring was constructed. ")
+		#endif 
+		return 
+	}
+	
 	string settings_string = FetchGlobalSettingsFromR5RDEV__internal(QueryDataString)
 	
 	#if DEVELOPER 
@@ -778,15 +796,15 @@ void function ShowOnlineMOTD( entity player )
 {
 	thread( void function() : ( player )
 		{
-			waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 			
 				if( IsValid( player ))
 				{	
-					wait 3.5
-					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 					//run ui script for motd
+					MessageLong( player, "", "", eMsgUI.VAR_MOTD , 10, LineBreak( file.onlineMOTD, 80 ) )
+					
 					wait 5
-					MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE , 10, LineBreak( file.onlineMOTD, 80 ) )
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 				}
 		})()
 }
@@ -795,22 +813,21 @@ void function ShowPlayerLocalMOTD( entity player )
 {	
 	thread( void function() : ( player )
 			{
-				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 				
 					if( IsValid( player ) )
 					{
-						wait 3.5
-						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 						//run ui script for motd
+						MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
 						wait 5
-						MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
+						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 					}
 			})()
 }
 
 
 void function Pin_Query_Init()
-{
+{	
 	if( file.restricted_server )
 	{
 		AddCallback_QueryString( "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring(), DummyFunction_ProofOfConcept )
@@ -883,16 +900,98 @@ void function INIT_BATCH_FETCH()
 			
         }
 	
-        LoadBatchSyncData__internal( oid_list )
+        LoadBatchSyncData__internal( oid_list, file.requestedStatsList )
 		
     }
 	
 	file.FETCH_BATCH_COMPLETE = true	
 }
 
+// if no callback is desired, use NULL_STATS_INBOUND or NULL_STATS_OUTBOUND as the callback func respectively
+void function RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
+{
+	if( empty( statname ) )
+	{
+		sqerror("Tried to addcallback with " + FUNC_NAME() + " but statname was empty")
+		return 
+	}
+	
+	if( !( statname in file.registeredStatCallbackFuncs ) )
+	{
+		file.registeredStatCallbackFuncs[statname] <- []
+	}
+	
+	if( file.registeredStatCallbackFuncs[statname].contains( inboundCallbackFunc ) )
+	{
+		sqerror("Tried to addcallback with " + FUNC_NAME() + " but callbackFunc " + string( inboundCallbackFunc ) + " already exists")
+	}
+	
+	file.registeredStatCallbackFuncs[statname].append( inboundCallbackFunc )	
+	RegisterStatOutboundData( statname, outboundCallbackFunc )
+}
+
+string function BuildRequestedStatsString()
+{
+	string statsQuery = ""
+	int last = file.registeredStatCallbackFuncs.len() - 1
+	int iter = 0
+	
+	foreach( statsKey, value in file.registeredStatCallbackFuncs )
+	{
+		string allButLast = iter != last ? "," : "";
+		
+		statsQuery += statsKey + allButLast
+		
+		iter++;
+	}
+	
+	return statsQuery 
+}
+
+void function InitializeStandardStats()
+{
+	RegisterStat( "kills", StandardStatInit_kills, ReturnKills )
+	RegisterStat( "deaths", StandardStatInit_deaths, ReturnDeaths )
+	RegisterStat( "superglides", StandardStatInit_superglides, ReturnSuperglides )
+	RegisterStat( "total_time_played", StandardStatInit_total_time_played, NULL_STATS_OUTBOUND )
+	RegisterStat( "total_matches", StandardStatInit_total_matches, NULL_STATS_OUTBOUND )
+	RegisterStat( "score", StandardStatInit_score, NULL_STATS_OUTBOUND )
+}
+
+var function ReturnSuperglides( string uid )
+{
+	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].SuperglideTimestamps.len()
+}
+
+var function ReturnKills( string uid )
+{
+	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].kills
+}
+
+var function ReturnDeaths( string uid )
+{
+	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].deaths
+}
+
+        
+	/* 	json += format( "\"superglides\": %d, ", metrics.SuperglideTimestamps.len() )
+        json += format( "\"kills\": %d, ", metrics.kills )
+        json += format( "\"deaths\": %d, ", metrics.deaths ) */
+
+void function BallsFunc( entity player )
+{
+	printt("balls was called.")
+}
+
+var function ReturnBalls( string UID )
+{
+	printt("player's uid is ",UID )
+	return 5;
+}
+
 void function __LoadPlayerSyncData( entity player )
 {
-	LoadSyncData__internal( player.GetPlatformUID() )
+	LoadSyncData__internal( player.GetPlatformUID(), file.requestedStatsList )
 }
 
 void function __SetPlayerSyncData( entity player )
@@ -910,152 +1009,53 @@ void function __SetPlayerSyncData( entity player )
 		waitthread WaitSignalOrTimeout( player, 5, "PlayerStatsReady", "OnDestroy", "OnDisconnected" )
 	}
 	
-	string OID;
-	int attempts = 0;
-	
 	if( !IsValid( player ) ) 
 	{
 		return
 	}
 			
-	OID = player.GetPlatformUID()
+	string OID = player.GetPlatformUID()	
+
+	array<string> statKeys = Stats__AddPlayerStatsTable( OID )
+	array<string> PersistenceData = split( GetPlayerStatString( OID, "settings" ), "," )
 	
-	int player_season_kills = 0;
-	int player_season_deaths = 0;
-	int player_season_glides = 0;
-	int player_season_playtime = 0;
-	int player_season_gamesplayed = 0;
-	int player_season_score = 0;
-	
-	while ( IsValid( player ) )
+	if ( !IsValid( player ) )
+		return 
+		
+	if ( statKeys.len() > 0 || PersistenceData.len() > 0 )
 	{		
-		string stat_data = GetSyncData__internal( OID )
+		#if DEVELOPER 
+			printt("Incoming StatsKeys:")
+			printarray( statKeys )
+			printt("Incoming Persistence Settings:")
+			printarray( PersistenceData )
+		#endif 
+	
+		int SYNC_Data_length = statKeys.len()
 		
-		if ( !IsValid( player ) )
-			return 
-		
-		if ( attempts > 2 )
-		{	
-			sqerror("Timeout loading stats for " + string( player ) )
-			break
-		}	
-		if ( stat_data == "NA" )
-		{	
-			break
-		}
-		if ( stat_data == "" )
-		{	
-			attempts++;
-			wait 1.2 + ( attempts * 0.09 )
-			continue
-		}
-		if ( stat_data != "NA" )
-		{	
-			
+		if ( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS) 
+		{
 			#if DEVELOPER 
-				sqprint(stat_data)
+				sqerror("Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
 			#endif 
-		
-			array<string> SYNC_Data = split( stat_data , ",")
-			int SYNC_Data_length = SYNC_Data.len()
-			
-			if ( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS) 
-			{
-				#if DEVELOPER 
-					sqerror("Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
-				#endif 
-				return
-			}
-			
-			string kills = (SYNC_Data_length > 0) ? SYNC_Data[0] : "";
-			string deaths = (SYNC_Data_length > 1) ? SYNC_Data[1] : "";
-			string glides = (SYNC_Data_length > 2) ? SYNC_Data[2] : "";
-			string playtime = (SYNC_Data_length > 3) ? SYNC_Data[3] : "";
-			string gamesplayed = (SYNC_Data_length > 4) ? SYNC_Data[4] : "";
-			string synced_score = (SYNC_Data_length > 5) ? SYNC_Data[5] : "";
-			
-			// Settings from this point use custom callbacks defined by gamemode dev.		
-			
-			if( !IsValid( player ) )
-			{
-				return
-			}
-			
-			if( !GetIgnoreSyncFlag( player ) && SYNC_Data_length > 5 )
-			{
-				array<string> PersistenceData = []
-				
-				for ( int i = 6; i <= ( SYNC_Data_length - 1) ; ++i )
-				{
-					PersistenceData.append( SYNC_Data[i] )
-				}
-				
-				#if DEVELOPER 
-					//sqprint("BEFORE SENDING")
-					//printarray(PersistenceData)
-				#endif 
-				
-				UpdatePlayerData( player, PersistenceData )
-			}
-			
-			//set base persistence stats
-			
-			if ( IsNumeric( kills ) )
-			{
-				player_season_kills = kills.tointeger()
-			}
-			
-			if( IsNumeric( deaths ) )
-			{
-				player_season_deaths = deaths.tointeger()
-			}			
-			
-			if ( IsNumeric( glides ) )
-			{
-				player_season_glides = glides.tointeger()
-			}
-			
-			if ( IsNumeric( playtime ) )
-			{
-				player_season_playtime = playtime.tointeger()
-			}	
-			
-			if ( IsNumeric( gamesplayed ) )
-			{
-				player_season_gamesplayed = gamesplayed.tointeger()
-			}
-			
-			if ( IsNumeric( synced_score ) )
-			{
-				player_season_score = synced_score.tointeger()
-			}
-						
-								
-			#if DEVELOPER
-				sqprint( "kills: " + kills + " deaths: " + deaths + " glides: " + glides + " playtime: " + playtime + " gamesplayed: " + gamesplayed + " synced_score: " + synced_score )
-			#endif
-			
-			//Todo: Stats struct in table   table<int, R5RPlayerStats> //hande -> PlayerStats struct
-			player.p.season_score = player_season_score;
-			player.p.season_kills = player_season_kills;
-			player.p.season_deaths = player_season_deaths; 
-			player.p.season_glides = player_season_glides;
-			player.p.season_playtime = player_season_playtime;
-			player.p.season_gamesplayed = player_season_gamesplayed;
-			//player.p.season_wins = player_season_wins //TODO
-			
-			player.SetPlayerNetInt( "SeasonScore", player_season_score )
-			player.SetPlayerNetInt( "SeasonKills", player_season_kills )
-			player.SetPlayerNetInt( "SeasonDeaths", player_season_deaths )
-			player.SetPlayerNetInt( "SeasonPlaytime", player_season_playtime )
-			player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
-			//player.SetPlayerNetInt( "SeasonWins", player_season_wins ) //TODO
-			
-			break
+			return
 		}
 		
-		attempts++;
+		foreach( key in statKeys )
+		{
+			if( key in file.registeredStatCallbackFuncs )
+			{
+				foreach( callbackFunc in file.registeredStatCallbackFuncs[key] )
+				{
+					callbackFunc( player )
+				}
+			}
+		}		
 		
+		if( !GetIgnoreSyncFlag( player ) )
+		{		
+			UpdatePlayerData( player, PersistenceData )
+		}
 	}
 	
 	player.Signal( "SyncDataFullyLoaded" )
@@ -1251,7 +1251,13 @@ void function PIN_Init()
 	if ( file.global_stats )
 	{
 		thread INIT_Global_R5RDEV_VarTable()
-		thread INIT_BATCH_FETCH()
+		
+		if(bRunTracker)
+		{	
+			InitializeStandardStats()
+			file.requestedStatsList = BuildRequestedStatsString()
+			thread INIT_BATCH_FETCH()
+		}
 	}
 	
 	if ( GetCurrentPlaylistVarBool( "enable_voice", false ) )
@@ -1330,7 +1336,7 @@ void function PlayerConnectedCallback( entity player )
 	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
-	if( !file.LogOn ){ return }
+	if( !file.LogOn || !Flowstate_IsTrackerSupportedMode() ){ return }
 	/////////////////////////////////////////////////////////////////////////////////////////
 	
 	//init player map
@@ -3048,7 +3054,7 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 
 	bool function ClientCommand_mkos_ea_verify(entity player, array<string> args)
 	{	
-		PlayerEA_Verify( player, args )	
+		thread PlayerEA_Verify( player, args )	
 		return true;	
 	}
 	
@@ -3056,23 +3062,28 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 	void function PlayerEA_Verify( entity player, array<string> args ) 
 	{
 	
-		if (!IsValid(player)) // || !player.p.isConnected)
+		if ( !IsValid(player) ) // || !player.p.isConnected)
 				return;
 		
 			if ( file.gamemode_type_1v1 ) 
 			{
+				WaitSignal( player, "OnConnected", "OnDisconnected", "OnDestroy" )
+				
+				if( !IsValid( player ) )
+					return 
+					
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 				mkos_Force_Rest( player, [] )
 			}
 
-			if (args.len() < 1)
+			if ( args.len() < 1  )
 			{
 				Message(player, "Token from R5R.DEV is required.");
 				return;
 			}
 
-			string ea_acc = player.GetPlayerName();
-			string OID = player.GetPlatformUID();
+			string ea_acc = player.GetPlayerName()
+			string OID = player.GetPlatformUID()
 		
 		
 			int index = -1;
@@ -3090,20 +3101,20 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 				PlayerVerifyCount newEntry;
 				newEntry.playerID = ea_acc;
 				newEntry.verifyCount = 0;
-				playerVerifyCounts.append(newEntry);
+				playerVerifyCounts.append(newEntry)
 				index = playerVerifyCounts.len() - 1;
 			}
 
 			if (playerVerifyCounts[index].verifyCount >= 3) 
 			{
-				Message(player, "Too many attempts. Try again later.");
+				Message(player, "Too many attempts. Try again later.")
 				return;
 			}
 
 			playerVerifyCounts[index].verifyCount += 1;
 
 			string token = args[0];
-			thread Player_EA_Verify( player, token, OID, ea_acc );
+			Player_EA_Verify( player, token, OID, ea_acc );
 
 			return;
 		
@@ -3119,40 +3130,40 @@ DamageEvent function getEventByPlayerHandle( int playerHandle )
 		switch (VERIFY) 
 		{
 			case 10:
-				Message(player, "Failed: Expired Token", "Please request a new one");
+				Message(player, "Failed: Expired Token", "Please request a new one")
 				return;
 
 			case 2:
-				Message(player, "Invalid token", "Usage: ea_verify   yourtoken");
+				Message(player, "Invalid token", "Usage: ea_verify   yourtoken")
 				return;
 
 			case 4:
-				Message(player, "Failed", "EA Account already linked.");
+				Message(player, "Failed", "EA Account already linked.")
 				return;
 
 			case 1:
-				Message(player, "SUCCESS", "Your account was successfully verified on R5R.DEV");
+				Message(player, "SUCCESS", "Your account was successfully verified on R5R.DEV")
 				return;
 
 			case 5:
-				Message(player, "Failed: ", "Database error on success");
+				Message(player, "Failed: ", "Database error on success")
 				return;
 
 			case 3:
-				Message(player, "Failed: ", "DB error");
+				Message(player, "Failed: ", "DB error")
 				return;
 
 			case 6:
-				Message(player, "Failed: ", "Missing Data");
+				Message(player, "Failed: ", "Missing Data")
 				return;
 
 			case 8:
-				Message(player, "Failed: ", "CURL Error.");
+				Message(player, "Failed: ", "CURL Error.")
 				return;
 
 			case 0:
 			default:
-				Message(player, "Failed", "Could not verify EA Account.");
+				Message(player, "Failed", "Could not verify EA Account.")
 				return;
 		}	
 	}
@@ -3203,7 +3214,7 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 	NewMetrics.damage = 0.0
 	NewMetrics.playerleft = false
 	NewMetrics.ignore_sync_flag = false
-	PlayerMetricsArray.append(NewMetrics);
+	PlayerMetricsArray.append(NewMetrics)
 	return UpdatePlayerMap( ID )	
 }
 
@@ -3510,15 +3521,18 @@ string function FetchPlayerData( string UID, string setting )
 	return notfound
 }
 
+
 // This function is responsible for sending sync data to r5r.dev.
 // If your data is not output with this, your data will not be synced. 
 
-// For settings added via AddCallback_PlayerData, your settings will be here,  IF
-// they were saved using SavePlayerData()
+// For settings added via AddCallback_PlayerData(), your settings will be here,
+// IF they were saved using SavePlayerData()
 
-
+// For stats added via RegisterStat() with also having defined
+// RegisterStatOutboundData() for the stat, your stat will 
+// output based on the defined field at the time of this function call
 string function PrintAllPlayerMetrics( bool trigger = false ) 
-{
+{	
     string json = "[";
     foreach (index, metrics in PlayerMetricsArray) 
 	{
@@ -3526,14 +3540,16 @@ string function PrintAllPlayerMetrics( bool trigger = false )
             json += ", ";
         }
 		
-		string UID = metrics.playerID
+		string UID = metrics.playerID	
 		
-        json += "{";
-        json += format("\"player\": \"%s\", ", UID);
-        json += format("\"jumps\": %d, ", metrics.JumpTimestamps.len());
-		json += format("\"superglides\": %d, ", metrics.SuperglideTimestamps.len());
-        json += format("\"kills\": %d, ", metrics.kills); 
-        json += format("\"deaths\": %d, ", metrics.deaths);
+		//start building
+        json += "{";	
+        json += format( "\"player\": \"%s\", ", UID )	
+		json += format( "\"jumps\": %d, ", metrics.JumpTimestamps.len() ) //predefined
+		
+		// stats are shipped when registered with 
+		// RegisterStatOutboundData()	
+		json += GenerateOutBoundJsonData( UID )
 		
 		//settings 
 		json += "\"settings\": {";
@@ -3827,7 +3843,7 @@ void function UpdateIBMMWaitTime( entity player, string data )
 	
 	if ( wait_time <= file.ibmm_wait_limit )
 	{
-		player.p.IBMM_grace_period = wait_time
+		player.p.IBMM_grace_period = ValidateIBMMWaitTime( wait_time )
 	}
 	else 
 	{
@@ -4845,6 +4861,55 @@ void function PIN_Training( entity player, string status, string trainingStatus 
 }
 
 
+void function StandardStatInit_kills( entity player )
+{
+	int player_season_kills = GetPlayerStatInt( player.p.UID, "kills" )
+	//int player_season_kills = player.GetPlayerStatInt( "kills" )
+	
+	player.p.season_kills = player_season_kills
+	player.SetPlayerNetInt( "SeasonKills", player_season_kills )
+}
+
+void function StandardStatInit_deaths( entity player )
+{
+	int player_season_deaths = GetPlayerStatInt( player.p.UID, "deaths" )
+	
+	player.p.season_deaths = player_season_deaths
+	player.SetPlayerNetInt( "SeasonDeaths", player_season_deaths )
+}
+
+void function StandardStatInit_superglides( entity player )
+{
+	int player_season_glides = GetPlayerStatInt( player.p.UID, "superglides" )
+	
+	player.p.season_glides = player_season_glides
+}
+
+void function StandardStatInit_total_time_played( entity player )
+{
+	int player_season_playtime = GetPlayerStatInt( player.p.UID, "total_time_played" )
+	
+	player.p.season_playtime = player_season_playtime
+	player.SetPlayerNetInt( "SeasonPlaytime", player_season_playtime )
+}
+
+void function StandardStatInit_total_matches( entity player )
+{
+	int player_season_gamesplayed = GetPlayerStatInt( player.p.UID, "total_matches" )
+	
+	player.p.season_gamesplayed = player_season_gamesplayed
+	player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
+}
+
+void function StandardStatInit_score( entity player )
+{
+	int player_season_score = GetPlayerStatInt( player.p.UID, "score" )
+	
+	player.p.season_score = player_season_score
+	player.SetPlayerNetInt( "SeasonScore", player_season_score )
+}
+
+
 #endif //END TRACKER DEFINE
 
 
@@ -5039,11 +5104,9 @@ void function ShowPlayerLocalMOTD( entity player )
 				
 					if( IsValid( player ) )
 					{
+						MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
 						wait 3.5
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
-						//run ui script for motd
-						wait 5
-						MessageLong( player, "", "", eMsgUI.VAR_DIALOGUE, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
 					}
 			})()
 }

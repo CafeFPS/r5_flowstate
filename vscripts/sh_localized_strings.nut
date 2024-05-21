@@ -53,8 +53,8 @@ global enum eMsgUI
 	VAR_TITLE_SLOT, 	//10
 	VAR_SUBTEXT_SLOT, 	//11
 	VAR_EVENT, 			//12
-	VAR_DIALOGUE, 		//13
-	IBMM 				//14
+	VAR_MOTD, 			//13
+	IBMM, 				//14
 }
 
 struct 
@@ -244,7 +244,7 @@ const array<int> longUiTypes =
 [
 	eMsgUI.EVENT,
 	eMsgUI.QUICK,
-	eMsgUI.VAR_DIALOGUE
+	eMsgUI.VAR_MOTD
 ]
 
 //########################################################
@@ -298,8 +298,10 @@ string function Flowstate_FetchToken( int tokenID )
 
 string function StringReplaceLimited( string baseString, string searchString, string replaceString, int limit )
 {
-	Assert( searchString.len() > 0, "cannot use StringReplaceLimited with an empty searchString" )
-
+	#if ASSERT_LOCALIZATION
+		mAssert( searchString.len() > 0, "cannot use StringReplaceLimited with an empty searchString" )
+	#endif 
+	
 	string newString = ""
 
 	int searchIndex = 0
@@ -754,7 +756,7 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 				//Announcement_SetOptionalTextArgsArray( announcement, [ player.GetPlayerNetInt("SeasonScore").tostring() ] )
 				break;	
 			case eMsgUI.WAVE:	iCustomUI = ANNOUNCEMENT_STYLE_WAVE; break;
-			case eMsgUI.VAR_DIALOGUE:
+			case eMsgUI.VAR_MOTD:
 				RunUIScript( "SetMotdText", str1 + str2 )
 				return
 			

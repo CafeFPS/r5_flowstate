@@ -36,6 +36,7 @@ global function PlayTime
 global function truncate
 global function DEV_PrintTrackerWeapons
 global function GetTrackerWeaponIdentifierTable
+global function ValidateIBMMWaitTime
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -1947,6 +1948,11 @@ string function Concatenate( string str1, string str2 )
 float function GetDefaultIBMM()
 {
 	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	return ValidateIBMMWaitTime( f_wait )
+}
+
+float function ValidateIBMMWaitTime( float f_wait )
+{
 	return f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
 }
 

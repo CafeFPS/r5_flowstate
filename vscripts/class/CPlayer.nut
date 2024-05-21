@@ -8,7 +8,7 @@ global function EnableDemigod
 global function DisableDemigod
 global function ToggleMute
 global function CommandsEnabled
-global function IsCommandsEnabled
+global function IsCommandsEnabled 
 
 int __nextInputHandle = 0
 
@@ -21,6 +21,7 @@ global struct PlayerSlowDownEffect
 
 function CodeCallback_RegisterClass_CPlayer()
 {
+	Warning("CodeCallback_RegisterClass_CPlayer: Registering script-based CPlayer overrides")
 	//printl( "Class Script: CPlayer" )
 
 	CPlayer.ClassName <- "CPlayer"
@@ -51,6 +52,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	RegisterSignal( "OnRespawnPlayer" )
 	RegisterSignal( "NewViewAnimEntity" )
 	RegisterSignal( "OnDisconnected" )
+	RegisterSignal( "OnConnected" )
 
 	function CPlayer::constructor()
 	{
@@ -381,6 +383,27 @@ function CodeCallback_RegisterClass_CPlayer()
 	function CPlayer::IsCommandsEnabled()
 	{
 		return this.ClientCommandsEnabled
+	}
+	
+	function CPlayer::GetPlayerStatString( statname )
+	{
+		return GetPlayerStatString( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	function CPlayer::GetPlayerStatBool( statname )
+	{
+		return GetPlayerStatBool( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	function CPlayer::GetPlayerStatFloat( statname )
+	{
+		return GetPlayerStatFloat( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	#document( "CPlayer::GetPlayerStatInt", "Fetch player stat int from player's stat table." )
+	function CPlayer::GetPlayerStatInt( statname )
+	{
+		return GetPlayerStatInt( expect entity(this).p.UID, expect string( statname ) )
 	}
 }
 

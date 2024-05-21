@@ -2695,12 +2695,12 @@ void function soloModefixDelayStart( entity player )
 	if( settings.is3v3Mode )
 		return
 	
-	#if HAS_TRACKER_DLL && TRACKER		
-		LocalMsg( player, "#FS_1V1_Tracker", "", eMsgUI.RESULTS )
+	// #if HAS_TRACKER_DLL && TRACKER		
+		// LocalMsg( player, "#FS_1V1_Tracker", "", eMsgUI.IMAGE )
 		//LocalVarMsg( player, "#FS_1V1_Tracker", 1, 5, "var 1", "var2", "var3", 4 )
-	#else 
-		LocalMsg( player, "#FS_1v1_Banner", "", eMsgUI.RESULTS )
-	#endif
+	// #else 
+		// LocalMsg( player, "#FS_1v1_Banner", "", eMsgUI.IMAGE )
+	// #endif
 	
 	if( GetGameState() >= eGameState.Playing ){ wait 7 } else { wait 12 }	
 	if( !IsValid( player ) ){ return }

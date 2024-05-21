@@ -1686,6 +1686,7 @@ void function InitMenus()
 
 	AddPanel( customizeCharacterMenu, "CharacterExecutionsPanel", InitCharacterExecutionsPanel )
 
+	//shared with 1v1 weapon select
 	var customizeWeaponMenu = AddMenu( "CustomizeWeaponMenu", $"scripts/resource/ui/menus/CustomLobby/customize_weapon.menu", InitCustomizeWeaponMenu )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel0", InitWeaponSkinsPanel )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel1", InitWeaponSkinsPanel )

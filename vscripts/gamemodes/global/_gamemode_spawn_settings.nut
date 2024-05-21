@@ -378,7 +378,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 			if( data.bOverrideSpawns )
 			{
 				#if DEVELOPER 
-					Warning("Spawns overriden with custom spawns count: [" + string( data.spawns.len() ) + "]" )
+					Warning("Spawns overriden with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 				#endif 
 				customSpawns = data.spawns
 				file.overrideSpawns = true
@@ -386,7 +386,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 			else 
 			{
 				#if DEVELOPER 
-					Warning("Spawns extended with custom spawns count: [" + string( data.spawns.len() ) + "]" )
+					Warning("Spawns extended with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 				#endif 
 				customSpawns.extend( data.spawns )
 			}	
@@ -479,7 +479,6 @@ string function GenerateAssetStringForMapAndGamemode( int eMap, string set, stri
 array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1", string customRpak = "", string customPlaylist = "" )
 {
 	array<LocPair> allSoloLocations
-	bool terminate = false
 	
 	try
 	{

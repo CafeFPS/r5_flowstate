@@ -676,7 +676,9 @@ void function DeployableMedic_PlayerHealUpdate( entity trigger, entity player )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
 
-	printt( "STARTING HEAL UPDATE FOR PLAYER " + player + " FOR TRIGGER " + trigger )
+	#if DEVELOPER
+		printt( "STARTING HEAL UPDATE FOR PLAYER " + player + " FOR TRIGGER " + trigger )
+	#endif
 	//printt( "PLAYER " + player + " IS PHASESHIFTED: " + player.IsPhaseShifted() )
 
 	SignalStruct singalStruct = CreateSignalStruct( trigger, player )

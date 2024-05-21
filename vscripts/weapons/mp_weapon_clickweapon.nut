@@ -896,7 +896,7 @@ void function LGDuels_SetFromPersistence( float s1, int s2, int s3, int s4, floa
 	SetConVarInt( "net_minimumPacketLossDC", s3 )
 	SetConVarInt( "net_wifi", s4 )
 
-	vector chosenColor = < s2, s3, s4 >
+	chosenColor = < s2, s3, s4 > //uses global script var
 
 	entity sPlayer = GetLocalViewPlayer()
 
@@ -905,7 +905,7 @@ void function LGDuels_SetFromPersistence( float s1, int s2, int s3, int s4, floa
 		EffectSetControlPointVector( file.beamsFxs[ sPlayer ], 2, chosenColor )
 	}
 	
-	vector chosenEnemyColor = < s6, s7, s8 >
+	chosenEnemyColor = < s6, s7, s8 > //uses global script var
 	
 	foreach( player in GetPlayerArray() )
 		if( player.GetTeam() != GetLocalViewPlayer().GetTeam() && player != GetLocalViewPlayer() && player in file.beamsFxs && EffectDoesExist( file.beamsFxs[ player ] ) )
@@ -915,6 +915,9 @@ void function LGDuels_SetFromPersistence( float s1, int s2, int s3, int s4, floa
 void function LGDuels_SaveToServerPersistence()
 {
 	entity player = GetLocalViewPlayer()
+	
+	if( !IsValid( player ) )
+		return
 	
 	string settings = GenerateSettingsString()
 	player.ClientCommand( format( "SaveLgSettings %s", settings ) ) 

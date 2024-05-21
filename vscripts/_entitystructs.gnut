@@ -793,12 +793,7 @@ global struct ServerPlayerStruct
 	bool bRelayChallengeState 	= false
 	int relayChallengeCode 		= 0
 	
-	bool bTextmute 				= false
-	
-
-	
-	
-	
+	bool bTextmute 				= false	
 
 	//MovementGym
 	bool isTimerActive = false

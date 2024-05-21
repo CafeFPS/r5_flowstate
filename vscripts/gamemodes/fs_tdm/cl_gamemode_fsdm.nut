@@ -62,6 +62,8 @@ global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
 global function FS_CreateTeleportFirstPersonEffectOnPlayer
 
+global function FS_Show1v1Banner
+
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
 struct {
@@ -128,6 +130,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
 	RegisterSignal("FS_CloseNewMsgBox")
+	RegisterSignal("FS_1v1Banner")
 	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
@@ -136,6 +139,11 @@ void function Cl_CustomTDM_Init()
 	if( Playlist() == ePlaylists.fs_scenarios )
 	{
 		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+	}
+	
+	if( Playlist() == ePlaylists.fs_1v1 )
+	{
+		AddCallback_OnClientScriptInit( FS_Show1v1Banner )
 	}
 }
 
@@ -174,7 +182,9 @@ void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity ne
 	if( player != localPlayer )
 		return
 	
-	printt( "1v1 enemy changed " + player, oldEnt, newEnt, actuallyChanged )
+	#if DEVELOPER
+		printt( "1v1 enemy changed " + player, oldEnt, newEnt, actuallyChanged )
+	#endif
 	
 	if ( !IsValid( localPlayer ) || !IsValid( newEnt ) || !newEnt.IsPlayer() || localPlayer != GetLocalViewPlayer() )
 	{
@@ -359,7 +369,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 {
 	if ( !actuallyChanged  )
 		return
-
+	
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
 }
@@ -367,7 +377,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
 	#if DEVELOPER
-	printt( "show round end time ui ", new, " - current time: " + Time() )
+		printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
 	if( new == -1 || Playlist() == ePlaylists.fs_movementgym )
 	{
@@ -890,8 +900,10 @@ void function ServerCallback_SetLGDuelPesistenceSettings( float s1, int s2, int 
 {
 	#if DEVELOPER 
 		printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
-	#endif
-	RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
+	#endif	
+	
+	LGDuels_SetFromPersistence( s1, s2, s3, s4, s5, s6, s7, s8 )	
+	//RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
 }
 
 void function ServerCallback_FSDM_ChampionScreenHandle(bool shouldOpen, int TeamWon, int skinindex)
@@ -1752,6 +1764,39 @@ void function FS_IBMM_Msg( string msgString, string subMsgString, float duration
 	Hud_MoveOverTime( HudElement( "FS_IBMM_MsgBg" ), currentPos.x + 1000, currentPos.y + 0, 0.15 )
 
 	wait 0.24
+}
+
+
+void function FS_Show1v1Banner( entity player )
+{
+	#if !DEVELOPER
+		if( GetGameState() >= eGameState.Playing )
+			return
+	#endif
+				
+	float duration = 5
+
+	clGlobal.levelEnt.Signal( "FS_1v1Banner" )
+	clGlobal.levelEnt.EndSignal( "FS_1v1Banner" )
+	player.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			Hud_SetVisible( HudElement( "FS_1v1Banner" ), false )
+		}
+	)
+	
+	Hud_ReturnToBasePos( HudElement( "FS_1v1Banner" ) )
+	Hud_SetSize( HudElement( "FS_1v1Banner" ), 0, 0 )
+	
+	Hud_SetVisible( HudElement( "FS_1v1Banner" ), true )	
+	Hud_ScaleOverTime( HudElement( "FS_1v1Banner" ), 1.7, 1.7, 1, INTERPOLATOR_ACCEL )
+	wait 1
+	Hud_ScaleOverTime( HudElement( "FS_1v1Banner" ), 1, 1, 2, INTERPOLATOR_SIMPLESPLINE )
+	wait duration - 2
+	Hud_FadeOverTime( HudElement( "FS_1v1Banner" ), 0, 3, INTERPOLATOR_ACCEL )
+	wait 2
 }
 
 void function FS_Scenarios_InitPlayersCards()

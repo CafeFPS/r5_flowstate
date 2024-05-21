@@ -209,6 +209,7 @@ Scripts:
 [
 	mp/tracker/chateffects.nut
 	mp/tracker/utility.nut
+	mp/tracker/_internal.nut
 ]
 
 When: "SERVER || CLIENT"
