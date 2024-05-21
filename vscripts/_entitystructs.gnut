@@ -956,6 +956,7 @@ global struct ServerPlayerStruct
 
 	float lastTgiveUsedTime
 	float lastRestUsedTime
+	float lastRequeueUsedTime
 	//float lastLockEnemyUsedTime //???
 
 	//bullet slow
@@ -1028,6 +1029,7 @@ global struct ServerPlayerStruct
 	bool recorderHideHud
 	bool continueLoop = true
 	array<entity> dummyList
+	bool InDeathRecap
 }
 
 global struct ChallengeScore

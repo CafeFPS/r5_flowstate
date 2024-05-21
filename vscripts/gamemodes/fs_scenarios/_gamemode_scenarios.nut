@@ -103,6 +103,8 @@ struct {
 	bool fs_scenarios_inventory_empty = false
 	bool fs_scenarios_start_skydiving = true
 	bool fs_scenarios_deathboxes_enabled = true
+	bool fs_scenarios_bleedout_enabled = true
+	bool fs_scenarios_show_death_recap_onkilled = true
 } settings
 
 array< bool > teamSlots
@@ -121,6 +123,8 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
+	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
+	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -132,11 +136,147 @@ void function Init_FS_Scenarios()
 		teamSlots[ i ] = false
 	}
 	SurvivalFreefall_Init()
+
+	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
 	
 	RegisterSignal( "FS_EndDelayedThread" )
 	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+
+	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
+	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
+}
+
+bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
+{
+	if( !IsValid(player) )
+		return false
+	
+	if( Time() < player.p.lastRequeueUsedTime + 3 )
+	{
+		return false
+	}
+	
+	player.p.InDeathRecap = false
+	player.p.lastRequeueUsedTime = Time()
+
+	return true
+}
+
+void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
+
+	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
+		return
+
+	if( settings.fs_scenarios_show_death_recap_onkilled )
+	{
+		int attackerEHandle = -1
+		int victimEHandle = -1
+
+		if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
+		{
+			attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+			victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+
+			if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+			{
+				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock(victim)
+			}
+
+			if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
+			{
+				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock(attacker)		
+			}
+
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
+		} else if( !attacker.IsPlayer() )
+		{
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
+		}
+	}
+
+	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+}
+
+void function FS_Scenarios_OnPlayerConnected( entity player )
+{
+	printt( "[+] OnPlayerConnected Scenarios -", player )
+
+	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
+}
+
+void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
+{
+	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
+		return
+	
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+	
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
+		return
+	
+	if( settings.fs_scenarios_show_death_recap_onkilled )
+		Flowstate_HandleDeathRecapData(victim, damageInfo)
+	
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	int currentHealth = victim.GetHealth()
+	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+		currentHealth += victim.GetShieldHealth()
+	
+	vector damagePosition = DamageInfo_GetDamagePosition( damageInfo )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+
+	TakingFireDialogue( attacker, victim, weapon )
+
+	LiveAPI_OnPlayerDamaged( victim, damageInfo )
+
+	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
+	{
+		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
+	}
+	
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
+	{	
+		if( !IsValid(attacker) || !IsValid(victim) )
+			return
+
+		thread EnemyDownedDialogue( attacker, victim )
+
+		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
+			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
+
+		foreach ( cbPlayer in GetPlayerArray() )
+			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
+			
+		// Add the cool splashy blood and big red crosshair hitmarker
+		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+	
+		// Supposed to be bleeding
+		Bleedout_StartPlayerBleedout( victim, attacker )
+
+		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
+		if (attacker.IsPlayer() && IsValid( attacker ))
+        {
+            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+        }
+		// Cancel the damage
+		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
+		// There might be a better way to do this, but this works well enough
+		DamageInfo_SetDamage( damageInfo, 1 )
+
+		// Delete any shield health remaining
+		victim.SetShieldHealth( 0 )
+	}
 }
 
 void function FS_Scenarios_OnPlayerDisconnected( entity player )
@@ -1090,6 +1230,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					foreach( splayer in players )
 						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
 
+					if( settings.fs_scenarios_show_death_recap_onkilled )
+					{
+						player.p.InDeathRecap = true
+						Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+					} else
+						player.p.InDeathRecap = false
+
 					printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
 					continue
 				}
@@ -1159,6 +1306,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				continue
 
 			if( Time() < eachPlayerStruct.waitingTime )
+				continue
+				
+			if( player.p.InDeathRecap )
 				continue
 
 			waitingPlayers.append( player )

@@ -111,24 +111,46 @@ void function DeathScreenMenuOnOpen()
 	{
 		TabData tabData = GetTabDataForPanel( file.menu )
 		tabData.centerTabs = true
-		AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSpectate" ), "#DEATH_SCREEN_SPECTATE" )		//
-		AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenRecap" ), "#DEATH_SCREEN_RECAP" )			//
-		AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSquadSummary" ), "#DEATH_SCREEN_SUMMARY" )	//
+
+		if( Playlist() == ePlaylists.fs_scenarios )
+		{
+			// AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSpectate" ), "#DEATH_SCREEN_SPECTATE" )		//
+			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenRecap" ), "#DEATH_SCREEN_RECAP" )			//
+			// AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSquadSummary" ), "#DEATH_SCREEN_SUMMARY" )	//
+		} else
+		{
+			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSpectate" ), "#DEATH_SCREEN_SPECTATE" )		//
+			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenRecap" ), "#DEATH_SCREEN_RECAP" )			//
+			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSquadSummary" ), "#DEATH_SCREEN_SUMMARY" )	//
+		}
+
 		file.tabsInitialized = true
 	}
 
-	TabData tabData        = GetTabDataForPanel( file.menu )
-	TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
-	TabDef spectateTab     = Tab_GetTabDefByBodyName( tabData, "DeathScreenSpectate" )
-	TabDef squadSummaryTab = Tab_GetTabDefByBodyName( tabData, "DeathScreenSquadSummary" )
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		TabData tabData        = GetTabDataForPanel( file.menu )
+		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
+		UpdateMenuTabs()
 
-	spectateTab.title = "#DEATH_SCREEN_SPECTATE"
-	UpdateMenuTabs()
+		SetTabDefEnabled( recapTab, true )
+		Hud_SetVisible( Hud_GetChild( file.menu, "FlowstateTitle" ), true )
+	} else
+	{
+		TabData tabData        = GetTabDataForPanel( file.menu )
+		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
+		TabDef spectateTab     = Tab_GetTabDefByBodyName( tabData, "DeathScreenSpectate" )
+		TabDef squadSummaryTab = Tab_GetTabDefByBodyName( tabData, "DeathScreenSquadSummary" )
 
-	SetTabDefEnabled( recapTab, true )
-	SetTabDefEnabled( squadSummaryTab, true )
-	SetTabDefEnabled( spectateTab, true )
-	
+		spectateTab.title = "#DEATH_SCREEN_SPECTATE"
+		UpdateMenuTabs()
+
+		SetTabDefEnabled( recapTab, true )
+		SetTabDefEnabled( squadSummaryTab, true )
+		SetTabDefEnabled( spectateTab, true )
+		Hud_SetVisible( Hud_GetChild( file.menu, "FlowstateTitle" ), false )
+	}
+
 	SetTabNavigationEnabled( file.menu, true )
 
 	var screenBlur = Hud_GetChild( file.menu, "ScreenBlur" )
@@ -169,7 +191,11 @@ void function UI_OpenDeathScreenMenu( int tabIndex )
 	EnableDeathScreenTab_Internal( tabIndex, true )
 
 	TabData tabData = GetTabDataForPanel( file.menu )
-	ActivateTab( tabData, tabIndex )
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+		ActivateTab( tabData, 0 )
+	else
+		ActivateTab( tabData, tabIndex )
 }
 
 
@@ -377,6 +403,12 @@ void function DeathScreenMenu_Shutdown()
 
 void function DeathScreenMenuOnNavBack()
 {
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		UI_CloseDeathScreenMenu()
+		return
+	}
+
 	TabData tabData = GetTabDataForPanel( file.menu )
 	{
 		int tabIndex = GetMenuActiveTabIndex( file.menu )

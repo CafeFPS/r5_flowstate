@@ -3,6 +3,7 @@ global function Cl_DeathScreen_Init
 global function ServerCallback_ShowDeathScreen
 global function ServerCallback_SquadEliminated
 global function ServerCallback_DeathScreenSwitchTab
+global function ServerCallback_ShowFlowstateDeathRecapNoSpectate
 
 global function ShowDeathScreen
 global function EnableDeathScreenTab
@@ -205,6 +206,15 @@ void function ServerCallback_ShowDeathScreen()
 	}
 }
 
+void function ServerCallback_ShowFlowstateDeathRecapNoSpectate()
+{
+	entity player = GetLocalClientPlayer()
+
+	file.isOpen = true
+
+	ShowDeathScreen( eDeathScreenPanel.DEATH_RECAP )
+}
+ 
 void function DeathScreenDelayedSwitchToTab( int tab, float delay )
 {
 	wait( delay )
@@ -1022,6 +1032,9 @@ void function UICallback_CloseDeathScreenMenu( bool clearRecap = true )
 	}
 
 	file.isOpen = false
+
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "playerRequeue_CloseDeathRecap" )
 }
 
 
@@ -1530,6 +1543,12 @@ void function DeathRecapShow( var recapElem )
 	                                                                   
 	Assert( file.deathRecapDamageBlocks.len() > 0, "This shouldn't happen, figure out why" )
 
+	if( file.deathRecapDamageBlocks.len() == 0 )
+	{
+		UICallback_CloseDeathScreenMenu( false )
+		return
+	}
+
 	RuiSetBool( recapRui, "display", true )
 
 	bool knockdown
@@ -1775,6 +1794,9 @@ array<int> function GetRecapPlayerEHIArray( EncodedEHandle playerEHandle )
 void function UpdateSelectedRecapBlock( int blockIndex )
 {
 	Assert( file.damageBlockElementArray.len() > blockIndex )
+	
+	if( blockIndex > file.damageBlockElementArray.len() - 1 )
+		return
 
 	int currentBlockIndex = file.selectedRecapBlock != -1 ? file.selectedRecapBlock : blockIndex
 

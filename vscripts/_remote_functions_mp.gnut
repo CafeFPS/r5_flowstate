@@ -479,6 +479,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "ServerCallback_SquadEliminated", "int", TEAM_INVALID, 126 )
 	Remote_RegisterClientFunction( "ServerCallback_ShowDeathScreen" )
 	Remote_RegisterClientFunction( "ServerCallback_DeathScreenSwitchTab" )
+	Remote_RegisterClientFunction( "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 
 	Remote_RegisterClientFunction( "ServerCallback_SendDeathRecapData", "int", -1, INT_MAX, "int", -1, INT_MAX, "int", -1, INT_MAX, "int", INT_MIN, INT_MAX, "int", -1, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "float", 0.0, 1.0, 32, "float", 0.0, 1.0, 32, "float", 0.0, 86400.0, 32 )
 	Remote_RegisterClientFunction( "ServerCallback_DeathRecapDataUpdated", "bool", "int", -1, INT_MAX )
