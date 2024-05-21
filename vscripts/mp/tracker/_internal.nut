@@ -171,10 +171,10 @@ global function GetPlayerStatString
 global function GetPlayerStatBool
 global function GetPlayerStatFloat
 
-int function GetPlayerStatInt( entity player, string statname ){ return 0 }
-string function GetPlayerStatString( entity player, string statname ){ return "" }
-bool function GetPlayerStatBool( entity player, string statname ){ return false }
-float function GetPlayerStatFloat( entity player, string statname ){ return 0.0 }
+int function GetPlayerStatInt( string player, string statname ){ return 0 }
+string function GetPlayerStatString( string player, string statname ){ return "" }
+bool function GetPlayerStatBool( string player, string statname ){ return false }
+float function GetPlayerStatFloat( string player, string statname ){ return 0.0 }
 
 
 #endif //TRACKER && HAS_TRACKER_DLL else
