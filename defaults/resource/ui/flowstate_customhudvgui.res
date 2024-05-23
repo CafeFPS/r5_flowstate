@@ -3993,4 +3993,73 @@ Resource/UI/flowstate_customhudvgui.res
         pin_corner_to_sibling	RIGHT
         pin_to_sibling_corner	RIGHT
     }
+
+	ScenariosVS_2
+	{
+		ControlName				RuiPanel
+		wide					66
+		tall					47
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					66
+		zpos 15
+		pin_to_sibling          TestCharacterR2
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
+	}
+
+    TestCharacterF0
+    {
+        ControlName				RuiPanel
+        rui                     "ui/store_character_button.rpak"
+		xpos					135
+        ypos					0
+		wide					129.33
+		tall					84
+        visible					0
+        zpos                    10
+
+        proportionalToParent    1
+
+        pin_to_sibling			ScenariosVS_2
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
+    }
+
+    TestCharacterF1
+    {
+        ControlName				RuiPanel
+        rui                     "ui/store_character_button.rpak"
+		xpos					90
+        ypos					0
+		wide					129.33
+		tall					84
+        visible					0
+        zpos                    10
+
+        proportionalToParent    1
+
+        pin_to_sibling			TestCharacterF0
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
+    }
+
+    TestCharacterF2
+    {
+        ControlName				RuiPanel
+        rui                     "ui/store_character_button.rpak"
+		xpos					90
+        ypos					0
+		wide					129.33
+		tall					84
+        visible					0
+        zpos                    10
+
+        proportionalToParent    1
+
+        pin_to_sibling			TestCharacterF1
+        pin_corner_to_sibling	RIGHT
+        pin_to_sibling_corner	RIGHT
+    }
 }
