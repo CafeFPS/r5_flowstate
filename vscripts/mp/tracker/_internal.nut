@@ -14,6 +14,11 @@ global function GetPlayerStatString
 global function GetPlayerStatBool
 global function GetPlayerStatFloat
 
+global function SetPlayerStatInt
+global function SetPlayerStatString
+global function SetPlayerStatBool
+global function SetPlayerStatFloat
+
 global function NULL_STATS_INBOUND
 global function NULL_STATS_OUTBOUND
 
@@ -50,8 +55,8 @@ array<string> function Stats__AddPlayerStatsTable(string player_oid)
 	return statKeys
 }
 
- int function GetPlayerStatInt( string player_oid, string statname ) 
- {
+int function GetPlayerStatInt( string player_oid, string statname ) 
+{
 	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
 	{
 		return expect int( file.allStatsTables[player_oid][statname] )
@@ -88,6 +93,41 @@ float function GetPlayerStatFloat( string player_oid, string statname )
 	}
 	return 0.0
 }
+
+void function SetPlayerStatInt( string player_oid, string statname, int value ) 
+{	
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	{
+		file.allStatsTables[player_oid][statname] = value
+	}
+}
+
+void function SetPlayerStatString( string player_oid, string statname, string value ) 
+{
+	mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value)
+	
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	{
+		file.allStatsTables[player_oid][statname] = value
+	}
+}
+
+void function SetPlayerStatBool( string player_oid, string statname, bool value ) 
+{
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	{
+		file.allStatsTables[player_oid][statname] = value
+	}
+}
+
+void function SetPlayerStatFloat( string player_oid, string statname, float value ) 
+{
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	{
+		file.allStatsTables[player_oid][statname] = value
+	}
+}
+
 
 
 const array<string> ignoreStats = 
@@ -164,17 +204,22 @@ void function RegisterStatOutboundData( string statname, var functionref( string
 void function NULL_STATS_INBOUND( entity player ){}
 var function NULL_STATS_OUTBOUND( string uid ){ return "" }
 
-#else //NOT TRACKER && HAS_TRACKER_DLL
+#else //TRACKER && HAS_TRACKER_DLL
 
 global function GetPlayerStatInt
 global function GetPlayerStatString
 global function GetPlayerStatBool
 global function GetPlayerStatFloat
+global function NULL_STATS_INBOUND
+global function NULL_STATS_OUTBOUND
+
 
 int function GetPlayerStatInt( string player, string statname ){ return 0 }
 string function GetPlayerStatString( string player, string statname ){ return "" }
 bool function GetPlayerStatBool( string player, string statname ){ return false }
 float function GetPlayerStatFloat( string player, string statname ){ return 0.0 }
+void function NULL_STATS_INBOUND( entity player ){}
+var function NULL_STATS_OUTBOUND( string uid ){ return "" }
 
 
-#endif //TRACKER && HAS_TRACKER_DLL else
+#endif // ELSE !TRACKER && !HAS_TRACKER_DLL

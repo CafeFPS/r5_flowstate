@@ -56,6 +56,11 @@ global function SetAfkToRest
 
 #if TRACKER
 	global const bool STUB = false
+	
+	global function ReturnSuperglides
+	global function ReturnKills
+	global function ReturnDeaths
+	global function Pin_Query_Init
 #else
 	global const bool STUB = true 
 #endif 
@@ -354,8 +359,8 @@ struct {
 	bool PIN_GameState_Start = false
 	bool global_stats
 
-	bool LogOn
-	bool LogE
+	bool LogOn = false
+	bool LogE = true
 	bool scriptLogthreadRunning = false
 	bool FETCH_BATCH_COMPLETE = false
 	bool restricted_server
@@ -573,16 +578,6 @@ bool function GetBoolSetting( string setting, bool none = false )
 ////////////////////////////////////////////
 ////////		QUERY Data			////////
 
-void function _RegisterAllQueries()
-{
-	////// INIT FUNCTIONS FOR GAMEMODES //////
-	
-	Pin_Query_Init()
-	//CustomGamemodeQueries_Init()
-	//Gamemode1v1Queries_Init()
-	//etc...etc..
-}
-
 void function __QueryString_Callbacks( string setting, string value )
 {	
 	if( !( setting in file.queryStringCallbackFuncs ) )
@@ -649,7 +644,7 @@ string function GetQueryDataString()
 
 void function INIT_Global_R5RDEV_VarTable()
 {	
-	_RegisterAllQueries()
+	Script_RegisterAllQueries()
 	
 	file.bQueryComplete = true
 	string QueryDataString = GetQueryDataString()	
@@ -948,16 +943,6 @@ string function BuildRequestedStatsString()
 	return statsQuery 
 }
 
-void function InitializeStandardStats()
-{
-	RegisterStat( "kills", StandardStatInit_kills, ReturnKills )
-	RegisterStat( "deaths", StandardStatInit_deaths, ReturnDeaths )
-	RegisterStat( "superglides", StandardStatInit_superglides, ReturnSuperglides )
-	RegisterStat( "total_time_played", StandardStatInit_total_time_played, NULL_STATS_OUTBOUND )
-	RegisterStat( "total_matches", StandardStatInit_total_matches, NULL_STATS_OUTBOUND )
-	RegisterStat( "score", StandardStatInit_score, NULL_STATS_OUTBOUND )
-}
-
 var function ReturnSuperglides( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].SuperglideTimestamps.len()
@@ -971,22 +956,6 @@ var function ReturnKills( string uid )
 var function ReturnDeaths( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].deaths
-}
-
-        
-	/* 	json += format( "\"superglides\": %d, ", metrics.SuperglideTimestamps.len() )
-        json += format( "\"kills\": %d, ", metrics.kills )
-        json += format( "\"deaths\": %d, ", metrics.deaths ) */
-
-void function BallsFunc( entity player )
-{
-	printt("balls was called.")
-}
-
-var function ReturnBalls( string UID )
-{
-	printt("player's uid is ",UID )
-	return 5;
 }
 
 void function __LoadPlayerSyncData( entity player )
@@ -1025,9 +994,9 @@ void function __SetPlayerSyncData( entity player )
 	if ( statKeys.len() > 0 || PersistenceData.len() > 0 )
 	{		
 		#if DEVELOPER 
-			printt("Incoming StatsKeys:")
+			printt("\n\nIncoming StatsKeys:")
 			printarray( statKeys )
-			printt("Incoming Persistence Settings:")
+			printt("\n\nIncoming Persistence Settings:")
 			printarray( PersistenceData )
 		#endif 
 	
@@ -1254,7 +1223,7 @@ void function PIN_Init()
 		
 		if(bRunTracker)
 		{	
-			InitializeStandardStats()
+			Script_RegisterAllStats()
 			file.requestedStatsList = BuildRequestedStatsString()
 			thread INIT_BATCH_FETCH()
 		}
@@ -1987,7 +1956,7 @@ void function __LoadServerBot()
 {
 	wait 3
 	
-	printt("\n\n\n\n\n loaded server bot \n\n\n\n\n")
+	printt(":(pin):: loaded server bot")
 	
 	array<int> result = SQ_CreateServerBot__internal(file.sBotName)
 	
@@ -3372,7 +3341,7 @@ void function AddToPlayerDamage( string playerID, float damage )
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-// add your settings with AddCallback_PlayerData(
+// add your settings with AddCallback_PlayerData()
 
 
 //player quit and rejoined, but data is already in table
@@ -3399,6 +3368,8 @@ void function INIT_PlayerDataCallbacks()
 	AddCallback_PlayerData( "lock1v1_setting", UpdateLock1v1Setting )
 	AddCallback_PlayerData( "start_in_rest_setting", UpdateStartInRestSetting )
 	AddCallback_PlayerData( "enable_input_banner", UpdateInputBannerSetting )
+	
+	Script_RegisterAllPlayerDataCallbacks()
 }
 
 // utility funcitons for fetch/save playerdata 
@@ -4860,56 +4831,6 @@ void function PIN_Training( entity player, string status, string trainingStatus 
 
 }
 
-
-void function StandardStatInit_kills( entity player )
-{
-	int player_season_kills = GetPlayerStatInt( player.p.UID, "kills" )
-	//int player_season_kills = player.GetPlayerStatInt( "kills" )
-	
-	player.p.season_kills = player_season_kills
-	player.SetPlayerNetInt( "SeasonKills", player_season_kills )
-}
-
-void function StandardStatInit_deaths( entity player )
-{
-	int player_season_deaths = GetPlayerStatInt( player.p.UID, "deaths" )
-	
-	player.p.season_deaths = player_season_deaths
-	player.SetPlayerNetInt( "SeasonDeaths", player_season_deaths )
-}
-
-void function StandardStatInit_superglides( entity player )
-{
-	int player_season_glides = GetPlayerStatInt( player.p.UID, "superglides" )
-	
-	player.p.season_glides = player_season_glides
-}
-
-void function StandardStatInit_total_time_played( entity player )
-{
-	int player_season_playtime = GetPlayerStatInt( player.p.UID, "total_time_played" )
-	
-	player.p.season_playtime = player_season_playtime
-	player.SetPlayerNetInt( "SeasonPlaytime", player_season_playtime )
-}
-
-void function StandardStatInit_total_matches( entity player )
-{
-	int player_season_gamesplayed = GetPlayerStatInt( player.p.UID, "total_matches" )
-	
-	player.p.season_gamesplayed = player_season_gamesplayed
-	player.SetPlayerNetInt( "SeasonGamesplayed", player_season_gamesplayed )
-}
-
-void function StandardStatInit_score( entity player )
-{
-	int player_season_score = GetPlayerStatInt( player.p.UID, "score" )
-	
-	player.p.season_score = player_season_score
-	player.SetPlayerNetInt( "SeasonScore", player_season_score )
-}
-
-
 #endif //END TRACKER DEFINE
 
 
@@ -5100,12 +5021,13 @@ void function ShowPlayerLocalMOTD( entity player )
 {	
 	thread( void function() : ( player )
 			{
-				waitthread WaitSignalOrTimeout( player, 20, "OnRespawnPlayer", "OnDestroy", "OnDisconnected" )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 				
 					if( IsValid( player ) )
 					{
+						//run ui script for motd
 						MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
-						wait 3.5
+						wait 5
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 					}
 			})()

@@ -1107,7 +1107,6 @@ bool function GetPilotBotFlag()
 	unreachable
 }
 
-
 function DoRespawnPlayer( entity player, entity spawnPoint )
 {
 	if( IsAlive( player ) )

@@ -9,6 +9,7 @@ global function DisableDemigod
 global function ToggleMute
 global function CommandsEnabled
 global function IsCommandsEnabled 
+global function p
 
 int __nextInputHandle = 0
 
@@ -45,6 +46,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.cloakedForever <- false
 	CPlayer.stimmedForever <- false
 	CPlayer.ClientCommandsEnabled <- true
+	CPlayer.ScriptClassRegistered <- true
 
 	RegisterSignal( "CleanUpPlayerAbilities" )
 	RegisterSignal( "ChallengeReceived" )
@@ -385,16 +387,22 @@ function CodeCallback_RegisterClass_CPlayer()
 		return this.ClientCommandsEnabled
 	}
 	
+	//////////////////////////
+	//			GET			//
+	//////////////////////////
+	#document( "CPlayer::GetPlayerStatString", "Fetch player stat string from player's stat table max.len(30)" )
 	function CPlayer::GetPlayerStatString( statname )
 	{
 		return GetPlayerStatString( expect entity(this).p.UID, expect string( statname ) )
 	}
 	
+	#document( "CPlayer::GetPlayerStatBool", "Fetch player stat bool from player's stat table." )
 	function CPlayer::GetPlayerStatBool( statname )
 	{
 		return GetPlayerStatBool( expect entity(this).p.UID, expect string( statname ) )
 	}
 	
+	#document( "CPlayer::GetPlayerStatFloat", "Fetch player stat float from player's stat table." )
 	function CPlayer::GetPlayerStatFloat( statname )
 	{
 		return GetPlayerStatFloat( expect entity(this).p.UID, expect string( statname ) )
@@ -405,6 +413,40 @@ function CodeCallback_RegisterClass_CPlayer()
 	{
 		return GetPlayerStatInt( expect entity(this).p.UID, expect string( statname ) )
 	}
+	
+	
+	//////////////////////////
+	//			SET			//
+	//////////////////////////
+	
+	#document( "CPlayer::SetPlayerStatString", "Set player stat string from player's stat table max.len(30)" )
+	function CPlayer::SetPlayerStatString( statname, value )
+	{
+		SetPlayerStatString( expect entity(this).p.UID, expect string( statname ), expect string( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatBool", "Set player stat bool from player's stat table." )
+	function CPlayer::SetPlayerStatBool( statname, value )
+	{
+		SetPlayerStatBool( expect entity(this).p.UID, expect string( statname ), expect bool( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatFloat", "Set player stat float from player's stat table." )
+	function CPlayer::SetPlayerStatFloat( statname, value )
+	{
+		SetPlayerStatFloat( expect entity(this).p.UID, expect string( statname ), expect float( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatInt", "Set player stat int from player's stat table." )
+	function CPlayer::SetPlayerStatInt( statname, value )
+	{
+		SetPlayerStatInt( expect entity(this).p.UID, expect string( statname ), expect int( value ) )
+	}
+}
+
+entity function p( int i )
+{
+	return GetPlayerArray()[i]
 }
 
 bool function IsCommandsEnabled( entity player )

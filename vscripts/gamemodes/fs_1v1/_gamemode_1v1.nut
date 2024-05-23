@@ -174,7 +174,6 @@ struct
 	bool bChalServerMsg = false
 	bool bNoCustomWeapons = false
 	bool is3v3Mode
-	string MOTD = ""
 	float roundTime
 	bool bAllowWeaponsMenu
 	table<string,bool> spawnOptions
@@ -370,7 +369,6 @@ void function INIT_PlaylistSettings()
 	settings.enableChallenges						= GetCurrentPlaylistVarBool( "enable_challenges", true )
 	settings.is3v3Mode								= Playlist() == ePlaylists.fs_scenarios
 	settings.bNoCustomWeapons						= GetCurrentPlaylistVarBool( "custom_weapons_challenge_only", false )
-	settings.MOTD									= GetCurrentPlaylistVarString( "custom_MOTD", "Welcome to my server" )
 	settings.roundTime								= float ( FlowState_RoundTime() )
 	settings.bAllowWeaponsMenu						= !FlowState_AdminTgive()
 }
@@ -798,7 +796,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 	if ( IsValid(groupToRemove.player1) && groupToRemove.player1.p.handle in file.playerToGroupMap )
 	{	
 		#if DEVELOPER
-		sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
+			sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
 		#endif
 		delete file.playerToGroupMap[groupToRemove.player1.p.handle]
 	}
@@ -806,7 +804,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 	if ( IsValid(groupToRemove.player2) && groupToRemove.player2.p.handle in file.playerToGroupMap )
 	{	
 		#if DEVELOPER
-		sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
+			sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
 		#endif
 		delete file.playerToGroupMap[groupToRemove.player2.p.handle];
 	}
@@ -814,14 +812,14 @@ void function removeGroup(soloGroupStruct groupToRemove)
 	if( groupToRemove.groupHandle in file.groupsInProgress )
 	{
 		#if DEVELOPER
-		sqprint(format("removing group: %d", groupToRemove.groupHandle) )
+			sqprint(format("removing group: %d", groupToRemove.groupHandle) )
 		#endif
 		delete file.groupsInProgress[groupToRemove.groupHandle]
 	}
 	else 
 	{
 		#if DEVELOPER
-		sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
+			sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
 		#endif
 	}
 	
