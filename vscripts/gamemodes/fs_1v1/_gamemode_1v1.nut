@@ -2445,6 +2445,14 @@ void function soloModePlayerToWaitingList( entity player )
 				}
 			}
 
+			foreach( splayer in playerGroup.team3Players )
+			{
+				if( splayer == player )
+				{
+					printt( "removed player from team 3 ", player )
+					playerGroup.team3Players.removebyvalue( player )
+				}
+			}
 			if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
 				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 		}
@@ -2465,7 +2473,7 @@ void function soloModePlayerToWaitingList( entity player )
 	playerStruct.handle = player.p.handle
 	
 	if( settings.is3v3Mode )
-		playerStruct.waitingTime = Time() + 3
+		playerStruct.waitingTime = Time() + 5
 	
 	//mkos
 	//playerStruct.queue_time = Time()
@@ -3157,7 +3165,6 @@ void function _soloModeInit( int eMap )
 		SetPreferredSpawnPak( 1 )
 		allSoloLocations = ReturnAllSpawnLocations( eMap )
 	}
-	
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
 	{
 		soloLocStruct p
@@ -3169,6 +3176,7 @@ void function _soloModeInit( int eMap )
 
 		soloLocations.append(p)
 	}
+
 	realmSlots.resize( MAX_REALM + 1 )
 	realmSlots[ 0 ] = true
 	for (int i = 1; i < realmSlots.len(); i++)
@@ -4733,7 +4741,17 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 				aliveCount2++
 		}
 
-		if( aliveCount1 == 0 || aliveCount2 == 0 )
+		int aliveCount3
+		foreach( splayer in group.team3Players )
+		{
+			if( !IsValid( splayer ) )
+				continue
+			
+			if( IsAlive( splayer ) )
+				aliveCount3++
+		}
+
+		if( FS_Scenarios_GetAmountOfTeams() > 2 && ( aliveCount1 == 0 && aliveCount2 == 0 || aliveCount1 == 0 && aliveCount3 == 0 || aliveCount2 == 0 && aliveCount3 == 0 ) || FS_Scenarios_GetAmountOfTeams() == 2 && ( aliveCount1 == 0 || aliveCount2 == 0 ) )
 			group.IsFinished = true //tell solo thread this round has finished
 		
 		if( FS_Scenarios_GetDeathboxesEnabled() )

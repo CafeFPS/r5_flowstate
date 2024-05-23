@@ -57,6 +57,7 @@ global function FS_Scenarios_TogglePlayersCardsVisibility
 
 global function FS_Scenarios_AddAllyHandle
 global function FS_Scenarios_AddEnemyHandle
+global function FS_Scenarios_AddEnemyHandle2
 
 global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
@@ -92,11 +93,14 @@ struct {
 
 	//Scenarios cards
 	var vsBasicImage
+	var vsBasicImage2
 	array<var> allyTeamCards
 	array<var> enemyTeamCards
+	array<var> enemyTeamCards2
 	bool buildingTeam = true
 	array<int> allyTeamHandles
 	array<int> enemyTeamHandles
+	array<int> enemyTeamHandles2
 	
 	bool muted = false
 	
@@ -1803,10 +1807,19 @@ void function FS_Scenarios_InitPlayersCards()
 {
 	file.allyTeamCards.clear()
 	file.enemyTeamCards.clear()
+	file.enemyTeamCards2.clear()
 
 	printt( "FS_Scenarios_InitPlayersCards" )
 	file.vsBasicImage = HudElement( "ScenariosVS" )
+	file.vsBasicImage2 = HudElement( "ScenariosVS_2" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
+	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
+
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 )
+	{
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
+		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 110, wepSelectorBasePos.y )
+	}
 
 	for(int i = 0; i<3; i++ )
 	{
@@ -1833,6 +1846,20 @@ void function FS_Scenarios_InitPlayersCards()
 		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
 		Hud_SetVisible( button , false )
 	}
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterF" + i )
+		file.enemyTeamCards2.append( button )
+		
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button , false )
+	}
+
 	file.buildingTeam = true
 }
 
@@ -1848,6 +1875,20 @@ void function FS_Scenarios_AddEnemyHandle( int handle )
 
 	// printt( "added handle for enemy team player", handle )
 	file.enemyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_AddEnemyHandle2( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( enemyPlayer ) )
+		return
+
+	// printt( "added handle for enemy team player", handle )
+	file.enemyTeamHandles2.append( handle )
 }
 
 void function FS_Scenarios_AddAllyHandle( int handle )
@@ -1867,6 +1908,32 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 void function FS_Scenarios_SetupPlayersCards()
 {
 	file.buildingTeam = false
+
+	foreach( int i, int handle in file.enemyTeamHandles2 )
+	{
+		if( i > file.enemyTeamCards2.len() )
+			continue
+
+		thread function() : ( i, handle )
+		{
+			entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( enemyPlayer ) )
+				return
+
+			EndSignal( enemyPlayer, "OnDestroy" )
+
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards2[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.enemyTeamCards2[i] ), "buttonText", enemyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.enemyTeamCards2[i], true )
+		}()
+	}
 
 	foreach( int i, int handle in file.enemyTeamHandles )
 	{
@@ -1929,6 +1996,9 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 
+	if( file.vsBasicImage2 != null && file.enemyTeamCards2.len() > 0 )
+		Hud_SetVisible( file.vsBasicImage2, show )
+
 	if( !show )
 	{
 		foreach( button in file.allyTeamCards )
@@ -1941,8 +2011,14 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 			Hud_SetVisible( button, show )
 		}
 
+		foreach( button in file.enemyTeamCards2 )
+		{
+			Hud_SetVisible( button, show )
+		}
+
 		file.allyTeamHandles.clear()
 		file.enemyTeamHandles.clear()
+		file.enemyTeamHandles2.clear()
 		FS_Scenarios_InitPlayersCards()
 	}
 }
