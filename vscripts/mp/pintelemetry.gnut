@@ -56,11 +56,6 @@ global function SetAfkToRest
 
 #if TRACKER
 	global const bool STUB = false
-	
-	global function ReturnSuperglides
-	global function ReturnKills
-	global function ReturnDeaths
-	global function Pin_Query_Init
 #else
 	global const bool STUB = true 
 #endif 
@@ -156,6 +151,7 @@ global function GetPlayerMetricsArray
 global function __TrackerStatsHook_AddEvent_DamageMult
 global function RegisterStat
 global function RegisterAllSettings
+global function Tracker_StatsMetricsByUID
 
 //custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
 global function SavePlayer_wait_time
@@ -194,6 +190,12 @@ global function isIntervalThreadRunning
 
 global function isRestrictedServer
 global function setRestrictedServer
+
+global function ReturnSuperglides
+global function ReturnKills
+global function ReturnDeaths
+global function Pin_Query_Init
+global function NULL_PDATA
 
 #if LOG_ERRORS
 	global function DEV_PrintAllTrackerErrors
@@ -485,6 +487,8 @@ void function DEV_ManualLogKill( bool ship )
 	svGlobal.levelEnt.Signal( "TrackerNoLog" )
 	stopLogging__internal( ship )
 }
+
+void function NULL_PDATA( entity player, string data ){}
 
 bool function bLog()
 {
@@ -1131,6 +1135,11 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 		
 		i++;
 	}
+}
+
+PlayerMetrics function Tracker_StatsMetricsByUID( string uid )
+{
+	return GetPlayerMetricsArray()[GetPlayerMetricsIndexByUID( uid )]
 }
 
 void function DestroyStats()

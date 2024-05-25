@@ -1,3 +1,4 @@
+untyped
 globalize_all_functions
 #if TRACKER && HAS_TRACKER_DLL
 
@@ -30,6 +31,8 @@ void function SetRegisterCoreStats( bool b )
 //////////////////////////////////////////////////
 void function Script_RegisterAllStats()
 {
+	// void function RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
+	//
 	// RegisterStat( "backend-name", data_in_callback, data_out_callback)
 	// NULL_STATS_INBOUND & NULL_STATS_OUTBOUND can be used as substitutes.
 	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [int,bool,float,string]
@@ -62,12 +65,22 @@ void function Script_RegisterAllStats()
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
 	
-	//RegisterStat( "", , )
+	if( Playlist() == ePlaylists.fs_scenarios )//for demo
+	{
+		RegisterStat( "scenarios_kills", Tracker_ScenariosKillsIn, TrackerStats_ScenariosKills )
+		RegisterStat( "scenarios_deaths", NULL_STATS_INBOUND, TrackerStats_ScenariosDeaths )
+	}
 }
 
 ////////////////////
 // STAT FUNCTIONS //
 ////////////////////
+
+void function Tracker_ScenariosKillsIn( entity player )
+{
+	printt( player, "Wow, this player has " + player.GetPlayerStatInt("scenarios_kills") )
+	seting
+}
 
 void function Callback_CoreStatInit( entity player )
 {
@@ -109,10 +122,22 @@ void function Callback_CoreStatInit( entity player )
 
 void function Script_RegisterAllPlayerDataCallbacks()
 {
-	//AddCallback_PlayerData( "setting", func ) 
-	// = void function func( entity player, string data )
+	////////////////////////////////////////////////////////////////////
+	//
+	// Add a callback to register a setting to be loaded.
+	// Must be in the tracker backend.
+	//
+	// AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
+	// AddCallback_PlayerData( "setting", func ) -- use NULL_PDATA() for no func.
+	// void function func( entity player, string data )
+	//
+	// usage:
+	//
+	// FetchPlayerData( uid, setting ) -- string|string
+	// SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
+	////////////////////////////////////////////////////////////////////
 	
-	
+	//func
 }
 
 

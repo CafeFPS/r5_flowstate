@@ -19,6 +19,11 @@ global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
 
+#if TRACKER //demo only
+global function TrackerStats_ScenariosKills
+global function TrackerStats_ScenariosDeaths
+#endif
+
 #if DEVELOPER
 global function Cafe_KillAllPlayers
 global function Cafe_EndAllRounds
@@ -1759,6 +1764,21 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 	}
 	Signal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 }
+
+//////////////////// STATS /////////////////
+#if TRACKER 
+
+//(for demo)
+var function TrackerStats_ScenariosKills( string uid )
+{
+	return Tracker_StatsMetricsByUID(uid).kills
+}
+
+var function TrackerStats_ScenariosDeaths( string uid )
+{
+	return Tracker_StatsMetricsByUID(uid).deaths
+}
+#endif 
 
 #if DEVELOPER
 void function Cafe_KillAllPlayers()
