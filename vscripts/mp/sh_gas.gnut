@@ -526,7 +526,10 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 
 	target.e.gasLastDamageTime = Time()
 	
-	printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#if DEVELOPER
+		printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#endif
+	
 	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	
 	if ( target.IsPlayer() )

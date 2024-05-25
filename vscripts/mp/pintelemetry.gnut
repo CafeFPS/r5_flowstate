@@ -125,7 +125,8 @@ global function SetAfkToRest
 		float lastHitTimestamp
 		
 		bool isNew
-		float shotIdentifier	
+		float shotIdentifier
+		bool isValid = false
 	};
 	
 #endif
@@ -154,6 +155,7 @@ global function PrintAllPlayerMetrics
 global function GetPlayerMetricsArray
 global function __TrackerStatsHook_AddEvent_DamageMult
 global function RegisterStat
+global function RegisterAllSettings
 
 //custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
 global function SavePlayer_wait_time
@@ -223,7 +225,7 @@ global float COMMAND_RATE_LIMIT = 0.200 //used in all client commands
 //
 ////////////////////////////////////
 
-
+const float MAX_FIGHT_HISTORY_TIME = 20;
 const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
 const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 const int MAX_SAY_MSG = 255;
@@ -277,7 +279,8 @@ global struct DamageEvent
 	float lastHitTimestamp = 0
 	
 	bool isNew
-	float shotIdentifier	
+	float shotIdentifier
+	bool isValid = false	
 };
 
 
@@ -285,6 +288,7 @@ global struct DeleteEvents
 {
 	int victim_handle
 	int attacker_handle	
+	float fightEndTime
 };
 
 // array of player structs containing various new metrics
@@ -312,6 +316,7 @@ table<string, int> PlayerIdMap //for constant time operation lookups
 
 //script arrays
 global array<DamageEvent> allDamageEvents
+global table<int, DamageEvent> allDamageEventsMap = {}
 array<PlayerMetrics> PlayerMetricsArray
 array<PlayerVerifyCount> playerVerifyCounts
 array< string > whitelist
@@ -354,6 +359,8 @@ struct {
 	array< void functionref( entity player ) > syncDataFullyLoadedCallbacks = []
 	table<string, array< void functionref(entity player) > > registeredStatCallbackFuncs = {}
 	string requestedStatsList = ""
+	string requestedSettingsList = ""
+	bool _registerAllSettings = false
 	
 	int fightIdCounter = 0
 	bool PIN_GameState_Start = false
@@ -397,7 +404,7 @@ struct {
 	
 	string sBotName
 	int iBotID
-	entity eBotEnt
+	entity entityBotEnt
 	
 	table < int, array<string> > MessageEvents
 	array<string> Messages_EventStart
@@ -436,7 +443,7 @@ void function CodeCallback_BatchStatsLoaded()
 
 void function CodeCallback_PlayerStatsReady( string uid )
 {
-	entity player = GetPlayer( uid )
+	entity player = GetPlayerEntityByOID( uid )
 	
 	if( !IsValid( player ) )
 		return 
@@ -444,7 +451,7 @@ void function CodeCallback_PlayerStatsReady( string uid )
 	player.Signal( "PlayerStatsReady" )	
 	
 	#if DEVELOPER
-		printt("CodeCallback_PlayerStatsReady: ",player)
+		printt( "CodeCallback_PlayerStatsReady:", player )
 	#endif
 }
 
@@ -574,6 +581,11 @@ bool function GetBoolSetting( string setting, bool none = false )
 	return none;
 }
 
+void function RegisterAllSettings()
+{
+	mAssert( !file.FETCH_BATCH_COMPLETE, "Called RegisterAllSettings() but query has already been made." )
+	file._registerAllSettings = true
+}
 
 ////////////////////////////////////////////
 ////////		QUERY Data			////////
@@ -895,7 +907,7 @@ void function INIT_BATCH_FETCH()
 			
         }
 	
-        LoadBatchSyncData__internal( oid_list, file.requestedStatsList )
+        LoadBatchSyncData__internal( oid_list, file.requestedStatsList, file.requestedSettingsList )
 		
     }
 	
@@ -943,6 +955,30 @@ string function BuildRequestedStatsString()
 	return statsQuery 
 }
 
+string function BuildRequestedSettingsString()
+{
+	if( file._registerAllSettings )
+	{
+		return "REGISTER_ALL";
+	}
+	
+	string settingsQuery = ""
+	int last = file.PlayerSettingsMap.len() - 1
+	int iter = 0
+	
+	foreach( settingsKey, value in file.PlayerSettingsMap )
+	{
+		string allButLast = iter != last ? "," : "";
+		
+		settingsQuery += settingsKey + allButLast
+		
+		iter++;
+	}
+	
+	printt("\n\n\n\n",settingsQuery,"\n\n\n\n\n\n")
+	return settingsQuery 
+}
+
 var function ReturnSuperglides( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].SuperglideTimestamps.len()
@@ -960,7 +996,7 @@ var function ReturnDeaths( string uid )
 
 void function __LoadPlayerSyncData( entity player )
 {
-	LoadSyncData__internal( player.GetPlatformUID(), file.requestedStatsList )
+	LoadSyncData__internal( player.GetPlatformUID(), file.requestedStatsList, file.requestedSettingsList )
 }
 
 void function __SetPlayerSyncData( entity player )
@@ -975,7 +1011,7 @@ void function __SetPlayerSyncData( entity player )
 	}
 	else 
 	{
-		waitthread WaitSignalOrTimeout( player, 5, "PlayerStatsReady", "OnDestroy", "OnDisconnected" )
+		waitthread WaitSignalOrTimeout( player, 15, "PlayerStatsReady", "OnDestroy", "OnDisconnected" )
 	}
 	
 	if( !IsValid( player ) ) 
@@ -1225,6 +1261,7 @@ void function PIN_Init()
 		{	
 			Script_RegisterAllStats()
 			file.requestedStatsList = BuildRequestedStatsString()
+			file.requestedSettingsList = BuildRequestedSettingsString()
 			thread INIT_BATCH_FETCH()
 		}
 	}
@@ -1318,14 +1355,13 @@ void function PlayerConnectedCallback( entity player )
 	
 	if( Data.playerName.find("[") != -1 )
 		return
-		
-	printt( player, playerUID )
 	
-	AddEntityCallback_OnDamaged( player, R5R_OnPlayerDamaged )
+	AddEntityCallback_OnDamaged( player, Tracker_OnPlayerDamaged )
+	//AddEntityCallback_OnPostDamaged( player, Tracker_OnPlayerDamaged )
 	
 	if( file.superglideDetect )
 	{
-		AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, OnJumped);
+		AddPlayerMovementEventCallback( player , ePlayerMovementEvents.JUMP, OnJumped )
 		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, Flowstate_TrackingVision_SuperglideDetection_Stats ) //credit cafe
 	}
 	
@@ -1397,10 +1433,6 @@ void function Init_NewGame()
 	{
 		return;
 	}
-	
-	#if DEVELOPER 
-		sqprint("initgame called")
-	#endif
 	
 	if ( !file.LogOn )
 	{
@@ -1979,7 +2011,7 @@ void function __LoadServerBot()
 
 entity function eMessageBot() //global
 {
-	return file.eBotEnt
+	return file.entityBotEnt
 }
 
 bool function bBotEnabled()
@@ -2046,7 +2078,7 @@ void function RecapStats(entity player, float damage, float hits, float shots, s
 
 
 
-DamageEvent function CreateDamageEvent( int weaponSource, float damage, float actionTimestamp, float shotIdentifier, int attackerHandle, int victimHandle ) 
+DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, float actionTimestamp, float shotIdentifier, int attackerHandle, int victimHandle ) 
 {
     DamageEvent event;
 	event.isNew = true; //bool
@@ -2061,6 +2093,10 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 	event.lastWeaponSource = weaponSource; //int
 	event.lastHitTimestamp = 0; //float
 	event.shotIdentifier = shotIdentifier; //int
+	event.isValid = true
+	
+	allDamageEventsMap[eventID( attackerHandle, victimHandle )] <- event
+	
     return event;
 }
 
@@ -2204,10 +2240,10 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		/////////////////////////////////////////////////////////////////////////////////////////
 		// log DamageEvents that fall within the time window if damages are less than full health
 		
-		foreach ( DamageEvent event in relevantDamageEvents ) 
+		foreach ( int eventIndex, DamageEvent event in relevantDamageEvents ) 
 		{	
 			if ( file.gamemode_type_1v1 || ( deathtime - event.actionTimestamp <= timeWindow ) ) 
-			{
+			{			
 				attackerUID = GetPlayerIdFromHandle(event.attackerHandle)
 				attackerName = GetPlayerNameFromHandle(event.attackerHandle)
 				
@@ -2261,9 +2297,8 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		
 		if ( !file.gamemode_type_1v1 && totalDamageToVictim < file.FS_MaxHealth ) 
 		{
-			foreach (DamageEvent event in allDamageEvents) 
-			{	
-				
+			foreach ( int eventIndex, DamageEvent event in allDamageEvents ) 
+			{			
 				attackerName = GetPlayerNameFromHandle(event.attackerHandle)
 				
 				if ( event.victimHandle == victim_handle && ( deathtime - event.actionTimestamp <= timeWindow ) ) 
@@ -2320,10 +2355,10 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		////////////////////////////////// 		victim			/////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////
 		
-		foreach ( DamageEvent event in allDamageEvents ) 
+		foreach ( int eventIndex, DamageEvent event in allDamageEvents ) 
 		{
 			if ( event.attackerHandle == victim.p.handle && ( file.gamemode_type_1v1 || deathtime - event.actionTimestamp <= timeWindow ) ) 
-			{		
+			{					
 				victimTotalDamage += event.damage;
 				victimTotalHits += event.hitCount;
 				victimTotalHeadshots += event.headshots;	
@@ -2357,6 +2392,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		DeleteEvents Event;
 		Event.attacker_handle = attacker.IsPlayer() ? attacker_handle : DamageInfo_GetDamageSourceIdentifier(damageInfo)
 		Event.victim_handle = victim_handle
+		Event.fightEndTime = Time()
 		AddEventTask(Event)
 			
 
@@ -2583,34 +2619,34 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 
 			int pA = pingAttacker.tointeger();
 			int pV = pingVictim.tointeger();
-            logString += format("\n^^,%s,1,%s,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s\n",
-                a_OID, //attName, //0
-                GetNumTeamsRemaining().tostring(), //2
+            logString += format("\n^^,%s,1,%d,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s\n",
+                a_OID, 					//0
+                GetNumTeamsRemaining(), //2
+                GetUnixTimestamp(), 	//3
+                v_OID, 					//4
+                team_of_killer, 		//5
+                team_of_killed, 		//6
+                timeRemaining, 			//7
+                id, 					//8
+				aController, 			//9
+				pA, 					//10
+				pV, 					//11
+				attName, 				//12	
+				vicName, 				//13	
+                v_OID, 				//0
+                placeM, 			//1
+                a_OID, 				//2
                 GetUnixTimestamp(), //3
-                v_OID, //was victim.GetPlayerName( ), //4
-                team_of_killer, //5
-                team_of_killed, //6
-                timeRemaining, //7
-                id, //8
-				aController, //9
-				pA, //10
-				pV, //11
-				attName, //a_OID, //12	
-				vicName, //13							//victim totals	below
-                v_OID, //0 was victim.GetPlayerName( )
-                placeM, //1
-                a_OID, //attName, //2
-                GetUnixTimestamp(), //3
-                team_of_killer, //4
-                team_of_killed, //5
-                timeRemaining, //6
-                id, //7
-				aController, //8
-				pV, //9
-				pA, //10
-				victimcontroller, //11
-				attName, //12
-				vicName //13
+                team_of_killer, 	//4
+                team_of_killed, 	//5
+                timeRemaining, 		//6
+                id, 				//7
+				aController, 		//8
+				pV, 				//9
+				pA, 				//10
+				victimcontroller, 	//11
+				attName, 			//12
+				vicName 			//13
             );
 
 			if (REPORT_STATS && file.bSafeLog)
@@ -2624,31 +2660,37 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
             return;
     }
 
-	//TODO redesign delete thread
+	//TODO redesign delete thread (maybe again)
 	void function EventManager() 
 	{		
 		if ( DeleteEventTaskList.len() > 0 )
 		{				
-			int victim_handle = DeleteEventTaskList[0].victim_handle;
-			int attacker_handle = DeleteEventTaskList[0].attacker_handle;
-			RemoveEvents( victim_handle, attacker_handle );	
-			DeleteEventTaskList.remove(0);			
+			RemoveEvents
+			( 
+				DeleteEventTaskList[0].victim_handle, 
+				DeleteEventTaskList[0].attacker_handle, 
+				DeleteEventTaskList[0].fightEndTime
+			)	
+			DeleteEventTaskList.remove(0);		
 		}
 	}
 	
 	void function AddEventTask( DeleteEvents Event ) 
 	{
-		DeleteEventTaskList.append( Event );
+		DeleteEventTaskList.append( Event )
 		EventManager()
-		//FlagSet("DeleteEvents")
 	}
 
 
-	void function RemoveEvents( int dead_victim_handle, int killer_attacker_handle ) 
+	void function RemoveEvents( int dead_victim_handle, int killer_attacker_handle, float fightEndTime ) 
 	{
 		#if DEVELOPER 
 			int removed = 0		
 		#endif
+			
+		DamageEvent nullevent;		
+		allDamageEventsMap[ eventID( killer_attacker_handle, dead_victim_handle ) ] <- nullevent
+		allDamageEventsMap[ eventID( dead_victim_handle, killer_attacker_handle ) ] <- nullevent
   
 		for (int i = allDamageEvents.len() - 1; i >= 0; --i) 
 		{
@@ -2656,7 +2698,7 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 			{
 				if (allDamageEvents[i].attackerHandle == dead_victim_handle || allDamageEvents[i].attackerHandle == killer_attacker_handle) 
 				{
-					allDamageEvents.remove(i);
+					allDamageEvents.remove(i)
 					#if DEVELOPER 
 						removed++;
 					#endif 
@@ -2664,9 +2706,9 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 			} 
 			else 
 			{
-				if (allDamageEvents[i].victimHandle == dead_victim_handle) 
+				if ( Time() - fightEndTime > MAX_FIGHT_HISTORY_TIME || allDamageEvents[i].victimHandle == dead_victim_handle) 
 				{          
-					allDamageEvents.remove(i);
+					allDamageEvents.remove(i)
 					#if DEVELOPER 
 						removed++;
 					#endif
@@ -2683,27 +2725,24 @@ DamageEvent function CreateDamageEvent( int weaponSource, float damage, float ac
 		#endif
 	}
 
-
 // these need replaced with global CONST to make future updates seamless
-const table<int,float> DamagePerBullet = {
+const table<int,float> DamagePerBullet = 
+{
+	[ eDamageSourceId.mp_weapon_shotgun ]		 	= 7.00, //mp_weapon_shotgun - 54
+	[ eDamageSourceId.mp_weapon_mastiff ] 			= 11.00, //mp_weapon_mastiff - 55
+	[ eDamageSourceId.mp_weapon_energy_shotgun ] 	= 9.00, //mp_weapon_energy_shotgun - 218
+	[ eDamageSourceId.mp_weapon_doubletake ]		= 21.00, //mp_weapon_doubletake - 63
+	[ eDamageSourceId.mp_weapon_shotgun_pistol ] 	= 20.25 //mp_weapon_shotgun_pistol - 62
+};
 
- [54] = 7.00, //mp_weapon_shotgun
- [55] = 11.00, //mp_weapon_mastiff
- [218] = 9.00, //mp_weapon_energy_shotgun
- [63] = 21.00, //mp_weapon_doubletake
- [62] = 20.25 //mp_weapon_shotgun_pistol
- 
-}
-
-const table<int,int> SpecialWeaponsBulletsPerShot = {
-
- [54] = 8, //mp_weapon_shotgun
- [55] = 8, //mp_weapon_mastiff
- [218] = 11, //mp_weapon_energy_shotgun
- [63] = 3, //mp_weapon_doubletake
- [62] = 3 //mp_weapon_shotgun_pistol
- 
-}
+const table<int,int> SpecialWeaponsBulletsPerShot = 
+{
+	[ eDamageSourceId.mp_weapon_shotgun ]			= 8, //mp_weapon_shotgun - 54
+	[ eDamageSourceId.mp_weapon_mastiff ] 			= 8, //mp_weapon_mastiff - 55
+	[ eDamageSourceId.mp_weapon_energy_shotgun ] 	= 11, //mp_weapon_energy_shotgun - 218
+	[ eDamageSourceId.mp_weapon_doubletake ] 		= 3, //mp_weapon_doubletake - 63
+	[ eDamageSourceId.mp_weapon_shotgun_pistol ] 	= 3 //mp_weapon_shotgun_pistolv
+};
 
 int function GetBulletsPerShot( int weaponSource ) 
 {
@@ -2731,7 +2770,7 @@ bool function IsSpecialWeapon( int weaponSource )
 }
 
 //calculated in backend
-table<int,bool> weaponBypassesHitCount = {
+const table<int,bool> weaponBypassesHitCount = {
 	[eDamageSourceId.melee_pilot_emptyhanded] = true,
 	[eDamageSourceId.mp_weapon_defensive_bombardment_weapon] = true,
 	[eDamageSourceId.mp_weapon_creeping_bombardment_weapon] = true,
@@ -2756,7 +2795,7 @@ bool function WeaponBypassesHits( int weaponSource )
 	return ( weaponSource in weaponBypassesHitCount )
 }
 
-void function HandleDamage(DamageEvent event, entity attacker, int weaponSource, float damageAmount, var damageInfo, entity victim) 
+void function Tracker_HandleDamage( DamageEvent event, entity attacker, int weaponSource, float damageAmount, var damageInfo, entity victim ) 
 {
 	if (!IsValid(victim) || !IsValid(attacker)) return;
 	float currentHealth = victim.GetHealth().tofloat() + victim.GetShieldHealth().tofloat();
@@ -2826,41 +2865,56 @@ void function HandleDamage(DamageEvent event, entity attacker, int weaponSource,
 	//sqprint(format("Handling damage for an event with isNew: %s and existing damage: %.2f\n", event.isNew ? "true" : "false", event.damage));
 }
 
-array<int> validEventDamageSource = [
+const array<int> validEventDamageSource = [
 	eDamageSourceId.deathField
 ]
 
-void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
+int function eventID( int attackerHandle, int victimHandle )
+{
+	return ( attackerHandle << 16 ) | victimHandle
+}
+
+DamageEvent function Tracker_GetRecentDamageEvent( int eventID )
+{
+	DamageEvent event;
+	
+	if( eventID in allDamageEventsMap )
+	{
+		return allDamageEventsMap[ eventID ]
+	}
+	
+	return event
+}
+
+void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 {	
 	float actionTimestamp = Time()
     // early exits
     if ( !IsValid(victim) || Bleedout_IsBleedingOut(victim)) return
 
-    entity attacker = DamageInfo_GetAttacker( damageInfo )//InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+    entity attacker = DamageInfo_GetAttacker( damageInfo )
     int weaponSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
     
 	// exclude this damage type
-    if (weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution){ return }
+    if ( weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution ){ return }
 
-    float damageAmount = DamageInfo_GetDamage(damageInfo)
-	
-	if( damageAmount == 1 )
-		return
-	
+    //float damageAmount = scalar > 0 ? DamageInfo_GetDamage(damageInfo) * scalar : DamageInfo_GetDamage(damageInfo) ;
+	float damageAmount = DamageInfo_GetDamage(damageInfo)
+
 	#if DEVELOPER && DEBUGDMG
 		DebugDamageInfo( victim, damageInfo )
-		printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )	
-	/* 
+		printt("InflictorOwner", InflictorOwner( DamageInfo_GetAttacker( damageInfo ) ) )
+		printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )	 
 		printt("raw getattacker: ",DamageInfo_GetAttacker( damageInfo ))
 		printt("raw getinflictor: ", DamageInfo_GetInflictor( damageInfo ))
 		printt("damageAmount: ", damageAmount)
 		printt("DamageInfo_GetWeapon: ", DamageInfo_GetWeapon(damageInfo) )
 		printt("weaponSource: ", weaponSource ) 
-	*/
+	
 	#endif
 
 	int attackerHandle = 0  
-	if ( attacker.IsPlayer() ) 
+	if ( IsValid( attacker ) && attacker.IsPlayer() ) 
 	{
 		attackerHandle = attacker.p.handle
     } 
@@ -2892,81 +2946,65 @@ void function R5R_OnPlayerDamaged( entity victim, var damageInfo )
 		}
     }
 
-	// find existing event and its index
-	int mostRecentEventIndex = -1;
-	int existingEventIndex = -1;
-	float latestTimestamp = -1.0;
-
-	// find most recent event with the same attacker and victim
-	//TODO:: REWORK
-	for ( int i = 0; i < allDamageEvents.len(); ++i ) 
-	{
-		if ( allDamageEvents[i].attackerHandle == attackerHandle && allDamageEvents[i].victimHandle == victim.p.handle ) 
-		{
-			if ( allDamageEvents[i].actionTimestamp > latestTimestamp ) 
-			{
-				mostRecentEventIndex = i;
-				latestTimestamp = allDamageEvents[i].actionTimestamp;
-			}
-		}
-	}
-
-	if ( mostRecentEventIndex != -1 ) 
-	{
-		existingEventIndex = mostRecentEventIndex;
-	} 
-
-	// sqprint(format("Event exists: %s, existing event index: %d\n", eventExists ? "true" : "false", existingEventIndex));
-
 	float shotIdentifier = 0.0;
     if (IsSpecialWeapon(weaponSource)) 
 	{
         shotIdentifier = weaponSource.tofloat() + Time() 
     }
+	
+	int eventID = eventID( attackerHandle, victim.p.handle ) 
+	DamageEvent existingEvent = Tracker_GetRecentDamageEvent( eventID )
 
-    if ( existingEventIndex != -1 ) //event exists
+	#if DEVELOPER
+		sqprint(format("\n\n\n Event exists: %s \n\n\n", existingEvent.isValid ? "true" : "false"))
+	#endif
+	
+    if ( existingEvent.isValid ) //event exists
 	{
         // last weapon used from the existing event
-        int lastWeaponSource = allDamageEvents[existingEventIndex].weaponOrder[allDamageEvents[existingEventIndex].weaponOrder.len() - 1];
+        int lastWeaponSource = existingEvent.weaponOrder[existingEvent.weaponOrder.len() - 1]
 
         // check if weapon changed or new shot from special weapon (new event(block))
-        if (lastWeaponSource != weaponSource || (IsSpecialWeapon(weaponSource) && allDamageEvents[existingEventIndex].shotIdentifier != shotIdentifier)) 
+        if ( lastWeaponSource != weaponSource || ( IsSpecialWeapon( weaponSource ) && existingEvent.shotIdentifier != shotIdentifier ) ) 
 		{
-            DamageEvent newEvent = CreateDamageEvent( weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle );
-            newEvent.weaponOrder.append( weaponSource );
-            newEvent.shotIdentifier = shotIdentifier;
-            HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim );
-            allDamageEvents.append( newEvent );
+            DamageEvent newEvent = Tracker_CreateDamageEvent( weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle )
+            newEvent.weaponOrder.append( weaponSource )
+            newEvent.shotIdentifier = shotIdentifier
+            Tracker_HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim )
+            allDamageEvents.append( newEvent )
         } 
 		else 
 		{
             // update existing damage event
-            allDamageEvents[existingEventIndex].isNew = false;
-            allDamageEvents[existingEventIndex].weaponOrder.append(weaponSource);
-            HandleDamage( allDamageEvents[existingEventIndex], attacker, weaponSource, damageAmount, damageInfo, victim );
+            existingEvent.isNew = false;
+            existingEvent.weaponOrder.append(weaponSource)
+            Tracker_HandleDamage( existingEvent, attacker, weaponSource, damageAmount, damageInfo, victim )
         }
     } 
 	else //event doesn't exist
 	{
         //create new one
-        DamageEvent newEvent = CreateDamageEvent(weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle );
-        newEvent.weaponOrder.append( weaponSource );
+        DamageEvent newEvent = Tracker_CreateDamageEvent(weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle )
+        newEvent.weaponOrder.append( weaponSource )
         newEvent.shotIdentifier = shotIdentifier;
-        HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim );
-        allDamageEvents.append( newEvent );
+        Tracker_HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim )
+        allDamageEvents.append( newEvent )
     }
 
-    /*
-    sqprint("Current Damage Events: \n");
-    foreach (DamageEvent event in allDamageEvents) {
-        sqprint(format("Attacker: %s, Victim: %s, Damage: %.2f, Time: %.2f\n", event.attackerUID, event.victimUID, event.damage, event.actionTimestamp));
-    }
-	*/
+    
+	#if DEVELOPER
+		sqprint("Current Damage Events: \n");
+		foreach (DamageEvent event in allDamageEvents) 
+		{
+			sqprint(format("Attacker: %d, Victim: %d, Damage: %.2f, Time: %.2f, shots: %d\n", event.attackerHandle, event.victimHandle, event.damage, event.actionTimestamp, event.hitCount ))
+		}
+	#endif
+	
 }
 
 void function __TrackerStatsHook_AddEvent_DamageMult( entity victim, var damageInfo )
 {
-	R5R_OnPlayerDamaged( victim, damageInfo )
+	Tracker_OnPlayerDamaged( victim, damageInfo )
 }
 
 /*
@@ -3410,7 +3448,7 @@ void function SavePlayerData( string UID, string setting, ... )
 	}
 	
 	#if DEVELOPER
-		sqprint( format( "saving setting: %s as %s", setting, value ) )
+		sqprint( format( "saving setting: %s as \"%s\"", setting, value ) )
 	#endif
 	
 	if ( !( UID in file.PlayerData ) )
@@ -4088,7 +4126,7 @@ void function OnJumped( entity player )
 }
 
 
-void function WeaponAttack(entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir) 
+void function WeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir ) 
 {
 	if( weaponName in TrackerWepTable() )
 	{	
@@ -4308,13 +4346,15 @@ void function PIN_AddPlayer( entity player )
 	
 	if( file.bChatbotEnabled && player.GetPlayerName() == "["+ file.sBotName +"]")
 	{
-		file.eBotEnt = player 
+		file.entityBotEnt = player 
 		
-		if( IsValid(file.eBotEnt) )
+		if( IsValid(file.entityBotEnt) )
 		{
 			player.p.bIsChatbot = true
-			mkos_Force_Rest( file.eBotEnt, [] )
-			file.eBotEnt.p.start_in_rest_setting = true;
+			mkos_Force_Rest( file.entityBotEnt, [] )
+			file.entityBotEnt.p.start_in_rest_setting = true;
+			file.entityBotEnt.SetDamageNotifications( false )
+			file.entityBotEnt.SetDeathNotifications( false )
 			thread BotInvis( player )
 			thread MessageIntervalThread()
 		}
@@ -4524,20 +4564,13 @@ void function PIN_PlayerRevived( entity injured, entity healer )
 
 void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
 {	
-	/*
-	string pname = victim.GetPlayerName( )
-	string killer = attacker.GetPlayerName( )
-	string message = format("%s died to %s", pname, killer )
-	sqprint(message)
-	*/
-
-	float deathtime = Time();
+	float deathtime = Time()
 
 	if ( file.LogOn && isLogging__internal() && IsValid(victim) && victim.IsPlayer() )
 	{
 		//TODO: Call function with additional flag
 		// for attackers from non player sources
-		thread EndFight( victim, attacker, damageInfo, deathtime );
+		thread EndFight( victim, attacker, damageInfo, deathtime )
 	}
 }
 

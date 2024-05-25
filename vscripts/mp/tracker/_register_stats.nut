@@ -96,7 +96,16 @@ void function Callback_CoreStatInit( entity player )
 }
 
 
-
+//////////////////////////////////////////////////////////
+//														//
+//	Any player settings that do not get registered 		//
+//	will not be loaded in. To load all settings 		//
+//	you can use RegisterAllSettings()					//
+//	however, you do not need to register settings		//
+//	manually, they will be registered when you add		//
+//	a callback via AddCallback_PlayerData()				//
+//														//
+//////////////////////////////////////////////////////////
 
 void function Script_RegisterAllPlayerDataCallbacks()
 {

@@ -735,8 +735,9 @@ void function __IncrementStat_Int( entity player, StatEntry entry, int increment
 	int newValue = oldValue + incrementAmount
 	player.p.statValues_Int[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
+	#if STATS_DEBUG_PRINT_SPAM
 		printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
+	#endif
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
 		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
@@ -762,8 +763,9 @@ void function __IncrementStat_Float( entity player, StatEntry entry, float incre
 	float newValue = oldValue + incrementAmount
 	player.p.statValues_Float[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
+	#if STATS_DEBUG_PRINT_SPAM
 		printt( "@@@@ STATS __IncrementStat_Float @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
+	#endif
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Float )
 		foreach( StatChangedCallbackType_Float cb in player.p.statEntryChangeCallbacks_Float[entry.indexWithinType] )
@@ -788,8 +790,9 @@ void function __SetStat_Bool( entity player, StatEntry entry, bool newValue, boo
 	bool oldValue = player.p.statValues_Bool[entry.indexWithinType]
 	player.p.statValues_Bool[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
+	#if STATS_DEBUG_PRINT_SPAM
 		printt( "@@@@ STATS __SetStat_Bool @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
+	#endif
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Bool )
 		foreach( StatChangedCallbackType_Bool cb in player.p.statEntryChangeCallbacks_Bool[entry.indexWithinType] )
@@ -814,8 +817,9 @@ void function __SetStat_Int( entity player, StatEntry entry, int newValue, bool 
 	int oldValue = player.p.statValues_Int[entry.indexWithinType]
 	player.p.statValues_Int[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
+	#if STATS_DEBUG_PRINT_SPAM
 		printt( "@@@@ STATS __SetStat_Int @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
+	#endif
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
 		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
@@ -840,8 +844,9 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
 	player.p.statValues_Float[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
+	#if STATS_DEBUG_PRINT_SPAM
 		printt( "@@@@ STATS SetStat_Float @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
+	#endif
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Float )
 		foreach( StatChangedCallbackType_Float cb in player.p.statEntryChangeCallbacks_Float[entry.indexWithinType] )
@@ -856,38 +861,38 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 #if SERVER
 void function UpdateCalculatedStatCachedValue( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
 {
-	// Assert( entry.behavior == eStatBehavior.CALCULATED && entry.shouldCache )
+	Assert( entry.behavior == eStatBehavior.CALCULATED && entry.shouldCache )
 
-	// if ( entry.type == eStatType.BOOL )
-	// {
-		// bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
-		// player.p.statValues_Bool[entry.indexWithinType] = value
-		// if ( IsLobby() )
-			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+	if ( entry.type == eStatType.BOOL )
+	{
+		bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
+		player.p.statValues_Bool[entry.indexWithinType] = value
+		if ( IsLobby() )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		// if ( STATS_DEBUG_PRINT_SPAM )
-			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	// }
-	// else if ( entry.type == eStatType.INT )
-	// {
-		// int value = entry.calcFunc_Int( player, entry.calcSourceEntries, when )
-		// player.p.statValues_Int[entry.indexWithinType] = value
-		// if ( IsLobby() )
-			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+		if ( STATS_DEBUG_PRINT_SPAM )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	}
+	else if ( entry.type == eStatType.INT )
+	{
+		int value = entry.calcFunc_Int( player, entry.calcSourceEntries, when )
+		player.p.statValues_Int[entry.indexWithinType] = value
+		if ( IsLobby() )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		// if ( STATS_DEBUG_PRINT_SPAM )
-			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	// }
-	// else if ( entry.type == eStatType.FLOAT )
-	// {
-		// float value = entry.calcFunc_Float( player, entry.calcSourceEntries, when )
-		// player.p.statValues_Float[entry.indexWithinType] = value
-		// if ( IsLobby() )
-			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+		if ( STATS_DEBUG_PRINT_SPAM )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	}
+	else if ( entry.type == eStatType.FLOAT )
+	{
+		float value = entry.calcFunc_Float( player, entry.calcSourceEntries, when )
+		player.p.statValues_Float[entry.indexWithinType] = value
+		if ( IsLobby() )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		// if ( STATS_DEBUG_PRINT_SPAM )
-			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	// }
+		if ( STATS_DEBUG_PRINT_SPAM )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	}
 }
 #endif
 

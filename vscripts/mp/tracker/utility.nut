@@ -1,4 +1,4 @@
-global function GetAdminList
+global function GetAdminList																	//~mkos
 global function EnableVoice
 global function empty
 global function StringToArray

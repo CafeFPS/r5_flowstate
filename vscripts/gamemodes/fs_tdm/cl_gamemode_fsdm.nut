@@ -147,7 +147,7 @@ void function Cl_CustomTDM_Init()
 	
 	if( Playlist() == ePlaylists.fs_1v1 )
 	{
-		AddCallback_OnClientScriptInit( FS_Show1v1Banner )
+		//AddCallback_OnClientScriptInit( FS_Show1v1Banner )
 	}
 }
 
