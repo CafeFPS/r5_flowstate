@@ -1111,7 +1111,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	
 	SetPlayerEliminated( victim )
 
-	if ( IsFiringRangeGameMode() )
+	if ( IsFiringRangeGameMode() || Playlist() == ePlaylists.fs_movementrecorder )
 	{
 		thread function() : ( victim )
 		{

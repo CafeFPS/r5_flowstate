@@ -246,7 +246,8 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_party_crasher:
 		
 			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )			
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )
+			
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
@@ -274,16 +275,19 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 				customSpawns = [
 					NewLocPair( <-20382.9375, 28349.0488, -6379.54199>, <0, 42.8024635, 0> ),
 					NewLocPair( <-15628.7354, 33786.6602, -6181.9043>, <0, -144.864426, 0> ),
+					NewLocPair( <-21250.4883, 34012.3867, -6383.88867>, <0, -62.3558273, 0> ),
 
 					NewLocPair( <-20105.1855, -1279.15027, -5568.2041>, <0, 149.361572, 0> ),
 					NewLocPair( <-26193.8652, 2219.52808, -5573.85596>, <0, -30.5185471, 0> ),
+					NewLocPair( <-24378.3047, -1635.08997, -5341.96875>, <0, 59.6698799, 0> ),
 					
 					NewLocPair( <21201.8613, -14852.7305, -5032.22363>, <0, -78.5065842, 0> ),
 					NewLocPair( <21783.9785, -21842.8613, -5032.22363>, <0, 107.717316, 0> ),
+					NewLocPair( <17949.0391, -18802.1172, -4923.96875>, <0, 5.94164991, 0> ),
 
 					NewLocPair( <9436.18555, 28426.0469, -4654.91553>, <0, -127.501564, 0> ),
-					NewLocPair( <3670.51611, 20282.0215, -5598.02393>, <0, 57.8940849, 0> )
-
+					NewLocPair( <3670.51611, 20282.0215, -5598.02393>, <0, 57.8940849, 0> ),
+					NewLocPair( <7840.729, 19089.4102, -5498.23828>, <0, 81.0241699, 0> )
 				]
 				 
 
