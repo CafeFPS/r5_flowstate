@@ -1196,7 +1196,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	return group;
 }
 
-void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex = -1, bool fromDropship = false )
+void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 {
 	if ( !IsValid(player) )
 		return
@@ -1257,18 +1257,6 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		#endif
 		return
 	}
-
-	if ( respawnSlotIndex == -1 ) 
-		return
-
-	// if dropship enabled
-	if( !settings.fs_scenarios_dropshipenabled && fromDropship )
-	{
-		soloLocStruct groupLocStruct = group.groupLocStruct
-		maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
-	}
-
-	Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
@@ -1643,8 +1631,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				printt( "ground loot is disabled from playlist!" )
 
 			wait 0.5
-
-			foreach ( entity player in players )
+			
+			int spawnSlot = -1
+			int oldSpawnSlot = -1
+			int j = 0
+			foreach ( int i, entity player in players )
 			{
 				if( !IsValid( player ) )
 					return
@@ -1653,20 +1644,56 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				player.p.destroynotify = true
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )
 				
-				int spawnSlot = -1
 				
-				if( player.GetTeam() == newGroup.team1Index )
-					spawnSlot = 0
-				else if( player.GetTeam() == newGroup.team2Index )
-					spawnSlot = 1
-				else
-					spawnSlot = 2
+				int amountPlayersPerTeam
 
-				FS_Scenarios_RespawnIn3v3Mode( player, spawnSlot, true )
-				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				if( player.GetTeam() == newGroup.team1Index )
+				{
+					spawnSlot = 0
+					amountPlayersPerTeam = newGroup.team1Players.len()
+				}
+				else if( player.GetTeam() == newGroup.team2Index )
+				{
+					spawnSlot = 1
+					amountPlayersPerTeam = newGroup.team2Players.len()
+				}
+				else if( player.GetTeam() == newGroup.team3Index )
+				{
+					spawnSlot = 2
+					amountPlayersPerTeam = newGroup.team3Players.len()
+				}
+
+				if ( spawnSlot == -1 ) 
+				{
+					soloModePlayerToWaitingList( player )
+					continue
+				}
+
+				if( spawnSlot != oldSpawnSlot )
+					j = 0
+
+				FS_Scenarios_RespawnIn3v3Mode( player )
 
 				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+
+				if( !settings.fs_scenarios_dropshipenabled  )
+				{
+					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
+
+					player.SetVelocity( < 0,0,0 > )
+					player.SetAngles( location.angles )
+					vector pos = location.origin
+
+					float r = float(j) / float( amountPlayersPerTeam ) * 2 * PI
+					vector circledPos = pos + 50.0 * <sin( r ), cos( r ), 0.0> 
+					player.SetOrigin( circledPos + <0,0,5> )
+					j++
+				}
+				oldSpawnSlot = spawnSlot
+				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+
+				Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
 			}
 
 			if( settings.fs_scenarios_dropshipenabled )

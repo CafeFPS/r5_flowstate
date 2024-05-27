@@ -3165,16 +3165,34 @@ void function _soloModeInit( int eMap )
 		SetPreferredSpawnPak( 1 )
 		allSoloLocations = ReturnAllSpawnLocations( eMap )
 	}
-	for (int i = 0; i < allSoloLocations.len(); i=i+2)
+
+	if( settings.is3v3Mode )
 	{
-		soloLocStruct p
+		for (int i = 0; i < allSoloLocations.len(); i=i+3)
+		{
+			soloLocStruct p
 
-		p.respawnLocations.append(allSoloLocations[i])
-		p.respawnLocations.append(allSoloLocations[i+1])
+			p.respawnLocations.append(allSoloLocations[i])
+			p.respawnLocations.append(allSoloLocations[i+1])
+			p.respawnLocations.append(allSoloLocations[i+2])
 
-		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
+			p.Center = GetCenterOfCircle( p.respawnLocations )
 
-		soloLocations.append(p)
+			soloLocations.append(p)
+		}
+	} else
+	{
+		for (int i = 0; i < allSoloLocations.len(); i=i+2)
+		{
+			soloLocStruct p
+
+			p.respawnLocations.append(allSoloLocations[i])
+			p.respawnLocations.append(allSoloLocations[i+1])
+
+			p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
+
+			soloLocations.append(p)
+		}
 	}
 
 	realmSlots.resize( MAX_REALM + 1 )
