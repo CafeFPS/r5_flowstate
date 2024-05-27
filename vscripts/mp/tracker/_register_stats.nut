@@ -79,7 +79,6 @@ void function Script_RegisterAllStats()
 void function Tracker_ScenariosKillsIn( entity player )
 {
 	printt( player, "Wow, this player has " + player.GetPlayerStatInt("scenarios_kills") )
-	seting
 }
 
 void function Callback_CoreStatInit( entity player )

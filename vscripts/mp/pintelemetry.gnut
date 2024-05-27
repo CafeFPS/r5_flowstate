@@ -1994,10 +1994,12 @@ void function EventMessageSystem()
 }
 
 void function __LoadServerBot()
-{
-	wait 3
+{	
+	wait 3 //time this event based
 	
-	printt(":(pin):: loaded server bot")
+	#if DEVELOPER
+		printt(":(pin):: loaded server bot")
+	#endif
 	
 	array<int> result = SQ_CreateServerBot__internal(file.sBotName)
 	
@@ -3612,7 +3614,9 @@ string function PrintAllPlayerMetrics( bool trigger = false )
 			}
 			else
 			{
-				printt( GetRefFromDamageSourceID(weaponSource) )
+				#if DEVELOPER
+					printt( GetRefFromDamageSourceID( weaponSource ) )
+				#endif
 				replace = weaponSource.tostring()
 			}
 			

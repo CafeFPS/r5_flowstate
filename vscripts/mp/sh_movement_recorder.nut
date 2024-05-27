@@ -471,7 +471,8 @@ bool function ClientCommand_ToggleContinueLoop(entity player, array<string> args
 	{
 		player.p.continueLoop = false
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, false, -1 )
-	} else if( !player.p.continueLoop )
+	} 
+	else if( !player.p.continueLoop )
 	{
 		player.p.continueLoop = true
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 8, true, -1 )
@@ -579,7 +580,7 @@ void function StopRecordingAnimation( entity player )
 
 	if( !player.p.recorderHideHud )
 	{
-		LocalEventMsg( player, "#FS_MOVEMENT_SAVED", slotname( slot ) )
+		LocalEventMsg( player, "#FS_MOVEMENT_SAVED", slotname( slot + 1 ) )
 		//Message_New(player, "MOVEMENT SAVED IN SLOT " + (slot + 1).tostring(), 3)
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, false, -1 )
 
@@ -640,7 +641,7 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", slot + 1, false, -1 )
 
 		if( !player.p.recorderHideHud )
-			LocalEventMsg( player, "#FS_ANIM_REMOVED_SLOT", slotname(slot), 3 )
+			LocalEventMsg( player, "#FS_ANIM_REMOVED_SLOT", slotname( slot + 1 ), 3 )
 			//Message_New(player, "Anim removed in slot " + slotname(slot), 3)
 			
 		DestroyDummyForSlot( player, slot )
@@ -679,7 +680,6 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 	{
 		entity dummy = CreateDummy( 99, initialpos, initialang )
 		
-			EndSignal( dummy, "OnDeath", "OnDestroy" )
 			EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
 			EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 
@@ -917,53 +917,54 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 
 
 //////////////////////
-//		UTILITY		//
+//		  DEV		//
 //////////////////////
 
-
-void function PrintMovementRecorderTable( table< int, table< int, int > > tbl )
-{
-	PrintTableTyped( 0, 0, 2, tbl )
-}
-
-void function PrintTableTyped( int indent, int depth, int maxDepth, table< int, table< int, int > > tbl )
-{
-	printt("\n\n")
-	printt("--- TABLE ---")
-	
-	if ( depth >= maxDepth )
+#if DEVELOPER
+	void function PrintMovementRecorderTable( table< int, table< int, int > > tbl )
 	{
-		printt( "{...}" )
-		return
+		PrintTableTyped( 0, 0, 2, tbl )
 	}
 
-	printt( "{" )
-	foreach ( k, v in tbl )
+	void function PrintTableTyped( int indent, int depth, int maxDepth, table< int, table< int, int > > tbl )
 	{
-		printt( TableIndent( indent + 2 ) + k + " = " )
-		PrintNestedTableTyped( indent + 2, depth + 1, maxDepth, v )
+		printt("\n\n")
+		printt("--- TABLE ---")
+		
+		if ( depth >= maxDepth )
+		{
+			printt( "{...}" )
+			return
+		}
+
+		printt( "{" )
+		foreach ( k, v in tbl )
+		{
+			printt( TableIndent( indent + 2 ) + k + " = " )
+			PrintNestedTableTyped( indent + 2, depth + 1, maxDepth, v )
+		}
+		printt( TableIndent( indent ) + "}" )
+		
+		printt("\n\n")
 	}
-	printt( TableIndent( indent ) + "}" )
-	
-	printt("\n\n")
-}
 
 
-void function PrintNestedTableTyped( int indent, int depth, int maxDepth, table< int, int > tbl )
-{
-	if ( depth >= maxDepth )
+	void function PrintNestedTableTyped( int indent, int depth, int maxDepth, table< int, int > tbl )
 	{
-		printl( "{...}" )
-		return
-	}
+		if ( depth >= maxDepth )
+		{
+			printl( "{...}" )
+			return
+		}
 
-	printt( TableIndent( indent ) + "{" )
-	foreach ( k, v in tbl )
-	{
-		printt( TableIndent( indent + 2 ) + k + " = " + v )
+		printt( TableIndent( indent ) + "{" )
+		foreach ( k, v in tbl )
+		{
+			printt( TableIndent( indent + 2 ) + k + " = " + v )
+		}
+		printt( TableIndent( indent ) + "}" )
 	}
-	printt( TableIndent( indent ) + "}" )
-}
+#endif //DEVELOPER
 
 
 #endif //IF SERVER
