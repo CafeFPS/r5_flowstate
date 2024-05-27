@@ -322,7 +322,6 @@ void function FS_MovementRecorder_OnPlayerConnected( entity player )
 	if( !player.p.recorderHideHud )
 	{
 		LocalEventMsg( player, "#FS_MOVEMENT_RECORDER", "", 10 )
-		LocalEventMsgDelayed( 10, player, "#FS_MOVEMENT_RECORDER_2", "", 2 )
 	}
 
 	player.p.recordingAnims.resize( MAX_SLOT )

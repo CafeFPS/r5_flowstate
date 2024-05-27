@@ -3443,6 +3443,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 	string Text5 = "#FS_OpponentDisconnect"
 	
 	wait 8
+	
 	while(true)
 	{
 		WaitFrame()
@@ -3807,6 +3808,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			
 			entity playerSelf = eachPlayerStruct.player
 			bool player_IBMM_timeout = eachPlayerStruct.IBMM_Timeout_Reached		
+			
 			//challenge system
 			if( isPlayerPendingChallenge(playerSelf) )
 			{
