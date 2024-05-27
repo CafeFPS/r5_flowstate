@@ -31,7 +31,7 @@ global function getBotSpawn
 global function RechargePlayerAbilities
 global function isCustomWeaponAllowed
 global function isPlayerInChallenge
-global function SetWaitingRoomRadius
+global function Gamemode1v1_SetWaitingRoomRadius
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -292,7 +292,7 @@ bool function is3v3Mode()
 	return settings.is3v3Mode
 }
 
-void function SetWaitingRoomRadius( float radius )
+void function Gamemode1v1_SetWaitingRoomRadius( float radius )
 {
 	file.waitingRoomRadius = radius
 }

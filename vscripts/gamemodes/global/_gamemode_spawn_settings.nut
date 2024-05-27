@@ -217,7 +217,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_aqueduct:
 			
-			defaultWaitingRoom = NewLocPair( < 705, -5885, 432 >, < 0, 90, 0 > )
+			defaultWaitingRoom = NewLocPair( < 705, -5895, 432 >, < 0, 90, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		break ////////////////////////////////////////////////////////////////////////////
@@ -246,8 +246,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_party_crasher:
 		
 			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )
-			
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )			
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	

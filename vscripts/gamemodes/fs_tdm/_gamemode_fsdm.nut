@@ -789,10 +789,10 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 	
 	string param = ""
 	
-	if (args.len() > 0){
-		param = args[0];
+	if (args.len() > 0)
+	{
+		param = args[0]
 	}
-	
 	
 		if (args.len() < 1)
 		{
@@ -866,11 +866,11 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 	
 	string param = ""
 	
-	if (args.len() > 0){
-		param = args[0];
+	if (args.len() > 0)
+	{
+		param = args[0]
 	}
-	
-	
+		
 		if (args.len() < 1)
 		{
 			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: start_in_rest # \n replacing # with 'on' or 'off'.  \n\n On: When the round/game starts or you join, you will start in rest and have to join the queue manually. \n\n Off: You will join the queue automatically.", 15)
@@ -943,10 +943,10 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 	
 	string param = ""
 	
-	if (args.len() > 0){
-		param = args[0];
+	if (args.len() > 0)
+	{
+		param = args[0]
 	}
-	
 	
 		if (args.len() < 1)
 		{
@@ -1037,7 +1037,7 @@ void function RotateMap()
 LocPairData function Init_LGDuels_Spawns()
 {
 	LocPair panels = NewLocPair( < 3480.92, -9218.92, -10252 >, < 360, 270, 0 > )
-	SetWaitingRoomRadius( 2400 )
+	Gamemode1v1_SetWaitingRoomRadius( 2400 )
 	return CreateLocPairObject( [], false, null, panels )
 }
 
@@ -1072,8 +1072,12 @@ LocPairData function Init_DropoffPatchSpawns()
 //////////////////////////////////////////////////// 
 
 //moved this to be initialized once instead of constantly computed...
-bool function bIs1v1Mode()
+bool function bIs1v1Mode() 
 {
+	//TODO: we don't need to manually manage this, 
+	//since it's only job is to make sure spawns exist and the playlist supports it
+	//we can simply auto check playlist maps in playlists file and auto check 
+	//to make sure at least one spawn is configured for that map
 	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
 		return false
 
@@ -2670,7 +2674,7 @@ void function TpPlayerToSpawnPoint(entity player)
 
 void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 {
-	if(!IsValid(player) || !IsValid(player) && !player.IsPlayer() || is1v1EnabledAndAllowed() ) return
+	if(!IsValid(player) || !IsValid(player) && !player.IsPlayer() || is1v1EnabledAndAllowed() ) return //wtf?
 	
 	// thread WpnPulloutOnRespawn(player, duration)
 
