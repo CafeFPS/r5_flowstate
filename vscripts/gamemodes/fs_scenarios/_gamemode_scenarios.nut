@@ -8,7 +8,6 @@ global function FS_Scenarios_Main_Thread
 
 global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
-global function FS_Scenarios_GetSkydiveFromDropshipEnabled
 global function FS_Scenarios_GetGroundLootEnabled
 global function FS_Scenarios_GetInventoryEmptyEnabled
 global function FS_Scenarios_GetAmountOfTeams
@@ -109,7 +108,6 @@ struct {
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
-	bool fs_scenarios_start_skydiving = true
 	bool fs_scenarios_deathboxes_enabled = true
 	bool fs_scenarios_bleedout_enabled = true
 	bool fs_scenarios_show_death_recap_onkilled = true
@@ -129,7 +127,6 @@ void function Init_FS_Scenarios()
 
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
-	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
 	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
@@ -975,11 +972,6 @@ table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
 table<int, scenariosGroupStruct> function FS_Scenarios_GetPlayerToGroupMap()
 {
 	return file.scenariosPlayerToGroupMap
-}
-
-bool function FS_Scenarios_GetSkydiveFromDropshipEnabled()
-{
-	return settings.fs_scenarios_start_skydiving
 }
 
 bool function FS_Scenarios_GetGroundLootEnabled()
