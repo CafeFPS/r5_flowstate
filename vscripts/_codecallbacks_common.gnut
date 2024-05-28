@@ -535,12 +535,13 @@ void function RunClassPostDamageCallbacks( entity ent, var damageInfo )
 	foreach ( callbackFunc in file.classPostDamageCallbacks[className] )
 	{
 		#if DEVELOPER
-		float damage = DamageInfo_GetDamage( damageInfo )
+			float damage = DamageInfo_GetDamage( damageInfo )
 		#endif
+		
 		callbackFunc( ent, damageInfo )
 
 		#if DEVELOPER
-		Assert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
+			mAssert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
 		#endif
 	}
 }

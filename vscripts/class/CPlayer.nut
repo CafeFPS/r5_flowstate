@@ -22,7 +22,9 @@ global struct PlayerSlowDownEffect
 
 function CodeCallback_RegisterClass_CPlayer()
 {
-	Warning("CodeCallback_RegisterClass_CPlayer: Registering script-based CPlayer overrides")
+	#if DEVELOPER 
+		Warning("CodeCallback_RegisterClass_CPlayer: Registering script-based CPlayer overrides")
+	#endif
 	//printl( "Class Script: CPlayer" )
 
 	CPlayer.ClassName <- "CPlayer"

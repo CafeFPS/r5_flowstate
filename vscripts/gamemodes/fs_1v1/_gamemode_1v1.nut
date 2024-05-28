@@ -2711,17 +2711,16 @@ void function soloModefixDelayStart( entity player )
 	if( GetGameState() >= eGameState.Playing ){ wait 7 } else { wait 12 }	
 	if( !IsValid( player ) ){ return }
 	
-	if(!isPlayerInRestingList(player))
+	if( !isPlayerInRestingList(player) )
 	{
 		soloModePlayerToWaitingList(player)
 	}
 
-	try
-	{
-		//player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
-	}
-	catch (error)
-	{}
+	// try
+	// {
+		// player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+	// }
+	// catch (error){}
 }
 
 const int MAX_REALM = 63
@@ -2895,14 +2894,6 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 
    	if( isPlayerInRestingList(player) )
 	{	
-		/*
-		try 
-		{
-			DoRespawnPlayer( player, null ) //mkos
-		}
-		catch(o){sqprint("Caught an error that would crash the server")}
-		*/
-		
 		
 		// Warning("resting respawn")
 		try
@@ -2912,9 +2903,8 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 		catch (erroree)
 		{	
 			#if DEVELOPER
-			sqprint("Caught an error that would crash the server" + erroree)
+				sqprint("Caught an error that would crash the server" + erroree)
 			#endif
-			// printt("fail to respawn")
 		}
 		
 		
@@ -2939,7 +2929,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	if( !isGroupValid( group ) )
 	{	
 		#if DEVELOPER
-		sqerror("group was invalid, err 007")
+			sqerror("group was invalid, err 007")
 		#endif
 		return //Is this group available
 	}
@@ -2972,11 +2962,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	soloLocStruct groupLocStruct = group.groupLocStruct
 	maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
 	
-
-	#if DEVELOPER
-	#else
-		wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
-	#endif
+	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
 
 	if(!IsValid(player)) return
 
@@ -2984,11 +2970,11 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 
 	if ( g_bLGmode )
 	{
-		PlayerRestoreHP_1v1(player, 100, 0 ) //lg
+		PlayerRestoreHP_1v1( player, 100, 0 ) //lg
 	}
 	else 
 	{
-		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
+		PlayerRestoreHP_1v1( player, 100, player.GetShieldHealthMax().tofloat() )
 	}
 
 	//re-enable for inventory. 
@@ -3501,7 +3487,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		bool quit;
 		bool removed;
 		
-		foreach (groupHandle, group in file.groupsInProgress) 
+		foreach ( groupHandle, group in file.groupsInProgress ) 
 		{
 			quit = false
 			removed = false
@@ -3512,7 +3498,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			//}
 			//else 
 			//{	
-				if(!IsValid(group))
+				if( !IsValid(group) )
 				{
 					removed = true
 				}
@@ -3525,12 +3511,12 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					soloModePlayerToWaitingList( group.player2 )
 					destroyRingsForGroup( group )
 					
-					if ( IsValid(group.player1) )
+					if ( IsValid( group.player1 ) )
 					{
 						processRestRequest( group.player1 )
 						HolsterAndDisableWeapons( group.player1 )
 					}					
-					if ( IsValid(group.player2) )
+					if ( IsValid( group.player2 ) )
 					{
 						processRestRequest( group.player2 )
 						HolsterAndDisableWeapons( group.player2 )
@@ -3554,24 +3540,24 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				
 				if ( !removed && group.IsKeep ) 
 				{
-					if (IsValid( group.player1 ) && IsValid( group.player2 ) && ( !IsAlive( group.player1 ) || !IsAlive( group.player2 ) )) 
+					if (IsValid( group.player1 ) && IsValid( group.player2 ) && ( !IsAlive( group.player1 ) || !IsAlive( group.player2 ) ) ) 
 					{
 						int p1 = 0
 						int p2 = 1
 						
-						if(group.cycle)
+						if( group.cycle )
 						{
 							group.groupLocStruct = soloLocations.getrandom()	
 						}
 						
-						if(group.swap)
+						if( group.swap )
 						{
 							p1 = CoinFlip() ? 1 : 0;		
 							p2 = p1 == 0 ? 1 : 0;
 						}
 						
 						bool nowep = false;
-						if ( processRestRequest( group.player1 ))
+						if ( processRestRequest( group.player1 ) )
 						{	
 							nowep = true
 							processRestRequest( group.player1 )
@@ -3583,7 +3569,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 						}
 						
 						
-						if ( processRestRequest( group.player1 ))
+						if ( processRestRequest( group.player1 ) )
 						{
 							nowep = true
 							processRestRequest( group.player1 )
@@ -3594,7 +3580,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 							thread respawnInSoloMode(group.player2, p2)
 						}
 						
-						if(!nowep)
+						if( !nowep )
 						{					
 							GiveWeaponsToGroup( [group.player1, group.player2] )						
 						}	
@@ -3635,21 +3621,22 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				}
 				
 				//检测乱跑的脑残
-				if(!removed && !quit)
+				if( !removed && !quit )
 				{
 					soloLocStruct groupLocStruct = group.groupLocStruct
 					vector Center = groupLocStruct.Center
 					array<entity> players = [group.player1,group.player2]
+					
 					foreach (eachPlayer in players )
 					{
-						if(!IsValid(eachPlayer)) continue
+						if( !IsValid(eachPlayer) ) continue
 
 						eachPlayer.p.lastDamageTime = Time() //avoid player regen health
 
 						if ( eachPlayer.IsPhaseShifted() )
 							continue
 
-						if(Distance2D(eachPlayer.GetOrigin(),Center) > 2000) //检测乱跑的脑残
+						if( Distance2D(eachPlayer.GetOrigin(),Center ) > 2000 ) //检测乱跑的脑残
 						{
 							Remote_CallFunction_Replay( eachPlayer, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 							eachPlayer.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -3762,13 +3749,13 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				
 				if ( solostruct.waitingmsg == true && !solostruct.player.p.challengenotify )
 				{
-					if(!IsValid(solostruct) || !IsValid(solostruct.player))
+					if( !IsValid(solostruct) || !IsValid(solostruct.player) )
 					{
 						continue
 					}
 					
 					Remote_CallFunction_NonReplay( solostruct.player, "ForceScoreboardLoseFocus" );
-					CreatePanelText(solostruct.player, "", "Waiting for\n   players...",IBMM_WFP_Coordinates(),IBMM_WFP_Angles(), false, 2.5, solostruct.player.p.handle )
+					CreatePanelText( solostruct.player, "", "Waiting for\n   players...",IBMM_WFP_Coordinates(),IBMM_WFP_Angles(), false, 2.5, solostruct.player.p.handle )
 					SetMsg( solostruct.player, false )
 					file.APlayerHasMessage = true;	
 				}
@@ -3776,7 +3763,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 
 			continue		
 		}  
-		else if (file.APlayerHasMessage) 
+		else if ( file.APlayerHasMessage ) 
 		{
 			foreach ( player in GetPlayerArray() )
 			{

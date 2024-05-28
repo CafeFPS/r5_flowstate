@@ -4312,39 +4312,43 @@ void function FinishGameStatsRound()
 								#endif
 								
 								//mkos: log winner placement - && denotes placement entry for parser
-								LogEvent__internal(
-								format("\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true)),
-								file.LogE
+								LogEvent__internal
+								(
+									format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true) ),
+									file.LogE
 								)
 
-										if(!Logging_ShipStats()){
-											sqprint("Shipping to stats server DISABLED -- check playlists file to enable --");
+										if(!Logging_ShipStats())
+										{
+											sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
 										}
 											
 										if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 										{
-											sqprint("No stats to ship...\n");
+											sqprint("No stats to ship...\n")
 											stopLogging__internal(false)
 										} 
 										else 
 										{
-											stopLogging__internal(Logging_ShipStats()); //IMPORTANT
+											stopLogging__internal( Logging_ShipStats() ) //IMPORTANT
 											
 											//update live global stats for match making (verified only)
-											string metrics = PrintAllPlayerMetrics(true)
+											string metrics = PrintAllPlayerMetrics( true )
 											UpdateLiveStats( metrics )
 											
 											//send to discord:
 											string recap = PIN_WinnerByKillsAndDamage()
-											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK );
+											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
 											
-											if (Logging_ShipStats())
+											if ( Logging_ShipStats() )
 											{
-												foreach(player in GetPlayerArray())
-													{
-														if(!IsValid(player)) continue
-														Message(player, "Stats Shipped", "\n\n\n\n Match metrics sent to tracker @ www.r5r.dev \n\n\n\n" , 4)
-													}
+												foreach( player in GetPlayerArray() )
+												{
+													if( !IsValid( player ) ) 
+														continue
+														
+													Message( player, "Stats Shipped", "\n\n\n\n Match metrics sent to tracker @ www.r5r.dev \n\n\n\n" , 4 )
+												}
 											}
 										}
 
@@ -5007,7 +5011,7 @@ bool function bAfkToRest(){ return file.afk_to_rest_enabled }
 
 #if STUB
 
-enum state 
+enum eLogState 
 { 
 	READY = 1,
 	BUSY = 2,
