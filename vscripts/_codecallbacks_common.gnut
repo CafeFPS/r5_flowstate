@@ -122,7 +122,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	CodeCallback_OnClientReloadConnectionCompleted( player )
 	
 	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
-		player.p.assignedCustomModel = RandomIntRangeInclusive(1,13)
+		player.p.assignedCustomModel = RandomIntRangeInclusive(1,10)
 	
 	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
