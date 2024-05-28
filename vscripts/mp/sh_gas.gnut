@@ -538,7 +538,7 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
 		
 		#if TRACKER
-			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+			__TrackerStatsHook_Damage( target, damageInfo )
 		#endif
 	}
 	
@@ -607,7 +607,7 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
 		
 		#if TRACKER
-			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+			__TrackerStatsHook_Damage( target, damageInfo )
 		#endif
 	}
 	

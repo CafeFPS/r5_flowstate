@@ -41,7 +41,7 @@ struct
 } file
 
 void function GamemodeSurvival_Init()
-{
+{	
 	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
@@ -866,7 +866,10 @@ void function Flowstate_HandleDeathRecapData(entity victim, var damageInfo)
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
-	printt( attacker, inflictor) 
+	
+	#if DEVELOPER 
+		printt( attacker, inflictor) 
+	#endif
 
 	entity weapon = null //DamageInfo_GetWeapon( damageInfo ) // This returns null for melee. See R5DEV-28611.
 	if ( IsValid( attacker ) && attacker.IsPlayer() )

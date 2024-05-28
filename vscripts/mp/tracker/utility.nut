@@ -7,7 +7,7 @@ global function Concatenate
 global function IsNumeric
 global function IsNum
 global function GetPlayer
-global function GetPlayerEntityByOID
+global function GetPlayerEntityByUID
 global function GetPlayerEntityByName
 global function IsValidOID
 global function Is_Bool
@@ -2215,7 +2215,7 @@ bool function IsValidOID( string str )
 	return false
 }
 
-entity function GetPlayerEntityByOID( string str )
+entity function GetPlayerEntityByUID( string str )
 {
 	entity r_player;
 	string oid;
@@ -2247,7 +2247,7 @@ entity function GetPlayer( string str )
 	
 	if ( IsValidOID( str ) )
 	{
-		return GetPlayerEntityByOID( str )	
+		return GetPlayerEntityByUID( str )	
 	}
 	else
 	{

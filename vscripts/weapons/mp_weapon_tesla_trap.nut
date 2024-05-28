@@ -436,7 +436,10 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 	if ( currAmmo < ammoReq && !IsValid( placementInfo.snapTo ) )
 	{
 		#if CLIENT
-			printf( "mp_weapon_tesla_trap: No more ammo before placing trap. Switching out with 'invnext'." )
+			#if DEVELOPER
+				printf( "mp_weapon_tesla_trap: No more ammo before placing trap. Switching out with 'invnext'." )
+			#endif
+			
 			ownerPlayer.ClientCommand( "invnext" )
 		#endif
 
@@ -454,7 +457,9 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 		#if CLIENT
 			if ( currAmmo < ammoReq )
 			{
-				printf( "mp_weapon_tesla_trap: No more ammo after placing trap. Switching out with 'invnext'." )
+				#if DEVELOPER 
+					printf( "mp_weapon_tesla_trap: No more ammo after placing trap. Switching out with 'invnext'." )
+				#endif
 				ownerPlayer.ClientCommand( "invnext" )
 			}
 		#endif
@@ -907,9 +912,8 @@ int function TeslaTrap_GetPlacementMaxLinks( entity player )
 
 	if ( !IsValid( weapon ) )
 		return -1
-
-	string className = weapon.GetWeaponClassName()
-	if ( className != "mp_weapon_tesla_trap" )
+		
+	if ( weapon.GetWeaponClassName() != "mp_weapon_tesla_trap" )
 		return -1
 
 	if ( weapon.GetScriptFlags0() > 0 )
@@ -2237,7 +2241,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 	{
 		poleFence = snapTo
 		alreadyCreatedPole = true
-	} else
+	} 
+	else
 	{
 		poleFence = CreateEntity( "prop_script" )
 		{
@@ -2378,7 +2383,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			if( direction == 1 )
 			{
 				#if DEVELOPER
-				printt( "va hacia abajo" )
+					printt( "va hacia abajo" )
 				#endif
 				spawnOrigin = poleFence.GetOrigin()
 				trigger.SetParent( poleFence )
@@ -2388,7 +2393,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			else if( direction == -1 )
 			{
 				#if DEVELOPER
-				printt( "va hacia arriba" )
+					printt( "va hacia arriba" )
 				#endif
 				spawnOrigin = attachTo.GetOrigin()
 				trigger.SetParent( attachTo )
@@ -2529,9 +2534,11 @@ void function Fence_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	EMP_Fence_DamagedPlayerOrNPC( ent, damageInfo, $"P_emp_body_human", FENCE_SEVERITY_SLOWTURN, FENCE_SEVERITY_SLOWMOVE )
 }
 
+float dinfo = 0
+
 void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset humanFx, float slowTurn, float slowMove )
 {
-	if ( !IsValid( ent ) || !ent.IsPlayer() && !ent.IsNPC() || DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
+	if ( !IsValid( ent ) || ( !ent.IsPlayer() && !ent.IsNPC() ) || DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
 		return
 
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
@@ -2539,12 +2546,14 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	if ( !IsValid( inflictor ) )
 		return
 
-	if( Time() <= ent.p.lastTimeDamagedByTeslaTrap + 4.0 )
+	if( Time() < ent.p.lastTimeDamagedByTeslaTrap + 4.0 && ent.p.lastTimeDamagedByTeslaTrap > 0 )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
 	}
 	else
 	{
+		dinfo += DamageInfo_GetDamage( damageInfo )
+		Warning("Damage in TESLA: " + DamageInfo_GetDamage( damageInfo ) + " addup: " + dinfo )
 		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()

@@ -330,7 +330,7 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 		ShieldModifyDamage( ent, damageInfo )
 	}
-
+	
 	// Added via AddEntityCallback_OnPostDamaged
 	foreach ( callbackFunc in ent.e.entPostDamageCallbacks )
 	{

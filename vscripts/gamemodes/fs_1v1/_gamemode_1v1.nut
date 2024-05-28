@@ -2217,7 +2217,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 			
 			if(!skip)
 			{
-				DamageEvent event = getEventByPlayerHandle(opponent.p.handle) 
+				DamageEvent event = getEventByPlayerHandle_expensive(opponent.p.handle) 
 				
 				float lasthittime = event.lastHitTimestamp
 				
