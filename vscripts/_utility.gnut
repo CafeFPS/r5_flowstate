@@ -1709,9 +1709,7 @@ void function POS_CC( entity player, string name )
 	string returnStr = CreateOriginAnglesString_CC( player.GetPlayerName() + " addspawn name: " + name, origin, <angles.x, angles.y, angles.z> )
 	
 	Message( player, "SAVED SPAWN: " + name , returnStr)
-	#if HAS_TRACKER_DLL
 	printt( format( "Pos: %s", returnStr ) )
-	#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -3831,9 +3829,9 @@ void function TeleportPlayerToEnt( entity player, entity org )
 float function ShieldModifyDamage( entity ent, var damageInfo )
 {
 	entity victim
-	if ( ent.IsTitan() )
-		victim = ent.GetTitanSoul()
-	else
+	// if ( ent.IsTitan() )
+		// victim = ent.GetTitanSoul()
+	// else
 		victim = ent
 
 	int shieldHealth = victim.GetShieldHealth()
@@ -3879,15 +3877,15 @@ float function ShieldModifyDamage( entity ent, var damageInfo )
 			EmitSoundOnEntityExceptToPlayer( ent, ent, "titan_energyshield_down_3P" )
 			EmitSoundOnEntityOnlyToPlayer( ent, ent, "titan_energyshield_down_1P" )
 		}
-		else if ( ent.GetScriptName() == "fw_team_tower" )
-		{
-			EmitSoundOnEntity( ent, "TitanWar_Harvester_ShieldDown" )
+		// else if ( ent.GetScriptName() == "fw_team_tower" )
+		// {
+			// EmitSoundOnEntity( ent, "TitanWar_Harvester_ShieldDown" )
 
-			#if FACTION_DIALOGUE_ENABLED
-				PlayFactionDialogueToTeam( "fortwar_baseShieldDownFriendly", ent.GetTeam() )
-				PlayFactionDialogueToTeam( "fortwar_baseShieldDownEnemy", GetOtherTeam( ent.GetTeam() ) )
-			#endif
-		}
+			// #if FACTION_DIALOGUE_ENABLED
+				// PlayFactionDialogueToTeam( "fortwar_baseShieldDownFriendly", ent.GetTeam() )
+				// PlayFactionDialogueToTeam( "fortwar_baseShieldDownEnemy", GetOtherTeam( ent.GetTeam() ) )
+			// #endif
+		// }
 		else
 		{
 			EmitSoundOnEntity( ent, "titan_energyshield_down_3P" )
@@ -4925,17 +4923,24 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
 
 }
 
-/*
-void function OneThousand()
-{
-	thread(	void function() : ()
+#if DEVELOPER 
+	void function HP( int index )
+	{
+		if( index > GetPlayerArray().len() - 1 || index < 0 )
 		{
-			for( int i = 0; i < 1000; i++ )
-			{
-				DEV_SpawnLootBinAtCrosshair()
-				WaitFrame()
-			}
-		}				
-	)()
-}
-*/
+			printt("Player doesn't exist.")
+			return
+		}
+		
+		entity p = p( index )
+		
+		if( IsValid( p ) )
+		{
+			printt( "\n\n", p, "\n", "Health:", p.GetHealth(), "Shields:", p.GetShieldHealth() )
+		}
+		else 
+		{
+			printt("Invalid entity.")
+		}
+	}
+#endif 

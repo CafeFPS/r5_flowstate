@@ -7,6 +7,10 @@ globalize_all_functions
 //********************************************************************************************
 const DEATH_CHAT_DELAY = 0.3
 
+//For performance, flinch is negated based on gamemode bitmask.
+//To add:  | ( 1 << playlistenum )
+const NON_FLINCH_MODES_BITMASK = ( 1 << ePlaylists.fs_lgduels_1v1) | ( 1 << ePlaylists.fs_1v1 )
+
 global struct OutOfBoundsDataStruct //Have to globalize it because all functions are globalized in this file :/
 {
 	int outOfBoundsTriggersTouched = 0
@@ -197,17 +201,10 @@ void function CodeCallback_OnPrecache()
 	level.ui.disableDev = IsMatchmakingServer()
 }
 
-const array<int> nonFlinchModes = [
-	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_1v1
-]
-
 function AddFlinch( entity attackedEnt, damageInfo )
 {
-	//if( GetCurrentPlaylistName() == "fs_lgduels_1v1" || GetCurrentPlaylistName() == "fs_1v1" )
-	if( nonFlinchModes.contains( Playlist() ) )
+	if( NON_FLINCH_MODES_BITMASK & ( 1 << Playlist() ) )
 	{
-		// DamageInfo_SetFlinchDirection( damageInfo, <0,0,0> )
 		return
 	}
 

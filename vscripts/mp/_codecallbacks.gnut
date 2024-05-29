@@ -115,20 +115,17 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		return
 
 	bool entIsPlayer = ent.IsPlayer()
-	bool entIsTitan = ent.IsTitan()
 	bool entIsNPC = ent.IsNPC()
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
 
 	bool attackerIsPlayer = false
-	bool attackerIsTitan = false
 	bool attackerIsNPC = false
 
 	if ( IsValid( attacker ) )
 	{
 		attackerIsPlayer = attacker.IsPlayer()
-		attackerIsTitan = attacker.IsTitan()
 		attackerIsNPC = attacker.IsNPC()
 	}
 
@@ -203,9 +200,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		return
 	}
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
-		HandleFootstepDamage( ent, damageInfo )
-
 	// HACK helps trap/grenade weapons do damage to the correct entities (player who deployed it as well as the team opposite his)
 	if ( IsValid( inflictor ) && "originalOwner" in inflictor.s )
 	{
@@ -246,7 +240,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		if ( inflictor.e.onlyDamageEntitiesOnce == true || inflictor.e.onlyDamageEntitiesOncePerTick == true )
 		{
 			#if DEVELOPER
-				mAssert( !inflictor.e.damagedEntities.contains(ent) )
+				mAssert( !inflictor.e.damagedEntities.contains(ent), "damagedEntities already contains ent " + string( ent ) )
 			#endif
 			inflictor.e.damagedEntities.append( ent )
 		}
@@ -290,17 +284,17 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	float damageMultiplier = 1.0 + StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier )
 
-	if (DamageInfo_GetWeapon(damageInfo) != null) 
+	if ( DamageInfo_GetWeapon( damageInfo ) != null ) 
 	{
-		if (ent.GetShieldHealth() == 0) 
+		if ( ent.GetShieldHealth() == 0 ) 
 		{
-			float unshielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_unshielded_scale)
-			damageMultiplier = unshielded
+			//unshielded (float)
+			damageMultiplier = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_unshielded_scale)
 		} 
 		else 
 		{
-			float shielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_shield_scale)
-			damageMultiplier = shielded
+			//shielded (float)
+			damageMultiplier = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_shield_scale)
 		}
  	}
 
@@ -316,7 +310,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		printt( "    after AddEntityCallback_OnDamaged callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	// use AddDamageCallbackSourceID( "classname", function ) to registed functions
+	// use AddDamageCallbackSourceID( "classname", function ) to register functions
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( damageSourceId in shGlobal.damageSourceIdCallbacks )
 	{
@@ -337,13 +331,13 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	#endif
 	if ( DamageInfo_GetDamage( damageInfo ) == 0 )
 		return
-		
-	#if TRACKER
-			__TrackerStatsHook_Damage( ent, damageInfo )
-	#endif
 
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
 		DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
+
+	#if TRACKER && SERVER && MP
+			__TrackerStatsHook_Damage( ent, damageInfo )
+	#endif
 
 	float savedDamage = DamageInfo_GetDamage( damageInfo )
 
@@ -353,7 +347,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 		if ( attackerIsPlayer )
 			PlayerDamageFeedback( ent, damageInfo, 0 )
-		savedDamage = DamageInfo_GetDamage( damageInfo )
+		savedDamage = DamageInfo_GetDamage( damageInfo )//again..?
 
 		ent.SetCloakFlicker( 0.5, 0.65 )
 	}
@@ -477,6 +471,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 					AddPlayerScore( attacker, "Sur_DownedPilot", ent )
 				
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+				
+				#if TRACKER 
+					Tracker_EndFight( ent, attacker, damageInfo )
+				#endif 
 			}
 
 			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL )
@@ -825,20 +823,8 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( critHit )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_CRITICAL )
 
-	array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
-
-	local eModSourceID = null
-	foreach ( mod in weaponMods )
-	{
-		local modSourceID = GetModSourceID( mod )
-		if ( modSourceID != null && modSourceID in modNameStrings )
-			eModSourceID = modSourceID
-	}
-
 	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.fall )
 		DamageInfo_SetForceKill( damageInfo, true )
-
-	bool isTitan = player.IsTitan()
 
 	float shieldDamage = 0
 
@@ -860,10 +846,20 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 		attackerOrigin = attacker.GetOrigin()
 		
 		//Fake evo shields
-		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL )
+		if( file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL && isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
 		{
 			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
+	}
+	
+	array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
+
+	local eModSourceID = null
+	foreach ( mod in weaponMods )
+	{
+		local modSourceID = GetModSourceID( mod )
+		if ( modSourceID != null && modSourceID in modNameStrings )
+			eModSourceID = modSourceID
 	}
 
 	if ( IsAlive( player ) )
@@ -878,7 +874,9 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	}
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
+	{
 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId )
+	}
 }
 
 void function EvoCurrentShieldToNextTier( var damageInfo, entity attacker )

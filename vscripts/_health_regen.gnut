@@ -193,6 +193,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
 		
 		isPermanentDmg = true
         sPermanentDmg = damage
+		
 		DamageInfo_SetDamage( damageInfo, permanentDamage )	
 		
 		if(IsValid(attacker))

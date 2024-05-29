@@ -3,12 +3,12 @@
 // refactored by mkos
 
 #if SERVER
-global function ClientCommand_DestroyDummys
+	global function ClientCommand_DestroyDummys
 #endif
 
 #if CLIENT
-global function FS_MovementRecorder_UpdateHints
-global function FS_MovementRecorder_CreateInputHintsRUI
+	global function FS_MovementRecorder_UpdateHints
+	global function FS_MovementRecorder_CreateInputHintsRUI
 #endif
 
 global function Sh_FS_MovementRecorder_Init
@@ -52,7 +52,9 @@ struct{
 		[4] = 0
 	}
 	
-}file
+	float helmet_lv4 = 0.65
+	
+} file
 
 void function Sh_FS_MovementRecorder_Init()
 {
@@ -68,19 +70,14 @@ void function Sh_FS_MovementRecorder_Init()
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		
 		AddClientCommandCallback("toggleMovementRecorder", ClientCommand_ToggleMovementRecorder)
-
-		// no puedo bindear argumentos? Xd
-		//mkos~ :D
 		AddClientCommandCallback("PlayAnimInSlot", ClientCommand_PlayAnimInSlot)
 		AddClientCommandCallback("PlayAllAnims", ClientCommand_PlayAllAnims)
-
 		AddClientCommandCallback("recorder_switchCharacter", ClientCommand_SwitchCharacter)
 		AddClientCommandCallback("recorder_recorderHideHud", ClientCommand_HideHud)
-		AddClientCommandCallback("recorder_toggleContinueLoop", ClientCommand_ToggleContinueLoop)
-		
+		AddClientCommandCallback("recorder_toggleContinueLoop", ClientCommand_ToggleContinueLoop)	
 		AddClientCommandCallbackNew( "DestroyDummys", ClientCommand_DestroyDummys )
-
 		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
+		
 		RegisterSignal( "EndDummyThread" )
 		
 		foreach( k,v in file._playbackAmounts__Template )
@@ -89,6 +86,7 @@ void function Sh_FS_MovementRecorder_Init()
 		}
 		
 		file.playbackLimit = GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
+		file.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
 	#endif
 }
 
@@ -354,7 +352,7 @@ void function PrintTableTyped( table< int, table<int,int> > varTable )
 }
 */
 
-bool function ClientCommand_ToggleMovementRecorder(entity player, array<string> args)
+bool function ClientCommand_ToggleMovementRecorder( entity player, array<string> args )
 {
 	if( !IsValid( player ) )
 		return false
@@ -405,7 +403,7 @@ bool function ClientCommand_PlayAnimInSlot( entity player, array<string> args )
 	return true
 }
 
-bool function ClientCommand_PlayAllAnims(entity player, array<string> args)
+bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
 {
 	if( !IsValid( player ) )
 		return false
@@ -421,7 +419,7 @@ bool function ClientCommand_PlayAllAnims(entity player, array<string> args)
 	return true
 }
 
-bool function ClientCommand_SwitchCharacter(entity player, array<string> args)
+bool function ClientCommand_SwitchCharacter( entity player, array<string> args )
 {
 	if( !IsValid( player ) )
 		return false
@@ -619,7 +617,9 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 		file.playerPlaybackAmounts[player.p.handle][slot]++
 	}
 	
-	printt( "playaniminslot", slot )
+	#if DEVELOPER
+		printt( "playaniminslot", slot )
+	#endif
 
 	// if( file.recordingAnims.len() == 0 ) // || slot > file.recordingAnims.len() - 1 )
 		// return
@@ -749,7 +749,9 @@ void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -
 		playerHandle = player.p.handle
 	}
 	
-	printf("Destroy %d dummys for slot %d ", file.playerDummyMaps[playerHandle][slot].len(), slot )
+	#if DEVELOPER
+		printf("Destroy %d dummys for slot %d ", file.playerDummyMaps[playerHandle][slot].len(), slot )
+	#endif
 	
 	if( !( playerHandle in file.playerDummyMaps ) )
 		return
@@ -837,7 +839,7 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 	
 	if(IsValidHeadShot( damageInfo, dummy ))
 	{
-		int headshot = int(basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+		int headshot = int(basedamage*(file.helmet_lv4+(1-file.helmet_lv4)*headshotMultiplier))
 		DamageInfo_SetDamage( damageInfo, headshot)
 	}
 

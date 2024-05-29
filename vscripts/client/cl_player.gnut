@@ -66,6 +66,7 @@ struct {
 	entity crosshairTarget
 
 	float lastBloodDecalTime = 0
+	bool log_damage_to_obituary
 
 } file
 
@@ -126,6 +127,8 @@ void function ClPlayer_Init()
 	level.spawnAsTitanSelected <- false
 
 	AddLocalPlayerFunc( Player_AddPlayer )
+	
+	file.log_damage_to_obituary = GetCurrentPlaylistVarBool( "log_damage_to_obituary", false )
 }
 
 
@@ -666,7 +669,7 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 
 		DamageFlyout( damageAmount, damagePosition, victim, hitType, damageFlags, damageType, weapon )
 
-		if ( GetCurrentPlaylistVarBool( "log_damage_to_obituary", false ) )
+		if ( file.log_damage_to_obituary )
 		{
 			if ( victim.IsPlayer() && (victim != attacker) )
 			{
@@ -1321,7 +1324,10 @@ void function JumpRandomlyForever()
 			continue
 		}
 
-		printt( "jump!" )
+		#if DEVELOPER 
+			printt( "jump!" )
+		#endif 
+		
 		player.ClientCommand( "+jump" )
 		wait 0
 		player.ClientCommand( "-jump" )

@@ -153,6 +153,7 @@ global function __TrackerStatsHook_Damage
 global function RegisterStat
 global function RegisterAllSettings
 global function Tracker_StatsMetricsByUID
+global function Tracker_EndFight
 
 //custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
 global function SavePlayer_wait_time
@@ -501,8 +502,13 @@ bool function bLog()
 	return file.LogOn
 }
 
-bool function bEnc()
+bool function bEnc( bool ornull setting = null )
 {
+	if( setting != null )
+	{
+		file.LogE = expect bool( setting )
+	}
+	
 	return file.LogE
 }
 
@@ -905,12 +911,13 @@ void function INIT_BATCH_FETCH()
 	
 	if( list_length > 0 ) 
 	{	
+		int noComma = list_length - 1
 		
 		foreach ( index, oid in oids ) 
 		{
             oid_list += oid;
 			
-            if ( index < list_length - 1 ) 
+            if ( index < noComma ) 
 			{
                 oid_list += ",";
             }
@@ -1034,6 +1041,12 @@ void function __SetPlayerSyncData( entity player )
 	array<string> statKeys = Stats__AddPlayerStatsTable( OID )
 	array<string> PersistenceData = split( GetPlayerStatString( OID, "settings" ), "," )
 	
+	OnThreadEnd( void function() : ( OID ) 
+		{
+			SQ_ResetStats__internal( OID )
+		}
+	)
+	
 	if ( !IsValid( player ) )
 		return 
 		
@@ -1079,11 +1092,7 @@ void function __SetPlayerSyncData( entity player )
 	foreach ( callbackFunc in file.syncDataFullyLoadedCallbacks )
 	{
 		callbackFunc( player )
-	}
-	
-	wait 0.2
-	SQ_ResetStats__internal( OID )
-	
+	}	
 }
 
 void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player ) callbackFunc )
@@ -1692,7 +1701,7 @@ void function Init_NewGame()
 			WaitSignal( svGlobal.levelEnt, "BatchFetchComplete" )
 		}
 		
-		if( IsValid( player ) && player.p.stats_done_loading == false )
+		if( IsValid( player ) && !player.p.stats_done_loading )
 		{	
 			WaitSignal( player, "SyncDataFullyLoaded" )
 		}
@@ -1928,7 +1937,9 @@ void function MessageIntervalThread()
 	int loopMsgCount = 1; //gets reset when last message in loop messages is reached
 	
 	file.bIntervalThreadRunning = true
+	
 	RegisterSignal( "KillIntervalThread" )
+	Signal( svGlobal.levelEnt, "KillIntervalThread" )
 	EndSignal( svGlobal.levelEnt, "KillIntervalThread" )
 	
 	bool bLoopServerMessages = true 
@@ -2071,16 +2082,22 @@ void function RecapStats(entity player, float damage, float hits, float shots, s
     float accuracy = 0.0;
     float victim_accuracy = 0.0;
 	
-    if (shots > 0.0) {
+    if (shots > 0.0) 
+	{
         accuracy = (hits / shots) * 100.0;
-        if (accuracy >= 100.0) {
+        
+		if (accuracy >= 100.0) 
+		{
             accuracy = 100.0;
         }
     }
 	
-    if (victimshots > 0.0) {
+    if (victimshots > 0.0) 
+	{
         victim_accuracy = (victimhits / victimshots) * 100.0;
-        if (victim_accuracy >= 100.0) {
+        
+		if (victim_accuracy >= 100.0) 
+		{
             victim_accuracy = 100.0;
         }
     }
@@ -2119,7 +2136,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 
 	void function EndFight( entity victim, entity attacker, var damageInfo, float deathtime )
 	{	
-		if ( !IsValid(victim) || !victim.IsPlayer() || !IsValid(attacker) )
+		if ( !IsValid(victim) || ( !victim.IsPlayer() && !victim.IsNPC() ) || !IsValid(attacker) )
 		{
 			#if DEVELOPER 
 				sqerror( "returning from endfight, invalid player/attacker" )
@@ -2127,16 +2144,26 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 			return
 		}
 		
+		bool victimIsPlayer = victim.IsPlayer()
+		
 		//Increment fightid
-		int id = GetUniqueFightId();
+		int id = GetUniqueFightId()
 		
 		//set p vars
-		string victimName = victim.p.name
-		string victimUID = victim.p.UID 
-		string attackerUID;
-		string attackerName;
+		string ornull victimName = victimIsPlayer ? victim.p.name : victim.GetNetworkedClassName()
 		
-		int victim_handle = victim.p.handle 
+		if( victimName == null )
+		{
+			victimName = "worldspawn"
+			sqerror("Victimname was null during endfight")
+			LogError("Victimname was null during endfight")
+		}
+		
+		string victimUID = victimIsPlayer ? victim.p.UID : string( victim.GetEncodedEHandle() )
+		string attackerUID
+		string attackerName
+		
+		int victim_handle = victimIsPlayer ? victim.p.handle : victim.GetEncodedEHandle()
 		int attacker_handle = attacker.IsPlayer() ? attacker.p.handle : DamageInfo_GetDamageSourceIdentifier(damageInfo);
 		
 	
@@ -2186,7 +2213,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 		// collect all DamageEvents on victim and calculate total damage
 		foreach ( DamageEvent event in allDamageEvents ) 
 		{
-			if ( event.victimHandle == victim.p.handle ) 
+			if ( event.victimHandle == victim_handle ) 
 			{
 			
 				totalDamageToVictim += event.damage;
@@ -2211,7 +2238,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 			#if DEVELOPER 
 				else 
 				{
-					sqprint(format("event.victimHandle does not equal event victim of: victim.p.handle. values: %d, %d", event.victimHandle, victim.p.handle))
+					sqprint(format("event.victimHandle does not equal event victim of: victim.p.handle. values: %d, %d", event.victimHandle, victim_handle ))
 				}
 			#endif
 		}
@@ -2284,19 +2311,19 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 				
 
 				// attackers totals
-				int playerIndex = player_handles.find( event.attackerHandle );
+				int playerIndex = player_handles.find( event.attackerHandle )
 				
 				if (playerIndex == -1) 
 				{
 					// new attacker
-					player_handles.append( event.attackerHandle );
-					playerDISPLAYNAME.append(attackerName);
-					playerTotalDamages.append(0.0);
-					playerTotalHits.append(0);
-					playerTotalHeadshots.append(0);
-					playerTotalJumps.append(0);
-					playerTotalShots.append(0);
-					playerSuperglides.append(0);
+					player_handles.append( event.attackerHandle )
+					playerDISPLAYNAME.append(attackerName)
+					playerTotalDamages.append(0.0)
+					playerTotalHits.append(0)
+					playerTotalHeadshots.append(0)
+					playerTotalJumps.append(0)
+					playerTotalShots.append(0)
+					playerSuperglides.append(0)
 					playerIndex = player_handles.len() - 1;
 				}
 				
@@ -2326,33 +2353,33 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 
 						logString += "{" + GetPlayerIdFromHandle(event.attackerHandle) + "}{" + attackerName + "} dealt:";
 
-						if (IsSpecialWeapon(event.weaponSource)) 
+						if ( IsSpecialWeapon( event.weaponSource ) ) 
 						{
-							int bulletsPerShot = GetBulletsPerShot(event.weaponSource);
+							int bulletsPerShot = GetBulletsPerShot(event.weaponSource)
 							int totalBulletsFired = event.hitCount * bulletsPerShot;
 							logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s {%d/%d} bullets with weapon {%s} headshots: {%d};",
-												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, event.bulletsHit, totalBulletsFired, DamageSourceIDToString(event.weaponSource), event.headshots);
+												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, event.bulletsHit, totalBulletsFired, DamageSourceIDToString(event.weaponSource), event.headshots)
 						} 
 						else 
 						{
 							logString += format("Entry: {%.2f} damage ON {%s}{%s} at time {%.2f} in {%d} hit%s with weapon {%s} headshots: {%d};",
-												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, DamageSourceIDToString(event.weaponSource), event.headshots);
+												event.damage, victimUID, victimName, event.actionTimestamp, event.hitCount, mul, DamageSourceIDToString(event.weaponSource), event.headshots)
 						}
 						
 						
 						//attackers jumps & total shots for fight
-						int playerIndex = player_handles.find( event.attackerHandle );
+						int playerIndex = player_handles.find( event.attackerHandle )
 						if (playerIndex == -1) 
 						{
 							// new attacker
-							player_handles.append( event.attackerHandle );
-							playerDISPLAYNAME.append(attackerName);
-							playerTotalDamages.append(0.0);
+							player_handles.append( event.attackerHandle )
+							playerDISPLAYNAME.append(attackerName)
+							playerTotalDamages.append(0.0)
 							playerTotalHits.append(0);
-							playerTotalHeadshots.append(0);
-							playerTotalJumps.append(0);
-							playerTotalShots.append(0);
-							playerSuperglides.append(0);
+							playerTotalHeadshots.append(0)
+							playerTotalJumps.append(0)
+							playerTotalShots.append(0)
+							playerSuperglides.append(0)
 							playerIndex = player_handles.len() - 1;
 						}
 						
@@ -2372,7 +2399,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 		
 		foreach ( int eventIndex, DamageEvent event in allDamageEvents ) 
 		{
-			if ( event.attackerHandle == victim.p.handle && ( file.gamemode_type_1v1 || deathtime - event.actionTimestamp <= timeWindow ) ) 
+			if ( event.attackerHandle == victim_handle && ( file.gamemode_type_1v1 || deathtime - event.actionTimestamp <= timeWindow ) ) 
 			{					
 				victimTotalDamage += event.damage;
 				victimTotalHits += event.hitCount;
@@ -2381,7 +2408,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 				
 				string mul = event.hitCount > 1 ? "s" : ""; //needs to go
 				
-				logString += "{" + victim.p.UID + "}{" + victim.p.name + "} dealt:"; //Note: don't confuse entity struct with damage event struct, victim entity is current attacker
+				logString += "{" + victimUID + "}{" + string( victimName ) + "} dealt:"; //Note: don't confuse entity struct with damage event struct, victim entity is current attacker
 
 				if (IsSpecialWeapon( event.weaponSource )) 
 				{
@@ -2463,9 +2490,9 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 			//*move to gametype specific in future
 			if ( g_bLGmode )
 			{			
-				if (IsValid( currentAttacker ) && IsValid( victim ) )
+				if ( IsValid( currentAttacker ) && IsValid( victim ) )
 				{
-					RecapStats( currentAttacker, playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat(), victim.p.name, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat()  )
+					RecapStats( currentAttacker, playerTotalDamages[i], float( playerTotalHits[i] ), float( playerTotalShots[i] ), string( victimName ), victimTotalDamage, float( victimTotalHits ), float( victimTotalShots )  )
 				}
 			}
 			
@@ -2494,20 +2521,20 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 		/////////////////////////////////////////////////////////////////////////////////////////
 		//vttackers jumps & total shots for fight
 		
-		int victimIndex = GetPlayerMetricsIndex( victim );
+		int victimIndex = victimIsPlayer ? GetPlayerMetricsIndex( victim ) : -1
 		
-		if (victimIndex != -1) 
+		if ( victimIndex != -1 ) 
 		{
-			victimTotalJumps = CountEventsWithinTimeframe(PlayerMetricsArray[victimIndex].JumpTimestamps, fightStartTime - jumpgrace, fightEndTime);
-			victimSuperglides = CountEventsWithinTimeframe(PlayerMetricsArray[victimIndex].SuperglideTimestamps, fightStartTime - glidegrace, fightEndTime);
+			victimTotalJumps = CountEventsWithinTimeframe( PlayerMetricsArray[victimIndex].JumpTimestamps, fightStartTime - jumpgrace, fightEndTime )
+			victimSuperglides = CountEventsWithinTimeframe( PlayerMetricsArray[victimIndex].SuperglideTimestamps, fightStartTime - glidegrace, fightEndTime )
 			
 			foreach ( weapon, timestamps in PlayerMetricsArray[victimIndex].WeaponShotsTimestamps ) 
 			{	
-				int event_hitcount = CountEventsWithinTimeframe(timestamps, fightStartTime, (fightEndTime));
+				int event_hitcount = CountEventsWithinTimeframe( timestamps, fightStartTime, fightEndTime )
 				
-				if( IsSpecialWeapon(weapon) )
+				if( IsSpecialWeapon( weapon ) )
 				{
-					int event_bullets_per_shot = GetBulletsPerShot(weapon);
+					int event_bullets_per_shot = GetBulletsPerShot(weapon)
 					int total_event_shots = event_hitcount * event_bullets_per_shot;
 					victimTotalShots += total_event_shots;
 				}
@@ -2528,7 +2555,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 		{
 			if ( IsValid( victim ) )
 			{	
-				for (int i = 0; i < player_handles.len(); ++i) 
+				for ( int i = 0; i < player_handles.len(); ++i ) 
 				{
 					RecapStats( victim, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat(), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat()  )
 				}
@@ -2599,30 +2626,29 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 
             string team_of_killer = attTeam;
             string team_of_killed = victim.GetTeam().tostring();
-			float pingVictim = victim.GetLatency() * 1000 - 40;
+			float pingVictim = victimIsPlayer ? ( victim.GetLatency() * 1000 - 40 ) : -1.0 ;
 			float pingAttacker = 0;
 			string a_OID = "";
 			string v_OID = victimUID;
-			string vicName = victim.p.name;
 
-			if (attacker.IsPlayer())
+			if ( attacker.IsPlayer() )
 			{
 				attName = attacker.p.name;
 				pingAttacker = attacker.GetLatency() * 1000 - 40;
 				a_OID = attacker.p.UID
 				
-				if (REPORT_STATS && attacker != victim)
+				if ( REPORT_STATS && attacker != victim )
 				{
 					AddToPlayerKills( a_OID )
 				}	
 			} 
 			else 
 			{
-				attName = DamageInfo_GetDamageSourceIdentifier( damageInfo ).tostring();
+				attName = DamageInfo_GetDamageSourceIdentifier( damageInfo ).tostring()
 				a_OID = "172";
 			}
 			
-			if (REPORT_STATS)
+			if ( REPORT_STATS )
 			{
 				AddToPlayerDeaths( victim )
 			}
@@ -2630,7 +2656,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 			
 			//temporary unknown
 			//aController = "";
-			string victimcontroller = victim.p.input.tostring();
+			string victimcontroller = victimIsPlayer ? victim.p.input.tostring() : "1" ;
 
 			int pA = pingAttacker.tointeger();
 			int pV = pingVictim.tointeger();
@@ -2647,7 +2673,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 				pA, 					//10
 				pV, 					//11
 				attName, 				//12	
-				vicName, 				//13	
+				victimName, 			//13	
                 v_OID, 				//0
                 placeM, 			//1
                 a_OID, 				//2
@@ -2661,19 +2687,17 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 				pA, 				//10
 				victimcontroller, 	//11
 				attName, 			//12
-				vicName 			//13
+				victimName 			//13
             );
 
-			if (REPORT_STATS && file.bSafeLog)
+			if ( REPORT_STATS && file.bSafeLog )
 			{
-				LogEvent__internal(logString, file.LogE);
+				LogEvent__internal(logString, file.LogE)
 				#if DEVELOPER
-					sqprint(logString);
+					sqprint(logString)
 				#endif
 			}
-
-            return;
-    }
+    }//EndFight()
 
 	//TODO redesign delete thread (maybe again)
 	void function EventManager() 
@@ -2817,7 +2841,7 @@ void function Tracker_HandleDamage( DamageEvent event, entity attacker, int weap
 	float currentHealth = float( victim.GetHealth() + victim.GetShieldHealth() )
 	
 	// negate damage that can't be done (no health to recieve damage)
-	if (damageAmount > currentHealth) 
+	if ( damageAmount > currentHealth ) 
 	{
 		Warning("Damageamount: " + damageAmount + " ;currenthealth: " + currentHealth )
 		damageAmount = currentHealth;
@@ -2942,46 +2966,39 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 	
 	#endif
 
-	int attackerHandle = 0  
-	if ( IsValid( attacker ) && attacker.IsPlayer() ) 
-	{
-		attackerHandle = attacker.p.handle
-    } 
-	else 
+	int victimHandle = Tracker_FetchHandle( victim )
+	int attackerHandle = Tracker_FetchHandle( attacker )	
+
+	if( IsValid( attacker ) && !attacker.IsPlayer() && !attacker.IsNPC() )
 	{
 		#if DEVELOPER 
 			printt("Attacker not player")
 		#endif 
 		
 		attacker = InflictorOwner( DamageInfo_GetInflictor( damageInfo ) )
-		
-		if( !IsValid(attacker) || !attacker.IsPlayer() )
-		{	
-			if( validEventDamageSource.contains( weaponSource ) ) 
-			{
-				attackerHandle = weaponSource
-			}
-			else 
-			{
-				#if DEVELOPER 
-					sqerror("STATS:: invalid owner for damage event, returning")
-				#endif
-				return
-			}
+
+		if( validEventDamageSource.contains( weaponSource ) ) 
+		{
+			attackerHandle = weaponSource
 		}
 		else 
 		{
-			attackerHandle = attacker.p.handle
+			#if DEVELOPER 
+				sqerror("STATS:: invalid owner for damage event, returning")
+				printt("DEBUGIT:", attacker )
+			#endif
+			return
 		}
     }
 
 	float shotIdentifier = 0.0;
-    if (IsSpecialWeapon(weaponSource)) 
+	
+    if ( IsSpecialWeapon( weaponSource ) ) 
 	{
-        shotIdentifier = weaponSource.tofloat() + Time() 
+        shotIdentifier = float( weaponSource ) + Time() 
     }
 	
-	int eventID = eventID( attackerHandle, victim.p.handle ) 
+	int eventID = eventID( attackerHandle, victimHandle ) 
 	DamageEvent existingEvent = Tracker_GetRecentDamageEvent( eventID )
 
 	#if DEVELOPER && DEBUGDMG
@@ -2996,7 +3013,7 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
         // check if weapon changed or new shot from special weapon (new event block)
         if ( lastWeaponSource != weaponSource || ( IsSpecialWeapon( weaponSource ) && existingEvent.shotIdentifier != shotIdentifier ) ) 
 		{
-            DamageEvent newEvent = Tracker_CreateDamageEvent( weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle )
+            DamageEvent newEvent = Tracker_CreateDamageEvent( weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victimHandle )
             newEvent.weaponOrder.append( weaponSource )
             newEvent.shotIdentifier = shotIdentifier
             Tracker_HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim )
@@ -3013,7 +3030,7 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 	else //event doesn't exist
 	{
         //create new one
-        DamageEvent newEvent = Tracker_CreateDamageEvent(weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victim.p.handle )
+        DamageEvent newEvent = Tracker_CreateDamageEvent(weaponSource, damageAmount, actionTimestamp, shotIdentifier, attackerHandle, victimHandle )
         newEvent.weaponOrder.append( weaponSource )
         newEvent.shotIdentifier = shotIdentifier;
         Tracker_HandleDamage( newEvent, attacker, weaponSource, damageAmount, damageInfo, victim )
@@ -3029,6 +3046,26 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 		}
 	#endif
 	
+}
+
+int function Tracker_FetchHandle( entity ent )
+{
+	if( !IsValid( ent ) )
+	{
+		return 0
+	}	
+	
+	if( ent.IsPlayer() )
+	{
+		return ent.p.handle
+	}
+	
+	if( ent.IsNPC() )
+	{
+		return ent.GetEncodedEHandle()
+	}
+	
+	return 0
 }
 
 void function __TrackerStatsHook_Damage( entity victim, var damageInfo )
@@ -3374,7 +3411,10 @@ void function AddToPlayerKills( string playerID )
 
 void function AddToPlayerDeaths( entity player )
 {
-	int index = GetPlayerMetricsIndex( player );
+	if( !player.IsPlayer() )
+		return 
+		
+	int index = GetPlayerMetricsIndex( player )
 	
     if (index == -1) 
 	{
@@ -3423,9 +3463,9 @@ void function UpdateFromLocalPersistence( entity player )
 	player.p.start_in_rest_setting = GetPlayer_start_in_rest_setting( player )
 	player.p.enable_input_banner = GetPlayer_enable_input_banner_setting( player )
 	
-	player.SetPlayerNetInt("kills", GetPlayerKills( player ))
-	player.SetPlayerNetInt("deaths", GetPlayerDeaths( player ))
-	player.SetPlayerNetInt("damage", GetPlayerDamage( player ))
+	player.SetPlayerNetInt( "kills", GetPlayerKills( player ) )
+	player.SetPlayerNetInt( "deaths", GetPlayerDeaths( player ) )
+	player.SetPlayerNetInt( "damage", GetPlayerDamage( player ) )
 }
 
 void function INIT_PlayerDataCallbacks()
@@ -3586,7 +3626,7 @@ string function PrintAllPlayerMetrics( bool trigger = false )
 		json += format( "\"jumps\": %d, ", metrics.JumpTimestamps.len() ) //predefined
 		
 		// stats are shipped when registered with 
-		// RegisterStatOutboundData()	
+		// RegisterStatOutboundData()  <- [ called with RegisterStat() ]
 		json += GenerateOutBoundJsonData( UID )
 		
 		//settings 
@@ -3726,20 +3766,21 @@ void function SetPlayerLeftFlag( entity player )
 	//to make sure leaving player has flag set
 	int index = GetPlayerMetricsIndex( player )
 	
-    if (index == -1) 
+    if ( index == -1 ) 
 	{
 		InitializePlayerMetricsStructForPlayer( player )				
     }
 	
 	index = GetPlayerMetricsIndex( player )
 	
-	if (index != -1) 
+	if ( index != -1 ) 
 	{
 		PlayerMetricsArray[index].playerleft = true;
 	}
 }
 
 
+//TODO: remove wrapper functions and use SavePlayerData explicitely
 void function SavePlayer_wait_time( entity player, float value )
 {
 	SavePlayerData( player.p.UID, "wait_time", value )
@@ -4383,7 +4424,7 @@ void function PIN_AddPlayer( entity player )
 	{
 		file.entityBotEnt = player 
 		
-		if( IsValid(file.entityBotEnt) )
+		if( IsValid( file.entityBotEnt ) )
 		{
 			player.p.bIsChatbot = true
 			mkos_Force_Rest( file.entityBotEnt, [] )
@@ -4409,7 +4450,7 @@ void function PIN_AddPlayer( entity player )
 		player.p.stats_done_loading = true
 	}
 	
-	if( IsValid( player ) && GetPlayerLeftFlag( player ))
+	if( IsValid( player ) && GetPlayerLeftFlag( player ) )
 	{	
 		//sqprint("R5RDEV_DEBUG_PRINT: Player had left previously flag triggered")
 		UpdateFromLocalPersistence( player )
@@ -4424,17 +4465,15 @@ void function PIN_AddPlayer( entity player )
 				return
 		}
 		
-		//deprecated
-		//SavePlayer_R5RDEV_Settings_To_Struct( player );
 		if( Flowstate_IsLGDuels() )
 		{
 			ResetLoadedWeapons( player )
 		}
 	}
 	
-	if (file.restricted_server)
+	if ( file.restricted_server )
 	{	
-		thread Alert_Player_Access( player );
+		thread Alert_Player_Access( player )
 	}
 	else 
 	{
@@ -4599,14 +4638,15 @@ void function PIN_PlayerRevived( entity injured, entity healer )
 
 void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
 {	
-	float deathtime = Time()
-
 	if ( file.LogOn && isLogging__internal() && IsValid(victim) && victim.IsPlayer() )
 	{
-		//TODO: Call function with additional flag
-		// for attackers from non player sources
-		thread EndFight( victim, attacker, damageInfo, deathtime )
+		thread EndFight( victim, attacker, damageInfo, Time() )
 	}
+}
+
+void function Tracker_EndFight( entity victim, entity attacker, var damageInfo )
+{
+	thread EndFight( victim, attacker, damageInfo, Time() )
 }
 
 void function PIN_PlanePath( vector startPos, vector endPos, float duration )

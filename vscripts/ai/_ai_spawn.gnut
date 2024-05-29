@@ -397,7 +397,7 @@ entity function CreateNPC( baseClass, team, origin, angles )
 	npc.kv.teamnumber = team
 	npc.kv.origin = origin
 	npc.kv.angles = angles
-
+	
 	return npc
 }
 

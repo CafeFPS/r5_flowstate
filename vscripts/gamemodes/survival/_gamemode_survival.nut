@@ -1107,14 +1107,15 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		}
 		
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
-	} else if( !attacker.IsPlayer() )
+	} 
+	else if( !attacker.IsPlayer() )
 	{
 		Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
 	}
 	
 	SetPlayerEliminated( victim )
 
-	if ( IsFiringRangeGameMode() || Playlist() == ePlaylists.fs_movementrecorder )
+	if ( Flowstate_PlayerDoesRespawn() )
 	{
 		thread function() : ( victim )
 		{

@@ -22,9 +22,6 @@ global struct PlayerSlowDownEffect
 
 function CodeCallback_RegisterClass_CPlayer()
 {
-	#if DEVELOPER 
-		Warning("CodeCallback_RegisterClass_CPlayer: Registering script-based CPlayer overrides")
-	#endif
 	//printl( "Class Script: CPlayer" )
 
 	CPlayer.ClassName <- "CPlayer"
@@ -392,6 +389,9 @@ function CodeCallback_RegisterClass_CPlayer()
 	//////////////////////////
 	//			GET			//
 	//////////////////////////
+	
+	//TODO: Replace with code entity function ~mkos
+	
 	#document( "CPlayer::GetPlayerStatString", "Fetch player stat string from player's stat table max.len(30)" )
 	function CPlayer::GetPlayerStatString( statname )
 	{
@@ -420,6 +420,8 @@ function CodeCallback_RegisterClass_CPlayer()
 	//////////////////////////
 	//			SET			//
 	//////////////////////////
+	
+	//TODO: Replace with code entity function ~mkos
 	
 	#document( "CPlayer::SetPlayerStatString", "Set player stat string from player's stat table max.len(30)" )
 	function CPlayer::SetPlayerStatString( statname, value )

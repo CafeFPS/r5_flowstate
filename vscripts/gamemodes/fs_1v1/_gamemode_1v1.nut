@@ -204,6 +204,7 @@ const array<string> charIndexMap = [
 		"Wraith", //8
 		"Wattson", //9
 		"Crypto", //10
+		
 		"Blisk", //11
 		"Fade", //12
 		"Amogus", //13
@@ -212,13 +213,13 @@ const array<string> charIndexMap = [
 		"Ash", //15
 								//"CJ", //17 --
 		"Jack", //16
-								//"Loba", //19 --
-		"Revenant", //17
-		"Ballistic", //18
-		"Marvin", //19
+		"Loba", //17 --
+		"Revenant", //18
+		"Ballistic", //19
+		"Marvin", //20
 								//"Gojo", //23 --
 								//"Naruto", //24 --
-		"Pete", //20
+		"Pete", //21
 	];
 
 //DEV functions

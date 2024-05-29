@@ -19,6 +19,7 @@ global const PRINT_GAMEMODE_DEBUGS = true
 global function is1v1GameType
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
+global function Flowstate_PlayerDoesRespawn
 
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
@@ -337,6 +338,7 @@ void function AllModeConditionals_Init()
 {
 	TrackerSupportedMode_Init()
 	PassivesAllowed_Init()
+	PlayerRespawnModes_Init()
 }
 
 
@@ -348,6 +350,7 @@ struct
 {
 	bool passivesAllowed = false
 	bool trackerSupportedMode = false
+	bool playerDoesRespawn = false
 	
 } modeSettings
 
@@ -408,6 +411,16 @@ void function TrackerSupportedMode_Init()
 	
 }
 
+void function PlayerRespawnModes_Init()
+{
+	array<int> playerRespawnModes = 
+	[
+		ePlaylists.fs_movementrecorder
+	];
+	
+	modeSettings.playerDoesRespawn = ( IsFiringRangeGameMode() || playerRespawnModes.contains( Playlist() ) )
+}
+
 //////////////////////////////////////////
 //	 gamemode conditional functions		//
 //////////////////////////////////////////
@@ -429,8 +442,10 @@ bool function Flowstate_IsTrackerSupportedMode()
 	return modeSettings.trackerSupportedMode
 }
 
-
-
+bool function Flowstate_PlayerDoesRespawn()
+{
+	return modeSettings.playerDoesRespawn
+}
 
 
 
