@@ -39,6 +39,7 @@ global struct scenariosGroupStruct
 
 	soloLocStruct &groupLocStruct
 	entity ring
+	float calculatedRingRadius
 	int slotIndex
 	int team1Index = -1
 	int team2Index = -1
@@ -100,6 +101,7 @@ struct {
 	int fs_scenarios_playersPerTeam = -1
 	int fs_scenarios_teamAmount = -1
 
+	float fs_scenarios_default_radius_padding = 169
 	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
 	// float fs_scenarios_max_queuetime = 150
@@ -111,6 +113,7 @@ struct {
 	bool fs_scenarios_deathboxes_enabled = true
 	bool fs_scenarios_bleedout_enabled = true
 	bool fs_scenarios_show_death_recap_onkilled = true
+	bool fs_scenarios_zonewars_ring_mode = false
 } settings
 
 array< bool > teamSlots
@@ -130,6 +133,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
 	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
+	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -495,7 +499,7 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 
 	foreach( i, bigDoorsData data in file.allBigMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( data.origin, center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -575,7 +579,7 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 	
 	foreach( i, doorsData data in file.allMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( data.origin, center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -762,7 +766,7 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	array< lootbinsData > chosenSpawns
 	
 	foreach( i, lootbinStruct in file.allMapLootbins )
-		if( Distance2D( lootbinStruct.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( lootbinStruct.origin, center) <= group.calculatedRingRadius )
 			chosenSpawns.append( lootbinStruct )
 
 	string zoneRef = "zone_high"
@@ -877,7 +881,7 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 	array<vector> chosenSpawns
 	
 	foreach( spawn in file.allLootSpawnsLocations )
-		if( Distance2D( spawn, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( spawn, center) <= group.calculatedRingRadius )
 			chosenSpawns.append( spawn )
 
 	string zoneRef = "zone_high"
@@ -1455,7 +1459,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if ( player.IsPhaseShifted() )
 					continue
 
-				if( Distance2D( player.GetOrigin(),Center) > settings.fs_scenarios_default_radius ) //检测乱跑的脑残
+				if( Distance2D( player.GetOrigin(),Center) > group.calculatedRingRadius ) //检测乱跑的脑残
 				{
 					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 					player.TakeDamage( 3, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -1647,7 +1651,21 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
-			newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
+			vector Center = groupLocStruct.Center
+			float ringRadius = 0
+
+			foreach( LocPair spawn in groupLocStruct.respawnLocations )
+			{
+				if( Distance( spawn.origin, Center ) > ringRadius )
+					ringRadius = Distance(spawn.origin, Center )
+			}
+
+			newGroup.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
+			
+			if( !settings.fs_scenarios_zonewars_ring_mode )
+				newGroup.calculatedRingRadius = settings.fs_scenarios_default_radius
+
+			newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex, newGroup.calculatedRingRadius )
 
 			//Play fx on players screen
 			foreach ( entity player in players )
@@ -1732,6 +1750,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					float r = float(j) / float( amountPlayersPerTeam ) * 2 * PI
 					vector circledPos = pos + 50.0 * <sin( r ), cos( r ), 0.0> 
 					player.SetOrigin( circledPos + <0,0,5> )
+					PutEntityInSafeSpot( player, null, null, circledPos, player.GetOrigin() )
 					j++
 				}
 				oldSpawnSlot = spawnSlot
@@ -1753,10 +1772,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 }//thread
 
-entity function CreateSmallRingBoundary(vector Center, int realm = -1)
+entity function CreateSmallRingBoundary(vector Center, int realm = -1, float radius = -1)
 {
     vector smallRingCenter = Center
-	float smallRingRadius = settings.fs_scenarios_default_radius
+	float smallRingRadius = radius
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
 	smallcircle.kv.fadedist = 2000

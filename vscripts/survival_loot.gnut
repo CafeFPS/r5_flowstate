@@ -71,9 +71,6 @@ struct {
 
 bool function InfiniteAmmoEnabled()
 {
-	if( is3v3Mode() && FS_Scenarios_GetGroundLootEnabled() )
-		return false
-
 	return GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
 }
 
