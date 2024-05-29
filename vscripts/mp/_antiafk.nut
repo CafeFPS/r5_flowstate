@@ -77,7 +77,7 @@ void function CheckAfkKickThread(entity player)
 			continue
 		
 		//another mkos mod
-		if ( g_bIs1v1 && isPlayerInRestingList( player ) && g_bRestMsg )
+		if ( Flowstate_IsFS1v1() && isPlayerInRestingList( player ) && FlowState_RestMsg() )
 		{	
 			if ( player.p.messagetime == 0 || Time() >= player.p.messagetime + 30 )
 			{	

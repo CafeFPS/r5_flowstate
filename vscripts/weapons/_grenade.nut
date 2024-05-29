@@ -114,7 +114,9 @@ void function Grenade_OnWeaponDeactivate( entity weapon )
 
 void function Grenade_OnProjectileIgnite( entity weapon )
 {
-	printt( "Grenade_OnProjectileIgnite() callback." )
+	#if DEVELOPER
+		printt( "Grenade_OnProjectileIgnite() callback." )
+	#endif
 }
 
 void function Grenade_Init( entity grenade, entity weapon )
@@ -229,12 +231,18 @@ void function OnProjectileCollision_weapon_impulse_grenade( entity projectile, v
 	
 			foreach( sPlayer in GetPlayerArray() )
 			{
-				printt( sPlayer, Distance( origin, sPlayer.GetOrigin() ) )
+				#if DEVELOPER
+					printt( sPlayer, Distance( origin, sPlayer.GetOrigin() ) )
+				#endif 
+				
 				if( Distance( origin, sPlayer.GetOrigin() ) < radius )
 				{
-					printt( "player should knockback" )
+					#if DEVELOPER
+						printt( "player should knockback" )
+					#endif
+					
 					#if SERVER
-					thread PushPlayerApart( sPlayer, origin, 1500 )
+						thread PushPlayerApart( sPlayer, origin, 1500 )
 					#endif
 				}
 			}

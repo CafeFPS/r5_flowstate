@@ -204,7 +204,10 @@ void function ChargePylonUseSuccess( entity button, entity player, ExtendedUseSe
 		if( trigger.IsTouching( sPlayer ) ) //redudant?
 		{
 			ChargePylon_RechargePlayerOffhand( player )
-			printt(player.GetPlayerName(), "is touching trigger: ", trigger, " - should reload ultimate")
+			
+			#if DEVELOPER
+				printt(player.GetPlayerName(), "is touching trigger: ", trigger, " - should reload ultimate")
+			#endif
 		}
 
 	thread ChargePylon_StartPropMovement_Thread( trigger )

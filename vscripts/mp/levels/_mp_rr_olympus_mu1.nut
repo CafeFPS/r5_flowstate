@@ -684,7 +684,9 @@ void function Flowstate_WarpTunnel_MoveEntAlongPath( entity player, array<entity
 		wait phaseTime - 0.055
 	}
 	
-	printt( "travel finished in ", elapsedTime, "s.")
+	#if DEVELOPER
+		printt( "travel finished in ", elapsedTime, "s.")
+	#endif
 }
 
 vector function Flowstate_GetNextAngleToLookAt( int currentIndex, int step, array< vector > pathNodeDataArray )
@@ -724,7 +726,9 @@ void function Flowstate_WarpTunnel_OnStartTouch( entity trigger, entity player, 
 	if( player.IsPhaseShifted() || player.e.isInPhaseTunnel )
 		return
 
-	printt( "player should travel now", player )
+	#if DEVELOPER
+		printt( "player should travel now", player )
+	#endif
 
 	thread Flowstate_WarpTunnel_MoveEntAlongPath( player, trigger.e.warpEntrancePath, trigger )
 }

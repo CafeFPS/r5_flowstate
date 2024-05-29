@@ -90,7 +90,10 @@ bool function OnWeaponChargeBegin_weapon_incap_shield( entity weapon )
 #if SERVER
 		PIN_PlayerUse( player, weapon.GetWeaponClassName(), "INCAP_SHIELD" )
 
-		printt( "started shield charge", weapon.GetScriptInt0(), ref )
+		#if DEVELOPER
+			printt( "started shield charge", weapon.GetScriptInt0(), ref )
+		#endif 
+		
 		if( !IsValid( weapon.GetWeaponUtilityEntity() ) && !Bleedout_IsReceivingFirstAid( player ) && weapon.GetScriptInt0() > 0 )
 			CreateIncapShield( player, weapon )
 #endif // #if SERVER

@@ -189,7 +189,10 @@ DeathFieldStageData function GetDeathFieldStage( int index )
     if(file.deathFieldStages.len() > index)
         return file.deathFieldStages[ index ]
 
-    printt("WARNING: Requested death field stage out of populated range!!")    
+    #if DEVELOPER
+		printt("WARNING: Requested death field stage out of populated range!!")   
+	#endif
+		
     return CreateDeathFieldStageData(index, true)
 }
 
@@ -466,7 +469,10 @@ void function SURVIVAL_RunArenaDeathField()
 
 	for ( int deathFieldStage = file.deathFieldStartStage; deathFieldStage < file.deathFieldStages.len(); deathFieldStage++ )
 	{
-		printt(" starting actually at : " + deathFieldStage )
+		#if DEVELOPER
+			printt(" starting actually at : " + deathFieldStage )
+		#endif 
+		
 		FlagWaitClear( "DeathFieldPaused" )
 
 		vector startPos   = deathField.GetOrigin()
@@ -889,7 +895,10 @@ vector function GetFinalDeathFieldLocation()
 					endPoint = GetRandomCenter( origin, 0, radius )
 					if ( Distance2D( endPoint, <0, 0, 0> ) <= REALBIG_CIRCLE_END_RADIUS )
 					{
-						printt( "Override END POS: " + endPoint )
+						#if DEVELOPER
+							printt( "Override END POS: " + endPoint )
+						#endif 
+						
 						foundSpot = true
 						//DebugDrawSphere( endPoint, 48.0, 255, 255, 0, true, 30.0 )
 						break
@@ -2009,12 +2018,16 @@ bool function ShouldShowDeathFieldEffects( entity player )
 
 void function Callback_OnPlayerEnteredDeathfield( entity player )
 {
-	printt( "Callback_OnPlayerEnteredDeathfield" )
+	#if DEVELOPER
+		printt( "Callback_OnPlayerEnteredDeathfield" )
+	#endif
 }
 
 void function Callback_OnPlayerLeftDeathfield( entity player )
 {
-	printt( "Callback_OnPlayerLeftDeathfield" )
+	#if DEVELOPER
+		printt( "Callback_OnPlayerLeftDeathfield" )
+	#endif
 }
 
 void function Callback_OnPlayerTakeDeathFieldDamage( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )

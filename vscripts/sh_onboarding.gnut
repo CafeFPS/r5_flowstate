@@ -1201,7 +1201,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.SetMoveSpeedScale( 0.87 )
 			#endif
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
-			printt( "Player movement changed to TF2" )
+			#if DEVELOPER
+				printt( "Player movement changed to TF2" )
+			#endif
 		break
 		
 		case 2:
@@ -1213,7 +1215,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 
 			SetPlayerSettings( player, CSGO_MOVEMENT )
-			printt( "Player movement changed to CSGO" )
+			#if DEVELOPER
+				printt( "Player movement changed to CSGO" )
+			#endif
 		break
 
 		case 3:
@@ -1223,7 +1227,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.DisableMantle()
 			#endif
 			SetPlayerSettings( player, HL1_MOVEMENT )
-			printt( "Player movement changed to HL1" )
+			#if DEVELOPER
+				printt( "Player movement changed to HL1" )
+			#endif
 		break
 
 		case 4:
@@ -1233,17 +1239,24 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.DisableMantle()
 			#endif
 			SetPlayerSettings( player, HALO_MOVEMENT )
-			printt( "Player movement changed to Halo" )
+			#if DEVELOPER
+				printt( "Player movement changed to Halo" )
+			#endif
 		break
 
 		case 5:
 			SetPlayerSettings( player, SURF_SETTINGS )
-			printt( "Player movement changed to Surf" )
+			#if DEVELOPER
+				printt( "Player movement changed to Surf" )
+			#endif
 		break
 		
 		case 6:
 			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
-			printt( "Superglide modified for all players" )
+			
+			#if DEVELOPER
+				printt( "Superglide modified for all players" )
+			#endif
 		break
 	}
 }

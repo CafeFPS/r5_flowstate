@@ -323,7 +323,10 @@ void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, stri
 
 bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> args )
 {
-	printt("ClientCommand_Sur_SwitchToOrdnance")
+	#if DEVELOPER
+		printt("ClientCommand_Sur_SwitchToOrdnance")
+	#endif 
+	
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 

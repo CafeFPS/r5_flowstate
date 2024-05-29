@@ -88,7 +88,9 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 
 	bool result = PlantStickyEntityOnWorldThatBouncesOffWalls( projectile, collisionParams, 0.7 )
 	
-	printt( "collision, result: ", result )
+	#if DEVELOPER
+		printt( "collision, result: ", result )
+	#endif
 
 	if(result && IsValid(projectile))
 	{
@@ -101,7 +103,7 @@ void function OnProjectileCollision_holospray( entity projectile, vector pos, ve
 		if( projectile.GetParent() && projectile.GetParent().GetScriptName() != "editor_placed_prop" ) // Parent to moving ents like train
 		{
 			#if DEVELOPER
-			printt( "Holo spray parented to moving ent" )
+				printt( "Holo spray parented to moving ent" )
 			#endif
 
 			entity parentPoint = CreateEntity( "script_mover_lightweight" )

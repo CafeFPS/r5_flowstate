@@ -529,13 +529,19 @@ void function Wattson_PassiveToggle(  entity player, int passive, bool didHave, 
 
 	if ( didHave )
 	{
-		printt( "Spark of Genius passive removed for player" + player )
+		#if DEVELOPER
+			printt( "Spark of Genius passive removed for player" + player )
+		#endif
+			
 		Signal( player, "EndSparkOfGeniusThread" )
 	}
 
 	if ( nowHas )
 	{
-		printt( "Spark of Genius passive enabled for player" + player )
+		#if DEVELOPER
+			printt( "Spark of Genius passive enabled for player" + player )
+		#endif 
+		
 		thread SparkOfGenius_Passive_Body( player )
 	}
 }
@@ -571,7 +577,7 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 	if ( didHave )
 	{
 		#if DEVELOPER
-		printt( "Pilot Blood passive removed for player" + player )
+			printt( "Pilot Blood passive removed for player" + player )
 		#endif
 		Signal( player, "EndPilotBloodThread" )
 	}
@@ -579,7 +585,7 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt( "Pilot Blood passive enabled for player" + player )
+			printt( "Pilot Blood passive enabled for player" + player )
 		#endif
 		thread PilotBlood_Passive_Body( player )
 	}
@@ -629,7 +635,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( didHave )
 	{
 		#if DEVELOPER
-		printt("Fortified passive granted! ", player)
+			printt("Fortified passive granted! ", player)
 		#endif
 		RemoveEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -637,7 +643,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt("Fortified passive granted! ", player)
+			printt("Fortified passive granted! ", player)
 		#endif
 		AddEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -688,7 +694,7 @@ void function Bloodhound_PassiveToggle( entity player, int passive, bool didHave
 	if ( didHave )
 	{
 		#if DEVELOPER
-		printt("Tracking Vision passive removed ", player)
+			printt("Tracking Vision passive removed ", player)
 		#endif
 		StatusEffect_StopAllOfType( player, eStatusEffect.tracking_vision)
 	}
@@ -696,7 +702,7 @@ void function Bloodhound_PassiveToggle( entity player, int passive, bool didHave
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt("Tracking Vision passive granted! ", player)
+			printt("Tracking Vision passive granted! ", player)
 		#endif
 		StatusEffect_AddEndless( player, eStatusEffect.tracking_vision, 1 )
 	}

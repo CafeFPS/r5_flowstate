@@ -19,7 +19,6 @@ struct
 	array<ConVarData>	conVarDataList
 
 	array<var>			noApplyConfirmationRequired
-	bool 				startupLoaded
 	
 } file
 
@@ -193,14 +192,6 @@ void function OnVideoPanel_Show( var panel )
 #endif
 	
 	NvidiaReflex_SetSettingsValue()
-	
-	//HACK, need fps_max setting added to settings.cfg
-	if( !file.startupLoaded )
-	{
-		int setting = int( floor( GetConVarFloat( "sv_noclipspeed_fast" ) ) )
-		SetConVarInt( "fps_max", setting )
-		file.startupLoaded = true
-	}
 }
 
 

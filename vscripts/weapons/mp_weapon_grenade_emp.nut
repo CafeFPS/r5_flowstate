@@ -49,7 +49,9 @@ void function OnProjectileCollision_weapon_grenade_decoy( entity projectile, vec
 		return
 
 	#if SERVER
-		printt("------------AUDIO DECOY START-----------")
+		#if DEVELOPER
+			printt("------------AUDIO DECOY START-----------")
+		#endif
 		
 		array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
 
@@ -58,8 +60,11 @@ void function OnProjectileCollision_weapon_grenade_decoy( entity projectile, vec
 		
 		if ( weapons.len() == 0 )
 			{
-				printt("error: no weapons to simulate.")
-				printt("------------AUDIO DECOY END-----------")
+				#if DEVELOPER
+					printt("error: no weapons to simulate.")
+					printt("------------AUDIO DECOY END-----------")
+				#endif 
+				
 				projectile.Destroy()
 				return
 			}

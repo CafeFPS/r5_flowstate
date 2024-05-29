@@ -171,7 +171,9 @@ bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> ar
 
 void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
+	#if DEVELOPER
+		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
+	#endif
 
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
@@ -212,7 +214,9 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 
 void function FS_Scenarios_OnPlayerConnected( entity player )
 {
-	printt( "[+] OnPlayerConnected Scenarios -", player )
+	#if DEVELOPER
+		printt( "[+] OnPlayerConnected Scenarios -", player )
+	#endif
 
 	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
 }
@@ -284,7 +288,10 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 
 void function FS_Scenarios_OnPlayerDisconnected( entity player )
 {
-	printt( "[+] OnPlayerDisconnected Scenarios -", player )
+	#if DEVELOPER
+		printt( "[+] OnPlayerDisconnected Scenarios -", player )
+	#endif
+	
 	_CleanupPlayerEntities( player )
 	HandleGroupIsFinished( player, null )
 
@@ -512,7 +519,9 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 			count++
         }
 	}
-	printt( "created", count, "big doors for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "created", count, "big doors for group", group.groupHandle )
+	#endif
 }
 
 void function FS_Scenarios_SaveDoorsData()
@@ -626,7 +635,9 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 			}
 		}
 	}
-	printt( "spawned", group.doors.len(), "doors for realm", realm )
+	#if DEVELOPER
+		printt( "spawned", group.doors.len(), "doors for realm", realm )
+	#endif
 }
 
 void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
@@ -643,7 +654,9 @@ void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
 			door.Destroy()
 		}
 
-	printt( "destroyed", count, "doors for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "doors for group", group.groupHandle )
+	#endif
 }
 
 int function FS_Scenarios_GetAmountOfTeams()
@@ -662,7 +675,10 @@ void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
 		return
 
 	file.aliveDeathboxes.append( deathbox )
-	printt( "added deathbox to alive deathboxes array", deathbox )
+	
+	#if DEVELOPER
+		printt( "added deathbox to alive deathboxes array", deathbox )
+	#endif
 }
 
 void function FS_Scenarios_CleanupDeathboxes()
@@ -689,7 +705,9 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 			
 			count++
 		}
-	printt( "removed", count, "deathboxes for realm", realm )
+	#if DEVELOPER
+		printt( "removed", count, "deathboxes for realm", realm )
+	#endif
 }
 
 void function FS_Scenarios_StoreAliveDropship( entity dropship )
@@ -698,7 +716,10 @@ void function FS_Scenarios_StoreAliveDropship( entity dropship )
 		return
 
 	file.aliveDropships.append( dropship )
-	printt( "added dropship to alive dropships array", dropship )
+	
+	#if DEVELOPER
+		printt( "added dropship to alive dropships array", dropship )
+	#endif
 }
 
 void function FS_Scenarios_CleanupDropships()
@@ -799,7 +820,10 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 		group.lootbins.append( lootbin )
 		count++
 	}
-	printt("spawned", count, "lootbins for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	
+	#if DEVELOPER
+		printt("spawned", count, "lootbins for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#endif
 }
 
 entity function FS_Scenarios_CreateCustomLootBin( vector origin, vector angles )
@@ -830,7 +854,9 @@ void function FS_Scenarios_DestroyLootbinsForGroup( scenariosGroupStruct group )
 			lootbin.Destroy()
 		}
 		
-	printt( "destroyed", count, "lootbins for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "lootbins for group", group.groupHandle )
+	#endif
 }
 
 void function FS_Scenarios_SaveLocationFromLootSpawn( entity ent )
@@ -945,7 +971,9 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 		count++
 	}
 
-	printt("spawned", count, "ground loot for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#if DEVELOPER
+		printt("spawned", count, "ground loot for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#endif
 }
 
 void function FS_Scenarios_DestroyLootForGroup( scenariosGroupStruct group )
@@ -961,7 +989,9 @@ void function FS_Scenarios_DestroyLootForGroup( scenariosGroupStruct group )
 			loot.Destroy()
 		}
 		
-	printt( "destroyed", count, "ground loot for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "ground loot for group", group.groupHandle )
+	#endif
 }
 
 table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
@@ -1020,22 +1050,25 @@ int function FS_Scenarios_GetAvailableTeamSlotIndex()
 
 	return -1
 }
-bool function FS_Scenarios_IsPlayerIn3v3Mode(entity player) 
+bool function FS_Scenarios_IsPlayerIn3v3Mode( entity player ) 
 {
-	if(!IsValid (player) )
+	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("isPlayerInSoloMode entity was invalid")
+			sqprint("isPlayerInSoloMode entity was invalid")
 		#endif
+		
 		return false 
 	}
 	
-    return ( player.p.handle in file.scenariosPlayerToGroupMap );
+    return ( player.p.handle in file.scenariosPlayerToGroupMap )
 }
 
 bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup, array<entity> players ) 
 {
-	printt( "FS_Scenarios_GroupToInProgressList" )
+	#if DEVELOPER
+		printt( "FS_Scenarios_GroupToInProgressList" )
+	#endif
 
 	int slotIndex = getAvailableRealmSlotIndex()
 
@@ -1330,7 +1363,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
 			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
 			{
-				printt( "Group has finished!", group.groupHandle )
+				#if DEVELOPER
+					printt( "Group has finished!", group.groupHandle )
+				#endif 
+				
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -1356,7 +1392,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				{
 					if( IsValid( ent ) )
 					{
-						printt( "tracked ent", ent, "destroyed" )
+						#if DEVELOPER
+							printt( "tracked ent", ent, "destroyed" )
+						#endif 
+						
 						ent.Destroy()
 					}
 				}
@@ -1405,7 +1444,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					} else
 						player.p.InDeathRecap = false
 
-					printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+					#if DEVELOPER
+						printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+					#endif 
+					
 					continue
 				}
 				player.p.lastDamageTime = Time() //avoid player regen health
@@ -1488,7 +1530,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		Assert( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 
-		printt("------------------MATCHING GROUP------------------")
+		#if DEVELOPER
+			printt("------------------MATCHING GROUP------------------")
+		#endif
 
 		waitingPlayers.randomize()
 
@@ -1535,7 +1579,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		}
 		
 		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
-		printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
+		
+		#if DEVELOPER
+			printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
+		#endif
 
 		// Setup HUD
 		foreach( player in newGroup.team1Players )
@@ -1619,8 +1666,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
 				thread FS_Scenarios_SpawnLootForGroup( newGroup )
-			} else
-				printt( "ground loot is disabled from playlist!" )
+			} 
+			#if DEVELOPER
+				else
+				{
+					printt( "ground loot is disabled from playlist!" )
+				}
+			#endif
 
 			wait 0.5
 			

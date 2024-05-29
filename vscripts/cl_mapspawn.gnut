@@ -602,7 +602,9 @@ void function FinisherPrivateFunction( int attackerIndex, int victimIndex, int a
 	foreach( ItemFlavor execution in GetValidItemFlavorsForLoadoutSlot( EHI_null, Loadout_CharacterExecution( attacker  ) ) )
 		AllFinishers.append(execution)
 	
-	printt("Total finishers for this attacker: " + AllFinishers.len())
+	#if DEVELOPER
+		printt("Total finishers for this attacker: " + AllFinishers.len())
+	#endif
 	
 	if(attackerFinisherIndex > AllFinishers.len()) return
 	

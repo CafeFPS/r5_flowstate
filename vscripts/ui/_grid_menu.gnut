@@ -1146,7 +1146,9 @@ void function ReselectLastElementSelected( GridMenuData data, var menu )
 	int col         = data.lastColSelected
 	var focusButton = Grid_GetButtonAtRowColumn( menu, row, col )
 
-	printt( "selecting: " + col + ", " + row )
+	#if DEVELOPER
+		printt( "selecting: " + col + ", " + row )
+	#endif
 
 	Hud_Show( focusButton )
 	Hud_SetEnabled( focusButton, true )

@@ -57,7 +57,7 @@ void function OnPlayerCreated( entity player )
 void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 {
 	#if DEVELOPER
-	printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
+		printt( "[+] Team changed for player " + player.GetPlayerName() + " Old: " + oldTeam + " - New: " + newTeam )
 	#endif
 
 	if ( PlayerShouldHaveUnitFrame( player ) )

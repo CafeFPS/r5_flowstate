@@ -4406,7 +4406,7 @@ void function TakeAllWeapons( entity ent )
 try{
 	if ( ent.IsPlayer() )
 	{	
-		if(g_bGiveTactical)
+		if( FlowState_GiveTactical() )
 		{
 			ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		}

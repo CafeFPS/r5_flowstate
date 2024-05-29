@@ -860,7 +860,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 
 	if( TROPHY_DESTROYS_EVERYTHING )
 	{
-		printt( "[pylon] Projectile destroyed! " + projectile )
+		#if DEVELOPER
+			printt( "[pylon] Projectile destroyed! " + projectile )
+		#endif
 	
 		//Sound for zap
 		EmitSoundOnEntity( pylon, TROPHY_INTERCEPT_SMALL )
@@ -900,7 +902,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 			vector pyloncenter = pylon.GetOrigin() + <0, 0, 60>
 			EffectSetControlPointVector( zap, 1, pyloncenter )
 
-			printt( "[pylon] Projectile destroyed! " + projectile )
+			#if DEVELOPER
+				printt( "[pylon] Projectile destroyed! " + projectile )
+			#endif
 	
 			//Destroy ent
 			projectile.Destroy()	
@@ -920,7 +924,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 		vector pyloncenter = pylon.GetOrigin() + <0, 0, 60>
 		EffectSetControlPointVector( zap, 1, pyloncenter )
 
-		printt( "[pylon] Projectile destroyed! " + projectile )
+		#if DEVELOPER
+			printt( "[pylon] Projectile destroyed! " + projectile )
+		#endif
 
 		//Destroy ent
 		projectile.Destroy()

@@ -2287,7 +2287,11 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 			player.SetMenuCameraEntityWithAudio( clGlobal.clientCamera )
 		else
 			player.ClearMenuCameraEntity()
-		printt( "Clearing menu camera" )
+		
+		#if DEVELOPER
+			printt( "Clearing menu camera" )
+		#endif 
+		
 		player.SetScriptMenuOff()
 		return
 	}

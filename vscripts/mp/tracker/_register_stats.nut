@@ -24,16 +24,16 @@ void function SetRegisterCoreStats( bool b )
 // for each player.								//
 //					Player-persistence settings //	
 //					can be fetched with 		//
-//					FetchPlayerData()			//
+//					Tracker_FetchPlayerData()	//
 //					and saved with				//
-//					SavePlayerData()			//
+//					Tracker_SavePlayerData()	//
 //										   ~mkos//
 //////////////////////////////////////////////////
 void function Script_RegisterAllStats()
 {
-	// void function RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
+	// void function Tracker_RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
 	//
-	// RegisterStat( "backend-name", data_in_callback, data_out_callback)
+	// Tracker_RegisterStat( "backend-name", data_in_callback, data_out_callback)
 	// NULL_STATS_INBOUND & NULL_STATS_OUTBOUND can be used as substitutes.
 	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [int,bool,float,string]
 	// Each stat will only load in if they get registered here.
@@ -54,21 +54,21 @@ void function Script_RegisterAllStats()
 
 	if( file.RegisterCoreStats )
 	{
-		RegisterStat( "kills",	 			NULL_STATS_INBOUND, 	ReturnKills )
-		RegisterStat( "deaths", 			NULL_STATS_INBOUND,		ReturnDeaths )
-		RegisterStat( "superglides", 		NULL_STATS_INBOUND, 	ReturnSuperglides )
-		RegisterStat( "total_time_played", 	NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		RegisterStat( "total_matches", 		NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		RegisterStat( "score", 				NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		RegisterStat( "settings", 			NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
+		Tracker_RegisterStat( "kills",	 			NULL_STATS_INBOUND, 	Tracker_ReturnKills )
+		Tracker_RegisterStat( "deaths", 			NULL_STATS_INBOUND,		Tracker_ReturnDeaths )
+		Tracker_RegisterStat( "superglides", 		NULL_STATS_INBOUND, 	Tracker_ReturnSuperglides )
+		Tracker_RegisterStat( "total_time_played", 	NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
+		Tracker_RegisterStat( "total_matches", 		NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
+		Tracker_RegisterStat( "score", 				NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
+		Tracker_RegisterStat( "settings", 			NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
 	
 	if( Playlist() == ePlaylists.fs_scenarios )//for demo
 	{
-		RegisterStat( "scenarios_kills", Tracker_ScenariosKillsIn, TrackerStats_ScenariosKills )
-		RegisterStat( "scenarios_deaths", NULL_STATS_INBOUND, TrackerStats_ScenariosDeaths )
+		Tracker_RegisterStat( "scenarios_kills", Tracker_ScenariosKillsIn, TrackerStats_ScenariosKills )
+		Tracker_RegisterStat( "scenarios_deaths", NULL_STATS_INBOUND, TrackerStats_ScenariosDeaths )
 	}
 }
 
@@ -132,8 +132,8 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	//
 	// usage:
 	//
-	// FetchPlayerData( uid, setting ) -- string|string
-	// SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
+	// Tracker_FetchPlayerData( uid, setting ) -- string|string
+	// Tracker_SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
 	////////////////////////////////////////////////////////////////////
 	
 	//func

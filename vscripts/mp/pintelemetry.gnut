@@ -50,8 +50,9 @@ global const LOG_ERRORS = true
 // SHARED GLOBAL //TODO: Reduce repeat declares between tracker/non tracker
 
 global function PIN_Callback_CheckReload
-global function FetchPlayerData
 global function SavePlayerData
+global function Tracker_FetchPlayerData
+global function Tracker_SavePlayerData
 global function SetAfkToRest
 
 #if TRACKER
@@ -67,11 +68,6 @@ global function SetAfkToRest
 	global function bGlobalStats
 	global function bLog
 	global function bEnc
-	global bool g_bIs1v1
-	global bool g_bLGmode = false
-	global bool g_bGiveTactical = false
-	global bool g_bRestMsg = false // used in antiafk
-	global float COMMAND_RATE_LIMIT = 0.200 
 	
 	global struct GameSummarySquadData 
 	{
@@ -88,17 +84,10 @@ global function SetAfkToRest
 	global function SendServerMessage
 	global function getEventByPlayerHandle_expensive
 	
-	//persistence
-	global function SavePlayer_wait_time
-	global function SavePlayer_lock1v1_setting
-	global function SavePlayer_start_in_rest_setting
-	global function SavePlayer_enable_input_banner
-	global function SavePlayer_saved_weapons
-	
 	//utility 
-	global function isRestrictedServer
-	global function setRestrictedServer
-	global function PrintAllPlayerMetrics
+	global function Tracker_IsRestrictedServer
+	global function Tracker_SetRestrictedServer
+	global function Tracker_PrintAllPlayerMetrics
 	#if !HAS_TRACKER_DLL
 		global function sqprint
 		global function sqerror
@@ -147,20 +136,14 @@ global function SetAfkToRest
 global function AddCallback_PlayerDataFullyLoaded
 global function AddCallback_PlayerData
 global function getEventByPlayerHandle_expensive
-global function PrintAllPlayerMetrics
-global function GetPlayerMetricsArray
+global function Tracker_PrintAllPlayerMetrics
+global function Tracker_GetPlayerMetricsArray
 global function __TrackerStatsHook_Damage
-global function RegisterStat
-global function RegisterAllSettings
+global function Tracker_RegisterStat
+global function Tracker_RegisterAllSettings
 global function Tracker_StatsMetricsByUID
 global function Tracker_EndFight
 
-//custom wrapper functions ( use FetchPlayerData() || your custom handler && SavePlayerData() )
-global function SavePlayer_wait_time
-global function SavePlayer_saved_weapons
-global function SavePlayer_lock1v1_setting
-global function SavePlayer_start_in_rest_setting
-global function SavePlayer_enable_input_banner
 global function GetDefaultLock1v1Setting
 global function GetDefaultEnableInputBannerSetting
 
@@ -174,10 +157,16 @@ global function GetDefaultEnableInputBannerSetting
 global function AddCallback_QueryString
 
 //For getting settings via query system by key. 
-global function GetStringSetting
-global function GetFloatSetting
-global function GetIntSetting
-global function GetBoolSetting
+global function Tracker_GetStringSetting
+global function Tracker_GetFloatSetting
+global function Tracker_GetIntSetting
+global function Tracker_GetBoolSetting
+
+global function Tracker_ReturnSuperglides
+global function Tracker_ReturnKills
+global function Tracker_ReturnDeaths
+global function Pin_Query_Init
+global function NULL_PDATA
 
 global function bAfkToRest
 global function bGlobalStats
@@ -190,14 +179,8 @@ global function SendServerMessage
 global function bBotEnabled
 global function isIntervalThreadRunning
 
-global function isRestrictedServer
-global function setRestrictedServer
-
-global function ReturnSuperglides
-global function ReturnKills
-global function ReturnDeaths
-global function Pin_Query_Init
-global function NULL_PDATA
+global function Tracker_IsRestrictedServer
+global function Tracker_SetRestrictedServer
 
 #if LOG_ERRORS
 	global function DEV_PrintAllTrackerErrors
@@ -218,18 +201,6 @@ global function GetTrackerErrorArray
 global function CodeCallback_BatchStatsLoaded
 global function CodeCallback_PlayerStatsReady
 
-//TODO: REMOVE THESE FROM HERE, use Playlist() or Gamemode()
-
-////////////////////////////////////
-//
-global bool g_bIs1v1 //used in all modes
-global bool g_bLGmode //used in all modes
-global bool g_bGiveTactical //used in all modes
-global bool g_bRestMsg // used in antiafk
-global float COMMAND_RATE_LIMIT = 0.200 //used in all client commands
-//
-////////////////////////////////////
-
 const float MAX_FIGHT_HISTORY_TIME = 20;
 const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
 const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
@@ -238,16 +209,14 @@ const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAcc
 const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
 
-const array<string> ServerMsgEventTypes = [
-
-		"start",
-		"end"	
-		
-	]
+const array<string> ServerMsgEventTypes = 
+[
+	"start",
+	"end"		
+];
 	
 
 //(respawns) game summary
-
 global struct GameSummarySquadData
 {
 	int kills
@@ -464,7 +433,7 @@ void function CodeCallback_PlayerStatsReady( string uid )
 	#endif
 }
 
-array<PlayerMetrics> function GetPlayerMetricsArray()
+array<PlayerMetrics> function Tracker_GetPlayerMetricsArray()
 {
 	return PlayerMetricsArray
 }
@@ -479,14 +448,14 @@ void function DEV_ManualLogKill( bool ship )
 {
 	if( ship )
 	{
-		LogEvent__internal( PrintAllPlayerMetrics(true), file.LogE )
-		UpdateLiveStats( PrintAllPlayerMetrics(true) )
+		LogEvent__internal( Tracker_PrintAllPlayerMetrics(true), file.LogE )
+		UpdateLiveStats( Tracker_PrintAllPlayerMetrics(true) )
 	}
 	
 	#if LOG_ERRORS
 		DEV_PrintAllTrackerErrors()
 		#if DEVELOPER 
-			PrintAllPlayerMetrics(false) //console
+			Tracker_PrintAllPlayerMetrics(false) //console
 		#endif 
 	#endif 
 	
@@ -557,7 +526,7 @@ table <string,bool> function GetAllBoolSettings()
 	return file.Global_R5RDEV_BoolSettings
 } 
 
-string function GetStringSetting( string setting, string none = "" )
+string function Tracker_GetStringSetting( string setting, string none = "" )
 {
 	if ( setting in file.Global_R5RDEV_StringSettings)
 	{
@@ -567,7 +536,7 @@ string function GetStringSetting( string setting, string none = "" )
 	return none;
 }
 
-float function GetFloatSetting( string setting, float none = 0.0 )
+float function Tracker_GetFloatSetting( string setting, float none = 0.0 )
 {
 	if ( setting in file.Global_R5RDEV_FloatSettings )
 	{
@@ -577,7 +546,7 @@ float function GetFloatSetting( string setting, float none = 0.0 )
 	return none;
 }
 
-int function GetIntSetting( string setting, int none = 0 )
+int function Tracker_GetIntSetting( string setting, int none = 0 )
 {
 	if ( setting in file.Global_R5RDEV_IntSettings )
 	{
@@ -587,7 +556,7 @@ int function GetIntSetting( string setting, int none = 0 )
 	return none;
 }
 
-bool function GetBoolSetting( string setting, bool none = false )
+bool function Tracker_GetBoolSetting( string setting, bool none = false )
 {
 	if ( setting in file.Global_R5RDEV_BoolSettings )
 	{
@@ -597,9 +566,9 @@ bool function GetBoolSetting( string setting, bool none = false )
 	return none;
 }
 
-void function RegisterAllSettings()
+void function Tracker_RegisterAllSettings()
 {
-	mAssert( !file.FETCH_BATCH_COMPLETE, "Called RegisterAllSettings() but query has already been made." )
+	mAssert( !file.FETCH_BATCH_COMPLETE, "Called Tracker_RegisterAllSettings() but query has already been made." )
 	file._registerAllSettings = true
 }
 
@@ -932,7 +901,7 @@ void function INIT_BATCH_FETCH()
 }
 
 // if no callback is desired, use NULL_STATS_INBOUND or NULL_STATS_OUTBOUND as the callback func respectively
-void function RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
+void function Tracker_RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
 {
 	if( empty( statname ) )
 	{
@@ -996,17 +965,17 @@ string function BuildRequestedSettingsString()
 	return settingsQuery 
 }
 
-var function ReturnSuperglides( string uid )
+var function Tracker_ReturnSuperglides( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].SuperglideTimestamps.len()
 }
 
-var function ReturnKills( string uid )
+var function Tracker_ReturnKills( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].kills
 }
 
-var function ReturnDeaths( string uid )
+var function Tracker_ReturnDeaths( string uid )
 {
 	return PlayerMetricsArray[GetPlayerMetricsIndexByUID(uid)].deaths
 }
@@ -1134,7 +1103,7 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 		
 		if ( key in file.PlayerSettingsMap )
 		{
-			SavePlayerData( player.p.UID , key, ReturnValue( Sync_Data[i] ) )
+			Tracker_SavePlayerData( player.p.UID , key, ReturnValue( Sync_Data[i] ) )
 			
 			foreach( callBackFunc in file.PlayerSettingsMap[key] )
 			{
@@ -1154,7 +1123,7 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 
 PlayerMetrics function Tracker_StatsMetricsByUID( string uid )
 {
-	return GetPlayerMetricsArray()[GetPlayerMetricsIndexByUID( uid )]
+	return Tracker_GetPlayerMetricsArray()[GetPlayerMetricsIndexByUID( uid )]
 }
 
 void function DestroyStats()
@@ -1306,9 +1275,6 @@ void function INIT_fastComputes()
 {
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
-	g_bIs1v1 							= Playlist() == ePlaylists.fs_1v1 ? true : false;
-	g_bLGmode 							= GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
-	g_bRestMsg 							= GetCurrentPlaylistVarBool( "rest_msg", false)
 	file.LogOn 							= GetCurrentPlaylistVarBool("logging_enabled", false)
 	file.LogE 							= GetCurrentPlaylistVarBool("logging_encryption", false)
 	file.bChatbotEnabled				= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
@@ -1323,9 +1289,6 @@ void function INIT_fastComputes()
 	{
 		file.sBotName = SQ_GetSetting__internal("settings.CHATBOT_PREFIX")
 	}	
-	
-	COMMAND_RATE_LIMIT = GetCurrentPlaylistVarFloat( "COMMAND_RATE_LIMIT", 0.200 )
-	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	
 	//init stat bools (must be before string inits)
 	file.global_stats 						= GetCurrentPlaylistVarBool( "use_global_stats", false )
@@ -1569,12 +1532,12 @@ void function Init_NewGame()
 }
 
 
-	bool function isRestrictedServer()
+	bool function Tracker_IsRestrictedServer()
 	{
 		return file.restricted_server
 	}
 
-	void function setRestrictedServer( bool setting )
+	void function Tracker_SetRestrictedServer( bool setting )
 	{
 		file.restricted_server = setting
 	}
@@ -1611,7 +1574,7 @@ void function Init_NewGame()
 			return 7
 		}
 		
-		if ( player.p.season_score < GetIntSetting("restricted_rank") )
+		if ( player.p.season_score < Tracker_GetIntSetting("restricted_rank") )
 		{
 			return 6
 		}
@@ -1654,7 +1617,7 @@ void function Init_NewGame()
 				return LineBreak( file.restricted_admin_message )
 				
 			case 6: 
-				return "Your Rank is too low to play on this server. \n\n Your Score: " + player.p.season_score.tostring() + ". \nLowest rank allowed: " + file.restricted_rank.tostring() + " (Score: " + GetIntSetting("restricted_rank").tostring() + ")"; //this GetIntSetting() setting should be named restricted_score for clarity
+				return "Your Rank is too low to play on this server. \n\n Your Score: " + player.p.season_score.tostring() + ". \nLowest rank allowed: " + file.restricted_rank.tostring() + " (Score: " + Tracker_GetIntSetting("restricted_rank").tostring() + ")"; //this Tracker_GetIntSetting() setting should be named restricted_score for clarity
 			
 			case 4:
 				return "You do not have enough games played to play on this server. \n Your total games played: " + player.p.season_gamesplayed.tostring() + " \n Server required minimum: " + file.restricted_gamesplayed.tostring() + "\n You need to play " + ( file.restricted_gamesplayed - player.p.season_gamesplayed ).tostring() + " more games to play on this server.";
@@ -2488,7 +2451,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 			entity currentAttacker = GetEntityFromEncodedEHandle( player_handles[i] )
 			
 			//*move to gametype specific in future
-			if ( g_bLGmode )
+			if ( Flowstate_IsLGDuels() )
 			{			
 				if ( IsValid( currentAttacker ) && IsValid( victim ) )
 				{
@@ -2551,7 +2514,7 @@ DamageEvent function Tracker_CreateDamageEvent( int weaponSource, float damage, 
 					AddToPlayerDamage( victimUID, victimTotalDamage )
 			
 		//*move to gametype specific in future or set playlist bool
-		if ( g_bLGmode )
+		if ( Flowstate_IsLGDuels() )
 		{
 			if ( IsValid( victim ) )
 			{	
@@ -2985,7 +2948,7 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 		{
 			#if DEVELOPER 
 				sqerror("STATS:: invalid owner for damage event, returning")
-				printt("DEBUGIT:", attacker )
+				printt("DEBUGIT:", attacker, "weaponSource: ", weaponSource )
 			#endif
 			return
 		}
@@ -3482,18 +3445,18 @@ void function INIT_PlayerDataCallbacks()
 // utility funcitons for fetch/save playerdata 
 
 
-void function SavePlayerData( string UID, string setting, ... )
+void function Tracker_SavePlayerData( string UID, string setting, ... )
 {
 	if( vargc < 1 )
 	{
 		#if DEVELOPER 
-			Warning( "No argument was passed to SavePlayerData()" )
+			Warning( "No argument was passed to " + FUNC_NAME() + "()" )
 		#endif 
 		return 
 	}
 	
 	ThrowValidSaveType( vargv[0] )
-	//Assert( ValidSaveType( vargv[0] ), "Invalid variable type passed to SavePlayerData()" )
+	//Assert( ValidSaveType( vargv[0] ), "Invalid variable type passed to Tracker_SavePlayerData()" )
 
 	string value = "";
 	
@@ -3584,7 +3547,7 @@ void function ThrowValidSaveType( ... )
 	unreachable
 }
 
-string function FetchPlayerData( string UID, string setting )
+string function Tracker_FetchPlayerData( string UID, string setting )
 {
 	string notfound = "";
 	
@@ -3604,12 +3567,12 @@ string function FetchPlayerData( string UID, string setting )
 // If your data is not output with this, your data will not be synced. 
 
 // For settings added via AddCallback_PlayerData(), your settings will be here,
-// IF they were saved using SavePlayerData()
+// IF they were saved using Tracker_SavePlayerData()
 
-// For stats added via RegisterStat() with also having defined
+// For stats added via Tracker_RegisterStat() with also having defined
 // RegisterStatOutboundData() for the stat, your stat will 
 // output based on the defined field at the time of this function call
-string function PrintAllPlayerMetrics( bool trigger = false ) 
+string function Tracker_PrintAllPlayerMetrics( bool trigger = false ) 
 {	
     string json = "[";
     foreach (index, metrics in PlayerMetricsArray) 
@@ -3626,7 +3589,7 @@ string function PrintAllPlayerMetrics( bool trigger = false )
 		json += format( "\"jumps\": %d, ", metrics.JumpTimestamps.len() ) //predefined
 		
 		// stats are shipped when registered with 
-		// RegisterStatOutboundData()  <- [ called with RegisterStat() ]
+		// RegisterStatOutboundData()  <- [ called with Tracker_RegisterStat() ]
 		json += GenerateOutBoundJsonData( UID )
 		
 		//settings 
@@ -3780,34 +3743,15 @@ void function SetPlayerLeftFlag( entity player )
 }
 
 
-//TODO: remove wrapper functions and use SavePlayerData explicitely
-void function SavePlayer_wait_time( entity player, float value )
+void function SavePlayerData( entity player, string setting, ... )
 {
-	SavePlayerData( player.p.UID, "wait_time", value )
-}
-
-
-void function SavePlayer_saved_weapons( entity player, string value )
-{
-	SavePlayerData( player.p.UID, "saved_weapons", value )
-}
-
-
-void function SavePlayer_lock1v1_setting( entity player, bool value )
-{
-	SavePlayerData( player.p.UID, "lock1v1_setting", value )
-}
-
-
-void function SavePlayer_enable_input_banner( entity player, bool value )
-{
-	SavePlayerData( player.p.UID, "enable_input_banner", value )
-}
-
-
-void function SavePlayer_start_in_rest_setting( entity player, bool value )
-{
-	SavePlayerData( player.p.UID, "start_in_rest_setting", value )
+	if( !IsValid( player ) )
+		return 
+		
+	Assert( vargc > 0, "Empty Data passed to " + FUNC_NAME() )	
+		
+	Assert( player.IsPlayer(), "Cannot save player data for nonplayer." )	
+		Tracker_SavePlayerData( player.p.UID, setting, vargv[0] )
 }
 
 
@@ -3832,7 +3776,7 @@ bool function GetPlayerLeftFlag( entity player )
 
 float function GetPlayer_wait_time( entity player ) 
 {
-	string setting = FetchPlayerData( player.p.UID, "enable_input_banner" ) 
+	string setting = Tracker_FetchPlayerData( player.p.UID, "enable_input_banner" ) 
 	
 	if ( !empty( setting ) )
 	{
@@ -3845,7 +3789,7 @@ float function GetPlayer_wait_time( entity player )
 
 string function GetPlayer_saved_weapons( entity player ) 
 {	
-	string setting = FetchPlayerData( player.p.UID, "saved_weapons" )
+	string setting = Tracker_FetchPlayerData( player.p.UID, "saved_weapons" )
 	
 	if ( !empty( setting ) )
 	{
@@ -3858,7 +3802,7 @@ string function GetPlayer_saved_weapons( entity player )
 
 bool function GetPlayer_lock1v1_setting( entity player ) 
 {	
-	string setting = FetchPlayerData( player.p.UID, "lock1v1_setting" )
+	string setting = Tracker_FetchPlayerData( player.p.UID, "lock1v1_setting" )
 	
 	if ( !empty( setting ) )
 	{
@@ -3871,7 +3815,7 @@ bool function GetPlayer_lock1v1_setting( entity player )
 
 bool function GetPlayer_start_in_rest_setting( entity player ) 
 {	
-	string setting = FetchPlayerData( player.p.UID, "start_in_rest_setting" )
+	string setting = Tracker_FetchPlayerData( player.p.UID, "start_in_rest_setting" )
 	
 	if ( !empty( setting ) )
 	{
@@ -3885,7 +3829,7 @@ bool function GetPlayer_start_in_rest_setting( entity player )
 bool function GetPlayer_enable_input_banner_setting( entity player ) 
 {
 
-	string setting = FetchPlayerData( player.p.UID, "enable_input_banner" )
+	string setting = Tracker_FetchPlayerData( player.p.UID, "enable_input_banner" )
 	
 	if ( !empty( setting ) )
 	{
@@ -4355,7 +4299,7 @@ void function FinishGameStatsRound()
 								//mkos: log winner placement - && denotes placement entry for parser
 								LogEvent__internal
 								(
-									format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), PrintAllPlayerMetrics(true) ),
+									format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), Tracker_PrintAllPlayerMetrics(true) ),
 									file.LogE
 								)
 
@@ -4374,7 +4318,7 @@ void function FinishGameStatsRound()
 											stopLogging__internal( Logging_ShipStats() ) //IMPORTANT
 											
 											//update live global stats for match making (verified only)
-											string metrics = PrintAllPlayerMetrics( true )
+											string metrics = Tracker_PrintAllPlayerMetrics( true )
 											UpdateLiveStats( metrics )
 											
 											//send to discord:
@@ -5076,32 +5020,21 @@ bool function bGlobalStats(){ return file.global_stats }
 bool function bBotEnabled(){ return file.bChatbotEnabled }
 
 //persistence
-void function FetchPlayerData( string UID, string setting ){}
-void function SavePlayerData( string UID, string setting, ... ){}
-void function SavePlayer_wait_time( entity ent, float time ){}
-void function SavePlayer_lock1v1_setting( entity ent, bool setting ){}
-void function SavePlayer_start_in_rest_setting( entity ent, bool setting ){}
-void function SavePlayer_enable_input_banner( entity ent, bool setting ){}
-void function SavePlayer_saved_weapons( entity ent, string setting ){}
+void function Tracker_FetchPlayerData( string UID, string setting ){}
+void function Tracker_SavePlayerData( string UID, string setting, ... ){}
+void function SavePlayerData( entity player, string setting, ... ){}
 
 //utility
 void function SendServerMessage( string _ ){}
 DamageEvent function getEventByPlayerHandle_expensive( int handle ){ DamageEvent e; e.lastHitTimestamp = 0.0; return e }
-bool function isRestrictedServer(){ return false }
-void function setRestrictedServer( bool _ ){}
-string function PrintAllPlayerMetrics( bool _ ){ return "" }
+bool function Tracker_IsRestrictedServer(){ return false }
+void function Tracker_SetRestrictedServer( bool _ ){}
+string function Tracker_PrintAllPlayerMetrics( bool _ ){ return "" }
 
 void function PIN_Init()
 {
-	//These global bools are initialized here and used in all scripts
-	//TODO: Use only sh file bools instead of globals
 	if( IsLobby() )
 		return
-	
-	g_bGiveTactical = GetCurrentPlaylistVarBool( "give_legend_tactical", false )
-	g_bIs1v1 = Playlist() == ePlaylists.fs_1v1 ? true : false;
-	g_bLGmode = GetCurrentPlaylistVarBool( "lg_duel_mode", false ) || Playlist() == ePlaylists.fs_lgduels_1v1
-	g_bRestMsg = GetCurrentPlaylistVarBool( "rest_msg", false )
 	
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
@@ -5144,7 +5077,7 @@ void function ShowPlayerLocalMOTD( entity player )
 void function PIN_GameStart(){}
 void function PIN_RoundEnd( int roundnum ){}
 void function PIN_GameEnd(){}
-void function PIN_AddPlayer( entity player ){ if(g_bIs1v1){ INIT_playerChallengesStruct( player ) } }
+void function PIN_AddPlayer( entity player ){ if( Flowstate_IsFS1v1() ){ INIT_playerChallengesStruct( player ) } }
 void function PIN_PlayerLeft( entity player, string reason ){}
 void function PIN_PlayerSpawned( entity player ){}
 void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo ){}

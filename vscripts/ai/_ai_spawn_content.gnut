@@ -671,7 +671,9 @@ function ShouldSpawn( team, forced )
 	//we're not allowed to spawn AI at all - return false
 	if ( !IsNPCSpawningEnabled() && !forced )
 	{
-		printt( "WARNING: tried to spawn an NPC but NPC Spawning is Disabled." )
+		#if DEVELOPER
+			printt( "WARNING: tried to spawn an NPC but NPC Spawning is Disabled." )
+		#endif
 		return false
 	}
 	return true

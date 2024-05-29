@@ -149,9 +149,11 @@ void function OnProjectileCollision_weapon_basic_bolt( entity projectile, vector
 		float durationSec = Time() - projectile.proj.savedShotTime
 		float dropDist = (pos.z - startPos.z)
 
-		printt( "Distance:   ", GetDistanceString( distance ) )
-		printt( "Drop:       ", GetDistanceString( dropDist ), durationSec )
-		printt( "Drop ms/sec:", (2 * fabs(dropDist / 39.3701)) / (durationSec * durationSec) )
+		#if DEVELOPER
+			printt( "Distance:   ", GetDistanceString( distance ) )
+			printt( "Drop:       ", GetDistanceString( dropDist ), durationSec )
+			printt( "Drop ms/sec:", (2 * fabs(dropDist / 39.3701)) / (durationSec * durationSec) )
+		#endif
 	}
 
 	int bounceCount = projectile.GetProjectileWeaponSettingInt( eWeaponVar.projectile_ricochet_max_count )

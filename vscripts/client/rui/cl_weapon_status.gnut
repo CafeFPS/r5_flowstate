@@ -1141,7 +1141,10 @@ void function UltimateWeaponStateActive()
 
 void function UltimateReadyVideoFinished( int channel )
 {
-	printt( "UltimateReadyVideoFinished" )
+	#if DEVELOPER
+		printt( "UltimateReadyVideoFinished" )
+	#endif 
+	
 	Signal( clGlobal.levelEnt, "ultimate_video_finished" )
 }
 

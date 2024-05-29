@@ -259,8 +259,9 @@ void function resetChallenges()
 		if( isChalValid( chalStruct ) )
 		{	
 			#if INVALID_ACCESS_DEBUG
-			printl("Potential crash avoided 01")
+				printl("Potential crash avoided 01")
 			#endif
+			
 			chalStruct.challengers.clear()
 		}
 	}
@@ -877,7 +878,7 @@ bool function isPlayerInWaitingList(entity player)
 // lg_duel mkos
 bool function return_rest_state( entity player )
 {
-	if( !IsValid (player) || !g_bIs1v1  )
+	if( !IsValid (player) || !Flowstate_IsFS1v1()  )
 		return false
 	
 	if ( isPlayerInRestingList( player ) )
@@ -956,7 +957,7 @@ void function AddPlayerToWaitingList( soloPlayerStruct playerStruct )
 
 bool function mkos_Force_Rest(entity player, array<string> args)
 {
-	if( !g_bIs1v1 && !g_bLGmode )
+	if( !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() )
 		return false
 	
 	if( !IsValid(player) ) //|| !IsAlive(player) )
@@ -1552,14 +1553,14 @@ float function checkChallengeTime( entity challenger, entity challengedPlayer )
 	if ( !isChalValid( chalStruct ) )
 	{
 		#if INVALID_ACCESS_DEBUG
-		if( IsValid( challengedPlayer ) )
-		{
-			PrintDebug( challengedPlayer, 3 )
-		}
-		else 
-		{
-			printl("Invalid player during chal access #8")
-		}
+			if( IsValid( challengedPlayer ) )
+			{
+				PrintDebug( challengedPlayer, 3 )
+			}
+			else 
+			{
+				printl("Invalid player during chal access #8")
+			}
 		#endif
 		return 0.0 
 	}
@@ -2432,7 +2433,10 @@ void function soloModePlayerToWaitingList( entity player )
 			{
 				if( splayer == player )
 				{
-					printt( "removed player from team 1 ", player )
+					#if DEVELOPER
+						printt( "removed player from team 1 ", player )
+					#endif 
+					
 					playerGroup.team1Players.removebyvalue( player )
 				}
 			}
@@ -2441,7 +2445,10 @@ void function soloModePlayerToWaitingList( entity player )
 			{
 				if( splayer == player )
 				{
-					printt( "removed player from team 2 ", player )
+					#if DEVELOPER
+						printt( "removed player from team 2 ", player )
+					#endif
+					
 					playerGroup.team2Players.removebyvalue( player )
 				}
 			}
@@ -2450,7 +2457,10 @@ void function soloModePlayerToWaitingList( entity player )
 			{
 				if( splayer == player )
 				{
-					printt( "removed player from team 3 ", player )
+					#if DEVELOPER
+						printt( "removed player from team 3 ", player )
+					#endif 
+					
 					playerGroup.team3Players.removebyvalue( player )
 				}
 			}
@@ -2969,7 +2979,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 
-	if ( g_bLGmode )
+	if ( Flowstate_IsLGDuels() )
 	{
 		PlayerRestoreHP_1v1( player, 100, 0 ) //lg
 	}
@@ -3071,7 +3081,7 @@ void function _soloModeInit( int eMap )
 	Init_ValidLegendRange()
 	
 	//INIT PRIMARY WEAPON SELECTION
-	if ( g_bLGmode ) 
+	if ( Flowstate_IsLGDuels() ) 
 	{
 		Weapons = [
 			"mp_weapon_lightninggun" //Lg_Duel
@@ -3105,7 +3115,7 @@ void function _soloModeInit( int eMap )
 	
 	
 	//INIT SECONDARY WEAPON SELECTION	
-	if ( g_bLGmode ) 
+	if ( Flowstate_IsLGDuels() ) 
 	{
 		WeaponsSecondary = [
 			"mp_weapon_lightninggun" //Lg_Duel beta
@@ -3325,7 +3335,7 @@ void function DefinePanelCallbacks( table<string, entity> panels )
         if ( user.p.IBMM_grace_period > 0 )
         {
             user.p.IBMM_grace_period = 0
-            SavePlayer_wait_time( user, 0.0 )
+            SavePlayerData( user, "wait_time", 0.0 )
             LocalMsg( user, "#FS_IBMM_Any" )
         }
         else
@@ -3335,7 +3345,7 @@ void function DefinePanelCallbacks( table<string, entity> panels )
                 if ( settings.default_ibmm_wait == 0 )
                 {
                     user.p.IBMM_grace_period = 3
-                    SavePlayer_wait_time( user, 3.0 )
+                    SavePlayerData( user, "wait_time", 3.0 )
                 }
                 else
                 {
@@ -3359,13 +3369,13 @@ void function DefinePanelCallbacks( table<string, entity> panels )
         if ( user.p.lock1v1_setting == true )
         {
             user.p.lock1v1_setting = false
-            SavePlayer_lock1v1_setting( user, false )
+            SavePlayerData( user, "lock1v1_setting", false )
             LocalMsg( user, "#FS_ChalDisabled" )
         }
         else
         {   
             user.p.lock1v1_setting = true
-            SavePlayer_lock1v1_setting( user, true )
+            SavePlayerData( user, "lock1v1_setting", true )
             LocalMsg( user, "#FS_ChalEnabled" )
         }
     })
@@ -3378,13 +3388,13 @@ void function DefinePanelCallbacks( table<string, entity> panels )
         if ( user.p.start_in_rest_setting == true )
         {
             user.p.start_in_rest_setting = false
-            SavePlayer_start_in_rest_setting( user, false )
+            SavePlayerData( user, "start_in_rest_setting", false )
             LocalMsg(user, "#FS_StartInRestDisabled")
         }
         else
         {   
             user.p.start_in_rest_setting = true
-            SavePlayer_start_in_rest_setting( user, true )
+            SavePlayerData( user, "start_in_rest_setting", true )
             LocalMsg( user, "#FS_StartInRestEnabled" )
         }
     })
@@ -3397,13 +3407,13 @@ void function DefinePanelCallbacks( table<string, entity> panels )
         if ( user.p.enable_input_banner == true )
         {
             user.p.enable_input_banner = false
-            SavePlayer_enable_input_banner( user, false )
+            SavePlayerData( user, "enable_input_banner", false )
             LocalMsg( user, "#FS_InputBannerDisabled" )
         }
         else
         {   
             user.p.enable_input_banner = true
-            SavePlayer_enable_input_banner( user, true )
+            SavePlayerData( user, "enable_input_banner", true )
             LocalMsg( user, "#FS_InputBannerEnabled" )
         }
     })
@@ -4175,7 +4185,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			
-			if (!g_bLGmode) //TODO: set bool during init based on array of game modes where melee is allowed, repeat for more. 
+			if ( !Flowstate_IsLGDuels() ) //TODO: set bool during init based on array of game modes where melee is allowed, repeat for more. 
 			{	
 				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )

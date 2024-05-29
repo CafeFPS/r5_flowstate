@@ -491,6 +491,6 @@ void function ToggleMute( entity player, bool toggle )
 	player.ToggleMute( toggle )
 	
 	#if TRACKER && HAS_TRACKER_DLL
-		SavePlayerData( player.p.UID, "muted", toggle )
+		Tracker_SavePlayerData( player.p.UID, "muted", toggle )
 	#endif
 }

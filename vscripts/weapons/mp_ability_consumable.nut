@@ -391,18 +391,24 @@ bool function OnWeaponAttemptOffhandSwitch_Consumable( entity weapon )
 	if ( GetConsumableModOnWeapon( weapon ) == "" && weapon.GetOwner().IsBot() )
 		return false
 
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#337")
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#337")
+	#endif
 
 #if SERVER
 	if ( ! ( weapon.GetOwner() in file.playerToNextMod ) )
 		return false
-
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#343")
+	
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#343")
+	#endif
 
 	if ( !CanSwitchToWeapon( weapon, file.playerToNextMod[ weapon.GetOwner() ] ) )
 		return false
-
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#348")
+	
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#348")
+	#endif
 #endif
 
 	#if CLIENT
@@ -835,7 +841,9 @@ void function OnWeaponChargeEnd_Consumable( entity weapon )
 		Signal( player, "OnChargeEnd" )
 	}
 
-	printt( "chargeFracAtEnd", chargeFracAtEnd )
+	#if DEVELOPER
+		printt( "chargeFracAtEnd", chargeFracAtEnd )
+	#endif
 
 	#if CLIENT
 	if ( player != GetLocalViewPlayer() )
@@ -1041,7 +1049,9 @@ void function AddModAndFireWeapon_Thread( entity player, string modName )
 	player.ClientCommand( "SetNextHealModType " + modName )
 	//Remote_CallFunction_NonReplay( "ClientCallback_SetNextHealModType", modName )
 
-	printt("AddModAndFireWeapon_Thread", "SetNextHealModType " + modName )
+	#if DEVELOPER
+		printt("AddModAndFireWeapon_Thread", "SetNextHealModType " + modName )
+	#endif
 
 	ActivateOffhandWeaponByIndex( OFFHAND_SLOT_FOR_CONSUMABLES )
 }
@@ -1450,7 +1460,10 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 	{
 		if ( useData.usedHealth )
 		{
-			printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
+			#if DEVELOPER
+				printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
+			#endif
+			
 			player.SetShieldHealth( minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ) )
 		}
 		else if ( shouldUpdateShields )
@@ -1502,13 +1515,17 @@ void function UltimatePackUse( entity player, ConsumableInfo info )
 
 void function ClientCallback_SetNextHealModType(string nextModName)
 {
-	printt("ClientCallback_SetNextHealModType")
+	#if DEVELOPER
+		printt("ClientCallback_SetNextHealModType")
+	#endif
 	//file.playerToNextMod[ player ] <- nextModName
 }
 
 void function ClientCallback_SetSelectedConsumableTypeNetInt( int consumableType )
 {
-	printt("ClientCallback_SetSelectedConsumableTypeNetInt")
+	#if DEVELOPER
+		printt("ClientCallback_SetSelectedConsumableTypeNetInt")
+	#endif
 	//SetSelectedConsumableTypeNetInt( player, consumableType )
 }
 

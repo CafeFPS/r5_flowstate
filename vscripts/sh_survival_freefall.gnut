@@ -266,11 +266,17 @@ vector function GetSkydiveSmokeColorForTeam( int team )
 SkyDiveTrailPackage function GetSkyDiveTrailPackageForPlayerWithOverrides( entity player ) //
 {
 	int index = -1 // player.GetPlayerNetInt( "skyDiveTrailOverrideIndex" )
-	printt( "player " + player + ", index : " + index )
+	
+	#if DEVELOPER
+		printt( "player " + player + ", index : " + index )
+	#endif 
+	
 	if ( index == -1  )
 	{
 		SkyDiveTrailPackage package =  SkydiveTrail_GetSkyDiveTrailPackageForPlayer( player )
-		printt( "Package smokeColor 0th element? " + package.smokeColorFX[0].fx )
+			#if DEVELOPER
+				printt( "Package smokeColor 0th element? " + package.smokeColorFX[0].fx )
+			#endif
 		return SkydiveTrail_GetSkyDiveTrailPackageForPlayer( player )
 	}
 
@@ -1483,7 +1489,9 @@ void function PlayerFallAssistanceDetection( entity player )
 #if CLIENT
 void function CL_AttemptDropEmote( entity player )
 {
-	printt( "CLIENT EMOTE" )
+	#if DEVELOPER
+		printt( "CLIENT EMOTE" )
+	#endif
 
 	if ( !player.Player_IsFreefalling() )
 		return
@@ -1690,7 +1698,10 @@ void function PlayerFreefallActiveChanged( entity player, bool oldValue, bool is
 
 void function PlayerFreefallEmoteAvailableChanged( entity player, bool oldValue, bool isFreefallEmoteAvailable, bool actuallyChanged )
 {
-	printt( "PlayerFreefallEmoteAvailableChanged", isFreefallEmoteAvailable )
+	#if DEVELOPER
+		printt( "PlayerFreefallEmoteAvailableChanged", isFreefallEmoteAvailable )
+	#endif
+		
 	if ( file.skydiveRui != null )
 	{
 		//

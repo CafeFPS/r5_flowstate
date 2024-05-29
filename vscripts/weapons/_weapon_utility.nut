@@ -2624,9 +2624,13 @@ void function AddToTrackedEnts( entity player, entity ent )
 		if( IsValid( group ) )
 		{
 			AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
-			printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+			
+			#if DEVELOPER
+				printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+			#endif
 		}
-	} else
+	} 
+	else
 	{
 		AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
 	}
@@ -2870,7 +2874,10 @@ entity function GetMeleeWeapon( entity player )
 	array<entity> weapons = player.GetMainWeapons()
 	foreach ( weaponEnt in weapons )
 	{
-		printt("ismelee", weaponEnt.IsWeaponMelee())
+		#if DEVELOPER
+			printt( "ismelee", weaponEnt.IsWeaponMelee() )
+		#endif 
+		
 		if ( weaponEnt.IsWeaponMelee() )
 			return weaponEnt
 	}
@@ -3833,15 +3840,19 @@ void function GetWeaponDPS( int activeSlot, bool vsTitan = false )
 		float timePerBurst   = (timePerShot * burst_fire_count) + burst_fire_delay
 		float burstPerSecond = 1 / timePerBurst
 
-		printt( timePerBurst )
+		#if DEVELOPER
+			printt( timePerBurst )
 
-		printt( "DPS Near", (burstPerSecond * burst_fire_count) * damage_near_value )
-		printt( "DPS Far ", (burstPerSecond * burst_fire_count) * damage_far_value )
+			printt( "DPS Near", (burstPerSecond * burst_fire_count) * damage_near_value )
+			printt( "DPS Far ", (burstPerSecond * burst_fire_count) * damage_far_value )
+		#endif 
 	}
 	else
 	{
-		printt( "DPS Near", fire_rate * damage_near_value )
-		printt( "DPS Far ", fire_rate * damage_far_value )
+		#if DEVELOPER
+			printt( "DPS Near", fire_rate * damage_near_value )
+			printt( "DPS Far ", fire_rate * damage_far_value )
+		#endif
 	}
 }
 

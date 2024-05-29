@@ -309,7 +309,9 @@ void function GenerateZoneTiers()
 		{
 			if( !IsValid( mapZoneData.zoneTrigger ) )
 			{
-				printt( "zone not valid?" )
+				#if DEVELOPER
+					printt( "zone not valid?" )
+				#endif 
 				continue
 			}
 

@@ -386,7 +386,9 @@ bool function ClientCommand_PlayAnimInSlot( entity player, array<string> args )
 	}
 	else 
 	{
-		printt( "Invalid commmand sent" )
+		#if DEVELOPER
+			printt( "Invalid commmand sent" )
+		#endif
 		return false
 	}
 	

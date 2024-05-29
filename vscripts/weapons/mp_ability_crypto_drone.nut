@@ -299,14 +299,18 @@ entity function CryptoDrone_ReleaseCamera( entity weapon, WeaponPrimaryAttackPar
 
 void function CryptoDrone_CameraImpact( entity projectile )
 {
-	printt( "CryptoDrone_CameraImpact", projectile )
+	#if DEVELOPER
+		printt( "CryptoDrone_CameraImpact", projectile )
+	#endif
 
 	thread CryptoDrone_CameraImpact_Thread( projectile )
 }
 
 void function CryptoDrone_CameraImpact_Thread( entity projectile )
 {
-	printt( "CryptoDrone_CameraImpact_Thread", projectile )
+	#if DEVELOPER
+		printt( "CryptoDrone_CameraImpact_Thread", projectile )
+	#endif
 
 	Assert( IsNewThread(), "Must be threaded off" )
 
@@ -327,7 +331,9 @@ void function CryptoDrone_CameraImpact_Thread( entity projectile )
 }
 var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	printt( "OnWeaponTossReleaseAnimEvent", weapon )
+	#if DEVELOPER
+		printt( "OnWeaponTossReleaseAnimEvent", weapon )
+	#endif
 	
 	entity player = weapon.GetWeaponOwner()
 
@@ -371,9 +377,9 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 		// // }
 	// }
 
-	#if SERVER
-	foreach( mod in weapon.GetMods() )
-		printt( "debug weapon mods: ", mod )
+	#if SERVER && DEVELOPER
+		foreach( mod in weapon.GetMods() )
+			printt( "debug weapon mods: ", mod )
 	#endif
 
 	//return 0 //ammoReq
@@ -381,7 +387,9 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 
 void function OnWeaponTossPrep_ability_crypto_drone( entity weapon, WeaponTossPrepParams prepParams )
 {
-	printt( "OnWeaponTossPrep", weapon )
+	#if DEVELOPER
+		printt( "OnWeaponTossPrep", weapon )
+	#endif
 	
 	#if CLIENT
 	if ( InPrediction() )
@@ -417,7 +425,9 @@ void function OnWeaponTossPrep_ability_crypto_drone( entity weapon, WeaponTossPr
 
 void function OnWeaponRegenEnd_ability_crypto_drone( entity weapon )
 {
-	printt( "OnWeaponRegenEnd", weapon )
+	#if DEVELOPER
+		printt( "OnWeaponRegenEnd", weapon )
+	#endif
 }
 
 #if CLIENT
@@ -759,7 +769,9 @@ void function GetPlayerOutOfCamera( entity player )
 	if( !IsValid( vehicle ) || !IsValid( player ) || !IsAlive( player ) || !player.ContextAction_IsInVehicle() )
 		return
 
-	printt( "player get out of camera", player )
+	#if DEVELOPER
+		printt( "player get out of camera", player )
+	#endif
 
 	// Supposed to use EndSignal "ExitCameraView" ?
 
@@ -1459,7 +1471,10 @@ void function CryptoDrone_OnPlayerTeamChanged( entity player, int oldTeam, int n
 
 void function CryptoDrone_CreateHUDMarker( entity drone )
 {
-	printt( "create hud marker")
+	#if DEVELOPER
+		printt( "create hud marker")
+	#endif 
+	
 	EndSignal( drone, "OnDestroy", "CameraViewStart" )
 	entity localViewPlayer = GetLocalViewPlayer()
 

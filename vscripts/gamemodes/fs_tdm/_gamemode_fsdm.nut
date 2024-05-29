@@ -755,7 +755,7 @@ bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> 
 			}
 			
 			player.p.IBMM_grace_period = user_value;
-			SavePlayer_wait_time( player, user_value )
+			SavePlayerData( player, "wait_time", user_value )
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 			//Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
 			
@@ -779,7 +779,7 @@ bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> a
 		sqprint( "saving:" + args[0])
 	#endif
 	
-	SavePlayerData( player.p.UID, "LgDuelsSetting", args[0] )
+	SavePlayerData( player, "LgDuelsSetting", args[0] )
 	return true
 }
 
@@ -819,7 +819,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 					{	
 						player.p.lock1v1_setting = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_lock1v1_setting( player, true )
+						SavePlayerData( player, "lock1v1_setting", true )
 						//Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
 						return true
@@ -841,7 +841,7 @@ bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> a
 					{
 						player.p.lock1v1_setting = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_lock1v1_setting( player, false )
+						SavePlayerData( player, "lock1v1_setting", false )
 						//Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
 						return true
@@ -897,7 +897,7 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 					{	
 						player.p.start_in_rest_setting = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_start_in_rest_setting( player, true )
+						SavePlayerData( player, "start_in_rest_setting", true )
 						//Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
 						return true
@@ -919,7 +919,7 @@ bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<str
 					{
 						player.p.start_in_rest_setting = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_start_in_rest_setting( player, false )
+						SavePlayerData( player, "start_in_rest_setting", false )
 						//Message( player, "Success", "START_IN_REST setting set to disabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
 						return true
@@ -974,7 +974,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 					{	
 						player.p.enable_input_banner = true;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_enable_input_banner( player, true )
+						SavePlayerData( player, "enable_input_banner", true )
 						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
 						return true				
@@ -995,7 +995,7 @@ bool function ClientCommand_enable_input_banner( entity player, array<string> ar
 					{
 						player.p.enable_input_banner = false;
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayer_enable_input_banner( player, false )
+						SavePlayerData( player, "enable_input_banner", false )
 						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
 						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
 						return true
@@ -1187,13 +1187,13 @@ void function _CustomTDM_Init()
 
         UpdatePlayerCounts()
 		
-		if ( g_bLGmode )
+		if ( Flowstate_IsLGDuels() )
 		{
 			INIT_LGDuels_Player( player )
 		}
 		
 		// init for IBMM
-		if ( g_bIs1v1 || g_bLGmode && !player.p.bIsChatbot )
+		if ( Flowstate_IsFS1v1() || Flowstate_IsLGDuels() && !player.p.bIsChatbot )
 		{	
 			Init_IBMM ( player )
 			
@@ -1476,7 +1476,7 @@ void function SetTdmStateToInProgress()
 		FlagSet("START_LOG")
 	}
 	
-	if(g_bIs1v1)
+	if( Flowstate_IsFS1v1() )
 	{
 		resetChallenges()
 	}
@@ -2013,7 +2013,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				if( !IsValid(victim) )
 					return
 				
-				if ( !g_bLGmode )
+				if ( !Flowstate_IsLGDuels() )
 				{
 					if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
 						PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
@@ -2103,7 +2103,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
 					
 					//lg_duel mkos
-					if ( !g_bLGmode )
+					if ( !Flowstate_IsLGDuels() )
 					{
 						if( attacker == GetChampion() )
 							PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
@@ -4458,7 +4458,7 @@ void function SimpleChampionUI()
 		//cycle map /mkos
 		string to_map = GetMapName();
 
-		if ( g_bLGmode ) 
+		if ( Flowstate_IsLGDuels() ) 
 		{
 			to_map = "mp_rr_canyonlands_staging";
 		} 
@@ -6046,7 +6046,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	}
 	
 		weaponlist[player.GetPlayerName()] <- concatenate_weps;
-		SavePlayer_saved_weapons( player, concatenate_weps )
+		SavePlayerData( player, "saved_weapons", concatenate_weps )
 	
 	return true
 }
@@ -6192,7 +6192,7 @@ bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 		delete weaponlist[player.GetPlayerName()]
 	}
 	
-	SavePlayer_saved_weapons( player, "NA" )
+	SavePlayerData( player, "saved_weapons", "NA" )
 	player.p.weapon_loadout = "NA";
 	
 	LocalMsg( player, "#FS_WEAPONS_RESET" )

@@ -141,7 +141,11 @@ void function TrackPrimaryWeapon()
 			if ( oldPlayerUsePrompts != newPlayerUsePrompts )
 			{
 				oldPlayerUsePrompts = newPlayerUsePrompts
-				printt( newPlayerUsePrompts )
+				
+				#if DEVELOPER
+					printt( newPlayerUsePrompts )
+				#endif
+					
 				RuiSetBool( file.shieldRegenRui, "showPlayerHints", !newPlayerUsePrompts )
 			}
 		}

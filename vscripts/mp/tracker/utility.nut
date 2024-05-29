@@ -173,7 +173,7 @@ struct {
 									return true;
 								}			
 								
-								if (g_bLGmode)
+								if ( Flowstate_IsLGDuels() )
 								{
 									handicap = l_player.p.p_damage == 2 ? "On" : "Off";
 									stringHandicap = "---- Handicap: " + handicap; 
@@ -602,13 +602,13 @@ struct {
 							
 								if ( args[1] == "1" )
 								{
-									setRestrictedServer( true )
+									Tracker_SetRestrictedServer( true )
 									Message( player, "Command sent", "restricted_server was ENABLED" )
 									return true
 								} 
 								else if ( args[1] == "0" )
 								{
-									setRestrictedServer( false )
+									Tracker_SetRestrictedServer( false )
 									Message( player, "Command sent", "restricted_server was disabled" )
 									return true
 								} 
@@ -884,7 +884,7 @@ struct {
 						{				
 							string nputmsg = "Current Stats:"
 							
-							string info = PrintAllPlayerMetrics(true);
+							string info = Tracker_PrintAllPlayerMetrics( true )
 							
 							if( (nputmsg.len() + info.len()) > 599 )
 							{
@@ -928,11 +928,11 @@ struct {
 							
 							if ( index != -1 )
 							{	
-								foreach ( playerMetrics in GetPlayerMetricsArray() ) 
+								foreach ( playerMetrics in Tracker_GetPlayerMetricsArray() ) 
 								{
 									if ( playerMetrics.playerID == args[1] ) 
 									{	
-										GetPlayerMetricsArray().removebyvalue(playerMetrics);					
+										Tracker_GetPlayerMetricsArray().removebyvalue(playerMetrics);					
 									}
 								}
 								
@@ -1468,7 +1468,7 @@ struct {
 				
 				if( IsValid( p ))
 				{
-					Message( player, "Data for: " + param, FetchPlayerData( p.p.UID, param2 ) )
+					Message( player, "Data for: " + param, Tracker_FetchPlayerData( p.p.UID, param2 ) )
 				}
 				else 
 				{

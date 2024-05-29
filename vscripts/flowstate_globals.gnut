@@ -1,8 +1,10 @@
 
 globalize_all_functions
 
-struct {
-	
+global const float COMMAND_RATE_LIMIT = 0.200 
+
+struct 
+{	
 	float Deathmatch_GetIntroCutsceneNumSpawns
 	float Deathmatch_GetIntroCutsceneSpawnDuration
 	float Deathmatch_GetIntroSpawnSpeed
@@ -90,6 +92,8 @@ struct {
 	bool Flowstate_DisableAllMapTriggers
 	bool Flowstate_Is_gamemode_1v1_type
 	bool Flowstate_GivePassive
+	bool FlowState_GiveTactical
+	bool FlowState_RestMsg
 	
 } SH_flowstateSettings
 
@@ -183,6 +187,8 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
 	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
 	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
+	SH_flowstateSettings.FlowState_GiveTactical							= GetCurrentPlaylistVarBool( "give_legend_tactical", false )
+	SH_flowstateSettings.FlowState_RestMsg 								= GetCurrentPlaylistVarBool( "rest_msg", false )
 }
 
 // Playlist GET
@@ -274,3 +280,5 @@ bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettin
 bool function Flowstate_IsGame1v1Type() 						{ return SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type }
 bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowstate_GivePassive }
 bool function Equipment_GetRespawnKitEnabled()                  { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }
+bool function FlowState_GiveTactical()							{ return SH_flowstateSettings.FlowState_GiveTactical }
+bool function FlowState_RestMsg()								{ return SH_flowstateSettings.FlowState_RestMsg }
