@@ -23,6 +23,7 @@ global function SetCustomPlaylist
 	global function DEV_pos_help
 	global function DEV_SetTeamSize
 	global function DEV_tp_to_panels
+	global function DEV_LoadPak
 #endif 
 
 	global struct LocPairData
@@ -51,7 +52,7 @@ global function SetCustomPlaylist
 			array<string> dev_positions = []
 			string dev_positions_type = ""
 			array<string> validPosTypes = ["sq","csv"]
-			array<LocPair> dev_positions_LocPair = []
+			array<LocPair> dev_positions_LocPair = []		
 			
 			table<string,string> DEV_POS_COMMANDS = {
 				
@@ -68,8 +69,6 @@ global function SetCustomPlaylist
 		#endif
 
 	} file 
-
-	
 
 array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {}  )
 {
@@ -352,6 +351,8 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 					NewLocPair(< -8705.69, -32702.3, -3498.85 >,< 0.533245, 305.132, 0> ),
 					NewLocPair(< -5250.25, -33407.4, -3341.1 >,< 359.723, 196.167, 0> )
 				]
+				 
+
 			}
 			else
 			{
@@ -896,6 +897,82 @@ LocPair function DEV_tp_to_panels()
 	return file.panelsloc
 }
 
+void function DEV_LoadPak( string pak = "", string playlist = "" )
+{
+	if( empty( DEV_PosType() ) )
+	{
+		Warning("No type was set. Set type with DEV_PosType(\"csv\") or \"sq\" for squirrel code")
+			return
+	}
+
+	bool usePlaylist = false
+	
+	if( empty( pak ) )
+	{
+		printt( "Pak was empty, using current." )
+		pak = file.currentSpawnPak
+	}
+	
+	if( !empty( playlist ) )
+	{
+		SetCustomPlaylist( playlist )
+		usePlaylist = true
+	}
+
+	table<string,bool> spawnOptions = {}
+	
+	spawnOptions["use_sets"] <- true
+	spawnOptions["use_random"] <- false
+	spawnOptions["prefer"] <- false
+	spawnOptions["use_custom_rpak"] <- SetCustomSpawnPak( pak )
+	spawnOptions["use_custom_playlist"] <- usePlaylist
+	
+	array<LocPair> devLocations = ReturnAllSpawnLocations( MapName(), spawnOptions )
+	
+	if( devLocations.len() > 0 )
+	{
+		DEV_ClearPos()
+		
+		string str 
+		
+		foreach( spawn in devLocations )
+		{
+			switch( DEV_PosType() )
+			{
+				case "csv":
+					if( DEV_PosType() == "sq" )
+						DEV_convert_array_to_csv_from_squirrel()
+						
+					str = DEV_append_pos_array_csv( spawn.origin, spawn.angles )
+					
+				break
+				case "sq":
+					if ( DEV_PosType() == "csv" )
+						DEV_convert_array_to_squirrel_from_csv()
+						
+					str = DEV_append_pos_array_squirrel( spawn.origin, spawn.angles )
+					
+				break
+				
+				default:
+					Warning("No type was set. Set type with DEV_PosType(\"csv\") or \"sq\" for squirrel code")
+					return
+			}
+			
+			file.dev_positions_LocPair.append( spawn )
+			file.dev_positions.append( str )
+		}
+		
+		Warning( "----LOADED PAK: " + pak + "----" )
+		DEV_PrintPosArray()
+	}
+	else 
+	{
+		Warning("Locations are empty.")
+	}
+	
+}
+
 #endif //DEVELOPER
 
 //util
@@ -945,7 +1022,14 @@ bool function SetCustomSpawnPak( string custom_rpak )
 
 void function SetCustomPlaylist( string playlistref )
 {
-	file.customPlaylist = playlistref
+	if( AllPlaylistsArray().contains( playlistref ) )
+	{
+		file.customPlaylist = playlistref
+	}
+	else 
+	{
+		Warning("Specified custom playlist in spawn pak, but playlist \"" + playlistref + "\" doesn't exist.")
+	}	
 }
 
 string function GetCurrentSpawnSet()

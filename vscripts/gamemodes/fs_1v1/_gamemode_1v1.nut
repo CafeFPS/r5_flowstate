@@ -3151,7 +3151,7 @@ void function _soloModeInit( int eMap )
 	
 	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap, settings.spawnOptions )
 	
-	if( !IsEven( allSoloLocations.len() ) )
+	if( is1v1GameType() && !IsEven( allSoloLocations.len() ) )
 	{
 		Warning("Incorrectly configured spawns in " + FILE_NAME() + " ( locpair must be an even amount )")
 		allSoloLocations.resize(0)
@@ -3177,7 +3177,8 @@ void function _soloModeInit( int eMap )
 
 			soloLocations.append(p)
 		}
-	} else
+	} 
+	else
 	{
 		for (int i = 0; i < allSoloLocations.len(); i=i+2)
 		{
