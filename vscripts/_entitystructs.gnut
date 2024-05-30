@@ -1030,6 +1030,7 @@ global struct ServerPlayerStruct
 	bool continueLoop = true
 	array<entity> dummyList
 	bool InDeathRecap
+	float lastRingDamagedTime
 }
 
 global struct ChallengeScore

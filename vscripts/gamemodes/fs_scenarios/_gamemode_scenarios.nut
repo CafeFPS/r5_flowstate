@@ -40,6 +40,7 @@ global struct scenariosGroupStruct
 	soloLocStruct &groupLocStruct
 	entity ring
 	float calculatedRingRadius
+	float currentRingRadius
 	int slotIndex
 	int team1Index = -1
 	int team2Index = -1
@@ -104,6 +105,7 @@ struct {
 	float fs_scenarios_default_radius_padding = 169
 	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
+
 	// float fs_scenarios_max_queuetime = 150
 	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
 	// int fs_scenarios_maximum_team_allowed = 3
@@ -114,14 +116,13 @@ struct {
 	bool fs_scenarios_bleedout_enabled = true
 	bool fs_scenarios_show_death_recap_onkilled = true
 	bool fs_scenarios_zonewars_ring_mode = false
+	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
 } settings
 
 array< bool > teamSlots
 
 void function Init_FS_Scenarios()
 {
-	AddCallback_FlowstateSpawnsInit( CustomSpawns )
-	
 	settings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
 	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
 	settings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
@@ -136,6 +137,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
 	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
+	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -157,75 +159,8 @@ void function Init_FS_Scenarios()
 	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
-}
 
-LocPairData function CustomSpawns()
-{
-	array<LocPair> spawns = 
-	[ 
-		NewLocPair( < 21571.2, -38315.6, -2220.33 >, < 5.24698, 276.919, 0 > ),
-		NewLocPair( < 19886.9, -40480.5, -2220.33 >, < 3.51996, 7.62843, 0 > ),
-		NewLocPair( < 21706.7, -40174.5, -2220.3 >, < 4.56219, 142.329, 0 > ),
-		NewLocPair( < 20994.1, -10747.6, -4134.61 >, < 2.58227, 114.477, 0 > ),
-		NewLocPair( < 20404, -9440, -4130.61 >, < 4.33487, 294.074, 0 > ),
-		NewLocPair( < 19168.6, -10683, -4174.59 >, < 359.776, 27.1522, 0 > ),
-		NewLocPair( < 27898, -4883.51, -3975.98 >, < 2.27297, 314.628, 0 > ),
-		NewLocPair( < 29196, -6981.77, -3620.77 >, < 4.91559, 42.2109, 0 > ),
-		NewLocPair( < 30156.8, -8187.79, -3695.4 >, < 359.362, 201.996, 0 > ),
-		NewLocPair( < 19568.1, 3619.8, -4083.48 >, < 8.71203, 358.715, 0 > ),
-		NewLocPair( < 20440.1, 4088.34, -3935.97 >, < 5.23619, 27.8162, 0 > ),
-		NewLocPair( < 21840.5, 3244.21, -4087.97 >, < 3.42291, 179.432, 0 > ),
-		NewLocPair( < 30499, 10332.4, -3463.97 >, < 2.19265, 340.815, 0 > ),
-		NewLocPair( < 32962, 9651.33, -3595.97 >, < 1.8348, 204.779, 0 > ),
-		NewLocPair( < 32303.5, 7670.99, -3399.97 >, < 5.88895, 86.1931, 0 > ),
-		NewLocPair( < 27656, 11566.7, -3333.05 >, < 6.70514, 89.4928, 0 > ),
-		NewLocPair( < 28169.9, 14017.2, -3096.08 >, < 8.58106, 176.488, 0 > ),
-		NewLocPair( < 27055.7, 14253.5, -3121.8 >, < 6.91889, 328.014, 0 > ),
-		NewLocPair( < 12028, 19842.8, -5071.97 >, < 7.74917, 61.6774, 0 > ),
-		NewLocPair( < 10763.7, 20620.4, -5021.19 >, < 0.721139, 2.94495, 0 > ),
-		NewLocPair( < 12422, 20024.9, -3955.5 >, < 6.13481, 37.477, 0 > ),
-		NewLocPair( < 12215.7, 6224.99, -4135.97 >, < 2.15493, 301.381, 0 > ),
-		NewLocPair( < 13710.8, 5519.57, -4295.97 >, < 3.51585, 135.276, 0 > ),
-		NewLocPair( < 13727.8, 6805.13, -4125.45 >, < 7.85658, 207.357, 0 > ),
-		NewLocPair( < 9739.9, 5670.5, -3695.97 >, < 6.19938, 206.917, 0 > ),
-		NewLocPair( < 9899.33, 5889.62, -4295.97 >, < 0.241581, 226.194, 0 > ),
-		NewLocPair( < 8188.41, 6422.55, -4328.97 >, < 4.43221, 343.673, 0 > ),
-		NewLocPair( < -3173.09, 19093.4, -2710.9 >, < 3.11988, 328.317, 0 > ),
-		NewLocPair( < 44.5532, 18607.7, -2950.61 >, < 1.29781, 134.363, 0 > ),
-		NewLocPair( < 170.456, 20832.4, -2998.95 >, < 359.924, 233.759, 0 > ),
-		NewLocPair( < -9093.1, 29465.8, -3297.97 >, < 7.87784, 340.927, 0 > ),
-		NewLocPair( < -9109.85, 29733.4, -3705.97 >, < 4.4871, 298.136, 0 > ),
-		NewLocPair( < -9036.7, 29103.5, -3985.97 >, < 1.55586, 102, 0 > ),
-		NewLocPair( < -19067.1, 22952.7, -3351.97 >, < 7.82167, 290.408, 0 > ),
-		NewLocPair( < -19354.7, 22662.6, -4039.97 >, < 8.6704, 56.1921, 0 > ),
-		NewLocPair( < -20649.8, 23252.1, -4088.94 >, < 358.799, 356.094, 0 > ),
-		NewLocPair( < -25572.1, 8425.76, -2960.97 >, < 4.11316, 39.1704, 0 > ),
-		NewLocPair( < -25531.3, 8567.46, -3364.97 >, < 0.992981, 225.578, 0 > ),
-		NewLocPair( < -27476, 9324.44, -3168.97 >, < 4.99117, 324.014, 0 > ),
-		NewLocPair( < -22985, -20526.7, -4080.12 >, < 8.68259, 359.654, 0 > ),
-		NewLocPair( < -20570.5, -17410.2, -4043.91 >, < 3.60389, 266.156, 0 > ),
-		NewLocPair( < -19860.9, -20718.1, -3187.63 >, < 10.476, 191.576, 0 > ),
-		NewLocPair( < -17184.4, -29771.7, -3471.97 >, < 3.20937, 183.963, 0 > ),
-		NewLocPair( < -19610.4, -29894.6, -3749.41 >, < 6.02845, 225.983, 0 > ),
-		NewLocPair( < -20096.8, -30485.4, -3751.52 >, < 3.42621, 44.4348, 0 > ),
-		NewLocPair( < -6612.29, -30421.6, -3559.94 >, < 9.03763, 262.677, 0 > ),
-		NewLocPair( < -5476.95, -33721.2, -3337.12 >, < 10.6455, 178.458, 0 > ),
-		NewLocPair( < -7238.02, -32846, -3469.78 >, < 3.58117, 356.822, 0 > ),
-		NewLocPair( < 12125.6, 1809.22, -3621.78 >, < 12.9427, 91.5103, 0 > ),
-		NewLocPair( < 10943.2, 3012.45, -4295.97 >, < 358.444, 317.55, 0 > ),
-		NewLocPair( < 14546.3, 3803.29, -4271.99 >, < 359.183, 221.825, 0 > ),
-		NewLocPair( < 17412.6, -1700.06, -3466.56 >, < 359.477, 201.463, 0 > ),
-		NewLocPair( < 14846.7, -2687.5, -3236.45 >, < 8.30138, 57.1494, 0 > ),
-		NewLocPair( < 14109.1, -694.488, -3625.18 >, < 4.55861, 315.723, 0 > ),
-		NewLocPair( < -12933.8, 32999.7, -3863.97 >, < 5.53265, 269.791, 0 > ),
-		NewLocPair( < -12773.3, 32075.2, -4079.97 >, < 2.5599, 177.638, 0 > ),
-		NewLocPair( < -13309.9, 30093, -4039.99 >, < 2.25235, 81.8431, 0 > ),
-		NewLocPair( < -10221.7, -26834.7, -2895.19 >, < 8.6499, 332.555, 0 > ),
-		NewLocPair( < -7745.85, -26691.1, -4136.14 >, < 1.36961, 209.059, 0 > ),
-		NewLocPair( < -9225.73, -28118.5, -3796.55 >, < 349.513, 104.549, 0 > ),
-	];
-	
-	return CreateLocPairObject( spawns, true )
+	AddCallback_FlowstateSpawnsInit( CustomSpawns )
 }
 
 bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
@@ -1530,10 +1465,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if ( player.IsPhaseShifted() )
 					continue
 
-				if( Distance2D( player.GetOrigin(),Center) > group.calculatedRingRadius ) //检测乱跑的脑残
+				if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > 1.5 ) //DAMAGE_CHECK_STEP_TIME
 				{
 					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-					player.TakeDamage( 3, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+					player.TakeDamage( 25, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+					player.p.lastRingDamagedTime = Time()
 					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
 				}
 			}
@@ -1723,6 +1659,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
 			vector Center = groupLocStruct.Center
+			
+			#if DEVELOPER
+				DebugDrawSphere( Center, 30, 255,0,0, true, 300 )
+			#endif
 			float ringRadius = 0
 
 			foreach( LocPair spawn in groupLocStruct.respawnLocations )
@@ -1732,6 +1672,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 
 			newGroup.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
+			newGroup.currentRingRadius = newGroup.calculatedRingRadius
 			
 			if( !settings.fs_scenarios_zonewars_ring_mode )
 				newGroup.calculatedRingRadius = settings.fs_scenarios_default_radius
@@ -1838,21 +1779,59 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				thread FS_Scenarios_GiveWeaponsToGroup( players )
 			}
 			newGroup.isReady = true
+			
+			thread FS_Scenarios_StartRingMovementTest( newGroup )
 		}()
 	}//while(true)
 
 }//thread
 
+
+void function FS_Scenarios_StartRingMovementTest( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+	
+	entity ring = group.ring
+	EndSignal( ring, "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( group )
+		{
+			if( IsValid( group ) )
+				group.currentRingRadius = 0
+		}
+	)
+
+	while ( group.currentRingRadius > 0 && !group.IsFinished )
+	{
+		array<entity> players
+		players.extend( group.team1Players )
+		players.extend( group.team2Players )
+		players.extend( group.team3Players )
+		ArrayRemoveInvalid( players )
+
+		float radius = group.currentRingRadius
+		
+		group.currentRingRadius = radius - settings.fs_scenarios_zonewars_ring_ringclosingspeed 
+
+		foreach( player in  players )
+		{
+			player.SetPlayerNetTime( "currentPlayerDeathfieldRadius", group.currentRingRadius )
+		}
+		WaitFrame()
+	}
+}
+
 entity function CreateSmallRingBoundary(vector Center, int realm = -1, float radius = -1)
 {
     vector smallRingCenter = Center
-	float smallRingRadius = radius
 	entity smallcircle = CreateEntity( "prop_script" )
-	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
+	smallcircle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	smallcircle.kv.fadedist = 2000
-	smallcircle.kv.modelscale = smallRingRadius
 	smallcircle.kv.renderamt = 1
-	smallcircle.kv.rendercolor = FlowState_RingColor()
 	smallcircle.kv.solid = 0
 	smallcircle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	// smallcircle.SetOwner(Owner)
@@ -1860,24 +1839,16 @@ entity function CreateSmallRingBoundary(vector Center, int realm = -1, float rad
 	smallcircle.SetAngles( <0, 0, 0> )
 	smallcircle.NotSolid()
 	smallcircle.DisableHibernation()
+	SetTargetName( smallcircle, "scenariosDeathField" )
+
 	if( realm > -1 )
 	{
 		smallcircle.RemoveFromAllRealms()
 		smallcircle.AddToRealm( realm )
 	}
 
-	// smallcircle.Minimap_SetObjectScale( min(smallRingRadius / SURVIVAL_MINIMAP_RING_SCALE, 1) )
-	// smallcircle.Minimap_SetAlignUpright( true )
-	// smallcircle.Minimap_SetZOrder( 2 )
-	// smallcircle.Minimap_SetClampToEdge( true )
-	// smallcircle.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
-
 	DispatchSpawn(smallcircle)
 
-	// foreach ( eachPlayer in GetPlayerArray() )
-	// {
-	// 	smallcircle.Minimap_AlwaysShow( 0, eachPlayer )
-	// }
 	return smallcircle
 }
 
@@ -1960,3 +1931,116 @@ void function Cafe_EndAllRounds()
 	FS_Scenarios_ForceAllRoundsToFinish()
 }
 #endif
+
+
+LocPairData function CustomSpawns()
+{
+	array<LocPair> spawns
+	switch( MapName() )
+	{
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+			spawns = 
+			[ 
+				NewLocPair( < 21571.2, -38315.6, -2220.33 >, < 5.24698, 276.919, 0 > ),
+				NewLocPair( < 19886.9, -40480.5, -2220.33 >, < 3.51996, 7.62843, 0 > ),
+				NewLocPair( < 21706.7, -40174.5, -2220.3 >, < 4.56219, 142.329, 0 > ),
+				NewLocPair( < 20994.1, -10747.6, -4134.61 >, < 2.58227, 114.477, 0 > ),
+				NewLocPair( < 20404, -9440, -4130.61 >, < 4.33487, 294.074, 0 > ),
+				NewLocPair( < 19168.6, -10683, -4174.59 >, < 359.776, 27.1522, 0 > ),
+				NewLocPair( < 27898, -4883.51, -3975.98 >, < 2.27297, 314.628, 0 > ),
+				NewLocPair( < 29196, -6981.77, -3620.77 >, < 4.91559, 42.2109, 0 > ),
+				NewLocPair( < 30156.8, -8187.79, -3695.4 >, < 359.362, 201.996, 0 > ),
+				NewLocPair( < 19568.1, 3619.8, -4083.48 >, < 8.71203, 358.715, 0 > ),
+				NewLocPair( < 20440.1, 4088.34, -3935.97 >, < 5.23619, 27.8162, 0 > ),
+				NewLocPair( < 21840.5, 3244.21, -4087.97 >, < 3.42291, 179.432, 0 > ),
+				NewLocPair( < 30499, 10332.4, -3463.97 >, < 2.19265, 340.815, 0 > ),
+				NewLocPair( < 32962, 9651.33, -3595.97 >, < 1.8348, 204.779, 0 > ),
+				NewLocPair( < 32303.5, 7670.99, -3399.97 >, < 5.88895, 86.1931, 0 > ),
+				NewLocPair( < 27656, 11566.7, -3333.05 >, < 6.70514, 89.4928, 0 > ),
+				NewLocPair( < 28169.9, 14017.2, -3096.08 >, < 8.58106, 176.488, 0 > ),
+				NewLocPair( < 27055.7, 14253.5, -3121.8 >, < 6.91889, 328.014, 0 > ),
+				NewLocPair( < 12028, 19842.8, -5071.97 >, < 7.74917, 61.6774, 0 > ),
+				NewLocPair( < 10763.7, 20620.4, -5021.19 >, < 0.721139, 2.94495, 0 > ),
+				NewLocPair( < 12422, 20024.9, -3955.5 >, < 6.13481, 37.477, 0 > ),
+				NewLocPair( < 12215.7, 6224.99, -4135.97 >, < 2.15493, 301.381, 0 > ),
+				NewLocPair( < 13710.8, 5519.57, -4295.97 >, < 3.51585, 135.276, 0 > ),
+				NewLocPair( < 13727.8, 6805.13, -4125.45 >, < 7.85658, 207.357, 0 > ),
+				NewLocPair( < 9739.9, 5670.5, -3695.97 >, < 6.19938, 206.917, 0 > ),
+				NewLocPair( < 9899.33, 5889.62, -4295.97 >, < 0.241581, 226.194, 0 > ),
+				NewLocPair( < 8188.41, 6422.55, -4328.97 >, < 4.43221, 343.673, 0 > ),
+				NewLocPair( < -3173.09, 19093.4, -2710.9 >, < 3.11988, 328.317, 0 > ),
+				NewLocPair( < 44.5532, 18607.7, -2950.61 >, < 1.29781, 134.363, 0 > ),
+				NewLocPair( < 170.456, 20832.4, -2998.95 >, < 359.924, 233.759, 0 > ),
+				NewLocPair( < -9093.1, 29465.8, -3297.97 >, < 7.87784, 340.927, 0 > ),
+				NewLocPair( < -9109.85, 29733.4, -3705.97 >, < 4.4871, 298.136, 0 > ),
+				NewLocPair( < -9036.7, 29103.5, -3985.97 >, < 1.55586, 102, 0 > ),
+				NewLocPair( < -19067.1, 22952.7, -3351.97 >, < 7.82167, 290.408, 0 > ),
+				NewLocPair( < -19354.7, 22662.6, -4039.97 >, < 8.6704, 56.1921, 0 > ),
+				NewLocPair( < -20649.8, 23252.1, -4088.94 >, < 358.799, 356.094, 0 > ),
+				NewLocPair( < -25572.1, 8425.76, -2960.97 >, < 4.11316, 39.1704, 0 > ),
+				NewLocPair( < -25531.3, 8567.46, -3364.97 >, < 0.992981, 225.578, 0 > ),
+				NewLocPair( < -27476, 9324.44, -3168.97 >, < 4.99117, 324.014, 0 > ),
+				NewLocPair( < -22985, -20526.7, -4080.12 >, < 8.68259, 359.654, 0 > ),
+				NewLocPair( < -20570.5, -17410.2, -4043.91 >, < 3.60389, 266.156, 0 > ),
+				NewLocPair( < -19860.9, -20718.1, -3187.63 >, < 10.476, 191.576, 0 > ),
+				NewLocPair( < -17184.4, -29771.7, -3471.97 >, < 3.20937, 183.963, 0 > ),
+				NewLocPair( < -19610.4, -29894.6, -3749.41 >, < 6.02845, 225.983, 0 > ),
+				NewLocPair( < -20096.8, -30485.4, -3751.52 >, < 3.42621, 44.4348, 0 > ),
+				NewLocPair( < -6612.29, -30421.6, -3559.94 >, < 9.03763, 262.677, 0 > ),
+				NewLocPair( < -5476.95, -33721.2, -3337.12 >, < 10.6455, 178.458, 0 > ),
+				NewLocPair( < -7238.02, -32846, -3469.78 >, < 3.58117, 356.822, 0 > ),
+				NewLocPair( < 12125.6, 1809.22, -3621.78 >, < 12.9427, 91.5103, 0 > ),
+				NewLocPair( < 10943.2, 3012.45, -4295.97 >, < 358.444, 317.55, 0 > ),
+				NewLocPair( < 14546.3, 3803.29, -4271.99 >, < 359.183, 221.825, 0 > ),
+				NewLocPair( < 17412.6, -1700.06, -3466.56 >, < 359.477, 201.463, 0 > ),
+				NewLocPair( < 14846.7, -2687.5, -3236.45 >, < 8.30138, 57.1494, 0 > ),
+				NewLocPair( < 14109.1, -694.488, -3625.18 >, < 4.55861, 315.723, 0 > ),
+				NewLocPair( < -12933.8, 32999.7, -3863.97 >, < 5.53265, 269.791, 0 > ),
+				NewLocPair( < -12773.3, 32075.2, -4079.97 >, < 2.5599, 177.638, 0 > ),
+				NewLocPair( < -13309.9, 30093, -4039.99 >, < 2.25235, 81.8431, 0 > ),
+				NewLocPair( < -10221.7, -26834.7, -2895.19 >, < 8.6499, 332.555, 0 > ),
+				NewLocPair( < -7745.85, -26691.1, -4136.14 >, < 1.36961, 209.059, 0 > ),
+				NewLocPair( < -9225.73, -28118.5, -3796.55 >, < 349.513, 104.549, 0 > )
+			]
+			break
+			
+		//these are for testing, i love to use different maps while developing so i don't get bored. Colombia
+		case eMaps.mp_rr_canyonlands_mu2:
+			spawns = [
+				NewLocPair( <19356.6816, 8522.87305, 4042.40039> , <0, 55.6736412, 0> ),
+				NewLocPair( <26999.6836, 17004.0176, 3332.56128> , <0, -151.621841, 0> ),
+
+				NewLocPair( <-16412.1445, -8597.46973, 3309.15259> , <0, -132.202454, 0> ),
+				NewLocPair( <-20556.3535, -13442.3467, 3205.87817> , <0, 61.0804405, 0> ),
+				
+				NewLocPair( <3425.80518, -10499.7891, 3285.03125> , <0, -175.575607, 0> ),
+				NewLocPair( <-2240.12695, -11501.4404, 3167.58057> , <0, 9.96513939, 0> ),
+
+				NewLocPair( <34933.0859, 20244.8984, 4202.85254> , <0, 35.38274, 0> ),
+				NewLocPair( <37117.9102, 23769.4707, 4019.0625> , <0, -122.349365, 0> )
+			]
+			break
+
+		case eMaps.mp_rr_olympus_mu1:
+			spawns = [
+				NewLocPair( <-20382.9375, 28349.0488, -6379.54199>, <0, 42.8024635, 0> ),
+				NewLocPair( <-15628.7354, 33786.6602, -6181.9043>, <0, -144.864426, 0> ),
+				NewLocPair( <-21250.4883, 34012.3867, -6383.88867>, <0, -62.3558273, 0> ),
+
+				NewLocPair( <-20105.1855, -1279.15027, -5568.2041>, <0, 149.361572, 0> ),
+				NewLocPair( <-26193.8652, 2219.52808, -5573.85596>, <0, -30.5185471, 0> ),
+				NewLocPair( <-24378.3047, -1635.08997, -5341.96875>, <0, 59.6698799, 0> ),
+				
+				NewLocPair( <21201.8613, -14852.7305, -5032.22363>, <0, -78.5065842, 0> ),
+				NewLocPair( <21783.9785, -21842.8613, -5032.22363>, <0, 107.717316, 0> ),
+				NewLocPair( <17949.0391, -18802.1172, -4923.96875>, <0, 5.94164991, 0> ),
+
+				NewLocPair( <9436.18555, 28426.0469, -4654.91553>, <0, -127.501564, 0> ),
+				NewLocPair( <3670.51611, 20282.0215, -5598.02393>, <0, 57.8940849, 0> ),
+				NewLocPair( <7840.729, 19089.4102, -5498.23828>, <0, 81.0241699, 0> )
+			]
+			break
+	}
+
+	return CreateLocPairObject( spawns, true )
+}

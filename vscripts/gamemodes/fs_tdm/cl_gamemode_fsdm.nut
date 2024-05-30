@@ -1818,7 +1818,7 @@ void function FS_Scenarios_InitPlayersCards()
 	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 )
 	{
 		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
-		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 110, wepSelectorBasePos.y )
+		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 115, wepSelectorBasePos.y + 2 )
 	}
 
 	for(int i = 0; i<3; i++ )
@@ -1998,7 +1998,7 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 
 	if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() > 0 && show )
 		Hud_SetVisible( file.vsBasicImage2, true )
-	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 )
+	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 || file.vsBasicImage2 != null && !show)
 		Hud_SetVisible( file.vsBasicImage2, false )
 
 	if( !show )

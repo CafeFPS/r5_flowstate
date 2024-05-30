@@ -276,6 +276,8 @@ void function ClMinimap_Init()
 
 	AddCreateCallback( "player", OnPlayerCreate )
 	AddTargetNameCreateCallback( "deathField", MinimapDeathFieldCreated )
+	AddTargetNameCreateCallback( "scenariosDeathField", MinimapDeathFieldCreated )
+
 	AddCallback_OnPlayerChangedTeam( Minimap_OnPlayerTeamChanged )
 	RegisterSignal( "TeamChanged" )
 
@@ -392,6 +394,9 @@ void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
 
 void function MinimapDeathFieldCreated( entity ent )
 {
+	if( ent.GetTargetName() == "scenariosDeathField" && !GetLocalClientPlayer().DoesShareRealms( ent ) )
+		return
+
 	var rui = file.minimap_base
 	RuiTrackFloat3( rui, "deathFieldOrigin", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiSetFloat( rui, "radiusScale", SURVIVAL_MINIMAP_RING_SCALE )

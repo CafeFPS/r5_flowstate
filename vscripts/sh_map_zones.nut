@@ -290,7 +290,7 @@ void function GenerateZoneTiers()
     file.hotZoneRadius = hotZoneRadius
     file.hotZoneOrigin = hotZoneOrigin
     
-    if(hotZoneOrigin != <0, 0, 0>)
+    if(hotZoneOrigin != <0, 0, 0> && Gamemode() == eGamemodes.SURVIVAL )
     {
         thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
         AddCallback_GameStateEnter( 
