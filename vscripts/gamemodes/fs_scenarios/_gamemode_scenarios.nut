@@ -41,6 +41,7 @@ global struct scenariosGroupStruct
 	entity ring
 	float calculatedRingRadius
 	float currentRingRadius
+	vector calculatedRingCenter
 	int slotIndex
 	int team1Index = -1
 	int team2Index = -1
@@ -311,8 +312,7 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 
 array<vector> function FS_Scenarios_GeneratePlaneFlightPathForGroup( scenariosGroupStruct group )
 {
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	const float CENTER_DEVIATION = 2.0
@@ -338,8 +338,7 @@ void function FS_Scenarios_StartDropshipMovement( scenariosGroupStruct group )
 
 	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array<vector> foundFlightPath = FS_Scenarios_GeneratePlaneFlightPathForGroup( group )
@@ -496,8 +495,7 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< bigDoorsData > chosenSpawns
@@ -505,7 +503,7 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 
 	foreach( i, bigDoorsData data in file.allBigMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= group.calculatedRingRadius )
+		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -577,15 +575,14 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< doorsData > chosenSpawns
 	
 	foreach( i, doorsData data in file.allMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= group.calculatedRingRadius )
+		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -765,14 +762,13 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< lootbinsData > chosenSpawns
 	
 	foreach( i, lootbinStruct in file.allMapLootbins )
-		if( Distance2D( lootbinStruct.origin, center) <= group.calculatedRingRadius )
+		if( Distance2D( lootbinStruct.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( lootbinStruct )
 
 	string zoneRef = "zone_high"
@@ -880,14 +876,13 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array<vector> chosenSpawns
 	
 	foreach( spawn in file.allLootSpawnsLocations )
-		if( Distance2D( spawn, center) <= group.calculatedRingRadius )
+		if( Distance2D( spawn, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( spawn )
 
 	string zoneRef = "zone_high"
@@ -1430,8 +1425,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 
 			// No se pueden alejar mucho de la zona de juego
-			soloLocStruct groupLocStruct = group.groupLocStruct
-			vector Center = groupLocStruct.Center
+			vector Center = group.calculatedRingCenter
 
 			foreach( player in players )
 			{
@@ -1570,7 +1564,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		players.extend( newGroup.team3Players )
 
 		bool success = FS_Scenarios_GroupToInProgressList( newGroup, players )
-		
+
 		if( !success )
 		{
 			FS_Scenarios_RemoveGroup( newGroup )
@@ -1588,7 +1582,15 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 			continue
 		}
-		
+
+		soloLocStruct groupLocStruct = newGroup.groupLocStruct
+		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
+
+		printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
+		#if DEVELOPER
+			DebugDrawSphere( newGroup.calculatedRingCenter, 30, 255,0,0, true, 300 )
+		#endif
+
 		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
 		
 		#if DEVELOPER
@@ -1811,9 +1813,8 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 		return
 
 	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
-
 	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector Center = OriginToGround_Inverse( groupLocStruct.Center ) //to ensure center is above ground. Colombia
+	vector Center = group.calculatedRingCenter
 
 	float ringRadius = 0
 
@@ -1828,11 +1829,6 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 	
 	if( !settings.fs_scenarios_zonewars_ring_mode )
 		group.calculatedRingRadius = settings.fs_scenarios_default_radius
-
-	printt( "Calculated center for ring: ", Center )
-	#if DEVELOPER
-		DebugDrawSphere( Center, 30, 255,0,0, true, 300 )
-	#endif
 
 	int realm = group.slotIndex
 	float radius = group.calculatedRingRadius
@@ -1922,7 +1918,7 @@ vector function FS_ClampToWorldSpace( vector origin )
 vector function OriginToGround_Inverse( vector origin )
 {
 	vector startorigin = origin - < 0, 0, 1000 >
-	TraceResults traceResult = TraceLine( startorigin, origin + < 0, 0, 512 >, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	TraceResults traceResult = TraceLine( startorigin, origin + < 0, 0, 128 >, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 	return traceResult.endPos
 }
