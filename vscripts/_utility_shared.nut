@@ -14,6 +14,9 @@ global const TRIG_FLAG_DEVDRAW			= 0x0020
 global const TRIG_FLAG_START_DISABLED	= 0x0040
 global const TRIG_FLAG_NO_PHASE_SHIFT	= 0x0080
 global const float MAP_EXTENTS = 128*128
+
+const MULTIPLAYER_DEBUG_PRINTS = true
+
 /*
 const TRIG_FLAG_	= 0x0080
 const TRIG_FLAG_	= 0x0100*/
@@ -5712,6 +5715,7 @@ bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
 	return false
 }
 
+//~mkos
 void function DEV_PrintClientCommands( table< string, void functionref( entity, array< string > ) > callbackTable )
 {
 	string data = "\n\n ------ CLIENTCOMMAND CALLBACK TABLE ------ \n\n"
@@ -5725,3 +5729,20 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 	
 	printt(data)
 }
+
+#if SERVER
+	void function printm( ... )
+	{
+		#if !MULTIPLAYER_DEBUG_PRINTS
+			return 
+		#endif
+		
+		if ( vargc <= 0 )
+		return
+
+		local msg = vargv[0]
+		for ( int i = 1; i < vargc; i++ )
+			msg = (msg + " " + vargv[i])
+			CenterPrintAll( msg )	
+	}
+#endif
