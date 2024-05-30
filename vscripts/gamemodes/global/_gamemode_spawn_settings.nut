@@ -567,6 +567,15 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 				printt("Added: [",extraSpawnLocations.len(),"] locations from custom spawns.")
 			#endif 
 		}
+		
+		#if DEVELOPER
+			string print_sdata = ""
+				foreach( spawn in extraSpawnLocations )
+				{
+					print_sdata += "Found origin: " + VectorToString( spawn.origin ) + " angles: " + VectorToString( spawn.angles ) + "\n"	
+				}
+			printt( "\n\n" + print_sdata )
+		#endif
 	}
 	
 	return allSoloLocations
@@ -901,8 +910,10 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 {
 	if( empty( DEV_PosType() ) )
 	{
-		Warning("No type was set. Set type with DEV_PosType(\"csv\") or \"sq\" for squirrel code")
-			return
+		Warning( "No spawn-maker type was set." )
+		Warning( "Setting to squirrel code." )
+		Warning( "Set type with DEV_PosType(\"csv\") or \"sq\" for squirrel code" )
+		DEV_PosType("sq")
 	}
 
 	bool usePlaylist = false
