@@ -1657,27 +1657,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		{
 			EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 
+			thread FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
-			vector Center = groupLocStruct.Center
-			
-			#if DEVELOPER
-				DebugDrawSphere( Center, 30, 255,0,0, true, 300 )
-			#endif
-			float ringRadius = 0
-
-			foreach( LocPair spawn in groupLocStruct.respawnLocations )
-			{
-				if( Distance( spawn.origin, Center ) > ringRadius )
-					ringRadius = Distance(spawn.origin, Center )
-			}
-
-			newGroup.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
-			newGroup.currentRingRadius = newGroup.calculatedRingRadius
-			
-			if( !settings.fs_scenarios_zonewars_ring_mode )
-				newGroup.calculatedRingRadius = settings.fs_scenarios_default_radius
-
-			newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex, newGroup.calculatedRingRadius )
 
 			//Play fx on players screen
 			foreach ( entity player in players )
@@ -1779,15 +1760,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				thread FS_Scenarios_GiveWeaponsToGroup( players )
 			}
 			newGroup.isReady = true
-			
-			thread FS_Scenarios_StartRingMovementTest( newGroup )
 		}()
 	}//while(true)
 
 }//thread
 
 
-void function FS_Scenarios_StartRingMovementTest( scenariosGroupStruct group )
+void function FS_Scenarios_StartRingMovement( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
@@ -1821,12 +1800,43 @@ void function FS_Scenarios_StartRingMovementTest( scenariosGroupStruct group )
 		{
 			player.SetPlayerNetTime( "currentPlayerDeathfieldRadius", group.currentRingRadius )
 		}
+		// printt("setting radius", group.currentRingRadius)
 		WaitFrame()
 	}
 }
 
-entity function CreateSmallRingBoundary(vector Center, int realm = -1, float radius = -1)
+void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 {
+	if( !IsValid( group ) )
+		return
+
+	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector Center = OriginToGround_Inverse( groupLocStruct.Center ) //to ensure center is above ground. Colombia
+
+	float ringRadius = 0
+
+	foreach( LocPair spawn in groupLocStruct.respawnLocations )
+	{
+		if( Distance( spawn.origin, Center ) > ringRadius )
+			ringRadius = Distance(spawn.origin, Center )
+	}
+
+	group.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
+	group.currentRingRadius = group.calculatedRingRadius
+	
+	if( !settings.fs_scenarios_zonewars_ring_mode )
+		group.calculatedRingRadius = settings.fs_scenarios_default_radius
+
+	printt( "Calculated center for ring: ", Center )
+	#if DEVELOPER
+		DebugDrawSphere( Center, 30, 255,0,0, true, 300 )
+	#endif
+
+	int realm = group.slotIndex
+	float radius = group.calculatedRingRadius
+
     vector smallRingCenter = Center
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
@@ -1849,7 +1859,9 @@ entity function CreateSmallRingBoundary(vector Center, int realm = -1, float rad
 
 	DispatchSpawn(smallcircle)
 
-	return smallcircle
+	group.ring = smallcircle
+
+	thread FS_Scenarios_StartRingMovement( group )
 }
 
 void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
@@ -1895,6 +1907,24 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 		}
 	}
 	Signal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+}
+
+vector function FS_ClampToWorldSpace( vector origin )
+{
+	// temp solution for start positions that are outside the world bounds
+	origin.x = clamp( origin.x, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.y = clamp( origin.y, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.z = clamp( origin.z, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+
+	return origin
+}
+
+vector function OriginToGround_Inverse( vector origin )
+{
+	vector startorigin = origin - < 0, 0, 1000 >
+	TraceResults traceResult = TraceLine( startorigin, origin + < 0, 0, 512 >, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
 }
 
 //////////////////// STATS /////////////////
