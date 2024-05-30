@@ -678,6 +678,9 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 		RuiSetFloat( rui, "chargeTime", chargeTime )
 		RuiSetImage( rui, "hudIcon", $"rui/flowstatecustom/bombicon" )
 		RuiSetInt( rui, "consumableType", 0 )
+
+		RuiSetString( rui, "hintController", "PRESS %attack% TO STOP PLANTING" )
+		RuiSetString( rui, "hintKeyboardMouse", "PRESS %attack% TO STOP PLANTING" )
 	}
 	else 
 	{
@@ -701,9 +704,6 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 	
 	while ( Time() < endTime )
 	{
-		RuiSetString( rui, "hintController", "PRESS %attack% TO STOP PLANTING" )
-		RuiSetString( rui, "hintKeyboardMouse", "PRESS %attack% TO STOP PLANTING" )
-
 		if( chargeTime != weapon.GetWeaponSettingFloat( eWeaponVar.charge_time ) )
 		{
 			if(modName == "snd_bomb")
