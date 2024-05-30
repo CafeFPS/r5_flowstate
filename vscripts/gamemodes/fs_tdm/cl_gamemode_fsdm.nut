@@ -1996,8 +1996,10 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 
-	if( file.vsBasicImage2 != null && file.enemyTeamCards2.len() > 0 )
-		Hud_SetVisible( file.vsBasicImage2, show )
+	if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() > 0 && show )
+		Hud_SetVisible( file.vsBasicImage2, true )
+	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 )
+		Hud_SetVisible( file.vsBasicImage2, false )
 
 	if( !show )
 	{
