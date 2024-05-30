@@ -4267,6 +4267,7 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
 
+		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"] //this should be const script var?

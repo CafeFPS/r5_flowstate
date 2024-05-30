@@ -11,6 +11,7 @@ global function Bleedout_GetBleedoutDamageInfo
 
 global function Bleedout_CheckForTeamBleedout
 global function Bleedout_AreThereAlivingMates
+global function PlayerDiesFromBleedout
 
 global table<string, string> EliminatedPlayers = {}
 

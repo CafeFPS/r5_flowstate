@@ -1416,6 +1416,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					{
 						Signal( player, "PlayerSkyDive" )
 					}
+					
+					if( Bleedout_IsBleedingOut( player ) )
+						PlayerDiesFromBleedout( player, GetLastAttacker(player) )
 
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
