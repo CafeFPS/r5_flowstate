@@ -2917,7 +2917,7 @@ void function UpdateInventoryUltimateRui( var rui, entity player, entity weapon 
 			break
 
 		default:
-			Assert( false, "Unsupported cooldown_type: " + weapon.GetWeaponSettingEnum( eWeaponVar.cooldown_type, eWeaponCooldownType ) )
+			mAssert( false, "Unsupported cooldown_type: " + weapon.GetWeaponSettingEnum( eWeaponVar.cooldown_type, eWeaponCooldownType ) )
 	}
 }
 
