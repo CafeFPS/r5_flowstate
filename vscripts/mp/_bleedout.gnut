@@ -54,7 +54,7 @@ void function Bleedout_Init()
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
 	
-	if( Gamemode() == eGamemodes.SURVIVAL ) //FIXME    ~mkos: what?
+	if( Gamemode() == eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_scenarios )
 		AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
 
 	PrecacheParticleSystem( FX_BLOODTRAIL )
@@ -772,7 +772,7 @@ void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer
 		{
 			if( targetPlayer != excludePlayer )
 			{
-				wait 0.2
+				wait 0.1
 
 				if( IsValid( targetPlayer ) && GetGameState() != eGameState.WinnerDetermined ) // Don't kill player after winner decided
 					PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
