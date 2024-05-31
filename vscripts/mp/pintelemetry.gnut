@@ -1329,7 +1329,7 @@ void function PlayerConnectedCallback( entity player )
 	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
-	if( !file.LogOn || !Flowstate_IsTrackerSupportedMode() ){ return }
+	if( !file.LogOn || !Flowstate_IsTrackerSupportedMode() ){ file.LogOn = false; return }
 	/////////////////////////////////////////////////////////////////////////////////////////
 	
 	//init player map

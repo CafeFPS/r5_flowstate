@@ -4615,21 +4615,19 @@ LocPair function getBotSpawn()
 "827049897": "Wraith",
 }*/
 
-const array<int> LegendGUID_EnabledPassives = [
-	
-	725342087, //ref character_bangalore
-	
+const array<int> LegendGUID_EnabledPassives = 
+[	
+	725342087, //ref character_bangalore	
 ]
 
-const array<int> LegendGUID_EnabledUltimates = [
-	
+const array<int> LegendGUID_EnabledUltimates = 
+[	
 	898565421, //ref character_bloodhound
 	187386164, //ref character_wattson
 	2045656322, //ref character_mirage
 	843405508, //ref character_octane
 	827049897, //ref character_wraith
 	1464849662, //ref character_pathfinder
-
 ]
 
 

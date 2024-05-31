@@ -41,6 +41,7 @@ global struct RUIWorldCoordinates // this isn't specific to RUI, it generally re
 struct
 {
 	table<int,array<var> > textPanels
+	table<int,array<var> > textPanelTopo
 	table<int,array<var> > worldRUI
 	int showButtonHintsInt = 1
 	array< entity > clientLightsFromServer
@@ -1017,6 +1018,16 @@ void function Dev_DestroyTextInfoPanelWithID( int panelID )
 
 	foreach ( rui in file.textPanels[ panelID ] )
 		RuiDestroyIfAlive( rui )
+		
+	foreach ( topo in file.textPanelTopo[ panelID ] )
+	{
+		try
+		{
+			RuiTopology_Destroy( topo ) //required
+		}
+		catch( e ){}
+
+	}
 
 	file.textPanels[ panelID ].clear()
 }
@@ -1048,6 +1059,11 @@ void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, flo
 			file.textPanels[ panelID ] <- []
 
 		file.textPanels[ panelID ].append( rui )
+		
+		if( !( panelID in file.textPanelTopo ) )
+			file.textPanelTopo[ panelID ] <- []
+			
+		file.textPanelTopo[ panelID ].append( topo )
 	}
 
 	dev_infoPanelTitleString = ""

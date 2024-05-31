@@ -7,9 +7,10 @@ global const int BOOSTZONE_ALIVE_TIME = 15
 global const SCRIPT_GAME_VERSION__RELEASE = false
 
 //r5r.dev
-global const bool TRACKER 			= false
-global const bool HAS_TRACKER_DLL 	= false
-global const vector NULL_VEC 		= <0,0,0>
+global const bool TRACKER 				= false
+global const bool HAS_TRACKER_DLL 		= false
+global const vector NULL_VEC 			= <0,0,0>
+global const MULTIPLAYER_DEBUG_PRINTS 	= false
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
@@ -137,7 +138,7 @@ global const fs_snd							= "fs_snd"
 
 global const FREELANCE_ENABLED          	= false
 
-global const VERBOSE_DAMAGE_PRINTOUTS   	= false
+global const VERBOSE_DAMAGE_PRINTOUTS   	= true
 
 global const SAVEGAME_VERSION           	= 13 // increment when saves need to be tossed
 global const PERSISTENCE_INIT_VERSION   	= 303

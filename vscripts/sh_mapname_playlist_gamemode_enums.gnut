@@ -93,6 +93,14 @@ global enum ePlaylists
 	flowstate_pkknockback, //27
 	fs_movementrecorder, //28
 	dev_default, //29
+	fs_ltm_mortalevoshields, //30
+	fs_ltm_armedanddangerous, //31
+	fs_doormovementpractice, //32
+	fs_grapplemovementpractice, //33
+	fs_mantlejumppractice, //34
+	fs_firstmovementmappractice, //35
+	fs_gymmovementmappractice, //36
+	survival_training, //37
 	
 	
 	_PLAYLISTS_COUNT //LAST

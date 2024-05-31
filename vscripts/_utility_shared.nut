@@ -15,8 +15,6 @@ global const TRIG_FLAG_START_DISABLED	= 0x0040
 global const TRIG_FLAG_NO_PHASE_SHIFT	= 0x0080
 global const float MAP_EXTENTS = 128*128
 
-const MULTIPLAYER_DEBUG_PRINTS = true
-
 /*
 const TRIG_FLAG_	= 0x0080
 const TRIG_FLAG_	= 0x0100*/
@@ -3468,27 +3466,41 @@ bool function IsTitanNPC( entity ent )
 	return ent.IsTitan() && ent.IsNPC()
 }
 
-//
+// my modified version probably shouldn't be used ~mkos
+// entity function InflictorOwner( entity inflictor )
+// {	
+	// if ( IsValid( inflictor ) )
+	// {
+		// entity ornull inflictorOwner = inflictor.GetOwner()
+		
+		// if ( IsValid( inflictorOwner ) )
+		// {	
+			//printt("Valid: ", inflictorOwner )
+			// inflictor = expect entity( inflictorOwner )
+		// }
+		// else if ( IsValid( inflictor.GetBossPlayer() ) )
+		// {
+			// inflictor = inflictor.GetBossPlayer()
+			//printt("Valid2: ", inflictor )
+		// }	
+	// }
+
+	// return inflictor
+// }
+
+
 entity function InflictorOwner( entity inflictor )
-{	
+{
 	if ( IsValid( inflictor ) )
 	{
-		entity ornull inflictorOwner = inflictor.GetOwner()
-		
+		entity inflictorOwner = inflictor.GetOwner()
 		if ( IsValid( inflictorOwner ) )
-		{	
-			printt("Valid: ", inflictorOwner )
-			inflictor = expect entity( inflictorOwner )
-		}
-		else if ( IsValid( inflictor.GetBossPlayer() ) )
-		{
-			inflictor = inflictor.GetBossPlayer()
-			printt("Valid2: ", inflictor )
-		}	
+			inflictor = inflictorOwner
 	}
 
 	return inflictor
 }
+
 
 bool function IsPlayerControlledSpectre( entity ent )
 {
@@ -5727,7 +5739,7 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 		idx++
 	}
 	
-	printt(data)
+	printt( data )
 }
 
 #if SERVER

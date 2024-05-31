@@ -17,22 +17,20 @@ void function CreatePanelText( entity player, string title, string text, vector 
         }
     }
 	
-	if ( id != 0 ){
-	
+	if ( id != 0 )
+	{
 		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanelWithID", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale, id )
-	
-	} else {
-		
+	}
+	else 
+	{		
 		// This allows old calls to the function without adding ID - mkos
-		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )
-	
+		Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )	
 	}
 }
 
-void function RemovePanelText( entity player, int id ){
-
-	Remote_CallFunction_NonReplay( player, "Dev_DestroyTextInfoPanelWithID", id )
-	
+void function RemovePanelText( entity player, int id )
+{
+	Remote_CallFunction_NonReplay( player, "Dev_DestroyTextInfoPanelWithID", id )	
 }
 
 array<vector> function GetNewFFADropShipLocations(string locationname, string mapname)

@@ -367,6 +367,8 @@ void function Server_Init()
     // ReMap Live
     if ( IsDevGamemode() )
         ReMapLive_Init()
+		
+	Flowstate_SpawnSystem_Init()
 
 	#if DEVELOPER
 		SmokeTest_Init()
