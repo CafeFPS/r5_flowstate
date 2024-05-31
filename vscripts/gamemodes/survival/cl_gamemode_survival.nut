@@ -300,17 +300,12 @@ struct
 
 void function ClGamemodeSurvival_Init()
 {
-	//Increase client command limit to 60
-	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-
 	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
 		SetConVarInt( "colorblind_mode", 0 )
 	
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
-	#if(false)
 
-#endif
 	BleedoutClient_Init()
 	ClSurvivalShip_Init()
 	SurvivalFreefall_Init()

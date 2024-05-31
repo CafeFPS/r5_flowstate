@@ -2472,6 +2472,11 @@ void function soloModePlayerToWaitingList( entity player )
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
 		TakeAllPassives( player )
+		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", 0 )
+		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
+
+		if( Bleedout_IsBleedingOut( player ) )
+			Signal( player, "BleedOut_OnRevive" )
 	}
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)

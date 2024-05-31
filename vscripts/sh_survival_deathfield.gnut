@@ -1551,7 +1551,7 @@ void function FS_Scenarios_Cl_DeathFieldThink( entity deathField )
 	while ( 1 )
 	{
 		entity player        = GetLocalViewPlayer()
-		float radius        = player.GetPlayerNetTime( "currentPlayerDeathfieldRadius" )
+		float radius        = player.GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" )
 
 		int idealIdx
 		if ( radius <= 1500 )
@@ -2072,7 +2072,6 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 	while ( 1 )
 	{
 		bool shouldShowDeathFieldFx = ShouldShowDeathFieldEffects( player )
-
 		if ( wasShowingDeathFieldFx != shouldShowDeathFieldFx )
 		{
 			if ( shouldShowDeathFieldFx )
@@ -2121,11 +2120,16 @@ bool function ShouldShowDeathFieldEffects( entity player )
 		if ( DeathField_PointDistanceFromFrontier( player.EyePosition() ) >= 0 )
 			shouldShow = false
 	}
-	else
+	else if( Playlist() != ePlaylists.fs_scenarios )
 	{
 		if ( DeathField_PointDistanceFromFrontier( player.GetOrigin() ) >= 0 )
 			shouldShow = false
+	} else
+	{
+		if( player.GetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter" ) < player.GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" ) )
+			shouldShow = false
 	}
+
 	if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		shouldShow = false
 

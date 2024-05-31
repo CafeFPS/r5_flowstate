@@ -10,6 +10,7 @@ const DEATH_CHAT_DELAY = 0.3
 //For performance, flinch is negated based on gamemode bitmask.
 //To add:  | ( 1 << playlistenum )
 const NON_FLINCH_MODES_BITMASK = ( 1 << ePlaylists.fs_lgduels_1v1) | ( 1 << ePlaylists.fs_1v1 )
+const NON_FLINCH_DAMAGE_BITMASK = 1 << eDamageSourceId.deathField
 
 global struct OutOfBoundsDataStruct //Have to globalize it because all functions are globalized in this file :/
 {
@@ -203,7 +204,7 @@ void function CodeCallback_OnPrecache()
 
 function AddFlinch( entity attackedEnt, damageInfo )
 {
-	if( NON_FLINCH_MODES_BITMASK & ( 1 << Playlist() ) )
+	if( NON_FLINCH_MODES_BITMASK & ( 1 << Playlist() ) || NON_FLINCH_DAMAGE_BITMASK & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
 	{
 		return
 	}

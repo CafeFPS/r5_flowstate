@@ -118,6 +118,7 @@ struct {
 	bool fs_scenarios_show_death_recap_onkilled = true
 	bool fs_scenarios_zonewars_ring_mode = false
 	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
+	float fs_scenarios_ring_damage_step_time = 1.5
 } settings
 
 array< bool > teamSlots
@@ -139,6 +140,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
 	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
 	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
+	settings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -1093,6 +1095,9 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
 		Message_New( player, "", 1 )
+
+		if( Bleedout_IsBleedingOut( player ) )
+			Signal( player, "BleedOut_OnRevive" )
 	}
 
 	newGroup.slotIndex = slotIndex
@@ -1351,6 +1356,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			players.extend( group.team1Players )
 			players.extend( group.team2Players )
 			players.extend( group.team3Players )
+			ArrayRemoveInvalid( players )
 
 			//Anuncio que la ronda individual está a punto de terminar
 			if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
@@ -1363,6 +1369,52 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					Message_New( player, "%$rui/menu/store/feature_timer% 30 Seconds remaining",  5 )
 				}
 				group.showedEndMsg = true
+			}
+
+			// No se pueden alejar mucho de la zona de juego
+			vector Center = group.calculatedRingCenter
+
+			foreach( player in players )
+			{
+				if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+				
+				//Se murió, a la sala de espera
+				if( !IsAlive( player ) )
+				{
+					soloModePlayerToWaitingList( player )
+					DecideRespawnPlayer( player, false )
+					HolsterAndDisableWeapons( player )
+
+					foreach( splayer in players )
+						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
+
+					if( settings.fs_scenarios_show_death_recap_onkilled )
+					{
+						player.p.InDeathRecap = true
+						Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+					} else
+						player.p.InDeathRecap = false
+
+					#if DEVELOPER
+						printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+					#endif 
+
+					player.SetHealth( player.GetMaxHealth() )
+					player.SetShieldHealth( player.GetShieldHealthMax() )
+					continue
+				}
+				player.p.lastDamageTime = Time() //avoid player regen health
+
+				if ( player.IsPhaseShifted() )
+					continue
+
+				if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > settings.fs_scenarios_ring_damage_step_time && !group.IsFinished )
+				{
+					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+					player.TakeDamage( 25, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+					player.p.lastRingDamagedTime = Time()
+					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
+				}
 			}
 
 			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
@@ -1412,63 +1464,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						continue
 
-					if( player.Player_IsFreefalling() )
-					{
-						Signal( player, "PlayerSkyDive" )
-					}
-					
-					if( Bleedout_IsBleedingOut( player ) )
-						PlayerDiesFromBleedout( player, GetLastAttacker(player) )
-
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}
 
 				groupsToRemove.append(group)
-			}
-
-			// No se pueden alejar mucho de la zona de juego
-			vector Center = group.calculatedRingCenter
-
-			foreach( player in players )
-			{
-				if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
-				
-				//Se murió, a la sala de espera
-				if( !IsAlive( player ) )
-				{
-					soloModePlayerToWaitingList( player )
-					DecideRespawnPlayer( player, false )
-					HolsterAndDisableWeapons( player )
-
-					foreach( splayer in players )
-						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
-
-					if( settings.fs_scenarios_show_death_recap_onkilled )
-					{
-						player.p.InDeathRecap = true
-						Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
-					} else
-						player.p.InDeathRecap = false
-
-					#if DEVELOPER
-						printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-					#endif 
-					
-					continue
-				}
-				player.p.lastDamageTime = Time() //avoid player regen health
-
-				if ( player.IsPhaseShifted() )
-					continue
-
-				if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > 1.5 ) //DAMAGE_CHECK_STEP_TIME
-				{
-					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-					player.TakeDamage( 25, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-					player.p.lastRingDamagedTime = Time()
-					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
-				}
 			}
 		}//foreach
 
@@ -1747,8 +1747,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 					float r = float(j) / float( amountPlayersPerTeam ) * 2 * PI
 					vector circledPos = pos + 50.0 * <sin( r ), cos( r ), 0.0> 
+
+					TraceResults result = TraceHull( circledPos + <0, 0, 75>, pos - <0, 0, 10>, player.GetBoundingMins(), player.GetBoundingMaxs(), null, TRACE_MASK_SOLID | CONTENTS_PLAYERCLIP, TRACE_COLLISION_GROUP_NONE )
+
+					if( result.fraction == 1.0 || result.startSolid )
+					{
+						circledPos = pos //fallback to ogspawn pos which we know is good
+					} else
+						circledPos = result.endPos
+
 					player.SetOrigin( circledPos + <0,0,5> )
-					PutEntityInSafeSpot( player, null, null, circledPos, player.GetOrigin() )
 					j++
 				}
 				oldSpawnSlot = spawnSlot
@@ -1777,19 +1785,11 @@ void function FS_Scenarios_StartRingMovement( scenariosGroupStruct group )
 		return
 
 	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
-	
-	entity ring = group.ring
-	EndSignal( ring, "OnDestroy" )
 
-	OnThreadEnd(
-		function() : ( group )
-		{
-			if( IsValid( group ) )
-				group.currentRingRadius = 0
-		}
-	)
+	while( IsValid( group ) && !group.isReady && !group.IsFinished )
+		WaitFrame()
 
-	while ( group.currentRingRadius > 0 && !group.IsFinished )
+	while ( IsValid( group ) && group.currentRingRadius > -1 && !group.IsFinished )
 	{
 		array<entity> players
 		players.extend( group.team1Players )
@@ -1803,7 +1803,8 @@ void function FS_Scenarios_StartRingMovement( scenariosGroupStruct group )
 
 		foreach( player in  players )
 		{
-			player.SetPlayerNetTime( "currentPlayerDeathfieldRadius", group.currentRingRadius )
+			player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
+			player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", Distance2D( player.GetOrigin(), group.calculatedRingCenter ) )
 		}
 		// printt("setting radius", group.currentRingRadius)
 		WaitFrame()
