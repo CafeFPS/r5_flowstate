@@ -1834,10 +1834,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							}
 						}
 					)
-
+					
+					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
 					foreach( player in players )
 					{
-						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", Time() + settings.fs_scenarios_game_start_time_delay )
+						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
 
 						player.ForceStand()
 						player.Server_TurnOffhandWeaponsDisabledOn()

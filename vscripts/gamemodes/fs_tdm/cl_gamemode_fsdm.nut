@@ -478,9 +478,13 @@ void function Flowstate_StartTime_Thread( float endtime )
         int elapsedtime = int(endtime) - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
+		
+		if( dt.seconds == 0 )
+			break
+
 		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), msg + dt.seconds )
 		
-		wait 0.1
+		wait 1
 	}
 }
 
