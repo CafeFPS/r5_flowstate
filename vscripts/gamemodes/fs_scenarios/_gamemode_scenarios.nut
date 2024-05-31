@@ -1,4 +1,7 @@
-// By @CafeFPS
+// Made by @CafeFPS
+//
+// mkos - feedback, playtest, spawns framework, stats
+// DarthElmo & Balvarine - gamemode idea, spawns, feedback, playtest
 
 global function Init_FS_Scenarios
 global function FS_Scenarios_GroupToInProgressList
@@ -30,6 +33,7 @@ global function Cafe_EndAllRounds
 
 global struct scenariosGroupStruct
 {
+	entity dummyEnt
 	int groupHandle
 	array<entity> team1Players
 	array<entity> team2Players
@@ -119,6 +123,8 @@ struct {
 	bool fs_scenarios_zonewars_ring_mode = false
 	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
 	float fs_scenarios_ring_damage_step_time = 1.5
+	float fs_scenarios_game_start_time_delay = 3.0
+	float fs_scenarios_ring_damage = 25.0
 } settings
 
 array< bool > teamSlots
@@ -141,6 +147,8 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
 	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
 	settings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
+	settings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
+	settings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -155,8 +163,10 @@ void function Init_FS_Scenarios()
 	SurvivalShip_Init()
 
 	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
-	
-	RegisterSignal( "FS_EndDelayedThread" )
+
+	RegisterSignal( "FS_Scenarios_GroupIsReady" )
+	RegisterSignal( "FS_Scenarios_GroupFinished" )
+
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
 
 	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
@@ -338,7 +348,7 @@ void function FS_Scenarios_StartDropshipMovement( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
 	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
@@ -497,6 +507,8 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
 	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
@@ -576,6 +588,8 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
+
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
 	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
@@ -764,6 +778,8 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
 	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
@@ -877,6 +893,8 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
+
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
 	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
@@ -1094,7 +1112,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
-		Message_New( player, "", 1 )
+		LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
 
 		if( Bleedout_IsBleedingOut( player ) )
 			Signal( player, "BleedOut_OnRevive" )
@@ -1106,6 +1124,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 
 	newGroup.groupHandle = groupHandle
 	newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
+	newGroup.dummyEnt = CreateEntity( "info_target" )
 
 	try 
 	{
@@ -1198,6 +1217,10 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		sqprint( "removeGroup crash: " + e2 )
 		#endif
 	}
+
+	Signal( groupToRemove.dummyEnt, "FS_Scenarios_GroupFinished" )
+	if( IsValid( groupToRemove.dummyEnt ) )
+		groupToRemove.dummyEnt.Destroy()
 }
 
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
@@ -1349,7 +1372,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		foreach( groupHandle, group in file.scenariosGroupsInProgress ) 
 		{
-			if( !IsValid( group ) || !group.isReady )
+			if( !IsValid( group ) )
 				continue
 
 			array<entity> players
@@ -1357,63 +1380,66 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			players.extend( group.team2Players )
 			players.extend( group.team3Players )
 			ArrayRemoveInvalid( players )
-
-			//Anuncio que la ronda individual está a punto de terminar
-			if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+			
+			if( group.isReady )
 			{
+				//Anuncio que la ronda individual está a punto de terminar
+				if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+				{
+					foreach( player in players )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						LocalMsg( player, "#FS_Scenarios_30Remaining", "", eMsgUI.EVENT, 5 )
+					}
+					group.showedEndMsg = true
+				}
+
+				// No se pueden alejar mucho de la zona de juego
+				vector Center = group.calculatedRingCenter
+
 				foreach( player in players )
 				{
-					if( !IsValid( player ) )
+					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+					
+					//Se murió, a la sala de espera
+					if( !IsAlive( player ) )
+					{
+						soloModePlayerToWaitingList( player )
+						DecideRespawnPlayer( player, false )
+						HolsterAndDisableWeapons( player )
+
+						foreach( splayer in players )
+							Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
+
+						if( settings.fs_scenarios_show_death_recap_onkilled )
+						{
+							player.p.InDeathRecap = true
+							Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+						} else
+							player.p.InDeathRecap = false
+
+						#if DEVELOPER
+							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+						#endif 
+
+						player.SetHealth( player.GetMaxHealth() )
+						player.SetShieldHealth( player.GetShieldHealthMax() )
+						continue
+					}
+					player.p.lastDamageTime = Time() //avoid player regen health
+
+					if ( player.IsPhaseShifted() )
 						continue
 
-					Message_New( player, "%$rui/menu/store/feature_timer% 30 Seconds remaining",  5 )
-				}
-				group.showedEndMsg = true
-			}
-
-			// No se pueden alejar mucho de la zona de juego
-			vector Center = group.calculatedRingCenter
-
-			foreach( player in players )
-			{
-				if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
-				
-				//Se murió, a la sala de espera
-				if( !IsAlive( player ) )
-				{
-					soloModePlayerToWaitingList( player )
-					DecideRespawnPlayer( player, false )
-					HolsterAndDisableWeapons( player )
-
-					foreach( splayer in players )
-						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
-
-					if( settings.fs_scenarios_show_death_recap_onkilled )
+					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > settings.fs_scenarios_ring_damage_step_time && !group.IsFinished )
 					{
-						player.p.InDeathRecap = true
-						Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
-					} else
-						player.p.InDeathRecap = false
-
-					#if DEVELOPER
-						printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-					#endif 
-
-					player.SetHealth( player.GetMaxHealth() )
-					player.SetShieldHealth( player.GetShieldHealthMax() )
-					continue
-				}
-				player.p.lastDamageTime = Time() //avoid player regen health
-
-				if ( player.IsPhaseShifted() )
-					continue
-
-				if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > settings.fs_scenarios_ring_damage_step_time && !group.IsFinished )
-				{
-					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-					player.TakeDamage( 25, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-					player.p.lastRingDamagedTime = Time()
-					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
+						Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+						player.TakeDamage( settings.fs_scenarios_ring_damage, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+						player.p.lastRingDamagedTime = Time()
+						// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
+					}
 				}
 			}
 
@@ -1423,7 +1449,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				#if DEVELOPER
 					printt( "Group has finished!", group.groupHandle )
 				#endif 
-				
+				group.IsFinished = true
+				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -1660,9 +1688,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		thread function () : ( newGroup, players )
 		{
-			EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+			EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-			thread FS_Scenarios_CreateCustomDeathfield( newGroup )
+			FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
 
 			//Play fx on players screen
@@ -1691,7 +1719,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			#endif
 
 			wait 0.5
-			
+
+			ArrayRemoveInvalid( players )
 			int spawnSlot = -1
 			int oldSpawnSlot = -1
 			int j = 0
@@ -1740,29 +1769,27 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if( !settings.fs_scenarios_dropshipenabled  )
 				{
 					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
-
+					player.MovementDisable()
 					player.SetVelocity( < 0,0,0 > )
 					player.SetAngles( location.angles )
 					vector pos = location.origin
 
 					float r = float(j) / float( amountPlayersPerTeam ) * 2 * PI
-					vector circledPos = pos + 50.0 * <sin( r ), cos( r ), 0.0> 
+					vector circledPos = pos + 30.0 * <sin( r ), cos( r ), 0.0> 
 
-					TraceResults result = TraceHull( circledPos + <0, 0, 75>, pos - <0, 0, 10>, player.GetBoundingMins(), player.GetBoundingMaxs(), null, TRACE_MASK_SOLID | CONTENTS_PLAYERCLIP, TRACE_COLLISION_GROUP_NONE )
+					TraceResults result = TraceHull( circledPos + <0, 0, 50>, circledPos - <0, 0, 10>, player.GetBoundingMins(), player.GetBoundingMaxs(), null, TRACE_MASK_SOLID | CONTENTS_PLAYERCLIP, TRACE_COLLISION_GROUP_NONE )
 
 					if( result.fraction == 1.0 || result.startSolid )
 					{
-						circledPos = pos //fallback to ogspawn pos which we know is good
+						circledPos = pos //fallback to ogspawn pos which we know is good. Café
 					} else
 						circledPos = result.endPos
 
-					player.SetOrigin( circledPos + <0,0,5> )
+					player.SetOrigin( circledPos )
 					j++
 				}
 				oldSpawnSlot = spawnSlot
 				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
-
-				Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
 			}
 
 			if( settings.fs_scenarios_dropshipenabled )
@@ -1771,27 +1798,99 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			} else
 			{
 				thread FS_Scenarios_GiveWeaponsToGroup( players )
+
+				thread function () : ( newGroup, players )
+				{
+					EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+					OnThreadEnd(
+						function() : ( newGroup, players  )
+						{
+							foreach( player in players )
+							{
+								if( !IsValid( player ) )
+									continue
+
+								if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
+								{
+									entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+									int ammoType = weapon.GetWeaponAmmoPoolType()
+									player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
+									weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+									player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+								}
+
+								player.MovementEnable()
+								player.UnforceStand()
+								DeployAndEnableWeapons( player )
+								player.Server_TurnOffhandWeaponsDisabledOff()
+								player.ClearMeleeDisabled()
+								player.UnlockWeaponChange()
+								player.ClearFirstDeployForAllWeapons()
+								// player.UnfreezeControlsOnServer()
+
+								if( !newGroup.IsFinished )
+									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
+							}
+						}
+					)
+
+					foreach( player in players )
+					{
+						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", Time() + settings.fs_scenarios_game_start_time_delay )
+
+						player.ForceStand()
+						player.Server_TurnOffhandWeaponsDisabledOn()
+						player.SetMeleeDisabled()
+						player.LockWeaponChange()
+						// player.FreezeControlsOnServer()
+						player.MovementDisable()
+						
+						entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+						int ammoType = weapon.GetWeaponAmmoPoolType()
+						player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
+						player.AmmoPool_SetCount( ammoType, 0 )
+						weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
+						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+					}
+					
+					wait settings.fs_scenarios_game_start_time_delay
+
+					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
+					newGroup.isReady = true
+				}()
 			}
-			newGroup.isReady = true
 		}()
 	}//while(true)
 
 }//thread
 
 
-void function FS_Scenarios_StartRingMovement( scenariosGroupStruct group )
+void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
 
-	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-	while( IsValid( group ) && !group.isReady && !group.IsFinished )
-		WaitFrame()
+	array<entity> players
+	players.extend( group.team1Players )
+	players.extend( group.team2Players )
+	players.extend( group.team3Players )
+	ArrayRemoveInvalid( players )
 
-	while ( IsValid( group ) && group.currentRingRadius > -1 && !group.IsFinished )
+	foreach( player in  players )
 	{
-		array<entity> players
+		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
+		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
+	}
+
+	WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
+
+	while ( group.currentRingRadius > -1 )
+	{
+		players.clear()
 		players.extend( group.team1Players )
 		players.extend( group.team2Players )
 		players.extend( group.team3Players )
@@ -1806,7 +1905,7 @@ void function FS_Scenarios_StartRingMovement( scenariosGroupStruct group )
 			player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
 			player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", Distance2D( player.GetOrigin(), group.calculatedRingCenter ) )
 		}
-		// printt("setting radius", group.currentRingRadius)
+
 		WaitFrame()
 	}
 }
@@ -1816,7 +1915,6 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 	soloLocStruct groupLocStruct = group.groupLocStruct
 	vector Center = group.calculatedRingCenter
 
@@ -1861,7 +1959,7 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 
 	group.ring = smallcircle
 
-	thread FS_Scenarios_StartRingMovement( group )
+	thread FS_Scenarios_StartRingMovementForGroup( group )
 }
 
 void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
@@ -1906,7 +2004,6 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 			group.IsFinished = true //tell solo thread this round has finished
 		}
 	}
-	Signal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 }
 
 vector function FS_ClampToWorldSpace( vector origin )

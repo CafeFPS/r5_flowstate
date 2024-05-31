@@ -101,6 +101,7 @@ void function RemoteFunctions_Init_Begin()
 				// RegisterNetworkedVariable( "matchesWins", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
 				RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 				RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+				RegisterNetworkedVariable( "FS_Scenarios_gameStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
 			}
 			
 			if( Playlist() == ePlaylists.fs_lgduels_1v1 )

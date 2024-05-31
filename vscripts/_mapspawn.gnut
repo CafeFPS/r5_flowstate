@@ -332,7 +332,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
-	PrecacheModel( $"mdl/custom_maps/mp_rr_dust2.rmdl" )
 
 	switch( GameRules_GetGameMode() )
 	{

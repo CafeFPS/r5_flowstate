@@ -1794,32 +1794,6 @@ void function _OnPlayerConnected(entity player)
 	if( is1v1EnabledAndAllowed() )
 	{
 		thread soloModefixDelayStart( player )
-	/*
-		void functionref() soloModefixDelayStart1 = void function() : (player) {
-			Remote_CallFunction_NonReplay( player, "DM_HintCatalog", 3, 0)
-			wait 1
-			if ( !IsValid( player ) ) return
-			TakeAllWeapons( player )
-			HolsterAndDisableWeapons(player)
-			wait 9
-			if ( !IsValid( player ) ) return
-			
-			// EnableOffhandWeapons( player )
-			// DeployAndEnableWeapons(player)
-			if(!isPlayerInRestingList(player))
-				soloModePlayerToWaitingList(player)
-			try
-			{
-				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
-			}
-			catch (error)
-			{
-				
-			}
-		}	
-
-		thread soloModefixDelayStart1()
-	*/
 	}
 }
 

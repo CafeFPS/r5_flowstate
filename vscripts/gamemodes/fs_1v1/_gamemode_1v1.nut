@@ -2474,6 +2474,7 @@ void function soloModePlayerToWaitingList( entity player )
 		TakeAllPassives( player )
 		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", 0 )
 		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
+		player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", -1 )
 
 		if( Bleedout_IsBleedingOut( player ) )
 			Signal( player, "BleedOut_OnRevive" )
@@ -2705,8 +2706,8 @@ void function soloModefixDelayStart( entity player )
 		player.WaitSignal( "OnRespawned" )
 		
 		if( !IsValid ( player ) )
-			return 
-			
+			return
+
 		TakeUltimate( player )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		TakeAllPassives( player )
@@ -4211,50 +4212,40 @@ void function GiveWeaponsToGroup( array<entity> players )
 
 void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 {
-	EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
-	
 	#if DEVELOPER 
 		printt( "FS_Scenarios_GiveWeaponsToGroup" )
 	#endif
-	
-	foreach( player in players )
-	{
-		if( !IsValid( player ) )
-			continue
-
-		TakeAllWeapons(player)
-	}
-
-	thread function() : ( players )
-	{
-		EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
-
-		// if( !FS_Scenarios_GetDropshipEnabled() )
-			wait 1 // Find a better method to wait for the client to be updated. Cafe  || What about WaitSignal in this thread combined with calling it as waitthread?
-
-		foreach( player in players )
-		{
-			if( !IsValid( player ) )
-				continue
-
-			scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 
-
-			if( IsValid( group ) && !group.IsFinished )
-				Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-		}
-	}()
-
-	wait 0.2
 
 	string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
 	string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
 
-	foreach( player in players )
+	if( players.len() == 0 )
+		return
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( players[0] ) 
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	foreach( entity player in players )
 	{
 		if( !IsValid( player ) )
 			continue
 
-		DeployAndEnableWeapons( player )
+		thread function() : ( player, group )
+		{
+			EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+			EndSignal( player, "OnDestroy" )
+
+			// if( !FS_Scenarios_GetDropshipEnabled() )
+			wait 1 // Find a better method to wait for the client to be updated. Cafe  || What about WaitSignal in this thread combined with calling it as waitthread? || server needs to know that client has the new data, client has to tell server somehow. Cafe
+
+			Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+		}()
+	}
+
+	foreach( player in players )
+	{
+		if( !IsValid( player ) )
+			continue
 
 		TakeAllWeapons(player)
 
@@ -4279,8 +4270,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		foreach(item in loot)
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
-		DeployAndEnableWeapons( player )
-		EnableOffhandWeapons( player )
 		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 		Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
 

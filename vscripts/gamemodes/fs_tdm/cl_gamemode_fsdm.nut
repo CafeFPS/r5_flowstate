@@ -171,6 +171,7 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	if ( IsLobby() )
 		return
 	
+	RegisterNetworkedVariableChangeCallback_time( "FS_Scenarios_gameStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
@@ -469,6 +470,8 @@ void function Flowstate_StartTime_Thread( float endtime )
 		msg = "Oddball Starting in "
 	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
+	else if( Playlist() == ePlaylists.fs_scenarios )
+		msg = "Zone War Starting in "
 
 	while ( Time() <= endtime )
 	{
@@ -477,7 +480,7 @@ void function Flowstate_StartTime_Thread( float endtime )
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
 		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), msg + dt.seconds )
 		
-		wait 1
+		wait 0.1
 	}
 }
 
@@ -1485,15 +1488,22 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 3:
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		switch( Playlist() )
 		{
-			Obituary_Print_Localized( "Made by mkos and @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-
-		} else
-		{
-			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			case ePlaylists.fs_lgduels_1v1:
+			Obituary_Print_Localized( "with the help from mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
+			
+			case ePlaylists.fs_scenarios:
+			Obituary_Print_Localized( "with the help from mkos, Darth Elmo and Balvarine. <3", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
+			
+			case ePlaylists.fs_1v1:
+			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS and mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
 		}
 		break
 

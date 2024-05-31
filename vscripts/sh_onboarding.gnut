@@ -292,25 +292,33 @@ void function Sequence_PickLoadout()
 void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 {
 	array< ItemFlavor > characters = clone GetAllCharacters()
-	
-	foreach( character in characters )
+
+	for ( int i = characters.len() - 1; i >= 0; i-- )
 	{
-		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( character ) )
-		
-		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED )
-		{
-			characters.fastremovebyvalue( character )
-			continue
-		}
-		
+		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( characters[ i ] ) )
+
+		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED || ItemFlavor_GetHumanReadableRef( characters[ i ] ) == "character_crypto" )
+			characters.remove( i )
+	}
+	
+	bool quit
+	for ( int i = characters.len() - 1; i >= 0; i-- )
+	{
+		quit = false
 		foreach ( squadMate in GetPlayerArrayOfTeam( player.GetTeam() ) )
 		{
+			if( quit )
+				continue
+
 			if( squadMate == player )
 				continue
 			
 			ItemFlavor mateCharacter = LoadoutSlot_GetItemFlavor( ToEHI( squadMate ), Loadout_CharacterClass() )
-			if( mateCharacter == character )
-				characters.fastremovebyvalue( mateCharacter )
+			if( mateCharacter == characters[ i ] )
+			{
+				characters.remove( i )
+				quit = true
+			}
 		}
 	}
 	

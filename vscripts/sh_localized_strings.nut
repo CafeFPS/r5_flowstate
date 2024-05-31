@@ -232,7 +232,9 @@ struct
 		"#FS_WELCOME",
 		"#FS_INPUT_VS",
 		"#FS_CONTROLLER",
-		"#FS_MKB"
+		"#FS_MKB",
+		"#FS_Scenarios_Tip",
+		"#FS_Scenarios_30Remaining"
 		
 	]
 	

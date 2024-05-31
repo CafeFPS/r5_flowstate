@@ -323,6 +323,11 @@ void function RunClientConnectScriptsThreaded( entity player )
 	FlagSet( "EntitiesDidLoad" )
 	
 	MapConVar_Init()
+
+	if( GetCurrentPlaylistVarBool( "lsm_mod15", false ) )
+		thread Thread_StartFakeObituaries()
+	
+	DM_HintCatalog( 3, 0 )
 }
 
 
