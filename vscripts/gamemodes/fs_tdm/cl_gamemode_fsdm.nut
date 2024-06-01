@@ -1496,14 +1496,19 @@ void function DM_HintCatalog(int index, int eHandle)
 		case 3:
 		switch( Playlist() )
 		{
+			case ePlaylists.fs_movementrecorder:
+			Obituary_Print_Localized( "mkos - fixes for multiplayer, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Movement Recorder v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
+
 			case ePlaylists.fs_lgduels_1v1:
-			Obituary_Print_Localized( "with the help from mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "mkos - settings persistance, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_scenarios:
 			Obituary_Print_Localized( "with the help from mkos, Darth Elmo and Balvarine. <3", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Scenarios v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios v0.9 Beta - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_1v1:

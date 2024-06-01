@@ -1,6 +1,5 @@
 // Made by @CafeFPS
-// el límite es bastante pequeño para npcs, como 128 o algo así, hacer un check para eso
-// refactored by mkos
+// mkos - multiplayer feature, code improvements
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
@@ -140,7 +139,7 @@ void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
 		return
 
 	UISize screenSize = GetScreenSize()
-	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0.08),( screenSize.height * 0 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
+	var topo = RuiTopology_CreatePlane( <( screenSize.width * 0.070),( screenSize.height * 0 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
 	var hintRui = RuiCreate( $"ui/tutorial_hint_line.rpak", topo, RUI_DRAW_POSTEFFECTS, MINIMAP_Z_BASE + 10 )
 	RuiSetString( hintRui, "buttonText", "%F2%" )
 	RuiSetString( hintRui, "gamepadButtonText", "%F2%" )
@@ -317,11 +316,6 @@ void function _HandlePlayerDisconnect( entity player )
 
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
 {
-	if( !player.p.recorderHideHud )
-	{
-		LocalEventMsg( player, "#FS_MOVEMENT_RECORDER", "", 10 )
-	}
-
 	player.p.recordingAnims.resize( MAX_SLOT )
 	player.p.recordingAnimsCoordinates.resize( MAX_SLOT )
 	player.p.recordingAnimsChosenCharacters.resize( MAX_SLOT )
@@ -452,6 +446,9 @@ bool function ClientCommand_SwitchCharacter( entity player, array<string> args )
 
 bool function ClientCommand_HideHud(entity player, array<string> args)
 {
+	if( !IsValid( player ) )
+		return false
+
 	if( player.p.recorderHideHud )
 	{
 		player.p.recorderHideHud = false
@@ -466,6 +463,9 @@ bool function ClientCommand_HideHud(entity player, array<string> args)
 
 bool function ClientCommand_ToggleContinueLoop(entity player, array<string> args)
 {
+	if( !IsValid( player ) )
+		return false
+
 	if( player.p.continueLoop )
 	{
 		player.p.continueLoop = false
@@ -590,22 +590,21 @@ void function StopRecordingAnimation( entity player )
 	}
 }
 
-
-	const array<string> r5rDevs = [
-		"CafeFPS",
-		"DEAFPS",
-		"AyeZee",
-		"Makimakima",
-		"Endergreen12",
-		"Zer0Bytes",
-		"Julefox",
-		"amos_x64",
-		"rexx_x64",
-		"IcePixelx", 
-		"KralRindo",
-		"sal",
-		"mkos"
-	]
+const array<string> r5rDevs = [
+	"CafeFPS",
+	"DEAFPS",
+	"AyeZee",
+	"Makimakima",
+	"Endergreen12",
+	"Zer0Bytes",
+	"Julefox",
+	"amos_x64",
+	"rexx_x64",
+	"IcePixelx", 
+	"KralRindo",
+	"sal",
+	"mkos"
+]
 
 void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 {
