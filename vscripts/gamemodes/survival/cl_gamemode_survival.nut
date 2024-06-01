@@ -743,6 +743,7 @@ var function AddInWorldMinimapTopo( entity ent, float width, float height )
 }
 
 const array<int> nonCompassModes = [
+	ePlaylists.custom_ctf
 	ePlaylists.fs_scenarios,
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,

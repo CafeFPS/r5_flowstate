@@ -426,7 +426,7 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 	if( !IsValid( meleeAttackWeapon ) || !meleeAttackWeapon.IsReadyToFire() )
 		return
 
-	int currentUsedSlot = SURVIVAL_GetActiveWeaponSlot( gp()[0] )
+	int currentUsedSlot = SURVIVAL_GetActiveWeaponSlot( attacker )
 
 	entity weaponx
 	if( currentUsedSlot != -1 )

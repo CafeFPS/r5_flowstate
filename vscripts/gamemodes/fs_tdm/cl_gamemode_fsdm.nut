@@ -171,7 +171,9 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	if ( IsLobby() )
 		return
 	
-	RegisterNetworkedVariableChangeCallback_time( "FS_Scenarios_gameStartTime", Flowstate_StartTimeChanged )
+	if( Playlist() == ePlaylists.fs_scenarios )
+		RegisterNetworkedVariableChangeCallback_time( "FS_Scenarios_gameStartTime", Flowstate_StartTimeChanged )
+
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
