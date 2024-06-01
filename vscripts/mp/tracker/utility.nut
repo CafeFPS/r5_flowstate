@@ -2174,7 +2174,7 @@ void function CheckAdmin_OnConnect( entity player )
 	if( !IsValid( player ) ) 
 		return 
 	
-	if( IsTrackerAdmin( player.GetPlatformUID() ) ){}
+	if( IsTrackerAdmin( player.GetPlatformUID() ) )
 		player.SetPlayerNetBool( "IsAdmin", true )
 }
 

@@ -101,7 +101,7 @@ struct
 
 void function Initialize_SH_FlowstateSettings()
 {
-	#if DISABLE_NETINFO
+	#if DISABLE_NETINFO && DEVELOPER
 		SetConVarInt( "net_showpeaks", 0 )
 	#endif 
 	SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns 			= GetCurrentPlaylistVarFloat( "intro_cutscene_num_spawns", 0 )

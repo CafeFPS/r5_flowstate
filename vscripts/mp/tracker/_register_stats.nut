@@ -130,7 +130,7 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	// AddCallback_PlayerData( "setting", func ) -- use NULL_PDATA() for no func.
 	// void function func( entity player, string data )
 	//
-	// usage:
+	// utility:
 	//
 	// Tracker_FetchPlayerData( uid, setting ) -- string|string
 	// Tracker_SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
