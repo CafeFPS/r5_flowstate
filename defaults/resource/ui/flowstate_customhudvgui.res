@@ -3002,7 +3002,7 @@ Resource/UI/flowstate_customhudvgui.res
 		ControlName				RuiPanel
 		wide					286
 		tall					54
-		ypos 					-120
+		ypos 					-220
 		xpos 					-32
 		zpos 					0
 		visible					0
