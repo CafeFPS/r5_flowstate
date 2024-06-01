@@ -3143,7 +3143,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	string weapon = args[0]
 	
 	bool bIs1v1 = is1v1GameType() //idc, conditional.	
-	if( !ValidateWeaponTgiveSettings( player, args[0] ) )
+	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) )
 		return true
 	
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)

@@ -4701,6 +4701,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	}
 	
 	ReloadTactical( player )
+	player.Server_TurnOffhandWeaponsDisabledOff()
 }
 
 void function ReloadTactical( entity player )
