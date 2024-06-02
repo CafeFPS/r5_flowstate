@@ -263,7 +263,7 @@ void function ClientToUI_UpdateSquadMute( bool muteState )
 #if SERVER || CLIENT
 void function CharacterSelectNewMenu_Init()
 {
-	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 		if ( MapName() == eMaps.mp_rr_desertlands_64k_x_64k || MapName() == eMaps.mp_rr_desertlands_64k_x_64k_nx )
 		{
 			PrecacheModel( BACKGROUND_GEO_MODEL )
@@ -990,9 +990,12 @@ void function _OpenCharacterSelectNewMenu( var menu )
 	if ( !fileLevel.isBrowseMode )
 	{
 		thread FlashScreenWhite()
-		float gameStartTime = GetGlobalNetTime( "pickLoadoutGamestateEndTime" )
-		Assert( gameStartTime > -1 )
-		thread CloseCharacterSelectMenuAtTime( gameStartTime )
+		if( Playlist() != ePlaylists.fs_scenarios  )
+		{
+			float gameStartTime = GetGlobalNetTime( "pickLoadoutGamestateEndTime" )
+			Assert( gameStartTime > -1 )
+			thread CloseCharacterSelectMenuAtTime( gameStartTime )
+		}
 	}
 
 	if ( !fileLevel.menuEntsExist )
@@ -1261,7 +1264,7 @@ void function CloseCharacterSelectMenuAtTime( float closeTimeStamp )
 	while ( Time() < closeTimeStamp - SCREEN_COVER_TRANSITION_OUT_DURATION - 0.1 )
 		WaitFrame()
 
-	wait ScreenCoverTransition( Time() + CHARACTER_SELECT_CLOSE_TRANSITION_DURATION )
+	wait Playlist() == ePlaylists.fs_scenarios ? CHARACTER_SELECT_CLOSE_TRANSITION_DURATION : ScreenCoverTransition( Time() + CHARACTER_SELECT_CLOSE_TRANSITION_DURATION )
 
 	CloseCharacterSelectNewMenu()
 
@@ -1283,7 +1286,7 @@ void function CloseCharacterSelectNewMenu()
 	// Reset camera, DOF, color correction, and fog
 	if ( IsValid( fileLevel.camera ) )
 	{
-		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 		fileLevel.camera.SetFOV( CAMERA_FOV )} else {
 		fileLevel.camera.SetFOV( CAMERA_FOV_LEGACY )}
 	}
@@ -1330,7 +1333,7 @@ void function CloseCharacterSelectNewMenu_AimTrainer()
 	// Reset camera, DOF, color correction, and fog
 	if ( IsValid( fileLevel.camera ) )
 	{
-		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 		fileLevel.camera.SetFOV( CAMERA_FOV )} else {
 		fileLevel.camera.SetFOV( CAMERA_FOV_LEGACY )}
 	}
@@ -1376,7 +1379,7 @@ void function OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 
 void function CreateCharacterSelectClientEnts()
 {
-	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){ 
+	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){ 
 		if ( !fileLevel.menuEntsExist )
 			return
 		
@@ -1519,7 +1522,7 @@ void function CreateCharacterSelectClientEnts()
 		{
 			fileLevel.countdownRui = CreateFullscreenRui( $"ui/character_select_timer_new.rpak" )
 			RuiSetResolutionToScreenSize( fileLevel.countdownRui )
-			float pickStartTime = GetGlobalNetTime( "pickLoadoutGamestateStartTime" )
+			float pickStartTime = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetTime( "pickLoadoutGamestateStartTime" ) : GetGlobalNetTime( "pickLoadoutGamestateStartTime" )
 			Assert( pickStartTime > -1 )
 			RuiSetGameTime( fileLevel.countdownRui, "countdownEndTime", pickStartTime )
 			RuiSetInt( fileLevel.countdownRui, "yourPick", fileLevel.localClientLockstepIndex + 1 )
@@ -1535,7 +1538,8 @@ void function CountdownTimerSounds()
 
 	wait max( 0.0, SCREEN_COVER_TRANSITION_IN_DURATION + SCREEN_COVER_TRANSITION_OUT_DURATION - 1.0 )
 
-	float timeRemaining = GetGlobalNetTime( "pickLoadoutGamestateStartTime" ) - Time()
+	float pickStartTime = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetTime( "pickLoadoutGamestateStartTime" ) : GetGlobalNetTime( "pickLoadoutGamestateStartTime" )
+	float timeRemaining = pickStartTime - Time()
 
 	if ( timeRemaining <= 1.0 )
 		return
@@ -1543,9 +1547,9 @@ void function CountdownTimerSounds()
 	wait max( 0.0, timeRemaining % 1.0 )
 	wait 0.5
 
-	while( Time() < GetGlobalNetTime( "pickLoadoutGamestateStartTime" ) )
+	while( Time() < pickStartTime )
 	{
-		timeRemaining = GetGlobalNetTime( "pickLoadoutGamestateStartTime" ) - Time()
+		timeRemaining = pickStartTime - Time()
 		EmitSoundOnEntity( player, "UI_Survival_Intro_PreLegendSelect_Countdown" )
 		wait 1.0
 	}
@@ -1558,7 +1562,7 @@ void function UpdateCamera()
 	if ( fileLevel.menuEntsExist )
 	{
 		player.SetMenuCameraEntity( fileLevel.camera )
-		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 			fileLevel.camera.SetTargetFOV( CAMERA_FOV, true, EASING_CUBIC_INOUT, CAMERA_TRANSITION_DURATION )
 		} else {
 			fileLevel.camera.SetTargetFOV( CAMERA_FOV_LEGACY, true, EASING_CUBIC_INOUT, CAMERA_TRANSITION_DURATION )
@@ -1727,8 +1731,9 @@ void function UpdateForFocusOnButtonIndex( int buttonIndex )
 	if ( !fileLevel.isBrowseMode && !GetLocalClientPlayer().GetPlayerNetBool( "hasLockedInCharacter" ) )
 		GetLocalClientPlayer().ClientCommand( "UpdateCharacterSelectFocus " + ItemFlavor_GetGUID( itemFlav ) )
 
+	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
 	// We aren't in browse mode and it's not our turn to pick
-	if ( !fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
+	if ( !fileLevel.isBrowseMode && stepIndex != fileLevel.localClientLockstepIndex )
 		return
 
 	// If we have a character locked in we don't update the model
@@ -1816,8 +1821,9 @@ void function OnLoadoutButton_Activate( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
+	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
 	// We aren't in browse mode and it's not our turn to pick
-	if ( !fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
+	if ( !fileLevel.isBrowseMode && stepIndex != fileLevel.localClientLockstepIndex )
 		return
 
 	// We already have a character locked
@@ -1889,8 +1895,9 @@ void function Client_TryUnlockCharacter()
 	if ( !GetLocalClientPlayer().GetPlayerNetBool( "hasLockedInCharacter" ) )
 		return
 
+	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
 	// It's not our turn, can't unlock
-	if ( GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
+	if ( stepIndex != fileLevel.localClientLockstepIndex )
 		return
 
 	// Too late to unlock, character selection is ending
@@ -1915,11 +1922,12 @@ void function OnLoadoutButton_RightClick()
 		UpdateButtonStates()
 		return
 	}
-
-	if ( GetGlobalNetInt( "characterSelectLockstepIndex" ) < 0 )
+	
+	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
+	if ( stepIndex < 0 )
 		return
 
-	if ( Time() >= GetGlobalNetTime( "squadPresentationStartTime" ) + 1.0 )
+	if ( Playlist() != ePlaylists.fs_scenarios && Time() >= GetGlobalNetTime( "squadPresentationStartTime" ) + 1.0 )
 		return
 
 	if ( !fileLevel.detailsPanelVisible )
@@ -1961,13 +1969,18 @@ void function OnLockStepPickIndexChanged( entity player, int old, int new, bool 
 	if ( !actuallyChanged )
 		return
 
-	if ( GetGlobalNetInt( "characterSelectLockstepIndex" ) == fileLevel.localClientLockstepIndex )
+	if( Playlist() == ePlaylists.fs_scenarios && player != GetLocalClientPlayer() )
+		return
+
+	int lockstepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
+
+	if ( lockstepIndex == fileLevel.localClientLockstepIndex )
 	{
 		thread LocalPlayerPickingSounds()
 		FlashGameWindow()
 	}
 
-	entity ornull pickingPlayer = GetTeammateForPickingIndex( GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+	entity ornull pickingPlayer = GetTeammateForPickingIndex( lockstepIndex )
 	if ( pickingPlayer != null )
 	{
 		expect entity( pickingPlayer )
@@ -1988,6 +2001,9 @@ void function OnLockStepPickIndexChanged( entity player, int old, int new, bool 
 void function OnLockStepPickStartTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
 	if ( !actuallyChanged )
+		return
+
+	if( Playlist() == ePlaylists.fs_scenarios && player != GetLocalClientPlayer() )
 		return
 
 	UpdateButtonStates()
@@ -2086,7 +2102,7 @@ void function OnPlayerUpdatedCharacterFocus( entity player, int oldFocusIndex, i
 
 	// If this focus change was from the active picking player we need to update the scene too
 
-	entity ornull playerForSlot = GetTeammateForPickingIndex( GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+	entity ornull playerForSlot = GetTeammateForPickingIndex( Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" ) )
 	if ( playerForSlot == null || expect entity( playerForSlot )  != player )
 		return
 
@@ -2148,7 +2164,7 @@ void function OnTeammateLoadoutSelectionChanged( EHI playerEHI, ItemFlavor unuse
 		return
 
 	// The picking player and the local player might be out of sync, so only allow the change if we think it's their turn
-	entity ornull playerForSlot = GetTeammateForPickingIndex( GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+	entity ornull playerForSlot = GetTeammateForPickingIndex( Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" ) )
 	if ( playerForSlot == null || ToEHI( expect entity( playerForSlot ) ) != playerEHI )
 		return
 
@@ -2199,7 +2215,9 @@ void function UpdateButtonStates()
 	entity localPlayer    = GetLocalClientPlayer()
 	array<entity> players = GetPlayerSquad()
 
-	int currentLockStepIndex   = GetGlobalNetInt( "characterSelectLockstepIndex" )
+	int currentLockStepIndex = Playlist() == ePlaylists.fs_scenarios ? localPlayer.GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
+	float selectStartTime = Playlist() == ePlaylists.fs_scenarios ? localPlayer.GetPlayerNetTime( "characterSelectLockstepStartTime" ) : GetGlobalNetTime( "characterSelectLockstepStartTime" )
+	float selectEndTime = Playlist() == ePlaylists.fs_scenarios ? localPlayer.GetPlayerNetTime( "characterSelectLockstepEndTime" ) : GetGlobalNetTime( "characterSelectLockstepEndTime" )
 	bool localPlayerIsLockedIn = localPlayer.GetPlayerNetBool( "hasLockedInCharacter" )
 
 	for ( int i = 0 ; i < fileLevel.characterButtons.len() ; i++ )
@@ -2217,7 +2235,7 @@ void function UpdateButtonStates()
 			// Lockstep index is = MAX_TEAM_PLAYERS, meaning all players have got their turn, but we want to leave the buttons visible
 			// Button not used, make sure it's hidden and disabled
 
-			if ( currentLockStepIndex < 0 || Time() >= GetGlobalNetTime( "squadPresentationStartTime" ) )
+			if ( currentLockStepIndex < 0 || Playlist() != ePlaylists.fs_scenarios && Time() >= GetGlobalNetTime( "squadPresentationStartTime" ) )
 				Hud_SetVisible( button, false )
 
 			Hud_SetEnabled( button, false )
@@ -2298,19 +2316,19 @@ void function UpdateButtonStates()
 	{
 		var playerRui = fileLevel.ruiPlayerBarRuis[i]
 
-		float pickStartTime = GetGlobalNetTime( "pickLoadoutGamestateStartTime" )
+		float pickStartTime = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetTime( "pickLoadoutGamestateStartTime" ) : GetGlobalNetTime( "pickLoadoutGamestateStartTime" )
 		RuiSetGameTime( playerRui, "countdownEndTime", pickStartTime )
 		RuiSetInt( playerRui, "yourPick", fileLevel.localClientLockstepIndex + 1 )
 
 		// Update selecting status
 		RuiSetBool( playerRui, "isSelecting", currentLockStepIndex == i )
 		RuiSetBool( playerRui, "showingCharacterDetails", fileLevel.detailsPanelVisible )
-		RuiSetFloat( playerRui, "gcardsStartTime", GetGlobalNetTime( "squadPresentationStartTime" ) )
+		RuiSetFloat( playerRui, "gcardsStartTime", Playlist() == ePlaylists.fs_scenarios ? selectEndTime : GetGlobalNetTime( "squadPresentationStartTime" ) )
 
 		if ( i == currentLockStepIndex )
 		{
-			RuiSetGameTime( playerRui, "selectingStartTime", GetGlobalNetTime( "characterSelectLockstepStartTime" ) )
-			RuiSetGameTime( playerRui, "selectingEndTime", GetGlobalNetTime( "characterSelectLockstepEndTime" ) )
+			RuiSetGameTime( playerRui, "selectingStartTime", selectStartTime )
+			RuiSetGameTime( playerRui, "selectingEndTime", selectEndTime )
 		}
 		else if ( i < currentLockStepIndex )
 		{
@@ -2487,9 +2505,10 @@ void function LocalPlayerPickingSounds()
 	// Start of turn sound
 	EmitSoundOnEntity( player, "pilot_collectible_pickup" )
 
-	while( Time() < GetGlobalNetTime( "characterSelectLockstepEndTime" ) )
+	float lockstepEndTime = Playlist() == ePlaylists.fs_scenarios ? player.GetPlayerNetTime( "characterSelectLockstepEndTime" ) : GetGlobalNetTime( "characterSelectLockstepEndTime" )
+	while( Time() < lockstepEndTime )
 	{
-		float timeRemaining = GetGlobalNetTime( "characterSelectLockstepEndTime" ) - Time()
+		float timeRemaining = lockstepEndTime - Time()
 		EmitSoundOnEntity( player, "UI_Survival_Intro_LegendSelectCountDown" )
 		wait 1.0
 	}
@@ -2602,7 +2621,7 @@ void function UpdateSceneThink()
 
 		bool shouldUpdateModel = false
 		bool shouldUpdateAnim  = false
-		int currentPickIndex   = GetGlobalNetInt( "characterSelectLockstepIndex" )
+		int currentPickIndex   = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
 
 		bool menuStateChanged = fileLevel.desiredMenuState != currentMenuState
 		if ( menuStateChanged )
@@ -2681,14 +2700,14 @@ void function UpdatePlayerModel( ItemFlavor character )
 //By @CafeFPS (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
-	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 		if ( !fileLevel.menuEntsExist )
 			return
 
 		if ( !IsValid( fileLevel.characterModel ) )
 			return
 
-		entity ornull pickingPlayer = GetTeammateForPickingIndex( GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+		entity ornull pickingPlayer = GetTeammateForPickingIndex( Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" ) )
 		if ( pickingPlayer == null )
 			return
 		ItemFlavor characterSkin = LoadoutSlot_WaitForItemFlavor( ToEHI( expect entity( pickingPlayer ) ), Loadout_CharacterSkin( character ) )
@@ -2725,7 +2744,7 @@ void function UpdatePlayerModel( ItemFlavor character )
 		if ( !IsValid( fileLevel.characterModel ) )
 			return
 
-		entity ornull pickingPlayer = GetTeammateForPickingIndex( GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+		entity ornull pickingPlayer = GetTeammateForPickingIndex( Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" ) )
 		if ( pickingPlayer == null )//&& !fileLevel.isBrowseMode )
 			return
 		//else
@@ -2900,7 +2919,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 //By @CafeFPS (CafeFPS)//
 /////////////////////////////////////////////////////// 
 {
-	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false )){
 	
 		if ( !fileLevel.menuEntsExist )
 			return

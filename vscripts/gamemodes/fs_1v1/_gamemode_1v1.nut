@@ -4225,23 +4225,6 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( players[0] ) 
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-	foreach( entity player in players )
-	{
-		if( !IsValid( player ) )
-			continue
-
-		thread function() : ( player, group )
-		{
-			EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
-			EndSignal( player, "OnDestroy" )
-
-			// if( !FS_Scenarios_GetDropshipEnabled() )
-			wait 1 // Find a better method to wait for the client to be updated. Cafe  || What about WaitSignal in this thread combined with calling it as waitthread? || server needs to know that client has the new data, client has to tell server somehow. Cafe
-
-			Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-		}()
-	}
-
 	foreach( player in players )
 	{
 		if( !IsValid( player ) )

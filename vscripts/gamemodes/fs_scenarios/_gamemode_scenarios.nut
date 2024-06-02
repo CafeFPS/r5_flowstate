@@ -125,6 +125,8 @@ struct {
 	float fs_scenarios_ring_damage_step_time = 1.5
 	float fs_scenarios_game_start_time_delay = 3.0
 	float fs_scenarios_ring_damage = 25.0
+	float fs_scenarios_characterselect_time_per_player = 3.0
+	bool fs_scenarios_characterselect_enabled = true
 } settings
 
 array< bool > teamSlots
@@ -149,6 +151,8 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
 	settings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
 	settings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
+	settings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
+	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.0 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -1834,11 +1838,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 							}
 						}
 					)
-					
-					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
+
 					foreach( player in players )
 					{
-						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+						if( !IsValid( player ) )
+							continue
 
 						player.ForceStand()
 						player.Server_TurnOffhandWeaponsDisabledOn()
@@ -1856,6 +1860,22 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
 					}
 					
+					if( settings.fs_scenarios_characterselect_enabled )
+					{
+						printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+						
+						waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
+					}
+
+					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
+					foreach( player in players )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+					}
+
 					wait settings.fs_scenarios_game_start_time_delay
 
 					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
@@ -1867,6 +1887,144 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 }//thread
 
+void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	table< int, array< entity > > groupedPlayers
+	groupedPlayers[0] <- group.team1Players
+	groupedPlayers[1] <- group.team2Players
+	groupedPlayers[2] <- group.team3Players
+
+	#if DEVELOPER
+	printt( "GIVING LOCKSTEP ORDER FOR PLAYERS GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+	#endif
+
+	float startime = Time()
+	float timeBeforeCharacterSelection = CharSelect_GetIntroCountdownDuration() + CharSelect_GetPickingDelayBeforeAll()
+
+	float timeToSelectAllCharacters = CharSelect_GetPickingDelayOnFirst()
+	for ( int pickIndex = 0; pickIndex < settings.fs_scenarios_playersPerTeam; pickIndex++ )
+		timeToSelectAllCharacters += Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
+
+	float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll() + CharSelect_GetOutroTransitionDuration()
+
+	foreach( int team, array<entity> players in groupedPlayers )
+	{
+		if ( players.len() == 0 )
+			continue
+
+		ArrayRemoveInvalid( players )
+		players.randomize()
+		int i = 0
+		foreach( entity player in players )
+		{
+			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
+			ScreenCoverTransition_Player( player, Time() + CharSelect_GetIntroTransitionDuration() )
+			player.SetPlayerNetTime( "pickLoadoutGamestateStartTime", startime + CharSelect_GetIntroTransitionDuration() )
+			player.SetPlayerNetTime( "pickLoadoutGamestateEndTime", startime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
+			player.SetPlayerNetBool( "hasLockedInCharacter", false )
+			player.SetPlayerNetBool( "characterSelectionReady", true )
+			i++
+		}
+	}
+
+	wait CharSelect_GetIntroTransitionDuration()
+	#if DEVELOPER
+	printt( "[Scenarios] SIGNALING THAT CHARACTER SELECT SHOULD OPEN ON CLIENTS OF GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+	#endif
+
+	wait CharSelect_GetPickingDelayBeforeAll()
+
+	for ( int pickIndex = 0; pickIndex < settings.fs_scenarios_playersPerTeam; pickIndex++ )
+	{
+		float startTime = Time()
+
+		float timeSpentOnSelection = settings.fs_scenarios_characterselect_time_per_player
+
+		float endTime = startTime + timeSpentOnSelection
+
+		foreach( int team, array<entity> players in groupedPlayers )
+		{
+			if ( players.len() == 0 )
+				continue
+
+			ArrayRemoveInvalid( players )
+			foreach( entity player in players )
+			{
+				player.SetPlayerNetInt( "characterSelectLockstepIndex", pickIndex )
+				player.SetPlayerNetTime( "characterSelectLockstepStartTime", startTime )
+				player.SetPlayerNetTime( "characterSelectLockstepEndTime", endTime )
+			}
+		}
+		#if DEVELOPER
+		printt( "[Scenarios] SIGNALING LOCKSTEP INDEX CHANGE FOR GROUP", group.groupHandle, "IN REALM", group.slotIndex, "SHOULD WAIT", timeSpentOnSelection )
+		#endif
+
+		wait timeSpentOnSelection
+		foreach( int team, array<entity> players in groupedPlayers )
+		{
+			if ( players.len() == 0 )
+				continue
+
+			ArrayRemoveInvalid( players )
+			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex, players ) )
+			{
+				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+				CharacterSelect_AssignCharacter( player, selectedCharacter )
+			}
+		}
+
+		wait CharSelect_GetPickingDelayAfterEachLock()
+		#if DEVELOPER
+		printt( "[Scenarios] GIVING CHARACTER FOR PLAYERS WITH SLOT", pickIndex, "OF GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+		#endif
+	}
+
+	wait 2
+
+	foreach( int team, array<entity> players in groupedPlayers )
+	{
+		if ( players.len() == 0 )
+			continue
+
+		ArrayRemoveInvalid( players )
+		foreach( entity player in players )
+		{
+			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+		}
+	}
+
+	wait 0.5
+
+	foreach( int team, array<entity> players in groupedPlayers )
+	{
+		if ( players.len() == 0 )
+			continue
+
+		ArrayRemoveInvalid( players )
+		foreach( entity player in players )
+		{
+			player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
+			player.SetPlayerNetBool( "characterSelectionReady", false )
+			Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+		}
+	}
+}
+
+array<entity> function FS_Scenarios_GetAllPlayersOfLockstepIndex( int index, array<entity> players )
+{
+	array<entity> result = []
+
+	foreach ( player in players )
+		if ( player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) == index )
+			result.append( player )
+
+	return result
+}
 
 void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group )
 {

@@ -30,7 +30,7 @@ bool function Survival_HasPlayerLockedInCharacter( EHI playerEHI )
 		if ( player == null || !IsValid( player ) )
 			return false
 
-		if ( Time() > GetGlobalNetTime( "squadPresentationStartTime" ) && GetGlobalNetTime( "squadPresentationStartTime" ) != -1 )
+		if ( Playlist() != ePlaylists.fs_scenarios && Time() > GetGlobalNetTime( "squadPresentationStartTime" ) && GetGlobalNetTime( "squadPresentationStartTime" ) != -1 )
 			return true
 		return player.GetPlayerNetBool( "hasLockedInCharacter" )
 	#elseif UI

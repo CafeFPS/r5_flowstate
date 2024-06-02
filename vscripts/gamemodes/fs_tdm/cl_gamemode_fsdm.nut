@@ -172,11 +172,32 @@ void function CL_FSDM_RegisterNetworkFunctions()
 		return
 	
 	if( Playlist() == ePlaylists.fs_scenarios )
+	{
 		RegisterNetworkedVariableChangeCallback_time( "FS_Scenarios_gameStartTime", Flowstate_StartTimeChanged )
+		RegisterNetworkedVariableChangeCallback_bool( "characterSelectionReady", FS_Scenarios_OnGroupCharacterSelectReady )
+	}
 
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
+}
+
+void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old, bool new, bool actuallyChanged )
+{
+	if ( player != GetLocalClientPlayer() )
+		return
+	
+	printt( "[Character Select] On Open:", new )
+	if( new )
+	{
+		Fullmap_SetVisible( false )
+		UpdateMainHudVisibility( GetLocalViewPlayer() )
+		OpenCharacterSelectNewMenu()
+	}
+	else
+	{
+		CloseCharacterSelectNewMenu()
+	}
 }
 
 void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )

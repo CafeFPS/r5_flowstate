@@ -459,18 +459,30 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "hasDeathFieldImmunity", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 	RegisterNetworkedVariable( "displayMapzoneText", SNDC_GLOBAL, SNVT_BOOL, true )
 
-	RegisterNetworkedVariable( "pickLoadoutGamestateStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "pickLoadoutGamestateEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 	RegisterNetworkedVariable( "hasLockedInCharacter", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	RegisterNetworkedVariable( "characterSelectLockstepPlayerIndex", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
 	RegisterNetworkedVariable( "characterSelectFocusIndex", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, -1 )
-	RegisterNetworkedVariable( "characterSelectionReady", SNDC_GLOBAL, SNVT_BOOL, false )
-	RegisterNetworkedVariable( "characterSelectLockstepIndex", SNDC_GLOBAL, SNVT_INT, -1 )
-	RegisterNetworkedVariable( "characterSelectLockstepStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "characterSelectLockstepEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "characterSelectPicksEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "squadPresentationStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "championSquadPresentationStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+	
+	if( Playlist() != ePlaylists.fs_scenarios )
+	{
+		RegisterNetworkedVariable( "characterSelectionReady", SNDC_GLOBAL, SNVT_BOOL, false )
+		RegisterNetworkedVariable( "characterSelectLockstepIndex", SNDC_GLOBAL, SNVT_INT, -1 )
+		RegisterNetworkedVariable( "characterSelectLockstepStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "characterSelectLockstepEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "squadPresentationStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "championSquadPresentationStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "pickLoadoutGamestateEndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "pickLoadoutGamestateStartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
+	} else // cafe was here
+	{
+		RegisterNetworkedVariable( "characterSelectionReady", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+		RegisterNetworkedVariable( "characterSelectLockstepIndex", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, -1 )
+		RegisterNetworkedVariable( "characterSelectLockstepStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "characterSelectLockstepEndTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "pickLoadoutGamestateEndTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -1 )
+		RegisterNetworkedVariable( "pickLoadoutGamestateStartTime", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -1 )
+	}
+
 	Remote_RegisterClientFunction( "ServerCallback_CharacterLockRejected" )
 
 	RegisterNetworkedVariable( "championEEH", SNDC_GLOBAL, SNVT_BIG_INT, EncodedEHandle_null )

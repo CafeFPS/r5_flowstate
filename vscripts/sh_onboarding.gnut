@@ -362,7 +362,7 @@ void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverr
 {
 	SetGlobalNetInt( "gameState", GetGameState() )
 
-	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() )
+	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() && Playlist() != ePlaylists.fs_scenarios )
 	{
 		case eGameState.WaitingForPlayers:
 			SetGlobalNetTime( "PreGameStartTime", referenceTime + PreGame_GetWaitingForPlayersCountdown() )
@@ -402,94 +402,6 @@ void function PlayPickLoadoutMusic( bool introCountdownEnabled )
 
 	if ( introCountdownEnabled )
 		wait CharSelect_GetIntroTransitionDuration()
-}
-
-void function Custom_AssignLockStepOrderForTwoTeams( array<entity> team1Players, array<entity> team2Players )
-{
-	table< int, array<entity> > groupedPlayers
-	groupedPlayers[0] <- []
-	groupedPlayers[1] <- []
-	foreach ( player in team1Players )
-	{
-		groupedPlayers[0].append( player )
-	}
-	foreach ( player in team2Players )
-	{
-		groupedPlayers[1].append( player )
-	}
-
-	foreach( int team, array<entity> players in groupedPlayers )
-	{
-		if ( players.len() == 0 )
-			continue
-
-		ArrayRemoveInvalid( players )
-		players.randomize()
-		int i = 0
-		foreach( entity player in players )
-		{
-			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
-			i++
-		}
-	}
-}
-
-void function FS_Custom_CharacterSelectPhase()
-{
-	Custom_AssignLockStepOrderForTwoTeams( [], [] )
-
-	ScreenCoverTransition_AllPlayers( Time() + CharSelect_GetIntroTransitionDuration() )
-	wait CharSelect_GetIntroTransitionDuration()
-
-	// Signalize that character selection sequence should be started clientside
-	SetGlobalNetBool( "characterSelectionReady", true )
-
-	wait CharSelect_GetPickingDelayBeforeAll()
-
-	for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
-	{
-		float startTime = Time()
-
-		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
-		if ( pickIndex == 0 )
-			timeSpentOnSelection += CharSelect_GetPickingDelayOnFirst()
-
-		float endTime = startTime + timeSpentOnSelection
-
-		SetGlobalNetInt( "characterSelectLockstepIndex", pickIndex )
-		SetGlobalNetTime( "characterSelectLockstepStartTime", startTime )
-		SetGlobalNetTime( "characterSelectLockstepEndTime", endTime )
-		
-		//compare player pick with GetLoadoutSlotContentsIndexInternal( playerEHI, entry ) before setting a forced pick
-		// if( pickIndex == 0 ) 
-		// {
-			// foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
-			// {
-				// Flowstate_AssignUniqueCharacterForPlayer(player, false)
-			// }
-		// }
-		
-		wait timeSpentOnSelection
-
-		foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
-		{
-			ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-			CharacterSelect_AssignCharacter( player, selectedCharacter )
-		}
-
-		wait CharSelect_GetPickingDelayAfterEachLock()
-	}
-
-	// Reset selection step to lock all character selection loadout slots
-	SetGlobalNetInt( "characterSelectLockstepIndex", MAX_TEAM_PLAYERS )
-
-	// foreach ( player in GetPlayerArray() )
-		// if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
-			// Flowstate_AssignUniqueCharacterForPlayer(player, true) // Joined too late, assign a random legend so everything runs fine
-
-	wait CharSelect_GetPickingDelayAfterAll()
-
-	wait CharSelect_GetOutroTransitionDuration() + CharSelect_GetOutroSceneChangeDuration() / 3.5 - CharSelect_GetPickingDelayAfterEachLock() * MAX_TEAM_PLAYERS
 }
 
 #endif

@@ -1319,7 +1319,8 @@ void function RateSpawnpoints_Directional( int checkClass, array<entity> spawnpo
 
 bool function SURVIVAL_IsCharacterClassLocked( entity player )
 {
-	return player.GetPlayerNetBool( "hasLockedInCharacter" ) || player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) != GetGlobalNetInt( "characterSelectLockstepIndex" )
+	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? player.GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
+	return player.GetPlayerNetBool( "hasLockedInCharacter" ) || player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) != stepIndex
 }
 
 bool function SURVIVAL_IsValidCircleLocation( vector origin )
