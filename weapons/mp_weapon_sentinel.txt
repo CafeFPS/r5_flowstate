@@ -176,8 +176,8 @@
 	// Sound - Firing
 	//
 	"fire_sound_1_npc"                         "Weapon_DMR_Fire_NPC"
-	"fire_sound_1_player_1p"                   "Weapon_DMR_Fire_1P"
-	"fire_sound_1_player_3p"                   "Weapon_DMR_Fire_3P"
+	"fire_sound_1_player_1p"                   "weapon_sentinel_fire_1p"
+	"fire_sound_1_player_3p"                   "weapon_sentinel_fire_3p"
 
 	// Sound - Low Ammo
 	"low_ammo_sound_name_1"                    "DMR_LowAmmo_Shot1"
@@ -185,8 +185,8 @@
 	"low_ammo_sound_name_3"                    "DMR_LowAmmo_Shot3"
 
 	// Sound - Misc
-	"sound_zoom_in"                            "Weapon_DMR_ADS_In"
-	"sound_zoom_out"                           "Weapon_DMR_ADS_Out"
+	"sound_zoom_in"                            "weapon_sentinel_ads_in"
+	"sound_zoom_out"                           "weapon_sentinel_ads_out"
 
 	// FX - Impacts
     "impact_effect_table"                      "titan_bullet"
