@@ -50,7 +50,6 @@ void function ScreenCoverTransition( float endTime )
 {
 	#if DEVELOPER
 		printt( "Calling ScreenCoverTransition with endTime", endTime, " at time", Time() )
-		DumpStack()
 	#endif
 	// can be called from server
 	// returns the time remaining until the out transition plays

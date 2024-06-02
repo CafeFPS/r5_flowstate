@@ -166,7 +166,10 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 			
 			case ePlaylists.fs_scenarios:
-			RuiSetString( rui, "gameModeString", "FS SCENARIOS" )
+			if( GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", false ) )
+				RuiSetString( rui, "gameModeString", "FS ZONE WARS" )
+			else
+				RuiSetString( rui, "gameModeString", "FS FAST BR(FIXME)" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS CONNECTED" )
 			break

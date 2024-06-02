@@ -1832,9 +1832,17 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								player.UnlockWeaponChange()
 								player.ClearFirstDeployForAllWeapons()
 								// player.UnfreezeControlsOnServer()
+								ClearInvincible(player)
 
 								if( !newGroup.IsFinished )
 									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
+								
+								if( settings.fs_scenarios_characterselect_enabled )
+								{
+									player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
+									player.SetPlayerNetBool( "hasLockedInCharacter", true )
+									player.SetPlayerNetBool( "characterSelectionReady", false )
+								}
 							}
 						}
 					)
@@ -1858,6 +1866,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
 						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
 						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						MakeInvincible(player)
 					}
 					
 					if( settings.fs_scenarios_characterselect_enabled )
@@ -1892,8 +1901,6 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 	if( !IsValid( group ) )
 		return
 
-	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
-
 	table< int, array< entity > > groupedPlayers
 	groupedPlayers[0] <- group.team1Players
 	groupedPlayers[1] <- group.team2Players
@@ -1923,7 +1930,6 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		foreach( entity player in players )
 		{
 			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
-			ScreenCoverTransition_Player( player, Time() + CharSelect_GetIntroTransitionDuration() )
 			player.SetPlayerNetTime( "pickLoadoutGamestateStartTime", startime + CharSelect_GetIntroTransitionDuration() )
 			player.SetPlayerNetTime( "pickLoadoutGamestateEndTime", startime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
 			player.SetPlayerNetBool( "hasLockedInCharacter", false )
@@ -1971,10 +1977,17 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 				continue
 
 			ArrayRemoveInvalid( players )
+
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex, players ) )
 			{
 				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				CharacterSelect_AssignCharacter( player, selectedCharacter )
+			}
+
+			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
+			{
+				if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+					Flowstate_AssignUniqueCharacterForPlayer(player, false)
 			}
 		}
 
@@ -2008,8 +2021,6 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		ArrayRemoveInvalid( players )
 		foreach( entity player in players )
 		{
-			player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
-			player.SetPlayerNetBool( "characterSelectionReady", false )
 			Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
 		}
 	}

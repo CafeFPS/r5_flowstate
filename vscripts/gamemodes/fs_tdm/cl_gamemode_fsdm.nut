@@ -164,6 +164,15 @@ bool function isMuted()
 void function FS_Scenarios_OnClientScriptInit( entity player ) 
 {
 	FS_Scenarios_InitPlayersCards()
+
+	//I don't want these things in user screen even if they launch in debug
+	SetConVarBool( "cl_showpos", false )
+	SetConVarBool( "cl_showfps", false )
+	SetConVarBool( "cl_showgpustats", false )
+	SetConVarBool( "cl_showsimstats", false )
+	SetConVarBool( "host_speeds", false )
+	SetConVarBool( "con_drawnotify", false )
+	SetConVarBool( "enable_debug_overlays", false )
 }
 
 void function CL_FSDM_RegisterNetworkFunctions()
@@ -186,17 +195,19 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 {
 	if ( player != GetLocalClientPlayer() )
 		return
-	
-	printt( "[Character Select] On Open:", new )
+
 	if( new )
 	{
+		printt( "[Scenarios Character Select] Open" )
 		Fullmap_SetVisible( false )
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		OpenCharacterSelectNewMenu()
 	}
 	else
 	{
+		printt( "[Scenarios Character Select] Close" )
 		CloseCharacterSelectNewMenu()
+		RunUIScript( "UI_CloseCharacterSelect" )
 	}
 }
 
@@ -2085,6 +2096,16 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		{
 			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			return
+		}
+	}
+
+	foreach( int i, int handle in file.enemyTeamHandles2 )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards2[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"rui/rui_screens/skull" )
 			return
 		}
 	}
