@@ -656,7 +656,7 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 
 	sequence.blendTime 			= 0.0
 	sequence.attachment 		= "ref"
-	sequence.useAnimatedRefAttachment		= true
+	sequence.useAnimatedRefAttachment		= false
 	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
 	waitthread FirstPersonSequence( sequence, dropPod, ref )
 	dropPod.DisableRenderAlways()
