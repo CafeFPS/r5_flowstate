@@ -255,9 +255,6 @@ void function ApplyVideoSettingsButton_Activate( var button )
 	print( "Video Settings Changed\n" )
 	VideoOptions_Apply( file.videoPanel )
 	
-	//HACK, need fps_max setting added to settings.cfg
-	SetConVarFloat( "sv_noclipspeed_fast", GetConVarInt("fps_max") )
-	
 	uiGlobal.videoSettingsChanged = false
 
 	UpdateFooterOptions()
