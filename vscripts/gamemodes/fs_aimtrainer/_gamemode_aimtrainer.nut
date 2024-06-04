@@ -43,6 +43,12 @@ struct{
 	array<entity> props
 } ChallengesEntities
 
+struct
+{
+	float helmet_lv4 = 0.65
+	
+} settings 
+
 table<int, array<ChallengeScore> > ChallengesData //implement this
 table<int, int> ChallengesBestScores
 
@@ -169,6 +175,8 @@ void function _ChallengesByColombia_Init()
 		ChallengesData[i] <- []
 		ChallengesBestScores[i] <- 0
 	}	
+	
+	settings.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
 }
 
 void function StartFRChallenges(entity player)
@@ -2556,7 +2564,7 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 	
 	if(IsValidHeadShot( damageInfo, dummy ))
 	{
-		int headshot = int(basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+		int headshot = int(basedamage*(settings.helmet_lv4+(1-settings.helmet_lv4)*headshotMultiplier))
 		DamageInfo_SetDamage( damageInfo, headshot)
 		if(headshot > dummy.GetHealth() + dummy.GetShieldHealth()) 
 		{
@@ -2613,7 +2621,7 @@ void function OnFloatingDummyDamaged( entity dummy, var damageInfo )
 	//fake helmet
 	float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 	float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
-	if(IsValidHeadShot( damageInfo, dummy )) DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+	if(IsValidHeadShot( damageInfo, dummy )) DamageInfo_SetDamage( damageInfo, basedamage*(settings.helmet_lv4+(1-settings.helmet_lv4)*headshotMultiplier))
 	
 	entity player = DamageInfo_GetAttacker(damageInfo)
 	float damage = DamageInfo_GetDamage( damageInfo )

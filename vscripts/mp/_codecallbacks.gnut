@@ -528,12 +528,15 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "	 health after postdamage: " + ent.GetHealth() )
+		PrintDamageFlags( DamageInfo_GetCustomDamageType( damageInfo ) )
 	#endif
 
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE && entIsPlayer )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	
+	if ( damageType & DF_SHIELD_DAMAGE && entIsPlayer )
 	{
-		if( ent.GetShieldHealth() > 0 )
-			DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
+		if( ent.GetShieldHealth() > 0 || !( damageType & DF_BYPASS_SHIELD ) )
+			DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.	
 	}
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -831,7 +834,11 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
 
 	if( takenDamage != null)
-		shieldDamage = expect float(takenDamage)
+		shieldDamage = expect float( takenDamage )
+	
+	#if VERBOSE_DAMAGE_PRINTOUTS && DEVELOPER 
+		Warning("shield damage: " + string( shieldDamage ) )
+	#endif
 
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
 	bool isKillShot = (damageAmount >= player.GetHealth() + shieldDamage)

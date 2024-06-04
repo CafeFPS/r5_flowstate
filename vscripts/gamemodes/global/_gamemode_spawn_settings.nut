@@ -69,8 +69,8 @@ global function SetCustomPlaylist
 			table<int,entity> allBeamEntities = {}
 			bool spawnInfoPanels = true
 			array< table<vector, string> > savedSpawnInfosExtendedArray
-			vector infoPanelYoffset = NULL_VEC
-			vector infoPanelYoffsetAngles = NULL_VEC
+			vector infoPanelOffset = NULL_VEC
+			vector infoPanelOffsetAngles = NULL_VEC
 			bool bInfoPanelsAreReloading = false
 			
 			table<string,string> DEV_POS_COMMANDS = 
@@ -627,8 +627,8 @@ void function DEV_ReloadInfo()
 
 void function DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector angles = NULL_VEC )
 {
-	file.infoPanelYoffset = offset 
-	file.infoPanelYoffsetAngles = angles
+	file.infoPanelOffset = offset 
+	file.infoPanelOffsetAngles = angles
 	
 	DEV_ReloadInfo()	
 }
@@ -1274,12 +1274,18 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	}
 
 	bool usePlaylist = false
+	bool bUsePak = false
 	
 	if( empty( pak ) )
 	{
 		printt( "Pak was empty, using current." )
 		printm( "Pak was empty, using current." )
 		pak = file.currentSpawnPak
+	}
+	else 
+	{
+		//pak was specified, use the override 
+		bUsePak = true
 	}
 	
 	if( !empty( playlist ) )
@@ -1296,7 +1302,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["use_custom_rpak"] <- SetCustomSpawnPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
 	
-	array<LocPair> devLocations = customDevSpawnsList().len() > 0 ? customDevSpawnsList() : ReturnAllSpawnLocations( MapName(), spawnOptions )
+	array<LocPair> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? customDevSpawnsList() : ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
 	if( devLocations.len() > 0 )
 	{
@@ -1361,7 +1367,7 @@ void function __CreateInfoPanelForSpawn( int set, int index, string identifier )
 	{	
 		RemovePanelText( player, id )
 		WaitFrame()
-		CreatePanelText( player, "SpawnSet: " + set, "index# [ " + index + " ] Team: " + identifier, ( spawn.origin + <0,0,5> + file.infoPanelYoffset ), faceup + file.infoPanelYoffsetAngles, false, 2, id )
+		CreatePanelText( player, "SpawnSet: " + set, "index# [ " + index + " ] Team: " + identifier, ( spawn.origin + <0,0,5> + file.infoPanelOffset ), faceup + file.infoPanelOffsetAngles, false, 2, id )
 	}
 }
 
@@ -1375,18 +1381,18 @@ void function DEV_RotateInfoPanels( string direction = "clockwise" )
 	if( !__bCheckReload() )
 		return
 	
-	vector info = file.infoPanelYoffsetAngles 
+	vector info = file.infoPanelOffsetAngles 
 	
 	switch( direction )
 	{
 		case "clockwise":
 			if( info.z >= 270 )
 			{
-				file.infoPanelYoffsetAngles = < info.x, info.y, 0 >
+				file.infoPanelOffsetAngles = < info.x, info.y, 0 >
 			}
 			else 
 			{
-				file.infoPanelYoffsetAngles = < info.x, info.y, info.z + 90 >
+				file.infoPanelOffsetAngles = < info.x, info.y, info.z + 90 >
 			}
 			
 			DEV_ReloadInfo()
@@ -1395,11 +1401,11 @@ void function DEV_RotateInfoPanels( string direction = "clockwise" )
 		case "counterclockwise":
 			if( info.z <= 90 )
 			{
-				file.infoPanelYoffsetAngles = < info.x, info.y, 360 >
+				file.infoPanelOffsetAngles = < info.x, info.y, 360 >
 			}
 			else 
 			{
-				file.infoPanelYoffsetAngles = < info.x, info.y, info.z - 90 >
+				file.infoPanelOffsetAngles = < info.x, info.y, info.z - 90 >
 			}
 			
 			DEV_ReloadInfo()

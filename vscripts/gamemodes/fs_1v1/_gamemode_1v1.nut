@@ -4625,7 +4625,7 @@ void function Init_ValidLegendRange()
 
 bool function ValidLegendRange( int i )
 {
-	return i >= file.minLegendRange && i <= file.maxLegendRange
+	return i >= file.minLegendRange && i < file.maxLegendRange
 }
 
 void function RechargePlayerAbilities( entity player, int index = -1 )
@@ -4639,7 +4639,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	
 	if( ValidLegendRange( index ) )
 	{
-		character = file.characters[characterslist[index]]
+		character = file.characters[ characterslist[ index ] ]
 	}
 	else 
 	{

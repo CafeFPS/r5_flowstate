@@ -561,7 +561,11 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	if ( IsValid( inflictor ) && inflictor.GetTeam() == playerTeam )
 		return
 
-	damagedEnt.Signal( "ExitCameraView" )
+	damagedEnt.Signal( "ExitCameraView" ) //TODO: get this signal working properly
+	
+	#if SERVER 
+		GetPlayerOutOfCamera( damagedEnt ) //HACK FIX (~mkos)
+	#endif
 }
 
 #if SERVER
