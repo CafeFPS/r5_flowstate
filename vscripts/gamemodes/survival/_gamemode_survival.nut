@@ -1221,24 +1221,28 @@ void function OnClientConnected( entity player )
 		SetRandomStagingPositionForPlayer( player )
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
-		return
-		} else if ( IsSurvivalTraining() )
-		{
+		return	
+	} 
+	else if ( IsSurvivalTraining() )
+	{
 		DecideRespawnPlayer( player )
 		thread PlayerStartsTraining( player )
 		return
-	} else if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+	} 
+	else if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementrecorder )
 	{
 		vector origin
 		if( GetPlayerArray_Alive().len() > 0 )
 			origin = GetPlayerArray_Alive()[0].GetOrigin()
 		
 		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+		
 		if( !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
 		{
 			Flowstate_AssignUniqueCharacterForPlayer(player, true)
 			player.SetOrigin( origin )
 		}
+		
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
 		return		

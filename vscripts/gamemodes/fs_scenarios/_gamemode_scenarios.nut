@@ -1820,7 +1820,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 									entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 									int ammoType = weapon.GetWeaponAmmoPoolType()
 									player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
-									weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+									
+									if( weapon.UsesClipsForAmmo() )
+										weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+									
 									player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
 								}
 
@@ -1860,18 +1863,28 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						player.MovementDisable()
 						
 						entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-						int ammoType = weapon.GetWeaponAmmoPoolType()
-						player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
-						player.AmmoPool_SetCount( ammoType, 0 )
-						weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
-						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
-						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						
+						if( IsValid( weapon ) )
+						{
+							int ammoType = weapon.GetWeaponAmmoPoolType()
+							player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
+							player.AmmoPool_SetCount( ammoType, 0 )
+							
+							if( weapon.UsesClipsForAmmo() )
+								weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
+							
+							weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
+							weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						}
+						
 						MakeInvincible(player)
 					}
 					
 					if( settings.fs_scenarios_characterselect_enabled )
 					{
-						printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+						#if DEVELOPER 
+							printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+						#endif 
 						
 						waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
 					}

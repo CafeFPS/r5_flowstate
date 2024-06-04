@@ -20,9 +20,10 @@ struct RecordingAnimation
 }
 
 const int MAX_SLOT = 5
+const int MAX_NPC_BUDGET = 120
 
-
-struct{
+struct
+{
 	#if SERVER
 	//movido a la estructura de server player
 	#endif
@@ -68,12 +69,12 @@ void function Sh_FS_MovementRecorder_Init()
 		
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		
-		AddClientCommandCallback("toggleMovementRecorder", ClientCommand_ToggleMovementRecorder)
-		AddClientCommandCallback("PlayAnimInSlot", ClientCommand_PlayAnimInSlot)
-		AddClientCommandCallback("PlayAllAnims", ClientCommand_PlayAllAnims)
-		AddClientCommandCallback("recorder_switchCharacter", ClientCommand_SwitchCharacter)
-		AddClientCommandCallback("recorder_recorderHideHud", ClientCommand_HideHud)
-		AddClientCommandCallback("recorder_toggleContinueLoop", ClientCommand_ToggleContinueLoop)	
+		AddClientCommandCallback( "toggleMovementRecorder", ClientCommand_ToggleMovementRecorder )
+		AddClientCommandCallback( "PlayAnimInSlot", ClientCommand_PlayAnimInSlot )
+		AddClientCommandCallback( "PlayAllAnims", ClientCommand_PlayAllAnims )
+		AddClientCommandCallback( "recorder_switchCharacter", ClientCommand_SwitchCharacter )
+		AddClientCommandCallback( "recorder_recorderHideHud", ClientCommand_HideHud )
+		AddClientCommandCallback( "recorder_toggleContinueLoop", ClientCommand_ToggleContinueLoop )	
 		AddClientCommandCallbackNew( "DestroyDummys", ClientCommand_DestroyDummys )
 		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
 		
@@ -406,12 +407,15 @@ bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
 
 	bool remove = player.IsInputCommandHeld( IN_DUCK )
 
+	if( !player.p.recorderHideHud )
+	{	
+		string token = remove ? "#FS_REMOVING_ALL_ANIMS" : "#FS_PLAYING_ALL_ANIMS";
+		LocalEventMsg( player, token )
+	}
+
 	for(int i = 0; i < MAX_SLOT ; i++ )
 		thread PlayAnimInSlot( player, 	i, remove )
 
-	if( !player.p.recorderHideHud )
-		LocalEventMsg( player, "#FS_PLAYING_ALL_ANIMS" )
-		//Message_New( player, "Playing All Anims", 5 )
 	return true
 }
 
@@ -608,6 +612,16 @@ const array<string> r5rDevs = [
 
 void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 {
+	if( !remove && file.playbackLimit > -1 && file.playerPlaybackAmounts[player.p.handle][slot] >= file.playbackLimit )
+	{
+		return
+	}
+	
+	if( IsOverBudget( player ) )
+	{
+		return
+	}
+	
 	EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
 	EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 	
@@ -647,6 +661,10 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 		DestroyDummyForSlot( player, slot )
 		
 		return
+	}
+	else if( !remove)
+	{
+		LocalEventMsg( player, "#FS_PLAYING_ANIM", slotname( slot + 1 ), 3 )
 	}
 
 	vector initialpos = player.p.recordingAnimsCoordinates[slot].origin
@@ -727,7 +745,10 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false )
 		}()
 
 		if( IsValid( player ) && !player.p.continueLoop )
+		{	
+			file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
 			break
+		}
 	}
 }
 
@@ -740,6 +761,8 @@ void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 		file.playerDummyMaps[player.p.handle][slot].removebyvalue( dummy )
 			
 	dummy.Destroy()
+	
+	file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
 }
 
 void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -1 )
@@ -916,7 +939,25 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 	}
 }
 
-
+//TODO: Preferably we use more performant budget management strategy in the future, for now.. this. ~mkos
+bool function IsOverBudget( entity player, int amountToPlay = 1 )
+{
+	if ( ( GetEntArrayByClass_Expensive( "npc_dummie" ).len() + amountToPlay ) < MAX_NPC_BUDGET )
+	{
+		return false 
+	}
+	else 
+	{
+		if( IsValid( player ) )
+		{
+			LocalEventMsg( player, "#FS_OVER_BUDGET" )
+		}
+		
+		return true
+	}
+	
+	unreachable
+}
 
 //////////////////////
 //		  DEV		//

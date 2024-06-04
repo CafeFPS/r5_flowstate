@@ -370,7 +370,7 @@ struct {
 	string onlineMOTD = ""
 	
 	// Chatbot Messages
-	array<string> BotAllowedModes = ["fs_1v1","lg_duel_mode"]
+	array<string> BotAllowedModes = [ "fs_1v1", "lg_duel_mode", "fs_scenarios" ]
 	bool bBotAllowed
 	bool bChatbotEnabled
 	bool bIntervalThreadRunning
@@ -646,7 +646,7 @@ void function INIT_Global_R5RDEV_VarTable()
 	file.bQueryComplete = true
 	string QueryDataString = GetQueryDataString()	
 	
-	if( empty( QueryDataString ))
+	if( empty( QueryDataString ) )
 	{
 		#if DEVELOPER
 			printt("No querydatastring was constructed. ")
@@ -654,18 +654,18 @@ void function INIT_Global_R5RDEV_VarTable()
 		return 
 	}
 	
-	string settings_string = FetchGlobalSettingsFromR5RDEV__internal(QueryDataString)
+	string settings_string = FetchGlobalSettingsFromR5RDEV__internal( QueryDataString )
 	
 	#if DEVELOPER 
 		sqprint( "QueryDataString: " + QueryDataString )
 		sqprint( "settings_string: " + settings_string )
 	#endif
 	
-	array<string> categories = split(settings_string,"`")
+	array<string> categories = split( settings_string, "`" )
 	
 	foreach ( settings in categories )
 	{
-		array<string> values = split( settings, ",")
+		array<string> values = split( settings, "," )
 		
 		if( values.len() >= 1)
 		{
@@ -675,7 +675,7 @@ void function INIT_Global_R5RDEV_VarTable()
 			for (i = 1; i < values.len(); i++)
 			{	
 				
-				array<string> setting = split(values[i],":")
+				array<string> setting = split( values[i], ":" )
 				
 				switch(data_type)
 				{
@@ -684,7 +684,7 @@ void function INIT_Global_R5RDEV_VarTable()
 						if( setting.len() > 1 )
 						{	
 							string data0 = setting[0]
-							string data1 = trim(setting[1])		
+							string data1 = trim( setting[1] )		
 							
 							bool val = ( data1 == "true" || data1 == "1" ) ? true : false;
 							file.Global_R5RDEV_BoolSettings[data0] <- val;
@@ -695,7 +695,7 @@ void function INIT_Global_R5RDEV_VarTable()
 						
 						if( setting.len() > 1 )
 						{
-							file.Global_R5RDEV_StringSettings[trim(setting[0])] <- trim(setting[1]);
+							file.Global_R5RDEV_StringSettings[ trim( setting[0] ) ] <- trim( setting[1] )
 						}
 						break
 					
@@ -710,7 +710,7 @@ void function INIT_Global_R5RDEV_VarTable()
 							
 							try
 							{
-								file.Global_R5RDEV_IntSettings[trim(setting[0])] <- trim(setting[1]).tointeger();
+								file.Global_R5RDEV_IntSettings[ trim( setting[0] ) ] <- int( trim( setting[1] ) )
 							}
 							catch(errint)
 							{
@@ -725,14 +725,14 @@ void function INIT_Global_R5RDEV_VarTable()
 					
 						if( setting.len() > 1 )
 						{
-							if( !IsNumeric( trim(setting[1]) ) )
+							if( !IsNumeric( trim( setting[1] ) ) )
 							{
 								break
 							}
 							
 							try 
 							{
-								file.Global_R5RDEV_FloatSettings[trim(setting[0])] <- trim(setting[1]).tofloat();
+								file.Global_R5RDEV_FloatSettings[ trim( setting[0] ) ] <- float( trim( setting[1] ) )
 							}
 							catch(errfloat)
 							{
@@ -746,7 +746,7 @@ void function INIT_Global_R5RDEV_VarTable()
 					default:
 					
 						#if DEVELOPER 
-							sqprint("Unknown data type: " + data_type + " for setting: " + settings)
+							sqprint( "Unknown data type: " + data_type + " for setting: " + settings )
 						#endif 
 						break 
 						
@@ -790,7 +790,7 @@ void function ShowOnlineMOTD( entity player )
 		{
 			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 			
-				if( IsValid( player ))
+				if( IsValid( player ) )
 				{	
 					//run ui script for motd
 					MessageLong( player, "", "", eMsgUI.VAR_MOTD , 10, LineBreak( file.onlineMOTD, 80 ) )

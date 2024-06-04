@@ -315,24 +315,7 @@ void function UpdateSystemPanel( var panel )
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
 			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
-
-		if( Playlist() != ePlaylists.fs_aimtrainer )
-		{
-			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
-		} 
-		else
-		{
-			if(ISAIMTRAINER)
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-			{
-				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
-				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
-			}
-		}
+		
 		if ( IsFiringRangeGameMode() && !uiGlobal.isAimTrainer )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
@@ -397,6 +380,25 @@ void function UpdateSystemPanel( var panel )
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+		
+		
+		if( Playlist() != ePlaylists.fs_aimtrainer )
+		{
+			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		} 
+		else
+		{
+			if(ISAIMTRAINER)
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+			{
+				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
+				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+			}
+		}
 }
 
 void function ToggleSetHunter(bool enable)
@@ -463,7 +465,7 @@ void function OpenSettingsMenu()
 void function HostEndMatch()
 {
 	#if LISTEN_SERVER
-	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE )
 	#endif // LISTEN_SERVER
 }
 

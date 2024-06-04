@@ -332,12 +332,7 @@ array<string> function AllPlaylistsArray()
 
 bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
 {
-	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
-	{
-		return true
-	}
-	
-	return false
+	return ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 }
 
  
@@ -498,8 +493,8 @@ void function ErrorServer( string errorMsg )
 
 void function WaitValidStateThenClose( string errorMsg )
 {
-	if(!SH_globals.errorCheck)
-		wait 1 //Todo(dw): Needs proper ~mkos
+	if( !SH_globals.errorCheck )
+		wait 1 //Todo(dw): Needs proper timing ~mkos
 	
 	if ( GetPlayerArray().len() > 0 )
 	{

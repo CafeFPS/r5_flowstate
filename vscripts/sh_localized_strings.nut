@@ -234,7 +234,10 @@ struct
 		"#FS_CONTROLLER",
 		"#FS_MKB",
 		"#FS_Scenarios_Tip",
-		"#FS_Scenarios_30Remaining"
+		"#FS_Scenarios_30Remaining",
+		"#FS_OVER_BUDGET",
+		"#FS_PLAYING_ANIM",
+		"#FS_REMOVING_ALL_ANIMS"
 		
 	]
 	
