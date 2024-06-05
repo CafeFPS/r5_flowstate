@@ -1471,7 +1471,7 @@ void function SetTdmStateToInProgress()
 	if( bLog() )
 	{
 		#if DEVELOPER && HAS_TRACKER_DLL
-		sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
+			sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
 		#endif
 		FlagSet("START_LOG")
 	}

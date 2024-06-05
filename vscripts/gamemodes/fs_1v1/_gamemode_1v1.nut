@@ -85,6 +85,9 @@ global struct soloGroupStruct
 	entity player1
 	entity player2
 	
+	int player1_handle
+	int player2_handle
+	
 	int p1LegendIndex = -1
 	int p2LegendIndex = -1
 	
@@ -127,7 +130,6 @@ LocPair WaitingRoom
 //this is fine
 global array <soloLocStruct> soloLocations //all respawn location stored here
 
-//TODO:: move to r5rdev_config.json-- mkos
 array <string> custom_weapons_primary = [] 
 array <string> custom_weapons_secondary = [] 
 
@@ -584,7 +586,7 @@ void function INIT_1v1_sbmm()
 
 bool function IsLockable( entity player1, entity player2 )
 {
-	if (player1.p.lock1v1_setting == false || player2.p.lock1v1_setting == false)
+	if ( player1.p.lock1v1_setting == false || player2.p.lock1v1_setting == false )
 	{
 		return false
 	}
@@ -592,12 +594,12 @@ bool function IsLockable( entity player1, entity player2 )
 	return true
 }
 
-string function LockSetting( entity player )
+string function LockSetting( entity player ) //not used?
 {
 	return player.p.lock1v1_setting == true ? "Enabled" : "Disabled";
 }
 
-bool function Lock1v1Enabled()
+bool function Lock1v1Enabled() //not used?
 {
 	return GetCurrentPlaylistVarBool("enable_lock1v1", true)
 }
@@ -653,7 +655,7 @@ void function SetIsUsedBoolForRealmSlot( int realmID, bool usedState )
 	catch(e)
 	{	
 		#if DEVELOPER
-		sqprint("SetIsUsedBoolForRealmSlot crash " + e )
+			sqprint("SetIsUsedBoolForRealmSlot crash " + e )
 		#endif
 	}
 }
@@ -938,7 +940,7 @@ void function deleteWaitingPlayer( int handle )
 
 void function AddPlayerToWaitingList( soloPlayerStruct playerStruct ) 
 {
-	if( !IsValid(playerStruct) )
+	if( !IsValid( playerStruct ) )
 	{
 		sqerror( "[AddPlayerToWaitingList] playerStruct was invalid" )
 	}
@@ -957,7 +959,7 @@ void function AddPlayerToWaitingList( soloPlayerStruct playerStruct )
 
 bool function mkos_Force_Rest(entity player, array<string> args)
 {
-	if( !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() )
+	if( !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() ) //TODO: Restable mode array in enums script
 		return false
 	
 	if( !IsValid(player) ) //|| !IsAlive(player) )
@@ -969,7 +971,7 @@ bool function mkos_Force_Rest(entity player, array<string> args)
 		return false
 	} 
 	
-	if(isPlayerInWaitingList(player))
+	if( isPlayerInWaitingList(player) )
 	{	
 		deleteWaitingPlayer(player.p.handle)
 	}
@@ -1005,7 +1007,7 @@ bool function mkos_Force_Rest(entity player, array<string> args)
 
 bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 {
-	if (!CheckRate( player )) return false
+	if ( !CheckRate( player ) ) return false
 	player.p.messagetime = Time()
 	
 	if( GetTDMState() != eTDMState.IN_PROGRESS )
@@ -1037,7 +1039,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		param = args[1]
 	}
 
-	switch(requestedData)
+	switch( requestedData )
 	{
 		
 		case "challenge":
@@ -1078,12 +1080,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					return true
 				}
 
-				if (IsValid(challengedPlayer))
+				if ( IsValid( challengedPlayer ) )
 				{
 					int result = addToChallenges( player, challengedPlayer )
 					string error = ""
 					
-					switch(result)
+					switch( result )
 					{
 						case 1: 
 							challengedPlayer.p.messagetime = Time()
@@ -1113,7 +1115,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 							break
 					}
 					
-					if(result > 1)
+					if( result > 1 )
 					{
 						//Message( player, "FAILED", "Couldn't add challenge: " + error, 5)
 						LocalMsg( player, "#FS_FAILED", "", eMsgUI.DEFAULT, 5, "", "Couldn't add challenge: " + error )
@@ -1496,7 +1498,7 @@ void function INIT_playerChallengesStruct( entity player )
 	
 	chalStruct.player = player
 	
-	file.allChallenges.append(chalStruct)
+	file.allChallenges.append( chalStruct )
 }
 
 int function addToChallenges( entity challenger, entity challengedPlayer )
@@ -2345,20 +2347,20 @@ entity function getRandomOpponentOfPlayer(entity player)
 {
     entity p;
 	
-    if (!IsValid(player)) return p;
+    if ( !IsValid( player ) ) return p;
 
     array<entity> eligible = [];
 
     foreach ( playerHandle, eachPlayerStruct in file.soloPlayersWaiting )
     {   		
-		if( !playerHandle || (!IsValid(eachPlayerStruct)) )
+		if( !playerHandle || ( !IsValid(eachPlayerStruct) ) )
 		{
 			return p
 		}
 		
-        if ( IsValid(eachPlayerStruct.player) && player != eachPlayerStruct.player && !eachPlayerStruct.player.p.waitingFor1v1 )
+        if ( IsValid( eachPlayerStruct.player ) && player != eachPlayerStruct.player && !eachPlayerStruct.player.p.waitingFor1v1 )
 		{
-            if ( eachPlayerStruct.player.p.input == player.p.input || (eachPlayerStruct.IBMM_Timeout_Reached == true && Fetch_IBMM_Timeout_For_Player(player) == true))
+            if ( eachPlayerStruct.player.p.input == player.p.input || ( eachPlayerStruct.IBMM_Timeout_Reached == true && Fetch_IBMM_Timeout_For_Player( player ) == true ) )
             {
                 eligible.append(eachPlayerStruct.player);
             }
@@ -2407,7 +2409,7 @@ entity function returnOpponentOfPlayer(entity player)
 
 void function soloModePlayerToWaitingList( entity player )
 {
-	if(!IsValid(player) || isPlayerInWaitingList(player) ) 	
+	if( !IsValid( player ) || isPlayerInWaitingList( player ) ) 	
 	{	
 		return
 	}
@@ -2492,13 +2494,6 @@ void function soloModePlayerToWaitingList( entity player )
 	if( settings.is3v3Mode )
 		playerStruct.waitingTime = Time() + 5
 	
-	//mkos
-	//playerStruct.queue_time = Time()
-	//ResetIBMM( player )
-	//player.p.inputmode = "OPEN";
-	//sqprint(format("Queue time set for %s AT: %f ", playerStruct.player.GetPlayerName(), playerStruct.queue_time ))
-	//sqprint(format("Setting player %s inputmode to: %s", player.GetPlayerName(), player.p.inputmode ))
-	
 	float season_kd;
 	float current_kd;
 	
@@ -2517,8 +2512,10 @@ void function soloModePlayerToWaitingList( entity player )
 
 	playerStruct.queue_time = Time()
 	ResetIBMM( player )
-	//soloPlayersWaiting.append(playerStruct) //maki 
-	AddPlayerToWaitingList( playerStruct ) // mkos
+	AddPlayerToWaitingList( playerStruct )
+	
+	//sqprint(format("Queue time set for %s AT: %f ", playerStruct.player.GetPlayerName(), playerStruct.queue_time ))
+	//sqprint(format("Setting player %s inputmode to: %s", player.GetPlayerName(), player.p.inputmode ))
 	
 	TakeAllWeapons( player )
 
@@ -2530,28 +2527,28 @@ void function soloModePlayerToWaitingList( entity player )
 	// Check if the player is part of any group
 	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode )
 	{
-		soloGroupStruct group = returnSoloGroupOfPlayer(player);
-		entity opponent = returnOpponentOfPlayer(player);	
+		soloGroupStruct group = returnSoloGroupOfPlayer( player )
+		entity opponent = returnOpponentOfPlayer( player )
 		
-		if(mGroupMutexLock)
+		if( mGroupMutexLock )
 		{ 
 			sqerror("tried to modify groups in use")
 			throw "tried to modify groups in use.";
 		}
-		else if(!IsValid(group))
+		else if( !IsValid( group ) )
 		{
 			#if DEVELOPER
-			sqprint("remove group request 01")
+				sqprint("remove group request 01")
 			#endif
-			destroyRingsForGroup(group);
-			removeGroup(group);
+			destroyRingsForGroup( group )
+			removeGroup( group )
 		}
 		
-		soloModePlayerToWaitingList(player); 
+		soloModePlayerToWaitingList( player )
 		
-		if (IsValid(opponent)) 
+		if ( IsValid( opponent ) ) 
 		{
-			soloModePlayerToWaitingList(opponent);
+			soloModePlayerToWaitingList( opponent )
 		}
 	}
 	
@@ -2577,20 +2574,19 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 		return
 	}
 	
-    player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent);
-    opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player);
-	//Message_New( player, "", 1 ) //
+    player.SetPlayerNetEnt("FSDM_1v1_Enemy", opponent )
+    opponent.SetPlayerNetEnt("FSDM_1v1_Enemy", player )
 	LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
 
     if ( player.p.handle in file.playerToGroupMap || opponent.p.handle in file.playerToGroupMap ) 
 	{	
 		//directly assign since we checked. - mkos
-        soloGroupStruct existingGroup = player.p.handle in file.playerToGroupMap ? file.playerToGroupMap[player.p.handle] : file.playerToGroupMap[opponent.p.handle];
+        soloGroupStruct existingGroup = player.p.handle in file.playerToGroupMap ? file.playerToGroupMap[ player.p.handle ] : file.playerToGroupMap[ opponent.p.handle ];
 		
-        destroyRingsForGroup(existingGroup);
+        destroyRingsForGroup(existingGroup)
 		
 		#if DEVELOPER
-		sqprint("remove group request 02")
+			sqprint("remove group request 02")
 		#endif
 		
 		while(mGroupMutexLock) 
@@ -2610,26 +2606,28 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 	newGroup.player1 = player
 	newGroup.player2 = opponent
 		
-    deleteWaitingPlayer(player.p.handle);
-    deleteWaitingPlayer(opponent.p.handle);
-    deleteSoloPlayerResting(player);
-    deleteSoloPlayerResting(opponent);
+    deleteWaitingPlayer( player.p.handle )
+    deleteWaitingPlayer( opponent.p.handle )
+    deleteSoloPlayerResting( player )
+    deleteSoloPlayerResting( opponent )
 
     
-    int slotIndex = getAvailableRealmSlotIndex();
-    if (slotIndex > -1) 
+    int slotIndex = getAvailableRealmSlotIndex()
+	
+    if ( slotIndex > -1 ) 
 	{
         newGroup.slotIndex = slotIndex;
         newGroup.groupLocStruct = soloLocations.getrandom()
 		
-		while(mGroupMutexLock) 
+		while( mGroupMutexLock ) 
 		{
 			#if DEVELOPER
-			sqprint("Waiting for lock to release R001")
+				sqprint("Waiting for lock to release R001")
 			#endif
 			WaitFrame() 
 		}
-		addGroup(newGroup); 
+		
+		addGroup( newGroup )
     } 
 
     return
@@ -3583,7 +3581,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 						else 
 						{
 							_CleanupPlayerEntities( group.player1 )
-							thread respawnInSoloMode(group.player1, p1)
+							thread respawnInSoloMode( group.player1, p1 )
 						}
 						
 						
@@ -3595,34 +3593,40 @@ void function soloModeThread( LocPair waitingRoomLocation )
 						else 
 						{
 							_CleanupPlayerEntities( group.player2 )
-							thread respawnInSoloMode(group.player2, p2)
+							thread respawnInSoloMode( group.player2, p2 )
 						}
 						
 						if( !nowep )
 						{					
-							GiveWeaponsToGroup( [group.player1, group.player2] )						
+							GiveWeaponsToGroup( [ group.player1, group.player2 ] )						
 						}	
 					}//keep
 				}
 				
-				if ( !IsValid( group.player1 ) || !IsValid( group.player2 )) 
+				if ( !IsValid( group.player1 ) || !IsValid( group.player2 ) ) 
 				{	
 					//printt("solo player quit!!!!!")
-					if ( !removed && IsValid(group.player1)) 
+					if ( !removed && IsValid( group.player1 ) ) 
 					{
-						if(processRestRequest( group.player1 )){ continue }	
-						soloModePlayerToWaitingList( group.player1 ) //back to wating list
+						#if TRACKER 
+							Tracker_AddDamageEventsToDeleteQueue( group.player1_handle, group.player2_handle )
+						#endif
+						
+						if( processRestRequest( group.player1 ) ){ continue }	
+						soloModePlayerToWaitingList( group.player1 ) //back to waiting list
 						HolsterAndDisableWeapons( group.player1 )
-						//Message( group.player1, Text5 ) 
 						LocalMsg( group.player1, Text5 )
 					}
 
 					if ( !removed && IsValid( group.player2 ) ) 
 					{
-						if(processRestRequest( group.player2 )){ continue }
-						soloModePlayerToWaitingList(group.player2) //back to wating list
-						HolsterAndDisableWeapons(group.player2)
-						//Message(group.player2, Text5);
+						#if TRACKER
+							Tracker_AddDamageEventsToDeleteQueue( group.player2_handle, group.player1_handle )
+						#endif 
+						
+						if( processRestRequest( group.player2 ) ){ continue }
+						soloModePlayerToWaitingList( group.player2 ) //back to waiting list
+						HolsterAndDisableWeapons( group.player2 )
 						LocalMsg( group.player2, Text5 )
 					}
 					
@@ -3632,8 +3636,9 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					}
 					
 					#if DEVELOPER
-					sqprint("remove group request 05")
+						sqprint("remove group request 05")
 					#endif
+					
 					groupsToRemove.append(group)
 					quit = true
 				}
@@ -3982,6 +3987,10 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		{		
 			//already matched two players
 			array<entity> players = [newGroup.player1,newGroup.player2]
+		
+			//set handles to group for cleanup on invalid player 
+			newGroup.player1_handle = newGroup.player1.p.handle
+			newGroup.player2_handle = newGroup.player2.p.handle
 		
 			if ( Fetch_IBMM_Timeout_For_Player( newGroup.player1 ) == false || Fetch_IBMM_Timeout_For_Player( newGroup.player2 ) == false && newGroup.player1.p.input == newGroup.player2.p.input )
 			{			

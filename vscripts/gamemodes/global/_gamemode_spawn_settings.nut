@@ -92,7 +92,7 @@ global function SetCustomPlaylist
 				["script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
 				["script DEV_ReloadInfo()"] = "Manually reload all info panels.",
 				["script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
-				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event id's are not visible. Reloads panels."
+				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels."
 			}
 		#endif
 
@@ -963,6 +963,7 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 		file.dev_positions_LocPair[replace] = data
 		file.dev_positions[replace] = str 
 		DEV_Highlight( replace, file.highlightPersistent )
+		DEV_ReloadInfo()
 	}
 	else 
 	{
