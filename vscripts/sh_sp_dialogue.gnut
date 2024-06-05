@@ -1229,7 +1229,10 @@ void function PlayClientDialogue_Internal( int aliasID, int dialogueFlags, array
 		return
 
 	bool isDevText = ((data.alias == "") && (data.DEV_DialogueText != ""))
-	printf( "Playing Dialogue - '%s'#%d -> '%s', priority:%d, from:'%s'  %s", data.group.groupName, data.indexInGroup, milesAlias, data.priority, string( data.group.sourceDataTable ), (isDevText ? " (dev text)" : "") )
+	
+	#if DEVELOPER
+		printf( "Playing Dialogue - '%s'#%d -> '%s', priority:%d, from:'%s'  %s", data.group.groupName, data.indexInGroup, milesAlias, data.priority, string( data.group.sourceDataTable ), (isDevText ? " (dev text)" : "") )
+	#endif
 
 	float duration
 	float extraWait = 0.0

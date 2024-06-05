@@ -359,7 +359,9 @@ void function ShowScoreboardMP()
 	
 	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_aimtrainer ) return
 
-	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
+	#if DEVELOPER
+		printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
+	#endif
 	
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
 		callbackFunc()

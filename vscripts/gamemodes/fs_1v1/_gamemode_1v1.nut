@@ -54,9 +54,9 @@ global function FS_Scenarios_GiveWeaponsToGroup
 
 //DEV 
 #if DEVELOPER
-global function DEV_printlegends
-global function DEV_legend
-global function DEV_acceptchal
+	global function DEV_printlegends
+	global function DEV_legend
+	global function DEV_acceptchal
 #endif
 
 global struct soloLocStruct
@@ -232,7 +232,7 @@ void function DEV_printlegends()
 	{
 		printt( ItemFlavor_GetHumanReadableRef( char ) )
 	}
-} 
+}
 	
 void function DEV_legend( entity player, int id )
 {
@@ -770,7 +770,7 @@ void function removeGroupByHandle( int handle )
 	if ( handle in file.groupsInProgress )
 	{	
 		#if DEVELOPER
-		sqprint(format("Removing group by handle: %d", handle))
+			sqprint(format("Removing group by handle: %d", handle))
 		#endif
 		delete file.groupsInProgress[handle]
 	}
@@ -854,7 +854,7 @@ bool function isPlayerInSoloMode(entity player)
 	if(!IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("isPlayerInSoloMode entity was invalid")
+			sqprint("isPlayerInSoloMode entity was invalid")
 		#endif
 		return false 
 	}
@@ -868,7 +868,7 @@ bool function isPlayerInWaitingList(entity player)
 	if(!IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("isPlayerInWaitingList entity was invalid")
+			sqprint("isPlayerInWaitingList entity was invalid")
 		#endif
 		return false 
 	}
@@ -894,7 +894,7 @@ bool function isPlayerInRestingList( entity player )
 	if(!IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("isPlayerInRestingList entity was invalid")
+			sqprint("isPlayerInRestingList entity was invalid")
 		#endif
 		return false 
 	}
@@ -915,7 +915,7 @@ void function addSoloPlayerResting( entity player )
 	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("addSoloPlayerResting enttiy was invalid")
+			sqprint("addSoloPlayerResting enttiy was invalid")
 		#endif
 		return
 	}
@@ -1508,7 +1508,7 @@ int function addToChallenges( entity challenger, entity challengedPlayer )
 	if( !isChalValid( chalStruct ) )
 	{
 		#if INVALID_ACCESS_DEBUG
-		PrintDebug( challengedPlayer, 7 )
+			PrintDebug( challengedPlayer, 7 )
 		#endif
 		return 5;
 	}
@@ -2592,7 +2592,7 @@ void function soloModePlayerToInProgressList( soloGroupStruct newGroup )
 		while(mGroupMutexLock) 
 		{
 			#if DEVELOPER
-			sqprint("Waiting for lock to release R002")
+				sqprint("Waiting for lock to release R002")
 			#endif
 			WaitFrame() 
 		}
@@ -2666,13 +2666,13 @@ void function soloModePlayerToRestingList(entity player)
 		destroyRingsForGroup(group)
 		
 		#if DEVELOPER
-		sqprint("remove group request 03")
+			sqprint("remove group request 03")
 		#endif
 		
 		while(mGroupMutexLock) 
 		{
 			#if DEVELOPER
-			sqprint("Waiting for lock to release R003")
+				sqprint("Waiting for lock to release R003")
 			#endif
 			WaitFrame() 
 		}
@@ -2966,7 +2966,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	catch (error)
 	{
 		#if DEVELOPER
-		sqprint("Caught an error that would crash the server")
+			sqprint("Caught an error that would crash the server")
 		#endif
 		// Warning("fail to respawn")
 	}
@@ -3539,13 +3539,13 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					}	
 					
 					#if DEVELOPER
-					sqprint("remove group request 04")
+						sqprint("remove group request 04")
 					#endif
 					
 					while(mGroupMutexLock) 
 					{
 						#if DEVELOPER
-						sqprint("Waiting for lock to release R004")
+							sqprint("Waiting for lock to release R004")
 						#endif
 						WaitFrame() 
 					}
@@ -3672,12 +3672,12 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		foreach ( group in groupsToRemove )
 		{	
 			#if DEVELOPER
-			sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
+				sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
 			#endif 
 			while(mGroupMutexLock) 
 			{	
 				#if DEVELOPER
-				sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
+					sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
 				#endif
 				WaitFrame() 
 			}

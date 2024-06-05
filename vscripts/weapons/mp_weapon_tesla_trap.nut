@@ -2535,7 +2535,7 @@ void function Fence_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	EMP_Fence_DamagedPlayerOrNPC( ent, damageInfo, $"P_emp_body_human", FENCE_SEVERITY_SLOWTURN, FENCE_SEVERITY_SLOWMOVE )
 }
 
-float dinfo = 0
+//float dinfo = 0
 
 void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset humanFx, float slowTurn, float slowMove )
 {
@@ -2553,9 +2553,9 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	}
 	else
 	{
-		dinfo += DamageInfo_GetDamage( damageInfo )
-		Warning("Damage in TESLA: " + DamageInfo_GetDamage( damageInfo ) + " addup: " + dinfo )
-		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
+		//dinfo += DamageInfo_GetDamage( damageInfo )
+		//Warning("Damage in TESLA: " + DamageInfo_GetDamage( damageInfo ) + " addup: " + dinfo )
+		//sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()
 	}

@@ -1061,7 +1061,7 @@ void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
 	catch(e)
 	{	
 		#if DEVELOPER
-		sqprint("SetIsUsedBoolForRealmSlot crash " + e )
+			sqprint("SetIsUsedBoolForRealmSlot crash " + e )
 		#endif
 	}
 }
@@ -1135,7 +1135,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		if( !( groupHandle in file.scenariosGroupsInProgress ) )
 		{
 			#if DEVELOPER
-			sqprint(format("adding group: %d", groupHandle ))
+				sqprint(format("adding group: %d", groupHandle ))
 			#endif
 
 			foreach( player in players )
@@ -1184,7 +1184,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 	catch(e)
 	{
 		#if DEVELOPER
-		sqprint("addGroup crash: " + e)
+			sqprint("addGroup crash: " + e)
 		#endif
 		return false
 	}
@@ -1204,21 +1204,21 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		if( groupToRemove.groupHandle in file.scenariosGroupsInProgress )
 		{
 			#if DEVELOPER
-			sqprint(format("removing group: %d", groupToRemove.groupHandle) )
+				sqprint(format("removing group: %d", groupToRemove.groupHandle) )
 			#endif
 			delete file.scenariosGroupsInProgress[groupToRemove.groupHandle]
 		}
 		else 
 		{
 			#if DEVELOPER
-			sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
+				sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
 			#endif
 		}
 	}
 	catch(e2)
 	{	
 		#if DEVELOPER
-		sqprint( "removeGroup crash: " + e2 )
+			sqprint( "removeGroup crash: " + e2 )
 		#endif
 	}
 
@@ -1233,7 +1233,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	if(!IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
+			sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
 		#endif
 		
 		return group; 
@@ -1252,7 +1252,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	catch(e)
 	{
 		#if DEVELOPER
-		sqprint("returnSoloGroupOfPlayer crash " + e)
+			sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
 	return group;
@@ -1290,7 +1290,7 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		catch (erroree)
 		{	
 			#if DEVELOPER
-			sqprint("Caught an error that would crash the server" + erroree)
+				sqprint("Caught an error that would crash the server" + erroree)
 			#endif
 		}
 	

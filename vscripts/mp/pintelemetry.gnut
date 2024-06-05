@@ -962,7 +962,10 @@ string function BuildRequestedSettingsString()
 		iter++;
 	}
 	
-	printt("\n\n\n\n",settingsQuery,"\n\n\n\n\n\n")
+	#if DEVELOPER
+		printt("\n\n ---- Settings query ---- \n",settingsQuery,"\n\n")
+	#endif 
+	
 	return settingsQuery 
 }
 
@@ -2625,12 +2628,13 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 					attName = "NULL_DEBUGIT";
 				}
 				
-				a_OID = attacker.GetPlatformUID()
+				a_OID = attName
 			}
 			else 
 			{
+				//todo
 				attName = DamageInfo_GetDamageSourceIdentifier( damageInfo ).tostring()
-				a_OID = "172";
+				a_OID = attName;
 			}
 			
 			if ( REPORT_STATS )
@@ -4625,35 +4629,6 @@ void function PIN_SetGameStartGetUnixTimestamp()
 	sqprint(message)
 	*/
 }
-
-
-
-/* #########################TODO: track only once ########################### */
-/*
-array<string> GameStartedForPlayer
-
-bool function IsPlayerTracked(string playerID) {
-    for (int i = 0; i < GameStartedForPlayer.len(); i++) {
-        if (GameStartedForPlayer[i] == playerID) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void function RemovePlayer(string playerID) {
-    array<string> updatedList;
-
-    for (int i = 0; i < GameStartedForPlayer.len(); i++) {
-        if (GameStartedForPlayer[i] != playerID) {
-            updatedList.push(GameStartedForPlayer[i]);
-        }
-    }
-
-    GameStartedForPlayer = updatedList;
-}
-*/
-/* #################################### ########################### */
 
 bool function CheckPlayerStartInRest( entity player )
 {

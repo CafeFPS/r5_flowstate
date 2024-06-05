@@ -485,7 +485,9 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	if( target.GetScriptName() == "caustic_trap" || target.GetScriptName() == "tesla_trap" )
 		return
 
-	printt( "ramping damage for " + target )
+	#if DEVELOPER 
+		printt( "ramping damage for " + target )
+	#endif
 	
 	//Players with gas gear aren't effected
 	if ( target.IsPlayer() )
@@ -790,7 +792,10 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	if( IsValid( smokescreen.attacker ) )
 	{
 		gasDmgInflictor.SetBossPlayer( smokescreen.attacker )
-		printt("gas smoke screen inflictor attacker: ", smokescreen.attacker )
+		
+		#if DEVELOPER
+			printt("gas smoke screen inflictor attacker: ", smokescreen.attacker )
+		#endif
 	}
 	
 	DispatchSpawn( gasDmgInflictor )

@@ -983,7 +983,10 @@ void function Chroma_EndSmokescreenEffect()
 
 void function Chroma_OnBubbleShieldCreated( entity bubbleShield )
 {
-	printt( "bubble!" )
+	#if DEVELOPER
+		printt( "bubble!" )
+	#endif 
+	
 	entity player = GetLocalViewPlayer()
 	if ( player.GetTeam() != bubbleShield.GetTeam() )
 		return
