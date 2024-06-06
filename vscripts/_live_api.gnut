@@ -299,6 +299,8 @@ void function LiveAPI_OnClientConnected( entity player )
 		[ LiveAPI_GetPlayerIdentityTable( player ) ], 
 		[ 3/*player*/ ]
 	)
+
+	AddEntityCallback_OnPostDamaged( player, LiveAPI_OnPlayerDamaged )
 }
 
 void function LiveAPI_OnClientDisconnected( entity player )

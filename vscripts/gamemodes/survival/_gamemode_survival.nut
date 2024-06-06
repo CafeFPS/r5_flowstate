@@ -701,8 +701,6 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
 
-	LiveAPI_OnPlayerDamaged( victim, damageInfo )
-
 	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
 	{
 		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
