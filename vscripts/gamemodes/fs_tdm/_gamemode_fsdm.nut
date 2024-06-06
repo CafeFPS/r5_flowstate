@@ -371,6 +371,9 @@ void function LgDuelLoadSettings( entity player, string data )
 
 void function Init_IBMM( entity player )
 {
+	if( player == eMessageBot() )
+		return 
+		
 	thread notify_thread( player )
 	
 	if(player.p.IBMM_grace_period == -1)

@@ -33,6 +33,7 @@ global function SetCustomPlaylist
 	global function DEV_ReloadInfo
 	global function DEV_InfoPanelOffset
 	global function DEV_RotateInfoPanels
+	global function DEV_ShowCenter
 	
 	const float HIGHLIGHT_SPAWN_DELAY 	= 7.0
 	const int SPAWN_POSITIONS_BUDGET 	= 210
@@ -92,7 +93,8 @@ global function SetCustomPlaylist
 				["script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
 				["script DEV_ReloadInfo()"] = "Manually reload all info panels.",
 				["script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
-				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels."
+				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels.",
+				["script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize."
 			}
 		#endif
 
@@ -243,7 +245,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 {														//ideally only default waiting
 	array<LocPair> customSpawns = []					// rooms are saved here. use :
 														// AddCallback_FlowstateSpawnsInit()
-														
+														// to create custom spawns for your gamemode 
 	LocPair defaultWaitingRoom
 	
 	switch( eMap )
@@ -1122,9 +1124,21 @@ void function DEV_WriteSpawnFile()
 
 void function DEV_SetTeamSize( int size )
 {
+	bool bReload = false
+	
+	if( file.teamsize != size )
+	{
+		bReload = true
+	}
+	
 	file.teamsize = size
 	printt( "Team size set to", size )
 	printm( "Team size set to", size )
+	
+	if( bReload )
+	{
+		DEV_PrintSpawns()
+	}
 }
 
 void function DEV_TeleportToPanels( string identifier )
@@ -1418,6 +1432,35 @@ void function DEV_RotateInfoPanels( string direction = "clockwise" )
 	}
 }
 
+void function DEV_ShowCenter( int set )
+{
+	array<LocPair> spawns = [] 
+	
+	int iSpawnsLen = file.dev_positions_LocPair.len()	
+	int iStartPos = ( set - 1 ) * file.teamsize 
+	int iEndPos = iStartPos + file.teamsize
+	
+	if( iStartPos < 0 || iStartPos >= iSpawnsLen || iEndPos > iSpawnsLen )//for loop end
+	{
+		printt( "Invalid Set, not enough spawns." )
+		printm( "Invalid Set, not enough spawns." )
+		return
+	}
+	
+	for( int i = iStartPos; i < iEndPos ; i++ )
+	{
+		spawns.append( file.dev_positions_LocPair[ i ] )
+	}
+	
+	vector center = OriginToGround( GetCenterOfCircle( spawns ) )
+	
+	printt( "Calculated center is: ", VectorToString( center ) )
+	printm( "Calculated center is: ", VectorToString( center ) )
+	
+	entity beam = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_chamber_beam" ), center, <0,0,0> )
+	thread __HighlightSpawn_DelayedEnd( beam )
+}
+
 array<LocPair> function customDevSpawnsList()
 {
 	array<LocPair> spawns = 
@@ -1488,4 +1531,3 @@ array<LocPair> function customDevSpawnsList()
 }
 
 #endif //DEVELOPER
-//$"P_chamber_beam"

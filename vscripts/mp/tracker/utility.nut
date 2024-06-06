@@ -2340,7 +2340,7 @@ bool function CheckRate( entity player )
 			
 	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
 	{
-		Message( player, "COMMANDS COOLDOWN")
+		LocalEventMsg( player, "#FS_CMD", "", 2 )
 		return false
 	}
 	

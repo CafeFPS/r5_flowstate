@@ -237,7 +237,8 @@ struct
 		"#FS_Scenarios_30Remaining",
 		"#FS_OVER_BUDGET",
 		"#FS_PLAYING_ANIM",
-		"#FS_REMOVING_ALL_ANIMS"
+		"#FS_REMOVING_ALL_ANIMS",
+		"#FS_CMD"
 		
 	]
 	

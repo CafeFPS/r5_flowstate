@@ -1,7 +1,7 @@
 //Flowstate 1v1 gamemode
 //made by __makimakima__
 //integrated and maintained by @CafeFPS
-//redesigned by mkos + [r5r.dev stats system/ibmm/sbmm]
+//redesigned by mkos + challenge / features / code refactor & [r5r.dev ibmm/sbmm]
 
 global const INVALID_ACCESS_DEBUG = false
 
@@ -717,7 +717,7 @@ void function addGroup(soloGroupStruct newGroup)
 	
 	mGroupMutexLock = true
 	
-		int groupHandle = GetUniqueID();
+		int groupHandle = GetUniqueID()
 		
 		newGroup.groupHandle = groupHandle
 		newGroup.startTime = Time()
@@ -1258,17 +1258,21 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			entity playerToRevoke = GetPlayer( param )
 			
-			if(IsValid( playerToRevoke ))
+			if( IsValid( playerToRevoke ) )
 			{
 				if( removeChallenger( playerToRevoke, player.p.handle ) )
 				{
-					endLock1v1( player, false, true )
+					if( returnChallengedPlayer( player ) == playerToRevoke )
+					{
+						endLock1v1( player, false, true )
+					}
+					
 					//Message( player, "Challenge revoked")
 					LocalMsg( player, "#FS_ChalRevoked" )
 				}
 				else 
 				{
-					endLock1v1( player, false, false )
+					//endLock1v1( player, false, false )
 					//Message( player, "PLAYER NOT IN CHALLENGES" )
 					LocalMsg( player, "#FS_PlayerNotInChallenges" )
 				}
@@ -1662,7 +1666,7 @@ bool function removeChallenger( entity player, int challenger_eHandle )
 	if ( !isChalValid( chalStruct ) )
 	{	
 		#if INVALID_ACCESS_DEBUG
-		PrintDebug( player, 5 )
+			PrintDebug( player, 5 )
 		#endif
 		
 		return false 
@@ -2952,13 +2956,6 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	if ( respawnSlotIndex == -1 ) 
 		return
 	
-	/*try 	
-	{
-		DoRespawnPlayer( player, null ) //mkos
-	}
-	catch(o){sqprint("Caught an error that would crash the server")}
-	*/
-	
 	try
 	{
 		DecideRespawnPlayer(player, true)
@@ -3054,10 +3051,22 @@ void function GivePlayerCustomPlayerModel( entity ent )
 
 void function INIT_WeaponsMenu()
 {
-	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
-	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot)
-	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector)
-	
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon ) 
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot )
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector )
+}
+
+void function INIT_WeaponsMenu_Disabled()
+{
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", MessagePlayer_Disabled ) 
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", MessagePlayer_Disabled )
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", MessagePlayer_Disabled )
+}
+
+bool function MessagePlayer_Disabled( entity player, array<string> args )
+{
+	LocalEventMsg( player, "#FS_DisabledTDMWeps" )
+	return true
 }
 
 void function _soloModeInit( int eMap )
@@ -3071,12 +3080,13 @@ void function _soloModeInit( int eMap )
 	{
 		INIT_WeaponsMenu()
 	}
+	else 
+	{
+		INIT_WeaponsMenu_Disabled()
+	}
 
 	if( settings.is3v3Mode )
 		Init_FS_Scenarios()
-
-	IBMM_COORDINATES = IBMM_Coordinates()
-	IBMM_ANGLES = IBMM_Angles()
 	
 	REST_GRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
 	
@@ -3154,6 +3164,9 @@ void function _soloModeInit( int eMap )
 	}
 	
 	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap, settings.spawnOptions )
+	
+	IBMM_COORDINATES = IBMM_Coordinates()
+	IBMM_ANGLES = IBMM_Angles()
 	
 	if( is1v1GameType() && !IsEven( allSoloLocations.len() ) )
 	{
@@ -3286,7 +3299,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
     // Resting room panel
     AddCallback_OnUseEntity( panels["%&use% Start spectating"], void function(entity panel, entity user, int input )
     {
-        if ( !IsValid( user ) ) return
+        if ( !IsValid( user ) ) 
+			return
+			
+		if( !CheckRate( user ) )
+			return 
         
 		if ( !isPlayerInRestingList( user ) )
         {
@@ -3334,8 +3351,12 @@ void function DefinePanelCallbacks( table<string, entity> panels )
 
     // IBMM button
     AddCallback_OnUseEntity( panels["%&use% Toggle IBMM"], void function(entity panel, entity user, int input )
-    {
-        if ( !IsValid( user ) ) return
+    {			
+        if ( !IsValid( user ) ) 
+			return
+		
+		if( !CheckRate( user ) )
+			return 
         
         if ( user.p.IBMM_grace_period > 0 )
         {
@@ -3369,7 +3390,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
     // Lock 1v1 button
     AddCallback_OnUseEntity( panels["%&use% Enable/Disable 1v1 Challenges"], void function( entity panel, entity user, int input )
     {
-        if ( !IsValid( user )) return
+        if ( !IsValid( user )) 
+			return
+			
+		if( !CheckRate( user ) )
+			return 
         
         if ( user.p.lock1v1_setting == true )
         {
@@ -3388,7 +3413,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
     // Start in rest setting button
     AddCallback_OnUseEntity( panels["%&use% Toggle \"Start In Rest\" Setting"], void function( entity panel, entity user, int input )
     {
-        if ( !IsValid(user) ) return
+        if ( !IsValid(user) ) 
+			return
+			
+		if( !CheckRate( user ) )
+			return 
         
         if ( user.p.start_in_rest_setting == true )
         {
@@ -3407,7 +3436,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
     // Toggle input banner button
     AddCallback_OnUseEntity( panels["%&use% Toggle Input Banner"], void function( entity panel, entity user, int input )
     {
-        if ( !IsValid( user ) ) return
+        if ( !IsValid( user ) ) 
+			return
+			
+		if( !CheckRate( user ) )
+			return 
         
         if ( user.p.enable_input_banner == true )
         {
@@ -3903,7 +3936,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					}
 					
 					//this makes sure we don't compare same player as opponent during MM -- mkos clarification
-					if(playerSelf == eachOpponent || !IsValid(eachOpponent))//过滤非法对手
+					if( !IsValid(eachOpponent) || playerSelf == eachOpponent )//过滤非法对手
 						continue
 						
 					if(fabs(selfKd - opponentKd) > file.SBMM_kd_difference ) //过滤kd差值
@@ -4028,7 +4061,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				ibmmLockTypeToken = "#FS_CouldNotLock";
 			}
 			
-			if ( newGroup.player1.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
+			if ( newGroup.player1.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false ) //todo: verify if player2 should be checked for grace as well
 			{ 
 				ibmmLockTypeToken = "#FS_AnyInput";
 			}
@@ -4322,12 +4355,14 @@ string function ReturnRandomSecondaryMetagame_1v1()
 
 void function ForceAllRoundsToFinish_solomode()
 {
-	foreach(player in GetPlayerArray())
+	foreach( player in GetPlayerArray() )
 	{
-		if(!IsValid(player)) continue
+		if( !IsValid( player ) ) 
+			continue
 		
-		try{
-			if(player.p.isSpectating)
+		try
+		{
+			if( player.p.isSpectating )
 			{
 				player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 				player.p.isSpectating = false
@@ -4339,21 +4374,23 @@ void function ForceAllRoundsToFinish_solomode()
 				player.ClearInvulnerable()
 				player.SetTakeDamageType( DAMAGE_YES )
 			}
-		}catch(e420){}
+		}
+		catch(e420){}
 		
-		if(isPlayerInWaitingList(player))
+		if( isPlayerInWaitingList( player ) )
 		{
 			continue
 		}
 
-		soloGroupStruct group = returnSoloGroupOfPlayer(player) 	
-		if(IsValid(group))
+		soloGroupStruct group = returnSoloGroupOfPlayer( player ) 	
+		
+		if( IsValid( group ) )
 		{
-			destroyRingsForGroup(group)		
-			if(!group.IsKeep)
-			{
+			destroyRingsForGroup( group )		
+			// if(!group.IsKeep)
+			// {
 				group.IsFinished = true //tell solo thread this round has finished
-			}
+			// }
 		}
 		
 		soloModePlayerToWaitingList( player )
@@ -4434,16 +4471,16 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 		
 		if ( player.p.notify == true && player.p.has_notify == false )
 		{
-			//sqprint("CREATING 001")
+			//printt( "CREATING 001 for", player )
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
 			CreatePanelText(player, "", "Matching for: " + FetchInputName( player ) , IBMM_COORDINATES, IBMM_ANGLES, false, 2, id )
-			//sqprint("Creating on screen match making for " + player.GetPlayerName() )
+			sqprint("Creating on screen match making for " + player.GetPlayerName() )
 			player.p.has_notify = true; //let thread self know not to create multiple displays	
 		}
 	
 		if ( player.p.destroynotify == true && player.p.notify == false )
 		{	
-			//sqprint("REMOVING 001")
+			//printt( "REMOVING 001 for", player )
 			RemovePanelText( player, id )
 			player.p.destroynotify = false;
 			player.p.has_notify = false;		
@@ -4457,7 +4494,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 		{
 			if( !HasChalText )
 			{
-				//sqprint("CREATING 002")
+				//printt( "CREATING 002 for", player )
 				RemovePanelText( player, player.p.handle ) //removes waiting for players
 				thread UpdateChallengeText( player, iChallengeTextID, "Challenge Started" )
 				HasChalText = true 
@@ -4470,7 +4507,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 			{			
 				if( iStatusText != 3 )
 				{
-					//sqprint("CREATING 003")
+					//printt( "CREATING 003 for", player )
 					player.Signal( "NotificationChanged" )
 					thread UpdateChallengeText( player, iChallengeTextID, "Join the queue to start the challenge" )
 					iStatusText = 3
@@ -4494,7 +4531,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 						
 					if( iStatusText != 4 )
 					{
-						//sqprint("CREATING 004")	
+						//printt( "CREATING 004 for", player )
 						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 						string alert = "Waiting for " + challenged.p.name + "\n to join the queue..."
 						if (!IsValid( player )){break}
@@ -4507,6 +4544,7 @@ void function notify_thread( entity player ) //whole thing is convoluted as fuck
 		}
 		else 
 		{
+			//sqprint("HasChalText = false")
 			HasChalText = false
 			iStatusText = 0			
 		}
@@ -4520,6 +4558,8 @@ void function UpdateChallengeText( entity player, int id, string text )
 	EndSignal( player, "NotificationChanged" )
 	EndSignal( opponent, "OnDisconnected" )
 	CreatePanelText( player, "", text, IBMM_COORDINATES, IBMM_ANGLES, false, 2, id )
+	
+	//printt( "Created panel at:", IBMM_COORDINATES, IBMM_ANGLES )
 	
 	OnThreadEnd( function() : ( player, id )
 		{
