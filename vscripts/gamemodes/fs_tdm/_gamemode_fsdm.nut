@@ -371,8 +371,10 @@ void function LgDuelLoadSettings( entity player, string data )
 
 void function Init_IBMM( entity player )
 {
-	if( player == eMessageBot() )
-		return 
+	#if TRACKER
+		if( player == eMessageBot() )
+			return 
+	#endif
 		
 	thread notify_thread( player )
 	
