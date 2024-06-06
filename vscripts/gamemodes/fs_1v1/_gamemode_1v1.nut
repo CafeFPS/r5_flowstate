@@ -4619,12 +4619,11 @@ const array<int> LegendGUID_EnabledUltimates =
 
 void function Init_ValidLegendRange()
 {
-	int min = 0
+	int min = -1
 	int max = file.characters.len()
 	
 	if( max <= 0 )
 	{
-		min = -1
 		max = -1
 	}
 		
@@ -4634,7 +4633,7 @@ void function Init_ValidLegendRange()
 
 bool function ValidLegendRange( int i )
 {
-	return i >= file.minLegendRange && i < file.maxLegendRange
+	return i > file.minLegendRange && i < file.maxLegendRange
 }
 
 void function RechargePlayerAbilities( entity player, int index = -1 )
