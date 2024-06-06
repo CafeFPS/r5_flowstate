@@ -38,7 +38,6 @@ global function LootZones_GetRefForOrigin
 global function CodeCallback_WeaponDropped
 global function CodeCallback_WeaponLoadoutPickup
 global function PlayerThrowLoot
-global function SwitchingTestIdk
 global function GetNextOrdnance
 global function SwitchPlayerToOrdnance
 
@@ -2504,17 +2503,6 @@ array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity play
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return lootToDrop
-}
-
-void function SwitchingTestIdk( entity player )
-{
-	while( true )
-	{
-		printt( "switching debug 1: " + player.IsSwitching( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) )
-		printt( "switching debug 2: " + player.IsSwitching( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) )
-		printt( "-----" )
-		WaitFrame()
-	}
 }
 
 bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )

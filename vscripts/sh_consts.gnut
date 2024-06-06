@@ -138,7 +138,7 @@ global const fs_snd							= "fs_snd"
 
 global const FREELANCE_ENABLED          	= false
 
-global const VERBOSE_DAMAGE_PRINTOUTS   	= true
+global const VERBOSE_DAMAGE_PRINTOUTS   	= false
 
 global const SAVEGAME_VERSION           	= 13 // increment when saves need to be tossed
 global const PERSISTENCE_INIT_VERSION   	= 303

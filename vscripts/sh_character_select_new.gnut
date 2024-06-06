@@ -447,6 +447,9 @@ void function PanAwayCharacterSelect()
 
 	wait (outroSceneChangeDuration / 3.0)
 
+	if( IsValid( fileLevel.characterModel ) ) //Temp hack, why pan away stopped working? Cafe
+		fileLevel.characterModel.Hide()
+
 	NotifyCharacterSelectBeginEnd( false )
 }
 
@@ -1943,7 +1946,8 @@ void function LockCharacter()
 	if(!fileLevel.isBrowseMode)
 	{
 		localClientPlayer.ClientCommand( "Sur_UpdateCharacterLock 1" )
-		localClientPlayer.ClientCommand( "Sur_MakeEligibleForJumpMaster" )
+		if( Playlist() != ePlaylists.fs_scenarios )
+			localClientPlayer.ClientCommand( "Sur_MakeEligibleForJumpMaster" )
 	}
 }
 

@@ -362,7 +362,10 @@ void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverr
 {
 	SetGlobalNetInt( "gameState", GetGameState() )
 
-	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() && Playlist() != ePlaylists.fs_scenarios )
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+
+	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
 			SetGlobalNetTime( "PreGameStartTime", referenceTime + PreGame_GetWaitingForPlayersCountdown() )

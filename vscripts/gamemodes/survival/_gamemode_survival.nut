@@ -53,15 +53,7 @@ void function GamemodeSurvival_Init()
 
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
-	
-	SetConVarFloat( "sv_usercmd_max_queued", 750 )
-	SetConVarFloat( "sv_maxUserCmdsPerPlayerPerFrame", 20 )
 
-	//Increase client command limit to 60
-	SetConVarInt("sv_quota_stringCmdsPerSecond", 60)
-
-	SetConVarBool( "sv_stressbots", false )
-	
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
