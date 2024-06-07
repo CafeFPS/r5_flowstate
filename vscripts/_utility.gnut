@@ -3828,11 +3828,7 @@ void function TeleportPlayerToEnt( entity player, entity org )
 
 float function ShieldModifyDamage( entity ent, var damageInfo )
 {
-	entity victim
-	// if ( ent.IsTitan() )
-		// victim = ent.GetTitanSoul()
-	// else
-		victim = ent
+	entity victim = ent
 
 	int shieldHealth = victim.GetShieldHealth()
 
@@ -3852,19 +3848,6 @@ float function ShieldModifyDamage( entity ent, var damageInfo )
 	{
 		shieldDamage = min( 1000.0, float( shieldHealth ) )
 	}
-	else
-	{
-		// if ( damageModifier.normalizeShieldDamage )
-		// 	shieldDamage = damage * 0.5
-		// else
-		// 	shieldDamage = damage - permanentDamage
-
-		// // if ( IsSoul( victim ) && SoulHasPassive( victim, ePassives.PAS_SHIELD_BOOST ) )
-		// // 	shieldDamage *= SHIELD_BOOST_DAMAGE_DAMPEN
-
-		// if ( IsSoul( victim ) && SoulHasPassive( victim, ePassives.PAS_BERSERKER ) )
-		// 	shieldDamage *= BERSERKER_INCOMING_DAMAGE_DAMPEN
-	}
 
 	float newShieldHealth = shieldHealth - shieldDamage
 
@@ -3877,15 +3860,6 @@ float function ShieldModifyDamage( entity ent, var damageInfo )
 			EmitSoundOnEntityExceptToPlayer( ent, ent, "titan_energyshield_down_3P" )
 			EmitSoundOnEntityOnlyToPlayer( ent, ent, "titan_energyshield_down_1P" )
 		}
-		// else if ( ent.GetScriptName() == "fw_team_tower" )
-		// {
-			// EmitSoundOnEntity( ent, "TitanWar_Harvester_ShieldDown" )
-
-			// #if FACTION_DIALOGUE_ENABLED
-				// PlayFactionDialogueToTeam( "fortwar_baseShieldDownFriendly", ent.GetTeam() )
-				// PlayFactionDialogueToTeam( "fortwar_baseShieldDownEnemy", GetOtherTeam( ent.GetTeam() ) )
-			// #endif
-		// }
 		else
 		{
 			EmitSoundOnEntity( ent, "titan_energyshield_down_3P" )
