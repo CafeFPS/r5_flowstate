@@ -127,6 +127,7 @@ struct {
 	float fs_scenarios_ring_damage = 25.0
 	float fs_scenarios_characterselect_time_per_player = 3.0
 	bool fs_scenarios_characterselect_enabled = true
+	float fs_scenarios_ringclosing_maxtime = 120
 } settings
 
 array< bool > teamSlots
@@ -153,6 +154,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
 	settings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
 	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.0 )
+	settings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -1846,7 +1848,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								{
 									player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
 									player.SetPlayerNetBool( "hasLockedInCharacter", true )
-									player.SetPlayerNetBool( "characterSelectionReady", false )
 								}
 							}
 						}
@@ -1897,7 +1898,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( !IsValid( player ) )
 							continue
 
+						if( settings.fs_scenarios_characterselect_enabled )
+							player.SetPlayerNetBool( "characterSelectionReady", false )
+
 						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
 					}
 
 					wait settings.fs_scenarios_game_start_time_delay
@@ -2012,7 +2017,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		#endif
 	}
 
-	wait 2
+	wait 3
 
 	foreach( int team, array<entity> players in groupedPlayers )
 	{
@@ -2025,20 +2030,8 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
 	}
-
+	
 	wait 0.5
-
-	foreach( int team, array<entity> players in groupedPlayers )
-	{
-		if ( players.len() == 0 )
-			continue
-
-		ArrayRemoveInvalid( players )
-		foreach( entity player in players )
-		{
-			Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-		}
-	}
 }
 
 array<entity> function FS_Scenarios_GetAllPlayersOfLockstepIndex( int index, array<entity> players )
@@ -2052,7 +2045,7 @@ array<entity> function FS_Scenarios_GetAllPlayersOfLockstepIndex( int index, arr
 	return result
 }
 
-void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group )
+void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group, float starttime )
 {
 	if( !IsValid( group ) )
 		return
@@ -2073,6 +2066,10 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 	WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
+	float endtime = Time() + settings.fs_scenarios_ringclosing_maxtime
+	float startradius = group.currentRingRadius
+	printt( "STARTED RING FOR GROUP", group.groupHandle, "Duration Closing", endtime - Time(), "Starting Radius", startradius )
+
 	while ( group.currentRingRadius > -1 )
 	{
 		players.clear()
@@ -2082,8 +2079,11 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 		ArrayRemoveInvalid( players )
 
 		float radius = group.currentRingRadius
-		
-		group.currentRingRadius = radius - settings.fs_scenarios_zonewars_ring_ringclosingspeed 
+
+		if( !settings.fs_scenarios_zonewars_ring_mode )
+			group.currentRingRadius = radius - settings.fs_scenarios_zonewars_ring_ringclosingspeed
+		else
+			group.currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
 
 		foreach( player in  players )
 		{
@@ -2144,7 +2144,7 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 
 	group.ring = smallcircle
 
-	thread FS_Scenarios_StartRingMovementForGroup( group )
+	thread FS_Scenarios_StartRingMovementForGroup( group, Time() )
 }
 
 void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
