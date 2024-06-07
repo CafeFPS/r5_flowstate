@@ -422,6 +422,8 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 			return true
 		}
 		
+		
+		
 		thread PlayRandomAnimation( player )
 		return true
 	}
@@ -795,7 +797,7 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 		return
 	}
 	
-	if( IsOverBudget( player ) )
+	if( !remove && IsOverBudget( player ) )
 	{
 		return
 	}
