@@ -1546,6 +1546,23 @@ void function UILevelLoadCallback()
 		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
 		Hud_SetColor( titletext, 180, 114, 41, 255 )
 	}
+	else if( Playlist() == ePlaylists.fs_movementrecorder )
+	{
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y + 155 )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 171, 132, 14, 220 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x - 30, wepmenuBasePos.y - 40 )	
+		Hud_SetText( wepmenu, "FS Movement Recorder" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 180, 114, 41, 255 )
+	}
 }
 
 void function InitMenus()

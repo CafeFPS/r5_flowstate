@@ -1,5 +1,5 @@
 // Made by @CafeFPS
-// mkos - multiplayer feature, code improvements
+// mkos - multiplayer compatibility overhaul, code improvements
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
@@ -79,6 +79,7 @@ void function Sh_FS_MovementRecorder_Init()
 		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
 		
 		RegisterSignal( "EndDummyThread" )
+		RegisterSignal( "FinishedRecording" )
 		
 		foreach( k,v in file._playbackAmounts__Template )
 		{
@@ -87,8 +88,56 @@ void function Sh_FS_MovementRecorder_Init()
 		
 		file.playbackLimit = GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
 		file.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+		
+		if( !FlowState_AdminTgive() )
+			INIT_WeaponsMenu()
+		else
+			INIT_WeaponsMenu_Disabled()
 	#endif
 }
+
+#if SERVER
+void function INIT_WeaponsMenu()
+{
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon ) 
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot )
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector )
+	AddClientCommandCallbackNew("CC_AimTrainer_WeaponSelectorClose", MovementRecorder_SetupWeapons )
+}
+
+void function INIT_WeaponsMenu_Disabled()
+{
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", MessagePlayer_Disabled ) 
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", MessagePlayer_Disabled )
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", MessagePlayer_Disabled )
+}
+
+bool function MessagePlayer_Disabled( entity player, array<string> args )
+{
+	LocalEventMsg( player, "#FS_DisabledTDMWeps" )
+	return true
+}
+
+void function MovementRecorder_SetupWeapons( entity player, array<string> args )
+{	
+	if( !IsValid( player ) )
+		return 
+		
+	if( Playlist() == ePlaylists.fs_movementrecorder && !FlowState_AdminTgive() )
+	{
+		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		
+		player.RefillAllAmmo()
+		
+		if( IsValid( primary ) )
+			SetupInfiniteAmmoForWeapon( player, primary )
+			
+		if( IsValid( secondary ) )
+			SetupInfiniteAmmoForWeapon( player, secondary )
+	}
+}
+#endif
 
 string function slotname( int slot )
 {
@@ -358,13 +407,6 @@ void function FS_MovementRecorder_PlayerInit( entity player )
 	//PrintMovementRecorderTable( file.playerPlaybackAmounts )
 }
 
-/*
-void function PrintTableTyped( table< int, table<int,int> > varTable )
-{
-	
-}
-*/
-
 bool function ClientCommand_ToggleMovementRecorder( entity player, array<string> args )
 {
 	if( !IsValid( player ) )
@@ -405,6 +447,7 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 
 		thread StartRecordingAnimation( player )
 	}
+	
 	return true
 }
 
@@ -476,7 +519,7 @@ bool function ClientCommand_SwitchCharacter( entity player, array<string> args )
 	if( player.p.isRecording )
 	{
 		if( !player.p.recorderHideHud )
-			LocalEventMsg( player, "FS_CANT_SWITCH_LEGEND", "", 3 )
+			LocalEventMsg( player, "#FS_CANT_SWITCH_LEGEND", "", 3 )
 			
 		return false
 	}
@@ -506,7 +549,8 @@ bool function ClientCommand_HideHud(entity player, array<string> args)
 	{
 		player.p.recorderHideHud = false
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_CreateInputHintsRUI", false )
-	} else if( !player.p.recorderHideHud )
+	}
+	else if( !player.p.recorderHideHud )
 	{
 		player.p.recorderHideHud = true
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_CreateInputHintsRUI", true )
@@ -586,10 +630,24 @@ void function StartRecordingAnimation( entity player )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, true, -1 )
 	}
 	
-	asset playermodel = player.GetModelName()
+	asset playermodel = player.GetModelName() //?
 	player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
-
 	player.p.isRecording = true
+	
+	OnThreadEnd
+	(
+		void function() : ( player )
+		{
+			if( IsValid( player ) )
+			{
+				if( player.p.isRecording )
+					StopRecordingAnimation( player )
+			}
+		}
+	)
+	
+	// Recording animations disappear after 2:30, hard-set limit.
+	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
 
 int function FS_MovementRecorder_GetEmptySlotForPlayer( entity player )
@@ -628,6 +686,7 @@ void function StopRecordingAnimation( entity player )
 	Assert( file.recordingAnims.len() == file.recordingAnimsCoordinates.len() )
 
 	player.p.isRecording = false
+	player.Signal( "FinishedRecording" )
 
 	if( !player.p.recorderHideHud )
 	{
@@ -654,7 +713,8 @@ const array<string> r5rDevs = [
 	"IcePixelx", 
 	"KralRindo",
 	"sal",
-	"mkos"
+	"mkos",
+	"fireproof"
 ]
 
 bool function bDoesAnyAnimationExist( entity player )
@@ -878,7 +938,7 @@ void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 			
 	if( IsValid( player ) && file.playerDummyMaps[ player.p.handle ][ slot ].contains( dummy ) )
 		file.playerDummyMaps[ player.p.handle ][ slot ].removebyvalue( dummy )
-			
+	
 	dummy.Destroy()
 	
 	file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
@@ -888,7 +948,7 @@ void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -
 {
 	if( IsValid(player ) )
 	{
-		player.Signal( "EndDummyThread_Slot_" + slot.tostring() )
+		player.Signal( "EndDummyThread_Slot_" + string( slot ) )
 		playerHandle = player.p.handle
 	}
 	
@@ -935,9 +995,10 @@ void function AssignCharacter( entity player, int index )
 	player.SetPlayerSettingsWithMods( characterSetFile, [] )
 }
 
-int function ReturnShieldAmountForDesiredLevel(int shield)
+int function ReturnShieldAmountForDesiredLevel( int shield )
 {
-	switch(shield){
+	switch(shield)
+	{
 		case 0:
 			return 0
 		case 1:
@@ -957,17 +1018,18 @@ int function ReturnShieldAmountForDesiredLevel(int shield)
 
 void function SetDummyProperties( entity dummy, int shield )
 {
-	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel(shield) )
-	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel(shield) )
+	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel( shield ) )
+	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel( shield ) )
 	dummy.SetMaxHealth( 100 )
 	dummy.SetHealth( 100 )
 	dummy.SetDamageNotifications( true )
 	dummy.SetTakeDamageType( DAMAGE_YES )
 	dummy.SetCanBeMeleed( true )
-	AddEntityCallback_OnDamaged( dummy, RecordingAnimationDummy_OnDamaged)
+	AddEntityCallback_OnDamaged( dummy, RecordingAnimationDummy_OnDamaged )
 
 	dummy.SetForceVisibleInPhaseShift( true )
 }
+
 void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 {
 	entity ent = dummy	

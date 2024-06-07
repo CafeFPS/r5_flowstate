@@ -897,7 +897,10 @@ void function NotifyRingTimer()
 void function OpenTDMWeaponSelectorUI()
 {
 	entity player = GetLocalClientPlayer()
-    player.ClientCommand("CC_TDM_Weapon_Selector_Open")
+    
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		player.ClientCommand("CC_TDM_Weapon_Selector_Open")
+	
 	DoF_SetFarDepth( 1, 300 )
 	RunUIScript("OpenFRChallengesSettingsWpnSelector")
 }

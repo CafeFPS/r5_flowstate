@@ -1114,7 +1114,7 @@ void function ChangeAimTrainer_USER_WANNA_BE_A_DUMMYClient(string isabool)
 void function UIToClient_MenuGiveWeapon(string weapon)
 {
 	entity player = GetLocalClientPlayer()
-    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot)
+	player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot)
 }
 
 void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desiredoptic, int desiredbarrel, int desiredstock, int desiredshotgunbolt, string weapontype, int desiredMag, string ammotype)
@@ -1122,8 +1122,7 @@ void function UIToClient_MenuGiveWeaponWithAttachments(string weapon, int desire
 	entity player = GetLocalClientPlayer()
 
 	// printt("DEBUG: desiredOptic: " + desiredoptic, " desiredBarrel: " + desiredbarrel, " desiredStock: " + desiredstock)
-
-    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot + " " + desiredoptic + " " + desiredbarrel + " " + desiredstock + " " + desiredshotgunbolt + " " + weapontype + " " + desiredMag + " " + ammotype )
+	player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + DesiredSlot + " " + desiredoptic + " " + desiredbarrel + " " + desiredstock + " " + desiredshotgunbolt + " " + weapontype + " " + desiredMag + " " + ammotype )
 }
 
 void function OpenFRChallengesSettingsWpnSelector()

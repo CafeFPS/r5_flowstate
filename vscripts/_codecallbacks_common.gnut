@@ -736,10 +736,8 @@ void function AddCallback_OnWeaponAttack( void functionref( entity, entity, stri
 
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
-	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
-	//Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
-	
 	//mkos - modified to support multiple functions for a single command
+	//Warning("AddClientCommandCallbackNew: " + commandString )
 	
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
@@ -748,7 +746,7 @@ void function AddClientCommandCallbackNew( string commandString, void functionre
 	}
 	else 
 	{
-		svGlobal.clientCommandCallbacksNew[ commandString ] <- [callbackFunc]
+		svGlobal.clientCommandCallbacksNew[ commandString ] <- [ callbackFunc ]
 	}
 }
 

@@ -572,7 +572,6 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 
 	//TODO: Track down Why VModEnable is being called from code?
 
-	//Assert( commandString in svGlobal.clientCommandCallbacks )
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
 		#if DEVELOPER 
@@ -583,9 +582,10 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 		{
 			callbackFunc( player, args )
 		}
-		
-		return true
 	}
+	
+	//Assert( commandString in svGlobal.clientCommandCallbacks )
+	
 	if ( commandString in svGlobal.clientCommandCallbacks  )
 	{
 		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )

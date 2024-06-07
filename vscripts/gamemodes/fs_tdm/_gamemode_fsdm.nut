@@ -1787,11 +1787,7 @@ void function _OnPlayerConnected(entity player)
 		thread Flowstate_InitAFKThreadForPlayer(player)
 	}
 
-	if( Flowstate_IsLGDuels()	 )
-	{
-		AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
-	} 
-	else if( Flowstate_IsFastInstaGib() )
+	if( Flowstate_IsFastInstaGib() )
 	{
 		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
 	}	

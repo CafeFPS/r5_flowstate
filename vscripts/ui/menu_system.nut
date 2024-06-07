@@ -312,6 +312,10 @@ void function UpdateSystemPanel( var panel )
 			//}
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
+		else if( Playlist() == ePlaylists.fs_movementrecorder )
+		{
+			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+		}
 
 		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
 			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
