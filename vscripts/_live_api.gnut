@@ -372,13 +372,7 @@ void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker
 	if( !IsValid( victim ) )
 		return
 
-	entity weapon = DamageInfo_GetWeapon( damageInfo )
-	string weaponName = IsValid( weapon ) ? weapon.GetWeaponClassName() : DamageInfo_GetInflictor( damageInfo ).GetClassName()
-
-	table< int, var > ornull attackerIdentity = null
-
-	if( IsValid( attacker ) && attacker.IsPlayer() )
-		attackerIdentity = LiveAPI_GetPlayerIdentityTable( attacker )
+	string weaponName = DamageSourceIDToString( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
 
 	array< var > fieldData
 	array< int > fieldNums
