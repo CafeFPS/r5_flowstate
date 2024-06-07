@@ -238,7 +238,10 @@ struct
 		"#FS_OVER_BUDGET",
 		"#FS_PLAYING_ANIM",
 		"#FS_REMOVING_ALL_ANIMS",
-		"#FS_CMD"
+		"#FS_CMD",
+		"#FS_NO_ANIMS",
+		"#FS_PLAYING_RANDOM",
+		"#FS_PLAYING_RANDOM_DESC"
 		
 	]
 	

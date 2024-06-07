@@ -376,7 +376,7 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 	{
 		if( !bDoesAnyAnimationExist( player ) )
 		{
-			LocalEventMsg( player, "#FS_ANIM_NOT_FOUND", "", 3 )
+			LocalEventMsg( player, "#FS_NO_ANIMS", "", 3 )
 			return true
 		}
 		
@@ -685,22 +685,32 @@ void function PlayRandomAnimation( entity player )
 	
 	int playerHandle = player.p.handle
 	
-	array<int> randomSlots = []
-	
-	for( int i = 0; i < file._dummyMaps__Template.len(); i++ )
-	{
-		randomSlots.append( i )
-	}
+	LocalMsg( player, "#FS_PLAYING_RANDOM", "#FS_PLAYING_RANDOM_DESC" )
 	
 	while( true )
 	{
 		WaitFrame()
 		
 		if( !IsValid( player ) )
-			break 
+			return 
 		
 		if( !( playerHandle in file.playerDummyMaps ) )
-			break 
+			return 
+			
+			
+		array<int> randomSlots = []
+	
+		for( int i = 0; i < file._dummyMaps__Template.len(); i++ )
+		{
+			if( player.p.recordingAnims[i] != null )
+			randomSlots.append( i )
+		}
+		
+		if( randomSlots.len() <= 0 )
+		{
+			LocalEventMsg( player, "#FS_NO_ANIMS" )
+			return
+		}
 			
 		int slot = randomSlots.getrandom()
 		var anim = player.p.recordingAnims[slot]
@@ -713,7 +723,7 @@ void function PlayRandomAnimation( entity player )
 		wait GetRecordedAnimationDuration( anim ) + 0.1
 		
 		if( !IsValid( player ) || !player.p.continueLoop )
-			break
+			return
 			
 		wait 0.2
 	}
