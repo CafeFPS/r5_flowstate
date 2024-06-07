@@ -693,7 +693,6 @@ void function StopRecordingAnimation( entity player )
 		LocalEventMsg( player, "#FS_MOVEMENT_SAVED", slotname( slot + 1 ) )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, false, -1 )
 
-
 		var anim = player.p.recordingAnims[ slot ]
 		float duration = GetRecordedAnimationDuration( anim )
 		Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", slot + 1, true, duration )
@@ -806,11 +805,6 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 	
 	int playerHandle = player.p.handle
 	
-	if( !remove )
-	{
-		file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
-	}
-	
 	#if DEVELOPER
 		printt( "playaniminslot", slot )
 	#endif
@@ -871,6 +865,11 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 		default:
 			aiFileToUse = "npc_dummie_wraith"
 		break
+	}
+	
+	if( !remove )
+	{
+		file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
 	}
 
 	while( true )
