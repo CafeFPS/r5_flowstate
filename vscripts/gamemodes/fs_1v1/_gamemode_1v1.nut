@@ -2584,7 +2584,8 @@ void function soloModePlayerToWaitingList( entity player )
 	//set realms for resting player
 	FS_ClearRealmsAndAddPlayerToAllRealms( player )
 	
-	Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
+	if( !is3v3Mode() )
+		Remote_CallFunction_NonReplay( player, "ForceScoreboardFocus" )
 
 	// Check if the player is part of any group
 	if ( player.p.handle in file.playerToGroupMap && !settings.is3v3Mode )

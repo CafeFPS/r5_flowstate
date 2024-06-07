@@ -9,6 +9,7 @@ global function Obituary_SetHorizontalOffset
 global function ShouldShowObituaryLineForPlayer
 
 global function Thread_StartFakeObituaries
+global function Flowstate_ForceRemoveAllObituaries
 
 const NUM_OBITUARY_LINES    = 4
 const obituaryTextBoxWidth  = 500
@@ -371,6 +372,17 @@ void function UpdateObituaryQueue()
 		RuiSetInt( obitData.rui, "offset", (EXTRA_OFFSET + index + file.indexOffest) )
 		RuiSetInt( obitData.rui, "horizontalOffset", file.horizontalOffset  )
 		RuiSetGameTime( obitData.rui, "updateTime", Time() )
+	}
+}
+
+void function Flowstate_ForceRemoveAllObituaries()
+{
+	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
+	{
+		ObituaryData obitData = file.obituaryQueue[index]
+
+		RuiDestroyIfAlive( obitData.rui )
+		file.obituaryQueue.remove( index )
 	}
 }
 

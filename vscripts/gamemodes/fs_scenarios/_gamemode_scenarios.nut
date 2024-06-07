@@ -125,7 +125,7 @@ struct {
 	float fs_scenarios_ring_damage_step_time = 1.5
 	float fs_scenarios_game_start_time_delay = 3.0
 	float fs_scenarios_ring_damage = 25.0
-	float fs_scenarios_characterselect_time_per_player = 3.0
+	float fs_scenarios_characterselect_time_per_player = 3.5
 	bool fs_scenarios_characterselect_enabled = true
 	float fs_scenarios_ringclosing_maxtime = 120
 } settings
@@ -153,7 +153,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
 	settings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
 	settings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
-	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.0 )
+	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
 	settings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
 
 	teamSlots.resize( 119 )
@@ -1699,16 +1699,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
 
-			//Play fx on players screen
-			foreach ( entity player in players )
-			{
-				if( !IsValid( player ) )
-					return
-
-				Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
-				Flowstate_AssignUniqueCharacterForPlayer( player, true )
-			}
-
 			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
 			thread FS_Scenarios_SpawnBigDoorsForGroup( newGroup )
 
@@ -1768,7 +1758,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 				if( spawnSlot != oldSpawnSlot )
 					j = 0
-
+				
 				FS_Scenarios_RespawnIn3v3Mode( player )
 
 				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
@@ -1778,6 +1768,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				{
 					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
 					player.MovementDisable()
+					AddCinematicFlag( player, CE_FLAG_INTRO )
 					player.SetVelocity( < 0,0,0 > )
 					player.SetAngles( location.angles )
 					vector pos = location.origin
@@ -1840,6 +1831,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								player.ClearFirstDeployForAllWeapons()
 								// player.UnfreezeControlsOnServer()
 								ClearInvincible(player)
+								Highlight_ClearEnemyHighlight( player )
 
 								if( !newGroup.IsFinished )
 									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
@@ -1898,9 +1890,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( !IsValid( player ) )
 							continue
 
+						Highlight_ClearEnemyHighlight( player )
+						Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+
 						if( settings.fs_scenarios_characterselect_enabled )
 							player.SetPlayerNetBool( "characterSelectionReady", false )
 
+						RemoveCinematicFlag( player, CE_FLAG_INTRO )
 						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
 						Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
 					}
@@ -2045,7 +2041,7 @@ array<entity> function FS_Scenarios_GetAllPlayersOfLockstepIndex( int index, arr
 	return result
 }
 
-void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group, float starttime )
+void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
@@ -2066,6 +2062,7 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 	WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
+	float starttime = Time()
 	float endtime = Time() + settings.fs_scenarios_ringclosing_maxtime
 	float startradius = group.currentRingRadius
 	printt( "STARTED RING FOR GROUP", group.groupHandle, "Duration Closing", endtime - Time(), "Starting Radius", startradius )
@@ -2144,7 +2141,7 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 
 	group.ring = smallcircle
 
-	thread FS_Scenarios_StartRingMovementForGroup( group, Time() )
+	thread FS_Scenarios_StartRingMovementForGroup( group )
 }
 
 void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )

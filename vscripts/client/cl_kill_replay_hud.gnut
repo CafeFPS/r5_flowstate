@@ -224,6 +224,7 @@ void function Custom_KillReplayHud_Activate()
 
 	string attackerName = ""
 
+	FS_SetHideEndTimeUI( true )
 	//Set is watching replay
 	file.IsWatchingReplay = true
 	
@@ -271,6 +272,7 @@ void function ServerCallback_UpdateSpectatorTargetCount(int targetCount, bool re
 void function Custom_KillReplayHud_Deactivate()
 {
 	//Set is not watching replay
+	FS_SetHideEndTimeUI( false )
 	file.IsWatchingReplay = false
 
 	if ( IsReplayRoundWinning() )

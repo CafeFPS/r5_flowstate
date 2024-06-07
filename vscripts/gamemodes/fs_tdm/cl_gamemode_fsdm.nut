@@ -64,6 +64,7 @@ global function FS_Scenarios_ChangeAliveStateForPlayer
 global function FS_CreateTeleportFirstPersonEffectOnPlayer
 
 global function FS_Show1v1Banner
+global function FS_SetHideEndTimeUI
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -103,6 +104,7 @@ struct {
 	array<int> enemyTeamHandles2
 	
 	bool muted = false
+	bool hideendtimeui = false
 	
 } file
 
@@ -191,6 +193,11 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
 }
 
+void function FS_SetHideEndTimeUI( bool show )
+{
+	file.hideendtimeui = show
+}
+
 void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old, bool new, bool actuallyChanged )
 {
 	if ( player != GetLocalClientPlayer() )
@@ -201,6 +208,9 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		printt( "[Scenarios Character Select] Open" )
 		Fullmap_SetVisible( false )
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
+		Flowstate_ForceRemoveAllObituaries()
+		FS_SetHideEndTimeUI( true )
+		Obituary_Print_Localized( "Made by CafeFPS with the help from mkos, Darth Elmo and Balvarine.", BURN_COLOR, BURN_COLOR )
 		OpenCharacterSelectNewMenu()
 	}
 	else
@@ -208,6 +218,7 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		printt( "[Scenarios Character Select] Close" )
 		CloseCharacterSelectNewMenu()
 		RunUIScript( "UI_CloseCharacterSelect" )
+		FS_SetHideEndTimeUI( false )
 	}
 }
 
@@ -461,8 +472,8 @@ void function Flowstate_DMTimer_Thread( float endtime )
 		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
 
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !GetPlayerIsWatchingReplay() )
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !GetPlayerIsWatchingReplay() )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !file.hideendtimeui )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !file.hideendtimeui )
 			
 		wait 1
 	}

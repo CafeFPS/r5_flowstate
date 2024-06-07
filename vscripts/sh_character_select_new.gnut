@@ -1611,6 +1611,7 @@ void function CountdownTimerSounds()
 		EmitSoundOnEntity( player, "UI_Survival_Intro_PreLegendSelect_Countdown" )
 		wait 1.0
 	}
+	Flowstate_ForceRemoveAllObituaries()
 }
 
 
