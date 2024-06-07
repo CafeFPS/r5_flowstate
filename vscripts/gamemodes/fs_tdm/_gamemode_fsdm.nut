@@ -376,9 +376,9 @@ void function Init_IBMM( entity player )
 			return 
 	#endif
 		
-	thread notify_thread( player )
+	thread Gamemode1v1_NotifyThread( player )
 	
-	if(player.p.IBMM_grace_period == -1)
+	if( player.p.IBMM_grace_period == -1 )
 	{
 		SetDefaultIBMM( player )
 	}

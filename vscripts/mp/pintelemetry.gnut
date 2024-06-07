@@ -4263,7 +4263,6 @@ void function DEV_PrintAllTrackerErrors()
 
 void function PlayerDisconnectedCallback( entity player ) 
 {	
-	player.Signal( "OnDisconnected" )
     string reason = "Disconnection";
     PIN_PlayerLeft(player, reason);
 }

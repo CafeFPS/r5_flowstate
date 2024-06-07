@@ -763,14 +763,11 @@ global struct ServerPlayerStruct
 	string inputmode 			= ""
 	bool challengenotify 		= false //need to make a notify system
 	entity entLastChallenger
-	bool notify 				= false
-	bool has_notify 			= false
-	bool destroynotify 			= false
 	float last_input_time
 	float IBMM_grace_period 	= -1 // <=0  is disabled
 	float messagetime			= 0
 	int movevalue 				= 0
-	int p_damage 				= 3 //for lgduel default dmg/heal 
+	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name
 	int season_kills 			= 0
 	int season_deaths 			= 0
 	int season_glides 			= 0
@@ -788,7 +785,7 @@ global struct ServerPlayerStruct
 	bool bIsChatbot 			= false
 	bool ClientCommandsEnabled 	= true
 	
-	//framework for confirm
+	//framework for confirm ( this is bad and experimental )
 	bool bInRetry 				= false
 	bool bRelayChallengeState 	= false
 	int relayChallengeCode 		= 0

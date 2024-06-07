@@ -1214,10 +1214,11 @@ void function AddCallback_OnPlayerInventoryChanged( void functionref( entity ) c
 	file.playerInventoryChangedCallbacks.append( callbackFunc )
 }
 
-void function CodeCallback_OnClientDisconnected(entity player, string reason)
+void function CodeCallback_OnClientDisconnected( entity player, string reason )
 {
-	printt("CodeCallback_OnClientDisconnected ", player, reason)
+	printt("CodeCallback_OnClientDisconnected ", player, reason )
+	player.Signal( "OnDisconnected" )
 	
-	foreach(cb in svGlobal.onClientDisconnectedCallbacks)
-		cb(player)
+	foreach( cb in svGlobal.onClientDisconnectedCallbacks )
+		cb( player )
 }

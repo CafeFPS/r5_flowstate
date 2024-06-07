@@ -1733,8 +1733,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if( !IsValid( player ) )
 					return
 
-				player.p.notify = false
-				player.p.destroynotify = true
+				// player.p.notify = false
+				// player.p.destroynotify = true
+				//TODO: use new notify system if using in your mode; these entity struct vars were removed
+				
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )
 				
 				
