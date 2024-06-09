@@ -775,8 +775,6 @@ void function GetPlayerOutOfCameraManual( entity player )
 
 void function GetPlayerOutOfCamera( entity player )
 {
-	Warning("attempting to get out ")
-	
 	entity vehicle = CryptoDrone_GetPlayerDrone( player )
 
 	if( !IsValid( vehicle ) || !IsValid( player ) || !player.ContextAction_IsInVehicle() ) //|| !IsAlive( player )

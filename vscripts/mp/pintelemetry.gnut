@@ -1289,7 +1289,7 @@ void function INIT_fastComputes()
 	file.flowstateRoundtime 			= FS_RoundTime()
 	file.afk_to_rest_enabled 			= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
-	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
+	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	file.bBotAllowed 					= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
 	file.gamemode_type_1v1 				= is1v1GameType() //returns true if mode is confifugred as 1v1 type
 	
@@ -4973,8 +4973,8 @@ bool function bAfkToRest(){ return file.afk_to_rest_enabled }
 		bool function SQ_GetLogState__internal( int state ){ return false }
 	
 		string function SQMatchID__internal(){ return "" }
-		string function GetSyncData__iternal( string UID ){ return "NA" }
-		string function SQ_GetSetting__iternal( string key ){ return "" }
+		string function GetSyncData__internal( string UID ){ return "NA" }
+		string function SQ_GetSetting__internal( string key ){ return "" }
 		string function FetchGlobalSettingsFromR5RDEV__iternal( string query ){ return "" }
 			
 		void function InitializeLogThread__internal(){}

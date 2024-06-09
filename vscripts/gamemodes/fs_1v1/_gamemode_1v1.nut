@@ -3826,13 +3826,13 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			if( isPlayerInSoloMode( player ) )
 				continue
 			
-			#if !DEVELOPER 
+			//#if !DEVELOPER 
 				if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > file.waitingRoomRadius )
 				{
 					maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
 					HolsterAndDisableWeapons( player )
 				}
-			#endif
+			//#endif
 		}
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4620,9 +4620,9 @@ void function _CleanupPlayerEntities( entity player )
 {
 	PROTO_CleanupTrackedProjectiles( player )
 
-	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) ) //todo signal
+	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) )
 	{
-		GetPlayerOutOfCamera( player )// why isn't this set up? -> Signal( "ExitCameraView" )
+		GetPlayerOutOfCamera( player )
 		CryptoDrone_GetPlayerDrone( player ).Destroy()
 	}
 
