@@ -804,18 +804,22 @@ void function ShowOnlineMOTD( entity player )
 
 void function ShowPlayerLocalMOTD( entity player )
 {	
-	thread( void function() : ( player )
+	thread
+	(
+		void function() : ( player )
+		{
+			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			
+			if( IsValid( player ) )
 			{
-				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
-				
-					if( IsValid( player ) )
-					{
-						//run ui script for motd
-						MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
-						wait 5
-						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
-					}
-			})()
+				//run ui script for motd
+				MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
+					wait 5
+					
+				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+			}
+		}
+	)()
 }
 
 
@@ -2111,7 +2115,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 	Tracker_AddEventTask( Event )
 }
 
-	void function EndFight( entity victim, entity attacker, var damageInfo, float deathtime )
+	void function __EndFight( entity victim, entity attacker, var damageInfo, float deathtime )
 	{	
 		if ( !IsValid( victim ) || ( !victim.IsPlayer() && !victim.IsNPC() ) || !IsValid( attacker ) )
 		{
@@ -4606,13 +4610,16 @@ void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
 {	
 	if ( file.LogOn && isLogging__internal() && IsValid(victim) && victim.IsPlayer() )
 	{
-		thread EndFight( victim, attacker, damageInfo, Time() )
+		thread __EndFight( victim, attacker, damageInfo, Time() )
 	}
 }
 
 void function Tracker_EndFight( entity victim, entity attacker, var damageInfo )
 {
-	thread EndFight( victim, attacker, damageInfo, Time() )
+	if( !Flowstate_IsTrackerSupportedMode() )
+		return 
+		
+	thread __EndFight( victim, attacker, damageInfo, Time() )
 }
 
 void function PIN_PlanePath( vector startPos, vector endPos, float duration )
@@ -5053,18 +5060,22 @@ void function PIN_Init()
 
 void function ShowPlayerLocalMOTD( entity player )
 {	
-	thread( void function() : ( player )
-			{
-				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
-				
-					if( IsValid( player ) )
-					{
-						//run ui script for motd
-						MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, LineBreak( file.localFlowstate_MOTD, 80 ) )
+	thread
+	( 
+		void function() : ( player )
+		{
+			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			
+				if( IsValid( player ) )
+				{
+					//run ui script for motd
+					MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
 						wait 5
-						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
-					}
-			})()
+						
+					LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
+				}
+		}
+	)()
 }
 
 void function PIN_GameStart(){}

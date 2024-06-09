@@ -389,6 +389,7 @@ void function FS_MovementRecorder_OnPlayerConnected( entity player )
 	player.p.recordingAnimsChosenCharacters.resize( MAX_SLOT )
 	
 	FS_MovementRecorder_PlayerInit( player )
+	SetTeam( player, 2 )
 }
 
 void function FS_MovementRecorder_PlayerInit( entity player )

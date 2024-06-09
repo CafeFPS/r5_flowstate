@@ -241,8 +241,7 @@ struct
 		"#FS_CMD",
 		"#FS_NO_ANIMS",
 		"#FS_PLAYING_RANDOM",
-		"#FS_PLAYING_RANDOM_DESC"
-		
+		"#FS_PLAYING_RANDOM_DESC"	
 	]
 	
 } file

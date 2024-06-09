@@ -3304,7 +3304,7 @@ void function _soloModeInit( int eMap )
 		["%&use% Enable/Disable 1v1 Challenges"] 		= null,
 		["%&use% Toggle \"Start In Rest\" Setting"] 	= null,
 		["%&use% Toggle Input Banner"] 					= null,
-		//["add another"] = null
+		//["add another"] = null,
 	};
 	
 	CreatePanels( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, panels )

@@ -167,12 +167,16 @@ void function MpAbilityCryptoDrone_Init()
 	RegisterSignal( "Crypto_Immediate_Camera_Access_Confirmed" )
 	RegisterSignal( "Crypto_StopSendPointThink" )
 	file.droneHealth = GetCurrentPlaylistVarInt( "crypto_drone_health", CRYPTO_DRONE_HEALTH_PROJECTILE )
+	
+	RegisterSignal( "ExitCameraView" )
 }
 
 
 bool function OnWeaponAttemptOffhandSwitch_ability_crypto_drone( entity weapon )
 {
-	printt( "OnWeaponAttemptOffhandSwitch", weapon )
+	#if DEVELOPER
+		printt( "OnWeaponAttemptOffhandSwitch", weapon )
+	#endif
 	
 	//int ammoReq = weapon.GetAmmoPerShot()
 	//int currAmmo = weapon.GetWeaponPrimaryClipCount()
@@ -203,7 +207,9 @@ bool function OnWeaponAttemptOffhandSwitch_ability_crypto_drone( entity weapon )
 
 var function OnWeaponToss_ability_crypto_drone( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	printt( "OnWeaponToss", weapon )
+	#if DEVELOPER
+		printt( "OnWeaponToss", weapon )
+	#endif
 
 	entity player = weapon.GetWeaponOwner()
 
@@ -346,13 +352,14 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 	if ( StatusEffect_GetSeverity( player, eStatusEffect.crypto_has_camera ) > 0.0 && StatusEffect_GetSeverity( player, eStatusEffect.camera_view ) == 0.0 )
 	{
 		#if SERVER
-	if ( weapon.HasMod( "crypto_drone_access" ) )
-		{
-		#if SERVER
-		GetPlayerInCamera( player )
+			if ( weapon.HasMod( "crypto_drone_access" ) )
+			{
+				#if SERVER
+					GetPlayerInCamera( player )
+				#endif
+			}
 		#endif
-		}
-		#endif
+		
 		return 0
 	}
 	
@@ -547,7 +554,12 @@ void function AttemptDroneRecall( entity player )
 #endif
 
 void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
-{
+{		
+	if( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOM_FATALITY )
+		damagedEnt.Signal( "ExitCameraView" )
+
+	//if()  settingsblock data for ignore exit [return]
+
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( damageSourceId == eDamageSourceId.deathField )
 		return
@@ -560,12 +572,8 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
 	if ( IsValid( inflictor ) && inflictor.GetTeam() == playerTeam )
 		return
-
-	damagedEnt.Signal( "ExitCameraView" ) //TODO: get this signal working properly
-	
-	#if SERVER 
-		GetPlayerOutOfCamera( damagedEnt ) //HACK FIX (~mkos)
-	#endif
+		
+	damagedEnt.Signal( "ExitCameraView" )
 }
 
 #if SERVER
@@ -599,7 +607,7 @@ entity function CreateCryptoVehicle( entity weapon, entity player )
 	EmitSoundOnEntity( vehicle, DRONE_PROPULSION_3P )
 
 	AddEntityCallback_OnKilled( vehicle, OnDroneKilled )
-	AddEntityCallback_OnDamaged( vehicle, OnDroneDamaged) 
+	AddEntityCallback_OnDamaged( vehicle, OnDroneDamaged ) 
 	
 	file.allDrones.append( vehicle )
 
@@ -674,8 +682,7 @@ bool function Flowstate_ClientCommand_AttemptDroneRecall(entity player, array < 
 		StatusEffect_AddTimed( owner, eStatusEffect.crypto_camera_is_recalling, 1.0, vehicle.GetSequenceDuration( "drone_recall" ), vehicle.GetSequenceDuration( "drone_recall" ) )
 		vehicle.Anim_Play( "drone_recall" )
 		
-		EndSignal( vehicle, "OnDeath" )
-		EndSignal( vehicle, "OnDestroy" )
+		EndSignal( vehicle, "OnDeath", "OnDestroy" )
 
 		wait vehicle.GetSequenceDuration( "drone_recall" )
 
@@ -768,26 +775,27 @@ void function GetPlayerOutOfCameraManual( entity player )
 
 void function GetPlayerOutOfCamera( entity player )
 {
+	Warning("attempting to get out ")
+	
 	entity vehicle = CryptoDrone_GetPlayerDrone( player )
 
-	if( !IsValid( vehicle ) || !IsValid( player ) || !IsAlive( player ) || !player.ContextAction_IsInVehicle() )
+	if( !IsValid( vehicle ) || !IsValid( player ) || !player.ContextAction_IsInVehicle() ) //|| !IsAlive( player )
 		return
 
 	#if DEVELOPER
 		printt( "player get out of camera", player )
 	#endif
 
-	// Supposed to use EndSignal "ExitCameraView" ?
+	// If player was in vehicle
+	try{ vehicle.VehicleRemoveDriver() } 
+	catch( error ){ return	}
 
 	vehicle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 
 	RemoveButtonPressedPlayerInputCallback( player, IN_OFFHAND1, GetPlayerOutOfCameraManual )
 	RemoveButtonPressedPlayerInputCallback( player, IN_OFFHAND4, FireUltimate )
 	RemoveButtonPressedPlayerInputCallback( player, IN_ATTACK, FireUltimate )
-
-	// If player was in vehicle
-	try{ vehicle.VehicleRemoveDriver() } 
-	catch( error ){ return	}
+	RemoveEntityCallback_OnDamaged( player, OnPlayerTookDamage )
 
 	player.ContextAction_ClearInVehicle()
 	player.p.lastTimeEnteredCryptosDrone = -1
@@ -853,26 +861,53 @@ void function GetPlayerInCamera( entity player )
 	AddButtonPressedPlayerInputCallback( player, IN_OFFHAND1, GetPlayerOutOfCameraManual )
 	AddButtonPressedPlayerInputCallback( player, IN_OFFHAND4, FireUltimate )
 	AddButtonPressedPlayerInputCallback( player, IN_ATTACK, FireUltimate )
+	AddEntityCallback_OnDamaged( player, OnPlayerTookDamage )
 }
 
-void function DroneCheck_Thread( entity vehicle )
+void function DroneCheck_Thread( entity vehicle ) //mkos
 {
+	entity owner = vehicle.GetOwner()
+	
+	if( !IsValid( owner ) )
+		return
+	
+	EndSignal( vehicle, "OnDestroy" )
+	EndSignal( owner, "OnDestroy", "OnDisconnected" )
+	
+	OnThreadEnd
+	(
+		void function() : ( owner, vehicle )
+		{
+			if( IsValid( owner ) )
+			{
+				if( IsPlayerInCryptoDroneCameraView( owner ) )
+					GetPlayerOutOfCamera( owner )
+			}
+			
+			entity worldSpawn = GetEnt( "worldspawn" )
+			
+			if( IsValid( vehicle ) )
+				vehicle.TakeDamage( CRYPTO_DRONE_HEALTH, worldSpawn, worldSpawn, {} )
+		}
+	)
+	
 	while( true )
 	{
-		wait 1
-
-		if(!IsValid( vehicle ))
-			return
-
-		entity owner = vehicle.GetOwner()
+		table results = WaitSignal( owner, "ExitCameraView", "OnDeath" )
 		
-		if( !IsValid( owner ) || !IsAlive( owner ) )
+		if( IsValid( owner ) )
+		{
+			if( IsPlayerInCryptoDroneCameraView( owner ) )
+				GetPlayerOutOfCamera( owner )
+		}
+		
+		string signal = expect string( results.signal )
+		
+		if( signal == "OnDeath" )
+		{
 			break
+		}
 	}
-
-	entity worldSpawn = GetEnt( "worldspawn" )
-
-	vehicle.TakeDamage( CRYPTO_DRONE_HEALTH, worldSpawn, worldSpawn, {} )
 }
 
 void function OnDroneKilled( entity vehicle, var damageInfo )
@@ -896,7 +931,7 @@ void function OnDroneKilled( entity vehicle, var damageInfo )
 	EmitSoundAtPosition( TEAM_ANY, vehicle.GetOrigin(), DRONE_EXPLOSION_3P )
 	StartParticleEffectInWorld( GetParticleSystemIndex( CAMERA_EXPLOSION_FX ), vehicle.GetOrigin(), <0,0,0> )
 
-	GetPlayerOutOfCamera( owner )
+	//GetPlayerOutOfCamera( owner )
 
 	entity ability = GetDroneWeapon( owner )
 
@@ -1661,7 +1696,7 @@ void function CryptoDrone_SetMaxZ( float maxZ )
 	file.droneMaxZ = maxZ
 }
 
-void function SetForceExitDroneView (bool forcing)
+void function SetForceExitDroneView(bool forcing)
 {
 	file.ForceExitDroneView = forcing
 }

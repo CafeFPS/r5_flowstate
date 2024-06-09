@@ -354,6 +354,24 @@ void function UpdateSystemPanel( var panel )
 		// {
 			// SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
 		// }
+		
+		if( Playlist() != ePlaylists.fs_aimtrainer )
+		{
+			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		} 
+		else
+		{
+			if(ISAIMTRAINER)
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+			{
+				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
+				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+			}
+		}
 	}
 	else
 	{
@@ -385,24 +403,6 @@ void function UpdateSystemPanel( var panel )
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
 		
-		
-		if( Playlist() != ePlaylists.fs_aimtrainer )
-		{
-			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
-		} 
-		else
-		{
-			if(ISAIMTRAINER)
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-			{
-				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
-				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
-			}
-		}
 }
 
 void function ToggleSetHunter(bool enable)
@@ -602,13 +602,15 @@ void function OpenMOTD()
 		motd = Localize("#FS_PLAYLIST_MOTD")
 	}
 	
-	DialogData dialog
-	dialog.header = "Server Message of the Day"
-	dialog.message = motd
-	dialog.darkenBackground = true
-	dialog.showPCBackButton = true
-	dialog.useFullMessageHeight = true
-	OpenDialog( dialog )
+	OpenServerMOTD( motd )
+	
+	// DialogData dialog
+	// dialog.header = "Server Message of the Day"
+	// dialog.message = motd
+	// dialog.darkenBackground = true
+	// dialog.showPCBackButton = true
+	// dialog.useFullMessageHeight = true
+	// OpenDialog( dialog )
 }
 
 void function UpdateOptInFooter()

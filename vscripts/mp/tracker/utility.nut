@@ -64,8 +64,8 @@ struct {
 
 	void function INIT_CC_MapNames()
 	{
-	
-		list_maps = [
+		list_maps = 
+		[
 			["dropoff", "mp_rr_arena_composite"],
 			["overflow", "mp_rr_aqueduct"],
 			["firingrange", "mp_rr_canyonlands_staging"],
@@ -79,8 +79,7 @@ struct {
 			["skygarden", "mp_rr_arena_skygarden"],
 			["ashsredemption", "mp_rr_ashs_redemption"],
 			["overflownight", "mp_rr_aqueduct_night"]
-		];
-	
+		];	
 	}
 	
 	void function INIT_CC_GameTypes()
@@ -1635,7 +1634,7 @@ void function Commands( entity player, array<string> args )
 		case "/wait":
 		case "\\wait":
 			args.remove(0)
-			ClientCommand_mkos_LGDuel_IBMM_wait( player, args )
+			ClientCommand_mkos_IBMM_wait( player, args )
 			break
 			
 		case "!rest":

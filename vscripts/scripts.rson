@@ -733,6 +733,7 @@ Scripts:
 	ui/dialogs/mode_select.nut
 	ui/dialogs/gamemode_select_v2.nut
 	ui/dialogs/report_player.nut
+	ui/dialogs/server_motd.nut
 	ui/menu_eula_dialog.nut
 	ui/menu_accessibility_dialog.nut
 	ui/menu_postgame.nut
@@ -1006,6 +1007,7 @@ Scripts:
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_notifications.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
+	gamemodes/fs_lgduels_1v1/_fs_lgduels_1v1.nut
 	gamemodes/fs_scenarios/_gamemode_scenarios.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut

@@ -2293,7 +2293,9 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 	int zOrder = file.planeEnd.Minimap_GetZOrder()
 
-	printt( "======================= added line ========================" )
+	#if DEVELOPER
+		printt( "======================= added line ========================" )
+	#endif
 
 	var rui = RuiCreate( $"ui/in_world_minimap_line.rpak", screen, drawType, FULLMAP_Z_BASE + 10 )
 	RuiSetFloat3( rui, "mapCorner", <file.mapCornerX, file.mapCornerY, 0.0> )
@@ -2306,7 +2308,10 @@ void function AddInWorldMinimapPlaneLine( var screen )
 	OnThreadEnd(
 		function() : ( rui )
 		{
-			printt( "Line Destroy " + rui )
+			#if DEVELOPER
+				printt( "Line Destroy " + rui )
+			#endif 
+			
 			RuiDestroy( rui )
 		}
 	)
@@ -3129,8 +3134,10 @@ bool function Survival_HandleKeyInput( int key )
 			break
 	}
 
+	#if DEVELOPER
 	if ( pressedPing )
 		printt( "pressedPing", key )
+	#endif
 
 	if ( ButtonIsBoundToAction( key, "use" ) )
 		return true
@@ -3606,19 +3613,19 @@ void function SetDpadMenuHidden()
 void function ChangeHUDVisibilityWhenInCryptoDrone( bool isInCryptoDrone = false )
 {
 	
-	//if ( IsAlive( GetLocalClientPlayer() ) )
-	//{
-	//	
-	//	var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
-	//
-	//	if ( cryptoAnimatedTacticalRui != null )
-	//	{
-	//		
-	//		RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
-	//	}
-	//}
-	//
-	//RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+	if ( IsAlive( GetLocalClientPlayer() ) )
+	{
+		
+		var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
+	
+		if ( cryptoAnimatedTacticalRui != null )
+		{
+			
+			RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+		}
+	}
+	
+	RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
 }
 
 void function OnGameStatePlaying_CheckCryptoDrone()

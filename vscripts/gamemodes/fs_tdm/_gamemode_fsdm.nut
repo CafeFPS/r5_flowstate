@@ -2,13 +2,18 @@
 // Fork of the custom_tdm gamemode made by sal#3261
 
 // Credits:
-// CafeFPS - main dev
-// AyeZee#6969 -- Ctf voting phase to work off & droppods
-// Zer0Bytes#4428 -- Weapons randomizer rewrite
-// makimakima#5561 -- TDM Saved Weapon List, 1v1 gamemode
-// michae\l/#1125 -- flowstate admin
-// mkos -- tracker / refactoring
-// everyone else -- advice
+
+// CafeFPS 			- Main Developer
+// AyeZee#6969 		-- Ctf voting phase to work off & droppods
+// Zer0Bytes#4428 	-- Weapons randomizer rewrite
+// makimakima#5561 	-- TDM Saved Weapon List, 1v1 gamemode
+// michae\l/#1125 	-- flowstate admin
+// mkos 			-- Developer #2 ( cafe's apprentice :D )
+// everyone else 	-- advice
+
+//TODO: Abstract gamemode specific logic into each gamemodes own file 
+//		and make logic in this script modular ( template-like ) by setting up
+//		callback systems and allowing logic to be defined outside of this file
 
 global function _CustomTDM_Init
 global function _RegisterLocation
@@ -66,13 +71,13 @@ global function DissolveItem
 global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function Thread_CheckInput
-global function ClientCommand_mkos_LGDuel_IBMM_wait
+global function ClientCommand_mkos_IBMM_wait
 global function ClientCommand_mkos_lock1v1_setting
 global function RotateMap
 
 
-global function Message_New
-global function ServerMsgToBox
+global function Message_New //deprecated, use LocalEventMsg() ~mkos
+global function ServerMsgToBox //not used
 
 global function SetPlayerCustomModel
 global function ResetLoadedWeapons //tracker override
@@ -81,26 +86,6 @@ global function ClientCommand_SaveCurrentWeapons
 global function ClientCommand_GiveWeapon
 
 global function ValidateWeaponTgiveSettings
-
-//LGDuels //TODO: move..somewhere.. 
-const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
-const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
-const string HIT_2 = "NONE"
-const string HIT_3 = "menu_click"
-const string HIT_4 = "Weapon_R1_Satchel.ArmedBeep"
-const string HIT_5 = "ui_callerid_chime_friendly"
-const string HIT_6 = "Wpn_ArcTrap_Beep"
-const string HIT_7 = "UI_Menu_accept"
-const string HIT_8 = "UI_MapPing_Location_1P"
-const string HIT_9 = "UI_DownedAlert_Friendly"
-const string HIT_10 = "UI_MapPing_Item_1P"
-const string HIT_11 = "UI_MapPing_Undo_1P"
-const string HIT_12 = "UI_MapPing_Local_Confirm_1P"
-const string HIT_13 = "UI_MapPing_Acknowledge_1P"
-const string HIT_14 = "UI_Survival_Intro_PreLegendSelect_Countdown"
-const string HIT_15 = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P"
-const string HIT_16 = "jackhammer_pickup"
-
 
 const table<string, string> WeaponNameMap = {
     ["mp_weapon_r97"] = "R99",
@@ -228,12 +213,8 @@ struct
 // ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 
-//////////////////////////////////////////////////// 
-///////////////////  R5R.DEV:  /////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////// 
-
-struct {
-
+struct 
+{
 	//bool settings
 	bool ForceCharacter
 	bool is_halo_gamemode
@@ -332,43 +313,6 @@ int function GetCurrentRound()
     return file.currentRound;
 }
 
-void function INIT_LGDuels_Player( entity player )
-{
-	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
-	AddClientCommandCallback("hitsound", ClientCommand_mkos_LGDuel_hitsound )
-	AddClientCommandCallback("handicap", ClientCommand_mkos_LGDuel_p_damage )
-	
-	#if TRACKER && HAS_TRACKER_DLL
-		AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
-	#endif
-	
-	player.p.hitsound = HIT_0
-	CreatePanelText(player, "", "LG Duels by @CafeFPS and..", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
-	CreatePanelText(player, "mkos ", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
-}
-
-void function LgDuelLoadSettings( entity player, string data )
-{
-	if( data == "NA" || data == "" ){ return }
-	
-	array<string> values = split( data, "|" )
-	
-	if( values.len() < 8 ){ return }
-	
-	foreach( str in values )
-	{
-		if( !IsNumeric( str ) )
-		{
-			#if DEVELOPER
-				sqerror("Data for lgduel setting not numeric: " + str + ";Data:" + data )
-			#endif 
-			return
-		}
-	}
-	
-	Remote_CallFunction_NonReplay( player, "ServerCallback_SetLGDuelPesistenceSettings", values[0].tofloat(), values[1].tointeger(), values[2].tointeger(), values[3].tointeger(), values[4].tofloat(), values[5].tointeger(), values[6].tointeger(), values[7].tointeger() )
-}
-
 void function Init_IBMM( entity player )
 {
 	#if TRACKER
@@ -385,7 +329,7 @@ void function Init_IBMM( entity player )
 	
 	player.p.messagetime = 0
 	thread Thread_CheckInput( player )
-	AddClientCommandCallback("wait", ClientCommand_mkos_LGDuel_IBMM_wait )
+	AddClientCommandCallback("wait", ClientCommand_mkos_IBMM_wait )
 	AddClientCommandCallback("lock1v1", ClientCommand_mkos_lock1v1_setting )
 	AddClientCommandCallback("start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
 	AddClientCommandCallback("enable_input_banner", ClientCommand_enable_input_banner )
@@ -550,473 +494,6 @@ void function SetInput_IN_FORWARD( entity player )
 	player.p.movevalue = 6
 }
 
-//LGDuel
-void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
-{
-	
-	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
-		return
-
-	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
-	//int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
-	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) )
-	{
-		float atthealth = float( attacker.GetHealth() )
-		if ( atthealth <= attacker.GetMaxHealth() )
-		{
-			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
-		}
-
-
-		if( attacker.p.totalLGShots == 0 )
-			return
-
-		attacker.SetPlayerNetInt( "accuracy", int( ( float( attacker.p.totalLGHits ) / float( attacker.p.totalLGShots ) )*100 ) )
-		attacker.p.totalLGHits++
-	}
-}
-
-string function IntToSound(string num)
-{
-	switch (num)
-	{
-		case "0": return HIT_0
-		case "1": return HIT_1
-		case "2": return HIT_2
-		case "3": return HIT_3
-		case "4": return HIT_4
-		case "5": return HIT_5
-		case "6": return HIT_6
-		case "7": return HIT_7
-		case "8": return HIT_8
-		case "9": return HIT_9
-		case "10": return HIT_10
-		case "11": return HIT_11
-		case "12": return HIT_12
-		case "13": return HIT_13
-		case "14": return HIT_14
-		case "15": return HIT_15
-		case "16": return HIT_16
-		default: return HIT_0;
-	}
-	
-	return HIT_0
-	
-}
-	
-	
-bool function ClientCommand_mkos_LGDuel_hitsound( entity player, array<string> args )
-{
-	if (!CheckRate( player )) return false
-	
-	string param = ""
-	
-	if (args.len() > 0)
-	{
-		param = args[0];
-	}
-	
-	
-		if (args.len() < 1)
-		{
-			// Moved to lg duels drop down menu 
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Hitsounds:", " Type into console: hitsound # \n replacing # with a number below\n\n\n\n 0 = Default \n  1 = CountDown \n 2 = None \n 3 = Click \n 4 = Armed \n 5 = Chime \n 6 = Beep \n 7 = Menu \n 8 = Ping \n 9 = Downed \n 10 = Ping2 \n 11 = Ping3 \n 12 = Ping4 \n 13 = Ping5  \n 14 = Countdown2 \n 15 = Shotgun \n 16 = Pickup ", 15)
-			return true
-		}				
-					
-		if ( args.len() > 0 && !IsNumeric( param, 0, 16 ) )
-		{
-			//Message( player, "Failed", "Hitsound must be number 0-16.", 5)
-			LocalMsg( player, "#FS_FAILED", "#FS_HitsoundNumFail" )
-			return true
-		} 
-		
-		
-		try
-		{	
-			player.p.hitsound = IntToSound( param );
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-			//Message( player, "Success", "Your hitsound was set to Hitsound # " + param, 3);
-			LocalMsg( player, "#FS_SUCCESS", "#FS_HitsoundChanged", eMsgUI.DEFAULT, 3, "", param )
-			return true	
-		} 
-		catch ( hiterr )
-		{
-			//Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
-			return true
-		}
-				
-	return false
-					
-}
-
-//purpose of this client command: allow lg duelers to enable a handicap ( idk quake gods wanted it )
-bool function ClientCommand_mkos_LGDuel_p_damage( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) return false
-	
-	string param = ""
-	
-	if ( args.len() > 0 )
-	{
-		param = args[0];
-	}
-	
-		if ( args.len() < 1 || param == "" )
-		{
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n handicap:", " Type into console: handicap # \n replacing # with 'on' or 'off'.  \n\n On: Deal and recieve 2 damage per hit. \n\n Off: Deal and recieve 3 damage per hit.", 15)
-			LocalMsg( player, "#FS_HandicapTitle", "#FS_HandicapSubstr", eMsgUI.DEFAULT, 15 )
-			return true
-		}				
-		
-		switch( param.tolower() )
-		{
-		
-		case "on":
-		case "1":
-					try
-					{
-						
-						player.p.p_damage = 2;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						//Message( player, "Success", "Damage and healing was set to 2.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOnSubstr", eMsgUI.DEFAULT, 3 )
-						return true
-					
-					} 
-					catch ( handicap_err_1 )
-					{		
-						//Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_1 )
-						return true					
-					}
-		
-		case "off":
-		case "0":
-					try
-					{
-						
-						player.p.p_damage = 3;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						//Message( player, "Success", "Damage and healing was set to 3.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_HandicapOffSubstr", eMsgUI.DEFAULT, 3 )
-						return true
-					
-					} 
-					catch ( handicap_err_2 )
-					{
-						//Message(player, "Failed", "Command failed because of: \n\n " + handicap_err_2 )
-						return true
-					}
-				
-		}
-		
-	return false
-					
-}
-
-bool function ClientCommand_mkos_LGDuel_IBMM_wait( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) return true
-
-	player.p.messagetime = Time()
-	
-	string param = ""; 
-	int limit = flowstateSettings.ibmm_wait_limit
-	
-	if (args.len() > 0)
-	{
-		param = args[0]
-	}
-	
-		if  ( args.len() < 1 )
-		{		
-			string status = " "; //needs to be a char or var is treated as empty
-			if (player.p.IBMM_grace_period == 0)
-			{
-				status = " (disabled)";
-			}
-		
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Usage", "In console, type:    wait # \n replacing # with a number (seconds) between 3 - " + limit.tostring() + " or 0 for disabled. \n\n Your current wait time\n before matching with opposite input is: \n\n                             " + player.p.IBMM_grace_period + " seconds. " + status, 15)
-			LocalVarMsg( player, "#FS_WAIT_TIME_CC", eMsgUI.VAR_SUBTEXT_SLOT, 15, limit.tostring(), player.p.IBMM_grace_period, status )
-			return true
-		}				
-					
-		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
-		{
-			//Message( player, "Failed", "wait must specify a number as seconds 0 - " + limit.tostring() + ".", 5)
-			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", eMsgUI.DEFAULT, 5, "", limit.tostring() )
-			return true
-		} 
-		
-		
-		try
-		{	
-			float user_value = float(param);
-			
-			if ( user_value > 0.0 && user_value < 3.0 )
-			{
-				user_value = 3;
-			}
-			
-			player.p.IBMM_grace_period = user_value;
-			SavePlayerData( player, "wait_time", user_value )
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-			//Message( player, "Success", "Your wait to match inputs was changed to " + user_value.tostring() + " seconds", 3);
-			
-			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
-			return true
-		} 
-		catch ( hiterr )
-		{		
-			//Message(player, "Failed", "Command failed because of: \n\n " + hiterr )
-			return true			
-		}
-	
-					
-}
-
-bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> args )
-{
-	if( args.len() == 0 ){ return true }
-	
-	#if DEVELOPER 
-		sqprint( "saving:" + args[0])
-	#endif
-	
-	SavePlayerData( player, "LgDuelsSetting", args[0] )
-	return true
-}
-
-bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
-{
-	if (!CheckRate( player )) return false
-	
-	string param = ""
-	
-	if (args.len() > 0)
-	{
-		param = args[0]
-	}
-	
-		if (args.len() < 1)
-		{
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n LOCK1V1 SETTING:", " Type into console: lock1v1 # \n replacing # with 'on' or 'off'.  \n\n On: You can lock/be locked into 1v1 fights with same player. \n\n Off: You can neither lock, nor be locked into 1v1s.", 15)
-			return true
-		}				
-		
-		if ( param == "")
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{
-		
-		case "ON":
-		case "on":
-		case "1":
-		case "true":
-		case "enabled":
-		
-					try
-					{	
-						player.p.lock1v1_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "lock1v1_setting", true )
-						//Message( player, "Success", "Lock1v1 setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
-						return true
-					
-					} 
-					catch ( lock1v1_err_1 )
-					{			
-						//Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_1 )
-						return true		
-					}
-		
-		case "OFF":
-		case "off":
-		case "0":
-		case "false":
-		case "disabled":
-		
-					try
-					{
-						player.p.lock1v1_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "lock1v1_setting", false )
-						//Message( player, "Success", "Lock1v1 setting set to disabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
-						return true
-					} 
-					catch ( lock1v1_err_2 )
-					{
-						//Message(player, "Failed", "Command failed because of: \n\n " + lock1v1_err_2 )
-						return true
-					}
-				
-		}
-		
-	return false
-					
-}
-
-
-
-bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<string> args )
-{
-	if (!CheckRate( player )) return false
-	
-	string param = ""
-	
-	if (args.len() > 0)
-	{
-		param = args[0]
-	}
-		
-		if (args.len() < 1)
-		{
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n START IN REST SETTING:", " Type into console: start_in_rest # \n replacing # with 'on' or 'off'.  \n\n On: When the round/game starts or you join, you will start in rest and have to join the queue manually. \n\n Off: You will join the queue automatically.", 15)
-			LocalMsg( player, "#FS_START_IN_REST_TITLE", "#FS_START_IN_REST_SUBSTR" )
-			return true
-		}				
-		
-		if ( param == "")
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{
-		
-		case "ON":
-		case "on":
-		case "1":
-		case "true":
-		case "enabled":
-		
-					try
-					{	
-						player.p.start_in_rest_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "start_in_rest_setting", true )
-						//Message( player, "Success", "START_IN_REST setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
-						return true
-					
-					} 
-					catch ( rest_setting_err_1 )
-					{			
-						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
-						return true		
-					}
-		
-		case "OFF":
-		case "off":
-		case "0":
-		case "false":
-		case "disabled":
-		
-					try
-					{
-						player.p.start_in_rest_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "start_in_rest_setting", false )
-						//Message( player, "Success", "START_IN_REST setting set to disabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
-						return true
-					} 
-					catch ( rest_setting_err_2 )
-					{
-						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
-						return true
-					}
-				
-		}
-		
-	return false
-					
-}
-
-
-bool function ClientCommand_enable_input_banner( entity player, array<string> args )
-{
-	if (!CheckRate( player )) return false
-	
-	string param = ""
-	
-	if (args.len() > 0)
-	{
-		param = args[0]
-	}
-	
-		if (args.len() < 1)
-		{
-			//Message( player, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n INPUT BANNER", " Type into console: enable_input_banner # \n replacing # with 'on' or 'off'.  ", 15)
-			LocalMsg( player, "#FS_INPUT_BANNER_DEPRECATED", "#FS_INPUT_BANNER_SUBSTR_DEP" )
-			return true
-		}				
-		
-		if ( param == "")
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{
-		
-		case "ON":
-		case "on":
-		case "1":
-		case "true":
-		case "enabled":
-		
-					try
-					{	
-						player.p.enable_input_banner = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "enable_input_banner", true )
-						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to enabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
-						return true				
-					} 
-					catch ( rest_setting_err_1 )
-					{			
-						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_1 )
-						return true		
-					}
-		
-		case "OFF":
-		case "off":
-		case "0":
-		case "false":
-		case "disabled":
-		
-					try
-					{
-						player.p.enable_input_banner = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						SavePlayerData( player, "enable_input_banner", false )
-						//Message( player, "Success", "ENABLE_INPUT_BANNER setting set to disabled.", 3);
-						LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
-						return true
-					} 
-					catch ( rest_setting_err_2 )
-					{
-						//Message(player, "Failed", "Command failed because of: \n\n " + rest_setting_err_2 )
-						return true
-					}
-				
-		}
-		
-	return false
-					
-}
-
 void function RotateMap()
 {
 	string to_map = GetMapName()
@@ -1026,24 +503,20 @@ void function RotateMap()
 	int countmaps = maplist.len()
 	int i;
 
-	for ( i = 0; i < countmaps; i++ ) 
+	if( countmaps > 0 )
 	{
-		if ( GetMapName() == maplist[i] ) 
+		for ( i = 0; i < countmaps; i++ ) 
 		{
-			int index = (i + 1) % countmaps	
-			to_map = maplist[index]
-			break
+			if ( GetMapName() == maplist[i] ) 
+			{
+				int index = (i + 1) % countmaps	
+				to_map = maplist[index]
+				break
+			}
 		}
 	}
 	
 	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
-}
-
-LocPairData function Init_LGDuels_Spawns()
-{
-	LocPair panels = NewLocPair( < 3480.92, -9218.92, -10252 >, < 360, 270, 0 > )
-	Gamemode1v1_SetWaitingRoomRadius( 2400 )
-	return CreateLocPairObject( [], false, null, panels )
 }
 
 LocPairData function Init_DropoffPatchSpawns()
@@ -1066,17 +539,10 @@ LocPairData function Init_DropoffPatchSpawns()
 			NewLocPair( < 2551.65, 515.938, 193.337 >, < 0.894581, 215.161, 0>), //16
 			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
 		];
-			
-			
+				
 	return CreateLocPairObject( dropoff_patch, false, null, null )
 }
 
-
-//////////////////////////////////////////////////// 
-///////////////////  END R5R.DEV  /////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////// 
-
-//moved this to be initialized once instead of constantly computed...
 bool function bIs1v1Mode() 
 {
 	//TODO: we don't need to manually manage this, 
@@ -1107,8 +573,7 @@ bool function bIs1v1Mode()
 
 void function _CustomTDM_Init()
 {
-	//these must be executed first
-	InitializePlaylistSettings() 
+	InitializePlaylistSettings() //must be executed first
 	file.scriptversion = FLOWSTATE_VERSION
 	
 	RegisterSignal( "EndScriptedPropsThread" )
@@ -1177,12 +642,6 @@ void function _CustomTDM_Init()
 
     AddCallback_EntitiesDidLoad( DM__OnEntitiesDidLoad )
 	
-	#if TRACKER && HAS_TRACKER_DLL
-		if( Flowstate_IsLGDuels() )
-		{
-			AddCallback_PlayerData( "LgDuelsSetting", LgDuelLoadSettings )
-		}	
-	#endif
 
     AddCallback_OnClientConnected( void function(entity player) {
         if (FlowState_SURF())
@@ -1191,11 +650,6 @@ void function _CustomTDM_Init()
 			thread _OnPlayerConnected(player)
 
         UpdatePlayerCounts()
-		
-		if ( Flowstate_IsLGDuels() )
-		{
-			INIT_LGDuels_Player( player )
-		}
 		
 		// init for IBMM
 		if ( Flowstate_IsFS1v1() || Flowstate_IsLGDuels() && !player.p.bIsChatbot )
@@ -1264,15 +718,15 @@ void function _CustomTDM_Init()
 
 	if( is1v1EnabledAndAllowed() )
 	{
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		{
+			Flowstate_LgDuels1v1_Init()
+		}
+		
 		//custom spawn extension using the implemented abstracted callback :) ~mkos 
 		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
 		{
 			AddCallback_FlowstateSpawnsInit( Init_DropoffPatchSpawns )
-		}
-		
-		if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
-		{
-			AddCallback_FlowstateSpawnsInit( Init_LGDuels_Spawns )
 		}
 		
 		_soloModeInit( MapName() ) //enum
@@ -1338,12 +792,7 @@ void function DM__OnEntitiesDidLoad()
     {
     	case eMaps.mp_rr_canyonlands_staging:
 		
-    		if( Flowstate_IsLGDuels() )
-			{
-    			SpawnLGProps()
-				SpawnLGProps2()
-			}
-    		else
+    		if( !Flowstate_IsLGDuels() )
     			SpawnMapPropsFR()
     		break
 
@@ -2467,8 +1916,13 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 	}
 	
-	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() && !Flowstate_IsFastInstaGib() )
+	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && 
+		!Flowstate_IsFS1v1() && 
+		!Flowstate_IsLGDuels() && 
+		!Flowstate_IsFastInstaGib() )
+	{
 		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	}
 
 	//allow healing items to be used	
 	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
@@ -5698,7 +5152,7 @@ bool function IsForcedlyDisabledWeapon( string weapon )
 		case "mp_weapon_throwingknife":
 		case "mp_weapon_pdw":
 		case "mp_weapon_lstar":
-		case "mp_weapon_sniper":
+		//case "mp_weapon_sniper":
 		return true
 	}
 	
@@ -6400,6 +5854,286 @@ bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 	return true
 }
 
+bool function ClientCommand_mkos_IBMM_wait( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return true
+
+	player.p.messagetime = Time()
+	
+	string param = ""; 
+	int limit = flowstateSettings.ibmm_wait_limit
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if  ( args.len() < 1 )
+		{		
+			string status = " "; //needs to be a char or var is treated as empty
+			if (player.p.IBMM_grace_period == 0)
+			{
+				status = " (disabled)";
+			}
+			
+			LocalVarMsg( player, "#FS_WAIT_TIME_CC", eMsgUI.VAR_SUBTEXT_SLOT, 15, limit.tostring(), player.p.IBMM_grace_period, status )
+			return true
+		}				
+					
+		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
+		{
+			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", eMsgUI.DEFAULT, 5, "", limit.tostring() )
+			return true
+		} 		
+		
+		try
+		{	
+			float user_value = float(param)
+			
+			if ( user_value > 0.0 && user_value < 3.0 )
+			{
+				user_value = 3;
+			}
+			
+			player.p.IBMM_grace_period = user_value;
+			SavePlayerData( player, "wait_time", user_value )
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			
+			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
+			return true
+		}
+		catch ( hiterr )
+		{
+			return true			
+		}
+	
+					
+}
+
+bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if ( args.len() < 1 )
+		{
+			return true
+		}				
+		
+		if ( param == "" )
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.lock1v1_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						SavePlayerData( player, "lock1v1_setting", true )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
+						return true
+					
+					} 
+					catch ( lock1v1_err_1 )
+					{
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.lock1v1_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						SavePlayerData( player, "lock1v1_setting", false )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
+						return true
+					} 
+					catch ( lock1v1_err_2 )
+					{
+						return true
+					}
+				
+		}
+		
+	return false
+					
+}
+
+bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+		
+		if ( args.len() < 1 )
+		{
+			LocalMsg( player, "#FS_START_IN_REST_TITLE", "#FS_START_IN_REST_SUBSTR" )
+			return true
+		}				
+		
+		if ( param == "" )
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.start_in_rest_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						
+						SavePlayerData( player, "start_in_rest_setting", true )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
+						
+						return true	
+					} 
+					catch ( rest_setting_err_1 )
+					{			
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.start_in_rest_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						
+						SavePlayerData( player, "start_in_rest_setting", false )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
+						
+						return true
+					} 
+					catch ( rest_setting_err_2 )
+					{
+						return true
+					}
+				
+		}
+		
+	return false					
+}
+
+bool function ClientCommand_enable_input_banner( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if ( args.len() < 1 )
+		{
+			LocalMsg( player, "#FS_INPUT_BANNER_DEPRECATED", "#FS_INPUT_BANNER_SUBSTR_DEP" )
+			return true
+		}				
+		
+		if ( param == "")
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{	
+			case "ON":
+			case "on":
+			case "1":
+			case "true":
+			case "enabled":
+			
+						try
+						{	
+							player.p.enable_input_banner = true;
+							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							
+							SavePlayerData( player, "enable_input_banner", true )
+							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
+							
+							return true				
+						} 
+						catch ( rest_setting_err_1 )
+						{			
+							return true		
+						}
+			
+			case "OFF":
+			case "off":
+			case "0":
+			case "false":
+			case "disabled":
+			
+						try
+						{
+							player.p.enable_input_banner = false;
+							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							
+							SavePlayerData( player, "enable_input_banner", false )
+							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
+							
+							return true
+						} 
+						catch ( rest_setting_err_2 )
+						{
+							return true
+						}
+					
+			}
+		
+	return false
+					
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
 void function GivePlayerRandomCharacter(entity player)
 {
 	if ( !IsValid( player ) ) 
@@ -6429,7 +6163,6 @@ void function highlightKdMoreThan2(entity player)
 		Highlight_ClearEnemyHighlight( player )
 	}
 }
-
 
 //Hackers vs pros
 

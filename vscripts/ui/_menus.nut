@@ -1802,6 +1802,8 @@ void function InitMenus()
 	AddMenu( "StatsSeasonSelectPopUp", $"resource/ui/menus/dialog_player_stats_season_select.menu", InitSeasonSelectPopUp )
 
 	AddMenu( "DevMenu", $"resource/ui/menus/dev.menu", InitDevMenu, "Dev" )
+	
+	AddMenu( "SERVER_MOTD", $"platform/scripts/resource/ui/menus/dialogs/server_motd.menu", Init_Server_MOTD, "Server MOTD" )
 
 	InitTabs()
 	InitSurveys()

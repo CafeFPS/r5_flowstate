@@ -277,24 +277,30 @@ var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAtta
 		return
 
 	weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, weapon.GetWeaponDamageFlags() )
-	entity player = weapon.GetWeaponOwner()
 
 	
 	#if SERVER
-	if( Flowstate_IsLGDuels() )
-	{
-		if( player.p.totalLGShots > 0 )
-		{
-			int acurracy = int( ( float( player.p.totalLGHits ) / float( player.p.totalLGShots ) )*100 )
-			player.SetPlayerNetInt( "accuracy", acurracy )
-		}
-		
-		player.p.totalLGShots++
-	}
 	
-	//The following code is only for the aim trainer stats
+	//this is handled with lgmode ondamaged callback.
+	
+	// if( Flowstate_IsLGDuels() )
+	// {
+		// if( player.p.totalLGShots > 0 )
+		// {
+			// int acurracy = int( ( float( player.p.totalLGHits ) / float( player.p.totalLGShots ) )*100 )
+			// player.SetPlayerNetInt( "accuracy", acurracy )
+		// }
+		
+		// player.p.totalLGShots++
+	// }
+	
+	//The following code is only for the aim trainer stats 
+	
+	//This should be moved to aimtrainer ondamaged callback
 	if( Gamemode() != eGamemodes.fs_aimtrainer ) 
 		return
+
+	entity player = weapon.GetWeaponOwner()
 
 	if(!player.p.isChallengeActivated) 
 		return

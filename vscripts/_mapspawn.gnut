@@ -569,19 +569,21 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	#endif
 
 	string commandString = args.remove( 0 )
-
+	bool bFound = false
 	//TODO: Track down Why VModEnable is being called from code?
 
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
 		#if DEVELOPER 
-			printt( "CodeCallback_ClientCommand", commandString )
-		#endif 
+			printt( "CodeCallback_ClientCommandNew", commandString )
+		#endif
 		
 		foreach ( callbackFunc in svGlobal.clientCommandCallbacksNew[ commandString ] )
 		{
 			callbackFunc( player, args )
 		}
+		
+		bFound = true
 	}
 	
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
@@ -590,13 +592,15 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	{
 		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
 	}
-	else
+	else if( !bFound )
 	{
 		#if DEVELOPER
 			printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
 		#endif
 		return false
 	}
+	
+	return true
 }
 
 entity ornull function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, float idk = -1)
