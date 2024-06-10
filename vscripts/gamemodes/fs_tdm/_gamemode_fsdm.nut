@@ -4151,6 +4151,8 @@ void function SimpleChampionUI()
 	// }
 
 	file.currentRound++	
+	
+	SetGameState( eGameState.Playing )
 }
 
 entity function GetMainRingBoundary()

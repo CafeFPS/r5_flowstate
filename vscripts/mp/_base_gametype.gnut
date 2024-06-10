@@ -560,7 +560,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	}
 }
 
-function PlayerDamageFeedback( entity ent, damageInfo, int num )
+function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 )
 {
 	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
 		return
@@ -573,16 +573,19 @@ function PlayerDamageFeedback( entity ent, damageInfo, int num )
 
 	if ( IsMaxRangeShot( damageInfo ) )
 		customDamageType = customDamageType | DF_MAX_RANGE
-
-	if( g_bIsPermanentDmg )
+	
+	float damage
+	
+	if( permanentDmg > 0.0 )
 	{
-		attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, sPermanentDmg, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-		g_bIsPermanentDmg = false
+		damage = permanentDmg
 	}
-	else
+	else 
 	{
-		attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+		damage = DamageInfo_GetDamage( damageInfo )
 	}
+	
+	attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 }
 
 void function UpdateLastDamageTime( entity ent )

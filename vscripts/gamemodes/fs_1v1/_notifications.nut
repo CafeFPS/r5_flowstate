@@ -1,5 +1,7 @@
 untyped
-globalize_all_functions
+
+global function Gamemode1v1_NotifyThread
+global function NotifyPlayer
 
 global enum eNotify
 {

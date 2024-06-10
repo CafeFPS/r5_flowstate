@@ -5,8 +5,6 @@ global function HealthRegen_Init
 global function PilotShieldHealthUpdate
 global function PilotShieldModifyDamage
 
-global bool g_bIsPermanentDmg = false
-global float sPermanentDmg = 0.0
 struct
 {
 	float healthRegenRate
@@ -191,14 +189,12 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 		if(IsValid(player))
 			maxHealth = float(player.GetHealth())
 		
-		g_bIsPermanentDmg = true //todo: REMOVE
-		DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )
-        sPermanentDmg = damage
-		
+		DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
 		DamageInfo_SetDamage( damageInfo, permanentDamage )	
 		
 		if( IsValid( attacker ) )
 		{
+			PlayerDamageFeedback( player, damageInfo, shieldHealth )
 			attacker.p.playerDamageDealt += shieldHealth
 			attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldHealth )
 		}

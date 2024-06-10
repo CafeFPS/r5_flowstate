@@ -1751,7 +1751,7 @@ bool function acceptChallenge( entity player, entity challenger )
 	
 	if ( isChalValid( chalStruct ) && challenger.p.handle in chalStruct.challengers )
 	{
-		file.acceptedChallenges[player.p.handle] <- challenger 
+		file.acceptedChallenges[ player.p.handle ] <- challenger
 		removeChallenger( player, challenger.p.handle ) //removes from incoming list	
 		SetUpChallengeNotifications( player, challenger )
 	}
@@ -1852,7 +1852,7 @@ bool function acceptRecentChallenge( entity player )
 		printt( "accepting player:", player, "challenger accepted:", recentChallenger )
 	#endif
 	
-	file.acceptedChallenges[ player.p.handle ] <- recentChallenger 
+	file.acceptedChallenges[ player.p.handle ] <- recentChallenger
 	removeChallenger( player, recentChallenger.p.handle )
 	SetUpChallengeNotifications( player, recentChallenger )
 	
