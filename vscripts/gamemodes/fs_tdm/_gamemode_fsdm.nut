@@ -3884,8 +3884,9 @@ void function SimpleChampionUI()
 		{
 			FlagEnd("START_LOG")
 		}
+		
 		//cycle map /mkos
-		string to_map = GetMapName();
+		string to_map = GetMapName()
 
 		if ( Flowstate_IsLGDuels() ) 
 		{
@@ -3911,6 +3912,7 @@ void function SimpleChampionUI()
 			}
 		}
 
+		SetGameState( eGameState.Postmatch )
 		PIN_Callback_CheckReload()
 		wait 1.2
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
@@ -3998,6 +4000,7 @@ void function SimpleChampionUI()
 		FS_DM.scoreboardShowing = false
 	}
 	
+	SetGameState( eGameState.Postmatch )
 	PIN_Callback_CheckReload()
 
 	if( VOTING_PHASE_ENABLE )

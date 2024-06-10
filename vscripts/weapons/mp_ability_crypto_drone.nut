@@ -9,6 +9,8 @@
 // Fix hacked map banners randomly showing?
 // Fix hacked map pings and enemies count
 
+// Last update: 6/10/24 ~mkos
+
 global function MpAbilityCryptoDrone_Init
 global function OnWeaponTossReleaseAnimEvent_ability_crypto_drone
 global function OnWeaponAttemptOffhandSwitch_ability_crypto_drone
@@ -354,9 +356,7 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 		#if SERVER
 			if ( weapon.HasMod( "crypto_drone_access" ) )
 			{
-				#if SERVER
-					GetPlayerInCamera( player )
-				#endif
+				GetPlayerInCamera( player )
 			}
 		#endif
 		
@@ -553,28 +553,31 @@ void function AttemptDroneRecall( entity player )
 }
 #endif
 
+#if SERVER
 void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 {		
 	if( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOM_FATALITY )
 		damagedEnt.Signal( "ExitCameraView" )
 
-	//if()  settingsblock data for ignore exit [return]
+		if( damagedEnt.GetPlayerNetInt( "player_setting_damage_closes_menu" ) == 0 )
+			return
 
-	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	if ( damageSourceId == eDamageSourceId.deathField )
-		return
+		int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		if ( damageSourceId == eDamageSourceId.deathField )
+			return
 
-	int playerTeam = damagedEnt.GetTeam()
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	if ( IsValid( attacker ) && attacker.GetTeam() == playerTeam )
-		return
+		int playerTeam = damagedEnt.GetTeam()
+		entity attacker = DamageInfo_GetAttacker( damageInfo )
+		if ( IsValid( attacker ) && attacker.GetTeam() == playerTeam )
+			return
 
-	entity inflictor = DamageInfo_GetInflictor( damageInfo )
-	if ( IsValid( inflictor ) && inflictor.GetTeam() == playerTeam )
-		return
+		entity inflictor = DamageInfo_GetInflictor( damageInfo )
+		if ( IsValid( inflictor ) && inflictor.GetTeam() == playerTeam )
+			return
 		
-	damagedEnt.Signal( "ExitCameraView" )
+		damagedEnt.Signal( "ExitCameraView" )
 }
+#endif
 
 #if SERVER
 entity function CreateCryptoVehicle( entity weapon, entity player )

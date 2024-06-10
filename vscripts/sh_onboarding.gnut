@@ -85,6 +85,7 @@ global function Flowstate_ApplyModifiedMovementToPlayer
 void function SV_CL_Onboarding_Init()
 {
 #if SERVER
+	SetAutoReloadState( false ) //let native know
 	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 	FlagInit( "MinPlayersReached", false )
 
@@ -100,6 +101,8 @@ void function SV_CL_Onboarding_Init()
 
 	if ( OnboardingEnabled() )
 		thread Sequence_WaitingForPlayers()
+		
+	AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload
 #endif
 }
 

@@ -1591,10 +1591,30 @@ struct {
 				
 			case "killme":
 			
+			#if DEVELOPER
 				if( IsAlive( player ) )
 				{
 					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 				}
+			#endif 	
+				return true
+						
+			case "dmg":
+			
+			#if DEVELOPER
+				entity p = GetPlayer( param )
+				
+				if( IsValid( p ) )
+				{
+					if( IsNumeric( param2 ) )
+					{
+						int dmg = param2.tointeger()
+						entity worldspawn = GetEnt( "worldspawn" )
+						p.TakeDamage( dmg, worldspawn, worldspawn, {} )
+					}
+				}
+			#endif 
+			
 				return true
 				
 			case "gamerules":

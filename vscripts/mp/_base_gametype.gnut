@@ -574,10 +574,10 @@ function PlayerDamageFeedback( entity ent, damageInfo, int num )
 	if ( IsMaxRangeShot( damageInfo ) )
 		customDamageType = customDamageType | DF_MAX_RANGE
 
-	if( isPermanentDmg )
+	if( g_bIsPermanentDmg )
 	{
 		attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, sPermanentDmg, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-		isPermanentDmg = false
+		g_bIsPermanentDmg = false
 	}
 	else
 	{

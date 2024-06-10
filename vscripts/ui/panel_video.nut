@@ -160,7 +160,10 @@ bool function OnVideoMenu_CanNavigateAway( var panel, int desiredTabIndex )
 
 bool function AreVideoSettingsChanged()
 {
-	printt( "uiGlobal.videoSettingsChanged:", uiGlobal.videoSettingsChanged )
+	#if DEVELOPER 
+		printt( "uiGlobal.videoSettingsChanged:", uiGlobal.videoSettingsChanged )
+	#endif
+		
 	return uiGlobal.videoSettingsChanged
 }
 
@@ -252,7 +255,10 @@ void function RestoreVideoDefaults()
 
 void function ApplyVideoSettingsButton_Activate( var button )
 {
-	print( "Video Settings Changed\n" )
+	#if DEVELOPER
+		print( "Video Settings Changed\n" )
+	#endif
+		
 	VideoOptions_Apply( file.videoPanel )
 	
 	uiGlobal.videoSettingsChanged = false

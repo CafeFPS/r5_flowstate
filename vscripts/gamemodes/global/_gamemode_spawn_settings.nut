@@ -557,7 +557,7 @@ void function SetCustomPlaylist( string playlistref )
 	}
 	else 
 	{
-		Warning("Specified custom playlist in spawn pak, but playlist \"" + playlistref + "\" doesn't exist.")
+		Warning("Tried to specify custom playlist for spawn pak, but playlist \"" + playlistref + "\" doesn't exist.")
 	}	
 }
 
@@ -1137,7 +1137,7 @@ void function DEV_SetTeamSize( int size )
 	
 	if( bReload )
 	{
-		DEV_PrintSpawns()
+		DEV_PrintSpawns( true )
 	}
 }
 

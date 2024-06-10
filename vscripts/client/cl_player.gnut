@@ -54,6 +54,8 @@ global function FS_Toggle_Mute
 global function FS_Silence
 global function FS_RegisterAdmin
 
+global function DamageClosesMenu
+
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
 #endif
@@ -67,6 +69,7 @@ struct {
 
 	float lastBloodDecalTime = 0
 	bool log_damage_to_obituary
+	int player_setting_damage_closes_deathbox_menu = -1
 
 } file
 
@@ -129,8 +132,26 @@ void function ClPlayer_Init()
 	AddLocalPlayerFunc( Player_AddPlayer )
 	
 	file.log_damage_to_obituary = GetCurrentPlaylistVarBool( "log_damage_to_obituary", false )
+
+	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
+	
+	OnSettingsUpdated()
 }
 
+void function OnSettingsUpdated()
+{
+	int iCheckPlayerDamageCloseSetting = GetConVarInt( "player_setting_damage_closes_deathbox_menu" )
+	
+	if( iCheckPlayerDamageCloseSetting != file.player_setting_damage_closes_deathbox_menu  )
+	{
+		file.player_setting_damage_closes_deathbox_menu = iCheckPlayerDamageCloseSetting
+	}
+}
+
+bool function DamageClosesMenu()
+{
+	return file.player_setting_damage_closes_deathbox_menu != 0 ? true : false
+}
 
 entity function FindEnemyRodeoParent( entity player )
 {

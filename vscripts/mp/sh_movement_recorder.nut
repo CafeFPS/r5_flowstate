@@ -80,6 +80,7 @@ void function Sh_FS_MovementRecorder_Init()
 		
 		RegisterSignal( "EndDummyThread" )
 		RegisterSignal( "FinishedRecording" )
+		RegisterSignal( "PlayRandomAnimation" )
 		
 		foreach( k,v in file._playbackAmounts__Template )
 		{
@@ -150,6 +151,7 @@ string function slotname( int slot )
 		case 5: return "[F7]";
 		default: return "";
 	}
+	
 	unreachable
 }
 
@@ -419,13 +421,15 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 	{
 		if( !bDoesAnyAnimationExist( player ) )
 		{
-			LocalEventMsg( player, "#FS_NO_ANIMS", "", 3 )
+			if( !player.p.recorderHideHud )
+				LocalEventMsg( player, "#FS_NO_ANIMS", "", 3 )
+				
 			return true
 		}
 		
-		
-		
-		thread PlayRandomAnimation( player )
+		if( !IsOverBudget( player ) )	
+			thread PlayRandomAnimation( player )
+			
 		return true
 	}
 
@@ -478,14 +482,13 @@ bool function ClientCommand_PlayAnimInSlot( entity player, array<string> args )
 	
 	bool remove = player.IsInputCommandHeld( IN_DUCK )
 	
-	if( !remove && file.playbackLimit > -1 && file.playerPlaybackAmounts[ player.p.handle ][ slot ] >= file.playbackLimit )
+	if( !remove && !HasSlotAllocation( player, slot ) )
 	{
-		LocalEventMsg( player, "#FS_PLAYBACK_LIMIT" )
-		return false
+		return true
 	}
 
 	thread PlayAnimInSlot( player, slot, remove )
-	return true
+		return true
 }
 
 bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
@@ -507,6 +510,7 @@ bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
 	{
 		removeAll = true
 	}
+	
 
 	for(int i = 0; i < MAX_SLOT ; i++ )
 		thread PlayAnimInSlot( player, 	i, remove, removeAll )
@@ -743,11 +747,26 @@ void function PlayRandomAnimation( entity player )
 	if( !IsValid( player ) )
 		return 
 	
-	EndSignal( player, "OnDisconnected", "OnDestroy" )
+	ClientCommand_DestroyDummys( player, [] )
+	player.Signal( "PlayRandomAnimation" )	
+	EndSignal( player, "OnDisconnected", "OnDestroy", "PlayRandomAnimation" )
 	
+	int slot;
 	int playerHandle = player.p.handle
 	
-	LocalMsg( player, "#FS_PLAYING_RANDOM", "#FS_PLAYING_RANDOM_DESC" )
+	if( !player.p.recorderHideHud )
+		LocalMsg( player, "#FS_PLAYING_RANDOM", "#FS_PLAYING_RANDOM_DESC" )
+	
+	OnThreadEnd
+	(
+		void function() : ( player, slot )
+		{
+			if( IsValid( player ) )
+			{
+				DestroyDummyForSlot( player, slot )
+			}
+		}
+	)
 	
 	while( true )
 	{
@@ -765,20 +784,25 @@ void function PlayRandomAnimation( entity player )
 		for( int i = 0; i < file._dummyMaps__Template.len(); i++ )
 		{
 			if( player.p.recordingAnims[i] != null )
-			randomSlots.append( i )
+				randomSlots.append( i )
 		}
 		
 		if( randomSlots.len() <= 0 )
 		{
-			LocalEventMsg( player, "#FS_NO_ANIMS" )
+			if( !player.p.recorderHideHud )
+				LocalEventMsg( player, "#FS_NO_ANIMS" )
+			
 			return
 		}
 			
-		int slot = randomSlots.getrandom()
+		slot = randomSlots.getrandom()
 		var anim = player.p.recordingAnims[slot]
 		
 		if( anim == null )
 			continue
+			
+		if( !HasSlotAllocation( player, slot, true ) )
+			continue 
 			
 		PlayAnimInSlot( player, slot, false, false, true )
 		
@@ -793,7 +817,7 @@ void function PlayRandomAnimation( entity player )
 
 void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool removeAll = false, bool bIsPlayingRandomSlot = false )
 {
-	if( !remove && file.playbackLimit > -1 && file.playerPlaybackAmounts[ player.p.handle ][ slot ] >= file.playbackLimit )
+	if( !remove && !HasSlotAllocation( player, slot ) )
 	{
 		return
 	}
@@ -836,7 +860,8 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 	}
 	else if( !remove )
 	{
-		LocalEventMsg( player, "#FS_PLAYING_ANIM", slotname( slot + 1 ), 3 )
+		if( !player.p.recorderHideHud )
+			LocalEventMsg( player, "#FS_PLAYING_ANIM", slotname( slot + 1 ), 3 )
 	}
 	else if ( remove )
 	{
@@ -870,21 +895,19 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 		break
 	}
 	
-	if( !remove )
-	{
-		file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
-	}
 
 	while( true )
 	{
 		entity dummy = CreateDummy( 99, initialpos, initialang )
+		file.playerPlaybackAmounts[ player.p.handle ][ slot ]++
 		
 			EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
 			EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 
 			OnThreadEnd( function() : ( player, dummy, slot )
 			{
-				RemoveDummyForPlayer( player, dummy, slot )			
+				if( IsValid( dummy ) )
+					RemoveDummyForPlayer( player, dummy, slot )			
 			})
 		
 		vector pos = dummy.GetOrigin()
@@ -921,20 +944,17 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 			})
 			
 			wait GetRecordedAnimationDuration( anim ) //this can be long
-			
-			RemoveDummyForPlayer( player, dummy, slot )
 		}()
 
 		if( IsValid( player ) && !player.p.continueLoop || bIsPlayingRandomSlot )
 		{	
-			file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
 			break
 		}
 	}
 }
 
 void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
-{
+{	
 	if( !IsValid( dummy ) ) 
 		return
 			
@@ -948,7 +968,7 @@ void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 
 void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -1 )
 {
-	if( IsValid(player ) )
+	if( IsValid( player ) )
 	{
 		player.Signal( "EndDummyThread_Slot_" + string( slot ) )
 		playerHandle = player.p.handle
@@ -976,6 +996,10 @@ void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -
 				CheckDummyDestroyed( slotDummy )
 			#endif
 		}
+	}
+	else 
+	{
+		return
 	}
 	
 	file.playerDummyMaps[ playerHandle ][ slot ].resize(0)
@@ -1060,7 +1084,8 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 
 void function ClientCommand_DestroyDummys( entity player, array<string> args )
 {
-	if( !IsValid( player ) ){ return }
+	if( !IsValid( player ) )
+		return
 	
 	string param = ""
 	int playerHandle = player.p.handle
@@ -1074,13 +1099,14 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 	{
 		case "":
 			
-			if( !(player.p.handle in file.playerDummyMaps ) )
+			if( !( player.p.handle in file.playerDummyMaps ) )
 				return
 			
-			foreach ( slot, dummies in file.playerDummyMaps[playerHandle])
+			foreach ( slot, dummies in file.playerDummyMaps[ playerHandle ] )
 				DestroyDummyForSlot( player, slot )
 			
-			LocalEventMsg( player, "#FS_RECORDER_ENDALL" )
+			if( !player.p.recorderHideHud )
+				LocalEventMsg( player, "#FS_RECORDER_ENDALL" )
 			
 			break
 		
@@ -1116,8 +1142,9 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 			{
 				if( !IsValid( sPlayer ) )
 					continue 
-					
-				LocalEventMsg( sPlayer, "#FS_ADMIN_RECORDER_ENDALL" )
+				
+				if( !player.p.recorderHideHud )
+					LocalEventMsg( sPlayer, "#FS_ADMIN_RECORDER_ENDALL" )
 			}
 			
 			break
@@ -1135,13 +1162,27 @@ bool function IsOverBudget( entity player, int amountToPlay = 1 )
 	{
 		if( IsValid( player ) )
 		{
-			LocalEventMsg( player, "#FS_OVER_BUDGET" )
+			if( !player.p.recorderHideHud )
+				LocalEventMsg( player, "#FS_OVER_BUDGET" )
 		}
 		
 		return true
 	}
 	
 	unreachable
+}
+
+bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
+{
+	if ( file.playbackLimit > -1 && file.playerPlaybackAmounts[ player.p.handle ][ slot ] >= file.playbackLimit )
+	{
+		if( !hidehud && !player.p.recorderHideHud )
+			LocalEventMsg( player, "#FS_PLAYBACK_LIMIT" )
+			
+		return false
+	}
+	
+	return true
 }
 
 //////////////////////
