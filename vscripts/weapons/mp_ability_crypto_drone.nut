@@ -559,8 +559,8 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	if( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOM_FATALITY )
 		damagedEnt.Signal( "ExitCameraView" )
 
-		if( damagedEnt.GetPlayerNetInt( "player_setting_damage_closes_menu" ) == 0 )
-			return
+		//	reimplement this behavior for player settings
+		//	return
 
 		int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 		if ( damageSourceId == eDamageSourceId.deathField )
