@@ -596,7 +596,7 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 #if SERVER
 void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
 {	
-	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGamestate.Playing )
+	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGameState.Playing )
 		return
 		
 	player.Signal( "ExitCameraView" )
