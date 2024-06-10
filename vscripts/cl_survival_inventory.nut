@@ -615,7 +615,7 @@ void function SurvivalMenu_Internal( entity player, string uiScript, entity deat
 	file.currentGroundListData.deathBox = deathBox
 	file.currentGroundListData.behavior = groundListBehavior
 
-	RunUIScript( uiScript, player.IsTitan() )
+	RunUIScript( uiScript, false ) // player.IsTitan()
 
 	if ( IsValid( deathBox ) )
 	{
@@ -647,12 +647,18 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 {
 	player.EndSignal( "OnDeath" )
 	deathBox.EndSignal( "OnDestroy" )
+	
+	if( DamageClosesMenu() )
+	{
+		player.EndSignal( "OnDamaged" )
+	}
 
-	OnThreadEnd(
+	OnThreadEnd
+	(
 		function() : (player)
 		{
 			if( Gamemode() == eGamemodes.fs_aimtrainer )
-				Signal(player, "StopArmorSwapStopwatch")
+				Signal( player, "StopArmorSwapStopwatch" )
 			
 			if ( Survival_IsGroundlistOpen() )
 			{

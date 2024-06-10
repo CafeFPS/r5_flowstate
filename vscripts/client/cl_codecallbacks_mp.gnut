@@ -90,7 +90,7 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	int maxShieldHealth = ent.GetShieldHealthMax()
 
 	// don't play on local pilot
-	if ( GetLocalViewPlayer() != ent || ent.IsTitan() )
+	if ( GetLocalViewPlayer() != ent )
 	{
 		if ( shieldHealth == 0 && ent.lastShieldHealth && maxShieldHealth > 0 )
 		{
@@ -103,6 +103,9 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	}
 
 	ent.Signal( "ShieldChanged" )
+	
+	if( ent.lastShieldHealth > shieldHealth )
+		ent.Signal( "OnDamaged" )
 
 	ent.lastShieldHealth = ent.GetShieldHealth()
 }

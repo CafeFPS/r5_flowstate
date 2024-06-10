@@ -1280,6 +1280,9 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 
 	if ( !IsValid( ent ) )
 		return
+		
+	if( newHealth < oldHealth )
+		ent.Signal( "OnDamaged" )
 
 	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
 	Chroma_HealthChanged()
