@@ -34,6 +34,7 @@ global function CreateCryptoAnimatedTacticalRui
 global function DestroyCryptoAnimatedTacticalRui
 global function GetCryptoAnimatedTacticalRui
 global function CryptoDrone_OnPlayerTeamChanged
+global function ServerCallback_ShouldExitDrone
 #endif
 
 const asset CAMERA_MODEL = $"mdl/props/crypto_drone/crypto_drone.rmdl"
@@ -137,6 +138,7 @@ void function MpAbilityCryptoDrone_Init()
 
 	#if SERVER
 		AddClientCommandCallback( "AttemptDroneRecall", Flowstate_ClientCommand_AttemptDroneRecall )
+		AddClientCommandCallbackNew( "ShouldExitDrone", ClientCommand_ShouldExitDrone )
 	#else
 		RegisterSignal( "StopUpdatingCameraRui" )
 		RegisterSignal( "CameraViewEnd" )
@@ -170,7 +172,7 @@ void function MpAbilityCryptoDrone_Init()
 	RegisterSignal( "Crypto_StopSendPointThink" )
 	file.droneHealth = GetCurrentPlaylistVarInt( "crypto_drone_health", CRYPTO_DRONE_HEALTH_PROJECTILE )
 	
-	RegisterSignal( "ExitCameraView" )
+	RegisterSignal( "ExitCameraView" )	
 }
 
 
@@ -559,9 +561,6 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	if( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOM_FATALITY )
 		damagedEnt.Signal( "ExitCameraView" )
 
-		//	reimplement this behavior for player settings
-		//	return
-
 		int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 		if ( damageSourceId == eDamageSourceId.deathField )
 			return
@@ -575,11 +574,34 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 		if ( IsValid( inflictor ) && inflictor.GetTeam() == playerTeam )
 			return
 		
-		damagedEnt.Signal( "ExitCameraView" )
+		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
 }
 #endif
 
+#if CLIENT 	
+	void function ServerCallback_ShouldExitDrone()
+	{
+		entity player = GetLocalClientPlayer()
+		
+		if( IsValid( player ) )
+		{
+			if( DamageClosesMenu() )
+			{
+				player.ClientCommand("ShouldExitDrone")
+			}
+		}
+	}	
+#endif 
+
 #if SERVER
+void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
+{	
+	if( !CheckRate( player, true, 0.05 ) || !IsValid( player ) )
+		return
+		
+	player.Signal( "ExitCameraView" )
+}
+
 entity function CreateCryptoVehicle( entity weapon, entity player )
 {
 	entity vehicle = CreateEntity( "player_vehicle" )
@@ -1276,10 +1298,13 @@ void function Camera_OnBeginRecall( entity player, int statusEffect, bool actual
 {
 	foreach ( void functionref() cb in file.onRecallDroneCallbacks )
 		cb()
+		
+	printt("balls ON?")
 }
 
 void function Camera_OnEndRecall( entity player, int statusEffect, bool actuallyChanged )
 {
+	printt("balls?  OFF")
 }
 
 void function TempUpdateRuiDistance( entity player )

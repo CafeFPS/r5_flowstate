@@ -805,6 +805,8 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "SeasonGamesplayed", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
 	//todo add wins
 	
+	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
+	
 	if ( IsLobby())
 	{
 		//Register networked variables for the lobby

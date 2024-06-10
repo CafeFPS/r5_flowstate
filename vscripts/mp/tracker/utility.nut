@@ -2352,14 +2352,16 @@ void function printarray( array<string> args )
 }
 
 
-bool function CheckRate( entity player )
+bool function CheckRate( entity player, bool notify = NOTIFY_RATELIMIT_FAILED, float rate = COMMAND_RATE_LIMIT )
 {	
 	if ( !IsValid( player ) ) 
 		return false 
 			
-	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
+	if ( Time() - player.p.ratelimit <= rate )
 	{
-		LocalEventMsg( player, "#FS_CMD", "", 2 )
+		if( notify )
+			LocalEventMsg( player, "#FS_CMD", "", 2 )
+			
 		return false
 	}
 	

@@ -11,6 +11,7 @@ global const bool TRACKER 				= false
 global const bool HAS_TRACKER_DLL 		= false
 global const vector NULL_VEC 			= <0,0,0>
 global const MULTIPLAYER_DEBUG_PRINTS 	= false
+global const NOTIFY_RATELIMIT_FAILED	= false
 
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
