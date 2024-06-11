@@ -1702,11 +1702,22 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
 			thread FS_Scenarios_SpawnBigDoorsForGroup( newGroup )
 
+			//Play fx on players screen
+			if( !settings.fs_scenarios_characterselect_enabled )
+				foreach ( entity player in players )
+				{
+					if( !IsValid( player ) )
+						return
+
+					Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					Flowstate_AssignUniqueCharacterForPlayer( player, true )
+				}
+
 			if( settings.fs_scenarios_ground_loot )
 			{
 				thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
 				thread FS_Scenarios_SpawnLootForGroup( newGroup )
-			} 
+			}
 			#if DEVELOPER
 				else
 				{
