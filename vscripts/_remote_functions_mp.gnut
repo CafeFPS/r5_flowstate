@@ -806,6 +806,7 @@ void function RemoteFunctions_Init_Begin()
 	//todo add wins
 	
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
+	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
 	
 	if ( IsLobby())
 	{

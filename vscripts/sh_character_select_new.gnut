@@ -54,6 +54,8 @@ global function AddCallback_OnCharacterSelectMenuClosed
 global function AddCallback_CharacterSelectMenu_OnCharacterFocused
 global function AddCallback_CharacterSelectMenu_OnCharacterLocked
 
+global function CharacterSelect_SetMenuState
+
 const string CAMERA_ENT_NAME = "target_char_sel_camera_new"
 const string CHARACTER_ENT_NAME = "target_char_sel_pilot_new"
 const string BACKGROUND_ENT_NAME = "target_char_sel_bg_new"
@@ -93,6 +95,8 @@ global function CharacterSelectNewMenu_Init
 #endif
 
 #if UI
+global function Gamemode1v1_CloseLegendMenu
+
 struct FileForeverStruct
 {
 	var menu
@@ -463,7 +467,9 @@ void function DoSquadCardsPresentation()
 	foreach( func in file.Callbacks_OnCharacterMenuClosed )
 		func()
 
-	printt( "CHARACTER SELECT: DoSquadCardsPresentation" )
+	#if DEVELOPER
+		printt( "CHARACTER SELECT: DoSquadCardsPresentation" )
+	#endif
 
 	if ( !IsValid( fileLevel.camera ) )
 		return
@@ -552,7 +558,9 @@ void function DoAnimatedSquadCardsPresentation()
 	foreach( func in file.Callbacks_OnCharacterMenuClosed )
 		func()
 
-	printt( "CHARACTER SELECT: DoAnimatedSquadCardsPresentation" )
+	#if DEVELOPER
+		printt( "CHARACTER SELECT: DoAnimatedSquadCardsPresentation" )
+	#endif
 
 	if ( !IsValid( fileLevel.camera ) )
 		return
@@ -1228,6 +1236,11 @@ void function UpdateMenuButtons()
 #endif //CLIENT
 
 #if UI
+void function Gamemode1v1_CloseLegendMenu()
+{
+	UI_OnCharacterSelectMenu_NavBack()
+}
+
 void function UI_OnCharacterSelectMenu_NavBack()
 {
 	// Don't close the menu during loadout selection
@@ -1235,11 +1248,13 @@ void function UI_OnCharacterSelectMenu_NavBack()
 	{
 		CloseAllMenus()
 		RunClientScript("CloseCharacterSelectNewMenu_AimTrainer" )
+		
 		if( ISAIMTRAINER )
 		{
 			RunClientScript("ServerCallback_OpenFRChallengesSettings")
 			RunClientScript("ServerCallback_CoolCameraOnMenu")
 		}
+		
 		return
 	} 
 	else 
@@ -2583,6 +2598,11 @@ void function SetMenuState( int state )
 	Signal( fileLevel.signalDummy, "UpdateScene" )
 }
 
+void function CharacterSelect_SetMenuState( int state )
+{
+	SetMenuState( state )
+}
+
 void function UpdateSceneThink_AimTrainer()
 {
 	EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
@@ -2637,10 +2657,12 @@ void function UpdateSceneThink_AimTrainer()
 			shouldUpdateModel = true
 		}
 
-		printt( "| -------- UpdateScene --------" )
-		printt( "| shouldUpdateModel:", shouldUpdateModel )
-		printt( "| shouldUpdateAnim:", shouldUpdateAnim )
-		printt( "| -----------------------------" )
+		#if DEVELOPER
+			printt( "| -------- UpdateScene --------" )
+			printt( "| shouldUpdateModel:", shouldUpdateModel )
+			printt( "| shouldUpdateAnim:", shouldUpdateAnim )
+			printt( "| -----------------------------" )
+		#endif
 
 		if ( shouldUpdateModel )
 		{
@@ -2722,10 +2744,12 @@ void function UpdateSceneThink()
 		//if ( shouldUpdateModel )
 		//	shouldUpdateAnim = true
 
-		printt( "| -------- UpdateScene --------" )
-		printt( "| shouldUpdateModel:", shouldUpdateModel )
-		printt( "| shouldUpdateAnim:", shouldUpdateAnim )
-		printt( "| -----------------------------" )
+		#if DEVELOPER
+			printt( "| -------- UpdateScene --------" )
+			printt( "| shouldUpdateModel:", shouldUpdateModel )
+			printt( "| shouldUpdateAnim:", shouldUpdateAnim )
+			printt( "| -----------------------------" )
+		#endif
 
 		if ( shouldUpdateModel )
 		{
@@ -3044,7 +3068,10 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		
 		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING )
 		{
-			printt( "| PICKING ANIM", fileLevel.characterModel.GetModelName() )
+			#if DEVELOPER
+				printt( "| PICKING ANIM", fileLevel.characterModel.GetModelName() )
+			#endif 
+			
 			ItemFlavor anim = animsforthischaracter[ThisRoundAnim]
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
@@ -3069,7 +3096,10 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		}
 		else if ( currentMenuState == eNewCharacterSelectMenuState.LOCKED )
 		{
-			printt( "| LOCKED ANIM", string(fileLevel.characterModel.GetModelName()) )
+			#if DEVELOPER
+				printt( "| LOCKED ANIM", string(fileLevel.characterModel.GetModelName()) )
+			#endif
+				
 			Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_FLASH, {[0.0] = <1, 1, 1>}, 2.0 )
 			thread PlayCharacterReadyUpLine( character )
 			fileLevel.lockSequenceAnimTime = Time()
@@ -3383,7 +3413,9 @@ void function CharacterSelect_OnClientConnected( entity player )
 	if ( !fileLevel.assignedLockStepOrder )
 		return
 
-	printt( "LATE CONNECTING PLAYER", player, "MISSED LOCK STEP ASSIGNMENT! TRYING TO ASSIGN A NEW ONE..." )
+	#if DEVELOPER
+		printt( "LATE CONNECTING PLAYER", player, "MISSED LOCK STEP ASSIGNMENT! TRYING TO ASSIGN A NEW ONE..." )
+	#endif
 	
 	int team                   = player.GetTeam()
 	array<entity> squadPlayers = GetPlayerArrayOfTeam( team )
@@ -3417,7 +3449,9 @@ void function CharacterSelect_OnClientConnected( entity player )
 			return
 	}
 
-	printt( "LATE CONNECTING PLAYER", player, "NEW LOCK STEP ASSIGNED!", pickIndex )
+	#if DEVELOPER
+		printt( "LATE CONNECTING PLAYER", player, "NEW LOCK STEP ASSIGNED!", pickIndex )
+	#endif
 	
 	// Assign lockstep index
 	player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", pickIndex )

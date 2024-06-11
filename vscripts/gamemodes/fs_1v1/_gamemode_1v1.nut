@@ -197,7 +197,7 @@ float REST_GRACE = 5.0
 const int MAX_CHALLENGERS = 12
 
 //TODO: unite this in a singular modular framework
-const array<string> charIndexMap = [
+const array<string> m_charIndexMap = [
 		"Bangalore", //0
 		"Bloodhound", //1
 		"Caustic", //2
@@ -1038,31 +1038,30 @@ bool function mkos_Force_Rest(entity player, array<string> args)
 
 bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 {
-	if ( !CheckRate( player ) ) return false
+	if ( !CheckRate( player, true ) ) 
+		return false
+		
 	player.p.messagetime = Time()
 	
 	if( GetTDMState() != eTDMState.IN_PROGRESS )
 	{
-		//Message( player, "Game is not playing" )
 		LocalMsg( player, "#FS_GameNotPlaying" )
 		return true
 	}
 	
 	if( !settings.enableChallenges )
 	{
-		//Message( player, "Host has disabled challenges" )
 		LocalMsg( player, "#FS_Challenges_Disabled" )
 		return true
 	}
 	
 	if ( args.len() < 1)
-	{	
-		//Message( player, "\n\n\nUsage: ", "challenge chal [playername/id] - Challenges a player to 1v1 \n challenge accept [playername/id] - Accepts challenge by playername or id. If no player is specified accepts most recent challenge \n challenge list - Shows a list of all challenges and their times \n ", 5 )
+	{
 		LocalMsg( player, "#FS_Usage", "#FS_Challenge_usage" )
 		return true;	
 	}
 	
-	string requestedData = args[0];
+	string requestedData = args[0]
 	string param = "";
 	
 	if ( args.len() >= 2 )
@@ -1078,7 +1077,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			if( args.len() < 2 )
 			{
-				//Message( player, "CHALLENGES", "\n\n\n/chal [playername/id] -challenges a player to 1v1\n/chal player -challenges current fight player\n/accept [playername/id] -accepts a specific challenge or the most recent if none specified\n/list -incoming challenges\n/outlist -outgoing challenges\n/end -ends and removes current challenge\n/remove [playername/id] -removes challenge from list\n/clear -clears all incoming challenges\n/revoke [playername/id/all] -Revokes a challenge sent to a player or all players\n/cycle -random spawn\n/swap -random side of spawn\n/legend -choose legend by number or name", 30 )			
 				LocalMsg( player, "#FS_Challenges", "#FS_Challenge_usage_2", eMsgUI.DEFAULT, 30 )
 			}
 			else 
@@ -1091,7 +1089,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					
 					if( !IsValid( group.player1 ) )
 					{
-						//Message( player, "NOT IN A FIGHT")
 						LocalMsg( player, "#FS_NotInFight" )
 						return true
 					}
@@ -1106,7 +1103,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				if( player == challengedPlayer )
 				{
-					//Message( player, "CANT CHALLENGE SELF")
 					LocalMsg( player, "#FS_CantChalSelf" )
 					return true
 				}
@@ -1120,11 +1116,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					{
 						case 1: 
 							challengedPlayer.p.messagetime = Time()
-							//Message( player, "CHALLENGE SENT", "", 5)
-							LocalMsg( player, "#FS_ChalSent" )
 							
-							//string details = format("Player: %s wants to 1v1. \n Type /accept to accept the most recent challenge \n or /accept [playername] to accept a specific 1v1 ", player.p.name  )
-							//Message( challengedPlayer, "NEW REQUEST", details , 10 )
+							LocalMsg( player, "#FS_ChalSent" )
 							LocalMsg( challengedPlayer, "#FS_NEW_REQUEST", "#FS_ChalRequest", eMsgUI.DEFAULT, 10, "", player.p.name )
 							
 							break; 
@@ -1151,14 +1144,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 					
 					if( result > 1 )
 					{
-						//Message( player, "FAILED", "Couldn't add challenge: " + error, 5)
 						LocalMsg( player, "#FS_FAILED", "", eMsgUI.DEFAULT, 5, "", "Couldn't add challenge: " + error )
 					}
 					
 				}
 				else 
 				{
-					//Message( player, "INVALID PLAYER...", "", 1)
 					LocalMsg( player, "#FS_InvalidPlayer" )
 				}
 			}
@@ -1176,7 +1167,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				if( !IsValid( challenger ) )
 				{
-					//Message( player, "INVALID PLAYER")
 					LocalMsg( player, "#FS_InvalidPlayer" )
 					return true
 				}
@@ -1199,7 +1189,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( ( list.len() + title.len() ) > 599 )
 			{
-				//Message( player, "Failed", "Cannot execute this command due to return result of overflow")
 				LocalMsg( player, "#FS_FAILED", "#FS_OVERFLOW" )
 			}
 			else 
@@ -1230,6 +1219,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				
 				endLock1v1( player, false )
 			}
+			
 			return true 
 			
 		case "clear":
@@ -1306,7 +1296,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			}
 			else
 			{
-				//Message( player, "Player QUIT")
 				LocalMsg( player, "#FS_PlayerQuit" )
 			}
 			
@@ -1316,7 +1305,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			if( !isPlayerInChallenge( player ) )
 			{
-				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
@@ -1328,16 +1316,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if(group.cycle)
 				{
 					group.cycle = false;
-					//Message( group.player1, "SPAWN CYCLE DISABLED" )
-					//Message( group.player2, "SPAWN CYCLE DISABLED" )
 					LocalMsg( group.player1, "#FS_SpawnCycDisabled" )
 					LocalMsg( group.player2, "#FS_SpawnCycDisabled" )
 				}
 				else 
 				{
 					group.cycle = true;
-					//Message( group.player1, "SPAWN CYCLE ENABLED" )
-					//Message( group.player2, "SPAWN CYCLE ENABLED" )
 					LocalMsg( group.player1, "#FS_SpawnCycEnabled" )
 					LocalMsg( group.player2, "#FS_SpawnCycEnabled" )
 				}
@@ -1350,7 +1334,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( !isPlayerInChallenge( player ) )
 			{
-				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
@@ -1362,16 +1345,12 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				if(group.swap)
 				{
 					group.swap = false;
-					//Message( group.player1, "SPAWN SWAP DISABLED" )
-					//Message( group.player2, "SPAWN SWAP DISABLED" )
 					LocalMsg( group.player1, "#FS_SpawnSwapDisabled" )
 					LocalMsg( group.player2, "#FS_SpawnSwapDisabled" )
 				}
 				else 
 				{
 					group.swap = true;
-					//Message( group.player1, "SPAWN SWAP ENABLED" )
-					//Message( group.player2, "SPAWN SWAP ENABLED" )
 					LocalMsg( group.player1, "#FS_SpawnSwapEnabled" )
 					LocalMsg( group.player2, "#FS_SpawnSwapEnabled" )
 				}
@@ -1383,29 +1362,41 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			if( !settings.bAllowLegend )
 			{
-				//Message( player, "Admin has disabled legends" )
 				LocalMsg( player, "#FS_DisabledLegends")
 				return true
 			}
 			
 			if( param == "" )
 			{
+				Remote_CallFunction_NonReplay( player, "Gamemode1v1_ForceLegendSelector_Deprecated" )
+			}
+			else if( param == "help" )
+			{
 				string legendList = "\n\n\n\n\n\n\n\n\n\n\n";
 				
-				int ii = 0
-				foreach( legend in charIndexMap )
+				int j = 0
+				foreach( legend in m_charIndexMap )
 				{
-					legendList += format("%d = %s \n", ii, legend)
-					ii++;
+					legendList += format("%d = %s \n", j, legend)
+					j++;
 				}
 				
 				Message( player, "LEGENDS", legendList, 20 )
 				return true
 			}
+			
+			string param2 = ""
+			
+			//because we don't want to have to update the client always,
+			//this param comes as a clientcommand with the legend guid ref
+			if( args.len() > 2 )
+			{
+				param2 = args[2]
+			}
 		
 			string legend = "undefined";
 			int index = -1;
-			int indexMapLen = charIndexMap.len()
+			int indexMapLen = m_charIndexMap.len()
 			
 			if( IsNumeric( param, 0, indexMapLen ) )
 			{
@@ -1416,23 +1407,29 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				index = -1
 				for( int i = 0; i < indexMapLen; i++ )
 				{
-					if ( charIndexMap[i].tolower() == param.tolower() )
+					if ( m_charIndexMap[i].tolower() == param.tolower() )
 					{
 						index = i;
 					}
 				}	
 			}
 			
+			if( param2 != "" )
+			{
+				if( IsNumeric( param2 ) )
+				{
+					index = CharacterGuidRefToIndex( param2 )
+				}
+			}
+			
 			if( index >= indexMapLen || index < 0 )
 			{
-				//Message( player, "INVALID LEGEND INDEX" )
 				LocalMsg( player, "#FS_InvalidLegend" )
 				return true
 			}
 			
 			if( !isPlayerInChallenge( player ) )
 			{
-				//Message( player, "NOT IN CHALLENGE" )
 				LocalMsg( player, "#FS_NotInChal" )
 				return true
 			}
@@ -1441,7 +1438,6 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( !IsValid( group ))
 			{
-				//Message( player, "INVALID GROUP" ) //what?
 				return true
 			}
 			
@@ -1454,8 +1450,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				group.p2LegendIndex = index
 			}
 			
-			legend = index != -1 ? charIndexMap[index] : "undefined";
-			//Message( player, "PLAYING AS: " + legend )
+			legend = index != -1 ? m_charIndexMap[ index ] : "undefined";
+			
 			LocalMsg( player, "#FS_PlayingAs", "", eMsgUI.DEFAULT, 5, legend, "" )
 			
 			if( index <= 10 )
@@ -1477,9 +1473,8 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			{
 				RechargePlayerAbilities( player, index )
 			}
-			
-			return true
-			
+		
+			return true 
 			
 		case "outlist":
 		
@@ -1502,26 +1497,22 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 			
 			if( list != "" )
 			{
-				//Message( player, "OUTGOING CHALLENGES", list, 15 )
 				LocalMsg( player, "#FS_OutgoingChal", "", eMsgUI.DEFAULT, 15, "", list )
 			}
 			else 
 			{
-				//Message( player, "NO OUTGOING CHALLENGES")
 				LocalMsg( player, "#FS_NoOutgoingChal" )
 			}
 		
 			return true
 		
 		default:
-			//Message( player, "Failed: ", "Unknown command \n", 5 )
 			LocalMsg( player, "#FS_FAILED", "#FS_UnknownCommand" )
 			return true
 	}
 	
 	return false;
 }
-
 
 void function INIT_playerChallengesStruct( entity player )
 {
@@ -3541,6 +3532,11 @@ void function DefinePanelCallbacks( table<string, entity> panels )
 	
 }
 
+void function Gamemode1v1_OnSelectedLegend( ItemFlavor character )
+{
+	
+}
+
 void function soloModeThread( LocPair waitingRoomLocation )
 {
 	//printt("solo mode thread start!")
@@ -4671,6 +4667,45 @@ LocPair function getBotSpawn()
 "187386164": "Wattson",
 "827049897": "Wraith",
 }*/
+
+/*
+		"Bangalore", //0
+		"Bloodhound", //1
+		"Caustic", //2
+		"Gibby", //3
+		"Lifeline", //4
+		"Mirage", //5
+		"Octane", //6
+		"Pathfinder", //7
+		"Wraith", //8
+		"Wattson", //9
+		"Crypto", //10
+*/
+
+const table<string,int> characterRefMap =
+{
+	["725342087"] 	= 0,	//"Bangalore",
+	["898565421"] 	= 1,	//"Bloodhound",
+	["1111853120"] 	= 2,	//"Caustic",
+	["182221730"] 	= 3,	//"Gibraltar",
+	["1409694078"] 	= 4,	//"Lifeline",
+	["2045656322"] 	= 5,	//"Mirage",
+	["843405508"] 	= 6,	//"Octane",
+	["1464849662"] 	= 7,	//"Pathfinder",
+	["827049897"] 	= 8,	//"Wraith",
+	["187386164"] 	= 9,	//"Wattson",
+	["80232848"] 	= 10 	//"Crypto",
+}
+
+int function CharacterGuidRefToIndex( string numRef )
+{
+	if( numRef in characterRefMap )
+	{
+		return characterRefMap[ numRef ]
+	}
+	
+	return -1
+}
 
 const array<int> LegendGUID_EnabledPassives = 
 [	

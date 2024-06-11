@@ -66,6 +66,8 @@ global function FS_CreateTeleportFirstPersonEffectOnPlayer
 global function FS_Show1v1Banner
 global function FS_SetHideEndTimeUI
 
+global function Gamemode1v1_ForceLegendSelector_Deprecated
+
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
 struct {
@@ -149,7 +151,39 @@ void function Cl_CustomTDM_Init()
 	
 	if( Playlist() == ePlaylists.fs_1v1 )
 	{
+		AddCallback_CharacterSelectMenu_OnCharacterLocked( Gamemode1v1_OnSelectedLegend )
+		AddCallback_OnCharacterSelectMenuClosed( Gamemode1v1_OnLegendSelector_Close )
 		//AddCallback_OnClientScriptInit( FS_Show1v1Banner )
+	}
+}
+
+void function Gamemode1v1_ForceLegendSelector_Deprecated() //TODO: Client-based open
+{
+	OpenCharacterSelectAimTrainer( true )
+}
+
+void function Gamemode1v1_OnLegendSelector_Close()
+{
+	CharacterSelect_SetMenuState( eNewCharacterSelectMenuState.PICKING )
+}
+
+void function Gamemode1v1_OnSelectedLegend( ItemFlavor character )
+{
+	entity player = GetLocalClientPlayer()
+	
+	if( IsValid( player ) )
+	{
+		thread
+		(
+			void function() : ( player, character )
+			{
+				wait 0.5 //rawr timing issue
+				RunUIScript( "Gamemode1v1_CloseLegendMenu" )
+				player.ClientCommand( "challenge legend -1 " + string( ItemFlavor_GetGUID( character ) ) )
+				ScreenFade( GetLocalViewPlayer(), 255, 255, 255, 255, .1, 0, FFADE_PURGE | FFADE_INOUT | FFADE_NOT_IN_REPLAY )
+			}
+		)()
+		
 	}
 }
 
@@ -205,7 +239,10 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 
 	if( new )
 	{
-		printt( "[Scenarios Character Select] Open" )
+		#if DEVELOPER 
+			printt( "[Scenarios Character Select] Open" )
+		#endif 
+		
 		Fullmap_SetVisible( false )
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		Flowstate_ForceRemoveAllObituaries()
@@ -215,7 +252,10 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 	}
 	else
 	{
-		printt( "[Scenarios Character Select] Close" )
+		#if DEVELOPER
+			printt( "[Scenarios Character Select] Close" )
+		#endif 
+		
 		CloseCharacterSelectNewMenu()
 		RunUIScript( "UI_CloseCharacterSelect" )
 		FS_SetHideEndTimeUI( false )
@@ -1876,7 +1916,10 @@ void function FS_Scenarios_InitPlayersCards()
 	file.enemyTeamCards.clear()
 	file.enemyTeamCards2.clear()
 
-	printt( "FS_Scenarios_InitPlayersCards" )
+	#if DEVELOPER
+		printt( "FS_Scenarios_InitPlayersCards" )
+	#endif 
+	
 	file.vsBasicImage = HudElement( "ScenariosVS" )
 	file.vsBasicImage2 = HudElement( "ScenariosVS_2" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
