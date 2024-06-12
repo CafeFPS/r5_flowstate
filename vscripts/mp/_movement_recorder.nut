@@ -8,6 +8,7 @@ struct{
 
 array<entity> dummyList;
 bool continueLoop = true;
+bool isRecording = false;
 
 void function AssignCharacter( entity player, int index )
 {
@@ -21,7 +22,7 @@ void function AssignCharacter( entity player, int index )
 
 void function StartMovementRecorder(entity player, float length = 10, int character = 0, int shield = 1, float animRate = 1.0 )
 {
-	if( character < 0 ) return
+	if( character < 0 || isRecording) return
 	
 	if( character > 2 ) 
 		character = 0
@@ -31,7 +32,8 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	
 	string msg1
 	string aiFileToUse 
-	
+	isRecording = true
+		
 	array<string> coolDevs = [
 		"CafeFPS",
 		"DEAFPS",
@@ -80,6 +82,8 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	player.StartRecordingAnimation(initialpos, initialang)
 	
 	wait length
+	
+	isRecording = false
 	
 	file.recordingAnims.append( player.StopRecordingAnimation() )
 	var anim = file.recordingAnims[file.recordingAnims.len()-1]
