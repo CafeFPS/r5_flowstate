@@ -296,7 +296,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 
 	OnThreadEnd(
 	function() : ( owner, canisterProxy, mover, noSpawnIdx, threatZoneID )
-		{
+		{		
 			DeleteNoSpawnArea( noSpawnIdx )
 
 			//Remove the threat zone for this trap.
@@ -496,7 +496,7 @@ void function RemoveCanister( entity canisterProxy, entity mover )
 		Highlight_ClearFriendlyHighlight( canisterProxy )
 		thread PlayAnim( canisterProxy, "prop_caustic_gastank_destroy", mover )
 		//canisterProxy.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
-		waitthread PROTO_FadeModelAlphaOverTime( canisterProxy, duration + 0.05 ) //extra state
+		waitthread PROTO_FadeModelAlphaOverTime( canisterProxy, duration )
 	}
 }
 
@@ -720,16 +720,6 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	
 	owner.EndSignal( "CleanUpPlayerAbilities" )
 	
-	OnThreadEnd
-	( 
-		function() : ( canisterProxy )
-		{
-			if( IsValid( canisterProxy ) )
-			{
-				canisterProxy.Signal( "OnDestroy" )
-			}
-		}
-	)
 	//If the owner is alive we should use the owner, otherwise world is attacker
 	entity attacker = IsValid( owner ) ? owner : svGlobal.worldspawn
 	

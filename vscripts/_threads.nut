@@ -23,6 +23,7 @@ global function PrintFunc
 global function printt_spamLog
 global function printl_spamLog
 global function printt_spam
+global function SpamWarning
 
 global function LevelVarInit
 
@@ -176,6 +177,19 @@ string function DBG_INFO( int up = 2 )
 	int lineNum  = expect int(stackInfos.line)
 	string funcName = expect string(stackInfos.func)
 	return "[ " + VM_NAME() + " ] :  FILE: " + fileName + "  LINE:" + lineNum + ":  FUNC: " + funcName + "() ]"
+}
+
+void function SpamWarning( int amount, ... )
+{
+	if ( vargc <= 0 )
+	return
+
+	local msg = vargv[0]
+	for ( int i = 1; i < vargc; i++ )
+		msg = ( msg + " " + vargv[i] )
+		
+	for ( int j = 0; j < amount; j++ )
+		Warning( msg )
 }
 
 void function printt_spam( int amount, ... )
