@@ -1,6 +1,6 @@
 // NOTE: _base_optics is included in _base_sniper so Kraber can inherit it, but not the others
-#base "_base_optics_sentinel_cq.txt"
-#base "_base_optics_sentinel_ranged.txt"
+#base "_base_optics_cq.txt"
+#base "_base_optics_ranged.txt"
 #base "_base_optics_fullscreen.txt"
 
 WeaponData
@@ -66,6 +66,54 @@ WeaponData
 			"viewmodel_offset_zoom_frac_start"      "0.1"
 			"viewmodel_offset_zoom_frac_end"        "0.75"
 		}
+		
+		//The following mods crashes the game on ported rui for weapon model
+        optic_cq_hcog_bruiser
+        {
+            "zoom_time_in"                          "0.37"
+	        "zoom_time_out"                         "0.33"
 
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_cq_holosight
+        {
+            "zoom_time_in"                          "0.37"
+	        "zoom_time_out"                         "0.33"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.9"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.9"
+        }
+
+        optic_cq_holosight_variable
+        {
+            "zoom_time_in"                          "0.37"
+	        "zoom_time_out"                         "0.33"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_ranged_hcog
+        {
+            "zoom_time_in"							"0.43"
+	        "zoom_time_out"   						"0.37"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.25"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.25"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
 	}
 }
