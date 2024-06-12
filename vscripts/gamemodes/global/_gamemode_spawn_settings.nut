@@ -286,9 +286,9 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
-		case eMaps.mp_rr_arena_phase_runner: //TODO: FIX ME
+		case eMaps.mp_rr_arena_phase_runner:
 		
-			defaultWaitingRoom = NewLocPair( < 705.502, -5885.31, 432.031 >, < 355.676, 90, 0 > )
+			defaultWaitingRoom = NewLocPair( < 31969, 17534, -884 >, < 360, 178, 0 > )
 			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		break ////////////////////////////////////////////////////////////////////////////
