@@ -5,6 +5,8 @@ global function HealthRegen_Init
 global function PilotShieldHealthUpdate
 global function PilotShieldModifyDamage
 
+const NO_HEALTH_DMG = ( 1 << eDamageSourceId.mp_ability_crypto_drone_emp ) // | ( 1 << eDamageSourceId. )
+
 struct
 {
 	float healthRegenRate
@@ -164,7 +166,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
     if ( newShieldHealth < 0 )
         permanentDamage = fabs( newShieldHealth )
 	
-	if(IsValid(player))
+	if( IsValid( player ) )
 		player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
 
     if ( shieldHealth && newShieldHealth <= 0 )
@@ -186,11 +188,18 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 		float damagefull = damage + shieldHealth
 		float maxHealth = 0.0
 		
-		if(IsValid(player))
+		if( IsValid( player ) )
 			maxHealth = float(player.GetHealth())
 		
-		DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
-		DamageInfo_SetDamage( damageInfo, permanentDamage )	
+		if( NO_HEALTH_DMG & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
+		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+		}
+		else 
+		{
+			DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
+			DamageInfo_SetDamage( damageInfo, permanentDamage )
+		}
 		
 		if( IsValid( attacker ) )
 		{

@@ -2465,7 +2465,7 @@ void function OnChallengeEnd(entity player)
 }
 
 void function ChallengesStartAgain(entity player)
-{
+{	
 	EndSignal(player, "ForceResultsEnd_SkipButton")
 	
 	OnThreadEnd(

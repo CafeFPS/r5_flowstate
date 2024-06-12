@@ -648,7 +648,7 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 	player.EndSignal( "OnDeath" )
 	deathBox.EndSignal( "OnDestroy" )
 	
-	if( DamageClosesMenu() )
+	if( PlayerSetting_DamageClosesMenu() )
 	{
 		player.EndSignal( "OnDamaged" )
 	}

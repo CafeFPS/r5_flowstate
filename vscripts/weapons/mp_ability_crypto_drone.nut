@@ -22,6 +22,7 @@ global function CryptoDrone_SetMaxZ
 global function CryptoDrone_GetPlayerDrone
 #if SERVER
 global function GetPlayerOutOfCamera
+global function CryptoDrone_Destroy
 #endif
 
 #if CLIENT
@@ -226,7 +227,11 @@ var function OnWeaponToss_ability_crypto_drone( entity weapon, WeaponPrimaryAtta
 	{
 			entity camera = CryptoDrone_ReleaseCamera( weapon, attackParams, DEPLOYABLE_CAMERA_THROW_POWER )
 			Signal( player, "Crypto_StopSendPointThink" )
-			printt( "should throw deployable" )
+			
+			#if DEVELOPER
+				printt( "should throw deployable" )
+			#endif 
+			
 		#if SERVER
 																									  
 		#endif          
@@ -576,6 +581,17 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 		
 		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
 }
+
+void function CryptoDrone_Destroy( entity player ) //deprecated
+{
+	entity vehicle = CryptoDrone_GetPlayerDrone( player )
+	
+	if( IsValid( vehicle ) )
+	{
+		entity worldSpawn = GetEnt("worldspawn")
+		vehicle.TakeDamage( CRYPTO_DRONE_HEALTH, worldSpawn, worldSpawn, {} )
+	}
+}
 #endif
 
 #if CLIENT 	
@@ -585,13 +601,13 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 		
 		if( IsValid( player ) )
 		{
-			if( DamageClosesMenu() )
+			if( PlayerSetting_DamageClosesMenu() )
 			{
 				player.ClientCommand("ShouldExitDrone")
 			}
 		}
 	}	
-#endif 
+#endif
 
 #if SERVER
 void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
@@ -599,7 +615,8 @@ void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
 	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGameState.Playing )
 		return
 		
-	player.Signal( "ExitCameraView" )
+	//player.Signal( "ExitCameraView" )
+	GetPlayerOutOfCameraManual( player )
 }
 
 entity function CreateCryptoVehicle( entity weapon, entity player )
@@ -895,22 +912,23 @@ void function DroneCheck_Thread( entity vehicle ) //mkos
 		return
 	
 	EndSignal( vehicle, "OnDestroy" )
-	EndSignal( owner, "OnDestroy", "OnDisconnected" )
+	EndSignal( owner, "OnDestroy", "OnDisconnected", "CleanUpPlayerAbilities" )
 	
 	OnThreadEnd
 	(
 		void function() : ( owner, vehicle )
-		{
+		{		
 			if( IsValid( owner ) )
 			{
 				if( IsPlayerInCryptoDroneCameraView( owner ) )
 					GetPlayerOutOfCamera( owner )
 			}
 			
-			entity worldSpawn = GetEnt( "worldspawn" )
-			
 			if( IsValid( vehicle ) )
+			{
+				entity worldSpawn = GetEnt( "worldspawn" )
 				vehicle.TakeDamage( CRYPTO_DRONE_HEALTH, worldSpawn, worldSpawn, {} )
+			}
 		}
 	)
 	
@@ -921,7 +939,9 @@ void function DroneCheck_Thread( entity vehicle ) //mkos
 		if( IsValid( owner ) )
 		{
 			if( IsPlayerInCryptoDroneCameraView( owner ) )
+			{
 				GetPlayerOutOfCamera( owner )
+			}
 		}
 		
 		string signal = expect string( results.signal )
@@ -944,7 +964,10 @@ void function OnDroneKilled( entity vehicle, var damageInfo )
 			e.Destroy()
 
 	if(!IsValid(owner))
+	{
+		RemoveDroneFromFile( vehicle )
 		return
+	}
 
 	StatusEffect_StopAllOfType( owner, eStatusEffect.crypto_has_camera )
 
@@ -959,13 +982,24 @@ void function OnDroneKilled( entity vehicle, var damageInfo )
 	entity ability = GetDroneWeapon( owner )
 
 	if( !IsValid(ability) )
+	{
+		RemoveDroneFromFile( vehicle )
 		return
+	}
 
 	ability.SetMods( [] )
 	ability.SetWeaponPrimaryClipCount( 0 )
 
-	if( file.allDrones.contains( vehicle ) )
-		file.allDrones.fastremovebyvalue( vehicle )
+	RemoveDroneFromFile( vehicle )
+}
+
+void function RemoveDroneFromFile( entity vehicle )
+{
+	if( IsValid( vehicle ) )
+	{
+		if( file.allDrones.contains( vehicle ) )
+			file.allDrones.fastremovebyvalue( vehicle )
+	}
 }
 
 void function OnDroneDamaged(entity drone, var damageInfo)
@@ -1298,13 +1332,10 @@ void function Camera_OnBeginRecall( entity player, int statusEffect, bool actual
 {
 	foreach ( void functionref() cb in file.onRecallDroneCallbacks )
 		cb()
-		
-	printt("balls ON?")
 }
 
 void function Camera_OnEndRecall( entity player, int statusEffect, bool actuallyChanged )
 {
-	printt("balls?  OFF")
 }
 
 void function TempUpdateRuiDistance( entity player )

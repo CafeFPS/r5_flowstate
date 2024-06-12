@@ -207,7 +207,7 @@ const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
 const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
 const int MAX_SAY_MSG = 255;
 const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAccess()
-const int REQUIRED_SYNC_DATA_FIELDS = 6;  //amount of fields returned by stats the scripts require (non-settings values)
+const int REQUIRED_SYNC_DATA_FIELDS = 1;  //amount of fields returned by stats the scripts require (non-settings values)
 const float T_VERS = 2.1
 
 const array<string> ServerMsgEventTypes = 
@@ -1024,10 +1024,10 @@ void function __SetPlayerSyncData( entity player )
 		}
 	)
 	
-	if ( !IsValid( player ) )
+	if( !IsValid( player ) )
 		return 
 		
-	if ( statKeys.len() > 0 || PersistenceData.len() > 0 )
+	if( statKeys.len() > 0 || PersistenceData.len() > 0 )
 	{		
 		#if DEVELOPER 
 			printt("\n\nIncoming StatsKeys:")
@@ -1038,12 +1038,14 @@ void function __SetPlayerSyncData( entity player )
 	
 		int SYNC_Data_length = statKeys.len()
 		
-		if ( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS) 
+		if( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS ) 
 		{
 			#if DEVELOPER 
 				sqerror("Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
 			#endif 
-			return
+			
+			Tracker_SignalPlayerStatsReady( player )
+				return
 		}
 		
 		foreach( key in statKeys )
@@ -1063,13 +1065,18 @@ void function __SetPlayerSyncData( entity player )
 		}
 	}
 	
-	player.Signal( "SyncDataFullyLoaded" )
-	player.p.stats_done_loading = true; //TODO: remove where possible
+	Tracker_SignalPlayerStatsReady( player )
 	
-	foreach ( callbackFunc in file.syncDataFullyLoadedCallbacks )
+	foreach( callbackFunc in file.syncDataFullyLoadedCallbacks )
 	{
 		callbackFunc( player )
-	}	
+	}
+}
+
+void function Tracker_SignalPlayerStatsReady( entity player )
+{
+	player.Signal( "SyncDataFullyLoaded" )
+	player.p.stats_done_loading = true
 }
 
 void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player ) callbackFunc )
@@ -1080,7 +1087,7 @@ void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player
 
 void function AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
 {
-	if ( setting in file.PlayerSettingsMap )
+	if( setting in file.PlayerSettingsMap )
 	{
 		if( file.PlayerSettingsMap[setting].contains( callbackFunc ) )
 		{
@@ -1105,11 +1112,11 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 		//printarray( Sync_Data )
 	#endif
 	
-	foreach ( setting in Sync_Data )
+	foreach( setting in Sync_Data )
 	{
 		string key = ReturnKey( setting )
 		
-		if ( key in file.PlayerSettingsMap )
+		if( key in file.PlayerSettingsMap )
 		{
 			Tracker_SavePlayerData( player.p.UID , key, ReturnValue( Sync_Data[i] ) )
 			
@@ -1175,9 +1182,10 @@ void function PIN_Init()
 		return
 	#endif 
 	
-	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
+	if( IsLobby() )
+		return
 	
-	if( IsLobby() ){ return }
+	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
 	
 	RegisterSignal( "BatchFetchComplete" )
 	RegisterSignal( "SyncDataFullyLoaded" )
@@ -1231,12 +1239,12 @@ void function PIN_Init()
 			
 			AddCallback_OnWeaponAttack( WeaponAttack )
 			RegisterSignal( "SuperglideDetectionResetStats" ); file.superglideDetect = true;	
-			file.FS_MaxHealth = ( GetCurrentPlaylistVarFloat("default_shield_hp", 0 )) + 100;
+			file.FS_MaxHealth = ( GetCurrentPlaylistVarFloat("default_shield_hp", 0 )) + 100; //TODO: Use health/shield getters
 		}
 	
 	//moved to r5rdev_config.json
-	file.DISCORD_PLAYERS_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_PLAYERS_WEBHOOK", ""))
-	file.DISCORD_MATCHES_WEBHOOK = (GetCurrentPlaylistVarString("DISCORD_MATCHES_WEBHOOK", ""))
+	file.DISCORD_PLAYERS_WEBHOOK = ( GetCurrentPlaylistVarString( "DISCORD_PLAYERS_WEBHOOK", "" ) )
+	file.DISCORD_MATCHES_WEBHOOK = ( GetCurrentPlaylistVarString( "DISCORD_MATCHES_WEBHOOK", "" ) )
 	
 	//initialize array/table maps
 	INIT_CC_GameTypes()
@@ -1249,7 +1257,7 @@ void function PIN_Init()
 	}
 	
 	//init superglide strings
-	file.sg_counter_msg = GetCurrentPlaylistVarBool("superglide_counter_msg", false )
+	file.sg_counter_msg = GetCurrentPlaylistVarBool( "superglide_counter_msg", false )
 	file.superglide_msg = GetCurrentPlaylistVarString( "custom_superglide_msg", "" )
 	file.superglidetitle = file.global_stats ? "Season Glides" : "Glides";
 	
@@ -1276,7 +1284,6 @@ void function PIN_Init()
 	{
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
-	
 }
 
 void function INIT_fastComputes()
@@ -1436,7 +1443,7 @@ void function Init_NewGame()
 		return
 	}
 	
-	DestroyStats() //make sure metrics incrued during intermediate time is not included
+	DestroyStats() //make sure metrics incrued during intermediate time are not included
 
 	//////////////////////////////////
 	//	THIS IS HANDLED INTERNALLY	//
@@ -1454,7 +1461,7 @@ void function Init_NewGame()
 		wait 0.5;
 		waitlimit++;
 		
-		if (waitlimit >= MAX_WAIT_FOR_LOGGING_THREAD)
+		if ( waitlimit >= MAX_WAIT_FOR_LOGGING_THREAD )
 		{
 			sqerror(format("Log thread failed to finish within [%d] seconds during busy check.", floor(MAX_WAIT_FOR_LOGGING_THREAD/2) ))
 			file.bSafeLog = false;
@@ -1522,10 +1529,19 @@ void function Init_NewGame()
 	///////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////
-	// Round started, make a new log. r5r.dev
-	LogEvent__internal(
-	format("|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n",T_VERS, GetCurrentRound(), GetUnixTimestamp() ),
-	file.LogE
+	
+	// Round started -- [you should not edit this]
+	LogEvent__internal
+	(
+		format
+		( 
+			"|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n",
+			T_VERS, 
+			GetCurrentRound(), 
+			GetUnixTimestamp() 
+		),
+		
+		file.LogE
 	);
 	
 	foreach( player in GetPlayerArray() )
@@ -1535,8 +1551,7 @@ void function Init_NewGame()
 	
 	PrintMatchIDtoAll()
 	
-	file.PIN_GameState_Start = true;
-	//END .DEV
+	file.PIN_GameState_Start = true
 }
 
 
@@ -1555,7 +1570,7 @@ void function Init_NewGame()
 	{
 		string string_whitelist = SQ_GetSetting__internal( "settings.PLAYER_WHITELIST" )
 		
-		if (string_whitelist != "")
+		if ( string_whitelist != "" )
 		{	
 			try
 			{
@@ -1687,7 +1702,7 @@ void function Init_NewGame()
 		
 		wait 2
 		
-		if ( IsValid(player) && access_status >= RESTRICTED_ACCESS_STATUS_REQUIRED )
+		if ( IsValid( player ) && access_status >= RESTRICTED_ACCESS_STATUS_REQUIRED )//Todo: Revisit for more modularity from a single defined source and remove CONST adjustments
 		{	
 			mkos_Force_Rest( player, [] )
 			Message( player, "Welcome " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30 )
@@ -1695,19 +1710,19 @@ void function Init_NewGame()
 		}
 		else 
 		{	
-			if(IsValid( player ))
+			if( IsValid( player ) )
 			{
 				thread force_rest( player )
 				
 				Message( player, "Sorry " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30 )
 				wait 7	
 				
-				if(IsValid( player ))
+				if( IsValid( player ) )
 				{
 					KickPlayerById( player.GetPlatformUID(), Player_Access_Message( player, access_status ) )
 					UpdatePlayerCounts()
 					
-					if(GetCurrentPlaylistVarBool("restricted_kick_log",false))
+					if( GetCurrentPlaylistVarBool("restricted_kick_log",false) )
 					{
 						sqprint(format("\n\n Player: %s, Kick msg: %s",player.GetPlayerName(), Player_Access_Message( player, access_status )))
 					}
@@ -1727,7 +1742,7 @@ bool function SendServerMessage( string _msg )
 	bool status = true
 	int msg_length = _msg.len()
 	
-	if ( msg_length > MAX_SAY_MSG )
+	if( msg_length > MAX_SAY_MSG )
 	{
 		_msg = truncate( _msg, MAX_SAY_MSG )
 		sqerror("Message contained " + msg_length.tostring() + " characters ( " + (msg_length - MAX_SAY_MSG).tostring() + " too many ) and was truncated. Maxlength: " + MAX_SAY_MSG.tostring() )
@@ -1819,7 +1834,7 @@ void function INIT_IntervalMessages()
 				}
 			}
 		}
-	}//goto
+	}// if !goto
 	
 	//loop messages (every x seconds)
 	
@@ -1923,12 +1938,15 @@ void function MessageIntervalThread()
 		bLoopServerMessages = false
 	}
 	
-	OnThreadEnd( void function() : () 
-	{
-		file.bIntervalThreadRunning = false
-	})
+	OnThreadEnd
+	( 
+		void function() : () 
+		{
+			file.bIntervalThreadRunning = false
+		}
+	)
 	
-	while(true)
+	while( true )
 	{		
 		wait 10	
 		
@@ -4287,7 +4305,7 @@ bool process_end_round_complete = true;
 
 void function PIN_RoundEnd( int roundnum )
 {	
-	if ( process_end_round_complete == true )
+	if( process_end_round_complete == true )
 	{
 		__executeEventEnd_messages()
 		thread FinishGameStatsRound()
@@ -4296,7 +4314,7 @@ void function PIN_RoundEnd( int roundnum )
 
 void function UpdateLiveStats( string metrics )
 {
-	if ( metrics != "" )
+	if( metrics != "" )
 	{
 		SQ_UpdateLiveStats__internal( metrics )
 	}
@@ -4304,7 +4322,7 @@ void function UpdateLiveStats( string metrics )
 
 void function FinishGameStatsRound()
 {
-	if ( process_end_round_complete == true )
+	if( process_end_round_complete == true )
 	{
 	
 		process_end_round_complete = false;
@@ -4334,7 +4352,7 @@ void function FinishGameStatsRound()
 											sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
 										}
 											
-										if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
+										if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
 										{
 											sqprint("No stats to ship...\n")
 											stopLogging__internal(false)
@@ -4351,7 +4369,7 @@ void function FinishGameStatsRound()
 											string recap = PIN_WinnerByKillsAndDamage()
 											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
 											
-											if ( Logging_ShipStats() )
+											if( Logging_ShipStats() )
 											{
 												foreach( player in GetPlayerArray() )
 												{
@@ -4420,7 +4438,7 @@ void function PIN_AddPlayer( entity player )
 		player.p.stats_done_loading = true
 	}
 	
-	if( IsValid( player ) && GetPlayerLeftFlag( player ) )
+	if( GetPlayerLeftFlag( player ) )
 	{	
 		//sqprint("R5RDEV_DEBUG_PRINT: Player had left previously flag triggered")
 		UpdateFromLocalPersistence( player )
@@ -4441,13 +4459,13 @@ void function PIN_AddPlayer( entity player )
 		}
 	}
 	
-	if ( file.restricted_server )
+	if( file.restricted_server )
 	{	
 		thread Alert_Player_Access( player )
 	}
 	else 
 	{
-		if ( player.p.start_in_rest_setting )
+		if( player.p.start_in_rest_setting )
 		{
 			#if DEVELOPER
 				sqprint("Player sent to rest from rest setting")
@@ -4456,7 +4474,7 @@ void function PIN_AddPlayer( entity player )
 		}
 	}
 	
-	if ( file.LogOn && isLogging__internal() && IsValid( player ) )
+	if( file.LogOn && isLogging__internal() && IsValid( player ) )
 	{	
 		string p_ea_name = player.GetPlayerName();
 		Message(player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10)	
@@ -4466,7 +4484,7 @@ void function PIN_AddPlayer( entity player )
 			{
 				float timeRemaining;
 
-				if ( file.gamemode_type_1v1 ) 
+				if( file.gamemode_type_1v1 ) 
 				{
 					const int INITIAL_DELAY = 7;
 					const int DELAY_BETWEEN_ROUNDS = 13;
@@ -4474,7 +4492,7 @@ void function PIN_AddPlayer( entity player )
 					int totalDelay = INITIAL_DELAY + (GetCurrentRound() - 1) * (FlowState_RoundTime() + DELAY_BETWEEN_ROUNDS);
 					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
 				} 
-				else if ( Gamemode() == eGamemodes.fs_dm ) 
+				else if( Gamemode() == eGamemodes.fs_dm ) 
 				{
 					const int INITIAL_DELAY = 8;
 					int DELAY_BETWEEN_ROUNDS;
@@ -4489,7 +4507,7 @@ void function PIN_AddPlayer( entity player )
 					timeRemaining = FlowState_RoundTime() - (Time() - totalDelay);
 				}
 				
-				if (IsValid(player)) 
+				if( IsValid( player ) ) 
 				{
 					LogEvent__internal(format("^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
 					   UID,
@@ -4638,20 +4656,19 @@ void function PIN_SetGameStartGetUnixTimestamp()
 
 bool function CheckPlayerStartInRest( entity player )
 {
-	if  ( !IsValid(player) ) 
+	if  ( !IsValid( player ) ) 
 	{
 		return false
 	}
 	
 	if ( file.gamemode_type_1v1 )
 	{
-		if (player.p.start_in_rest_setting)
+		if ( player.p.start_in_rest_setting )
 		{
 			mkos_Force_Rest( player, [] )
-		}
+		}	
 	
-	
-		if (isPlayerInRestingList( player ))
+		if ( isPlayerInRestingList( player ) )
 		{
 			return true 
 		}

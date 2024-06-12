@@ -764,7 +764,7 @@ void function _CustomTDM_Init()
 	
 	if ( f_wait > 0.0 && f_wait < 3.0 )
 	{
-		//this shouldn't be defined out, it let's the host know they have an invalid setting
+		//this shouldn't be defined out, it lets the host know they have an invalid setting
 		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
 	}
 }
@@ -851,7 +851,7 @@ void function DM__OnEntitiesDidLoad()
 		break
 		case eMaps.mp_rr_party_crasher:
 
-		Patch_Partycrasher_Restarea()
+			Patch_Partycrasher_Restarea()
 		break
     }
 }
@@ -894,7 +894,7 @@ LocPair function _GetVotingLocation()
 		case eMaps.mp_rr_olympus_mu1:
 			return NewLocPair( <7008.73047, 7627.40234, -4623.99805>, <0,63,0> )
         default:
-			Assert(false, "No voting location for the map!")
+			mAssert(false, "No voting location for the map!")
     }
     unreachable
 }

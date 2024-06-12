@@ -75,6 +75,7 @@ struct
 	#if SERVER
 	table<entity, array<entity> > gasProtectTriggers
 	int gasEmitterEntArrayID
+	bool caustic_teammate_forgiveness
 	#endif
 
 } file
@@ -103,6 +104,7 @@ void function ShGas_Init()
 	AddSpawnCallback( "npc_dummie", OnEntSpawned )
 
 	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, GasGear_OnPassiveChanged )
+	file.caustic_teammate_forgiveness = GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true )
 	#endif
 
 	#if CLIENT
@@ -259,7 +261,7 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 		newGasExposure = true
 		target.e.gasEnterTime = Time()
 
-		if ( GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true ) )
+		if ( file.caustic_teammate_forgiveness )
 		{
 			entity inflictor = DamageInfo_GetInflictor( damageInfo )
 			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
@@ -501,8 +503,8 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	}
 
 	//Titans are not effected.
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 	//if the target is not in gas return.
 	if ( !IsEntInGas( target ) )
@@ -571,8 +573,8 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 	}
 
 	//Titans are not effected.
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 	//if the target is not in gas return.
 	if ( !IsEntInGas( target ) )
@@ -604,7 +606,10 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 
 	target.e.gasLastDamageTime = Time()
 	
-	printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#if DEVELOPER
+		printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#endif 
+	
 	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	
 	if ( target.IsPlayer() )

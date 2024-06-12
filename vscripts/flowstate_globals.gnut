@@ -196,6 +196,7 @@ void function Initialize_SH_FlowstateSettings()
 }
 
 // Playlist GET
+// Todo: Eventually, make the above struct global and access directly? rename to fsGlobal
 
 float function Deathmatch_GetIntroCutsceneNumSpawns()			{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns }
 float function Deathmatch_GetIntroCutsceneSpawnDuration()		{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneSpawnDuration }

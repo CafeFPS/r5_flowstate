@@ -4090,7 +4090,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				newGroup.GROUP_INPUT_LOCKED = false;
 			}
 			
-			thread soloModePlayerToInProgressList( newGroup )
+			waitthread soloModePlayerToInProgressList( newGroup ) //possible timing fix
 
 			foreach ( index, eachPlayer in players )
 			{
@@ -4615,15 +4615,6 @@ void function Gamemode1v1_ChallengeNotificationsThread( entity player )
 void function _CleanupPlayerEntities( entity player )
 {
 	PROTO_CleanupTrackedProjectiles( player )
-
-	if( IsValid( CryptoDrone_GetPlayerDrone( player ) ) )
-	{
-		GetPlayerOutOfCamera( player )
-		CryptoDrone_GetPlayerDrone( player ).Destroy()
-	}
-
-	PhaseTunnel_CancelPlacement( player )
-	
 	player.Signal( "CleanUpPlayerAbilities" )
 }
 

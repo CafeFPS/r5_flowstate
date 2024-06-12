@@ -89,8 +89,7 @@ void function LgDuelLoadSettings( entity player, string data )
 
 //LGDuel
 void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
-{
-	
+{	
 	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
 		return
 	
@@ -106,12 +105,13 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
 		}
 
-
+		
+		attacker.p.totalLGHits++
+		
 		if( attacker.p.totalLGShots == 0 )
 			return
 
 		attacker.SetPlayerNetInt( "accuracy", int( ( float( attacker.p.totalLGHits ) / float( attacker.p.totalLGShots ) )*100 ) )
-		attacker.p.totalLGHits++
 	}
 }
 

@@ -2518,6 +2518,13 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	void function PrintMatchIDtoAll()
 	{
 		string matchID = format( "\n\n Server stats enabled @ www.r5r.dev, \n round: %d - MatchID: %s \n ", GetCurrentRound(), SQMatchID__internal() )
-		CenterPrintAll( matchID )
+		thread
+		(
+			void function() : ( matchID )
+			{
+				wait 1 //idk
+				CenterPrintAll( matchID )
+			}
+		)()
 	}	
 #endif

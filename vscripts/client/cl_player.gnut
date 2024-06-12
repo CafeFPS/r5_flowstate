@@ -54,7 +54,7 @@ global function FS_Toggle_Mute
 global function FS_Silence
 global function FS_RegisterAdmin
 
-global function DamageClosesMenu
+global function PlayerSetting_DamageClosesMenu
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -148,7 +148,7 @@ void function OnSettingsUpdated()
 	}
 }
 
-bool function DamageClosesMenu()
+bool function PlayerSetting_DamageClosesMenu()
 {
 	return file.player_setting_damage_closes_deathbox_menu != 0 ? true : false
 }

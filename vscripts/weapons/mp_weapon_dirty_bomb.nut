@@ -221,8 +221,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	vector origin = placementInfo.origin
 	vector angles = placementInfo.angles
 
-	owner.EndSignal( "OnDestroy" )
-	owner.EndSignal( "CleanUpPlayerAbilities" )
+	owner.EndSignal( "OnDestroy", "CleanUpPlayerAbilities" )
 
 	int team = owner.GetTeam()
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
@@ -353,7 +352,8 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	
 	if( GetCurrentPlaylistVarBool( "lsm_mod6", false ) )
 	{
-		while(true){
+		while(true)
+		{
 			wait RandomFloatRange(DIRTY_BOMB_SPAWN_MIN,DIRTY_BOMB_SPAWN_MAX)
 
 			vector attackPos = placementInfo.origin + <0,0,80>
@@ -462,8 +462,8 @@ void function CausticTrap_OnDamaged_Activated(entity ent, var damageInfo)
 
 	ent.SetTakeDamageType( DAMAGE_NO )
 	ent.kv.solid = 0
-	DamageInfo_SetDamage( damageInfo, 0)
-		
+	DamageInfo_SetDamage( damageInfo, 0 )
+	
 	thread RemoveCanister( ent, null )
 }
 
@@ -488,15 +488,15 @@ void function RemoveCanister( entity canisterProxy, entity mover )
 	if ( IsValid( canisterProxy ) )
 	{
 		canisterProxy.EndSignal( "OnDestroy" )
-		// canisterProxy.SetTakeDamageType( DAMAGE_NO )
+		//canisterProxy.SetTakeDamageType( DAMAGE_NO )
 		canisterProxy.NotSolid()
 
 		float duration = canisterProxy.GetSequenceDuration( "prop_caustic_gastank_destroy" )
 		Highlight_ClearOwnedHighlight( canisterProxy )
 		Highlight_ClearFriendlyHighlight( canisterProxy )
-		thread PlayAnim( canisterProxy, "prop_caustic_gastank_destroy", mover)
+		thread PlayAnim( canisterProxy, "prop_caustic_gastank_destroy", mover )
 		//canisterProxy.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
-		waitthread PROTO_FadeModelAlphaOverTime( canisterProxy, duration )
+		waitthread PROTO_FadeModelAlphaOverTime( canisterProxy, duration + 0.05 ) //extra state
 	}
 }
 
@@ -605,6 +605,9 @@ void function DirtyBombProximityActivationUpdate( entity trigger )
 
 		foreach ( entity ent in targetEnts )
 		{
+			if ( !ent.DoesShareRealms( trigger ) )
+				continue
+				
 			//Don't trigger on phase shifted targets.
 			if ( ent.IsPhaseShifted() )
 				continue
@@ -614,11 +617,8 @@ void function DirtyBombProximityActivationUpdate( entity trigger )
 				continue
 
 			//Don't trigger on titans
-			if ( ent.IsTitan() )
-				continue
-
-			if ( !ent.DoesShareRealms( trigger ) )
-				continue
+			// if ( ent.IsTitan() )
+				// continue
 
 			//printt( "CASTING CONE FOR " + ent )
 			vector dir = Normalize( ent.GetOrigin() - offsetOrigin )
@@ -687,7 +687,6 @@ void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 	{
 		canisterProxy.Signal( "DirtyBomb_Disarmed" )
 	}
-
 }
 
 void function OnDirtyBombCanisterDamaged_PreArmed( entity canisterProxy, var damageInfo )
@@ -721,9 +720,11 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 	
 	owner.EndSignal( "CleanUpPlayerAbilities" )
 	
-	OnThreadEnd( function() : ( canisterProxy )
+	OnThreadEnd
+	( 
+		function() : ( canisterProxy )
 		{
-			if( IsValid(canisterProxy) )
+			if( IsValid( canisterProxy ) )
 			{
 				canisterProxy.Signal( "OnDestroy" )
 			}
@@ -818,8 +819,8 @@ void function WaitForCanisterPickup( entity canisterProxy )
  		entity player = expect entity( canisterProxy.WaitSignal( "OnPlayerUse" ).player )
 
  		//Titans cannot interact with dirty bomb.
- 		if ( player.IsTitan() )
- 			continue
+ 		// if ( player.IsTitan() )
+ 			// continue
 
 		entity owner = canisterProxy.GetBossPlayer()
 
