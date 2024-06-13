@@ -452,7 +452,7 @@ void function TakeLoadoutRelatedWeapons( entity player )
 const array<int> nonPassiveModes = [
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_scenarios
+	/* ePlaylists.fs_scenarios */
 ]
 
 void function GiveLoadoutRelatedWeapons( entity player )

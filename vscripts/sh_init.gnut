@@ -203,6 +203,8 @@ void function SV_CL_Init()
 	//R5R Sword
 	MpWeaponTitanSword_Init()
 	MpWeaponPortalGun_Init()
+	
+	WeaponMastiff_Init()
 
     // Zipline Utility
     #if SERVER

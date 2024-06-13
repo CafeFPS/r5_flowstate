@@ -366,7 +366,8 @@ void function PassivesAllowed_Init()
 	]
 	
 	array<int> allowedPassivePlaylists = [
-		ePlaylists.fs_1v1
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_scenarios
 	]
 	
 	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	

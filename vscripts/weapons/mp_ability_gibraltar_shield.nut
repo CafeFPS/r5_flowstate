@@ -78,7 +78,8 @@ bool function OnWeaponChargeBegin_ability_gibraltar_shield( entity weapon )
 				weapon.EmitWeaponSound_1p3p( SOUND_PILOT_GUN_SHIELD_1P, SOUND_PILOT_GUN_SHIELD_3P )
 			}
 		}
-		//TrackFirstPersonGunShield( weapon, FX_GUN_SHIELD_WALL_FP, "muzzle_flash" )
+		
+		//TrackFirstPersonGunShield( weapon, FX_GUN_SHIELD_WALL_FP , "muzzle_flash" )
 		#endif
 
 	}

@@ -106,6 +106,7 @@ void function ClPlayer_Init()
 	RegisterSignal( "HealthChanged" )
 	RegisterSignal( "ShieldChanged" )
 	RegisterSignal( "TargetChanged" )
+	//RegisterSignal( "PlayerADSPressed" )
 
 	FlagInit( "DamageDistancePrint" )
 	FlagInit( "EnableTitanModeChange", true )
@@ -133,10 +134,17 @@ void function ClPlayer_Init()
 	
 	file.log_damage_to_obituary = GetCurrentPlaylistVarBool( "log_damage_to_obituary", false )
 
+	//RegisterConCommandTriggeredCallback( "+zoom", CPlayerADSPressed )
+
 	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
 	
 	OnSettingsUpdated()
 }
+
+// void function CPlayerADSPressed( entity player )
+// {
+	// player.Signal( "PlayerADSPressed" )
+// }
 
 void function OnSettingsUpdated()
 {
@@ -1979,7 +1987,7 @@ void function SetHideCrosshairHitIndicatorOverride( bool value )
 	file.hideCrosshairHitIndicatorOverride = value
 }
 
-void function FS_Toggle_Mute( int chal, bool toggle )
+void function FS_Toggle_Mute( int chal, bool toggle ) //TODO: remove challenge sequence (redundant)
 {
 	entity player = GetLocalClientPlayer()
 	string uid = player.GetPlatformUID()
@@ -2032,7 +2040,6 @@ void function FS_Silence( bool toggle, int eHandle )
 			TogglePlayerTextMutedForUID( uid )
 		}
 	}	
-
 }
 
 void function FS_RegisterAdmin()

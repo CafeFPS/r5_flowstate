@@ -368,7 +368,7 @@ struct FileStruct_LifetimeLevel
 	#if CLIENT
 		var sidePaneRui = null
 
-		//array<NestedGladiatorCardHandle>                     nestedCards
+		array<NestedGladiatorCardHandle>                     nestedCards//was commented
 		table<EHI, array<NestedGladiatorCardHandle> > ownerNestedCardListMap
 
 		bool                                 isCaptureThreadRunning = false
@@ -445,6 +445,10 @@ void function ShGladiatorCards_LevelInit()
 #if UI
 void function ShGladiatorCards_LevelShutdown()
 {
+	#if DEVELOPER
+		Warning("SHUTDOWN")
+	#endif 
+	
 	if ( fileLevel.currentMenuGladCardPanel != null )
 	{
 		RuiDestroyNestedIfAlive( Hud_GetRui( fileLevel.currentMenuGladCardPanel ), fileLevel.currentMenuGladCardArgName )
@@ -484,7 +488,7 @@ NestedGladiatorCardHandle function CreateNestedGladiatorCard( var parentRui, str
 	handle.currentOwnerEHI = EHI_null
 	handle.situation = situation
 	handle.isMoving = eGladCardDisplaySituation_IS_MOVING[situation]
-	//fileLevel.nestedCards.append( handle )
+	fileLevel.nestedCards.append( handle ) //was commented
 	#if DEVELOPER
 		handle.DEV_culprit = expect string(expect table(getstackinfos( 2 )).func)
 	#endif
@@ -517,7 +521,7 @@ void function CleanupNestedGladiatorCard( NestedGladiatorCardHandle handle, bool
 		handle.framePakHandleOrNull = null
 	}
 
-	//fileLevel.nestedCards.fastremovebyvalue( handle )
+	fileLevel.nestedCards.fastremovebyvalue( handle ) //was commented
 }
 #endif
 
@@ -1821,7 +1825,8 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 				}
 			}
 		}
-	}catch(e420)
+	}
+	catch(e420)
 	{
 		printt("gladiators error, debug it" )
 	}
@@ -2680,7 +2685,33 @@ void function UpdateRuiWithStatTrackerData( var rui, string prefix, EHI playerEH
 #if CLIENT
 void function UpdateRuiWithStatTrackerData_JustValue( var rui, string prefix, float value )
 {
-	RuiSetFloat( rui, prefix + "Value", value )
+	if( !IsValid( rui ) )
+	{
+		#if DEVELOPER
+			Warning("RUI crash avoided")
+			entity player = GetLocalClientPlayer()
+			if( !IsValid( player ) )
+			{
+				Warning("Player was invalid")
+			}
+			else 
+			{
+				Warning("player is good")
+				player.ClientCommand("Script_Callback:_Player_is_not_invalid during_rui_stat_tracker_data RUI_NULL")
+			}			
+		#endif
+		
+		return 
+	}
+	
+	try 
+	{
+		RuiSetFloat( rui, prefix + "Value", value )
+	}
+	catch( e )
+	{
+		Warning( "GLAD ERROR DEBUG IT Error: " + e )
+	}
 }
 #endif
 

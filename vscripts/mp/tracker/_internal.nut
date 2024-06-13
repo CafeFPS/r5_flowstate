@@ -104,7 +104,7 @@ void function SetPlayerStatInt( string player_oid, string statname, int value )
 
 void function SetPlayerStatString( string player_oid, string statname, string value ) 
 {
-	mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value)
+	mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value )
 	
 	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
 	{

@@ -2009,6 +2009,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			{
 				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				CharacterSelect_AssignCharacter( player, selectedCharacter )
+				GiveLoadoutRelatedWeapons( player )
 			}
 
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )

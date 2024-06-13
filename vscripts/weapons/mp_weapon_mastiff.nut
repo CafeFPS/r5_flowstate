@@ -1,8 +1,14 @@
 global function OnWeaponPrimaryAttack_weapon_mastiff
 
 #if SERVER
-global function OnWeaponNpcPrimaryAttack_weapon_mastiff
+	global function OnWeaponNpcPrimaryAttack_weapon_mastiff
+	//global function OnReloadCancel_weapon_mastiff	
 #endif // #if SERVER
+
+global function WeaponMastiff_Init
+global function OnWeaponReload_weapon_mastiff
+//global function OnWeaponActivate_weapon_mastiff
+//global function OnWeaponDeactivate_weapon_mastiff
 
 const MASTIFF_BLAST_PATTERN_LEN = 8
 const BLAST_PATTERN_LEN_SIXTYNINE = 69
@@ -104,6 +110,9 @@ struct {
 		[-2.0, 2.2], //
 		[-2.0, 2.6], //
 	]
+	
+	bool bAdsCancelsReload
+	
 } file
 
 var function OnWeaponPrimaryAttack_weapon_mastiff( entity weapon, WeaponPrimaryAttackParams attackParams )
@@ -198,3 +207,43 @@ int function FireMastiff( WeaponPrimaryAttackParams attackParams, bool playerFir
 	return 1
 }
 
+// weapon cancels reload ~mkos [ HACK, needs native managed reload cancel ]
+void function WeaponMastiff_Init()
+{
+	//AddClientCommandCallbackNew( "AttemptCancelReload_Mastiff", OnReloadCancel_weapon_mastiff )
+	
+	var bAdsCancelsReload = GetWeaponInfoFileKeyField_Global( "mp_weapon_mastiff", "reload_allow_ads" ) 
+
+	if( bAdsCancelsReload != null )
+	{
+		if( expect int( bAdsCancelsReload ) != 0 )
+		{
+			file.bAdsCancelsReload = true
+		}
+	}
+}
+
+void function OnWeaponReload_weapon_mastiff( entity weapon, int milestoneIndex )
+{
+	if( !file.bAdsCancelsReload )
+		return
+	
+	entity player = weapon.GetWeaponOwner()
+	
+	if( !IsValid( player ) )
+		return
+	
+	if ( IsValid( weapon ) && weapon.IsReloading() )
+	{
+		if( player.IsInputCommandPressed( IN_ZOOM ) || player.IsInputCommandHeld( IN_ZOOM ) )
+		{
+			#if CLIENT
+				if ( !InPrediction() )
+					return
+			#endif
+			
+			player.DisableWeapon()
+			player.EnableWeapon()
+		}
+	}
+}
