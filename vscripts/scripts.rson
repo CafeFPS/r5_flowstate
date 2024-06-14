@@ -264,7 +264,6 @@ Scripts:
 	weapons/mp_weapon_softball.nut
 	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
-	
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
@@ -998,6 +997,7 @@ Scripts:
 	lobby/lobbyvm/sh_lobbyvm.nut
 	mp/sh_movement_recorder.nut
 	sh_hover_vehicle.gnut
+	gamemodes/fs_scenarios/sh_gamemode_scenarios.nut
 ]
 
 When: "SERVER"
