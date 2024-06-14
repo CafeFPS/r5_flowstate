@@ -20,6 +20,7 @@ global function FS_Scenarios_GetDropshipEnabled
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
+global function FS_Scenarios_HandleGroupIsFinished
 
 #if TRACKER //demo only
 global function TrackerStats_ScenariosKills
@@ -52,6 +53,7 @@ global struct scenariosGroupStruct
 	int team3Index = -1
 
 	bool IsFinished = false
+	float startTime
 	float endTime
 	bool showedEndMsg = false
 	bool isReady = false
@@ -180,6 +182,8 @@ void function Init_FS_Scenarios()
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
 
 	AddCallback_FlowstateSpawnsInit( CustomSpawns )
+
+	FS_Scenarios_Score_System_Init()
 }
 
 bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
@@ -238,7 +242,58 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 		}
 	}
 
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
+	float elapsedTime = Time() - group.startTime
+	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+
+	if ( victim.GetTeam() != attacker.GetTeam() && attacker.IsPlayer() )
+	{
+		// todo fix bleedout signaling
+		// if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
+		// {
+			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
+		// } else if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
+		// {
+			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+		// } else
+		// {
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
+		// }
+	}
+
+	FS_Scenarios_HandleGroupIsFinished( victim, damageInfo )
+
+	if( IsValid( group ) && group.IsFinished )
+		return
+
+	if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 1 )
+	{
+		entity soloPlayer = GetPlayerArrayOfTeam_Alive( victim.GetTeam() )[0]
+		
+		if( IsValid( soloPlayer ) && !Bleedout_IsBleedingOut( soloPlayer ) )
+		{
+			FS_Scenarios_UpdatePlayerScore( soloPlayer, FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER )
+		}
+	}
+
 	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+}
+
+bool function FS_Scenarios_IsFullTeamBleedout( entity attacker, entity victim ) 
+{
+	int count = 0
+	foreach( player in GetPlayerArrayOfTeam_Alive( victim.GetTeam() ) )
+	{
+		if( player == victim )
+			continue
+
+		if( IsAlive( player ) && !Bleedout_IsBleedingOut( player ) )
+			count++
+	}
+	printt( "FS_Scenarios_IsFullTeamBleedout", count )
+	
+	return count == 0
 }
 
 void function FS_Scenarios_OnPlayerConnected( entity player )
@@ -246,6 +301,8 @@ void function FS_Scenarios_OnPlayerConnected( entity player )
 	#if DEVELOPER
 		printt( "[+] OnPlayerConnected Scenarios -", player )
 	#endif
+
+	ValidateDataTable( player, "datatable/flowstate_scenarios_score_system.rpak" )
 
 	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
 }
@@ -289,7 +346,7 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 		thread EnemyDownedDialogue( attacker, victim )
 
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
-			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.DOWNED, victim )
 
 		foreach ( cbPlayer in GetPlayerArray() )
 			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
@@ -322,7 +379,13 @@ void function FS_Scenarios_OnPlayerDisconnected( entity player )
 	#endif
 	
 	_CleanupPlayerEntities( player )
-	HandleGroupIsFinished( player, null )
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+	if( IsValid( group ) && !group.IsFinished )
+		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
+
+	FS_Scenarios_HandleGroupIsFinished( player, null )
 
 	if( player.p.handle in file.scenariosPlayerToGroupMap )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
@@ -1129,7 +1192,6 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 	int groupHandle = GetUniqueID()
 
 	newGroup.groupHandle = groupHandle
-	newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
 	newGroup.dummyEnt = CreateEntity( "info_target" )
 
 	try 
@@ -1359,18 +1421,27 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		//Los jugadores que están en la sala de espera no se pueden alejar mucho de ahí
 		foreach ( playerHandle, playerInWaitingStruct in FS_1v1_GetPlayersWaiting() )
 		{
-			if ( !IsValid( playerInWaitingStruct.player ) )
+			entity player = playerInWaitingStruct.player
+			if ( !IsValid( player ) )
 			{
 				deleteWaitingPlayer(playerInWaitingStruct.handle) //struct contains players handle as basic int
 				continue
 			}
 
+			if( !IsAlive( player ) )
+			{
+				DecideRespawnPlayer( player, false )
+				HolsterAndDisableWeapons( player )
+				player.SetHealth( player.GetMaxHealth() )
+				player.SetShieldHealth( player.GetShieldHealthMax() )
+			}
+
 			float t_radius = 600;
 
-			if( Distance2D( playerInWaitingStruct.player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
+			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
 			{
-				maki_tp_player( playerInWaitingStruct.player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons( playerInWaitingStruct.player )
+				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( player )
 			}
 		}
 
@@ -1387,10 +1458,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			players.extend( group.team3Players )
 			ArrayRemoveInvalid( players )
 			
-			if( group.isReady )
+			if( group.isReady && !group.IsFinished )
 			{
 				//Anuncio que la ronda individual está a punto de terminar
-				if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+				if( Time() > group.endTime - 30 && !group.showedEndMsg )
 				{
 					foreach( player in players )
 					{
@@ -1413,9 +1484,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsAlive( player ) )
 					{
 						soloModePlayerToWaitingList( player )
-						DecideRespawnPlayer( player, false )
-						HolsterAndDisableWeapons( player )
-
+						
 						foreach( splayer in players )
 							Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
 
@@ -1428,10 +1497,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 						#if DEVELOPER
 							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-						#endif 
-
-						player.SetHealth( player.GetMaxHealth() )
-						player.SetShieldHealth( player.GetShieldHealthMax() )
+						#endif
 						continue
 					}
 					player.p.lastDamageTime = Time() //avoid player regen health
@@ -1444,13 +1510,14 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 						player.TakeDamage( settings.fs_scenarios_ring_damage, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
 						player.p.lastRingDamagedTime = Time()
+						FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_RING )
 						// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
 					}
 				}
 			}
 
-			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
-			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
+			// Acabó la ronda, todos los jugadores de un equipo murieron
+			if ( group.isReady && group.IsFinished )
 			{
 				#if DEVELOPER
 					printt( "Group has finished!", group.groupHandle )
@@ -1915,6 +1982,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					wait settings.fs_scenarios_game_start_time_delay
 
 					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
+
+					newGroup.startTime = Time()
+					newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
 					newGroup.isReady = true
 				}()
 			}
@@ -1922,6 +1992,92 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 	}//while(true)
 
 }//thread
+
+void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo )
+{
+	if( !IsValid( player ) )
+		return
+
+	if( damageInfo != null && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
+		return
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+	if( !IsValid( group ) || group.IsFinished || !group.isReady )
+		return
+
+	int aliveCount1
+	array<entity> winners
+	foreach( splayer in group.team1Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount1++
+			winners.append( splayer )
+		}
+	}
+	
+	int aliveCount2
+	foreach( splayer in group.team2Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount2++
+			winners.append( splayer )
+		}
+	}
+
+	int aliveCount3
+	foreach( splayer in group.team3Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount3++
+			winners.append( splayer )
+		}
+	}
+
+	if( FS_Scenarios_GetAmountOfTeams() > 2 && ( aliveCount1 == 0 && aliveCount2 == 0 || aliveCount1 == 0 && aliveCount3 == 0 || aliveCount2 == 0 && aliveCount3 == 0 ) || FS_Scenarios_GetAmountOfTeams() == 2 && ( aliveCount1 == 0 || aliveCount2 == 0 ) )
+	{
+		float elapsedTime = Time() - group.startTime
+
+		if( winners.len() > 1 )
+		{
+			//it should be only one team
+			foreach( winner in winners )
+			{
+				FS_Scenarios_UpdatePlayerScore( winner, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+				FS_Scenarios_UpdatePlayerScore( winner, FS_ScoreType.TEAM_WIN )
+				player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", player.GetPlayerNetInt( "FS_Scenarios_MatchesWins" ) + 1 )
+			}
+		}
+		else if( winners.len() == 1 )
+		{
+			FS_Scenarios_UpdatePlayerScore( winners[0], FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+			FS_Scenarios_UpdatePlayerScore( winners[0], FS_ScoreType.SOLO_WIN )
+			player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", player.GetPlayerNetInt( "FS_Scenarios_MatchesWins" ) + 1 )
+		}
+
+		group.IsFinished = true //tell solo thread this round has finished
+	}
+
+	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
+	{
+		int droppableItems = GetAllDroppableItems( player ).len()
+
+		if ( droppableItems > 0 )
+			CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
+	}
+} 
 
 void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct group )
 {

@@ -241,7 +241,19 @@ struct
 		"#FS_CMD",
 		"#FS_NO_ANIMS",
 		"#FS_PLAYING_RANDOM",
-		"#FS_PLAYING_RANDOM_DESC"	
+		"#FS_PLAYING_RANDOM_DESC",	
+		"#SCORE_EVENT_FS_Scenarios_EnemyDowned",
+		"#SCORE_EVENT_FS_Scenarios_EnemyKilled",
+		"#SCORE_EVENT_FS_Scenarios_SurvivalTime",
+		"#SCORE_EVENT_FS_Scenarios_EnemyDoubleDowned",
+		"#SCORE_EVENT_FS_Scenarios_EnemyTripleDowned",
+		"#SCORE_EVENT_FS_Scenarios_BonusTeamWipe",
+		"#SCORE_EVENT_FS_Scenarios_TeamWin",
+		"#SCORE_EVENT_FS_Scenarios_SoloWin",
+		"#SCORE_EVENT_FS_Scenarios_PenaltyDeath",
+		"#SCORE_EVENT_FS_Scenarios_PenaltyRing",
+		"#SCORE_EVENT_FS_Scenarios_BecomesSoloPlayer",
+		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer"
 	]
 	
 } file

@@ -2550,7 +2550,7 @@ void function soloModePlayerToWaitingList( entity player )
 	float season_kd;
 	float current_kd;
 	
-	if(IsValid(player))
+	if(IsValid(player)) //already checked? Cafe
 	{// weighted scoring
 		season_kd = getkd( (player.GetPlayerNetInt( "kills" ) + player.p.season_kills) , (player.GetPlayerNetInt( "deaths" ) + player.p.season_deaths) )
 		current_kd = getkd( player.GetPlayerNetInt( "kills" ) , player.GetPlayerNetInt( "deaths" )  )	
@@ -2558,7 +2558,7 @@ void function soloModePlayerToWaitingList( entity player )
 	}
 	else
 	{
-		return
+		return // wtf? cafe
 		//playerStruct.kd = 0
 	}
 	playerStruct.lastOpponent = player.p.lastKiller
@@ -4815,61 +4815,10 @@ void function HandleGroupIsFinished( entity player, var damageInfo )
 	if( !IsValid( player ) )
 		return
 
-	if( settings.is3v3Mode )
-	{
-		if( damageInfo != null && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
-			return
+	soloGroupStruct group = returnSoloGroupOfPlayer(player) 
 
-		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
-
-		int aliveCount1
-		foreach( splayer in group.team1Players )
-		{
-			if( !IsValid( splayer ) )
-				continue
-			
-			if( IsAlive( splayer ) )
-				aliveCount1++
-		}
-		
-		int aliveCount2
-		foreach( splayer in group.team2Players )
-		{
-			if( !IsValid( splayer ) )
-				continue
-			
-			if( IsAlive( splayer ) )
-				aliveCount2++
-		}
-
-		int aliveCount3
-		foreach( splayer in group.team3Players )
-		{
-			if( !IsValid( splayer ) )
-				continue
-			
-			if( IsAlive( splayer ) )
-				aliveCount3++
-		}
-
-		if( FS_Scenarios_GetAmountOfTeams() > 2 && ( aliveCount1 == 0 && aliveCount2 == 0 || aliveCount1 == 0 && aliveCount3 == 0 || aliveCount2 == 0 && aliveCount3 == 0 ) || FS_Scenarios_GetAmountOfTeams() == 2 && ( aliveCount1 == 0 || aliveCount2 == 0 ) )
-			group.IsFinished = true //tell solo thread this round has finished
-		
-		if( FS_Scenarios_GetDeathboxesEnabled() )
-		{
-			int droppableItems = GetAllDroppableItems( player ).len()
-
-			if ( droppableItems > 0 && !group.IsFinished )
-				CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
-		}
-	} 
-	else
-	{
-		soloGroupStruct group = returnSoloGroupOfPlayer(player) 
-		
-		if(!group.IsKeep)
-			group.IsFinished = true //tell solo thread this round has finished
-	}
+	if(!group.IsKeep)
+		group.IsFinished = true //tell solo thread this round has finished
 }
 
 void function TakeUltimate( entity player )

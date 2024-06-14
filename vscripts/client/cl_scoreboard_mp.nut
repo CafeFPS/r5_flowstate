@@ -723,6 +723,8 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 					playerScore3 = player.GetPlayerNetInt( "oddball_ballHeldTime" )
 				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore3 = player.GetPlayerNetInt( "defused" )
+				else if( Playlist() == ePlaylists.fs_scenarios )
+					playerScore3 = player.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
 				else
 					playerScore3 = player.GetPlayerNetInt( "damage" )
 			}
@@ -738,6 +740,8 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 					playerScore2 = player.GetPlayerNetInt( "accuracy" )
 				else if( Gamemode() == eGamemodes.fs_snd ) 
 					playerScore2 = player.GetPlayerNetInt( "planted" )
+				else if( Playlist() == ePlaylists.fs_scenarios )
+					playerScore2 = player.GetPlayerNetInt( "FS_Scenarios_MatchesWins")
 				else
 					playerScore2 = player.GetPlayerNetInt( "deaths" )
 			}

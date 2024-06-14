@@ -1944,6 +1944,28 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		aVal = a.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+		bVal = b.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+
+		aVal = a.GetPlayerNetInt( "FS_Scenarios_MatchesWins" )
+		bVal = b.GetPlayerNetInt( "FS_Scenarios_MatchesWins" )
+
+		if ( aVal > bVal )
+			return 1
+		else if ( aVal < bVal )
+			return -1
+		
+		return 0
+	}
+
 	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		aVal = a.GetPlayerNetInt( "defused" )

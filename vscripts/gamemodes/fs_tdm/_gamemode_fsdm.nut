@@ -1398,8 +1398,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 		if(IsValid(attacker) && IsValid(victim))
 			victim.p.lastKiller = attacker
+		
+		if( !is3v3Mode() )
+			HandleGroupIsFinished( victim, damageInfo )
 
-		HandleGroupIsFinished( victim, damageInfo )
 		ClearInvincible(victim)
 
 		return
@@ -3427,9 +3429,16 @@ void function SimpleChampionUI()
 		if ( FlowState_ResetKillsEachRound() || is1v1EnabledAndAllowed() )
 		{
 			player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
-			player.SetPlayerNetInt( "deaths", 0 ) //Reset for kills
+			player.SetPlayerNetInt( "assists", 0 ) //Reset for assists
+			player.SetPlayerNetInt( "deaths", 0 ) //Reset for deaths
 			player.SetPlayerGameStat( PGS_KILLS, 0 )
 			player.SetPlayerGameStat( PGS_DEATHS, 0 )
+
+			if( Playlist() == ePlaylists.fs_scenarios )
+			{
+				player.SetPlayerNetInt( "FS_Scenarios_PlayerScore", 0 )
+				player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", 0 )
+			}
 		}
 
 		if( Flowstate_IsLGDuels() )

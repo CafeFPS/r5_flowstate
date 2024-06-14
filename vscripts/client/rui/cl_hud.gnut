@@ -559,8 +559,19 @@ void function AddScoreEventMessage( ScoreEvent scoreEvent, EHI associatedEHI, in
 	messageData.scoreEventValue = pointValue
 	messageData.messageText = eventText
 	messageData.messageScale = (displayType & eEventDisplayType.BIG) ? 1.01 : 1.0
-	if ( ScoreEvent_GetEventName( scoreEvent ) == "Sur_DownedPilot" || ScoreEvent_GetEventName( scoreEvent ) == "Sur_DownedPilotAssist" )
+	if ( ScoreEvent_GetEventName( scoreEvent ) == "Sur_DownedPilot" ||
+		ScoreEvent_GetEventName( scoreEvent ) == "Sur_DownedPilotAssist" )
 		messageData.messageScale = 1.5
+		
+	if( ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_SoloWin" || 
+		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_TeamWin" ||
+		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_PenaltyDeath" ||
+		ScoreEvent_GetEventName( scoreEvent ) == "FS_Scenarios_SurvivalTime"
+		)
+	{
+		messageData.messageScale = 1.5
+		messageData.duration = 5
+	}
 
 	if ( !(displayType & eEventDisplayType.BIG) )
 		return

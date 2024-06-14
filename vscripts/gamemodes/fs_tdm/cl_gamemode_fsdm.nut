@@ -147,6 +147,7 @@ void function Cl_CustomTDM_Init()
 	if( Playlist() == ePlaylists.fs_scenarios )
 	{
 		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+		FS_Scenarios_Score_System_Init()
 	}
 	
 	if( Playlist() == ePlaylists.fs_1v1 )
@@ -556,7 +557,7 @@ void function Flowstate_StartTime_Thread( float endtime )
 	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
 	else if( Playlist() == ePlaylists.fs_scenarios )
-		msg = "Zone War Starting in "
+		msg = "Zone Wars Starting in "
 
 	while ( Time() <= endtime )
 	{
