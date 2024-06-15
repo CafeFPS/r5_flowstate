@@ -22,7 +22,7 @@ void function Score_Init()
 
 }
 
-void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity associatedEnt = null, string noideawhatthisis = "", int pointValueOverride = -1 )
+void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity associatedEnt = null, string noideawhatthisis = "", int ownValueOverride = -1 )
 {
 	ScoreEvent event = GetScoreEvent( scoreEventName )
 	
@@ -32,17 +32,17 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	var associatedHandle = 0
 	if ( associatedEnt != null )
 		associatedHandle = associatedEnt.GetEncodedEHandle()
-		
-	if ( pointValueOverride != -1 )
-		event.pointValue = pointValueOverride 
-		
+
 	float scale = targetPlayer.IsTitan() ? event.coreMeterScalar : 1.0	
 	float earnValue = event.earnMeterEarnValue * scale
 	float ownValue = event.earnMeterOwnValue * scale
 
 	if( scoreEventName == "Sur_DownedPilot" )
 		ownValue = GetTotalDamageTakenByPlayer( associatedEnt, targetPlayer )
-	
+
+	if ( Playlist() == ePlaylists.fs_scenarios && ownValueOverride != -1 || Playlist() == ePlaylists.fs_scenarios && ownValueOverride == -1 && scoreEventName == "FS_Scenarios_PenaltyRing") //point value is unused in r5, gonna use own value for scenarios. Cafe
+		ownValue = float( ownValueOverride )
+
 	//PlayerEarnMeter_AddEarnedAndOwned( targetPlayer, earnValue * scale, ownValue * scale )
 	
 	Remote_CallFunction_NonReplay( targetPlayer, "ServerCallback_ScoreEvent", event.eventId, event.pointValue, event.displayType, associatedHandle, ownValue, earnValue )
@@ -76,7 +76,10 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 		if ( sourceId == eDamageSourceId.damagedef_suicide )
 			return
 	}
-				
+	
+	if( is3v3Mode() )
+		return
+
 	if ( downed && GetGameState() >= eGameState.Playing)
 		AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 	else if( !downed && GetGameState() >= eGameState.Playing )
