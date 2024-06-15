@@ -3302,19 +3302,19 @@ void function SimpleChampionUI()
 					if( flowstateSettings.enable_oddball_gamemode )
 					{
 
-						if( !debugging )
-						{
-							SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-							SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+						// if( !debugging )
+						// {
+							// SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+							// SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
 
-							while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
-								WaitFrame()
+							// while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+								// WaitFrame()
 
-							foreach(player in GetPlayerArray())
-							{
-								Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
-							}
-						}
+							// foreach(player in GetPlayerArray())
+							// {
+								// Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+							// }
+						// }
 
 						//Message( player, "Oddball", file.selectedLocation.name, 5, "" )
 						LocalMsg( player, "#FS_Oddball", "", eMsgUI.DEFAULT, 5, "", file.selectedLocation.name )
@@ -6694,20 +6694,20 @@ void function SpawnChill()
 		FS_ResetMapLightning()
 		WaitFrame()
 
-		SetConVarFloat( "jump_graceperiod", 0 )
-		SetConVarFloat( "mat_envmap_scale", 0.12 )
+		// SetConVarFloat( "jump_graceperiod", 0 )
+		// SetConVarFloat( "mat_envmap_scale", 0.12 )
 
-		SetConVarFloat( "mat_autoexposure_max", 1.0 )
-		SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
-		SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
-		SetConVarFloat( "mat_autoexposure_min", 1.7 )
+		// SetConVarFloat( "mat_autoexposure_max", 1.0 )
+		// SetConVarFloat( "mat_autoexposure_max_multiplier", 3 )
+		// SetConVarFloat( "mat_autoexposure_min_multiplier", 3.0 )
+		// SetConVarFloat( "mat_autoexposure_min", 1.7 )
 
-		SetConVarFloat( "mat_sky_scale", 0.01 )
-		SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
-		SetConVarFloat( "mat_sun_scale", 1 )
-		SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
-		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
-	
+		// SetConVarFloat( "mat_sky_scale", 0.01 )
+		// SetConVarString( "mat_sky_color", "2.0 1.2 0.5 1.0" )
+		// SetConVarFloat( "mat_sun_scale", 1 )
+		// SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
+		// SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
+
 		//cannons
 		file.playerSpawnedProps.append( FSCannon_Create( <40676.5586, -10610.1416, -20472.6426>, 48, <1.0, 0.0, 1.0>) )
 		file.playerSpawnedProps.append( FSCannon_Create( <43311.0898, -10610.4277, -20470.5313>, 48, <-1.0, 0.0, 1.0>) )
@@ -6733,7 +6733,7 @@ void function SpawnChill()
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42050.5703, -9994.34082, -20213.0469>, <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 ) )
 		file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41947.1797, -9995.0625, -20212.5527>, <0, -180, 0>, "mp_weapon_haloshotgun", 0.5 ) )
 		
-		//Adjust sun flare for rotated skybox.
+		// Adjust sun flare for rotated skybox.
 		foreach( player in GetPlayerArray() )
 		{
 			if( !IsValid( player ) )

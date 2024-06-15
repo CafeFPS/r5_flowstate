@@ -89,6 +89,7 @@ global function AimTrainer_QuickHint
 global function StartUpdatingArmorSwapLastTime
 
 global function SetWeaponSlot
+global function CoolCameraOnMenu
 string DesiredSlot = "p"
 
 struct{
@@ -411,6 +412,7 @@ void function CoolCameraOnMenu()
 		cutsceneSpawns.append(NewCameraPair(<1133.25562, -20102.9648, -2488.08252>, <0, -24.9140873, 0>))
 		break
 		
+		case eMaps.mp_flowstate:
 		case eMaps.mp_rr_canyonlands_staging:
 		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
 		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 

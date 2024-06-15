@@ -271,6 +271,9 @@ void function Flowstate_CTFStartTimeChanged( entity player, float old, float new
 	if ( !actuallyChanged  )
 		return
 
+	if( Flowstate_IsHaloMode() )
+		return
+
 	Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LaunchCountDown_Finish" )
 }

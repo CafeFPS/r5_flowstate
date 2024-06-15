@@ -595,7 +595,7 @@ void function Flowstate_PlayStartRoundSounds()
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 	
-	if( Gamemode() == eGamemodes.CUSTOM_CTF )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF && !Flowstate_IsHaloMode() )
 	{
 		Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
