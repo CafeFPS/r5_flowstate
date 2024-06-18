@@ -3613,19 +3613,19 @@ void function SetDpadMenuHidden()
 }
 
 void function ChangeHUDVisibilityWhenInCryptoDrone( bool isInCryptoDrone = false )
-{
+{	
+	//TODO: debug it 
 	
-	if ( IsAlive( GetLocalClientPlayer() ) )
-	{
+	// if ( IsAlive( GetLocalClientPlayer() ) )
+	// {
 		
-		var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
+		// var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
 	
-		if ( cryptoAnimatedTacticalRui != null )
-		{
-			
-			RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
-		}
-	}
+		// if ( cryptoAnimatedTacticalRui != null )
+		// {
+			// RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+		// }
+	// }
 	
 	RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
 }
