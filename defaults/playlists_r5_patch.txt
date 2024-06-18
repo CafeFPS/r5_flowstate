@@ -1123,7 +1123,7 @@ playlists
 				flowstate_Enable_Shipment_By_AyeZee				1
 				flowstate_Enable_Killhouse_By_AyeZee			1
 				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							1
+				flowstate_Enable_Encore							1 //if disabled, it will try to load Rust first
 				flowstate_Enable_Killyard_By_DEAFPS				1
 				flowstate_Enable_Dustment_By_DEAFPS				1
 				flowstate_Enable_Shoothouse_By_DEAFPS			1
@@ -1390,8 +1390,37 @@ playlists
 				flowstateRoundsBeforeChangeLevel		2
 				
 				flowstateAdminTgive 					0 //admin is for tgive only, 0 will enable dev menu weapons for players
-				flowstate1v1MatchLoadout					0
-				afk_to_rest_bool						0
+				flowstate1v1MatchLoadout				0
+				
+				flowstate_give_character_passive		1
+				
+				flowstate_disable_all_map_triggers									0
+				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
+				flowstate_give_random_custom_models_toall			1		
+					
+				fs_scenarios_dropshipenabled 					0
+				fs_scenarios_start_skydiving 					1 //only works when dropship is enabled
+				fs_scenarios_maxIndividualMatchTime				300
+				fs_scenarios_playersPerTeam						3
+				fs_scenarios_teamAmount							3
+				fs_scenarios_ground_loot						1
+				fs_scenarios_inventory_empty					0 	// 0 won't give weapons, 1 will give wepons
+				fs_scenarios_deathboxes_enabled					1
+				fs_scenarios_bleedout_enabled					1
+				fs_scenarios_show_death_recap_onkilled			1
+				fs_scenarios_zonewars_ring_mode					1
+				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
+				fs_scenarios_ring_damage_step_time				1.5
+				fs_scenarios_game_start_time_delay				3.0
+				fs_scenarios_ring_damage						25.0
+				fs_scenarios_characterselect_enabled			1
+				fs_scenarios_characterselect_time_per_player	3.5
+				fs_scenarios_ringclosing_maxtime				100
+				survival_infinite_ammo   						1 	//Disable if ground loot is enabled above
+				flowstateBubble 								"111, 66, 245"	
+				// fs_scenarios_max_queuetime 150.0 //not implemented atm
+				// fs_scenarios_minimum_team_allowed 1 // used only when max_queuetime is triggered
+				// fs_scenarios_maximum_team_allowed 3
 				
 				/////////////////////////
 				// mkos added features //
@@ -1413,53 +1442,28 @@ playlists
 															// if player tries to rest, it will send them to rest after fight 
 															// and tell them they can try again in (n) seconds. 
 				
-				//TODO: custom teams settings
-				//
 				
 				// extra
 				default_start_in_rest_setting			0 // players default to starting in rest if 1 and player has no prior saved preference
 				default_lock1v1_setting					1 // default setting for player preference
-				give_random_legend_on_spawn             1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
+				give_random_legend_on_spawn             0 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice							0
 				default_enable_input_banner_setting     0 ///disables spammy player input banner on spawn //deprecated?
 				enable_chat_commands					1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
 				
-				///////////////////////////////////////////////////////////////////////////////
-				
-				flowstate_disable_all_map_triggers									0
-				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
-				flowstate_give_random_custom_models_toall			1
-
-				flowstateBubble 						"111, 66, 245"				
-
-				fs_scenarios_dropshipenabled 0
-				fs_scenarios_start_skydiving 1 //only works when dropship is enabled
-				fs_scenarios_playersPerTeam 3
-				fs_scenarios_teamAmount	3
-				fs_scenarios_maxIndividualMatchTime 300.0
-				// fs_scenarios_max_queuetime 150.0 //not implemented atm
-				// fs_scenarios_minimum_team_allowed 1 // used only when max_queuetime is triggered
-				// fs_scenarios_maximum_team_allowed 3
-				
-				fs_scenarios_ground_loot 1 //spawn ground loot and lootbins for realms
-				survival_infinite_ammo   0 //Disable if ground loot is enabled above
-				fs_scenarios_inventory_empty 1 // 1 won't give weapons, 0 will give wepons
-
-				fs_scenarios_deathboxes_enabled 1
-				
-				
+				///////////////////////////////////////////////////////////////////////////////			
 				
 				//The following is for when 
 				//installing or enabling extra spawn paks
 				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
 				
-				mp_rr_canyonlands_64k_x_64k		"1"
-				spawnsets_mp_rr_aqueduct 		"1"
-				spawnsets_mp_rr_arena_composite "1"
-				mp_rr_arena_phase_runner		"1"
-				mp_rr_olympus_mu1				"1"
+				spawnsets_mp_rr_canyonlands_64k_x_64k	"1"
+				spawnsets_mp_rr_aqueduct 				"1"
+				spawnsets_mp_rr_arena_composite 		"1"
+				spawnsets_mp_rr_arena_phase_runner		"1"
+				spawnsets_mp_rr_olympus_mu1				"1"
 				
 				spawnpaks_use_sets 				0	// bool, enables using other than stock spawn paks
 				spawnpaks_use_random			0	// bool, loads random configured pak on mapstart
@@ -3053,7 +3057,7 @@ playlists
 				lsm_mod9 0 // all loot is mozambique
 				lsm_mod10 1
 				
-				
+				flowstate_give_character_passive		1
 				
 			}
 			gamemodes { survival { maps {
