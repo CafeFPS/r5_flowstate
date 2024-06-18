@@ -20,6 +20,7 @@ When: " SERVER || CLIENT || UI "
 Scripts:
 [
 	sh_mapname_playlist_gamemode_enums.gnut //init this early ~mkos
+	sh_assert.nut
 	feature_flags_script.gnut
 	root_asset_lists.gnut
 ]

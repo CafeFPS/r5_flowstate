@@ -19,6 +19,7 @@ global function FILE_NAME
 global function DBG_INFO
 
 global function printt
+global function printw
 global function PrintFunc
 global function printt_spamLog
 global function printl_spamLog
@@ -71,6 +72,18 @@ void function printt( ... )
 		msg = (msg + " " + vargv[i])
 
 	printl( msg )
+}
+
+void function printw( ... )
+{
+	if ( vargc <= 0 )
+		return
+
+	local msg = vargv[0]
+	for ( int i = 1; i < vargc; i++ )
+		msg = (msg + " " + vargv[i])
+
+	Warning( msg )
 }
 
 void function PrintFunc( var val = null )

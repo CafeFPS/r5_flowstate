@@ -1112,7 +1112,7 @@ void function ClientCommand_DestroyDummys( entity player, array<string> args )
 		
 		case "Admin":
 		
-			if( !IsTrackerAdmin( player.p.UID ) )
+			if( !VerifyAdmin( player.p.name, player.p.UID ) )
 				return
 	
 			if( IsValid( svGlobal.levelEnt ) )

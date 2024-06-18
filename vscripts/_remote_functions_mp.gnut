@@ -364,7 +364,8 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_RemoveClientThatVotedFromTeam", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
 			// RegisterNetworkedVariable( "FSVoteTeam_StartTime", SNDC_GLOBAL, SNVT_TIME, -1 )
 			RegisterNetworkedVariable( "FSVoteTeam_EndTime", SNDC_GLOBAL, SNVT_TIME, -1 )
-			break
+			break			
+			
 	}
 	
 	//TF2 leftovers + Survival base gamemode
@@ -808,6 +809,8 @@ void function RemoteFunctions_Init_Begin()
 	
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
+	
+	Remote_RegisterUIFunction( "UICallback_ForceCloseDeathScreenMenu" )
 	
 	if ( IsLobby())
 	{

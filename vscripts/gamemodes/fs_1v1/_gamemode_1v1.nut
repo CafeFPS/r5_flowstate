@@ -4328,6 +4328,8 @@ void function GiveWeaponsToGroup( array<entity> players )
 }
 
 
+const array<string> STANDARD_INV_LOOT = ["health_pickup_combo_small", "health_pickup_health_small"]
+
 void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 {
 	#if DEVELOPER 
@@ -4359,7 +4361,8 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		Survival_SetInventoryEnabled( player, true )
 		SetPlayerInventory( player, [] )
 
-		RechargePlayerAbilities( player )
+		//RechargePlayerAbilities( player )
+		TakeAllPassives( player ) //passives given after legend selection
 
 		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
@@ -4367,8 +4370,8 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 		Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")  
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-		array<string> loot = ["health_pickup_combo_small", "health_pickup_health_small"] //this should be const script var?
-		foreach(item in loot)
+
+		foreach( item in STANDARD_INV_LOOT )
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
 		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
@@ -4761,7 +4764,7 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	{
 		ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
 		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
-	} 
+	}
 	else if( LegendGUID_EnabledPassives.contains( charID ) )
 	{
 		GivePassive( player, 0 ) //bangalore is only legend current in list

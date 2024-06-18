@@ -740,7 +740,7 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 		//player.BecomeRagdoll( Vector(0,0,0), false )
 		}catch(e420)
 		{
-			printt("Was not fixed, debug this asap")
+			printt( "Was not fixed, debug this asap:", e420 )
 		}
 	}
 	else
@@ -749,7 +749,7 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 			player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = eDamageSourceId.bleedout } )
 		}catch(e420)
 		{
-			printt("Was not fixed, debug this asap 2")
+			printt( "Was not fixed, debug this asap 2", e420 )
 		}
 		//player.BecomeRagdoll( Vector(0,0,0), false )
 	}

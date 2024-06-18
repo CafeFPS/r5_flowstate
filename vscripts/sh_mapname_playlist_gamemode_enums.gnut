@@ -2,7 +2,6 @@
 global function PlayLists_Mapnames_Gamemodes_Init
 
 //public:
-global function mAssert
 global function MapName
 global function Playlist
 global function Gamemode
@@ -11,6 +10,7 @@ global function Gamemode
 global function AllMapsArray
 global function AllGamemodesArray
 global function AllPlaylistsArray
+global function shGlobalErrorCheck
 
 //const:
 global const PRINT_GAMEMODE_DEBUGS = true
@@ -140,12 +140,6 @@ struct
 	
 } SH_globals
 
-
-//-----make global with----
-//
-// global SH_globals shGlobal
-//
-
 //this is the global location for defining a mode that is 1v1 based
 const array<int> playlist1v1Types = [
 	
@@ -179,8 +173,19 @@ void function __EnumsToArrays_Init()
 	}
 }
 
+void function __ClearEnumArrays()
+{
+	SH_globals.mapNames.clear()
+	SH_globals.playlists.clear()
+	SH_globals.gamemodes.clear()
+}
+
 void function PlayLists_Mapnames_Gamemodes_Init()
 {
+	#if UI 
+		__ClearEnumArrays()
+	#endif 
+	
 	__EnumsToArrays_Init()
 	
 	int playlistsArrayCount = SH_globals.playlists.len() - 1
@@ -324,7 +329,10 @@ array<string> function AllPlaylistsArray()
 	return SH_globals.playlists
 }
 	
-	
+bool function shGlobalErrorCheck()
+{
+	return SH_globals.errorCheck
+}
 
 //////////////////////////////////////////
 //	gamemode conditional INIT functions	//
@@ -450,63 +458,3 @@ bool function Flowstate_PlayerDoesRespawn()
 {
 	return modeSettings.playerDoesRespawn
 }
-
-
-
-//////////////////////////////////////////
-// placing this here temp (mkos Assert) //
-//////////////////////////////////////////
-
-void function mAssert( bool condition, string errorMsg = "" )
-{
-	if ( !condition )
-	{
-		#if CLIENT
-			ErrorClientPlayer( errorMsg )
-		#endif 
-		
-		#if SERVER 		
-			ErrorServer( errorMsg + "\n\n" + DBG_INFO( 5 ) )
-		#endif
-	}
-}
-
-#if CLIENT
-void function ErrorClientPlayer( string errorMsg )
-{
-	entity player = GetLocalClientPlayer()
-	thread WaitValidPlayerThenError( player, errorMsg )
-}
-
-void function WaitValidPlayerThenError( entity player, string errorMsg )
-{
-	GetLocalClientPlayer().ClientCommand("disconnect " + errorMsg )
-	waitthread WaitSignalOrTimeout( player, 2, "_disconnectedInternal" )	
-	RunUIScript( "OpenErrorDialog", errorMsg )
-}
-#endif
-
-#if SERVER
-void function ErrorServer( string errorMsg )
-{
-	thread WaitValidStateThenClose( errorMsg )
-}
-
-void function WaitValidStateThenClose( string errorMsg )
-{
-	if( !SH_globals.errorCheck )
-		wait 1 //Todo(dw): Needs proper timing ~mkos
-	
-	if ( GetPlayerArray().len() > 0 )
-	{
-		foreach( player in GetPlayerArray() )
-		{
-			KickPlayerById( player.GetPlatformUID(), errorMsg )
-		}
-	}
-	
-	ScriptError( errorMsg, DBG_INFO() )
-	//throw errorMsg
-}
-#endif 
-///

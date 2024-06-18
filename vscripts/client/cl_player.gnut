@@ -106,6 +106,7 @@ void function ClPlayer_Init()
 	RegisterSignal( "HealthChanged" )
 	RegisterSignal( "ShieldChanged" )
 	RegisterSignal( "TargetChanged" )
+	RegisterSignal( "OnDisconnected" )
 	//RegisterSignal( "PlayerADSPressed" )
 
 	FlagInit( "DamageDistancePrint" )
@@ -459,6 +460,8 @@ void function ClientCodeCallback_PlayerDisconnected( entity player, string cache
 	{
 		callbackFunc( player )
 	}
+	
+	player.Signal( "OnDisconnected" )
 }
 
 
@@ -670,8 +673,8 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	if ( isKillShot || isKnockdownShot )
 		KillShotBloodSpray( attacker, victim, damagePosition, isExplosion, isBullet, isShotgun )
 
-	if ( victim.IsTitan() && isKillShot )
-		ClientScreenShake( 8, 10, 1, <0, 0, 0> )
+	//if ( victim.IsTitan() && isKillShot )
+	//	ClientScreenShake( 8, 10, 1, <0, 0, 0> )
 
 	BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
 
@@ -804,7 +807,6 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
 	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
 }
-
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
 {

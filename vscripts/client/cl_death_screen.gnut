@@ -129,7 +129,6 @@ struct
 	bool isOpen = false
 } file
 
-
 void function Cl_DeathScreen_Init()
 {
 	AddCreateCallback( "player", DeathScreen_OnPlayerCreated )
@@ -237,8 +236,12 @@ bool function SquadSummaryTabIsPlaylistEnabled()
 
 void function ServerCallback_SquadEliminated( int eliminiatedTeam )
 {
+	#if DEVELOPER 
+		printt("cl_death_screen: SQUAD ELIMINATED")
+	#endif
+	
 	entity clientPlayer = GetLocalClientPlayer()
-	Assert( IsValid( clientPlayer ) )
+	mAssert( IsValid( clientPlayer ), "GetLocalClientPlayer() is invalid" )
 
 	if ( eliminiatedTeam != clientPlayer.GetTeam() )
 		return
@@ -294,7 +297,7 @@ void function DeathScreen_OnPlayerLifeStateChanged( entity player, int oldState,
 			file.blackBarRui = null
 		}
 
-		if ( IsViewingDeathScreen() )
+		if ( IsViewingDeathScreen() && Playlist() != ePlaylists.fs_scenarios )
 		{
 			RunUIScript( "UI_CloseDeathScreenMenu" )
 		}
@@ -341,7 +344,7 @@ void function DeathScreen_BleedoutEnded( entity player )
 
 void function DeathScreen_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
 {
-	Assert( player == GetLocalClientPlayer() )
+	mAssert( player == GetLocalClientPlayer(), "player != GetLocalClientPlayer()" )
 
 	RunUIScript( "UI_SetShouldShowSkip", false )
 
@@ -424,7 +427,12 @@ void function ShowDeathScreen( int tabIndex )
 		return
 
 	if ( GetCurrentTabIndex() != eDeathScreenPanel.NONE )
+	{
+		#if DEVELOPER 
+			Warning("WARNING: GetCurrentTabIndex() != eDeathScreenPanel.NONE ; returning")
+		#endif 
 		return
+	}
 	
 	SetBigMapZoomScale( 1.0 )
 
@@ -433,10 +441,7 @@ void function ShowDeathScreen( int tabIndex )
 	UpdateMainHudVisibility( GetLocalViewPlayer() )
 	Hud_SetAboveBlur( HudElement( "IngameTextChat" ), true )
 	Signal( player, "Bleedout_StopBleedoutEffects" )
-
-	                                              
-
-	                                                                     
+	
 	RunUIScript( "UI_OpenDeathScreenMenu", tabIndex )
 	
 	UpdateMenuBackground()
@@ -446,13 +451,13 @@ void function ShowDeathScreen( int tabIndex )
 void function UpdateEnabledTabs() 
 {
 	entity clientPlayer = GetLocalClientPlayer()
-
 	
 	if ( file.deathRecapDataUpdated )
+	{
 		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
+	}
 
-	
-	if ( !IsAlive( clientPlayer ) )
+	if ( !IsAlive( clientPlayer ) && Playlist() != ePlaylists.fs_scenarios )
 		EnableDeathScreenTab( eDeathScreenPanel.SPECTATE, true )
 }
 
@@ -990,7 +995,7 @@ void function UICallback_ShowSpectateTab( var headerElem )
 void function UICallback_CloseDeathScreenMenu( bool clearRecap = true )
 {
 	#if DEVELOPER
-	printt( "DS: UICallback_CloseDeathScreenMenu" )
+	printt( "DS: UICallback_CloseDeathScreenMenu", clearRecap )
 	#endif
 	
 	entity clientPlayer = GetLocalClientPlayer()
@@ -1331,7 +1336,7 @@ void function UpdateGladCardVisibility()
 	}
 
 	entity clientPlayer = GetLocalClientPlayer()
-	Assert( IsValid( clientPlayer ) )
+	mAssert( IsValid( clientPlayer ), "GetLocalClientPlayer() is invalid in UpdateGladCardVisibility()" )
 	entity currentObserverTarget = clientPlayer.GetObserverTarget()
 
 	EHI playerEHI = ToEHI( currentObserverTarget )
@@ -1537,14 +1542,15 @@ void function DeathRecapShow( var recapElem )
 	                                                                                                 
 	if ( file.currentTabIndex != eDeathScreenPanel.DEATH_RECAP )
 		return
-
-	                                                                                          
-
-	                                                                   
-	Assert( file.deathRecapDamageBlocks.len() > 0, "This shouldn't happen, figure out why" )
+                                                             
+	mAssert( file.deathRecapDamageBlocks.len() > 0, "This shouldn't happen, figure out why" )
 
 	if( file.deathRecapDamageBlocks.len() == 0 )
-	{
+	{	
+		#if DEVELOPER
+			Warning("file.deathRecapDamageBlocks.len() == 0, RETURNING")
+		#endif 
+		
 		UICallback_CloseDeathScreenMenu( false )
 		return
 	}
@@ -1555,7 +1561,7 @@ void function DeathRecapShow( var recapElem )
 	if ( file.deathRecapDamageBlocks[0].damageType & DF_KNOCKDOWN )
 		knockdown = true
 
-	Assert( file.recapGladCardDataTable.len() == 0, "recapGladCardDataTable wasn't empty " + file.recapGladCardDataTable.len() )
+	mAssert( file.recapGladCardDataTable.len() == 0, "recapGladCardDataTable wasn't empty " + file.recapGladCardDataTable.len() )
 
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot0" )
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot1" )
@@ -1724,7 +1730,7 @@ void function PlayRecapAnimSounds( entity player )
 
 	EmitSoundOnEntity( player, SFX_DEATH_REACP_BANNER_MOVE )
 
-	Assert( (MIN_ACTIVATION_DELAY - GLADCARD_SPLIT_DELAY > 0) )
+	mAssert( ( MIN_ACTIVATION_DELAY - GLADCARD_SPLIT_DELAY > 0 ), "MIN_ACTIVATION_DELAY - GLADCARD_SPLIT_DELAY IS LESS THAN OR EQUAL TO 0" )
 	wait MIN_ACTIVATION_DELAY - GLADCARD_SPLIT_DELAY
 
 	for ( int i = file.deathRecapDamageBlocks.len() - 1; i >= 0; i-- )
@@ -1793,7 +1799,8 @@ array<int> function GetRecapPlayerEHIArray( EncodedEHandle playerEHandle )
 
 void function UpdateSelectedRecapBlock( int blockIndex )
 {
-	Assert( file.damageBlockElementArray.len() > blockIndex )
+	//Todo(dw): Debug long damage blocks
+	//mAssert( file.damageBlockElementArray.len() > blockIndex, "file.damageBlockElementArray.len IS LESS THAN blockIndex" )
 	
 	if( blockIndex > file.damageBlockElementArray.len() - 1 )
 		return
@@ -1814,7 +1821,7 @@ void function UpdateSelectedRecapBlock( int blockIndex )
 
 void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 {
-	Assert( file.deathScreenRecapRui )
+	mAssert( file.deathScreenRecapRui, "file.deathScreenRecapRui was invalid" )
 
 	entity localClientPlayer = GetLocalClientPlayer()
 
@@ -1946,7 +1953,10 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 			return $"rui/death_recap/icon_deathrecap_specialcase_crush"
 
 		case eDamageSourceId.burn:
+		case eDamageSourceId.damagedef_gas_exposure:
 			return $"rui/death_recap/icon_deathrecap_specialcase_burn"
+			
+		//
 
 	}
 
@@ -2006,7 +2016,7 @@ void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, Encoded
 		entity clientPlayer = GetLocalClientPlayer()
 		if ( IsValid( clientPlayer ) )
 			Signal( clientPlayer, "DeathRecapDataUpdated" )
-
+		
 		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true ) 
 	}()	
 }
@@ -2030,7 +2040,7 @@ EncodedEHandle function GetKillerFromRecapData( entity player )
 
 	foreach ( damageBlocks in file.deathRecapDamageBlocks )
 	{
-		Assert( EHIHasValidScriptStruct( damageBlocks.attackerEHandle ) )
+		mAssert( EHIHasValidScriptStruct( damageBlocks.attackerEHandle ), "EHIHasValidScriptStruct( damageBlocks.attackerEHandle ) FAILED" )
 
 		if ( damageBlocks.attackerEHandle == playerEHI )
 			continue

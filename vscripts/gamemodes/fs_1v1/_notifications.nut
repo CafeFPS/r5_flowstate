@@ -1,4 +1,4 @@
-untyped
+untyped 																			//mkos
 
 global function Gamemode1v1_NotifyThread
 global function NotifyPlayer
@@ -78,7 +78,9 @@ void function __UpdateNotificationText( entity player, string text, int panelID 
 		panelID
 	)
 	
-	OnThreadEnd( function() : ( player, panelID )
+	OnThreadEnd
+	( 
+		function() : ( player, panelID )
 		{
 			if( IsValid( player ) )
 			{

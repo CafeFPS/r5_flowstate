@@ -30,6 +30,7 @@ global function TrackerStats_ScenariosDeaths
 #if DEVELOPER
 global function Cafe_KillAllPlayers
 global function Cafe_EndAllRounds
+global function Mkos_ForceCloseRecap
 #endif
 
 global struct scenariosGroupStruct
@@ -236,7 +237,8 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 			}
 
 			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
-		} else if( !attacker.IsPlayer() )
+		} 
+		else if( !attacker.IsPlayer() )
 		{
 			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
 		}
@@ -291,7 +293,10 @@ bool function FS_Scenarios_IsFullTeamBleedout( entity attacker, entity victim )
 		if( IsAlive( player ) && !Bleedout_IsBleedingOut( player ) )
 			count++
 	}
-	printt( "FS_Scenarios_IsFullTeamBleedout", count )
+	
+	#if DEVELOPER
+		printt( "FS_Scenarios_IsFullTeamBleedout", count )
+	#endif
 	
 	return count == 0
 }
@@ -1383,6 +1388,8 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		#endif
 		return
 	}
+	
+	//wtf?
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
@@ -1500,7 +1507,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						#endif
 						continue
 					}
-					player.p.lastDamageTime = Time() //avoid player regen health
+					//player.p.lastDamageTime = Time() //avoid player regen health
 
 					if ( player.IsPhaseShifted() )
 						continue
@@ -1573,13 +1580,15 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 		}//foreach
 
-		foreach ( group in groupsToRemove )
-		{
-			FS_Scenarios_RemoveGroup(group)
-		}
-
 		if( groupsToRemove.len() > 0 )
+		{
+			foreach ( group in groupsToRemove )
+			{
+				FS_Scenarios_RemoveGroup(group)
+			}
+			
 			continue
+		}
 
 		// Revivir jugadores muertos que están descansando ( No debería pasar, pero por si acaso )
 		foreach ( restingPlayerHandle, restingStruct in FS_1v1_GetPlayersResting() )
@@ -1627,8 +1636,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			if( Time() < eachPlayerStruct.waitingTime )
 				continue
 				
-			// if( player.p.InDeathRecap ) //Has player closed Death Recap?
-				// continue
+			if( player.p.InDeathRecap ) //Has player closed Death Recap?
+				continue
 
 			waitingPlayers.append( player )
 		}
@@ -1645,7 +1654,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		waitingPlayers.randomize()
 
-		// mkos please add proper matchmaking for teams lol	
+		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
 		foreach( player in waitingPlayers )
 		{
 			//Temp !FIXME
@@ -2165,7 +2174,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			{
 				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				CharacterSelect_AssignCharacter( player, selectedCharacter )
-				GiveLoadoutRelatedWeapons( player )
+				thread RechargePlayerAbilities( player ) // may need threaded or pass legend index in second param
 			}
 
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
@@ -2390,23 +2399,32 @@ var function TrackerStats_ScenariosDeaths( string uid )
 #endif 
 
 #if DEVELOPER
-void function Cafe_KillAllPlayers()
-{
-	entity player = gp()[0]
-	
-	foreach( splayer in gp() )
+	void function Cafe_KillAllPlayers()
 	{
-		if( splayer == player )
-			continue
+		entity player = gp()[0]
 		
-		splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+		foreach( splayer in gp() )
+		{
+			if( splayer == player )
+				continue
+			
+			splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+		}
 	}
-}
 
-void function Cafe_EndAllRounds()
-{
-	FS_Scenarios_ForceAllRoundsToFinish()
-}
+	void function Cafe_EndAllRounds()
+	{
+		FS_Scenarios_ForceAllRoundsToFinish()
+	}
+
+	void function Mkos_ForceCloseRecap()
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_UI( player, "UICallback_ForceCloseDeathScreenMenu" )
+			ClientCommand_FS_Scenarios_Requeue( player, [] )
+		}
+	}
 #endif
 
 

@@ -112,6 +112,8 @@ void function Flowstate_CheckForMapTriggers()
 				trigger.Destroy()
 				i++
 			}
+		
+		file.allTriggers.clear()
 			
 		printt( "[FS All Triggers Disabled] Removed ", i, " map triggers" )
 	}

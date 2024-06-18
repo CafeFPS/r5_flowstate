@@ -37,6 +37,7 @@ global function truncate
 global function DEV_PrintTrackerWeapons
 global function GetTrackerWeaponIdentifierTable
 global function ValidateIBMMWaitTime
+global function VerifyAdmin
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -433,7 +434,7 @@ struct {
 			{	
 				pair = admin_pair
 				array<string> a_format = split( admin_pair, "-")
-				player_admins[a_format[0]] <- a_format[1];
+				player_admins[a_format[0]] <- a_format[1]
 				file.ADMINS.append(a_format[1])
 			}
 			
@@ -453,7 +454,7 @@ struct {
 
 	string function PlayTime( int iSeconds ) 
 	{	
-		float seconds = iSeconds.tofloat();
+		float seconds = iSeconds.tofloat()
 		float hours =  seconds / 3600;
 		float minutes = (seconds % 3600) / 60;
 		float r_seconds = seconds % 60;
@@ -464,23 +465,18 @@ struct {
 
 	//////////////////////////////////////////////////////////////////////////
 	//cc commands
-	bool function ClientCommand_mkos_admin(entity player, array<string> args)
+	bool function ClientCommand_mkos_admin( entity player, array<string> args )
 	{	
 		
-		if (!CheckRate( player )) return false
+		if ( !CheckRate( player ) ) 
+			return false
 		
-		string PlayerName = player.GetPlayerName();
-		string PlayerUID = player.GetPlatformUID();
+		string PlayerName = player.GetPlayerName()
+		string PlayerUID = player.GetPlatformUID()
 
-  
-		if (PlayerName in player_admins) {
-		
-			if ( player_admins[PlayerName] != PlayerUID ) {
-				return false;
-			}
+		if( !VerifyAdmin( PlayerName, PlayerUID ) )
+			return false
 			
-		} else { return false }
-
 		player.p.messagetime = Time()	
 		
 		string command = "";
@@ -550,7 +546,8 @@ struct {
 									
 								k_playeroid = k_player.GetPlatformUID()	
 								
-								if ( IsTrackerAdmin(k_playeroid) ){
+								if ( IsTrackerAdmin( k_playeroid ) )
+								{
 									Message( player, "Cannot kick admin")
 									return true
 								}
@@ -2207,7 +2204,7 @@ bool function IsTrackerAdmin( string CheckPlayer )
 		}
 	}
 	
-	return false;
+	return false
 }
 
 bool function IsValidOID( string str )
@@ -2313,7 +2310,8 @@ string function sanitize(string str)
 {
 	string sanitized = "";
 
-	for (int i = 0; i < str.len(); i++) {
+	for (int i = 0; i < str.len(); i++) 
+	{
 		string c = str.slice(i, i + 1);
 
 		if ( IsControlCharacter(c) ) 
@@ -2333,7 +2331,7 @@ string function truncate( string str, int limit )
 {
     if ( str.len() > limit ) 
 	{
-        return str.slice( 0, limit );
+        return str.slice( 0, limit )
     }
     
     return str;
@@ -2392,6 +2390,22 @@ array<string> function GetPlaylistMaps( PlaylistName playlistName )
 
 	return mapsArray
 }
+
+bool function VerifyAdmin( string PlayerName, string PlayerUID )
+{
+	if ( PlayerName in player_admins ) 
+	{
+		if ( player_admins[PlayerName] != PlayerUID ) 
+			return false		
+	}
+	else 
+	{
+		return false
+	}
+	
+	return true
+}
+
 #endif //SERVER
 
 int function WeaponToIdentifier( string weaponName )
@@ -2474,7 +2488,7 @@ string function ParseWeapon( string weaponString )
 		}
 	}
 	
-	if (removed)
+	if ( removed )
 	{
 		sqprint( PrintSupportedAttachpointsForWeapon( mods[0] ) )
 	}
@@ -2486,7 +2500,7 @@ string function ParseWeapon( string weaponString )
 		return_string += mod + " "
 	}
 	
-	return trim(return_string)
+	return trim( return_string )
 }
 
 bool function IsModValidForWeapon( string weaponref, string mod )

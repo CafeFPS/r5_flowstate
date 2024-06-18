@@ -1,5 +1,6 @@
 global function InitDeathScreenMenu
 
+global function UICallback_ForceCloseDeathScreenMenu //remote func
 //
 global function UI_OpenDeathScreenMenu
 global function UI_CloseDeathScreenMenu
@@ -40,7 +41,6 @@ struct
 	int       spectateTargetCount
 	InputDef& gladCardToggleInputData
 } file
-
 
 void function InitDeathScreenMenu( var newMenuArg )
 {
@@ -112,17 +112,18 @@ void function DeathScreenMenuOnOpen()
 		TabData tabData = GetTabDataForPanel( file.menu )
 		tabData.centerTabs = true
 
-		if( Playlist() == ePlaylists.fs_scenarios )
+		/* if( Playlist() == ePlaylists.fs_scenarios )
 		{
 			// AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSpectate" ), "#DEATH_SCREEN_SPECTATE" )		//
 			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenRecap" ), "#DEATH_SCREEN_RECAP" )			//
 			// AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSquadSummary" ), "#DEATH_SCREEN_SUMMARY" )	//
-		} else
-		{
+		} 
+		else
+		{ */
 			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSpectate" ), "#DEATH_SCREEN_SPECTATE" )		//
 			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenRecap" ), "#DEATH_SCREEN_RECAP" )			//
 			AddTab( file.menu, Hud_GetChild( file.menu, "DeathScreenSquadSummary" ), "#DEATH_SCREEN_SUMMARY" )	//
-		}
+		//}
 
 		file.tabsInitialized = true
 	}
@@ -131,11 +132,16 @@ void function DeathScreenMenuOnOpen()
 	{
 		TabData tabData        = GetTabDataForPanel( file.menu )
 		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
+		TabDef spectateTab     = Tab_GetTabDefByBodyName( tabData, "DeathScreenSpectate" )
+		TabDef squadSummaryTab = Tab_GetTabDefByBodyName( tabData, "DeathScreenSquadSummary" )
 		UpdateMenuTabs()
 
 		SetTabDefEnabled( recapTab, true )
+		SetTabDefEnabled( squadSummaryTab, false )
+		SetTabDefEnabled( spectateTab, false )
 		Hud_SetVisible( Hud_GetChild( file.menu, "FlowstateTitle" ), true )
-	} else
+	} 
+	else
 	{
 		TabData tabData        = GetTabDataForPanel( file.menu )
 		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
@@ -187,17 +193,13 @@ void function UI_OpenDeathScreenMenu( int tabIndex )
 	{
 		AdvanceMenu( file.menu )
 	}
-
+	
 	EnableDeathScreenTab_Internal( tabIndex, true )
 
 	TabData tabData = GetTabDataForPanel( file.menu )
 	
-	if( Playlist() == ePlaylists.fs_scenarios )
-		ActivateTab( tabData, 0 )
-	else
-		ActivateTab( tabData, tabIndex )
+	ActivateTab( tabData, tabIndex )
 }
-
 
 void function UI_CloseDeathScreenMenu()
 {
@@ -230,8 +232,10 @@ void function UI_EnableDeathScreenTab( int tabIndex, bool enable )
 void function EnableDeathScreenTab_Internal( int tabIndex, bool enable )
 {
 	if ( !IsMenuInMenuStack( file.menu ) )
+	{
 		return
-
+	}
+	
 	string panelName
 	switch( tabIndex )
 	{
@@ -268,7 +272,7 @@ void function UI_SwitchToDeathScreenTab( int tabIndex )
 {
 	if ( !IsMenuInMenuStack( file.menu ) )
 		return
-
+	
 	EnableDeathScreenTab_Internal( tabIndex, true )
 
 	TabData tabData = GetTabDataForPanel( file.menu )
@@ -400,6 +404,10 @@ void function DeathScreenMenu_Shutdown()
 	return
 }
 
+void function UICallback_ForceCloseDeathScreenMenu()
+{
+	UI_CloseDeathScreenMenu()
+}
 
 void function DeathScreenMenuOnNavBack()
 {

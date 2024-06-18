@@ -37,13 +37,14 @@ void function PilotHealthRegenThinkMP( entity player )
 	// There's a delay when you change legends, have to compensate
 	wait 1
 	
-	if(!HealthRegen_IsPlayerAllowed(player))
+	if( !HealthRegen_IsPlayerAllowed(player) )
 		return
 
 	int tick
 	
 	while ( IsValid( player ) )
 	{
+		//Warning("continued")
 		wait( file.healthRegenTickTime )
 
 		if ( !IsAlive( player ) )
@@ -70,6 +71,7 @@ void function PilotHealthRegenThinkMP( entity player )
 		}
 		else if ( Time() - player.p.lastDamageTime < file.healthRegenStartDelay )
 		{
+			//printt( Time(), player.p.lastDamageTime, file.healthRegenStartDelay )
 			StatusEffect_StopAllOfType( player, eStatusEffect.target_health )
 			tick = 0
 			continue
@@ -110,7 +112,7 @@ void function PilotHealthRegenThinkMP( entity player )
 
 bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+	if( PlayerHasPassive( player, ePassives.PAS_OCTANE ) )
 		return true
 		
 	return false

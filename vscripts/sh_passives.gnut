@@ -209,6 +209,17 @@ void function OnRegisterRootItemFlavors()
 //////////////////////////
 //////////////////////////
 #if SERVER
+string function GetPassiveName( int enumIndex )
+{
+	foreach( string name, int index in ePassives )
+	{
+		if( index == enumIndex )
+			return name
+	}
+	
+	return "unknown"
+}
+
 void function GivePassive( entity player, int passive )
 {
     if(!IsValid(player))
@@ -216,7 +227,10 @@ void function GivePassive( entity player, int passive )
     
 	bool didHavePassive = player.HasPassive( passive )
 
-	// printt( "give passive " + GetPassiveName( passive ), passive )
+	#if DEVELOPER
+		printt( "give passive ", passive, GetPassiveName( passive ) )
+	#endif
+		
 	player.GivePassive( passive )
 
 	if ( didHavePassive )
@@ -230,7 +244,10 @@ void function TakePassive( entity player, int passive )
 {
 	bool didHavePassive = player.HasPassive( passive )
 
-	//printt( "take passive " + PassiveEnumFromBitfield( passive ) )
+	#if DEVELOPER
+		printt( "take passive ", passive, GetPassiveName( passive )  )
+	#endif
+		
 	player.RemovePassive( passive )
 
 	if ( !didHavePassive )
