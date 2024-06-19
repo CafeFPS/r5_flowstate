@@ -9,7 +9,7 @@ const DEATH_CHAT_DELAY = 0.3
 
 //For performance, flinch is negated based on gamemode bitmask.
 //To add:  | ( 1 << playlistenum )
-const NON_FLINCH_MODES_BITMASK = ( 1 << ePlaylists.fs_lgduels_1v1) | ( 1 << ePlaylists.fs_1v1 )
+const NON_FLINCH_MODES_BITMASK = ( 1 << ePlaylists.fs_lgduels_1v1 ) | ( 1 << ePlaylists.fs_1v1 )
 const NON_FLINCH_DAMAGE_BITMASK = 1 << eDamageSourceId.deathField
 
 global struct OutOfBoundsDataStruct //Have to globalize it because all functions are globalized in this file :/
@@ -115,7 +115,7 @@ void function Flowstate_CheckForMapTriggers()
 		
 		file.allTriggers.clear()
 			
-		printt( "[FS All Triggers Disabled] Removed ", i, " map triggers" )
+		printt( "[FS All Triggers Disabled] Removed", i, "map triggers" )
 	}
 }
 
@@ -211,13 +211,14 @@ function AddFlinch( entity attackedEnt, damageInfo )
 		return
 	}
 
-	Assert( IsValid_ThisFrame( attackedEnt ) )
+	Assert( IsValid_ThisFrame( attackedEnt ), "attackedEnt not valid this frame" )
 
-	//if ( !( "nextFlinchTime" in attackedEnt.s ) )
-	//	attackedEnt.s.nextFlinchTime <- 0
-	//if ( Time() < attackedEnt.s.nextFlinchTime )
-	//	return
-	//attackedEnt.s.nextFlinchTime = Time() + RandomFloatRange( 2.0, 4.0 )
+	//next flinch time block was commented , uncommented ~mkos
+	if ( !( "nextFlinchTime" in attackedEnt.s ) )
+		attackedEnt.s.nextFlinchTime <- 0
+	if ( Time() < attackedEnt.s.nextFlinchTime )
+		return
+	attackedEnt.s.nextFlinchTime = Time() + RandomFloatRange( 2.0, 4.0 )
 
 	vector damageAngles = VectorToAngles( DamageInfo_GetDamageForce( damageInfo ) )
 	vector entAngles = attackedEnt.EyeAngles()
@@ -436,13 +437,10 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 		&& !IsDamageFromDamageTrigger( damageInfo ) )
 		return false
 
-	if ( player.IsInvulnerable() )
-		return false
-
+	// if ( player.IsInvulnerable() ) // this is checked in calling func
+		// return false
 
 	return true
-
-	unreachable
 }
 
 
@@ -477,18 +475,18 @@ float function GetHeadshotDamageMultiplierFromDamageInfo( var damageInfo )
 	return 1.0
 }
 
+const DMG_LOCATION_DEBUG = false
+
 function HandleLocationBasedDamage( entity ent, var damageInfo )
 {
 	// Don't allow non-players to get headshots or any other location bonuses
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if ( !IsValid( attacker ) || !attacker.IsPlayer() )
 		return
-
-	bool debugPrints = false
+		
 	int hitGroup = DamageInfo_GetHitGroup( damageInfo )
 
-	if ( debugPrints )
-	{
+	#if DMG_LOCATION_DEBUG
 		printt( "---------------------" )
 		printt( "LOCATION BASED DAMAGE" )
 		printt( "HIDGROUP ID:", hitGroup )
@@ -512,7 +510,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 			printt( "HITGROUP: HITGROUP_GEAR" )
 		else
 			printt( "HITGROUP: UNKNOWN" )
-	}
+	#endif
 
 	bool isValidHeadShot = IsValidHeadShot( damageInfo, ent )
 	if ( isValidHeadShot )
@@ -520,12 +518,16 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 
 	float damageMult_location = 1.0
 
-	var weaponName // TODO: If set to type string, will cause errors because weaponName can be ""
-	if ( DamageInfo_GetWeapon( damageInfo ) )
-		weaponName = DamageInfo_GetWeapon( damageInfo ).GetWeaponClassName()
-	else if ( DamageInfo_GetInflictor( damageInfo ) && (DamageInfo_GetInflictor( damageInfo ) instanceof CProjectile ) )
-		weaponName = DamageInfo_GetInflictor( damageInfo ).ProjectileGetWeaponClassName()
+	//removing the following code, as weaponName is not used, and we don't need 
+	//spectre / stalker currently ~mkos
+	
+	// var weaponName // TODO: If set to type string, will cause errors because weaponName can be ""
+	// if ( DamageInfo_GetWeapon( damageInfo ) )
+		// weaponName = DamageInfo_GetWeapon( damageInfo ).GetWeaponClassName()
+	// else if ( DamageInfo_GetInflictor( damageInfo ) && (DamageInfo_GetInflictor( damageInfo ) instanceof CProjectile ) )
+		// weaponName = DamageInfo_GetInflictor( damageInfo ).ProjectileGetWeaponClassName()
 
+	/* 	
 	if ( IsSuperSpectre( ent ) )
 	{
 		if ( CritWeaponInDamageInfo( damageInfo ) && IsCriticalHit( attacker, ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageType( damageInfo ) ) )
@@ -544,7 +546,9 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 				break
 		}
 	}
-	else if ( isValidHeadShot )
+	else  
+	*/
+	if ( isValidHeadShot )
 	{
 		damageMult_location = GetHeadshotDamageMultiplierFromDamageInfo( damageInfo )
 	}
@@ -552,11 +556,10 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	// modify damage value based on where we hit
 	if ( damageMult_location != 1.0 )
 	{
-		if ( debugPrints )
-		{
+		#if DMG_LOCATION_DEBUG
 			printt( "Multiplier:", damageMult_location )
 			printt( "---------------------" )
-		}
+		#endif
 
 		DamageInfo_ScaleDamage( damageInfo, damageMult_location )
 	}
@@ -569,7 +572,7 @@ function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 
 
 //	printt( "player damage feedback for " + ent )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-	Assert( attacker.IsPlayer() )
+	Assert( attacker.IsPlayer(), "Attacker is not player" )
 
 	int customDamageType = DamageInfo_GetCustomDamageType( damageInfo )
 

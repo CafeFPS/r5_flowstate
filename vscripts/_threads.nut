@@ -83,7 +83,7 @@ void function printw( ... )
 	for ( int i = 1; i < vargc; i++ )
 		msg = (msg + " " + vargv[i])
 
-	Warning( msg )
+	Warning( string( msg ) )
 }
 
 void function PrintFunc( var val = null )

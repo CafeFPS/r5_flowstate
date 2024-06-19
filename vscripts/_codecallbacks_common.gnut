@@ -292,8 +292,8 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		printt( "CodeCallback_DamageEntity() top:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
-		HandleFootstepDamage( ent, damageInfo )
+	// if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
+		// HandleFootstepDamage( ent, damageInfo )
 
 	RunClassDamageCallbacks( ent, damageInfo )
 	#if VERBOSE_DAMAGE_PRINTOUTS

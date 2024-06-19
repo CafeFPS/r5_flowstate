@@ -1,7 +1,7 @@
 //Flowstate 1v1 gamemode
 //made by __makimakima__
 //integrated and maintained by @CafeFPS
-//redesigned by mkos + challenge / features / code refactor & [r5r.dev ibmm/sbmm]
+//redesigned and maintained by mkos + challenge / features / code refactor & [r5r.dev ibmm/sbmm]
 
 global const INVALID_ACCESS_DEBUG = false
 
@@ -2251,8 +2251,7 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 		HolsterAndDisableWeapons(player)
 	}
 	else
-	{		
-
+	{
 		if( isPlayerInProgress( player ) )
 		{		
 			entity opponent;
@@ -2271,15 +2270,15 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				timeNow = Time()
 			}
 			
-			if ( !IsValid (opponent)) { skip = true }
+			if ( !IsValid( opponent ) ) { skip = true }
 			
 			if( !skip )
 			{
-				DamageEvent event = getEventByPlayerHandle_expensive( opponent.p.handle ) 
+				DamageEvent event = Tracker_GetCurrentEventForAttackerOnVictim( opponent.p.handle, player.p.handle ) 
 				
-				float lasthittime = event.lastHitTimestamp
+				float lastHitTime = event.lastHitTimestamp
 				
-				float difference = ( timeNow - lasthittime )
+				float difference = ( timeNow - lastHitTime )
 				
 				bool start_grace_exceeded = false
 				
@@ -2292,31 +2291,30 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 				{	
 					float fTryAgainIn;
 					
-					if(start_grace_exceeded)
+					if( start_grace_exceeded )
 					{
-						fTryAgainIn = REST_GRACE - ( timeNow - lasthittime )
+						fTryAgainIn = REST_GRACE - ( timeNow - lastHitTime )
 					}
 					else 
 					{
 						fTryAgainIn = REST_GRACE - ( timeNow - group.startTime )
 					}
 					
-					//string sTryAgain = format("Or.. try again in: %d seconds", floor( fTryAgainIn.tointeger() ) )
 					string sTryAgain = format( " %d", floor( fTryAgainIn.tointeger() ) )
 					#if DEVELOPER
 						sqprint(format( "Time was too soon: difference:  %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
-					//Message( player, "SENDING TO REST AFTER FIGHT", sTryAgain, 1 )
+					
 					LocalMsg( player, "#FS_SendingToRestAfter", "#FS_TryRestAgainIn", eMsgUI.DEFAULT, 5, "", sTryAgain )
 					player.p.rest_request = true;
 					return true
 				}
-				else 
+				else
 				{
 					#if DEVELOPER
 						sqprint(format("Time was good: difference: %d, REST_GRACE: %d ", difference, REST_GRACE ))
 					#endif
-					//restText = format("Sent to rest because time since last damage recieved was greater than %d seconds.", REST_GRACE );
+					
 					restText = "#FS_RestGrace";
 					restFlag = REST_GRACE.tostring()
 				}
@@ -3575,17 +3573,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			} 
 			catch (varerror)
 			{
-				sqerror("\n\n --- DEBUGIT ERROR --- \n " + varerror )
-				if( typeof( playerInWaitingStruct.queue_time ) != "float" )
-				{
-					sqerror( "playerInWaitingStruct.queue_time was not a float" )
-				}
-				
-				if( typeof( playerInWaitingStruct.player.p.IBMM_grace_period ) != "float" )
-				{
-					sqerror( "playerInWaitingStruct.player.p.IBMM_grace_period was not a float" )
-				}
-				
+				sqerror( "\n\n --- DEBUGIT ERROR --- \n " + varerror )
 				continue //onward
 			}
 
@@ -3934,7 +3922,10 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				}
 				else 
 				{
-					sqprint("waiting for lockmatch TIMEOUT matching")
+					#if DEVELOPER 
+						sqprint("waiting for lockmatch TIMEOUT matching")
+					#endif 
+					
 					continue //these guys are still waiting for each other
 				}
 			}

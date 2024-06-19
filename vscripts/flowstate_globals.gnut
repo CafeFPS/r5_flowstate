@@ -5,7 +5,7 @@ global const float COMMAND_RATE_LIMIT = 0.200
 global const bool DISABLE_NETINFO = true
 
 struct 
-{	
+{
 	float Deathmatch_GetIntroCutsceneNumSpawns
 	float Deathmatch_GetIntroCutsceneSpawnDuration
 	float Deathmatch_GetIntroSpawnSpeed
