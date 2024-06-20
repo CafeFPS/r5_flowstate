@@ -1000,7 +1000,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							DrawAngledBox( (offsetCenter + FX_GAS_SMOKE_OFFSET), Vector( 0,0,0 ), <-20, -20, -16>, <35, 35, 100>, 255, 0, 0, true, 15 )
 							#endif
 
-							if ( smokescreen.smokeSource != null && IsValid( smokescreen.smokeSource ) )
+							if ( IsValid_ThisFrame( smokescreen.smokeSource ) )
 								smokeFXs[i][1].SetParent( smokescreen.smokeSource )
 
 							if ( IsValid( smokescreen.inflictor ) )

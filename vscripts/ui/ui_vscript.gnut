@@ -330,8 +330,8 @@ void function UICodeCallback_UIInit()
 	ShUtilityAll_Init()
 	LevelVarInit()
 	
-	AddUICallback_OnLevelInit( UILevelLoadCallback )
 	AddUICallback_OnLevelInit( Load_Level_based_UIGlobals )
+	AddUICallback_OnLevelInit( UILevelLoadCallback )
 	AddUICallback_OnLevelInit( ResetDefaults )
 
 	VPKNotifyFile( "media/intro_captions.txt" )

@@ -197,7 +197,7 @@ float REST_GRACE = 5.0
 const int MAX_CHALLENGERS = 12
 
 //TODO: unite this in a singular modular framework
-const array<string> m_charIndexMap = [
+const array<string> LEGEND_INDEX_ARRAY = [
 		"Bangalore", //0
 		"Bloodhound", //1
 		"Caustic", //2
@@ -1375,7 +1375,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				string legendList = "\n\n\n\n\n\n\n\n\n\n\n";
 				
 				int j = 0
-				foreach( legend in m_charIndexMap )
+				foreach( legend in LEGEND_INDEX_ARRAY )
 				{
 					legendList += format("%d = %s \n", j, legend)
 					j++;
@@ -1396,7 +1396,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		
 			string legend = "undefined";
 			int index = -1;
-			int indexMapLen = m_charIndexMap.len()
+			int indexMapLen = LEGEND_INDEX_ARRAY.len()
 			
 			if( IsNumeric( param, 0, indexMapLen ) )
 			{
@@ -1407,7 +1407,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				index = -1
 				for( int i = 0; i < indexMapLen; i++ )
 				{
-					if ( m_charIndexMap[i].tolower() == param.tolower() )
+					if ( LEGEND_INDEX_ARRAY[i].tolower() == param.tolower() )
 					{
 						index = i;
 					}
@@ -1450,7 +1450,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				group.p2LegendIndex = index
 			}
 			
-			legend = index != -1 ? m_charIndexMap[ index ] : "undefined";
+			legend = index != -1 ? LEGEND_INDEX_ARRAY[ index ] : "undefined";
 			
 			LocalMsg( player, "#FS_PlayingAs", "", eMsgUI.DEFAULT, 5, legend, "" )
 			
@@ -3302,8 +3302,27 @@ void function _soloModeInit( int eMap )
 	forbiddenZoneInit( GetMapName() )
 	
 	thread soloModeThread( getWaitingRoomLocation() )
+	
+	AddCallback_OnClientConnected
+	( 
+		void function( entity player ) 
+		{
+			int imgWidth = 600
+			int imgHeight = 380
+			
+			WorldDrawImg_CreateOnClient
+			( 
+				player,
+				"",
+				Gamemode1v1_GetNotificationPanel_Coordinates() + <0,0,imgHeight>,
+				Gamemode1v1_GetNotificationPanel_Angles(),
+				imgWidth,
+				imgHeight,
+				WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" )
+			)
+		}
+	)
 }
-
 
 void function CreatePanels( vector origin, vector angles, table<string, entity> panels )
 {

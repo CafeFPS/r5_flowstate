@@ -1,0 +1,232 @@
+// WorldImgDraw 																		//mkos
+
+global function WorldDrawImg_Init
+
+#if SERVER
+	global function WorldDrawImg_CreateOnClient
+	global function WorldDrawImg_DestroyOnClient
+	global function WorldDrawImg_RegisterRemoteAsset
+	global function WorldDrawImg_AssetRefToID
+#endif
+
+#if CLIENT 
+	global function ServerCallback_CreateWorldImg
+	global function ServerCallback_DestroyWorldImg
+	
+	const MAX_WORLD_TOPO = 30 //not dynamically set
+#endif
+
+const ASSERT_WORLD_DRAW = true
+
+struct
+{
+	#if SERVER 
+		int uniqueWorldRuiID = 100 //reserve 100 clientsided ids
+	#endif 
+	
+	#if CLIENT 
+		table<int,array<var> > worldRUI
+		table<int,array<var> > worldRUITopo
+		string worldImgAssetRef = ""
+	#endif
+
+} file
+
+table<string,int> assetRefToIntMap = {}
+table<int,asset> assetIntToAssetMap = {}
+array<asset> registeredRemoteAssets = 
+[
+	$"rui/flowstate_custom/mkos/1v1banner"
+]
+
+
+#if SERVER || CLIENT 
+void function WorldDrawImg_RegisterRemoteAsset( asset img )
+{
+	//if registering, these must match 
+	
+	if( registeredRemoteAssets.contains( img ) )
+	{
+		Warning("Tried to register asset: " + string( img ) + " but already exists in registeredRemoteAssets")
+	}
+	
+	registeredRemoteAssets.append( img )
+}
+#endif //if SERVER || CLIENT
+
+void function WorldDrawImg_Init()
+{
+	#if ASSERT_WORLD_DRAW
+		Warning("ASSERT_WORLD_DRAW enabled")
+	#endif 
+	
+	foreach( int idx, asset img in registeredRemoteAssets )
+	{
+		assetRefToIntMap[ string( img ) ] 	<- idx 
+		assetIntToAssetMap[ idx ] 			<- img
+	}
+}
+
+#if SERVER
+
+	int function __GenerateUniqueWorldRuiID()
+	{
+		return file.uniqueWorldRuiID++;
+	}
+	
+	int function WorldDrawImg_AssetRefToID( string ref )
+	{
+		if( ref in assetRefToIntMap )
+			return assetRefToIntMap[ ref ]
+		
+		#if ASSERT_WORLD_DRAW
+			mAssert( false, "Img ref " + ref + "doesn't exist" )
+		#endif 
+		
+		return -1
+	}
+
+	int function WorldDrawImg_CreateOnClient( entity player, string imgAssetRef, vector origin, vector angles, int width, int height, int remoteAssetRefID = -1 )
+	{
+		bool bHasRef = remoteAssetRefID > -1
+		
+		if( empty( imgAssetRef ) && !bHasRef )
+			return -1
+			
+		int id = __GenerateUniqueWorldRuiID() //don't allow manual assignment as overwriting topologies will lose the reference to destroy them on client.
+		
+		if( !bHasRef )
+		{
+			for ( int i = 0; i < imgAssetRef.len(); i++ )
+			{
+				Remote_CallFunction_NonReplay( player, "__BuildWorldImgAssetString", imgAssetRef[i] )
+			}
+		}
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_CreateWorldImg", origin, angles, width, height, id, remoteAssetRefID )
+		
+		return id
+	}
+
+	void function WorldDrawImg_DestroyOnClient( entity player, int id )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyWorldImg", id )
+	}
+#endif //if SERVER
+
+#if CLIENT 
+	
+	void function __BuildWorldImageRUI( asset image, vector org, vector ang, float width, float height, int RUIID = -1 )
+	{
+		vector origin = org
+		vector angles = ang
+
+		origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
+		var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+
+		var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
+		RuiSetImage( rui, "basicImage", image )
+
+		if ( RUIID != -1 )
+		{
+			if ( !( RUIID in file.worldRUI ) )
+				file.worldRUI[ RUIID ] <- []
+
+			file.worldRUI[ RUIID ].append( rui )
+			
+			if ( !( RUIID in file.worldRUITopo ) )
+				file.worldRUITopo[ RUIID ] <- []
+				
+			file.worldRUITopo[ RUIID ].append( topo )
+		}
+	}
+
+	void function __DestroyWorldRUIWithID( int RUIID )
+	{
+		if ( !( RUIID in file.worldRUI ) )
+			return
+
+		foreach ( rui in file.worldRUI[ RUIID ] )
+			RuiDestroyIfAlive( rui )
+
+		file.worldRUI[ RUIID ].clear()
+		
+		if( !( RUIID in file.worldRUITopo ) )
+			return 
+			
+		foreach ( int index, var topo in file.worldRUITopo[ RUIID ] )
+		{
+			try
+			{
+				RuiTopology_Destroy( topo ) //required
+			}
+			catch( e ){}
+		}
+		
+		file.worldRUITopo[ RUIID ].clear()
+	}
+
+	
+	void function __BuildWorldImgAssetString( ... )
+	{
+		if( vargc == 0 )
+			return 
+			
+		for ( int i = 0; i < vargc; i++ )
+		{
+			file.worldImgAssetRef += format( "%c", vargv[i] )
+		}
+	}
+
+	void function ServerCallback_CreateWorldImg( vector origin, vector angles, int width, int height, int id, int remoteAssetRefID )
+	{
+		if( file.worldRUITopo.len() >= MAX_WORLD_TOPO )
+			return 
+		
+		bool bHasRef 	= remoteAssetRefID > -1
+		string assetRef 	= file.worldImgAssetRef
+		
+		if( !bHasRef && assetRef == "" )
+			return
+		
+		asset ornull img = null
+		
+		if ( !bHasRef )
+		{
+			try
+			{
+				img = CastStringToAsset( assetRef )
+			}
+			catch( e )
+			{
+				printt( "Error: Server tried to create an image that does not exist: " + e )
+				return
+			}
+		}
+		else 
+		{
+			img = __FetchWorldImgAssetFromRef( remoteAssetRefID )
+			id = remoteAssetRefID
+		}
+		
+		if( img != null )
+		{
+			__BuildWorldImageRUI( expect asset( img ), origin, angles, float( width ), float( height ), id )
+		}
+		
+		file.worldImgAssetRef = ""
+	}
+
+	void function ServerCallback_DestroyWorldImg( int id )
+	{
+		__DestroyWorldRUIWithID( id )
+	}
+
+	asset ornull function __FetchWorldImgAssetFromRef( int ref )
+	{
+		if( ref in assetIntToAssetMap )
+			return assetIntToAssetMap[ ref ]
+			
+		return null
+	}
+#endif //if CLIENT

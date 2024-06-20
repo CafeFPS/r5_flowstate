@@ -512,7 +512,7 @@ bool function ClientCommand_PlayAllAnims( entity player, array<string> args )
 	}
 	
 
-	for(int i = 0; i < MAX_SLOT ; i++ )
+	for( int i = 0; i < MAX_SLOT ; i++ )
 		thread PlayAnimInSlot( player, 	i, remove, removeAll )
 
 	return true
@@ -653,7 +653,7 @@ void function StartRecordingAnimation( entity player )
 		}
 	)
 	
-	// Recording animations disappear after 2:30, hard-set limit.
+	// Recording animations disappear after 2:30, hard-set limit of 3000 frames.
 	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
 

@@ -655,7 +655,7 @@ void function TrackDistanceFromDeathBox( entity player, entity deathBox )
 
 	OnThreadEnd
 	(
-		function() : (player)
+		function() : ( player )
 		{
 			if( Gamemode() == eGamemodes.fs_aimtrainer )
 				Signal( player, "StopArmorSwapStopwatch" )

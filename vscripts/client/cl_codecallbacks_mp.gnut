@@ -105,7 +105,10 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	ent.Signal( "ShieldChanged" )
 	
 	if( ent.lastShieldHealth > shieldHealth )
-		ent.Signal( "OnDamaged" )
+	{
+		local amount = ent.lastShieldHealth - shieldHealth
+		ent.Signal( "OnDamaged", { damageAmount = amount } )
+	}
 
 	ent.lastShieldHealth = ent.GetShieldHealth()
 }

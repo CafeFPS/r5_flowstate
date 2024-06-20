@@ -7,6 +7,7 @@ global LocPair &waitingRoomPanelLocation
 
 global function CreateLocPairObject
 global function AddCallback_FlowstateSpawnsInit
+global function SetCallback_FlowstateSpawnsOffset
 global function SetPreferredSpawnPak
 
 global function GetCurrentSpawnSet
@@ -46,12 +47,13 @@ global function SetCustomPlaylist
 		LocPair ornull panels = null
 		bool bOverrideSpawns = false
 	}
-
+	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
 	
 	struct
 	{
 		array<LocPairData functionref()> onSpawnInitCallbacks
+		LocPair functionref() mapGamemodeBasedOffsetFunc = null
 		int preferredSpawnPak = 1
 		string currentSpawnPak = ""
 		string customSpawnpak = ""
@@ -70,8 +72,8 @@ global function SetCustomPlaylist
 			table<int,entity> allBeamEntities = {}
 			bool spawnInfoPanels = true
 			array< table<vector, string> > savedSpawnInfosExtendedArray
-			vector infoPanelOffset = NULL_VEC
-			vector infoPanelOffsetAngles = NULL_VEC
+			vector infoPanelOffset = ZERO_VECTOR
+			vector infoPanelOffsetAngles = ZERO_VECTOR
 			bool bInfoPanelsAreReloading = false
 			
 			table<string,string> DEV_POS_COMMANDS = 
@@ -282,7 +284,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_party_crasher:
 		
 			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, NULL_VEC, 300 )		
+			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, ZERO_VECTOR, 300 )		
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
@@ -388,18 +390,20 @@ LocPair function SetWaitingRoomAndGeneratePanelLocs( LocPair defaultWaitingRoom,
 	return defaultPanels
 }
 
-vector function GenerateMapGamemodeBasedOffset( int eMap )
+void function SetCallback_FlowstateSpawnsOffset( LocPair functionref() callbackFunc )
 {
-	vector baseOffset = <0,0,0>
-	
-	if( eMap == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
+	mAssert( file.mapGamemodeBasedOffsetFunc == null, "Tried to set " + string( callbackFunc ) + " in mapGamemodeBasedOffsetFunc but func was already set to " + string( file.mapGamemodeBasedOffsetFunc ) + " in " + FUNC_NAME() + "()" )
+	file.mapGamemodeBasedOffsetFunc = callbackFunc 
+}
+
+LocPair function GenerateMapGamemodeBasedOffset()
+{
+	if( file.mapGamemodeBasedOffsetFunc != null )
 	{
-		return LG_DUELS_OFFSET_ORIGIN //prop based map can be moved based on this offset, therefore spawns are dynamically adjusted
+		return file.mapGamemodeBasedOffsetFunc()
 	}
 	
-	//if(){}
-	
-	return baseOffset
+	return NewLocPair( ZERO_VECTOR, ZERO_VECTOR )
 }
 
 string function GenerateAssetStringForMapAndGamemode( int eMap, string set, string customRpak = "", string playlistOverride = "" )
@@ -442,7 +446,10 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 	try
 	{
 		string spawnset 	= GenerateAssetStringForMapAndGamemode( eMap, set, customRpak, customPlaylist )
-		vector originOffset = GenerateMapGamemodeBasedOffset( eMap )
+		
+		LocPair offsets 	= GenerateMapGamemodeBasedOffset()
+		vector originOffset = offsets.origin
+		vector anglesOffset = offsets.angles
 		
 		asset fetchasset 	= CastStringToAsset( spawnset )
 		var datatable 		= GetDataTable( fetchasset )	
@@ -457,7 +464,7 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		for ( int i = 0; i < spawnsCount; i++ )
 		{		
 			vector origin = GetDataTableVector( datatable, i, originCol ) + originOffset
-			vector angles = GetDataTableVector( datatable, i, anglesCol )
+			vector angles = GetDataTableVector( datatable, i, anglesCol ) + anglesOffset
 			
 			#if DEVELOPER
 				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + "\n"	
@@ -519,7 +526,8 @@ bool function ValidateOptions( table<string,bool> options )
 
 void function SetPreferredSpawnPak( int preference )
 {
-	file.preferredSpawnPak = preference
+	mAssert( preference > 0, "Invalid spawn pak preference" )
+		file.preferredSpawnPak = preference
 }
 
 bool function SetCustomSpawnPak( string custom_rpak )
@@ -627,7 +635,7 @@ void function DEV_ReloadInfo()
 	}
 }
 
-void function DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector angles = NULL_VEC )
+void function DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector angles = ZERO_VECTOR )
 {
 	file.infoPanelOffset = offset 
 	file.infoPanelOffsetAngles = angles

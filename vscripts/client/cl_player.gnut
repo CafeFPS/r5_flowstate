@@ -1292,7 +1292,10 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 		return
 		
 	if( newHealth < oldHealth )
-		ent.Signal( "OnDamaged" )
+	{
+		local amount = oldHealth - newHealth
+		ent.Signal( "OnDamaged", { damageAmount = amount } )
+	}
 
 	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
 	Chroma_HealthChanged()

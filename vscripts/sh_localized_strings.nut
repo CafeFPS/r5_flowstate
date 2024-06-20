@@ -291,7 +291,7 @@ void function INIT_Flowstate_Localization_Strings()
 		#endif
 	}
 	
-	file.allTokens.resize(0)
+	file.allTokens.clear()
 	
 	#if DEVELOPER && ASSERT_LOCALIZATION
 		Warning("ASSERTS ENABLED for script: " + FILE_NAME() )
