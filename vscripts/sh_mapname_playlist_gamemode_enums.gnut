@@ -56,6 +56,7 @@ global enum eMaps
 	mp_rr_construct, //23
 	mp_rr_desertlands_mu1, //24
 	mp_rr_canyonlands_mu2, //25
+	mp_rr_tropic_island, //26
 	
 	
 	_MAP_COUNT //LAST

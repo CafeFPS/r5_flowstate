@@ -220,6 +220,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheEntity( "env_entity_dissolver" )
 
 	FlagInit("EntitiesDidLoad")
+	FlagInit( "ShowExplosionRadius" )  // temp HACK
+
 	svGlobal.levelEnt = GetEnt( "worldspawn" )
 
 	LevelVarInit()
@@ -263,9 +265,13 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
+
+	PrecacheModel( $"mdl/creatures/prowler/prowler_apex.rmdl" )
+	PrecacheModel( $"mdl/creatures/spider/spider.rmdl" )
+	PrecacheWeapon( $"mp_weapon_gibulter" )
 	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
-
+	// AddCallback_EntitiesDidLoad( OnProjectileSpawnedTest )
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_melee_halo" )
 	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )
@@ -404,6 +410,23 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_w.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_v.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_valkyrie.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_valkyrie.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_nova_01.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_nova_base_01.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_v.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_w.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_rampart.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_rampart.rmdl" )
+	
+	PrecacheModel( $"mdl/robots/spectre/imc_spectre.rmdl" )
+	PrecacheModel( $"mdl/robots/stalker/robot_stalker.rmdl" )
+	PrecacheModel( $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl" )
+	PrecacheModel( $"mdl/weapons/clacker_detonator/ptpov_clacker_detonator.rmdl" )
+	
+	PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"melee_titan_sword" )
 	PrecacheWeapon( $"mp_weapon_titan_sword" )
 

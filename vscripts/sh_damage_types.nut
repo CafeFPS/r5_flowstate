@@ -113,7 +113,7 @@ global enum eDamageSourceId
 	mp_weapon_wingmanelite
 	mp_weapon_arc_blast
 	mp_weapon_nuke_satchel
-	//mp_weapon_satchel
+	mp_weapon_satchel
 	mp_extreme_environment
 	mp_weapon_wrecking_ball
 	//mp_weapon_epg

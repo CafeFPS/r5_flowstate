@@ -8,3 +8,7 @@ behavior_spider
 behavior_infected
 behavior_marvin
 behavior_prowler
+behavior_stalker
+behavior_stalker_crawling
+behavior_spectre
+behavior_pilot_elite

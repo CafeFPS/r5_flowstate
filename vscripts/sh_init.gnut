@@ -151,6 +151,7 @@ void function SV_CL_Init()
 	ShPersistentData_LevelInit_Finish()
 	
 	ShWeaponRack_Init()
+	MpWeaponSatchel_Init()
 
 	//ShGruntChatter_MP_Init()
 	//ShSpectreChatter_MP_Init()

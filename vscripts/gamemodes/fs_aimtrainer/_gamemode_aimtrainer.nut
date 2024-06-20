@@ -223,10 +223,10 @@ void function SetCommonDummyLines(entity dummy)
 	dummy.SetDeathNotifications( true )
 	dummy.SetValidHealthBarTarget( true )
 	SetObjectCanBeMeleed( dummy, true )
-	if(AimTrainer_AI_COLOR == 5)
-		dummy.SetSkin(RandomIntRangeInclusive(1,4))
-	else
-		dummy.SetSkin(AimTrainer_AI_COLOR)
+	// if(AimTrainer_AI_COLOR == 5)
+		// dummy.SetSkin(RandomIntRangeInclusive(1,4))
+	// else
+		// dummy.SetSkin(AimTrainer_AI_COLOR)
 	dummy.DisableHibernation()
 }
 
@@ -263,11 +263,11 @@ void function StartStraferDummyChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		vector dummypos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
-		entity dummy = CreateDummy( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0) )
+		entity dummy = CreateLegend_ai( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0), true )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
-		SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
+		// SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
 		DispatchSpawn( dummy )
 		dummy.SetOrigin(dummy.GetOrigin() + Vector(0,0,1))
 		

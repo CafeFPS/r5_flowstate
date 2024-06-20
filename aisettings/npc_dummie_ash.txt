@@ -1,15 +1,15 @@
-npc_dummie_loba
+npc_dummie_ash
 {
-	AIClass							dummie
+	AIClass							human
 	TraverseAnimType				spectre
 
-	title							DUMMIE
+	title							"im cool"
 	useSequenceBounds				1
 
-	aiEnemy_usePriorityDist			2500
-	aiEnemy_immediateThreatDist		200
+	aiEnemy_usePriorityDist			1300
+	aiEnemy_immediateThreatDist		800
 
-	AimAngularSpeed					15
+	AimAngularSpeed					7
 
 	ArmorType						normal
 
@@ -17,36 +17,39 @@ npc_dummie_loba
 	BodyType						human
 
 	footstep_type					"human"
-	mechanical						1
+	mechanical						0
 
-	BehaviorSelector				"behavior_dummie_combat"
-	LocationScoringCriteria			"CommonShootWithLos"
+	BehaviorSelector				"behavior_dummy_empty"
+	//LocationScoringCriteria			"CommonShootWithLos"
 
-	chaseStopDist					50
-	chaseStopDistHeavyArmor			100
+	chaseStopDist					2000
+	chaseStopDistHeavyArmor			2000
 
 	allowCower						0
 	allowUseCover					1
 
+
 	traverseCostFactor				2.0
-	minGoalRadius					256
+	minGoalRadius					2000
 
-	DefaultModelName				"mdl/Humans/pilots/pilot_medium_loba.rmdl"
+	DefaultModelName				"mdl/techart/mshop/characters/legends/ash/ash_base_w.rmdl"
 
-	DefaultWeapon					"mp_weapon_rspn101"
-	WeaponCapacity					"PilotMainWeapons"
+	DefaultWeapon					"mp_weapon_hemlok"
+	WeaponCapacity					"FromLoadout"
 
     //Precision
-    aimingPrecisionMin              1
+    aimingPrecisionMin              0.7
     aimingPrecisionMax              1
     aimingPrecisionIncreaseRate     0.175
     aimingPrecisionDecreaseRate     0.125
 
-	// longJumpCheckMinInterval		15
-	// longJumpCheckMaxInterval		30
-	// longJumpMinDist					400
-	// longJumpMaxDist					700
-	// longJumpHeight					300
+	enemyAimAtMeWidth				100
+
+	longJumpCheckMinInterval		15
+	longJumpCheckMaxInterval		30
+	longJumpMinDist					400
+	longJumpMaxDist					700
+	longJumpHeight					300
 
 	//GibModel0						"mdl/robots/spectre/spectre_assault_d_gib_leg_l.rmdl"
 	//GibModel1						"mdl/robots/spectre/spectre_assault_d_gib_leg_r.rmdl"
@@ -63,10 +66,10 @@ npc_dummie_loba
 	//GibSpeed						200
 	//GibAngularSpeed					20
 	//GibMaxDist						1600
-	//GibFX							"P_exp_spectre_death"
+	//GibFX							"P_exp_human_death"
 	//GibSound						"Explo_Spectre"
 
-	headshotFX 						"P_headshot_pilot_robot"
+	headshotFX 						"P_headshot_pilot"
 	landingImpactTable				"pilot_landing"
 	footstepImpactTable				"pilot_foostep"
 
@@ -123,15 +126,15 @@ npc_dummie_loba
 	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
 	aimassist_adspull_headshotRadius			7.0
 
-	MeleeDamageMax					35
-	MeleeDamageMin					35
+	MeleeDamageMax					25
+	MeleeDamageMin					25
 
 	Health							100
 
 	PainOnHeavyDamageThreshold		9999 // 32
 	PainOnRepeatDamageThreshold		9999 // 70
 
-	MeleeDamageRadius				50
+	MeleeDamageRadius				40
 	MeleeRange						65
 
 
@@ -147,11 +150,11 @@ npc_dummie_loba
 	//meleeImpactEffectTable		"melee_spectre"
 
 	MinForceWalkDist				0
-	MinStartMoveDist				100
+	MinStartMoveDist				10
 	MoveYawSpeed					12
 	//moveDeflectionLookAheadTime		0.5			[$sp]
 
-	//shootingCoverFightRadius 		600			[$sp]
+	shootingCoverFightRadius 		600
 
 	DrawEnemyHealthBar				0
 	DrawTargetHealthBar				0
@@ -159,10 +162,10 @@ npc_dummie_loba
 	resetBurstOnStopShootOverlay	1
 	restrictAimGunToValidSequences	1
 
-	// showFriendlyIcon				1
-	// showTitle						1
+	showFriendlyIcon				1
+	showTitle						0
 
-	// ui_targetinfo					"ui/targetinfo_npc_simple"
+	ui_targetinfo					""
 
 	smartAmmoLockAttachmentName0	HEADFOCUS
 	waitBetweenWeaponBurst			1
@@ -173,7 +176,8 @@ npc_dummie_loba
 
 //////////////////////
 	chancetohit_spread_ontarget		15.0
-	disableMeleeExecution		1
+	disableMeleeExecution		0
+	
 //////////////////////
 
 }

@@ -1,4 +1,4 @@
-npc_dummie_loba
+npc_dummie_rampart
 {
 	AIClass							dummie
 	TraverseAnimType				spectre
@@ -31,7 +31,7 @@ npc_dummie_loba
 	traverseCostFactor				2.0
 	minGoalRadius					256
 
-	DefaultModelName				"mdl/Humans/pilots/pilot_medium_loba.rmdl"
+	DefaultModelName				"mdl/Humans/class/medium/pilot_medium_rampart.rmdl"
 
 	DefaultWeapon					"mp_weapon_rspn101"
 	WeaponCapacity					"PilotMainWeapons"
