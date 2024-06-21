@@ -41,7 +41,6 @@ global struct ShieldDamageModifier
 	float damageScale = 1.0
 }
 
-
 struct
 {
 	bool isSkyboxView = false
@@ -4916,5 +4915,13 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
 		{
 			printt("Invalid entity.")
 		}
+	}
+#endif 
+
+#if SERVER //ty cafe for remotefunc impl
+	void function CreateClientLight( entity player, LocPair loc, int color = 0, float brightness = 255, exponent = 0.5 )
+	{
+		if( IsValid( player ) )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnClientSideDynamicLight", loc.origin, loc.angles, color, brightness, exponent )
 	}
 #endif 

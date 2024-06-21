@@ -35,8 +35,8 @@ void function WorldDrawImg_RegisterAllAssets()
 	#if CLIENT 
 		if( file.bShouldWaitForRpak )
 		{
-			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
 			WorldDrawImg_SetupRequestedAssets( file.someRpakName, file.someBuiltAssetArrayFromServerClientMightNotHave )
+			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
 		}
 	#endif
 	

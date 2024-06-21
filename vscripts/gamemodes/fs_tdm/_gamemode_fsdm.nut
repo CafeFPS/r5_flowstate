@@ -726,7 +726,17 @@ void function _CustomTDM_Init()
 		//custom spawn extension using the implemented abstracted callback :) ~mkos 
 		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
 		{
+			DropoffPatch_Init()
+			
 			AddCallback_FlowstateSpawnsInit( Init_DropoffPatchSpawns )
+				
+			AddCallback_OnClientConnected
+			(
+				void function( entity player )
+				{
+					DropoffPatch_SpawnLights( player )
+				}
+			)
 		}
 		
 		_soloModeInit( MapName() ) //enum

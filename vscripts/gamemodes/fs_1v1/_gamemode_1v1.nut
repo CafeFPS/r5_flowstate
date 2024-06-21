@@ -3324,18 +3324,18 @@ void function _soloModeInit( int eMap )
 			// WorldDrawImg_Timed
 			// (
 				// player, 
-				// "",
+				// "rui/flowstate_custom/mkos/1v1banner",
 				// Gamemode1v1_GetNotificationPanel_Coordinates() + <0,0,imgHeight>,
 				// Gamemode1v1_GetNotificationPanel_Angles(),
 				// imgWidth,
 				// imgHeight,
-				// WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" ),
+				// -1, //WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" ),
 				// -1, //no alpha change
-				// 15
+				// 15  //duration
 			// )
 			
 			#if DEVELOPER 
-				printt( "SERVER: Created WorldDrawImg on client for", player )//, "with ID:", refID )
+				printt( "SERVER: Created WorldDrawImg on client for", player, "with ID:", refID )
 			#endif
 		}
 	)
@@ -3418,11 +3418,17 @@ void function DefinePanelCallbacks( table<string, entity> panels )
             enemiesArray.fastremovebyvalue( user )
             
             #if TRACKER
-            if ( bBotEnabled() && IsValid( eMessageBot() ) && IsAlive( eMessageBot() ) )
-            {
-                enemiesArray.fastremovebyvalue( eMessageBot() )
-            }
+				if ( bBotEnabled() && IsValid( eMessageBot() ) && IsAlive( eMessageBot() ) )
+				{
+					enemiesArray.fastremovebyvalue( eMessageBot() )
+				}
             #endif
+			
+			if ( enemiesArray.len() == 0 )
+			{
+				LocalMsg( user, "#FS_NO_PLAYERS_TO_SPEC" )
+				return
+			}
             
             entity specTarget = enemiesArray.getrandom()
 
@@ -3561,7 +3567,7 @@ void function DefinePanelCallbacks( table<string, entity> panels )
     })
 	
 	
-	//Designers: Define your custom panel behavior here
+	//Designers: Define your custom panel behavior here ~mkos
 	//...
 	
 }
@@ -4151,7 +4157,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			
 			if( newGroup.player1.p.enable_input_banner && !bMatchFound )
 			{
-				IBMM_Notify( newGroup.player1, ibmmLockTypeToken, newGroup.player2.p.input, newGroup.player2.p.name )
+				IBMM_Notify( newGroup.player1, ibmmLockTypeToken, newGroup.player2.p.input )
 			}
 			
 			if ( newGroup.player2.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false )
@@ -4161,7 +4167,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			
 			if( newGroup.player2.p.enable_input_banner && !bMatchFound )
 			{
-				IBMM_Notify( newGroup.player2, ibmmLockTypeToken, newGroup.player1.p.input, newGroup.player1.p.name )
+				IBMM_Notify( newGroup.player2, ibmmLockTypeToken, newGroup.player1.p.input )
 			}
 		} //not waiting
 		

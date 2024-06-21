@@ -1848,6 +1848,19 @@ void function FS_IBMM_Msg( string msgString, string subMsgString, float duration
 	)
 	// printt( "trying to show message:", file.fs_newMsgBoxString, file.fs_newMsgBoxSubString )
 
+	entity enemy = player.GetPlayerNetEnt( "FSDM_1v1_Enemy")
+	
+	if( enemy != null )
+	{
+		if( subMsgString.find( "%s" ) != -1 )
+			subMsgString = StringReplaceLimited( subMsgString, "%s", enemy.GetPlayerName(), 1 )
+	}
+	else
+	{
+		if( subMsgString.find( "%s" ) != -1 )
+			subMsgString = StringReplaceLimited( subMsgString, "%s", "~unknown~", 1 )
+	}
+
 	Hud_SetText( HudElement( "FS_IBMM_MsgText"), msgString )
 	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), subMsgString )
 	

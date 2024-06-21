@@ -17,6 +17,7 @@ global function WorldDrawImg_RegisterRemoteAsset
 	global function ServerCallback_DestroyWorldImg
 	global function ServerCallback_SetWorldImgVisibility
 	global function ServerCallback_ModifyWorldImg
+	global function __BuildWorldImgAssetString
 	
 	const MAX_WORLD_TOPO = 30 //not dynamically set
 #endif
@@ -116,6 +117,10 @@ void function WorldDrawImg_Init()
 		
 		if( !bHasRef )
 		{
+			#if DEVELOPER
+				printt( "imgAssetRef:", imgAssetRef )
+			#endif
+			
 			for ( int i = 0; i < imgAssetRef.len(); i++ )
 			{
 				Remote_CallFunction_NonReplay( player, "__BuildWorldImgAssetString", imgAssetRef[i] )
@@ -247,7 +252,7 @@ void function WorldDrawImg_Init()
 	void function __BuildWorldImgAssetString( ... )
 	{
 		if( vargc == 0 )
-			return 
+			return
 			
 		for ( int i = 0; i < vargc; i++ )
 		{
@@ -273,7 +278,12 @@ void function WorldDrawImg_Init()
 		}
 		
 		if( !bHasRef && assetRef == "" )
+		{
+			#if DEVELOPER
+				Warning("No ref and custom asset specification is empty")
+			#endif
 			return
+		}
 		
 		asset ornull img = null
 		float ornull setduration = null
@@ -293,9 +303,13 @@ void function WorldDrawImg_Init()
 		else 
 		{
 			img = __FetchWorldImgAssetFromRef( remoteAssetRefID )
-			id = id != -1 ? remoteAssetRefID : id //set to -1 to destroy timed
-			setduration = duration != -1.0 ? duration : null 
+			id = id != -1 ? id : remoteAssetRefID //set to server managed id's unless calling predefined 0-99
 		}
+		
+		setduration = duration != -1.0 ? duration : null 
+			
+		if( setduration != null )
+			id = -1 //duration is specified, trigger timed method
 		
 		if( img != null )
 		{

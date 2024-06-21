@@ -589,7 +589,7 @@ void function LocalEventMsgDelayed( float eventdelay, entity player, string ref,
 			})()
 }
 
-void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPlayerInputType, string enemyName, float duration = 5.0 )
+void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPlayerInputType, float duration = 5.0 )
 {
 	string inputTypeToken = "";
 	
@@ -599,7 +599,7 @@ void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPla
 		case 1: inputTypeToken = "#FS_CONTROLLER"; break;
 	}
 	
-	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", enemyName, "", false )
+	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", "", "", false )
 }
 #endif //SERVER
 

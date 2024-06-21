@@ -1,5 +1,38 @@
-globalize_all_functions
+globalize_all_functions																	//mkos
 
+struct
+{
+	array<LocPair> dropoffLightLocations = []
+	
+} file 
+
+void function DropoffPatch_Init()
+{
+	file.dropoffLightLocations = 
+	[
+		NewLocPair( < 2373.2, 3925.91, 105.346 >, < 87.5226, 227.648, 0 > ),
+		NewLocPair( < 1882.94, 3471.24, 108.092 >, < 89, 201.822, 0 > ),
+		NewLocPair( < 3247.74, 3428.48, 91.2053 >, < 86.2699, 222.461, 0 > ),
+		NewLocPair( < 3005.4, 3113.86, 78.7966 >, < 86.139, 111.982, 0 > ),
+		NewLocPair( < -2246.38, 3903.73, 72.1974 >, < 85.1666, 293.864, 0 > ),
+		NewLocPair( < -1845.91, 3425.76, 89.8023 >, < 86.6625, 239.504, 0 > ),
+		NewLocPair( < -2654.67, 2739.17, 119.676 >, < 89, 63.8106, 0 > ),
+		NewLocPair( < -2959.08, 3108.02, 57.1684 >, < 89, 352.62, 0 > ),
+		NewLocPair( < -2925.19, 281.82, 479.922 >, < 83.0535, 322.269, 0 > ),
+		NewLocPair( < -2541.1, 445.873, 476.121 >, < 89, 231.077, 0 > ),
+		NewLocPair( < -2102.71, 137.273, 467.849 >, < 88.9252, 235.577, 0 > ),
+		NewLocPair( < -2173.54, -292.228, 475.295 >, < 89, 78.7337, 0 > ),
+		NewLocPair( < -1646.02, -718.983, 477.509 >, < 81.8751, 143.367, 0 > ),
+		NewLocPair( < -2834.12, -202.15, 472.755 >, < 89, 32.6441, 0 > ),
+		NewLocPair( < 1600.83, -761.084, 450.386 >, < 89, 41.3022, 0 > ),
+		NewLocPair( < 1882.6, -512.284, 456.744 >, < 89, 39.4136, 0 > ),
+		NewLocPair( < 2135.1, -322.856, 469.75 >, < 89, 39.0021, 0 > ),
+		NewLocPair( < 2524.3, -19.347, 473.018 >, < 89, 121.599, 0 > ),
+		NewLocPair( < 2982.62, 304.125, 471.702 >, < 88.9813, 219.756, 0 > ),
+		NewLocPair( < 2380.27, 377.874, 469.924 >, < 89, 222.47, 0 > ),
+		NewLocPair( < 1998.2, 51.0162, 464.697 >, < 89, 315.202, 0 > )
+	]
+}
 
 void function Patch_Barrier_Dropoff() 
 {
@@ -711,10 +744,17 @@ void function Patch_Dropoff()
 */ 
 }
 
-
 void function Patch_Partycrasher_Restarea()
 {
 	entity prop
     prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 1755.278, -3840.448, 669.9891 >, < 0, 15, 90 >, false, 0.0001, -1, 1 )
     prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+}
+
+void function DropoffPatch_SpawnLights( entity player )
+{
+	foreach( lightLoc in file.dropoffLightLocations )
+	{
+		CreateClientLight( player, lightLoc )
+	}
 }
