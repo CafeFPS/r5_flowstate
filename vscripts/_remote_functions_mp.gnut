@@ -814,8 +814,10 @@ void function RemoteFunctions_Init_Begin()
 	
 	// ClientWorldImg
 	Remote_RegisterUntypedFunction_deprecated( "__BuildWorldImgAssetString" ) //optional, else called by int ref
-	Remote_RegisterClientFunction_Optional( "ServerCallback_CreateWorldImg", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 32000, "int", 0, 32000, "int", 0, INT_MAX, "int", -1, 99 )
+	Remote_RegisterClientFunction_Optional( "ServerCallback_CreateWorldImg", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "int", -1, INT_MAX, "int", -1, 99, "float", -1.0, 1.0, 32, "bool", "float", -1.0, 32000.0, 32 )
 	Remote_RegisterClientFunction_Optional( "ServerCallback_DestroyWorldImg", "int", 0, INT_MAX )
+	Remote_RegisterClientFunction_Optional( "ServerCallback_SetWorldImgVisibility", "int", 0, INT_MAX, "bool" )
+	Remote_RegisterClientFunction_Optional( "ServerCallback_ModifyWorldImg", "int", 0, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 1.0, 32, "int", -1, INT_MAX )
 	
 	if ( IsLobby())
 	{

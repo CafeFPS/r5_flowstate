@@ -1,17 +1,22 @@
 // WorldImgDraw 																		//mkos
 
 global function WorldDrawImg_Init
+global function WorldDrawImg_RegisterRemoteAsset
 
 #if SERVER
 	global function WorldDrawImg_CreateOnClient
 	global function WorldDrawImg_DestroyOnClient
-	global function WorldDrawImg_RegisterRemoteAsset
 	global function WorldDrawImg_AssetRefToID
+	global function WorldDrawImg_Modify
+	global function WorldDrawImg_SetVisible
+	global function WorldDrawImg_Timed
 #endif
 
 #if CLIENT 
 	global function ServerCallback_CreateWorldImg
 	global function ServerCallback_DestroyWorldImg
+	global function ServerCallback_SetWorldImgVisibility
+	global function ServerCallback_ModifyWorldImg
 	
 	const MAX_WORLD_TOPO = 30 //not dynamically set
 #endif
@@ -34,20 +39,18 @@ struct
 
 table<string,int> assetRefToIntMap = {}
 table<int,asset> assetIntToAssetMap = {}
-array<asset> registeredRemoteAssets = 
-[
-	$"rui/flowstate_custom/mkos/1v1banner"
-]
+array<asset> registeredRemoteAssets = []
 
 
 #if SERVER || CLIENT 
 void function WorldDrawImg_RegisterRemoteAsset( asset img )
 {
 	//if registering, these must match 
-	
+
 	if( registeredRemoteAssets.contains( img ) )
 	{
-		Warning("Tried to register asset: " + string( img ) + " but already exists in registeredRemoteAssets")
+		Warning( "Tried to register asset: " + string( img ) + " but already exists in registeredRemoteAssets" )
+		return
 	}
 	
 	registeredRemoteAssets.append( img )
@@ -56,8 +59,15 @@ void function WorldDrawImg_RegisterRemoteAsset( asset img )
 
 void function WorldDrawImg_Init()
 {
+	#if CLIENT
+		RegisterSignal( "RemoteAssetsLoaded" )
+		RegisterSignal( "PakReadyForLoad" )
+	#endif
+	
+	WorldDrawImg_RegisterAllAssets()
+	
 	#if ASSERT_WORLD_DRAW
-		Warning("ASSERT_WORLD_DRAW enabled")
+		Warning( "ASSERT_WORLD_DRAW enabled" )
 	#endif 
 	
 	foreach( int idx, asset img in registeredRemoteAssets )
@@ -80,20 +90,25 @@ void function WorldDrawImg_Init()
 			return assetRefToIntMap[ ref ]
 		
 		#if ASSERT_WORLD_DRAW
-			mAssert( false, "Img ref " + ref + "doesn't exist" )
+			mAssert( false, "Img ref " + ref + " doesn't exist" )
 		#endif 
 		
 		return -1
 	}
 
-	int function WorldDrawImg_CreateOnClient( entity player, string imgAssetRef, vector origin, vector angles, int width, int height, int remoteAssetRefID = -1 )
+	int function WorldDrawImg_CreateOnClient( entity player, string imgAssetRef, vector origin, vector angles, float width, float height, int remoteAssetRefID = -1, float alpha = -1.0, bool visible = true, float duration = -1.0 )
 	{
 		bool bHasRef = remoteAssetRefID > -1
 		
 		if( empty( imgAssetRef ) && !bHasRef )
 			return -1
 			
-		int id = __GenerateUniqueWorldRuiID() //don't allow manual assignment as overwriting topologies will lose the reference to destroy them on client.
+		int id = !bHasRef ? __GenerateUniqueWorldRuiID() : remoteAssetRefID //don't allow manual assignment unless predefined, as overwriting topologies will lose the reference to destroy them on client.
+		
+		if( duration > -1.0 )
+		{
+			id = -1
+		}
 		
 		if( !bHasRef )
 		{
@@ -103,7 +118,7 @@ void function WorldDrawImg_Init()
 			}
 		}
 		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_CreateWorldImg", origin, angles, width, height, id, remoteAssetRefID )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_CreateWorldImg", origin, angles, width, height, id, remoteAssetRefID, alpha, visible, duration )
 		
 		return id
 	}
@@ -112,11 +127,27 @@ void function WorldDrawImg_Init()
 	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyWorldImg", id )
 	}
+	
+	void function WorldDrawImg_Modify( entity player, int id, vector org = ZERO_VECTOR, vector ang = ZERO_VECTOR, float width = -1.0, float height = -1.0, float alpha = -1.0, int newImgRefID = -1 )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_ModifyWorldImg", id, org, ang, width, height, alpha, newImgRefID )
+	}
+	
+	void function WorldDrawImg_SetVisible( entity player, int id, bool visible )
+	{
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible )
+	}
+	
+	void function WorldDrawImg_Timed( entity player, string imgAssetRef, vector origin, vector angles, float width, float height, int remoteAssetRefID, float alpha, float duration )
+	{
+		mAssert( duration > 0.0, "Called WorldDrawImg_Timed() with invalid duration. Must be > 0" )
+		WorldDrawImg_CreateOnClient( player, imgAssetRef, origin, angles, width, height, remoteAssetRefID, alpha, true, duration )
+	}
 #endif //if SERVER
 
-#if CLIENT 
+#if CLIENT
 	
-	void function __BuildWorldImageRUI( asset image, vector org, vector ang, float width, float height, int RUIID = -1 )
+	void function __BuildWorldImageRUI( asset image, vector org, vector ang, float width, float height, int RUIID = -1, float alpha = -1.0, bool visible = true, float ornull duration = null )
 	{
 		vector origin = org
 		vector angles = ang
@@ -126,6 +157,11 @@ void function WorldDrawImg_Init()
 
 		var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
 		RuiSetImage( rui, "basicImage", image )
+		
+		if( alpha > -1.0 )
+			RuiSetFloat( rui, "basicImageAlpha", alpha )
+			
+		RuiSetVisible( rui, visible )
 
 		if ( RUIID != -1 )
 		{
@@ -138,6 +174,15 @@ void function WorldDrawImg_Init()
 				file.worldRUITopo[ RUIID ] <- []
 				
 			file.worldRUITopo[ RUIID ].append( topo )
+		}
+		else 
+		{
+			float setduration = 5
+			
+			if( duration != null )
+				setduration = expect float( duration )
+				
+			thread __DestroyWorldRUIWithID_Timed( topo, rui, setduration )
 		}
 	}
 
@@ -160,12 +205,40 @@ void function WorldDrawImg_Init()
 			{
 				RuiTopology_Destroy( topo ) //required
 			}
-			catch( e ){}
+			catch( e )
+			{
+				#if DEVELOPER && ASSERT_WORLD_DRAW
+					Warning( "Warning: " + e )
+				#endif
+			}
 		}
 		
 		file.worldRUITopo[ RUIID ].clear()
 	}
-
+	
+	void function __DestroyWorldRUIWithID_Timed( var topo, var rui, float duration = 5 )
+	{
+		OnThreadEnd
+		(
+			function() : ( topo, rui )
+			{
+				RuiDestroyIfAlive( rui )
+				
+				try
+				{
+					RuiTopology_Destroy( topo ) //required
+				}
+				catch( e )
+				{
+					#if DEVELOPER && ASSERT_WORLD_DRAW
+						Warning( "Warning: " + e )
+					#endif
+				}
+			}
+		)
+		
+		wait duration
+	}
 	
 	void function __BuildWorldImgAssetString( ... )
 	{
@@ -178,18 +251,28 @@ void function WorldDrawImg_Init()
 		}
 	}
 
-	void function ServerCallback_CreateWorldImg( vector origin, vector angles, int width, int height, int id, int remoteAssetRefID )
+	void function ServerCallback_CreateWorldImg( vector origin, vector angles, float width, float height, int id, int remoteAssetRefID, float alpha, bool visible, float duration )
 	{
 		if( file.worldRUITopo.len() >= MAX_WORLD_TOPO )
 			return 
 		
-		bool bHasRef 	= remoteAssetRefID > -1
+		bool bHasRef 		= remoteAssetRefID > -1
 		string assetRef 	= file.worldImgAssetRef
+		
+		if( assetRef != "" && !RuiImageExists( assetRef ) )
+		{
+			#if DEVELOPER && ASSERT_WORLD_DRAW
+				Warning( "Warning: Asset img \"" + assetRef + "\" does not exist for " + FUNC_NAME() + "()" )
+			#endif
+			
+			return
+		}
 		
 		if( !bHasRef && assetRef == "" )
 			return
 		
 		asset ornull img = null
+		float ornull setduration = null
 		
 		if ( !bHasRef )
 		{
@@ -199,22 +282,126 @@ void function WorldDrawImg_Init()
 			}
 			catch( e )
 			{
-				printt( "Error: Server tried to create an image that does not exist: " + e )
+				printt( "Error: " + e )
 				return
 			}
 		}
 		else 
 		{
 			img = __FetchWorldImgAssetFromRef( remoteAssetRefID )
-			id = remoteAssetRefID
+			id = id != -1 ? remoteAssetRefID : id //set to -1 to destroy timed
+			setduration = duration != -1.0 ? duration : null 
 		}
 		
 		if( img != null )
 		{
-			__BuildWorldImageRUI( expect asset( img ), origin, angles, float( width ), float( height ), id )
+			__BuildWorldImageRUI( expect asset( img ), origin, angles, width, height, id, alpha, visible, setduration )
 		}
 		
 		file.worldImgAssetRef = ""
+	}
+	
+	void function ServerCallback_ModifyWorldImg( int id, vector org, vector ang, float width, float height, float alpha, int newImgRefID )
+	{
+		asset ornull newImg 
+		
+		var topo 	= GetWorldDrawTopology( id )
+		var rui 	= GetWorldDrawImgRUI( id ) 
+		
+		if( !IsValid( topo ) )
+		{	
+			#if DEVELOPER 
+				Warning( "Topology was invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER 
+				Warning( "Rui was invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		if( newImgRefID > -1 )
+		{
+			newImg = __FetchWorldImgAssetFromRef( newImgRefID )
+		}	
+
+		if( newImg != null )
+		{		
+			RuiSetImage( rui, "basicImage", expect asset( newImg ) )
+		}
+		
+		if( alpha > -1.0 )
+		{
+			RuiSetFloat( rui, "basicImageAlpha", alpha )
+		}
+		
+		if ( width > -1 && height > -1 )
+		{	
+			org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+			org += ( AnglesToUp( ang ) * (height*0.5) )
+			
+			vector right = ( AnglesToRight( ang ) * width )
+			vector down = ( (AnglesToUp( ang )*-1) * height )
+			
+			RuiTopology_UpdatePos( topo, org, right, down )
+		}
+		
+		#if DEVELOPER 
+			printt
+			(
+				"\n\n ---- Updated topology/rui ---- \nID:", id, 
+				"\nOld Image:", string( file.worldRUI[ id ][0] ),
+				"\nOrigin:", org, 
+				"\nAngles:", ang, 
+				"\nWidth:", width, 
+				"\nHeight:", height,
+				"\nAlpha:", alpha,
+				"\nNewImgRef:", newImgRefID,
+				"\nNewImage:", newImg != null ? string( newImg ) : "null"
+			)
+		#endif 
+	}
+	
+	void function ServerCallback_SetWorldImgVisibility( int id, bool visible )
+	{
+		var rui = GetWorldDrawImgRUI( id )
+		
+		if( !IsValid( rui ) )
+		{
+			#if DEVELOPER 
+				Warning( "Rui asset was invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		RuiSetVisible( rui, visible )
+	}
+	
+	var function GetWorldDrawImgRUI( int id )
+	{
+		var nullRui
+		
+		if( id in file.worldRUI )
+			return file.worldRUI[ id ][0]
+		else 
+			return nullRui
+	}
+	
+	var function GetWorldDrawTopology( int id )
+	{
+		var nullTopo
+		
+		if( id in file.worldRUITopo )
+			return file.worldRUITopo[ id ]
+			
+		return nullTopo
 	}
 
 	void function ServerCallback_DestroyWorldImg( int id )

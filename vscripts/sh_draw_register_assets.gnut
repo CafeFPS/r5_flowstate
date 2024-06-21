@@ -1,0 +1,139 @@
+//WorldDraw Registration of server/client assets 							//mkos
+//Todo: Assign desired assets in a timely manner based on streamed rpaks success
+
+global function WorldDrawImg_RegisterAllAssets
+
+#if CLIENT
+	global function ClientCodeCallback_PakRequestFinished //todo: move?
+#endif
+
+const MAX_WAIT_FOR_RPAK_TRANSFER = 5
+const RPAK_MP_TEMP_PATH = ""
+
+struct
+{
+	array<string> assets = 
+	[
+		"rui/flowstate_custom/mkos/1v1banner"
+	]
+	
+	#if CLIENT 
+		bool bShouldWaitForRpak = false
+		string someRpakName = ""
+		array<string> someBuiltAssetArrayFromServerClientMightNotHave = []
+	#endif 
+
+} file
+
+void function WorldDrawImg_RegisterAllAssets()
+{
+	#if CLIENT 
+		if( file.bShouldWaitForRpak )
+		{
+			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
+			WorldDrawImg_SetupRequestedAssets( file.someRpakName ,file.someBuiltAssetArrayFromServerClientMightNotHave )
+		}
+	#endif
+	
+	foreach( assetImg in file.assets )
+	{	
+		#if CLIENT		
+			if( !RuiImageExists( assetImg ) )
+				continue
+		#endif
+		
+		asset img
+		
+		try
+		{
+			img = CastStringToAsset( assetImg )
+		}
+		catch( e )
+		{
+			#if DEVELOPER
+				Warning( "Error: " + e )
+			#endif 
+			
+			continue
+		}
+		
+		WorldDrawImg_RegisterRemoteAsset( img )
+	}
+}
+
+#if CLIENT
+	void function ClientCodeCallback_PakRequestFinished( table preferablyTableOfSomedata ) //todo: move
+	{
+		entity player = GetLocalClientPlayer()
+		player.Signal( "PakReadyForLoad", preferablyTableOfSomedata )
+	}
+	
+	void function ServerCallback_ShouldWaitForRpak( bool setting )
+	{
+		file.bShouldWaitForRpak = setting
+	}
+	
+	void function WorldDrawImg_SetupRequestedAssets( string rpakName, array<string> assetList )
+	{
+		thread
+		(
+			function() : ( rpakName, assetList )
+			{
+				entity player = GetLocalClientPlayer()
+				player.EndSignal( "OnDestroy", "OnDisconnected" )
+		
+				float curTime = Time()
+				
+				while( !IsDownloadedFileReadyForPakLoad( rpakName ) )
+				{
+					if( Time() - curTime > MAX_WAIT_FOR_RPAK_TRANSFER )
+					{
+						break
+					}
+					
+					WaitFrame()
+				}
+				
+				if( !IsDownloadedFileReadyForPakLoad( rpakName ) )
+				{
+					#if DEVELOPER 
+						Warning( "Warning: Failed to get pak " + rpakName + " in time" )
+					#endif 
+					
+					return
+				}
+				
+				int handle = ClientPakFile_RequestAsyncLoad( RPAK_MP_TEMP_PATH + rpakName )	
+				
+				if( handle == -1 )
+					return
+				
+				table result = player.WaitSignal( "PakReadyForLoad" )
+				
+				//will need a better impl to avoid sync issues
+				//currently this would assume we aren't going to fire multiple
+				//pakready signals which is naive and this code is only valid
+				//for testing purposes
+				if( result.success && result.handle == handle ) 
+				{
+					file.assets.extend( assetList )
+					player.Signal( "RemoteAssetsLoaded" )
+				} 
+			}
+		)()
+		
+	}
+#endif
+
+#if SERVER	
+	void function TransmitDesiredAssets()
+	{
+		// Append desired assets to server list, omitting duplicates
+		// Fire RemoteCall to notify client it should load rpaks if using
+		// And extend asset list before proceeding to init
+		
+		// The client will not have these always, so :
+		// Implement call and checks to transfer rpak containing assets via code
+		// Transmit an array of asset image string refs desired to be loaded into WorldDraw framework
+	}
+#endif

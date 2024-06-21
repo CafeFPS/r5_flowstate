@@ -89,6 +89,7 @@ Scripts:
     sh_survival_loot_distribution.gnut
 	
 	sh_draw_img.gnut
+	sh_draw_register_assets.gnut
 ]
 
 When: "SERVER || CLIENT || UI"

@@ -3307,11 +3307,11 @@ void function _soloModeInit( int eMap )
 	( 
 		void function( entity player ) 
 		{
-			int imgWidth = 600
-			int imgHeight = 380
+			float imgWidth = 600
+			float imgHeight = 380
 			
-			WorldDrawImg_CreateOnClient
-			( 
+			int refID = WorldDrawImg_CreateOnClient
+			(
 				player,
 				"",
 				Gamemode1v1_GetNotificationPanel_Coordinates() + <0,0,imgHeight>,
@@ -3320,6 +3320,23 @@ void function _soloModeInit( int eMap )
 				imgHeight,
 				WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" )
 			)
+			
+			// WorldDrawImg_Timed
+			// (
+				// player, 
+				// "",
+				// Gamemode1v1_GetNotificationPanel_Coordinates() + <0,0,imgHeight>,
+				// Gamemode1v1_GetNotificationPanel_Angles(),
+				// imgWidth,
+				// imgHeight,
+				// WorldDrawImg_AssetRefToID( "rui/flowstate_custom/mkos/1v1banner" ),
+				// -1, //no alpha change
+				// 15
+			// )
+			
+			#if DEVELOPER 
+				printt( "SERVER: Created WorldDrawImg on client for", player )//, "with ID:", refID )
+			#endif
 		}
 	)
 }
