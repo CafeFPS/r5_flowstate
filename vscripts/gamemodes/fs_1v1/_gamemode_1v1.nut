@@ -3250,7 +3250,7 @@ void function _soloModeInit( int eMap )
 
 			soloLocations.append(p)
 		}
-	} 
+	}
 	else
 	{
 		for (int i = 0; i < allSoloLocations.len(); i=i+2)
@@ -4028,11 +4028,11 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					properOpponentTable[eachOpponent] <- fabs(selfKd - opponentKd)
 					
 					//mkos - keep building a list of candidates who are not timed out with same input
-					if( playerSelf.p.input != eachOpponent.p.input && player_IBMM_timeout == false && opponent_IBMM_timeout == false )
+					if( playerSelf.p.input != eachOpponent.p.input && ( player_IBMM_timeout == false || opponent_IBMM_timeout == false ) )
 					{
 						//sqprint("Waiting for input match...");
 						continue		
-					} 	
+					}	
 				}
 
 				float lowestKd = 999

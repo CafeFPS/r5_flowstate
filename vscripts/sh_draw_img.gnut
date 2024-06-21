@@ -58,10 +58,14 @@ void function WorldDrawImg_RegisterRemoteAsset( asset img )
 #endif //if SERVER || CLIENT
 
 void function WorldDrawImg_Init()
-{
+{	
 	#if CLIENT
 		RegisterSignal( "RemoteAssetsLoaded" )
 		RegisterSignal( "PakReadyForLoad" )
+	#endif
+	
+	#if SERVER 
+		WorldDrawImg_TransmitDesiredAssets()
 	#endif
 	
 	WorldDrawImg_RegisterAllAssets()

@@ -5,7 +5,12 @@ global function WorldDrawImg_RegisterAllAssets
 
 #if CLIENT
 	global function ClientCodeCallback_PakRequestFinished //todo: move?
+	global function ServerCallback_ShouldWaitForRpak
 #endif
+
+#if SERVER 
+	global function WorldDrawImg_TransmitDesiredAssets
+#endif 
 
 const MAX_WAIT_FOR_RPAK_TRANSFER = 5
 const RPAK_MP_TEMP_PATH = ""
@@ -17,7 +22,7 @@ struct
 		"rui/flowstate_custom/mkos/1v1banner"
 	]
 	
-	#if CLIENT 
+	#if CLIENT
 		bool bShouldWaitForRpak = false
 		string someRpakName = ""
 		array<string> someBuiltAssetArrayFromServerClientMightNotHave = []
@@ -31,7 +36,7 @@ void function WorldDrawImg_RegisterAllAssets()
 		if( file.bShouldWaitForRpak )
 		{
 			waitthread WaitSignalOrTimeout( GetLocalClientPlayer(), 7, "RemoteAssetsLoaded" )	
-			WorldDrawImg_SetupRequestedAssets( file.someRpakName ,file.someBuiltAssetArrayFromServerClientMightNotHave )
+			WorldDrawImg_SetupRequestedAssets( file.someRpakName, file.someBuiltAssetArrayFromServerClientMightNotHave )
 		}
 	#endif
 	
@@ -126,7 +131,7 @@ void function WorldDrawImg_RegisterAllAssets()
 #endif
 
 #if SERVER	
-	void function TransmitDesiredAssets()
+	void function WorldDrawImg_TransmitDesiredAssets()
 	{
 		// Append desired assets to server list, omitting duplicates
 		// Fire RemoteCall to notify client it should load rpaks if using
