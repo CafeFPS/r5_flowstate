@@ -182,7 +182,7 @@ void function Init_FS_Scenarios()
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
 
-	AddCallback_FlowstateSpawnsInit( CustomSpawns )
+	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 
 	FS_Scenarios_Score_System_Init()
 }

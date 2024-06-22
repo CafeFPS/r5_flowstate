@@ -1995,6 +1995,10 @@ void function SetHideCrosshairHitIndicatorOverride( bool value )
 void function FS_Toggle_Mute( int chal, bool toggle ) //TODO: remove challenge sequence (redundant)
 {
 	entity player = GetLocalClientPlayer()
+	
+	if( !IsValid( player ) ) //ui calls this
+		return
+		
 	string uid = player.GetPlatformUID()
 	string cmd = "FS_TT " + chal.tostring()
 	

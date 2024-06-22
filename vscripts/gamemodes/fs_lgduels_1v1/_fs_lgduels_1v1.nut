@@ -1,5 +1,4 @@
-global function Flowstate_LgDuels1v1_Init
-
+global function Flowstate_LgDuels1v1_Init									//mkos
 
 const string HIT_0 = "UI_Survival_Intro_LaunchCountDown_3Seconds"
 const string HIT_1 = "UI_InGame_MarkedForDeath_CountdownToMarked"
@@ -24,8 +23,13 @@ void function Flowstate_LgDuels1v1_Init()
 {
 	if( MapName() == eMaps.mp_rr_canyonlands_staging && Playlist() == ePlaylists.fs_lgduels_1v1 )
 	{
-		SetCallback_FlowstateSpawnsOffset( LGDuels_Spawns_Offset )
-		AddCallback_FlowstateSpawnsInit( Init_LGDuels_Spawns )
+		AddCallback_FlowstateSpawnsSettings( InitPreSpawnSystemSettings)	
+		SetCallback_FlowstateSpawnsOffset( LGDuels_Spawns_Offset ) //used to move all spawns by an offset
+		AddCallback_FlowstateSpawnsPostInit( Init_LGDuels_Spawns )
+	}
+	else 
+	{
+		SpawnSystem_SetCustomPlaylist( AllPlaylistsArray()[ ePlaylists.fs_1v1 ] ) 
 	}
 
 	#if TRACKER && HAS_TRACKER_DLL
@@ -36,6 +40,11 @@ void function Flowstate_LgDuels1v1_Init()
 	#endif
 	
 	AddCallback_OnClientConnected( INIT_LGDuels_Player )
+}
+
+void function InitPreSpawnSystemSettings()
+{
+	SpawnSystem_SetCustomPak( "datatable/fs_spawns_lgduels.rpak" )
 }
 
 void function INIT_LGDuels_Player( entity player )
@@ -91,7 +100,7 @@ void function LgDuelLoadSettings( entity player, string data )
 //LGDuel
 void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 {	
-	if ( !IsValid(victim) || !victim.IsPlayer() || Bleedout_IsBleedingOut(victim) ) 
+	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) ) 
 		return
 	
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
@@ -105,7 +114,6 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 		{
 			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
 		}
-
 		
 		attacker.p.totalLGHits++
 		

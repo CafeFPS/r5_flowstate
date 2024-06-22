@@ -715,35 +715,6 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("startcameraman", ClientCommand_setspecplayer )
 		AddClientCommandCallback("becomepro", ClientCommand_BecomePro )
 	}
-
-	if( is1v1EnabledAndAllowed() )
-	{
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
-		{
-			Flowstate_LgDuels1v1_Init()
-		}
-		
-		//custom spawn extension using the implemented abstracted callback :) ~mkos 
-		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
-		{
-			DropoffPatch_Init()
-			
-			AddCallback_FlowstateSpawnsInit( Init_DropoffPatchSpawns )
-				
-			AddCallback_OnClientConnected
-			(
-				void function( entity player )
-				{
-					DropoffPatch_SpawnLights( player )
-				}
-			)
-		}
-		
-		_soloModeInit( MapName() ) //enum
-
-		if( !is3v3Mode() )
-			AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )	
-	}
 		
 	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
 	{
@@ -777,6 +748,44 @@ void function _CustomTDM_Init()
 		//this shouldn't be defined out, it lets the host know they have an invalid setting
 		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
 	}
+	
+	if( is1v1EnabledAndAllowed() )
+	{
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		{
+			Flowstate_LgDuels1v1_Init()
+		}
+		
+		//custom spawn extension using the implemented abstracted callback :) ~mkos 
+		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
+		{
+			DropoffPatch_Init()
+			
+			AddCallback_FlowstateSpawnsPostInit( Init_DropoffPatchSpawns )
+				
+			AddCallback_OnClientConnected
+			(
+				void function( entity player )
+				{
+					DropoffPatch_SpawnLights( player )
+				}
+			)
+		}
+		
+		thread
+		(
+			void function()
+			{
+				FlagWait( "EntitiesDidLoad" )
+				_soloModeInit( MapName() )
+				
+				if( !is3v3Mode() )
+					AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
+			}
+		)()
+	
+	}
+	
 }
 
 void function __OnEntitiesDidLoadCTF()

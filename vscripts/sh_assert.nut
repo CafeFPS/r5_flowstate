@@ -20,10 +20,13 @@ void function mAssert( var condition, string errorMsg = "error" )
 		
 		#if CLIENT
 			ErrorClientPlayer( errorMsg )
-		#endif 
+		#endif
 		
-		#if SERVER 		
-			ErrorServer( errorMsg + "\n\n" + DBG_INFO( 5 ) )
+		#if SERVER
+			string appenderr = "\n\n" + DBG_INFO( 3 )
+			appenderr += "\n" + DBG_INFO( 4 )
+			
+			ErrorServer( errorMsg + appenderr )
 		#endif
 	}
 }
@@ -51,7 +54,7 @@ void function ErrorServer( string errorMsg )
 
 void function WaitValidStateThenClose( string errorMsg )
 {
-	if( !shGlobalErrorCheck() )
+	if( shGlobalErrorCheck() )
 		wait 1 //Todo(dw): Needs proper timing ~mkos
 	
 	if ( GetPlayerArray().len() > 0 )

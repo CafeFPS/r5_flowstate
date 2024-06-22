@@ -1036,9 +1036,9 @@ Scripts:
 	custom_maps/_custom_maps_8.nut
 	custom_maps/_custom_deafps_maps.nut
 	
-	//mkos LG & dropoff location patches
+	//mkos LG patches & map based patches
 	custom_maps/_LG_Duel.nut
-	custom_maps/dropoff_patch.nut
+	custom_maps/_map_patch.nut
 
 	gamemodes/fs_movementgym/_movement_gym.nut
 

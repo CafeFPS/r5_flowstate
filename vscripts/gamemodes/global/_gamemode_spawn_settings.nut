@@ -1,19 +1,22 @@
-// flowstate spawn system
+// flowstate spawn system														//mkos
 
 global function Flowstate_SpawnSystem_Init
+global function Flowstate_SpawnSystem_InitGamemodeOptions
 
 global function ReturnAllSpawnLocations
-global LocPair &waitingRoomPanelLocation
+global LocPair &g_waitingRoomPanelLocation
 
 global function CreateLocPairObject
-global function AddCallback_FlowstateSpawnsInit
 global function SetCallback_FlowstateSpawnsOffset
-global function SetPreferredSpawnPak
+global function AddCallback_FlowstateSpawnsSettings
+global function AddCallback_FlowstateSpawnsPostInit
 
-global function GetCurrentSpawnSet
-global function GetCurrentSpawnAsset
-global function SetCustomSpawnPak
-global function SetCustomPlaylist
+global function SpawnSystem_SetCustomPak
+global function SpawnSystem_SetCustomPlaylist
+global function SpawnSystem_SetPreferredPak
+
+global function SpawnSystem_GetCurrentSpawnSet
+global function SpawnSystem_GetCurrentSpawnAsset
 
 #if DEVELOPER
 	global function DEV_SpawnType
@@ -53,6 +56,7 @@ global function SetCustomPlaylist
 	struct
 	{
 		array<LocPairData functionref()> onSpawnInitCallbacks
+		array<void functionref()> spawnSettingsCallbacks
 		LocPair functionref() mapGamemodeBasedOffsetFunc = null
 		int preferredSpawnPak = 1
 		string currentSpawnPak = ""
@@ -60,6 +64,7 @@ global function SetCustomPlaylist
 		string customPlaylist = ""
 		int teamsize = 2
 		bool overrideSpawns = false	
+		bool bSpawnsInitialized = false
 		
 		#if DEVELOPER
 			LocPair &panelsloc
@@ -101,6 +106,13 @@ global function SetCustomPlaylist
 		#endif
 
 	} file 
+	
+	struct 
+	{
+		table<string,bool> spawnOptions = {}
+		bool bOptionsAreSet = false
+		
+	} settings
 
 void function Flowstate_SpawnSystem_Init()
 {
@@ -109,14 +121,73 @@ void function Flowstate_SpawnSystem_Init()
 	#endif
 }
 
-array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {}  )
+void function AddCallback_FlowstateSpawnsSettings( void functionref() callbackFunc )
 {
+	mAssert( !file.spawnSettingsCallbacks.contains( callbackFunc ), "Tried to add callback Func " + string( callbackFunc ) + "() with " + FUNC_NAME() + " but was already added" )
+	mAssert( !settings.bOptionsAreSet, "Tried to add callbackFunc " + string( callbackFunc ) + "() but options were already loaded in " + FILE_NAME() )
+	
+	file.spawnSettingsCallbacks.append( callbackFunc )
+}
+
+void function Flowstate_SpawnSystem_InitGamemodeOptions()
+{
+	bool use_sets 				= GetCurrentPlaylistVarBool( "spawnpaks_use_sets", false )
+	bool use_random 			= GetCurrentPlaylistVarBool( "spawnpaks_use_random", false )
+	bool prefer 				= GetCurrentPlaylistVarBool( "spawnpaks_prefer", false )
+	bool use_custom_playlist 	= GetCurrentPlaylistVarBool( "spawnpaks_playlist_override", false )
+	int preferred 				= GetCurrentPlaylistVarInt( "spawnpaks_preferred_pak", 1 )
+	string customRpak 			= GetCurrentPlaylistVarString( "custom_spawnpak", "" )
+	string customSpawnPlaylist	= GetCurrentPlaylistVarString( "custom_playlist_spawnpak", "" )
+	
+	settings.spawnOptions["use_sets"] <- use_sets
+	settings.spawnOptions["use_random"] <- use_random
+	settings.spawnOptions["prefer"] <- prefer
+	settings.spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( customRpak )
+	settings.spawnOptions["use_custom_playlist"] <- use_custom_playlist
+	
+	if( use_custom_playlist && !empty( customSpawnPlaylist ) )
+	{
+		SpawnSystem_SetCustomPlaylist( customSpawnPlaylist )
+	}
+	
+	if( preferred > 1 )
+	{
+		SpawnSystem_SetPreferredPak( preferred )
+		#if DEVELOPER
+			printt("Preferred spawnpak set to:", preferred )
+		#endif 
+	}
+	
+	foreach ( callbackFunc in file.spawnSettingsCallbacks )
+	{
+		callbackFunc()
+	}
+	
+	settings.bOptionsAreSet = true
+}
+
+array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {} )
+{
+	mAssert( settings.bOptionsAreSet, "Tried to fetch spawns without first running Flowstate_SpawnSystem_InitGamemodeOptions()" )
+	
+	if( !ValidateOptions( options ) )
+	{
+		options = settings.spawnOptions
+		
+		#if DEVELOPER
+			foreach( setting, value in options )
+			{
+				printt( "Setting:", setting, " Value:", value )
+			}
+		#endif
+	}
+		
 	string defaultpak = "_set_1";
 	string spawnSet = defaultpak
 	string customRpak = "";
 	
 	if ( options.len() >= 5 && ValidateOptions( options ) )
-	{	
+	{
 		if( options.use_custom_rpak )
 		{
 			customRpak = file.customSpawnpak
@@ -131,25 +202,34 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 				array<string> setpaks = []
 				bool success = false
 				
-				try
+				if( empty( currentMapSpawnSets ) )
 				{
-					setpaks = StringToArray( currentMapSpawnSets )
-					for( int i = 0; i < setpaks.len(); i++ )
-					{
-						if( !IsNumeric( setpaks[i] ) )
-						{
-							throw " error: " + setpaks[i] + " is not numeric..";
-						}
-						setpaks[i] = "_set_" + setpaks[i];
-					}
-					success = true
-				}
-				catch(e)
-				{
-					Warning( "Warning: " + e )
-					
+					Warning( "options.use_sets was set but no paks were specified for \"" + mapSpawnString + "\" in playlist. Using default pak instead" )
 					spawnSet = defaultpak
 					success = false
+				}
+				else 
+				{
+					try
+					{
+						setpaks = StringToArray( currentMapSpawnSets )
+						for( int i = 0; i < setpaks.len(); i++ )
+						{
+							if( !IsNumeric( setpaks[i] ) )
+							{
+								throw " error: " + setpaks[i] + " is not numeric..";
+							}
+							setpaks[i] = "_set_" + setpaks[i];
+						}
+						success = true
+					}
+					catch(e)
+					{
+						Warning( "Warning: " + e )
+						
+						spawnSet = defaultpak
+						success = false
+					}
 				}
 				
 				if( success )
@@ -179,6 +259,10 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 				}
 			}
 		} //custom rpak override
+	}
+	else 
+	{
+		mAssert( false, "No spawn options were configured" )
 	}
 	
 	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )
@@ -214,13 +298,15 @@ LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideS
 	return data
 }
 
-void function AddCallback_FlowstateSpawnsInit( LocPairData functionref() callbackFunc )
+void function AddCallback_FlowstateSpawnsPostInit( LocPairData functionref() callbackFunc )
 {
 	if( file.onSpawnInitCallbacks.contains( callbackFunc ) )
 	{
 		Warning("Tried to add callbackk with " + FUNC_NAME() + " but function " + string( callbackFunc ) + " already exists in [onSpawnInitCallbacks]")
 		return
 	}
+	
+	mAssert( !file.bSpawnsInitialized, "Tried to add spawns init function " + string( callbackFunc ) + " but spawns are already initialized " )
 	
 	file.onSpawnInitCallbacks.append( callbackFunc )
 }
@@ -246,7 +332,7 @@ void function AddCallback_FlowstateSpawnsInit( LocPairData functionref() callbac
 array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra spawns
 {														//ideally only default waiting
 	array<LocPair> customSpawns = []					// rooms are saved here. use :
-														// AddCallback_FlowstateSpawnsInit()
+														// AddCallback_FlowstateSpawnsPostInit()
 														// to create custom spawns for your gamemode 
 	LocPair defaultWaitingRoom
 	
@@ -256,79 +342,100 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		case eMaps.mp_rr_aqueduct:
 			
 			defaultWaitingRoom = NewLocPair( < 705, -5895, 432 >, < 0, 90, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_arena_composite:
 		
 			defaultWaitingRoom = NewLocPair( < -2.46021, 291.152, 129.574 >, < 0, 90, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, <0,0,-5> )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, <0,0,-5> )
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_64k_x_64k:
 		
 			defaultWaitingRoom = NewLocPair( < -906.22, 20306.5, 4570.03 >, < 0, 45, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_staging: 
 		
 			defaultWaitingRoom = NewLocPair( < 3477.69, -8364.02, -10252 >, < 356.203, 269.459, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_party_crasher:
 		
 			defaultWaitingRoom = NewLocPair( < 1881.75, -4210.87, 626.106 >, < 359.047, 104.246, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, ZERO_VECTOR, 300 )		
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom, ZERO_VECTOR, 300 )		
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
 		case eMaps.mp_rr_arena_phase_runner:
 		
 			defaultWaitingRoom = NewLocPair( < 31969, 17534, -884 >, < 360, 178, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 			
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////	
 		case eMaps.mp_rr_arena_skygarden:
 		
 			defaultWaitingRoom = NewLocPair( < -7.8126, -1320.75, 2877.51 >, < 359.849, 270.32, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_olympus_mu1:
 
 			defaultWaitingRoom = NewLocPair( < 318.434906, -19474.4141, -4947.88867 > , < 0, 32.8506927, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )	
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )	
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_desertlands_64k_x_64k:
 
 			defaultWaitingRoom = NewLocPair( < -19830.3633, 14081.7314, -3759.98901 >, < 0, -83.0441132, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )	
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )	
 		
 		break ////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////
 		case eMaps.mp_rr_canyonlands_mu2:
 		
 			defaultWaitingRoom = NewLocPair( < -915.356, 20298.4, 4570.03 >, < 3.22824, 44.1054, 0 > )
-			waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
 		
 		break ////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////	
+		//////////////////////////////////////////////////////////////////////////////////
+		
+		default:
+		
+			entity spawnstart = GetEnt( "info_player_start" )
+			
+			if( IsValid( spawnstart ) )
+			{
+				#if DEVELOPER
+					Warning( "Warning: No default spawn provided. Setting initial player spawn from map's info_player_start ent" )
+				#endif
+				
+				defaultWaitingRoom = NewLocPair( spawnstart.GetOrigin(), spawnstart.GetAngles() )
+				g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( defaultWaitingRoom )
+			}
+			else 
+			{
+				Warning( "No valid player start spawn detected" )
+			}
+		
+		break ////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////		
 	}//: Switch (eMap)
 	
 	#if DEVELOPER //for timing tests
 		printt(" --- CALLING CUSTOM SPAWN CALLBACKS --- ")
 	#endif
-	//add with AddCallback_FlowstateSpawnsInit( functionref ) 
+	//add with AddCallback_FlowstateSpawnsPostInit( functionref ) 
 	//  function ref should return a LocPairData data object
 	foreach( callbackFunc in file.onSpawnInitCallbacks )
 	{
@@ -356,16 +463,19 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		if( data.waitingRoom != null )
 		{
 			LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
-			getWaitingRoomLocation().origin = varWaitingRoom.origin
-			getWaitingRoomLocation().angles = varWaitingRoom.angles
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( varWaitingRoom )		
+			//getWaitingRoomLocation().origin = varWaitingRoom.origin
+			//getWaitingRoomLocation().angles = varWaitingRoom.angles
 		}
 		
 		if( data.panels != null )
 		{
 			LocPair varPanels = expect LocPair( data.panels )
-			waitingRoomPanelLocation = NewLocPair( varPanels.origin, varPanels.angles )
+			g_waitingRoomPanelLocation = NewLocPair( varPanels.origin, varPanels.angles )
 		}
 	}
+	
+	file.bSpawnsInitialized = true
 	
 	return customSpawns
 }
@@ -524,17 +634,17 @@ bool function ValidateOptions( table<string,bool> options )
 	)
 }
 
-void function SetPreferredSpawnPak( int preference )
+void function SpawnSystem_SetPreferredPak( int preference )
 {
 	mAssert( preference > 0, "Invalid spawn pak preference" )
 		file.preferredSpawnPak = preference
 }
 
-bool function SetCustomSpawnPak( string custom_rpak )
+bool function SpawnSystem_SetCustomPak( string custom_rpak )
 {
-	bool success = false 
+	bool success = false
 	
-	if( !empty ( custom_rpak ) )
+	if( !empty( custom_rpak ) )
 	{
 		try 
 		{
@@ -551,30 +661,32 @@ bool function SetCustomSpawnPak( string custom_rpak )
 		if( success )
 		{
 			file.customSpawnpak = custom_rpak
+			settings.spawnOptions["use_custom_rpak"] = true
 		}
 	}
 	
 	return success
 }
 
-void function SetCustomPlaylist( string playlistref )
+void function SpawnSystem_SetCustomPlaylist( string playlistref )
 {
 	if( AllPlaylistsArray().contains( playlistref ) )
 	{
 		file.customPlaylist = playlistref
+		settings.spawnOptions["use_custom_playlist"] = true
 	}
 	else 
 	{
 		Warning("Tried to specify custom playlist for spawn pak, but playlist \"" + playlistref + "\" doesn't exist.")
-	}	
+	}
 }
 
-string function GetCurrentSpawnSet()
+string function SpawnSystem_GetCurrentSpawnSet()
 {
 	return file.currentSpawnPak
 }
 
-asset function GetCurrentSpawnAsset()
+asset function SpawnSystem_GetCurrentSpawnAsset()
 {
 	asset returnAsset = $""
 	
@@ -1313,7 +1425,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	
 	if( !empty( playlist ) )
 	{
-		SetCustomPlaylist( playlist )
+		SpawnSystem_SetCustomPlaylist( playlist )
 		usePlaylist = true
 	}
 
@@ -1322,7 +1434,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["use_sets"] <- true
 	spawnOptions["use_random"] <- false
 	spawnOptions["prefer"] <- false
-	spawnOptions["use_custom_rpak"] <- SetCustomSpawnPak( pak )
+	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
 	
 	array<LocPair> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? customDevSpawnsList() : ReturnAllSpawnLocations( MapName(), spawnOptions )

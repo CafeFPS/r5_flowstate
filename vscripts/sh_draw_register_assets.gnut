@@ -87,11 +87,11 @@ void function WorldDrawImg_RegisterAllAssets()
 				entity player = GetLocalClientPlayer()
 				player.EndSignal( "OnDestroy", "OnDisconnected" )
 		
-				float curTime = Time()
+				float startTime = Time()
 				
 				while( !IsDownloadedFileReadyForPakLoad( rpakName ) )
 				{
-					if( Time() - curTime > MAX_WAIT_FOR_RPAK_TRANSFER )
+					if( Time() - startTime > MAX_WAIT_FOR_RPAK_TRANSFER )
 					{
 						break
 					}

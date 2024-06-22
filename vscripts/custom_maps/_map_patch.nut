@@ -746,6 +746,9 @@ void function Patch_Dropoff()
 
 void function Patch_Partycrasher_Restarea()
 {
+	if( !is1v1EnabledAndAllowed() ) 
+		return
+	
 	entity prop
     prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 1755.278, -3840.448, 669.9891 >, < 0, 15, 90 >, false, 0.0001, -1, 1 )
     prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
@@ -757,4 +760,41 @@ void function DropoffPatch_SpawnLights( entity player )
 	{
 		CreateClientLight( player, lightLoc )
 	}
+}
+
+void function Patch_mp_rr_party_crasher()
+{
+	//used for every game mode.
+	
+    entity prop
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1217.875, 2330.116, 833.9526 >, < 0, 131.4793, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1006.107, 420.1204, 1092.953 >, < 0, -149.0379, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1154.235, 319.7744, 1284.326 >, < -1.5242, 148.0945, 7.0464 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1077.235, 274.7744, 1281.326 >, < -1.5242, 148.0945, 7.0464 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1143.236, 168.7744, 1295.326 >, < -1.5242, 148.0945, 7.0464 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1219.306, 212.8457, 1295.326 >, < -1.5242, 147.1376, 7.0464 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -1614.092, 89.1189, 1153.953 >, < 0, -151.5146, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -2511.114, -353.8749, 1185.953 >, < 0, -133.1323, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -2063.127, -161.1127, 1185.953 >, < 0, -49.8612, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -584.3978, -669.4189, 1242.076 >, < -1.8841, -110.1693, -3.5052 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -926.0718, -851.0959, 1276.092 >, < 2.4916, -21.8666, -3.5782 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -739.3558, -1340.771, 1264.076 >, < -1.8841, -106.114, -3.5052 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < -649.5403, -1340.125, 1261.083 >, < 1.5744, -67.0171, -3.8881 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl", < 982.8848, -1577.062, 835.9526 >, < 0, -66.2995, 0 >, true, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 1755.278, -3840.448, 669.9891 >, < 0, 15, 90 >, false, 0.0001, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
 }

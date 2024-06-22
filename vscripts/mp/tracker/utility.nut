@@ -1617,7 +1617,15 @@ struct {
 			case "gamerules":
 			
 				//TODO: mini framework for parsing valid map/playlist combos
-				//CreateServer("","","mp_rr_desertlands_64k_x_64k","fs_survival_solos", 0)		
+				//CreateServer("","","mp_rr_desertlands_64k_x_64k","fs_survival_solos", 0)
+				break
+				
+			case "testimg":
+			
+				#if DEVELOPER 
+					
+				#endif
+				break
 				
 			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
@@ -1887,7 +1895,7 @@ array<string> function StringToArray( string str, int MAX_LENGTH = 128 )
 	
     if ( t_str == "" )
 	{
-        throw "Cannot convert empty string to array.";
+        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
 	}
 	
     array<string> arr = split( str, "," )
