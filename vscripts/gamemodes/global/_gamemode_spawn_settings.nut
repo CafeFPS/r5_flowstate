@@ -38,9 +38,21 @@ global function SpawnSystem_GetCurrentSpawnAsset
 	global function DEV_InfoPanelOffset
 	global function DEV_RotateInfoPanels
 	global function DEV_ShowCenter
+	global function DEV_ValidateSpawn
+	global function DEV_AutoDeleteInvalid
+	global function DEV_GetSpawn
+	global function DEV_SimulateRing
+	global function DEV_KillRing
+	global function DEV_SetRingSettings
+	global function DEV_RingInfo
 	
 	const float HIGHLIGHT_SPAWN_DELAY 	= 7.0
 	const int SPAWN_POSITIONS_BUDGET 	= 210
+	const float DOOR_SCAN_RADIUS		= 100
+	const bool DEBUG_SPAWN_TRACE		= true
+	
+	const bool REMOVE 	= true 
+	const bool LOAD 		= false
 #endif 
 
 	global struct LocPairData
@@ -72,14 +84,20 @@ global function SpawnSystem_GetCurrentSpawnAsset
 			string dev_positions_type = ""
 			array<string> validPosTypes = ["sq","csv"]
 			array<LocPair> dev_positions_LocPair = []
-			bool highlightToggleAll = false
-			bool highlightPersistent = true
+			bool bHighlightToggleAll = false
+			bool bHighlightPersistent = true
 			table<int,entity> allBeamEntities = {}
-			bool spawnInfoPanels = true
+			bool bSpawnInfoPanels = true
 			array< table<vector, string> > savedSpawnInfosExtendedArray
 			vector infoPanelOffset = ZERO_VECTOR
 			vector infoPanelOffsetAngles = ZERO_VECTOR
 			bool bInfoPanelsAreReloading = false
+			table signalDummy
+			bool bValidatorRunning = false
+			int iValidatorTracker = 1
+			bool bAutoDelInvalid = false
+			int maxIndentNeeded
+			entity dummyEnt
 			
 			table<string,string> DEV_POS_COMMANDS = 
 			{		
@@ -101,7 +119,14 @@ global function SpawnSystem_GetCurrentSpawnAsset
 				["script DEV_ReloadInfo()"] = "Manually reload all info panels.",
 				["script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
 				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels.",
-				["script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize."
+				["script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize.",
+				["script DEV_ValidateSpawn( int index = -1, bool remove = false, player = null )"] = "Validates a given spawn or all if -1 is passed. Removes each invalid if true passed. Optionally pass a player to check mins/maxes",
+				["script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation.",
+				["script DEV_GetSpawn( int index )"] = "Returns lockpair object for given spawn. Indexed with .origin and .angles",
+				["script DEV_SimulateRing( int spawnSet, bool loop = true )"] = "Start ring simulation for given spawnset. Optional disable looping passing false as second paramater.",
+				["script DEV_KillRing( int spawnSet, bool instantly = true, bool keepLooping = false )"] = "Kills ring simulation by spawnSet, optionally let ring complete, and keep looping",
+				["script DEV_SetRingSettings( table<string, float> settings )"] = "Set test settings for ring brhavior. Use { setting = value, setting2 = value }. Call DEV_RingInfo() for available settings.",
+				["script DEV_RingInfo()"] = "Call to see available settings for ring simulation"
 			}
 		#endif
 
@@ -118,6 +143,11 @@ void function Flowstate_SpawnSystem_Init()
 {
 	#if DEVELOPER 
 		RegisterSignal( "DelayedHighlightActivate" )
+		RegisterSignal( "RunValidatorIfWaiting" )
+		RegisterSignal( "SpawnValidStatus" )
+		
+		CalculateMaxIndent()
+		InitClonedSettings()
 	#endif
 }
 
@@ -463,9 +493,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 		if( data.waitingRoom != null )
 		{
 			LocPair varWaitingRoom = expect LocPair( data.waitingRoom )
-			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( varWaitingRoom )		
-			//getWaitingRoomLocation().origin = varWaitingRoom.origin
-			//getWaitingRoomLocation().angles = varWaitingRoom.angles
+			g_waitingRoomPanelLocation = SetWaitingRoomAndGeneratePanelLocs( varWaitingRoom )
 		}
 		
 		if( data.panels != null )
@@ -712,12 +740,12 @@ asset function SpawnSystem_GetCurrentSpawnAsset()
 
 bool function IsValidIndex( array<string> haystack, int index )
 {
-	return index >= 0 && index < haystack.len();
+	return index >= 0 && index < haystack.len()
 }
 
 void function __RemoveAllPanels()
 {
-	int toDelete = file.dev_positions_LocPair.len() + 2
+	int toDelete = SpawnCount() + 2
 	
 	for( int i = 0; i < toDelete; i++ )
 	{
@@ -733,7 +761,7 @@ void function DEV_ReloadInfo()
 	if( !__bCheckReload() )
 		return
 	
-	if( file.spawnInfoPanels )
+	if( file.bSpawnInfoPanels )
 	{
 		printt( "Reloading info panels." )
 		printm( "Reloading info panels." )
@@ -800,14 +828,14 @@ void function DEV_DeleteSpawn( int index )
 	{
 		__RemoveAllPanels()
 		
-		file.dev_positions_LocPair.remove( index )
+		GetSpawns().remove( index )
 		file.dev_positions.remove( index )
 		printt( "Removed spawn:", index )
 		printm( "Removed spawn:", index )
 		
 		__DestroyHighlight( index )
-		DEV_HighlightAll( true )
-		DEV_HighlightAll( false )	
+		DEV_HighlightAll( REMOVE )
+		DEV_HighlightAll( LOAD )	
 		DEV_PrintSpawns( true )
 	}
 	else 
@@ -854,7 +882,7 @@ void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
 		printm( "~~none~~" )
 	}
 	
-	if( file.spawnInfoPanels )
+	if( file.bSpawnInfoPanels )
 	{
 		if( spawnInfosList.len() > 0 )
 		{
@@ -1041,7 +1069,7 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 		return
 	}
 	
-	if( file.dev_positions_LocPair.len() > SPAWN_POSITIONS_BUDGET )
+	if( SpawnCount() > SPAWN_POSITIONS_BUDGET )
 	{
 		LocalEventMsg( player, "", " SPAWN BUDGET REACHED \n\n Cannot add more spawns " )
 		return
@@ -1082,16 +1110,16 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 	
 	if( replace > -1 && IsValidIndex( file.dev_positions, replace ) )
 	{	
-		file.dev_positions_LocPair[replace] = data
+		GetSpawns()[replace] = data
 		file.dev_positions[replace] = str 
-		DEV_Highlight( replace, file.highlightPersistent )
+		DEV_Highlight( replace, file.bHighlightPersistent )
 		DEV_ReloadInfo()
 	}
 	else 
 	{
-		file.dev_positions_LocPair.append( data )
+		GetSpawns().append( data )
 		file.dev_positions.append( str )
-		DEV_Highlight( ( file.dev_positions_LocPair.len() - 1 ), file.highlightPersistent )
+		DEV_Highlight( ( SpawnCount() - 1 ), file.bHighlightPersistent )
 	}
 	
 	DEV_PrintSpawns( false )
@@ -1104,11 +1132,13 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 	printt( format( "\n\n Newly Added Spawn Pos: %s", str ) )
 	printm( format( "\n\n Newly Added spawn Pos: %s", str ) )
 	
+	if( file.bAutoDelInvalid )
+		DEV_ValidateSpawn( SpawnCount() - 1, true, player )
 }
 
 void function DEV_KeepHighlight( bool setting = true )
 {
-	file.highlightPersistent = setting
+	file.bHighlightPersistent = setting
 	
 	printt( "Keep highlights set to:", setting )
 	printm( "Keep highlights set to:", setting )
@@ -1119,13 +1149,13 @@ void function DEV_ClearSpawns( bool clearHighlights = true )
 	__RemoveAllPanels()
 	
 	file.dev_positions.clear()
-	file.dev_positions_LocPair.clear()
+	GetSpawns().clear()
 	printt( "Cleared all saved positions" )
 	printm( "Cleared all saved positions" )
 	
 	if( clearHighlights )
 	{
-		DEV_HighlightAll( true ) //removes all with true passed
+		DEV_HighlightAll( REMOVE ) //removes all with true passed
 	}
 }
 
@@ -1158,7 +1188,7 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 		return
 	}
 	
-	if( file.dev_positions_LocPair.len() != file.dev_positions.len() )
+	if( SpawnCount() != file.dev_positions.len() )
 	{
 		Warning( "LOCPAIR & PRINT POSITIONS DO NOT MATCH" )
 		printm( "LOCPAIR & PRINT POSITIONS DO NOT MATCH" )
@@ -1169,7 +1199,7 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 	printm( "Teleporting to spawnpoint", posIndex )
 	printt( file.dev_positions[posIndex] )
 	printm( file.dev_positions[posIndex] )
-	maki_tp_player( player, file.dev_positions_LocPair[posIndex] )
+	maki_tp_player( player, GetSpawns()[posIndex] )
 }
 
 void function DEV_SpawnHelp()
@@ -1178,8 +1208,9 @@ void function DEV_SpawnHelp()
 	
 	foreach( command, helpstring in file.DEV_POS_COMMANDS )
 	{
-		helpinfo += command + " = " + helpstring + "\n";
-		printm( command + " = " + helpstring )	
+		int offset = file.maxIndentNeeded - command.len()
+		helpinfo += command + " " + TableIndent2( offset ) + " = " + helpstring + "\n";
+		printm( command + " " + TableIndent2( offset ) + " = " + helpstring )	
 	}
 	
 	printt( helpinfo )
@@ -1283,9 +1314,9 @@ void function DEV_TeleportToPanels( string identifier )
 	}
 }
 
-void function DEV_HighlightAll( bool removeAll = false )
+void function DEV_HighlightAll( bool removeAll = LOAD )
 {
-	if( file.dev_positions_LocPair.len() == 0 && !removeAll )
+	if( SpawnCount() == 0 && !removeAll )
 	{
 		printt( "No spawns in PosArray to highlight" )
 		printm( "No spawns in PosArray to highlight" )
@@ -1293,7 +1324,7 @@ void function DEV_HighlightAll( bool removeAll = false )
 	}
 	
 	string msg = ""
-	if ( removeAll || file.highlightToggleAll )
+	if ( removeAll || file.bHighlightToggleAll )
 	{
 		foreach( int index, entity beam in file.allBeamEntities )
 		{
@@ -1303,12 +1334,12 @@ void function DEV_HighlightAll( bool removeAll = false )
 			}
 		}
 		
-		file.highlightToggleAll = false 
+		file.bHighlightToggleAll = false 
 		msg = "Removed all spawn highlights."
 	}
 	else 
 	{		
-		foreach ( int index, LocPair spawn in file.dev_positions_LocPair )
+		foreach ( int index, LocPair spawn in GetSpawns() )
 		{
 			entity beam = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_ar_titan_droppoint_tall" ), spawn.origin, <0,0,0> )
 			EffectSetControlPointVector( beam, 1, Vector( 235, 213, 52 ) )
@@ -1316,7 +1347,7 @@ void function DEV_HighlightAll( bool removeAll = false )
 			file.allBeamEntities[ index ] <- beam
 		}
 		
-		file.highlightToggleAll = true 
+		file.bHighlightToggleAll = true 
 		msg = "Highlighted all spawns."
 	}
 	
@@ -1354,14 +1385,14 @@ void function DEV_RemoveHighlight( int index )
 
 void function DEV_Highlight( int index, bool persistent = true )
 {
-	if( index >= file.dev_positions_LocPair.len() || index < 0 )
+	if( index >= SpawnCount() || index < 0 )
 	{
 		printt( "Location does not exist" )
 		printm( "Location does not exist" )
 		return
 	}
 	
-	LocPair spawn = file.dev_positions_LocPair[ index ]
+	LocPair spawn = GetSpawns()[ index ]
 	entity beam = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_ar_titan_droppoint_tall" ), spawn.origin, <0,0,0> )
 	EffectSetControlPointVector( beam, 1, Vector( 63, 72, 204 ) )
 	
@@ -1470,7 +1501,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 					return
 			}
 			
-			file.dev_positions_LocPair.append( spawn )
+			GetSpawns().append( spawn )
 			file.dev_positions.append( str )
 		}
 		
@@ -1488,13 +1519,13 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 
 void function __CreateInfoPanelForSpawn( int set, int index, string identifier )
 {
-	if( index >= file.dev_positions_LocPair.len() )
+	if( index >= SpawnCount() )
 	{
 		sqerror( "Spawn doesn't exist for index: " + index )
 		return 
 	}
 	
-	LocPair spawn = file.dev_positions_LocPair[ index ]
+	LocPair spawn = GetSpawns()[ index ]
 	int id = index + 1
 	vector faceup = < 90, 360, 0 >
 	
@@ -1508,7 +1539,7 @@ void function __CreateInfoPanelForSpawn( int set, int index, string identifier )
 
 void function DEV_SpawnInfo( bool setting = true )
 {
-	file.spawnInfoPanels = setting
+	file.bSpawnInfoPanels = setting
 }
 
 void function DEV_RotateInfoPanels( string direction = "clockwise" )
@@ -1552,11 +1583,11 @@ void function DEV_RotateInfoPanels( string direction = "clockwise" )
 	}
 }
 
-void function DEV_ShowCenter( int set )
+array<LocPair> function DEV_ShowCenter( int set, bool bReturnData = false )
 {
 	array<LocPair> spawns = [] 
 	
-	int iSpawnsLen = file.dev_positions_LocPair.len()	
+	int iSpawnsLen = SpawnCount()	
 	int iStartPos = ( set - 1 ) * file.teamsize 
 	int iEndPos = iStartPos + file.teamsize
 	
@@ -1564,12 +1595,12 @@ void function DEV_ShowCenter( int set )
 	{
 		printt( "Invalid Set, not enough spawns." )
 		printm( "Invalid Set, not enough spawns." )
-		return
+		return spawns
 	}
 	
 	for( int i = iStartPos; i < iEndPos ; i++ )
 	{
-		spawns.append( file.dev_positions_LocPair[ i ] )
+		spawns.append( GetSpawns()[ i ] )
 	}
 	
 	vector center = OriginToGround( GetCenterOfCircle( spawns ) )
@@ -1579,6 +1610,859 @@ void function DEV_ShowCenter( int set )
 	
 	entity beam = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_chamber_beam" ), center, <0,0,0> )
 	thread __HighlightSpawn_DelayedEnd( beam )
+	
+	if( bReturnData )
+	{
+		spawns.append( NewLocPair( center, ZERO_VECTOR ) )
+		return spawns
+	}
+	else 
+	{
+		array<LocPair> nullspawns
+		return nullspawns
+	}
+		
+	unreachable
+}
+
+void function DEV_ValidateSpawn( int index = -1, bool remove = false, entity player = null )
+{
+	thread __SpawnValidate_internal( index, remove, player )
+}
+
+void function __SpawnValidate_internal( int index = -1, bool remove = false, entity player = null )
+{
+	if( IsValid( player ) )
+		player.EndSignal( "OnDestroy" )
+	
+	int thisthread = file.iValidatorTracker++;
+	
+	if( file.bValidatorRunning )
+	{
+		for( ; ; )
+		{
+			table results = WaitSignal( file.signalDummy, "RunValidatorIfWaiting" )
+			
+			if( results.runthread == null )
+				return
+			
+			if( expect int( results.runthread ) == thisthread )
+				break
+		}
+	}
+	
+	file.bValidatorRunning = true
+	
+	OnThreadEnd
+	(
+		function() : ( thisthread )
+		{
+			file.bValidatorRunning = false
+			Signal( file.signalDummy, "RunValidatorIfWaiting", { runthread = ( thisthread + 1 ) } )
+			
+			#if DEBUG_SPAWN_TRACE
+				printt("Thread", thisthread, "ended" )
+			#endif 
+		}
+	)
+	
+	int spawnsLen = SpawnCount()
+	
+	if( spawnsLen == 0 || ( index != -1 && !IsValidIndex( file.dev_positions, index ) ) )
+	{
+		printt( "Invalid spawn index provided:", index )
+		printm( "Invalid spawn index provided:", index )
+		return
+	}
+	
+	if( index != -1 )
+	{
+		thread __SignalIsValidSpawn( GetSpawns()[ index ].origin, index, player )
+		table spawnResults = WaitSignal( file.signalDummy, "SpawnValidStatus" )
+		
+		if( expect bool( spawnResults.validspawn ) == false && expect int( spawnResults.spawnIndex ) == index )
+		{
+			string consoleMsg = "Issue with spawn [ " + index + " ].\n Spawn was positioned badly and should be removed or modified."
+			
+			if( remove )
+			{
+				string delmsg = format("Spawn [ %d ] was positioned badly and removed.", index )
+				
+				DEV_DeleteSpawn( index )
+				DEV_MessageAll( "WARNING", delmsg )
+				
+				printt( delmsg )
+				printm( delmsg )
+				
+			}
+			else
+			{
+				DEV_MessageAll( "WARNING", consoleMsg )
+				printt( consoleMsg )
+				printm( consoleMsg )
+			}
+
+			return
+		}
+		
+		printf( "spawn [ %d ] is valid.", index )
+		printm( "spawn [ " + index + " ] is valid." )
+		return
+	}
+	
+	array<string> errors = []
+	
+	for( int i = spawnsLen - 1; i >= 0; i-- )
+	{
+		thread __SignalIsValidSpawn( GetSpawns()[ i ].origin, i, player )	
+		table spawnResultsAll = WaitSignal( file.signalDummy, "SpawnValidStatus" )
+		
+		if( expect bool( spawnResultsAll.validspawn ) == false && expect int( spawnResultsAll.spawnIndex ) == i )
+		{
+			if( remove )
+			{
+				DEV_DeleteSpawn( i )
+				errors.append( "Spawn [ " + i + " ] was bad and removed" )
+			}
+			else 
+			{
+				errors.append( "Spawn [ " + i + " ] is bad and should be removed or modified" )
+			}
+		}
+		
+		WaitFrame()
+	}
+	
+	if( errors.len() > 0 )
+	{	
+		errors.insert( 0, "=== THE FOLLOWING SPAWNS HAD AN ISSUE ===" )
+		
+		printarray( errors )
+		
+		#if MULTIPLAYER_DEBUG_PRINTS
+			foreach( error in errors )
+			{
+				printm( error )
+			}
+		#endif
+	}
+}
+
+void function DEV_MessageAll( string msg, string msg2 = "" )
+{
+	foreach( player in GetPlayerArray() )
+	{
+		Message( player, msg, msg2 )
+	}
+}
+
+void function __SignalIsValidSpawn( vector origin, int spawnIndex, entity player = null ) 
+{
+	WaitFrame()
+	
+	vector mins
+	vector maxs
+	array<entity> ignoreEnts = []
+	vector playerOrigin
+	
+	if ( !IsValid( player ) ) 
+	{
+		mins = <-16, -16, 0>
+		maxs = <16, 16, 72>
+	} 
+	else
+	{
+		player.EndSignal( "OnDestroy" )
+		playerOrigin = player.GetOrigin()
+		ignoreEnts.append( player )
+		mins = player.GetPlayerMins()
+		maxs = player.GetPlayerMaxs()
+		
+		#if DEBUG_SPAWN_TRACE
+			printt( "player mins:", mins, "maxs:", maxs )
+		#endif
+	}
+	
+	//check for doors and close them before doing trace	
+	array<entity> scan = ArrayEntSphere( origin, DOOR_SCAN_RADIUS )
+	
+	entity lastDoor
+	bool bDoorFound = false
+	array<entity> doorsToClose	
+	
+	foreach( doorEnt in scan )
+	{	
+		if( IsValid( doorEnt ) && IsDoorOpen( doorEnt ) ) //IsDoorOpen checks if is door
+		{			
+			#if DEBUG_SPAWN_TRACE
+				printt("open")
+			#endif 
+			
+			doorsToClose.append( doorEnt )	
+			lastDoor = doorEnt
+			
+			if( !bDoorFound )
+				bDoorFound = true 
+		}
+		else
+		{
+			#if DEBUG_SPAWN_TRACE		
+				if( IsValid( doorEnt ) && IsDoor( doorEnt ) )
+				{
+					printt
+					(
+						"info: ",
+						doorEnt.e.isOpen, 
+						IsDoorOpen( doorEnt )
+					)
+				}
+				else 
+				{
+					printt( "not a door" )
+				}
+			#endif
+		}
+	}
+	
+	if( file.bAutoDelInvalid && bDoorFound && IsValid( player ) )
+	{		
+		PushAwayFromDoor( doorsToClose, player, 300 )		
+		
+		wait 0.25
+		
+		if( !player.IsNoclipping() )
+			ClientCommand( player, "noclip" )
+	}
+	
+	foreach( door in doorsToClose )
+	{
+		if( IsValid( door ) && IsDoorOpen( door ) )
+		{
+			Signal( door, "CloseDoor" )
+			door.CloseDoor( null )
+			door.e.isOpen = false
+		}
+	}
+	
+	float startTime = Time()
+	
+	while( IsValid( lastDoor ) && IsDoorOpen( lastDoor ) )
+	{
+		WaitFrame()
+		
+		if( Time() - startTime > 3 )
+			break
+	}
+	
+	if( file.bAutoDelInvalid && bDoorFound && IsValid( player ) )	
+	{
+		if( player.IsNoclipping() )
+			ClientCommand( player, "noclip" )
+	}
+			
+	TraceResults result = TraceHull( origin, origin + <0, 0, 1>, mins, maxs, ignoreEnts, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
+
+	if ( result.startSolid )
+		Signal( file.signalDummy, "SpawnValidStatus", { validspawn = false, spawnIndex = spawnIndex } )
+
+	bool traceFinalResult = result.fraction == 1.0
+	
+	Signal( file.signalDummy, "SpawnValidStatus", { validspawn = traceFinalResult, spawnIndex = spawnIndex } )
+}
+
+void function PushAwayFromDoor( array<entity> doors, entity player, float force )
+{
+	if ( !IsValid( player ) || ( !player.IsPlayer() && !player.IsNPC() ) || doors.len() < 1 )
+		return
+
+	vector doorLine
+	vector playerOrigin = player.GetOrigin()
+
+	if ( doors.len() == 1 ) 
+	{
+		entity door = doors[0]
+		vector doorMins = door.GetBoundingMins()
+		vector doorMaxs = door.GetBoundingMaxs()
+		vector doorCenter = (doorMins + doorMaxs) * 0.5
+		
+		vector toPlayer = playerOrigin - doorCenter
+		toPlayer.z = 0
+		
+		float angle = acos( door.GetForwardVector().Dot( toPlayer ) / ( Length( door.GetForwardVector() ) * Length( toPlayer ) ) ) * ( 180.0 / PI )
+		vector direction = angle < 90 ? -Normalize( door.GetForwardVector() ) : Normalize( door.GetForwardVector() )
+		
+		vector velocity = direction * force
+		velocity.z = max( 200, fabs( velocity.z ) )
+		
+		player.SetVelocity(velocity)
+		
+		#if DEBUG_SPAWN_TRACE
+			DebugDrawBox(doorCenter, doorMins, doorMaxs, 0, 255, 0, 0, 5.0)
+			DebugDrawLine(playerOrigin, doorCenter, 0, 0, 255, true, 5.0)
+			DebugDrawLine(playerOrigin, playerOrigin + velocity * 5, 255, 0, 0, true, 5.0)
+			Warning( "Door Center: " + doorCenter.tostring() )
+			Warning( "Player Origin: " + playerOrigin.tostring() )
+			Warning( "Direction to Push: " + direction.tostring() )
+		#endif
+		
+	} 
+	else 
+	{
+		entity firstDoor = doors[0]
+		entity lastDoor = doors[ doors.len() - 1 ]
+		vector firstDoorCenter = ( firstDoor.GetBoundingMins() + firstDoor.GetBoundingMaxs() ) * 0.5
+		vector lastDoorCenter = ( lastDoor.GetBoundingMins() + lastDoor.GetBoundingMaxs() ) * 0.5
+		doorLine = lastDoorCenter - firstDoorCenter
+		doorLine.z = 0
+		
+		vector toFirstDoor = firstDoorCenter - playerOrigin
+		toFirstDoor.z = 0
+		
+		float angle = acos(doorLine.Dot(toFirstDoor) / (Length(doorLine) * Length( toFirstDoor )) ) * ( 180.0 / PI )
+		
+		vector direction = angle < 90 ? -Normalize(doorLine) : Normalize(doorLine);
+		
+		vector velocity = direction * force
+		velocity.z = max(200, fabs(velocity.z))
+		
+		player.SetVelocity(velocity)
+		
+		#if DEBUG_SPAWN_TRACE
+			DebugDrawBox( firstDoorCenter, firstDoor.GetBoundingMins(), firstDoor.GetBoundingMaxs(), 0, 255, 0, 0, 5.0 )
+			DebugDrawBox( lastDoorCenter, lastDoor.GetBoundingMins(), lastDoor.GetBoundingMaxs(), 0, 255, 0, 0, 5.0 )
+			DebugDrawLine( playerOrigin, firstDoorCenter, 0, 0, 255, true, 5.0 )
+			DebugDrawLine( firstDoorCenter, lastDoorCenter, 255, 0, 0, true, 5.0 )
+			DebugDrawLine( lastDoorCenter, playerOrigin, 0, 0, 255, true, 5.0 )
+			DebugDrawLine( playerOrigin, playerOrigin + velocity * 5, 255, 0, 0, true, 5.0 )
+			Warning( "first door center: " + firstDoorCenter.tostring() )
+			Warning( "las door center: " + lastDoorCenter.tostring() )
+			Warning( "player origin: " + playerOrigin.tostring() )
+			Warning( "direction: " + direction.tostring() )
+		#endif
+    }
+}
+
+void function CalculateMaxIndent()
+{
+	int maxlen = 0
+	
+	foreach( keyname, helpstring in file.DEV_POS_COMMANDS )
+	{
+		if( keyname.len() > maxlen )
+			maxlen = keyname.len()
+	}
+	
+	file.maxIndentNeeded = maxlen + 3
+}
+
+void function DEV_AutoDeleteInvalid( bool setting = true )
+{
+	string msg = "bAutoDelInvalid set to " + setting
+	
+	printt( msg )
+	printm( msg )
+	
+	file.bAutoDelInvalid = setting
+}
+
+LocPair ornull function DEV_GetSpawn( int index )
+{
+	LocPair nullLoc
+	string msg
+	
+	if( !IsValidIndex( file.dev_positions, index ) )
+	{
+		msg = "Invalid spawn index."
+		printt( msg )
+		printm( msg )
+		
+		return null
+	}
+	
+	return GetSpawns()[ index ]
+}
+
+int function SpawnCount()
+{
+	return GetSpawns().len()
+}
+
+array<LocPair> function GetSpawns()
+{
+	return file.dev_positions_LocPair
+}
+
+void function DEV_SimulateRing( int spawnSet, bool loop = true )
+{
+	string msg = ""
+	
+	if( SpawnCount() < 2 )
+	{
+		msg = "Not enough spawns to simulate ring";
+		printt( msg )
+		printm( msg )
+		return
+	}
+	
+	int iSpawnsLen = SpawnCount()	
+	int iStartPos = ( spawnSet - 1 ) * file.teamsize 
+	int iEndPos = iStartPos + file.teamsize
+	
+	if( iStartPos < 0 || iStartPos >= iSpawnsLen || iEndPos > iSpawnsLen )//for loop end
+	{
+		printt( "Invalid Set, not enough spawns." )
+		printm( "Invalid Set, not enough spawns." )
+		return
+	}
+	
+	string ringIdentifier = GetRingIdentifier( spawnSet )
+	RegisterSignal( ringIdentifier )
+	clonedSettings.loopRings[ ringIdentifier ] <- true
+	FS_Scenarios_CreateCustomDeathfield_clone( spawnSet )
+	
+	msg = format( "Ring simulation started for spawnset [ %d ]", spawnSet )
+	printt( msg )
+	printm( msg )
+	DEV_MessageAll( "Ring Started", msg )
+}
+
+string function GetRingIdentifier( int spawnSet )
+{
+	string ringIdentifier = "continue_ring_" + spawnSet
+	
+	return ringIdentifier
+}
+
+void function DEV_KillRing( int spawnSet, bool instantly = true, bool keepLooping = false )
+{
+	string ringIdentifier = GetRingIdentifier( spawnSet )
+	string msg = ""
+	
+	if( ringIdentifier in clonedSettings.loopRings )
+	{
+		if( !keepLooping )
+			clonedSettings.loopRings[ ringIdentifier ] <- false	
+		
+		if( instantly )
+		{
+			Signal( file.dummyEnt, ringIdentifier )
+			msg = format( "Ring for spawnset [ %d ] was killed", spawnSet )
+		}
+		else
+		{
+			msg = format( "Ring for spawnset [ %d ] will end after completion.", spawnSet )
+		}	
+	}
+	else 
+	{
+		msg = format( "ring for spawnset [ %d ] does not exist.", spawnSet )
+	}
+	
+	printt( msg )
+	printm( msg )
+}
+
+void function DEV_SetRingSettings( table<string, float> settings )
+{	
+	string msg = "" 
+	string out = ""
+	bool bFound = false 
+	
+	if( settings.len() == 0 )
+	{
+		msg = "No settings provided. Use { setting = value, setting2 = value }"
+		printt( msg )
+		printm( msg )
+		return
+	}
+	
+	foreach ( key, value in settings )
+	{
+		bool bFailed = false 
+		
+		if( !( key in clonedSettings.ringSettings ) )
+			continue 
+			
+		if( !__UpdateRingSetting( key, value ) )
+		{
+			bFailed = true
+			print("Warning: " + key + " not found in clonedSettings\n")
+			
+			continue 
+		}
+		
+		if( !bFailed )
+		{
+			if( !bFound )
+				bFound = true
+			
+			out = "Updated setting: " + key + " with value: \"" + string( value ) + "\"\n"
+			msg += out
+			
+			printm( out )	
+		}
+	}
+	
+	if( bFound )
+	{
+		string prefix = "\n\n=== Ring Settings Updated ===\n"
+		printt( prefix )
+	}
+	
+	printt( msg )
+}
+
+array<vector> function GetPointsOnCircleForRing( vector origin, float radius, int segments = 16, float offset = 0 )
+{
+	array<vector> pointsOnCircle = []
+	float degrees = 360.0 / float(segments)
+	
+	for ( int i = 0; i < segments; i++ )
+	{
+		float angle = degrees * i
+		float radians = angle * ( PI / 180.0 )
+
+		float x = ( radius - offset ) * cos( radians )
+		float y = ( radius - offset ) * sin( radians )
+
+		vector point = origin + <x, y, 0>
+		
+		pointsOnCircle.append( point )
+	}
+	
+	return pointsOnCircle
+}
+
+//this blows, structs are weak
+bool function __UpdateRingSetting( string key, float value )
+{
+	bool bSuccess = true
+	
+	switch( key )
+	{
+		case "default_radius_padding":
+			clonedSettings.fs_scenarios_default_radius_padding = value
+			break 
+			
+		case "default_radius":
+			clonedSettings.fs_scenarios_default_radius = value
+			break
+			
+		case "maxIndividualMatchTime":
+			clonedSettings.fs_scenarios_maxIndividualMatchTime = value
+			break
+			
+		case "zonewars_ring_ringclosingspeed":
+			clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed = value
+			break
+			
+		case "ring_damage_step_time":
+			clonedSettings.fs_scenarios_ring_damage_step_time = value
+			break
+			
+		case "game_start_time_delay":
+			clonedSettings.fs_scenarios_game_start_time_delay = value
+			break
+			
+		case "ring_damage":
+			clonedSettings.fs_scenarios_ring_damage = value
+			break
+			
+		case "ringclosing_maxtime":
+			clonedSettings.fs_scenarios_ringclosing_maxtime = value
+			break
+			
+		case "use_random":
+			clonedSettings.fs_scenarios_use_random = value
+			break
+			
+		default:
+			bSuccess = false 
+	}
+	
+	return bSuccess
+}
+
+float function __FetchRingSetting( string key )
+{
+	if( empty( key ) )
+		return -1.0
+		
+	switch( key )
+	{
+		case "default_radius_padding":
+			return clonedSettings.fs_scenarios_default_radius_padding
+			
+		case "default_radius":
+			return clonedSettings.fs_scenarios_default_radius
+			
+		case "maxIndividualMatchTime":
+			return clonedSettings.fs_scenarios_maxIndividualMatchTime
+			
+		case "zonewars_ring_ringclosingspeed":
+			return clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed
+			
+		case "ring_damage_step_time":
+			return clonedSettings.fs_scenarios_ring_damage_step_time
+			
+		case "game_start_time_delay":
+			return clonedSettings.fs_scenarios_game_start_time_delay
+			
+		case "ring_damage":
+			return clonedSettings.fs_scenarios_ring_damage
+			
+		case "ringclosing_maxtime":
+			return clonedSettings.fs_scenarios_ringclosing_maxtime
+			
+		case "use_random":
+			return clonedSettings.fs_scenarios_use_random
+			
+		default:
+			return -1.0
+	}
+	
+	unreachable
+}
+
+void function DEV_RingInfo()
+{
+	string out 		= ""
+	string display 	= ""
+	
+	foreach( key, value in clonedSettings.ringSettings )
+	{
+		int offset = 40 - key.len()
+		display = "[\"" + key + "\"] " + TableIndent( offset ) + string( __FetchRingSetting( key ) )
+		out += "\n" + display
+		
+		printm( display )
+	}
+	
+	printt( out )
+}
+
+struct
+{
+	bool fs_scenarios_dropshipenabled = false
+	int fs_scenarios_playersPerTeam = -1
+	int fs_scenarios_teamAmount = -1
+
+	// float fs_scenarios_max_queuetime = 150
+	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
+	// int fs_scenarios_maximum_team_allowed = 3
+	
+	bool fs_scenarios_ground_loot = false
+	bool fs_scenarios_inventory_empty = false
+	bool fs_scenarios_deathboxes_enabled = true
+	bool fs_scenarios_bleedout_enabled = true
+	bool fs_scenarios_show_death_recap_onkilled = true
+	bool fs_scenarios_zonewars_ring_mode = false
+	bool fs_scenarios_characterselect_enabled = true
+	
+	float fs_scenarios_characterselect_time_per_player = 3.5
+	
+	float fs_scenarios_default_radius_padding = 169
+	float fs_scenarios_default_radius = 8000
+	float fs_scenarios_maxIndividualMatchTime = 300
+	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
+	float fs_scenarios_ring_damage_step_time = 1.5
+	float fs_scenarios_game_start_time_delay = 3.0
+	float fs_scenarios_ring_damage = 25.0
+	float fs_scenarios_ringclosing_maxtime = 120
+	float fs_scenarios_use_random = 1.0 //float bool for testing
+	
+	
+	table<string,bool> loopRings
+	
+	table<string,string> ringSettings =
+	{
+		["default_radius_padding"] 			= "fs_scenarios_default_radius_padding",
+		["default_radius"] 					= "fs_scenarios_default_radius",
+		["maxIndividualMatchTime"] 			= "fs_scenarios_maxIndividualMatchTime",
+		["zonewars_ring_ringclosingspeed"] 	= "fs_scenarios_zonewars_ring_ringclosingspeed",
+		["ring_damage_step_time"] 			= "fs_scenarios_ring_damage_step_time",
+		["game_start_time_delay"] 			= "fs_scenarios_game_start_time_delay",
+		["ring_damage"] 					= "fs_scenarios_ring_damage",
+		["ringclosing_maxtime"] 			= "fs_scenarios_ringclosing_maxtime",
+		["use_random"]						= "fs_scenarios_use_random"
+	}
+	
+} clonedSettings
+
+void function InitClonedSettings()
+{
+	file.dummyEnt = CreateEntity( "info_target" )
+	
+	clonedSettings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
+	clonedSettings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
+	clonedSettings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
+	clonedSettings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
+	// clonedSettings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
+	// clonedSettings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
+	// clonedSettings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
+
+	clonedSettings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
+	clonedSettings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
+	clonedSettings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
+	clonedSettings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
+	clonedSettings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
+	clonedSettings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
+	clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
+	clonedSettings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
+	clonedSettings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
+	clonedSettings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
+	clonedSettings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
+	clonedSettings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
+	clonedSettings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
+}
+
+void function FS_Scenarios_StartRingMovementForGroup_clone( entity ring, vector calculatedRingCenter, float currentRingRadius, int spawnSet )
+{
+	if( !IsValid( ring ) )
+		return
+
+	string ringIdentifier = "continue_ring_" + spawnSet
+	
+	Signal( file.dummyEnt, ringIdentifier )
+	WaitFrame()
+	
+	EndSignal( file.dummyEnt, ringIdentifier )
+	
+	OnThreadEnd
+	(
+		function() : ( ring, spawnSet, ringIdentifier )
+		{
+			if( IsValid( ring ) )
+			{
+				ring.Destroy()
+			}
+			
+			if( clonedSettings.loopRings[ ringIdentifier ] )
+				FS_Scenarios_CreateCustomDeathfield_clone( spawnSet )
+		}
+	)
+
+	float starttime = Time()
+	float endtime = Time() + clonedSettings.fs_scenarios_ringclosing_maxtime
+	float startradius = currentRingRadius
+	float oldMaxTime = clonedSettings.fs_scenarios_ringclosing_maxtime
+	
+	string ringDebug = "RING SIMULATION STARTED: Duration Closing " + ( endtime - Time() ) + "Starting Radius: " + startradius
+	printt( ringDebug )
+	printm( ringDebug )
+
+	while ( currentRingRadius > 0 )
+	{
+		float radius = currentRingRadius
+		
+		if ( clonedSettings.fs_scenarios_ringclosing_maxtime != oldMaxTime )
+		{
+			endtime = AdjustEndTime( oldMaxTime, clonedSettings.fs_scenarios_ringclosing_maxtime, endtime )
+			oldMaxTime = clonedSettings.fs_scenarios_ringclosing_maxtime
+		}
+	
+		if( !clonedSettings.fs_scenarios_zonewars_ring_mode )
+			currentRingRadius = radius - clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed
+		else
+			currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
+
+		foreach( player in GetPlayerArray() )
+		{
+			player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", currentRingRadius )
+			player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", Distance2D( player.GetOrigin(), calculatedRingCenter ) )
+		}
+
+		WaitFrame()
+	}
+	
+	DEV_KillRing( spawnSet, false, true )
+}
+
+float function AdjustEndTime( float oldMaxTime, float newMaxTime, float currentEndTime )
+{
+	float timeNow = Time()
+	float timeElapsed = timeNow - ( currentEndTime - oldMaxTime )
+	float newEndTime = timeNow + ( newMaxTime - timeElapsed )
+	
+	return newEndTime
+}
+
+vector function OriginToGround_Inverse_clone( vector origin )
+{
+	vector startorigin = origin - < 0, 0, 1000 >
+	TraceResults traceResult = TraceLine( startorigin, origin + < 0, 0, 128 >, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
+}
+
+void function FS_Scenarios_CreateCustomDeathfield_clone( int spawnSet )
+{
+	array<LocPair>spawnSetInfo = DEV_ShowCenter( spawnSet, true )
+	
+	mAssert( spawnSetInfo.len() > 2, "Invalid spawns passed to ring simulator" )
+	
+	LocPair spawnSetCenter = spawnSetInfo.pop()
+
+	vector Center = OriginToGround_Inverse_clone( spawnSetCenter.origin )
+	
+	float ringRadius = 0
+	
+	if( clonedSettings.fs_scenarios_use_random )
+	{
+		foreach( LocPair spawn in spawnSetInfo )
+		{
+			if( Distance( spawn.origin, Center ) > ringRadius )
+				ringRadius = Distance( spawn.origin, Center )
+		}
+		
+		Center = OriginToGround_Inverse_clone
+				( 
+					GetPointsOnCircleForRing
+					( 
+						Center, 
+						ringRadius + RandomFloatRange( 50.0, 500.0 ),
+						16,
+						RandomFloatRange( 20.0, 500.0 )
+						
+					).getrandom() 
+				)
+	}
+	
+	foreach( LocPair spawn in spawnSetInfo )
+	{
+		if( Distance( spawn.origin, Center ) > ringRadius )
+			ringRadius = Distance( spawn.origin, Center )
+	}
+	
+
+	float calculatedRingRadius = ringRadius + clonedSettings.fs_scenarios_default_radius_padding
+	float currentRingRadius = calculatedRingRadius
+	
+	if( !clonedSettings.fs_scenarios_zonewars_ring_mode )
+		calculatedRingRadius = clonedSettings.fs_scenarios_default_radius
+
+	float radius = calculatedRingRadius
+
+
+    vector smallRingCenter = Center
+	entity smallcircle = CreateEntity( "prop_script" )
+	smallcircle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	smallcircle.kv.fadedist = 2000
+	smallcircle.kv.renderamt = 1
+	smallcircle.kv.solid = 0
+	smallcircle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+	smallcircle.SetOwner( file.dummyEnt )
+	smallcircle.SetOrigin( smallRingCenter )
+	smallcircle.SetAngles( <0, 0, 0> )
+	smallcircle.NotSolid()
+	smallcircle.DisableHibernation()
+	SetTargetName( smallcircle, "scenariosDeathField" )
+
+	DispatchSpawn(smallcircle)
+
+	entity ring = smallcircle
+
+	thread FS_Scenarios_StartRingMovementForGroup_clone( ring, Center, currentRingRadius, spawnSet )
 }
 
 array<LocPair> function customDevSpawnsList()

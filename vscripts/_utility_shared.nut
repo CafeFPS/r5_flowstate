@@ -205,6 +205,9 @@ void function InitWeaponScripts()
 	MpWeaponTrophy_Init()
 
 	MpWeaponBasicBolt_Init()
+	
+	Clickweapon_Init() //cafe
+	WeaponMastiff_Init() //mkos
 
 	#if SERVER
 		//BallLightning_Init()
@@ -5778,5 +5781,5 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 		for ( int i = 1; i < vargc; i++ )
 			msg = (msg + " " + vargv[i])
 			CenterPrintAll( msg )	
-	}
+	}	
 #endif

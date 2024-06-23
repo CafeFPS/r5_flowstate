@@ -72,8 +72,8 @@ struct
 #endif
 
 	//these must match the same order on client.
-	//use playlist patch to add tokens between releases
-	array<string> allTokens = [
+	array<string> allTokens = 
+	[
 		"#FS_NULL",
 		"#FS_1v1_Banner",
 		"#FS_1V1_Tracker",
@@ -425,7 +425,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	if ( ( datalen ) >= 599 )
 	{
 		long = true
-		uiTypeValidLong = longUiTypes.contains(uiType)
+		uiTypeValidLong = longUiTypes.contains( uiType )
 	}
 	
 	if( long )
@@ -582,11 +582,14 @@ void function LocalEventMsg( entity player, string ref, string varString = "", f
 
 void function LocalEventMsgDelayed( float eventdelay, entity player, string ref, string varString = "", float duration = 5 )
 {
-	thread( void function() : ( eventdelay, player, ref, varString, duration )
-			{
-				wait eventdelay
-				LocalEventMsg( player, ref, varString, duration )
-			})()
+	thread
+	( 
+		void function() : ( eventdelay, player, ref, varString, duration )
+		{
+			wait eventdelay
+			LocalEventMsg( player, ref, varString, duration )
+		}
+	)()
 }
 
 void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPlayerInputType, float duration = 5.0 )
@@ -719,7 +722,7 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 	{
 		int playlist = Playlist()
 		
-		switch(mode)
+		switch( mode )
 		{
 			case eGamemodes.fs_dm:
 			case eGamemodes.fs_prophunt:
@@ -734,7 +737,7 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 			default: break;
 		}
 		
-		switch(playlist)
+		switch( playlist )
 		{
 			case ePlaylists.fs_movementgym:
 			case ePlaylists.fs_scenarios:
@@ -744,13 +747,13 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 			case ePlaylists.fs_snd:
 			
 			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
-			Announcement_SetTitleColor( announcement, Vector(0,0,1) )
+			Announcement_SetTitleColor( announcement, Vector( 0, 0, 1 ) )
 			
-			if(duration == 8.420)
+			if( duration == 8.420 )
 			{
 				Announcement_SetDuration( announcement, 5 )
 				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-				Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+				Announcement_SetTitleColor( announcement, Vector( 0, 0, 0 ) )
 			}
 			
 			break;
@@ -794,9 +797,9 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 			printt("\n\n --- LocalMsg() ---\n", "str1:", StringReplaceLimited( str1, "\n", "\\n", 999 ), "\n str2:", StringReplaceLimited( str2, "\n", "\\n", 999 ), "\n duration:", duration, "\n uiType:", uiType, "\n iCustomUI:", iCustomUI )
 		#endif 
 		
-		Announcement_SetStyle(announcement, iCustomUI )
+		Announcement_SetStyle( announcement, iCustomUI )
 		Announcement_SetDuration( announcement, duration )
-		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+		Announcement_SetTitleColor( announcement, Vector( 0, 0, 0 ) )
 	}
 	
 	AnnouncementFromClass( player, announcement )

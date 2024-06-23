@@ -296,6 +296,10 @@ string function TableIndent( int indent )
 	return ("                                            ").slice( 0, indent )
 }
 
+string function TableIndent2( int indent )
+{
+	return ("...............................................................................................................................").slice( 0, indent )
+}
 
 string function RepeatString( string str, int times )
 {

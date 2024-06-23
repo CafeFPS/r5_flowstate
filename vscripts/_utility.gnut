@@ -4924,4 +4924,4 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
 		if( IsValid( player ) )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnClientSideDynamicLight", loc.origin, loc.angles, color, brightness, exponent )
 	}
-#endif 
+#endif

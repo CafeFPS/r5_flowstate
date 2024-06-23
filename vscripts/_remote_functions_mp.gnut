@@ -819,6 +819,14 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction_Optional( "ServerCallback_SetWorldImgVisibility", "int", 0, INT_MAX, "bool" )
 	Remote_RegisterClientFunction_Optional( "ServerCallback_ModifyWorldImg", "int", 0, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 1.0, 32, "int", -1, INT_MAX )
 	
+	#if DEVELOPER 
+		if( Playlist() != ePlaylists.fs_scenarios )
+		{
+			RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+			RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+		}
+	#endif
+	
 	if ( IsLobby())
 	{
 		//Register networked variables for the lobby

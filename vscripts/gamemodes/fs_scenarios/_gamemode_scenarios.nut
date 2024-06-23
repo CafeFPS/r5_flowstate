@@ -1507,6 +1507,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						#endif
 						continue
 					}
+					
+					// removed this, as it interferes with core mechanics ~mkos 
 					//player.p.lastDamageTime = Time() //avoid player regen health
 
 					if ( player.IsPhaseShifted() )
@@ -1802,7 +1804,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			#endif
 
 			wait 0.5
-
+			
 			ArrayRemoveInvalid( players )
 			int spawnSlot = -1
 			int oldSpawnSlot = -1
@@ -2174,7 +2176,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			{
 				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				CharacterSelect_AssignCharacter( player, selectedCharacter )
-				thread RechargePlayerAbilities( player ) // may need threaded or pass legend index in second param
+				thread RechargePlayerAbilities( player ) // may need threaded or pass legend index in second param -- since you already have the flacor we should pass that directly to avoid double waits. 
 			}
 
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
