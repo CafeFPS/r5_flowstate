@@ -34,7 +34,11 @@ void function Script_RegisterAllStats()
 	// void function Tracker_RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
 	//
 	// Tracker_RegisterStat( "backend-name", data_in_callback, data_out_callback)
-	// NULL_STATS_INBOUND & NULL_STATS_OUTBOUND can be used as substitutes.
+	// null can be used as substitutes if specific in/out is not needed.
+	// Stats don't need an in function to be fetched with the getter functions.
+	// They can all be fetched when stats for a player loads,
+	// see: AddCallback_PlayerDataFullyLoaded below.
+	//
 	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [int,bool,float,string]
 	// Each stat will only load in if they get registered here.
 	// AddCallback_PlayerDataFullyLoaded callbackFunc will get called when 
@@ -54,13 +58,13 @@ void function Script_RegisterAllStats()
 
 	if( file.RegisterCoreStats )
 	{
-		Tracker_RegisterStat( "kills",	 			NULL_STATS_INBOUND, 	Tracker_ReturnKills )
-		Tracker_RegisterStat( "deaths", 			NULL_STATS_INBOUND,		Tracker_ReturnDeaths )
-		Tracker_RegisterStat( "superglides", 		NULL_STATS_INBOUND, 	Tracker_ReturnSuperglides )
-		Tracker_RegisterStat( "total_time_played", 	NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		Tracker_RegisterStat( "total_matches", 		NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		Tracker_RegisterStat( "score", 				NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
-		Tracker_RegisterStat( "settings", 			NULL_STATS_INBOUND, 	NULL_STATS_OUTBOUND )
+		Tracker_RegisterStat( "kills", 				null, Tracker_ReturnKills )
+		Tracker_RegisterStat( "deaths", 			null, Tracker_ReturnDeaths )
+		Tracker_RegisterStat( "superglides", 		null, Tracker_ReturnSuperglides )
+		Tracker_RegisterStat( "total_time_played", 	null, null )
+		Tracker_RegisterStat( "total_matches", 		null, null )
+		Tracker_RegisterStat( "score", 				null, null )
+		Tracker_RegisterStat( "settings", 			null, null )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
@@ -68,7 +72,7 @@ void function Script_RegisterAllStats()
 	if( Playlist() == ePlaylists.fs_scenarios )//for demo
 	{
 		Tracker_RegisterStat( "scenarios_kills", Tracker_ScenariosKillsIn, TrackerStats_ScenariosKills )
-		Tracker_RegisterStat( "scenarios_deaths", NULL_STATS_INBOUND, TrackerStats_ScenariosDeaths )
+		Tracker_RegisterStat( "scenarios_deaths", null, TrackerStats_ScenariosDeaths )
 	}
 }
 

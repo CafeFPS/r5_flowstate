@@ -3226,7 +3226,7 @@ void function _soloModeInit( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	array<LocPair> allSoloLocations = ReturnAllSpawnLocations( eMap )
+	array<SpawnData> allSoloLocations = ReturnAllSpawnLocations( eMap )
 	
 	Gamemode1v1_NotificationPanel_Coordinates = Gamemode1v1_GetNotificationPanel_Coordinates()
 	Gamemode1v1_NotificationPanel_Angles = Gamemode1v1_GetNotificationPanel_Angles()
@@ -3242,13 +3242,13 @@ void function _soloModeInit( int eMap )
 
 	if( settings.is3v3Mode )
 	{	
-		for (int i = 0; i < allSoloLocations.len(); i=i+3)
+		for ( int i = 0; i < allSoloLocations.len(); i=i+3 )
 		{
 			soloLocStruct p
 
-			p.respawnLocations.append(allSoloLocations[i])
-			p.respawnLocations.append(allSoloLocations[i+1])
-			p.respawnLocations.append(allSoloLocations[i+2])
+			p.respawnLocations.append( allSoloLocations[i].spawn )
+			p.respawnLocations.append( allSoloLocations[i+1].spawn )
+			p.respawnLocations.append( allSoloLocations[i+2].spawn )
 
 			p.Center = GetCenterOfCircle( p.respawnLocations )
 
@@ -3257,14 +3257,14 @@ void function _soloModeInit( int eMap )
 	}
 	else
 	{
-		for (int i = 0; i < allSoloLocations.len(); i=i+2)
+		for ( int i = 0; i < allSoloLocations.len(); i=i+2 )
 		{
 			soloLocStruct p
 
-			p.respawnLocations.append(allSoloLocations[i])
-			p.respawnLocations.append(allSoloLocations[i+1])
+			p.respawnLocations.append( allSoloLocations[i].spawn )
+			p.respawnLocations.append( allSoloLocations[i+1].spawn )
 
-			p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
+			p.Center = ( allSoloLocations[i].spawn.origin + allSoloLocations[i+1].spawn.origin ) / 2
 
 			soloLocations.append(p)
 		}
@@ -3581,7 +3581,7 @@ void function Gamemode1v1_OnSelectedLegend( ItemFlavor character )
 	
 }
 
-bool function ValidateSpawns( array<LocPair> allSoloLocations )
+bool function ValidateSpawns( array<SpawnData> allSoloLocations )
 {
 	string warningmsg = "Incorrectly configured spawns in " + FILE_NAME()
 	

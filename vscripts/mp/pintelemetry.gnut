@@ -909,7 +909,7 @@ void function INIT_BATCH_FETCH()
 }
 
 // if no callback is desired, use NULL_STATS_INBOUND or NULL_STATS_OUTBOUND as the callback func respectively
-void function Tracker_RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
+void function Tracker_RegisterStat( string statname, void functionref( entity ) ornull inboundCallbackFuncOrNull = null, var functionref( string ) ornull outboundCallbackFuncOrNull = null )
 {
 	if( empty( statname ) )
 	{
@@ -922,13 +922,25 @@ void function Tracker_RegisterStat( string statname, void functionref( entity ) 
 		file.registeredStatCallbackFuncs[ statname ] <- []
 	}
 	
-	if( file.registeredStatCallbackFuncs[ statname ].contains( inboundCallbackFunc ) )
+	if( inboundCallbackFuncOrNull != null )
 	{
-		sqerror("Tried to addcallback with " + FUNC_NAME() + " but callbackFunc " + string( inboundCallbackFunc ) + " already exists")
+		void functionref( entity ) inboundCallbackFunc = expect void functionref( entity ) ( inboundCallbackFuncOrNull )
+		
+		if( file.registeredStatCallbackFuncs[ statname ].contains( inboundCallbackFunc ) )
+		{
+			sqerror("Tried to addcallback with " + FUNC_NAME() + " but callbackFunc " + string( inboundCallbackFunc ) + " already exists")
+		}
+		
+		file.registeredStatCallbackFuncs[ statname ].append( inboundCallbackFunc )
 	}
-	
-	file.registeredStatCallbackFuncs[ statname ].append( inboundCallbackFunc )	
-	RegisterStatOutboundData( statname, outboundCallbackFunc )
+
+	if( outboundCallbackFuncOrNull == null )
+		return 
+	else 
+	{
+		var functionref( string ) outboundCallbackFunc = expect var functionref( string ) ( outboundCallbackFuncOrNull )
+		RegisterStatOutboundData( statname, outboundCallbackFunc )
+	}
 }
 
 string function BuildRequestedStatsString()

@@ -31,12 +31,12 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction("Flowstate_UpdateRainbowShieldExtraProperty", "int", INT_MIN, INT_MAX, "int", 0, 9999)
 	
 	//Custom box msg from server
-	Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxBuildMessage" )
-	Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxShowMessage" )
+	//Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxBuildMessage" )
+	//Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxShowMessage" )
 	
 	//Custom box msg from server
-	Remote_RegisterUntypedFunction_deprecated( "fs_ServerMsgsToChatBox_BuildMessage" )
-	Remote_RegisterUntypedFunction_deprecated( "fs_ServerMsgsToChatBox_ShowMessage" )
+	//Remote_RegisterUntypedFunction_deprecated( "fs_ServerMsgsToChatBox_BuildMessage" )
+	//Remote_RegisterUntypedFunction_deprecated( "fs_ServerMsgsToChatBox_ShowMessage" )
 
 	//Dynamic client side ligths spawn from server
 	Remote_RegisterClientFunction( "ServerCallback_DeleteSpawnedClientSideDynamicLights" )
@@ -465,6 +465,7 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "characterSelectLockstepPlayerIndex", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
 	RegisterNetworkedVariable( "characterSelectFocusIndex", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, -1 )
 	
+
 	if( Playlist() != ePlaylists.fs_scenarios )
 	{
 		RegisterNetworkedVariable( "characterSelectionReady", SNDC_GLOBAL, SNVT_BOOL, false )
@@ -624,7 +625,7 @@ void function RemoteFunctions_Init_Begin()
 
 	// RANKED & APEX ELITE
 	//RegisterNetworkedVariable( "currentEliteStreak", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
-	Remote_RegisterClientFunction( "ServerCallback_UpdateEliteBadge", "int", INT_MIN, INT_MAX, "bool" )
+	//Remote_RegisterClientFunction( "ServerCallback_UpdateEliteBadge", "int", INT_MIN, INT_MAX, "bool" ) //not called, disabled to save space
 
 	// RegisterNetworkedVariable( "currentRankedScore", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, -1 )
 	// RegisterNetworkedVariable( "currentRankedLadderPosition", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, -1 )
@@ -678,7 +679,7 @@ void function RemoteFunctions_Init_Begin()
 	if ( !IsLobby() )
 		Remote_RegisterClientFunction( "ServerCallback_ShowDeathHint", "int", 0, MAX_DEATH_HINTS )
 
-	Remote_RegisterClientFunction( "ServerCallback_SatchelPlanted" )
+	//Remote_RegisterClientFunction( "ServerCallback_SatchelPlanted" ) //disabled for now ~mkos
 
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_SetAssistInformation" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_DataKnifeStartLeech" )
@@ -732,7 +733,7 @@ void function RemoteFunctions_Init_Begin()
 
 	Remote_RegisterClientFunction( "ServerCallback_GiveMatchLossProtection" )
 
-	Remote_RegisterUntypedFunction_deprecated( "SCB_TitanDialogue" )
+	//Remote_RegisterUntypedFunction_deprecated( "SCB_TitanDialogue" ) //titan func, disabled ~mkos
 
 	// Model Viewer
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_MVUpdateModelBounds" )
@@ -755,7 +756,7 @@ void function RemoteFunctions_Init_Begin()
 	Dialog_RegisterNetworking()
 
 	RegisterNetworkedVariable( "PilotAbilitySelectMenu_Enabled", SNDC_GLOBAL, SNVT_INT, 1 )
-	Remote_RegisterUntypedFunction_deprecated( "SCB_SetDoubleXPStatus" )
+	//Remote_RegisterUntypedFunction_deprecated( "SCB_SetDoubleXPStatus" ) //not used ~mkos
 	Remote_RegisterUIFunction( "SurvivalMenu_AckAction" )
 
 	RegisterServerVar( "respawnAvailableBits0", 0 )
@@ -809,7 +810,6 @@ void function RemoteFunctions_Init_Begin()
 	
 	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
-	
 	Remote_RegisterUIFunction( "UICallback_ForceCloseDeathScreenMenu" )
 	
 	// ClientWorldImg

@@ -119,7 +119,11 @@ void function WorldDrawImg_RegisterAllAssets()
 				//currently this would assume we aren't going to fire multiple
 				//pakready signals which is naive and this code is only valid
 				//for testing purposes
-				if( result.success && result.handle == handle ) 
+				
+				if( result.success == null || result.handle == null )
+					return
+				
+				if( expect bool( result.success ) && expect int( result.handle ) == handle ) 
 				{
 					file.assets.extend( assetList )
 					player.Signal( "RemoteAssetsLoaded" )

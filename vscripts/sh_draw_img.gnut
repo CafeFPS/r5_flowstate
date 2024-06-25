@@ -24,6 +24,20 @@ global function WorldDrawImg_RegisterRemoteAsset
 
 const ASSERT_WORLD_DRAW = true
 
+#if CLIENT 
+
+	struct TopoData
+	{
+		var topo 
+		int id
+		vector org 
+		vector ang
+		float width 
+		float height
+		bool isValid = false
+	}
+#endif 
+
 struct
 {
 	#if SERVER 
@@ -32,7 +46,7 @@ struct
 	
 	#if CLIENT 
 		table<int,array<var> > worldRUI
-		table<int,array<var> > worldRUITopo
+		table<int,array<TopoData> > worldRUITopo
 		string worldImgAssetRef = ""
 	#endif
 
@@ -156,15 +170,35 @@ void function WorldDrawImg_Init()
 
 #if CLIENT
 	
+	//taken from cl_utility
+	TopoData function WorldDrawImg_CreateTopo( vector org, vector ang, float width, float height, int id = -1 )
+	{
+		vector baseOrg = org 
+		vector baseAng = ang 
+		
+		// adjust so the RUI is drawn with the org as its center point
+		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+		org += ( AnglesToUp( ang ) * (height*0.5) )
+
+		// right and down vectors that get added to base org to create the display size
+		vector right = ( AnglesToRight( ang ) * width )
+		vector down = ( (AnglesToUp( ang )*-1) * height )
+		
+		var topo = RuiTopology_CreatePlane( org, right, down, true )
+		
+		return CreateTopoInfo( id, topo, baseOrg, baseAng )
+	}
+	
 	void function __BuildWorldImageRUI( asset image, vector org, vector ang, float width, float height, int RUIID = -1, float alpha = -1.0, bool visible = true, float ornull duration = null )
 	{
 		vector origin = org
 		vector angles = ang
 
 		origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
-		var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+		
+		TopoData topoInfo = WorldDrawImg_CreateTopo( origin, angles, width, height, RUIID )
 
-		var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
+		var rui = RuiCreate( $"ui/basic_image.rpak", topoInfo.topo, RUI_DRAW_WORLD, 32767 )
 		RuiSetImage( rui, "basicImage", image )
 		
 		if( alpha > -1.0 )
@@ -177,12 +211,12 @@ void function WorldDrawImg_Init()
 			if ( !( RUIID in file.worldRUI ) )
 				file.worldRUI[ RUIID ] <- []
 
-			file.worldRUI[ RUIID ].append( rui )
+			file.worldRUI[ RUIID ].insert( 0, rui )
 			
 			if ( !( RUIID in file.worldRUITopo ) )
 				file.worldRUITopo[ RUIID ] <- []
 				
-			file.worldRUITopo[ RUIID ].append( topo )
+			file.worldRUITopo[ RUIID ].insert( 0, topoInfo )
 		}
 		else 
 		{
@@ -191,7 +225,7 @@ void function WorldDrawImg_Init()
 			if( duration != null )
 				setduration = expect float( duration )
 				
-			thread __DestroyWorldRUIWithID_Timed( topo, rui, setduration )
+			thread __DestroyWorldRUIWithID_Timed( topoInfo.topo, rui, setduration )
 		}
 	}
 
@@ -208,11 +242,11 @@ void function WorldDrawImg_Init()
 		if( !( RUIID in file.worldRUITopo ) )
 			return 
 			
-		foreach ( int index, var topo in file.worldRUITopo[ RUIID ] )
+		foreach ( int index, TopoData topoInfo in file.worldRUITopo[ RUIID ] )
 		{
 			try
 			{
-				RuiTopology_Destroy( topo ) //required
+				RuiTopology_Destroy( topoInfo.topo ) //required
 			}
 			catch( e )
 			{
@@ -359,16 +393,41 @@ void function WorldDrawImg_Init()
 			RuiSetFloat( rui, "basicImageAlpha", alpha )
 		}
 		
-		if ( width > -1 && height > -1 )
-		{	
-			org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
-			org += ( AnglesToUp( ang ) * (height*0.5) )
+		TopoData topoInfo = GetTopoInfo( id )
+		
+		if( !IsTopoDataValid( topoInfo ) )
+		{
+			#if DEVELOPER 
+				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
+			#endif 
 			
-			vector right = ( AnglesToRight( ang ) * width )
-			vector down = ( (AnglesToUp( ang )*-1) * height )
-			
-			RuiTopology_UpdatePos( topo, org, right, down )
+			return
 		}
+		
+		if( width == -1 )
+			width = topoInfo.width
+		
+		if( height == -1 )
+			height = topoInfo.height
+		
+		if( org == ZERO_VECTOR )
+			org = topoInfo.org
+
+		if( ang == ZERO_VECTOR )
+			ang = topoInfo.ang
+				
+		topoInfo.org 	= org 
+		topoInfo.ang 	= ang
+		topoInfo.width 	= width
+		topoInfo.height = height
+				
+		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
+		org += ( AnglesToUp( ang ) * (height*0.5) )
+		
+		vector right = ( AnglesToRight( ang ) * width )
+		vector down = ( (AnglesToUp( ang )*-1) * height )
+		
+		RuiTopology_UpdatePos( topo, org, right, down )
 		
 		#if DEVELOPER 
 			printt
@@ -384,6 +443,37 @@ void function WorldDrawImg_Init()
 				"\nNewImage:", newImg != null ? string( newImg ) : "null"
 			)
 		#endif 
+	}
+	
+	TopoData function GetTopoInfo( int id )
+	{
+		TopoData nullTopo 
+		
+		if( id in file.worldRUITopo )
+			return file.worldRUITopo[ id ][0]
+			
+		return nullTopo
+	}
+	
+	TopoData function CreateTopoInfo( int id, var topo, vector org, vector ang )
+	{
+		TopoData topoInfo 
+		
+		if( IsValid( topo ) )
+		{
+			topoInfo.id 	 = id
+			topoInfo.topo 	 = topo
+			topoInfo.org	 = org
+			topoInfo.ang	 = ang
+			topoInfo.isValid = true
+		}
+		
+		return topoInfo
+	}
+	
+	bool function IsTopoDataValid( TopoData topoInfo )
+	{
+		return topoInfo.isValid && IsValid( topoInfo.topo )
 	}
 	
 	void function ServerCallback_SetWorldImgVisibility( int id, bool visible )
@@ -408,8 +498,8 @@ void function WorldDrawImg_Init()
 		
 		if( id in file.worldRUI )
 			return file.worldRUI[ id ][0]
-		else 
-			return nullRui
+		
+		return nullRui
 	}
 	
 	var function GetWorldDrawTopology( int id )
@@ -417,7 +507,7 @@ void function WorldDrawImg_Init()
 		var nullTopo
 		
 		if( id in file.worldRUITopo )
-			return file.worldRUITopo[ id ]
+			return file.worldRUITopo[ id ][0].topo
 			
 		return nullTopo
 	}

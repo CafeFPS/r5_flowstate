@@ -341,6 +341,12 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
 	{
 		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
+		
+		if( victim.IsZiplining() || victim.IsMountingZipline() )
+			victim.Zipline_Stop()
+		
+		if( victim.IsGrappleAttached() )
+			victim.GrappleDetach()
 	}
 	
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
@@ -2538,6 +2544,11 @@ LocPairData function CustomSpawns()
 			]
 			break
 	}
+	
+	array<table> metaData
+	
+	foreach( spawn in spawns )
+		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
 
-	return CreateLocPairObject( spawns, true )
+	return CreateLocPairObject( spawns, true, null, null, metaData )
 }

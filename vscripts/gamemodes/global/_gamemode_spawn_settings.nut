@@ -17,6 +17,8 @@ global function SpawnSystem_SetPreferredPak
 
 global function SpawnSystem_GetCurrentSpawnSet
 global function SpawnSystem_GetCurrentSpawnAsset
+global function SpawnSystem_CreateSpawnObject
+global function SpawnSystem_CreateSpawnObjectArray
 
 #if DEVELOPER
 	global function DEV_SpawnType
@@ -44,12 +46,19 @@ global function SpawnSystem_GetCurrentSpawnAsset
 	global function DEV_SimulateRing
 	global function DEV_KillRing
 	global function DEV_SetRingSettings
+	global function DEV_RingSettings
 	global function DEV_RingInfo
+	global function DEV_AutoSimulateRing
+	global function DEV_SetAutoSave
+	global function DEV_PrintSettings
+	global function DEV_AutoSetName
+	global function DEV_RenameSpawn
 	
 	const float HIGHLIGHT_SPAWN_DELAY 	= 7.0
 	const int SPAWN_POSITIONS_BUDGET 	= 210
 	const float DOOR_SCAN_RADIUS		= 100
 	const bool DEBUG_SPAWN_TRACE		= true
+	const int MAX_SPAWN_NAME_LENGTH	= 255
 	
 	const bool REMOVE 	= true 
 	const bool LOAD 		= false
@@ -61,6 +70,13 @@ global function SpawnSystem_GetCurrentSpawnAsset
 		LocPair ornull waitingRoom = null
 		LocPair ornull panels = null
 		bool bOverrideSpawns = false
+		array<table> metaData
+	}
+	
+	global struct SpawnData
+	{
+		LocPair& 		spawn
+		string 			name
 	}
 	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
@@ -96,37 +112,68 @@ global function SpawnSystem_GetCurrentSpawnAsset
 			bool bValidatorRunning = false
 			int iValidatorTracker = 1
 			bool bAutoDelInvalid = false
-			int maxIndentNeeded
+			int maxIndentNeeded = 93 //auto generated in init. 
 			entity dummyEnt
+			bool autoSimulateRing = false
+			bool bAutoSave = false
+			bool bFirstTimeUse = true
+			string spawnSetName = ""
 			
 			table<string,string> DEV_POS_COMMANDS = 
-			{		
-				["script DEV_SpawnType( string setToType = \"\" )"] = "Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided.",
-				["script DEV_AddSpawn( string pid, int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
-				["script DEV_PrintSpawns()"] = "Prints the current made spawn positions array",
-				["script DEV_DeleteSpawn( int index )"] = "Deletes a spawn from array by index",
-				["script DEV_ClearSpawns( bool clearHighlights = true )"] = "Deletes all saved spawns. If passed false, does not remove highlights on map",
-				["script DEV_TeleportToSpawn( string pid, int index )"] = "Teleport specified player by name/uid to a saved spawn by index",
-				["script DEV_WriteSpawnFile()"] = "Write current locations to file in the current format, use printt( DEV_SpawnType() ) to see current type.",
-				["script DEV_SpawnHelp()"] = "Prints this help msg...",
-				["script DEV_SetTeamSize( int size )"] = "Sets the size of a team formatting the PrintSpawns() array",
-				["script DEV_TeleportToPanels( playerName/uid )"] = "Teleports player to panel locations",
-				["script DEV_LoadPak( string pak = \"\", string playlist = \"\" )"] = "Loads spawn pak specifying rpak asset and playlist. If custom spawns are wrote into script loads those instead.",
-				["script DEV_HighlightAll()"] = "Shows/Removes beams of light on all spawns in the PosArray",
-				["script DEV_Highlight( int index, bool persistent = false )"] = "Highlight a single spawn by spawn index. Called automatically on spawn add. If persistent is not provided beam destroys ater " + HIGHLIGHT_SPAWN_DELAY + " seconds.",
-				["script DEV_KeepHighlight( bool setting = true )"] = "Sets whether spawn highlight stays after adding spawn.",
-				["script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
-				["script DEV_ReloadInfo()"] = "Manually reload all info panels.",
-				["script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
-				["script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels.",
-				["script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize.",
-				["script DEV_ValidateSpawn( int index = -1, bool remove = false, player = null )"] = "Validates a given spawn or all if -1 is passed. Removes each invalid if true passed. Optionally pass a player to check mins/maxes",
-				["script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation.",
-				["script DEV_GetSpawn( int index )"] = "Returns lockpair object for given spawn. Indexed with .origin and .angles",
-				["script DEV_SimulateRing( int spawnSet, bool loop = true )"] = "Start ring simulation for given spawnset. Optional disable looping passing false as second paramater.",
-				["script DEV_KillRing( int spawnSet, bool instantly = true, bool keepLooping = false )"] = "Kills ring simulation by spawnSet, optionally let ring complete, and keep looping",
-				["script DEV_SetRingSettings( table<string, float> settings )"] = "Set test settings for ring brhavior. Use { setting = value, setting2 = value }. Call DEV_RingInfo() for available settings.",
-				["script DEV_RingInfo()"] = "Call to see available settings for ring simulation"
+			{
+					[" script DEV_SpawnHelp()"] = "Prints this help msg...",
+					[" script DEV_PrintSettings()"] = "Prints all current settings.",
+					[" script DEV_PrintSpawns()"] = "Prints the current made spawn positions array [ called automatically for most operations ]",
+					[".................."] = "",
+					["...."] = "",
+					[" ==== SETTINGS ===="] = "",
+					["....."] = "",
+					[" script DEV_SetAutoSave( bool value = true )"] = "Disabled by default. Make sure folder 'output' in r5reloaded/platform exists",
+					[" script DEV_LoadPak( string pak = \"\", string playlist = \"\" )"] = "Loads spawn pak specifying rpak asset and playlist. If none provided, loads current pak. If custom spawns are wrote into the script test function, it loads those instead.",
+					[" script DEV_SpawnType( string setToType = \"\" )"] = "Params: \"csv\" or \"sq\" Sets/Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided. ( call with printt() )",
+					[" script DEV_SetTeamSize( int size )"] = "Sets the size of a team formatting the PrintSpawns() array",
+					[" script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
+					[" script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
+					[" script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation. Disavled by default",
+					[" script DEV_AutoSetName( string name = \"\" )"] = "Defines a custom spawn set name to auto use when creating spawns if not specified during DEV_AddSpawn(). Call with nothing to empty/disable. System automatically names spawns based on index otherwise.",
+					[" script DEV_KeepHighlight( bool setting = true )"] = "Sets whether spawn highlight stays after adding spawn.",
+					["......"] = "",
+					["......."] = "",
+					[" ==== MAIN SPAWN FUNCTIONS ===="] = "",
+					["........"] = "",
+					[" script DEV_AddSpawn( string pid, string spawnName = \"\", int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. Name the spawn, uses provided DEV_AutoSetName() if none specified. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
+					[" script DEV_RenameSpawn( int index, string name = \"\" )"] = "Rename an already present spawn by index.",
+					[" script DEV_DeleteSpawn( int index )"] = "Deletes a spawn from array by index",
+					[" script DEV_ClearSpawns( bool clearHighlights = true )"] = "Deletes all saved spawns. If passed false, does not remove highlights on map",
+					["........"] = "",
+					["........."] = "",
+					[" ==== UTILITY ===="] = "",
+					[".........."] = "",
+					[" script DEV_TeleportToSpawn( string pid, int index )"] = "Teleport specified player by name/uid to a saved spawn by index",
+					[" script DEV_TeleportToPanels( playerName/uid )"] = "Teleports player to panel locations",
+					[" script DEV_ValidateSpawn( int index = -1, bool remove = false, player = null )"] = "Validates a given spawn or all if -1 is passed. Removes each invalid if true passed. Optionally pass a player to check mins/maxes",
+					[" script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels.",
+					[" script DEV_ReloadInfo()"] = "Manually reload all info panels.",
+					[" script DEV_HighlightAll()"] = "Shows/Removes beams of light on all spawns in the PosArray",
+					[" script DEV_Highlight( int index, bool persistent = false )"] = "Highlight a single spawn by spawn index. Called automatically on spawn add. If persistent is not provided beam destroys ater " + HIGHLIGHT_SPAWN_DELAY + " seconds. Set with DEV_KeepHighlight()",
+					[" script DEV_GetSpawn( int index )"] = "Returns lockpair object for given spawn. Indexed into with .origin and .angles such as script printt( DEV_GetSpawn(0).origin )",
+					[" script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize.",
+					["..........."] = "",
+					["............"] = "",
+					[" ==== GENERATE FILE ===="] = "",
+					["............."] = "",
+					[" script DEV_WriteSpawnFile()"] = "Write current locations to file in the current format, use printt( DEV_SpawnType() ) to see current type.",
+					[".............."] = "",
+					["..............."] = "",
+					["................"] = "",
+					[" ==== RING SIMULATOR ===="] = "",
+					["................."] = "",
+					[" script DEV_RingSettings()"] = "Call to see available settings for ring simulation",
+					[" script DEV_SetRingSettings( table<string, float> settings )"] = "Set test settings for ring brhavior. Use { setting = value, setting2 = value }. Call DEV_RingSettings() for available settings.",
+					[" script DEV_AutoSimulateRing( bool ornull bSetting = null )"] = "Auto simulate ring on spawn set creation. Calling empty returns current setting",
+					[" script DEV_SimulateRing( int spawnSet, bool loop = false )"] = "Start ring simulation for given spawnset. Optional enable looping passing true as second paramater.",
+					[" script DEV_KillRing( int spawnSet = -1, bool instantly = true, bool keepLooping = false )"] = "Kills ring simulation by spawnSet or -1 for all, optionally let ring complete, and keep looping",
+					[" script DEV_RingInfo( bool bActiveOnly = true )"] = "Print active/all available ring struct info to console."
 			}
 		#endif
 
@@ -138,13 +185,26 @@ global function SpawnSystem_GetCurrentSpawnAsset
 		bool bOptionsAreSet = false
 		
 	} settings
+	
+	#if DEVELOPER 
+	struct RingInfo
+	{
+		string identifier	= "_invalid"
+		entity ringEnt		= null
+		int spawnSet 		= -1
+		bool loopSetting 		= false
+		vector center 		= ZERO_VECTOR
+		float radius
+		float closeMaxTime
+	}
+	#endif 
 
 void function Flowstate_SpawnSystem_Init()
 {
 	#if DEVELOPER 
 		RegisterSignal( "DelayedHighlightActivate" )
 		RegisterSignal( "RunValidatorIfWaiting" )
-		RegisterSignal( "SpawnValidStatus" )
+		RegisterSignal( "SpawnIsValidStatus" )
 		
 		CalculateMaxIndent()
 		InitClonedSettings()
@@ -169,11 +229,11 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	string customRpak 			= GetCurrentPlaylistVarString( "custom_spawnpak", "" )
 	string customSpawnPlaylist	= GetCurrentPlaylistVarString( "custom_playlist_spawnpak", "" )
 	
-	settings.spawnOptions["use_sets"] <- use_sets
-	settings.spawnOptions["use_random"] <- use_random
-	settings.spawnOptions["prefer"] <- prefer
-	settings.spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( customRpak )
-	settings.spawnOptions["use_custom_playlist"] <- use_custom_playlist
+	settings.spawnOptions[ "use_sets" ] 			<- use_sets
+	settings.spawnOptions[ "use_random" ] 			<- use_random
+	settings.spawnOptions[ "prefer" ] 				<- prefer
+	settings.spawnOptions[ "use_custom_rpak" ] 		<- SpawnSystem_SetCustomPak( customRpak )
+	settings.spawnOptions[ "use_custom_playlist" ] 	<- use_custom_playlist
 	
 	if( use_custom_playlist && !empty( customSpawnPlaylist ) )
 	{
@@ -184,7 +244,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	{
 		SpawnSystem_SetPreferredPak( preferred )
 		#if DEVELOPER
-			printt("Preferred spawnpak set to:", preferred )
+			printt( "Preferred spawnpak set to:", preferred )
 		#endif 
 	}
 	
@@ -196,7 +256,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	settings.bOptionsAreSet = true
 }
 
-array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {} )
+array<SpawnData> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {} )
 {
 	mAssert( settings.bOptionsAreSet, "Tried to fetch spawns without first running Flowstate_SpawnSystem_InitGamemodeOptions()" )
 	
@@ -270,7 +330,7 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 						int j = setpaks.find( prefferred )			
 						if( j == -1 )
 						{
-							Warning("Preferred spawnpak: " + prefferred + " not found!")
+							Warning( "Preferred spawnpak: " + prefferred + " not found!" )
 							spawnSet = defaultpak
 						}
 						else
@@ -284,7 +344,7 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 					}
 					else 
 					{
-						printt("spawnpaks: Use sets was enabeld with no valid options in playlists")
+						printt( "spawnpaks: Use sets was enabeld with no valid options in playlists" )
 					}
 				}
 			}
@@ -298,12 +358,15 @@ array<LocPair> function ReturnAllSpawnLocations( int eMap, table<string,bool> op
 	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )
 }
 
-LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null )
+LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null, array<table> ornull propertiesOrNull = null )
 {
 	LocPairData data
 	
 	data.spawns = spawns
 	data.bOverrideSpawns = bOverrideSpawns
+	
+	if( propertiesOrNull != null )
+		data.metaData = expect array<table> ( propertiesOrNull )
 
 	if ( waitingRoom != null )
 	{
@@ -359,9 +422,9 @@ void function AddCallback_FlowstateSpawnsPostInit( LocPairData functionref() cal
 // 																		//
 //////////////////////////////////////////////////////////////////////////
 
-array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra spawns
+array<SpawnData> function GenerateCustomSpawns( int eMap )//waiting room + extra spawns
 {														//ideally only default waiting
-	array<LocPair> customSpawns = []					// rooms are saved here. use :
+	array<SpawnData> customSpawns = []					// rooms are saved here. use :
 														// AddCallback_FlowstateSpawnsPostInit()
 														// to create custom spawns for your gamemode 
 	LocPair defaultWaitingRoom
@@ -478,7 +541,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 				#if DEVELOPER 
 					Warning("Spawns overriden with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 				#endif 
-				customSpawns = data.spawns
+				customSpawns = SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData )
 				file.overrideSpawns = true
 			}
 			else 
@@ -486,7 +549,7 @@ array<LocPair> function GenerateCustomSpawns( int eMap )//waiting room + extra s
 				#if DEVELOPER 
 					Warning("Spawns extended with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 				#endif 
-				customSpawns.extend( data.spawns )
+				customSpawns.extend( SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData ) )
 			}	
 		}
 			
@@ -557,8 +620,8 @@ string function GenerateAssetStringForMapAndGamemode( int eMap, string set, stri
 	}
 	else 
 	{
-		string dtbl_MapRef 			= AllMapsArray()[eMap]
-		string dtbl_PlaylistRef 	= AllPlaylistsArray()[Playlist()]
+		string dtbl_MapRef 			= AllMapsArray()[ eMap ]
+		string dtbl_PlaylistRef 	= AllPlaylistsArray()[ Playlist() ]
 		
 		//pre conditionals
 		if ( !empty( playlistOverride ) )
@@ -577,9 +640,9 @@ string function GenerateAssetStringForMapAndGamemode( int eMap, string set, stri
 	return spawnset
 }
 
-array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1", string customRpak = "", string customPlaylist = "" )
+array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_1", string customRpak = "", string customPlaylist = "" )
 {
-	array<LocPair> allSoloLocations
+	array<SpawnData> allSoloLocations
 	
 	try
 	{
@@ -595,6 +658,16 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		int spawnsCount 	= GetDatatableRowCount( datatable )
 		int originCol 		= GetDataTableColumnByName( datatable, "origin" )
 		int anglesCol 		= GetDataTableColumnByName( datatable, "angles" )
+		int nameCol			= GetDataTableColumnByName( datatable, "name" )
+		
+		bool verify = 
+		(
+			originCol != -1 && 
+			anglesCol != -1 &&
+			nameCol != -1
+		)
+		
+		mAssert( verify, "Loaded spawn rpak is an invalid format. Check updates?" )
 		
 		#if DEVELOPER
 			string print_data = "\n\n spawnset: " + spawnset + "\n--- LOCATIONS ---\n\n"
@@ -603,12 +676,15 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		{		
 			vector origin = GetDataTableVector( datatable, i, originCol ) + originOffset
 			vector angles = GetDataTableVector( datatable, i, anglesCol ) + anglesOffset
+			string name   = GetDataTableString( datatable, i, nameCol )
 			
 			#if DEVELOPER
-				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + "\n"	
+				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + " SpawnName: " + name + "\n"	
 			#endif
 			
-			allSoloLocations.append( NewLocPair( origin, angles ) )
+			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), name )
+
+			allSoloLocations.append( spawnInfo )
 		}	
 		#if DEVELOPER 
 			printt( print_data )
@@ -620,7 +696,7 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		sqerror( "Error: " + e )
 	}
 	
-	array<LocPair> extraSpawnLocations = GenerateCustomSpawns( eMap )
+	array<SpawnData> extraSpawnLocations = GenerateCustomSpawns( eMap )
 	
 	if( extraSpawnLocations.len() > 0 )
 	{
@@ -638,9 +714,9 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 		
 		#if DEVELOPER
 			string print_sdata = ""
-				foreach( spawn in extraSpawnLocations )
+				foreach( spawnInfo in extraSpawnLocations )
 				{
-					print_sdata += "Found origin: " + VectorToString( spawn.origin ) + " angles: " + VectorToString( spawn.angles ) + "\n"	
+					print_sdata += "Found origin: " + VectorToString( spawnInfo.spawn.origin ) + " angles: " + VectorToString( spawnInfo.spawn.angles ) + " Name: " + spawnInfo.name + "\n"	
 				}
 			printt( "\n\n" + print_sdata )
 		#endif
@@ -650,6 +726,70 @@ array<LocPair> function FetchReturnAllLocations( int eMap, string set = "_set_1"
 }
 
 //util
+
+SpawnData function SpawnSystem_CreateSpawnObject( LocPair spawn, string spawnName )
+{
+	SpawnData spawnInfo
+	
+	spawnInfo.spawn = spawn
+	spawnInfo.name 	= spawnName
+	
+	return spawnInfo
+}
+
+array<SpawnData> function SpawnSystem_CreateSpawnObjectArray( array<LocPair> spawns, array<table> ornull propertiesOrNull = null )
+{
+	bool bGenDefault = true
+	table properties = {}
+	array<table> propertiesArray = []
+	int spawnsLen = spawns.len()
+	
+	if( propertiesOrNull != null )
+	{
+		propertiesArray = expect array<table> ( propertiesOrNull )		
+		//mAssert( spawnsLen == propertiesArray.len(), "Tried to create a spawn object array but specified properties table does not match the number of elements passed in the LocPair array." )
+	}
+	else
+	{
+		for( int i = 0; i < spawnsLen; i++ )
+			propertiesArray.append( {} )
+			
+		mAssert( spawnsLen == propertiesArray.len(), "spawnsLen != propertiesArray" )
+	}
+	
+	
+	array<SpawnData> spawnInfoArray = []
+
+	int iter = 0
+	
+	foreach( tableData in propertiesArray )
+	{	
+		if( tableData.len() == 0 )
+			tableData = GenerateDefaultSpawnData()
+		
+		SpawnData spawnInfo
+		
+		spawnInfo.spawn = spawns[ iter ]
+		
+		//this can be expanded in the future
+		if( "name" in tableData )
+		{
+			if( tableData["name"] != null )
+				spawnInfo.name = expect string( tableData["name"] )
+		}
+		
+		spawnInfoArray.append( spawnInfo )
+		
+		iter++
+	}
+	
+	return spawnInfoArray
+}
+
+table function GenerateDefaultSpawnData()
+{
+	return { name = "spawn" }
+}
 
 bool function ValidateOptions( table<string,bool> options )
 {
@@ -738,9 +878,9 @@ asset function SpawnSystem_GetCurrentSpawnAsset()
 
 #if DEVELOPER
 
-bool function IsValidIndex( array<string> haystack, int index )
+bool function IsValidSpawnIndex( int index )
 {
-	return index >= 0 && index < haystack.len()
+	return index >= 0 && index < file.dev_positions.len()
 }
 
 void function __RemoveAllPanels()
@@ -824,7 +964,7 @@ void function DEV_DeleteSpawn( int index )
 	if( !__bCheckReload() )
 		return
 	
-	if( IsValidIndex( file.dev_positions, index ) )
+	if( IsValidSpawnIndex( index ) )
 	{
 		__RemoveAllPanels()
 		
@@ -837,6 +977,8 @@ void function DEV_DeleteSpawn( int index )
 		DEV_HighlightAll( REMOVE )
 		DEV_HighlightAll( LOAD )	
 		DEV_PrintSpawns( true )
+		
+		CheckAutoSave()
 	}
 	else 
 	{
@@ -861,7 +1003,7 @@ void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
 			table<vector,string> spawnInfos = {}
 			string identifier = GetIdentifier( index, file.teamsize )
 			
-			if( ( index + 1 ) % file.teamsize == 1 )
+			if( IsNewSet( index ) || index == 0 )
 			{
 				string style = index > 1 ? "\n" : "";
 				spawnSetCount++; 
@@ -891,6 +1033,14 @@ void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
 	}
 	
 	printt( printstring )
+}
+
+bool function IsNewSet( int index )
+{
+	if( SpawnCount() < file.teamsize )
+		return false 
+		
+	return ( index + 1 ) % file.teamsize == 1
 }
 
 void function __LoopPanelDeletion( array< table<vector, string> > spawnInfosListRef = [], bool bSyncInfoPanels = false )
@@ -968,30 +1118,30 @@ string function GetIdentifier( int index, int teamsize )
     return letters[letterIndex] + ( cycle > 0 ? cycle.tostring() : "" )
 }
 
-string function DEV_append_pos_array_squirrel( vector origin, vector angles )
+string function DEV_append_pos_array_squirrel( vector origin, vector angles, string name )
 {	
-	return "NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ),";	
+	return "NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ), //\"" + name + "\"";	
 }
 
-string function DEV_append_pos_array_csv( vector origin, vector angles )
+string function DEV_append_pos_array_csv( vector origin, vector angles, string name )
 {
-	return "\"< " + origin.x + ", " + origin.y + ", " + origin.z + " >\",\"< " + angles.x + ", " + angles.y + ", " + angles.z + ">\" ";
+	return "\"< " + origin.x + ", " + origin.y + ", " + origin.z + " >\",\"< " + angles.x + ", " + angles.y + ", " + angles.z + ">\" ,   \"" + name + "\"";
 }
 
 void function DEV_convert_array_to_csv_from_squirrel()
 {
 	for( int i = 0; i < file.dev_positions.len(); i++ )
-	{
+	{	
 		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "NewLocPair( < ", "\"< ", 1 )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], " >, < ", ">\",\"< " )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], " > ),", ">\" " )
+		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "//", ",   ", 1 )	
 	}
 	
 	printt("Converted current array to csv.")
 	printm("Converted current array to csv.")
 	DEV_PrintSpawns()
 }
-
 
 void function DEV_convert_array_to_squirrel_from_csv()
 {
@@ -1000,6 +1150,7 @@ void function DEV_convert_array_to_squirrel_from_csv()
 		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], "\"< ", "NewLocPair( < ", 1 )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], ">\",\"< " , " >, < " )
 		file.dev_positions[i] = StringReplace( file.dev_positions[i], ">\" ", " > )," )
+		file.dev_positions[i] = StringReplaceLimited( file.dev_positions[i], ",   ", "//", 1 )
 	}
 	
 	printt("Converted current array to squirrel.")
@@ -1007,7 +1158,7 @@ void function DEV_convert_array_to_squirrel_from_csv()
 	DEV_PrintSpawns()
 }
 
-string function DEV_SpawnType( string setToType = "" )
+string function DEV_SpawnType( string setToType = "", bool bIgnorePrints = false )
 {
 	if ( !empty( setToType ) )
 	{
@@ -1029,8 +1180,12 @@ string function DEV_SpawnType( string setToType = "" )
 			}
 				
 			file.dev_positions_type = setToType
-			printt("Spawn saving format was set to", "\"" + setToType + "\"" )
-			printm("Spawn saving format was set to", "\"" + setToType + "\"" )
+			
+			if( !bIgnorePrints )
+			{
+				printt("Spawn saving format was set to", "\"" + setToType + "\"" )
+				printm("Spawn saving format was set to", "\"" + setToType + "\"" )
+			}
 		}
 		else 
 		{
@@ -1042,42 +1197,103 @@ string function DEV_SpawnType( string setToType = "" )
 	return file.dev_positions_type
 }
 
-void function DEV_AddSpawn( string pid, int replace = -1 )
+void function DEV_AddSpawn( string ornull checkpid, string name = "", int replace = -1, LocPair ornull spawnPointOrNull = null )
 {	
-	if( empty( pid ) )
+	entity player
+	
+	if( checkpid != null )
 	{
-		printt( "No player provided to first param of", FUNC_NAME() + "()" )
-		printm( "No player provided to first param of", FUNC_NAME() + "()" )
-		return
+		string pid = expect string( checkpid )
+		
+		if( empty( pid ) )
+		{
+			printt( "No player provided to first param of", FUNC_NAME() + "()" )
+			printm( "No player provided to first param of", FUNC_NAME() + "()" )
+			return
+		}
+
+		player = GetPlayer( pid )
+	
+		if( !IsValid( player ) )
+		{
+			printt( "Invalid player" )
+			printm( "Invalid player" )
+			return
+		}
 	}
+	
+	bool bUsePlayer = IsValid( player )
+	CheckFirstUse()
 	
 	if( empty( DEV_SpawnType() ) )
 	{
-		printt( "No type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code")
-		printm( "No type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code")
-		printt( "Setting to squirrel code." )
-		printm( "Setting to squirrel code." )
+		string txt = "\n\nNo type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code. Setting to squirrel code. \n"
+		printt( txt )
+		printm( txt )
+		
 		DEV_SpawnType( "sq" )
 	}
-
-	entity player = GetPlayer( pid )
 	
-	if( !IsValid( player ) )
+	int currentSpawnCount = SpawnCount()
+	string msg = ""
+	
+	if( currentSpawnCount > SPAWN_POSITIONS_BUDGET )
 	{
-		printt( "Invalid player" )
-		printm( "Invalid player" )
+		msg = " SPAWN BUDGET REACHED \n\n Cannot add more spawns "
+		
+		if( bUsePlayer )
+			LocalEventMsg( player, "", msg )
+			
+		printt( msg )
+		printm( msg )
+		
 		return
 	}
 	
-	if( SpawnCount() > SPAWN_POSITIONS_BUDGET )
+	if( empty( name ) )
 	{
-		LocalEventMsg( player, "", " SPAWN BUDGET REACHED \n\n Cannot add more spawns " )
-		return
+		string spawnSetName = _SpawnSetName()
+		
+		if( !empty( spawnSetName ) )
+			name = spawnSetName
+		else
+			name = "spawn_" + currentSpawnCount
 	}
-
-	table playerPos = GetPlayerPos( player )
-	vector origin = expect vector( playerPos.origin )
-	vector angles = expect vector( playerPos.angles )
+	else 
+	{
+		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		{
+			msg = IssueWarning( name.len() )
+			name = ""
+			
+			printt( msg )
+			printm( msg )
+		}
+	}
+	
+	vector origin 
+	vector angles 
+	
+	if( bUsePlayer )
+	{
+		table playerPos = GetPlayerPos( player )
+		origin = expect vector( playerPos.origin )
+		angles = expect vector( playerPos.angles )
+	}
+	else if( spawnPointOrNull != null )
+	{
+		LocPair spawnPoint = expect LocPair ( spawnPointOrNull )
+		origin = spawnPoint.origin
+		angles = spawnPoint.angles
+	}
+	else if( spawnPointOrNull == null )
+	{
+		msg += "\n\nError: spawnPoint was null during add"
+		
+		printt( msg )
+		printm( msg )
+		return 
+	}
 
 	string str = ""
 	
@@ -1087,20 +1303,21 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 			if( DEV_SpawnType() == "sq" )
 				DEV_convert_array_to_csv_from_squirrel()
 				
-			str = DEV_append_pos_array_csv( origin, <angles.x, angles.y, angles.z> )
+			str = DEV_append_pos_array_csv( origin, <angles.x, angles.y, angles.z>, name )
 			
 		break
 		case "sq":
 			if ( DEV_SpawnType() == "csv" )
 				DEV_convert_array_to_squirrel_from_csv()
 				
-			str = DEV_append_pos_array_squirrel( origin, <angles.x, angles.y, angles.z> )
+			str = DEV_append_pos_array_squirrel( origin, <angles.x, angles.y, angles.z>, name )
 			
 		break
 		
 		default:
-			printt("No type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code")
-			printm("No type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code")
+			string z = "No type was set. Set type with DEV_SpawnType(\"csv\") or \"sq\" for squirrel code"
+			printt( z )
+			printm( z )
 			return
 	}
 	
@@ -1108,32 +1325,67 @@ void function DEV_AddSpawn( string pid, int replace = -1 )
 	data.origin = origin 
 	data.angles = angles
 	
-	if( replace > -1 && IsValidIndex( file.dev_positions, replace ) )
-	{	
-		GetSpawns()[replace] = data
-		file.dev_positions[replace] = str 
+	if( replace > -1 && IsValidSpawnIndex( replace ) )
+	{
+		GetSpawns()[ replace ] = data
+		file.dev_positions[ replace ] = str 
 		DEV_Highlight( replace, file.bHighlightPersistent )
 		DEV_ReloadInfo()
 	}
-	else 
+	else
 	{
 		GetSpawns().append( data )
 		file.dev_positions.append( str )
 		DEV_Highlight( ( SpawnCount() - 1 ), file.bHighlightPersistent )
+		DEV_PrintSpawns( false )
 	}
 	
-	DEV_PrintSpawns( false )
-	LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + " " )
+	if( bUsePlayer )
+		LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + " " )
 	
 	#if TRACKER && HAS_TRACKER_DLL
 		SendServerMessage( "Spawn added: " + str )
-	#endif 
+	#endif
 	
 	printt( format( "\n\n Newly Added Spawn Pos: %s", str ) )
 	printm( format( "\n\n Newly Added spawn Pos: %s", str ) )
 	
 	if( file.bAutoDelInvalid )
 		DEV_ValidateSpawn( SpawnCount() - 1, true, player )
+		
+	if( DEV_AutoSimulateRing() )
+	{
+		if( IsNewSet( SpawnCount() ) )
+		{
+			int spawnSet = GetPreviousSpawnSet( SpawnCount() )
+			
+			if( spawnSet > 0 )
+				DEV_SimulateRing( spawnSet )
+		}
+	}
+	
+	CheckAutoSave()
+}
+
+int function GetCurrentSpawnSet( int index, int teamsize = -1 )
+{
+	if ( teamsize == -1 )
+		teamsize = file.teamsize 
+	
+	return ( index + 1 ) / teamsize + 1
+}
+
+int function GetPreviousSpawnSet( int index, int teamsize = -1 )
+{
+	if ( teamsize == -1 )
+		teamsize = file.teamsize 
+		
+	int previous = GetCurrentSpawnSet( index, teamsize ) - 1
+	
+	if( previous > 0 )
+		return ( previous )
+		
+	return -1
 }
 
 void function DEV_KeepHighlight( bool setting = true )
@@ -1150,8 +1402,10 @@ void function DEV_ClearSpawns( bool clearHighlights = true )
 	
 	file.dev_positions.clear()
 	GetSpawns().clear()
-	printt( "Cleared all saved positions" )
-	printm( "Cleared all saved positions" )
+	
+	string msg = "Cleared all saved positions"
+	printt( msg )
+	printm( msg )
 	
 	if( clearHighlights )
 	{
@@ -1181,7 +1435,7 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 		return 
 	}
 	
-	if( !IsValidIndex( file.dev_positions, posIndex ) )
+	if( !IsValidSpawnIndex( posIndex ) )
 	{
 		printt( "Invalid spawn selected" )
 		printm( "Invalid spawn selected" )
@@ -1204,19 +1458,28 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 
 void function DEV_SpawnHelp()
 {
-	string helpinfo = "\n\n ---- POSITION COMMANDS ----- \n\n"
+	string helpinfo = "\n\n ---- SPAWN TOOL COMMANDS ----- \n\n"
 	
 	foreach( command, helpstring in file.DEV_POS_COMMANDS )
 	{
 		int offset = file.maxIndentNeeded - command.len()
-		helpinfo += command + " " + TableIndent2( offset ) + " = " + helpstring + "\n";
-		printm( command + " " + TableIndent2( offset ) + " = " + helpstring )	
+		
+		string spacing = TableIndent2( offset ) + " = "
+		
+		if( command.find("===") != -1 || command.find("...") != -1 )
+			spacing = TableIndent3( offset )
+			
+		if( command.find("...") != -1 )
+			command = ""
+			
+		helpinfo += command + " " + spacing + helpstring + "\n";
+		printm( command + " " + spacing + " = " + helpstring )	
 	}
 	
 	printt( helpinfo )
 }
 
-void function DEV_WriteSpawnFile()
+void function DEV_WriteSpawnFile( bool bAutoSave = false )
 {
 	if( file.dev_positions.len() <= 0 )
 	{
@@ -1226,12 +1489,26 @@ void function DEV_WriteSpawnFile()
 	}
 	
 	DevTextBufferClear()
-
+	
+	//////////////
+	// AUTOSAVE //
+	//////////////
+	bool bReconvert = false
+	
+	if( bAutoSave )
+	{
+		if( DEV_SpawnType() == "csv" )
+		{
+			DEV_SpawnType( "sq", true )
+			bReconvert = true
+		}
+	}
+	
 	//////////////
 	// 	 OPEN	//
 	//////////////
 	if( DEV_SpawnType() == "csv" )
-		DevTextBufferWrite( "origin,angles\n" )
+		DevTextBufferWrite( "origin,angles,name\n" )
 		
 	if( DEV_SpawnType() == "sq" )
 		DevTextBufferWrite( "array<LocPair> spawns = \n[ \n" )
@@ -1247,7 +1524,7 @@ void function DEV_WriteSpawnFile()
 	//	CLOSURE	//
 	//////////////
 	if( DEV_SpawnType() == "csv" )
-		DevTextBufferWrite( "vector,vector\n" )
+		DevTextBufferWrite( "vector,vector,string\n" )
 		
 	if( DEV_SpawnType() == "sq" )
 		DevTextBufferWrite( "];" )
@@ -1262,15 +1539,26 @@ void function DEV_WriteSpawnFile()
 	{
 		fType = ".nut"
 	}
-
+	
 	int uTime 			= GetUnixTimestamp()
 	string file 		= "spawns_" + string( uTime ) + fType
 	string directory 	= "output/"
 	
+	if( bAutoSave )
+		file = "spawns_autosave.nut"
+	
 	DevP4Checkout( file )
 	DevTextBufferDumpToFile( directory + file )
-	printt("Wrote file to: ", directory + file )
-	printm("Wrote file to: ", directory + file )
+	
+	if( !bAutoSave )
+	{
+		printt("Wrote file to: ", directory + file )
+		printm("Wrote file to: ", directory + file )
+	}
+	else if( bReconvert )
+	{
+		DEV_SpawnType( "csv", true )	
+	}
 }
 
 void function DEV_SetTeamSize( int size )
@@ -1283,6 +1571,7 @@ void function DEV_SetTeamSize( int size )
 	}
 	
 	file.teamsize = size
+	
 	printt( "Team size set to", size )
 	printm( "Team size set to", size )
 	
@@ -1468,30 +1757,34 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
 	
-	array<LocPair> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? customDevSpawnsList() : ReturnAllSpawnLocations( MapName(), spawnOptions )
+	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
 	if( devLocations.len() > 0 )
 	{
 		DEV_ClearSpawns()
 		
 		string str 
+		int iter = 0
+		string name
 		
-		foreach( spawn in devLocations )
+		foreach( spawnInfo in devLocations )
 		{
+			name = "spawn_" + iter
+			
 			switch( DEV_SpawnType() )
 			{
 				case "csv":
 					if( DEV_SpawnType() == "sq" )
 						DEV_convert_array_to_csv_from_squirrel()
 						
-					str = DEV_append_pos_array_csv( spawn.origin, spawn.angles )
+					str = DEV_append_pos_array_csv( spawnInfo.spawn.origin, spawnInfo.spawn.angles, name )
 					
 				break
 				case "sq":
 					if ( DEV_SpawnType() == "csv" )
 						DEV_convert_array_to_squirrel_from_csv()
 						
-					str = DEV_append_pos_array_squirrel( spawn.origin, spawn.angles )
+					str = DEV_append_pos_array_squirrel( spawnInfo.spawn.origin, spawnInfo.spawn.angles, name )
 					
 				break
 				
@@ -1501,8 +1794,10 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 					return
 			}
 			
-			GetSpawns().append( spawn )
+			GetSpawns().append( spawnInfo.spawn )
 			file.dev_positions.append( str )
+			
+			iter++;
 		}
 		
 		Warning( "----LOADED PAK: " + pak + "----" )
@@ -1540,6 +1835,10 @@ void function __CreateInfoPanelForSpawn( int set, int index, string identifier )
 void function DEV_SpawnInfo( bool setting = true )
 {
 	file.bSpawnInfoPanels = setting
+	string msg = "Set info panels to " + ( setting ? "show (true)" : "not show (false)" )
+	
+	printt( msg )
+	printm( msg )
 }
 
 void function DEV_RotateInfoPanels( string direction = "clockwise" )
@@ -1647,7 +1946,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 				return
 			
 			if( expect int( results.runthread ) == thisthread )
-				break
+				break			
 		}
 	}
 	
@@ -1668,7 +1967,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	
 	int spawnsLen = SpawnCount()
 	
-	if( spawnsLen == 0 || ( index != -1 && !IsValidIndex( file.dev_positions, index ) ) )
+	if( spawnsLen == 0 || ( index != -1 && !IsValidSpawnIndex( index ) ) )
 	{
 		printt( "Invalid spawn index provided:", index )
 		printm( "Invalid spawn index provided:", index )
@@ -1678,7 +1977,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	if( index != -1 )
 	{
 		thread __SignalIsValidSpawn( GetSpawns()[ index ].origin, index, player )
-		table spawnResults = WaitSignal( file.signalDummy, "SpawnValidStatus" )
+		table spawnResults = WaitSignal( file.signalDummy, "SpawnIsValidStatus" )
 		
 		if( expect bool( spawnResults.validspawn ) == false && expect int( spawnResults.spawnIndex ) == index )
 		{
@@ -1715,7 +2014,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	for( int i = spawnsLen - 1; i >= 0; i-- )
 	{
 		thread __SignalIsValidSpawn( GetSpawns()[ i ].origin, i, player )	
-		table spawnResultsAll = WaitSignal( file.signalDummy, "SpawnValidStatus" )
+		table spawnResultsAll = WaitSignal( file.signalDummy, "SpawnIsValidStatus" )
 		
 		if( expect bool( spawnResultsAll.validspawn ) == false && expect int( spawnResultsAll.spawnIndex ) == i )
 		{
@@ -1783,7 +2082,8 @@ void function __SignalIsValidSpawn( vector origin, int spawnIndex, entity player
 		#endif
 	}
 	
-	//check for doors and close them before doing trace	
+	// check for doors and close them before doing trace	
+	// better ways to trace but since we have this checker doing this here
 	array<entity> scan = ArrayEntSphere( origin, DOOR_SCAN_RADIUS )
 	
 	entity lastDoor
@@ -1863,11 +2163,11 @@ void function __SignalIsValidSpawn( vector origin, int spawnIndex, entity player
 	TraceResults result = TraceHull( origin, origin + <0, 0, 1>, mins, maxs, ignoreEnts, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
 
 	if ( result.startSolid )
-		Signal( file.signalDummy, "SpawnValidStatus", { validspawn = false, spawnIndex = spawnIndex } )
+		Signal( file.signalDummy, "SpawnIsValidStatus", { validspawn = false, spawnIndex = spawnIndex } )
 
 	bool traceFinalResult = result.fraction == 1.0
 	
-	Signal( file.signalDummy, "SpawnValidStatus", { validspawn = traceFinalResult, spawnIndex = spawnIndex } )
+	Signal( file.signalDummy, "SpawnIsValidStatus", { validspawn = traceFinalResult, spawnIndex = spawnIndex } )
 }
 
 void function PushAwayFromDoor( array<entity> doors, entity player, float force )
@@ -1883,7 +2183,7 @@ void function PushAwayFromDoor( array<entity> doors, entity player, float force 
 		entity door = doors[0]
 		vector doorMins = door.GetBoundingMins()
 		vector doorMaxs = door.GetBoundingMaxs()
-		vector doorCenter = (doorMins + doorMaxs) * 0.5
+		vector doorCenter = ( doorMins + doorMaxs ) * 0.5
 		
 		vector toPlayer = playerOrigin - doorCenter
 		toPlayer.z = 0
@@ -1897,9 +2197,9 @@ void function PushAwayFromDoor( array<entity> doors, entity player, float force 
 		player.SetVelocity(velocity)
 		
 		#if DEBUG_SPAWN_TRACE
-			DebugDrawBox(doorCenter, doorMins, doorMaxs, 0, 255, 0, 0, 5.0)
-			DebugDrawLine(playerOrigin, doorCenter, 0, 0, 255, true, 5.0)
-			DebugDrawLine(playerOrigin, playerOrigin + velocity * 5, 255, 0, 0, true, 5.0)
+			DebugDrawBox( doorCenter, doorMins, doorMaxs, 0, 255, 0, 0, 5.0 )
+			DebugDrawLine( playerOrigin, doorCenter, 0, 0, 255, true, 5.0 )
+			DebugDrawLine( playerOrigin, playerOrigin + velocity * 5, 255, 0, 0, true, 5.0 )
 			Warning( "Door Center: " + doorCenter.tostring() )
 			Warning( "Player Origin: " + playerOrigin.tostring() )
 			Warning( "Direction to Push: " + direction.tostring() )
@@ -1957,12 +2257,12 @@ void function CalculateMaxIndent()
 
 void function DEV_AutoDeleteInvalid( bool setting = true )
 {
+	file.bAutoDelInvalid = setting
+	
 	string msg = "bAutoDelInvalid set to " + setting
 	
 	printt( msg )
 	printm( msg )
-	
-	file.bAutoDelInvalid = setting
 }
 
 LocPair ornull function DEV_GetSpawn( int index )
@@ -1970,7 +2270,7 @@ LocPair ornull function DEV_GetSpawn( int index )
 	LocPair nullLoc
 	string msg
 	
-	if( !IsValidIndex( file.dev_positions, index ) )
+	if( !IsValidSpawnIndex( index ) )
 	{
 		msg = "Invalid spawn index."
 		printt( msg )
@@ -1992,9 +2292,236 @@ array<LocPair> function GetSpawns()
 	return file.dev_positions_LocPair
 }
 
-void function DEV_SimulateRing( int spawnSet, bool loop = true )
+bool function GetAutoSave()
 {
+	return file.bAutoSave
+}
+
+void function CheckAutoSave()
+{
+	if( !GetAutoSave() )
+		return
+		
+	if( SpawnCount() == 0 )
+		return
+		
+	DEV_WriteSpawnFile( true )
+}
+
+void function DEV_SetAutoSave( bool bSave = true )
+{
+	file.bAutoSave = bSave 
+	
+	string msg = "Set Autosave to " + bSave
+	
+	printt( msg )
+	printm( msg )
+}
+
+array<string> function GetSpawnSettings()
+{
+	array<string> settings = []
+	
+	settings.append( " === CURRENT SETTINGS === " )
+	settings.append( " Auto Save = " + file.bAutoSave )
+	settings.append( " Spawns Count = " + SpawnCount() )
+	settings.append( " Team Size = " + file.teamsize )
+	settings.append( " File Type = " + file.dev_positions_type )
+	settings.append( " Spawn set name = " + file.spawnSetName )
+	settings.append( " Panel Locations = " + file.panelsloc.origin + "," + file.panelsloc.angles )
+	settings.append( " Auto Simulate Ring ? = " + file.autoSimulateRing )
+	settings.append( " Spawn Info Panels ? = " + file.bSpawnInfoPanels )
+	settings.append( " infoPanelOffset = " + file.infoPanelOffset )
+	settings.append( " infoPanelOffsetAngles = " + file.infoPanelOffsetAngles )
+	settings.append( " Highlight Toggle All ? = " + file.bHighlightToggleAll )
+	settings.append( " Highlight Persistent ? = " + file.bHighlightPersistent )
+	settings.append( " Auto Delete Invalid ? = " + file.bAutoDelInvalid )
+	settings.append( " " )
+	settings.append( " === DEBUG INFO === " )
+	settings.append( " allBeamEntities count = " + file.allBeamEntities.len() )
+	settings.append( " bInfoPanelsAreReloading = " + file.bInfoPanelsAreReloading )
+	settings.append( " bValidatorRunning = " + file.bValidatorRunning )
+	settings.append( " iValidatorTracker = " + file.iValidatorTracker )
+	settings.append( " maxIndentNeeded = " + file.maxIndentNeeded )
+	settings.append( " bFirstTimeUse = " + file.bFirstTimeUse )
+	//settings.append( " = " + file. )
+	
+	return settings
+}
+
+void function PrintSpawnSettings()
+{
+	foreach( text in GetSpawnSettings() )
+		printt( text )
+	
+	#if MULTIPLAYER_DEBUG_PRINTS
+		foreach( text in GetSpawnSettings() )
+			printm( text )
+	#endif 
+}
+
+void function CheckFirstUse()
+{
+	if( !file.bFirstTimeUse )
+		return
+	
+	array<string> msg
+	
+	msg.append( " " )
+	msg.append( " " )
+	msg.append( "---------------------------------------------------" )
+    msg.append( "|                                                 |" )
+	msg.append( "| ____ _    ____ _ _ _ ____ ___ ____ ___ ____     |" )
+    msg.append( "| |___ |    |  | | | | [__   |  |__|  |  |___     |" )
+    msg.append( "| |    |___ |__| |_|_| ___]  |  |  |  |  |___     |" )
+    msg.append( "|      ____ ___  ____ _    _       ___            |" )
+    msg.append( "|      [__  |__| |__| \\    / |\\ | [__             |" )
+    msg.append( "|      ___] |    |  |  \\/\\/  | \\| ___]            |" )
+    msg.append( "|                                                 |" )
+    msg.append( "| Flowstate SpawnSystem & Tool - Created by Mkos. |" )
+    msg.append( "|                                                 |" )
+    msg.append( "---------------------------------------------------" )
+    msg.append( " " )
+	msg.append( "NOTICE: Make sure to have a folder called 'output' in r5reloaded/platform directory" )
+	msg.append( "NOTICE: AutoSave is disabled by default. To turn on run 'script DEV_SetAutoSave()'" )
+	msg.append( " " )
+	msg.append( " " )
+	msg.append( " " )
+	msg.append( "       run:  script DEV_SpawnHelp()    to see the help documentation." )
+	msg.append( " " )
+	
+	foreach( txt in msg )
+		printt( txt )
+		
+	#if MULTIPLAYER_DEBUG_PRINTS
+		foreach( txt in msg )
+			printm( txt )
+	#endif
+	
+	PrintSpawnSettings()
+	
+	file.bFirstTimeUse = false
+}
+
+void function DEV_PrintSettings()
+{
+	PrintSpawnSettings()
+}
+
+void function CreateSpawnWithInfoAtPoint( int index, LocPair spawn, string name )
+{
+	DEV_AddSpawn( null, name, index, spawn )
+}
+
+void function DEV_RenameSpawn( int index, string name = "" )
+{
+	string msg
+	
+	if( !IsValidSpawnIndex( index ) )
+	{
+		msg = "Can't rename an invalid spawn."
+		
+		printt( msg )
+		printm( msg )
+		
+		return
+	}
+	
+	LocPair spawn = clone GetSpawns()[ index ]
+	CreateSpawnWithInfoAtPoint( index, spawn, name )
+}
+
+void function DEV_AutoSetName( string name = "" )
+{
+	string msg
+	
+	if( !empty( name ) )
+	{
+		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		{
+			msg = IssueWarning( name.len() )
+			name = ""
+		}
+		else 
+		{
+			msg = "Set auto SpawnSetName to \"" + name + "\""
+		}
+	}
+	else 
+	{
+		msg = "Cleared SpawnSetName."
+	}
+
+	_SpawnSetName( name )
+	
+	printt( msg )
+	printm( msg )
+}
+
+string function IssueWarning( int strLen )
+{
+	bool bOverLimit
+	string tooLong 
+	
+	if( strLen > MAX_SPAWN_NAME_LENGTH )
+	{
+		tooLong = "name was " + strLen + " characters long. " + ( strLen - MAX_SPAWN_NAME_LENGTH ) + " chars too many. Max length: " + MAX_SPAWN_NAME_LENGTH
+		Warning( tooLong )
+	}
+	
+	if( !empty( tooLong ) )
+		return tooLong 
+	else	
+		return "Provided name contained invalid characters"
+		
+	unreachable
+}
+
+string function _SpawnSetName( string ornull name = null )
+{
+	if( name == null )
+		return file.spawnSetName
+		
+	string setname = expect string( name )
+	file.spawnSetName = setname 
+	
+	return setname
+}
+
+bool function DEV_AutoSimulateRing( bool ornull bSetting = null )
+{
+	bool userSetting = false 
+	
+	if( bSetting == null )
+	{
+		return file.autoSimulateRing
+	}
+	else 
+	{
+		userSetting = expect bool( bSetting )
+		file.autoSimulateRing = userSetting
+		
+		string msg = "Set AutoSimulateRing to " + string( userSetting )
+		
+		printt( msg )
+		printm( msg )
+	}
+	
+	return userSetting
+}
+
+void function DEV_SimulateRing( int spawnSet = -1, bool bLoop = false )
+{	
 	string msg = ""
+	
+	if( spawnSet == -1 )
+	{
+		msg = "No spawnset was provided. Spawn sets are shown in yellow on spawn info panels."
+		
+		printt( msg )
+		printm( msg )
+		return
+	}
 	
 	if( SpawnCount() < 2 )
 	{
@@ -2016,14 +2543,174 @@ void function DEV_SimulateRing( int spawnSet, bool loop = true )
 	}
 	
 	string ringIdentifier = GetRingIdentifier( spawnSet )
+	
 	RegisterSignal( ringIdentifier )
-	clonedSettings.loopRings[ ringIdentifier ] <- true
-	FS_Scenarios_CreateCustomDeathfield_clone( spawnSet )
+	
+	FS_Scenarios_CreateCustomDeathfield_clone( spawnSet, ringIdentifier, bLoop )
 	
 	msg = format( "Ring simulation started for spawnset [ %d ]", spawnSet )
 	printt( msg )
 	printm( msg )
 	DEV_MessageAll( "Ring Started", msg )
+}
+
+void function DEV_RingInfo( bool bActiveOnly = true )
+{
+	bool bFound = false 
+	
+	if( bActiveOnly )
+	{
+		foreach( ring in GetRingArray() )
+		{
+			if( !bFound )
+				bFound = true 
+				
+			PrintRingInfo( SearchForRingInfo( ring ) )
+		}
+	}
+	else 
+	{
+		foreach( string ringIdentifier, RingInfo ringInfo in GetRings() )
+		{
+			if( !bFound )
+				bFound = true 
+				
+			PrintRingInfo( ringInfo )
+		}
+	}
+	
+	if( !bFound )
+	{
+		string msg = "No available ring data to show."
+		
+		printt( msg )
+		printm( msg )
+	}
+}
+
+void function PrintRingInfo( RingInfo ringInfo )
+{		
+	array<string> arrayprints = []
+	
+	arrayprints.append( "Entity: " + ringInfo.ringEnt + "\n" )
+	arrayprints.append( "Spawnset:" + ringInfo.spawnSet + "\n" )
+	arrayprints.append( "Loop Setting:" + ringInfo.loopSetting + "\n" )
+	arrayprints.append( "Center:" + ringInfo.center + "\n" )
+	arrayprints.append( "Radius:" + ringInfo.radius + "\n" )
+	arrayprints.append( "Original Close Max Time:" + ringInfo.closeMaxTime + "\n" )
+	
+	string localprint = "\n\n"
+	
+	foreach( prnt in arrayprints )
+		localprint += prnt
+	
+	printt( localprint )
+	
+	#if MULTIPLAYER_DEBUG_PRINTS 
+		foreach( prnt in arrayprints )
+			printm( prnt )
+	#endif
+}
+
+RingInfo function SearchForRingInfo( entity ring )
+{	
+	RingInfo nullRingInfo 
+	
+	if( !IsValid( ring ) )
+		return nullRingInfo
+	
+	foreach( string ringIdentifier, RingInfo ringInfo in GetRings() )
+	{
+		if( IsRingValid( ringIdentifier ) )
+			if( ringInfo.ringEnt == ring )
+				return ringInfo
+	}
+	
+	return nullRingInfo
+}
+
+bool function DoesRingSettingsExist( string ringIdentifier )
+{
+	return ( ringIdentifier in GetRings() )
+}
+
+table<string,RingInfo> function GetRings()
+{
+	return clonedSettings.allRings
+}
+
+bool function IsRingValid( string ringIdentifier )
+{
+	if( !DoesRingSettingsExist( ringIdentifier ) )
+		return false 
+		
+	if( !IsValid( GetRings()[ ringIdentifier ].ringEnt ) )
+		return false 
+		
+	return true
+}
+
+bool function LoopRing( string ringIdentifier, bool ornull setting = null )
+{
+	bool bExists = DoesRingSettingsExist( ringIdentifier )
+	bool bSettingValue = false 
+	
+	if ( setting != null )
+	{
+		bSettingValue = expect bool( setting )
+	}
+	else 
+	{
+		if( bExists )
+			return GetRings()[ ringIdentifier ].loopSetting
+		else 
+			return false
+	}
+	
+	if( bExists )
+		GetRings()[ ringIdentifier ].loopSetting = bSettingValue
+	else 
+		mAssert( false, "LoopRing() was applied on a ring whos settings were not first created." )
+		
+	return bSettingValue
+}
+
+void function CreateRingSettings( string ringIdentifier, entity ring, int spawnSet, bool loopSetting, vector center, float radius, float closeMaxTime )
+{
+	RingInfo ringInfo	
+	
+	ringInfo.identifier		= ringIdentifier
+	ringInfo.ringEnt 		= ring
+	ringInfo.spawnSet 		= spawnSet 
+	ringInfo.loopSetting 	= loopSetting
+	ringInfo.center			= center
+	ringInfo.radius			= radius
+	ringInfo.closeMaxTime	= closeMaxTime
+	
+	AddEntityDestroyedCallback( ring, RemoveRingFromScriptManagedRingArray )
+	AddToScriptManagedRingArray( ring )
+	
+	if( !DoesRingSettingsExist( ringIdentifier ) )
+		GetRings()[ ringIdentifier ] <- ringInfo
+	else 
+		GetRings()[ ringIdentifier ] = ringInfo
+}
+
+array<entity> function GetRingArray()
+{
+	return clonedSettings.ringArray
+}
+
+void function AddToScriptManagedRingArray( entity ring )
+{
+	mAssert( !GetRingArray().contains( ring ), "Tried to add the same ring twice" )
+	GetRingArray().append( ring )
+}
+
+void function RemoveRingFromScriptManagedRingArray( entity ring )
+{
+	if( GetRingArray().contains( ring ) )
+		GetRingArray().removebyvalue( ring )
 }
 
 string function GetRingIdentifier( int spawnSet )
@@ -2033,22 +2720,28 @@ string function GetRingIdentifier( int spawnSet )
 	return ringIdentifier
 }
 
-void function DEV_KillRing( int spawnSet, bool instantly = true, bool keepLooping = false )
+void function DEV_KillRing( int spawnSet = -1, bool instantly = true, bool keepLooping = false )
 {
 	string ringIdentifier = GetRingIdentifier( spawnSet )
 	string msg = ""
+
+	if( spawnSet == -1 )
+	{
+		KillAllRings()
+		return
+	}
 	
-	if( ringIdentifier in clonedSettings.loopRings )
+	if( DoesRingSettingsExist( ringIdentifier ) )
 	{
 		if( !keepLooping )
-			clonedSettings.loopRings[ ringIdentifier ] <- false	
+			LoopRing( ringIdentifier, false )	
 		
 		if( instantly )
 		{
 			Signal( file.dummyEnt, ringIdentifier )
 			msg = format( "Ring for spawnset [ %d ] was killed", spawnSet )
 		}
-		else
+		else if( !LoopRing( ringIdentifier ) )
 		{
 			msg = format( "Ring for spawnset [ %d ] will end after completion.", spawnSet )
 		}	
@@ -2060,6 +2753,36 @@ void function DEV_KillRing( int spawnSet, bool instantly = true, bool keepLoopin
 	
 	printt( msg )
 	printm( msg )
+}
+
+void function KillAllRings()
+{
+	string msg = ""
+	
+	if( GetRings().len() == 0 )
+	{
+		msg = "No ring settings exist to kill all"
+		
+		printt( msg )
+		printm( msg )
+		return
+	}
+	
+	if( GetRingArray().len() == 0 )
+	{
+		msg = "No active rings to kill."
+		
+		printt( msg )
+		printm( msg )
+		
+		return
+	}
+	
+	foreach( string identifier, RingInfo ringInfo in GetRings() )
+	{
+		LoopRing( identifier, false )
+		Signal( file.dummyEnt, identifier )
+	}
 }
 
 void function DEV_SetRingSettings( table<string, float> settings )
@@ -2133,7 +2856,7 @@ array<vector> function GetPointsOnCircleForRing( vector origin, float radius, in
 	return pointsOnCircle
 }
 
-//this blows, structs are weak
+//this blows, structs are weak man, weak!
 bool function __UpdateRingSetting( string key, float value )
 {
 	bool bSuccess = true
@@ -2224,7 +2947,7 @@ float function __FetchRingSetting( string key )
 	unreachable
 }
 
-void function DEV_RingInfo()
+void function DEV_RingSettings()
 {
 	string out 		= ""
 	string display 	= ""
@@ -2272,7 +2995,9 @@ struct
 	float fs_scenarios_use_random = 1.0 //float bool for testing
 	
 	
-	table<string,bool> loopRings
+	table<string,RingInfo> allRings
+	
+	array<entity> ringArray
 	
 	table<string,string> ringSettings =
 	{
@@ -2293,27 +3018,27 @@ void function InitClonedSettings()
 {
 	file.dummyEnt = CreateEntity( "info_target" )
 	
-	clonedSettings.fs_scenarios_dropshipenabled = GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
-	clonedSettings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
-	clonedSettings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
-	clonedSettings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
-	// clonedSettings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
-	// clonedSettings.fs_scenarios_minimum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
-	// clonedSettings.fs_scenarios_maximum_team_allowed = GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
+	clonedSettings.fs_scenarios_dropshipenabled 				= GetCurrentPlaylistVarBool( "fs_scenarios_dropshipenabled", true )
+	clonedSettings.fs_scenarios_maxIndividualMatchTime 			= GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
+	clonedSettings.fs_scenarios_playersPerTeam 					= GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
+	clonedSettings.fs_scenarios_teamAmount 						= GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
+	// clonedSettings.fs_scenarios_max_queuetime 				= GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 150.0 )
+	// clonedSettings.fs_scenarios_minimum_team_allowed 		= GetCurrentPlaylistVarInt( "fs_scenarios_minimum_team_allowed", 1 ) // used only when max_queuetime is triggered
+	// clonedSettings.fs_scenarios_maximum_team_allowed 		= GetCurrentPlaylistVarInt( "fs_scenarios_maximum_team_allowed", 3 )
 
-	clonedSettings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
-	clonedSettings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
-	clonedSettings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
-	clonedSettings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
-	clonedSettings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
-	clonedSettings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
-	clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
-	clonedSettings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
-	clonedSettings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
-	clonedSettings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
-	clonedSettings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
+	clonedSettings.fs_scenarios_ground_loot 					= GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
+	clonedSettings.fs_scenarios_inventory_empty 				= GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
+	clonedSettings.fs_scenarios_deathboxes_enabled 				= GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
+	clonedSettings.fs_scenarios_bleedout_enabled 				= GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
+	clonedSettings.fs_scenarios_show_death_recap_onkilled 		= GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
+	clonedSettings.fs_scenarios_zonewars_ring_mode 				= GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
+	clonedSettings.fs_scenarios_zonewars_ring_ringclosingspeed 	=  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
+	clonedSettings.fs_scenarios_ring_damage_step_time 			= GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
+	clonedSettings.fs_scenarios_game_start_time_delay 			= GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
+	clonedSettings.fs_scenarios_ring_damage 					= GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
+	clonedSettings.fs_scenarios_characterselect_enabled 		= GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
 	clonedSettings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
-	clonedSettings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
+	clonedSettings.fs_scenarios_ringclosing_maxtime 			= GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
 }
 
 void function FS_Scenarios_StartRingMovementForGroup_clone( entity ring, vector calculatedRingCenter, float currentRingRadius, int spawnSet )
@@ -2321,7 +3046,7 @@ void function FS_Scenarios_StartRingMovementForGroup_clone( entity ring, vector 
 	if( !IsValid( ring ) )
 		return
 
-	string ringIdentifier = "continue_ring_" + spawnSet
+	string ringIdentifier = GetRingIdentifier( spawnSet )
 	
 	Signal( file.dummyEnt, ringIdentifier )
 	WaitFrame()
@@ -2337,7 +3062,7 @@ void function FS_Scenarios_StartRingMovementForGroup_clone( entity ring, vector 
 				ring.Destroy()
 			}
 			
-			if( clonedSettings.loopRings[ ringIdentifier ] )
+			if( LoopRing( ringIdentifier ) )
 				FS_Scenarios_CreateCustomDeathfield_clone( spawnSet )
 		}
 	)
@@ -2395,7 +3120,7 @@ vector function OriginToGround_Inverse_clone( vector origin )
 	return traceResult.endPos
 }
 
-void function FS_Scenarios_CreateCustomDeathfield_clone( int spawnSet )
+void function FS_Scenarios_CreateCustomDeathfield_clone( int spawnSet, string ringIdentifier = "", bool bLoop = true )
 {
 	array<LocPair>spawnSetInfo = DEV_ShowCenter( spawnSet, true )
 	
@@ -2461,6 +3186,19 @@ void function FS_Scenarios_CreateCustomDeathfield_clone( int spawnSet )
 	DispatchSpawn(smallcircle)
 
 	entity ring = smallcircle
+	
+	CreateRingSettings
+	(
+		ringIdentifier,
+		ring,
+		spawnSet,
+		bLoop,
+		Center,
+		radius,
+		clonedSettings.fs_scenarios_ringclosing_maxtime
+	)
+	
+	LoopRing( ringIdentifier, bLoop )
 
 	thread FS_Scenarios_StartRingMovementForGroup_clone( ring, Center, currentRingRadius, spawnSet )
 }

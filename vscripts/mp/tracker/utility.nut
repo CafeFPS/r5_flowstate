@@ -38,6 +38,7 @@ global function DEV_PrintTrackerWeapons
 global function GetTrackerWeaponIdentifierTable
 global function ValidateIBMMWaitTime
 global function VerifyAdmin
+global function IsSafeString
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -2202,6 +2203,7 @@ void function CheckAdmin_OnConnect( entity player )
 		player.SetPlayerNetBool( "IsAdmin", true )
 }
 
+// WARNING, use ONLY VerifyAdmin() for permissive uses, not this.
 bool function IsTrackerAdmin( string CheckPlayer )
 {
 	foreach ( Player, OID in player_admins) 
@@ -2550,3 +2552,18 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 		)()
 	}	
 #endif
+
+//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? .
+bool function IsSafeString( string str, int strlen = -1, string pattern = "" ) 
+{
+	if( empty( str ) )
+		return true
+		
+	if( strlen != -1 && str.len() > strlen )
+		return false
+	
+	if( pattern == "" )
+		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.]*$"
+	
+	return ( RegexpFindAll( str, pattern ).len() != 0 )
+}
