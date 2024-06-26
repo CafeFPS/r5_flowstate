@@ -1,5 +1,5 @@
 untyped
-globalize_all_functions
+global function mantlejumpmap_init
 
 // Made by Loy and Treeree. 
 
