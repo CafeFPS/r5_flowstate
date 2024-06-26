@@ -16,7 +16,7 @@ global function shGlobalErrorCheck
 global const PRINT_GAMEMODE_DEBUGS = true
 
 //mode functions:
-global function is1v1GameType
+global function g_is1v1GameType
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
@@ -339,7 +339,7 @@ bool function shGlobalErrorCheck()
 //	gamemode conditional INIT functions	//
 //////////////////////////////////////////
 
-bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
+bool function g_is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
 {
 	return ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 }

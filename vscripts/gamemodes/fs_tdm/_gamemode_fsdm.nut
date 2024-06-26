@@ -70,9 +70,6 @@ global function DissolveItem
 //R5R.DEV Tracker
 global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
-global function Thread_CheckInput
-global function ClientCommand_mkos_IBMM_wait
-global function ClientCommand_mkos_lock1v1_setting
 global function RotateMap
 
 
@@ -250,7 +247,6 @@ struct
 	string Admins
 	
 	//int settings 
-	int ibmm_wait_limit
 	int endgame_delay
 	
 	//float settings
@@ -282,7 +278,6 @@ void function InitializePlaylistSettings()
 	flowstateSettings.ring_radius_padding 					= GetCurrentPlaylistVarFloat( "ring_radius_padding", 800 )
 	flowstateSettings.Admins 								= GetCurrentPlaylistVarString( "Admins", "" )
 	flowstateSettings.flowstate_1v1mode 					= GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
-	flowstateSettings.ibmm_wait_limit 						= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999)
 	flowstateSettings.enable_oddball_gamemode 				= GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false )
 	flowstateSettings.default_ibmm_wait 					= GetCurrentPlaylistVarFloat( "default_ibmm_wait", 0 )
 	flowstateSettings.patch_for_dropoff 					= GetCurrentPlaylistVarBool( "patch_for_dropoff", false )
@@ -313,186 +308,6 @@ int function GetCurrentRound()
     return file.currentRound;
 }
 
-void function Init_IBMM( entity player )
-{
-	#if TRACKER
-		if( player == eMessageBot() )
-			return 
-	#endif
-		
-	thread Gamemode1v1_NotifyThread( player )
-	
-	if( player.p.IBMM_grace_period == -1 )
-	{
-		SetDefaultIBMM( player )
-	}
-	
-	player.p.messagetime = 0
-	thread Thread_CheckInput( player )
-	AddClientCommandCallback("wait", ClientCommand_mkos_IBMM_wait )
-	AddClientCommandCallback("lock1v1", ClientCommand_mkos_lock1v1_setting )
-	AddClientCommandCallback("start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
-	AddClientCommandCallback("enable_input_banner", ClientCommand_enable_input_banner )
-	AddClientCommandCallback("challenge", ClientCommand_mkos_challenge )
-	AddButtonPressedPlayerInputCallback( player, IN_MOVELEFT, SetInput_IN_MOVELEFT )
-	AddButtonPressedPlayerInputCallback( player, IN_MOVERIGHT, SetInput_IN_MOVERIGHT )
-	AddButtonPressedPlayerInputCallback( player, IN_BACK, SetInput_IN_BACK )
-	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )	
-}
-
-
-//Made by @CafeFPS - don't ask wtf is this just enjoy it
-//modified by mkos
-void function Thread_CheckInput( entity player )
-{
-	int timesCheckedForNewInput = 0
-	int previousInput = -1
-	bool isCheckerRunning
-
-    while ( true ) 
-	{
-		wait 0.2 //was 0.1
-		
-		if( !IsValid( player ) )
-			break
-
-		int typeOfInput = GetInput( player )
-		
-		if ( !isCheckerRunning && typeOfInput == 1 )
-			player.p.movevalue = 0
-		
-		if( typeOfInput == 9 )
-			continue
-
-		if( isCheckerRunning )
-		{
-			if( typeOfInput == previousInput )
-			{
-				if( timesCheckedForNewInput >= 4 )
-				{
-					isCheckerRunning = false
-					timesCheckedForNewInput = 0
-
-					if ( InvalidInput( typeOfInput, player.p.movevalue ) ) 
-					{				
-                       // HandlePlayer( player ) //not used yet
-					   player.p.input = 1					
-                    }
-					else
-					{
-                        //sqprint("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
-                        player.p.input = typeOfInput;
-						player.Signal("InputChanged") //registered signal in CPlayer class		
-                    }
-					continue
-				}
-				timesCheckedForNewInput++
-				//sqprint( "Checking if it's a valid input change..." + typeOfInput.tostring() + previousInput.tostring() + " - Times checked: " + timesCheckedForNewInput.tostring() )
-			}
-			else
-			{
-				timesCheckedForNewInput = 0
-				isCheckerRunning = false
-				//sqprint( "Player did NOT change input. It was a false alarm." )
-			}
-			
-			previousInput = typeOfInput
-			continue
-		}
-
-		if( player.p.input != typeOfInput && !isCheckerRunning )
-		{
-			//sqprint( "Input change check triggered. " + player.p.input.tostring() + typeOfInput.tostring() + " - Did player change input?" )
-			isCheckerRunning = true
-			previousInput = typeOfInput
-			continue
-		}
-
-		/*
-		if( player.p.input == 0 )
-				sqprint( player.GetPlayerName() + "is mnk" )
-			else // 1
-				sqprint( player.GetPlayerName() + "is rolla" )
-		*/
-    }
-}
-//ty cafe for fixed thread
-
-bool function InvalidInput( int input_type, int movevalue )
-{
-	if ( movevalue == 0 && input_type == 0 )
-	{
-		return true
-	} 
-	
-	return false	
-}
-
-// not currently used ~mkos
-void function HandlePlayer( entity player )
-{
-	
-	string id = player.GetPlatformUID()
-	int action = GetCurrentPlaylistVarInt( "invalid_input_action", 1 )
-	string msg = GetCurrentPlaylistVarString( "invalid_input_msg", "Invalid Input Device" )
-	bool log_invalid_input = GetCurrentPlaylistVarBool( "log_invalid_input", false )
-	
-	switch (action)
-	{
-	
-		case 1:
-			printt("Action: keeping as controller")
-			player.p.input = 1;
-			break
-		case 2:
-			printt("Action: kick")
-			//KickPlayerById( id, msg )
-			break
-		case 3:
-			printt("Action: Ban")
-			//BanPlayerById( id, msg )
-			break
-	
-	}
-	
-}
-
-//Made by @CafeFPS
-int function GetInput( entity player )
-{	
-    float value = player.GetInputAxisRight() == 0 ? player.GetInputAxisForward() : player.GetInputAxisRight() 
-	
-    if( value == 0 || value == 0.5 )
-		return 9
-		
-	//sqprint( "Right axis value: " + player.GetInputAxisRight().tostring() + " --- Player forward axis: " + player.GetInputAxisForward())
-	//sqprint( "Value: " + value.tostring() + " Length:" + value.tostring().len().tostring() )
-    return value.tostring().len() < 5 ? 0 : 1
-}
-
-void function SetInput_IN_MOVELEFT( entity player )
-{
-	//sqprint( "Setting movevalue for " + player.GetPlayerName() + " to 3" )
-	player.p.movevalue = 3
-}
-
-void function SetInput_IN_MOVERIGHT( entity player )
-{
-	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 4")
-	player.p.movevalue = 4
-}
-
-void function SetInput_IN_BACK( entity player )
-{	
-	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 5")
-	player.p.movevalue = 5
-}
-
-void function SetInput_IN_FORWARD( entity player )
-{	
-	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 6")
-	player.p.movevalue = 6
-}
 
 void function RotateMap()
 {
@@ -519,55 +334,18 @@ void function RotateMap()
 	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 }
 
-LocPairData function Init_DropoffPatchSpawns()
-{
-	array<LocPair> dropoff_patch = [
-		
-			//removed skyroom
-			//NewLocPair( <-1378.05, 559.458, 1026.54 >, < 359.695, 307.314, 0 >),//13
-			//NewLocPair( <-1469.03, -117.677, 1026.54 >, < 1.34318, 60.0746, 0 >),
-			
-			NewLocPair( < -2824.9, 2868.1, -111.969 >, < 0.354577, 31.8209, 0 >), //13
-			NewLocPair( < -2541.81, 3919.45, -111.969 >, < 358.65, 315.899, 0 >),
-		
-			NewLocPair( < -2958.52, 183.899, 190.063 >, < 0.905181, 353.701, 0 >),//14
-			NewLocPair( < -1693.05, -663.034, 190.063 >, < 0.514909, 140.627, 0 >),
-			
-			NewLocPair( <2544.54, 3934.15, -111.969 >, < 3.3168, 218.85, 0>), //15
-			NewLocPair( <3196.49, 3010.24, -111.969 >, < 1.33276, 134.094, 0>),
-			
-			NewLocPair( < 2551.65, 515.938, 193.337 >, < 0.894581, 215.161, 0>), //16
-			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
-		];
-				
-	return CreateLocPairObject( dropoff_patch, false, null, null )
-}
 
-bool function bIs1v1Mode() 
+bool function bIs1v1Mode()
 {
-	//TODO: we don't need to manually manage this, 
-	//since it's only job is to make sure spawns exist and the playlist supports it
-	//we can simply auto check playlist maps in playlists file and auto check 
-	//to make sure at least one spawn is configured for that map
 	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
 		return false
 
-	switch ( MapName() )
-	{
-		case eMaps.mp_rr_arena_composite:
-		case eMaps.mp_rr_aqueduct:
-		case eMaps.mp_rr_canyonlands_64k_x_64k:
-		case eMaps.mp_rr_canyonlands_mu2:
-		case eMaps.mp_rr_canyonlands_staging:
-		case eMaps.mp_rr_party_crasher:
-		case eMaps.mp_rr_olympus_mu1:
-		case eMaps.mp_rr_desertlands_64k_x_64k:
-		case eMaps.mp_rr_arena_phase_runner:
-		case eMaps.mp_rr_arena_skygarden:
-		return true
-		default:
+	if( GetCurrentPlaylistMapsCount() == 0 )
 		return false
-	}
+
+	if( GetPlaylistMaps( GetCurrentPlaylistName() ).contains( GetMapName() ) )
+		return true
+
 	return false
 }
 
@@ -580,6 +358,7 @@ void function _CustomTDM_Init()
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
 	
+	flowstateSettings.IS_1V1_MODE_ENABLED = bIs1v1Mode()
 	
 	if( flowstateSettings.enable_global_chat )
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
@@ -616,9 +395,6 @@ void function _CustomTDM_Init()
 		}
 	}
 
-	
-	flowstateSettings.IS_1V1_MODE_ENABLED = bIs1v1Mode()
-
 	if( flowstateSettings.enable_oddball_gamemode )
 	{
 		VOTING_PHASE_ENABLE = false
@@ -649,19 +425,7 @@ void function _CustomTDM_Init()
         else
 			thread _OnPlayerConnected(player)
 
-        UpdatePlayerCounts()
-		
-		// init for IBMM
-		if ( Flowstate_IsFS1v1() || Flowstate_IsLGDuels() && !player.p.bIsChatbot )
-		{	
-			Init_IBMM ( player )
-			
-			#if !TRACKER
-				INIT_playerChallengesStruct( player ) //normally init after persistence loads
-			#endif
-		}
-		
-
+        UpdatePlayerCounts()		
     })
 	
 	if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
@@ -750,42 +514,40 @@ void function _CustomTDM_Init()
 	}
 	
 	if( is1v1EnabledAndAllowed() )
-	{
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
-		{
-			Flowstate_LgDuels1v1_Init()
-		}
-		
+	{	
 		//custom spawn extension using the implemented abstracted callback :) ~mkos 
 		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
 		{
 			DropoffPatch_Init()
-			
 			AddCallback_FlowstateSpawnsPostInit( Init_DropoffPatchSpawns )
-				
-			AddCallback_OnClientConnected
-			(
-				void function( entity player )
-				{
-					DropoffPatch_SpawnLights( player )
-				}
-			)
 		}
 		
-		thread
-		(
-			void function()
-			{
-				FlagWait( "EntitiesDidLoad" )
-				_soloModeInit( MapName() )
-				
-				if( !is3v3Mode() )
-					AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
-			}
-		)()
-	
+		thread Gamemode1v1_Init( MapName() )
 	}
-	
+}
+
+LocPairData function Init_DropoffPatchSpawns()
+{
+	array<LocPair> dropoff_patch = [
+		
+			//removed skyroom
+			//NewLocPair( <-1378.05, 559.458, 1026.54 >, < 359.695, 307.314, 0 >),//13
+			//NewLocPair( <-1469.03, -117.677, 1026.54 >, < 1.34318, 60.0746, 0 >),
+			
+			NewLocPair( < -2824.9, 2868.1, -111.969 >, < 0.354577, 31.8209, 0 >), //13
+			NewLocPair( < -2541.81, 3919.45, -111.969 >, < 358.65, 315.899, 0 >),
+		
+			NewLocPair( < -2958.52, 183.899, 190.063 >, < 0.905181, 353.701, 0 >),//14
+			NewLocPair( < -1693.05, -663.034, 190.063 >, < 0.514909, 140.627, 0 >),
+			
+			NewLocPair( <2544.54, 3934.15, -111.969 >, < 3.3168, 218.85, 0>), //15
+			NewLocPair( <3196.49, 3010.24, -111.969 >, < 1.33276, 134.094, 0>),
+			
+			NewLocPair( < 2551.65, 515.938, 193.337 >, < 0.894581, 215.161, 0>), //16
+			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
+		];
+				
+	return SpawnSystem_CreateLocPairObject( dropoff_patch, false, null, null )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -5886,284 +5648,6 @@ bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 	}
 	return true
 }
-
-bool function ClientCommand_mkos_IBMM_wait( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) 
-		return true
-
-	player.p.messagetime = Time()
-	
-	string param = ""; 
-	int limit = flowstateSettings.ibmm_wait_limit
-	
-	if ( args.len() > 0 )
-	{
-		param = args[0]
-	}
-	
-		if  ( args.len() < 1 )
-		{		
-			string status = " "; //needs to be a char or var is treated as empty
-			if (player.p.IBMM_grace_period == 0)
-			{
-				status = " (disabled)";
-			}
-			
-			LocalVarMsg( player, "#FS_WAIT_TIME_CC", eMsgUI.VAR_SUBTEXT_SLOT, 15, limit.tostring(), player.p.IBMM_grace_period, status )
-			return true
-		}				
-					
-		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
-		{
-			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", eMsgUI.DEFAULT, 5, "", limit.tostring() )
-			return true
-		} 		
-		
-		try
-		{	
-			float user_value = float(param)
-			
-			if ( user_value > 0.0 && user_value < 3.0 )
-			{
-				user_value = 3;
-			}
-			
-			player.p.IBMM_grace_period = user_value;
-			SavePlayerData( player, "wait_time", user_value )
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			
-			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
-			return true
-		}
-		catch ( hiterr )
-		{
-			return true			
-		}
-	
-					
-}
-
-bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) 
-		return false
-	
-	string param = ""
-	
-	if ( args.len() > 0 )
-	{
-		param = args[0]
-	}
-	
-		if ( args.len() < 1 )
-		{
-			return true
-		}				
-		
-		if ( param == "" )
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{
-		
-		case "ON":
-		case "on":
-		case "1":
-		case "true":
-		case "enabled":
-		
-					try
-					{	
-						player.p.lock1v1_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-						SavePlayerData( player, "lock1v1_setting", true )
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
-						return true
-					
-					} 
-					catch ( lock1v1_err_1 )
-					{
-						return true		
-					}
-		
-		case "OFF":
-		case "off":
-		case "0":
-		case "false":
-		case "disabled":
-		
-					try
-					{
-						player.p.lock1v1_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-						SavePlayerData( player, "lock1v1_setting", false )
-						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
-						return true
-					} 
-					catch ( lock1v1_err_2 )
-					{
-						return true
-					}
-				
-		}
-		
-	return false
-					
-}
-
-bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) 
-		return false
-	
-	string param = ""
-	
-	if ( args.len() > 0 )
-	{
-		param = args[0]
-	}
-		
-		if ( args.len() < 1 )
-		{
-			LocalMsg( player, "#FS_START_IN_REST_TITLE", "#FS_START_IN_REST_SUBSTR" )
-			return true
-		}				
-		
-		if ( param == "" )
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{
-		
-		case "ON":
-		case "on":
-		case "1":
-		case "true":
-		case "enabled":
-		
-					try
-					{	
-						player.p.start_in_rest_setting = true;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						
-						SavePlayerData( player, "start_in_rest_setting", true )
-						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
-						
-						return true	
-					} 
-					catch ( rest_setting_err_1 )
-					{			
-						return true		
-					}
-		
-		case "OFF":
-		case "off":
-		case "0":
-		case "false":
-		case "disabled":
-		
-					try
-					{
-						player.p.start_in_rest_setting = false;
-						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
-						
-						SavePlayerData( player, "start_in_rest_setting", false )
-						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
-						
-						return true
-					} 
-					catch ( rest_setting_err_2 )
-					{
-						return true
-					}
-				
-		}
-		
-	return false					
-}
-
-bool function ClientCommand_enable_input_banner( entity player, array<string> args )
-{
-	if ( !CheckRate( player ) ) 
-		return false
-	
-	string param = ""
-	
-	if ( args.len() > 0 )
-	{
-		param = args[0]
-	}
-	
-		if ( args.len() < 1 )
-		{
-			LocalMsg( player, "#FS_INPUT_BANNER_DEPRECATED", "#FS_INPUT_BANNER_SUBSTR_DEP" )
-			return true
-		}				
-		
-		if ( param == "")
-		{
-			return true; 
-		}
-		
-		
-		switch( param.tolower() )
-		{	
-			case "ON":
-			case "on":
-			case "1":
-			case "true":
-			case "enabled":
-			
-						try
-						{	
-							player.p.enable_input_banner = true;
-							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-							
-							SavePlayerData( player, "enable_input_banner", true )
-							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
-							
-							return true				
-						} 
-						catch ( rest_setting_err_1 )
-						{			
-							return true		
-						}
-			
-			case "OFF":
-			case "off":
-			case "0":
-			case "false":
-			case "disabled":
-			
-						try
-						{
-							player.p.enable_input_banner = false;
-							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-							
-							SavePlayerData( player, "enable_input_banner", false )
-							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
-							
-							return true
-						} 
-						catch ( rest_setting_err_2 )
-						{
-							return true
-						}
-					
-			}
-		
-	return false
-					
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 

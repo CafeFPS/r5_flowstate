@@ -1627,6 +1627,9 @@ function OutOfBoundsSetup()
 
 void function OutOfBoundsDisable()
 {
+	if( Flowstate_DisableAllMapTriggers() )
+		return
+		
 	foreach( trigger in file.outOfBoundsTriggers )
 	{
 		#if MP

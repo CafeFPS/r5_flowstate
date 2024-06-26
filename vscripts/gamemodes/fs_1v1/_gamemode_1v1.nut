@@ -16,7 +16,7 @@ global function getPlayerToGroupMap
 global function ClientCommand_Maki_SoloModeRest
 global function ClientCommand_mkos_challenge
 global function endSpectate
-global function _soloModeInit
+global function Gamemode1v1_Init
 global function resetChallenges
 global function soloModefixDelayStart
 global function isPlayerInWaitingList
@@ -33,6 +33,8 @@ global function isPlayerInChallenge
 global function Gamemode1v1_SetWaitingRoomRadius
 global function Gamemode1v1_FetchNotificationPanelCoordinates
 global function Gamemode1v1_FetchNotificationPanelAngles
+global function ClientCommand_mkos_IBMM_wait
+global function g_bRestEnabled
 
 //shared with scenarios server script
 global function HandleGroupIsFinished
@@ -64,11 +66,11 @@ global function FS_Scenarios_GiveWeaponsToGroup
 
 global struct soloLocStruct
 {
-	LocPair &Loc1 //player1 respawn location
-	LocPair &Loc2 //player2 respawn location
 	array<LocPair> respawnLocations
-	vector Center //center of Loc1 and Loc2
-	entity Panel //keep current opponent panel
+	vector Center
+	entity Panel //keep current opponent panel //not used ~mkos
+	string name
+	string ids
 }
 
 global struct groupStats 
@@ -163,6 +165,8 @@ struct
 	array<ItemFlavor> characters
 	int minLegendRange = 0
 	int maxLegendRange = 10
+	
+	bool bRestEnabled = false
 
 } file
 
@@ -991,18 +995,18 @@ void function AddPlayerToWaitingList( soloPlayerStruct playerStruct )
 	}
 }
 
-bool function mkos_Force_Rest(entity player, array<string> args)
+void function mkos_Force_Rest( entity player )
 {
-	if( !Flowstate_IsFS1v1() && !Flowstate_IsLGDuels() ) //TODO: Restable mode array in enums script
-		return false
+	if( ( !file.bRestEnabled ) )
+		return
 	
 	if( !IsValid(player) ) //|| !IsAlive(player) )
-		return false
+		return
 
 	if( player.p.handle in file.soloPlayersResting )
 	{	
 		HolsterAndDisableWeapons(player)
-		return false
+		return
 	} 
 	
 	if( isPlayerInWaitingList(player) )
@@ -1024,8 +1028,6 @@ bool function mkos_Force_Rest(entity player, array<string> args)
 	HolsterAndDisableWeapons(player)
 	//TakeAllWeapons( player )	
 	player.p.lastRestUsedTime = Time()
-
-	return true
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1963,8 +1965,8 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 			
 			group.IsKeep = false;
 			group.IsFinished = true;
-			mkos_Force_Rest( group.player1, [] )
-			mkos_Force_Rest( group.player2 , [] )
+			mkos_Force_Rest( group.player1 )
+			mkos_Force_Rest( group.player2 )
 		}
 	}
 	
@@ -3127,8 +3129,8 @@ vector function Gamemode1v1_FetchNotificationPanelAngles()
 	return Gamemode1v1_NotificationPanel_Angles
 }
 
-void function _soloModeInit( int eMap )
-{	
+void function Gamemode1v1_Init( int eMap )
+{
 	RegisterSignal( "NotificationChanged" )
 	RegisterSignal( "ClearNotifications" )
 	RegisterSignal( "ChallengeStarted" )
@@ -3147,6 +3149,9 @@ void function _soloModeInit( int eMap )
 	{
 		INIT_WeaponsMenu_Disabled()
 	}
+	
+	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		Flowstate_LgDuels1v1_Init()
 
 	if( settings.is3v3Mode )
 		Init_FS_Scenarios()
@@ -3226,7 +3231,10 @@ void function _soloModeInit( int eMap )
 				WeaponsSecondary.removebyvalue(weapon)
 	}
 	
-	array<SpawnData> allSoloLocations = ReturnAllSpawnLocations( eMap )
+	FlagWait( "EntitiesDidLoad" )
+	
+	eMap = SpawnSystem_FindBaseMapForPak( eMap )
+	array<SpawnData> allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 	
 	Gamemode1v1_NotificationPanel_Coordinates = Gamemode1v1_GetNotificationPanel_Coordinates()
 	Gamemode1v1_NotificationPanel_Angles = Gamemode1v1_GetNotificationPanel_Angles()
@@ -3235,7 +3243,7 @@ void function _soloModeInit( int eMap )
 	if( !ValidateSpawns( allSoloLocations ) )
 	{
 		SpawnSystem_SetPreferredPak( 1 )
-		allSoloLocations = ReturnAllSpawnLocations( eMap )
+		allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 		
 		mAssert( allSoloLocations.len() > 0, "No valid spawns were defined" )
 	}
@@ -3249,9 +3257,14 @@ void function _soloModeInit( int eMap )
 			p.respawnLocations.append( allSoloLocations[i].spawn )
 			p.respawnLocations.append( allSoloLocations[i+1].spawn )
 			p.respawnLocations.append( allSoloLocations[i+2].spawn )
-
+			
 			p.Center = GetCenterOfCircle( p.respawnLocations )
-
+			
+			if( allSoloLocations[i].name != "" )
+				p.name = allSoloLocations[i].name
+				
+			p.ids = " " + i + "," + (i+1) + "," + (i+2)
+				
 			soloLocations.append(p)
 		}
 	}
@@ -3265,6 +3278,11 @@ void function _soloModeInit( int eMap )
 			p.respawnLocations.append( allSoloLocations[i+1].spawn )
 
 			p.Center = ( allSoloLocations[i].spawn.origin + allSoloLocations[i+1].spawn.origin ) / 2
+
+			if( allSoloLocations[i].name != "" )
+				p.name = allSoloLocations[i].name
+				
+			p.ids = " " + i + "," + (i+1)
 
 			soloLocations.append(p)
 		}
@@ -3343,6 +3361,30 @@ void function _soloModeInit( int eMap )
 			#endif
 		}
 	)
+	
+	AddCallback_OnClientConnected
+	( 
+		void function( entity player )
+		{
+			// init for IBMM
+			if ( !player.p.bIsChatbot )
+			{	
+				Init_IBMM( player )
+				
+				#if !TRACKER
+					INIT_playerChallengesStruct( player ) //normally init after persistence loads
+				#endif
+			}
+		}
+	)
+	
+	AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
+	file.bRestEnabled = true
+}
+
+bool function g_bRestEnabled()
+{
+	return file.bRestEnabled
 }
 
 void function CreatePanels( vector origin, vector angles, table<string, entity> panels )
@@ -3591,7 +3633,7 @@ bool function ValidateSpawns( array<SpawnData> allSoloLocations )
 		return false
 	}
 	
-	if( is1v1GameType() && !IsEven( allSoloLocations.len() ) )
+	if( g_is1v1GameType() && !IsEven( allSoloLocations.len() ) )
 	{
 		Warning( warningmsg + " ( locpair must be an even amount )" )
 		allSoloLocations.resize(0)
@@ -4895,4 +4937,463 @@ void function TakeUltimate( entity player )
 {
 	if( IsValid( player.GetOffhandWeapon( OFFHAND_ULTIMATE ) ) )
 		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+}
+
+
+void function Init_IBMM( entity player )
+{
+	#if TRACKER
+		if( player == eMessageBot() )
+			return 
+	#endif
+		
+	thread Gamemode1v1_NotifyThread( player )
+	
+	if( player.p.IBMM_grace_period == -1 )
+	{
+		SetDefaultIBMM( player )
+	}
+	
+	player.p.messagetime = 0
+	thread Thread_CheckInput( player )
+	AddClientCommandCallback("wait", ClientCommand_mkos_IBMM_wait )
+	AddClientCommandCallback("lock1v1", ClientCommand_mkos_lock1v1_setting )
+	AddClientCommandCallback("start_in_rest", ClientCommand_mkos_start_in_rest_setting ) 
+	AddClientCommandCallback("enable_input_banner", ClientCommand_enable_input_banner )
+	AddClientCommandCallback("challenge", ClientCommand_mkos_challenge )
+	AddButtonPressedPlayerInputCallback( player, IN_MOVELEFT, SetInput_IN_MOVELEFT )
+	AddButtonPressedPlayerInputCallback( player, IN_MOVERIGHT, SetInput_IN_MOVERIGHT )
+	AddButtonPressedPlayerInputCallback( player, IN_BACK, SetInput_IN_BACK )
+	AddButtonPressedPlayerInputCallback( player, IN_FORWARD, SetInput_IN_FORWARD )	
+}
+
+
+//Made by @CafeFPS - don't ask wtf is this just enjoy it
+//modified by mkos
+void function Thread_CheckInput( entity player )
+{
+	int timesCheckedForNewInput = 0
+	int previousInput = -1
+	bool isCheckerRunning
+
+    while ( true ) 
+	{
+		wait 0.2 //was 0.1
+		
+		if( !IsValid( player ) )
+			break
+
+		int typeOfInput = GetInput( player )
+		
+		if ( !isCheckerRunning && typeOfInput == 1 )
+			player.p.movevalue = 0
+		
+		if( typeOfInput == 9 )
+			continue
+
+		if( isCheckerRunning )
+		{
+			if( typeOfInput == previousInput )
+			{
+				if( timesCheckedForNewInput >= 4 )
+				{
+					isCheckerRunning = false
+					timesCheckedForNewInput = 0
+
+					if ( InvalidInput( typeOfInput, player.p.movevalue ) ) 
+					{				
+                       // HandlePlayer( player ) //not used yet
+					   player.p.input = 1					
+                    }
+					else
+					{
+                        //sqprint("Player did change input! Old: " + player.p.input.tostring() + " - New: " + typeOfInput.tostring());
+                        player.p.input = typeOfInput;
+						player.Signal("InputChanged") //registered signal in CPlayer class		
+                    }
+					continue
+				}
+				timesCheckedForNewInput++
+				//sqprint( "Checking if it's a valid input change..." + typeOfInput.tostring() + previousInput.tostring() + " - Times checked: " + timesCheckedForNewInput.tostring() )
+			}
+			else
+			{
+				timesCheckedForNewInput = 0
+				isCheckerRunning = false
+				//sqprint( "Player did NOT change input. It was a false alarm." )
+			}
+			
+			previousInput = typeOfInput
+			continue
+		}
+
+		if( player.p.input != typeOfInput && !isCheckerRunning )
+		{
+			//sqprint( "Input change check triggered. " + player.p.input.tostring() + typeOfInput.tostring() + " - Did player change input?" )
+			isCheckerRunning = true
+			previousInput = typeOfInput
+			continue
+		}
+
+		/*
+		if( player.p.input == 0 )
+				sqprint( player.GetPlayerName() + "is mnk" )
+			else // 1
+				sqprint( player.GetPlayerName() + "is rolla" )
+		*/
+    }
+}
+//ty cafe for fixed thread
+
+bool function InvalidInput( int input_type, int movevalue )
+{
+	if ( movevalue == 0 && input_type == 0 )
+	{
+		return true
+	} 
+	
+	return false	
+}
+
+// not currently used ~mkos
+void function HandlePlayer( entity player )
+{
+	
+	string id = player.GetPlatformUID()
+	int action = GetCurrentPlaylistVarInt( "invalid_input_action", 1 )
+	string msg = GetCurrentPlaylistVarString( "invalid_input_msg", "Invalid Input Device" )
+	bool log_invalid_input = GetCurrentPlaylistVarBool( "log_invalid_input", false )
+	
+	switch (action)
+	{
+	
+		case 1:
+			printt("Action: keeping as controller")
+			player.p.input = 1;
+			break
+		case 2:
+			printt("Action: kick")
+			//KickPlayerById( id, msg )
+			break
+		case 3:
+			printt("Action: Ban")
+			//BanPlayerById( id, msg )
+			break
+	
+	}
+	
+}
+
+//Made by @CafeFPS
+int function GetInput( entity player )
+{	
+    float value = player.GetInputAxisRight() == 0 ? player.GetInputAxisForward() : player.GetInputAxisRight() 
+	
+    if( value == 0 || value == 0.5 )
+		return 9
+		
+	//sqprint( "Right axis value: " + player.GetInputAxisRight().tostring() + " --- Player forward axis: " + player.GetInputAxisForward())
+	//sqprint( "Value: " + value.tostring() + " Length:" + value.tostring().len().tostring() )
+    return value.tostring().len() < 5 ? 0 : 1
+}
+
+void function SetInput_IN_MOVELEFT( entity player )
+{
+	//sqprint( "Setting movevalue for " + player.GetPlayerName() + " to 3" )
+	player.p.movevalue = 3
+}
+
+void function SetInput_IN_MOVERIGHT( entity player )
+{
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 4")
+	player.p.movevalue = 4
+}
+
+void function SetInput_IN_BACK( entity player )
+{	
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 5")
+	player.p.movevalue = 5
+}
+
+void function SetInput_IN_FORWARD( entity player )
+{	
+	//sqprint("Setting movevalue for " + player.GetPlayerName() + " to 6")
+	player.p.movevalue = 6
+}
+
+
+bool function ClientCommand_mkos_IBMM_wait( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return true
+
+	player.p.messagetime = Time()
+	
+	string param = ""; 
+	int limit = settings.ibmm_wait_limit
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if  ( args.len() < 1 )
+		{		
+			string status = " "; //needs to be a char or var is treated as empty
+			if (player.p.IBMM_grace_period == 0)
+			{
+				status = " (disabled)";
+			}
+			
+			LocalVarMsg( player, "#FS_WAIT_TIME_CC", eMsgUI.VAR_SUBTEXT_SLOT, 15, limit.tostring(), player.p.IBMM_grace_period, status )
+			return true
+		}				
+					
+		if ( args.len() > 0 && !IsNumeric( param, 0, limit ) )
+		{
+			LocalMsg( player, "#FS_FAILED", "#FS_IBMM_Time_Failed", eMsgUI.DEFAULT, 5, "", limit.tostring() )
+			return true
+		} 		
+		
+		try
+		{	
+			float user_value = float(param)
+			
+			if ( user_value > 0.0 && user_value < 3.0 )
+			{
+				user_value = 3;
+			}
+			
+			player.p.IBMM_grace_period = user_value;
+			SavePlayerData( player, "wait_time", user_value )
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			
+			LocalMsg( player, "#FS_SUCCESS", "#FS_IBMM_Time_Changed", eMsgUI.DEFAULT, 3, "", user_value.tostring() )
+			return true
+		}
+		catch ( hiterr )
+		{
+			return true			
+		}
+	
+					
+}
+
+bool function ClientCommand_mkos_lock1v1_setting( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if ( args.len() < 1 )
+		{
+			return true
+		}				
+		
+		if ( param == "" )
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.lock1v1_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						SavePlayerData( player, "lock1v1_setting", true )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_ENABLED", eMsgUI.DEFAULT, 3 )
+						return true
+					
+					} 
+					catch ( lock1v1_err_1 )
+					{
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.lock1v1_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+						SavePlayerData( player, "lock1v1_setting", false )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_LOCK1V1_DISABLED", eMsgUI.DEFAULT, 3 )
+						return true
+					} 
+					catch ( lock1v1_err_2 )
+					{
+						return true
+					}
+				
+		}
+		
+	return false
+					
+}
+
+bool function ClientCommand_mkos_start_in_rest_setting( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+		
+		if ( args.len() < 1 )
+		{
+			LocalMsg( player, "#FS_START_IN_REST_TITLE", "#FS_START_IN_REST_SUBSTR" )
+			return true
+		}				
+		
+		if ( param == "" )
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{
+		
+		case "ON":
+		case "on":
+		case "1":
+		case "true":
+		case "enabled":
+		
+					try
+					{	
+						player.p.start_in_rest_setting = true;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						
+						SavePlayerData( player, "start_in_rest_setting", true )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_ENABLED", eMsgUI.DEFAULT, 3 )
+						
+						return true	
+					} 
+					catch ( rest_setting_err_1 )
+					{			
+						return true		
+					}
+		
+		case "OFF":
+		case "off":
+		case "0":
+		case "false":
+		case "disabled":
+		
+					try
+					{
+						player.p.start_in_rest_setting = false;
+						Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" );
+						
+						SavePlayerData( player, "start_in_rest_setting", false )
+						LocalMsg( player, "#FS_SUCCESS", "#FS_START_IN_REST_DISABLED" )
+						
+						return true
+					} 
+					catch ( rest_setting_err_2 )
+					{
+						return true
+					}
+				
+		}
+		
+	return false					
+}
+
+bool function ClientCommand_enable_input_banner( entity player, array<string> args )
+{
+	if ( !CheckRate( player ) ) 
+		return false
+	
+	string param = ""
+	
+	if ( args.len() > 0 )
+	{
+		param = args[0]
+	}
+	
+		if ( args.len() < 1 )
+		{
+			LocalMsg( player, "#FS_INPUT_BANNER_DEPRECATED", "#FS_INPUT_BANNER_SUBSTR_DEP" )
+			return true
+		}				
+		
+		if ( param == "")
+		{
+			return true; 
+		}
+		
+		
+		switch( param.tolower() )
+		{	
+			case "ON":
+			case "on":
+			case "1":
+			case "true":
+			case "enabled":
+			
+						try
+						{	
+							player.p.enable_input_banner = true;
+							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							
+							SavePlayerData( player, "enable_input_banner", true )
+							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_ENABLED_DEP", eMsgUI.DEFAULT, 3 )
+							
+							return true				
+						} 
+						catch ( rest_setting_err_1 )
+						{			
+							return true		
+						}
+			
+			case "OFF":
+			case "off":
+			case "0":
+			case "false":
+			case "disabled":
+			
+						try
+						{
+							player.p.enable_input_banner = false;
+							Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+							
+							SavePlayerData( player, "enable_input_banner", false )
+							LocalMsg( player, "#FS_SUCCESS", "#FS_INPUT_BANNER_DISABLED_DEP", eMsgUI.DEFAULT, 3 )
+							
+							return true
+						} 
+						catch ( rest_setting_err_2 )
+						{
+							return true
+						}
+					
+			}
+		
+	return false
+					
 }

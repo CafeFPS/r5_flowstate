@@ -492,7 +492,7 @@ void function Load_Level_based_UIGlobals()
 {	
 	mAssert( Playlist() != -1 && Gamemode() != -1 && MapName() != -1, "INVALID INIT enums -- PlaylistEnumIdx: " + Playlist().tostring() + " GamemodeEnumIdx: " + Gamemode().tostring() + " MapNameEnumIdx: " + MapName().tostring() )
 	uiGlobal.isAimTrainer = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
-	uiGlobal.is1v1GameType = is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
+	uiGlobal.is1v1GameType = g_is1v1GameType() //sh_mapname_playlist_gamemode_enums.gnut
 	uiGlobal.playlistbool_flowstate_1v1mode = GetCurrentPlaylistVarBool( "flowstate_1v1mode", false )
 }
 

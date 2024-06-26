@@ -1546,7 +1546,7 @@ void function UILevelLoadCallback()
 		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
 		Hud_SetColor( titletext, 252, 198, 3, 255 )
 	}
-	else if( is1v1GameType() )
+	else if( g_is1v1GameType() )
 	{	
 		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
 		

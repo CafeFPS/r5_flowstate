@@ -1929,7 +1929,12 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								Highlight_ClearEnemyHighlight( player )
 
 								if( !newGroup.IsFinished )
-									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
+								{
+									//this is just a test to see how spawn metadata would be used for a game mode
+									string spawnName = newGroup.groupLocStruct.name
+									string ids = newGroup.groupLocStruct.ids
+									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
+								}
 								
 								if( settings.fs_scenarios_characterselect_enabled )
 								{
@@ -2550,5 +2555,5 @@ LocPairData function CustomSpawns()
 	foreach( spawn in spawns )
 		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
 
-	return CreateLocPairObject( spawns, true, null, null, metaData )
+	return SpawnSystem_CreateLocPairObject( spawns, true, null, null, metaData )
 }

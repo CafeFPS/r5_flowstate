@@ -3,10 +3,9 @@
 global function Flowstate_SpawnSystem_Init
 global function Flowstate_SpawnSystem_InitGamemodeOptions
 
-global function ReturnAllSpawnLocations
+global function SpawnSystem_ReturnAllSpawnLocations
 global LocPair &g_waitingRoomPanelLocation
 
-global function CreateLocPairObject
 global function SetCallback_FlowstateSpawnsOffset
 global function AddCallback_FlowstateSpawnsSettings
 global function AddCallback_FlowstateSpawnsPostInit
@@ -19,12 +18,17 @@ global function SpawnSystem_GetCurrentSpawnSet
 global function SpawnSystem_GetCurrentSpawnAsset
 global function SpawnSystem_CreateSpawnObject
 global function SpawnSystem_CreateSpawnObjectArray
+global function SpawnSystem_FindBaseMapForPak
+
+global function SpawnSystem_CreateLocPairObject
+
 
 #if DEVELOPER
 	global function DEV_SpawnType
 	global function DEV_AddSpawn
 	global function DEV_PrintSpawns
 	global function DEV_DeleteSpawn
+	global function DEV_DeleteLast
 	global function DEV_ClearSpawns
 	global function DEV_TeleportToSpawn
 	global function DEV_WriteSpawnFile
@@ -77,6 +81,7 @@ global function SpawnSystem_CreateSpawnObjectArray
 	{
 		LocPair& 		spawn
 		string 			name
+		int				id = -1
 	}
 	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
@@ -144,6 +149,7 @@ global function SpawnSystem_CreateSpawnObjectArray
 					[" script DEV_AddSpawn( string pid, string spawnName = \"\", int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. Name the spawn, uses provided DEV_AutoSetName() if none specified. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
 					[" script DEV_RenameSpawn( int index, string name = \"\" )"] = "Rename an already present spawn by index.",
 					[" script DEV_DeleteSpawn( int index )"] = "Deletes a spawn from array by index",
+					[" script DEV_DeleteLast()"] = "Deletes last placed spawn",
 					[" script DEV_ClearSpawns( bool clearHighlights = true )"] = "Deletes all saved spawns. If passed false, does not remove highlights on map",
 					["........"] = "",
 					["........."] = "",
@@ -256,7 +262,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	settings.bOptionsAreSet = true
 }
 
-array<SpawnData> function ReturnAllSpawnLocations( int eMap, table<string,bool> options = {} )
+array<SpawnData> function SpawnSystem_ReturnAllSpawnLocations( int eMap, table<string,bool> options = {} )
 {
 	mAssert( settings.bOptionsAreSet, "Tried to fetch spawns without first running Flowstate_SpawnSystem_InitGamemodeOptions()" )
 	
@@ -358,7 +364,7 @@ array<SpawnData> function ReturnAllSpawnLocations( int eMap, table<string,bool> 
 	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )
 }
 
-LocPairData function CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null, array<table> ornull propertiesOrNull = null )
+LocPairData function SpawnSystem_CreateLocPairObject( array<LocPair> spawns, bool bOverrideSpawns = false, LocPair ornull waitingRoom = null, LocPair ornull panels = null, array<table> ornull propertiesOrNull = null )
 {
 	LocPairData data
 	
@@ -422,7 +428,7 @@ void function AddCallback_FlowstateSpawnsPostInit( LocPairData functionref() cal
 // 																		//
 //////////////////////////////////////////////////////////////////////////
 
-array<SpawnData> function GenerateCustomSpawns( int eMap )//waiting room + extra spawns
+array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1 )//waiting room + extra spawns
 {														//ideally only default waiting
 	array<SpawnData> customSpawns = []					// rooms are saved here. use :
 														// AddCallback_FlowstateSpawnsPostInit()
@@ -549,7 +555,8 @@ array<SpawnData> function GenerateCustomSpawns( int eMap )//waiting room + extra
 				#if DEVELOPER 
 					Warning("Spawns extended with custom spawns - count: [" + string( data.spawns.len() ) + "]" )
 				#endif 
-				customSpawns.extend( SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData ) )
+				
+				customSpawns.extend( SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData, coreSpawnsLen ) )
 			}	
 		}
 			
@@ -682,7 +689,7 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + " SpawnName: " + name + "\n"	
 			#endif
 			
-			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), name )
+			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), name, i )
 
 			allSoloLocations.append( spawnInfo )
 		}	
@@ -696,7 +703,7 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 		sqerror( "Error: " + e )
 	}
 	
-	array<SpawnData> extraSpawnLocations = GenerateCustomSpawns( eMap )
+	array<SpawnData> extraSpawnLocations = GenerateCustomSpawns( eMap, allSoloLocations.len() )
 	
 	if( extraSpawnLocations.len() > 0 )
 	{
@@ -727,27 +734,34 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 
 //util
 
-SpawnData function SpawnSystem_CreateSpawnObject( LocPair spawn, string spawnName )
+SpawnData function SpawnSystem_CreateSpawnObject( LocPair spawn, string spawnName, int id = -1 )
 {
 	SpawnData spawnInfo
 	
 	spawnInfo.spawn = spawn
 	spawnInfo.name 	= spawnName
 	
+	if( id != -1 )
+		spawnInfo.id = id
+	
 	return spawnInfo
 }
 
-array<SpawnData> function SpawnSystem_CreateSpawnObjectArray( array<LocPair> spawns, array<table> ornull propertiesOrNull = null )
+array<SpawnData> function SpawnSystem_CreateSpawnObjectArray( array<LocPair> spawns, array<table> ornull propertiesOrNull = null, int coreSpawnsLen = -1 )
 {
 	bool bGenDefault = true
 	table properties = {}
 	array<table> propertiesArray = []
 	int spawnsLen = spawns.len()
 	
+	bool bStartFromCoreLength = ( coreSpawnsLen > 0 )
+	
 	if( propertiesOrNull != null )
 	{
-		propertiesArray = expect array<table> ( propertiesOrNull )		
-		//mAssert( spawnsLen == propertiesArray.len(), "Tried to create a spawn object array but specified properties table does not match the number of elements passed in the LocPair array." )
+		propertiesArray = expect array<table> ( propertiesOrNull )	
+		int propertiesArrayLen = propertiesArray.len()
+			
+		mAssert( propertiesArrayLen == 0 || spawnsLen == propertiesArrayLen, "Tried to create a spawn object array but specified properties table does not match the number of elements passed in the LocPair array." )
 	}
 	else
 	{
@@ -770,6 +784,7 @@ array<SpawnData> function SpawnSystem_CreateSpawnObjectArray( array<LocPair> spa
 		SpawnData spawnInfo
 		
 		spawnInfo.spawn = spawns[ iter ]
+		spawnInfo.id	= bStartFromCoreLength ? coreSpawnsLen + iter : iter
 		
 		//this can be expanded in the future
 		if( "name" in tableData )
@@ -871,6 +886,28 @@ asset function SpawnSystem_GetCurrentSpawnAsset()
 	return returnAsset
 }
 
+int function SpawnSystem_FindBaseMapForPak( int eMap )
+{
+	switch( eMap )
+	{
+		case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+		case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			return eMaps.mp_rr_desertlands_64k_x_64k
+			
+		case eMaps.mp_rr_canyonlands_mu1:
+		case eMaps.mp_rr_canyonlands_mu1_night:
+			return eMaps.mp_rr_canyonlands_64k_x_64k
+			
+		case eMaps.mp_rr_aqueduct_night:
+			return eMaps.mp_rr_aqueduct
+		
+		default:
+			return eMap
+	}
+	
+	unreachable
+}
+
 
 //////////////////////////////////////////////////////////////////////
 //						  DEVELOPER FUNCTIONS						//
@@ -960,12 +997,12 @@ void function __ReloadingMsg()
 }
 
 void function DEV_DeleteSpawn( int index )
-{
-	if( !__bCheckReload() )
-		return
-	
+{	
 	if( IsValidSpawnIndex( index ) )
 	{
+		if( !__bCheckReload() )
+			return
+		
 		__RemoveAllPanels()
 		
 		GetSpawns().remove( index )
@@ -985,6 +1022,11 @@ void function DEV_DeleteSpawn( int index )
 		printt( "Index", index, "was invalid and could not be removed." )
 		printm( "Index", index, "was invalid and could not be removed." )
 	}
+}
+
+void function DEV_DeleteLast()
+{
+	DEV_DeleteSpawn( ( GetSpawns().len() - 1 ) )
 }
 
 void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
@@ -1223,7 +1265,7 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 	}
 	
 	bool bUsePlayer = IsValid( player )
-	CheckFirstUse()
+	string info = CheckFirstUse()
 	
 	if( empty( DEV_SpawnType() ) )
 	{
@@ -1263,10 +1305,10 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 	{
 		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
 		{
-			msg = IssueWarning( name.len() )
+			msg = IssueNameWarning( name.len() )
 			name = ""
 			
-			printt( msg )
+			Warning( msg )
 			printm( msg )
 		}
 	}
@@ -1341,7 +1383,7 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 	}
 	
 	if( bUsePlayer )
-		LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + " " )
+		LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + info + " " )
 	
 	#if TRACKER && HAS_TRACKER_DLL
 		SendServerMessage( "Spawn added: " + str )
@@ -1757,7 +1799,7 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	spawnOptions["use_custom_rpak"] <- SpawnSystem_SetCustomPak( pak )
 	spawnOptions["use_custom_playlist"] <- usePlaylist
 	
-	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : ReturnAllSpawnLocations( MapName(), spawnOptions )
+	array<SpawnData> devLocations = customDevSpawnsList().len() > 0 && !bUsePak ? SpawnSystem_CreateSpawnObjectArray( customDevSpawnsList() ) : SpawnSystem_ReturnAllSpawnLocations( MapName(), spawnOptions )
 	
 	if( devLocations.len() > 0 )
 	{
@@ -2360,10 +2402,10 @@ void function PrintSpawnSettings()
 	#endif 
 }
 
-void function CheckFirstUse()
+string function CheckFirstUse()
 {
 	if( !file.bFirstTimeUse )
-		return
+		return ""
 	
 	array<string> msg
 	
@@ -2401,6 +2443,10 @@ void function CheckFirstUse()
 	PrintSpawnSettings()
 	
 	file.bFirstTimeUse = false
+	
+	string info = "\n\n This is the first time running the spawn tool. Check console for more info. "
+	
+	return info
 }
 
 void function DEV_PrintSettings()
@@ -2408,7 +2454,7 @@ void function DEV_PrintSettings()
 	PrintSpawnSettings()
 }
 
-void function CreateSpawnWithInfoAtPoint( int index, LocPair spawn, string name )
+void function _CreateSpawnWithInfoAtPoint( int index, LocPair spawn, string name )
 {
 	DEV_AddSpawn( null, name, index, spawn )
 }
@@ -2427,8 +2473,20 @@ void function DEV_RenameSpawn( int index, string name = "" )
 		return
 	}
 	
+	if( !empty( name ) )
+	{
+		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		{
+			msg = IssueNameWarning( name.len() )
+			name = ""
+			
+			Warning( msg )
+			printm( msg )
+		}
+	}
+	
 	LocPair spawn = clone GetSpawns()[ index ]
-	CreateSpawnWithInfoAtPoint( index, spawn, name )
+	_CreateSpawnWithInfoAtPoint( index, spawn, name )
 }
 
 void function DEV_AutoSetName( string name = "" )
@@ -2439,7 +2497,8 @@ void function DEV_AutoSetName( string name = "" )
 	{
 		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
 		{
-			msg = IssueWarning( name.len() )
+			msg = IssueNameWarning( name.len() )
+			Warning( msg )
 			name = ""
 		}
 		else 
@@ -2458,7 +2517,7 @@ void function DEV_AutoSetName( string name = "" )
 	printm( msg )
 }
 
-string function IssueWarning( int strLen )
+string function IssueNameWarning( int strLen )
 {
 	bool bOverLimit
 	string tooLong 
@@ -2466,7 +2525,6 @@ string function IssueWarning( int strLen )
 	if( strLen > MAX_SPAWN_NAME_LENGTH )
 	{
 		tooLong = "name was " + strLen + " characters long. " + ( strLen - MAX_SPAWN_NAME_LENGTH ) + " chars too many. Max length: " + MAX_SPAWN_NAME_LENGTH
-		Warning( tooLong )
 	}
 	
 	if( !empty( tooLong ) )

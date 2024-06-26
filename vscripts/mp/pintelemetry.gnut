@@ -185,6 +185,8 @@ global function isIntervalThreadRunning
 global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
 
+global function Gamemode1v1_PlayerDataCallbacks //TODO: this probably shouldn't be here, but a bit of logic needs sorted into it's gamemode file (will do soonTM)
+
 #if LOG_ERRORS
 	global function DEV_PrintAllTrackerErrors
 #endif
@@ -318,8 +320,8 @@ enum eLogState
 	SAFE = 3	
 } 
 
-struct {
-	
+struct 
+{
 	table<int,PlayerData> HandleToPlayerData
 	
 	//queries 
@@ -424,10 +426,19 @@ void function CodeCallback_BatchStatsLoaded()
 
 void function CodeCallback_PlayerStatsReady( string uid )
 {
+	if( empty( uid ) )
+	{
+		#if DEVELOPER 
+			Warning( "Player uid was empty in " + FUNC_NAME() + "()" )
+		#endif
+		
+		return
+	}
+	
 	entity player = GetPlayerEntityByUID( uid )
 	
 	if( !IsValid( player ) )
-		return 
+		return
 		
 	player.Signal( "PlayerStatsReady" )	
 	
@@ -1208,8 +1219,9 @@ void function PIN_Init()
 	RegisterSignal( "SyncDataFullyLoaded" )
 	RegisterSignal( "PlayerStatsReady" )
 	
-	INIT_fastComputes()
-	INIT_PlayerDataCallbacks()
+	Tracker_SettingsInit()
+	Tracker_Init()
+	PlayerDataCallbacks_Init()
 	WeaponSettings_Init()
 	
 	SetServerReloadReadyState( ReloadState.BUSY )
@@ -1232,10 +1244,6 @@ void function PIN_Init()
 	{
 		SetConVarInt("sv_unlag",0)
 	}
-	 
-	//init event manager thread
-	//FlagInit("DeleteEvents")
-	//thread EventManager()
 	
 		AddCallback_OnClientConnected( PlayerConnectedCallback )
 		AddClientCommandCallback( "show", ClientCommand_mkos_return_data )
@@ -1260,7 +1268,7 @@ void function PIN_Init()
 			file.FS_MaxHealth = ( GetCurrentPlaylistVarFloat("default_shield_hp", 0 )) + 100; //TODO: Use health/shield getters
 		}
 	
-	//moved to r5rdev_config.json
+	//moved to r5rdev_config.json for security reasons
 	file.DISCORD_PLAYERS_WEBHOOK = ( GetCurrentPlaylistVarString( "DISCORD_PLAYERS_WEBHOOK", "" ) )
 	file.DISCORD_MATCHES_WEBHOOK = ( GetCurrentPlaylistVarString( "DISCORD_MATCHES_WEBHOOK", "" ) )
 	
@@ -1304,7 +1312,7 @@ void function PIN_Init()
 	}
 }
 
-void function INIT_fastComputes()
+void function Tracker_SettingsInit()
 {
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
@@ -1316,7 +1324,7 @@ void function INIT_fastComputes()
 	file.update_discord_player_counts 	= GetCurrentPlaylistVarBool("stats_discord_webhook_player_count", false )
 	file.ibmm_wait_limit 				= GetCurrentPlaylistVarInt( "ibmm_wait_limit", 999 )
 	file.bBotAllowed 					= file.BotAllowedModes.contains( GetCurrentPlaylistName() ) //TODO: rework 
-	file.gamemode_type_1v1 				= is1v1GameType() //returns true if mode is confifugred as 1v1 type
+	file.gamemode_type_1v1 				= g_is1v1GameType() //returns true if mode is confifugred as 1v1 type
 	
 	if( file.bChatbotEnabled )
 	{
@@ -1688,7 +1696,7 @@ void function Init_NewGame()
 		
 		while( IsValid( player ) )
 		{				
-			mkos_Force_Rest( player, [] )
+			mkos_Force_Rest( player )
 			wait 0.5
 		}	
 	}
@@ -1698,7 +1706,7 @@ void function Init_NewGame()
 		EndSignal( player, "OnDisconnected", "OnDestroy" )
 		CommandsEnabled( player, false )
 		
-		mkos_Force_Rest( player, [] )
+		mkos_Force_Rest( player )
 		
 		if( IsValid( player ) && file.FETCH_BATCH_COMPLETE == false )
 		{	
@@ -1722,7 +1730,7 @@ void function Init_NewGame()
 		
 		if ( IsValid( player ) && access_status >= RESTRICTED_ACCESS_STATUS_REQUIRED )//Todo: Revisit for more modularity from a single defined source and remove CONST adjustments
 		{	
-			mkos_Force_Rest( player, [] )
+			mkos_Force_Rest( player )
 			Message( player, "Welcome " + player.GetPlayerName(),  Player_Access_Message( player, access_status ), 30 )
 			CommandsEnabled( player, true )
 		}
@@ -3254,7 +3262,7 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 					return 
 					
 				Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-				mkos_Force_Rest( player, [] )
+				mkos_Force_Rest( player )
 			}
 
 			if ( args.len() < 1  )
@@ -3580,15 +3588,18 @@ void function UpdateFromLocalPersistence( entity player )
 	player.SetPlayerNetInt( "damage", GetPlayerDamage( player ) )
 }
 
-void function INIT_PlayerDataCallbacks()
+void function PlayerDataCallbacks_Init()
+{	
+	Script_RegisterAllPlayerDataCallbacks()
+}
+
+void function Gamemode1v1_PlayerDataCallbacks()
 {
 	AddCallback_PlayerData( "wait_time", UpdateIBMMWaitTime )
 	if( FlowState_AdminTgive() ){ AddCallback_PlayerData( "saved_weapons", UpdateSavedWeapons ) }
 	AddCallback_PlayerData( "lock1v1_setting", UpdateLock1v1Setting )
 	AddCallback_PlayerData( "start_in_rest_setting", UpdateStartInRestSetting )
 	AddCallback_PlayerData( "enable_input_banner", UpdateInputBannerSetting )
-	
-	Script_RegisterAllPlayerDataCallbacks()
 }
 
 // utility funcitons for fetch/save playerdata 
@@ -3894,10 +3905,12 @@ void function SavePlayerData( entity player, string setting, ... )
 	if( !IsValid( player ) )
 		return 
 		
-	Assert( vargc > 0, "Empty Data passed to " + FUNC_NAME() )	
-		
-	Assert( player.IsPlayer(), "Cannot save player data for nonplayer." )	
-		Tracker_SavePlayerData( player.p.UID, setting, vargv[0] )
+	#if DEVELOPER
+		mAssert( vargc > 0, "Empty Data passed to " + FUNC_NAME() )			
+		mAssert( player.IsPlayer(), "Cannot save player data for nonplayer." )
+	#endif
+	
+	Tracker_SavePlayerData( player.p.UID, setting, vargv[0] )
 }
 
 
@@ -4554,7 +4567,7 @@ void function PIN_AddPlayer( entity player )
 		if( IsValid( file.entityBotEnt ) )
 		{
 			player.p.bIsChatbot = true
-			mkos_Force_Rest( file.entityBotEnt, [] )
+			mkos_Force_Rest( file.entityBotEnt )
 			file.entityBotEnt.p.start_in_rest_setting = true;
 			file.entityBotEnt.SetDamageNotifications( false )
 			file.entityBotEnt.SetDeathNotifications( false )
@@ -4609,7 +4622,7 @@ void function PIN_AddPlayer( entity player )
 			#if DEVELOPER
 				sqprint("Player sent to rest from rest setting")
 			#endif
-			mkos_Force_Rest( player, [] )
+			mkos_Force_Rest( player )
 		}
 	}
 	
@@ -4804,7 +4817,7 @@ bool function CheckPlayerStartInRest( entity player )
 	{
 		if ( player.p.start_in_rest_setting )
 		{
-			mkos_Force_Rest( player, [] )
+			mkos_Force_Rest( player )
 		}	
 	
 		if ( isPlayerInRestingList( player ) )
@@ -5239,7 +5252,7 @@ void function ShowPlayerLocalMOTD( entity player )
 void function PIN_GameStart(){}
 void function PIN_RoundEnd( int roundnum ){}
 void function PIN_GameEnd(){}
-void function PIN_AddPlayer( entity player ){ if( Flowstate_IsFS1v1() ){ INIT_playerChallengesStruct( player ) } }
+void function PIN_AddPlayer( entity player ){}
 void function PIN_PlayerLeft( entity player, string reason ){}
 void function PIN_PlayerSpawned( entity player ){}
 void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo ){}

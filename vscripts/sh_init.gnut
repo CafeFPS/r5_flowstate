@@ -199,13 +199,11 @@ void function SV_CL_Init()
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
 	ShPassiveAdrenaline_Init()
-	Clickweapon_Init()
 	
 	//R5R Sword
 	MpWeaponTitanSword_Init()
 	MpWeaponPortalGun_Init()
 	
-	WeaponMastiff_Init()
 	WorldDrawImg_Init()
 
     // Zipline Utility
@@ -340,6 +338,7 @@ void function Server_Init()
 	Score_Init()
 
 	Spawn_Init()
+	
 	DialogueChatter_Init()
 
 	TrackingVision_Init()

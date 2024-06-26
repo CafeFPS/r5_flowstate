@@ -32,7 +32,7 @@ struct
 } file
 
 
-array<string> function Stats__AddPlayerStatsTable(string player_oid) 
+array<string> function Stats__AddPlayerStatsTable( string player_oid ) 
 {
 	var rawStatsTable = GetPlayerStats__internal( player_oid )
 	array<string> statKeys = []
@@ -57,7 +57,7 @@ array<string> function Stats__AddPlayerStatsTable(string player_oid)
 
 int function GetPlayerStatInt( string player_oid, string statname ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
 		return expect int( file.allStatsTables[player_oid][statname] )
 	}
@@ -67,9 +67,9 @@ int function GetPlayerStatInt( string player_oid, string statname )
 
 string function GetPlayerStatString( string player_oid, string statname ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		return expect string( file.allStatsTables[player_oid][statname] )
+		return expect string( file.allStatsTables[ player_oid ][ statname ] )
 	}
 	
 	return ""
@@ -77,9 +77,9 @@ string function GetPlayerStatString( string player_oid, string statname )
 
 bool function GetPlayerStatBool( string player_oid, string statname ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		return expect bool( file.allStatsTables[player_oid][statname] )
+		return expect bool( file.allStatsTables[ player_oid ][ statname ] )
 	}
 	
 	return false
@@ -87,18 +87,18 @@ bool function GetPlayerStatBool( string player_oid, string statname )
 
 float function GetPlayerStatFloat( string player_oid, string statname ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		return expect float( file.allStatsTables[player_oid][statname] )
+		return expect float( file.allStatsTables[ player_oid ][ statname ] )
 	}
 	return 0.0
 }
 
 void function SetPlayerStatInt( string player_oid, string statname, int value ) 
 {	
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		file.allStatsTables[player_oid][statname] = value
+		file.allStatsTables[ player_oid ][ statname ] = value
 	}
 }
 
@@ -106,25 +106,25 @@ void function SetPlayerStatString( string player_oid, string statname, string va
 {
 	mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value )
 	
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		file.allStatsTables[player_oid][statname] = value
+		file.allStatsTables[ player_oid ][ statname ] = value
 	}
 }
 
 void function SetPlayerStatBool( string player_oid, string statname, bool value ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		file.allStatsTables[player_oid][statname] = value
+		file.allStatsTables[ player_oid ][ statname ] = value
 	}
 }
 
 void function SetPlayerStatFloat( string player_oid, string statname, float value ) 
 {
-	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[player_oid] ) 
+	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		file.allStatsTables[player_oid][statname] = value
+		file.allStatsTables[ player_oid ][ statname ] = value
 	}
 }
 

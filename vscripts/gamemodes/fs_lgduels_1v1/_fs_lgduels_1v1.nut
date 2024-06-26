@@ -54,7 +54,7 @@ void function INIT_LGDuels_Player( entity player )
 	AddClientCommandCallback( "handicap", ClientCommand_mkos_LGDuel_p_damage )
 	
 	#if TRACKER && HAS_TRACKER_DLL
-		AddClientCommandCallback("SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
+		AddClientCommandCallback( "SaveLgSettings", ClientCommand_mkos_LGDuel_settings )
 	#endif
 	
 	player.p.hitsound = HIT_0
@@ -127,11 +127,10 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 bool function ClientCommand_mkos_LGDuel_settings( entity player, array<string> args )
 {
 	if( args.len() == 0 )
-		return true
+		return false
 	
-	#if DEVELOPER 
-		sqprint( "saving:" + args[0])
-	#endif
+	if( !IsSafeString( args[0], 50 ) )
+		return false
 	
 	SavePlayerData( player, "LgDuelsSetting", args[0] )
 	
@@ -147,7 +146,7 @@ LocPairData function Init_LGDuels_Spawns()
 	
 	Gamemode1v1_SetWaitingRoomRadius( 2400 )
 	
-	return CreateLocPairObject( [], false, null, panels )
+	return SpawnSystem_CreateLocPairObject( [], false, null, panels )
 }
 
 LocPair function LGDuels_Spawns_Offset()

@@ -39,6 +39,7 @@ global function GetTrackerWeaponIdentifierTable
 global function ValidateIBMMWaitTime
 global function VerifyAdmin
 global function IsSafeString
+global function GetPlaylistMaps
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -2553,7 +2554,7 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	}	
 #endif
 
-//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? .
+//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? . |
 bool function IsSafeString( string str, int strlen = -1, string pattern = "" ) 
 {
 	if( empty( str ) )
@@ -2563,7 +2564,7 @@ bool function IsSafeString( string str, int strlen = -1, string pattern = "" )
 		return false
 	
 	if( pattern == "" )
-		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.]*$"
+		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.|]*$"
 	
 	return ( RegexpFindAll( str, pattern ).len() != 0 )
 }

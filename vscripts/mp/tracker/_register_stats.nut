@@ -5,12 +5,18 @@ globalize_all_functions
 struct {
 
 	bool RegisterCoreStats = true
+	bool bStatsIs1v1Type = false
 
 } file
 
 void function SetRegisterCoreStats( bool b )
 {
 	file.RegisterCoreStats = b
+}
+
+void function Tracker_Init()
+{
+	file.bStatsIs1v1Type = g_is1v1GameType()
 }
 
 //////////////////////////////////////////////////
@@ -55,16 +61,19 @@ void function Script_RegisterAllStats()
 	//								
 	//								There also exists api rate-limiting. 
 	
+	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
+	SetRegisterCoreStats( bRegisterCoreStats )
+	
+	Tracker_RegisterStat( "settings" )
 
 	if( file.RegisterCoreStats )
 	{
-		Tracker_RegisterStat( "kills", 				null, Tracker_ReturnKills )
-		Tracker_RegisterStat( "deaths", 			null, Tracker_ReturnDeaths )
-		Tracker_RegisterStat( "superglides", 		null, Tracker_ReturnSuperglides )
-		Tracker_RegisterStat( "total_time_played", 	null, null )
-		Tracker_RegisterStat( "total_matches", 		null, null )
-		Tracker_RegisterStat( "score", 				null, null )
-		Tracker_RegisterStat( "settings", 			null, null )
+		Tracker_RegisterStat( "kills", null, Tracker_ReturnKills )
+		Tracker_RegisterStat( "deaths", null, Tracker_ReturnDeaths )
+		Tracker_RegisterStat( "superglides", null, Tracker_ReturnSuperglides )
+		Tracker_RegisterStat( "total_time_played" )
+		Tracker_RegisterStat( "total_matches" )
+		Tracker_RegisterStat( "score" )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
@@ -140,6 +149,9 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	// Tracker_SavePlayerData( uid, "settingname", value )  -- value: [bool|int|float|string]
 	////////////////////////////////////////////////////////////////////
 	
+	if( file.bStatsIs1v1Type )
+		Gamemode1v1_PlayerDataCallbacks()
+
 	//func
 }
 
