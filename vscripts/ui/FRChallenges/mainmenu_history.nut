@@ -212,7 +212,7 @@ void function InitChallengesHistory( var newMenuArg )
 
 void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon, float Accuracy, int dummiesKilled, int Damage, int totalshots, int criticalshots, int roundtime)
 {
-	string AccuracyShort = LocalizeAndShortenNumber_Float(Accuracy, 1, 2)
+	string AccuracyShort = LocalizeAndShortenNumber_Float(Accuracy * 100, 3, 2) + "%"
 	if(AccuracyShort == "-na,n(i,nd).-n" || AccuracyShort == "-nan(ind)" || AccuracyShort == "-na.n(i.nd),-n") AccuracyShort = "0"
 
 	ResultsHistory newChallenge

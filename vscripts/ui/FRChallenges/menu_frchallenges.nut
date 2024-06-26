@@ -37,12 +37,12 @@ void function InitFRChallengesResultsMenu( var newMenuArg )
 
 void function UpdateResultsData(string challengeName, int shothits, int dummieskilled, float accuracy, int damagedone, int criticalshots, int shotshitrecord, bool isNewRecord)
 {
-	string AccuracyShort = LocalizeAndShortenNumber_Float(accuracy, 1, 2)
+	string AccuracyShort = LocalizeAndShortenNumber_Float(accuracy * 100, 3, 2)
 	if(AccuracyShort == "-na,n(i,nd).-n" || AccuracyShort == "-nan(ind)" || AccuracyShort == "-na.n(i.nd),-n") AccuracyShort = "0"
 	printt(AccuracyShort)
 	Hud_SetText(Hud_GetChild( file.menu, "Title"), challengeName)
 	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledResult"), dummieskilled.tostring())
-	Hud_SetText(Hud_GetChild( file.menu, "AccuracyResult"), AccuracyShort)
+	Hud_SetText(Hud_GetChild( file.menu, "AccuracyResult"), AccuracyShort + "%")
 	Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResult"), shothits.tostring())
 	Hud_SetText(Hud_GetChild( file.menu, "DamageDoneResult"), damagedone.tostring())
 	Hud_SetText(Hud_GetChild( file.menu, "CriticalShotsResult"), criticalshots.tostring())
