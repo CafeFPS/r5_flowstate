@@ -50,11 +50,11 @@ void function ClientCodeCallbacks_Init()
     RegisterSignal( "KillReplayEnded" )
 }
 
+
 void function ClientCodeCallback_OnLinkedButtonPairPressed( int binding )
 {
 	Ping_Interrupt()
 }
-
 
 void function ClientCodeCallback_HotDropImpactTimeChanged( entity player )
 {
@@ -90,7 +90,7 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	int maxShieldHealth = ent.GetShieldHealthMax()
 
 	// don't play on local pilot
-	if ( GetLocalViewPlayer() != ent || ent.IsTitan() )
+	if ( GetLocalViewPlayer() != ent )
 	{
 		if ( shieldHealth == 0 && ent.lastShieldHealth && maxShieldHealth > 0 )
 		{
@@ -103,6 +103,12 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	}
 
 	ent.Signal( "ShieldChanged" )
+	
+	if( ent.lastShieldHealth > shieldHealth )
+	{
+		local amount = ent.lastShieldHealth - shieldHealth
+		ent.Signal( "OnDamaged", { damageAmount = amount } )
+	}
 
 	ent.lastShieldHealth = ent.GetShieldHealth()
 }

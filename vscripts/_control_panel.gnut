@@ -777,7 +777,10 @@ function CaptureAllAvailableControlPanels( player )
 	array<entity> panels = GetAllControlPanels()
 	foreach ( panel in panels )
 	{
-		printt( "panel team " + panel.GetTeam() )
+		#if DEVELOPER
+			printt( "panel team " + panel.GetTeam() )
+		#endif 
+		
 		RunPanelUseFunctions( panel, player )
 	}
 }

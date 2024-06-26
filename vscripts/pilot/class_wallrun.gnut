@@ -9,9 +9,28 @@ global function Wallrun_PlayerTookDamage
 global function Wallrun_EnforceWeaponDefaults
 //global function Wallrun_CreateCopyOfPilotModel
 
+struct 
+{
+	bool flowstate_enable_bullet_slow = false
+	bool flowstate_headshots_only_gamemode = false
+	float helmet_lv4 = 0.65
+	float helmet_lv3 = 0.65
+	float helmet_lv2 = 0.5
+	float helmet_lv1 = 0.2
+	
+} file 
+
 function ClassWallrun_Init()
 {
-
+	//use local copy of values instead of lookups ~mkos
+	
+	file.flowstate_enable_bullet_slow = GetCurrentPlaylistVarBool( "flowstate_enable_bullet_slow", false )
+	file.flowstate_headshots_only_gamemode = GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false )
+	file.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+	file.helmet_lv3 = GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 )
+	file.helmet_lv2 = GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 )
+	file.helmet_lv1 = GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 )
+	
 	// Make weapons less effective when playing at higher difficulty.
 	level.lethalityMods <- {}
 }
@@ -44,13 +63,15 @@ function Wallrun_EnforceWeaponDefaults( player )
 
 function Wallrun_OnPlayerSpawn( player )
 {
-	printt( "ClassWallrun - OnPlayerSpawn" )
+	#if DEVELOPER
+		printt( "ClassWallrun - OnPlayerSpawn" )
+	#endif
 }
 
 
 function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 {
-	if( !IsValid(player) ) 
+	if( !IsValid( player ) ) 
 		return
 	
 	if ( IsDemigod( player ) )
@@ -59,7 +80,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		return
 	}
 
-	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
+	//AdjustDamageForRodeoPlayers( player, damageInfo, attacker ) //this call does nothing
 
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
@@ -70,41 +91,53 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	if( IsValid( weapon ) && SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
 		data0 = SURVIVAL_Loot_GetLootDataByRef( weapon.GetWeaponClassName() )
 
-	if( GetCurrentPlaylistVarBool( "flowstate_enable_bullet_slow", false ) && !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) && Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 && StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 && IsValid( weapon ) && data0.lootType == eLootType.MAINWEAPON )
+
+	if( file.flowstate_enable_bullet_slow 
+		&& !PlayerHasPassive(player, ePassives.PAS_FORTIFIED ) 
+		&& Time() >= player.p.lastTimeShotSlowApplied_Global + 3.0 
+		&& StatusEffect_GetSeverity( player, eStatusEffect.move_slow ) == 0 
+		&& IsValid( weapon ) && data0.lootType == eLootType.MAINWEAPON )
 	{
 		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.4, 0.25, 0.25 )
 		player.p.lastTimeShotSlowApplied_Global = Time()
 	}
 
 	//Super dumb headshots gamemode
-	if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
+	if( file.flowstate_headshots_only_gamemode && player.IsPlayer() && attacker != player )
 	{
-		DamageInfo_SetDamage( damageInfo, 42069.0)
-		return 0.0
+		if( IsValidHeadShot( damageInfo, player ) )
+		{
+			DamageInfo_SetDamage( damageInfo, 42069.0)
+			return 0.0
+		}
+		else
+		{
+			DamageInfo_SetDamage( damageInfo, 0.0)
+			return 0.0
+		}
 	}
-	else if( GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && !IsValidHeadShot(damageInfo, player) && player.IsPlayer() && attacker != player )
-	{
-		DamageInfo_SetDamage( damageInfo, 0.0)
-		return 0.0
-	}
+	
 
 	//Helmets fix By @CafeFPS (CafeFPS)
-	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
+	if( IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "" ) 
+	{
 		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
 		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" )
-		switch(data.ref){
+		
+		switch( data.ref )
+		{
 			case "helmet_pickup_lv4_abilities":
-				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv4+(1-file.helmet_lv4)*headshotMultiplier))
 				break
 			case "helmet_pickup_lv3":
-				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 ))*headshotMultiplier))
+				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv3+(1-file.helmet_lv3)*headshotMultiplier))
 				break
 			case "helmet_pickup_lv2":
-				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 ))*headshotMultiplier))
+				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv2+(1-file.helmet_lv2)*headshotMultiplier))
 				break
 			case "helmet_pickup_lv1":				
-				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 ))*headshotMultiplier))
+				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv1+(1-file.helmet_lv1)*headshotMultiplier))
 				break
 		}
 	}

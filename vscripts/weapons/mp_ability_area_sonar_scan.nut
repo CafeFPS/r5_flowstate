@@ -273,7 +273,7 @@ void function AreaSonarScan_OnSonarTriggerEnter( entity trigger, entity ent )
 	if ( ent.IsPlayer() )
 		Remote_CallFunction_Replay( ent, "ServerCallback_SonarAreaScanTarget", ent, owner )
 
-	//StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
+	StatsHook_AreaSonarScan_EnemyDetected( trigger.GetOwner(), ent )
 }
 
 void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger )
@@ -288,7 +288,7 @@ void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger
 	SonarStart( revealedEnt, revealedEnt.GetOrigin(), team, owner )
 	
 	#if DEVELOPER
-	printt("target revealed by area sonar scan " + revealedEnt )
+		printt("target revealed by area sonar scan " + revealedEnt )
 	#endif
 	
 	OnThreadEnd(
@@ -298,7 +298,7 @@ void function Flowstate_HighlightPlayerTimed( entity revealedEnt, entity trigger
 				return
 			
 			#if DEVELOPER
-			printt("sonar highlight removed" )
+				printt("sonar highlight removed" )
 			#endif
 	
 			if( revealedEnt.e.sonarTriggers.contains(trigger) )

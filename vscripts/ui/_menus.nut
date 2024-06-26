@@ -153,6 +153,8 @@ global function OpenDevMenu
 
 global function OpenModelMenu
 
+global function UILevelLoadCallback
+
 struct
 {
 	array<void functionref()>                   partyUpdatedCallbacks
@@ -483,9 +485,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 
 void function UICodeCallback_LevelInit( string levelname )
-{
-	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
-	
+{	
 	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
 	{	
 		if ( RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
@@ -1527,6 +1527,60 @@ void function InitGamepadConfigs()
 	SetStandardAbilityBindingsForPilot( GetLocalClientPlayer() )
 }
 
+void function UILevelLoadCallback()
+{
+	if( Gamemode() == eGamemodes.fs_aimtrainer)
+	{
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 191, 13, 13, 255 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x, wepmenuBasePos.y )	
+		Hud_SetText( wepmenu, "FLOWSTATE AIM TRAINER" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 252, 198, 3, 255 )
+	}
+	else if( is1v1GameType() )
+	{	
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y + 100 )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 171, 132, 14, 220 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x - 30, wepmenuBasePos.y - 40 )	
+		Hud_SetText( wepmenu, "Flowstate 1v1" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 180, 114, 41, 255 )
+	}
+	else if( Playlist() == ePlaylists.fs_movementrecorder )
+	{
+		var weaponselector = GetMenu("FRChallengesSettingsWpnSelector")
+		
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( weaponselector )		
+		Hud_SetPos( weaponselector, wepSelectorBasePos.x, wepSelectorBasePos.y + 100 )
+		
+		var wepmenu = Hud_GetChild( weaponselector, "Title" )
+		Hud_SetColor( wepmenu, 171, 132, 14, 220 )
+		
+		UIPos wepmenuBasePos = REPLACEHud_GetBasePos( wepmenu )
+		Hud_SetPos( wepmenu, wepmenuBasePos.x - 30, wepmenuBasePos.y - 40 )	
+		Hud_SetText( wepmenu, "FS Movement Recorder" )
+		
+		var titletext = Hud_GetChild( weaponselector, "TitleWeaponSelector" )
+		Hud_SetColor( titletext, 180, 114, 41, 255 )
+	}
+}
 
 void function InitMenus()
 {
@@ -1587,7 +1641,7 @@ void function InitMenus()
 	AddPanel( weaponselector, "BuyMenu3", InitArenasBuyPanel3 )
 	AddPanel( weaponselector, "BuyMenu4", InitArenasBuyPanel4 )
 	AddPanel( weaponselector, "BuyMenu5", InitArenasBuyPanel5 )
-
+	
 	//results
 	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/challenges_results.menu", InitFRChallengesResultsMenu ) //results
 	
@@ -1666,6 +1720,7 @@ void function InitMenus()
 
 	AddPanel( customizeCharacterMenu, "CharacterExecutionsPanel", InitCharacterExecutionsPanel )
 
+	//shared with 1v1 weapon select
 	var customizeWeaponMenu = AddMenu( "CustomizeWeaponMenu", $"scripts/resource/ui/menus/CustomLobby/customize_weapon.menu", InitCustomizeWeaponMenu )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel0", InitWeaponSkinsPanel )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel1", InitWeaponSkinsPanel )
@@ -1764,6 +1819,8 @@ void function InitMenus()
 	AddMenu( "StatsSeasonSelectPopUp", $"resource/ui/menus/dialog_player_stats_season_select.menu", InitSeasonSelectPopUp )
 
 	AddMenu( "DevMenu", $"resource/ui/menus/dev.menu", InitDevMenu, "Dev" )
+	
+	AddMenu( "SERVER_MOTD", $"platform/scripts/resource/ui/menus/dialogs/server_motd.menu", Init_Server_MOTD, "Server MOTD" )
 
 	InitTabs()
 	InitSurveys()

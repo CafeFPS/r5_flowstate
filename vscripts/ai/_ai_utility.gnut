@@ -16,6 +16,65 @@ void function PutPlayersInOneTeam()
 		SetTeam( player, 2 )
 }
 
+void function SpawnBots( int amount = 1 )
+{
+	for( int i = 0; i<amount; i++)
+	{
+		ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+	}
+
+	wait 2
+	foreach( int j, entity bot in GetPlayerArray() )
+	{
+		if( j == 0 )
+			continue
+
+		bot.p.IsBot = true
+	}
+}
+
+void function SpawnAllyBots( int amount = 1 )
+{
+	for( int i = 0; i<amount; i++)
+	{
+		ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+		wait 0.1
+	}
+
+	wait 2
+	foreach( int j, entity bot in GetPlayerArray() )
+	{
+		if( j == 0 )
+			continue
+
+		bot.p.IsBot = true
+
+		SetTeam( bot, gp()[0].GetTeam() )
+	}
+}
+
+void function DEV_SpawnDownedBots( int amount = 1 )
+{
+	for( int i = 0; i<amount; i++)
+	{
+		ClientCommand( gp()[0], "sv_addbot flowstate -1" )
+		wait 0.1
+	}
+
+	wait 2
+	foreach( int j, entity bot in GetPlayerArray() )
+	{
+		if( j == 0 )
+			continue
+
+		bot.p.IsBot = true
+
+		SetTeam( bot, gp()[0].GetTeam() )
+		thread Bleedout_StartPlayerBleedout( bot, gp()[0] )
+	}
+}
+
+
 void function DEV_SpawnSkydivingBots( int amount = 1 )
 {
 	for( int i = 0; i<amount; i++)
@@ -522,8 +581,8 @@ void function NPCFollowsNPC( entity npc, entity leader )
 void function NpcFollowsEntity( entity npc, entity leader )
 {
 	// stop scripted things
-	if ( IsMultiplayer() )
-		npc.Signal( "StopHardpointBehavior" )
+	// if ( IsMultiplayer() )
+		// npc.Signal( "StopHardpointBehavior" )
 
 	if ( leader.IsPlayer() && leader.p.followPlayerOverride != null )
 	{
@@ -1549,8 +1608,31 @@ void function DEV_SpawnProwlerAtCrosshair()
 	entity prowler = CreateProwler( 99, origin, angles )
 
 	DispatchSpawn( prowler )
+	prowler.SetSkin(RandomInt(5) )
+}
 
-    prowler.SetSkin(RandomInt(5))
+void function DEV_SpawnSpectreAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity prowler = CreateSpectre( 99, origin, angles )
+
+	DispatchSpawn( prowler )
+}
+
+void function DEV_SpawnStalkerAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity prowler = CreateStalker( 99, origin, angles )
+
+	DispatchSpawn( prowler )
 }
 
 void function DEV_SpawnMarvinAtCrosshair()
@@ -1584,6 +1666,18 @@ void function DEV_SpawnInfectedSoldierAtCrosshair()
 	vector angles = Vector( 0, 0, 0 )
 
 	entity Infected = CreateInfected( 99, origin, angles )
+
+	DispatchSpawn( Infected )
+}
+
+void function DEV_SpawnElitePilotAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity Infected = CreateElitePilot( 99, origin, angles )
 
 	DispatchSpawn( Infected )
 }
@@ -1644,13 +1738,24 @@ void function DEV_SpawnLegendAtCrosshair()
 	entity dummy
 
 	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", true ))
+	{
 		dummy = CreateLegend_ai( 99, origin, angles1 )
+		dummy.SetBehaviorSelector( "behavior_dummie_combat" )
+	}
 	else
 	{
 		dummy = CreateLegend_ai( 99, origin, angles1, true)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
 		dummy.EnableNPCFlag( NPC_IGNORE_ALL )
+		dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_USE_SHOOTING_COVER )
+
+		// follow!
+		// int followBehavior = GetDefaultNPCFollowBehavior( dummy )
+		// dummy.InitFollowBehavior( player, followBehavior )
+		// dummy.DisableBehavior( "Assault" )
+		// dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_USE_SHOOTING_COVER )
+		// dummy.EnableBehavior( "Follow" )
 	}
 
 	DispatchSpawn( dummy )
@@ -1715,3 +1820,39 @@ bool function WithinEngagementRange( entity npc, vector origin )
 
 	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
 }
+
+
+/*
+void function SpawnLootbinCount( int count )
+{
+	thread(void function() : ( count )
+	{
+		entity player = GetPlayerArray()[0]
+		vector origin = GetPlayerCrosshairOrigin(player)
+		
+		for ( int i = 0; i < count; i++ )
+		{
+			float angle = 360.0 * ( i / float( count ) )
+			float spread = 5.0 * i
+			vector offset = Vector( cos( angle ), sin( angle ), 0 ) * spread;
+			
+			DEV_SpawnLootBinAtOffset(origin + offset, player)
+			//WaitFrame()
+		}
+	})()
+}
+
+void function DEV_SpawnLootBinAtOffset( vector origin, entity player )
+{
+    vector org1 = origin
+    vector org2 = player.GetOrigin()
+    vector vec1 = org2 - org1
+    vector angles1 = VectorToAngles( vec1 )
+    angles1.x = 0
+
+    entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
+    SetTargetName( ent_lootbin, "LootBin" )
+    ent_lootbin.SetOrigin( origin )
+    ent_lootbin.SetAngles( angles1 )
+}
+*/

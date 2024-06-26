@@ -1678,6 +1678,7 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 		if ( reallyAdd )
 		{
 			SetPlayerInventory( player, playerInventory )
+
 			if( Gamemode() == eGamemodes.fs_snd )
 			{
 				foreach ( func in file.healingItemChangeCallbacks )
@@ -2624,8 +2625,8 @@ bool function SURVIVAL_PlayerAllowedToPickup( entity player, entity pickup = nul
 			#endif
 			return false
 		}
-		
 	}
+
 	return PlayerInValidState( player )
 }
 
@@ -4203,7 +4204,10 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 	bool useAlt     = (pickupFlags & PICKUP_FLAG_ALT) > 0
 	bool useLong    = (pickupFlags & PICKUP_FLAG_LONG) > 0
 
-	as = SURVIVAL_GetActionForGroundItem( player, lootRef, useAlt, useLong )
+	if ( forcedAction == null )
+		as = SURVIVAL_GetActionForGroundItem( player, lootRef, useAlt, useLong )
+	else
+		as = expect LootActionStruct( forcedAction )
 
 	int pickupCount    = pickup.GetClipCount()
 	bool shouldDestroy = SURVIVAL_ApplyLootAction( as.action, pickup, player, pickupFlags, deathBox, desiredCount )
@@ -4244,6 +4248,7 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 			}
 
 			pickup.e.lastUseTime = Time()
+			
 			if( Gamemode() == eGamemodes.fs_snd && lootRef.lootData.ref == "snd_bomb" )
 			{
 				thread function () : (player)
@@ -4261,8 +4266,14 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 	if ( shouldDestroy || pickedUpAnything )
 	{
 		int countPerDrop = lootRef.lootData.countPerDrop
+		string itemName = lootRef.lootData.ref
 
 		PIN_ItemPickup( player, pickup, lootRef.lootData.ref, unitsPickedUp )
+
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryPickUp,
+			[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  countPerDrop ],
+			[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
+		)
 
 		//printt( "LOOTED by: " + player.GetPlayerName(), lootRef.lootData.ref, "x" + unitsPickedUp, "index: " + data.index)
 

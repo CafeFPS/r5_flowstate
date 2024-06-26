@@ -315,10 +315,17 @@ void function BurnMeter_PhaseRewind_threaded( entity player )
 		rewindData.velocity = savedPositions[i].velocity
 		rewindData.wasInContextAction = savedPositions[i].wasInContextAction
 		rewindData.wasCrouched = savedPositions[i].wasCrouched
-		printt( "wasCrouched?" + rewindData.wasCrouched )
+		
+		#if DEVELOPER
+			printt( "wasCrouched?" + rewindData.wasCrouched )
+		#endif 
+		
 		if ( rewindData.wasCrouched )
 		{
-			printt( "PhaseRewindCrouchPlayer" )
+			#if DEVELOPER
+				printt( "PhaseRewindCrouchPlayer" )
+			#endif 
+			
 			thread PhaseRewindCrouchPlayer( player )
 		}
 

@@ -3270,11 +3270,17 @@ void function ClientCommand_PingNewLoot( entity player, array<string> args )
 	float checkDist = Distance( pingOrigin, item.GetOrigin() )
 	if ( checkDist > CHECKDIST_MAX )
 	{
-		printt( format( "PingLoot: player '%s' - given entity at %s is too far away from the given ping origin of %s: '%s'", player.GetPlayerName(), string( pingOrigin ), string( item.GetOrigin() ), string( item ) ) )
+		#if DEVELOPER
+			printt( format( "PingLoot: player '%s' - given entity at %s is too far away from the given ping origin of %s: '%s'", player.GetPlayerName(), string( pingOrigin ), string( item.GetOrigin() ), string( item ) ) )
+		#endif 
+		
 		return
 	}
 
-	printt( format( "PingLoot: player '%s' - pinging loot item: '%s'", player.GetPlayerName(), string( item ) ) )
+	#if DEVELOPER
+		printt( format( "PingLoot: player '%s' - pinging loot item: '%s'", player.GetPlayerName(), string( item ) ) )
+	#endif
+	
 	CreateWaypoint_Ping_Loot( player, item, ticketID )
 }
 

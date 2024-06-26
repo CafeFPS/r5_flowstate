@@ -1,0 +1,203 @@
+resource/ui/menus/confirm_dialog.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+		disableDpad             1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.65
+            }
+		}
+
+        DialogFrame
+        {
+            ControlName				Label
+            wide					1200
+            tall					760
+            labelText				""
+            bgcolor_override		"0 0 0 255"
+            visible					0
+            paintbackground			1
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+        Header
+        {
+            ControlName				RuiPanel
+            classname               "MenuButton"
+            wide					1080
+            tall					128
+            ypos                    -100
+            visible				    1
+            rui                     "ui/featured_header.rpak"
+
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+        }
+
+        Background
+        {
+            ControlName				RuiPanel
+            wide					967
+            tall			        445
+            ypos                    -120
+            visible				    1
+            rui                     "ui/pass_dialog_content.rpak"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+        }
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+        RewardList
+        {
+            ControlName				GridButtonListPanel
+            xpos                    0
+            ypos                    20
+            columns                 5
+            rows                    2
+            buttonSpacing           8
+            scrollbarSpacing        8
+            scrollbarOnLeft         0
+            visible					1
+
+            //tabPosition 1
+            navDown PurchaseButton // (dw): hahaha
+
+            ButtonSettings
+            {
+                rui					    "ui/battle_pass_reward_button_v2.rpak"
+                clipRui                 1
+                wide					128
+                tall					128
+                cursorVelocityModifier  0.7
+                sound_focus             "UI_Menu_Focus_Small"
+                rightClickEvents		1
+                doubleClickEvents       1
+            }
+
+            pin_to_sibling			Background
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        PurchaseButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            rui						"ui/battle_pass_level_purchase.rpak"
+            labelText               ""
+            wide                    364
+            tall					88
+            ypos                    -40
+            font                    Default_28
+            enabled					1
+            visible					1
+
+            pin_to_sibling			DialogFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+
+            tabPosition 1
+            //navUp RewardList
+            //navLeft DecButton
+            //navRight IncButton
+        }
+
+        IncButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            rui						"ui/battle_pass_level_purchase_increase.rpak"
+            wide                    90
+            tall					62
+            xpos                    8
+            font                    Default_28
+            labelText				"+"
+            enabled					1
+            visible					1
+
+            pin_to_sibling			PurchaseButton
+            pin_corner_to_sibling	LEFT
+            pin_to_sibling_corner	RIGHT
+
+            sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+
+            //tabPosition 1
+            navLeft PurchaseButton // (dw): hahaha
+        }
+
+        DecButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            rui						"ui/battle_pass_level_purchase_decrease.rpak"
+            wide                    90
+            tall					62
+            xpos                    8
+            font                    Default_28
+            labelText				"-"
+            enabled					1
+            visible					1
+
+            pin_to_sibling			PurchaseButton
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	LEFT
+
+            sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+
+            //tabPosition 1
+            navRight PurchaseButton // (dw): hahaha
+        }
+	}
+
+    FooterButtons
+    {
+        ControlName				CNestedPanel
+        InheritProperties       FooterButtons
+    }
+}

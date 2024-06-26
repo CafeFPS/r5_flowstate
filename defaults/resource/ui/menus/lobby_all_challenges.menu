@@ -1,0 +1,315 @@
+resource/ui/menus/lobby_all_challenges.menu
+{
+	menu
+	{
+		ControlName				Frame
+        xpos					0
+        ypos					0
+        zpos					3
+        wide					f0
+        tall					f0
+        autoResize				0
+        pinCorner				0
+        visible					1
+        enabled					1
+        PaintBackgroundType		0
+        infocus_bgcolor_override	"0 0 0 0"
+        outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+            labelText				""
+        }
+
+        UserInfo
+        {
+            ControlName             RuiButton
+            InheritProperties       UserInfo
+            xpos                    "%-2.5"
+            zpos                    4
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+        }
+
+        Decoration
+        {
+            ControlName             RuiPanel
+            wide					f0
+            tall                    f0
+            rui                     "ui/customize_character_menu_decoration.rpak"
+        }
+
+        Logo
+        {
+            ControlName				RuiPanel
+            InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Title
+        {
+            ControlName				RuiPanel
+            ypos					-48
+            wide					912
+            tall					65
+            visible				    1
+            rui                     "ui/menu_title.rpak"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        CategoryLargeButton0
+        {
+            ControlName				RuiButton
+            xpos                    c-700
+            ypos                    151
+            wide					374
+            tall					80
+            zpos					2 // Needed or clicking on the background can hide this
+            visible					1
+            enabled					1
+            rui                     "ui/challenge_category_button_large.rpak"
+            clipRui                 1
+            labelText				""
+            style					RuiButton
+            clip 					0
+            cursorVelocityModifier  0.7
+            tabPosition             1
+            rightClickEvents		1
+            doubleClickEvents       1
+            sound_focus             "UI_Menu_Focus_Small"
+            sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+            sound_deny              ""
+
+            navDown					CategoryLargeButton1
+        }
+
+        CategoryLargeButton1
+        {
+            ControlName				RuiButton
+            xpos                    0
+            ypos                    10
+            wide					374
+            tall					80
+            zpos					2 // Needed or clicking on the background can hide this
+            visible					1
+            enabled					1
+            rui                     "ui/challenge_category_button_large.rpak"
+            clipRui                 1
+            labelText				""
+            style					RuiButton
+            clip 					0
+            cursorVelocityModifier  0.7
+            rightClickEvents		1
+            doubleClickEvents       1
+            sound_focus             "UI_Menu_Focus_Small"
+            sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+            sound_deny              ""
+
+            navUp   				CategoryLargeButton0
+            navDown					CategoryLargeButton2
+
+            pin_to_sibling			CategoryLargeButton0
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        CategoryLargeButton2
+        {
+            ControlName				RuiButton
+            xpos                    0
+            ypos                    10
+            wide					374
+            tall					80
+            zpos					2 // Needed or clicking on the background can hide this
+            visible					1
+            enabled					1
+            rui                     "ui/challenge_category_button_large.rpak"
+            clipRui                 1
+            labelText				""
+            style					RuiButton
+            clip 					0
+            cursorVelocityModifier  0.7
+            rightClickEvents		1
+            doubleClickEvents       1
+            sound_focus             "UI_Menu_Focus_Small"
+            sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+            sound_deny              ""
+
+            navUp   				CategoryLargeButton1
+            navDown					GridButton0
+
+            pin_to_sibling			CategoryLargeButton1
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        CategoryList
+        {
+            ControlName				GridButtonListPanel
+            xpos                    0
+            ypos                    10
+            columns                 1
+            rows                    1
+            buttonSpacing           6
+            scrollbarSpacing        6
+            scrollbarOnLeft         0
+            visible					1
+            selectOnDpadNav         1
+
+            pin_to_sibling			CategoryLargeButton2
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+
+            ButtonSettings
+            {
+                rui                     "ui/challenge_category_button.rpak"
+                clipRui                 1
+                wide					350
+                tall					50
+                cursorVelocityModifier  0.7
+                rightClickEvents		1
+                doubleClickEvents       1
+                sound_focus             "UI_Menu_Focus_Small"
+                sound_accept            "UI_Menu_BattlePass_LevelIncreaseTab"
+                sound_deny              ""
+            }
+        }
+
+        PinnedChallenge
+        {
+            ControlName				RuiButton
+            xpos                    c-300
+            ypos                    151
+            wide					990
+            tall					70
+            zpos					2 // Needed or clicking on the background can hide this
+            visible					1
+            enabled					1
+            rui                     "ui/challenge_full_button.rpak"
+            clipRui                 1
+            labelText				""
+            style					RuiButton
+            clip 					1
+            cursorVelocityModifier  0.7
+            rightClickEvents		1
+            doubleClickEvents       1
+            sound_focus             ""
+            sound_accept            ""
+            sound_deny              ""
+        }
+
+        DividerLine
+        {
+            ControlName				RuiPanel
+            rui                     "ui/basic_image.rpak"
+            xpos					0
+            ypos                    16
+            wide					990
+            tall					3
+            visible					1
+            ruiArgs
+            {
+                basicImageAlpha     0.5
+            }
+
+            pin_to_sibling			PinnedChallenge
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        ChallengesList
+        {
+            ControlName				GridButtonListPanel
+            xpos                    0
+            ypos                    16
+            columns                 1
+            rows                    1
+            buttonSpacing           6
+            scrollbarSpacing        6
+            scrollbarOnLeft         0
+            visible					1
+            selectOnDpadNav         0
+
+            pin_to_sibling			DividerLine
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+
+            ButtonSettings
+            {
+                rui                     "ui/challenge_full_button.rpak"
+                clipRui                 1
+                wide					990
+                tall					70
+                cursorVelocityModifier  0.7
+                rightClickEvents		1
+                doubleClickEvents       1
+                sound_focus             ""
+                sound_accept            ""
+                sound_deny              ""
+            }
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		ButtonTooltip
+		{
+			ControlName				CNestedPanel
+			InheritProperties		ButtonTooltip
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+
+	}
+}

@@ -391,18 +391,24 @@ bool function OnWeaponAttemptOffhandSwitch_Consumable( entity weapon )
 	if ( GetConsumableModOnWeapon( weapon ) == "" && weapon.GetOwner().IsBot() )
 		return false
 
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#337")
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#337")
+	#endif
 
 #if SERVER
 	if ( ! ( weapon.GetOwner() in file.playerToNextMod ) )
 		return false
-
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#343")
+	
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#343")
+	#endif
 
 	if ( !CanSwitchToWeapon( weapon, file.playerToNextMod[ weapon.GetOwner() ] ) )
 		return false
-
-	printt("OnWeaponAttemptOffhandSwitch_Consumable#348")
+	
+	#if DEVELOPER
+		printt("OnWeaponAttemptOffhandSwitch_Consumable#348")
+	#endif
 #endif
 
 	#if CLIENT
@@ -672,6 +678,9 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 		RuiSetFloat( rui, "chargeTime", chargeTime )
 		RuiSetImage( rui, "hudIcon", $"rui/flowstatecustom/bombicon" )
 		RuiSetInt( rui, "consumableType", 0 )
+
+		RuiSetString( rui, "hintController", "PRESS %attack% TO STOP PLANTING" )
+		RuiSetString( rui, "hintKeyboardMouse", "PRESS %attack% TO STOP PLANTING" )
 	}
 	else 
 	{
@@ -695,9 +704,6 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 	
 	while ( Time() < endTime )
 	{
-		RuiSetString( rui, "hintController", "PRESS %attack% TO STOP PLANTING" )
-		RuiSetString( rui, "hintKeyboardMouse", "PRESS %attack% TO STOP PLANTING" )
-
 		if( chargeTime != weapon.GetWeaponSettingFloat( eWeaponVar.charge_time ) )
 		{
 			if(modName == "snd_bomb")
@@ -835,7 +841,9 @@ void function OnWeaponChargeEnd_Consumable( entity weapon )
 		Signal( player, "OnChargeEnd" )
 	}
 
-	printt( "chargeFracAtEnd", chargeFracAtEnd )
+	#if DEVELOPER
+		printt( "chargeFracAtEnd", chargeFracAtEnd )
+	#endif
 
 	#if CLIENT
 	if ( player != GetLocalViewPlayer() )
@@ -888,7 +896,6 @@ void function OnWeaponChargeEnd_Consumable( entity weapon )
 
 var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	printt("OnWeaponPrimaryAttack_Consumable")
 	entity player = weapon.GetOwner()
 
 	if ( weapon.GetWeaponChargeFraction() < 1.0 )
@@ -918,11 +925,19 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 
 		if( info.ultimateAmount > 0 )
 			UltimatePackUse( player, info )
-		
-		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
-			SURVIVAL_RemoveFromPlayerInventory( player, itemName, 1 )
 
-		//StatsHook_PlayerUsedResource( player, null, itemName )
+		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
+		{
+			int dropAmount = 1
+			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
+
+			LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryUse,
+				[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  dropAmount ],
+				[ 3/*player*/,                              4/*item*/, 5/*quantity*/ ]
+			)
+		}
+		
+		StatsHook_PlayerUsedResource( player, null, itemName )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
 	#endif
 
@@ -1034,7 +1049,9 @@ void function AddModAndFireWeapon_Thread( entity player, string modName )
 	player.ClientCommand( "SetNextHealModType " + modName )
 	//Remote_CallFunction_NonReplay( "ClientCallback_SetNextHealModType", modName )
 
-	printt("AddModAndFireWeapon_Thread", "SetNextHealModType " + modName )
+	#if DEVELOPER
+		printt("AddModAndFireWeapon_Thread", "SetNextHealModType " + modName )
+	#endif
 
 	ActivateOffhandWeaponByIndex( OFFHAND_SLOT_FOR_CONSUMABLES )
 }
@@ -1443,7 +1460,10 @@ void function UpdateConsumableUse( entity player, ConsumableInfo info, Consumabl
 	{
 		if ( useData.usedHealth )
 		{
-			printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
+			#if DEVELOPER
+				printt( "debug shields " + minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ), info.shieldAmount )
+			#endif
+			
 			player.SetShieldHealth( minint( int( player.GetShieldHealth() + info.shieldAmount ), shieldHealthMax ) )
 		}
 		else if ( shouldUpdateShields )
@@ -1495,13 +1515,17 @@ void function UltimatePackUse( entity player, ConsumableInfo info )
 
 void function ClientCallback_SetNextHealModType(string nextModName)
 {
-	printt("ClientCallback_SetNextHealModType")
+	#if DEVELOPER
+		printt("ClientCallback_SetNextHealModType")
+	#endif
 	//file.playerToNextMod[ player ] <- nextModName
 }
 
 void function ClientCallback_SetSelectedConsumableTypeNetInt( int consumableType )
 {
-	printt("ClientCallback_SetSelectedConsumableTypeNetInt")
+	#if DEVELOPER
+		printt("ClientCallback_SetSelectedConsumableTypeNetInt")
+	#endif
 	//SetSelectedConsumableTypeNetInt( player, consumableType )
 }
 

@@ -1,0 +1,289 @@
+
+globalize_all_functions
+
+global const float COMMAND_RATE_LIMIT = 0.200 
+global const bool DISABLE_NETINFO = true
+
+struct 
+{
+	float Deathmatch_GetIntroCutsceneNumSpawns
+	float Deathmatch_GetIntroCutsceneSpawnDuration
+	float Deathmatch_GetIntroSpawnSpeed
+	bool Spectator_GetReplayIsEnabled
+	float Spectator_GetReplayDelay
+	float Deathmatch_GetRespawnDelay
+	float Equipment_GetDefaultShieldHP
+	float Deathmatch_GetOOBDamagePercent
+	float Deathmatch_GetVotingTime
+	string FlowState_Hoster
+	string FlowState_Admin1
+	string FlowState_Admin2
+	string FlowState_Admin3
+	string FlowState_Admin4
+	int FlowState_RoundTime
+	string FlowState_RingColor
+	string FlowState_BubbleColor
+	bool FlowState_ResetKillsEachRound
+	bool FlowState_Timer
+	bool FlowState_LockPOI
+	int FlowState_LockedPOI
+	bool FlowState_AdminTgive
+	float FlowState_TgiveDelay
+	bool FlowState_ForceCharacter
+	int FlowState_ChosenCharacter
+	bool FlowState_ForceAdminCharacter
+	int FlowState_ChosenAdminCharacter
+	bool FlowState_DummyOverride
+	bool FlowState_AutoreloadOnKillPrimary	
+	bool FlowState_AutoreloadOnKillSecondary
+	bool FlowState_RandomGuns
+	bool FlowState_RandomTactical
+	bool FlowState_RandomUltimate
+	bool FlowState_RandomGunsEverydie
+	bool FlowState_FIESTAShieldsStreak
+	bool FlowState_FIESTADeathboxes
+	bool FlowState_RandomGunsMetagame
+	bool FlowState_KillshotEnabled
+	bool FlowState_Droppods
+	bool FlowState_ExtrashieldsEnabled
+	float FlowState_ExtrashieldsSpawntime
+	float FlowState_ExtrashieldValue
+	bool FlowState_Gungame
+	bool FlowState_GungameRandomAbilities
+	bool FlowState_SURF
+	int FlowState_SURFRoundTime
+	bool FlowState_SURFLockPOI
+	int FlowState_SURFLockedPOI
+	bool Flowstate_EnableAutoChangeLevel
+	int Flowstate_AutoChangeLevelRounds
+	bool FlowState_EnableSkillTrainerByColombia
+	bool FlowState_EnableCustomMapByBiscutz
+	bool FlowState_EnableWhiteForestByZero
+	bool FlowState_EnableBrightWaterByZero
+	bool FlowState_EnableCaveByBlessedSeal
+	bool FlowState_EnableShipmentByAyeZee
+	bool FlowState_EnableKillhouseByAyeZee
+	bool FlowState_EnableNuketownByAyeZee	
+	bool Flowstate_DoorsEnabled
+	int FlowState_MaxPingAllowed
+	bool FlowState_KickHighPingPlayer
+	bool FlowState_EnableEncore
+	bool FlowState_EnableKillyardByDEAFPS
+	bool FlowState_EnableDustmentByDEAFPS
+	bool FlowState_EnableShoothouseByDEAFPS
+	bool FlowState_EnableRustByDEAFPS
+	bool FlowState_EnableNCanalsByDEAFPS
+	bool FlowState_EnableEncoreNuketownByAyeZee
+	bool FlowState_EnableMovementGym
+	bool FlowState_EnableMovementGymLogs
+	bool Flowstate_MovementGym_ClassicMovement
+	int Flowstate_MovementGym_ClassicMovement_Type
+	bool Flowstate_MovementGym_ClassicMovement_AutoBHOP	
+	bool Equipment_GetRespawnKitEnabled
+	bool Flowstate_movementgym
+	bool Flowstate_dm_oddball
+	bool Flowstate_haloMod_oddball
+	bool Flowstate_fs_1v1
+	bool Flowstate_fs_lgduels_1v1
+	bool Flowstate_fs_dm_fast_instagib
+	bool Flowstate_fs_dm
+	bool Flowstate_Is_PartyCrasher
+	bool Flowstate_Is_Canyon_Staging
+	bool Flowstate_IsHaloMode
+	bool Flowstate_DisableAllMapTriggers
+	bool Flowstate_Is_gamemode_1v1_type
+	bool Flowstate_GivePassive
+	bool FlowState_GiveTactical
+	bool FlowState_RestMsg
+	
+} SH_flowstateSettings
+
+
+void function Initialize_SH_FlowstateSettings()
+{
+	#if DISABLE_NETINFO && DEVELOPER
+		SetConVarInt( "net_showpeaks", 0 )
+	#endif 
+	SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns 			= GetCurrentPlaylistVarFloat( "intro_cutscene_num_spawns", 0 )
+	SH_flowstateSettings.Deathmatch_GetIntroCutsceneSpawnDuration 		= GetCurrentPlaylistVarFloat( "intro_cutscene_spawn_duration", 5 )
+	SH_flowstateSettings.Deathmatch_GetIntroSpawnSpeed 					= GetCurrentPlaylistVarFloat( "intro_cutscene_spawn_speed", 40 )
+	SH_flowstateSettings.Spectator_GetReplayIsEnabled 					= GetCurrentPlaylistVarBool( "replay_enabled", true )
+	SH_flowstateSettings.Spectator_GetReplayDelay 						= GetCurrentPlaylistVarFloat( "replay_delay", 5 )
+	SH_flowstateSettings.Deathmatch_GetRespawnDelay						= GetCurrentPlaylistVarFloat( "respawn_delay", 3.5 )
+	SH_flowstateSettings.Equipment_GetDefaultShieldHP 					= GetCurrentPlaylistVarFloat( "default_shield_hp", 100 )
+	SH_flowstateSettings.Deathmatch_GetOOBDamagePercent 				= GetCurrentPlaylistVarFloat( "oob_damage_percent", 10 )
+	SH_flowstateSettings.Deathmatch_GetVotingTime 						= GetCurrentPlaylistVarFloat( "voting_time", 5 )
+	SH_flowstateSettings.FlowState_Hoster 								= GetCurrentPlaylistVarString( "flowstateHoster", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin1 								= GetCurrentPlaylistVarString( "flowstateAdmin1", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin2 								= GetCurrentPlaylistVarString( "flowstateAdmin2", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin3 								= GetCurrentPlaylistVarString( "flowstateAdmin3", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_Admin4 								= GetCurrentPlaylistVarString( "flowstateAdmin4", "ColombiaFPS" )
+	SH_flowstateSettings.FlowState_RoundTime 							= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
+	SH_flowstateSettings.FlowState_RingColor 							= GetCurrentPlaylistVarString( "flowstateBubble", "120, 26, 56" )
+	SH_flowstateSettings.FlowState_BubbleColor 							= GetCurrentPlaylistVarString( "flowstateBubble", "120, 26, 56" )
+	SH_flowstateSettings.FlowState_ResetKillsEachRound 					= GetCurrentPlaylistVarBool( "flowstateResetKills", true )
+	SH_flowstateSettings.FlowState_Timer 								= GetCurrentPlaylistVarBool( "flowstateTimer", true )
+	SH_flowstateSettings.FlowState_LockPOI 								= GetCurrentPlaylistVarBool( "flowstateLockPOI", false )
+	SH_flowstateSettings.FlowState_LockedPOI 							= GetCurrentPlaylistVarInt( "flowstateLockeedPOI", 0)
+	SH_flowstateSettings.FlowState_AdminTgive 							= GetCurrentPlaylistVarBool( "flowstateAdminTgive", true )
+	SH_flowstateSettings.FlowState_TgiveDelay 							= GetCurrentPlaylistVarFloat( "flowstateTgiveDelay", 1.0 )
+	SH_flowstateSettings.FlowState_ForceCharacter 						= GetCurrentPlaylistVarBool( "flowstateForceCharacter", true )
+	SH_flowstateSettings.FlowState_ChosenCharacter 						= GetCurrentPlaylistVarInt( "flowstateChosenCharacter", 8 )
+	SH_flowstateSettings.FlowState_ForceAdminCharacter 					= GetCurrentPlaylistVarBool( "flowstateForceAdminCharacter", true )
+	SH_flowstateSettings.FlowState_ChosenAdminCharacter 				= GetCurrentPlaylistVarInt( "flowstateChosenAdminCharacter", 8 )
+	SH_flowstateSettings.FlowState_DummyOverride 						= GetCurrentPlaylistVarBool( "flowstateDummyOverride", false )
+	SH_flowstateSettings.FlowState_AutoreloadOnKillPrimary 				= GetCurrentPlaylistVarBool( "flowstateAutoreloadPrimary", true )
+	SH_flowstateSettings.FlowState_AutoreloadOnKillSecondary 			= GetCurrentPlaylistVarBool( "flowstateAutoreloadSecondary", true )
+	SH_flowstateSettings.FlowState_RandomGuns 							= GetCurrentPlaylistVarBool( "flowstateRandomGuns", false )
+	SH_flowstateSettings.FlowState_RandomTactical 						= GetCurrentPlaylistVarBool( "flowstateRandomTactical", false )
+	SH_flowstateSettings.FlowState_RandomUltimate 						= GetCurrentPlaylistVarBool( "flowstateRandomUltimate", false )
+	SH_flowstateSettings.FlowState_RandomGunsEverydie 					= GetCurrentPlaylistVarBool( "flowstateFiesta", false )
+	SH_flowstateSettings.FlowState_FIESTAShieldsStreak 					= GetCurrentPlaylistVarBool( "flowstateFiestaShieldsUpgrade", true )
+	SH_flowstateSettings.FlowState_FIESTADeathboxes 					= GetCurrentPlaylistVarBool( "flowstateFiestaDeathboxes", true )
+	SH_flowstateSettings.FlowState_RandomGunsMetagame 					= GetCurrentPlaylistVarBool( "flowstateRandomGunsMetagame", false )
+	SH_flowstateSettings.FlowState_KillshotEnabled 						= GetCurrentPlaylistVarBool( "flowstateKillshotEnabled", true )
+	SH_flowstateSettings.FlowState_Droppods 							= GetCurrentPlaylistVarBool( "flowstateDroppodsOnPlayerConnected", false )
+	SH_flowstateSettings.FlowState_ExtrashieldsEnabled 					= GetCurrentPlaylistVarBool( "flowstateExtrashieldsEnabled", true )
+	SH_flowstateSettings.FlowState_ExtrashieldsSpawntime 				= GetCurrentPlaylistVarFloat( "flowstateExtrashieldsSpawntime", 240 )
+	SH_flowstateSettings.FlowState_ExtrashieldValue 					= GetCurrentPlaylistVarFloat( "flowstateExtrashieldValue", 150 )
+	SH_flowstateSettings.FlowState_Gungame 								= GetCurrentPlaylistVarBool( "flowstateGungame", false )
+	SH_flowstateSettings.FlowState_GungameRandomAbilities 				= GetCurrentPlaylistVarBool( "flowstateGUNGAMERandomAbilities", false )
+	SH_flowstateSettings.FlowState_SURF 								= GetCurrentPlaylistVarBool( "flowstateSurf", false )
+	SH_flowstateSettings.FlowState_SURFRoundTime 						= GetCurrentPlaylistVarInt( "flowstateSURFRoundtime", 800 )
+	SH_flowstateSettings.FlowState_SURFLockPOI 							= GetCurrentPlaylistVarBool( "flowstateSURFLockPOI", false )
+	SH_flowstateSettings.FlowState_SURFLockedPOI 						= GetCurrentPlaylistVarInt( "flowstateSURFLockeedPOI", 0 )
+	SH_flowstateSettings.Flowstate_EnableAutoChangeLevel 				= GetCurrentPlaylistVarBool( "flowstateAutoChangeLevelEnable", false )
+	SH_flowstateSettings.Flowstate_AutoChangeLevelRounds 				= GetCurrentPlaylistVarInt( "flowstateRoundsBeforeChangeLevel", 2 )
+	SH_flowstateSettings.FlowState_EnableSkillTrainerByColombia 		= GetCurrentPlaylistVarBool( "flowstate_Enable_SKILLTRAINER_By_Colombia", true )
+	SH_flowstateSettings.FlowState_EnableCustomMapByBiscutz 			= GetCurrentPlaylistVarBool( "flowstate_Enable_CUSTOMMAP_By_Biscutz", false )
+	SH_flowstateSettings.FlowState_EnableWhiteForestByZero 				= GetCurrentPlaylistVarBool( "flowstate_Enable_WHITEFOREST_By_Zero", true )
+	SH_flowstateSettings.FlowState_EnableBrightWaterByZero 				= GetCurrentPlaylistVarBool( "flowstate_Enable_BRIGHWATER_By_Zero", false )
+	SH_flowstateSettings.FlowState_EnableCaveByBlessedSeal 				= GetCurrentPlaylistVarBool( "flowstate_Enable_CAVE_By_BlessedSeal", false )
+	SH_flowstateSettings.FlowState_EnableShipmentByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Shipment_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableKillhouseByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Killhouse_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableNuketownByAyeZee 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Nuketown_By_AyeZee", false )
+	SH_flowstateSettings.Flowstate_DoorsEnabled 						= GetCurrentPlaylistVarBool( "flowstateDoorsEnabled", true )
+	SH_flowstateSettings.FlowState_MaxPingAllowed 						= GetCurrentPlaylistVarInt( "flowstateMaxPingAllowed", 200 )
+	SH_flowstateSettings.FlowState_KickHighPingPlayer 					= GetCurrentPlaylistVarBool( "flowstateKickHighPingPlayer", true )
+	SH_flowstateSettings.FlowState_EnableEncore 						= GetCurrentPlaylistVarBool( "flowstate_Enable_Encore", true )
+	SH_flowstateSettings.FlowState_EnableKillyardByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Killyard_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableDustmentByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_Dustment_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableShoothouseByDEAFPS 			= GetCurrentPlaylistVarBool( "flowstate_Enable_Shoothouse_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableRustByDEAFPS 					= GetCurrentPlaylistVarBool( "flowstate_Enable_Rust_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableNCanalsByDEAFPS 				= GetCurrentPlaylistVarBool( "flowstate_Enable_NCanals_By_DEAFPS", false )
+	SH_flowstateSettings.FlowState_EnableEncoreNuketownByAyeZee 		= GetCurrentPlaylistVarBool( "flowstate_Enable_Encore_Nuketown_By_AyeZee", false )
+	SH_flowstateSettings.FlowState_EnableMovementGym 					= GetCurrentPlaylistVarBool( "flowstate_Enable_MovementGym", false )
+	SH_flowstateSettings.FlowState_EnableMovementGymLogs 				= GetCurrentPlaylistVarBool( "flowstate_Enable_MovementGym_Logs", false )
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement 			= GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement", false)
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type 	= GetCurrentPlaylistVarInt( "flowstate_MovementGym_ClassicMovement_Type", 0 )
+	SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP = GetCurrentPlaylistVarBool( "flowstate_MovementGym_ClassicMovement_AutoBHOP", false )
+	SH_flowstateSettings.Equipment_GetRespawnKitEnabled					= GetCurrentPlaylistVarBool("respawn_kit_enabled", false)
+	SH_flowstateSettings.Flowstate_movementgym 							= ( Playlist() == ePlaylists.fs_movementgym )
+	SH_flowstateSettings.Flowstate_dm_oddball							= ( Playlist() == ePlaylists.fs_dm_oddball )
+	SH_flowstateSettings.Flowstate_haloMod_oddball						= ( Playlist() == ePlaylists.fs_haloMod_oddball )
+	SH_flowstateSettings.Flowstate_fs_1v1								= ( Playlist() == ePlaylists.fs_1v1 )
+	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( Playlist() == ePlaylists.fs_lgduels_1v1 )
+	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( Playlist() == ePlaylists.fs_dm_fast_instagib )
+	SH_flowstateSettings.Flowstate_fs_dm								= ( Playlist() == ePlaylists.fs_dm )
+	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( MapName() == eMaps.mp_rr_party_crasher )
+	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
+	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
+	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
+	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= is1v1GameType()
+	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
+	SH_flowstateSettings.FlowState_GiveTactical							= GetCurrentPlaylistVarBool( "give_legend_tactical", false )
+	SH_flowstateSettings.FlowState_RestMsg 								= GetCurrentPlaylistVarBool( "rest_msg", false )
+}
+
+// Playlist GET
+// Todo: Eventually, make the above struct global and access directly? rename to fsGlobal
+
+float function Deathmatch_GetIntroCutsceneNumSpawns()			{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneNumSpawns }
+float function Deathmatch_GetIntroCutsceneSpawnDuration()		{ return SH_flowstateSettings.Deathmatch_GetIntroCutsceneSpawnDuration }
+float function Deathmatch_GetIntroSpawnSpeed()					{ return SH_flowstateSettings.Deathmatch_GetIntroSpawnSpeed }
+bool function Spectator_GetReplayIsEnabled()					{ return SH_flowstateSettings.Spectator_GetReplayIsEnabled } 
+float function Spectator_GetReplayDelay()						{ return SH_flowstateSettings.Spectator_GetReplayDelay } 
+float function Deathmatch_GetRespawnDelay()						{ return SH_flowstateSettings.Deathmatch_GetRespawnDelay }
+float function Equipment_GetDefaultShieldHP()					{ return SH_flowstateSettings.Equipment_GetDefaultShieldHP }
+float function Deathmatch_GetOOBDamagePercent()					{ return SH_flowstateSettings.Deathmatch_GetOOBDamagePercent }
+float function Deathmatch_GetVotingTime()						{ return SH_flowstateSettings.Deathmatch_GetVotingTime }
+string function FlowState_Hoster()								{ return SH_flowstateSettings.FlowState_Hoster }
+string function FlowState_Admin1()								{ return SH_flowstateSettings.FlowState_Admin1 }
+string function FlowState_Admin2()								{ return SH_flowstateSettings.FlowState_Admin2 }
+string function FlowState_Admin3()								{ return SH_flowstateSettings.FlowState_Admin3 }
+string function FlowState_Admin4()								{ return SH_flowstateSettings.FlowState_Admin4 }
+int function FlowState_RoundTime()								{ return SH_flowstateSettings.FlowState_RoundTime }
+string function FlowState_RingColor()							{ return SH_flowstateSettings.FlowState_RingColor }
+string function FlowState_BubbleColor()							{ return SH_flowstateSettings.FlowState_BubbleColor }
+bool function FlowState_ResetKillsEachRound()					{ return SH_flowstateSettings.FlowState_ResetKillsEachRound } 
+bool function FlowState_Timer()									{ return SH_flowstateSettings.FlowState_Timer } 
+bool function FlowState_LockPOI()								{ return SH_flowstateSettings.FlowState_LockPOI } 
+int function FlowState_LockedPOI()								{ return SH_flowstateSettings.FlowState_LockedPOI }
+bool function FlowState_AdminTgive()							{ return SH_flowstateSettings.FlowState_AdminTgive }
+float function FlowState_TgiveDelay()							{ return SH_flowstateSettings.FlowState_TgiveDelay }
+bool function FlowState_ForceCharacter()						{ return SH_flowstateSettings.FlowState_ForceCharacter } 
+int function FlowState_ChosenCharacter()						{ return SH_flowstateSettings.FlowState_ChosenCharacter }
+bool function FlowState_ForceAdminCharacter()					{ return SH_flowstateSettings.FlowState_ForceAdminCharacter } 
+int function FlowState_ChosenAdminCharacter()					{ return SH_flowstateSettings.FlowState_ChosenAdminCharacter }
+bool function FlowState_DummyOverride()							{ return SH_flowstateSettings.FlowState_DummyOverride } 
+bool function FlowState_AutoreloadOnKillPrimary()				{ return SH_flowstateSettings.FlowState_AutoreloadOnKillPrimary } 
+bool function FlowState_AutoreloadOnKillSecondary()				{ return SH_flowstateSettings.FlowState_AutoreloadOnKillSecondary } 
+bool function FlowState_RandomGuns()							{ return SH_flowstateSettings.FlowState_RandomGuns } 
+bool function FlowState_RandomTactical()						{ return SH_flowstateSettings.FlowState_RandomTactical } 
+bool function FlowState_RandomUltimate()						{ return SH_flowstateSettings.FlowState_RandomUltimate }
+bool function FlowState_RandomGunsEverydie()					{ return SH_flowstateSettings.FlowState_RandomGunsEverydie }
+bool function FlowState_FIESTAShieldsStreak()					{ return SH_flowstateSettings.FlowState_FIESTAShieldsStreak } 
+bool function FlowState_FIESTADeathboxes()						{ return SH_flowstateSettings.FlowState_FIESTADeathboxes } 
+bool function FlowState_RandomGunsMetagame()					{ return SH_flowstateSettings.FlowState_RandomGunsMetagame }
+bool function FlowState_KillshotEnabled()						{ return SH_flowstateSettings.FlowState_KillshotEnabled }
+bool function FlowState_Droppods()								{ return SH_flowstateSettings.FlowState_Droppods }
+bool function FlowState_ExtrashieldsEnabled()					{ return SH_flowstateSettings.FlowState_ExtrashieldsEnabled }
+float function FlowState_ExtrashieldsSpawntime()				{ return SH_flowstateSettings.FlowState_ExtrashieldsSpawntime }
+float function FlowState_ExtrashieldValue()						{ return SH_flowstateSettings.FlowState_ExtrashieldValue }
+bool function FlowState_Gungame()								{ return SH_flowstateSettings.FlowState_Gungame }
+bool function FlowState_GungameRandomAbilities()				{ return SH_flowstateSettings.FlowState_GungameRandomAbilities }
+bool function FlowState_SURF()									{ return SH_flowstateSettings.FlowState_SURF }
+int function FlowState_SURFRoundTime()							{ return SH_flowstateSettings.FlowState_SURFRoundTime }
+bool function FlowState_SURFLockPOI()							{ return SH_flowstateSettings.FlowState_SURFLockPOI } 
+int function FlowState_SURFLockedPOI()							{ return SH_flowstateSettings.FlowState_SURFLockedPOI }
+bool function Flowstate_EnableAutoChangeLevel()					{ return SH_flowstateSettings.Flowstate_EnableAutoChangeLevel }
+int function Flowstate_AutoChangeLevelRounds() 					{ return SH_flowstateSettings.Flowstate_AutoChangeLevelRounds }
+bool function FlowState_EnableSkillTrainerByColombia()			{ return SH_flowstateSettings.FlowState_EnableSkillTrainerByColombia }
+bool function FlowState_EnableCustomMapByBiscutz()				{ return SH_flowstateSettings.FlowState_EnableCustomMapByBiscutz }
+bool function FlowState_EnableWhiteForestByZero()				{ return SH_flowstateSettings.FlowState_EnableWhiteForestByZero }
+bool function FlowState_EnableBrightWaterByZero()				{ return SH_flowstateSettings.FlowState_EnableBrightWaterByZero }
+bool function FlowState_EnableCaveByBlessedSeal()				{ return SH_flowstateSettings.FlowState_EnableCaveByBlessedSeal }
+bool function FlowState_EnableShipmentByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableShipmentByAyeZee }
+bool function FlowState_EnableKillhouseByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableKillhouseByAyeZee }
+bool function FlowState_EnableNuketownByAyeZee()				{ return SH_flowstateSettings.FlowState_EnableNuketownByAyeZee }
+bool function Flowstate_DoorsEnabled()							{ return SH_flowstateSettings.Flowstate_DoorsEnabled }
+int function FlowState_MaxPingAllowed() 						{ return SH_flowstateSettings.FlowState_MaxPingAllowed }
+bool function FlowState_KickHighPingPlayer()					{ return SH_flowstateSettings.FlowState_KickHighPingPlayer }
+bool function FlowState_EnableEncore()							{ return SH_flowstateSettings.FlowState_EnableEncore } //enable encore by default unless stated false in playlist
+bool function FlowState_EnableKillyardByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableKillyardByDEAFPS }
+bool function FlowState_EnableDustmentByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableDustmentByDEAFPS }
+bool function FlowState_EnableShoothouseByDEAFPS()				{ return SH_flowstateSettings.FlowState_EnableShoothouseByDEAFPS }
+bool function FlowState_EnableRustByDEAFPS()					{ return SH_flowstateSettings.FlowState_EnableRustByDEAFPS }
+bool function FlowState_EnableNCanalsByDEAFPS()					{ return SH_flowstateSettings.FlowState_EnableNCanalsByDEAFPS }
+bool function FlowState_EnableEncoreNuketownByAyeZee()			{ return SH_flowstateSettings.FlowState_EnableEncoreNuketownByAyeZee }
+bool function FlowState_EnableMovementGym()						{ return SH_flowstateSettings.FlowState_EnableMovementGym }
+bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSettings.FlowState_EnableMovementGymLogs }
+bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
+int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
+bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
+bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }			
+bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
+bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
+bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
+bool function Flowstate_IsDmOddball()							{ return SH_flowstateSettings.Flowstate_dm_oddball }
+bool function Flowstate_IsHalomodeOddball()						{ return SH_flowstateSettings.Flowstate_haloMod_oddball }
+bool function Flowstate_IsFS1v1()								{ return SH_flowstateSettings.Flowstate_fs_1v1 }
+bool function Flowstate_IsFastInstaGib()						{ return SH_flowstateSettings.Flowstate_fs_dm_fast_instagib }
+bool function Flowstate_IsFSDM()								{ return SH_flowstateSettings.Flowstate_fs_dm }
+bool function Flowstate_IsMapPartyCrasher()						{ return SH_flowstateSettings.Flowstate_Is_PartyCrasher }
+bool function Flowstate_IsMapCanyonlandsStaging()				{ return SH_flowstateSettings.Flowstate_Is_Canyon_Staging }
+bool function Flowstate_IsGame1v1Type() 						{ return SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type }
+bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowstate_GivePassive }
+bool function Equipment_GetRespawnKitEnabled()                  { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }
+bool function FlowState_GiveTactical()							{ return SH_flowstateSettings.FlowState_GiveTactical }
+bool function FlowState_RestMsg()								{ return SH_flowstateSettings.FlowState_RestMsg }

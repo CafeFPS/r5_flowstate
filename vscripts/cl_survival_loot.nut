@@ -1913,7 +1913,10 @@ float function GetHighlightFillAlphaForLoot( entity lootEnt )
 }
 void function CreateDeathBoxRuiWithOverridenData( entity deathBox, NestedGladiatorCardHandle nestedGCHandle  )
 {
-	printt( "Creating with overriden profile data"  )
+	#if DEVELOPER
+		printt( "Creating with overriden profile data"  )
+	#endif 
+	
 	SetNestedGladiatorCardOverrideName( nestedGCHandle, deathBox.GetCustomOwnerName() )
 
 	int characterIndex = deathBox.GetNetInt(  "characterIndex" )

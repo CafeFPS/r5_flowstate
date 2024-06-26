@@ -40,20 +40,20 @@ playlists
 				use_global_stats								1
 
 				// restricted servers	
-				restricted_server 0			// 1 = restrictions enabled
-				restricted_join_message "Welcome to the R5R.DEV elite server. \n\n You meet the minimum requirements to play on this server."
-				restricted_whitelist_message "You're whitelisted for the R5R.DEV elite server"
-				restricted_kills 500		// minimum kills required to play
-				restricted_kd 0.7  			// minimum kd ratio
-				restricted_playtime 10000 	// minimum play time in seconds
-				restricted_gamesplayed 10 // minimum games played
-				restricted_rank 200  		//minimum rank allowed to join	
-				restricted_kick_log 1
+				restricted_server 				0			// 1 = restrictions enabled
+				restricted_join_message 		"Welcome to the R5R.DEV elite server. \n\n You meet the minimum requirements to play on this server."
+				restricted_whitelist_message 	"You're whitelisted for the R5R.DEV elite server"
+				restricted_kills 				500		// minimum kills required to play
+				restricted_kd 					0.7  			// minimum kd ratio
+				restricted_playtime 			10000 	// minimum play time in seconds
+				restricted_gamesplayed 			10 // minimum games played
+				restricted_rank 				200  		//minimum rank allowed to join	
+				restricted_kick_log 			1
 					
 					
-				//ADMINS for cc command
+				//ADMINS for cc command (reccomended to list in r5r.dev_config file if has tracker dll)
 				// usage: "adminname-oid,anotheradmin-oid"	
-				admins_list ""		
+				admins_list "R5mkos-1007946891142"		
 				stats_discord_webhook_player_count		0 // Sends player join and disconnect data to a discord channel
 				stats_discord_webhook_matches_enabled	0
 				
@@ -88,7 +88,7 @@ playlists
 
 				enable_report                                  2
 				enable_three_weapons                           0
-				charselect_intro_countdown_duration            5
+				charselect_intro_countdown_duration            5 //5
 				wait_for_players_forever                       0
 
 
@@ -526,6 +526,10 @@ playlists
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
 				flowstate_enable_bullet_slow					1
+				
+				flowstate_limit_playback_per_slot_amount		1	//-1 for unlimited (up to server limit)		
+				flowstateAdminTgive								0 // 0 enables weapons menu for players
+			
 			}
 			gamemodes { survival { maps {
 				mp_rr_party_crasher                     		1
@@ -1119,7 +1123,7 @@ playlists
 				flowstate_Enable_Shipment_By_AyeZee				1
 				flowstate_Enable_Killhouse_By_AyeZee			1
 				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							1
+				flowstate_Enable_Encore							1 //if disabled, it will try to load Rust first
 				flowstate_Enable_Killyard_By_DEAFPS				1
 				flowstate_Enable_Dustment_By_DEAFPS				1
 				flowstate_Enable_Shoothouse_By_DEAFPS			1
@@ -1385,9 +1389,38 @@ playlists
 				flowstateAutoChangeLevelEnable			1
 				flowstateRoundsBeforeChangeLevel		2
 				
-				flowstateAdminTgive 					0 //admin is for tgive only, 1 will enable dev menu weapons for players
-				flowstate1v1MatchLoadout					0
-				afk_to_rest_bool						0
+				flowstateAdminTgive 					0 //admin is for tgive only, 0 will enable dev menu weapons for players
+				flowstate1v1MatchLoadout				0
+				
+				flowstate_give_character_passive		1
+				
+				flowstate_disable_all_map_triggers									0
+				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
+				flowstate_give_random_custom_models_toall			1		
+					
+				fs_scenarios_dropshipenabled 					0
+				fs_scenarios_start_skydiving 					1 //only works when dropship is enabled
+				fs_scenarios_maxIndividualMatchTime				300
+				fs_scenarios_playersPerTeam						3
+				fs_scenarios_teamAmount							3
+				fs_scenarios_ground_loot						1
+				fs_scenarios_inventory_empty					0 	// 0 won't give weapons, 1 will give wepons
+				fs_scenarios_deathboxes_enabled					1
+				fs_scenarios_bleedout_enabled					1
+				fs_scenarios_show_death_recap_onkilled			1
+				fs_scenarios_zonewars_ring_mode					1
+				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
+				fs_scenarios_ring_damage_step_time				1.5
+				fs_scenarios_game_start_time_delay				3.0
+				fs_scenarios_ring_damage						25.0
+				fs_scenarios_characterselect_enabled			1
+				fs_scenarios_characterselect_time_per_player	3.5
+				fs_scenarios_ringclosing_maxtime				100
+				survival_infinite_ammo   						1 	//Disable if ground loot is enabled above
+				flowstateBubble 								"111, 66, 245"	
+				// fs_scenarios_max_queuetime 150.0 //not implemented atm
+				// fs_scenarios_minimum_team_allowed 1 // used only when max_queuetime is triggered
+				// fs_scenarios_maximum_team_allowed 3
 				
 				/////////////////////////
 				// mkos added features //
@@ -1409,41 +1442,33 @@ playlists
 															// if player tries to rest, it will send them to rest after fight 
 															// and tell them they can try again in (n) seconds. 
 				
-				//TODO: custom teams settings
-				//
 				
 				// extra
 				default_start_in_rest_setting			0 // players default to starting in rest if 1 and player has no prior saved preference
 				default_lock1v1_setting					1 // default setting for player preference
-				give_random_legend_on_spawn             1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
+				give_random_legend_on_spawn             0 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice							0
 				default_enable_input_banner_setting     0 ///disables spammy player input banner on spawn //deprecated?
 				enable_chat_commands					1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
 				
-				///////////////////////////////////////////////////////////////////////////////
+				///////////////////////////////////////////////////////////////////////////////			
 				
-				flowstate_disable_all_map_triggers									0
-				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
-				flowstate_give_random_custom_models_toall			1
-
-				flowstateBubble 						"111, 66, 245"				
-
-				fs_scenarios_dropshipenabled 0
-				fs_scenarios_start_skydiving 1 //only works when dropship is enabled
-				fs_scenarios_playersPerTeam 3
-				fs_scenarios_teamAmount	2 //only supports 2 atm
-				fs_scenarios_maxIndividualMatchTime 300.0
-				// fs_scenarios_max_queuetime 150.0 //not implemented atm
-				// fs_scenarios_minimum_team_allowed 1 // used only when max_queuetime is triggered
-				// fs_scenarios_maximum_team_allowed 3
+				//The following is for when 
+				//installing or enabling extra spawn paks
+				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
 				
-				fs_scenarios_ground_loot 1 //spawn ground loot and lootbins for realms
-				survival_infinite_ammo   0 //Disable if ground loot is enabled above
-				fs_scenarios_inventory_empty 1 // 1 won't give weapons, 0 will give wepons
-
-				fs_scenarios_deathboxes_enabled 1
+				spawnsets_mp_rr_canyonlands_64k_x_64k	"1"
+				spawnsets_mp_rr_aqueduct 				"1"
+				spawnsets_mp_rr_arena_composite 		"1"
+				spawnsets_mp_rr_arena_phase_runner		"1"
+				spawnsets_mp_rr_olympus_mu1				"1"
+				
+				spawnpaks_use_sets 				0	// bool, enables using other than stock spawn paks
+				spawnpaks_use_random			0	// bool, loads random configured pak on mapstart
+				spawnpaks_prefer				0	// bool, enables the below setting 
+				spawnpaks_preferred_pak			0 	//integer, pak number 
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
@@ -1509,8 +1534,8 @@ playlists
 				flowstateAutoChangeLevelEnable			1
 				flowstateRoundsBeforeChangeLevel		2
 				
-				flowstateAdminTgive 					0 // 1 will enable dev menu weapons for players
-				flowstate1v1MatchLoadout					0
+				flowstateAdminTgive 					0 // 0 will enable dev menu weapons for players
+				flowstate1v1MatchLoadout				0
 				
 				flowstate_disable_all_map_triggers									1
 				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
@@ -1522,11 +1547,17 @@ playlists
 				// mkos added features //
 				/////////////////////////
 				
-				COMMAND_RATE_LIMIT						0.200 //Rate limiting for all custom client commands
+				enable_motd 		1  
+				use_online_motd 	0  // 1 for online, 0 for local		
+				
+				// for local motd:
+				custom_MOTD "var 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111 11111111111"
+				
+				
+				COMMAND_RATE_LIMIT						0.200 //Rate limiting for custom client commands
 				
 				default_ibmm_wait						0 //0 for instant queue any input
 				ibmm_wait_limit							30 //maximum wait time allowed to match input
-				lg_duel_mode_60p						0 //will lock map to base 60 player map on staging
 				
 				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
@@ -1534,10 +1565,13 @@ playlists
 				enable_afk_thread 						1 //0 disables afk thread for this mode
 				superglide_counter_msg					1 // Shows players superglide count
 				custom_superglide_msg					"Kewl beans" //shows custom msg under counter.
-				patch_for_dropoff						0
+				patch_for_dropoff						1
 				patch_waiting_area						1 //makes a barrier between waiting and fighting areas
 				
 				//The following can be used to create custom loadouts 
+				// "weapon_name attachment atachment, weapon_name2"
+				//https://discord.com/channels/873158454850756638/876944169594159105
+				
 				custom_1v1_weapons_primary ""
 				custom_1v1_weapons_primary_continue ""
 				custom_1v1_weapons_secondary ""
@@ -1548,11 +1582,13 @@ playlists
 				give_legend_tactical					1 //gives player tactical ability for legend on spawn
 				give_legend 							1 // allows giving legend ( during challenge only )
 				challenge_recap_server_message			1 //enables quick kill/death recap msg in chat (requires chat bot enabled in r5rdev_config.json)
-				custom_weapons_challenge_only			0 //allows custom weapons during challenge only
+				custom_weapons_challenge_only			1 //restricts custom weapons to during challenge only ( dev menu/weapon menu )
 				
-				maplist "mp_rr_arena_composite,mp_rr_aqueduct,mp_rr_party_crasher"
-				rotate_map 								1 // rotatesmaps in maplist
-				disable_lag_comp						0
+				maplist "mp_rr_arena_composite,mp_rr_aqueduct,mp_rr_party_crasher" //maps you want cycled
+				rotate_map 								1 // rotatesmaps in maplist 
+				
+				disable_lag_comp						0 //not advised
+				
 				rest_grace 								5.0 // time required from start of fight 
 															// or since last damage to rest during a fight 
 															// if player tries to rest, it will send them to rest after fight 
@@ -1564,11 +1600,30 @@ playlists
 				default_lock1v1_setting					1 // default setting for player preference
 				give_random_legend_on_spawn             1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice							0
-				default_enable_input_banner_setting     0 ///disables spammy player input banner on spawn //deprecated?
+				default_enable_input_banner_setting     1 // display input ui default setting for players
 				enable_chat_commands					1 // allows typing /rest /info /id  into chat. 
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
 				
+				//The following is for when 
+				//installing or enabling extra spawn paks
+				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
+				
+				spawnsets_mp_rr_canyonlands_64k_x_64k		"1"
+				spawnsets_mp_rr_aqueduct 					"1"
+				spawnsets_mp_rr_arena_composite 			"1"
+				spawnsets_mp_rr_arena_phase_runner			"1"
+				spawnsets_mp_rr_olympus_mu1					"1"
+				spawnsets_mp_rr_arena_skygarden				"1"
+				
+				spawnpaks_use_sets 				1	// bool, enables using other than stock spawn paks
+				spawnpaks_use_random			1	// bool, loads random configured pak on mapstart
+				spawnpaks_prefer				0	// bool, enables the below setting 
+				spawnpaks_preferred_pak			0 	// integer, pak number 
+				spawnpaks_playlist_override		0 	// bool, enables using below defined playlist for spawnpaks_playlist_override
+				
+				custom_spawnpak					""	// string, custom spawn.rpak override
+				custom_playlist_spawnpak		""  // string, custom playlist override (fs_1v1, fs_scenarios, etc. )  loads spawns for this gametype instead of game loaded gametype
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
@@ -1576,6 +1631,7 @@ playlists
 				mp_rr_arena_composite							1
 				mp_rr_arena_phase_runner						1
 				mp_rr_olympus_mu1								1
+				mp_rr_arena_skygarden							1
 			} } }
 		}
 
@@ -1638,7 +1694,7 @@ playlists
 				flowstateAutoChangeLevelEnable			1
 				flowstateRoundsBeforeChangeLevel		2
 				
-				flowstateAdminTgive 					0 //admin is for tgive only, 1 will enable dev menu weapons for players
+				flowstateAdminTgive 					0 //admin is for tgive only, 0 will enable dev menu weapons for players
 				flowstate1v1MatchLoadout					0
 				afk_to_rest_bool						0
 				flowstate_headshots_only_gamemode 		1 //i recommend a wingman only in respawn kit above
@@ -1655,7 +1711,6 @@ playlists
 				
 				default_ibmm_wait						0 //0 for instant queue any input
 				ibmm_wait_limit							30 //maximum wait time allowed to match input
-				lg_duel_mode_60p						0 //will lock map to base 60 player map on staging
 				
 				rest_msg								1 // displays block message during rest with helpful commands information
 				afk_to_rest_bool						1 // makes player rest when afk instead of kick
@@ -1698,6 +1753,21 @@ playlists
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
 				
+				
+				//The following is for when 
+				//installing or enabling extra spawn paks
+				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
+				
+				mp_rr_canyonlands_64k_x_64k		"1"
+				spawnsets_mp_rr_aqueduct 		"1,2"
+				spawnsets_mp_rr_arena_composite "1,2"
+				mp_rr_arena_phase_runner		"1,2,3"
+				mp_rr_olympus_mu1				"1,2,3,4,5"
+				
+				spawnpaks_use_sets 				1	// bool, enables using other than stock spawn paks
+				spawnpaks_use_random			0	// bool, loads random configured pak on mapstart
+				spawnpaks_prefer				0	// bool, enables the below setting 
+				spawnpaks_preferred_pak			2 	//integer, pak number 
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
@@ -1767,7 +1837,7 @@ playlists
 				flowstateAutoChangeLevelEnable			1
 				flowstateRoundsBeforeChangeLevel		2
 				
-				flowstateAdminTgive 					0 //admin is for tgive only, 1 will enable dev menu weapons for players
+				flowstateAdminTgive 					1 //admin is for tgive only, 0 will enable dev menu weapons for players
 				flowstate1v1MatchLoadout				0
 				afk_to_rest_bool						0
 				
@@ -1827,7 +1897,7 @@ playlists
 				custom_match_ending_title				"Match complete"
 				custom_match_ending_message				"Don't leave. Server is going to change maps."
 				
-				
+				//has its own spawn pak hardcoded
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_staging 1
@@ -2987,6 +3057,8 @@ playlists
 				lsm_mod9 0 // all loot is mozambique
 				lsm_mod10 1
 				
+				flowstate_give_character_passive		1
+				
 			}
 			gamemodes { survival { maps {
 				mp_rr_party_crasher                     		1
@@ -3098,6 +3170,7 @@ playlists
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
 				"BETA_BUILD_WATERMARK" 				  ""
+				"FS_PLAYLIST_MOTD"						"wow this motd is so amazingly beautiful"
 			}
 		}
 	}

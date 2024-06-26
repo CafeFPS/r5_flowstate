@@ -24,6 +24,9 @@ WeaponData
 
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_mastiff"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_mastiff"
+	"OnWeaponReload"								"OnWeaponReload_weapon_mastiff"
+	//"OnWeaponActivate"							"OnWeaponActivate_weapon_mastiff"
+    //"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_mastiff"
 
 	// Menu
 	"menu_category"                                 "shotgun"
@@ -105,7 +108,7 @@ WeaponData
       
 	"ammo_min_to_fire"								"1"
 	"reload_is_segmented"                           "1"
-	 "reload_allow_ads"                              "1"
+	"reload_allow_ads"                              "1"
 	"ammo_size_segmented_reload"					"1"
 	"ammo_display_as_clips"							"0"
 	"low_ammo_fraction" 							"0.25"
@@ -277,10 +280,6 @@ WeaponData
 	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_MASTIFF"
 	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_MASTIFF"               
          
-  
-                              
-                              
-  
       
 
 	Mods

@@ -1,0 +1,505 @@
+resource/ui/menus/about_game_mode.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		disableDpad             1
+
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+        ScreenFrame
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            visible					1
+            enabled 				1
+			scaleImage				1
+			image					"vgui/HUD/white"
+            drawColor				"0 0 0 220"
+        }
+
+		MenuFrame
+		{
+			ControlName				Label
+			xpos					0
+			ypos					c-420
+			wide					%100
+			tall					906
+			labelText				""
+			bgcolor_override		"70 70 70 0"
+			visible					1
+			paintbackground			1
+		}
+
+        Cover
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide                    %80
+            tall					%80
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"0 0 0 200"
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+        LineRight
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide                    2
+            tall					%80
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"255 255 255 255"
+
+            pin_to_sibling			Cover
+            pin_corner_to_sibling	RIGHT
+            pin_to_sibling_corner	RIGHT
+        }
+
+		LineLeft
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide                    2
+            tall					%80
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"255 255 255 255"
+
+            pin_to_sibling			Cover
+            pin_corner_to_sibling	LEFT
+            pin_to_sibling_corner	LEFT
+        }
+
+		LineTop
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide                    %80
+            tall					2
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"255 255 255 255"
+
+            pin_to_sibling			Cover
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+		LineBottom
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					0
+            wide                    %80
+            tall					2
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"255 255 255 255"
+
+            pin_to_sibling			Cover
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+        Line
+        {
+            ControlName				ImagePanel
+            xpos					0
+            ypos					-100
+            wide                    %30
+            tall					2
+            visible					1
+            enabled 				1
+            scaleImage				1
+            image					"vgui/HUD/white"
+            drawColor				"255 255 255 255"
+
+            pin_to_sibling			Cover
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	TOP
+        }
+
+        TitleText
+		{
+			ControlName				Label
+			ypos                    -40
+			auto_wide_tocontents	1
+			tall					41
+			labelText				"About R5Reloaded"
+			font					TitleBoldFont
+			fontHeight				41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		DiscordMainTitleText
+		{
+			ControlName				Label
+			ypos                    -140
+			auto_wide_tocontents	1
+			tall					31
+			labelText				"Discord"
+			font					TitleBoldFont
+			fontHeight				31
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+        DiscordTitleText
+		{
+			ControlName				Label
+			ypos                    -180
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"Need any help? Wana talk with the community? Join our discord server!"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+        DiscordLinkText
+		{
+			ControlName             RuiButton
+            classname               "MenuButton"
+			ypos                    -210
+			wide					460
+			tall					25
+			labelText				"discord.com/invite/jqMkUdXrBr"
+			font					TitleFont
+			rui                     "ui/generic_left_icon_button.rpak"
+			fontHeight				25
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		TwitterMainTitleText
+		{
+			ControlName				Label
+			ypos                    -270
+			auto_wide_tocontents	1
+			tall					31
+			labelText				"Twitter"
+			font					TitleBoldFont
+			fontHeight				31
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		TwitterTitleText
+		{
+			ControlName				Label
+			ypos                    -310
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"R5Reloaded Twitter"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		TwitterR5Text
+		{
+			ControlName             RuiButton
+            classname               "MenuButton"
+			ypos                    -340
+			wide	 				355
+			tall					25
+			labelText				""
+			font					TitleFont
+			rui                     "ui/generic_left_icon_button.rpak"
+			fontHeight				25
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		TwitterR5JPText
+		{
+			ControlName             RuiButton
+            classname               "MenuButton"
+			ypos                    -370
+			wide					390
+			tall					25
+			labelText				""
+			font					TitleFont
+			rui                     "ui/generic_left_icon_button.rpak"
+			fontHeight				25
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		DocTitleText
+		{
+			ControlName				Label
+			ypos                    -430
+			auto_wide_tocontents	1
+			tall					31
+			labelText				"Documentation"
+			font					TitleBoldFont
+			fontHeight				31
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		DocText
+		{
+			ControlName				Label
+			ypos                    -470
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"Need or want to view the documentation for R5Reloaded?"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		DocLinkText
+		{
+			ControlName             RuiButton
+            classname               "MenuButton"
+			ypos                    -500
+			wide					510
+			tall					25
+			labelText				""
+			font					TitleFont
+			rui                     "ui/generic_left_icon_button.rpak"
+			fontHeight				25
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		GithubTitleText
+		{
+			ControlName				Label
+			ypos                    -560
+			auto_wide_tocontents	1
+			tall					31
+			labelText				"Github"
+			font					TitleBoldFont
+			fontHeight				31
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		GithubText
+		{
+			ControlName				Label
+			ypos                    -600
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"We are opensource, check it out!"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		GithubLinkText
+		{
+			ControlName             RuiButton
+            classname               "MenuButton"
+			ypos                    -630
+			wide					505
+			tall					25
+			labelText				""
+			font					TitleFont
+			rui                     "ui/generic_left_icon_button.rpak"
+			fontHeight				25
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		KBText
+		{
+			ControlName				Label
+			ypos                    -690
+			auto_wide_tocontents	1
+			tall					31
+			labelText				"Quick Keybinds"
+			font					TitleBoldFont
+			fontHeight				31
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		KBCCompanionText
+		{
+			ControlName				Label
+			ypos                    -730
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"F10 - Opens the companion you can use to find/create servers"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		KBCConsoleText
+		{
+			ControlName				Label
+			ypos                    -760
+			auto_wide_tocontents	1
+			tall					21
+			labelText				"Tilde ( ~ ) - Opens the console"
+			font					TitleFont
+			fontHeight				21
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			visible					1
+
+			pin_to_sibling			Cover
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+// FOOTER //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+    }
+}

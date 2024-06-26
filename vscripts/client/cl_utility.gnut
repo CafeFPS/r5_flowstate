@@ -41,9 +41,10 @@ global struct RUIWorldCoordinates // this isn't specific to RUI, it generally re
 struct
 {
 	table<int,array<var> > textPanels
-	table<int,array<var> > worldRUI
+	table<int,array<var> > textPanelTopo
 	int showButtonHintsInt = 1
 	array< entity > clientLightsFromServer
+	
 } file
 
 /***************************************************
@@ -1017,6 +1018,15 @@ void function Dev_DestroyTextInfoPanelWithID( int panelID )
 
 	foreach ( rui in file.textPanels[ panelID ] )
 		RuiDestroyIfAlive( rui )
+		
+	foreach ( topo in file.textPanelTopo[ panelID ] )
+	{
+		try
+		{
+			RuiTopology_Destroy( topo ) //required
+		}
+		catch( e ){}
+	}
 
 	file.textPanels[ panelID ].clear()
 }
@@ -1048,6 +1058,11 @@ void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, flo
 			file.textPanels[ panelID ] <- []
 
 		file.textPanels[ panelID ].append( rui )
+		
+		if( !( panelID in file.textPanelTopo ) )
+			file.textPanelTopo[ panelID ] <- []
+			
+		file.textPanelTopo[ panelID ].append( topo )
 	}
 
 	dev_infoPanelTitleString = ""
@@ -1912,33 +1927,28 @@ void function ServerCallback_DeleteSpawnedClientSideDynamicLights()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void function Dev_BuildWorldImageRUI(asset image, vector org, vector ang, float width, float height, int RUIID = -1)
+table function GetPlayerPos( entity player = null )
 {
-	vector origin = org
-	vector angles = ang
+	if ( !player )
+		player = GetLocalClientPlayer()
 
-	origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
-	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+	vector org = player.GetOrigin()
+	vector vec = player.GetViewVector()
+	vector ang = VectorToAngles( vec )
 
-	var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
-    RuiSetImage( rui, "basicImage", image)
-
-	if ( RUIID != -1 )
-	{
-		if ( !( RUIID in file.worldRUI ) )
-			file.worldRUI[ RUIID ] <- []
-
-		file.worldRUI[ RUIID ].append( rui )
-	}
+	return { origin = org, angles = ang }
 }
 
-void function Dev_DestroyWorldRUIWithID( int RUIID )
-{
-	if ( !( RUIID in file.worldRUI ) )
-		return
-
-	foreach ( rui in file.worldRUI[ RUIID ] )
-		RuiDestroyIfAlive( rui )
-
-	file.worldRUI[ RUIID ].clear()
-}
+// void function DEV_TestImg()
+// {
+	// entity player = GetLocalClientPlayer()
+	
+	// Dev_BuildWorldImageRUI
+	// ( 
+		// $"rui/flowstate_custom/mkos/1v1banner", 
+		// expect vector ( GetPlayerPos( player ).origin ),
+		// expect vector ( GetPlayerPos( player ).angles ),
+		// 800,
+		// 505
+	// )
+// }

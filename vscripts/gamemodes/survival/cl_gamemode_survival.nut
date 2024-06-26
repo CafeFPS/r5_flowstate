@@ -300,17 +300,12 @@ struct
 
 void function ClGamemodeSurvival_Init()
 {
-	//Increase client command limit to 60
-	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
-
 	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
 		SetConVarInt( "colorblind_mode", 0 )
 	
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
-	#if(false)
 
-#endif
 	BleedoutClient_Init()
 	ClSurvivalShip_Init()
 	SurvivalFreefall_Init()
@@ -408,7 +403,8 @@ void function ClGamemodeSurvival_Init()
 	AddClientCallback_OnResolutionChanged( OnResolutionChanged_FixRuiSize )
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, Survival_WaitForPlayers )
 	AddCallback_GameStateEnter( eGameState.WaitingForPlayers, EnableToggleMuteKeys )
-	AddCallback_GameStateEnter( eGameState.PickLoadout, Survival_RunCharacterSelection )
+	if( Playlist() != ePlaylists.fs_scenarios )
+		AddCallback_GameStateEnter( eGameState.PickLoadout, Survival_RunCharacterSelection )
 	AddCallback_GameStateEnter( eGameState.PickLoadout, DisableToggleMuteKeys )
 	AddCallback_GameStateEnter( eGameState.Prematch, OnGamestatePrematch )
 	AddCallback_GameStateEnter( eGameState.Playing, DisableToggleMuteKeys )
@@ -748,9 +744,13 @@ var function AddInWorldMinimapTopo( entity ent, float width, float height )
 }
 
 const array<int> nonCompassModes = [
+	ePlaylists.custom_ctf,
+	ePlaylists.fs_haloMod_ctf,
+	ePlaylists.fs_haloMod_oddball,
 	ePlaylists.fs_scenarios,
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_snd
 ]
 
 void function Cl_Survival_AddClient( entity player )
@@ -2295,7 +2295,9 @@ void function AddInWorldMinimapPlaneLine( var screen )
 
 	int zOrder = file.planeEnd.Minimap_GetZOrder()
 
-	printt( "======================= added line ========================" )
+	#if DEVELOPER
+		printt( "======================= added line ========================" )
+	#endif
 
 	var rui = RuiCreate( $"ui/in_world_minimap_line.rpak", screen, drawType, FULLMAP_Z_BASE + 10 )
 	RuiSetFloat3( rui, "mapCorner", <file.mapCornerX, file.mapCornerY, 0.0> )
@@ -2308,7 +2310,10 @@ void function AddInWorldMinimapPlaneLine( var screen )
 	OnThreadEnd(
 		function() : ( rui )
 		{
-			printt( "Line Destroy " + rui )
+			#if DEVELOPER
+				printt( "Line Destroy " + rui )
+			#endif 
+			
 			RuiDestroy( rui )
 		}
 	)
@@ -3131,8 +3136,10 @@ bool function Survival_HandleKeyInput( int key )
 			break
 	}
 
+	#if DEVELOPER
 	if ( pressedPing )
 		printt( "pressedPing", key )
+	#endif
 
 	if ( ButtonIsBoundToAction( key, "use" ) )
 		return true
@@ -3396,7 +3403,6 @@ void function WaitingForPlayers_CreateCustomCameras()
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), true)
-		Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), true)
 		Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), true)
 	}
 	
@@ -3420,7 +3426,6 @@ void function DisableCustomMapAndGamemodeNameFrames()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits2" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits3" ), false)
-	Hud_SetVisible(HudElement( "WaitingForPlayers_Credits4" ), false)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_CreditsFrame" ), false)
 	
 }
@@ -3538,10 +3543,12 @@ void function Survival_RunCharacterSelection_Thread()
 		WaitFrame()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 )
-		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true ) )
+	{
+		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false ) )
 			thread DoAnimatedSquadCardsPresentation()
 		else
 			thread DoSquadCardsPresentation()
+	}
 	else
 		CloseCharacterSelectNewMenu()
 
@@ -3549,10 +3556,12 @@ void function Survival_RunCharacterSelection_Thread()
 		WaitFrame()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
-		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true ) )
+	{
+		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", false) )
 			thread DoAnimatedChampionSquadCardsPresentation()
 		else
 			thread DoChampionSquadCardsPresentation()
+	}
 }
 
 
@@ -3604,21 +3613,21 @@ void function SetDpadMenuHidden()
 }
 
 void function ChangeHUDVisibilityWhenInCryptoDrone( bool isInCryptoDrone = false )
-{
+{	
+	//TODO: debug it 
 	
-	//if ( IsAlive( GetLocalClientPlayer() ) )
-	//{
-	//	
-	//	var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
-	//
-	//	if ( cryptoAnimatedTacticalRui != null )
-	//	{
-	//		
-	//		RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
-	//	}
-	//}
-	//
-	//RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+	// if ( IsAlive( GetLocalClientPlayer() ) )
+	// {
+		
+		// var cryptoAnimatedTacticalRui = GetCryptoAnimatedTacticalRui()
+	
+		// if ( cryptoAnimatedTacticalRui != null )
+		// {
+			// RuiSetBool( cryptoAnimatedTacticalRui, "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
+		// }
+	// }
+	
+	RuiSetBool( GetUltimateRui(), "isVisible", isInCryptoDrone ? false : GetHudDefaultVisibility() )
 }
 
 void function OnGameStatePlaying_CheckCryptoDrone()

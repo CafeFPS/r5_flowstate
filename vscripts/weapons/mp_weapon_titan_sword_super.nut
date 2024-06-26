@@ -306,7 +306,10 @@ void function ServerToClient_TitanSword_StopSuperFx()
 
 void function ServerCallback_TitanSword_SuperReady( entity player )
 {
-	printt( "SUPER READY: " + player + " :: " + GetLocalViewPlayer() )
+	#if DEVELOPER
+		printt( "SUPER READY: " + player + " :: " + GetLocalViewPlayer() )
+	#endif 
+	
 	if ( player != GetLocalViewPlayer() )
 		return
 
@@ -356,7 +359,10 @@ void function FS_TitanSword_Super_Thread( entity player, entity weapon )
 		if( TitanSword_Super_IsFirstPickup( player ) )
 		{
 			player.SetPlayerNetTime( "TitanSwordSuper", Time() + cooldown )
-			printt( "Super thread started, Super will be available in ", cooldown, " cooldown."  )
+			
+				#if DEVELOPER
+					printt( "Super thread started, Super will be available in ", cooldown, " cooldown."  )
+				#endif
 			continue
 		}
 
@@ -408,7 +414,9 @@ void function FS_TitanSword_ReduceSuperCooldown( entity player, int type = -1)
 
 bool function ClientCommand_OnActivateSuper( entity player, array<string> args )
 {
-	printt( "FLOWSTATE SERVER - OnSuperKeyPressed TryToActivateSuper" )
+	#if DEVELOPER
+		printt( "FLOWSTATE SERVER - OnSuperKeyPressed TryToActivateSuper" )
+	#endif
 
 	if( !IsValid( player ) )
 		return false
@@ -487,7 +495,9 @@ bool function ClientCommand_OnActivateSuper( entity player, array<string> args )
 			}
 		}
 
-		printt( "SUPER ACTIVATED FOR PLAYER - ", player )
+		#if DEVELOPER
+			printt( "SUPER ACTIVATED FOR PLAYER - ", player )
+		#endif
 	}()
 
 	return true

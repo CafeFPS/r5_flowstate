@@ -347,10 +347,6 @@ asset function GetModeEmblemImage( string playlistName )
 		case eGamemodes.fs_snd:
 		emblemImage = $"rui/flowstatecustom/sndgamemode"
 		break
-		
-		// case "fs_infected":
-		// emblemImage = $"rui/flowstatecustom/infection"
-		// break
 	}
 	
 	switch( playlistName )
@@ -374,10 +370,12 @@ asset function GetModeEmblemImage( string playlistName )
 		case "fs_survival_solos":
 		emblemImage = $"rui/flowstatecustom/generic_ltm"
 		break
+
+		case "fs_scenarios":
+		emblemImage = $"rui/menu/gamemode_emblem/duos"
+		break
 	}
-	
-	if( GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) )
-		emblemImage = $"rui/flowstatecustom/hiswattson_ltms"
+
 	#endif
 		
 	return emblemImage

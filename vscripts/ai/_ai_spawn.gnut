@@ -294,12 +294,7 @@ entity function CreateDummy( int team, vector origin, vector angles )
 
 entity function CreateLegend_ai( int team, vector origin, vector angles, bool trainingdummie = false )
 {
-	array<string> aiSettings
-	
-	if(trainingdummie)
-		aiSettings = ["npc_dummie_caustic_training", "npc_dummie_mirage_training"]//, "npc_dummie_loba_training"]
-	else
-		aiSettings = ["npc_dummie_caustic", "npc_dummie_mirage"]//, "npc_dummie_loba"]
+	array<string> aiSettings = ["npc_dummie_ballistic", "npc_dummie_valk", "npc_dummie_horizon", "npc_dummie_rampart", "npc_dummie_loba", "npc_dummie_catalyst" ]
 	
 	entity npc = CreateNPC( "npc_dummie", team, origin, angles )
 	SetSpawnOption_AISettings( npc, aiSettings.getrandom() )
@@ -397,7 +392,7 @@ entity function CreateNPC( baseClass, team, origin, angles )
 	npc.kv.teamnumber = team
 	npc.kv.origin = origin
 	npc.kv.angles = angles
-
+	
 	return npc
 }
 

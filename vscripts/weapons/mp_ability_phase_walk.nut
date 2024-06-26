@@ -13,6 +13,7 @@ const asset PHASE_WALK_APPEAR_PRE_FX = $"P_phase_dash_pre_end_mdl"
 
 void function MpAbilityPhaseWalk_Init()
 {
+	RegisterSignal( "RemovePhaseHighlights" )
 	PrecacheParticleSystem( PHASE_WALK_APPEAR_PRE_FX )
 }
 
@@ -71,8 +72,9 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 			#if SERVER
 			LockWeaponsAndMelee( player )
 			thread PhaseWalkUnphaseTell( player, chargeTime )
+			thread ThreadPhaseHighlights( player, chargeTime - PHASE_WALK_PRE_TELL_TIME )
 			PlayerUsedOffhand( player, weapon )
-			//StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )                                         
+			StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )                                         
 			#endif
 		}
 	}
@@ -103,11 +105,45 @@ void function PhaseWalkUnphaseTell( entity player, float chargeTime )
 	function() : ( player, dashFX )
 		{
 			if ( IsValid( player ) )
+			{
 				TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_PHASE_DASH_STOP, player, player.GetOrigin(), player.GetTeam(), player )
-			EffectStop( dashFX )
+				player.Signal( "RemovePhaseHighlights" )
+			}
+			
+			EffectStop( dashFX )		
 		}
 	)
+	
 	wait chargeTime - PHASE_WALK_PRE_TELL_TIME
+}
+
+void function ThreadPhaseHighlights( entity player, float duration )
+{
+	player.EndSignal( "RemovePhaseHighlights", "OnDeath", "ForceStopPhaseShift" )
+	player.EndSignal( "OnDisconnected", "OnDestroy" )
+	
+	player.WaitSignal( "StartPhaseShift" )
+	
+	int fx = StatusEffect_AddEndless( player, eStatusEffect.threat_vision, 1.0 )
+	
+	#if DEVELOPER
+		printt( "added threat vision with handle", fx, "Severity:", StatusEffect_GetSeverity( player, eStatusEffect.threat_vision ) )
+	#endif
+	
+	OnThreadEnd
+	(
+		function() : ( player, fx )
+		{
+			#if DEVELOPER
+				printt( "stopping effect" )
+			#endif
+			
+			if( IsValid( player ) )
+				StatusEffect_Stop( player, fx )
+		}
+	)
+	
+	WaitForever()
 }
 #endif
 

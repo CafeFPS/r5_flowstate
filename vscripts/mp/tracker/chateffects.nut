@@ -1,4 +1,4 @@
-global function ChatEffects
+global function ChatEffects																	//~mkos
 global function FindChatEffect
 global function DEV_PrintAllChatEffects
 global function SetRelayChallenge

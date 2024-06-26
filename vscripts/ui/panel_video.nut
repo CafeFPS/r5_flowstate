@@ -10,15 +10,16 @@ global function VideoPanel_GetConVarData
 
 struct
 {
-	var                panel
-	var                videoPanel
-	table<var, string> buttonTitles
-	table<var, string> buttonDescriptions
-	var                detailsPanel
+	var					panel
+	var					videoPanel
+	table<var, string>	buttonTitles
+	table<var, string>	buttonDescriptions
+	var					detailsPanel
 
-	array<ConVarData>    conVarDataList
+	array<ConVarData>	conVarDataList
 
 	array<var>			noApplyConfirmationRequired
+	
 } file
 
 void function InitVideoPanelForCode( var panel )
@@ -61,6 +62,15 @@ void function InitVideoPanel( var panel )
 		button = Hud_GetChild( file.videoPanel, "SwchReflex" )
 		SetupSettingsButton( button, "#REFLEX", "#ADVANCED_VIDEO_MENU_REFLEX_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, NvidiaReflex_Changed )
+
+		button = Hud_GetChild( file.videoPanel, "SldFpsMax" )
+		SetupSettingsSlider( button, "#FS_FPS_MAX", "#FS_MAX_FPS_DESC", $"rui/menu/settings/settings_video" )
+		//AddButtonEventHandler( button, UIE_CHANGE, FpsMax_Changed )
+		file.noApplyConfirmationRequired.append( button )
+		
+		button = Hud_GetChild( file.videoPanel, "TextEntrySldFpsMax" )
+		//AddButtonEventHandler( button, UIE_CHANGE, FpsMax_Changed )
+		file.noApplyConfirmationRequired.append( button )
 
 		button = Hud_GetChild( file.videoPanel, "SldAdaptiveRes" )
 		SetupSettingsSlider( button, "#ADAPTIVE_RES", "#ADAPTIVE_RES_DESC", $"rui/menu/settings/settings_video" )
@@ -150,7 +160,10 @@ bool function OnVideoMenu_CanNavigateAway( var panel, int desiredTabIndex )
 
 bool function AreVideoSettingsChanged()
 {
-	printt( "uiGlobal.videoSettingsChanged:", uiGlobal.videoSettingsChanged )
+	#if DEVELOPER 
+		printt( "uiGlobal.videoSettingsChanged:", uiGlobal.videoSettingsChanged )
+	#endif
+		
 	return uiGlobal.videoSettingsChanged
 }
 
@@ -242,8 +255,12 @@ void function RestoreVideoDefaults()
 
 void function ApplyVideoSettingsButton_Activate( var button )
 {
-	print( "Video Settings Changed\n" )
+	#if DEVELOPER
+		print( "Video Settings Changed\n" )
+	#endif
+		
 	VideoOptions_Apply( file.videoPanel )
+	
 	uiGlobal.videoSettingsChanged = false
 
 	UpdateFooterOptions()

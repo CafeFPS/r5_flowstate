@@ -1213,9 +1213,12 @@ void function InstanceLocationPing( entity wp )
 	int ticketID     = GetTicketIDForWaypoint( wp )
 	entity pingedEnt = GetPingedEntForLocWaypoint( wp )
 
-	printt( format( "New loc ping  -  wpent #%d, pingType #%d, ticketID #%d, target: '%s'", wp.GetEntIndex(), pingType, ticketID, string( pingedEnt ) ) )
+	#if DEVELOPER
+		printt( format( "New loc ping  -  wpent #%d, pingType #%d, ticketID #%d, target: '%s'", wp.GetEntIndex(), pingType, ticketID, string( pingedEnt ) ) )
+	#endif
 
 	entity owner = wp.GetOwner()
+	
 	if ( (owner == viewPlayer) && Ping_TicketIDIsLocallyCanceled( ticketID ) )
 	{
 		printt( format( "New ping #%d has already been canceled locally.", ticketID ) )

@@ -281,6 +281,18 @@ void function CodeCallback_OnSpawned( entity ent )
 		//ent.ConnectOutput( "OnDestroy", "_RemoveFromEntityList" )
 	}
 
+	if( ent.kv.teamnumber == null )
+	{
+		if( IsValid( ent ) && ent.IsPlayer() )
+		{
+			KickPlayerById( ent.GetPlatformUID(), "Connection error, please try again." )
+		}
+		
+		ent.Destroy()
+		
+		return
+	}
+		
 	int teamNum = int( expect string( ent.kv.teamnumber ) )
 	if ( teamNum != 0 && !ent.IsPlayer() )
 		SetTeam( ent, teamNum )

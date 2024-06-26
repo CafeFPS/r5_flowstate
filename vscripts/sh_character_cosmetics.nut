@@ -720,7 +720,7 @@ table<int,ItemFlavor> function GetValidPlayerSkydiveEmotes( entity player )
 	table<int,ItemFlavor> emotes
 
 	#if CLIENT || SERVER
-	if( Gamemode() != eGamemodes.SURVIVAL )
+	// if( Gamemode() != eGamemodes.SURVIVAL )
 		return emotes
 	#endif
 

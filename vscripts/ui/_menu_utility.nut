@@ -136,18 +136,21 @@ void function FlashElement( var menu, var element, int numberFlashes = 4, float 
 }
 
 
-void function FancyLabelFadeIn( var menu, var label, int xOffset = 0, int yOffset = 300, bool flicker = true, float duration = 0.15, bool isPanel = false, float delay = 0.0, string soundAlias = "" )
+void function FancyLabelFadeIn( var menu, var label, int xOffset = 0, int yOffset = 300, bool flicker = true, float duration = 0.15, bool isPanel = false, float delay = 0.0, string soundAlias = "", bool returnToBase = true )
 {
 	EndSignal( menu, "StopMenuAnimation" )
 
 	UIPos basePos = REPLACEHud_GetBasePos( label )
 
 	OnThreadEnd(
-		function() : ( label )
+		function() : ( label, returnToBase )
 		{
 			Hud_ReturnToBasePos( label )
 			Hud_Show( label )
-			Hud_ReturnToBaseColor( label )
+			
+			if( returnToBase )
+				Hud_ReturnToBaseColor( label )
+	
 		}
 	)
 

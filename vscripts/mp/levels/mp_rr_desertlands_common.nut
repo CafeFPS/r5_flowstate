@@ -462,9 +462,10 @@ void function AddTrainToMinimap( entity mover )
 #if CLIENT
 void function MinimapPackage_Train( entity ent, var rui )
 {
-	#if DEV
+	#if DEVELOPER
 		printt( "Adding 'rui/hud/gametype_icons/sur_train_minimap' icon to minimap" )
 	#endif
+	
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/sur_train_minimap" )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )

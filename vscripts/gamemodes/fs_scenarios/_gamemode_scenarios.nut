@@ -1,4 +1,7 @@
-// By @CafeFPS
+// Made by @CafeFPS
+//
+// mkos - feedback, playtest, spawns framework, stats
+// DarthElmo & Balvarine - gamemode idea, spawns, feedback, playtest
 
 global function Init_FS_Scenarios
 global function FS_Scenarios_GroupToInProgressList
@@ -8,36 +11,50 @@ global function FS_Scenarios_Main_Thread
 
 global function FS_Scenarios_GetInProgressGroupsMap
 global function FS_Scenarios_GetPlayerToGroupMap
-global function FS_Scenarios_GetSkydiveFromDropshipEnabled
 global function FS_Scenarios_GetGroundLootEnabled
 global function FS_Scenarios_GetInventoryEmptyEnabled
+global function FS_Scenarios_GetAmountOfTeams
 global function FS_Scenarios_GetDeathboxesEnabled
 global function FS_Scenarios_ForceAllRoundsToFinish
 global function FS_Scenarios_GetDropshipEnabled
 global function FS_Scenarios_SaveLocationFromLootSpawn
 global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
+global function FS_Scenarios_HandleGroupIsFinished
+
+#if TRACKER //demo only
+global function TrackerStats_ScenariosKills
+global function TrackerStats_ScenariosDeaths
+#endif
 
 #if DEVELOPER
 global function Cafe_KillAllPlayers
 global function Cafe_EndAllRounds
+global function Mkos_ForceCloseRecap
 #endif
 
 global struct scenariosGroupStruct
 {
+	entity dummyEnt
 	int groupHandle
 	array<entity> team1Players
 	array<entity> team2Players
+	array<entity> team3Players
 
 	// save legends indexes ?
 
 	soloLocStruct &groupLocStruct
 	entity ring
+	float calculatedRingRadius
+	float currentRingRadius
+	vector calculatedRingCenter
 	int slotIndex
-	int team1Index
-	int team2Index
+	int team1Index = -1
+	int team2Index = -1
+	int team3Index = -1
 
 	bool IsFinished = false
+	float startTime
 	float endTime
 	bool showedEndMsg = false
 	bool isReady = false
@@ -90,19 +107,30 @@ struct {
 
 struct {
 	bool fs_scenarios_dropshipenabled = false
-	int fs_scenarios_playersPerTeam = 3
-	int fs_scenarios_teamAmount = 2
+	int fs_scenarios_playersPerTeam = -1
+	int fs_scenarios_teamAmount = -1
 
+	float fs_scenarios_default_radius_padding = 169
 	float fs_scenarios_default_radius = 8000
 	float fs_scenarios_maxIndividualMatchTime = 300
+
 	// float fs_scenarios_max_queuetime = 150
 	// int fs_scenarios_minimum_team_allowed = 1 // used only when max_queuetime is triggered
 	// int fs_scenarios_maximum_team_allowed = 3
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
-	bool fs_scenarios_start_skydiving = true
 	bool fs_scenarios_deathboxes_enabled = true
+	bool fs_scenarios_bleedout_enabled = true
+	bool fs_scenarios_show_death_recap_onkilled = true
+	bool fs_scenarios_zonewars_ring_mode = false
+	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
+	float fs_scenarios_ring_damage_step_time = 1.5
+	float fs_scenarios_game_start_time_delay = 3.0
+	float fs_scenarios_ring_damage = 25.0
+	float fs_scenarios_characterselect_time_per_player = 3.5
+	bool fs_scenarios_characterselect_enabled = true
+	float fs_scenarios_ringclosing_maxtime = 120
 } settings
 
 array< bool > teamSlots
@@ -119,8 +147,17 @@ void function Init_FS_Scenarios()
 
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
-	settings.fs_scenarios_start_skydiving = GetCurrentPlaylistVarBool( "fs_scenarios_start_skydiving", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
+	settings.fs_scenarios_bleedout_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_bleedout_enabled", true )
+	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
+	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
+	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
+	settings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
+	settings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
+	settings.fs_scenarios_ring_damage = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage", 25.0 )
+	settings.fs_scenarios_characterselect_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_characterselect_enabled", true )
+	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
+	settings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
 
 	teamSlots.resize( 119 )
 	teamSlots[ 0 ] = true
@@ -132,21 +169,404 @@ void function Init_FS_Scenarios()
 		teamSlots[ i ] = false
 	}
 	SurvivalFreefall_Init()
-	
-	RegisterSignal( "FS_EndDelayedThread" )
-	AddSpawnCallback( "npc_dropship", FS_Scenarios_StoreAliveDropship )
+	SurvivalShip_Init()
+
+	AddClientCommandCallback("playerRequeue_CloseDeathRecap", ClientCommand_FS_Scenarios_Requeue )	
+
+	RegisterSignal( "FS_Scenarios_GroupIsReady" )
+	RegisterSignal( "FS_Scenarios_GroupFinished" )
+
 	AddSpawnCallback( "prop_death_box", FS_Scenarios_StoreAliveDeathbox )
+
+	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
+	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
+
+	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
+
+	FS_Scenarios_Score_System_Init()
+}
+
+bool function ClientCommand_FS_Scenarios_Requeue(entity player, array<string> args )
+{
+	if( !IsValid(player) )
+		return false
+	
+	if( Time() < player.p.lastRequeueUsedTime + 3 )
+	{
+		return false
+	}
+	
+	player.p.InDeathRecap = false
+	player.p.lastRequeueUsedTime = Time()
+
+	return true
+}
+
+void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	#if DEVELOPER
+		printt( "[+] OnPlayerKilled Scenarios -", victim, "by", attacker )
+	#endif
+
+	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
+		return
+
+	if( settings.fs_scenarios_show_death_recap_onkilled )
+	{
+		int attackerEHandle = -1
+		int victimEHandle = -1
+
+		if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
+		{
+			attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+			victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
+
+			if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+			{
+				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock(victim)
+			}
+
+			if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
+			{
+				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+				ResetDeathRecapBlock(attacker)		
+			}
+
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
+		} 
+		else if( !attacker.IsPlayer() )
+		{
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
+		}
+	}
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
+	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.PENALTY_DEATH )
+	float elapsedTime = Time() - group.startTime
+	FS_Scenarios_UpdatePlayerScore( victim, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+
+	if ( victim.GetTeam() != attacker.GetTeam() && attacker.IsPlayer() )
+	{
+		// todo fix bleedout signaling
+		// if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() > 1 )
+		// {
+			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_TEAM_WIPE, victim )
+		// } else if( FS_Scenarios_IsFullTeamBleedout( attacker, victim ) && GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 0 )
+		// {
+			// FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.BONUS_KILLED_SOLO_PLAYER, victim )
+		// } else
+		// {
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.KILL, victim )
+		// }
+	}
+
+	FS_Scenarios_HandleGroupIsFinished( victim, damageInfo )
+
+	if( IsValid( group ) && group.IsFinished )
+		return
+
+	if( GetPlayerArrayOfTeam_Alive( victim.GetTeam() ).len() == 1 )
+	{
+		entity soloPlayer = GetPlayerArrayOfTeam_Alive( victim.GetTeam() )[0]
+		
+		if( IsValid( soloPlayer ) && !Bleedout_IsBleedingOut( soloPlayer ) )
+		{
+			FS_Scenarios_UpdatePlayerScore( soloPlayer, FS_ScoreType.BONUS_BECOMES_SOLO_PLAYER )
+		}
+	}
+
+	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+}
+
+bool function FS_Scenarios_IsFullTeamBleedout( entity attacker, entity victim ) 
+{
+	int count = 0
+	foreach( player in GetPlayerArrayOfTeam_Alive( victim.GetTeam() ) )
+	{
+		if( player == victim )
+			continue
+
+		if( IsAlive( player ) && !Bleedout_IsBleedingOut( player ) )
+			count++
+	}
+	
+	#if DEVELOPER
+		printt( "FS_Scenarios_IsFullTeamBleedout", count )
+	#endif
+	
+	return count == 0
+}
+
+void function FS_Scenarios_OnPlayerConnected( entity player )
+{
+	#if DEVELOPER
+		printt( "[+] OnPlayerConnected Scenarios -", player )
+	#endif
+
+	ValidateDataTable( player, "datatable/flowstate_scenarios_score_system.rpak" )
+
+	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
+}
+
+void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
+{
+	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
+		return
+	
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+	
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution || sourceId == eDamageSourceId.damagedef_despawn )
+		return
+	
+	if( settings.fs_scenarios_show_death_recap_onkilled )
+		Flowstate_HandleDeathRecapData(victim, damageInfo)
+	
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	int currentHealth = victim.GetHealth()
+	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+		currentHealth += victim.GetShieldHealth()
+	
+	vector damagePosition = DamageInfo_GetDamagePosition( damageInfo )
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+
+	TakingFireDialogue( attacker, victim, weapon )
+
+	if ( currentHealth - damage <= 0 && !IsInstantDeath( damageInfo ) && !IsDemigod( victim ) )
+	{
+		OnPlayerDowned_UpdateHuntEndTime( victim, attacker, damageInfo )
+		
+		if( victim.IsZiplining() || victim.IsMountingZipline() )
+			victim.Zipline_Stop()
+		
+		if( victim.IsGrappleAttached() )
+			victim.GrappleDetach()
+	}
+	
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
+	{	
+		if( !IsValid(attacker) || !IsValid(victim) )
+			return
+
+		thread EnemyDownedDialogue( attacker, victim )
+
+		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
+			FS_Scenarios_UpdatePlayerScore( attacker, FS_ScoreType.DOWNED, victim )
+
+		foreach ( cbPlayer in GetPlayerArray() )
+			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
+			
+		// Add the cool splashy blood and big red crosshair hitmarker
+		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+	
+		// Supposed to be bleeding
+		Bleedout_StartPlayerBleedout( victim, attacker )
+
+		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
+		if (attacker.IsPlayer() && IsValid( attacker ))
+        {
+            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+        }
+		// Cancel the damage
+		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
+		// There might be a better way to do this, but this works well enough
+		DamageInfo_SetDamage( damageInfo, 1 )
+
+		// Delete any shield health remaining
+		victim.SetShieldHealth( 0 )
+	}
 }
 
 void function FS_Scenarios_OnPlayerDisconnected( entity player )
 {
-	printt( "[+] OnPlayerDisconnected Scenarios -", player )
+	#if DEVELOPER
+		printt( "[+] OnPlayerDisconnected Scenarios -", player )
+	#endif
+	
 	_CleanupPlayerEntities( player )
-	HandleGroupIsFinished( player, null )
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+	if( IsValid( group ) && !group.IsFinished )
+		FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_DESERTER )
+
+	FS_Scenarios_HandleGroupIsFinished( player, null )
 
 	if( player.p.handle in file.scenariosPlayerToGroupMap )
 		delete file.scenariosPlayerToGroupMap[ player.p.handle ]
+}
+
+array<vector> function FS_Scenarios_GeneratePlaneFlightPathForGroup( scenariosGroupStruct group )
+{
+	vector center = group.calculatedRingCenter
+	int realm = group.slotIndex
+
+	const float CENTER_DEVIATION = 2.0
+	const float POINT_FINDER_MULTIPLIER = 200
+
+	// Get a random point from map center within specified deviation
+	vector dropshipCenterPoint = center // GetRandomCenter( center, 0.0, CENTER_DEVIATION )
+	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight() / 2.5
+
+	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
+	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
+
+	vector startPos = ClampToWorldspace( dropshipCenterPoint - dropshipMovingForward* settings.fs_scenarios_default_radius )
+	vector endPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward* settings.fs_scenarios_default_radius )
+
+	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
+}
+
+void function FS_Scenarios_StartDropshipMovement( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	vector Center = group.calculatedRingCenter
+	int realm = group.slotIndex
+
+	array<vector> foundFlightPath = FS_Scenarios_GeneratePlaneFlightPathForGroup( group )
+
+	vector shipStart = foundFlightPath[0]
+	vector shipEnd = foundFlightPath[1]
+	vector shipAngles = foundFlightPath[2]
+	vector shipPathCenter = foundFlightPath[3]
+
+	// entity centerEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", shipPathCenter, shipAngles )
+	// centerEnt.Minimap_AlwaysShow( 0, null )
+	// SetTargetName( centerEnt, "pathCenterEnt" )
+	// DispatchSpawn( centerEnt )
+
+	// entity minimapPlaneEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", dropship.GetOrigin(), dropship.GetAngles() )
+	// minimapPlaneEnt.NotSolid()
+	// minimapPlaneEnt.SetParent( dropship )
+	// minimapPlaneEnt.Minimap_AlwaysShow( 0, null )
+	// SetTargetName( minimapPlaneEnt, "planeEnt" )
+	// DispatchSpawn( minimapPlaneEnt )
+
+	entity dropship = Survival_CreatePlane( shipStart, shipAngles )
+
+	FS_Scenarios_StoreAliveDropship( dropship )
+
+	dropship.RemoveFromAllRealms()
+	dropship.AddToRealm( realm )
+
+	EndSignal( dropship, "OnDestroy" )
+
+	array<entity> players
+	players.extend( group.team1Players )
+	players.extend( group.team2Players )
+	players.extend( group.team3Players )
+
+	OnThreadEnd(
+		function() : ( players, dropship )
+		{
+			foreach ( player in players )
+			{
+				if ( player.GetPlayerNetBool( "playerInPlane" ) )
+					Survival_DropPlayerFromPlane_UseCallback( player )
+			}
+
+			// centerEnt.Destroy()
+			// minimapPlaneEnt.Destroy()
+			// minimapPlaneEnt.ClearParent()
+			try{
+				ClearChildren( dropship, true )
+				dropship.Destroy()
+			}
+			catch( e420 )
+			{
+				printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
+			}
+		}
+	)
+
+	foreach ( team in GetTeamsForPlayers( players ) )
+	{
+		array<entity> teamMembers = GetPlayerArrayOfTeam( team )
+
+		bool foundJumpmaster = false
+		entity ornull jumpMaster = null
+
+		for ( int idx = teamMembers.len() - 1; idx == 0; idx-- )
+		{
+			entity teamMember = teamMembers[idx]
+
+			if ( Survival_IsPlayerEligibleForJumpmaster( teamMember ) )
+			{
+				foundJumpmaster = true
+				jumpMaster = teamMember
+
+				break
+			}
+		}
+
+		if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
+			jumpMaster = teamMembers.getrandom()
+
+		if ( jumpMaster != null )
+		{
+			expect entity( jumpMaster )
+
+			jumpMaster.SetPlayerNetBool( "isJumpmaster", true )
+		}
+	}
+
+	foreach ( player in players )
+		FS_Scenarios_RespawnPlayerInDropship( player, dropship )
+
+	float DROP_TOTAL_TIME = 20 // GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 20.0 )
+
+	dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME, 0.0, 0.0 )
+
+	foreach ( player in players )
+		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+	wait DROP_TOTAL_TIME
+}
+
+void function FS_Scenarios_RespawnPlayerInDropship( entity player, entity dropship )
+{
+	const float POS_OFFSET = -525.0 // Offset from dropship's origin
+
+	vector dropshipPlayerOrigin = dropship.GetOrigin()
+	dropshipPlayerOrigin.z += POS_OFFSET
+
+	DecideRespawnPlayer( player, false )
+
+	player.SetParent( dropship )
+
+	player.SetOrigin( dropshipPlayerOrigin )
+	player.SetAngles( dropship.GetAngles() )
+
+	player.UnfreezeControlsOnServer()
+
+	player.ForceCrouch()
+	player.Hide()
+	player.NotSolid()
+	
+	player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	player.SetPlayerNetBool( "playerInPlane", true )
+
+	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
+
+	AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	bool isAlone = playerTeam.len() <= 1
+
+	if ( isAlone )
+		player.SetPlayerNetBool( "isJumpmaster", true )
+
+	// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 }
 
 void function FS_Scenarios_SaveBigDoorData( entity door )
@@ -162,14 +582,14 @@ void function FS_Scenarios_SaveBigDoorData( entity door )
 	door.Destroy()
 }
 
-
 void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 {
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< bigDoorsData > chosenSpawns
@@ -177,7 +597,7 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 
 	foreach( i, bigDoorsData data in file.allBigMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -201,7 +621,9 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 			count++
         }
 	}
-	printt( "created", count, "big doors for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "created", count, "big doors for group", group.groupHandle )
+	#endif
 }
 
 void function FS_Scenarios_SaveDoorsData()
@@ -247,15 +669,16 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< doorsData > chosenSpawns
 	
 	foreach( i, doorsData data in file.allMapDoors )
 	{
-		if( Distance2D( data.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -315,7 +738,9 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 			}
 		}
 	}
-	printt( "spawned", group.doors.len(), "doors for realm", realm )
+	#if DEVELOPER
+		printt( "spawned", group.doors.len(), "doors for realm", realm )
+	#endif
 }
 
 void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
@@ -332,7 +757,14 @@ void function FS_Scenarios_DestroyDoorsForGroup( scenariosGroupStruct group )
 			door.Destroy()
 		}
 
-	printt( "destroyed", count, "doors for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "doors for group", group.groupHandle )
+	#endif
+}
+
+int function FS_Scenarios_GetAmountOfTeams()
+{
+	return settings.fs_scenarios_teamAmount
 }
 
 bool function FS_Scenarios_GetDeathboxesEnabled()
@@ -346,7 +778,10 @@ void function FS_Scenarios_StoreAliveDeathbox( entity deathbox )
 		return
 
 	file.aliveDeathboxes.append( deathbox )
-	printt( "added deathbox to alive deathboxes array", deathbox )
+	
+	#if DEVELOPER
+		printt( "added deathbox to alive deathboxes array", deathbox )
+	#endif
 }
 
 void function FS_Scenarios_CleanupDeathboxes()
@@ -373,7 +808,9 @@ void function FS_Scenarios_DestroyAllAliveDeathboxesForRealm( int realm = -1 )
 			
 			count++
 		}
-	printt( "removed", count, "deathboxes for realm", realm )
+	#if DEVELOPER
+		printt( "removed", count, "deathboxes for realm", realm )
+	#endif
 }
 
 void function FS_Scenarios_StoreAliveDropship( entity dropship )
@@ -382,7 +819,10 @@ void function FS_Scenarios_StoreAliveDropship( entity dropship )
 		return
 
 	file.aliveDropships.append( dropship )
-	printt( "added dropship to alive dropships array", dropship )
+	
+	#if DEVELOPER
+		printt( "added dropship to alive dropships array", dropship )
+	#endif
 }
 
 void function FS_Scenarios_CleanupDropships()
@@ -418,14 +858,15 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array< lootbinsData > chosenSpawns
 	
 	foreach( i, lootbinStruct in file.allMapLootbins )
-		if( Distance2D( lootbinStruct.origin, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( lootbinStruct.origin, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( lootbinStruct )
 
 	string zoneRef = "zone_high"
@@ -483,7 +924,10 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 		group.lootbins.append( lootbin )
 		count++
 	}
-	printt("spawned", count, "lootbins for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	
+	#if DEVELOPER
+		printt("spawned", count, "lootbins for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#endif
 }
 
 entity function FS_Scenarios_CreateCustomLootBin( vector origin, vector angles )
@@ -514,7 +958,9 @@ void function FS_Scenarios_DestroyLootbinsForGroup( scenariosGroupStruct group )
 			lootbin.Destroy()
 		}
 		
-	printt( "destroyed", count, "lootbins for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "lootbins for group", group.groupHandle )
+	#endif
 }
 
 void function FS_Scenarios_SaveLocationFromLootSpawn( entity ent )
@@ -528,14 +974,15 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 	if( !IsValid( group ) )
 		return
 
-	soloLocStruct groupLocStruct = group.groupLocStruct
-	vector center = groupLocStruct.Center
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	vector Center = group.calculatedRingCenter
 	int realm = group.slotIndex
 
 	array<vector> chosenSpawns
 	
 	foreach( spawn in file.allLootSpawnsLocations )
-		if( Distance2D( spawn, center) <= settings.fs_scenarios_default_radius )
+		if( Distance2D( spawn, Center) <= group.calculatedRingRadius )
 			chosenSpawns.append( spawn )
 
 	string zoneRef = "zone_high"
@@ -629,7 +1076,9 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 		count++
 	}
 
-	printt("spawned", count, "ground loot for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#if DEVELOPER
+		printt("spawned", count, "ground loot for group", group.groupHandle, "in realm", group.slotIndex, "- WEAPONS: ", weapons )
+	#endif
 }
 
 void function FS_Scenarios_DestroyLootForGroup( scenariosGroupStruct group )
@@ -645,7 +1094,9 @@ void function FS_Scenarios_DestroyLootForGroup( scenariosGroupStruct group )
 			loot.Destroy()
 		}
 		
-	printt( "destroyed", count, "ground loot for group", group.groupHandle )
+	#if DEVELOPER
+		printt( "destroyed", count, "ground loot for group", group.groupHandle )
+	#endif
 }
 
 table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
@@ -656,11 +1107,6 @@ table<int, scenariosGroupStruct> function FS_Scenarios_GetInProgressGroupsMap()
 table<int, scenariosGroupStruct> function FS_Scenarios_GetPlayerToGroupMap()
 {
 	return file.scenariosPlayerToGroupMap
-}
-
-bool function FS_Scenarios_GetSkydiveFromDropshipEnabled()
-{
-	return settings.fs_scenarios_start_skydiving
 }
 
 bool function FS_Scenarios_GetGroundLootEnabled()
@@ -680,6 +1126,9 @@ bool function FS_Scenarios_GetDropshipEnabled()
 
 void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
 {
+	if( team == -1 )
+		return
+
 	try
 	{
 		if ( !team ) { return } //temporary crash fix
@@ -688,7 +1137,7 @@ void function FS_Scenarios_SetIsUsedBoolForTeamSlot( int team, bool usedState )
 	catch(e)
 	{	
 		#if DEVELOPER
-		sqprint("SetIsUsedBoolForRealmSlot crash " + e )
+			sqprint("SetIsUsedBoolForRealmSlot crash " + e )
 		#endif
 	}
 }
@@ -706,22 +1155,25 @@ int function FS_Scenarios_GetAvailableTeamSlotIndex()
 
 	return -1
 }
-bool function FS_Scenarios_IsPlayerIn3v3Mode(entity player) 
+bool function FS_Scenarios_IsPlayerIn3v3Mode( entity player ) 
 {
-	if(!IsValid (player) )
+	if( !IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("isPlayerInSoloMode entity was invalid")
+			sqprint("isPlayerInSoloMode entity was invalid")
 		#endif
+		
 		return false 
 	}
 	
-    return ( player.p.handle in file.scenariosPlayerToGroupMap );
+    return ( player.p.handle in file.scenariosPlayerToGroupMap )
 }
 
 bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup, array<entity> players ) 
 {
-	printt( "FS_Scenarios_GroupToInProgressList" )
+	#if DEVELOPER
+		printt( "FS_Scenarios_GroupToInProgressList" )
+	#endif
 
 	int slotIndex = getAvailableRealmSlotIndex()
 
@@ -740,7 +1192,10 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 		
 		deleteWaitingPlayer( player.p.handle )
 		deleteSoloPlayerResting( player )
-		Message_New( player, "", 1 )
+		LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
+
+		if( Bleedout_IsBleedingOut( player ) )
+			Signal( player, "BleedOut_OnRevive" )
 	}
 
 	newGroup.slotIndex = slotIndex
@@ -748,14 +1203,14 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 	int groupHandle = GetUniqueID()
 
 	newGroup.groupHandle = groupHandle
-	newGroup.endTime = Time() + settings.fs_scenarios_maxIndividualMatchTime
+	newGroup.dummyEnt = CreateEntity( "info_target" )
 
 	try 
 	{
 		if( !( groupHandle in file.scenariosGroupsInProgress ) )
 		{
 			#if DEVELOPER
-			sqprint(format("adding group: %d", groupHandle ))
+				sqprint(format("adding group: %d", groupHandle ))
 			#endif
 
 			foreach( player in players )
@@ -764,11 +1219,6 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 					continue
 
 				file.scenariosPlayerToGroupMap[ player.p.handle] <- newGroup
-
-				if( settings.fs_scenarios_dropshipenabled )
-				{
-					player.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.damagedef_despawn } )
-				}
 			}
 
 			file.scenariosGroupsInProgress[ groupHandle ] <- newGroup
@@ -788,6 +1238,15 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 
 				SetTeam( player, newGroup.team2Index )
 			}
+			
+			if( settings.fs_scenarios_teamAmount > 2 )
+				foreach( player in newGroup.team3Players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					SetTeam( player, newGroup.team3Index )
+				}
 		}
 		else 
 		{	
@@ -800,7 +1259,7 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 	catch(e)
 	{
 		#if DEVELOPER
-		sqprint("addGroup crash: " + e)
+			sqprint("addGroup crash: " + e)
 		#endif
 		return false
 	}
@@ -820,23 +1279,27 @@ void function FS_Scenarios_RemoveGroup( scenariosGroupStruct groupToRemove )
 		if( groupToRemove.groupHandle in file.scenariosGroupsInProgress )
 		{
 			#if DEVELOPER
-			sqprint(format("removing group: %d", groupToRemove.groupHandle) )
+				sqprint(format("removing group: %d", groupToRemove.groupHandle) )
 			#endif
 			delete file.scenariosGroupsInProgress[groupToRemove.groupHandle]
 		}
 		else 
 		{
 			#if DEVELOPER
-			sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
+				sqprint(format("groupToRemove.groupHandle: %d not in file.groupsInProgress", groupToRemove.groupHandle ))
 			#endif
 		}
 	}
 	catch(e2)
 	{	
 		#if DEVELOPER
-		sqprint( "removeGroup crash: " + e2 )
+			sqprint( "removeGroup crash: " + e2 )
 		#endif
 	}
+
+	Signal( groupToRemove.dummyEnt, "FS_Scenarios_GroupFinished" )
+	if( IsValid( groupToRemove.dummyEnt ) )
+		groupToRemove.dummyEnt.Destroy()
 }
 
 scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player ) 
@@ -845,7 +1308,7 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	if(!IsValid (player) )
 	{	
 		#if DEVELOPER
-		sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
+			sqprint("FS_Scenarios_ReturnGroupForPlayer entity was invalid")
 		#endif
 		
 		return group; 
@@ -864,13 +1327,13 @@ scenariosGroupStruct function FS_Scenarios_ReturnGroupForPlayer( entity player )
 	catch(e)
 	{
 		#if DEVELOPER
-		sqprint("returnSoloGroupOfPlayer crash " + e)
+			sqprint("returnSoloGroupOfPlayer crash " + e)
 		#endif
 	}
 	return group;
 }
 
-void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex = -1, bool fromDropship = false )
+void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 {
 	if ( !IsValid(player) )
 		return
@@ -902,7 +1365,7 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		catch (erroree)
 		{	
 			#if DEVELOPER
-			sqprint("Caught an error that would crash the server" + erroree)
+				sqprint("Caught an error that would crash the server" + erroree)
 			#endif
 		}
 	
@@ -931,18 +1394,8 @@ void function FS_Scenarios_RespawnIn3v3Mode(entity player, int respawnSlotIndex 
 		#endif
 		return
 	}
-
-	if ( respawnSlotIndex == -1 ) 
-		return
-
-	// if dropship enabled
-	if( !settings.fs_scenarios_dropshipenabled && fromDropship )
-	{
-		soloLocStruct groupLocStruct = group.groupLocStruct
-		maki_tp_player(player, groupLocStruct.respawnLocations[ respawnSlotIndex ] )
-	}
-
-	Message_New( player, "%$rui/menu/buttons/tip% Kill and win to get points in the global match", 5 )
+	
+	//wtf?
 }
 
 void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
@@ -981,18 +1434,27 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		//Los jugadores que están en la sala de espera no se pueden alejar mucho de ahí
 		foreach ( playerHandle, playerInWaitingStruct in FS_1v1_GetPlayersWaiting() )
 		{
-			if ( !IsValid( playerInWaitingStruct.player ) )
+			entity player = playerInWaitingStruct.player
+			if ( !IsValid( player ) )
 			{
 				deleteWaitingPlayer(playerInWaitingStruct.handle) //struct contains players handle as basic int
 				continue
 			}
 
+			if( !IsAlive( player ) )
+			{
+				DecideRespawnPlayer( player, false )
+				HolsterAndDisableWeapons( player )
+				player.SetHealth( player.GetMaxHealth() )
+				player.SetShieldHealth( player.GetShieldHealthMax() )
+			}
+
 			float t_radius = 600;
 
-			if( Distance2D( playerInWaitingStruct.player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
+			if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > t_radius ) //waiting player should be in waiting room,not battle area
 			{
-				maki_tp_player( playerInWaitingStruct.player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
-				HolsterAndDisableWeapons( playerInWaitingStruct.player )
+				maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
+				HolsterAndDisableWeapons( player )
 			}
 		}
 
@@ -1000,30 +1462,84 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		foreach( groupHandle, group in file.scenariosGroupsInProgress ) 
 		{
-			if( !IsValid( group ) || !group.isReady )
+			if( !IsValid( group ) )
 				continue
 
 			array<entity> players
 			players.extend( group.team1Players )
 			players.extend( group.team2Players )
-
-			//Anuncio que la ronda individual está a punto de terminar
-			if( !group.IsFinished && Time() > group.endTime - 30 && !group.showedEndMsg )
+			players.extend( group.team3Players )
+			ArrayRemoveInvalid( players )
+			
+			if( group.isReady && !group.IsFinished )
 			{
+				//Anuncio que la ronda individual está a punto de terminar
+				if( Time() > group.endTime - 30 && !group.showedEndMsg )
+				{
+					foreach( player in players )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						LocalMsg( player, "#FS_Scenarios_30Remaining", "", eMsgUI.EVENT, 5 )
+					}
+					group.showedEndMsg = true
+				}
+
+				// No se pueden alejar mucho de la zona de juego
+				vector Center = group.calculatedRingCenter
+
 				foreach( player in players )
 				{
-					if( !IsValid( player ) )
+					if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
+					
+					//Se murió, a la sala de espera
+					if( !IsAlive( player ) )
+					{
+						soloModePlayerToWaitingList( player )
+						
+						foreach( splayer in players )
+							Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
+
+						if( settings.fs_scenarios_show_death_recap_onkilled )
+						{
+							player.p.InDeathRecap = true
+							Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+						} else
+							player.p.InDeathRecap = false
+
+						#if DEVELOPER
+							printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
+						#endif
+						continue
+					}
+					
+					// removed this, as it interferes with core mechanics ~mkos 
+					//player.p.lastDamageTime = Time() //avoid player regen health
+
+					if ( player.IsPhaseShifted() )
 						continue
 
-					Message_New( player, "%$rui/menu/store/feature_timer% 30 Seconds remaining",  5 )
+					if( Distance2D( player.GetOrigin(),Center) > group.currentRingRadius && Time() - player.p.lastRingDamagedTime > settings.fs_scenarios_ring_damage_step_time && !group.IsFinished )
+					{
+						Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+						player.TakeDamage( settings.fs_scenarios_ring_damage, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+						player.p.lastRingDamagedTime = Time()
+						FS_Scenarios_UpdatePlayerScore( player, FS_ScoreType.PENALTY_RING )
+						// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
+					}
 				}
-				group.showedEndMsg = true
 			}
 
-			// Acabó la ronda, todos los jugadores de un equipo murieron o se superó el tiempo límite de la ronda
-			if ( group.IsFinished || !group.IsFinished && Time() > group.endTime )
+			// Acabó la ronda, todos los jugadores de un equipo murieron
+			if ( group.isReady && group.IsFinished )
 			{
-				printt( "Group has finished!", group.groupHandle )
+				#if DEVELOPER
+					printt( "Group has finished!", group.groupHandle )
+				#endif 
+				group.IsFinished = true
+				// Signal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
 				FS_Scenarios_DestroyRingsForGroup( group )
 				FS_Scenarios_DestroyDoorsForGroup( group )
 
@@ -1039,6 +1555,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				SetIsUsedBoolForRealmSlot( group.slotIndex, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team1Index, false )
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team2Index, false )
+				FS_Scenarios_SetIsUsedBoolForTeamSlot( group.team3Index, false )
 
 				//Some abilities designed to stay like, bombardments, zipline, care package, decoy, grenades
 				//should be destroyed when the scenarios round ends and not when the player dies
@@ -1048,7 +1565,10 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				{
 					if( IsValid( ent ) )
 					{
-						printt( "tracked ent", ent, "destroyed" )
+						#if DEVELOPER
+							printt( "tracked ent", ent, "destroyed" )
+						#endif 
+						
 						ent.Destroy()
 					}
 				}
@@ -1060,60 +1580,23 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						continue
 
-					if( player.Player_IsFreefalling() )
-					{
-						Signal( player, "PlayerSkyDive" )
-					}
-
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}
 
 				groupsToRemove.append(group)
 			}
-
-			// No se pueden alejar mucho de la zona de juego
-			soloLocStruct groupLocStruct = group.groupLocStruct
-			vector Center = groupLocStruct.Center
-
-			foreach( player in players )
-			{
-				if( !IsValid( player ) || IsValid( player.p.respawnPod ) ) continue
-				
-				//Se murió, a la sala de espera
-				if( !IsAlive( player ) )
-				{
-					soloModePlayerToWaitingList( player )
-					DecideRespawnPlayer( player, false )
-					HolsterAndDisableWeapons( player )
-
-					foreach( splayer in players )
-						Remote_CallFunction_Replay( splayer, "FS_Scenarios_ChangeAliveStateForPlayer", player.GetEncodedEHandle(), false )
-
-					printt( "player killed in scenarios! player sent to waiting room and added to waiting list", player)
-					continue
-				}
-				player.p.lastDamageTime = Time() //avoid player regen health
-
-				if ( player.IsPhaseShifted() )
-					continue
-
-				if( Distance2D( player.GetOrigin(),Center) > settings.fs_scenarios_default_radius ) //检测乱跑的脑残
-				{
-					Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-					player.TakeDamage( 3, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-					// printt( player, " TOOK DAMAGE", Distance2D( player.GetOrigin(),Center ) )
-				}
-			}
 		}//foreach
 
-		foreach ( group in groupsToRemove )
-		{
-			FS_Scenarios_RemoveGroup(group)
-		}
-
 		if( groupsToRemove.len() > 0 )
+		{
+			foreach ( group in groupsToRemove )
+			{
+				FS_Scenarios_RemoveGroup(group)
+			}
+			
 			continue
+		}
 
 		// Revivir jugadores muertos que están descansando ( No debería pasar, pero por si acaso )
 		foreach ( restingPlayerHandle, restingStruct in FS_1v1_GetPlayersResting() )
@@ -1160,6 +1643,9 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 			if( Time() < eachPlayerStruct.waitingTime )
 				continue
+				
+			if( player.p.InDeathRecap ) //Has player closed Death Recap?
+				continue
 
 			waitingPlayers.append( player )
 		}
@@ -1170,11 +1656,13 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 
 		Assert( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 
-		printt("------------------MATCHING GROUP------------------")
+		#if DEVELOPER
+			printt("------------------MATCHING GROUP------------------")
+		#endif
 
 		waitingPlayers.randomize()
 
-		// mkos please add proper matchmaking for teams lol	
+		// mkos please add proper matchmaking for teams lol	--[ will do. ~mkos
 		foreach( player in waitingPlayers )
 		{
 			//Temp !FIXME
@@ -1182,20 +1670,30 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				newGroup.team1Players.append( player )
 			else if( newGroup.team2Players.len() < settings.fs_scenarios_playersPerTeam )
 				newGroup.team2Players.append( player )
+			else if( newGroup.team3Players.len() < settings.fs_scenarios_playersPerTeam && settings.fs_scenarios_teamAmount > 2 )
+				newGroup.team3Players.append( player )
 		}
 
 		newGroup.team1Index = FS_Scenarios_GetAvailableTeamSlotIndex()
 		newGroup.team2Index = FS_Scenarios_GetAvailableTeamSlotIndex()
+		if( settings.fs_scenarios_teamAmount > 2 )
+			newGroup.team3Index = FS_Scenarios_GetAvailableTeamSlotIndex()
 
 		array<entity> players
 		players.extend( newGroup.team1Players )
 		players.extend( newGroup.team2Players )
+		players.extend( newGroup.team3Players )
 
 		bool success = FS_Scenarios_GroupToInProgressList( newGroup, players )
-		
+
 		if( !success )
 		{
 			FS_Scenarios_RemoveGroup( newGroup )
+
+			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team1Index, false )
+			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team2Index, false )
+			FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team3Index, false )
+
 			foreach( player in players )
 			{
 				if( !IsValid( player ) )
@@ -1205,9 +1703,20 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			}
 			continue
 		}
-		
+
+		soloLocStruct groupLocStruct = newGroup.groupLocStruct
+		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
+
+		printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
+		#if DEVELOPER
+			DebugDrawSphere( newGroup.calculatedRingCenter, 30, 255,0,0, true, 300 )
+		#endif
+
 		newGroup.trackedEntsArrayIndex = CreateScriptManagedEntArray()
-		printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
+		
+		#if DEVELOPER
+			printt( "tracked ents script managed array created for group", newGroup.groupHandle, newGroup.trackedEntsArrayIndex )
+		#endif
 
 		// Setup HUD
 		foreach( player in newGroup.team1Players )
@@ -1221,6 +1730,11 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 			{
 				if( IsValid( player ) && IsValid( splayer ) )
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+			}
+			foreach( splayer in newGroup.team3Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
 			}
 		}
 		
@@ -1236,77 +1750,563 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				if( IsValid( player ) && IsValid( splayer ) )
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
 			}
+			foreach( splayer in newGroup.team3Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+			}
+		}
+
+		foreach( player in newGroup.team3Players )
+		{
+			foreach( splayer in newGroup.team1Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle", splayer.GetEncodedEHandle() )
+			}
+			foreach( splayer in newGroup.team2Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddEnemyHandle2", splayer.GetEncodedEHandle() )
+			}
+			foreach( splayer in newGroup.team3Players )
+			{
+				if( IsValid( player ) && IsValid( splayer ) )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
+			}
 		}
 
 		thread function () : ( newGroup, players )
 		{
-			EndSignal( svGlobal.levelEnt, "FS_EndDelayedThread" )
+			EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
 
+			FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
-			newGroup.ring = CreateSmallRingBoundary( groupLocStruct.Center, newGroup.slotIndex )
-
-			//Play fx on players screen
-			foreach ( entity player in players )
-			{
-				if( !IsValid( player ) )
-					return
-
-				Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
-				Flowstate_AssignUniqueCharacterForPlayer( player, true )
-			}
 
 			thread FS_Scenarios_SpawnDoorsForGroup( newGroup )
 			thread FS_Scenarios_SpawnBigDoorsForGroup( newGroup )
+
+			//Play fx on players screen
+			if( !settings.fs_scenarios_characterselect_enabled )
+				foreach ( entity player in players )
+				{
+					if( !IsValid( player ) )
+						return
+
+					Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					Flowstate_AssignUniqueCharacterForPlayer( player, true )
+				}
 
 			if( settings.fs_scenarios_ground_loot )
 			{
 				thread FS_Scenarios_SpawnLootbinsForGroup( newGroup )
 				thread FS_Scenarios_SpawnLootForGroup( newGroup )
-			} else
-				printt( "ground loot is disabled from playlist!" )
+			}
+			#if DEVELOPER
+				else
+				{
+					printt( "ground loot is disabled from playlist!" )
+				}
+			#endif
 
 			wait 0.5
-
-			foreach ( entity player in players )
+			
+			ArrayRemoveInvalid( players )
+			int spawnSlot = -1
+			int oldSpawnSlot = -1
+			int j = 0
+			foreach ( int i, entity player in players )
 			{
 				if( !IsValid( player ) )
 					return
 
-				player.p.notify = false
-				player.p.destroynotify = true
+				// player.p.notify = false
+				// player.p.destroynotify = true
+				//TODO: use new notify system if using in your mode; these entity struct vars were removed
+				
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )
+				
+				
+				int amountPlayersPerTeam
 
-				FS_Scenarios_RespawnIn3v3Mode( player, player.GetTeam() == newGroup.team1Index ? 0 : 1, true )
-				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				if( player.GetTeam() == newGroup.team1Index )
+				{
+					spawnSlot = 0
+					amountPlayersPerTeam = newGroup.team1Players.len()
+				}
+				else if( player.GetTeam() == newGroup.team2Index )
+				{
+					spawnSlot = 1
+					amountPlayersPerTeam = newGroup.team2Players.len()
+				}
+				else if( player.GetTeam() == newGroup.team3Index )
+				{
+					spawnSlot = 2
+					amountPlayersPerTeam = newGroup.team3Players.len()
+				}
+
+				if ( spawnSlot == -1 ) 
+				{
+					soloModePlayerToWaitingList( player )
+					continue
+				}
+
+				if( spawnSlot != oldSpawnSlot )
+					j = 0
+				
+				FS_Scenarios_RespawnIn3v3Mode( player )
 
 				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+
+				if( !settings.fs_scenarios_dropshipenabled  )
+				{
+					LocPair location = groupLocStruct.respawnLocations[ spawnSlot ]
+					player.MovementDisable()
+					AddCinematicFlag( player, CE_FLAG_INTRO )
+					player.SetVelocity( < 0,0,0 > )
+					player.SetAngles( location.angles )
+					vector pos = location.origin
+
+					float r = float(j) / float( amountPlayersPerTeam ) * 2 * PI
+					vector circledPos = pos + 30.0 * <sin( r ), cos( r ), 0.0> 
+
+					TraceResults result = TraceHull( circledPos + <0, 0, 50>, circledPos - <0, 0, 10>, player.GetBoundingMins(), player.GetBoundingMaxs(), null, TRACE_MASK_SOLID | CONTENTS_PLAYERCLIP, TRACE_COLLISION_GROUP_NONE )
+
+					if( result.fraction == 1.0 || result.startSolid )
+					{
+						circledPos = pos //fallback to ogspawn pos which we know is good. Café
+					} else
+						circledPos = result.endPos
+
+					player.SetOrigin( circledPos )
+					j++
+				}
+				oldSpawnSlot = spawnSlot
+				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 			}
 
 			if( settings.fs_scenarios_dropshipenabled )
 			{
-				thread RespawnPlayersInDropshipAtPoint( newGroup.team1Players, groupLocStruct.respawnLocations[ 0 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 0 ].angles, newGroup.slotIndex )
-				thread RespawnPlayersInDropshipAtPoint( newGroup.team2Players, groupLocStruct.respawnLocations[ 1 ].origin + < 0, 0, 5000 >, groupLocStruct.respawnLocations[ 1 ].angles, newGroup.slotIndex )
+				thread FS_Scenarios_StartDropshipMovement( newGroup )
 			} else
 			{
 				thread FS_Scenarios_GiveWeaponsToGroup( players )
+
+				thread function () : ( newGroup, players )
+				{
+					EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+					OnThreadEnd(
+						function() : ( newGroup, players  )
+						{
+							foreach( player in players )
+							{
+								if( !IsValid( player ) )
+									continue
+
+								if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
+								{
+									entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+									int ammoType = weapon.GetWeaponAmmoPoolType()
+									player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
+									
+									if( weapon.UsesClipsForAmmo() )
+										weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+									
+									player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+								}
+
+								player.MovementEnable()
+								player.UnforceStand()
+								DeployAndEnableWeapons( player )
+								player.Server_TurnOffhandWeaponsDisabledOff()
+								player.ClearMeleeDisabled()
+								player.UnlockWeaponChange()
+								player.ClearFirstDeployForAllWeapons()
+								// player.UnfreezeControlsOnServer()
+								ClearInvincible(player)
+								Highlight_ClearEnemyHighlight( player )
+
+								if( !newGroup.IsFinished )
+									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5 )
+								
+								if( settings.fs_scenarios_characterselect_enabled )
+								{
+									player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
+									player.SetPlayerNetBool( "hasLockedInCharacter", true )
+								}
+							}
+						}
+					)
+
+					foreach( player in players )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						player.ForceStand()
+						player.Server_TurnOffhandWeaponsDisabledOn()
+						player.SetMeleeDisabled()
+						player.LockWeaponChange()
+						// player.FreezeControlsOnServer()
+						player.MovementDisable()
+						
+						entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+						
+						if( IsValid( weapon ) )
+						{
+							int ammoType = weapon.GetWeaponAmmoPoolType()
+							player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
+							player.AmmoPool_SetCount( ammoType, 0 )
+							
+							if( weapon.UsesClipsForAmmo() )
+								weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
+							
+							weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
+							weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						}
+						
+						MakeInvincible(player)
+					}
+					
+					if( settings.fs_scenarios_characterselect_enabled )
+					{
+						#if DEVELOPER 
+							printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+						#endif 
+						
+						waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
+					}
+
+					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
+					foreach( player in players )
+					{
+						if( !IsValid( player ) )
+							continue
+
+						Highlight_ClearEnemyHighlight( player )
+						Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+
+						if( settings.fs_scenarios_characterselect_enabled )
+							player.SetPlayerNetBool( "characterSelectionReady", false )
+
+						RemoveCinematicFlag( player, CE_FLAG_INTRO )
+						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+						Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+					}
+
+					wait settings.fs_scenarios_game_start_time_delay
+
+					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
+
+					newGroup.startTime = Time()
+					newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
+					newGroup.isReady = true
+				}()
 			}
-			newGroup.isReady = true
 		}()
 	}//while(true)
 
 }//thread
 
-entity function CreateSmallRingBoundary(vector Center, int realm = -1)
+void function FS_Scenarios_HandleGroupIsFinished( entity player, var damageInfo )
 {
+	if( !IsValid( player ) )
+		return
+
+	if( damageInfo != null && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.damagedef_despawn )
+		return
+
+	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+	if( !IsValid( group ) || group.IsFinished || !group.isReady )
+		return
+
+	int aliveCount1
+	array<entity> winners
+	foreach( splayer in group.team1Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount1++
+			winners.append( splayer )
+		}
+	}
+	
+	int aliveCount2
+	foreach( splayer in group.team2Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount2++
+			winners.append( splayer )
+		}
+	}
+
+	int aliveCount3
+	foreach( splayer in group.team3Players )
+	{
+		if( !IsValid( splayer ) )
+			continue
+		
+		if( IsAlive( splayer ) && !Bleedout_IsBleedingOut( splayer ) )
+		{
+			aliveCount3++
+			winners.append( splayer )
+		}
+	}
+
+	if( FS_Scenarios_GetAmountOfTeams() > 2 && ( aliveCount1 == 0 && aliveCount2 == 0 || aliveCount1 == 0 && aliveCount3 == 0 || aliveCount2 == 0 && aliveCount3 == 0 ) || FS_Scenarios_GetAmountOfTeams() == 2 && ( aliveCount1 == 0 || aliveCount2 == 0 ) )
+	{
+		float elapsedTime = Time() - group.startTime
+
+		if( winners.len() > 1 )
+		{
+			//it should be only one team
+			foreach( winner in winners )
+			{
+				FS_Scenarios_UpdatePlayerScore( winner, FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+				FS_Scenarios_UpdatePlayerScore( winner, FS_ScoreType.TEAM_WIN )
+				player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", player.GetPlayerNetInt( "FS_Scenarios_MatchesWins" ) + 1 )
+			}
+		}
+		else if( winners.len() == 1 )
+		{
+			FS_Scenarios_UpdatePlayerScore( winners[0], FS_ScoreType.SURVIVAL_TIME, null, elapsedTime )
+			FS_Scenarios_UpdatePlayerScore( winners[0], FS_ScoreType.SOLO_WIN )
+			player.SetPlayerNetInt( "FS_Scenarios_MatchesWins", player.GetPlayerNetInt( "FS_Scenarios_MatchesWins" ) + 1 )
+		}
+
+		group.IsFinished = true //tell solo thread this round has finished
+	}
+
+	if( FS_Scenarios_GetDeathboxesEnabled() && !group.IsFinished )
+	{
+		int droppableItems = GetAllDroppableItems( player ).len()
+
+		if ( droppableItems > 0 )
+			CreateSurvivalDeathBoxForPlayer( player, player.e.lastAttacker, null )
+	}
+} 
+
+void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	table< int, array< entity > > groupedPlayers
+	groupedPlayers[0] <- group.team1Players
+	groupedPlayers[1] <- group.team2Players
+	groupedPlayers[2] <- group.team3Players
+
+	#if DEVELOPER
+	printt( "GIVING LOCKSTEP ORDER FOR PLAYERS GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+	#endif
+
+	float startime = Time()
+	float timeBeforeCharacterSelection = CharSelect_GetIntroCountdownDuration() + CharSelect_GetPickingDelayBeforeAll()
+
+	float timeToSelectAllCharacters = CharSelect_GetPickingDelayOnFirst()
+	for ( int pickIndex = 0; pickIndex < settings.fs_scenarios_playersPerTeam; pickIndex++ )
+		timeToSelectAllCharacters += Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
+
+	float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll() + CharSelect_GetOutroTransitionDuration()
+
+	foreach( int team, array<entity> players in groupedPlayers )
+	{
+		if ( players.len() == 0 )
+			continue
+
+		ArrayRemoveInvalid( players )
+		players.randomize()
+		int i = 0
+		foreach( entity player in players )
+		{
+			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
+			player.SetPlayerNetTime( "pickLoadoutGamestateStartTime", startime + CharSelect_GetIntroTransitionDuration() )
+			player.SetPlayerNetTime( "pickLoadoutGamestateEndTime", startime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
+			player.SetPlayerNetBool( "hasLockedInCharacter", false )
+			player.SetPlayerNetBool( "characterSelectionReady", true )
+			i++
+		}
+	}
+
+	wait CharSelect_GetIntroTransitionDuration()
+	#if DEVELOPER
+	printt( "[Scenarios] SIGNALING THAT CHARACTER SELECT SHOULD OPEN ON CLIENTS OF GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+	#endif
+
+	wait CharSelect_GetPickingDelayBeforeAll()
+
+	for ( int pickIndex = 0; pickIndex < settings.fs_scenarios_playersPerTeam; pickIndex++ )
+	{
+		float startTime = Time()
+
+		float timeSpentOnSelection = settings.fs_scenarios_characterselect_time_per_player
+
+		float endTime = startTime + timeSpentOnSelection
+
+		foreach( int team, array<entity> players in groupedPlayers )
+		{
+			if ( players.len() == 0 )
+				continue
+
+			ArrayRemoveInvalid( players )
+			foreach( entity player in players )
+			{
+				player.SetPlayerNetInt( "characterSelectLockstepIndex", pickIndex )
+				player.SetPlayerNetTime( "characterSelectLockstepStartTime", startTime )
+				player.SetPlayerNetTime( "characterSelectLockstepEndTime", endTime )
+			}
+		}
+		#if DEVELOPER
+		printt( "[Scenarios] SIGNALING LOCKSTEP INDEX CHANGE FOR GROUP", group.groupHandle, "IN REALM", group.slotIndex, "SHOULD WAIT", timeSpentOnSelection )
+		#endif
+
+		wait timeSpentOnSelection
+		foreach( int team, array<entity> players in groupedPlayers )
+		{
+			if ( players.len() == 0 )
+				continue
+
+			ArrayRemoveInvalid( players )
+
+			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex, players ) )
+			{
+				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+				CharacterSelect_AssignCharacter( player, selectedCharacter )
+				thread RechargePlayerAbilities( player ) // may need threaded or pass legend index in second param -- since you already have the flacor we should pass that directly to avoid double waits. 
+			}
+
+			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )
+			{
+				if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+					Flowstate_AssignUniqueCharacterForPlayer(player, false)
+			}
+		}
+
+		wait CharSelect_GetPickingDelayAfterEachLock()
+		#if DEVELOPER
+		printt( "[Scenarios] GIVING CHARACTER FOR PLAYERS WITH SLOT", pickIndex, "OF GROUP", group.groupHandle, "IN REALM", group.slotIndex )
+		#endif
+	}
+
+	wait 3
+
+	foreach( int team, array<entity> players in groupedPlayers )
+	{
+		if ( players.len() == 0 )
+			continue
+
+		ArrayRemoveInvalid( players )
+		foreach( entity player in players )
+		{
+			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+		}
+	}
+	
+	wait 0.5
+}
+
+array<entity> function FS_Scenarios_GetAllPlayersOfLockstepIndex( int index, array<entity> players )
+{
+	array<entity> result = []
+
+	foreach ( player in players )
+		if ( player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) == index )
+			result.append( player )
+
+	return result
+}
+
+void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
+
+	array<entity> players
+	players.extend( group.team1Players )
+	players.extend( group.team2Players )
+	players.extend( group.team3Players )
+	ArrayRemoveInvalid( players )
+
+	foreach( player in  players )
+	{
+		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
+		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
+	}
+
+	WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
+
+	float starttime = Time()
+	float endtime = Time() + settings.fs_scenarios_ringclosing_maxtime
+	float startradius = group.currentRingRadius
+	printt( "STARTED RING FOR GROUP", group.groupHandle, "Duration Closing", endtime - Time(), "Starting Radius", startradius )
+
+	while ( group.currentRingRadius > -1 )
+	{
+		players.clear()
+		players.extend( group.team1Players )
+		players.extend( group.team2Players )
+		players.extend( group.team3Players )
+		ArrayRemoveInvalid( players )
+
+		float radius = group.currentRingRadius
+
+		if( !settings.fs_scenarios_zonewars_ring_mode )
+			group.currentRingRadius = radius - settings.fs_scenarios_zonewars_ring_ringclosingspeed
+		else
+			group.currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
+
+		foreach( player in  players )
+		{
+			player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
+			player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", Distance2D( player.GetOrigin(), group.calculatedRingCenter ) )
+		}
+
+		WaitFrame()
+	}
+}
+
+void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
+{
+	if( !IsValid( group ) )
+		return
+
+	soloLocStruct groupLocStruct = group.groupLocStruct
+	vector Center = group.calculatedRingCenter
+
+	float ringRadius = 0
+
+	foreach( LocPair spawn in groupLocStruct.respawnLocations )
+	{
+		if( Distance( spawn.origin, Center ) > ringRadius )
+			ringRadius = Distance(spawn.origin, Center )
+	}
+
+	group.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
+	group.currentRingRadius = group.calculatedRingRadius
+	
+	if( !settings.fs_scenarios_zonewars_ring_mode )
+		group.calculatedRingRadius = settings.fs_scenarios_default_radius
+
+	int realm = group.slotIndex
+	float radius = group.calculatedRingRadius
+
     vector smallRingCenter = Center
-	float smallRingRadius = settings.fs_scenarios_default_radius
 	entity smallcircle = CreateEntity( "prop_script" )
-	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
+	smallcircle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	smallcircle.kv.fadedist = 2000
-	smallcircle.kv.modelscale = smallRingRadius
 	smallcircle.kv.renderamt = 1
-	smallcircle.kv.rendercolor = FlowState_RingColor()
 	smallcircle.kv.solid = 0
 	smallcircle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	// smallcircle.SetOwner(Owner)
@@ -1314,25 +2314,19 @@ entity function CreateSmallRingBoundary(vector Center, int realm = -1)
 	smallcircle.SetAngles( <0, 0, 0> )
 	smallcircle.NotSolid()
 	smallcircle.DisableHibernation()
+	SetTargetName( smallcircle, "scenariosDeathField" )
+
 	if( realm > -1 )
 	{
 		smallcircle.RemoveFromAllRealms()
 		smallcircle.AddToRealm( realm )
 	}
 
-	// smallcircle.Minimap_SetObjectScale( min(smallRingRadius / SURVIVAL_MINIMAP_RING_SCALE, 1) )
-	// smallcircle.Minimap_SetAlignUpright( true )
-	// smallcircle.Minimap_SetZOrder( 2 )
-	// smallcircle.Minimap_SetClampToEdge( true )
-	// smallcircle.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
-
 	DispatchSpawn(smallcircle)
 
-	// foreach ( eachPlayer in GetPlayerArray() )
-	// {
-	// 	smallcircle.Minimap_AlwaysShow( 0, eachPlayer )
-	// }
-	return smallcircle
+	group.ring = smallcircle
+
+	thread FS_Scenarios_StartRingMovementForGroup( group )
 }
 
 void function FS_Scenarios_DestroyRingsForGroup( scenariosGroupStruct group )
@@ -1377,25 +2371,184 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 			group.IsFinished = true //tell solo thread this round has finished
 		}
 	}
-	Signal( svGlobal.levelEnt, "FS_EndDelayedThread" )
 }
+
+vector function FS_ClampToWorldSpace( vector origin )
+{
+	// temp solution for start positions that are outside the world bounds
+	origin.x = clamp( origin.x, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.y = clamp( origin.y, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+	origin.z = clamp( origin.z, -MAX_WORLD_COORD, MAX_WORLD_COORD )
+
+	return origin
+}
+
+vector function OriginToGround_Inverse( vector origin )
+{
+	vector startorigin = origin - < 0, 0, 1000 >
+	TraceResults traceResult = TraceLine( startorigin, origin + < 0, 0, 128 >, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
+}
+
+//////////////////// STATS /////////////////
+#if TRACKER 
+
+//(for demo)
+var function TrackerStats_ScenariosKills( string uid )
+{
+	return Tracker_StatsMetricsByUID(uid).kills
+}
+
+var function TrackerStats_ScenariosDeaths( string uid )
+{
+	return Tracker_StatsMetricsByUID(uid).deaths
+}
+#endif 
 
 #if DEVELOPER
-void function Cafe_KillAllPlayers()
-{
-	entity player = gp()[0]
-	
-	foreach( splayer in gp() )
+	void function Cafe_KillAllPlayers()
 	{
-		if( splayer == player )
-			continue
+		entity player = gp()[0]
 		
-		splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+		foreach( splayer in gp() )
+		{
+			if( splayer == player )
+				continue
+			
+			splayer.TakeDamage( 420, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+		}
 	}
-}
 
-void function Cafe_EndAllRounds()
-{
-	FS_Scenarios_ForceAllRoundsToFinish()
-}
+	void function Cafe_EndAllRounds()
+	{
+		FS_Scenarios_ForceAllRoundsToFinish()
+	}
+
+	void function Mkos_ForceCloseRecap()
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_UI( player, "UICallback_ForceCloseDeathScreenMenu" )
+			ClientCommand_FS_Scenarios_Requeue( player, [] )
+		}
+	}
 #endif
+
+
+LocPairData function CustomSpawns()
+{
+	array<LocPair> spawns
+	switch( MapName() )
+	{
+		case eMaps.mp_rr_desertlands_64k_x_64k:
+			spawns = 
+			[ 
+				NewLocPair( < 21571.2, -38315.6, -2220.33 >, < 5.24698, 276.919, 0 > ),
+				NewLocPair( < 19886.9, -40480.5, -2220.33 >, < 3.51996, 7.62843, 0 > ),
+				NewLocPair( < 21706.7, -40174.5, -2220.3 >, < 4.56219, 142.329, 0 > ),
+				NewLocPair( < 20994.1, -10747.6, -4134.61 >, < 2.58227, 114.477, 0 > ),
+				NewLocPair( < 20404, -9440, -4130.61 >, < 4.33487, 294.074, 0 > ),
+				NewLocPair( < 19168.6, -10683, -4174.59 >, < 359.776, 27.1522, 0 > ),
+				NewLocPair( < 27898, -4883.51, -3975.98 >, < 2.27297, 314.628, 0 > ),
+				NewLocPair( < 29196, -6981.77, -3620.77 >, < 4.91559, 42.2109, 0 > ),
+				NewLocPair( < 30156.8, -8187.79, -3695.4 >, < 359.362, 201.996, 0 > ),
+				NewLocPair( < 19568.1, 3619.8, -4083.48 >, < 8.71203, 358.715, 0 > ),
+				NewLocPair( < 20440.1, 4088.34, -3935.97 >, < 5.23619, 27.8162, 0 > ),
+				NewLocPair( < 21840.5, 3244.21, -4087.97 >, < 3.42291, 179.432, 0 > ),
+				NewLocPair( < 30499, 10332.4, -3463.97 >, < 2.19265, 340.815, 0 > ),
+				NewLocPair( < 32962, 9651.33, -3595.97 >, < 1.8348, 204.779, 0 > ),
+				NewLocPair( < 32303.5, 7670.99, -3399.97 >, < 5.88895, 86.1931, 0 > ),
+				NewLocPair( < 27656, 11566.7, -3333.05 >, < 6.70514, 89.4928, 0 > ),
+				NewLocPair( < 28169.9, 14017.2, -3096.08 >, < 8.58106, 176.488, 0 > ),
+				NewLocPair( < 27055.7, 14253.5, -3121.8 >, < 6.91889, 328.014, 0 > ),
+				NewLocPair( < 12028, 19842.8, -5071.97 >, < 7.74917, 61.6774, 0 > ),
+				NewLocPair( < 10763.7, 20620.4, -5021.19 >, < 0.721139, 2.94495, 0 > ),
+				NewLocPair( < 12422, 20024.9, -3955.5 >, < 6.13481, 37.477, 0 > ),
+				NewLocPair( < 12215.7, 6224.99, -4135.97 >, < 2.15493, 301.381, 0 > ),
+				NewLocPair( < 13710.8, 5519.57, -4295.97 >, < 3.51585, 135.276, 0 > ),
+				NewLocPair( < 13727.8, 6805.13, -4125.45 >, < 7.85658, 207.357, 0 > ),
+				NewLocPair( < 9739.9, 5670.5, -3695.97 >, < 6.19938, 206.917, 0 > ),
+				NewLocPair( < 9899.33, 5889.62, -4295.97 >, < 0.241581, 226.194, 0 > ),
+				NewLocPair( < 8188.41, 6422.55, -4328.97 >, < 4.43221, 343.673, 0 > ),
+				NewLocPair( < -3173.09, 19093.4, -2710.9 >, < 3.11988, 328.317, 0 > ),
+				NewLocPair( < 44.5532, 18607.7, -2950.61 >, < 1.29781, 134.363, 0 > ),
+				NewLocPair( < 170.456, 20832.4, -2998.95 >, < 359.924, 233.759, 0 > ),
+				NewLocPair( < -9093.1, 29465.8, -3297.97 >, < 7.87784, 340.927, 0 > ),
+				NewLocPair( < -9109.85, 29733.4, -3705.97 >, < 4.4871, 298.136, 0 > ),
+				NewLocPair( < -9036.7, 29103.5, -3985.97 >, < 1.55586, 102, 0 > ),
+				NewLocPair( < -19067.1, 22952.7, -3351.97 >, < 7.82167, 290.408, 0 > ),
+				NewLocPair( < -19354.7, 22662.6, -4039.97 >, < 8.6704, 56.1921, 0 > ),
+				NewLocPair( < -20649.8, 23252.1, -4088.94 >, < 358.799, 356.094, 0 > ),
+				NewLocPair( < -25572.1, 8425.76, -2960.97 >, < 4.11316, 39.1704, 0 > ),
+				NewLocPair( < -25531.3, 8567.46, -3364.97 >, < 0.992981, 225.578, 0 > ),
+				NewLocPair( < -27476, 9324.44, -3168.97 >, < 4.99117, 324.014, 0 > ),
+				NewLocPair( < -22985, -20526.7, -4080.12 >, < 8.68259, 359.654, 0 > ),
+				NewLocPair( < -20570.5, -17410.2, -4043.91 >, < 3.60389, 266.156, 0 > ),
+				NewLocPair( < -19860.9, -20718.1, -3187.63 >, < 10.476, 191.576, 0 > ),
+				NewLocPair( < -17184.4, -29771.7, -3471.97 >, < 3.20937, 183.963, 0 > ),
+				NewLocPair( < -19610.4, -29894.6, -3749.41 >, < 6.02845, 225.983, 0 > ),
+				NewLocPair( < -20096.8, -30485.4, -3751.52 >, < 3.42621, 44.4348, 0 > ),
+				NewLocPair( < -6612.29, -30421.6, -3559.94 >, < 9.03763, 262.677, 0 > ),
+				NewLocPair( < -5476.95, -33721.2, -3337.12 >, < 10.6455, 178.458, 0 > ),
+				NewLocPair( < -7238.02, -32846, -3469.78 >, < 3.58117, 356.822, 0 > ),
+				NewLocPair( < 12125.6, 1809.22, -3621.78 >, < 12.9427, 91.5103, 0 > ),
+				NewLocPair( < 10943.2, 3012.45, -4295.97 >, < 358.444, 317.55, 0 > ),
+				NewLocPair( < 14546.3, 3803.29, -4271.99 >, < 359.183, 221.825, 0 > ),
+				NewLocPair( < 17412.6, -1700.06, -3466.56 >, < 359.477, 201.463, 0 > ),
+				NewLocPair( < 14846.7, -2687.5, -3236.45 >, < 8.30138, 57.1494, 0 > ),
+				NewLocPair( < 14109.1, -694.488, -3625.18 >, < 4.55861, 315.723, 0 > ),
+				NewLocPair( < -12933.8, 32999.7, -3863.97 >, < 5.53265, 269.791, 0 > ),
+				NewLocPair( < -12773.3, 32075.2, -4079.97 >, < 2.5599, 177.638, 0 > ),
+				NewLocPair( < -13309.9, 30093, -4039.99 >, < 2.25235, 81.8431, 0 > ),
+				NewLocPair( < -10221.7, -26834.7, -2895.19 >, < 8.6499, 332.555, 0 > ),
+				NewLocPair( < -7745.85, -26691.1, -4136.14 >, < 1.36961, 209.059, 0 > ),
+				NewLocPair( < -9225.73, -28118.5, -3796.55 >, < 349.513, 104.549, 0 > )
+			]
+			break
+			
+		//these are for testing, i love to use different maps while developing so i don't get bored. Colombia
+		case eMaps.mp_rr_canyonlands_mu2:
+			spawns = [
+				NewLocPair( <19356.6816, 8522.87305, 4042.40039> , <0, 55.6736412, 0> ),
+				NewLocPair( <26999.6836, 17004.0176, 3332.56128> , <0, -151.621841, 0> ),
+
+				NewLocPair( <-16412.1445, -8597.46973, 3309.15259> , <0, -132.202454, 0> ),
+				NewLocPair( <-20556.3535, -13442.3467, 3205.87817> , <0, 61.0804405, 0> ),
+				
+				NewLocPair( <3425.80518, -10499.7891, 3285.03125> , <0, -175.575607, 0> ),
+				NewLocPair( <-2240.12695, -11501.4404, 3167.58057> , <0, 9.96513939, 0> ),
+
+				NewLocPair( <34933.0859, 20244.8984, 4202.85254> , <0, 35.38274, 0> ),
+				NewLocPair( <37117.9102, 23769.4707, 4019.0625> , <0, -122.349365, 0> )
+			]
+			break
+
+		case eMaps.mp_rr_olympus_mu1:
+			spawns = [
+				NewLocPair( <-20382.9375, 28349.0488, -6379.54199>, <0, 42.8024635, 0> ),
+				NewLocPair( <-15628.7354, 33786.6602, -6181.9043>, <0, -144.864426, 0> ),
+				NewLocPair( <-21250.4883, 34012.3867, -6383.88867>, <0, -62.3558273, 0> ),
+
+				NewLocPair( <-20105.1855, -1279.15027, -5568.2041>, <0, 149.361572, 0> ),
+				NewLocPair( <-26193.8652, 2219.52808, -5573.85596>, <0, -30.5185471, 0> ),
+				NewLocPair( <-24378.3047, -1635.08997, -5341.96875>, <0, 59.6698799, 0> ),
+				
+				NewLocPair( <21201.8613, -14852.7305, -5032.22363>, <0, -78.5065842, 0> ),
+				NewLocPair( <21783.9785, -21842.8613, -5032.22363>, <0, 107.717316, 0> ),
+				NewLocPair( <17949.0391, -18802.1172, -4923.96875>, <0, 5.94164991, 0> ),
+
+				NewLocPair( <9436.18555, 28426.0469, -4654.91553>, <0, -127.501564, 0> ),
+				NewLocPair( <3670.51611, 20282.0215, -5598.02393>, <0, 57.8940849, 0> ),
+				NewLocPair( <7840.729, 19089.4102, -5498.23828>, <0, 81.0241699, 0> )
+			]
+			break
+	}
+	
+	array<table> metaData
+	
+	foreach( spawn in spawns )
+		metaData.append( { name = SCRUBBED_NAMES.getrandom() } )
+
+	return CreateLocPairObject( spawns, true, null, null, metaData )
+}

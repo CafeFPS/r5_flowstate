@@ -115,6 +115,7 @@ void function _GamemodeSND_Init()
 	
 	FS_SND.currentLocation = GetCurrentPlaylistVarInt( "SND_force_initial_map", 0 )
 
+	PrecacheDust2()
 	PrecacheDefuseMapProps()
 	PrecacheDEAFPSMapProps()
 	PrecacheZeesMapProps()
@@ -137,6 +138,7 @@ void function Sv_EntitiesDidLoad()
 		case eMaps.mp_rr_arena_empty:
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+			DestroyPlayerProps()
 		case eMaps.mp_flowstate:
 		case eMaps.mp_rr_arena_phase_runner:
 		case eMaps.mp_rr_arena_composite:
@@ -162,9 +164,6 @@ void function Sv_EntitiesDidLoad()
 			
 			SpawnVotePhaseCustomMaps()
 			AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-
-			dust2part1()
-			dust2part2()
 			DestroyPlayerProps()
 		break
 		

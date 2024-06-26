@@ -426,7 +426,10 @@ void function OnWeaponZoomOut_ModdedPistol(  entity weapon )
 #if CLIENT
 void function FS_ForceDestroyCustomAdsOverlay()
 {
-	printt( "You died! Removing custom overlay and restoring HUD visibility." )
+	#if DEVELOPER
+		printt( "You died! Removing custom overlay and restoring HUD visibility." )
+	#endif
+	
 	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
 	Hud_SetVisible( BRAds, false )
 
@@ -451,7 +454,10 @@ void function FS_ForceDestroyCustomAdsOverlay_Callback( entity attacker, float h
 	if( Gamemode() == eGamemodes.fs_dm )
 		return
 
-	printt( "You died! Removing custom overlay and restoring HUD visibility. - From callback." )
+	#if DEVELOPER
+		printt( "You died! Removing custom overlay and restoring HUD visibility. - From callback." )
+	#endif
+	
 	var BRAds = HudElement( "FS_HaloMod_BattleRifleAdsOverlay")
 	Hud_SetVisible( BRAds, false )
 	

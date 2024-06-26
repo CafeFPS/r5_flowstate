@@ -1,0 +1,550 @@
+//=========================================================
+//	_live_api.gnut
+//=========================================================
+global function LiveAPI_Init
+
+global function LiveAPI_WriteLogUsingDefinedFields
+global function LiveAPI_WriteLogUsingCustomFields
+
+global function LiveAPI_GetPlayerIdentity
+
+global function LiveAPI_GetPlayerIdentityTable
+global function LiveAPI_GetPlayerIdentityTableString
+
+global function LiveAPI_OnGameStateChanged
+global function LiveAPI_OnRespawnTeamPlayers
+
+global function LiveAPI_GrenadeThrown
+global function LiveAPI_PlayerAbilityUsed
+
+global function LiveAPI_OnPlayerDamaged
+global function LiveAPI_OnPlayerStatChanged
+
+////////////////////////
+////////////////////////
+//// Initialization ////
+////////////////////////
+////////////////////////
+void function LiveAPI_Init()
+{
+	// NOTE: always call this since if we still have an open logger, this will
+	// close the handle. If the cvar 'liveapi_print_enabled' has been disabled
+	// by then, no new logging instance will be created, thus this func won't
+	// do anything besides closing an open logger instance if the function
+	// LiveAPI_StopLogging() hasn't been called prior
+	LiveAPI_StartLogging()
+
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	AddCallback_OnClientConnected( LiveAPI_OnClientConnected )
+	AddCallback_OnClientDisconnected( LiveAPI_OnClientDisconnected )
+	AddCallback_OnWeaponAttack( LiveAPI_OnWeaponAttack )
+	AddCallback_OnPlayerKilled( LiveAPI_OnPlayerKilled )
+	AddCallback_ZiplineStart( LiveAPI_ZiplineStart )
+
+	Bleedout_AddCallback_OnPlayerStartBleedout( LiveAPI_OnPlayerStartBleedout )
+	Bleedout_AddCallback_OnPlayerGotFirstAid( LiveAPI_OnPlayerGotFirstAid )
+
+	SURVIVAL_AddCallback_OnDeathFieldStartShrink( LiveAPI_OnDeathFieldStartShrink )
+	SURVIVAL_AddCallback_OnDeathFieldStopShrink( LiveAPI_OnDeathFieldStopShrink )
+	//AddCallback_OnPlayerWeaponSwitched( LiveAPI_OnPlayerWeaponSwitched ) TODO: CodeCallback_OnPlayerWeaponActivated()
+
+	LiveAPI_OnInit()
+	LiveAPI_OnMatchSetup()
+}
+
+/////////////////////////
+/////////////////////////
+//// Internals       ////
+/////////////////////////
+/////////////////////////
+string function LiveAPI_GetPlayerIdentity( entity player )
+{
+	if( player == null || player.IsWorld() )
+		return "World"
+
+	if( player.IsPlayer() )
+	{
+		return player.GetPlayerName()
+	}
+
+	return expect string( player.GetNetworkedClassName() )
+}
+
+table< int, var > function LiveAPI_GetWritableDefinedData( array< var > logData, array< int > fieldEnums = [] )
+{
+	table< int , var > data = {}
+
+	for ( int i = 0; i < fieldEnums.len(); ++i )
+	{
+		if( i >= logData.len() )
+			return data
+		
+		data[ fieldEnums[ i ] ] <- logData[ i ]
+	}
+
+	return data
+}
+
+table< string, var > function LiveAPI_GetWritableCustomData( array< var > logData, array< string > fieldNames = [] )
+{
+	table< string , var > data = {}
+
+	for ( int i = 0; i < fieldNames.len(); ++i )
+	{
+		if( i >= logData.len() )
+			return data
+
+		data[ fieldNames[ i ] ] <- logData[ i ]
+	}
+
+	return data
+}
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+table< int, var > function LiveAPI_GetPlayerIdentityTable( entity player )
+{
+	Assert( LiveAPI_IsValidToRun() )
+
+	if( player == null || player.IsWorld() )
+		return { [ 0 ]/*name*/ = "World" }
+
+	if( player.IsPlayer() )
+	{
+		EHI playerEHI = ToEHI( player )
+		int playerTeamID = player.GetTeam()
+
+		table< int, var > data
+		data[  1 ] /*name           */ <- player.GetPlayerName()
+		data[  2 ] /*teamId         */ <- playerTeamID
+		data[  3 ] /*pos            */ <- player.GetOrigin()
+		data[  4 ] /*angles         */ <- player.GetAngles()
+		data[  5 ] /*currentHealth  */ <- player.GetHealth()
+		data[  6 ] /*maxHealth      */ <- player.GetMaxHealth()
+		data[  7 ] /*shieldHealth   */ <- player.GetShieldHealth()
+		data[  8 ] /*shieldMaxHealth*/ <- player.GetShieldHealthMax()
+		data[  9 ] /*nucleusHash    */ <- player.GetPlatformUID() // TODO[ AMOS ] add GetHashedPlatformUID() to SDK 
+		data[ 10 ] /*hardwareName   */ <- player.GetHardware()
+
+		// TODO[ AMOS ] add this function to the SDK
+		//if( GameRules_IsTeamIndexValid( playerTeamID ) )
+		{
+			data[ 11 ] /*teamName*/ <- GameRules_GetTeamName( playerTeamID )
+		}
+
+		array< entity > playerSquad = GetPlayerArrayOfTeam( playerTeamID )
+		playerSquad.sort( SortPlayersByName );
+
+		int sortedPlayerSquadIndex = playerSquad.find( player )
+		data[ 12 ]/*squadIndex*/ <- sortedPlayerSquadIndex >= 0 
+			? sortedPlayerSquadIndex 
+			: EEH_GetTeamMemberIndex( EHIToEncodedEHandle( playerEHI ) )
+
+		LoadoutEntry characterSlot = Loadout_CharacterClass()
+		if( LoadoutSlot_IsReady( playerEHI, characterSlot ) )
+		{
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterSlot )
+			data[ 13 ]/*character*/ <- ItemFlavor_GetHumanReadableRef( character )
+
+			LoadoutEntry characterSkin = Loadout_CharacterSkin( character )
+			if( LoadoutSlot_IsReady( playerEHI, characterSkin ) )
+			{
+				ItemFlavor currentSkin = LoadoutSlot_GetItemFlavor( playerEHI, characterSkin )
+				data[ 14 ]/*skin*/ <- ItemFlavor_GetHumanReadableRef( currentSkin )
+			}
+		}
+
+		return data
+	}
+
+	return { [ 0 ]/*name*/ = expect string( player.GetNetworkedClassName() ) }
+}
+
+table< string, var > function LiveAPI_GetPlayerIdentityTableString( entity player )
+{
+	Assert( LiveAPI_IsValidToRun() )
+
+	if( player == null || player.IsWorld() )
+		return { [ "name" ] = "World" }
+
+	if( player.IsPlayer() )
+	{
+		EHI playerEHI = ToEHI( player )
+		int playerTeamID = player.GetTeam()
+
+		table< string, var > data
+		data[ "name"            ] <- player.GetPlayerName()
+		data[ "teamId"          ] <- playerTeamID
+		data[ "pos"             ] <- player.GetOrigin()
+		data[ "angles"          ] <- player.GetAngles()
+		data[ "currentHealth"   ] <- player.GetHealth()
+		data[ "maxHealth"       ] <- player.GetMaxHealth()
+		data[ "shieldHealth"    ] <- player.GetShieldHealth()
+		data[ "shieldMaxHealth" ] <- player.GetShieldHealthMax()
+		data[ "nucleusHash"     ] <- player.GetPlatformUID()
+		data[ "hardwareName"    ] <- player.GetHardware()
+
+		// TODO[ AMOS ] add this function to the SDK
+		//if( GameRules_IsTeamIndexValid( playerTeamID ) )
+		{
+			data[ "teamName" ] <- GameRules_GetTeamName( playerTeamID )
+		}
+
+		array< entity > playerSquad = GetPlayerArrayOfTeam( playerTeamID )
+		playerSquad.sort( SortPlayersByName );
+
+		int sortedPlayerSquadIndex = playerSquad.find( player )
+		data[ "squadIndex" ] <- sortedPlayerSquadIndex >= 0 
+			? sortedPlayerSquadIndex 
+			: EEH_GetTeamMemberIndex( EHIToEncodedEHandle( playerEHI ) )
+
+		LoadoutEntry characterSlot = Loadout_CharacterClass()
+		if( LoadoutSlot_IsReady( playerEHI, characterSlot ) )
+		{
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterSlot )
+			data[ "character" ] <- ItemFlavor_GetHumanReadableRef( character )
+
+			LoadoutEntry characterSkin = Loadout_CharacterSkin( character )
+			if( LoadoutSlot_IsReady( playerEHI, characterSkin ) )
+			{
+				ItemFlavor currentSkin = LoadoutSlot_GetItemFlavor( playerEHI, characterSkin )
+				data[ "skin" ] <- ItemFlavor_GetHumanReadableRef( currentSkin )
+			}
+		}
+
+		return data
+	}
+
+	return { [ "name" ] = expect string( player.GetNetworkedClassName() ) }
+}
+
+// Example usage of this func:
+// 	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.ammoUsed,
+// 		[ LiveAPI_GetPlayerIdentityTable( player ), ammoType,      ammoUsed,        oldCount,          newCount ],
+// 		[ 3/*player*/,                              4/*ammoType*/, 5/*amountUsed*/, 6/*oldAmmoCount*/, 7/*newAmmoCount*/ ]
+// 	)
+void function LiveAPI_WriteLogUsingDefinedFields( int eventEnum, array< var > data, array< int > fieldEnums = [] )
+{
+	table< int, var > writableData = LiveAPI_GetWritableDefinedData( data, fieldEnums )
+	LiveAPI_WriteLog( eventEnum, writableData )
+}
+
+// Example usage of this func:
+// 	LiveAPI_WriteLogUsingCustomFields( "myCustomEvent", 
+// 		[ LiveAPI_GetPlayerIdentityTableString( player ), weaponName, ammoUsed,   origin,   dir ],
+// 		[ "player",                                       "weapon",   "ammoUsed", "origin", "dir" ]
+// 	)
+void function LiveAPI_WriteLogUsingCustomFields( string eventName, array< var > data, array< string > fieldNames = [] )
+{
+	table< string, var > writableData = LiveAPI_GetWritableCustomData( data, fieldNames )
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.customEvent, 
+		[ eventName, writableData ],
+		[ 3/*name*/, 4/*data*/] )
+}
+
+void function LiveAPI_WriteLog( int category, table< int, var > data )
+{
+	LiveAPI_LogRaw( data, category )
+}
+
+/////////////////////////
+/////////////////////////
+//// Callbacks       ////
+/////////////////////////
+/////////////////////////
+void function LiveAPI_OnInit()
+{
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.init, [ 0 ], [ 0 ] )
+}
+
+void function LiveAPI_OnGameStateChanged( int newVal )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	if( newVal == eGameState.WinnerDetermined )
+	{
+		int winnerTeam = GetWinningTeam()
+
+		array< table< int, var > > winners
+		array< entity > playerList = GetPlayerArrayOfTeam( winnerTeam )
+
+		foreach ( listedPlayer in playerList )
+		{
+			winners.append( LiveAPI_GetPlayerIdentityTable( listedPlayer ) )
+		}
+
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.matchStateEnd,
+			[ GetEnumString( "eGameState", GetGameState() ), winners ],
+			[ 3/*state*/,                                    4/*winners*/ ]
+		)
+
+		return
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.gameStateChanged, 
+		[ GetEnumString( "eGameState", GetGameState() ) ], 
+		[ 3/*state*/ ]
+	)
+}
+
+void function LiveAPI_OnClientConnected( entity player )
+{
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerConnected, 
+		[ LiveAPI_GetPlayerIdentityTable( player ) ], 
+		[ 3/*player*/ ]
+	)
+
+	AddEntityCallback_OnPostDamaged( player, LiveAPI_OnPlayerDamaged )
+}
+
+void function LiveAPI_OnClientDisconnected( entity player )
+{
+	// NOTE: when reconnect becomes a thing in our game build, adjust it here too !!!
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerDisconnected, 
+		[ LiveAPI_GetPlayerIdentityTable( player ), false,             IsAlive( player ) ], 
+		[ 3/*player*/,                              4/*canReconnect*/, 5/*isAlive*/ ]
+	)
+}
+
+void function LiveAPI_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir )
+{
+	if( !IsValid( player ) )
+		return
+
+	ItemFlavor ornull weaponFlavorOrNull = GetWeaponItemFlavorByClass( weaponName )
+
+	if ( !weaponFlavorOrNull )
+		return // Not a weapon we should track
+
+	int newCount = weapon.GetWeaponPrimaryClipCount( )
+	int oldCount = newCount + ammoUsed
+
+	if( oldCount < newCount )                                              
+		return
+
+	int poolType = weapon.GetWeaponAmmoPoolType()
+	string ammoType = AmmoType_GetRefFromIndex( poolType )
+
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.ammoUsed,
+		[ LiveAPI_GetPlayerIdentityTable( player ), ammoType,      ammoUsed,        oldCount,          newCount ],
+		[ 3/*player*/,                              4/*ammoType*/, 5/*amountUsed*/, 6/*oldAmmoCount*/, 7/*newAmmoCount*/ ]
+	)
+}
+
+void function LiveAPI_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if( !IsValid( victim ) )
+		return
+
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+
+	string weaponName = IsValid( weapon ) ? weapon.GetWeaponClassName() : DamageInfo_GetInflictor( damageInfo ).GetClassName()
+	table< int, var > ornull attackerIdentity = null
+
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+		attackerIdentity = LiveAPI_GetPlayerIdentityTable( attacker )
+
+	array< var > fieldData
+	array< int > fieldNums
+
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( victim ), LiveAPI_GetPlayerIdentityTable( attacker ), weaponName ]
+		fieldNums = [ 3/*attacker*/,                              4/*victim*/,                              5/*awardedTo*/                              6/*weapon*/ ]
+	}
+	else
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
+		fieldNums = [ 4/*victim*/,                              6/*weapon*/ ]
+	}
+	
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerKilled, fieldData, fieldNums )
+}
+
+void function LiveAPI_OnPlayerDamageActionCommon( entity victim, entity attacker, var damageInfo, int eventType )
+{
+	if( !IsValid( victim ) )
+		return
+
+	string weaponName = DamageSourceIDToString( DamageInfo_GetDamageSourceIdentifier( damageInfo ) )
+
+	array< var > fieldData
+	array< int > fieldNums
+
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
+		fieldNums = [ 3/*attacker*/,                              4/*victim*/,                              5/*weapon*/ ]
+	}
+	else
+	{
+		fieldData = [ LiveAPI_GetPlayerIdentityTable( victim ), weaponName ]
+		fieldNums = [ 4/*victim*/,                              5/*weapon*/ ]
+	}
+
+	if( eventType == eLiveAPI_EventTypes.playerDamaged )
+	{
+		fieldData.append( int( DamageInfo_GetDamage( damageInfo ) ) )
+		fieldNums.append( 6/*damageInflicted*/ )
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eventType, fieldData, fieldNums )
+}
+
+void function LiveAPI_OnPlayerStartBleedout( entity victim, entity attacker, var damageInfo )
+{
+	LiveAPI_OnPlayerDamageActionCommon( victim, attacker, damageInfo, eLiveAPI_EventTypes.playerDowned )
+}
+
+void function LiveAPI_OnPlayerDamaged( entity victim, var damageInfo )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
+	LiveAPI_OnPlayerDamageActionCommon( victim, attacker, damageInfo, eLiveAPI_EventTypes.playerDamaged )
+}
+
+void function LiveAPI_OnPlayerGotFirstAid( entity injured, entity healer )
+{
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerRevive,
+		[ LiveAPI_GetPlayerIdentityTable( healer ), LiveAPI_GetPlayerIdentityTable( injured ) ],
+		[ 3/*player*/,                              4/*revived*/ ]
+	)
+}
+
+void function LiveAPI_LinkedEntityLog( entity player, entity linkedEntity, int eventType )
+{
+	LiveAPI_WriteLogUsingDefinedFields( eventType,
+		[ LiveAPI_GetPlayerIdentityTable( player ), string( linkedEntity ) ],
+		[ 3/*player*/,                              4/*linkedEntity*/ ]
+	)
+}
+
+void function LiveAPI_ZiplineStart( entity player, entity zipline )
+{
+	LiveAPI_LinkedEntityLog( player, zipline, eLiveAPI_EventTypes.ziplineUsed )
+}
+
+void function LiveAPI_PlayerAbilityUsed( entity player, entity ability )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	LiveAPI_LinkedEntityLog( player, ability, eLiveAPI_EventTypes.playerAbilityUsed )
+}
+
+void function LiveAPI_GrenadeThrown( entity player, entity grenade )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	LiveAPI_LinkedEntityLog( player, grenade, eLiveAPI_EventTypes.grenadeThrown )
+}
+
+void function LiveAPI_OnPlayerWeaponSwitched( entity player, entity newWeapon, entity oldWeapon )
+{
+	if( !IsValid( player ) || !player.IsPlayer() )
+		return
+
+	array< var > data = [ LiveAPI_GetPlayerIdentityTable( player ), newWeapon.GetWeaponClassName() ]
+	array< int > fieldNums = [ 3/*player*/,                         4/*newWeapon*/ ]
+
+	if( IsValid( oldWeapon ) )
+	{
+		data.append( oldWeapon.GetWeaponClassName() )
+		fieldNums.append( 5/*oldWeapon*/ )
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.weaponSwitched, data, fieldNums )
+}
+
+void function LiveAPI_OnRespawnTeamPlayers( entity respawner, array< entity > playersRespawned )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	if( !IsValid( respawner ) )
+		return
+
+	array< table< int, var > > respawnedData
+	foreach ( listedPlayer in playersRespawned )
+	{
+		respawnedData.append( LiveAPI_GetPlayerIdentityTable( listedPlayer ) )
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.playerRespawnTeam,
+		[ LiveAPI_GetPlayerIdentityTable( respawner ), respawnedData ],
+		[ 3/*player*/,                                 4/*respawned*/ ]
+	)
+}
+
+void function LiveAPI_OnPlayerStatChanged( entity player, string statName, var newVal )
+{
+	if( !LiveAPI_IsValidToRun() )
+		return
+
+	if( !IsValid(player) )
+		return
+
+	int oneofFieldNum = -1 // will error if an unsupported type is passed in
+
+	switch( type( newVal ) )
+	{
+		case "int":
+			oneofFieldNum = 5
+			break;
+		case "float":
+			oneofFieldNum = 6
+			break;
+		case "bool":
+			oneofFieldNum = 7
+			break;
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields(eLiveAPI_EventTypes.playerStatChanged,
+		[ LiveAPI_GetPlayerIdentityTable( player ),	statName, 	   newVal ],
+		[ 3/*player*/,                              4/*statName*/, oneofFieldNum/*newValue*/ ]
+	)
+}
+
+void function LiveAPI_OnDeathFieldStartResize( DeathFieldData data, int eventType )
+{
+	int currStage = int( max( 0, SURVIVAL_GetCurrentDeathFieldStage() ) )
+	DeathFieldStageData stage = SURVIVAL_GetDeathFieldStages()[ currStage ]
+
+	array< var > logData = [ SURVIVAL_GetCurrentDeathFieldStage(), SURVIVAL_GetDeathFieldCenter(), SURVIVAL_GetDeathFieldCurrentRadius(), stage.shrinkDuration ]
+	array< int > logNums = [ 3/*stage*/,                           4/*center*/,                    5/*currentRadius*/,                    7/*shrinkDuration*/ ]
+
+	if( eventType == eLiveAPI_EventTypes.ringStartClosing )
+	{
+		logData.append( SURVIVAL_GetSafeZoneRadius() )
+		logNums.append( 6/*endRadius*/ )
+	}
+
+	LiveAPI_WriteLogUsingDefinedFields( eventType, logData, logNums )
+}
+
+void function LiveAPI_OnDeathFieldStartShrink( DeathFieldData data )
+{
+	LiveAPI_OnDeathFieldStartResize( data, eLiveAPI_EventTypes.ringStartClosing )
+}
+
+void function LiveAPI_OnDeathFieldStopShrink( DeathFieldData data )
+{
+	LiveAPI_OnDeathFieldStartResize( data, eLiveAPI_EventTypes.ringFinishedClosing )
+}
+
+void function LiveAPI_OnMatchSetup()
+{
+	LiveAPI_WriteLogUsingDefinedFields(eLiveAPI_EventTypes.matchSetup,
+		[ GetMapName(),	GetCurrentPlaylistName(), GetCurrentPlaylistVarString( "description", "" ), GetDatacenterName(), !GetCurrentPlaylistVarBool( "aimassist_adspull_disabled", false ), false, GetServerID()/*, TODO: loadoutConfiguration*/ ],
+		[ 3/*map*/,     4/*playlistName*/,        5/*playlistDesc*/,                              6/*dataCenter*/,     7/*aimAssistOn*/,                                                  8/*anonymousMode*/, 9/*, 10*/ ]
+	)
+}

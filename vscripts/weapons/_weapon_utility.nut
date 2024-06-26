@@ -1278,9 +1278,8 @@ bool function PlantStickyEntity( entity ent, table collisionParams, vector angle
 				ent.SetParentWithHitbox( collisionParams.hitEnt, collisionParams.hitbox, true )
 			}
 			// Hit a func_brush
-			else
+			else if( collisionParams.hitEnt.GetClassName() == "func_brush" )
 			{
-				//
 				ent.SetParent( collisionParams.hitEnt )
 			}
 
@@ -2624,9 +2623,13 @@ void function AddToTrackedEnts( entity player, entity ent )
 		if( IsValid( group ) )
 		{
 			AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
-			printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+			
+			#if DEVELOPER
+				printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+			#endif
 		}
-	} else
+	} 
+	else
 	{
 		AddToScriptManagedEntArray( player.s.activeTrapArrayId, ent )
 	}
@@ -2870,7 +2873,10 @@ entity function GetMeleeWeapon( entity player )
 	array<entity> weapons = player.GetMainWeapons()
 	foreach ( weaponEnt in weapons )
 	{
-		printt("ismelee", weaponEnt.IsWeaponMelee())
+		#if DEVELOPER
+			printt( "ismelee", weaponEnt.IsWeaponMelee() )
+		#endif 
+		
 		if ( weaponEnt.IsWeaponMelee() )
 			return weaponEnt
 	}
@@ -3833,15 +3839,19 @@ void function GetWeaponDPS( int activeSlot, bool vsTitan = false )
 		float timePerBurst   = (timePerShot * burst_fire_count) + burst_fire_delay
 		float burstPerSecond = 1 / timePerBurst
 
-		printt( timePerBurst )
+		#if DEVELOPER
+			printt( timePerBurst )
 
-		printt( "DPS Near", (burstPerSecond * burst_fire_count) * damage_near_value )
-		printt( "DPS Far ", (burstPerSecond * burst_fire_count) * damage_far_value )
+			printt( "DPS Near", (burstPerSecond * burst_fire_count) * damage_near_value )
+			printt( "DPS Far ", (burstPerSecond * burst_fire_count) * damage_far_value )
+		#endif 
 	}
 	else
 	{
-		printt( "DPS Near", fire_rate * damage_near_value )
-		printt( "DPS Far ", fire_rate * damage_far_value )
+		#if DEVELOPER
+			printt( "DPS Near", fire_rate * damage_near_value )
+			printt( "DPS Far ", fire_rate * damage_far_value )
+		#endif
 	}
 }
 
@@ -4233,14 +4243,19 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 				player.p.lastPilotOffhandUseTime[ index ] = Time()
 			StoreOffhandData( player, true, [index] )
 
-			// PIN
-			if ( sendPINEvent )
+			if ( index == OFFHAND_TACTICAL )
 			{
-				string weaponName = offhandWeapon.GetWeaponClassName()
-				if ( index == OFFHAND_TACTICAL )
-					PIN_PlayerAbility( player, weaponName, ABILITY_TYPE.TACTICAL, trackedProjectile, pinAdditionalData )
-				else if ( index == OFFHAND_ULTIMATE )
-					PIN_PlayerAbility( player, weaponName, ABILITY_TYPE.ULTIMATE, trackedProjectile, pinAdditionalData )
+				if ( sendPINEvent ) // PIN
+					PIN_PlayerAbility( player, offhandWeapon.GetWeaponClassName(), ABILITY_TYPE.TACTICAL, trackedProjectile, pinAdditionalData )
+
+				LiveAPI_PlayerAbilityUsed( player, offhandWeapon )
+			}
+			else if ( index == OFFHAND_ULTIMATE )
+			{
+				if (sendPINEvent) // PIN
+					PIN_PlayerAbility( player, offhandWeapon.GetWeaponClassName(), ABILITY_TYPE.ULTIMATE, trackedProjectile, pinAdditionalData )
+				
+				LiveAPI_PlayerAbilityUsed( player, offhandWeapon )
 			}
 
 			return

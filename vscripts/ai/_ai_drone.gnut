@@ -921,7 +921,9 @@ entity function SpawnDroneFromNPC( entity npc, string aiSettings )
 	}
 	else
 	{
-		printt( "NPC at ", npc.GetOrigin(), " couldn't spawn drone because there is less than ", DRONE_MINIMUM_DEPLOY_CLEARANCE_FROM_GROUND, " units of clearance from his origin." )
+		#if DEVELOPER
+			printt( "NPC at ", npc.GetOrigin(), " couldn't spawn drone because there is less than ", DRONE_MINIMUM_DEPLOY_CLEARANCE_FROM_GROUND, " units of clearance from his origin." )
+		#endif
 		return null
 	}
 

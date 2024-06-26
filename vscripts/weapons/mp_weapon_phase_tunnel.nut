@@ -232,7 +232,7 @@ bool function OnWeaponChargeBegin_weapon_phase_tunnel( entity weapon )
 				float fade = 0.125
 				thread PhaseTunnel_StartAbility( player, shiftTime + fade, weapon )
 				EmitSoundOnEntityExceptToPlayer( player, player, "Wraith_PhaseGate_GauntletArcs_3p" )
-			#elseif CLIENT
+			#elseif CLIENT				
 				AddPlayerHint( PHASE_TUNNEL_PLACEMENT_DURATION, 0, $"", "#WPN_PHASE_TUNNEL_PLAYER_DEPLOY_STOP_HINT" )
 				HidePlayerHint( "#WPN_PHASE_TUNNEL_PLAYER_DEPLOY_START_HINT" )
 				EmitSoundOnEntity( player, "Wraith_PhaseGate_GauntletArcs_1p" )
@@ -322,10 +322,10 @@ void function ForceTacticalEnd( entity player )
 	if ( IsValid( tactical ) )
 	{
 		if ( tactical.IsChargeWeapon() && tactical.IsWeaponCharging() )
-			{
-				tactical.ForceChargeEndNoAttack()
-				tactical.SetWeaponPrimaryClipCount(  0 )
-			}
+		{
+			tactical.ForceChargeEndNoAttack()
+			tactical.SetWeaponPrimaryClipCount(  0 )
+		}
 	}
 
 }
@@ -343,8 +343,7 @@ void function PhaseTunnel_OnPlayerStartBleedout( entity player, entity attacker,
 void function PhaseTunnel_StartAbility( entity player, float duration, entity weapon )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath", "OnDestroy", "CleanUpPlayerAbilities" )
 	weapon.EndSignal( "OnDestroy" )
 
 	Embark_Disallow( player )
@@ -423,7 +422,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 
 	OnThreadEnd(
 		function () : ( wpStart )
-		{
+		{		
 			if ( IsValid( wpStart ) )
 			{
 				wpStart.Destroy()
@@ -965,7 +964,13 @@ void function PhaseTunnel_PhaseEntity( entity ent, entity tunnelEnt, entity trig
 
 	tunnelData.activeUsers++
 	file.phaseTime[ tunnelEnt ] = Time() + PHASE_TUNNEL_TELEPORT_DBOUNCE
+
 	StatsHook_PhaseTunnel_EntTraversed( ent, tunnelEnt, entHasUsedTunnelBefore )
+	LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.wraithPortal, 
+		[ LiveAPI_GetPlayerIdentityTable( ent ) ], 
+		[ 3/*player*/ ]
+	)
+
 	waitthread PhaseTunnel_MoveEntAlongPath( ent, portalData.pathData )
 }
 
@@ -1326,8 +1331,18 @@ bool function PhaseTunnel_ShouldPhaseProjectile( entity projectile )
 
 void function PhaseTunnel_StartTrackingPositions( entity player, PhaseTunnelPathData startPath, PhaseTunnelPathData endPath )
 {
-	player.EndSignal( "PhaseTunnel_CancelPlacement" )
-	player.EndSignal( "OnDeath" )
+	player.EndSignal( "PhaseTunnel_CancelPlacement", "OnDeath", "CleanUpPlayerAbilities" )
+	
+	OnThreadEnd
+	(
+		void function() : ( player )
+		{
+			if( IsValid( player ) )
+			{
+				StopSoundOnEntity( player, "Wraith_PhaseGate_GauntletArcs_3p" )
+			}
+		}
+	)
 
 	//StatusEffect_AddTimed( player, eStatusEffect.placing_phase_tunnel, 1.0, PHASE_TUNNEL_PLACEMENT_DURATION, PHASE_TUNNEL_PLACEMENT_DURATION )
 
@@ -1395,9 +1410,9 @@ void function PhaseTunnel_StartTrackingPositions( entity player, PhaseTunnelPath
 
 void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseTunnelPathData startPath, PhaseTunnelPathData endPath )
 {
-	player.EndSignal( "PhaseTunnel_CancelPlacement" )
-	player.EndSignal( "PhaseTunnel_EndPlacement" )
-	player.EndSignal( "OnDeath" )
+	player.EndSignal( "PhaseTunnel_CancelPlacement", "PhaseTunnel_EndPlacement", "OnDeath" )
+	player.EndSignal( "CleanUpPlayerAbilities" )
+
 
 	vector lastOrigin 	  = player.GetOriginOutOfTraversal()
 	vector startingOrigin = player.GetOriginOutOfTraversal()
@@ -1680,7 +1695,7 @@ void function PhaseTunnel_OnPropScriptCreated( entity ent )
 	switch ( ent.GetScriptName() )
 	{
 		case "portal_marker":
-			//thread PhaseTunnel_CreateHUDMarker( ent )
+			thread PhaseTunnel_CreateHUDMarker( ent )
 			break
 	}
 }
@@ -1718,11 +1733,11 @@ bool function PhaseTunnel_ShouldShowIcon( entity localPlayer, entity portalMarke
 	if ( !GamePlayingOrSuddenDeath() )
 		return false
 
-	//if ( IsWatchingReplay() )
-	//	return false
+	if ( IsWatchingReplay() )
+		return false
 
-	//if ( localPlayer.GetTeam() != portalMarker.GetTeam() )
-	//	return false
+	if ( localPlayer.GetTeam() != portalMarker.GetTeam() )
+		return false
 
 	return true
 }
@@ -1739,6 +1754,10 @@ void function PhaseTunnel_OnEndPlacement( entity player, int statusEffect, bool 
 		return
 
 	HidePlayerHint( "#WPN_PHASE_TUNNEL_PLAYER_DEPLOY_STOP_HINT" )
+	
+	// calling this here, as cleaning up player abilities mid charge destroys the weapon 
+	// before forcecharge can call the function responsible for cleaning this up ~mkos
+	StopSoundOnEntity( player, "Wraith_PhaseGate_GauntletArcs_1p" )
 }
 
 void function TunnelVisualsEnabled( entity ent, int statusEffect, bool actuallyChanged )

@@ -220,6 +220,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheEntity( "env_entity_dissolver" )
 
 	FlagInit("EntitiesDidLoad")
+	FlagInit( "ShowExplosionRadius" )  // temp HACK
+
 	svGlobal.levelEnt = GetEnt( "worldspawn" )
 
 	LevelVarInit()
@@ -250,9 +252,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/props/charm/charm_nessy_ghost.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_clown.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_witch.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_blue.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/charm_hiswattson_white.rmdl" )
 	
 	PrecacheParticleSystem( $"train_far_beam_far_blink" )
 	
@@ -266,6 +265,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
+
 	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
 
@@ -376,8 +376,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_phantom.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_amogino.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
@@ -389,24 +387,49 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/w_gojo.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/w_naruto.rmdl" )
-	PrecacheModel( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
+
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
 	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/w_marvin.rmdl" )
-	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_arrows_mn.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/evac_tower_balloon.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/evac_tower_weight.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_w.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_v.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_valkyrie.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_valkyrie.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_nova_01.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_nova_base_01.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_v.rmdl" )
+	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_w.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_rampart.rmdl" )
+	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_rampart.rmdl" )
+	
+	PrecacheModel( $"mdl/robots/spectre/imc_spectre.rmdl" )
+	PrecacheModel( $"mdl/robots/stalker/robot_stalker.rmdl" )
+	PrecacheModel( $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl" )
+	PrecacheModel( $"mdl/creatures/prowler/prowler_apex.rmdl" )
+	PrecacheModel( $"mdl/creatures/spider/spider.rmdl" )
+	
+	PrecacheModel( $"mdl/fx/cloud_fill_01.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_16x128_01.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x352_01.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x352_01.rmdl" )
+	PrecacheModel( $"mdl/rocks/rock_white_chalk_modular_flat_02.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_05.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_128x32_01.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_64x32_01.rmdl" )
+	PrecacheModel( $"mdl/canyonlands/fabric_canopy_02.rmdl" )
+	PrecacheModel( $"mdl/pipes/pipe_modular_painted_yellow_32_04.rmdl" )
+	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x32_01.rmdl" )
+	
+	PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"melee_titan_sword" )
 	PrecacheWeapon( $"mp_weapon_titan_sword" )
 
@@ -416,7 +439,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheWeapon( $"melee_oddball" )
 	}
 
-	if( Flowstate_IsHaloMode() )
+	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	{
 		PrecacheParticleSystem( $"P_snow_atmo_512" )
 		PrecacheWeapon( $"mp_ability_grapple_master_chief" )
@@ -451,13 +474,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 		PrecacheModel( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
 	}
 
-	#if DEVELOPER
-		#if LISTEN_SERVER
-		SetConVarInt( "sv_onlineAuthEnable", 0 )
-		#endif
-	SetConVarInt( "sv_quota_scriptExecsPerSecond", 4 )
-	#endif
-	
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 	
@@ -494,12 +510,25 @@ void function CodeCallback_MapSpawn() // original script entry point
 		
 		case "fs_lgduels_1v1":
 		case "fs_1v1":
-		thread FS_TrackPlayersPositionInScoreboard()
+		
+		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash
+			thread FS_TrackPlayersPositionInScoreboard()
 		break
 	}
 	
 	thread FS_RestartServerAfterSomeTimeWithoutPlayers()
 }
+
+const array<string> InvalidModesForTrackScoreBoard = //const values
+[
+	SURVIVAL,
+	MENUFALL,
+	CUSTOM_CTF,
+	TEAM_DEATHMATCH,
+	fs_prophunt,
+	fs_duckhunt,
+	fs_infected	,
+]
 
 void function FS_RestartServerAfterSomeTimeWithoutPlayers()
 {
@@ -557,9 +586,10 @@ void function FS_TrackPlayersPositionInScoreboard()
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "VModEnable" || args[0] == "vban" ) return
+	if( !IsCommandsEnabled( player ) ) return 
+	if( args[0] == "VModEnable" || args[0] == "vban" ) return
 	
-	#if !SCRIPT_GAME_VERSION__RELEASE && DEVELOPER
+	#if DEVELOPER
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
@@ -569,34 +599,38 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	#endif
 
 	string commandString = args.remove( 0 )
-
+	bool bFound = false
 	//TODO: Track down Why VModEnable is being called from code?
 
-	//Assert( commandString in svGlobal.clientCommandCallbacks )
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
 		#if DEVELOPER 
-		printt("CodeCallback_ClientCommand", commandString)
-		#endif 
+			printt( "CodeCallback_ClientCommandNew", commandString )
+		#endif
 		
 		foreach ( callbackFunc in svGlobal.clientCommandCallbacksNew[ commandString ] )
 		{
 			callbackFunc( player, args )
 		}
 		
-		return true
+		bFound = true
 	}
+	
+	//Assert( commandString in svGlobal.clientCommandCallbacks )
+	
 	if ( commandString in svGlobal.clientCommandCallbacks  )
 	{
 		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
 	}
-	else
+	else if( !bFound )
 	{
-		#if !SCRIPT_GAME_VERSION__RELEASE && !DEVELOPER
+		#if DEVELOPER
 			printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
 		#endif
 		return false
 	}
+	
+	return true
 }
 
 entity ornull function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, float idk = -1)

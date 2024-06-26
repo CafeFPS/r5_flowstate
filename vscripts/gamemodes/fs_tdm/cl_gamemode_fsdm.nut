@@ -45,7 +45,7 @@ global function FS_1v1_ToggleUIVisibility
 global function Toggle1v1Scoreboard
 global function ForceHide1v1Scoreboard
 global function ForceShow1v1Scoreboard
-global function FS_NewBox_Msg
+global function FS_IBMM_Msg
 
 global function fs_NewBoxBuildMessage
 global function fs_NewBoxShowMessage
@@ -57,10 +57,16 @@ global function FS_Scenarios_TogglePlayersCardsVisibility
 
 global function FS_Scenarios_AddAllyHandle
 global function FS_Scenarios_AddEnemyHandle
+global function FS_Scenarios_AddEnemyHandle2
 
 global function FS_Scenarios_SetupPlayersCards
 global function FS_Scenarios_ChangeAliveStateForPlayer
 global function FS_CreateTeleportFirstPersonEffectOnPlayer
+
+global function FS_Show1v1Banner
+global function FS_SetHideEndTimeUI
+
+global function Gamemode1v1_ForceLegendSelector_Deprecated
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -90,13 +96,17 @@ struct {
 
 	//Scenarios cards
 	var vsBasicImage
+	var vsBasicImage2
 	array<var> allyTeamCards
 	array<var> enemyTeamCards
+	array<var> enemyTeamCards2
 	bool buildingTeam = true
 	array<int> allyTeamHandles
 	array<int> enemyTeamHandles
+	array<int> enemyTeamHandles2
 	
 	bool muted = false
+	bool hideendtimeui = false
 	
 } file
 
@@ -128,6 +138,7 @@ void function Cl_CustomTDM_Init()
 	RegisterSignal("FSDM_EndTimer")
 	RegisterSignal("NewKillChangeRui")
 	RegisterSignal("FS_CloseNewMsgBox")
+	RegisterSignal("FS_1v1Banner")
 	RegisterSignal("StopCurrentEnemyThread")
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 		Cl_FsOddballInit()
@@ -136,6 +147,44 @@ void function Cl_CustomTDM_Init()
 	if( Playlist() == ePlaylists.fs_scenarios )
 	{
 		AddCallback_OnClientScriptInit( FS_Scenarios_OnClientScriptInit )
+		FS_Scenarios_Score_System_Init()
+	}
+	
+	if( Playlist() == ePlaylists.fs_1v1 )
+	{
+		AddCallback_CharacterSelectMenu_OnCharacterLocked( Gamemode1v1_OnSelectedLegend )
+		AddCallback_OnCharacterSelectMenuClosed( Gamemode1v1_OnLegendSelector_Close )
+		//AddCallback_OnClientScriptInit( FS_Show1v1Banner )
+	}
+}
+
+void function Gamemode1v1_ForceLegendSelector_Deprecated() //TODO: Client-based open
+{
+	OpenCharacterSelectAimTrainer( true )
+}
+
+void function Gamemode1v1_OnLegendSelector_Close()
+{
+	CharacterSelect_SetMenuState( eNewCharacterSelectMenuState.PICKING )
+}
+
+void function Gamemode1v1_OnSelectedLegend( ItemFlavor character )
+{
+	entity player = GetLocalClientPlayer()
+	
+	if( IsValid( player ) )
+	{
+		thread
+		(
+			void function() : ( player, character )
+			{
+				wait 0.5 //rawr timing issue
+				RunUIScript( "Gamemode1v1_CloseLegendMenu" )
+				player.ClientCommand( "challenge legend -1 " + string( ItemFlavor_GetGUID( character ) ) )
+				ScreenFade( GetLocalViewPlayer(), 255, 255, 255, 255, .1, 0, FFADE_PURGE | FFADE_INOUT | FFADE_NOT_IN_REPLAY )
+			}
+		)()
+		
 	}
 }
 
@@ -152,6 +201,15 @@ bool function isMuted()
 void function FS_Scenarios_OnClientScriptInit( entity player ) 
 {
 	FS_Scenarios_InitPlayersCards()
+
+	//I don't want these things in user screen even if they launch in debug
+	SetConVarBool( "cl_showpos", false )
+	SetConVarBool( "cl_showfps", false )
+	SetConVarBool( "cl_showgpustats", false )
+	SetConVarBool( "cl_showsimstats", false )
+	SetConVarBool( "host_speeds", false )
+	SetConVarBool( "con_drawnotify", false )
+	SetConVarBool( "enable_debug_overlays", false )
 }
 
 void function CL_FSDM_RegisterNetworkFunctions()
@@ -159,9 +217,50 @@ void function CL_FSDM_RegisterNetworkFunctions()
 	if ( IsLobby() )
 		return
 	
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		RegisterNetworkedVariableChangeCallback_time( "FS_Scenarios_gameStartTime", Flowstate_StartTimeChanged )
+		RegisterNetworkedVariableChangeCallback_bool( "characterSelectionReady", FS_Scenarios_OnGroupCharacterSelectReady )
+	}
+
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMStartTime", Flowstate_StartTimeChanged )
 	RegisterNetworkedVariableChangeCallback_time( "flowstate_DMRoundEndTime", Flowstate_RoundEndTimeChanged )
 	RegisterNetworkedVariableChangeCallback_ent( "FSDM_1v1_Enemy", Flowstate_1v1EnemyChanged )
+}
+
+void function FS_SetHideEndTimeUI( bool show )
+{
+	file.hideendtimeui = show
+}
+
+void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old, bool new, bool actuallyChanged )
+{
+	if ( player != GetLocalClientPlayer() )
+		return
+
+	if( new )
+	{
+		#if DEVELOPER 
+			printt( "[Scenarios Character Select] Open" )
+		#endif 
+		
+		Fullmap_SetVisible( false )
+		UpdateMainHudVisibility( GetLocalViewPlayer() )
+		Flowstate_ForceRemoveAllObituaries()
+		FS_SetHideEndTimeUI( true )
+		Obituary_Print_Localized( "Made by CafeFPS with the help from mkos, Darth Elmo and Balvarine.", BURN_COLOR, BURN_COLOR )
+		OpenCharacterSelectNewMenu()
+	}
+	else
+	{
+		#if DEVELOPER
+			printt( "[Scenarios Character Select] Close" )
+		#endif 
+		
+		CloseCharacterSelectNewMenu()
+		RunUIScript( "UI_CloseCharacterSelect" )
+		FS_SetHideEndTimeUI( false )
+	}
 }
 
 void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity newEnt, bool actuallyChanged )
@@ -174,7 +273,9 @@ void function Flowstate_1v1EnemyChanged( entity player, entity oldEnt, entity ne
 	if( player != localPlayer )
 		return
 	
-	printt( "1v1 enemy changed " + player, oldEnt, newEnt, actuallyChanged )
+	#if DEVELOPER
+		printt( "1v1 enemy changed " + player, oldEnt, newEnt, actuallyChanged )
+	#endif
 	
 	if ( !IsValid( localPlayer ) || !IsValid( newEnt ) || !newEnt.IsPlayer() || localPlayer != GetLocalViewPlayer() )
 	{
@@ -359,7 +460,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 {
 	if ( !actuallyChanged  )
 		return
-
+	
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
 }
@@ -367,7 +468,7 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 void function Flowstate_ShowRoundEndTimeUI( float new )
 {
 	#if DEVELOPER
-	printt( "show round end time ui ", new, " - current time: " + Time() )
+		printt( "show round end time ui ", new, " - current time: " + Time() )
 	#endif
 	if( new == -1 || Playlist() == ePlaylists.fs_movementgym )
 	{
@@ -412,8 +513,8 @@ void function Flowstate_DMTimer_Thread( float endtime )
 		Hud_SetText( HudElement( "FS_DMCountDown_Text"), "Time Remaining: " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		startTime++
 
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !GetPlayerIsWatchingReplay() )
-		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !GetPlayerIsWatchingReplay() )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Text" ), !file.hideendtimeui )
+		Hud_SetVisible( HudElement( "FS_DMCountDown_Frame" ), !file.hideendtimeui )
 			
 		wait 1
 	}
@@ -455,12 +556,18 @@ void function Flowstate_StartTime_Thread( float endtime )
 		msg = "Oddball Starting in "
 	else if( Gamemode() == eGamemodes.CUSTOM_CTF )
 		msg = "CTF Starting in "
+	else if( Playlist() == ePlaylists.fs_scenarios )
+		msg = "Zone Wars Starting in "
 
 	while ( Time() <= endtime )
 	{
         int elapsedtime = int(endtime) - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
+		
+		if( dt.seconds == 0 )
+			break
+
 		Hud_SetText( HudElement( "FS_DMCountDown_Text_Center"), msg + dt.seconds )
 		
 		wait 1
@@ -484,11 +591,11 @@ void function Flowstate_PlayStartRoundSounds()
 	if( Flowstate_IsHaloMode() )
 	{
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS and Darkes65.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		// Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "Welcome to Flowstate Halo DM Mod v1.0 RC - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
 	
-	if( Gamemode() == eGamemodes.CUSTOM_CTF )
+	if( Gamemode() == eGamemodes.CUSTOM_CTF && !Flowstate_IsHaloMode() )
 	{
 		Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}
@@ -831,7 +938,10 @@ void function NotifyRingTimer()
 void function OpenTDMWeaponSelectorUI()
 {
 	entity player = GetLocalClientPlayer()
-    player.ClientCommand("CC_TDM_Weapon_Selector_Open")
+    
+	if( Playlist() == ePlaylists.fs_aimtrainer )
+		player.ClientCommand("CC_TDM_Weapon_Selector_Open")
+	
 	DoF_SetFarDepth( 1, 300 )
 	RunUIScript("OpenFRChallengesSettingsWpnSelector")
 }
@@ -890,8 +1000,10 @@ void function ServerCallback_SetLGDuelPesistenceSettings( float s1, int s2, int 
 {
 	#if DEVELOPER 
 		printt("Calling LoadLgDuelSettings with: ", s1, s2, s3, s4, s5, s6, s7, s8 )
-	#endif
-	RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
+	#endif	
+	
+	LGDuels_SetFromPersistence( s1, s2, s3, s4, s5, s6, s7, s8 )	
+	//RunUIScript( "LoadLgDuelSettings", s1, s2, s3, s4, s5, s6, s7, s8 )
 }
 
 void function ServerCallback_FSDM_ChampionScreenHandle(bool shouldOpen, int TeamWon, int skinindex)
@@ -1469,15 +1581,27 @@ void function DM_HintCatalog(int index, int eHandle)
 		break
 		
 		case 3:
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 )
+		switch( Playlist() )
 		{
-			Obituary_Print_Localized( "Made by mkos and @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "Flowstate LG Duels v1.0 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			case ePlaylists.fs_movementrecorder:
+			Obituary_Print_Localized( "mkos - fixes for multiplayer, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Movement Recorder v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
 
-		} else
-		{
-			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "Flowstate 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			case ePlaylists.fs_lgduels_1v1:
+			Obituary_Print_Localized( "mkos - settings persistance, code improvements", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS LG Duels v1.0 - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
+			
+			case ePlaylists.fs_scenarios:
+			Obituary_Print_Localized( "with the help from mkos, Darth Elmo and Balvarine. <3", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios v0.9 Beta - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
+			
+			case ePlaylists.fs_1v1:
+			Obituary_Print_Localized( "Made by __makimakima__ - Maintained by @CafeFPS and mkos", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS 1V1 v1.33 - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			break
 		}
 		break
 
@@ -1700,11 +1824,14 @@ void function fs_NewBoxShowMessage( float duration )
 }
 
 
-//Unused :C Cafe
-void function FS_NewBox_Msg( float duration = 3 )
+//Unused :C Cafe ----- used now :) ~Mkos
+void function FS_IBMM_Msg( string msgString, string subMsgString, float duration = 5 )
 {
+	entity player = GetLocalClientPlayer()
+
 	clGlobal.levelEnt.Signal( "FS_CloseNewMsgBox" )
 	clGlobal.levelEnt.EndSignal( "FS_CloseNewMsgBox" )
+	player.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( )
@@ -1717,15 +1844,25 @@ void function FS_NewBox_Msg( float duration = 3 )
 			Hud_SetText( HudElement( "FS_IBMM_MsgSubText" ), "" )
 			Hud_SetAlpha( HudElement( "FS_IBMM_MsgText" ), 255 )
 			Hud_SetAlpha( HudElement( "FS_IBMM_MsgSubText" ), 255 )
-
-			file.fs_newMsgBoxString = ""
-			file.fs_newMsgBoxSubString = ""
 		}
 	)
 	// printt( "trying to show message:", file.fs_newMsgBoxString, file.fs_newMsgBoxSubString )
 
-	Hud_SetText( HudElement( "FS_IBMM_MsgText"), file.fs_newMsgBoxString )
-	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), file.fs_newMsgBoxSubString )
+	entity enemy = player.GetPlayerNetEnt( "FSDM_1v1_Enemy")
+	
+	if( enemy != null )
+	{
+		if( subMsgString.find( "%s" ) != -1 )
+			subMsgString = StringReplaceLimited( subMsgString, "%s", enemy.GetPlayerName(), 1 )
+	}
+	else
+	{
+		if( subMsgString.find( "%s" ) != -1 )
+			subMsgString = StringReplaceLimited( subMsgString, "%s", "~unknown~", 1 )
+	}
+
+	Hud_SetText( HudElement( "FS_IBMM_MsgText"), msgString )
+	Hud_SetText( HudElement( "FS_IBMM_MsgSubText"), subMsgString )
 	
 	RuiSetImage( Hud_GetRui( HudElement( "FS_IBMM_MsgBg") ), "basicImage", $"rui/flowstatecustom/strip_bg" )
 
@@ -1754,14 +1891,59 @@ void function FS_NewBox_Msg( float duration = 3 )
 	wait 0.24
 }
 
+
+void function FS_Show1v1Banner( entity player )
+{
+	#if !DEVELOPER
+		if( GetGameState() >= eGameState.Playing )
+			return
+	#endif
+				
+	float duration = 5
+
+	clGlobal.levelEnt.Signal( "FS_1v1Banner" )
+	clGlobal.levelEnt.EndSignal( "FS_1v1Banner" )
+	player.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( )
+		{
+			Hud_SetVisible( HudElement( "FS_1v1Banner" ), false )
+		}
+	)
+	
+	Hud_ReturnToBasePos( HudElement( "FS_1v1Banner" ) )
+	Hud_SetSize( HudElement( "FS_1v1Banner" ), 0, 0 )
+	
+	Hud_SetVisible( HudElement( "FS_1v1Banner" ), true )	
+	Hud_ScaleOverTime( HudElement( "FS_1v1Banner" ), 1.7, 1.7, 1, INTERPOLATOR_ACCEL )
+	wait 1
+	Hud_ScaleOverTime( HudElement( "FS_1v1Banner" ), 1, 1, 2, INTERPOLATOR_SIMPLESPLINE )
+	wait duration - 2
+	Hud_FadeOverTime( HudElement( "FS_1v1Banner" ), 0, 3, INTERPOLATOR_ACCEL )
+	wait 2
+}
+
 void function FS_Scenarios_InitPlayersCards()
 {
 	file.allyTeamCards.clear()
 	file.enemyTeamCards.clear()
+	file.enemyTeamCards2.clear()
 
-	printt( "FS_Scenarios_InitPlayersCards" )
+	#if DEVELOPER
+		printt( "FS_Scenarios_InitPlayersCards" )
+	#endif 
+	
 	file.vsBasicImage = HudElement( "ScenariosVS" )
+	file.vsBasicImage2 = HudElement( "ScenariosVS_2" )
 	RuiSetImage( Hud_GetRui( file.vsBasicImage ), "basicImage", $"rui/flowstatecustom/vs" )
+	RuiSetImage( Hud_GetRui( file.vsBasicImage2 ), "basicImage", $"rui/flowstatecustom/vs" )
+
+	if( GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 ) > 2 )
+	{
+		UIPos wepSelectorBasePos = REPLACEHud_GetBasePos( file.vsBasicImage )		
+		Hud_SetPos( file.vsBasicImage, wepSelectorBasePos.x - 115, wepSelectorBasePos.y + 2 )
+	}
 
 	for(int i = 0; i<3; i++ )
 	{
@@ -1788,6 +1970,20 @@ void function FS_Scenarios_InitPlayersCards()
 		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
 		Hud_SetVisible( button , false )
 	}
+
+	for(int i = 0; i<3; i++ )
+	{
+		var button = HudElement( "TestCharacterF" + i )
+		file.enemyTeamCards2.append( button )
+		
+		RuiSetBool( Hud_GetRui( button ), "isPurchasable", false )
+		RuiSetString( Hud_GetRui( button ), "buttonText", "@CafeFPS" )
+		RuiSetImage( Hud_GetRui( button ), "buttonImage", $"rui/menu/buttons/lobby_character_select/random" )
+		RuiSetImage( Hud_GetRui( button ), "bgImage", $"rui/flowstate_custom/colombia_flag_papa" )
+		RuiSetImage( Hud_GetRui( button ), "roleImage", $"" )
+		Hud_SetVisible( button , false )
+	}
+
 	file.buildingTeam = true
 }
 
@@ -1803,6 +1999,20 @@ void function FS_Scenarios_AddEnemyHandle( int handle )
 
 	// printt( "added handle for enemy team player", handle )
 	file.enemyTeamHandles.append( handle )
+}
+
+void function FS_Scenarios_AddEnemyHandle2( int handle )
+{
+	if( !file.buildingTeam )
+		return
+
+	entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+	
+	if( !IsValid( enemyPlayer ) )
+		return
+
+	// printt( "added handle for enemy team player", handle )
+	file.enemyTeamHandles2.append( handle )
 }
 
 void function FS_Scenarios_AddAllyHandle( int handle )
@@ -1822,6 +2032,32 @@ void function FS_Scenarios_AddAllyHandle( int handle )
 void function FS_Scenarios_SetupPlayersCards()
 {
 	file.buildingTeam = false
+
+	foreach( int i, int handle in file.enemyTeamHandles2 )
+	{
+		if( i > file.enemyTeamCards2.len() )
+			continue
+
+		thread function() : ( i, handle )
+		{
+			entity enemyPlayer = GetEntityFromEncodedEHandle( handle )
+			
+			if( !IsValid( enemyPlayer ) )
+				return
+
+			EndSignal( enemyPlayer, "OnDestroy" )
+
+			ItemFlavor character = LoadoutSlot_WaitForItemFlavor( handle, Loadout_CharacterClass() )
+
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards2[i] ), "isPurchasable", true )
+			RuiSetString( Hud_GetRui( file.enemyTeamCards2[i] ), "buttonText", enemyPlayer.GetPlayerName() )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"" )
+
+			Hud_SetVisible( file.enemyTeamCards2[i], true )
+		}()
+	}
 
 	foreach( int i, int handle in file.enemyTeamHandles )
 	{
@@ -1884,6 +2120,11 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 	if( file.vsBasicImage != null )
 		Hud_SetVisible( file.vsBasicImage, show )
 
+	if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() > 0 && show )
+		Hud_SetVisible( file.vsBasicImage2, true )
+	else if( file.vsBasicImage2 != null && file.enemyTeamHandles2.len() == 0 || file.vsBasicImage2 != null && !show)
+		Hud_SetVisible( file.vsBasicImage2, false )
+
 	if( !show )
 	{
 		foreach( button in file.allyTeamCards )
@@ -1896,8 +2137,14 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show )
 			Hud_SetVisible( button, show )
 		}
 
+		foreach( button in file.enemyTeamCards2 )
+		{
+			Hud_SetVisible( button, show )
+		}
+
 		file.allyTeamHandles.clear()
 		file.enemyTeamHandles.clear()
+		file.enemyTeamHandles2.clear()
 		FS_Scenarios_InitPlayersCards()
 	}
 }
@@ -1920,6 +2167,16 @@ void function FS_Scenarios_ChangeAliveStateForPlayer( int eHandle, bool alive )
 		{
 			RuiSetBool( Hud_GetRui( file.enemyTeamCards[i] ), "isPurchasable", alive )
 			RuiSetImage( Hud_GetRui( file.enemyTeamCards[i] ), "roleImage", $"rui/rui_screens/skull" )
+			return
+		}
+	}
+
+	foreach( int i, int handle in file.enemyTeamHandles2 )
+	{
+		if( handle == eHandle )
+		{
+			RuiSetBool( Hud_GetRui( file.enemyTeamCards2[i] ), "isPurchasable", alive )
+			RuiSetImage( Hud_GetRui( file.enemyTeamCards2[i] ), "roleImage", $"rui/rui_screens/skull" )
 			return
 		}
 	}

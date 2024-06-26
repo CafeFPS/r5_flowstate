@@ -860,7 +860,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 
 	if( TROPHY_DESTROYS_EVERYTHING )
 	{
-		printt( "[pylon] Projectile destroyed! " + projectile )
+		#if DEVELOPER
+			printt( "[pylon] Projectile destroyed! " + projectile )
+		#endif
 	
 		//Sound for zap
 		EmitSoundOnEntity( pylon, TROPHY_INTERCEPT_SMALL )
@@ -878,14 +880,12 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 	switch ( pclassname )
 	{
 		case "mp_weapon_grenade_gas":
-			//Reset ult to no charge if used
-			player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
 		case "mp_weapon_grenade_defensive_bombardment":
-			//Reset ult to no charge if used
-			player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
 		case "mp_weapon_grenade_creeping_bombardment":
 			//Reset ult to no charge if used
-			player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
+			if( IsValid( player ) )
+				player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
+				
 		case "mp_weapon_grenade_emp":
 		case "mp_weapon_frag_grenade":
 		case "mp_weapon_thermite_grenade":
@@ -900,7 +900,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 			vector pyloncenter = pylon.GetOrigin() + <0, 0, 60>
 			EffectSetControlPointVector( zap, 1, pyloncenter )
 
-			printt( "[pylon] Projectile destroyed! " + projectile )
+			#if DEVELOPER
+				printt( "[pylon] Projectile destroyed! " + projectile )
+			#endif
 	
 			//Destroy ent
 			projectile.Destroy()	
@@ -920,7 +922,9 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 		vector pyloncenter = pylon.GetOrigin() + <0, 0, 60>
 		EffectSetControlPointVector( zap, 1, pyloncenter )
 
-		printt( "[pylon] Projectile destroyed! " + projectile )
+		#if DEVELOPER
+			printt( "[pylon] Projectile destroyed! " + projectile )
+		#endif
 
 		//Destroy ent
 		projectile.Destroy()

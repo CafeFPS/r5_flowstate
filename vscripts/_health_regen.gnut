@@ -5,8 +5,8 @@ global function HealthRegen_Init
 global function PilotShieldHealthUpdate
 global function PilotShieldModifyDamage
 
-global bool isPermanentDmg = false
-global float sPermanentDmg = 0.0
+const NO_HEALTH_DMG = ( 1 << eDamageSourceId.mp_ability_crypto_drone_emp ) // | ( 1 << eDamageSourceId. )
+
 struct
 {
 	float healthRegenRate
@@ -37,13 +37,14 @@ void function PilotHealthRegenThinkMP( entity player )
 	// There's a delay when you change legends, have to compensate
 	wait 1
 	
-	if(!HealthRegen_IsPlayerAllowed(player))
+	if( !HealthRegen_IsPlayerAllowed(player) )
 		return
 
 	int tick
 	
 	while ( IsValid( player ) )
 	{
+		//Warning("continued")
 		wait( file.healthRegenTickTime )
 
 		if ( !IsAlive( player ) )
@@ -70,6 +71,7 @@ void function PilotHealthRegenThinkMP( entity player )
 		}
 		else if ( Time() - player.p.lastDamageTime < file.healthRegenStartDelay )
 		{
+			//printt( Time(), player.p.lastDamageTime, file.healthRegenStartDelay )
 			StatusEffect_StopAllOfType( player, eStatusEffect.target_health )
 			tick = 0
 			continue
@@ -110,7 +112,7 @@ void function PilotHealthRegenThinkMP( entity player )
 
 bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+	if( PlayerHasPassive( player, ePassives.PAS_OCTANE ) )
 		return true
 		
 	return false
@@ -131,10 +133,10 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 	if(IsValid(player))
 		shieldHealth = player.GetShieldHealth()
 
-	float maxHealth = 0.0
+	//float maxHealth = 0.0
 	
-	if(IsValid(player))
-		maxHealth = float(player.GetHealth()) + float(shieldHealth)
+	//if(IsValid(player))
+	//	maxHealth = float(player.GetHealth()) + float(shieldHealth) //not used??
 
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if(!attacker.IsPlayer()) return 0
@@ -150,13 +152,13 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 	return shieldDamage
 }
 
-float function PilotShieldModifyDamage( entity player, var damageInfo)
+float function PilotShieldModifyDamage( entity player, var damageInfo )
 {
-    entity attacker = DamageInfo_GetAttacker(damageInfo)
+    entity attacker = DamageInfo_GetAttacker( damageInfo )
 
     float shieldHealth = 0.0
 	
-	if(IsValid(player))
+	if( IsValid( player ) )
 		shieldHealth = float( player.GetShieldHealth() )
 	
     float damage = DamageInfo_GetDamage( damageInfo )
@@ -166,7 +168,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
     if ( newShieldHealth < 0 )
         permanentDamage = fabs( newShieldHealth )
 	
-	if(IsValid(player))
+	if( IsValid( player ) )
 		player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
 
     if ( shieldHealth && newShieldHealth <= 0 )
@@ -183,20 +185,27 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
 		}
     }
 
-	if(permanentDamage > 0)
+	if( permanentDamage > 0 )
     {
 		float damagefull = damage + shieldHealth
 		float maxHealth = 0.0
 		
-		if(IsValid(player))
+		if( IsValid( player ) )
 			maxHealth = float(player.GetHealth())
 		
-		isPermanentDmg = true
-        sPermanentDmg = damage
-		DamageInfo_SetDamage( damageInfo, permanentDamage )	
-		
-		if(IsValid(attacker))
+		if( NO_HEALTH_DMG & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
 		{
+			DamageInfo_SetDamage( damageInfo, 0 )
+		}
+		else 
+		{
+			DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
+			DamageInfo_SetDamage( damageInfo, permanentDamage )
+		}
+		
+		if( IsValid( attacker ) )
+		{
+			PlayerDamageFeedback( player, damageInfo, shieldHealth )
 			attacker.p.playerDamageDealt += shieldHealth
 			attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldHealth )
 		}

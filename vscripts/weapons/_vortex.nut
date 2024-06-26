@@ -1552,7 +1552,9 @@ void function UpdateFriendlyEnemyShieldWallColorForFrac( array<entity> fxArray, 
 
 bool function CodeCallback_OnVortexHitBullet( entity weapon, entity vortexSphere, var damageInfo )
 {
-	printt( "CodeCallback_OnVortexHitBullet ", weapon, vortexSphere )
+	#if DEVELOPER
+		printt( "CodeCallback_OnVortexHitBullet ", weapon, vortexSphere )
+	#endif
 
 	//TO DO: Get a code flag for this so we don't use target name.
 	//If the vortex is set to be a trigger area for bullets and projectiles run the specified callbacks then early out.
@@ -1694,7 +1696,9 @@ bool function OnVortexHitBullet_BubbleShieldNPC( entity vortexSphere, var damage
 
 bool function CodeCallback_OnVortexHitProjectile( entity weapon, entity vortexSphere, entity attacker, entity projectile, vector contactPos )
 {
-	printt( "CodeCallback_OnVortexHitBullet ", weapon, vortexSphere )
+	#if DEVELOPER
+		printt( "CodeCallback_OnVortexHitBullet ", weapon, vortexSphere )
+	#endif
 
 	// code shouldn't call this on an invalid vortexsphere!
 	if ( !IsValid( vortexSphere ) )

@@ -195,7 +195,9 @@ void function WeaponReactiveKillEffects_PlayOneShotSounds( entity weapon, ItemFl
 
 	weapon.EmitWeaponSound_1p3p( sound1p, sound3p )
 
-	printt( "playing one-shot sounds", sound1p, sound3p )
+	#if DEVELOPER
+		printt( "playing one-shot sounds", sound1p, sound3p )
+	#endif
 }
 
 void function WeaponReactiveKillEffects_PlayPersistentSounds( entity weapon, ItemFlavor weaponSkin, int reactiveKillLevel )
@@ -210,7 +212,9 @@ void function WeaponReactiveKillEffects_PlayPersistentSounds( entity weapon, Ite
 
 	weapon.EmitWeaponSound_1p3p( sound1p, sound3p )
 
-	printt( "playing persistent sounds", sound1p, sound3p )
+	#if DEVELOPER
+		printt( "playing persistent sounds", sound1p, sound3p )
+	#endif
 }
 
 void function WeaponReactiveKillEffects_StopPersistentSounds( entity weapon, ItemFlavor weaponSkin )
@@ -232,7 +236,9 @@ void function WeaponReactiveKillEffects_StopPersistentSounds( entity weapon, Ite
 		if ( sound3p != "" )
 			weapon.StopWeaponSound( sound3p )
 
-		printt( "stopping persistent sound(s)", sound1p, sound3p )
+		#if DEVELOPER
+			printt( "stopping persistent sound(s)", sound1p, sound3p )
+		#endif
 	}
 }
 
@@ -255,7 +261,9 @@ void function WeaponReactiveKillEffects_PlayOneShotFx( entity weapon, ItemFlavor
 
 		weapon.PlayWeaponEffect( fx1p, fx3p, attachmentName )
 
-		printt( "playing flash FX", fx1p, fx3p, attachmentName )
+		#if DEVELOPER
+			printt( "playing flash FX", fx1p, fx3p, attachmentName )
+		#endif
 
 		WeaponReactiveKillEffects_AddActiveFXGroup( weaponSkin, reactiveKillLevel, fx1p, fx3p )
 	}
@@ -272,7 +280,9 @@ void function WeaponReactiveKillEffects_PlayPersistentFX( entity weapon, ItemFla
 
 		weapon.PlayWeaponEffect( fx1p, fx3p, attachmentName )
 
-		printt( "playing persistent FX", fx1p, fx3p, attachmentName )
+		#if DEVELOPER
+			printt( "playing persistent FX", fx1p, fx3p, attachmentName )
+		#endif
 
 		WeaponReactiveKillEffects_AddActiveFXGroup( weaponSkin, reactiveKillLevel, fx1p, fx3p, true )
 	}
@@ -297,7 +307,9 @@ void function WeaponReactiveKillEffects_ClearPersistentFX( entity weapon )
 	{
 		if ( fxGroup.isPersistent )
 		{
-			printt( "removing effect", fxGroup.fx1p, fxGroup.fx3p )
+			#if DEVELOPER
+				printt( "removing effect", fxGroup.fx1p, fxGroup.fx3p )
+			#endif
 
 			weapon.StopWeaponEffect( fxGroup.fx1p, fxGroup.fx3p )
 			idxsToRemove.append( idx )
@@ -313,7 +325,9 @@ void function WeaponReactiveKillEffects_ClearAllFX( entity weapon )
 {
 	foreach ( int idx, fxGroup in file.activeReactiveKillFX )
 	{
-		printt( "removing effect", fxGroup.fx1p, fxGroup.fx3p )
+		#if DEVELOPER
+			printt( "removing effect", fxGroup.fx1p, fxGroup.fx3p )
+		#endif
 
 		weapon.StopWeaponEffect( fxGroup.fx1p, fxGroup.fx3p )
 	}

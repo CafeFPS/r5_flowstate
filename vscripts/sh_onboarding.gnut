@@ -85,6 +85,7 @@ global function Flowstate_ApplyModifiedMovementToPlayer
 void function SV_CL_Onboarding_Init()
 {
 #if SERVER
+	SetAutoReloadState( false ) //let native know
 	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 	FlagInit( "MinPlayersReached", false )
 
@@ -100,6 +101,10 @@ void function SV_CL_Onboarding_Init()
 
 	if ( OnboardingEnabled() )
 		thread Sequence_WaitingForPlayers()
+		
+	AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload
+
+	
 #endif
 }
 
@@ -174,6 +179,8 @@ void function Sequence_WaitingForPlayers()
 	}
 
 	// Set champion randomly from among all players
+	// TODO: tracker modification to get last winner for server if player still exists
+	// If not, use next closest , etc
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) && GetPlayerArray().len() > 0 )
 	{
 		entity champion = GetPlayerArray().getrandom()
@@ -290,25 +297,33 @@ void function Sequence_PickLoadout()
 void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 {
 	array< ItemFlavor > characters = clone GetAllCharacters()
-	
-	foreach( character in characters )
+
+	for ( int i = characters.len() - 1; i >= 0; i-- )
 	{
-		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( character ) )
-		
-		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED )
-		{
-			characters.fastremovebyvalue( character )
-			continue
-		}
-		
+		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( characters[ i ] ) )
+
+		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED || ItemFlavor_GetHumanReadableRef( characters[ i ] ) == "character_crypto" )
+			characters.remove( i )
+	}
+	
+	bool quit
+	for ( int i = characters.len() - 1; i >= 0; i-- )
+	{
+		quit = false
 		foreach ( squadMate in GetPlayerArrayOfTeam( player.GetTeam() ) )
 		{
+			if( quit )
+				continue
+
 			if( squadMate == player )
 				continue
 			
 			ItemFlavor mateCharacter = LoadoutSlot_GetItemFlavor( ToEHI( squadMate ), Loadout_CharacterClass() )
-			if( mateCharacter == character )
-				characters.fastremovebyvalue( mateCharacter )
+			if( mateCharacter == characters[ i ] )
+			{
+				characters.remove( i )
+				quit = true
+			}
 		}
 	}
 	
@@ -352,6 +367,9 @@ void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverr
 {
 	SetGlobalNetInt( "gameState", GetGameState() )
 
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+
 	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
@@ -394,94 +412,6 @@ void function PlayPickLoadoutMusic( bool introCountdownEnabled )
 		wait CharSelect_GetIntroTransitionDuration()
 }
 
-void function Custom_AssignLockStepOrderForTwoTeams( array<entity> team1Players, array<entity> team2Players )
-{
-	table< int, array<entity> > groupedPlayers
-	groupedPlayers[0] <- []
-	groupedPlayers[1] <- []
-	foreach ( player in team1Players )
-	{
-		groupedPlayers[0].append( player )
-	}
-	foreach ( player in team2Players )
-	{
-		groupedPlayers[1].append( player )
-	}
-
-	foreach( int team, array<entity> players in groupedPlayers )
-	{
-		if ( players.len() == 0 )
-			continue
-
-		ArrayRemoveInvalid( players )
-		players.randomize()
-		int i = 0
-		foreach( entity player in players )
-		{
-			player.SetPlayerNetInt( "characterSelectLockstepPlayerIndex", i )
-			i++
-		}
-	}
-}
-
-void function FS_Custom_CharacterSelectPhase()
-{
-	Custom_AssignLockStepOrderForTwoTeams( [], [] )
-
-	ScreenCoverTransition_AllPlayers( Time() + CharSelect_GetIntroTransitionDuration() )
-	wait CharSelect_GetIntroTransitionDuration()
-
-	// Signalize that character selection sequence should be started clientside
-	SetGlobalNetBool( "characterSelectionReady", true )
-
-	wait CharSelect_GetPickingDelayBeforeAll()
-
-	for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
-	{
-		float startTime = Time()
-
-		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
-		if ( pickIndex == 0 )
-			timeSpentOnSelection += CharSelect_GetPickingDelayOnFirst()
-
-		float endTime = startTime + timeSpentOnSelection
-
-		SetGlobalNetInt( "characterSelectLockstepIndex", pickIndex )
-		SetGlobalNetTime( "characterSelectLockstepStartTime", startTime )
-		SetGlobalNetTime( "characterSelectLockstepEndTime", endTime )
-		
-		//compare player pick with GetLoadoutSlotContentsIndexInternal( playerEHI, entry ) before setting a forced pick
-		// if( pickIndex == 0 ) 
-		// {
-			// foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
-			// {
-				// Flowstate_AssignUniqueCharacterForPlayer(player, false)
-			// }
-		// }
-		
-		wait timeSpentOnSelection
-
-		foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
-		{
-			ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-			CharacterSelect_AssignCharacter( player, selectedCharacter )
-		}
-
-		wait CharSelect_GetPickingDelayAfterEachLock()
-	}
-
-	// Reset selection step to lock all character selection loadout slots
-	SetGlobalNetInt( "characterSelectLockstepIndex", MAX_TEAM_PLAYERS )
-
-	// foreach ( player in GetPlayerArray() )
-		// if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
-			// Flowstate_AssignUniqueCharacterForPlayer(player, true) // Joined too late, assign a random legend so everything runs fine
-
-	wait CharSelect_GetPickingDelayAfterAll()
-
-	wait CharSelect_GetOutroTransitionDuration() + CharSelect_GetOutroSceneChangeDuration() / 3.5 - CharSelect_GetPickingDelayAfterEachLock() * MAX_TEAM_PLAYERS
-}
-
 #endif
 
 #if SERVER
@@ -521,12 +451,6 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	TakeAllPassives( player )
 }
 
-const array<int> nonPassiveModes = [
-	ePlaylists.fs_1v1,
-	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_scenarios
-]
-
 void function GiveLoadoutRelatedWeapons( entity player )
 {
 	TakeLoadoutRelatedWeapons(player)
@@ -543,7 +467,7 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
-	if( !Flowstate_GivePassive() || nonPassiveModes.contains( Playlist() )  )
+	if( !Flowstate_GivePassive() || !Flowstate_PassivesAllowedForMode() )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
@@ -670,11 +594,6 @@ void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index
 {
 	switch( index )
 	{
-		// case 0:
-		// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
-		// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
-		// break
-		
 		case 1:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_blisk.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_blisk.rmdl" )
@@ -691,66 +610,41 @@ void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index
 		break
 
 		case 4:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
-		break
-		
-		case 5:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_rhapsody.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
 		break
 		
-		case 6:
+		case 5:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
 		break
-		
-		case 7:
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_cj.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
-		break
-		
-		case 8:
+
+		case 6:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
 		break
 
-		case 9:
+		case 7:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
 		break
 		
-		case 10:
+		case 8:
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
 		break
 
-		case 11: //loba ss
-		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_medium_loba_swimsuit.rmdl" )
-		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_loba_swimsuit.rmdl" )
-		break
-		
-		case 12: // ballistic
+		case 9: // ballistic
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ballistic_base_v.rmdl" )
 		break
 		
-		case 13: // mrvn
+		case 10: // mrvn
 		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_marvin.rmdl" )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_amogino.rmdl" )
 		break
 
-		case 14: // gojo
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_gojo.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_gojo.rmdl" )
-		break
-
-		case 15: // naruto
-		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_naruto.rmdl" )
-		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_naruto.rmdl" )
-		break
-
-		case 16: // pete
+		case 11: // pete
 		player.SetBodyModelOverride( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 		player.SetArmsModelOverride( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
 		break
@@ -899,6 +793,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn )
 			return
 	}
+	
 	UpdatePlayerCounts()
 		
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )
@@ -1019,6 +914,7 @@ void function OnClientConnected( entity player )
 	}
 	
 	player.p.isConnected = true
+	player.Signal( "OnConnected" )
 
 	thread Flowstate_CheckForLv4MagazinesAndRefillAmmo( player )
 }
@@ -1078,12 +974,12 @@ void function UpdatePlayerCounts()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
 		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
 	
-		if( nonPassiveModes.contains( Playlist() ) )
-		{
-			connectedPlayers = GetPlayerArray()
-			SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-			SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
-		}
+		// if( nonPassiveModes.contains( Playlist() ) )
+		// {
+			// connectedPlayers = GetPlayerArray()
+			// SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+			// SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
+		// }
 		break
 
 		case eGamemodes.CUSTOM_CTF:
@@ -1171,10 +1067,6 @@ float function CharSelect_GetOutroSquadPresentDuration()		{ return GetCurrentPla
 float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
 float function CharSelect_GetOutroTransitionDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
 
-// Spectator
-bool function Spectator_GetReplayIsEnabled()                   { return GetCurrentPlaylistVarBool( "replay_enabled", false ) } 
-float function Spectator_GetReplayDelay()                      { return GetCurrentPlaylistVarFloat( "replay_delay", 1 ) } 
-
 // Custom logic
 float function Survival_GetCharacterSelectDuration( int pickIndex )
 {
@@ -1232,7 +1124,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.SetMoveSpeedScale( 0.87 )
 			#endif
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
-			printt( "Player movement changed to TF2" )
+			#if DEVELOPER
+				printt( "Player movement changed to TF2" )
+			#endif
 		break
 		
 		case 2:
@@ -1244,7 +1138,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			#endif
 
 			SetPlayerSettings( player, CSGO_MOVEMENT )
-			printt( "Player movement changed to CSGO" )
+			#if DEVELOPER
+				printt( "Player movement changed to CSGO" )
+			#endif
 		break
 
 		case 3:
@@ -1254,7 +1150,9 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.DisableMantle()
 			#endif
 			SetPlayerSettings( player, HL1_MOVEMENT )
-			printt( "Player movement changed to HL1" )
+			#if DEVELOPER
+				printt( "Player movement changed to HL1" )
+			#endif
 		break
 
 		case 4:
@@ -1264,17 +1162,24 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 			player.DisableMantle()
 			#endif
 			SetPlayerSettings( player, HALO_MOVEMENT )
-			printt( "Player movement changed to Halo" )
+			#if DEVELOPER
+				printt( "Player movement changed to Halo" )
+			#endif
 		break
 
 		case 5:
 			SetPlayerSettings( player, SURF_SETTINGS )
-			printt( "Player movement changed to Surf" )
+			#if DEVELOPER
+				printt( "Player movement changed to Surf" )
+			#endif
 		break
 		
 		case 6:
 			SetPlayerSettings( player, SUPERGLIDE_BOOST_SETTINGS )
-			printt( "Superglide modified for all players" )
+			
+			#if DEVELOPER
+				printt( "Superglide modified for all players" )
+			#endif
 		break
 	}
 }

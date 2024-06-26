@@ -2,12 +2,18 @@
 
 global function INIT_Flowstate_Localization_Strings
 global function Flowstate_FetchToken
+global function ClientLocalizedTokenExists
+global function StringReplaceLimited
 
 #if SERVER
 	global function Flowstate_FetchTokenID
 	global function LocalMsg
 	global function LocalVarMsg
 	global function MessageLong
+	global function LocalEventMsgDelayed
+	global function LocalEventMsg //wrapper for LocalMsg ui type 1
+	global function IBMM_Notify
+	global function LocalizedTokenExists
 #endif
 
 #if CLIENT 	
@@ -20,15 +26,39 @@ global function Flowstate_FetchToken
 #if DEVELOPER 
 	global function DEV_GenerateTable
 	global function DEV_getTokenIdFromRef //deprecated use Flowstate_FetchTokenID
-	global function DEV_printLocalizationTable
+	global function DEV_Print_eMsgUI
+	#if CLIENT || SERVER
+		global function DEV_printLocalizationTable
+	#endif
 	#if CLIENT 
 		global function DEV_printLocalizedTokenByID
 	#endif 
 #endif
-	global const DEBUG_VARMSG = false
 
-struct {
+	const ASSERT_LOCALIZATION = true 
+	const DEBUG_VARMSG = false
 
+global enum eMsgUI
+{
+	DEFAULT, 			//0
+	EVENT, 				//1
+	CIRCLE_WARNING, 	//2
+	BIG, 				//3
+	QUICK, 				//4
+	SWEEP, 				//5
+	RESULTS, 			//6
+	OBJECTIVE, 			//7
+	ELITE, 				//8
+	WAVE, 				//9
+	VAR_TITLE_SLOT, 	//10
+	VAR_SUBTEXT_SLOT, 	//11
+	VAR_EVENT, 			//12
+	VAR_MOTD, 			//13
+	IBMM, 				//14
+}
+
+struct 
+{
 	table<int, string> FS_LocalizedStrings = {}
 	
 #if SERVER
@@ -42,8 +72,8 @@ struct {
 #endif
 
 	//these must match the same order on client.
-	//use playlist patch to add tokens between releases
-	array<string> allTokens = [
+	array<string> allTokens = 
+	[
 		"#FS_NULL",
 		"#FS_1v1_Banner",
 		"#FS_1V1_Tracker",
@@ -187,14 +217,54 @@ struct {
 		"#FS_WEAPONS_RESET",
 		"#FS_ALL_WEPS_SAVED",
 		"#FS_MUTED",
-		"#FS_UNMUTED"
-		
+		"#FS_UNMUTED",
+		"#FS_ADMIN_RECORDER_ENDALL",
+		"#FS_RECORDER_ENDALL",
+		"#FS_MOVEMENT_RECORDER",
+		"#FS_PLAYBACK_LIMIT",
+		"#FS_PLAYING_ALL_ANIMS",
+		"#FS_CANT_SWITCH_LEGEND",
+		"#FS_RECORDINGANIM_CUSTOM",
+		"#FS_NO_SLOTS",
+		"#FS_MOVEMENT_SAVED",
+		"#FS_ANIM_NOT_FOUND",
+		"#FS_ANIM_REMOVED_SLOT",
+		"#FS_WELCOME",
+		"#FS_INPUT_VS",
+		"#FS_CONTROLLER",
+		"#FS_MKB",
+		"#FS_Scenarios_Tip",
+		"#FS_Scenarios_30Remaining",
+		"#FS_OVER_BUDGET",
+		"#FS_PLAYING_ANIM",
+		"#FS_REMOVING_ALL_ANIMS",
+		"#FS_CMD",
+		"#FS_NO_ANIMS",
+		"#FS_PLAYING_RANDOM",
+		"#FS_PLAYING_RANDOM_DESC",	
+		"#SCORE_EVENT_FS_Scenarios_EnemyDowned",
+		"#SCORE_EVENT_FS_Scenarios_EnemyKilled",
+		"#SCORE_EVENT_FS_Scenarios_SurvivalTime",
+		"#SCORE_EVENT_FS_Scenarios_EnemyDoubleDowned",
+		"#SCORE_EVENT_FS_Scenarios_EnemyTripleDowned",
+		"#SCORE_EVENT_FS_Scenarios_BonusTeamWipe",
+		"#SCORE_EVENT_FS_Scenarios_TeamWin",
+		"#SCORE_EVENT_FS_Scenarios_SoloWin",
+		"#SCORE_EVENT_FS_Scenarios_PenaltyDeath",
+		"#SCORE_EVENT_FS_Scenarios_PenaltyRing",
+		"#SCORE_EVENT_FS_Scenarios_BecomesSoloPlayer",
+		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer"
 	]
 	
 } file
 
 //local script vars
-const array<int> longUiTypes = [1]
+const array<int> longUiTypes = 
+[
+	eMsgUI.EVENT,
+	eMsgUI.QUICK,
+	eMsgUI.VAR_MOTD
+]
 
 //########################################################
 //							init						//
@@ -221,7 +291,11 @@ void function INIT_Flowstate_Localization_Strings()
 		#endif
 	}
 	
-	file.allTokens.resize(0)
+	file.allTokens.clear()
+	
+	#if DEVELOPER && ASSERT_LOCALIZATION
+		Warning("ASSERTS ENABLED for script: " + FILE_NAME() )
+	#endif
 }
 
 
@@ -243,8 +317,10 @@ string function Flowstate_FetchToken( int tokenID )
 
 string function StringReplaceLimited( string baseString, string searchString, string replaceString, int limit )
 {
-	Assert( searchString.len() > 0, "cannot use StringReplaceLimited with an empty searchString" )
-
+	#if ASSERT_LOCALIZATION
+		mAssert( searchString.len() > 0, "cannot use StringReplaceLimited with an empty searchString" )
+	#endif 
+	
 	string newString = ""
 
 	int searchIndex = 0
@@ -270,10 +346,20 @@ string function StringReplaceLimited( string baseString, string searchString, st
 
 	return newString
 }
+
+bool function ClientLocalizedTokenExists( int tokenRef )
+{
+	return ( tokenRef in file.FS_LocalizedStrings )
+}
 // /SHARED
 
 #if SERVER
 
+	bool function LocalizedTokenExists( string token )
+	{
+		return ( token in file.FS_LocalizedStringMap )
+	}
+	
 	int function Flowstate_FetchTokenID( string ref )
 	{
 		if ( ref in file.FS_LocalizedStringMap )
@@ -286,6 +372,26 @@ string function StringReplaceLimited( string baseString, string searchString, st
 	
 #endif
 
+#if CLIENT
+string function trim( string str ) 
+{
+    int start = 0;
+    int end = str.len() - 1;
+    string whitespace = " \t\n\r";
+
+    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	{
+        start++;
+    }
+
+    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	{
+        end--;
+    }
+
+    return str.slice(start, end + 1);
+}
+#endif
 
 //########################################################
 //					 SERVER FUNCTIONS					//
@@ -294,7 +400,14 @@ string function StringReplaceLimited( string baseString, string searchString, st
 #if SERVER
 void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = false )
 {
-	//original by @Cafe
+	#if DEVELOPER && ASSERT_LOCALIZATION
+		if( !empty(ref) )
+		{
+			mAssert( ref.find("#") != -1, "Reference missing # symbol  ref: [ " + ref + " ] in calling func: " + FUNC_NAME( 3 ) + "()" )
+			mAssert( LocalizedTokenExists( ref ), "Localized Token Reference does not exist for [ " + ref + " ] \n in calling func: " + FUNC_NAME( 3 ) + "()" )
+		}
+	#endif 
+	//original template by @Cafe ( Message() function )
 	
 	if ( !IsValid( player ) ) return
 	if ( !player.IsPlayer() ) return
@@ -312,7 +425,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	if ( ( datalen ) >= 599 )
 	{
 		long = true
-		uiTypeValidLong = longUiTypes.contains(uiType)
+		uiTypeValidLong = longUiTypes.contains( uiType )
 	}
 	
 	if( long )
@@ -333,7 +446,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 			return 			
 		}
 		
-		if( uiTypeValidLong )
+		if( uiTypeValidLong && varStringLen >= 599 )
 		{
 			if( varStringLen > 1 )
 			{	
@@ -344,7 +457,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		}
 		else 
 		{
-			if( varSubStringLen > 1 )
+			if( varSubStringLen > 1 && varSubStringLen >= 599 )
 			{	
 				int slicePoint = 599 - varStringLen
 				appendSubstring = varSubstring.slice( slicePoint, varSubStringLen )
@@ -372,11 +485,11 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 	{
 		if( uiTypeValidLong )
 		{
-			thread MessageLong( player, ref, subref, uiType, duration, appendString, "", sound, false )
+			MessageLong( player, ref, subref, uiType, duration, appendString, "", sound, false )
 		}
 		else 
 		{
-			thread MessageLong( player, ref, subref, uiType, duration, "", appendSubstring, sound, false )
+			MessageLong( player, ref, subref, uiType, duration, "", appendSubstring, sound, false )
 		}
 		
 		return
@@ -400,8 +513,11 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 
 void function MessageLong( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = true )
 {
-	wait 0.5
-	LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+	thread( void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+	{
+		wait 0.5 //HACKFIX: avoid code rock
+		LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+	})()
 }
 
 void function LocalVarMsg( entity player, string ref, int uiType = 2, float duration = 5, ... )
@@ -458,7 +574,37 @@ bool function ValidateType( ... )
 	
 	return false
 }
-#endif
+
+void function LocalEventMsg( entity player, string ref, string varString = "", float duration = 5 )
+{
+	LocalMsg( player, ref, "", eMsgUI.EVENT, duration, varString, "", "", false )
+}
+
+void function LocalEventMsgDelayed( float eventdelay, entity player, string ref, string varString = "", float duration = 5 )
+{
+	thread
+	( 
+		void function() : ( eventdelay, player, ref, varString, duration )
+		{
+			wait eventdelay
+			LocalEventMsg( player, ref, varString, duration )
+		}
+	)()
+}
+
+void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPlayerInputType, float duration = 5.0 )
+{
+	string inputTypeToken = "";
+	
+	switch( enemyPlayerInputType )
+	{
+		case 0: inputTypeToken = "#FS_MKB"; break;
+		case 1: inputTypeToken = "#FS_CONTROLLER"; break;
+	}
+	
+	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", "", "", false )
+}
+#endif //SERVER
 
 //########################################################
 //					 CLIENT FUNCTIONS					//
@@ -489,10 +635,9 @@ int function countStringArgs( string str )
 	int found = RegexpFindAll( str, "%s" ).len()
 	// var pattern = MakeRegexp( "%s" )
 	// int found = Regexp_Match( pattern, str ).len()
-		#if DEVELOPER && DEBUG_VARMSG
-			printt( "REGEX FOUND %s: ", found )
-		#endif
-
+	#if DEVELOPER && DEBUG_VARMSG
+		printt( "REGEX FOUND %s count:", found )
+	#endif
 	return found
 }
 
@@ -516,11 +661,16 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	
 	try 
 	{
-		Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ) , S )
+		Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ) , " " + S )
 	}
 	catch(e)
 	{
 		printt("Error ", e ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", token )
+		Msg = Localize( trim( localToken ) ) + " " + S
+		
+		#if DEVELOPER && DEBUG_VARMSG 
+			printt("New msg:", Msg )
+		#endif
 	}
 	
 	try
@@ -533,26 +683,25 @@ void function FS_DisplayLocalizedToken( int token, int subtoken, int uiType, flo
 	}
 	
 	#if DEVELOPER && DEBUG_VARMSG
-		printt("msg: ", Msg, " ;SubMsg: ", SubMsg )
+		printt("msg: ", StringReplaceLimited( Msg, "\n", "\\n", 999 ), " ;SubMsg: ", StringReplaceLimited( SubMsg, "\n", "\\n", 999 ) )
 	#endif
 	
 
 	switch(uiType)
 	{
-		case 0: DisplayOldMessage( Msg, SubMsg, duration ); break
-		case 1: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
-		case 2: DisplayOldMessage( Msg, SubMsg, duration, 2 ); break
+		case eMsgUI.DEFAULT: DisplayMessage( Msg, SubMsg, duration ); break
+		case eMsgUI.EVENT: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
+		// > 2 is handled by enum: eMsgUI and DisplayMessage()
 		
 		default:
-			printt("Server tried to call ui that doesn't exist.")
-		break
+			DisplayMessage( Msg, SubMsg, duration, uiType ); break
 	}
 	
 	file.fs_variableString = ""
 	file.fs_variableSubString = ""
 }
 
-void function DisplayOldMessage( string str1, string str2, float duration, int uiType = 0 )
+void function DisplayMessage( string str1, string str2, float duration, int uiType = 0 )
 {
 	entity player = GetLocalClientPlayer()
 	AnnouncementData announcement = Announcement_Create( str1 )
@@ -560,14 +709,20 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 	Announcement_SetHideOnDeath( announcement, false )
 	Announcement_SetDuration( announcement, duration )
 	Announcement_SetPurge( announcement, true )
-	// Announcement_SetSoundAlias( announcement, "" )
+	//Announcement_SetSoundAlias( announcement, "" )
+	//Announcement_SetLeftText( announcement, ["test","test","test"] )
+	//Announcement_SetRightText( announcement, ["test","test","test"] )
 	
-	//string mode = GameRules_GetGameMode()
+	//set default 
+	Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+
 	int mode = Gamemode()
 	
-	if( uiType < 2 )
+	if( uiType < 2 ) //old Message() style
 	{
-		switch(mode)
+		int playlist = Playlist()
+		
+		switch( mode )
 		{
 			case eGamemodes.fs_dm:
 			case eGamemodes.fs_prophunt:
@@ -581,15 +736,8 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 			
 			default: break;
 		}
-	}
-	
-	
-	if( uiType < 2 )
-	{
-		//string playlist = GetCurrentPlaylistName()
-		int playlist = Playlist()
 		
-		switch(playlist)
+		switch( playlist )
 		{
 			case ePlaylists.fs_movementgym:
 			case ePlaylists.fs_scenarios:
@@ -599,13 +747,13 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 			case ePlaylists.fs_snd:
 			
 			Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_SWEEP)
-			Announcement_SetTitleColor( announcement, Vector(0,0,1) )
+			Announcement_SetTitleColor( announcement, Vector( 0, 0, 1 ) )
 			
-			if(duration == 8.420)
+			if( duration == 8.420 )
 			{
 				Announcement_SetDuration( announcement, 5 )
 				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-				Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+				Announcement_SetTitleColor( announcement, Vector( 0, 0, 0 ) )
 			}
 			
 			break;
@@ -615,16 +763,43 @@ void function DisplayOldMessage( string str1, string str2, float duration, int u
 	}
 	else 
 	{
-		switch( uiType)
+		int iCustomUI = ANNOUNCEMENT_STYLE_CIRCLE_WARNING
+		
+		switch( uiType )
 		{
-			case 2:
-				Announcement_SetDuration( announcement, 5 )
-				Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
-				Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+			case eMsgUI.CIRCLE_WARNING: break;
+			case eMsgUI.BIG: iCustomUI = ANNOUNCEMENT_STYLE_BIG; break;
+			case eMsgUI.QUICK: iCustomUI = ANNOUNCEMENT_STYLE_QUICK; break;
+			case eMsgUI.SWEEP: iCustomUI = ANNOUNCEMENT_STYLE_SWEEP; break;
+			case eMsgUI.RESULTS: iCustomUI = ANNOUNCEMENT_STYLE_RESULTS; break;
+			case eMsgUI.OBJECTIVE: iCustomUI = ANNOUNCEMENT_STYLE_OBJECTIVE; break;
+			case eMsgUI.ELITE: 
+				iCustomUI = ANNOUNCEMENT_STYLE_ELITE; 
+				//Announcement_SetOptionalTextArgsArray( announcement, [ player.GetPlayerNetInt("SeasonScore").tostring() ] )
+				break;	
+			case eMsgUI.WAVE:	iCustomUI = ANNOUNCEMENT_STYLE_WAVE; break;
+			case eMsgUI.VAR_MOTD:
+				RunUIScript( "SetMotdText", str1 + str2 )
+				return
+			
+			case eMsgUI.IBMM:
+				thread FS_IBMM_Msg( str1, str2, duration )
+				return
 				
-			default: 
+			default:
+				#if DEVELOPER
+					Warning( format( "Server tried to call ui that doesn't exist: uiType: %d, function: %s()", uiType, FUNC_NAME()  ) )
+				#endif
 				break
 		}
+		
+		#if DEVELOPER && DEBUG_VARMSG
+			printt("\n\n --- LocalMsg() ---\n", "str1:", StringReplaceLimited( str1, "\n", "\\n", 999 ), "\n str2:", StringReplaceLimited( str2, "\n", "\\n", 999 ), "\n duration:", duration, "\n uiType:", uiType, "\n iCustomUI:", iCustomUI )
+		#endif 
+		
+		Announcement_SetStyle( announcement, iCustomUI )
+		Announcement_SetDuration( announcement, duration )
+		Announcement_SetTitleColor( announcement, Vector( 0, 0, 0 ) )
 	}
 	
 	AnnouncementFromClass( player, announcement )
@@ -664,7 +839,9 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 			}
 		}
 		
-		Assert( file.variableVars.len() == 10, "Variable vars were removed, but do not equal max vars" )
+		#if DEVELOPER && ASSERT_LOCALIZATION
+			mAssert( file.variableVars.len() == 10, "Variable vars were removed, but do not equal max vars" )
+		#endif
 	}
 
 	if( tokenPlaceholdersCount > varCount )
@@ -705,7 +882,7 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 	} 
 	catch (e)
 	{
-		printt("Error " + e + " ;Invalid format qualifiers in message ID: ", token )
+		Warning( format("Error " + e + " ;Invalid format qualifiers in message ID: %d , Text: %s", token, Localize( Flowstate_FetchToken( token ) ) ) )
 	}
 	
 	#if DEVELOPER && DEBUG_VARMSG
@@ -723,19 +900,20 @@ void function FS_ShowLocalizedMultiVarMessage( int token, int uiType, float dura
 	
 	switch( uiType )
 	{
-		case 0: DisplayOldMessage( Msg, " ", duration ); break
-		case 1: DisplayOldMessage( " ", Msg, duration ); break
-		case 2: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break
-		case 3: DisplayOldMessage( Msg, " ", duration, 2 ); break //type 2 big text
-		case 4: DisplayOldMessage(" ", Msg, duration, 2 ); break //type 2 big text, subtext slot
+		case eMsgUI.VAR_TITLE_SLOT: DisplayMessage( Msg, " ", duration ); break;
+		case eMsgUI.VAR_SUBTEXT_SLOT: DisplayMessage( " ", Msg, duration ); break;
+		case eMsgUI.VAR_EVENT: Flowstate_AddCustomScoreEventMessage(  Msg, duration ); break;
+
 		default:
-			printt("Server tried to call ui that doesn't exist.")
+			#if DEVELOPER
+				Warning( format( "Server tried to call ui that doesn't exist: uiType: %d, function: %s()", uiType, FUNC_NAME()  ) )
+			#endif
 			break
 	}
 	
 	file.variableVars.clear()
 }
-#endif
+#endif //CLIENT
 
 
 //########################################################
@@ -788,18 +966,59 @@ int function DEV_getTokenIdFromRef( string ref ) //deprecated
 	return -1
 }
 
+#if CLIENT || SERVER
 void function DEV_printLocalizationTable()
 {
+	
+	#if CLIENT 
+		string kvFormat = "";
+	#endif //CLIENT
+	
 	foreach ( key, value in file.FS_LocalizedStrings )
-	{
-		printt( key, value )
+	{		
+#endif
+		#if CLIENT 
+			string vFormat = StringReplaceLimited( Localize(value), "\n", "\\n", 100 )
+			string kFormat = StringReplaceLimited( value, "#", "", 1 )
+			int kOffset = 30 - kFormat.len()
+			kvFormat += "\"" + kFormat + "\"" + TableIndent( kOffset ) + "\"" + vFormat + "\"\n";				
+		#endif //CLIENT
+			
+		#if SERVER 
+			printt( key, value )
+		#endif 
+#if CLIENT || SERVER
 	}
+	
+	#if CLIENT 
+		printt( "\n\n --- LOCALIZATION TOKENS --- \n\n" + kvFormat + "\n" )
+		printt( "Token count:", file.FS_LocalizedStrings.len(), "\n\n" )
+	#endif //CLIENT
 }
+#endif //CLIENT || SERVER
 
 	#if CLIENT 
 		void function DEV_printLocalizedTokenByID( int id )
 		{
 			printt( Localize( Flowstate_FetchToken( id ) ) )
 		}
-	#endif
-#endif
+	#endif //CLIENT
+	
+	void function DEV_Print_eMsgUI()
+	{	
+		string tableText = "\n\nglobal enum eMsgUI\n{\n"
+		
+		foreach( enumName, index in eMsgUI )
+		{
+			int offset = 25 - enumName.len()
+			tableText += TableIndent( 5 ) + enumName + TableIndent( offset ) + " = " + string( index ) + "\n"
+		}
+		
+		tableText += "}\n\n"
+		printt( tableText )
+	}
+#endif //DEVELOPER
+
+
+/////////////////////////////////////////
+// reload command: reload_localization //

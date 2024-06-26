@@ -4574,7 +4574,8 @@ bool function HasLootBeenPresented()
 #if UI
 void function OnLevelInit()
 {
-	RunClientScript( "UIToClient_LootCeremony_SetMenuHandles", fileForever.menu )
+	if( CanRunClientScript() )
+		RunClientScript( "UIToClient_LootCeremony_SetMenuHandles", fileForever.menu )
 }
 #endif
 

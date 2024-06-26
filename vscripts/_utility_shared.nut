@@ -14,6 +14,7 @@ global const TRIG_FLAG_DEVDRAW			= 0x0020
 global const TRIG_FLAG_START_DISABLED	= 0x0040
 global const TRIG_FLAG_NO_PHASE_SHIFT	= 0x0080
 global const float MAP_EXTENTS = 128*128
+
 /*
 const TRIG_FLAG_	= 0x0080
 const TRIG_FLAG_	= 0x0100*/
@@ -204,6 +205,9 @@ void function InitWeaponScripts()
 	MpWeaponTrophy_Init()
 
 	MpWeaponBasicBolt_Init()
+	
+	Clickweapon_Init() //cafe
+	WeaponMastiff_Init() //mkos
 
 	#if SERVER
 		//BallLightning_Init()
@@ -1943,6 +1947,28 @@ int function CompareKills( entity a, entity b )
 	
 	int aVal
 	int bVal
+	
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		aVal = a.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+		bVal = b.GetPlayerNetInt( "FS_Scenarios_PlayerScore" )
+
+		if ( aVal < bVal )
+			return 1
+		else if ( aVal > bVal )
+			return -1
+
+		aVal = a.GetPlayerNetInt( "FS_Scenarios_MatchesWins" )
+		bVal = b.GetPlayerNetInt( "FS_Scenarios_MatchesWins" )
+
+		if ( aVal > bVal )
+			return 1
+		else if ( aVal < bVal )
+			return -1
+		
+		return 0
+	}
+
 	if( Gamemode() == eGamemodes.fs_snd )
 	{
 		aVal = a.GetPlayerNetInt( "defused" )
@@ -3465,27 +3491,41 @@ bool function IsTitanNPC( entity ent )
 	return ent.IsTitan() && ent.IsNPC()
 }
 
-//
+// my modified version probably shouldn't be used ~mkos
+// entity function InflictorOwner( entity inflictor )
+// {	
+	// if ( IsValid( inflictor ) )
+	// {
+		// entity ornull inflictorOwner = inflictor.GetOwner()
+		
+		// if ( IsValid( inflictorOwner ) )
+		// {	
+			//printt("Valid: ", inflictorOwner )
+			// inflictor = expect entity( inflictorOwner )
+		// }
+		// else if ( IsValid( inflictor.GetBossPlayer() ) )
+		// {
+			// inflictor = inflictor.GetBossPlayer()
+			//printt("Valid2: ", inflictor )
+		// }	
+	// }
+
+	// return inflictor
+// }
+
+
 entity function InflictorOwner( entity inflictor )
-{	
+{
 	if ( IsValid( inflictor ) )
 	{
-		entity ornull inflictorOwner = inflictor.GetOwner()
-		
+		entity inflictorOwner = inflictor.GetOwner()
 		if ( IsValid( inflictorOwner ) )
-		{	
-			printt("Valid: ", inflictorOwner )
-			inflictor = expect entity( inflictorOwner )
-		}
-		else if ( IsValid( inflictor.GetBossPlayer() ) )
-		{
-			inflictor = inflictor.GetBossPlayer()
-			printt("Valid2: ", inflictor )
-		}	
+			inflictor = inflictorOwner
 	}
 
 	return inflictor
 }
+
 
 bool function IsPlayerControlledSpectre( entity ent )
 {
@@ -4383,7 +4423,9 @@ void function PrintFirstPersonSequenceStruct( FirstPersonSequenceStruct fpsStruc
 
 void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, string signal2 = "", string signal3 = "" )
 {
-	Assert( IsValid( ent ) )
+	//Assert( IsValid( ent ) )
+	if( !IsValid( ent ) )
+		return
 
 	ent.EndSignal( signal1 )
 
@@ -4394,6 +4436,10 @@ void function WaitSignalOrTimeout( entity ent, float timeout, string signal1, st
 		ent.EndSignal( signal3 )
 
 	wait( timeout )
+	
+	#if DEVELOPER
+		Warning("WARNING: Timeout reached for signals: " + format("%s, %s, %s, func: %s", signal1, signal2, signal3, FUNC_NAME( 3 ) ) )
+	#endif 
 }
 
 void function AddWaitMultipleSignal( table signalTable, string signalToWait, string signalToReturn )
@@ -5706,6 +5752,7 @@ bool function IsOriginInvalidForPlacingPermanentOnto( vector origin )
 	return false
 }
 
+//~mkos
 void function DEV_PrintClientCommands( table< string, void functionref( entity, array< string > ) > callbackTable )
 {
 	string data = "\n\n ------ CLIENTCOMMAND CALLBACK TABLE ------ \n\n"
@@ -5717,5 +5764,22 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 		idx++
 	}
 	
-	printt(data)
+	printt( data )
 }
+
+#if SERVER
+	void function printm( ... )
+	{
+		#if !MULTIPLAYER_DEBUG_PRINTS
+			return 
+		#endif
+		
+		if ( vargc <= 0 )
+		return
+
+		local msg = vargv[0]
+		for ( int i = 1; i < vargc; i++ )
+			msg = (msg + " " + vargv[i])
+			CenterPrintAll( msg )	
+	}	
+#endif

@@ -43,6 +43,12 @@ struct{
 	array<entity> props
 } ChallengesEntities
 
+struct
+{
+	float helmet_lv4 = 0.65
+	
+} settings 
+
 table<int, array<ChallengeScore> > ChallengesData //implement this
 table<int, int> ChallengesBestScores
 
@@ -169,6 +175,8 @@ void function _ChallengesByColombia_Init()
 		ChallengesData[i] <- []
 		ChallengesBestScores[i] <- 0
 	}	
+	
+	settings.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
 }
 
 void function StartFRChallenges(entity player)
@@ -215,10 +223,10 @@ void function SetCommonDummyLines(entity dummy)
 	dummy.SetDeathNotifications( true )
 	dummy.SetValidHealthBarTarget( true )
 	SetObjectCanBeMeleed( dummy, true )
-	if(AimTrainer_AI_COLOR == 5)
-		dummy.SetSkin(RandomIntRangeInclusive(1,4))
-	else
-		dummy.SetSkin(AimTrainer_AI_COLOR)
+	// if(AimTrainer_AI_COLOR == 5)
+		// dummy.SetSkin(RandomIntRangeInclusive(1,4))
+	// else
+		// dummy.SetSkin(AimTrainer_AI_COLOR)
 	dummy.DisableHibernation()
 }
 
@@ -255,11 +263,11 @@ void function StartStraferDummyChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		vector dummypos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
-		entity dummy = CreateDummy( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0) )
+		entity dummy = CreateLegend_ai( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0), true )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
-		SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
+		// SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
 		DispatchSpawn( dummy )
 		dummy.SetOrigin(dummy.GetOrigin() + Vector(0,0,1))
 		
@@ -2457,7 +2465,7 @@ void function OnChallengeEnd(entity player)
 }
 
 void function ChallengesStartAgain(entity player)
-{
+{	
 	EndSignal(player, "ForceResultsEnd_SkipButton")
 	
 	OnThreadEnd(
@@ -2556,7 +2564,7 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 	
 	if(IsValidHeadShot( damageInfo, dummy ))
 	{
-		int headshot = int(basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+		int headshot = int(basedamage*(settings.helmet_lv4+(1-settings.helmet_lv4)*headshotMultiplier))
 		DamageInfo_SetDamage( damageInfo, headshot)
 		if(headshot > dummy.GetHealth() + dummy.GetShieldHealth()) 
 		{
@@ -2613,7 +2621,7 @@ void function OnFloatingDummyDamaged( entity dummy, var damageInfo )
 	//fake helmet
 	float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 	float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
-	if(IsValidHeadShot( damageInfo, dummy )) DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+	if(IsValidHeadShot( damageInfo, dummy )) DamageInfo_SetDamage( damageInfo, basedamage*(settings.helmet_lv4+(1-settings.helmet_lv4)*headshotMultiplier))
 	
 	entity player = DamageInfo_GetAttacker(damageInfo)
 	float damage = DamageInfo_GetDamage( damageInfo )
@@ -3142,15 +3150,19 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	string weapon = args[0]
 	
+	bool bIs1v1 = is1v1GameType() //idc, conditional.	
+	if( Gamemode() != eGamemodes.fs_aimtrainer && !ValidateWeaponTgiveSettings( player, args[0] ) )
+		return true
+	
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
-		Message(player, "WEAPON WHITELISTED")
+		Message(player, "WEAPON NOT WHITELISTED")
 		return false
 	}
 
 	if( Gamemode() != eGamemodes.fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
-		Message(player, "ABILITY WHITELISTED")
+		Message(player, "ABILITY NOT WHITELISTED")
 		return false
 	}
 
@@ -3460,7 +3472,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weapon = "mp_weapon_lightninggun"
 		autonoauto = false
 	}
-
+		
 	weaponent = player.GiveWeapon_NoDeploy( weapon, actualslot, finalargs, false )
 
 	if( weapon == "mp_weapon_lightninggun" && autonoauto )
@@ -3487,16 +3499,16 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 		weapon1 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_0 ) // This function returns weapon class name if there's weapon, otherwise returns empty string
 		weapon2 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-
+		
 		if( weapon1 != "" ) // Primary slot
 		{
 			mods1 = GetWeaponMods( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) )
 			foreach (mod in mods1)
 				optics1 = mod + " " + optics1
 			
-			weaponname1 = "tgive p " + weapon1 + " " + optics1 + "; "
+			weaponname1 = "tgive p " + weapon1 + " " + optics1 + ( bIs1v1 ? "" : "; " )		
 		}
-
+		
 		if( weapon2 != "" ) // Secondary Slot
 		{
 			mods2 = GetWeaponMods( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) )
@@ -3506,7 +3518,40 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 			weaponname2 = "tgive s " + weapon2 + " " + optics2
 		}
 
-		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
+		if( bIs1v1 ) 
+		{			
+			array<string> wep1Array = split( weaponname1, " " )
+		
+			if( args[1] == "p" )
+			{
+				player.p.ratelimit = 0.0;				
+			
+					wep1Array[0] = "wepmenu"; printarray( wep1Array )
+				
+						ClientCommand_GiveWeapon( player, wep1Array )
+							
+							return true
+			}
+			else
+			{		
+				array<string> wep2Array = split( weaponname2, " " )
+				
+					if ( wep2Array[1] == "s" )
+					{
+						player.p.ratelimit = 0;	
+					
+							wep2Array[0] = "wepmenu"; printarray( wep2Array )	
+						
+								ClientCommand_GiveWeapon( player, wep2Array )	
+									
+									return true
+					}												
+			}
+		}
+		else 
+		{
+			weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
+		}
 	}
 
 	int weaponSkin = -1

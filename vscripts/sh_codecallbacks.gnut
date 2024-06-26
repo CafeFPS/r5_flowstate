@@ -170,28 +170,9 @@ bool function CodeCallback_CanUseEntity( entity player, entity ent )
 			return false
 	}
 
-	if ( player.IsTitan() )
+	if ( ent.IsNPC() && !IsAlive( ent ) )
 	{
-		return !ent.IsTitan()
-	}
-
-	if ( ent.IsTitan() )
-	{
-		return PlayerCanEmbarkTitan( player, ent )
-	}
-
-	if ( ent.IsNPC() )
-	{
-		// player titan can't use NPCs
-		if ( !player.IsTitan() )
-		{
-			// not titan NPCs are not usable
-			//if ( !( ent.IsTitan() || IsTurret( ent ) ) )
-			//	return false
-
-			if ( !IsAlive( ent ) )
-				return false
-		}
+		return false
 	}
 
 	if ( ent.e.canUseEntityCallback != null )
@@ -351,7 +332,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	#else
 		player.kv.renderColor = "255 255 255 255"
 		
-		if( Gamemode() != eGamemodes.SURVIVAL )
+		if( !Flowstate_PassivesAllowedForMode() )
 			TakeAllPassives( player )
 		
 		InitDamageStates( player )
@@ -514,9 +495,12 @@ void function CheckForAccelerants( entity player )
 			Consumable_UseItemByType(player, 5)
 			SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)
 		}
-	} else if ( ammoNow >= ammoMax )
+	} 
+	else if ( ammoNow >= ammoMax )
 	{
-		printt("Flowstate DEBUG - Ultimate is ready we can't use accelerants.")
+		#if DEVELOPER
+			printt("Flowstate DEBUG - Ultimate is ready we can't use accelerants.")
+		#endif
 	}
 }
 
@@ -795,7 +779,10 @@ void function CodeCallback_OnWeaponDisable( entity weapon )
 
 void function ClientCodeCallback_PartyUpdated()
 {
-	printt( "ClientCodeCallback_PartyUpdated" )
+	#if DEVELOPER
+		printt( "ClientCodeCallback_PartyUpdated" )
+	#endif
+	
 	foreach ( callbackFunc in file.partyUpdatedCallbacks )
 	{
 		callbackFunc()
@@ -804,17 +791,23 @@ void function ClientCodeCallback_PartyUpdated()
 
 void function ClientCodeCallback_PartyMemberAdded()
 {
-	printt( "ClientCodeCallback_PartyMemberAdded" )
+	#if DEVELOPER
+		printt( "ClientCodeCallback_PartyMemberAdded" )
+	#endif
 }
 
 void function ClientCodeCallback_PartyMemberRemoved()
 {
-	printt( "ClientCodeCallback_PartyMemberRemoved" )
+	#if DEVELOPER
+		printt( "ClientCodeCallback_PartyMemberRemoved" )
+	#endif
 }
 
 void function ClientCodeCallback_UserInfoUpdated( string hardware, string uid )
 {
-	printt( "ClientCodeCallback_UserInfoUpdated( " + hardware + ", " + uid + ")" )
+	#if DEVELOPER
+		printt( "ClientCodeCallback_UserInfoUpdated( " + hardware + ", " + uid + ")" )
+	#endif
 }
 
 void function AddCallback_OnPartyUpdated( void functionref() callbackFunc )

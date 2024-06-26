@@ -115,7 +115,7 @@ void function Cl_GamemodeSND_Init()
 	SetConVarBool( "host_speeds", false )
 	SetConVarBool( "con_drawnotify", false )
 	SetConVarBool( "enable_debug_overlays", false )
-	SetConVarFloat( "fps_max", 190 )
+	//SetConVarFloat( "fps_max", 190 ) 
 	
 	SetConVarInt( "cl_footstep_event_max_dist", 600 )
 	SetConVarBool( "miles_occlusion", false )
@@ -333,7 +333,9 @@ void function SetCameraStartPointForMap()
 
 void function ServerCallback_FlowstateSND_CustomBuyMenu_UpdateValues(int availableMoney, int weapon1ID, int weapon2ID, int weapon1lvl, int weapon2lvl)
 {
-	printt("updating values, weaponid: " + weapon1ID + " | weapon 2 id: " + weapon2ID + " | weapon1lvl: " + weapon1lvl + " | weapon2lvl: " + weapon2lvl)
+	#if DEVELOPER
+		printt("updating values, weaponid: " + weapon1ID + " | weapon 2 id: " + weapon2ID + " | weapon1lvl: " + weapon1lvl + " | weapon2lvl: " + weapon2lvl)
+	#endif
 	
 	file.availableMoney = availableMoney
 	file.weapon1ID = weapon1ID
@@ -946,7 +948,9 @@ bool function BuyMenu_HandleKeyInput( int key ) //todo cleanup
 				file.executeNewAnim = true
 			}
 			
-			printt("Should return to main weapons menu if another menu is open")
+			#if DEVELOPER
+				printt("Should return to main weapons menu if another menu is open")
+			#endif
 		
 			break
 	}
@@ -1059,7 +1063,9 @@ void function ServerCallback_BuySuccessful(int weaponID, int weaponSlot, int upg
 	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
 		return
 	
-	printt("me fui de compras en el slot " + weaponSlot)
+	#if DEVELOPER
+		printt("me fui de compras en el slot " + weaponSlot)
+	#endif
 	
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Menu_Store_Purchase_Success" )
 	
@@ -1085,7 +1091,9 @@ void function ServerCallback_SellSuccessful(int weaponID, int weaponSlot, int up
 	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
 		return
 	
-	printt("vendiendo vendiendo")
+	#if DEVELOPER
+		printt("vendiendo vendiendo")
+	#endif
 	
 	EmitSoundOnEntity(GetLocalClientPlayer(), "UI_Menu_Purchase_Coins" )
 	
@@ -1100,7 +1108,10 @@ void function ServerCallback_SellSuccessful(int weaponID, int weaponSlot, int up
 
 void function HandleCharacterAndWeaponMenuModel(asset weaponModel, bool isSell, int weaponSlot, int upgradeLevel)
 {
-	printt("Menu model data input: " + " " + weaponModel + " " + isSell + " " + weaponSlot + " " + upgradeLevel)
+	#if DEVELOPER
+		printt("Menu model data input: " + " " + weaponModel + " " + isSell + " " + weaponSlot + " " + upgradeLevel)
+	#endif 
+	
 	entity player = GetLocalClientPlayer()
 
 	if(isSell && upgradeLevel == -1)
@@ -1115,8 +1126,13 @@ void function HandleCharacterAndWeaponMenuModel(asset weaponModel, bool isSell, 
 				file.executeNewAnim = true
 				file.menumodelWeaponSecondary.SetParent( file.menumodelCharacter, "PROPGUN" )
 				file.menumodelWeaponPrimary.SetParent( file.menumodelCharacter, "RIFLE_HOLSTER" )
-			} else {
-				printt("should return to idle, no another weapon detected")
+			} 
+			else 
+			{
+				#if DEVELOPER
+					printt("should return to idle, no another weapon detected")
+				#endif 
+				
 				Signal(GetLocalClientPlayer(), "ChangeMenuModelAnim" )
 				file.menumodelCharacter.Anim_Play( "ACT_MP_MENU_LOBBY_SELECT_IDLE" )
 				file.executeNewAnim = true
@@ -1404,7 +1420,9 @@ void function FillWeaponBoxTest(int slot)
 	
 	int tier = slot == 0 ? file.weapon1lvl : file.weapon2lvl
 	
-	printt("DEBUG TIER ", tier)
+	#if DEVELOPER
+		printt("DEBUG TIER ", tier)
+	#endif
 	
 	{
 		var rui = Hud_GetRui( HudElement( "MainWeapon" + slot ) )
@@ -1455,7 +1473,9 @@ void function FillWeaponBoxTest(int slot)
 	
 	foreach ( string mod in mods )
 	{
-		printt(mod, SURVIVAL_Loot_GetLootDataByRef( mod ).attachmentStyle )
+		#if DEVELOPER
+			printt(mod, SURVIVAL_Loot_GetLootDataByRef( mod ).attachmentStyle )
+		#endif
 		
 		LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( mod )
 

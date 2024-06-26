@@ -1,4 +1,4 @@
-global function GetAdminList
+global function GetAdminList																	//~mkos
 global function EnableVoice
 global function empty
 global function StringToArray
@@ -7,7 +7,7 @@ global function Concatenate
 global function IsNumeric
 global function IsNum
 global function GetPlayer
-global function GetPlayerEntityByOID
+global function GetPlayerEntityByUID
 global function GetPlayerEntityByName
 global function IsValidOID
 global function Is_Bool
@@ -36,10 +36,17 @@ global function PlayTime
 global function truncate
 global function DEV_PrintTrackerWeapons
 global function GetTrackerWeaponIdentifierTable
+global function ValidateIBMMWaitTime
+global function VerifyAdmin
+global function IsSafeString
+
+#if TRACKER && HAS_TRACKER_DLL
+	global function PrintMatchIDtoAll
+#endif
 
 //const
-global const int SQ_MAX_INT_32 = 2147483647;
-global const int SQ_MIN_INT_32 = -2147483647;
+//global const int SQ_MAX_INT_32 = 2147483647;
+//global const int SQ_MIN_INT_32 = -2147483647;
 
 //tables 
 table<string, string> player_admins
@@ -59,8 +66,8 @@ struct {
 
 	void function INIT_CC_MapNames()
 	{
-	
-		list_maps = [
+		list_maps = 
+		[
 			["dropoff", "mp_rr_arena_composite"],
 			["overflow", "mp_rr_aqueduct"],
 			["firingrange", "mp_rr_canyonlands_staging"],
@@ -74,8 +81,7 @@ struct {
 			["skygarden", "mp_rr_arena_skygarden"],
 			["ashsredemption", "mp_rr_ashs_redemption"],
 			["overflownight", "mp_rr_aqueduct_night"]
-		];
-	
+		];	
 	}
 	
 	void function INIT_CC_GameTypes()
@@ -168,15 +174,15 @@ struct {
 									return true;
 								}			
 								
-								if (g_bLGmode)
+								if ( Flowstate_IsLGDuels() )
 								{
 									handicap = l_player.p.p_damage == 2 ? "On" : "Off";
 									stringHandicap = "---- Handicap: " + handicap; 
 								}
 								
 								p_input = l_player.p.input > 0 ? "Controller" : "MnK"; 
-								kills = l_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
-								deaths = l_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								kills = l_player.p.season_kills + player.GetPlayerNetInt( "kills" )
+								deaths = l_player.p.season_deaths + player.GetPlayerNetInt( "deaths" )
 								l_name = l_player.GetPlayerName()
 								l_oid = l_player.GetPlatformUID()
 								l_wait = l_player.p.IBMM_grace_period
@@ -191,9 +197,9 @@ struct {
 								data += "Input:  " + p_input + stringHandicap + "\n"; 
 								data += "wait time:  " + l_wait.tostring() + "\n"; 
 								data += GetScore(l_player) + "\n";
-								data += "Season playtime: " + PlayTime(l_player.p.lifetime_playtime) + "\n";
-								data += "Season games: " + l_player.p.lifetime_gamesplayed + "\n";
-								data += "Season score: " + l_player.p.lifetime_score;
+								data += "Season playtime: " + PlayTime(l_player.p.season_playtime) + "\n";
+								data += "Season games: " + l_player.p.season_gamesplayed + "\n";
+								data += "Season score: " + l_player.p.season_score;
 								
 								if( (inputmsg.len() + data.len()) > 599 )
 								{
@@ -289,8 +295,8 @@ struct {
 						
 							foreach ( active_player in GetPlayerArray() )
 							{
-								kills = active_player.p.lifetime_kills + player.GetPlayerNetInt( "kills" )
-								deaths = active_player.p.lifetime_deaths + player.GetPlayerNetInt( "deaths" )
+								kills = active_player.p.season_kills + player.GetPlayerNetInt( "kills" )
+								deaths = active_player.p.season_deaths + player.GetPlayerNetInt( "deaths" )
 								
 								if (deaths > 0) 
 								{
@@ -363,7 +369,7 @@ struct {
 					try 
 					{
 						
-						data += format("\n\n %s ", SQMatchID() );
+						data += format("\n\n %s ", SQMatchID__internal() );
 								
 						if( (inputmsg.len() + data.len()) > 599 )
 						{	
@@ -403,7 +409,7 @@ struct {
 		string pair;
 		
 		#if TRACKER && HAS_TRACKER_DLL
-			admins_list = SQ_GetSetting("settings.ADMINS")
+			admins_list = SQ_GetSetting__internal("settings.ADMINS")
 		#endif
 		
 		if( admins_list != "" )
@@ -419,6 +425,7 @@ struct {
 		
 		if ( empty( admins_list ) ){ return }
 		
+		AddCallback_OnClientConnected( CheckAdmin_OnConnect )
 		
 		try 
 		{
@@ -428,7 +435,7 @@ struct {
 			{	
 				pair = admin_pair
 				array<string> a_format = split( admin_pair, "-")
-				player_admins[a_format[0]] <- a_format[1];
+				player_admins[a_format[0]] <- a_format[1]
 				file.ADMINS.append(a_format[1])
 			}
 			
@@ -448,7 +455,7 @@ struct {
 
 	string function PlayTime( int iSeconds ) 
 	{	
-		float seconds = iSeconds.tofloat();
+		float seconds = iSeconds.tofloat()
 		float hours =  seconds / 3600;
 		float minutes = (seconds % 3600) / 60;
 		float r_seconds = seconds % 60;
@@ -459,23 +466,18 @@ struct {
 
 	//////////////////////////////////////////////////////////////////////////
 	//cc commands
-	bool function ClientCommand_mkos_admin(entity player, array<string> args)
+	bool function ClientCommand_mkos_admin( entity player, array<string> args )
 	{	
 		
-		if (!CheckRate( player )) return false
+		if ( !CheckRate( player ) ) 
+			return false
 		
-		string PlayerName = player.GetPlayerName();
-		string PlayerUID = player.GetPlatformUID();
+		string PlayerName = player.GetPlayerName()
+		string PlayerUID = player.GetPlatformUID()
 
-  
-		if (PlayerName in player_admins) {
-		
-			if ( player_admins[PlayerName] != PlayerUID ) {
-				return false;
-			}
+		if( !VerifyAdmin( PlayerName, PlayerUID ) )
+			return false
 			
-		} else { return false }
-
 		player.p.messagetime = Time()	
 		
 		string command = "";
@@ -545,7 +547,8 @@ struct {
 									
 								k_playeroid = k_player.GetPlatformUID()	
 								
-								if ( IsTrackerAdmin(k_playeroid) ){
+								if ( IsTrackerAdmin( k_playeroid ) )
+								{
 									Message( player, "Cannot kick admin")
 									return true
 								}
@@ -596,13 +599,13 @@ struct {
 							
 								if ( args[1] == "1" )
 								{
-									setRestrictedServer( true )
+									Tracker_SetRestrictedServer( true )
 									Message( player, "Command sent", "restricted_server was ENABLED" )
 									return true
 								} 
 								else if ( args[1] == "0" )
 								{
-									setRestrictedServer( false )
+									Tracker_SetRestrictedServer( false )
 									Message( player, "Command sent", "restricted_server was disabled" )
 									return true
 								} 
@@ -651,11 +654,9 @@ struct {
 								EmitSoundOnEntityOnlyToPlayer( player, player, args[1] )	
 							} 
 							catch ( erra )
-							{
-									
+							{			
 								Message(player, "Failed", "Command failed because of: \n\n " + erra )
-								return false
-									
+								return false	
 							}
 							
 							return true
@@ -666,7 +667,6 @@ struct {
 							
 							foreach (connected_player in GetPlayerArray())
 							{
-							
 								try 
 								{
 									EmitSoundOnEntityOnlyToPlayer( connected_player, connected_player, args[1] )
@@ -687,8 +687,8 @@ struct {
 			case "stopplayall":
 						
 							
-							foreach (connected_player in GetPlayerArray()){
-							
+							foreach (connected_player in GetPlayerArray())
+							{					
 								try 
 								{
 									StopSoundOnEntity( connected_player, args[1] )
@@ -699,7 +699,6 @@ struct {
 									Message(player, "Failed", "Command failed because of: \n\n " + errb )
 									return false
 								}
-							
 							}
 
 							return true
@@ -717,7 +716,6 @@ struct {
 							
 							foreach ( say_to_player in GetPlayerArray())
 							{
-							
 								try	
 								{	
 									Message( say_to_player, param, param2, param3.tofloat())	
@@ -737,7 +735,6 @@ struct {
 							{			
 								param4 = "3"		
 							} 	
-							
 								try	
 								{	
 									entity to_player = GetPlayer(param)	
@@ -757,20 +754,17 @@ struct {
 									Message(player, "Failed", "Command failed because of: \n\n " + errst )			
 								}
 
-					
 							return true
 			case "ban":
-							
-							
-							if ( args.len() < 2 ){
-						
+									
+							if ( args.len() < 2 )
+							{		
 								Message( player, "Failed", "Command 'ban' requires name/id for 1st param of command" )
 								return false
 							}			
 							
 							try 
 							{		
-							
 								entity b_player;
 								string b_playeroid;
 								string b_reason = param2;	
@@ -796,12 +790,10 @@ struct {
 								UpdatePlayerCounts()
 								
 								Message( player, "Success", "Player: " + param + "\n\n was banned for: \n\n" + b_reason )
-								return true
-								
+								return true		
 							} 
 							catch ( erre )
 							{
-							
 								Message(player, "Failed", "Command failed because of: \n\n " + erre )
 								return false
 							}
@@ -820,7 +812,6 @@ struct {
 
 							try 
 							{
-								
 								if ( IsTrackerAdmin(param) )
 								{		
 									Message( player, "Failed", param + " is an admin. Ban rejected.", 10 )
@@ -863,54 +854,46 @@ struct {
 			
 					
 					
-						if ( args.len() < 2 ){
-						
+						if ( args.len() < 2 )
+						{		
 							Message( player, "Failed", "Command 'unban' requires id for 1st param of command as string" )
-							return false
-						
+							return false	
 						}
 						
-						try {
+						try 
+						{
+							UnbanPlayer( args[1])					
+							Message( player, "Success", "ID: " + args[1] + " was supposedly unbanned" )				
+							return true
+								
+						} 
+						catch ( erre )
+						{	
+							Message(player, "Failed", "Command failed because of: \n\n " + erre )
+							return false
+						}
 						
-								UnbanPlayer( args[1])
-								
-								Message( player, "Success", "ID: " + args[1] + " was supposedly unbanned" )
-								
-								return true
-								
-							} catch ( erre ){
-							
-								Message(player, "Failed", "Command failed because of: \n\n " + erre )
-								return false
-							}
-					
-						
-					
 						return true;
-						
-						
-						
+								
 			case "playerinfo":
 			
-						try {
-							
+						try 
+						{				
 							string nputmsg = "Current Stats:"
 							
-							string info = PrintAllPlayerMetrics(true);
+							string info = Tracker_PrintAllPlayerMetrics( true )
 							
 							if( (nputmsg.len() + info.len()) > 599 )
 							{
-						
 								Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
 								return true;
-						
 							}
 							
 							Message( player, nputmsg, LineBreak(info), 20);
-							return true;
-						
-						} catch (errf){
-							
+							return true;	
+						} 
+						catch (errf)
+						{	
 							Message( player, "Failed", "Command failed because of: \n\n " + errf )
 							return false;
 						}
@@ -942,11 +925,11 @@ struct {
 							
 							if ( index != -1 )
 							{	
-								foreach ( playerMetrics in GetPlayerMetricsArray() ) 
+								foreach ( playerMetrics in Tracker_GetPlayerMetricsArray() ) 
 								{
 									if ( playerMetrics.playerID == args[1] ) 
 									{	
-										GetPlayerMetricsArray().removebyvalue(playerMetrics);					
+										Tracker_GetPlayerMetricsArray().removebyvalue(playerMetrics);					
 									}
 								}
 								
@@ -967,15 +950,14 @@ struct {
 						
 			case "playerinput":
 						
-						if ( args.len() < 1){
-						
+						if ( args.len() < 1)
+						{	
 							Message( player, "Failed", "Param 1 of command 'playerinput' requires player name/oid.")
-							return true
-							
+							return true		
 						}
 						
-						try {
-							
+						try 
+						{		
 							entity a_player;
 							string mode;
 							
@@ -986,18 +968,17 @@ struct {
 								Message( player, "Failed", "Player: " + param + " -- is invalid" );
 								return true
 							}
-					
 							
 							mode = a_player.p.input == 0 ? "Mouse and keyboard" : "Controller";
 							
 							Message( player, "Success: ", "Current inputmode: " + mode );
 							return true
 							
-						} catch (errh) {
-							
+						} 
+						catch (errh) 
+						{		
 							Message( player, "Failed", "Command failed because of: \n\n " + errh )
-							return true
-							
+							return true		
 						}
 					
 					return true
@@ -1005,64 +986,61 @@ struct {
 						
 			case "input":	
 
-						if ( args.len() < 1){
-						
+						if ( args.len() < 1)
+						{		
 							Message( player, "Failed", "Param 1 of command 'input' requires player name/oid.")
-							return true
-							
+							return true		
 						}
 						
 						
-						if ( args.len() < 2){
-						
+						if ( args.len() < 2)
+						{	
 							Message( player, "Failed", "Param 2 of command 'input' requires type 0/1.")
-							return true
-							
+							return true		
 						}
 								
-						try {	
-						
-								string str = args[2]
-								string a_str = str;
-								
-								if (str == "false"){ a_str = "0" }
-								if (str == "true"){ a_str = "1" }
-								if (str == "mnk" ){ a_str = "0" }
-								if (str == "controller" ) { a_str = "1" }
-								
-								if ( !Is_Bool(a_str) ){
-								
-									Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
-									return false;
-								
-								}
-								
-								entity select_player =  GetPlayer( param )
-								
-								if ( !IsValid(select_player) )
-								{
-									Message( player, "Failed", "Player: " + param + " - is invalid. ")
-									return true;
-								}
-								
-								select_player.p.input = a_str.tointeger();
-								
-								string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
-								
-								Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
+						try 
+						{	
+							string str = args[2]
+							string a_str = str;
+							
+							if (str == "false"){ a_str = "0" }
+							if (str == "true"){ a_str = "1" }
+							if (str == "mnk" ){ a_str = "0" }
+							if (str == "controller" ) { a_str = "1" }
+							
+							if ( !Is_Bool(a_str) )
+							{	
+								Message( player, "Failed", "Incorrect usage, setting input using: " + a_str )
+								return false;	
+							}
+							
+							entity select_player =  GetPlayer( param )
+							
+							if ( !IsValid(select_player) )
+							{
+								Message( player, "Failed", "Player: " + param + " - is invalid. ")
 								return true;
+							}
+							
+							select_player.p.input = a_str.tointeger();
+							
+							string sayinput = a_str.tointeger() > 0 ? "Controller" : "MnK"; 
+							
+							Message( player, "Success", "Player " + select_player.GetPlayerName() + "  was changed to input: " + sayinput  )
+							return true;
 						
-						} catch (errj) {
-						
+						} 
+						catch (errj) 
+						{		
 							Message( player, "Failed", "Command failed because of: \n\n " + errj )
 							return false;
-						
 						}
 						
 			case "listhandles":
 						
-						try {
-						
+						try 
+						{
 							string statement = "\n ";
 							
 							foreach ( list_player in GetPlayerArray() )
@@ -1070,8 +1048,7 @@ struct {
 								int handle = list_player.GetEncodedEHandle()
 								string p_name = list_player.GetPlayerName()
 								
-								statement += " Player: " + p_name + "   Handle: " + handle + "\n";
-								
+								statement += " Player: " + p_name + "   Handle: " + handle + "\n";	
 							}
 							
 							sqprint(statement);
@@ -1079,11 +1056,11 @@ struct {
 							
 							return true;
 						
-						} catch (errk) {
-						
+						} 
+						catch (errk) 
+						{
 							Message( player, "Failed", "Command failed because of: \n\n " + errk )
-							return true;
-						
+							return true;		
 						}
 						
 					return true
@@ -1104,42 +1081,32 @@ struct {
 					
 			case "score":
 			
-						if ( args.len() < 1){
-							
-								Message( player, "Info", "Param 1 of command 'score' requires player name/oid/*/current/lifetime/difference. \n\n Usage: score player | score * | score current")
-								return true
-								
+						if ( args.len() < 1)
+						{		
+							Message( player, "Info", "Param 1 of command 'score' requires player name/oid/*/current/season/difference. \n\n Usage: score player | score * | score current")
+							return true			
 						}
 						
 						if ( param == "current" )
-						{
-							
+						{	
 							Message( player, "Success", "'Current KD' server weight setting is:   " + getSbmmSetting( "current_kd_weight" ) )
-							return true
-							
+							return true		
 						}
-						else if ( param == "lifetime" )
-						{
-							
-							Message( player, "Success", "'lifetime KD' server weight setting is:   " + getSbmmSetting( "lifetime_kd_weight" ) )
+						else if ( param == "season" )
+						{	
+							Message( player, "Success", "'season KD' server weight setting is:   " + getSbmmSetting( "season_kd_weight" ) )
 							return true
-						
 						}
 						else if ( param == "difference" )
-						{
-							
+						{	
 							Message( player, "Success", "'KD matchmaking difference' server setting is:   " + getSbmmSetting( "SBMM_kd_difference" ) )
 							return true
-						
 						}
 					
 						if ( param == "*")
-						{
-							
-							
+						{			
 							try 
 							{
-							
 								string putmsg = "Success";
 								string s_data;
 								
@@ -1148,31 +1115,26 @@ struct {
 									if ( !IsValid( score_player ) ) continue
 									
 									s_data += GetScore( score_player ) + "\n";
-							
 								}
 								
 								if( ( putmsg.len() + s_data.len() ) > 599 )
-								{
-							
+								{	
 									Message( player, "Failed", "Cannot execute this command currently due to return data resulting in overflow" )
 									return true;
-							
 								}
-							
 							
 								Message( player, putmsg, s_data, 20 );
 							
-							} catch (errallscore) {
-							
+							}
+							catch (errallscore) 
+							{
 								Message( player, "Failed", "Command failed because of: \n\n " + errallscore )
 								return true;
-							
 							}
 						
 						}
 						else
 						{
-						
 							entity s_player;
 									
 							s_player = GetPlayer( param )
@@ -1185,16 +1147,12 @@ struct {
 							
 							try 
 							{
-							
-								Message( player, "Success", GetScore( s_player ) );
-							
+								Message( player, "Success", GetScore( s_player ) );		
 							} 
 							catch (errscore) 
 							{
-							
 								Message( player, "Failed", "Command failed because of: \n\n " + errscore )
-								return true;
-							
+								return true;			
 							}
 						
 						}
@@ -1205,7 +1163,7 @@ struct {
 			
 						if ( args.len() < 2)
 						{
-							Message( player, "Failed", "Param 1 of command 'scoreconfig' requires type: current/lifetime/difference.")
+							Message( player, "Failed", "Param 1 of command 'scoreconfig' requires type: current/season/difference.")
 							return true
 						}
 						
@@ -1217,8 +1175,8 @@ struct {
 						
 						
 						
-						try {
-						
+						try 
+						{			
 							if ( !IsFloat( param2 ) )
 							{
 								Message( player, "Failed", "param 3 of command 'scoreconfig' must be numeric type float, \n\n example: 0.8 --            '" + param2 + "' was provided" )
@@ -1226,37 +1184,30 @@ struct {
 							}
 							
 							if ( param == "current" )
-							{
-							
-								setSbmmSetting( "current_kd_weight", param2.tofloat() )
-							
+							{	
+								setSbmmSetting( "current_kd_weight", param2.tofloat() )		
 							}
-							else if ( param == "lifetime" )
-							{
-							
-								setSbmmSetting( "lifetime_kd_weight", param2.tofloat() )
-							
+							else if ( param == "season" )
+							{		
+								setSbmmSetting( "season_kd_weight", param2.tofloat() )				
 							}
 							else if ( param == "difference" )
-							{
-							
-								setSbmmSetting( "SBMM_kd_difference", param2.tofloat() )
-							
+							{	
+								setSbmmSetting( "SBMM_kd_difference", param2.tofloat() )	
 							}
 							else
 							{
 								Message( player, "Failed", "Invalid scoreconfig type: " + param )
 								return true
-							}
-							
+							}	
 							
 							Message( player, "Success", "Weight for " + param + " KD -- was set to: " + param2 , 5 );
 						
-						} catch (errsetweight) {
-						
+						} 
+						catch (errsetweight) 
+						{
 							Message( player, "Failed", "Command failed because of: \n\n " + errsetweight )
-							return true;
-						
+							return true;			
 						}
 						
 					return true
@@ -1264,7 +1215,7 @@ struct {
 			case "cleanuplogs":
 				
 					#if TRACKER && HAS_TRACKER_DLL	
-						CleanupLogs() //sdk function 
+						CleanupLogs__internal()
 					#endif
 							
 						return true
@@ -1272,7 +1223,7 @@ struct {
 			case "reload_config":
 			
 					#if TRACKER && HAS_TRACKER_DLL	
-						SQ_ReloadConfig() //sdk function
+						SQ_ReloadConfig__internal()
 					#endif
 						
 						return true
@@ -1291,7 +1242,7 @@ struct {
 						try 
 						{	
 							string return_str = "";
-							return_str = SQ_GetSetting(param);	
+							return_str = SQ_GetSetting__internal(param);	
 							
 							Message( player, param + ":", return_str)
 							return true
@@ -1514,7 +1465,7 @@ struct {
 				
 				if( IsValid( p ))
 				{
-					Message( player, "Data for: " + param, FetchPlayerData( p.p.UID, param2 ) )
+					Message( player, "Data for: " + param, Tracker_FetchPlayerData( p.p.UID, param2 ) )
 				}
 				else 
 				{
@@ -1623,7 +1574,7 @@ struct {
 				entity p = GetPlayer( param )				
 				if( !IsValid(p) ){ return true }	
 				ToggleMuteForAll( p, true )
-				LocalMsg( p, "#FS_MUTED", "", 0, 5, "", param2 )
+				LocalMsg( p, "#FS_MUTED", "", eMsgUI.DEFAULT, 5, "", param2 )
 				
 				return true
 			
@@ -1638,12 +1589,46 @@ struct {
 				
 			case "killme":
 			
-				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			#if DEVELOPER
+				if( IsAlive( player ) )
+				{
+					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+				}
+			#endif 	
+				return true
+						
+			case "dmg":
+			
+			#if DEVELOPER
+				entity p = GetPlayer( param )
+				
+				if( IsValid( p ) )
+				{
+					if( IsNumeric( param2 ) )
+					{
+						int dmg = param2.tointeger()
+						entity worldspawn = GetEnt( "worldspawn" )
+						p.TakeDamage( dmg, worldspawn, worldspawn, {} )
+					}
+				}
+			#endif 
+			
 				return true
 				
-				
-			default:
+			case "gamerules":
 			
+				//TODO: mini framework for parsing valid map/playlist combos
+				//CreateServer("","","mp_rr_desertlands_64k_x_64k","fs_survival_solos", 0)
+				break
+				
+			case "testimg":
+			
+				#if DEVELOPER 
+					
+				#endif
+				break
+				
+			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;
 		}
@@ -1675,7 +1660,7 @@ void function Commands( entity player, array<string> args )
 		case "/wait":
 		case "\\wait":
 			args.remove(0)
-			ClientCommand_mkos_LGDuel_IBMM_wait( player, args )
+			ClientCommand_mkos_IBMM_wait( player, args )
 			break
 			
 		case "!rest":
@@ -1911,7 +1896,7 @@ array<string> function StringToArray( string str, int MAX_LENGTH = 128 )
 	
     if ( t_str == "" )
 	{
-        throw "Cannot convert empty string to array.";
+        throw "Cannot convert empty string to array in " + FUNC_NAME(1) + "()";
 	}
 	
     array<string> arr = split( str, "," )
@@ -1988,6 +1973,11 @@ string function Concatenate( string str1, string str2 )
 float function GetDefaultIBMM()
 {
 	float f_wait = GetCurrentPlaylistVarFloat("default_ibmm_wait", 0)
+	return ValidateIBMMWaitTime( f_wait )
+}
+
+float function ValidateIBMMWaitTime( float f_wait )
+{
 	return f_wait > 0.0 && f_wait < 3.0 ? 3.0 : f_wait;
 }
 
@@ -2080,7 +2070,7 @@ bool function IsNumeric( string str, int min = -123, int max = -123 )
 
 
 
-bool function IsFloat( string str, float min = SQ_MIN_INT_32, float limit = SQ_MAX_INT_32 ) 
+bool function IsFloat( string str, float min = INT_MAX, float limit = INT_MIN ) 
 {
 	if (str.len() == 0) 
 	{
@@ -2204,6 +2194,16 @@ entity function GetPlayerEntityByName( string name )
 	return p;
 }
 
+void function CheckAdmin_OnConnect( entity player )
+{
+	if( !IsValid( player ) ) 
+		return 
+	
+	if( IsTrackerAdmin( player.GetPlatformUID() ) )
+		player.SetPlayerNetBool( "IsAdmin", true )
+}
+
+// WARNING, use ONLY VerifyAdmin() for permissive uses, not this.
 bool function IsTrackerAdmin( string CheckPlayer )
 {
 	foreach ( Player, OID in player_admins) 
@@ -2214,7 +2214,7 @@ bool function IsTrackerAdmin( string CheckPlayer )
 		}
 	}
 	
-	return false;
+	return false
 }
 
 bool function IsValidOID( string str )
@@ -2241,7 +2241,7 @@ bool function IsValidOID( string str )
 	return false
 }
 
-entity function GetPlayerEntityByOID( string str )
+entity function GetPlayerEntityByUID( string str )
 {
 	entity r_player;
 	string oid;
@@ -2273,7 +2273,7 @@ entity function GetPlayer( string str )
 	
 	if ( IsValidOID( str ) )
 	{
-		return GetPlayerEntityByOID( str )	
+		return GetPlayerEntityByUID( str )	
 	}
 	else
 	{
@@ -2320,7 +2320,8 @@ string function sanitize(string str)
 {
 	string sanitized = "";
 
-	for (int i = 0; i < str.len(); i++) {
+	for (int i = 0; i < str.len(); i++) 
+	{
 		string c = str.slice(i, i + 1);
 
 		if ( IsControlCharacter(c) ) 
@@ -2340,7 +2341,7 @@ string function truncate( string str, int limit )
 {
     if ( str.len() > limit ) 
 	{
-        return str.slice( 0, limit );
+        return str.slice( 0, limit )
     }
     
     return str;
@@ -2348,32 +2349,27 @@ string function truncate( string str, int limit )
 
 void function printarray( array<string> args )
 {
-	try 
+	string test = "\n\n------ PRINT ARRAY ------\n\n"
+	
+	foreach( arg in args )
 	{
-		string test = "\n\n------ PRINT ARRAY ------\n\n"
-		
-		foreach( arg in args )
-		{
-			test += format( "	\"%s\", \n", arg )
-		}
-		
-		sqprint(test)
+		test += format( "	\"%s\", \n", arg )
 	}
-	catch(badType) //?how
-	{
-		sqprint("Error: " + badType )
-	}
+	
+	sqprint(test)
 }
 
 
-bool function CheckRate( entity player )
+bool function CheckRate( entity player, bool notify = NOTIFY_RATELIMIT_FAILED, float rate = COMMAND_RATE_LIMIT )
 {	
 	if ( !IsValid( player ) ) 
 		return false 
 			
-	if ( Time() - player.p.ratelimit <= COMMAND_RATE_LIMIT )
+	if ( Time() - player.p.ratelimit <= rate )
 	{
-		//Message( player, "COMMANDS COOLDOWN")
+		if( notify )
+			LocalEventMsg( player, "#FS_CMD", "", 2 )
+			
 		return false
 	}
 	
@@ -2404,7 +2400,23 @@ array<string> function GetPlaylistMaps( PlaylistName playlistName )
 
 	return mapsArray
 }
-#endif
+
+bool function VerifyAdmin( string PlayerName, string PlayerUID )
+{
+	if ( PlayerName in player_admins ) 
+	{
+		if ( player_admins[PlayerName] != PlayerUID ) 
+			return false		
+	}
+	else 
+	{
+		return false
+	}
+	
+	return true
+}
+
+#endif //SERVER
 
 int function WeaponToIdentifier( string weaponName )
 {
@@ -2413,9 +2425,9 @@ int function WeaponToIdentifier( string weaponName )
 		string err = format( "#^ Unknown weaponName !DEBUG IT! -- weapon: %s", weaponName )
 		
 		#if TRACKER && HAS_TRACKER_DLL
-			if( bLog() && isLogging() )
+			if( bLog() && isLogging__internal() )
 			{
-				LogEvent( err, bEnc() )
+				LogEvent__internal( err, bEnc() )
 			}
 		#endif
 		
@@ -2486,7 +2498,7 @@ string function ParseWeapon( string weaponString )
 		}
 	}
 	
-	if (removed)
+	if ( removed )
 	{
 		sqprint( PrintSupportedAttachpointsForWeapon( mods[0] ) )
 	}
@@ -2498,7 +2510,7 @@ string function ParseWeapon( string weaponString )
 		return_string += mod + " "
 	}
 	
-	return trim(return_string)
+	return trim( return_string )
 }
 
 bool function IsModValidForWeapon( string weaponref, string mod )
@@ -2524,4 +2536,34 @@ string function PrintSupportedAttachpointsForWeapon( string weaponref )
 	}
 	
 	return debug
+}
+
+#if TRACKER && HAS_TRACKER_DLL
+	void function PrintMatchIDtoAll()
+	{
+		string matchID = format( "\n\n Server stats enabled @ www.r5r.dev, \n round: %d - MatchID: %s \n ", GetCurrentRound(), SQMatchID__internal() )
+		thread
+		(
+			void function() : ( matchID )
+			{
+				wait 1 //idk
+				CenterPrintAll( matchID )
+			}
+		)()
+	}	
+#endif
+
+//Defaults: space and:  A-Z  a-z  0-9  _    [  ]  (  )  :  ;  -  *  &  ^  %  $  #  @  ! + = ? .
+bool function IsSafeString( string str, int strlen = -1, string pattern = "" ) 
+{
+	if( empty( str ) )
+		return true
+		
+	if( strlen != -1 && str.len() > strlen )
+		return false
+	
+	if( pattern == "" )
+		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.]*$"
+	
+	return ( RegexpFindAll( str, pattern ).len() != 0 )
 }

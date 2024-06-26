@@ -1,0 +1,23 @@
+// list files that you want the game to read in for localization
+// the game will automatically append _LANGUAGE.txt to whatever you list here
+// so, for example, for the entry 'r1', if you launch the game in english, the game will automatically try and load r1_english.txt
+// if you add a new localization file, please make sure that the encoding for that file is "UTF-16 LE with BOM"
+localization/base
+localization/legal/eula
+
+localization/character/bangalore
+localization/character/bloodhound
+localization/character/caustic
+localization/character/gibraltar
+localization/character/lifeline
+localization/character/mirage
+localization/character/pathfinder
+localization/character/wraith
+localization/character/octane
+localization/character/wattson
+localization/character/crypto
+localization/character/forge
+
+localization/feature/battlepass
+localization/feature/challenges
+localization/feature/beasthunter

@@ -368,7 +368,7 @@ struct FileStruct_LifetimeLevel
 	#if CLIENT
 		var sidePaneRui = null
 
-		//array<NestedGladiatorCardHandle>                     nestedCards
+		array<NestedGladiatorCardHandle>                     nestedCards//was commented
 		table<EHI, array<NestedGladiatorCardHandle> > ownerNestedCardListMap
 
 		bool                                 isCaptureThreadRunning = false
@@ -445,6 +445,10 @@ void function ShGladiatorCards_LevelInit()
 #if UI
 void function ShGladiatorCards_LevelShutdown()
 {
+	#if DEVELOPER
+		Warning("SHUTDOWN")
+	#endif 
+	
 	if ( fileLevel.currentMenuGladCardPanel != null )
 	{
 		RuiDestroyNestedIfAlive( Hud_GetRui( fileLevel.currentMenuGladCardPanel ), fileLevel.currentMenuGladCardArgName )
@@ -484,7 +488,7 @@ NestedGladiatorCardHandle function CreateNestedGladiatorCard( var parentRui, str
 	handle.currentOwnerEHI = EHI_null
 	handle.situation = situation
 	handle.isMoving = eGladCardDisplaySituation_IS_MOVING[situation]
-	//fileLevel.nestedCards.append( handle )
+	fileLevel.nestedCards.append( handle ) //was commented
 	#if DEVELOPER
 		handle.DEV_culprit = expect string(expect table(getstackinfos( 2 )).func)
 	#endif
@@ -517,7 +521,7 @@ void function CleanupNestedGladiatorCard( NestedGladiatorCardHandle handle, bool
 		handle.framePakHandleOrNull = null
 	}
 
-	//fileLevel.nestedCards.fastremovebyvalue( handle )
+	fileLevel.nestedCards.fastremovebyvalue( handle ) //was commented
 }
 #endif
 
@@ -1448,7 +1452,7 @@ void function RunGladCardStatTracker( entity player, int trackerIndex, StatEntry
 	{
 		void functionref( entity, int, int ) cb = void function( entity player, int oldValue, int newValue ) : ( valueEntry ) {
 			//player.SetPlayerNetInt( networkVarName, newValue * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION )
-			SetIntegerLoadoutSlot( ToEHI( player ), valueEntry, int(float(newValue) * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION) )
+			// SetIntegerLoadoutSlot( ToEHI( player ), valueEntry, int(float(newValue) * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION) )
 		}
 		OnThreadEnd( void function() : ( player, trackerIndex, stat, cb ) {
 			RemoveCallback_StatChanged_Int( player, stat, cb )
@@ -1462,7 +1466,7 @@ void function RunGladCardStatTracker( entity player, int trackerIndex, StatEntry
 	{
 		void functionref( entity, float, float ) cb = void function( entity player, float oldValue, float newValue ) : ( valueEntry ) {
 			//player.SetPlayerNetInt( networkVarName, int(newValue * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION) )
-			SetIntegerLoadoutSlot( ToEHI( player ), valueEntry, int(newValue * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION) )
+			// SetIntegerLoadoutSlot( ToEHI( player ), valueEntry, int(newValue * GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION) )
 		}
 		OnThreadEnd( void function() : ( player, trackerIndex, stat, cb ) {
 			RemoveCallback_StatChanged_Float( player, stat, cb )
@@ -1602,18 +1606,35 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 				for ( int badgeIndex = 0; badgeIndex < GLADIATOR_CARDS_NUM_BADGES; badgeIndex++ )
 				{
 					ItemFlavor ornull badgeOrNull = null
-
 					int ornull overrideDataIntegerOrNull = null
-					if ( handle.overrideBadgeList[badgeIndex] != null )
-					{
-						badgeOrNull = handle.overrideBadgeList[badgeIndex]
-						overrideDataIntegerOrNull = handle.overrideBadgeDataIntegerList[badgeIndex]
-					}
 
-					LoadoutEntry badgeSlot = Loadout_GladiatorCardBadge( character, badgeIndex )
-					if ( badgeOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, badgeSlot ) )
+					// if ( handle.overrideBadgeList[badgeIndex] != null )
+					// {
+						// badgeOrNull = handle.overrideBadgeList[badgeIndex]
+						// overrideDataIntegerOrNull = handle.overrideBadgeDataIntegerList[badgeIndex]
+					// }
+
+					// LoadoutEntry badgeSlot = Loadout_GladiatorCardBadge( character, badgeIndex )
+					// if ( badgeOrNull == null && havePlayer && LoadoutSlot_IsReady( handle.currentOwnerEHI, badgeSlot ) )
+					// {
+						// badgeOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, badgeSlot )
+					// }
+
+					switch( badgeIndex ) //test itemflavors
 					{
-						badgeOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, badgeSlot )
+						case 0:
+						badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00097219464" ) )
+						// overrideDataIntegerOrNull = 1
+						break
+
+						case 1:
+						badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01673450061" ) )
+						break
+
+						case 2:
+						badgeOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01774065557" ) )
+						overrideDataIntegerOrNull = 100
+						break
 					}
 
 					if ( badgeOrNull != null )
@@ -1804,7 +1825,8 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 				}
 			}
 		}
-	}catch(e420)
+	}
+	catch(e420)
 	{
 		printt("gladiators error, debug it" )
 	}
@@ -2494,29 +2516,103 @@ void function UpdateStatTrackersOfNestedGladiatorCard( NestedGladiatorCardHandle
 	for ( int index = 0; index < GLADIATOR_CARDS_NUM_TRACKERS; index++ )
 	{
 		ItemFlavor ornull trackerFlavOrNull = null
-
 		int ornull overrideDataIntegerOrNull = null
-		if ( handle.overrideTrackerList[index] != null )
+
+		switch( index )
 		{
-			trackerFlavOrNull = expect ItemFlavor(handle.overrideTrackerList[index])
-			overrideDataIntegerOrNull = handle.overrideTrackerDataIntegerList[index]
+			case 0:
+			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID01814522143" ) ) //gcard_tracker_bangalore_kills
+			overrideDataIntegerOrNull = 0
+			
+			entity player = FromEHI( handle.currentOwnerEHI )
+
+			#if HAS_TRACKER_DLL
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonKills" )
+			#else
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "kills" )
+			#endif
+
+			break
+			case 1:
+			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00278004241" ) ) //gcard_tracker_bangalore_games_played
+			overrideDataIntegerOrNull = 0
+			entity player = FromEHI( handle.currentOwnerEHI )
+
+			#if HAS_TRACKER_DLL
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonGamesplayed" )
+			#else
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "deaths" )
+			#endif
+
+			break
+			case 2:
+			trackerFlavOrNull = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( "SAID00833459246" ) ) //gcard_tracker_bangalore_damage_done
+			overrideDataIntegerOrNull = 0
+			entity player = FromEHI( handle.currentOwnerEHI )
+
+			#if HAS_TRACKER_DLL
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "SeasonDeaths" )
+			#else
+				overrideDataIntegerOrNull = player.GetPlayerNetInt( "damage" )
+			#endif
+
+			break
 		}
 
-		if ( trackerFlavOrNull == null && characterOrNull != null )
-		{
-			LoadoutEntry trackerSlot = Loadout_GladiatorCardStatTracker( expect ItemFlavor(characterOrNull), index )
-			if ( LoadoutSlot_IsReady( handle.currentOwnerEHI, trackerSlot ) )
-				trackerFlavOrNull = LoadoutSlot_GetItemFlavor( handle.currentOwnerEHI, trackerSlot )
-		}
-
-		if ( trackerFlavOrNull != null )
-			UpdateRuiWithStatTrackerData( handle.cardRui, "statTracker" + index, handle.currentOwnerEHI, characterOrNull, index, trackerFlavOrNull, overrideDataIntegerOrNull )
+		UpdateRuiWithStatTrackerData_Flowstate_Custom( handle.cardRui, "statTracker" + index, handle.currentOwnerEHI, characterOrNull, index, trackerFlavOrNull, overrideDataIntegerOrNull )
 	}
 }
 #endif
 
 
 #if CLIENT
+void function UpdateRuiWithStatTrackerData_Flowstate_Custom( var rui, string prefix, EHI playerEHI, ItemFlavor ornull characterOrNull, int trackerIndex, ItemFlavor ornull trackerFlavorOrNull, int ornull overrideDataIntegerOrNull = null, bool isLootCeremony = false )
+{
+	// todo(dw): remove concatenation
+	if ( trackerFlavorOrNull == null || GladiatorCardTracker_IsTheEmpty( expect ItemFlavor(trackerFlavorOrNull) ) )
+	{
+		RuiSetString( rui, prefix + "Label", "" )
+		RuiSetFloat( rui, prefix + "Value", 0 )
+		RuiSetInt( rui, prefix + "ValueFormat", 0 )
+		RuiSetString( rui, prefix + "ValueSuffix", "" )
+
+		if ( isLootCeremony )
+		{
+			RuiSetBool( rui, prefix + "IsLootCeremony", isLootCeremony )
+			RuiSetString( rui, prefix + "Character", "" )
+		}
+
+		return
+	}
+
+	ItemFlavor trackerFlav = expect ItemFlavor(trackerFlavorOrNull)
+	string label = ItemFlavor_GetShortName( trackerFlav )
+
+	#if HAS_TRACKER_DLL
+	if( Localize( label ) == "Damage Done" )
+		label = "Deaths"
+	#else
+	if( Localize( label ) == "Games Played" )
+		label = "Deaths"
+	#endif
+
+	RuiSetString( rui, prefix + "Label", label )
+	RuiSetInt( rui, prefix + "ValueFormat", GladiatorCardStatTracker_GetValueNumberFormat( trackerFlav ) )
+	RuiSetString( rui, prefix + "ValueSuffix", GladiatorCardStatTracker_GetValueSuffix( trackerFlav ) )
+	RuiSetAsset( rui, prefix + "BackgroundImage", GladiatorCardStatTracker_GetBackgroundImage( trackerFlav ) )
+
+	float value = -1337.0
+
+	int intValue
+	if ( overrideDataIntegerOrNull != null )
+	{
+		intValue = expect int(overrideDataIntegerOrNull)
+	}
+
+	value = float(intValue)
+	RuiSetFloat( rui, prefix + "Value", value )
+}
+
 void function UpdateRuiWithStatTrackerData( var rui, string prefix, EHI playerEHI, ItemFlavor ornull characterOrNull, int trackerIndex, ItemFlavor ornull trackerFlavorOrNull, int ornull overrideDataIntegerOrNull = null, bool isLootCeremony = false )
 {
 	// todo(dw): remove concatenation
@@ -2589,7 +2685,33 @@ void function UpdateRuiWithStatTrackerData( var rui, string prefix, EHI playerEH
 #if CLIENT
 void function UpdateRuiWithStatTrackerData_JustValue( var rui, string prefix, float value )
 {
-	RuiSetFloat( rui, prefix + "Value", value )
+	if( !IsValid( rui ) )
+	{
+		#if DEVELOPER
+			Warning("RUI crash avoided")
+			entity player = GetLocalClientPlayer()
+			if( !IsValid( player ) )
+			{
+				Warning("Player was invalid")
+			}
+			else 
+			{
+				Warning("player is good")
+				player.ClientCommand("Script_Callback:_Player_is_not_invalid during_rui_stat_tracker_data RUI_NULL")
+			}			
+		#endif
+		
+		return 
+	}
+	
+	try 
+	{
+		RuiSetFloat( rui, prefix + "Value", value )
+	}
+	catch( e )
+	{
+		Warning( "GLAD ERROR DEBUG IT Error: " + e )
+	}
 }
 #endif
 

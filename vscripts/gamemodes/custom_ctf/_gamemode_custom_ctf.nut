@@ -355,27 +355,27 @@ void function VotingPhase()
 
 	//Open Vote for Team Menu ( Halo Mod Only )
 	
-	if( Flowstate_IsHaloMode() && !debugging )
-	{
-		file.VoteTeamEnabled = true
-		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
-		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
+	// if( Flowstate_IsHaloMode() && !debugging )
+	// {
+		// file.VoteTeamEnabled = true
+		// // SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
+		// SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
 
-		foreach( player in GetPlayerArray() )
-		{
-			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
-			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
-		}
+		// foreach( player in GetPlayerArray() )
+		// {
+			// Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			// Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+			// SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
+			// Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
+		// }
 		
-		// WaitForever()
-		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
-			WaitFrame()
+		// // WaitForever()
+		// while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
+			// WaitFrame()
 
-		file.VoteTeamEnabled = false
-		SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
-	} else
+		// file.VoteTeamEnabled = false
+		// SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
+	// } else
 	{
 		foreach( player in GetPlayerArray() )
 		{
@@ -397,7 +397,10 @@ void function VotingPhase()
 
 		if(player.p.teamasked != -1)
 		{
-			printt( "poner jugador en equipo solicitado", player )
+			#if DEVELOPER
+				printt( "poner jugador en equipo solicitado", player )
+			#endif
+			
 			switch(player.p.teamasked)
 			{
 				case 0:
@@ -411,14 +414,19 @@ void function VotingPhase()
 			}
 		} else
 		{
-			printt( "poner jugador en equipo que tenga espacio ya que no voto", player )
+			#if DEVELOPER
+				printt( "poner jugador en equipo que tenga espacio ya que no voto", player )
+			#endif
+			
 			if( GetPlayerArrayOfTeam(TEAM_MILITIA).len() < idealMilitia )
 				SetTeam(player, TEAM_MILITIA )
 			else
 				SetTeam(player, TEAM_IMC )
 		}
 		
-		printt( maxplayers, idealMilitia, GetPlayerArrayOfTeam(TEAM_MILITIA).len(), GetPlayerArrayOfTeam(TEAM_IMC).len())
+		#if DEVELOPER
+			printt( maxplayers, idealMilitia, GetPlayerArrayOfTeam(TEAM_MILITIA).len(), GetPlayerArrayOfTeam(TEAM_IMC).len())
+		#endif
 
 		array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
 		int teamMemberIndex = playerTeam.len() - 1
@@ -574,19 +582,19 @@ void function StartRound()
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
 	
-	if( !debugging && Flowstate_IsHaloMode() )
-	{
-		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-		SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+	// if( !debugging && Flowstate_IsHaloMode() )
+	// {
+		// SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+		// SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
 
-		while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
-			WaitFrame()
+		// while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+			// WaitFrame()
 
-		foreach(player in GetPlayerArray())
-		{
-			Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
-		}
-	}
+		// foreach(player in GetPlayerArray())
+		// {
+			// Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+		// }
+	// }
 	
 	// wait 1
 	// set
@@ -1238,7 +1246,10 @@ int function GetCTFEnemyTeam(int team)
 
 void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 {
-	printt(" player trying to pickup flag" )
+	#if DEVELOPER
+		printt(" player trying to pickup flag" )
+	#endif
+		
 	if( !IsValid( ent ) )
 		return
 	
@@ -1283,7 +1294,10 @@ void function PickUpFlag(entity ent, int team, CTFPoint teamflagpoint)
 
 void function CaptureFlag(entity ent, int team, CTFPoint teamflagpoint)
 {
-	printt(" player trying to capture flag" )
+	#if DEVELOPER
+		printt(" player trying to capture flag" )
+	#endif
+	
 	int enemyteam = GetCTFEnemyTeam(team)
 	
 	PlayerDroppedFlag(ent)
@@ -1346,8 +1360,10 @@ void function IMCPoint_Trigger( entity trigger, entity ent )
 	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
-	printt( "player entered imc point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
-
+	#if DEVELOPER
+		printt( "player entered imc point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
+	#endif
+	
 	if ( ent.IsPlayer() )
 	{
 		if ( ent.GetTeam() == TEAM_MILITIA )
@@ -1379,7 +1395,9 @@ void function MILITIA_Point_Trigger( entity trigger, entity ent )
 	if(!IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
-	printt( "player entered militia point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
+	#if DEVELOPER
+		printt( "player entered militia point trigger: ", ent, IMCPoint.pickedup, MILITIAPoint.pickedup )
+	#endif
 
 	if( ent.IsPlayer() )
 	{
@@ -1487,7 +1505,10 @@ void function GiveBackWeapons(entity player)
 // purpose: OnPlayerConnected Callback
 void function _OnPlayerConnected(entity player)
 {
-	printt( "_OnPlayerConnected CTF - ", player )
+	#if DEVELOPER
+		printt( "_OnPlayerConnected CTF - ", player )
+	#endif 
+	
 	if( !IsValid( player ) )
 		return
 
@@ -1536,7 +1557,9 @@ void function MILITIA_PoleReturn_Trigger( entity trigger, entity ent )
 	if( !IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 
-	printt( "player entered mil return trigger: ", ent )
+	#if DEVELOPER
+		printt( "player entered mil return trigger: ", ent )
+	#endif
 
 	if ( ent.IsPlayer() && !MILITIAPoint.flagatbase && !MILITIAPoint.pickedup && !MILITIAPoint.isbeingreturned )
 	{
@@ -1563,7 +1586,9 @@ void function IMC_PoleReturn_Trigger( entity trigger, entity ent)
 	if( !IsValid(ent) || !ent.IsPlayer() || !IsAlive( ent ) || file.ctfState != eCTFState.IN_PROGRESS )
 		return
 	
-	printt( "player entered imc return trigger: ", ent )
+	#if DEVELOPER
+		printt( "player entered imc return trigger: ", ent )
+	#endif
 
 	if ( ent.IsPlayer() && !IMCPoint.flagatbase && !IMCPoint.pickedup && !IMCPoint.isbeingreturned )
 	{
@@ -1617,7 +1642,9 @@ void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
 	
 	wait 2.5
 	
-	printt("Player:", player, " - Returned flag to base!" )
+	#if DEVELOPER
+		printt("Player:", player, " - Returned flag to base!" )
+	#endif
 
 	// flag return succeeded
 	player.SetPlayerNetInt( "returns", player.GetPlayerNetInt( "returns" ) + 1 )
@@ -1645,7 +1672,10 @@ void function StartFlagReturn(entity player, int team, CTFPoint teamflagpoint)
 
 void function PlayerThrowFlag(entity victim, int team, CTFPoint teamflagpoint)
 {
-	printt("Player: ", victim, " - Threw flag!" )
+	#if DEVELOPER
+		printt("Player: ", victim, " - Threw flag!" )
+	#endif 
+	
 	int enemyteam = GetCTFEnemyTeam(team)
 	
 	if( IsValid( teamflagpoint.pole ) )
@@ -2030,7 +2060,9 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 
 void function TpPlayerToSpawnPoint(entity player)
 {
-	printt( "tried to tp player to spawn point" )
+	#if DEVELOPER
+		printt( "tried to tp player to spawn point" )
+	#endif
 	if( !IsValid( player ) )
 		return
 

@@ -2,7 +2,6 @@
 global function PlayLists_Mapnames_Gamemodes_Init
 
 //public:
-global function mAssert
 global function MapName
 global function Playlist
 global function Gamemode
@@ -11,6 +10,7 @@ global function Gamemode
 global function AllMapsArray
 global function AllGamemodesArray
 global function AllPlaylistsArray
+global function shGlobalErrorCheck
 
 //const:
 global const PRINT_GAMEMODE_DEBUGS = true
@@ -19,6 +19,7 @@ global const PRINT_GAMEMODE_DEBUGS = true
 global function is1v1GameType
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
+global function Flowstate_PlayerDoesRespawn
 
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
@@ -55,6 +56,7 @@ global enum eMaps
 	mp_rr_construct, //23
 	mp_rr_desertlands_mu1, //24
 	mp_rr_canyonlands_mu2, //25
+	mp_rr_tropic_island, //26
 	
 	
 	_MAP_COUNT //LAST
@@ -92,6 +94,14 @@ global enum ePlaylists
 	flowstate_pkknockback, //27
 	fs_movementrecorder, //28
 	dev_default, //29
+	fs_ltm_mortalevoshields, //30
+	fs_ltm_armedanddangerous, //31
+	fs_doormovementpractice, //32
+	fs_grapplemovementpractice, //33
+	fs_mantlejumppractice, //34
+	fs_firstmovementmappractice, //35
+	fs_gymmovementmappractice, //36
+	survival_training, //37
 	
 	
 	_PLAYLISTS_COUNT //LAST
@@ -127,13 +137,9 @@ struct
 	int currentPlaylist = -1
 	int currentGamemode = -1
 	
+	bool errorCheck = false
+	
 } SH_globals
-
-
-//-----make global with----
-//
-// global SH_globals shGlobal
-//
 
 //this is the global location for defining a mode that is 1v1 based
 const array<int> playlist1v1Types = [
@@ -168,8 +174,19 @@ void function __EnumsToArrays_Init()
 	}
 }
 
+void function __ClearEnumArrays()
+{
+	SH_globals.mapNames.clear()
+	SH_globals.playlists.clear()
+	SH_globals.gamemodes.clear()
+}
+
 void function PlayLists_Mapnames_Gamemodes_Init()
 {
+	#if UI 
+		__ClearEnumArrays()
+	#endif 
+	
 	__EnumsToArrays_Init()
 	
 	int playlistsArrayCount = SH_globals.playlists.len() - 1
@@ -191,16 +208,25 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		string level = uiGlobal.loadedLevel
 		
 			#if DEVELOPER
-				printt( "UI Mapname: ", level )
+				printt( "UI Mapname:", level )
 			#endif
 	#endif
 	
 		SH_globals.currentMap = getMapEnumFromName( level )
 		mAssert( SH_globals.currentMap != -1, format( "Current map \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", level ) )
 		
-		SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )	
-		mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
-
+		#if UI 
+			if( level != "" )
+			{
+		#endif
+			
+			SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )
+			mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
+		
+		#if UI 
+			}
+		#endif 
+	
 	
 	#if SERVER || CLIENT	
 		int currentGamemodeEnum = getGamemodeEnumFromName( GameRules_GetGameMode() )
@@ -210,6 +236,7 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		int currentGamemodeEnum = getGamemodeEnumFromName( curentGamemodeName )
 			
 			#if DEVELOPER
+				printt( "UI Playlist: ", SH_globals.currentPlaylist )
 				printt( "UI Gamemode: ", curentGamemodeName )
 			#endif
 	#endif
@@ -218,6 +245,8 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 		mAssert( SH_globals.currentGamemode != -1, format( "Current gamemode \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", curentGamemodeName ) )
 	
 	AllModeConditionals_Init()
+	
+	SH_globals.errorCheck = true
 }
 
 int function getMapEnumFromName( string mapString ) 
@@ -301,7 +330,10 @@ array<string> function AllPlaylistsArray()
 	return SH_globals.playlists
 }
 	
-	
+bool function shGlobalErrorCheck()
+{
+	return SH_globals.errorCheck
+}
 
 //////////////////////////////////////////
 //	gamemode conditional INIT functions	//
@@ -309,12 +341,7 @@ array<string> function AllPlaylistsArray()
 
 bool function is1v1GameType() //this function should be called to set local bool for conditionals, not directly used as conditional
 {
-	if ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
-	{
-		return true
-	}
-	
-	return false
+	return ( playlist1v1Types.contains( Playlist() ) || gamemode1v1Types.contains( Gamemode() ) )
 }
 
  
@@ -323,6 +350,7 @@ void function AllModeConditionals_Init()
 {
 	TrackerSupportedMode_Init()
 	PassivesAllowed_Init()
+	PlayerRespawnModes_Init()
 }
 
 
@@ -334,6 +362,7 @@ struct
 {
 	bool passivesAllowed = false
 	bool trackerSupportedMode = false
+	bool playerDoesRespawn = false
 	
 } modeSettings
 
@@ -346,7 +375,8 @@ void function PassivesAllowed_Init()
 	]
 	
 	array<int> allowedPassivePlaylists = [
-		ePlaylists.fs_1v1
+		ePlaylists.fs_1v1,
+		ePlaylists.fs_scenarios
 	]
 	
 	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	
@@ -381,12 +411,27 @@ void function TrackerSupportedMode_Init()
 	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
 		if( !result )
 		{
-			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", Gamemode(), AllGamemodesArray()[Gamemode()], Playlist(), AllPlaylistsArray()[Playlist()] ) )
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for tracker. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", 
+				Gamemode(), 
+				Gamemode() > -1 ? AllGamemodesArray()[Gamemode()] : "_INVALID", 
+				Playlist(), 
+				Playlist() > - 1 ? AllPlaylistsArray()[Playlist()]  : "_INVALID"
+			))
 		}
 	#endif 
 	
 	modeSettings.trackerSupportedMode = result
 	
+}
+
+void function PlayerRespawnModes_Init()
+{
+	array<int> playerRespawnModes = 
+	[
+		ePlaylists.fs_movementrecorder
+	];
+	
+	modeSettings.playerDoesRespawn = ( IsFiringRangeGameMode() || playerRespawnModes.contains( Playlist() ) )
 }
 
 //////////////////////////////////////////
@@ -410,76 +455,7 @@ bool function Flowstate_IsTrackerSupportedMode()
 	return modeSettings.trackerSupportedMode
 }
 
-
-
-
-
-
-
-
-
-//////////////////////////////////////////
-// placing this here temp (mkos Assert) //
-//////////////////////////////////////////
-
-void function mAssert( bool condition, string errorMsg = "" )
+bool function Flowstate_PlayerDoesRespawn()
 {
-	if ( !condition )
-	{
-		#if CLIENT
-			ErrorClientPlayer( errorMsg )
-		#endif 
-		
-		#if SERVER 		
-			ErrorServer( errorMsg )
-		#endif
-	}
+	return modeSettings.playerDoesRespawn
 }
-
-#if CLIENT
-void function ErrorClientPlayer( string errorMsg )
-{
-	thread WaitValidPlayerThenError( errorMsg )
-}
-
-void function WaitValidPlayerThenError( string errorMsg )
-{
-	while( !IsValid( GetLocalClientPlayer() ) )
-	{
-		WaitFrame()
-	}
-	
-	RunUIScript("OpenErrorDialog", errorMsg )
-	GetLocalClientPlayer().ClientCommand("disconnect")
-}
-#endif
-
-#if SERVER
-void function ErrorServer( string errorMsg )
-{
-	thread WaitValidStateThenClose( errorMsg )
-}
-
-void function WaitValidStateThenClose( string errorMsg )
-{
-	wait 1
-	/* OnThreadEnd( function() : ( errorMsg )
-		{
-			throw errorMsg 
-		}
-	)
-	
-	WaitForever() */
-	
-	if ( GetPlayerArray().len() > 0 )
-	{
-		foreach( player in GetPlayerArray() )
-		{
-			KickPlayerById( player.GetPlatformUID(), errorMsg )
-		}
-	}
-	
-	throw errorMsg
-}
-#endif 
-///

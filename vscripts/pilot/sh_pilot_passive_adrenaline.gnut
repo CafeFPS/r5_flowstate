@@ -34,12 +34,17 @@ void function ShPassiveAdrenaline_Init()
 void function PassiveAdrenaline_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
 {
 	if ( didHave && IsValid(player.p.vortexTriggerDoubleTime) )
+	{
+		#if DEVELOPER
+			printt("[Passive Adrenaline - Reimplemented by @CafeFPS] - stopped for player ", player)
+		#endif
 		player.p.vortexTriggerDoubleTime.Destroy()
+	}
 
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt("adrenaline started")
+			printt("[Passive Adrenaline - Reimplemented by @CafeFPS] - started for player ", player)
 		#endif
 		thread Flowstate_GrantAdrenaline( player )
 	}

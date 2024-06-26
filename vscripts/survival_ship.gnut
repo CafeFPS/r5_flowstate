@@ -244,9 +244,15 @@ void function CommonPlayerDropLines(entity player)
 	player.Solid()
 	player.SetPlayerNetBool( "playerInPlane", false )
 	player.SetPlayerNetBool( "freefallIsFromPlane", true )
-	if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
-		player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
+	// if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
+		// player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
 	
+	if( Playlist() == ePlaylists.fs_scenarios )
+	{
+		thread FS_Scenarios_GiveWeaponsToGroup( [player] )
+		return
+	}
+
 	GiveBasicSurvivalItems( player )
 }
 

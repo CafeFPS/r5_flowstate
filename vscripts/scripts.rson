@@ -20,6 +20,7 @@ When: " SERVER || CLIENT || UI "
 Scripts:
 [
 	sh_mapname_playlist_gamemode_enums.gnut //init this early ~mkos
+	sh_assert.nut
 	feature_flags_script.gnut
 	root_asset_lists.gnut
 ]
@@ -33,6 +34,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	flowstate_globals.gnut
 	sh_damage_history.gnut // needs to come before _entitystructs
 ]
 
@@ -50,6 +52,7 @@ Scripts:
 	_threads.nut
 	_settings.nut
 	sh_utility_all.gnut
+	REMOVE_BEFORE_SHIPPING.nut // ~mkos test area
 	sh_assets.nut
 	sh_playlists.gnut
 	sh_networkvars.gnut
@@ -73,7 +76,6 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	
 	gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 
@@ -86,6 +88,9 @@ Scripts:
 	sh_survival_loot_types.gnut
 	sh_survival_equipment_slot.gnut
     sh_survival_loot_distribution.gnut
+	
+	sh_draw_img.gnut
+	sh_draw_register_assets.gnut
 ]
 
 When: "SERVER || CLIENT || UI"
@@ -209,6 +214,8 @@ Scripts:
 [
 	mp/tracker/chateffects.nut
 	mp/tracker/utility.nut
+	mp/tracker/_internal.nut
+	mp/tracker/_register_stats.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -262,7 +269,7 @@ Scripts:
 	weapons/mp_weapon_softball.nut
 	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
-	
+	weapons/mp_weapon_satchel.nut
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
@@ -430,6 +437,7 @@ Scripts:
 	_viewcone.gnut
 	_pain_death_sounds.gnut
 	_threat_tracker.gnut
+	_live_api.gnut
 	ai/_ai_chatter.gnut
 	ai/_ai_goliath.gnut
 	ai/_ai_stationary_firing_positions.gnut // DEVSCRIPTS remove
@@ -730,6 +738,7 @@ Scripts:
 	ui/dialogs/mode_select.nut
 	ui/dialogs/gamemode_select_v2.nut
 	ui/dialogs/report_player.nut
+	ui/dialogs/server_motd.nut
 	ui/menu_eula_dialog.nut
 	ui/menu_accessibility_dialog.nut
 	ui/menu_postgame.nut
@@ -970,6 +979,13 @@ Scripts:
 // END DEVSCRIPTS CONTENT
 
 // Custom
+
+When: "SERVER"
+Scripts:
+[
+	gamemodes/global/_gamemode_spawn_settings.nut
+]
+
 When: "SERVER || CLIENT"
 Scripts:
 [
@@ -987,6 +1003,7 @@ Scripts:
 	lobby/lobbyvm/sh_lobbyvm.nut
 	mp/sh_movement_recorder.nut
 	sh_hover_vehicle.gnut
+	gamemodes/fs_scenarios/sh_gamemode_scenarios.nut
 ]
 
 When: "SERVER"
@@ -994,8 +1011,9 @@ Scripts:
 [
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
-	gamemodes/fs_1v1/_gamemode_1v1_settings.nut
+	gamemodes/fs_1v1/_notifications.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut
+	gamemodes/fs_lgduels_1v1/_fs_lgduels_1v1.nut
 	gamemodes/fs_scenarios/_gamemode_scenarios.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/fs_duckhunt/_gamemode_duckhunt.nut
@@ -1019,9 +1037,9 @@ Scripts:
 	custom_maps/_custom_maps_8.nut
 	custom_maps/_custom_deafps_maps.nut
 	
-	//mkos LG & dropoff location patches
+	//mkos LG patches & map based patches
 	custom_maps/_LG_Duel.nut
-	custom_maps/dropoff_patch.nut
+	custom_maps/_map_patch.nut
 
 	gamemodes/fs_movementgym/_movement_gym.nut
 

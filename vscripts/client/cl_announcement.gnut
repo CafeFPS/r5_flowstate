@@ -49,7 +49,7 @@ global struct AnnouncementData
 	asset         leftIcon = $""
 	asset         rightIcon = $""
 	float         displayEndTime = RUI_BADGAMETIME
-	string        soundAlias = SFX_HUD_ANNOUNCE_STANDARD
+	string        soundAlias = "" //SFX_HUD_ANNOUNCE_STANDARD
 	int           announcementStyle = ANNOUNCEMENT_STYLE_DEFAULT
 	int           sortKey = MINIMAP_Z_BASE + 200
 	bool          drawOverScreenFade = false
@@ -442,7 +442,10 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 				rui = RuiCreate( $"ui/announcement_center_sweep.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
 			else
 				rui = CreatePermanentCockpitRui( $"ui/announcement_center_sweep.rpak", announcement.sortKey )
-			EmitSoundOnEntity( player, announcement.soundAlias )
+			
+			if ( announcement.soundAlias != "" )
+				EmitSoundOnEntity( player, announcement.soundAlias )
+			
 			RuiSetFloat2( rui, "iconAspect", announcement.iconAspect )
 
 			RuiSetImage( rui, "leftIconImage", announcement.leftIcon )
@@ -455,7 +458,10 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 				rui = RuiCreate( $"ui/announcement_center.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
 			else
 				rui = CreatePermanentCockpitRui( $"ui/announcement_center.rpak", announcement.sortKey )
-			EmitSoundOnEntity( player, announcement.soundAlias )
+			
+			if ( announcement.soundAlias != "" )
+				EmitSoundOnEntity( player, announcement.soundAlias )
+			
 			break
 
 		case ANNOUNCEMENT_STYLE_QUICK:
@@ -463,8 +469,10 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 				rui = RuiCreate( $"ui/announcement_quick_right.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
 			else
 				rui = CreatePermanentCockpitRui( $"ui/announcement_quick_right.rpak", announcement.sortKey )
+			
 			if ( announcement.soundAlias != "" )
 				EmitSoundOnEntity( player, announcement.soundAlias )
+			
 			break
 
 		case ANNOUNCEMENT_STYLE_OBJECTIVE:
@@ -472,12 +480,15 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 				rui = RuiCreate( $"ui/announcement_objective.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
 			else
 				rui = CreatePermanentCockpitRui( $"ui/announcement_objective.rpak", announcement.sortKey )
+			
 			if ( announcement.soundAlias != "" )
 				EmitSoundOnEntity( player, announcement.soundAlias )
+			
 			break
 
 		case ANNOUNCEMENT_STYLE_RESULTS:
 			rui = CreatePermanentCockpitRui( $"ui/announcement_results.rpak", announcement.sortKey )
+			
 			if ( announcement.soundAlias != "" )
 				EmitSoundOnEntity( player, announcement.soundAlias )
 			break
@@ -497,7 +508,9 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 
 			RuiSetGameTime( rui, "displayEndTime", announcement.displayEndTime )
 
-			EmitSoundOnEntity( player, announcement.soundAlias )
+			if ( announcement.soundAlias != "" )
+				EmitSoundOnEntity( player, announcement.soundAlias )
+				
 			break
 
 		case ANNOUNCEMENT_STYLE_ELITE:
@@ -509,7 +522,9 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 			RuiSetFloat( rui, "duration", announcement.duration )
 			RuiSetGameTime( rui, "startFadeTime", Time() + announcement.duration - 0.5 )
 
-			EmitSoundOnEntity( player, announcement.soundAlias )
+			if ( announcement.soundAlias != "" )
+				EmitSoundOnEntity( player, announcement.soundAlias )
+				
 			break
 			
 		case ANNOUNCEMENT_STYLE_WAVE:
@@ -526,7 +541,9 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 			RuiSetInt( rui, "numPips", int( optionalTextArgs[0] ) )
 			RuiSetInt( rui, "numFilledPips", int( optionalTextArgs[1] ) )
 
-			EmitSoundOnEntity( player, announcement.soundAlias )
+			if ( announcement.soundAlias != "" )
+				EmitSoundOnEntity( player, announcement.soundAlias )
+				
 			break
 
 		default:

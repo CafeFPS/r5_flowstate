@@ -49,6 +49,9 @@ struct
 	UIPos& originalFlowstateShieldsPos
 	UISize& originalRes
 	bool changedViewPlayer = false
+	
+	bool is_hiswattson_ltm
+	
 } file
 
 
@@ -91,6 +94,8 @@ void function ClHealthHud_Init()
 	//AddLocalPlayerFunc( HealthHUD_AddPlayer )
 	AddCallback_OnViewPlayerChanged( HealthHUD_ViewPlayerChanged )
 	AddCallback_EntitiesDidLoad( HealthHUD_EntitiesDidLoad )
+	
+	file.is_hiswattson_ltm = GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false )
 }
 
 void function HealthHUD_EntitiesDidLoad()
@@ -307,7 +312,7 @@ void function HealthHUD_Update( entity player )
 
 void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayerChanged = false )
 {
-	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing || Flowstate_IsHaloMode() )
+	if( !file.is_hiswattson_ltm || GetGameState() != eGameState.Playing || Flowstate_IsHaloMode() )
 		return
 
 	if( viewPlayerChanged && GetLocalClientPlayer() != GetLocalViewPlayer() && !file.changedViewPlayer )
@@ -317,7 +322,8 @@ void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayer
 		
 		Flowstate_HUD_UpdateShieldHealthForPlayer()
 		return
-	} else if( viewPlayerChanged && GetLocalClientPlayer() == GetLocalViewPlayer() )
+	} 
+	else if( viewPlayerChanged && GetLocalClientPlayer() == GetLocalViewPlayer() )
 	{
 		Hud_SetPos( HudElement( "FS_EvoShields_Frame" ), file.originalFlowstateShieldsPos.x, file.originalFlowstateShieldsPos.y)
 		file.changedViewPlayer = false
@@ -339,7 +345,7 @@ void function Init_EvoShields_Flowstate_HUD( bool toggle = true, bool viewPlayer
 
 void function Flowstate_HUD_UpdateShieldHealthForPlayer()
 {
-	if( !GetCurrentPlaylistVarBool( "is_hiswattson_ltm", false ) || GetGameState() != eGameState.Playing )
+	if( !file.is_hiswattson_ltm || GetGameState() != eGameState.Playing )
 		return
 	
 	entity player = GetLocalViewPlayer()

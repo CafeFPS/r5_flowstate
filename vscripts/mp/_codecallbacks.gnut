@@ -33,12 +33,22 @@ struct
 	void functionref( entity, entity, TitanDamage, float ) earnMeterOnDamageGameModeRulesCallback
 
 	table<entity, AccumulatedDamageData> playerAccumulatedDamageData
+	
+	bool phaseRewindEnabled
+	bool register_damage_to_ai
+	bool register_dummie_kill_as_actual_kill
+	bool flowstate_evo_shields
+	bool firingrange_aimtrainerbycolombia
 } file
 
 // r5 stuff
 void function SvCodeCallbacksCommon_Init()
 {
-	// stubbystuvb
+	file.phaseRewindEnabled = GetCurrentPlaylistVarBool( "phaseRewindEnabled", true )
+	file.register_damage_to_ai = GetCurrentPlaylistVarBool( "register_damage_to_ai", false )
+	file.register_dummie_kill_as_actual_kill = GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )
+	file.flowstate_evo_shields = GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
+	file.firingrange_aimtrainerbycolombia = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
 }
 
 void function CodeCallback_Init()
@@ -62,9 +72,10 @@ void function OnClientConnected( entity player )
 
 	//Wraith Q fix
 	player.SetForceVisibleInPhaseShift( true )
-
+	
 	//Phase Rewind Record Positions
-	thread RecordPositions( player )
+	if( file.phaseRewindEnabled )
+		thread RecordPositions( player )
 
 	//Record a networked int for Latency to show in scoreboard
 	thread NetworkedIntLatencyThingy( player )	
@@ -79,13 +90,16 @@ void function NetworkedIntLatencyThingy( entity player )
 	while ( IsValid(player) )
 	{
 		latency = int( player.GetLatency() * 1000 ) - 45
+		
 		if( latency >= 500 )
 		{
 			player.SetPlayerNetInt( "latency", 500 )
-		} else if( latency < 0 )
+		} 
+		else if( latency < 0 )
 		{
 			player.SetPlayerNetInt( "latency", -1 )
-		} else
+		} 
+		else
 		{
 			player.SetPlayerNetInt( "latency", latency )
 		}
@@ -101,20 +115,17 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		return
 
 	bool entIsPlayer = ent.IsPlayer()
-	bool entIsTitan = ent.IsTitan()
 	bool entIsNPC = ent.IsNPC()
 
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
 
 	bool attackerIsPlayer = false
-	bool attackerIsTitan = false
 	bool attackerIsNPC = false
 
 	if ( IsValid( attacker ) )
 	{
 		attackerIsPlayer = attacker.IsPlayer()
-		attackerIsTitan = attacker.IsTitan()
 		attackerIsNPC = attacker.IsNPC()
 	}
 
@@ -123,11 +134,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	{
 		if ( IsValid( attacker ) )
 		{
-			if ( attackerIsTitan )
-			{
-				DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId.auto_titan_melee )
-			}
-			else if ( IsSpectre( attacker ) )
+			if ( IsSpectre( attacker ) )
 			{
 				DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId.spectre_melee )
 			}
@@ -153,7 +160,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			&& inflictor.HasKey( "damageSourceName" ) )
 		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
 
-	if( IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" && DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.burn )
+	if( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.burn && IsValid( inflictor ) && inflictor.GetClassName() == "trigger_hurt" )
 		attackerIsNPC = true //force lava to damage shields
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -192,9 +199,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, 0 )
 		return
 	}
-
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
-		HandleFootstepDamage( ent, damageInfo )
 
 	// HACK helps trap/grenade weapons do damage to the correct entities (player who deployed it as well as the team opposite his)
 	if ( IsValid( inflictor ) && "originalOwner" in inflictor.s )
@@ -235,7 +239,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 		if ( inflictor.e.onlyDamageEntitiesOnce == true || inflictor.e.onlyDamageEntitiesOncePerTick == true )
 		{
-			Assert( !inflictor.e.damagedEntities.contains(ent) )
+			#if DEVELOPER
+				mAssert( !inflictor.e.damagedEntities.contains(ent), "damagedEntities already contains ent " + string( ent ) )
+			#endif
 			inflictor.e.damagedEntities.append( ent )
 		}
 	}
@@ -254,19 +260,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		printt( "    after location based damage:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	//PROTO Defensive AI Chip. Ideally less invisible gameplay, but something that can combo with other chips.
-	if ( ent.IsTitan() && entIsNPC )
-	{
-		entity soul = ent.GetTitanSoul()
-		if ( IsValid( soul ) && SoulHasPassive( soul, ePassives.PAS_GUARDIAN_CHIP ) )
-		{
-			DamageInfo_SetDamage( damageInfo, DamageInfo_GetDamage( damageInfo ) * 0.8 )
-			#if VERBOSE_DAMAGE_PRINTOUTS
-				printt( "After guardian chip :", DamageInfo_GetDamage( damageInfo ) )
-			#endif
-		}
-	}
-
 	RunClassDamageCallbacks( ent, damageInfo )
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after class damage callbacks:", DamageInfo_GetDamage( damageInfo ) )
@@ -277,17 +270,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	// use AddDamageByCallback( "classname", function ) to registed functions
 	if ( IsValid( attacker ) )
 	{
-		if ( attackerIsTitan )
-		{
-			entity soul = attacker.GetTitanSoul()
-			if ( IsValid( soul ) )
-			{
-				float damageAmpScale = 1.0 + StatusEffect_GetSeverity( soul, eStatusEffect.titan_damage_amp )
-				if ( damageAmpScale != 1.0 )
-					DamageInfo_ScaleDamage( damageInfo, damageAmpScale )
-			}
-		}
-
 		string attackerClassName = attacker.GetClassName()
 		if ( attackerClassName in svGlobal.damageByCallbacks )
 		{
@@ -302,15 +284,17 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	float damageMultiplier = 1.0 + StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier )
 
-	if (DamageInfo_GetWeapon(damageInfo) != null) {
-		if (ent.GetShieldHealth() == 0) {
-			float unshielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_unshielded_scale)
-
-			damageMultiplier = unshielded
-		} else {
-			float shielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_shield_scale)
-
-			damageMultiplier = shielded
+	if ( DamageInfo_GetWeapon( damageInfo ) != null ) 
+	{
+		if ( ent.GetShieldHealth() == 0 ) 
+		{
+			//unshielded (float)
+			damageMultiplier = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_unshielded_scale)
+		} 
+		else 
+		{
+			//shielded (float)
+			damageMultiplier = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_shield_scale)
 		}
  	}
 
@@ -326,7 +310,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		printt( "    after AddEntityCallback_OnDamaged callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	// use AddDamageCallbackSourceID( "classname", function ) to registed functions
+	// use AddDamageCallbackSourceID( "classname", function ) to register functions
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( damageSourceId in shGlobal.damageSourceIdCallbacks )
 	{
@@ -351,25 +335,22 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS )
 		DamageInfo_AddDamageFlags( damageInfo, DAMAGEFLAG_NOPAIN )
 
+	#if TRACKER && SERVER && MP
+			__TrackerStatsHook_Damage( ent, damageInfo )
+	#endif
+
 	float savedDamage = DamageInfo_GetDamage( damageInfo )
 
-	TitanDamage titanDamage
 	if ( entIsPlayer )
 	{
-		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId, titanDamage )
-
-		if ( DamageInfo_GetDamage( damageInfo ) == 0 && entIsTitan )
-		{
-			EarnMeterDamageConversion( damageInfo, attacker, ent, 0, titanDamage )
-			return
-		}
+		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId )
 
 		if ( attackerIsPlayer )
-			PlayerDamageFeedback( ent, damageInfo, 0 )
-		savedDamage = DamageInfo_GetDamage( damageInfo )
+			PlayerDamageFeedback( ent, damageInfo )
+			
+		savedDamage = DamageInfo_GetDamage( damageInfo )//again..?
 
-		if ( !entIsTitan )
-			ent.SetCloakFlicker( 0.5, 0.65 )
+		ent.SetCloakFlicker( 0.5, 0.65 )
 	}
 
 	if( entIsNPC && attackerIsNPC )
@@ -405,10 +386,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		}
 	}
 
-	if ( entIsNPC && attackerIsPlayer || entIsPlayer && attackerIsNPC )
+	if (  ( entIsNPC && attackerIsPlayer ) || ( entIsPlayer && attackerIsNPC ) )
 	{
 		//AI bleedthrough fix By @CafeFPS (CafeFPS)
-		if(ent.GetShieldHealth() > 0)
+		if( ent.GetShieldHealth() > 0 )
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 
@@ -435,7 +416,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 				if( IsValid( attacker ) && IsValid( ent ) )
 				{
-					if( attacker != ent && attacker.IsPlayer() )
+					if( attacker != ent && attackerIsPlayer )
 						EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
 					if( entIsPlayer )
@@ -443,29 +424,30 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				}
 			}
 
-			if( attacker.IsPlayer() )
-				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
+			if( attackerIsPlayer )
+				PlayerDamageFeedback( ent, damageInfo )
 			
-			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			if( file.register_damage_to_ai && attackerIsPlayer )
 			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
 				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
 			}
 			
 			DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
-		} else
+		} 
+		else
 		{
 			if( attacker.IsPlayer() )
-				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
+				PlayerDamageFeedback( ent, damageInfo )
 
-			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+			if( file.register_damage_to_ai && attacker.IsPlayer() )
 			{
 				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
 				attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + DamageInfo_GetDamage( damageInfo ) )
 			}
 		}
 
-		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && !ent.IsPlayer() )
+		if( !ent.IsPlayer() && file.register_dummie_kill_as_actual_kill && !file.firingrange_aimtrainerbycolombia )
 		{
 			StoreDamageHistoryAndUpdate( ent, MAX_DAMAGE_HISTORY_TIME, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker, GetWeaponModsFromDamageInfo( damageInfo ) )
 		}
@@ -473,18 +455,16 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		float damageAmount = DamageInfo_GetDamage( damageInfo )
 		bool isKillShot = (damageAmount >= ent.GetHealth() + ent.GetShieldHealth() )
 	
-		if ( isKillShot && attacker.IsPlayer() && !ent.IsPlayer() )
+		if ( isKillShot && attacker.IsPlayer() && !entIsPlayer )
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 			EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 			
-			if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
+			if( file.register_dummie_kill_as_actual_kill && !file.firingrange_aimtrainerbycolombia )
 			{
 				if( is1v1EnabledAndAllowed() )
-				{
-					int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-					
-					if ( sourceId == eDamageSourceId.damagedef_suicide || sourceId == eDamageSourceId.damagedef_despawn )
+				{				
+					if ( damageSourceId == eDamageSourceId.damagedef_suicide || damageSourceId == eDamageSourceId.damagedef_despawn )
 						return
 				}
 				
@@ -492,20 +472,19 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 					AddPlayerScore( attacker, "Sur_DownedPilot", ent )
 				
 				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+				
+				#if TRACKER 
+					Tracker_EndFight( ent, attacker, damageInfo )
+				#endif 
 			}
 
-			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && Gamemode() == eGamemodes.SURVIVAL )
+			if( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL )
 				EvoCurrentShieldToNextTier( damageInfo, attacker )
 		}
 	}
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    After player damage mod:", DamageInfo_GetDamage( damageInfo ) )
-	#endif
-
-	#if VERBOSE_DAMAGE_PRINTOUTS
-	if ( titanDamage.shieldDamage > 0 )
-		printt( "    	Shield Damage:", titanDamage.shieldDamage )
 	#endif
 
 	// Added via AddEntityCallback_OnPostDamaged
@@ -525,21 +504,8 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
 	{
 		if ( attackerIsPlayer )
-		{
-			if ( entIsTitan )
-			{
-				PlayerDealtTitanDamage( attacker, ent, savedDamage, damageInfo )
-
-				entity entSoul = ent.GetTitanSoul()
-				if ( attacker.p.currentTargetPlayerOrSoul_Ent != entSoul )
-				{
-					attacker.p.currentTargetPlayerOrSoul_Ent = ent.GetTitanSoul()
-
-					TitanVO_TellPlayersThatAreAlsoFightingThisTarget( attacker, entSoul )
-				}
-				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
-			}
-			else if ( entIsPlayer )
+		{		
+			if ( entIsPlayer )
 			{
 				attacker.p.currentTargetPlayerOrSoul_Ent = ent
 				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
@@ -549,17 +515,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		}
 	}
 
-	EarnMeterDamageConversion( damageInfo, attacker, ent, savedDamage, titanDamage )
+	//EarnMeterDamageConversion( damageInfo, attacker, ent, savedDamage ) //function is commented
 
-	if ( entIsTitan )
-	{
-		TitanDamageFlinch( ent, damageInfo )
-
-		if ( TitanDamageRewardsTitanCoreTime() && entIsPlayer && attacker.GetTeam() != ent.GetTeam() )
-			AddCreditToTitanCoreBuilderForTitanDamageReceived( ent, savedDamage )
-	}
-
-	if ( entIsPlayer && !entIsTitan )
+	if ( entIsPlayer )
 		PilotDamageFlinch( ent, damageInfo )
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -569,21 +527,31 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	RunClassPostDamageCallbacks( ent, damageInfo )
 
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE && entIsPlayer)
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "	 health after postdamage: " + ent.GetHealth() )
+		PrintDamageFlags( DamageInfo_GetCustomDamageType( damageInfo ) )
+	#endif
+
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	
+	if ( damageType & DF_SHIELD_DAMAGE && entIsPlayer )
 	{
-		if(ent.GetShieldHealth() > 0)
-			DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
+		if( ent.GetShieldHealth() > 0 || !( damageType & DF_BYPASS_SHIELD ) )
+			DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.	
 	}
 	
+	#if VERBOSE_DAMAGE_PRINTOUTS
+		printt( "	 health after shield damage flag : " + ent.GetHealth() )
+	#endif
+	
 	#if SERVER && MP
-		//Stats_OnPlayerDidDamage( ent, damageInfo )
 		PIN_DamageDone( attacker, ent, DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
 	attacker.Signal( "DamagedPlayerOrNPC" )
 }
 
-void function EarnMeterDamageConversion( var damageInfo, entity attacker, entity ent, float savedDamage, TitanDamage titanDamage )
+void function EarnMeterDamageConversion( var damageInfo, entity attacker, entity ent, float savedDamage )
 {
 	// if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
 	// {
@@ -847,7 +815,7 @@ function UpdateDPS( ent, damageInfo )
 */
 
 
-void function PlayerTookDamage( entity player, var damageInfo, entity attacker, entity inflictor, int damageSourceId, TitanDamage titanDamage )
+void function PlayerTookDamage( entity player, var damageInfo, entity attacker, entity inflictor, int damageSourceId )
 {
 	int hitBox = DamageInfo_GetHitBox( damageInfo )
 
@@ -859,6 +827,39 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( critHit )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_CRITICAL )
 
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.fall )
+		DamageInfo_SetForceKill( damageInfo, true )
+
+	float shieldDamage = 0
+
+	var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
+
+	if( takenDamage != null)
+		shieldDamage = expect float( takenDamage )
+	
+	#if VERBOSE_DAMAGE_PRINTOUTS && DEVELOPER 
+		Warning("shield damage: " + string( shieldDamage ) )
+	#endif
+
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	bool isKillShot = (damageAmount >= player.GetHealth() + shieldDamage)
+	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	
+	if ( isKillShot )
+		damageType = (damageType | DF_KILLSHOT)
+
+	vector attackerOrigin = Vector( 0, 0, 0 )
+	if ( IsValid( attacker ) )
+	{
+		attackerOrigin = attacker.GetOrigin()
+		
+		//Fake evo shields
+		if( file.flowstate_evo_shields && Gamemode() == eGamemodes.SURVIVAL && isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
+		{
+			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
+		}
+	}
+	
 	array<string> weaponMods = GetWeaponModsFromDamageInfo( damageInfo )
 
 	local eModSourceID = null
@@ -869,66 +870,21 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 			eModSourceID = modSourceID
 	}
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.fall )
-		DamageInfo_SetForceKill( damageInfo, true )
-
-	bool isTitan = player.IsTitan()
-
-	float shieldDamage = 0
-	if ( isTitan )
-		Titan_PlayerTookDamage( player, damageInfo, attacker, critHit, titanDamage )
-	else
-	{
-		var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
-
-		if( takenDamage != null)
-			shieldDamage = expect float(takenDamage)
-	}
-
-	float damageAmount = DamageInfo_GetDamage( damageInfo )
-	bool isKillShot = (damageAmount >= player.GetHealth() + shieldDamage)
-	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
-	if ( isKillShot )
-		damageType = (damageType | DF_KILLSHOT)
-
-	// if ( isTitan && (DamageInfo_GetDamage( damageInfo ) == 0) )
-	// {
-	// 	if ( titanDamage.doomedNow ) // to make kill card come up for you even if you have auto-eject. In Titan_PlayerTookDamage we set damage to 0 if you have Auto-Eject and are doomed
-	// 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
-	// }
-
-	vector attackerOrigin = Vector( 0, 0, 0 )
-	if ( IsValid( attacker ) )
-	{
-		attackerOrigin = attacker.GetOrigin()
-		
-		//Fake evo shields
-		if( isKillShot && IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) && GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) && Gamemode() == eGamemodes.SURVIVAL )
-		{
-			thread EvoCurrentShieldToNextTier( damageInfo, attacker )
-		}
-	}
-
 	if ( IsAlive( player ) )
 	{
 		float storeTime = MAX_DAMAGE_HISTORY_TIME
-		entity storeEnt
-		if ( isTitan )
-		{
-			storeEnt = player.GetTitanSoul()
-		}
-		else
-		{
-			storeEnt = player
-			if ( IsSingleplayer() )
-				storeTime = 30.0
-		}
+		entity storeEnt = player
+			
+		if ( IsSingleplayer() )
+			storeTime = 30.0
 
 		StoreDamageHistoryAndUpdate( storeEnt, storeTime, DamageInfo_GetDamage( damageInfo ), attackerOrigin, damageType, damageSourceId, attacker, weaponMods )
 	}
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
-		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
+	{
+		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId )
+	}
 }
 
 void function EvoCurrentShieldToNextTier( var damageInfo, entity attacker )
@@ -1000,7 +956,7 @@ string function returnShieldNameForCurrentShieldName( LootData currentShield  )
 	return ""
 }
 
-function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker, eModSourceID, int damageType, int damageSourceId, TitanDamage titanDamage )
+function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker, eModSourceID, int damageType, int damageSourceId )
 {
 	if ( !player.hasConnected )
 		return

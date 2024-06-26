@@ -974,7 +974,10 @@ vector function FSIntro_GetVictorySquadFormationPosition( vector mainPosition, v
 
 	// file.charactersModels.append( finalOffsetSide )
 
-	printt( "building position for player in victory screen:", mainPosition, index, finalOffsetSide, finalOffsetBack )
+	#if DEVELOPER
+		printt( "building position for player in victory screen:", mainPosition, index, finalOffsetSide, finalOffsetBack )
+	#endif
+	
 	vector offset = < finalOffsetSide, finalOffsetBack, -8 >
 	return OffsetPointRelativeToVector( mainPosition, offset, AnglesToForward( angles ) )
 }

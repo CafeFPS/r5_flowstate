@@ -6,7 +6,9 @@ void function SV_CL_Shared_Init()
 	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
 #endif
 
-	PlayLists_Mapnames_Gamemodes_Init()	
+	PlayLists_Mapnames_Gamemodes_Init()
+	Initialize_SH_FlowstateSettings()
+	
 	GameModes_Init()
 	Settings_Init()
 	
@@ -57,6 +59,9 @@ void function SV_CL_Init()
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
 	CodeCallbacksShared_Init()
+		#if SERVER 
+			CodeCallbacksCommon_Init()
+		#endif 
 	Flags_Init()
 	RemoteFunctions_Init_Begin()
 	ShGamepad_LevelInit()
@@ -146,6 +151,7 @@ void function SV_CL_Init()
 	ShPersistentData_LevelInit_Finish()
 	
 	ShWeaponRack_Init()
+	MpWeaponSatchel_Init()
 
 	//ShGruntChatter_MP_Init()
 	//ShSpectreChatter_MP_Init()
@@ -198,6 +204,9 @@ void function SV_CL_Init()
 	//R5R Sword
 	MpWeaponTitanSword_Init()
 	MpWeaponPortalGun_Init()
+	
+	WeaponMastiff_Init()
+	WorldDrawImg_Init()
 
     // Zipline Utility
     #if SERVER
@@ -219,7 +228,7 @@ void function SV_CL_Init()
 	Dev_RemoteFunctions_Init()
 	#endif
 
-	if( GetCurrentPlaylistName() == "fs_movementrecorder" )
+	if( Playlist() == ePlaylists.fs_movementrecorder )
 	{
 		Sh_FS_MovementRecorder_Init()
 	}
@@ -357,9 +366,13 @@ void function Server_Init()
 	ObjectiveResourceSystem_ServerInit()
 	ChatUtility_Init()
 
+	LiveAPI_Init()
+
     // ReMap Live
     if ( IsDevGamemode() )
         ReMapLive_Init()
+		
+	Flowstate_SpawnSystem_Init()
 
 	#if DEVELOPER
 		SmokeTest_Init()

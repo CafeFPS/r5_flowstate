@@ -1,0 +1,291 @@
+resource/ui/menus/lobby.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenFrame
+        {
+            ControlName				Label
+            wide					%100
+            tall					%100
+            labelText				""
+            //visible				    1
+            //bgcolor_override        "255 255 0 100"
+            //paintbackground         1
+        }
+
+        ScreenBlur
+        {
+            ControlName				Label
+        }
+
+        MarginFrame
+        {
+            ControlName				Label
+			wide					%95
+			tall					%87.32
+			labelText				""
+            bgcolor_override        "0 0 0 0"
+            paintbackground         1
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+		TabsCommon
+		{
+			ControlName				CNestedPanel
+			classname				"TabsCommonClass"
+			zpos					1
+			wide					f0
+			tall					84
+			visible					1
+			controlSettingsFile		"resource/ui/menus/panels/tabs_lobby.res"
+
+			pin_to_sibling			ScreenFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			TabsCommon
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+		UserInfo
+		{
+			ControlName             RuiButton //RuiPanel can't get focus for tooltips
+			InheritProperties       UserInfo
+	        xpos                    "%-2.5"
+	        zpos                    4
+
+	        pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+			zpos					1
+			mouseEnabled			0
+			//ypos					r300
+			//wide                    %35 // override default width otherwise some panel buttons overlap and can't be clicked
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	    PlayPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					%95
+			tall					%87.32
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/play.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    CharactersPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					1824
+			tall					904
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/characters.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    ArmoryPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					1824
+			tall					904
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/armory.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    StorePanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					%100
+			tall					904
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/store.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    PassPanel
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					1824
+			tall					904
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/battlepass.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+	    PassPanelV2
+	    {
+		    ControlName				CNestedPanel
+		    classname				"TabPanelClass"
+		    xpos					0
+		    ypos					0
+			wide					1824
+			tall					904
+		    visible					0
+		    tabPosition             1
+		    controlSettingsFile		"resource/ui/menus/panels/battlepass_v2.res"
+
+			pin_to_sibling			TabsCommon
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+	    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        GameMenuButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            zpos                    5
+
+            pin_to_sibling			MarginFrame
+            pin_corner_to_sibling	BOTTOM_RIGHT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        SocialButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            xpos                    13
+            zpos                    5
+
+            pin_to_sibling			GameMenuButton
+            pin_corner_to_sibling	BOTTOM_RIGHT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        NewsButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            xpos                    13
+            zpos                    5
+
+            pin_to_sibling			SocialButton
+            pin_corner_to_sibling	BOTTOM_RIGHT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        PostGameButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            xpos                    13
+            zpos                    5
+
+            pin_to_sibling			NewsButton
+            pin_corner_to_sibling	BOTTOM_RIGHT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        DatacenterButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            xpos                    13
+            zpos                    5
+
+            pin_to_sibling			PostGameButton
+            pin_corner_to_sibling	BOTTOM_RIGHT
+            pin_to_sibling_corner	BOTTOM_LEFT
+        }
+
+        MatchmakingStatus
+        {
+            ControlName		        RuiPanel
+            InheritProperties		MatchmakingStatus
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	BOTTOM
+            pin_to_sibling_corner	BOTTOM
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		ButtonTooltip
+		{
+			ControlName				CNestedPanel
+			InheritProperties		ButtonTooltip
+		}
+	}
+}

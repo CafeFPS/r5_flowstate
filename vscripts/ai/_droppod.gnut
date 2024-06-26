@@ -656,7 +656,7 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 
 	sequence.blendTime 			= 0.0
 	sequence.attachment 		= "ref"
-	sequence.useAnimatedRefAttachment		= true
+	sequence.useAnimatedRefAttachment		= false
 	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
 	waitthread FirstPersonSequence( sequence, dropPod, ref )
 	dropPod.DisableRenderAlways()
@@ -777,18 +777,16 @@ entity function CreateMobileBeaconThreatIndicator(vector origin, vector angles)
 entity function CreateDropPod( vector ornull origin = null, vector ornull angles = null, string sourceWeaponClassName = "" )
 {
 	entity prop_dynamic = CreateEntity( "prop_dynamic" )
+	prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
 
 	if( sourceWeaponClassName == "mp_ability_care_package" )
 	{
-		prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
         SetTargetName(prop_dynamic, CARE_PACKAGE_LIFELINE_TARGETNAME)
 	}
-	else {
-		prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
-        SetTargetName(prop_dynamic, CARE_PACKAGE_TARGETNAME)
+	else
+	{
+		SetTargetName(prop_dynamic, CARE_PACKAGE_TARGETNAME)
 	}
-
-	//prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
 
 	prop_dynamic.kv.contents = int( prop_dynamic.kv.contents ) & ~CONTENTS_TITANCLIP
 	prop_dynamic.kv.fadedist = -1
@@ -796,12 +794,14 @@ entity function CreateDropPod( vector ornull origin = null, vector ornull angles
 	prop_dynamic.kv.rendermode = 0
 	prop_dynamic.kv.rendercolor = "255 255 255"
 	prop_dynamic.kv.solid = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+
 	if ( origin )
 	{
 		prop_dynamic.SetOrigin( expect vector( origin ) )
 		if ( angles )
 			prop_dynamic.SetAngles( expect vector( angles ) )
 	}
+
 	DispatchSpawn( prop_dynamic )
 
 	return prop_dynamic
@@ -825,6 +825,7 @@ entity function CreateMobileBeaconForVisualDrop( vector ornull origin = null, ve
 		if ( angles )
 			prop_dynamic.SetAngles( expect vector( angles ) )
 	}
+
 	DispatchSpawn( prop_dynamic )
 
 	return prop_dynamic

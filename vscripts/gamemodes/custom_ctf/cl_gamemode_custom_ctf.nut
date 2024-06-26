@@ -184,7 +184,9 @@ void function CTF_FlagEntChangedMil( entity player, entity oldFlag, entity newFl
 
 void function CTF_FlagEntChanged( int team, entity newFlag )
 {
-	printt( "CTF_FlagEntChanged", newFlag, team )
+	#if DEVELOPER
+		printt( "CTF_FlagEntChanged", newFlag, team )
+	#endif
 
 	if ( !IsValid( newFlag ) || newFlag.IsPlayer() && newFlag == GetLocalClientPlayer() )
 	{
@@ -267,6 +269,9 @@ void function FSCTF_GameStateChanged( entity player, int old, int new, bool actu
 void function Flowstate_CTFStartTimeChanged( entity player, float old, float new, bool actuallyChanged )
 {
 	if ( !actuallyChanged  )
+		return
+
+	if( Flowstate_IsHaloMode() )
 		return
 
 	Obituary_Print_Localized( "%$rui/bullet_point% Made by zee_x64. Reworked by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
@@ -493,8 +498,9 @@ var function AddCaptureIcon( entity prop, asset icon, bool pinToEdge = true, ass
 void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 {
 	#if DEVELOPER
-	printt( "debug, ServerCallback_CTF_PickedUpFlag:", player, pickedup )
+		printt( "debug, ServerCallback_CTF_PickedUpFlag:", player, pickedup )
 	#endif
+	
 	asset icon = $"rui/gamemodes/capture_the_flag/arrow"
 	vector emptymdlloc
 	vector color
@@ -597,7 +603,7 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
 
 void function DeleteScoreRUI(bool newround)
 {
-	printt( "Delete score Rui" )
+	printt( "Delete score Rui" ) //...?
 }
 
 void function ShowScoreRUI(bool show)
@@ -1517,7 +1523,10 @@ void function FSIntro_StartIntroScreen()
 		//Move camera to end pos
 		cameraMover.NonPhysicsMoveTo( camera_end_pos, 1, 0.5, 0.5 )
 		cameraMover.NonPhysicsRotateTo( camera_end_angles, 1, 0.5, 0.5 )
-		printt( "Moving camera" )
+		
+		#if DEVELOPER
+			printt( "Moving camera" )
+		#endif
 		wait 1
 
 		if( i == charactersModels.len() )
@@ -1550,7 +1559,9 @@ void function FSIntro_StartIntroScreen()
 
 	wait 2.9
 
-	printt(  "intro lasted: ", ( Time() - stime ).tostring() )
+	#if DEVELOPER
+		printt(  "intro lasted: ", ( Time() - stime ).tostring() )
+	#endif
 }
 
 void function FSIntro_ForceEnd()
@@ -1576,8 +1587,9 @@ void function FSIntro_ForceEnd()
 		wait 0.75
 		FSIntro_Destroy()	
 		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.5, 0, FFADE_IN | FFADE_PURGE )
-		printt(  "intro end lasted: ", ( Time() - stime ).tostring() )
-
+		#if DEVELOPER
+			printt(  "intro end lasted: ", ( Time() - stime ).tostring() )
+		#endif
 
 		if( FlagRUI.IMCpointicon != null )
 		{
@@ -1589,7 +1601,7 @@ void function FSIntro_ForceEnd()
 		}
 
 		Obituary_Print_Localized( "%$rui/flowstate_custom/colombia_flag_papa% Made in Colombia with love by @CafeFPS.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-		Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		// Obituary_Print_Localized( "%$rui/flowstatecustom/hiswattson_ltms% Devised by HisWattson.", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		Obituary_Print_Localized( "Welcome to FS Halo Mod CTF v0.9 Beta - Powered by R5Reloaded", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 	}()
 }
@@ -1882,7 +1894,10 @@ var function FS_InWorldText( string text, vector origin, vector angles )
 	origin.z += 165
 	origin -= AnglesToRight( angles ) * 30
 	
-	printt( origin )
+	#if DEVELOPER
+		printt( origin )
+	#endif 
+	
 	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
 	
 	var rui = RuiCreate( $"ui/announcement_quick_right.rpak", topo, RUI_DRAW_WORLD, 32767 )
@@ -1895,7 +1910,10 @@ var function FS_InWorldText( string text, vector origin, vector angles )
 
 void function HoverTeamButton( int model, bool forceFx = false )
 {
-	printt("hover team button client call ", model, forceFx )
+	#if DEVELOPER
+		printt("hover team button client call ", model, forceFx )
+	#endif 
+	
 	if( model == 0 && IsValid( file.VoteTeam_condorPlayerModel ) )
 	{
 		vector color = <128, 52, 235>
@@ -1907,7 +1925,11 @@ void function HoverTeamButton( int model, bool forceFx = false )
 
 		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
 			return
-		printt( "starting new effect for condor menu model", file.VoteTeam_selectedTeam, model )
+			
+		#if DEVELOPER
+			printt( "starting new effect for condor menu model", file.VoteTeam_selectedTeam, model )
+		#endif
+		
 		thread Custom_HighlightTest( file.VoteTeam_condorPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime )
 	} else if( model == 1 && IsValid( file.VoteTeam_orchidPlayerModel ) )
 	{
@@ -1920,7 +1942,11 @@ void function HoverTeamButton( int model, bool forceFx = false )
 		
 		if( file.VoteTeam_selectedTeam != -1 && !forceFx )
 			return
-		printt( "starting new effect for orchid menu model", file.VoteTeam_selectedTeam, model )
+		
+		#if DEVELOPER
+			printt( "starting new effect for orchid menu model", file.VoteTeam_selectedTeam, model )
+		#endif
+		
 		thread Custom_HighlightTest( file.VoteTeam_orchidPlayerModel, color, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime )
 	}
 }
@@ -1957,7 +1983,11 @@ void function Custom_HighlightTest( entity model, vector color, float fillIntens
 			}()
 		}
 	)
-	printt("started highlight thread for model: ", model)
+	
+	#if DEVELOPER
+		printt("started highlight thread for model: ", model)
+	#endif
+		
 	while( IsValid( model ) )
 	{
 		model.Highlight_ResetFlags()
@@ -2014,7 +2044,10 @@ void function VoteTeam_ClientAskedForTeam( int index )
 		file.VoteTeam_selectedTeam = -1
 		break
 	}
-	printt("changed selected team for menu model: " , index, file.VoteTeam_selectedTeam)
+	
+	#if DEVELOPER
+		printt("changed selected team for menu model: " , index, file.VoteTeam_selectedTeam)
+	#endif
 }
 
 void function ServerCallback_AddClientThatVotedToTeam( int eHandle, int team )

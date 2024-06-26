@@ -8,6 +8,9 @@ global function Obituary_SetIndexOffset
 global function Obituary_SetHorizontalOffset
 global function ShouldShowObituaryLineForPlayer
 
+global function Thread_StartFakeObituaries
+global function Flowstate_ForceRemoveAllObituaries
+
 const NUM_OBITUARY_LINES    = 4
 const obituaryTextBoxWidth  = 500
 const obituaryTextBoxHeight = 20
@@ -372,6 +375,17 @@ void function UpdateObituaryQueue()
 	}
 }
 
+void function Flowstate_ForceRemoveAllObituaries()
+{
+	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
+	{
+		ObituaryData obitData = file.obituaryQueue[index]
+
+		RuiDestroyIfAlive( obitData.rui )
+		file.obituaryQueue.remove( index )
+	}
+}
+
 void function Obituary_SetEnabled( bool state )
 {
 	file.obituariesEnabled = state
@@ -389,4 +403,217 @@ void function Obituary_SetHorizontalOffset( int offset )
 	file.horizontalOffset = offset
 
 	UpdateObituaryQueue()
+}
+
+array <string> fakeNames = [
+"PixelPwnz",
+"lOrdMcSnugglepants",
+"NinjaNacho",
+"BubblegumBrawler",
+"SirSassALot",
+"GlitterGunslinger",
+"CaptainCouchPotato",
+"DonutDestroyer",
+"FluffyFury",
+"MasterMemeLord",
+"SparklesMcSnark",
+"ProfessorPwnage",
+"ZombeeZapper",
+"LOLlord",
+"DarkKnightRises",
+"Stormbringer99",
+"ArchonXandros",
+"NovaSparks",
+"ValkyrieVixen",
+"ShadowAssassinX",
+"CelestialCrusader",
+"ThunderboltTitan",
+"FrostbiteFury",
+"InfernoInquisitor",
+"StarlightSentinel",
+"QuantumQuestor",
+"AetheriusAce",
+"EmberEclipse",
+"CosmicCrusader",
+"ByteBandit",
+"PixelPioneer",
+"GameGenie2000",
+"CtrlAltWin",
+"FPS_Fanatic",
+"LagLord99",
+"JoystickJedi",
+"ScreenSavvy",
+"ByteBrawler",
+"PixelPwnzor",
+"TechTitan99",
+"GameGuru2000",
+"CPU_Crusher",
+"RAM_Rampage",
+"GPU_Gladiator",
+"PizzaPwnz",
+"DonutDestroyer",
+"SushiSensei",
+"TacoTerror",
+"CoffeeCrusader",
+"BurgerBaron",
+"FriesFanatic",
+"SodaSlayer",
+"MuffinMaster",
+"IceCreamInquisitor",
+"CandyCaneCrusher",
+"PizzaPartyPete",
+"BagelBrawler",
+"CerealKiller",
+"FruitFury",
+"WolfWarrior99",
+"LionLord2000",
+"TigerTamer99",
+"BearBrawler",
+"EagleEye99",
+"SharkAttack99",
+"DolphinDynamo",
+"ButterflyBrawler",
+"HoneyBadgerHero",
+"KoalaKrusader",
+"PandaPwnz",
+"RaccoonRampage",
+"SnakeSlayer99",
+"TurtleTitan",
+"FalconFury",
+"GuitarGuru99",
+"DJ_Dynamo",
+"RhapsodyRampage",
+"MelodyMaven",
+"HarmonyHero",
+"AriaAce",
+"SymphonySlayer",
+"RiffRampage",
+"BeatBrawler",
+"ChordCrusader",
+"LyricLord",
+"OperaObliterator",
+"JazzJester",
+"FunkFury",
+"ClassicalCrusader",
+"SpartanSlayer",
+"VikingVandal",
+"KnightKrusader",
+"SamuraiSentinel",
+"GladiatorGoliath",
+"PharaohPwnz",
+"ZeusZapper",
+"ThorThunderbolt",
+"OdinObliterator",
+"HerculesHero",
+"ApolloAce",
+"AthenaAssassin",
+"PoseidonPwnz",
+"HadesHavoc",
+"PerseusPwnz",
+"AstroAce",
+"QuantumQuest",
+"NovaNemesis",
+"CosmicCrusader",
+"StellarSlayer",
+"GalacticGoliath",
+"NebulaNemesis",
+"BlackHoleBrawler",
+"GravityGuru",
+"EinsteinEagle",
+"HawkingHero",
+"NewtonNemesis",
+"MarsMarauder",
+"JupiterJuggernaut",
+"SaturnSlayer",
+"SherlockSlayer",
+"BatmanBrawler",
+"SpidermanSentinel",
+"HarryPotterHero",
+"CaptainAmericaCrusader",
+"IronManInquisitor",
+"ThorThunderbolt",
+"DoctorWhoDynamo",
+"SherlockHolmesHero",
+"JamesBondJuggernaut",
+"LukeSkywalkerLegend",
+"HanSoloHero",
+"DarthVaderVandal",
+"YodaYanker",
+"ChewbaccaCrusader",
+"PineapplePwnz",
+"SpaceInvader99",
+"DiscoDynamo",
+"RobotRampage",
+"NinjaNacho",
+"BubblegumBrawler",
+"GlitterGunslinger",
+"SirSassALot",
+"LOLlord",
+"MasterMemeLord",
+"SparklesMcSnark",
+"ProfessorPwnage",
+"ZombeeZapper",
+"FluffyFury",
+"CaptainCouchPotato"
+]
+
+void function Thread_StartFakeObituaries()
+{
+	EndSignal( GetLocalClientPlayer(), "OnDestroy" )
+	
+	while( true )
+	{
+		thread BuildFakeObituary()
+		wait RandomIntRangeInclusive( 1, 10 )
+	}
+}
+
+void function BuildFakeObituary()
+{
+	if( fakeNames.len() < 2 )
+		return
+
+	string attacker = fakeNames.getrandom()
+	fakeNames.removebyvalue( attacker )
+	
+	string victim = fakeNames.getrandom()
+	fakeNames.removebyvalue( victim )
+	fakeNames.append( attacker )
+
+	ObitEntityInfo attackerInfo
+	attackerInfo.displayName = attacker
+
+	ObitEntityInfo victimInfo
+	victimInfo.displayName = victim
+
+	int damageSourceId = RandomIntRangeInclusive( 40, 65 ) //s3 default apex weapons
+
+	bool isMainWeapon = false
+	string damageRef = GetRefFromDamageSourceID( damageSourceId )
+	if ( SURVIVAL_Loot_IsRefValid( damageRef ) )
+	{
+		LootData lootData = SURVIVAL_Loot_GetLootDataByRef( damageRef )
+		isMainWeapon = lootData.lootType == eLootType.MAINWEAPON
+	}
+
+	string sourceDisplayName = GetObitFromDamageSourceID( damageSourceId )
+	asset weaponIcon = GetObitImageFromDamageSourceID( damageSourceId )
+
+	string attackerString = Localize( "#OBIT_PLAYER_STRING", attackerInfo.displayName )
+	string victimString = Localize( "#OBIT_PLAYER_STRING", victimInfo.displayName )
+	string localizedObit = Localize( "#OBIT_ENT_WEAPON_ENT", attackerString, Localize( sourceDisplayName ), victimString )
+
+	asset modifierIcon = $""
+
+	if ( CoinFlip() )
+		modifierIcon = $"rui/hud/obituary/obituary_downed"
+	else if( !isMainWeapon )
+		modifierIcon = $"rui/hud/obituary/obituary_headshot"
+	else
+		modifierIcon = $"rui/hud/obituary/obituary_downed"
+
+	if ( weaponIcon == $"" )
+		Obituary_Print_Localized( localizedObit, attackerInfo.displayColor, victimInfo.displayColor, <255,255,255>, <0, 0, 0>, 0 )
+	else
+		Obituary_Print_PlayerDeath( attackerString, weaponIcon, modifierIcon, victimString, attackerInfo.displayColor, victimInfo.displayColor, <255, 255, 255>, isMainWeapon )
 }

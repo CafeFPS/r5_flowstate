@@ -52,6 +52,9 @@ global function PlayerFieryDeath
 
 global function FS_Toggle_Mute
 global function FS_Silence
+global function FS_RegisterAdmin
+
+global function PlayerSetting_DamageClosesMenu
 
 #if DEVELOPER
 global function BloodSprayDecals_Toggle
@@ -65,6 +68,8 @@ struct {
 	entity crosshairTarget
 
 	float lastBloodDecalTime = 0
+	bool log_damage_to_obituary
+	int player_setting_damage_closes_deathbox_menu = -1
 
 } file
 
@@ -101,6 +106,8 @@ void function ClPlayer_Init()
 	RegisterSignal( "HealthChanged" )
 	RegisterSignal( "ShieldChanged" )
 	RegisterSignal( "TargetChanged" )
+	RegisterSignal( "OnDisconnected" )
+	//RegisterSignal( "PlayerADSPressed" )
 
 	FlagInit( "DamageDistancePrint" )
 	FlagInit( "EnableTitanModeChange", true )
@@ -125,8 +132,35 @@ void function ClPlayer_Init()
 	level.spawnAsTitanSelected <- false
 
 	AddLocalPlayerFunc( Player_AddPlayer )
+	
+	file.log_damage_to_obituary = GetCurrentPlaylistVarBool( "log_damage_to_obituary", false )
+
+	//RegisterConCommandTriggeredCallback( "+zoom", CPlayerADSPressed )
+
+	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
+	
+	OnSettingsUpdated()
 }
 
+// void function CPlayerADSPressed( entity player )
+// {
+	// player.Signal( "PlayerADSPressed" )
+// }
+
+void function OnSettingsUpdated()
+{
+	int iCheckPlayerDamageCloseSetting = GetConVarInt( "player_setting_damage_closes_deathbox_menu" )
+	
+	if( iCheckPlayerDamageCloseSetting != file.player_setting_damage_closes_deathbox_menu  )
+	{
+		file.player_setting_damage_closes_deathbox_menu = iCheckPlayerDamageCloseSetting
+	}
+}
+
+bool function PlayerSetting_DamageClosesMenu()
+{
+	return file.player_setting_damage_closes_deathbox_menu != 0 ? true : false
+}
 
 entity function FindEnemyRodeoParent( entity player )
 {
@@ -426,6 +460,8 @@ void function ClientCodeCallback_PlayerDisconnected( entity player, string cache
 	{
 		callbackFunc( player )
 	}
+	
+	player.Signal( "OnDisconnected" )
 }
 
 
@@ -637,8 +673,8 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 	if ( isKillShot || isKnockdownShot )
 		KillShotBloodSpray( attacker, victim, damagePosition, isExplosion, isBullet, isShotgun )
 
-	if ( victim.IsTitan() && isKillShot )
-		ClientScreenShake( 8, 10, 1, <0, 0, 0> )
+	//if ( victim.IsTitan() && isKillShot )
+	//	ClientScreenShake( 8, 10, 1, <0, 0, 0> )
 
 	BloodSprayDecals( attacker, victim, damagePosition, damageAmount, isHeadShot, isKillShot, isMelee, isExplosion, isBullet, isShotgun )
 
@@ -665,7 +701,7 @@ void function ClientCodeCallback_PlayerDidDamage( PlayerDidDamageParams params )
 
 		DamageFlyout( damageAmount, damagePosition, victim, hitType, damageFlags, damageType, weapon )
 
-		if ( GetCurrentPlaylistVarBool( "log_damage_to_obituary", false ) )
+		if ( file.log_damage_to_obituary )
 		{
 			if ( victim.IsPlayer() && (victim != attacker) )
 			{
@@ -771,7 +807,6 @@ void function KillShotBloodSpray( entity player, entity victim, vector damagePos
 	damagePosition += (Length( victimVelocity ) * 0.15) * Normalize( victimVelocity )
 	StartParticleEffectOnEntityWithPos( victim, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, damagePosition - victim.GetOrigin(), <0, 0, 0> )
 }
-
 
 void function BloodSprayDecals( entity player, entity victim, vector damagePosition, float damageAmount, bool isHeadShot, bool isKillShot, bool isMelee, bool isExplosion, bool isBullet, bool isShotgun )
 {
@@ -1255,6 +1290,12 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 
 	if ( !IsValid( ent ) )
 		return
+		
+	if( newHealth < oldHealth )
+	{
+		local amount = oldHealth - newHealth
+		ent.Signal( "OnDamaged", { damageAmount = amount } )
+	}
 
 	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
 	Chroma_HealthChanged()
@@ -1320,7 +1361,10 @@ void function JumpRandomlyForever()
 			continue
 		}
 
-		printt( "jump!" )
+		#if DEVELOPER 
+			printt( "jump!" )
+		#endif 
+		
 		player.ClientCommand( "+jump" )
 		wait 0
 		player.ClientCommand( "-jump" )
@@ -1625,6 +1669,9 @@ void function PlayShieldActivateEffect( entity ent )
 
 	int attachID = ent.LookupAttachment( "ref" )
 	
+	if( attachID == 0 )
+		return
+	
 	if ( Gamemode() == eGamemodes.fs_prophunt )
 	{
 		int shieldFXHandle = StartParticleEffectInWorldWithHandle( shieldBreakFX, ent.GetOrigin(), ent.GetAngles() )
@@ -1632,6 +1679,7 @@ void function PlayShieldActivateEffect( entity ent )
 		
 		return
 	}
+	
 	int shieldFXHandle = StartParticleEffectOnEntity( shieldEnt, shieldBreakFX, FX_PATTACH_POINT_FOLLOW, attachID )
 	EffectSetControlPointVector( shieldFXHandle, 1, shieldColor )
 }
@@ -1944,9 +1992,13 @@ void function SetHideCrosshairHitIndicatorOverride( bool value )
 	file.hideCrosshairHitIndicatorOverride = value
 }
 
-void function FS_Toggle_Mute( int chal, bool toggle )
+void function FS_Toggle_Mute( int chal, bool toggle ) //TODO: remove challenge sequence (redundant)
 {
 	entity player = GetLocalClientPlayer()
+	
+	if( !IsValid( player ) ) //ui calls this
+		return
+		
 	string uid = player.GetPlatformUID()
 	string cmd = "FS_TT " + chal.tostring()
 	
@@ -1972,7 +2024,8 @@ void function FS_Toggle_Mute( int chal, bool toggle )
 		UpdateChatHUDVisibility()
 	}	
 	
-	player.ClientCommand(cmd)
+	if( chal != 0 )
+		player.ClientCommand(cmd)
 }
 
 void function FS_Silence( bool toggle, int eHandle )
@@ -1996,5 +2049,14 @@ void function FS_Silence( bool toggle, int eHandle )
 			TogglePlayerTextMutedForUID( uid )
 		}
 	}	
+}
 
+void function FS_RegisterAdmin()
+{	
+	entity player = GetLocalClientPlayer() 
+	
+	if( !IsValid( player ) || !player.IsPlayer() )
+		return 
+		
+	RunUIScript( "UICallback_AdminStatus", player.GetPlayerNetBool("IsAdmin") )	
 }

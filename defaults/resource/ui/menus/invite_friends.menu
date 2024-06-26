@@ -1,0 +1,44 @@
+resource/ui/menus/invite_friends.menu
+{
+	menu
+	{
+		ControlName				Frame
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        FriendList
+        {
+            ControlName				GridButtonListPanel
+            xpos                    132
+            ypos                    180
+            columns                 2
+            rows                    15
+            buttonSpacing           6
+            scrollbarSpacing        6
+            visible					1
+            ButtonSettings
+            {
+                rui						"ui/friend_button.rpak"
+                clipRui                 1
+                wide					300
+                tall					40
+                cursorVelocityModifier  0.7
+            }
+        }
+	}
+}

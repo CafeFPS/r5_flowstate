@@ -1,0 +1,155 @@
+resource/ui/menus/pass_purchase.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+
+        ScreenBlur
+        {
+            ControlName				RuiPanel
+            wide					%100
+            tall					%100
+            rui                     "ui/screen_blur.rpak"
+            visible					1
+            zpos 					-1
+        }
+
+        ScreenFrame
+        {
+            ControlName				Label
+            xpos					0
+            ypos					0
+            wide					%100
+            tall					%100
+            labelText				""
+            visible				    1
+            bgcolor_override        "0 0 0 160"
+            paintbackground         1
+        }
+
+        Vignette
+        {
+            ControlName             ImagePanel
+            InheritProperties       MenuVignette
+        }
+
+        SeasonLogo
+        {
+            ControlName				RuiPanel
+            xpos                    -100
+            ypos                    -40
+            wide                    686
+            tall                    986
+            visible                 1
+            rui                     "ui/battle_pass_large_logo.rpak"
+            proportionalToParent	1
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP
+        }
+
+        Logo
+        {
+            ControlName				RuiPanel
+			InheritProperties       Logo
+
+            pin_to_sibling			ScreenFrame
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        PassPurchaseButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            xpos                    40
+            ypos                    -200
+            zpos                    3
+            wide					720
+            tall					360
+            rui                     "ui/battle_pass_bundle_button.rpak"
+            labelText               ""
+            visible					1
+            cursorVelocityModifier  0.7
+
+            sound_focus             "UI_Menu_Focus_Large"
+            cursorVelocityModifier  0.7
+            proportionalToParent	1
+
+            pin_to_sibling          ScreenFrame
+            pin_corner_to_sibling   TOP_LEFT
+            pin_to_sibling_corner   TOP
+
+			tabPosition 1
+            navDown BundlePurchaseButton
+        }
+
+        BundlePurchaseButton
+        {
+            ControlName				RuiButton
+            classname               "MenuButton"
+            ypos					50
+            zpos                    3
+            wide					720
+            tall					360
+            rui                     "ui/battle_pass_bundle_button.rpak"
+            labelText               ""
+            visible					1
+            cursorVelocityModifier  0.7
+
+            sound_focus             "UI_Menu_Focus_Large"
+            cursorVelocityModifier  0.7
+            proportionalToParent	1
+
+            pin_to_sibling			PassPurchaseButton
+            pin_corner_to_sibling	TOP
+            pin_to_sibling_corner	BOTTOM
+
+			tabPosition 1
+            navUp PassPurchaseButton
+        }
+
+        OffersBorders
+        {
+            ControlName				RuiPanel
+            xpos                    0
+            ypos                    80
+            wide                    800
+            tall                    1000
+            visible                 1
+            rui                     "ui/battle_pass_bundles_border.rpak"
+
+            pin_to_sibling			BundlePurchaseButton
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	TOP
+        }
+
+
+        ToolTip
+        {
+            ControlName				RuiPanel
+            InheritProperties       ToolTip
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       FooterButtons
+		}
+	}
+}

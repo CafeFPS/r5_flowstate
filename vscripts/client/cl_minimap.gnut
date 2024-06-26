@@ -276,6 +276,8 @@ void function ClMinimap_Init()
 
 	AddCreateCallback( "player", OnPlayerCreate )
 	AddTargetNameCreateCallback( "deathField", MinimapDeathFieldCreated )
+	AddTargetNameCreateCallback( "scenariosDeathField", MinimapDeathFieldCreated )
+
 	AddCallback_OnPlayerChangedTeam( Minimap_OnPlayerTeamChanged )
 	RegisterSignal( "TeamChanged" )
 
@@ -392,6 +394,9 @@ void function ClientCodeCallback_MinimapEntitySpawned( entity ent )
 
 void function MinimapDeathFieldCreated( entity ent )
 {
+	if( ent.GetTargetName() == "scenariosDeathField" && !GetLocalClientPlayer().DoesShareRealms( ent ) )
+		return
+
 	var rui = file.minimap_base
 	RuiTrackFloat3( rui, "deathFieldOrigin", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
 	RuiSetFloat( rui, "radiusScale", SURVIVAL_MINIMAP_RING_SCALE )
@@ -1828,9 +1833,9 @@ void function UpdateMapFeatures()
 {
 	if ( Flowstate_IsHaloMode() && file.fullmap_legendRui != null )
 	{
-		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Halo Mod" )
-		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Master Chief is Cool, HisWattson too. \n\nMade in Colombia with love by @CafeFPS and Darkes65." )
-		RuiSetImage( file.fullmap_legendRui, "itemIcon1", $"rui/flowstatecustom/hiswattson_ltms" )
+		RuiSetString( file.fullmap_legendRui, "itemTitle1", "Flowstate Halo Mod" )
+		RuiSetString( file.fullmap_legendRui, "itemDesc1", "Made in Colombia with love by @CafeFPS and Darkes65." )
+		RuiSetImage( file.fullmap_legendRui, "itemIcon1", $"" )
 		return
 	}
 	

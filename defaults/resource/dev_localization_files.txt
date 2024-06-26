@@ -1,0 +1,18 @@
+// do not ship list of localization files
+dev
+
+localization/character/blackout
+localization/character/crypto
+localization/character/downfall
+localization/character/husaria
+localization/character/immortal
+localization/character/jericho
+localization/character/nomad
+localization/character/prophet
+localization/character/rampart
+localization/character/reckoner
+localization/character/rosie
+localization/character/skunner
+localization/character/valk
+localization/character/blisk
+localization/character/conduit

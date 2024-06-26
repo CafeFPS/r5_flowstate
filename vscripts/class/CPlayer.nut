@@ -7,6 +7,9 @@ global function IsDemigod
 global function EnableDemigod
 global function DisableDemigod
 global function ToggleMute
+global function CommandsEnabled
+global function IsCommandsEnabled 
+global function p
 
 int __nextInputHandle = 0
 
@@ -41,13 +44,16 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.watchingKillreplayEndTime <- 0.0
 	CPlayer.cloakedForever <- false
 	CPlayer.stimmedForever <- false
+	CPlayer.ClientCommandsEnabled <- true
+	CPlayer.ScriptClassRegistered <- true
 
 	RegisterSignal( "CleanUpPlayerAbilities" )
 	RegisterSignal( "ChallengeReceived" )
 	RegisterSignal( "InputChanged" )
 	RegisterSignal( "OnRespawnPlayer" )
 	RegisterSignal( "NewViewAnimEntity" )
-	RegisterSignal( "PlayerDisconnected" )
+	RegisterSignal( "OnDisconnected" )
+	RegisterSignal( "OnConnected" )
 
 	function CPlayer::constructor()
 	{
@@ -160,7 +166,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	function CPlayer::Disconnected()
 	{
 		this.Signal( "_disconnectedInternal" )
-		svGlobal.levelEnt.Signal( "PlayerDisconnected" )
+		svGlobal.levelEnt.Signal( "OnDisconnected" )
 
 		if ( HasSoul( expect entity( this ) ) )
 		{
@@ -347,15 +353,18 @@ function CodeCallback_RegisterClass_CPlayer()
 		player.p.bTextmute = expect bool ( toggle )
 		player.p.relayChallengeCode = RandomIntRange( 10000000, 99999999 )
 		player.p.bRelayChallengeState = false
+		player.p.ratelimit = 0
 		
 		Remote_CallFunction_NonReplay( player, "FS_Toggle_Mute", player.p.relayChallengeCode, toggle )
 		
-		printt( "Sent challenge as", player.p.relayChallengeCode )
+		#if DEVELOPER
+			printt( "Sent challenge as", player.p.relayChallengeCode )
+		#endif
 		
 		thread( void function() : ( player )
 		{
-			EndSignal( player, "OnDestroy" )
-			WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
+			EndSignal( player, "OnDestroy", "OnDisconnected" )
+			waitthread WaitSignalOrTimeout( player, 3, "ChallengeReceived" )
 			
 			if( !IsValid( player ) ){ return }
 			
@@ -366,6 +375,92 @@ function CodeCallback_RegisterClass_CPlayer()
 			}
 		}())
 	}
+	
+	function CPlayer::CommandsEnabled( toggle )
+	{
+		this.ClientCommandsEnabled = expect bool ( toggle )
+	}
+	
+	function CPlayer::IsCommandsEnabled()
+	{
+		return this.ClientCommandsEnabled
+	}
+	
+	//////////////////////////
+	//			GET			//
+	//////////////////////////
+	
+	//TODO: Replace with code entity function ~mkos
+	
+	#document( "CPlayer::GetPlayerStatString", "Fetch player stat string from player's stat table max.len(30)" )
+	function CPlayer::GetPlayerStatString( statname )
+	{
+		return GetPlayerStatString( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	#document( "CPlayer::GetPlayerStatBool", "Fetch player stat bool from player's stat table." )
+	function CPlayer::GetPlayerStatBool( statname )
+	{
+		return GetPlayerStatBool( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	#document( "CPlayer::GetPlayerStatFloat", "Fetch player stat float from player's stat table." )
+	function CPlayer::GetPlayerStatFloat( statname )
+	{
+		return GetPlayerStatFloat( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	#document( "CPlayer::GetPlayerStatInt", "Fetch player stat int from player's stat table." )
+	function CPlayer::GetPlayerStatInt( statname )
+	{
+		return GetPlayerStatInt( expect entity(this).p.UID, expect string( statname ) )
+	}
+	
+	
+	//////////////////////////
+	//			SET			//
+	//////////////////////////
+	
+	//TODO: Replace with code entity function ~mkos
+	
+	#document( "CPlayer::SetPlayerStatString", "Set player stat string from player's stat table max.len(30)" )
+	function CPlayer::SetPlayerStatString( statname, value )
+	{
+		SetPlayerStatString( expect entity(this).p.UID, expect string( statname ), expect string( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatBool", "Set player stat bool from player's stat table." )
+	function CPlayer::SetPlayerStatBool( statname, value )
+	{
+		SetPlayerStatBool( expect entity(this).p.UID, expect string( statname ), expect bool( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatFloat", "Set player stat float from player's stat table." )
+	function CPlayer::SetPlayerStatFloat( statname, value )
+	{
+		SetPlayerStatFloat( expect entity(this).p.UID, expect string( statname ), expect float( value ) )
+	}
+	
+	#document( "CPlayer::SetPlayerStatInt", "Set player stat int from player's stat table." )
+	function CPlayer::SetPlayerStatInt( statname, value )
+	{
+		SetPlayerStatInt( expect entity(this).p.UID, expect string( statname ), expect int( value ) )
+	}
+}
+
+entity function p( int i )
+{
+	return GetPlayerArray()[i]
+}
+
+bool function IsCommandsEnabled( entity player )
+{
+	return bool ( player.IsCommandsEnabled() )
+}
+
+void function CommandsEnabled( entity player, bool toggle )
+{
+	player.CommandsEnabled( toggle )
 }
 
 void function PlayerDropsScriptedItems( entity player )
@@ -396,6 +491,6 @@ void function ToggleMute( entity player, bool toggle )
 	player.ToggleMute( toggle )
 	
 	#if TRACKER && HAS_TRACKER_DLL
-		SavePlayerData( player.p.UID, "muted", toggle )
+		Tracker_SavePlayerData( player.p.UID, "muted", toggle )
 	#endif
 }

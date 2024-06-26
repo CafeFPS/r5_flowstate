@@ -1,0 +1,106 @@
+resource/ui/menus/confirm_dialog.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+		disableDpad             1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.65
+            }
+		}
+
+        DialogFrame
+        {
+            ControlName				Label
+            wide					%100
+            tall					515
+            labelText				""
+            bgcolor_override		"0 0 0 255"
+            visible					0
+            paintbackground			1
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	CENTER
+            pin_to_sibling_corner	CENTER
+        }
+
+        ContentRui
+        {
+            ControlName				RuiPanel
+            classname               "MenuButton"
+            wide					%100
+            tall					515
+            visible				    1
+            rui                     "ui/dialog_content.rpak"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+        }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		OID
+		{
+			ControlName				Label
+			labelText				"OID"
+			auto_wide_tocontents 1
+			tall 30
+			ypos 33
+			xpos 0
+			fontHeight 25
+			zpos 10
+			visible 0
+			interactive 		false
+			textAlignment		center
+
+
+			pin_to_sibling			FooterButtons
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+		
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       DialogFooterButtons
+			xpos                    0
+            wide					200
+			ypos					-23
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+	}
+}

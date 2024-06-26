@@ -595,7 +595,11 @@ void function PlayerOnLiftMovement(entity bottom, entity player)
 			
 		newVelocity.z = UPVELOCITY
 		player.SetVelocity( newVelocity )
-		printt( "player going up" )
+		
+		#if DEVELOPER
+			printt( "player going up" )
+		#endif 
+		
 		WaitFrame()
 	}
 	

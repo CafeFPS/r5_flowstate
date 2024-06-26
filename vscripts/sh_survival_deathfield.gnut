@@ -189,7 +189,10 @@ DeathFieldStageData function GetDeathFieldStage( int index )
     if(file.deathFieldStages.len() > index)
         return file.deathFieldStages[ index ]
 
-    printt("WARNING: Requested death field stage out of populated range!!")    
+    #if DEVELOPER
+		printt("WARNING: Requested death field stage out of populated range!!")   
+	#endif
+		
     return CreateDeathFieldStageData(index, true)
 }
 
@@ -466,7 +469,10 @@ void function SURVIVAL_RunArenaDeathField()
 
 	for ( int deathFieldStage = file.deathFieldStartStage; deathFieldStage < file.deathFieldStages.len(); deathFieldStage++ )
 	{
-		printt(" starting actually at : " + deathFieldStage )
+		#if DEVELOPER
+			printt(" starting actually at : " + deathFieldStage )
+		#endif 
+		
 		FlagWaitClear( "DeathFieldPaused" )
 
 		vector startPos   = deathField.GetOrigin()
@@ -889,7 +895,10 @@ vector function GetFinalDeathFieldLocation()
 					endPoint = GetRandomCenter( origin, 0, radius )
 					if ( Distance2D( endPoint, <0, 0, 0> ) <= REALBIG_CIRCLE_END_RADIUS )
 					{
-						printt( "Override END POS: " + endPoint )
+						#if DEVELOPER
+							printt( "Override END POS: " + endPoint )
+						#endif 
+						
 						foundSpot = true
 						//DebugDrawSphere( endPoint, 48.0, 255, 255, 0, true, 30.0 )
 						break
@@ -1429,6 +1438,27 @@ void function OnPropDynamicCreated( entity prop )
 
 void function OnPropScriptCreated( entity prop )
 {
+	if ( prop.GetTargetName() == "scenariosDeathField" )
+	{
+		if ( !GetLocalClientPlayer().DoesShareRealms( prop ) )
+			return
+
+		printt( "scenarios deathfield spawned in local player realm", prop, prop.GetTargetName() )
+		file.deathField = prop
+		thread FS_Scenarios_Cl_DeathFieldThink( prop )
+
+		var gamestateRui = ClGameState_GetRui()
+		array<var> ruis = [gamestateRui]
+		var cameraRui = GetCameraCircleStatusRui()
+		if ( IsValid( cameraRui ) )
+			ruis.append( cameraRui )
+
+		foreach( rui in ruis )
+		{
+			RuiTrackFloat3( rui, "deathFieldOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
+		}
+	}
+
 	if ( prop.GetTargetName() == "surveyZone" )
 	{
 		file.surveyMinimapEnts.append( prop )
@@ -1480,6 +1510,108 @@ void function OnPropScriptCreated( entity prop )
 void function SurveyZoneCleanupOnDestroy( entity surveyZoneEnt )
 {
 	file.surveyMinimapEnts.fastremovebyvalue( surveyZoneEnt )
+}
+
+void function FS_Scenarios_Cl_DeathFieldThink( entity deathField )
+{
+	deathField.SetDoDestroyCallback( true )
+	deathField.EndSignal( "OnDestroy" )
+
+	int currentEffectIdx = 0
+	array<int> fxIdx     = [ GetParticleSystemIndex( $"P_survival_radius_CP_1x1" ), GetParticleSystemIndex( $"P_survival_radius_CP_1x5" ), GetParticleSystemIndex( $"P_survival_radius_CP_1x100" ) ]
+
+	int effectID = fxIdx[ currentEffectIdx ]
+	int ringFX   = StartParticleEffectOnEntity( deathField, effectID, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+
+	table<string, int> e
+	e["fx"] <- ringFX
+
+	float startRadius         = file.deathFieldData.currentRadius
+	entity deathfieldSoundEnt = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", deathField.GetOrigin(), <0, 0, 0> )
+
+	OnThreadEnd(
+		function() : ( e, deathfieldSoundEnt )
+		{
+			deathfieldSoundEnt.Destroy()
+			EffectStop( e["fx"], true, true )
+		}
+	)
+
+	string currentSoundPlaying = ""
+	bool wasMoving = false
+
+	int currentDeathFieldStage = -1
+	float lastStartTime        = 0.0
+	float lastEndTime          = 0.0
+	
+	bool playSoundInPrematch = GetCurrentPlaylistVarBool( "deathfield_play_sound_in_prematch", true )
+	vector prevDeathFieldOrigin = deathField.GetOrigin()
+	
+
+	while ( 1 )
+	{
+		entity player        = GetLocalViewPlayer()
+		float radius        = player.GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" )
+
+		int idealIdx
+		if ( radius <= 1500 )
+		{
+			idealIdx = 2
+		}
+		else if ( radius <= 17000 )
+		{
+			idealIdx = 1
+		}
+		else
+		{
+			idealIdx = 0
+		}
+
+		if ( idealIdx != currentEffectIdx )
+		{
+			currentEffectIdx = idealIdx
+			EffectStop( e["fx"], true, true )
+			effectID = fxIdx[ currentEffectIdx ]
+			ringFX = StartParticleEffectOnEntity( deathField, effectID, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+			e["fx"] = ringFX
+		}
+
+		vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <deathField.GetOrigin().x, deathField.GetOrigin().y, 0> )
+		vector circleEdgePos = deathField.GetOrigin() + (fwdToPlayer * radius)
+		circleEdgePos.z = player.EyePosition().z
+
+		if ( PositionIsInMapBounds( circleEdgePos ) )
+		{
+			deathfieldSoundEnt.SetOrigin( circleEdgePos )
+			string soundToPlay = GetCircleSoundForSize( radius )
+
+			#if DEVELOPER
+			DebugDrawSphere( circleEdgePos, 20, 255,0,0, true, 0.01 )
+			#endif
+
+			bool moving = true
+
+			if ( moving )
+				soundToPlay = soundToPlay + "_Movement"
+
+			if ( ( !moving || currentSoundPlaying == "" || wasMoving != moving ) && currentSoundPlaying != soundToPlay  )
+			{
+				//printt( "soundToPlay:", soundToPlay )
+				if ( currentSoundPlaying != "" )
+					StopSoundOnEntity( deathfieldSoundEnt, currentSoundPlaying )
+				if ( soundToPlay != "" )
+					EmitSoundOnEntity( deathfieldSoundEnt, soundToPlay )
+
+				currentSoundPlaying = soundToPlay
+				wasMoving = moving
+			}
+		}
+
+		Minimap_SetDeathFieldRadius( radius )
+		FullMap_SetDeathFieldRadius( radius )
+		EffectSetControlPointVector( e["fx"], 1, <radius, 0, 0> )
+		WaitFrame()
+	}
 }
 
 void function Cl_DeathFieldThink( entity deathField )
@@ -1940,7 +2072,6 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 	while ( 1 )
 	{
 		bool shouldShowDeathFieldFx = ShouldShowDeathFieldEffects( player )
-
 		if ( wasShowingDeathFieldFx != shouldShowDeathFieldFx )
 		{
 			if ( shouldShowDeathFieldFx )
@@ -1989,11 +2120,16 @@ bool function ShouldShowDeathFieldEffects( entity player )
 		if ( DeathField_PointDistanceFromFrontier( player.EyePosition() ) >= 0 )
 			shouldShow = false
 	}
-	else
+	else if( Playlist() != ePlaylists.fs_scenarios )
 	{
 		if ( DeathField_PointDistanceFromFrontier( player.GetOrigin() ) >= 0 )
 			shouldShow = false
+	} else
+	{
+		if( player.GetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter" ) < player.GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" ) )
+			shouldShow = false
 	}
+
 	if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		shouldShow = false
 
@@ -2009,12 +2145,16 @@ bool function ShouldShowDeathFieldEffects( entity player )
 
 void function Callback_OnPlayerEnteredDeathfield( entity player )
 {
-	printt( "Callback_OnPlayerEnteredDeathfield" )
+	#if DEVELOPER
+		printt( "Callback_OnPlayerEnteredDeathfield" )
+	#endif
 }
 
 void function Callback_OnPlayerLeftDeathfield( entity player )
 {
-	printt( "Callback_OnPlayerLeftDeathfield" )
+	#if DEVELOPER
+		printt( "Callback_OnPlayerLeftDeathfield" )
+	#endif
 }
 
 void function Callback_OnPlayerTakeDeathFieldDamage( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )

@@ -4,7 +4,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 	{
 		ControlName				Frame
 		xpos					0
-		ypos					0
+		ypos					30
 		zpos					3
 		wide					f0
 		tall					f0

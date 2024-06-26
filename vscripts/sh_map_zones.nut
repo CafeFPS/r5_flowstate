@@ -290,7 +290,7 @@ void function GenerateZoneTiers()
     file.hotZoneRadius = hotZoneRadius
     file.hotZoneOrigin = hotZoneOrigin
     
-    if(hotZoneOrigin != <0, 0, 0>)
+    if(hotZoneOrigin != <0, 0, 0> && Gamemode() == eGamemodes.SURVIVAL )
     {
         thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
         AddCallback_GameStateEnter( 
@@ -309,7 +309,9 @@ void function GenerateZoneTiers()
 		{
 			if( !IsValid( mapZoneData.zoneTrigger ) )
 			{
-				printt( "zone not valid?" )
+				#if DEVELOPER
+					printt( "zone not valid?" )
+				#endif 
 				continue
 			}
 

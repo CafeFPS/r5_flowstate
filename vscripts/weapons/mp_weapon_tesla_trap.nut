@@ -14,12 +14,13 @@ global function OnWeaponOwnerChanged_weapon_tesla_trap
 global function OnWeaponPrimaryAttack_weapon_tesla_trap
 global function CodeCallback_TeslaTrapCrossed
 global function Placement_IsHitEntScriptedPlaceable
+
 #if CLIENT
-global function TeslaTrap_AreTrapsLinked
-global function ClientCodeCallback_TeslaTrapLinked
-global function ClientCodeCallback_TeslaTrapVisibilityChanged
-global function RegisterTeslaTrapMinimapRui
-global function TeslaTrap_OnPlayerTeamChanged
+	global function TeslaTrap_AreTrapsLinked
+	global function ClientCodeCallback_TeslaTrapLinked
+	global function ClientCodeCallback_TeslaTrapVisibilityChanged
+	global function RegisterTeslaTrapMinimapRui
+	global function TeslaTrap_OnPlayerTeamChanged
 #endif
 
 global const string TESLA_TRAP_NAME = "tesla_trap"
@@ -38,7 +39,7 @@ const asset TESLA_TRAP_DESTROY_CLOSED_FX = $"P_tesla_trap_closed_exp"
 const asset TESLA_TRAP_PLACE_FX = $"P_tesla_trap_place"
 
 #if CLIENT
-const asset TESLA_TRAP_PLACE_RANGE_FX = $"P_tesla_trap_ar_place"
+	const asset TESLA_TRAP_PLACE_RANGE_FX = $"P_tesla_trap_ar_place"
 #endif
 
 const string TESLA_TRAP_PLACEMENT_SOUND = "wattson_tactical_c"
@@ -153,8 +154,8 @@ enum eDeployLinkFlags
 }
 
 #if CLIENT
-const float TESLA_TRAP_ICON_HEIGHT = 16.0
-const bool TESLA_TRAP_DEBUG_DRAW_CLIENT_TRAP_LINKING = false
+	const float TESLA_TRAP_ICON_HEIGHT = 16.0
+	const bool TESLA_TRAP_DEBUG_DRAW_CLIENT_TRAP_LINKING = false
 #endif
 
 const asset TESLA_TRAP_ACTIVATED_ICON = $"rui/hud/tactical_icons/wattson_trap_enemy_collided"
@@ -196,11 +197,11 @@ struct FramePlacementInfo
 }
 
 #if CLIENT
-struct TrapMinimapData
-{
-	array<var> ruiArray
-	array<entity> triggerArray
-}
+	struct TrapMinimapData
+	{
+		array<var> ruiArray
+		array<entity> triggerArray
+	}
 #endif
 
 struct
@@ -287,23 +288,23 @@ void function MpWeaponTeslaTrap_Init()
 }
 
 #if CLIENT
-void function TeslaTrap_OnPlayerClassChanged( entity player )
-{
-	entity localViewPlayer = GetLocalViewPlayer()
-	entity localClientPlayer = GetLocalClientPlayer()
-	bool playerIsLocalViewPlayer = (player == localViewPlayer)
-
-	if ( playerIsLocalViewPlayer )
+	void function TeslaTrap_OnPlayerClassChanged( entity player )
 	{
-		player.Signal( "TeslaTrap_StopFocalTrapUpdate" )
-		player.Signal( "TeslaTrap_StopHudIconUpdate" )
-	}
-}
+		entity localViewPlayer = GetLocalViewPlayer()
+		entity localClientPlayer = GetLocalClientPlayer()
+		bool playerIsLocalViewPlayer = (player == localViewPlayer)
 
-vector function OnModifyDamageFlyout( entity ent, vector pos )
-{
-	return ( pos - < 0, 0, ent.GetBoundingMaxs().z * 0.8 > )
-}
+		if ( playerIsLocalViewPlayer )
+		{
+			player.Signal( "TeslaTrap_StopFocalTrapUpdate" )
+			player.Signal( "TeslaTrap_StopHudIconUpdate" )
+		}
+	}
+
+	vector function OnModifyDamageFlyout( entity ent, vector pos )
+	{
+		return ( pos - < 0, 0, ent.GetBoundingMaxs().z * 0.8 > )
+	}
 #endif
 
 void function OnWeaponActivate_weapon_tesla_trap( entity weapon )
@@ -436,7 +437,10 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 	if ( currAmmo < ammoReq && !IsValid( placementInfo.snapTo ) )
 	{
 		#if CLIENT
-			printf( "mp_weapon_tesla_trap: No more ammo before placing trap. Switching out with 'invnext'." )
+			#if DEVELOPER
+				printf( "mp_weapon_tesla_trap: No more ammo before placing trap. Switching out with 'invnext'." )
+			#endif
+			
 			ownerPlayer.ClientCommand( "invnext" )
 		#endif
 
@@ -454,7 +458,9 @@ var function OnWeaponPrimaryAttack_weapon_tesla_trap( entity weapon, WeaponPrima
 		#if CLIENT
 			if ( currAmmo < ammoReq )
 			{
-				printf( "mp_weapon_tesla_trap: No more ammo after placing trap. Switching out with 'invnext'." )
+				#if DEVELOPER 
+					printf( "mp_weapon_tesla_trap: No more ammo after placing trap. Switching out with 'invnext'." )
+				#endif
 				ownerPlayer.ClientCommand( "invnext" )
 			}
 		#endif
@@ -907,9 +913,8 @@ int function TeslaTrap_GetPlacementMaxLinks( entity player )
 
 	if ( !IsValid( weapon ) )
 		return -1
-
-	string className = weapon.GetWeaponClassName()
-	if ( className != "mp_weapon_tesla_trap" )
+		
+	if ( weapon.GetWeaponClassName() != "mp_weapon_tesla_trap" )
 		return -1
 
 	if ( weapon.GetScriptFlags0() > 0 )
@@ -2237,7 +2242,8 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 	{
 		poleFence = snapTo
 		alreadyCreatedPole = true
-	} else
+	} 
+	else
 	{
 		poleFence = CreateEntity( "prop_script" )
 		{
@@ -2378,7 +2384,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			if( direction == 1 )
 			{
 				#if DEVELOPER
-				printt( "va hacia abajo" )
+					printt( "va hacia abajo" )
 				#endif
 				spawnOrigin = poleFence.GetOrigin()
 				trigger.SetParent( poleFence )
@@ -2388,7 +2394,7 @@ void function Flowstate_CreateTeslaTrap( entity weapon, asset model, TeslaTrapPl
 			else if( direction == -1 )
 			{
 				#if DEVELOPER
-				printt( "va hacia arriba" )
+					printt( "va hacia arriba" )
 				#endif
 				spawnOrigin = attachTo.GetOrigin()
 				trigger.SetParent( attachTo )
@@ -2529,9 +2535,11 @@ void function Fence_DamagedPlayerOrNPC( entity ent, var damageInfo )
 	EMP_Fence_DamagedPlayerOrNPC( ent, damageInfo, $"P_emp_body_human", FENCE_SEVERITY_SLOWTURN, FENCE_SEVERITY_SLOWMOVE )
 }
 
+//float dinfo = 0
+
 void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset humanFx, float slowTurn, float slowMove )
 {
-	if ( !IsValid( ent ) || !ent.IsPlayer() && !ent.IsNPC() || DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
+	if ( !IsValid( ent ) || ( !ent.IsPlayer() && !ent.IsNPC() ) || DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS)
 		return
 
 	entity inflictor = DamageInfo_GetInflictor( damageInfo )
@@ -2539,13 +2547,15 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	if ( !IsValid( inflictor ) )
 		return
 
-	if( Time() <= ent.p.lastTimeDamagedByTeslaTrap + 4.0 )
+	if( Time() < ent.p.lastTimeDamagedByTeslaTrap + 4.0 )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
 	}
 	else
 	{
-		sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
+		//dinfo += DamageInfo_GetDamage( damageInfo )
+		//Warning("Damage in TESLA: " + DamageInfo_GetDamage( damageInfo ) + " addup: " + dinfo )
+		//sqprint( format( "Damaging: @ time: %f, last damaged: %f", Time(), ent.p.lastTimeDamagedByTeslaTrap ) )
 		CreateWaypointForCrossingEnt( inflictor, ent )
 		ent.p.lastTimeDamagedByTeslaTrap = Time()
 	}
@@ -2553,7 +2563,12 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 	string tag = ""
 	asset effect
 
-	if ( ent.IsNPC() )
+	if ( ent.IsPlayer() )
+	{
+		tag = "CHESTFOCUS"
+		effect = humanFx
+	}
+	else if ( ent.IsNPC() )
 	{
 		tag = "CHESTFOCUS"
 		effect = humanFx
@@ -2562,11 +2577,6 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 			ent.Anim_ScriptedPlayActivityByName( "ACT_STUNNED", true, 0.1 )
 			ent.EnableNPCFlag( NPC_PAIN_IN_SCRIPTED_ANIM )
 		}
-	}
-	else if ( ent.IsPlayer() )
-	{
-		tag = "CHESTFOCUS"
-		effect = humanFx
 	}
 
 	ent.Signal( "ArcStunned" )
@@ -2589,7 +2599,6 @@ void function EMP_Fence_DamagedPlayerOrNPC( entity ent, var damageInfo, asset hu
 		GiveEMPStunStatusEffects( ent, 2.5, 1.0, slowTurn, slowMove )
 		DamageInfo_ScaleDamage( damageInfo, 2.05 )
 	}
-
 }
 
 void function CleanUpOldestPole(entity player, entity snapTo)

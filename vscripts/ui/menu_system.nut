@@ -5,6 +5,9 @@ global function UpdateSystemPanel
 global function ToggleSetHunter
 global function OpenSystemMenu
 
+global function SetMotdText
+global function OpenMOTD
+
 global function ShouldDisplayOptInOptions
 
 struct ButtonData
@@ -44,9 +47,18 @@ struct
 	table<var, ButtonData > OpenValkSimulatorSettingsData
 	table<var, ButtonData > LockCurrent1v1Enemy
 	table<var, ButtonData > ToggleRest
+	table<var, ButtonData > DestroyDummies
+	table<var, ButtonData > DestroyDummiesAdmin
+	table<var, ButtonData > OpenWeaponsMenu
+	table<var, ButtonData > OpenMOTD
 
 	InputDef& qaFooter
+	
 	bool SETHUNTERALLOWED
+	
+	string motdText = ""
+	table<string,bool> seenMotdForServer = {}
+	
 } file
 
 void function InitSystemMenu( var newMenuArg ) //
@@ -109,7 +121,13 @@ void function SetHunterFunct()
 
 void function OpenWeaponSelector()
 {
+	var menu = GetMenu("FRChallengesSettingsWpnSelector")
+	var child = Hud_GetChild( menu , "Title" )
+	Hud_SetColor( menu, 255, 255, 0, 255 )
+	thread FancyLabelFadeIn( menu, child, 200, 1000, true, .40, false, 0, "", false )
+	Hud_SetColorBG( menu, 0, 0, 0, 0 )		
 	RunClientScript("OpenTDMWeaponSelectorUI")
+	thread PulsateElem( menu, child, 255, 25, 2.0 )
 }
 
 void function InitSystemPanel( var panel )
@@ -152,6 +170,10 @@ void function InitSystemPanel( var panel )
 	file.OpenValkSimulatorSettingsData[ panel ] <- clone data
 	file.LockCurrent1v1Enemy[ panel ] <- clone data
 	file.ToggleRest[ panel ] <- clone data
+	file.DestroyDummies[ panel ] <- clone data
+	file.DestroyDummiesAdmin[ panel ] <- clone data
+	file.OpenWeaponsMenu[ panel ] <- clone data
+	file.OpenMOTD[ panel ] <- clone data
 
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -222,6 +244,18 @@ void function InitSystemPanel( var panel )
 	file.ToggleRest[ panel ].label = "TOGGLE REST"
 	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
 	
+	file.DestroyDummies[ panel ].label = "Destroy Dummies"
+	file.DestroyDummies[ panel ].activateFunc = DestroyDummys_MovementRecorder
+	
+	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
+	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
+	
+	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
+	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
+	
+	file.OpenMOTD[ panel ].label = "SERVER MOTD"
+	file.OpenMOTD[ panel ].activateFunc = OpenMOTD	
+	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -234,14 +268,14 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
-
 	UpdateOptInFooter()
 }
 
 
 void function UpdateSystemPanel( var panel )
 {	
-	entity player = GetLocalClientPlayer()
+	//entity player = GetLocalClientPlayer()
+	
 	//temp workaround, not the best place for this tbh
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
@@ -255,6 +289,8 @@ void function UpdateSystemPanel( var panel )
 	int buttonIndex = 0
 	if ( IsConnected() && !IsLobby() )
 	{
+		RunClientScript( "FS_RegisterAdmin" )
+		
 		UISize screenSize = GetScreenSize()
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
@@ -269,28 +305,21 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
+			
+			//if( Playlist() != ePlaylists.fs_lgduels_1v1 && Playlist() != ePlaylists.fs_dm_fast_instagib )
+			//{
+				SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
+			//}
 			//SetButtonData( panel, buttonIndex++, file.LockCurrent1v1Enemy[ panel ] )
 		}
-
-		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )
-			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
-
-		if( Playlist() != ePlaylists.fs_aimtrainer )
+		else if( Playlist() == ePlaylists.fs_movementrecorder )
 		{
-			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
-		} else
-		{
-			if(ISAIMTRAINER)
-				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
-			{
-				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
-				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
-			}
+			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 		}
+
+		if( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_dm_fast_instagib )		
+			SetButtonData( panel, buttonIndex++, file.OpenLGDuelsSettingsData[ panel ] )
+		
 		if ( IsFiringRangeGameMode() && !uiGlobal.isAimTrainer )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
@@ -309,11 +338,40 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
-
+		if( Playlist() == ePlaylists.fs_movementrecorder )
+		{
+			SetButtonData( panel, buttonIndex++, file.DestroyDummies[ panel ] )
+			
+			if( uiGlobal.bIsServerAdmin )
+			{	
+				SetButtonData( panel, buttonIndex++, file.DestroyDummiesAdmin[ panel ] )
+			}
+		}
+		
+		SetButtonData( panel, buttonIndex++, file.OpenMOTD[ panel ] )
+		
 		// if( GetCurrentPlaylistName() == "fs_duckhunt" && IsConnected() && file.SETHUNTERALLOWED )
 		// {
 			// SetButtonData( panel, buttonIndex++, file.SetHunterButtonData[ panel ] )
 		// }
+		
+		if( Playlist() != ePlaylists.fs_aimtrainer )
+		{
+			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		} 
+		else
+		{
+			if(ISAIMTRAINER)
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+			{
+				// SetButtonData( panel, buttonIndex++, file.OpenValkSimulatorSettingsData[ panel ] )
+				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+			}
+		}
 	}
 	else
 	{
@@ -344,6 +402,7 @@ void function UpdateSystemPanel( var panel )
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+		
 }
 
 void function ToggleSetHunter(bool enable)
@@ -410,7 +469,7 @@ void function OpenSettingsMenu()
 void function HostEndMatch()
 {
 	#if LISTEN_SERVER
-	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE )
 	#endif // LISTEN_SERVER
 }
 
@@ -464,6 +523,16 @@ void function ToggleRest_1v1()
 	ClientCommand( "rest" )
 }
 
+void function DestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys" )
+}
+
+void function AdminDestroyDummys_MovementRecorder()
+{
+	ClientCommand( "DestroyDummys Admin" )
+}
+
 #if CONSOLE_PROG
 void function ReturnToMain_OnActivate( var button )
 {
@@ -505,6 +574,44 @@ bool function ShouldDisplayOptInOptions()
 	return GetGlobalNetBool( "isOptInServer" )
 }
 
+void function SetMotdText( string text )
+{
+	file.motdText = text
+	
+	// auto-opening motd disabled as per amos request
+	
+	// if( !("server" in file.seenMotdForServer) )
+	// {
+		// OpenMOTD()
+	// }
+}
+
+void function OpenMOTD()
+{
+	if ( IsLobby() )
+		return
+		
+	string motd = ""
+	
+	if ( file.motdText != "" )
+	{ 
+		motd = file.motdText
+	} 
+	else if( Localize("#FS_PLAYLIST_MOTD") != "" )
+	{
+		motd = Localize("#FS_PLAYLIST_MOTD")
+	}
+	
+	OpenServerMOTD( motd )
+	
+	// DialogData dialog
+	// dialog.header = "Server Message of the Day"
+	// dialog.message = motd
+	// dialog.darkenBackground = true
+	// dialog.showPCBackButton = true
+	// dialog.useFullMessageHeight = true
+	// OpenDialog( dialog )
+}
 
 void function UpdateOptInFooter()
 {
@@ -529,5 +636,6 @@ bool function ShouldShowDevMenu()
 	
 	return true
 }
+
 
 

@@ -778,6 +778,7 @@ void function RespawnTeamPlayers( entity ent, int team, entity respawnCaller )
 		}
 	}
 
+	LiveAPI_OnRespawnTeamPlayers( respawnCaller, playersToSpawn )
 	thread RespawnPlayersInDropship( playersToSpawn, ent )
 }
 #endif
@@ -1079,6 +1080,11 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 
 		PlayBattleChatterLineToSpeakerAndTeam( playerUser, "bc_gotFriendlyBanner" )
 
+		LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.bannerCollected,
+			[ LiveAPI_GetPlayerIdentityTable( playerUser ), LiveAPI_GetPlayerIdentityTable( owner ) ],
+			[ 3/*player*/,                                  4/*collected*/ ]
+		)
+
 		dna.Destroy()
 	}
 }
@@ -1129,11 +1135,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
-	if( Playlist() == ePlaylists.fs_scenarios )
-	{
-		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-	}
 
 	if( !is3v3Mode() )
 		player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
@@ -1181,17 +1182,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 				player.p.respawnPodLanded = false
 				player.ClearParent()
 				ClearPlayerAnimViewEntity( player )
-
-				if( Playlist() == ePlaylists.fs_scenarios )
-				{
-					RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-					RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-
-					thread FS_Scenarios_GiveWeaponsToGroup( [ player ] )
-
-					if( FS_Scenarios_GetSkydiveFromDropshipEnabled() )
-						thread PlayerSkydiveFromCurrentPosition( player )
-				}
 			}
 		}
 	)

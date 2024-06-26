@@ -199,6 +199,8 @@ void function GameModes_Init()
 	#if !UI
 	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		GameMode_AddScoreboardColumnData( gameMode, "Accuracy", PGS_DEATHS, 3 )
+	else if( Playlist() == ePlaylists.fs_scenarios )
+		GameMode_AddScoreboardColumnData( gameMode, "Wins", PGS_DEATHS, 2 )
 	else
 		GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	#endif
@@ -206,6 +208,8 @@ void function GameModes_Init()
 	#if !UI
 		if( Playlist() == ePlaylists.fs_dm_oddball || Playlist() == ePlaylists.fs_haloMod_oddball )
 			GameMode_AddScoreboardColumnData( gameMode, "Oddball Score", PGS_ASSISTS, 5 )
+		else if( Playlist() == ePlaylists.fs_scenarios )
+			GameMode_AddScoreboardColumnData( gameMode, "Score", PGS_ASSISTS, 3 )
 		else
 			GameMode_AddScoreboardColumnData( gameMode, "Damage", PGS_ASSISTS, 5 )
 		

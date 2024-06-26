@@ -1,5 +1,7 @@
 untyped
 
+global function CodeCallbacksCommon_Init
+
 global function CodeCallback_DamageEntity
 global function HandleFootstepDamage
 global function CodeCallback_OnEntityKilled
@@ -90,6 +92,11 @@ global function CodeCallback_GetBestObserverTarget
 global function CodeCallback_OnClientDisconnected
 global function CodeCallback_OnWeaponAttack
 
+global function CodeCallback_OnNavMeshHotSwapBegin
+global function CodeCallback_OnNavMeshHotSwapEnd
+
+const bool PRINT_MOVEMENT = false
+
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
@@ -117,7 +124,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	CodeCallback_OnClientReloadConnectionCompleted( player )
 	
 	if( GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false ) )
-		player.p.assignedCustomModel = RandomIntRangeInclusive(1,13)
+		player.p.assignedCustomModel = RandomIntRangeInclusive(1,10)
 	
 	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
@@ -126,8 +133,9 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
-	printt( "CodeCallback_OnPlayerRespawned", player )
+		printt( "CodeCallback_OnPlayerRespawned", player )
 	#endif
+	
 	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
 		cb( player )
 }
@@ -171,6 +179,17 @@ struct
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
 } file
 
+struct 
+{
+	bool flowstate_spectator_team_only
+} settings
+
+
+void function CodeCallbacksCommon_Init()
+{
+	settings.flowstate_spectator_team_only = GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false )
+}
+
 entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
 {
 	if( !IsValid( observer ) )
@@ -184,11 +203,11 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 	}
 
 	#if DEVELOPER
-	printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
+		printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
 	#endif
 		
 	//Force teammate observer target when spec_next and spec_prev are used
-	if( GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false ) || Gamemode() == eGamemodes.SURVIVAL )
+	if( settings.flowstate_spectator_team_only || Gamemode() == eGamemodes.SURVIVAL )
 	{
 		int team = observer.GetTeam()
 		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
@@ -197,6 +216,11 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 				
 		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
 			players.removebyvalue( observer )
+			
+		#if TRACKER
+			if( players.contains( eMessageBot() ) )
+				players.fastremovebyvalue( eMessageBot() ) 
+		#endif 
 
 		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
 		{
@@ -268,8 +292,8 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		printt( "CodeCallback_DamageEntity() top:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
-		HandleFootstepDamage( ent, damageInfo )
+	// if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
+		// HandleFootstepDamage( ent, damageInfo )
 
 	RunClassDamageCallbacks( ent, damageInfo )
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -309,7 +333,7 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 		ShieldModifyDamage( ent, damageInfo )
 	}
-
+	
 	// Added via AddEntityCallback_OnPostDamaged
 	foreach ( callbackFunc in ent.e.entPostDamageCallbacks )
 	{
@@ -334,6 +358,16 @@ void function CodeCallback_OnWeaponAttack( entity player, entity weapon, string 
 {
 	foreach ( callbackFunc in svGlobal.onWeaponAttackCallbacks )
 		callbackFunc( player, weapon, weaponName, ammoUsed, origin, dir )
+}
+
+void function CodeCallback_OnNavMeshHotSwapBegin()
+{
+	//printf("CodeCallback_OnNavMeshHotSwapBegin()")
+}
+
+void function CodeCallback_OnNavMeshHotSwapEnd()
+{
+	//printf("CodeCallback_OnNavMeshHotSwapEnd()")
 }
 
 bool function TrySpectreVirus( entity victim, var damageInfo )
@@ -504,12 +538,13 @@ void function RunClassPostDamageCallbacks( entity ent, var damageInfo )
 	foreach ( callbackFunc in file.classPostDamageCallbacks[className] )
 	{
 		#if DEVELOPER
-		float damage = DamageInfo_GetDamage( damageInfo )
+			float damage = DamageInfo_GetDamage( damageInfo )
 		#endif
+		
 		callbackFunc( ent, damageInfo )
 
 		#if DEVELOPER
-		Assert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
+			mAssert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
 		#endif
 	}
 }
@@ -701,10 +736,8 @@ void function AddCallback_OnWeaponAttack( void functionref( entity, entity, stri
 
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
-	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
-	//Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
-	
 	//mkos - modified to support multiple functions for a single command
+	//Warning("AddClientCommandCallbackNew: " + commandString )
 	
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{
@@ -713,7 +746,7 @@ void function AddClientCommandCallbackNew( string commandString, void functionre
 	}
 	else 
 	{
-		svGlobal.clientCommandCallbacksNew[ commandString ] <- [callbackFunc]
+		svGlobal.clientCommandCallbacksNew[ commandString ] <- [ callbackFunc ]
 	}
 }
 
@@ -1029,12 +1062,13 @@ void function RemovePlayerMovementEventCallback( entity player, int playerMoveme
 
 }
 
-bool PRINT_MOVEMENT = false
+
 
 void function CodeCallback_OnPlayerJump( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Jump")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.JUMP in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1046,8 +1080,9 @@ void function CodeCallback_OnPlayerJump( entity player )
 
 void function CodeCallback_OnPlayerDoubleJump( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Double Jump")
+	#endif
 
 	if ( ! ( ePlayerMovementEvents.DOUBLE_JUMP in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1059,8 +1094,9 @@ void function CodeCallback_OnPlayerDoubleJump( entity player )
 
 void function CodeCallback_OnPlayerDodge( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Dodge" )
+	#endif
 
 	if ( ! ( ePlayerMovementEvents.DODGE in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1072,8 +1108,9 @@ void function CodeCallback_OnPlayerDodge( entity player )
 
 void function CodeCallback_OnPlayerLeaveGround( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Left Ground")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.LEAVE_GROUND in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1085,8 +1122,9 @@ void function CodeCallback_OnPlayerLeaveGround( entity player )
 
 void function CodeCallback_OnPlayerTouchGround( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Touch Ground")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.TOUCH_GROUND in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1100,8 +1138,9 @@ void function CodeCallback_OnPlayerTouchGround( entity player )
 
 void function CodeCallback_OnPlayerMantle( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Mantle")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.MANTLE in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1113,8 +1152,9 @@ void function CodeCallback_OnPlayerMantle( entity player )
 
 void function CodeCallback_OnPlayerBeginWallrun( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Wallrun Begin")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.BEGIN_WALLRUN in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1126,8 +1166,9 @@ void function CodeCallback_OnPlayerBeginWallrun( entity player )
 
 void function CodeCallback_OnPlayerEndWallrun( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Wallrun End")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.END_WALLRUN in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1139,8 +1180,9 @@ void function CodeCallback_OnPlayerEndWallrun( entity player )
 
 void function CodeCallback_OnPlayerBeginWallhang( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Wallhang Begin")
+	#endif
 
 	if ( ! ( ePlayerMovementEvents.BEGIN_WALLHANG in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1152,8 +1194,9 @@ void function CodeCallback_OnPlayerBeginWallhang( entity player )
 
 void function CodeCallback_OnPlayerEndWallhang( entity player )
 {
-	if( PRINT_MOVEMENT )
+	#if PRINT_MOVEMENT
 		printt( "Player Wallhang End")
+	#endif
 	
 	if ( ! ( ePlayerMovementEvents.END_WALLHANG in player.p.playerMovementEventCallbacks ) )
 		return
@@ -1169,10 +1212,11 @@ void function AddCallback_OnPlayerInventoryChanged( void functionref( entity ) c
 	file.playerInventoryChangedCallbacks.append( callbackFunc )
 }
 
-void function CodeCallback_OnClientDisconnected(entity player, string reason)
+void function CodeCallback_OnClientDisconnected( entity player, string reason )
 {
-	printt("CodeCallback_OnClientDisconnected ", player, reason)
+	printt( "CodeCallback_OnClientDisconnected", player, reason )
+	player.Signal( "OnDisconnected" )
 	
-	foreach(cb in svGlobal.onClientDisconnectedCallbacks)
-		cb(player)
+	foreach( cb in svGlobal.onClientDisconnectedCallbacks )
+		cb( player )
 }

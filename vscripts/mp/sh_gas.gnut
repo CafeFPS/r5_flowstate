@@ -75,6 +75,7 @@ struct
 	#if SERVER
 	table<entity, array<entity> > gasProtectTriggers
 	int gasEmitterEntArrayID
+	bool caustic_teammate_forgiveness
 	#endif
 
 } file
@@ -103,6 +104,7 @@ void function ShGas_Init()
 	AddSpawnCallback( "npc_dummie", OnEntSpawned )
 
 	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, GasGear_OnPassiveChanged )
+	file.caustic_teammate_forgiveness = GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true )
 	#endif
 
 	#if CLIENT
@@ -259,7 +261,7 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 		newGasExposure = true
 		target.e.gasEnterTime = Time()
 
-		if ( GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true ) )
+		if ( file.caustic_teammate_forgiveness )
 		{
 			entity inflictor = DamageInfo_GetInflictor( damageInfo )
 			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
@@ -285,7 +287,11 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 	//The Gas Exposure Damage Type is only used to detect gas exposure and to ensure that damage radius blockers stop gas exposure.
 	//It should never do real damage, that's damagedef_grenade_gas's job.
 	DamageInfo_SetDamage( damageInfo, 0.0 )
-	printt( "GasCloud_HandleGasExposure_Copy thread for " + target )
+	 
+	#if DEVELOPER
+		printt( "GasCloud_HandleGasExposure_Copy thread for " + target )
+	#endif 
+	
 	if ( target.GetScriptName() != TESLA_TRAP_NAME )
 		return
 	
@@ -481,7 +487,9 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	if( target.GetScriptName() == "caustic_trap" || target.GetScriptName() == "tesla_trap" )
 		return
 
-	printt( "ramping damage for " + target )
+	#if DEVELOPER 
+		printt( "ramping damage for " + target )
+	#endif
 	
 	//Players with gas gear aren't effected
 	if ( target.IsPlayer() )
@@ -495,8 +503,8 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	}
 
 	//Titans are not effected.
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 	//if the target is not in gas return.
 	if ( !IsEntInGas( target ) )
@@ -526,7 +534,10 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 
 	target.e.gasLastDamageTime = Time()
 	
-	printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#if DEVELOPER
+		printt( "scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#endif
+	
 	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	
 	if ( target.IsPlayer() )
@@ -535,7 +546,7 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
 		
 		#if TRACKER
-			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+			__TrackerStatsHook_Damage( target, damageInfo )
 		#endif
 	}
 	
@@ -562,8 +573,8 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 	}
 
 	//Titans are not effected.
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 	//if the target is not in gas return.
 	if ( !IsEntInGas( target ) )
@@ -595,7 +606,10 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 
 	target.e.gasLastDamageTime = Time()
 	
-	printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#if DEVELOPER
+		printt( "TeslaTrap: scalling damage dmgMult " + dmgMult + " | Time in gas: " + timeInGas + " | Last Expo Time: " + target.e.gasLastExpoTime + " | LastGasEnterTime " + target.e.gasEnterTime )
+	#endif 
+	
 	DamageInfo_ScaleDamage( damageInfo, dmgMult )
 	
 	if ( target.IsPlayer() )
@@ -604,7 +618,7 @@ void function GasCloud_RampDamageBasedOnExposureTime_Copy( entity target, var da
 		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
 		
 		#if TRACKER
-			__TrackerStatsHook_AddEvent_DamageMult( target, damageInfo )
+			__TrackerStatsHook_Damage( target, damageInfo )
 		#endif
 	}
 	
@@ -783,7 +797,10 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 	if( IsValid( smokescreen.attacker ) )
 	{
 		gasDmgInflictor.SetBossPlayer( smokescreen.attacker )
-		printt("gas smoke screen inflictor attacker: ", smokescreen.attacker )
+		
+		#if DEVELOPER
+			printt("gas smoke screen inflictor attacker: ", smokescreen.attacker )
+		#endif
 	}
 	
 	DispatchSpawn( gasDmgInflictor )
@@ -983,7 +1000,7 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							DrawAngledBox( (offsetCenter + FX_GAS_SMOKE_OFFSET), Vector( 0,0,0 ), <-20, -20, -16>, <35, 35, 100>, 255, 0, 0, true, 15 )
 							#endif
 
-							if ( smokescreen.smokeSource != null )
+							if ( IsValid_ThisFrame( smokescreen.smokeSource ) )
 								smokeFXs[i][1].SetParent( smokescreen.smokeSource )
 
 							if ( IsValid( smokescreen.inflictor ) )
