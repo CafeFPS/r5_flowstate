@@ -1035,6 +1035,7 @@ Scripts:
 	custom_maps/_custom_maps_6.nut
 	custom_maps/_custom_maps_7.nut
 	custom_maps/_custom_maps_8.nut
+	custom_maps/_remap_tutorial.nut
 	custom_maps/_custom_deafps_maps.nut
 	
 	//mkos LG patches & map based patches
