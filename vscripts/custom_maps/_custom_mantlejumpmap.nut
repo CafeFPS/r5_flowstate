@@ -1,5 +1,6 @@
 untyped
 global function mantlejumpmap_init
+global function mantlemap_reset_doors
 
 // Made by Loy and Treeree. 
 
