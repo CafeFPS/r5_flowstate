@@ -1632,15 +1632,24 @@ void function OutOfBoundsDisable()
 		
 	foreach( trigger in file.outOfBoundsTriggers )
 	{
-		#if MP
-			foreach ( ent, val in oob_triggerEntPairs[trigger] )
-				oob_triggerEntPairs[trigger][ent] = false
-			trigger.DisconnectOutput( "OnStartTouch", EntityEnterOutOfBoundsTrig )
-			trigger.DisconnectOutput( "OnEndTouch", EntityLeaveOutOfBoundsTrig )
-		#else
-			trigger.DisconnectOutput( "OnStartTouch", EntityOutOfBounds )
-			trigger.DisconnectOutput( "OnEndTouch", EntityBackInBounds )
-		#endif
+		try 
+		{
+			#if MP
+				foreach ( ent, val in oob_triggerEntPairs[trigger] )
+					oob_triggerEntPairs[trigger][ent] = false
+				trigger.DisconnectOutput( "OnStartTouch", EntityEnterOutOfBoundsTrig )
+				trigger.DisconnectOutput( "OnEndTouch", EntityLeaveOutOfBoundsTrig )
+			#else
+				trigger.DisconnectOutput( "OnStartTouch", EntityOutOfBounds )
+				trigger.DisconnectOutput( "OnEndTouch", EntityBackInBounds )
+			#endif
+		}
+		catch( e )
+		{
+			#if DEVELOPER 
+				Warning( "Track this down: " + e )
+			#endif 
+		}
 	}
 }
 

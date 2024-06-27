@@ -19,7 +19,9 @@ struct
 {
 	array<string> assets = 
 	[
-		"rui/flowstate_custom/mkos/1v1banner"
+		"rui/flowstate_custom/mkos/1v1banner",
+		"rui/world/flowstate1v1_banner01",
+		"rui/world/flowstate1v1_banner02"
 	]
 	
 	#if CLIENT

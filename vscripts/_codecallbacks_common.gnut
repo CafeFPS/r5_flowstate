@@ -100,6 +100,11 @@ const bool PRINT_MOVEMENT = false
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
+	#if TRACKER && HAS_TRACKER_DLL //TODO(dw): server messages
+		if( IsBotEnt( player ) )
+			return
+	#endif
+		
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
 	player.s.activeTrapArrayId <- CreateScriptManagedEntArray()
 
@@ -115,7 +120,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	player.hasConnected = true
 
-	foreach ( cb in svGlobal.onClientConnectedCallbacks )
+	foreach ( cb in svGlobal.onClientConnectedCallbacks )	
 		cb( player )
 
 	NotifyClientsOfConnection( player, 1 )

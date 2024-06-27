@@ -1897,13 +1897,16 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				{
 					EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-					OnThreadEnd(
+					OnThreadEnd
+					(
 						function() : ( newGroup, players  )
 						{
 							foreach( player in players )
 							{
 								if( !IsValid( player ) )
 									continue
+
+								player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
 
 								if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
 								{
@@ -1920,7 +1923,6 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 								player.MovementEnable()
 								player.UnforceStand()
 								DeployAndEnableWeapons( player )
-								player.Server_TurnOffhandWeaponsDisabledOff()
 								player.ClearMeleeDisabled()
 								player.UnlockWeaponChange()
 								player.ClearFirstDeployForAllWeapons()
@@ -2002,7 +2004,7 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					}
 
 					wait settings.fs_scenarios_game_start_time_delay
-
+					
 					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
 					newGroup.startTime = Time()

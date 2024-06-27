@@ -55,6 +55,8 @@ global function is3v3Mode
 global function _CleanupPlayerEntities
 global function FS_Scenarios_GiveWeaponsToGroup
 
+const bool TEST_WORLDDRAW = false
+
 //DEV 
 #if DEVELOPER
 	global function DEV_printlegends
@@ -3129,6 +3131,47 @@ vector function Gamemode1v1_FetchNotificationPanelAngles()
 	return Gamemode1v1_NotificationPanel_Angles
 }
 
+void function BannerImages_1v1Init()
+{
+	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
+	
+	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,250 >
+	
+	BannerImages_SetAllGroupsFunc
+	(
+		void function() : ( main_banner__Coordinates )
+		{
+			BannerImages_RegisterGroup
+			(
+				"main_banner",
+				main_banner__Coordinates,
+				400,
+				280
+			)
+		}
+	)
+	
+	BannerImages_SetAllImagesFunc
+	(
+		void function()
+		{
+			BannerImages_GroupAppendImage
+			(
+				"main_banner",
+				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner01" )
+			)
+			
+			BannerImages_GroupAppendImage
+			(
+				"main_banner",
+				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
+			)			
+		}
+	)
+	
+	BannerImages_Init()
+}
+
 void function Gamemode1v1_Init( int eMap )
 {
 	RegisterSignal( "NotificationChanged" )
@@ -3142,13 +3185,9 @@ void function Gamemode1v1_Init( int eMap )
 	SetHostInvetoryAttachments()
 	
 	if( settings.bAllowWeaponsMenu )
-	{
 		INIT_WeaponsMenu()
-	}
 	else 
-	{
 		INIT_WeaponsMenu_Disabled()
-	}
 	
 	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
 		Flowstate_LgDuels1v1_Init()
@@ -3211,14 +3250,13 @@ void function Gamemode1v1_Init( int eMap )
 	if ( WeaponsSecondary.len() <= 0 )
 	{
 
-		WeaponsSecondary = [
-		
+		WeaponsSecondary = 
+		[	
 			//default R5R.DEV selection
 			"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l1",
 			"mp_weapon_energy_shotgun shotgun_bolt_l1",
 			"mp_weapon_mastiff shotgun_bolt_l2",
-			"mp_weapon_doubletake energy_mag_l3 stock_sniper_l3",
-			
+			"mp_weapon_doubletake energy_mag_l3 stock_sniper_l3"	
 		]
 	
 	}
@@ -3325,6 +3363,7 @@ void function Gamemode1v1_Init( int eMap )
 	
 	thread soloModeThread( getWaitingRoomLocation() )
 	
+	#if TEST_WORLDDRAW
 	AddCallback_OnClientConnected
 	(
 		void function( entity player ) 
@@ -3361,6 +3400,7 @@ void function Gamemode1v1_Init( int eMap )
 			#endif
 		}
 	)
+	#endif
 	
 	AddCallback_OnClientConnected
 	( 
@@ -3368,7 +3408,7 @@ void function Gamemode1v1_Init( int eMap )
 		{
 			// init for IBMM
 			if ( !player.p.bIsChatbot )
-			{	
+			{
 				Init_IBMM( player )
 				
 				#if !TRACKER
@@ -3377,6 +3417,8 @@ void function Gamemode1v1_Init( int eMap )
 			}
 		}
 	)
+	
+	BannerImages_1v1Init()
 	
 	AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
 	file.bRestEnabled = true

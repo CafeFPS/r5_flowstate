@@ -118,6 +118,12 @@ Scripts:
 	sh_weapon_cosmetics.nut
 ]
 
+When: "SERVER"
+Scripts:
+[
+	mp/banner_img/_banner_image.nut
+]
+
 When: "CLIENT"
 Scripts:
 [

@@ -1495,7 +1495,7 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 	printm( "Teleporting to spawnpoint", posIndex )
 	printt( file.dev_positions[posIndex] )
 	printm( file.dev_positions[posIndex] )
-	maki_tp_player( player, GetSpawns()[posIndex] )
+	TP( player, GetSpawns()[posIndex] )
 }
 
 void function DEV_SpawnHelp()
@@ -1636,7 +1636,7 @@ void function DEV_TeleportToPanels( string identifier )
 			return
 		}
 		
-		maki_tp_player( player, file.panelsloc )
+		TP( player, file.panelsloc )
 	}
 	else 
 	{

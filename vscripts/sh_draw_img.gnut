@@ -10,6 +10,8 @@ global function WorldDrawImg_RegisterRemoteAsset
 	global function WorldDrawImg_Modify
 	global function WorldDrawImg_SetVisible
 	global function WorldDrawImg_Timed
+	
+	global function MoveDecimal
 #endif
 
 #if CLIENT 
@@ -22,6 +24,7 @@ global function WorldDrawImg_RegisterRemoteAsset
 	const MAX_WORLD_TOPO = 30 //not dynamically set
 #endif
 
+global const float WORLD_DRAW_BASE_SPEED		= 0.01
 const ASSERT_WORLD_DRAW = true
 
 #if CLIENT 
@@ -35,6 +38,7 @@ const ASSERT_WORLD_DRAW = true
 		float width 
 		float height
 		bool isValid = false
+		float alpha
 	}
 #endif 
 
@@ -73,7 +77,7 @@ void function WorldDrawImg_RegisterRemoteAsset( asset img )
 #endif //if SERVER || CLIENT
 
 void function WorldDrawImg_Init()
-{	
+{
 	#if CLIENT
 		RegisterSignal( "RemoteAssetsLoaded" )
 		RegisterSignal( "PakReadyForLoad" )
@@ -156,9 +160,18 @@ void function WorldDrawImg_Init()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ModifyWorldImg", id, org, ang, width, height, alpha, newImgRefID )
 	}
 	
-	void function WorldDrawImg_SetVisible( entity player, int id, bool visible )
+	void function WorldDrawImg_SetVisible( entity player, int id, bool visible, bool fade, bool direction, int speed = 0 )
 	{
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible )
+		if( speed < -4 || speed > 2 )
+		{
+			#if DEVELOPER 
+				Warning( "Cannot set speed greater than 3 or less than -2" )
+			#endif 
+			
+			return
+		}
+		
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible, fade, direction, speed )
 	}
 	
 	void function WorldDrawImg_Timed( entity player, string imgAssetRef, vector origin, vector angles, float width, float height, int remoteAssetRefID, float alpha, float duration )
@@ -171,7 +184,7 @@ void function WorldDrawImg_Init()
 #if CLIENT
 	
 	//taken from cl_utility
-	TopoData function WorldDrawImg_CreateTopo( vector org, vector ang, float width, float height, int id = -1 )
+	TopoData function WorldDrawImg_CreateTopo( vector org, vector ang, float width, float height, int id = -1, float alpha = -1.0 )
 	{
 		vector baseOrg = org 
 		vector baseAng = ang 
@@ -186,7 +199,7 @@ void function WorldDrawImg_Init()
 		
 		var topo = RuiTopology_CreatePlane( org, right, down, true )
 		
-		return CreateTopoInfo( id, topo, baseOrg, baseAng )
+		return CreateTopoInfo( id, topo, baseOrg, baseAng, width, height, alpha )
 	}
 	
 	void function __BuildWorldImageRUI( asset image, vector org, vector ang, float width, float height, int RUIID = -1, float alpha = -1.0, bool visible = true, float ornull duration = null )
@@ -196,13 +209,16 @@ void function WorldDrawImg_Init()
 
 		origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
 		
-		TopoData topoInfo = WorldDrawImg_CreateTopo( origin, angles, width, height, RUIID )
+		TopoData topoInfo = WorldDrawImg_CreateTopo( origin, angles, width, height, RUIID, alpha )
 
 		var rui = RuiCreate( $"ui/basic_image.rpak", topoInfo.topo, RUI_DRAW_WORLD, 32767 )
 		RuiSetImage( rui, "basicImage", image )
 		
 		if( alpha > -1.0 )
+		{
 			RuiSetFloat( rui, "basicImageAlpha", alpha )
+			topoInfo.alpha = alpha
+		}
 			
 		RuiSetVisible( rui, visible )
 
@@ -349,6 +365,12 @@ void function WorldDrawImg_Init()
 		{
 			__BuildWorldImageRUI( expect asset( img ), origin, angles, width, height, id, alpha, visible, setduration )
 		}
+		else 
+		{
+			#if DEVELOPER 
+				Warning( "Asset was null" )
+			#endif
+		}
 		
 		file.worldImgAssetRef = ""
 	}
@@ -404,6 +426,8 @@ void function WorldDrawImg_Init()
 			return
 		}
 		
+		
+		
 		if( width == -1 )
 			width = topoInfo.width
 		
@@ -415,11 +439,13 @@ void function WorldDrawImg_Init()
 
 		if( ang == ZERO_VECTOR )
 			ang = topoInfo.ang
-				
+			
+		topoInfo.alpha 	= alpha
 		topoInfo.org 	= org 
 		topoInfo.ang 	= ang
 		topoInfo.width 	= width
 		topoInfo.height = height
+		//SaveTopoData( topoInfo, { org = org, ang = ang, width = width, height = height, alpha = alpha } )
 				
 		org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
 		org += ( AnglesToUp( ang ) * (height*0.5) )
@@ -429,11 +455,12 @@ void function WorldDrawImg_Init()
 		
 		RuiTopology_UpdatePos( topo, org, right, down )
 		
-		#if DEVELOPER 
+		
+		#if DEVELOPER
 			printt
 			(
 				"\n\n ---- Updated topology/rui ---- \nID:", id, 
-				"\nOld Image:", string( file.worldRUI[ id ][0] ),
+				"\nRui:", string( file.worldRUI[ id ][0] ),
 				"\nOrigin:", org, 
 				"\nAngles:", ang, 
 				"\nWidth:", width, 
@@ -455,7 +482,7 @@ void function WorldDrawImg_Init()
 		return nullTopo
 	}
 	
-	TopoData function CreateTopoInfo( int id, var topo, vector org, vector ang )
+	TopoData function CreateTopoInfo( int id, var topo, vector org, vector ang, float width, float height, float alpha )
 	{
 		TopoData topoInfo 
 		
@@ -465,6 +492,9 @@ void function WorldDrawImg_Init()
 			topoInfo.topo 	 = topo
 			topoInfo.org	 = org
 			topoInfo.ang	 = ang
+			topoInfo.width   = width
+			topoInfo.height  = height
+			topoInfo.alpha   = alpha > -1.0 ? alpha : 1.0
 			topoInfo.isValid = true
 		}
 		
@@ -476,7 +506,44 @@ void function WorldDrawImg_Init()
 		return topoInfo.isValid && IsValid( topoInfo.topo )
 	}
 	
-	void function ServerCallback_SetWorldImgVisibility( int id, bool visible )
+	void function SaveTopoData( TopoData topoInfo, table tbl = {} )
+	{
+		if( !IsTopoDataValid( topoInfo ) )
+			return 
+		
+		foreach( tblKey, value in tbl )
+		{
+			string key = expect string( tblKey )
+			
+			switch( key )
+			{
+				case "org":
+					topoInfo.org 		=	expect vector( value )
+					break				
+					
+				case "ang":	
+					topoInfo.ang		=	expect vector( value )
+					break			
+					
+				case "width":	
+					topoInfo.width 		=	expect float( value )			
+					break
+					
+				case "height":	
+					topoInfo.height		=	expect float( value )
+					break				
+					
+				case "alpha":	
+					topoInfo.alpha		=	expect float( value )
+					break
+					
+				default:
+					break
+			}
+		}
+	}
+	
+	void function ServerCallback_SetWorldImgVisibility( int id, bool visible, bool fade, bool direction, int speed )
 	{
 		var rui = GetWorldDrawImgRUI( id )
 		
@@ -488,8 +555,67 @@ void function WorldDrawImg_Init()
 			
 			return
 		}
+			
+		if( fade )
+			thread _WorldDrawImg_Fade( direction, id, rui, speed )
+		else
+			RuiSetVisible( rui, visible )
+	}
+	
+	void function _WorldDrawImg_Fade( bool direction, int id, var rui, int speed )
+	{
+		TopoData topoInfo = GetTopoInfo( id )
 		
-		RuiSetVisible( rui, visible )
+		if( !IsTopoDataValid( topoInfo ) )
+		{
+			#if DEVELOPER 
+				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
+			#endif 
+			
+			return
+		}
+		
+		float alphaFade = 0	
+		float baseScale 
+		
+		if( speed == 0 )
+		{
+			baseScale = 0.01
+		}
+		else 
+		{
+			bool move
+			move = speed > 0 ? true : false
+			baseScale = MoveDecimal( WORLD_DRAW_BASE_SPEED, speed, move )
+		}
+			
+		if( direction ) //fadein
+		{
+			alphaFade = topoInfo.alpha
+			
+			while( alphaFade < 1 )
+			{
+				alphaFade = alphaFade + WORLD_DRAW_BASE_SPEED
+				RuiSetFloat( rui, "basicImageAlpha", alphaFade )
+				wait baseScale
+			}
+		}
+		else //fadeout
+		{
+			alphaFade = topoInfo.alpha
+			
+			if( alphaFade <= 0 )
+				alphaFade = 1
+				
+			while( alphaFade > 0 )
+			{
+				alphaFade = alphaFade - WORLD_DRAW_BASE_SPEED
+				RuiSetFloat( rui, "basicImageAlpha", alphaFade )
+				wait baseScale
+			}
+		}
+		
+		topoInfo.alpha = alphaFade
 	}
 	
 	var function GetWorldDrawImgRUI( int id )
@@ -519,9 +645,44 @@ void function WorldDrawImg_Init()
 
 	asset ornull function __FetchWorldImgAssetFromRef( int ref )
 	{
+		#if DEVELOPER 
+			Warning( "Requested asset for ref id: " + ref )
+		#endif 
+		
 		if( ref in assetIntToAssetMap )
+		{
+			#if DEVELOPER 
+				Warning( string( assetIntToAssetMap[ ref ] ) )
+			#endif
+			
 			return assetIntToAssetMap[ ref ]
+		}
 			
 		return null
 	}
 #endif //if CLIENT
+
+
+#if SERVER || CLIENT 
+	float function MoveDecimal( float num, int speed, bool direction = true )
+	{
+		if( num == 0 )
+			return 0.0
+			
+		if( speed == 0 )
+			return 0.0
+			
+		if( direction )
+		{
+			for( int i = 0; i < speed; i++ )
+				num = num / 10
+		}
+		else 
+		{
+			for( int i = 0; i < speed; i++ )
+				num = num * 10
+		}
+			
+		return num
+	}
+#endif

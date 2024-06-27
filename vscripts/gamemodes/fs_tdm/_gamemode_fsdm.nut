@@ -547,7 +547,7 @@ LocPairData function Init_DropoffPatchSpawns()
 			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
 		];
 				
-	return SpawnSystem_CreateLocPairObject( dropoff_patch, false, null, null )
+	return SpawnSystem_CreateLocPairObject( dropoff_patch )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -3247,11 +3247,7 @@ void function SimpleChampionUI()
 	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
-
 	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
-	
-	//CALL THIS FOR STATS NEW ROUND
-	
 	
 	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 

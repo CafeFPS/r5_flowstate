@@ -40,6 +40,7 @@ global function ValidateIBMMWaitTime
 global function VerifyAdmin
 global function IsSafeString
 global function GetPlaylistMaps
+global function TP
 
 #if TRACKER && HAS_TRACKER_DLL
 	global function PrintMatchIDtoAll
@@ -2567,4 +2568,15 @@ bool function IsSafeString( string str, int strlen = -1, string pattern = "" )
 		pattern = "^[A-Za-z0-9_ \\[\\]\\(\\):;\\-*&^%$#@!+=?.|]*$"
 	
 	return ( RegexpFindAll( str, pattern ).len() != 0 )
+}
+
+//original by maki
+void function TP( entity player, LocPair data )
+{
+	if( !IsValid( player ) ) 
+		return
+		
+	player.SetVelocity( Vector( 0,0,0 ) )
+	player.SetAngles( data.angles )
+	player.SetOrigin( data.origin )
 }

@@ -178,6 +178,7 @@ global function bEnc
 
 global function __executeEventStart_messages
 global function eMessageBot
+global function IsBotEnt
 global function SendServerMessage
 global function bBotEnabled
 global function isIntervalThreadRunning
@@ -2052,6 +2053,14 @@ void function __LoadServerBot()
 	
 	//file.iBotHandle = result[1]
 	//sqprint(format( "Bot id is: %d", file.iBotID ))
+}
+
+bool function IsBotEnt( entity player )
+{
+	if( player == file.entityBotEnt )
+		return true
+		
+	return false
 }
 
 entity function eMessageBot() //global
