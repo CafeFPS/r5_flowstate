@@ -56,7 +56,7 @@
 	"damage_rodeo"                             "400"
 
                      
-	"damage_headshot_scale"			           "2.15"
+	"damage_headshot_scale"			           "2.25"
       
 
 	"damage_leg_scale"                         "0.8"
@@ -99,7 +99,7 @@
 	"viewkick_spring"                          "dmr"
 
 	// Viewkick - Pitch
-	"viewkick_pitch_base"                      "-1.06"
+	"viewkick_pitch_base"                      "-0.9"
 	"viewkick_pitch_random"                    "0.5"
 	"viewkick_pitch_softScale"                 "1.0"
 	"viewkick_pitch_hardScale"                 "0.9"
@@ -185,11 +185,11 @@
 	"clip_bodygroup_show_for_milestone_1"      "0"
 	"clip_bodygroup_show_for_milestone_2"      "1"
 	"clip_bodygroup_show_for_milestone_3"      "1"
-
-	"projectile_gravity_scale_time_2"				"1.0"//"0.1"
-	"projectile_gravity_scale_2"					"3.0"
-	"projectile_gravity_scale_time_final"			"0.2"
-	"projectile_gravity_scale_final"				"6.0"
+	"projectile_gravity_scale"					"1.3"
+	//"projectile_gravity_scale_time_2"				"1.0"//"0.1"
+	//"projectile_gravity_scale_2"					"3.0"
+	//"projectile_gravity_scale_time_final"			"0.2"
+	//"projectile_gravity_scale_final"				"6.0"
 
 	"projectile_drag_coefficient"					"0.0"
 	"Mods"
