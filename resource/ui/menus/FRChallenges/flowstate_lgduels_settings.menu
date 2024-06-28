@@ -163,7 +163,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Local Beam Offset"
+				labelText				"#FS_LOCAL_BEAM_OFFSET"
 				visible                 1
 				zpos 0
 				tall					60
@@ -217,7 +217,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Beam To Modify"
+				labelText				"#FS_BEAM_TO_MODIFY"
 				visible                 1
 				// wide 500
 				zpos 0
@@ -470,7 +470,7 @@ scripts/resource/ui/menus/FRChallenges/flowstate_lgduels_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Preset Colors"
+				labelText				"#FS_PRESET_COLORS"
 				visible                 1
 				// wide 500
 				zpos 0

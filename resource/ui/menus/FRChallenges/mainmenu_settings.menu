@@ -236,7 +236,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"CHANGE WEAPON"
+			labelText				"#FS_CHANGE_WEAPON"
 			visible                 1
 			zpos 3
 			tall					60
@@ -352,7 +352,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"CHANGE CHARACTER"
+			labelText				"#FS_CHANGE_CHARACTER"
 			visible                 1
 			zpos 3
 			tall					60
@@ -635,7 +635,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Invincible targets"
+				labelText				"#FS_INVINCIBLE_TARGETS"
 				visible                 1
 				zpos 0
 				tall					60
@@ -679,7 +679,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"AutoReload on hit"
+				labelText				"#FS_AUTORELOAD_ON_HIT"
 				visible                 1
 				zpos 0
 				tall					60
@@ -722,7 +722,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"AutoReload on kill"
+				labelText				"#FS_AUTORELOAD_ON_KILL"
 				visible                 1
 				zpos 0
 				tall					60
@@ -914,7 +914,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Play as dummy"
+				labelText				"#FS_PLAY_AS_DUMMY"
 				visible                 0
 				zpos 0
 				tall					60
@@ -957,7 +957,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Infinite training"
+				labelText				"#FS_INFINITE_TRAINING"
 				visible                 0
 				zpos 0
 				tall					60
@@ -1001,7 +1001,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Challenges duration"
+				labelText				"#FS_CHALLENGES_DURATION"
 				visible                 0
 				zpos 0
 				tall					60
@@ -1030,7 +1030,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"*For challenges that support it."
+				labelText				"#FS_FOR_SUPPORTED_CHALLENGES"
 				visible                 1
 				zpos 0
 				tall					60

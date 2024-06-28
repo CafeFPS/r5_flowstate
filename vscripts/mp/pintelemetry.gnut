@@ -169,7 +169,6 @@ global function Tracker_ReturnSuperglides
 global function Tracker_ReturnKills
 global function Tracker_ReturnDeaths
 global function Pin_Query_Init
-global function NULL_PDATA
 
 global function bAfkToRest
 global function bGlobalStats
@@ -177,7 +176,7 @@ global function bLog
 global function bEnc
 
 global function __executeEventStart_messages
-global function eMessageBot
+global function GetMessageBotEnt
 global function IsBotEnt
 global function SendServerMessage
 global function bBotEnabled
@@ -186,6 +185,7 @@ global function isIntervalThreadRunning
 global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
 
+global function NULL_PDATA
 global function Gamemode1v1_PlayerDataCallbacks //TODO: this probably shouldn't be here, but a bit of logic needs sorted into it's gamemode file (will do soonTM)
 
 #if LOG_ERRORS
@@ -1114,18 +1114,19 @@ void function AddCallback_PlayerDataFullyLoaded( void functionref( entity player
 		file.syncDataFullyLoadedCallbacks.append( callbackFunc ) 
 }
 
-void function AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
+void function AddCallback_PlayerData( string setting, void functionref( entity player, string data ) ornull setCallbackFunc = null )
 {
+	void functionref( entity player, string data ) callbackFunc = NULL_PDATA
+	
+	if( setCallbackFunc != null )
+		callbackFunc = expect void functionref( entity player, string data ) ( setCallbackFunc )
+		
 	if( setting in file.PlayerSettingsMap )
 	{
 		if( file.PlayerSettingsMap[ setting ].contains( callbackFunc ) )
-		{
-			throw format( "Already added function %s() for setting: %s ", string( callbackFunc ), setting )
-		}
+			mAssert( false, format( "Already added function %s() for setting: %s ", string( callbackFunc ), setting ) )
 		else
-		{
 			file.PlayerSettingsMap[ setting ].append( callbackFunc )
-		}
 	}
 	else 
 	{
@@ -2063,7 +2064,7 @@ bool function IsBotEnt( entity player )
 	return false
 }
 
-entity function eMessageBot() //global
+entity function GetMessageBotEnt() //global
 {
 	return file.entityBotEnt
 }
@@ -3653,18 +3654,12 @@ void function Tracker_SavePlayerData( string UID, string setting, ... )
 	#endif
 	
 	if ( !( UID in file.PlayerData ) )
-    {
-        file.PlayerData[UID] <- {}
-    }
+        file.PlayerData[ UID ] <- {}
 	
-	if ( !( setting in file.PlayerData[UID] ) )
-	{
-		file.PlayerData[UID][setting] <- value
-	}
+	if ( !( setting in file.PlayerData[ UID ] ) )
+		file.PlayerData[ UID ][ setting ] <- value
 	else 
-	{
-		file.PlayerData[UID][setting] = value
-	}
+		file.PlayerData[ UID ][ setting ] = value
 
 
 }

@@ -175,16 +175,16 @@ void function InitSystemPanel( var panel )
 	file.OpenWeaponsMenu[ panel ] <- clone data
 	file.OpenMOTD[ panel ] <- clone data
 
-	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].label = "#FS_FINISH_CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
 	
-	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
+	file.SetHunterButtonData[ panel ].label = "#FS_SET_HUNTER"
 	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
 		
-	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
+	file.TDM_ChangeWeapons[ panel ].label = "#FS_CHANGE_WEAPON"
 	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
@@ -208,16 +208,16 @@ void function InitSystemPanel( var panel )
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
 	
-	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].label = "#FS_TOGGLE_THIRD_PERSON"
 	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
-	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
+	file.endmatchButtonData[ panel ].label = "#FS_END_GAME_LOBBY"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
 	
-	file.hubButtonData[ panel ].label = "HUB"
+	file.hubButtonData[ panel ].label = "#FS_HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
 
-	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
+	file.MGsettingsButtonData[ panel ].label = "#FS_GYM_SETTINGS"
 	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
 
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
@@ -226,34 +226,34 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
-	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
+	file.ToggleScoreboardFocus[ panel ].label = "#FS_TOGGLE_SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
-	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "#FS_TOGGLE_VS_UI"
 	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
 
-	file.OpenLGDuelsSettingsData[ panel ].label = "LG DUELS SETTINGS"
+	file.OpenLGDuelsSettingsData[ panel ].label = "#FS_LG_DUELS_SETTINGS"
 	file.OpenLGDuelsSettingsData[ panel ].activateFunc = OpenLGDuelsSettings_System
 
-	file.OpenValkSimulatorSettingsData[ panel ].label = "VALK ULT SIM SETTINGS"
+	file.OpenValkSimulatorSettingsData[ panel ].label = "#FS_VALK_ULT_SIM_SETTINGS"
 	file.OpenValkSimulatorSettingsData[ panel ].activateFunc = OpenValkSimulatorSettings_System
 	
-	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK"
+	file.LockCurrent1v1Enemy[ panel ].label = "TOGGLE ENEMY LOCK" //set by server, not used here
 	file.LockCurrent1v1Enemy[ panel ].activateFunc = OpenLockCurrent1v1Enemy_System
 	
-	file.ToggleRest[ panel ].label = "TOGGLE REST"
+	file.ToggleRest[ panel ].label = "#FS_TOGGLE_REST"
 	file.ToggleRest[ panel ].activateFunc = ToggleRest_1v1
 	
-	file.DestroyDummies[ panel ].label = "Destroy Dummies"
+	file.DestroyDummies[ panel ].label = "#FS_DESTROY_DUMMIES"
 	file.DestroyDummies[ panel ].activateFunc = DestroyDummys_MovementRecorder
 	
-	file.DestroyDummiesAdmin[ panel ].label = "ADMIN Destroy Dummies"
+	file.DestroyDummiesAdmin[ panel ].label = "#FS_ADMIN_DESTROY_DUMMIES"
 	file.DestroyDummiesAdmin[ panel ].activateFunc = AdminDestroyDummys_MovementRecorder
 	
-	file.OpenWeaponsMenu[ panel ].label = "Weapons Menu"
+	file.OpenWeaponsMenu[ panel ].label = "#FS_WEAPONS_MENU"
 	file.OpenWeaponsMenu[ panel ].activateFunc = OpenWeaponSelector
 	
-	file.OpenMOTD[ panel ].label = "SERVER MOTD"
+	file.OpenMOTD[ panel ].label = "#FS_SERVER_MOTD"
 	file.OpenMOTD[ panel ].activateFunc = OpenMOTD	
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
@@ -280,7 +280,7 @@ void function UpdateSystemPanel( var panel )
 	if( IsConnected() && Playlist() != ePlaylists.fs_aimtrainer )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
 	else if( IsConnected() && Playlist() == ePlaylists.fs_aimtrainer )
-		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
+		file.lobbyReturnButtonData[ panel ].label = "#FS_EXIT_AIM_TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	foreach ( index, button in file.buttons[ panel ] )

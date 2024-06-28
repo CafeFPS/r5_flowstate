@@ -75,7 +75,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 			tall					50
 			visible					1
 			fontHeight				60
-			labelText				"CHALLENGE RESULTS"
+			labelText				"#FS_CHALLENGE_RESULTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -284,7 +284,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"ACCURACY"
+			labelText				"#FS_ACCURACY_CAPS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -322,7 +322,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"SHOTS HIT"
+			labelText				"#FS_SHOTS_HIT_CAPS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -360,7 +360,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"DAMAGE DONE"
+			labelText				"#FS_DAMAGE_DONE"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -398,7 +398,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"CRITICAL SHOTS"
+			labelText				"#FS_CRITICAL_SHOTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -461,7 +461,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"EXIT"
+			labelText				"#FS_EXIT"
 			visible                 1
 			zpos 0
 			tall					30
@@ -509,7 +509,7 @@ scripts/resource/ui/menus/FRChallenges/frchallenges.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"RESTART"
+			labelText				"#FS_RESTART"
 			visible                 1
 			zpos 0
 			tall					30

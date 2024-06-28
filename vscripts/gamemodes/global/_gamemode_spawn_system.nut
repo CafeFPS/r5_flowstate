@@ -210,7 +210,7 @@ void function Flowstate_SpawnSystem_Init()
 	#if DEVELOPER 
 		RegisterSignal( "DelayedHighlightActivate" )
 		RegisterSignal( "RunValidatorIfWaiting" )
-		RegisterSignal( "SpawnIsValidStatus" )
+		RegisterSignal( "IsSpawnValidStatus" )
 		
 		CalculateMaxIndent()
 		InitClonedSettings()
@@ -428,7 +428,8 @@ void function AddCallback_FlowstateSpawnsPostInit( LocPairData functionref() cal
 // 																		//
 //////////////////////////////////////////////////////////////////////////
 
-array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1 )//waiting room + extra spawns
+array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1 )
+														//waiting room + extra spawns
 {														//ideally only default waiting
 	array<SpawnData> customSpawns = []					// rooms are saved here. use :
 														// AddCallback_FlowstateSpawnsPostInit()
@@ -607,9 +608,7 @@ void function SetCallback_FlowstateSpawnsOffset( LocPair functionref() callbackF
 LocPair function GenerateMapGamemodeBasedOffset()
 {
 	if( file.mapGamemodeBasedOffsetFunc != null )
-	{
 		return file.mapGamemodeBasedOffsetFunc()
-	}
 	
 	return NewLocPair( ZERO_VECTOR, ZERO_VECTOR )
 }
@@ -2019,7 +2018,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	if( index != -1 )
 	{
 		thread __SignalIsValidSpawn( GetSpawns()[ index ].origin, index, player )
-		table spawnResults = WaitSignal( file.signalDummy, "SpawnIsValidStatus" )
+		table spawnResults = WaitSignal( file.signalDummy, "IsSpawnValidStatus" )
 		
 		if( expect bool( spawnResults.validspawn ) == false && expect int( spawnResults.spawnIndex ) == index )
 		{
@@ -2056,7 +2055,7 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 	for( int i = spawnsLen - 1; i >= 0; i-- )
 	{
 		thread __SignalIsValidSpawn( GetSpawns()[ i ].origin, i, player )	
-		table spawnResultsAll = WaitSignal( file.signalDummy, "SpawnIsValidStatus" )
+		table spawnResultsAll = WaitSignal( file.signalDummy, "IsSpawnValidStatus" )
 		
 		if( expect bool( spawnResultsAll.validspawn ) == false && expect int( spawnResultsAll.spawnIndex ) == i )
 		{
@@ -2205,11 +2204,11 @@ void function __SignalIsValidSpawn( vector origin, int spawnIndex, entity player
 	TraceResults result = TraceHull( origin, origin + <0, 0, 1>, mins, maxs, ignoreEnts, TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_PLAYER )
 
 	if ( result.startSolid )
-		Signal( file.signalDummy, "SpawnIsValidStatus", { validspawn = false, spawnIndex = spawnIndex } )
+		Signal( file.signalDummy, "IsSpawnValidStatus", { validspawn = false, spawnIndex = spawnIndex } )
 
 	bool traceFinalResult = result.fraction == 1.0
 	
-	Signal( file.signalDummy, "SpawnIsValidStatus", { validspawn = traceFinalResult, spawnIndex = spawnIndex } )
+	Signal( file.signalDummy, "IsSpawnValidStatus", { validspawn = traceFinalResult, spawnIndex = spawnIndex } )
 }
 
 void function PushAwayFromDoor( array<entity> doors, entity player, float force )

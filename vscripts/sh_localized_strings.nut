@@ -1,4 +1,4 @@
-// Localized strings table //mkos
+// Localized strings table 																	//mkos
 
 global function INIT_Flowstate_Localization_Strings
 global function Flowstate_FetchToken
@@ -14,6 +14,7 @@ global function StringReplaceLimited
 	global function LocalEventMsg //wrapper for LocalMsg ui type 1
 	global function IBMM_Notify
 	global function LocalizedTokenExists
+	global function CreatePanelText_Localized
 #endif
 
 #if CLIENT 	
@@ -21,6 +22,8 @@ global function StringReplaceLimited
 	global function FS_BuildLocalizedTokenWithVariableString
 	global function FS_DisplayLocalizedToken
 	global function FS_BuildLocalizedMultiVarString
+	global function FS_CreateTextInfoPanelWithID_Localized
+	global function FS_BuildLocalizedVariable_InfoPanel
 #endif
 
 #if DEVELOPER 
@@ -54,7 +57,7 @@ global enum eMsgUI
 	VAR_SUBTEXT_SLOT, 	//11
 	VAR_EVENT, 			//12
 	VAR_MOTD, 			//13
-	IBMM, 				//14
+	IBMM 				//14
 }
 
 struct 
@@ -68,6 +71,8 @@ struct
 #if CLIENT
 	string fs_variableString = ""
 	string fs_variableSubString = ""
+	string fs_variableString_InfoPanel = ""
+	string fs_variableSubString_InfoPanel = ""
 	table<int, string> variableVars = {}
 #endif
 
@@ -253,7 +258,12 @@ struct
 		"#SCORE_EVENT_FS_Scenarios_PenaltyDeath",
 		"#SCORE_EVENT_FS_Scenarios_PenaltyRing",
 		"#SCORE_EVENT_FS_Scenarios_BecomesSoloPlayer",
-		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer"
+		"#SCORE_EVENT_FS_Scenarios_KilledSoloPlayer",
+		"#FS_MATCHING_FOR",
+		"#FS_CHALLENGE_STARTED",
+		"#FS_JOIN_QUEUE",
+		"#FS_CHALLENGE_WAITING_FOR",
+		"#FS_WAITING_PANEL"
 	]
 	
 } file
@@ -604,6 +614,72 @@ void function IBMM_Notify( entity player, string ibmmLockTypeToken, int enemyPla
 	
 	LocalMsg( player, ibmmLockTypeToken, inputTypeToken, eMsgUI.IBMM, duration, "", "", "", false )
 }
+
+void function CreatePanelText_Localized( entity player, string ref, string subRef, string varString, string varSubstring, vector origin, vector angles, float textScale, int panelID = 0 )
+{
+	#if DEVELOPER && ASSERT_LOCALIZATION
+		if( !empty( ref ) )
+		{
+			mAssert( ref.find( "#" ) != -1, "Reference missing # symbol  ref: [ " + ref + " ] in calling func: " + FUNC_NAME( 3 ) + "()" )
+			mAssert( LocalizedTokenExists( ref ), "Localized Token Reference does not exist for [ " + ref + " ] \n in calling func: " + FUNC_NAME( 3 ) + "()" )
+		}
+		
+		if( !empty( subRef ) )
+		{
+			mAssert( subRef.find( "#" ) != -1, "Reference missing # symbol  ref: [ " + subRef + " ] in calling func: " + FUNC_NAME( 3 ) + "()" )
+			mAssert( LocalizedTokenExists( subRef ), "Localized Token Reference does not exist for [ " + subRef + " ] \n in calling func: " + FUNC_NAME( 3 ) + "()" )
+		}
+	#endif
+	
+	if ( !IsValid( player ) ) 
+		return
+		
+	if ( !player.IsPlayer() ) 
+		return
+		
+	if ( !player.p.isConnected ) 
+		return
+	
+	int datalen = varString.len() + varSubstring.len()
+	
+	string appendSubstring;
+	string appendString;
+	bool uiTypeValidLong;
+	string sendMessage;
+	
+	if ( ( datalen ) >= 599 )
+	{
+		#if DEVELOPER //implement limits?
+			Warning( "long text" )
+		#endif 
+	}
+	
+	if ( datalen > 0 )
+	{
+		for ( int textType = 0 ; textType < 2 ; textType++ )
+		{
+			sendMessage = textType == 0 ? varString : varSubstring
+
+			for ( int i = 0; i < sendMessage.len(); i++ )
+			{
+				Remote_CallFunction_NonReplay( player, "FS_BuildLocalizedVariable_InfoPanel", textType, sendMessage[i] )
+			}
+		}
+	}
+	
+	int tokenID = 0
+	int subTokenID = 0
+	
+	if( ref != "" )
+		tokenID = Flowstate_FetchTokenID( ref )
+	
+	if( subRef != "" )
+		subTokenID = Flowstate_FetchTokenID( subRef )
+	
+	Remote_CallFunction_NonReplay( player, "FS_CreateTextInfoPanelWithID_Localized", tokenID, subTokenID, origin, angles, textScale, panelID )
+}
+
+
 #endif //SERVER
 
 //########################################################
@@ -626,6 +702,25 @@ void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
 		for ( int i = 0; i < vargc; i++ )
 		{
 			file.fs_variableSubString += format( "%c", vargv[i] )
+		}
+	}
+}
+
+
+void function FS_BuildLocalizedVariable_InfoPanel( int Type, ... )
+{
+	if ( Type == 0 )
+	{
+		for ( int i = 0; i < vargc; i++ )
+		{
+			file.fs_variableString_InfoPanel += format( "%c", vargv[i] )
+		}
+	}
+	else 
+	{
+		for ( int i = 0; i < vargc; i++ )
+		{
+			file.fs_variableSubString_InfoPanel += format( "%c", vargv[i] )
 		}
 	}
 }
@@ -803,6 +898,83 @@ void function DisplayMessage( string str1, string str2, float duration, int uiTy
 	}
 	
 	AnnouncementFromClass( player, announcement )
+}
+
+void function FS_CreateTextInfoPanelWithID_Localized( int token, int subToken, vector origin, vector angles, float textScale, int panelID )
+{
+	string Msg = "";
+	string SubMsg = "";
+	
+	if( token != 0 )
+	{
+		string S = file.fs_variableString_InfoPanel
+		string localToken = Flowstate_FetchToken( token )
+		string add_placeholder_to_msg = countStringArgs( Localize( localToken ) ) == 0 ? "%s " : "";
+		
+		#if DEVELOPER && DEBUG_VARMSG
+			printt( "S: [", S + "]", "msg placeholder:[", add_placeholder_to_msg + "]" )
+		#endif 
+		
+		try 
+		{
+			Msg = format( ( Localize( localToken ) + add_placeholder_to_msg ), S )
+		}
+		catch(e)
+		{
+			printt("Error ", e ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", token )
+			Msg = Localize( trim( localToken ) ) + " " + S
+			
+			#if DEVELOPER && DEBUG_VARMSG 
+				printt("New msg:", Msg )
+			#endif
+		}
+	}
+	
+	if( subToken != 0 )
+	{
+		string SubS = file.fs_variableSubString_InfoPanel
+		string localSubToken = Flowstate_FetchToken( subToken )
+		string add_placeholder_to_submsg = countStringArgs( Localize( localSubToken ) ) == 0 ? "%s " : "";
+		
+		#if DEVELOPER && DEBUG_VARMSG
+			printt( "SubS: [", SubS + "]", "; submsg placeholder:[", add_placeholder_to_submsg + "]" )
+		#endif
+	
+		try
+		{
+			SubMsg = format( ( Localize( localSubToken ) + add_placeholder_to_submsg ), SubS )
+		}
+		catch(e2)
+		{
+			printt("Error ", e2 ," ; Function: ", FUNC_NAME(), " ;Invalid format qualifiers in message ID: ", subToken )
+		
+			#if DEVELOPER && DEBUG_VARMSG 
+				printt("New msg:", SubMsg )
+			#endif
+		}
+	}
+	
+	#if DEVELOPER && DEBUG_VARMSG
+		printt("msg: ", StringReplaceLimited( Msg, "\n", "\\n", 999 ), " ;SubMsg: ", StringReplaceLimited( SubMsg, "\n", "\\n", 999 ) )
+	#endif
+		
+	CreateTextPanel_Localized
+	( 
+		origin.x,
+		origin.y,
+		origin.z,
+		angles.x,
+		angles.y,
+		angles.z,
+		false,
+		textScale, 
+		panelID, 
+		Msg,
+		SubMsg
+	)
+	
+	file.fs_variableString_InfoPanel = ""
+	file.fs_variableSubString_InfoPanel = ""
 }
 
 void function FS_BuildLocalizedMultiVarString( int varNum, ... )

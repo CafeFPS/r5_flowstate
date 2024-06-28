@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				32
-			labelText				"SELECT A CHALLENGE TO START"
+			labelText				"#FS_SELECT_CHALLENGE"
 			font					TitleBoldFont
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -191,7 +191,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"Dummies killed this session: 0"
+			labelText				"#FS_DUMMIES_KILLED"
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -209,7 +209,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"Current weapon: "
+			labelText				"#FS_CURRENT_WEAPON"
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

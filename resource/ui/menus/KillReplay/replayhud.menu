@@ -127,7 +127,7 @@
 		"KillReplayText"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Kill Replay"
+			"labelText"				"#FS_KILL_REPLAY"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"	
 			"auto_wide_tocontents"	"1"
@@ -146,7 +146,7 @@
 		"ControlsText"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Kill Replay"
+			"labelText"				"#FS_KILL_REPLAY"
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"	
 			"auto_wide_tocontents"	"1"
@@ -165,7 +165,7 @@
 		"ControlsText2"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Kill Replay"
+			"labelText"				"#FS_KILL_REPLAY"
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"	
 			"auto_wide_tocontents"	"1"
@@ -235,7 +235,7 @@
 		"KillReplayKilledBy"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Killed By:"
+			"labelText"				"#FS_KILLED_BY"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"auto_wide_tocontents"	"1"

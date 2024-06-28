@@ -110,7 +110,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					50
 			visible					1
 			fontHeight				40
-			labelText				"WEAPON SELECTOR"
+			labelText				"#FS_WEAPON_SELECTOR"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -308,7 +308,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"%zoom% CHANGE ATTACHMENTS"
+			labelText				"#FS_CHANGE_ATTACHMENTS"
 			visible                 1
 			zpos 1
 			tall					40

@@ -372,6 +372,7 @@ void function Server_Init()
         ReMapLive_Init()
 		
 	Flowstate_SpawnSystem_Init()
+	NotificationSystem_Init()
 
 	#if DEVELOPER
 		SmokeTest_Init()

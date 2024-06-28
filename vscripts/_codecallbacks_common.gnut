@@ -223,8 +223,8 @@ entity function CodeCallback_GetBestObserverTarget( entity observer, bool revers
 			players.removebyvalue( observer )
 			
 		#if TRACKER
-			if( players.contains( eMessageBot() ) )
-				players.fastremovebyvalue( eMessageBot() ) 
+			if( players.contains( GetMessageBotEnt() ) )
+				players.fastremovebyvalue( GetMessageBotEnt() ) 
 		#endif 
 
 		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )

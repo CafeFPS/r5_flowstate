@@ -1894,7 +1894,7 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 		return false
 	}
 	
-	NotifyPlayer( player, "", eNotify.CHALLENGE )
+	ClearNotifications( player, eNotify.CHALLENGE )
 	int iRemoveOpponent = 0
 	entity opponent = getLock1v1OpponentOfPlayer( player )
 	entity challenged;
@@ -1978,12 +1978,12 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 		
 		if( IsValid( opponent ) )
 		{
-			opponent.Signal( "ClearNotifications" )
+			ClearNotifications( opponent )
 			opp = opponent
 		}
 		else if( IsValid( challenged ) )
 		{
-			challenged.Signal( "ClearNotifications" )
+			ClearNotifications( challenged )
 			opp = challenged
 		}
 		
@@ -1992,7 +1992,7 @@ bool function endLock1v1( entity player, bool addmsg = true, bool revoke = false
 			LocalMsg( player, "#FS_ChalEnded" )
 		}
 		
-		player.Signal( "ClearNotifications" )
+		ClearNotifications( player )
 		SetChallengeNotifications( [ player,opp ], false )
 	}
 	
@@ -2430,7 +2430,7 @@ entity function getRandomOpponentOfPlayer(entity player)
 	
 	if( count > 0 )
 	{
-		entity foundOpponent = eligible[RandomIntRangeInclusive( 0, count - 1 )]
+		entity foundOpponent = eligible[ RandomIntRangeInclusive( 0, count - 1 ) ]
 		
 		if( IsValid( foundOpponent ) )
 		{
@@ -2701,9 +2701,9 @@ void function soloModePlayerToRestingList(entity player)
 	}
 	
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
-	ResetIBMM( player )
 	
-	NotifyPlayer( player, "", eNotify.MATCHING )
+	ResetIBMM( player )
+	ClearNotifications( player )
 	
 	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 	deleteWaitingPlayer( player.p.handle )
@@ -3135,7 +3135,7 @@ void function BannerImages_1v1Init()
 {
 	LocPair main_banner__Coordinates = NewLocPair( Gamemode1v1_FetchNotificationPanelCoordinates(), Gamemode1v1_FetchNotificationPanelAngles() )
 	
-	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,250 >
+	main_banner__Coordinates.origin = main_banner__Coordinates.origin + < 0,0,267 > //TODO():, raytrace for determining valid display loc
 	
 	BannerImages_SetAllGroupsFunc
 	(
@@ -3174,8 +3174,6 @@ void function BannerImages_1v1Init()
 
 void function Gamemode1v1_Init( int eMap )
 {
-	RegisterSignal( "NotificationChanged" )
-	RegisterSignal( "ClearNotifications" )
 	RegisterSignal( "ChallengeStarted" )
 	RegisterSignal( "ChallengeEnded" )
 	
@@ -3506,9 +3504,9 @@ void function DefinePanelCallbacks( table<string, entity> panels )
             enemiesArray.fastremovebyvalue( user )
             
             #if TRACKER
-				if ( bBotEnabled() && IsValid( eMessageBot() ) && IsAlive( eMessageBot() ) )
+				if ( bBotEnabled() && IsValid( GetMessageBotEnt() ) && IsAlive( GetMessageBotEnt() ) )
 				{
-					enemiesArray.fastremovebyvalue( eMessageBot() )
+					enemiesArray.fastremovebyvalue( GetMessageBotEnt() )
 				}
             #endif
 			
@@ -3878,7 +3876,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					
 					if( !removed )
 					{
-						SetIsUsedBoolForRealmSlot(group.slotIndex, false);
+						SetIsUsedBoolForRealmSlot( group.slotIndex, false )
 					}
 					
 					#if DEVELOPER
@@ -4014,7 +4012,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					if( !IsValid( solostruct ) || !IsValid( solostruct.player ) )
 						continue
 					
-					NotifyPlayer( solostruct.player, "Waiting for\n   players...", eNotify.WAITING )
+					Gamemode1v1_NotifyPlayer( solostruct.player, eNotify.WAITING, "#FS_WAITING_PANEL" )
 					
 					SetShowWaitingMsg( solostruct.player, false ) //prevent looped signals
 					file.APlayerHasMessage = true 	//thread should remove waiting for msg..
@@ -4032,7 +4030,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					continue
 				}
 				
-				NotifyPlayer( player, "", eNotify.WAITING )
+				ClearNotifications( player, eNotify.WAITING )
 				SetShowWaitingMsg( player, true )
 			}
 			
@@ -4083,7 +4081,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				else 
 				{
 					#if DEVELOPER 
-						sqprint("waiting for lockmatch TIMEOUT matching")
+						sqprint( "waiting for lockmatch TIMEOUT matching" )
 					#endif 
 					
 					continue //these guys are still waiting for each other
@@ -4099,24 +4097,23 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			if(IsValid(newGroup.player1))//存在超时等待玩家
 			{
 				//sqprint("Player 1 found: " + newGroup.player1.GetPlayerName() + " waiting for same input or IBMM grace period time out")
-				opponent = getRandomOpponentOfPlayer(newGroup.player1)
+				opponent = getRandomOpponentOfPlayer( newGroup.player1 )
 				
 				//mkos
 				if( IsValid( opponent ) )
 				{
-					NotifyPlayer( newGroup.player1, "", eNotify.MATCHING )
-					newGroup.player2 = opponent
+					ClearNotifications( newGroup.player1, eNotify.MATCHING )
+					newGroup.player2 = opponent	
 				} 
-				else 
+				else
 				{
-					NotifyPlayer( newGroup.player1, "Matching for: " + FetchInputName( newGroup.player1 ), eNotify.MATCHING )
+					Gamemode1v1_NotifyPlayerOnce( newGroup.player1, eNotify.MATCHING, "#FS_MATCHING_FOR", FetchInputName( newGroup.player1 ) )
 				}
 							
 			}
 		}//超时玩家处理结束
 		else if ( !bMatchFound )//不存在已超时玩家,正常按照kd匹配	
 		{	
-		
 			// Warning("Normal matching")
 			foreach ( playerHandle, eachPlayerStruct in file.soloPlayersWaiting ) //找player1
 			{	
@@ -4154,7 +4151,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 					//mkos - keep building a list of candidates who are not timed out with same input
 					if( playerSelf.p.input != eachOpponent.p.input && ( player_IBMM_timeout == false || opponent_IBMM_timeout == false ) )
 					{
-						//sqprint("Waiting for input match...");
+						sqprint("Waiting for input match...");
 						continue		
 					}	
 				}
@@ -4232,7 +4229,8 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			newGroup.player1_handle = newGroup.player1.p.handle
 			newGroup.player2_handle = newGroup.player2.p.handle
 		
-			if ( Fetch_IBMM_Timeout_For_Player( newGroup.player1 ) == false || Fetch_IBMM_Timeout_For_Player( newGroup.player2 ) == false && newGroup.player1.p.input == newGroup.player2.p.input )
+			//TODO: verify this
+			if ( ( Fetch_IBMM_Timeout_For_Player( newGroup.player1 ) == false && Fetch_IBMM_Timeout_For_Player( newGroup.player2 ) == false ) || newGroup.player1.p.input == newGroup.player2.p.input )
 			{			
 				newGroup.GROUP_INPUT_LOCKED = true;
 			} 
@@ -4242,6 +4240,10 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			}
 			
 			waitthread soloModePlayerToInProgressList( newGroup ) //possible timing fix
+			ArrayRemoveInvalid( players )
+			
+			if( players.len() != 2 )
+				continue
 
 			foreach ( index, eachPlayer in players )
 			{
@@ -4651,7 +4653,7 @@ void function ClearAllNotifications()
 		if( !IsValid( player ) )
 			continue 
 			
-		player.Signal( "ClearNotifications" )
+		ClearNotifications( player )
 	}
 }
 
@@ -4662,7 +4664,7 @@ vector function Gamemode1v1_GetNotificationPanel_Coordinates()
 		return WaitingRoom.origin + <0,-200,130> 
 	}
 	
-	return g_waitingRoomPanelLocation.origin + <0,0,155> 	
+	return g_waitingRoomPanelLocation.origin + <0,0,155>
 }
 
 vector function Gamemode1v1_GetNotificationPanel_Angles()
@@ -4685,7 +4687,7 @@ void function Gamemode1v1_ChallengeNotificationsThread( entity player )
 		{
 			if( IsValid( player ) )
 			{
-				player.Signal( "ClearNotifications" )
+				ClearNotifications( player )
 			}
 		}
 	)
@@ -4707,7 +4709,7 @@ void function Gamemode1v1_ChallengeNotificationsThread( entity player )
 				printt( "CREATING 002 for", player )
 			#endif
 			
-			NotifyPlayer( player, "\n Challenge \n Started \n", eNotify.CHALLENGE )
+			Gamemode1v1_NotifyPlayer( player, eNotify.CHALLENGE, "#FS_CHALLENGE_STARTED" )
 			HasChalText = true 
 			wait 2
 			
@@ -4725,7 +4727,7 @@ void function Gamemode1v1_ChallengeNotificationsThread( entity player )
 					printt( "CREATING 003 for", player )
 				#endif 
 				
-				NotifyPlayer( player, "Join the queue\n        to start\nthe challenge", eNotify.CHALLENGE )
+				Gamemode1v1_NotifyPlayer( player, eNotify.CHALLENGE, "#FS_JOIN_QUEUE" )
 				iStatusText = 3
 			}
 			
@@ -4758,7 +4760,7 @@ void function Gamemode1v1_ChallengeNotificationsThread( entity player )
 						printt( "CREATING 004 for", player )
 					#endif 
 					
-					NotifyPlayer( player, "Waiting for " + challenged.p.name + "\n to join the queue...", eNotify.CHALLENGE )
+					Gamemode1v1_NotifyPlayer( player, eNotify.CHALLENGE, "#FS_CHALLENGE_WAITING_FOR", challenged.p.name )
 					iStatusText = 4
 				}
 			}
@@ -4984,8 +4986,8 @@ void function TakeUltimate( entity player )
 
 void function Init_IBMM( entity player )
 {
-	#if TRACKER
-		if( player == eMessageBot() )
+	#if TRACKER && HAS_TRACKER_DLL
+		if( player == GetMessageBotEnt() )
 			return 
 	#endif
 		

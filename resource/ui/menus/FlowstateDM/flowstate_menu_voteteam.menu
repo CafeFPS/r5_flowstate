@@ -319,7 +319,7 @@
 			"tall"						"40"
 			"visible"					"1"
 			"fontHeight"				"50"
-			"labelText"					"CHOOSE A TEAM"
+			"labelText"					"#FS_CHOOSE_A_TEAM"
 			"font"						"DefaultBold_41"
 			"allcaps"					"1"
 			"fgcolor_override"			"255 255 255 155"

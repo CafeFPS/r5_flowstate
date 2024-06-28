@@ -70,7 +70,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"BtnSearchLabel"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Search:"
+		"labelText"				"#FS_SEARCH"
 		"xpos"					"-23"
 		"ypos"					"-16"
 		"auto_wide_tocontents"	"1"
@@ -190,7 +190,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"NoServersLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"No Servers Found"
+		"labelText"				"#FS_NO_SERVERS_FOUND"
 		"xpos"					"0"
 		"ypos"					"-15"
 		"auto_wide_tocontents"	"1"
@@ -229,7 +229,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"RefreshServersText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Refresh Servers"
+		"labelText"				"#FS_REFRESH_SERVERS"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -272,7 +272,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ClearFlitersText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Clear Filters"
+		"labelText"				"#FS_CLEAR_FILTERS"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -474,7 +474,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ServerNameLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Server Name"
+		"labelText"				"#FS_SERVER_NAME"
 		"xpos"					"-15"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -492,7 +492,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"PlayerCountLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Players"
+		"labelText"				"#FS_PLAYERS"
 		"xpos"					"-670"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -510,7 +510,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"PlaylistLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Playlist"
+		"labelText"				"#FS_PLAYLIST"
 		"xpos"					"-800"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -527,7 +527,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"MapLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Map"
+		"labelText"				"#FS_MAP"
 		"xpos"					"-1050"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -839,7 +839,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ConnectButtonText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Connect"
+		"labelText"				"#FS_CONNECT"
 		"font"					"Default_27_Outline"
 		"allcaps"				"1"
 		"wide"					"200"

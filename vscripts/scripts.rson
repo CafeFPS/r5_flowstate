@@ -989,7 +989,7 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	gamemodes/global/_gamemode_spawn_settings.nut
+	gamemodes/global/_gamemode_spawn_system.nut
 ]
 
 When: "SERVER || CLIENT"

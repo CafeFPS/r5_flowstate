@@ -154,7 +154,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					60
 			visible					1
 			fontHeight				32
-			labelText				"SELECT A CHALLENGE TO START"
+			labelText				"#FS_SELECT_CHALLENGE"
 			font					TitleBoldFont
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -172,7 +172,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"Dummies killed this session: 0"
+			labelText				"#FS_DUMMIES_KILLED"
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -190,7 +190,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"Current weapon: "
+			labelText				"#FS_CURRENT_WEAPON"
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -259,7 +259,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Strafing Dummy"
+			labelText				"#FS_STRAFING_DUMMY"
 			visible                 1
 			zpos 3
 			tall					60
@@ -318,7 +318,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Target Switching"
+			labelText				"#FS_TARGET_SWITCHING"
 			visible                 1
 			zpos 3
 			tall					55
@@ -377,7 +377,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Floating Target"
+			labelText				"#FS_FLOATING_TARGET"
 			visible                 1
 			zpos 3
 			tall					55
@@ -436,7 +436,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Popcorn Targets"
+			labelText				"#FS_POPCORN_TARGETS"
 			visible                 1
 			zpos 3
 			tall					55
@@ -495,7 +495,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Tile Frenzy"
+			labelText				"#FS_TILE_FRENZY"
 			visible                 1
 			zpos 3
 			tall					55
@@ -554,7 +554,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Close Fast Strafes"
+			labelText				"#FS_CLOSE_FAST_STRAFES"
 			visible                 1
 			zpos 3
 			tall					55
@@ -729,7 +729,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Record Movement"
+			labelText				"#FS_RECORD_MOVEMENT"
 			visible                 1
 			zpos 3
 			tall					55
@@ -846,7 +846,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Grenades Practice"
+			labelText				"#FS_GRENADES_PRACTICE"
 			visible                 1
 			zpos 3
 			tall					55
@@ -905,7 +905,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Shooting Valk's Ult"
+			labelText				"#FS_SHOOTING_VALKS_ULT"
 			visible                 1
 			zpos 3
 			tall					55
@@ -964,7 +964,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Shooting From Lift"
+			labelText				"#FS_SHOOTING_FROM_LIFT"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1005,7 +1005,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
 			"visible"				"1"
-			sound_focus           "UI_Menu_Focus"
+			sound_focus           	"UI_Menu_Focus"
 			"sound_accept"          "UI_Menu_Accept"
 			"cursorPriority"        "-1"
 
@@ -1023,7 +1023,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Skydiving Targets"
+			labelText				"#FS_SKYDIVING_TARGETS"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1081,7 +1081,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Running Targets"
+			labelText				"#FS_RUNNING_TARGETS"
 			visible                 1
 			zpos 3
 			tall					55

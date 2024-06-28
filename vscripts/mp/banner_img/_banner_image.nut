@@ -67,9 +67,9 @@ void function BannerImages_Init()
 		
 		if( file.runImageAppendtoGroupsFunc != null )
 			file.runImageAppendtoGroupsFunc()
+			
+		__RunThreads()
 	}
-	
-	__RunThreads()
 	
 	g_bBannerImages_Loaded = true
 }

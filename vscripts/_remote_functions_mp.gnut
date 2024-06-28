@@ -793,6 +793,10 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "FS_BuildLocalizedTokenWithVariableString" ) //only for variable string
 	Remote_RegisterClientFunction( "FS_DisplayLocalizedToken", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "float", 0.0, 5000.0, 32 )
 
+	// Localized TextPanel
+	Remote_RegisterUntypedFunction_deprecated( "FS_BuildLocalizedVariable_InfoPanel" )
+	Remote_RegisterClientFunction( "FS_CreateTextInfoPanelWithID_Localized", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", 0.0, 100.0, 32, "int", INT_MIN, INT_MAX )
+
 	// Experiment
 	Remote_RegisterClientFunction( "FS_Toggle_Mute", "int", INT_MIN, INT_MAX, "bool" )
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )

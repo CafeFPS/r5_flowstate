@@ -60,7 +60,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Server Settings"
+			labelText				"#FS_SERVER_SETTINGS"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -169,7 +169,7 @@
 		ChatRoomText
 		{
 			ControlName				Label
-			labelText				"Chat Room"
+			labelText				"#FS_CHAT_ROOM"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -225,7 +225,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Start Game"
+			labelText				"#FS_START_GAME"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -297,7 +297,7 @@
 		MapServerNameInfoEdit
 		{
 			ControlName				Label
-			labelText				"Some Server Name"
+			labelText				"#FS_SOME_SERVER_NAME"
 			font					Default_27_Outline
 			"allcaps"				"1"
 			wide					680
@@ -392,7 +392,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Server Name"
+			labelText				"#FS_SERVER_NAME"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -448,7 +448,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Server Description"
+			labelText				"#FS_SERVER_DESC"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -504,7 +504,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Select Map"
+			labelText				"#FS_SELECT_MAP"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -560,7 +560,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Select Playlist"
+			labelText				"#FS_SELECT_PLAYLIST"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -616,7 +616,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"Select Visibility"
+			labelText				"#FS_SELECT_VISIBILITY"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1

@@ -53,11 +53,11 @@ void function Script_RegisterAllStats()
 	// Additionally, an api constant REGISTER_ALL will trigger the return of the entire 
 	// script-registered live-table stats.
 	//
-	// There are limits in place.  int must not exceed 32bit int limit 
-	//								string must not exceed 30char
-	//								bool 0/1 true/false 
-	//								float must not exceed 32bit 
-	//								all numericals are signed. 
+	// There are limits in place:   - int must not exceed 32bit int limit 
+	//								- string must not exceed 30char
+	//								- bool 0/1 true/false 
+	//								- float must not exceed 32bit 
+	//								- all numericals are signed. 
 	//								
 	//								There also exists api rate-limiting. 
 	
@@ -140,7 +140,7 @@ void function Script_RegisterAllPlayerDataCallbacks()
 	// Must be in the tracker backend.
 	//
 	// AddCallback_PlayerData( string setting, void functionref( entity player, string data ) callbackFunc )
-	// AddCallback_PlayerData( "setting", func ) -- use NULL_PDATA() for no func.
+	// AddCallback_PlayerData( "setting", func ) -- omit second param or use null for no func. AddCallback_PlayerData( "setting" )
 	// void function func( entity player, string data )
 	//
 	// utility:

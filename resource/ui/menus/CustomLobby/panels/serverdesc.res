@@ -35,7 +35,7 @@
 	SetServerDescTxt
 	{
 		ControlName				Label
-		labelText				"Set Server Description"
+		labelText				"#FS_SET_SERVER_DESCRIPTION"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1
@@ -155,7 +155,7 @@
 	BtnDescText
 	{
 		ControlName				Label
-		labelText				"Save"
+		labelText				"#FS_SAVE"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

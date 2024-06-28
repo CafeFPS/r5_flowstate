@@ -35,7 +35,7 @@
 	SetServerNameTxt
 	{
 		ControlName				Label
-		labelText				"Set Server Name"
+		labelText				"#FS_SET_SERVER_NAME"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1
@@ -155,7 +155,7 @@
 	BtnSaveText
 	{
 		ControlName				Label
-		labelText				"Save"
+		labelText				"#FS_SAVE"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

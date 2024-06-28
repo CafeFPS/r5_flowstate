@@ -208,7 +208,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -180
 			auto_wide_tocontents	1
 			tall					21
-			labelText				"Need any help? Wana talk with the community? Join our discord server!"
+			labelText				"#FS_R5RELOADED_HELP"
 			font					TitleFont
 			fontHeight				21
 			allcaps					1
@@ -322,7 +322,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -430
 			auto_wide_tocontents	1
 			tall					31
-			labelText				"Documentation"
+			labelText				"#FS_DOCUMENTATION"
 			font					TitleBoldFont
 			fontHeight				31
 			allcaps					1
@@ -340,7 +340,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -470
 			auto_wide_tocontents	1
 			tall					21
-			labelText				"Need or want to view the documentation for R5Reloaded?"
+			labelText				"#FS_VIEW_DOCUMENTATION"
 			font					TitleFont
 			fontHeight				21
 			allcaps					1
@@ -396,7 +396,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -600
 			auto_wide_tocontents	1
 			tall					21
-			labelText				"We are opensource, check it out!"
+			labelText				"#FS_R5R_OPENSOURCE"
 			font					TitleFont
 			fontHeight				21
 			allcaps					1
@@ -434,7 +434,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -690
 			auto_wide_tocontents	1
 			tall					31
-			labelText				"Quick Keybinds"
+			labelText				"#FS_QUICK_KEYBINDS"
 			font					TitleBoldFont
 			fontHeight				31
 			allcaps					1
@@ -452,7 +452,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -730
 			auto_wide_tocontents	1
 			tall					21
-			labelText				"F10 - Opens the companion you can use to find/create servers"
+			labelText				"#FS_OPENS_COMPANION"
 			font					TitleFont
 			fontHeight				21
 			allcaps					1
@@ -470,7 +470,7 @@ resource/ui/menus/about_game_mode.menu
 			ypos                    -760
 			auto_wide_tocontents	1
 			tall					21
-			labelText				"Tilde ( ~ ) - Opens the console"
+			labelText				"#FS_OPENS_CONSOLE"
 			font					TitleFont
 			fontHeight				21
 			allcaps					1
