@@ -1,3 +1,37 @@
+global const table TRUE_TF2_SETTINGS_LOW_GRAV = {
+	// ["airspeed"] = 60, //check value
+	["airacceleration"] = 10,
+    ["landslowdownduration"] = 0,
+    ["gravityscale"]=0.5, //check value
+    ["jumpheight"]=120,
+    ["Slidejumpheight"]=90,
+    ["slideRequiredStartSpeed"]=200,
+    ["stepheight"]=18,
+    ["ziplineSpeed"]=600,
+    ["wallrun"] = 1,
+    ["doublejump"] = 1,
+    ["superjumpMinHeight"]=60,
+    ["superjumpMaxHeight"]=60,
+    ["superjumpHorzSpeed"]=180,
+    ["wallrun_timeLimit"]=1.75,
+    ["wallrunJumpOutwardSpeed"]=205,
+    ["wallrunJumpUpSpeed"]=230,
+    ["wallrunJumpInputDirSpeed"]=80,
+    ["wallrunMaxSpeedVertical"]=225,
+    ["wallrunMaxSpeedHorizontal"]=420,
+    ["wallrunAccelerateVertical"]=360,
+    ["wallrunAccelerateHorizontal"]=1500,
+    ["leech_range"]=64,
+    ["impactSpeed"]=380,
+    ["slidedecel"]=50,
+    ["automantle_enable"] = 1,
+    ["slidevelocitydecay"]=0.7,
+	// ["acceleration"] = 10, can't be 10
+    ["skip_speed_reduce"]=0,
+    ["slideSpeedBoostCap"]=9999999,
+    ["antiMultiJumpHeightFrac"]=1
+}
+
 global const table TRUE_TF2_SETTINGS = {
 	// ["airspeed"] = 60, //check value
 	["airacceleration"] = 10,

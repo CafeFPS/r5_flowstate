@@ -81,7 +81,9 @@ void function RemoteFunctions_Init_Begin()
 	//Trident
 	Remote_RegisterClientFunction("SetupThirdPersonForVehicle", "bool")
 	Remote_RegisterClientFunction("TridentBoost_Visuals")
+	// RegisterNetworkedVariable( "lastFlowstateHovercraftSpeed", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -1.0 )
 
+	//Lightning Gun
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
 	//Custom gamemodes
@@ -455,7 +457,10 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "thirdBadgeDataInt", SNDC_DEATH_BOX, SNVT_INT, -1 )
 	
 	RegisterNetworkedVariable( "lootRarity", SNDC_DEATH_BOX, SNVT_INT, -1 )
-	Remote_RegisterClientFunction( "ServerCallback_PlayLootRarityFXOnDeathboxDrop", "entity" )
+
+	Remote_RegisterClientFunction( "ServerToClient_PlayLootRarityFXOnDeathboxDrop", "entity" )
+	Remote_RegisterClientFunction( "Flyer_ServerToClient_DisplayFlyerDeathboxPrompt" )
+
 	RegisterNetworkedVariable( "ownerEHI", SNDC_DEATH_BOX, SNVT_BIG_INT, -1 )
 
 	RegisterNetworkedVariable( "hasDeathFieldImmunity", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
@@ -802,7 +807,8 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
 	
 	// Client-side helper (not permissive)
-	RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
+	if( Gamemode() != eGamemodes.WINTEREXPRESS )
+		RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	
 	//r5r.dev player stats
 	RegisterNetworkedVariable( "SeasonScore", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0  )

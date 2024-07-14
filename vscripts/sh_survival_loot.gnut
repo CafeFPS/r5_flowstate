@@ -84,6 +84,7 @@ global function SURVIVAL_AddCallback_OnInventoryChanged
 global function SURVIVAL_AddCallback_OnHealingItemCountChanged
 global function Dev_SpawnAllLootTypes
 global function SURVIVAL_Loot_GetByType_InLevel
+global function SURVIVAL_Loot_GetByType_FixedTier
 global function SURVIVAL_Loot_DisableNetworkDistanceCullingManaged
 global function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged
 #if DEVELOPER
@@ -1010,7 +1011,7 @@ void function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged( entity loot )
 	}
 }
 
-array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxTier = -1 )
+array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxTier = -1, int minTier = -1 )
 {
 	array<LootData> lootOfType = []
 	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
@@ -1022,6 +1023,32 @@ array<LootData> function SURVIVAL_Loot_GetByType_InLevel( int lootType, int maxT
 			continue
 
 		if ( maxTier > -1 && lootData.tier > maxTier )
+			continue
+
+		if ( minTier > -1 && lootData.tier < minTier )
+			continue
+
+		lootOfType.append( lootData )
+	}
+
+	return lootOfType
+}
+
+array<LootData> function SURVIVAL_Loot_GetByType_FixedTier( int lootType, int tier )
+{
+	array<LootData> lootOfType = []
+	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
+	{
+		if ( !IsLootTypeValid( lootData.lootType ) )
+			continue
+
+		if ( lootData.lootType != lootType )
+			continue
+
+		if ( !LootTypeHasAnyChanceToSpawn( lootRef ) )
+			continue
+
+		if ( tier > -1 && lootData.tier != tier )
 			continue
 
 		lootOfType.append( lootData )

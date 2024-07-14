@@ -1,7 +1,319 @@
-// stub script
-global function BaseGametype_Init_MPSP
+globalize_all_functions
 
+global struct IntroCameraSettings
+{
+	vector origin = ZERO_VECTOR
+	vector angles = ZERO_VECTOR
+	float fov = 70.0
+}
+
+global typedef CustomIntroCameraSettingsFunc void functionref( entity, IntroCameraSettings )
+global typedef ExtendedPostDeathLogic		 void functionref( entity )
+global typedef ShouldSpawnPlayerOnConnect	 bool functionref( entity )
+global typedef OnPostDeathLogicEnd			 void functionref( entity )
+const float THIRD_PERSON_KILL_REPLAY_PROJECTILES_MINTIME = 0.3
+
+struct
+{
+	IntroCameraSettings ornull introCamSettings
+	void functionref(entity player ) ObserverThreadOverrideCallback = null
+	// PostMatchSurveySettings surveySettings
+	ExtendedPostDeathLogic extendedDeathLogic
+	array<OnPostDeathLogicEnd> onPostDeathLogicEndFuncs
+} file
+
+int s_randomViewpointBaseInt = -1
 void function BaseGametype_Init_MPSP()
 {
     
+}
+
+
+entity function PickBestObserverTarget( entity player, int cycleDirection = 0 )
+{
+	entity observerTarget = player.GetObserverTarget()
+
+	array<entity> observeablePlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	bool observingTeamMembers        = observeablePlayers.len() > 0
+
+	if ( observeablePlayers.len() == 0 )
+		observeablePlayers = GetPlayerArray_AliveConnected()
+
+	//dont let player observe bots
+	if ( GetCurrentPlaylistVarBool( "NotAllowSpectatingBots", false ) )
+	{
+		array<entity> botPlayers
+		foreach( targetPlayer in observeablePlayers )
+		{
+
+			if ( targetPlayer.IsBot() )
+			{
+				botPlayers.append(targetPlayer)
+			}
+		}
+
+		foreach( tar in botPlayers )
+		{
+			observeablePlayers.removebyvalue(tar)
+		}
+
+
+		if ( IsValid( player.p.killerToSpectate ) )
+		{
+			if ( player.p.killerToSpectate.IsBot() )
+			{
+				player.p.killerToSpectate = null
+			}
+		}
+	}
+
+	if ( observeablePlayers.len() == 0 )
+		return null
+
+	if ( GetCurrentPlaylistVarBool( "allowSpectatingEnemySquad", true ) )
+	{
+		if ( observingTeamMembers )
+		{
+			return PickBestPlayerOnteamToObserve( observeablePlayers, player, cycleDirection )
+		}
+		else
+		{
+			if ( observerTarget != null )
+			{
+				if ( observerTarget.IsPlayer() )
+				{
+					array<entity> obsTargets = GetPlayerArrayOfTeam_Alive( observerTarget.GetTeam() )
+					if ( obsTargets.len() > 0 )
+						return PickBestPlayerOnteamToObserve( obsTargets, player, cycleDirection )
+					else
+						return ArrayClosest( observeablePlayers, observerTarget.GetOrigin() )[0]
+				}
+				else
+					return ArrayClosest( observeablePlayers, observerTarget.GetOrigin() )[0]
+			}
+
+			if ( IsValid( player.p.killerToSpectate ) )
+			{
+				if ( IsAlive( player.p.killerToSpectate ) && !player.p.hasSpectatedKillerOnce )
+				{
+					return player.p.killerToSpectate
+				}
+				else
+				{
+					array<entity> killerTeammates = GetPlayerArrayOfTeam_Alive( player.p.killerToSpectate.GetTeam() )
+					if ( killerTeammates.len() == 0 )
+						return ArrayClosest( observeablePlayers, player.p.deathOrigin )[0]
+					else
+						return PickBestPlayerOnteamToObserve( killerTeammates, player, cycleDirection )
+				}
+			}
+			else
+			{
+				return ArrayClosest( observeablePlayers, player.p.deathOrigin )[0]
+			}
+		}
+
+		return null
+
+	}
+	else // allowSpectatingEnemySquad is false
+	{
+		if ( observingTeamMembers )
+		{
+			observeablePlayers.sort( SortByTeamMemberIndex )
+			if ( cycleDirection == 0 )
+				return observeablePlayers[0]
+
+			int indexToObserve = 0
+			foreach ( index, observeable in observeablePlayers ) // look for a pivot
+			{
+				if ( observeable == observerTarget || observeable == player)
+				{
+					if ( cycleDirection == 1 )
+						indexToObserve = (index + 1) % observeablePlayers.len()
+					else
+						indexToObserve = ((index - 1) + observeablePlayers.len()) % observeablePlayers.len()
+
+					break
+				}
+			}
+
+			return observeablePlayers[indexToObserve] // 0 if pivot not found
+		}
+		else
+		{
+			if ( observerTarget != null )
+			{
+				if ( observerTarget.IsPlayer() && IsAlive( observerTarget.p.killerToSpectate ) )
+					return observerTarget.p.killerToSpectate
+				else
+					return ArrayClosest( observeablePlayers, observerTarget.GetOrigin() )[0]
+			}
+
+			if ( IsAlive( player.p.killerToSpectate ) )
+				return player.p.killerToSpectate
+			else
+			{
+				return ArrayClosest( observeablePlayers, player.p.deathOrigin )[0]
+			}
+		}
+
+		return null
+	}
+
+	unreachable
+}
+
+
+entity function PickBestPlayerOnteamToObserve( array< entity > playerAliveOnTeam, entity observingPlayer, int cycleDirection = 0 )
+{
+	entity observerTarget = observingPlayer.GetObserverTarget()
+
+	playerAliveOnTeam.sort( int function( entity a, entity b ) : ( observingPlayer ) //Sort by teammemberindex, except always put killer to spectate first
+	{
+		Assert( a.GetTeam() == b.GetTeam() )
+
+		if ( IsValid( observingPlayer.p.killerToSpectate ) )
+		{
+			if ( a == observingPlayer.p.killerToSpectate || b == observingPlayer.p.killerToSpectate )
+				return -1
+		}
+
+		return a.GetTeamMemberIndex() > b.GetTeamMemberIndex() ? 1 : -1
+	} )
+
+	if ( cycleDirection == 0 )
+		return playerAliveOnTeam[0]
+
+	int indexToObserve = 0
+	foreach ( index, observeable in playerAliveOnTeam ) // look for a pivot
+	{
+		if ( observeable == observerTarget || observeable == observingPlayer)
+		{
+			if ( cycleDirection == 1 )
+				indexToObserve = (index + 1) % playerAliveOnTeam.len()
+			else
+				indexToObserve = ((index - 1) + playerAliveOnTeam.len()) % playerAliveOnTeam.len()
+
+			break
+		}
+	}
+
+	Assert( indexToObserve < playerAliveOnTeam.len() )
+	return playerAliveOnTeam[indexToObserve]
+}
+CustomIntroCameraSettingsFunc s_cameraSettingsFunc = null
+void function SetCustomIntroCameraSettingsFunction( CustomIntroCameraSettingsFunc func )
+{
+	Assert( (s_cameraSettingsFunc == null), format( "Function was already set to: '%s'", string( s_cameraSettingsFunc ) ) )
+	s_cameraSettingsFunc = func
+}
+
+void function SetPlayerToDefaultViewPoint( entity player )
+{
+	IntroCameraSettings view
+
+	entity viewPoint = player //FindViewPoint( player )
+	if ( IsValid( viewPoint ) )
+	{
+		view.origin = viewPoint.GetOrigin()
+
+		player.SetOrigin( view.origin )
+		view.angles = viewPoint.GetAngles()
+
+		entity viewTarget = GetEnt( expect string( viewPoint.kv.target ) )
+		if ( IsValid( viewTarget ) )
+			view.angles = VectorToAngles( viewTarget.GetOrigin() - view.origin )
+	}
+
+	if ( file.introCamSettings != null )
+	{
+		view = expect IntroCameraSettings( file.introCamSettings )
+	}
+
+	if ( s_cameraSettingsFunc != null )
+		s_cameraSettingsFunc( player, view )
+
+	const string FORCE_INTRO_CAM_VARNAME = "force_intro_camera"
+	string forceStr = GetCurrentPlaylistVarString( FORCE_INTRO_CAM_VARNAME, "" )
+	if ( forceStr.len() > 0 )
+	{
+		array<string> arr = split( forceStr, ", " )
+		if ( arr.len() >= 6 )
+		{
+			printf( "%s() - Using playlist var '%s' with value '%s'.", FUNC_NAME(), FORCE_INTRO_CAM_VARNAME, forceStr )
+			view.origin = <float( arr[0] ), float( arr[1] ), float( arr[2] )>
+			view.angles = <float( arr[3] ), float( arr[4] ), float( arr[5] )>
+			view.fov = ((arr.len() >= 7) ? float( arr[6] ) : 70.0)
+		}
+	}
+
+	if ( view.origin == ZERO_VECTOR  && !IsTestMap() )
+		Warning( "%s() - View Origin not set.", FUNC_NAME() )
+
+	player.SetOrigin( view.origin )
+	player.SetObserverModeStaticPosition( view.origin )
+	player.SetObserverModeStaticAngles( view.angles )
+	player.SetObserverModeStaticFOVOverride( view.fov )
+}
+
+// entity function FindViewPoint( entity player )
+// {
+	// int spotCount = svSpawnGlobals.infoIntermissions.len()
+	// if ( spotCount == 0 )
+		// return null
+
+	// int index = (s_randomViewpointBaseInt % spotCount)
+	// return svSpawnGlobals.infoIntermissions[index]
+// }
+void function PutPlayerInObserverMode_( entity player, int observerMode, bool doSpecifyOriginAngles, vector specificOrigin, vector specificAngles )
+{
+	// clearing weapons or particles attached here can cause other errors
+	player.ClearHitboxAttachedChildren()
+
+	if ( doSpecifyOriginAngles )
+	{
+		player.SetObserverModeStaticPosition( specificOrigin )
+		player.SetObserverModeStaticAngles( specificAngles )
+		player.SetObserverModeStaticFOVOverride( 0.0 )
+	}
+	else
+	{
+		SetPlayerToDefaultViewPoint( player )
+	}
+
+	switch ( observerMode )
+	{
+		case OBS_MODE_IN_EYE:
+		case OBS_MODE_CHASE:
+			Assert( (Time() - player.p.connectTime) > FIRST_PERSON_SPECTATOR_DELAY )
+			player.SetSpecReplayDelay( FIRST_PERSON_SPECTATOR_DELAY )
+			player.StartObserverMode( observerMode )
+			break
+		case OBS_MODE_STATIC:
+		case OBS_MODE_STATIC_LOCKED:
+		case OBS_MODE_DEATHCAM:
+		case OBS_MODE_IN_EYE_SIMPLE:
+			player.SetSpecReplayDelay( 0.0 )
+			player.StartObserverMode( observerMode )
+			player.SetObserverTarget( null )
+			break
+		default:
+			unreachable
+			break
+	}
+}
+
+void function PutPlayerInObserverMode( entity player, int observerMode )
+{
+	PutPlayerInObserverMode_( player, observerMode, false, <0,0,0>, <0,0,0> )
+}
+void function PutPlayerInObserverModeWithOriginAngles( entity player, int observerMode, vector origin, vector angles )
+{
+	PutPlayerInObserverMode_( player, observerMode, true, origin, angles )
+}
+
+void function SetIntroCameraSettings( IntroCameraSettings viewSettings )
+{
+	file.introCamSettings = viewSettings
 }

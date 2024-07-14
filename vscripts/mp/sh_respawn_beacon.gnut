@@ -50,7 +50,7 @@ global const float MOBILE_RESPAWN_BEACON_RESPAWN_TIME         = 7.0
 global const string RESPAWN_BEACON_SUCCESS_SOUND       = "Survival_RespawnChamber_Activate"
 global const string RESPAWN_BEACON_LOOP_SOUND          = "Survival_RespawnBeacon_Linking_loop"
 
-const asset RESPAWN_DROPSHIP_MODEL                     = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
+global const asset RESPAWN_DROPSHIP_MODEL                     = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 
 global const asset RESPAWN_BEACON_EMITTER_FX           = $"P_chamber_proj_holo"
 global const asset RESPAWN_BEACON_BEAM_FX              = $"P_chamber_beam"

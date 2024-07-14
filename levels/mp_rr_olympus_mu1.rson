@@ -14,4 +14,5 @@ Scripts:
 [
 	mp/levels/sh_mp_rr_olympus_mu1.nut
 	mp/levels/sh_pathfinder_tt_common.nut
+	mp/levels/mp_rr_olympus_common.nut
 ]

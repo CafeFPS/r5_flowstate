@@ -34,41 +34,44 @@ void function CodeCallback_MapInit()
 	printt( "----------------------------" )
 
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
+
+	Olympus_MapInit_Common()
 	SURVIVAL_SetPlaneHeight( 12500 )
 	SURVIVAL_SetAirburstHeight( 9000 )
 	SURVIVAL_SetMapCenter( <-6900, 2940, 0> )
 	// SURVIVAL_SetMapDelta( 50000 )
+
 
 	PathTT_Init()
 	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_olympus_mu1.rpak" )
 	
 	//Clean up unused ents
 	AddCallback_EntitiesDidLoad( Olympus_OnEntitiesDidLoad )
-	AddSpawnCallbackEditorClass( "prop_dynamic", "script_loot_marvin", CleanupEnt )
-	AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_workbench_cluster", CleanupEnt )
-	AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_harvester", CleanupEnt )
-	AddSpawnCallbackEditorClass( "player_vehicle", "hover_vehicle", CleanupEnt )
-	AddSpawnCallbackEditorClass( "prop_script", "control_vehicle_summon_platform", CleanupEnt )
-	AddSpawnCallbackEditorClass( "func_brush", "func_brush_arenas_start_zone", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "prop_dynamic", "script_loot_marvin", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_workbench_cluster", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_harvester", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "player_vehicle", "hover_vehicle", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "prop_script", "control_vehicle_summon_platform", CleanupEnt )
+	// AddSpawnCallbackEditorClass( "func_brush", "func_brush_arenas_start_zone", CleanupEnt )
 	
-	AddSpawnCallback( "info_spawnpoint_human", InitSpawnpoint )
-	AddSpawnCallback( "info_spawnpoint_human_start", InitSpawnpoint )
-	AddSpawnCallback( "info_spawnpoint_titan", InitSpawnpoint )
-	AddSpawnCallback( "info_spawnpoint_titan_start", InitSpawnpoint )
-	AddSpawnCallback( "trigger_multiple", InitTriggerMultiple )
+	// AddSpawnCallback( "info_spawnpoint_human", InitSpawnpoint )
+	// AddSpawnCallback( "info_spawnpoint_human_start", InitSpawnpoint )
+	// AddSpawnCallback( "info_spawnpoint_titan", InitSpawnpoint )
+	// AddSpawnCallback( "info_spawnpoint_titan_start", InitSpawnpoint )
+	// AddSpawnCallback( "trigger_multiple", InitTriggerMultiple )
 	
-	AddSpawnCallback( "script_ref", InitScriptRef )
-	AddSpawnCallback( "info_target", InitInfoTarget )
+	// AddSpawnCallback( "script_ref", InitScriptRef )
+	// AddSpawnCallback( "info_target", InitInfoTarget )
 	
-	AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_warp_gate", Flowstate_InitWarpGateTrigger )
+	// AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_warp_gate", Flowstate_InitWarpGateTrigger )
 }
 
 void function Olympus_OnEntitiesDidLoad() 
 {
-	//Remove trident walls
-	array<entity> tridentWalls = GetEntArrayByScriptName( "vehicle_fence_01" )
-	foreach( ent in tridentWalls )
-		ent.Destroy()
+	// //Remove trident walls
+	// array<entity> tridentWalls = GetEntArrayByScriptName( "vehicle_fence_01" )
+	// foreach( ent in tridentWalls )
+		// ent.Destroy()
 
 	//Adjust props
 	array<entity> props

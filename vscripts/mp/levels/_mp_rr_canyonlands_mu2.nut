@@ -73,9 +73,6 @@ bool function ShouldDestroyInfoTarget( entity infotarget )
 
 	if( GetEditorClass( infotarget ) == "info_warp_gate_path_node" || infotarget.GetScriptName() == "apex_screen" )
 		return false
-
-	if( infotarget.GetScriptName() == "give_charge_fx_target" || infotarget.GetScriptName() == "hovertank_start_node" || infotarget.GetScriptName() == "hovertank_end_node" || GetEditorClass( infotarget ) == "info_hover_tank_node" )
-		return true
 	
 	if( infotarget.GetModelName() == $"mdl/test/loot_box_half_01.rmdl" || infotarget.GetModelName() == $"mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
 		return true

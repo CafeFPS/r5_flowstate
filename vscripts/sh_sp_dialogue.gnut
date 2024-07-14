@@ -31,6 +31,7 @@ global function PlayDialogueForPlayer
 global function PlayRadioDialogueToAll
 global function PlayRadioDialogueToTeam
 global function PlayRadioDialogueToPlayer
+global function RequestCustomDialogueQueueIndex
 #endif //SERVER
 
 
@@ -63,7 +64,7 @@ global function CustomSpeakers1ListInit
 
 #if DEVELOPER
 global function ShouldTryToReplaceMissingVoiceWithTempVoice
-#endif // DEVELOPERELOPER
+#endif // #if DEVELOPER
 
 
 //////////////////////
@@ -136,7 +137,7 @@ global const PRIORITY_LOWEST    = 1
 
 #if DEVELOPER
 global const string TEMP_VOICE  = "playerM1"
-#endif // DEVELOPERELOPER
+#endif // #if DEVELOPER
 
 
 ///////////////////////
@@ -179,6 +180,8 @@ struct QueueData
 	#endif
 }
 
+const int NUM_CUSTOM_QUEUES = 6
+global const int NUM_TOTAL_DIALOGUE_QUEUES = NUM_CUSTOM_QUEUES + 1
 
 #if CLIENT
 struct CachedCharacterData
@@ -202,6 +205,7 @@ struct
 	bool                  useVDU = false
 	array<var>            currentDialoguePlayingHandles
 	int                   lastLineRequestPriority
+	int 				  numCustomQueuesUsed = 1 // Starts at 1, since 0 is main
 
 	array<string> validVoices
 
@@ -355,7 +359,20 @@ void function EnvironmentSpeakerListInit()
 		}
 	#endif //
 }
+#if SERVER
+int function RequestCustomDialogueQueueIndex()
+{
+	Assert( file.numCustomQueuesUsed < NUM_CUSTOM_QUEUES, "Requested new custom dialogue queue, but all are taken! Consider increasing NUM_CUSTOM_QUEUES" )
+	if( file.numCustomQueuesUsed >= NUM_CUSTOM_QUEUES )
+		return 0
 
+	// Starts at 1, since 0 is for main
+	int queueIdx = file.numCustomQueuesUsed
+	file.numCustomQueuesUsed++
+
+	return queueIdx
+}
+#endif
 
 #if(CLIENT)
 void function CustomSpeakers1ListInit( array<entity> customSpeakers1 )

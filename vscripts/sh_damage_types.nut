@@ -109,20 +109,20 @@ global enum eDamageSourceId
 	mp_weapon_nemesis
 	mp_weapon_softball
 	mp_weapon_warmachine
-	//mp_weapon_wingman_n
+	mp_weapon_wingman_n
 	mp_weapon_wingmanelite
 	mp_weapon_arc_blast
 	mp_weapon_nuke_satchel
 	mp_weapon_satchel
 	mp_extreme_environment
 	mp_weapon_wrecking_ball
-	//mp_weapon_epg
+	mp_weapon_epg
 	//mp_weapon_smr
 	//mp_weapon_rocket_launcher
 	mp_weapon_grenade_electric_smoke
 	mp_weapon_grenade_gravity
 	//mp_weapon_rspn101_og
-	//sp_weapon_arc_tool
+	sp_weapon_arc_tool
 	//
 	melee_pilot_emptyhanded
 	melee_pilot_arena
@@ -173,7 +173,7 @@ global enum eDamageSourceId
 	mp_turretweapon_blaster
 	mp_turretweapon_plasma
 	mp_turretweapon_sentry
-	//mp_weapon_mobile_hmg
+	mp_weapon_mobile_hmg
 	mp_weapon_smart_pistol
 
 	//Character Abilities
@@ -649,15 +649,15 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_bolo_sword_primary ] 			= "Bolo Sword Melee",
 		[ eDamageSourceId.melee_boxing_ring ] 						= "Boxing Hands",
 		[ eDamageSourceId.mp_weapon_melee_boxing_ring ] 			= "Boxing Hands",
-		//[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
-		//[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
+		[ eDamageSourceId.melee_data_knife ] 						= "Dataknife",
+		[ eDamageSourceId.mp_weapon_data_knife_primary ] 			= "Dataknife",
 		[ eDamageSourceId.mp_weapon_throwingknife ] 				= "Throwing Knife",
-		//[ eDamageSourceId.mp_weapon_satchel ] 	 				= "Satchel",
-		//[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
+		[ eDamageSourceId.mp_weapon_satchel ] 	 				= "Satchel",
+		[ eDamageSourceId.mp_weapon_wingman_n ] 	 				= "Wingman Elite",
 		[ eDamageSourceId.mp_weapon_sentinel ] 						= "Sentinel",
-		//[ eDamageSourceId.mp_weapon_mobile_hmg ] 					= "Sheila",
+		[ eDamageSourceId.mp_weapon_mobile_hmg ] 					= "Sheila",
 		[ eDamageSourceId.mp_weapon_softball ] 						= "Softball",
-		//[ eDamageSourceId.mp_weapon_epg ] 						= "EPG",
+		[ eDamageSourceId.mp_weapon_epg ] 						= "EPG",
 		//[ eDamageSourceId.mp_weapon_smr ] 						= "Sidewinder SMR",
 		//[ eDamageSourceId.mp_weapon_rocket_launcher ] 			= "Softball",
 		[ eDamageSourceId.mp_weapon_car ] 							= "Car SMG",
@@ -673,8 +673,8 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_oddball ] 	 						= "Ball",
 		[ eDamageSourceId.mp_weapon_flagpole_primary ] 	 			= "Ball",
 		[ eDamageSourceId.melee_flagpole ] 	 						= "Ball", 
-		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101"
-		//[ eDamageSourceId.sp_weapon_arc_tool] 	 				= "Arc Tool"
+		//[ eDamageSourceId.mp_weapon_rspn101_og ] 	 				= "R101",
+		[ eDamageSourceId.sp_weapon_arc_tool] 	 				= "Arc Tool",
 		[ eDamageSourceId.mp_weapon_titan_sword ] 	 				= "Sword", 
 		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 			= "Sword",
 		[ eDamageSourceId.melee_titan_sword ] 	 					= "Sword",

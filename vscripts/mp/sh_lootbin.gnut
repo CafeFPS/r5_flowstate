@@ -481,6 +481,8 @@ Point function GetLootBinSpawnLocation( entity lootbin, int lootI, int lootCount
 void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount, string previousRef = "")
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
+	if( ref == "" )
+		return
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	int countPerDrop = data.countPerDrop

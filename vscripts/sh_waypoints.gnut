@@ -34,6 +34,9 @@ global function CreateWaypoint_Test
 global function CreateWaypoint_BasicEnt
 global function CreateWaypoint_BasicPos
 global function CreateWaypoint_BasicArea
+global function CreateWaypoint_BasicLocation
+global function CreateWaypoint_BasicEntLocation
+global function CreateWaypoint_ObjectiveEntLocation
 global function DEV_WaypointConfirm
 //
 global function CreateWaypoint_BreadcrumbTrail
@@ -686,6 +689,91 @@ entity function CreateWaypoint_BasicPos( vector position, string promptText, ass
 	return wp
 }
 
+entity function CreateWaypoint_BasicLocation( vector position, int pingType )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.BASIC_LOCATION )
+	wp.SetOwner( wp )
+	wp.SetOrigin( position )
+	wp.SetWaypointVector( 0, position )
+	SetPingTypeForWaypoint( wp, pingType )
+
+	return wp
+}
+
+entity function CreateWaypoint_BasicEntLocation( entity ent, int pingType )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.BASIC_LOCATION )
+	wp.SetWaypointEntity( 0, ent )
+	wp.SetOwner( wp )
+	SetPingTypeForWaypoint( wp, pingType )
+
+	return wp
+}
+
+entity function CreateWaypoint_ObjectiveEntLocation( entity ent, int pingType )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.OBJECTIVE )
+	wp.SetWaypointEntity( 0, ent )
+	wp.SetOwner( wp )
+
+	SetPingTypeForWaypoint( wp, pingType )
+
+	return wp
+}
+entity function CreateWaypoint_ObjectivePos( vector position, string promptText, vector pixelOffset = <0, 0, 0>, asset iconImage = WAYPOINT_ICON_TARGET, float countdownTimer = -1 )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.OBJECTIVE_POS )
+	wp.SetOrigin( position )
+	wp.SetWaypointVector( 0, position )
+	wp.SetWaypointVector( 1, pixelOffset )
+	wp.SetWaypointFloat( 0, countdownTimer )
+	wp.SetWaypointString( 0, promptText )
+	wp.SetWaypointAsset( 0, iconImage )
+
+	return wp
+}
+
+entity function CreateWaypoint_ObjectiveEnt( entity target, string promptText, vector pixelOffset = <0, 0, 0>, asset iconImage = WAYPOINT_ICON_TARGET, float countdownTimer = -1 )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.OBJECTIVE_ENT )
+	wp.SetOrigin( target.GetOrigin() )
+	wp.SetWaypointEntity( 0, target )
+	wp.SetWaypointVector( 0, pixelOffset )
+	wp.SetWaypointFloat( 0, countdownTimer )
+	wp.SetWaypointString( 0, promptText )
+	wp.SetWaypointAsset( 0, iconImage )
+
+	wp.SetParent( target )
+
+	return wp
+}
+
+entity function CreateWaypoint_Button( entity target, string promptText, asset iconImage, vector offset = <0, 0, 0> )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.BUTTON )
+	wp.SetOrigin( target.GetOrigin() )
+	wp.SetWaypointVector( 0, offset )
+	wp.SetWaypointEntity( 0, target )
+	wp.SetWaypointString( 0, promptText )
+	wp.SetWaypointAsset( 0, iconImage )
+
+	return wp
+}
+
+                     
+entity function CreateWaypoint_TrackEnt( entity target, string promptText, asset iconImage, vector offset = <0, 0, 0>, bool ignoreCenterFade = false )
+{
+	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.TRACK_ENT )
+
+	wp.SetOrigin( target.GetOrigin() )
+	wp.SetWaypointVector( 0, offset )
+	wp.SetWaypointEntity( 0, target )
+	wp.SetWaypointString( 0, promptText )
+	wp.SetWaypointAsset( 0, iconImage )
+	wp.SetWaypointInt( 0, ignoreCenterFade ? 1 : 0  )
+
+	return wp
+}
 #endif // SERVER
 
 

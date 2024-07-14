@@ -6,9 +6,13 @@ global function SURVIVAL_Loot_IsLootIndexValid
 global function SURVIVAL_Loot_GetLootDataByRef
 global function SURVIVAL_Loot_IsRefValid
 global function SURVIVAL_Loot_IsRefDisabled
+global function SURVIVAL_Loot_IsReforBaseWeaponDisabled
+global function SURVIVAL_Loot_AddDisabledRef
 global function SURVIVAL_Loot_GetByType
 global function SURVIVAL_Loot_GetLootTypeFromString
+global function SURVIVAL_Loot_GetAttachmentType_Enum
 global function SURVIVAL_Loot_GetByTier
+global function SURVIVAL_Loot_GetSortedStringArrayFromSupportedAttachmentsString
 
 global function SURVIVAL_Loot_IsUniqueAmmoWeapon
 global function GetCustomHopupArray
@@ -94,17 +98,39 @@ global struct LootData
 	bool          pretendsToBeBlank = false
 	bool          noDrop = false
 
-	string baseWeapon
+	table<int,var> extraData
+
+	string        baseWeapon
 	array<string> baseMods
 
-	asset fakeAmmoIcon
+	asset         fakeAmmoIcon
 	array<string> fakeMods
+
+	bool functionref( entity, entity, int ) extraCanUseFunction = null
 }
+
+global enum eExtraDataType
+{
+	INT_ARMOR_EVO = 0,
+	INT_ARMOR_SHIELDS
+}
+global enum eWeaponAttachmentType
+{
+	NONE = -1,
+	MAG,
+	SCOPE,
+	BARREL,
+	STOCK,
+	HOPUP,
+	_count
+}
+
 
 global enum eLootType
 {
-	MAINWEAPON
-	AMMO
+	INVALID
+	MAINWEAPON // must match with LOOT_TYPE_MAINWEAPON in RUI
+	AMMO // must match with LOOT_TYPE_AMMO in RUI
 	HEALTH
 	ARMOR
 	INCAPSHIELD
@@ -258,10 +284,13 @@ bool function IsNewLootEnabled( string ref )
 		break
 
 		case "":
+		case "mp_weapon_smart_pistol":
+		case "mp_weapon_wingman_n":
+		case "mp_weapon_epg":
 		// case "mp_weapon_sentinel":
 		case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
-		//case "mp_weapon_3030":
+		case "mp_weapon_3030":
 		case "mp_weapon_nemesis":
 		case "arrows":
 		case "mp_weapon_dragon_lmg":
@@ -271,8 +300,9 @@ bool function IsNewLootEnabled( string ref )
 		case "armor_pickup_lv2_evolving":
 		case "armor_pickup_lv3_evolving":
 		case "armor_pickup_lv5_evolving":
-		// case "mp_weapon_throwingknife":
-		// case "mp_weapon_raygun":
+		case "mp_weapon_throwingknife":
+		case "mp_weapon_raygun":
+		case "mp_titanweapon_flightcore_rockets":
 		// case "laser_sight_l1":
 		// case "laser_sight_l2": 
 		// case "laser_sight_l3":
@@ -738,6 +768,25 @@ void function FireCustomConsumable(entity player, string ref)
 }
 #endif
 
+array<string> function SURVIVAL_Loot_GetSortedStringArrayFromSupportedAttachmentsString( string supportedAttachmentsString )
+{
+	array<string> supportedAttachments = split( supportedAttachmentsString, WHITESPACE_CHARACTERS )
+	supportedAttachments.sort(
+		int function( string attachmentA, string attachmentB ) : ()
+		{
+			int aIndex = attachmentSortOrder.find( attachmentA )
+			int bIndex = attachmentSortOrder.find( attachmentB )
+			if ( aIndex > bIndex )
+				return 1
+			else if ( aIndex < bIndex )
+				return -1
+
+			return 0
+		}
+	)
+	return supportedAttachments
+}
+
 #if SERVER
 bool function ClientCallback_SetNextCustomConsumable( entity player, array<string> args )
 {
@@ -1030,6 +1079,33 @@ int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 	unreachable
 }
 
+int function SURVIVAL_Loot_GetAttachmentType_Enum( string attachmentType )
+{
+	int attachmentStyle = eWeaponAttachmentType.NONE
+	switch( attachmentType )
+	{
+		case "mag":
+			attachmentStyle = eWeaponAttachmentType.MAG
+			break
+		case "sight":
+			attachmentStyle = eWeaponAttachmentType.SCOPE
+			break
+		case "barrel":
+			attachmentStyle = eWeaponAttachmentType.BARREL
+			break
+		case "grip":
+		case "stock":
+			attachmentStyle = eWeaponAttachmentType.STOCK
+			break
+		case "hopup":
+			attachmentStyle = eWeaponAttachmentType.HOPUP
+			break
+		default:
+			break
+	}
+	return attachmentStyle
+}
+
 LootData function SURVIVAL_Loot_GetLootDataByIndex( int index )
 {
 	#if CLIENT
@@ -1068,6 +1144,40 @@ bool function SURVIVAL_Loot_IsRefDisabled( string ref )
 	return file.disabledRefs.contains( ref )
 }
 
+bool function SURVIVAL_Loot_IsReforBaseWeaponDisabled( string ref )
+{
+	if( SURVIVAL_Loot_IsRefDisabled( ref ) )
+		return true
+	// If it's not valid, lets consider it disabled
+	if( !SURVIVAL_Loot_IsRefValid( ref ) )
+		return true
+	// If the base weapon is disabled, disable all derived locked sets
+	LootData lootData = SURVIVAL_Loot_GetLootDataByRef( ref )
+                     
+                                                         
+               
+       
+	if( lootData.lootType == eLootType.MAINWEAPON && SURVIVAL_Loot_IsRefDisabled( lootData.baseWeapon ) )
+		return true
+	return false
+}
+void function SURVIVAL_Loot_AddDisabledRef( string ref )
+{
+	if ( !file.disabledRefs.contains( ref ) )
+	{
+		file.disabledRefs.append( ref )
+	}
+}
+#if DEV
+void function DEV_PrintDisabledLoot()
+{
+	printf("Dumping Disabled Loot")
+	foreach ( string ref in file.disabledRefs )
+	{
+		printf( ref )
+	}
+}
+#endif//DEV
 #if CLIENT
 vector function GetRarityColor( entity ent )
 {

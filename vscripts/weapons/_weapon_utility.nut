@@ -1277,8 +1277,7 @@ bool function PlantStickyEntity( entity ent, table collisionParams, vector angle
 			{
 				ent.SetParentWithHitbox( collisionParams.hitEnt, collisionParams.hitbox, true )
 			}
-			// Hit a func_brush
-			else if( collisionParams.hitEnt.GetClassName() == "func_brush" )
+			else
 			{
 				ent.SetParent( collisionParams.hitEnt )
 			}

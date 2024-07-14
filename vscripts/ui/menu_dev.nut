@@ -745,6 +745,7 @@ void function SetupFS_NPCs()
 {
 	SetupDevCommand( "Dummy", "script DEV_SpawnDummyAtCrosshair()" )
 	SetupDevCommand( "Legend as Dummy", "script DEV_SpawnLegendAtCrosshair()" )
+	SetupDevCommand( "Marvin", "script DEV_SpawnMarvinAtCrosshair()" )
 	SetupDevCommand( "Prowler", "script DEV_SpawnProwlerAtCrosshair()" )
 	SetupDevCommand( "Spider", "script DEV_SpawnSpiderAtCrosshair()" )
 	SetupDevCommand( "Spectre", "script DEV_SpawnSpectreAtCrosshair()" )
@@ -753,6 +754,7 @@ void function SetupFS_NPCs()
 	SetupDevCommand( "Elite Pilot", "script DEV_SpawnElitePilotAtCrosshair()" )
 	SetupDevCommand( "Explosive Tick", "script DEV_SpawnExplosiveTickAtCrosshair()" )
 }
+
 void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles

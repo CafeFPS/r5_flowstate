@@ -332,7 +332,7 @@ int function EntHasSpawnflag( entity ent, int spawnflagHexVal )
 	return ( expect int( ent.kv.spawnflags ) & spawnflagHexVal )
 }
 
-entity function CreateInfoTarget( vector origin = <0,0,0>, vector angles = <0,0,0> )
+entity function CreateInfoTarget( vector origin = <0, 0, 0>, vector angles = <0, 0, 0> )
 {
 	entity info_target = CreateEntity( "info_target" )
 	info_target.SetOrigin( origin )
@@ -341,18 +341,51 @@ entity function CreateInfoTarget( vector origin = <0,0,0>, vector angles = <0,0,
 	return info_target
 }
 
-entity function CreateExpensiveScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0 )
+
+entity function CreateScriptMover_NEW( string scriptName, vector origin = <0, 0, 0>, vector angles = <0, 0, 0>, int solidType = 0 )
 {
-	entity script_mover = CreateEntity( "script_mover" )
+	entity script_mover = CreateScriptMover_BASE( origin, angles, solidType, EMPTY_MODEL, -1, "script_mover_lightweight" )
+	script_mover.SetScriptName( scriptName )
+	return script_mover
+}
+
+
+entity function CreateScriptMoverModel( asset model, vector origin = <0, 0, 0>, vector angles = <0, 0, 0>, int solidType = 0, float fadeDist = -1 )
+{
+	entity script_mover = CreateScriptMover_BASE( origin, angles, solidType, model,  fadeDist, "script_mover_lightweight"  )
+	return script_mover
+}
+
+entity function CreateExpensiveScriptMover( vector origin = <0, 0, 0>, vector angles = <0, 0, 0>, int solidType = 0 )
+{
+	entity script_mover = CreateScriptMover_BASE( origin, angles, solidType )
+	return script_mover
+}
+
+entity function CreateExpensiveScriptMoverModel( asset model, vector origin = <0, 0, 0>, vector angles = <0, 0, 0>, int solidType = 0, float fadeDist = -1 )
+{
+	entity script_mover = CreateScriptMover_BASE( origin, angles, solidType, model )
+	return script_mover
+}
+
+
+entity function CreateScriptMover_BASE( vector origin = <0, 0, 0>, vector angles = <0, 0, 0>, int solidType = 0, asset model = EMPTY_MODEL, float fadeDist = -1, string entityTypeString = "script_mover", string scriptName = "" )
+{
+	entity script_mover = CreateEntity( entityTypeString )
 	script_mover.kv.solid = solidType
-	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	if ( fadeDist != -1 )
+		script_mover.kv.fadedist = fadeDist
+	script_mover.SetValueForModelKey( model )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( origin )
 	script_mover.SetAngles( angles )
+	if ( scriptName != "" )
+		script_mover.SetScriptName( scriptName )
 
 	DispatchSpawn( script_mover )
 	return script_mover
 }
+
 
 entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0 )
 {
@@ -388,32 +421,6 @@ void function SpawnDummy(vector origin, vector angles)
 	array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
 	string randomWeapon = weapons[RandomInt(weapons.len())]
 	dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
-}
-
-entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
-{
-	entity script_mover = CreateEntity( "script_mover_lightweight" )
-	script_mover.kv.solid = solidType
-	script_mover.kv.fadedist = fadeDist
-	script_mover.SetValueForModelKey( model )
-	script_mover.kv.SpawnAsPhysicsMover = 0
-	script_mover.SetOrigin( origin )
-	script_mover.SetAngles( angles )
-	DispatchSpawn( script_mover )
-	return script_mover
-}
-
-entity function CreateExpensiveScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
-{
-	entity script_mover = CreateEntity( "script_mover" )
-	script_mover.kv.solid = solidType
-	script_mover.kv.fadedist = fadeDist
-	script_mover.SetValueForModelKey( model )
-	script_mover.kv.SpawnAsPhysicsMover = 0
-	script_mover.SetOrigin( origin )
-	script_mover.SetAngles( angles )
-	DispatchSpawn( script_mover )
-	return script_mover
 }
 
 entity function CreateOwnedScriptMover( entity owner )
@@ -2775,6 +2782,20 @@ void function MoveSpawn( string targetName, vector origin, vector angles )
 	ent.SetAngles( angles )
 }
 
+entity function GetLastLinkedEnt( entity startingEnt )
+{
+	array<entity> linkChain = GetEntityChain( startingEnt )
+	return linkChain.top()
+}
+
+
+entity function GetLastLinkedEntOfType( entity startingEnt )
+{
+	array<entity> linkChain = GetEntityChainOfType( startingEnt )
+	return linkChain.top()
+}
+
+
 /*
 function CheckDailyChallengeAchievement( entity player )
 {
@@ -2803,26 +2824,96 @@ function CheckDailyChallengeAchievement( entity player )
 */
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get an array of all linked entities targeted to one after the other down the chain
-array<entity> function GetEntityTargetChain_Deprecated( entity ent )
+// Returns an array of all linked entities targeted one after the other down the chain, including the starting ent
+array<entity> function GetEntityChain( entity startingEnt )
 {
-	array<entity> entityChain = []
-	entity currentEnt = ent
+	array<entity> entityChain
+	entity currentEnt = startingEnt
 	entity nextEnt
+	entityChain.append( startingEnt )
 
 	while ( true )
 	{
-		nextEnt = GetEnt( currentEnt.GetTarget_Deprecated() )
-		if ( IsValid( nextEnt ) )
-			entityChain.append( nextEnt )
-		else
+		nextEnt = currentEnt.GetLinkEnt()
+		if ( !IsValid( nextEnt ) )
+		{
 			return entityChain
+		}
+		else if ( nextEnt == startingEnt )
+		{
+			printt( "Warning: GetEntityChain has a linked ent targeting the starting ent in a loop at " + startingEnt.GetOrigin() )
+			return entityChain
+		}
+		else
+		{
+			entityChain.append( nextEnt )
+		}
+
 		currentEnt = nextEnt
 	}
 
 	unreachable
 }
 
+
+array<entity> function GetEntityChainOfType( entity startingEnt )
+{
+	array<entity> entityChain
+	string curEntType = TryGetEditorClass_ElseGetEntityClass( startingEnt )
+	string nextEntType
+	entity currentEnt = startingEnt
+	array<entity> nextEnts
+	array<entity> processedEnts
+	entityChain.append( startingEnt )
+
+	while ( true )
+	{
+		nextEnts = currentEnt.GetLinkEntArray()
+		int numNextEnts = nextEnts.len()
+		for ( int i = numNextEnts - 1; i >= 0; i-- )
+		{
+			nextEntType = TryGetEditorClass_ElseGetEntityClass( nextEnts[ i ] )
+			if ( nextEntType != curEntType )
+				nextEnts.fastremove( i )
+			// Handle bidirectional chains
+			else if ( processedEnts.contains( nextEnts[ i ] ) )
+				nextEnts.fastremove( i )
+		}
+
+		int numFilteredEnts = nextEnts.len()
+
+		if ( numFilteredEnts > 1 )
+		{
+			Assert( false, "Warning! Cannot get entity chain of type: " + curEntType + ". Entity chain has branching paths of given type." )
+			return entityChain
+		}
+		else if ( numFilteredEnts == 0 )
+		{
+			return entityChain
+		}
+
+		processedEnts.append( currentEnt )
+		entity nextEnt = nextEnts[ 0 ]
+		entityChain.append( nextEnt )
+		currentEnt = nextEnt
+	}
+
+	unreachable
+}
+
+
+
+
+string function TryGetEditorClass_ElseGetEntityClass( entity ent )
+{
+	string result = GetEditorClass( ent )
+	if ( result == "" )
+		result = ent.GetClassName()
+
+	return result
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void function PlayImpactFXTable( vector origin, entity owner, string impactFX, int flags = 0 )
 {
 	Explosion(
@@ -2923,6 +3014,29 @@ void function ToggleHud()
 }
 #endif // DEVELOPER
 
+void function ToggleHudForPlayer( entity player )
+{
+	if ( !( "hudVisible" in player.s ) )
+		player.s.hudVisible <- true
+
+	player.s.hudVisible = !player.s.hudVisible
+
+	array<int> flagsForHudVisibilityControl = [
+		CE_FLAG_HIDE_MAIN_HUD_INSTANT,
+		CE_FLAG_HIDE_PERMANENT_HUD
+	]
+
+	if ( player.s.hudVisible )
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			RemoveCinematicFlag( player, flag )
+	} else
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			AddCinematicFlag( player, flag )
+	}
+}
+
 void function ClearChildren( entity parentEnt, bool b0 ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
 {
 	entity childEnt = parentEnt.FirstMoveChild()
@@ -2999,49 +3113,117 @@ bool function ShouldResetRoundBasedTeamScore()
 {
 	return IsRoundBased() && svGlobal.roundBasedTeamScore_RoundReset
 }
-
-void function CreateZipline( vector startPos, vector endPos )
+array<entity> function CreateZipline( vector startPos, vector endPos, bool disableResting = false, float detatchDistanceOverride = -1 )
 {
-	string startpointName = UniqueString( "rope_startpoint" )
-	string endpointName = UniqueString( "rope_endpoint" )
+	vector delta     = startPos - endPos
+	vector direction = Normalize( delta )
+	float steepness  = fabs( direction.z )
+	bool isSteep     = steepness > 0.7
 
-	entity rope_start = CreateEntity( "move_rope" )
-	SetTargetName( rope_start, startpointName )
-	rope_start.kv.NextKey = endpointName
-	rope_start.kv.MoveSpeed = 64
-	rope_start.kv.Slack = 25
-	rope_start.kv.Subdiv = "2"
-	rope_start.kv.Width = "2"
-	rope_start.kv.Type = "0"
-	rope_start.kv.TextureScale = "1"
-	rope_start.kv.RopeMaterial = "cable/zipline.vmt"
-	rope_start.kv.PositionInterpolator = 2
-	rope_start.kv.Zipline = "1"
-	rope_start.kv.ZiplineAutoDetachDistance = "150"
-	rope_start.kv.ZiplineSagEnable = "0"
-	rope_start.kv.ZiplineSagHeight = "50"
-	rope_start.SetOrigin( startPos )
+	string detachDist = isSteep ? "0" : "160"
 
-	entity rope_end = CreateEntity( "keyframe_rope" )
-	SetTargetName( rope_end, endpointName )
-	rope_end.kv.MoveSpeed = 64
-	rope_end.kv.Slack = 25
-	rope_end.kv.Subdiv = "2"
-	rope_end.kv.Width = "2"
-	rope_end.kv.Type = "0"
-	rope_end.kv.TextureScale = "1"
-	rope_end.kv.RopeMaterial = "cable/zipline.vmt"
-	rope_end.kv.PositionInterpolator = 2
-	rope_end.kv.Zipline = "1"
-	rope_end.kv.ZiplineAutoDetachDistance = "150"
-	rope_end.kv.ZiplineSagEnable = "0"
-	rope_end.kv.ZiplineSagHeight = "50"
-	rope_end.SetOrigin( endPos )
+	if ( detatchDistanceOverride >= 0 )
+		detachDist = string( detatchDistanceOverride )
 
-	DispatchSpawn( rope_start )
-	DispatchSpawn( rope_end )
+	entity zipline_start = CreateEntity( "zipline" )
+	if ( ShouldZiplineUseShadowFogMaterial() )
+		zipline_start.kv.Material = "cable/zipline_w_shadows_fog"
+	else
+		zipline_start.kv.Material = "cable/zipline"
+
+	zipline_start.SetOrigin( startPos )
+	zipline_start.kv.ZiplineAutoDetachDistance = detachDist
+	zipline_start.kv._zipline_rest_point_0 = startPos.x + " " + startPos.y + " " + startPos.z
+	zipline_start.kv._zipline_rest_point_1 = endPos.x + " " + endPos.y + " " + endPos.z
+	zipline_start.kv.ZiplineVertical = isSteep
+	zipline_start.kv.ZiplinePreserveVelocity = isSteep
+
+	if ( disableResting )
+		zipline_start.Zipline_DisableResting()
+
+	entity zipline_end = CreateEntity( "zipline_end" )
+	zipline_end.kv.ZiplineAutoDetachDistance = detachDist
+	zipline_end.SetOrigin( endPos )
+
+	zipline_start.LinkToEnt( zipline_end )
+
+	DispatchSpawn( zipline_start )
+	DispatchSpawn( zipline_end )
+
+	array<entity> ziplineEnts = [ zipline_start, zipline_end ]
+	return ziplineEnts
 }
 
+
+bool function ShouldZiplineUseShadowFogMaterial()
+{
+	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+		return true
+
+	return false
+}
+
+void function DeployZipline( float deployDuration, vector startPos, vector endPos, bool pushOff, vector startAngles, float detatchDistanceOverride = -1 )
+{
+	Assert ( IsNewThread(), "DeployZipline must be threaded off" )
+
+	// have to create the zipline begin/end on top of each other,
+	// otherwise you'll see the fully complete zipline a frame before it deploys
+	vector delta     = startPos - endPos
+	vector direction = Normalize( delta )
+	float steepness  = fabs( direction.z )
+	bool isSteep     = steepness > 0.7
+
+	string detachDist = isSteep ? "0" : "160"
+
+	if ( detatchDistanceOverride >= 0 )
+		detachDist = string( detatchDistanceOverride )
+
+	entity zipline_start = CreateEntity( "zipline" )
+	if ( ShouldZiplineUseShadowFogMaterial() )
+		zipline_start.kv.Material = "cable/zipline_w_shadows_fog"
+	else
+		zipline_start.kv.Material = "cable/zipline"
+
+	zipline_start.SetOrigin( startPos )
+	zipline_start.SetAngles( startAngles )
+	zipline_start.kv.ZiplineAutoDetachDistance = detachDist
+	zipline_start.kv._zipline_rest_point_0 = startPos.x + " " + startPos.y + " " + startPos.z
+	zipline_start.kv._zipline_rest_point_1 = endPos.x + " " + endPos.y + " " + endPos.z
+	zipline_start.kv.ZiplineVertical = isSteep
+	zipline_start.kv.ZiplinePreserveVelocity = isSteep
+	zipline_start.kv.ZiplinePushOffInDirectionX = pushOff
+
+	// we're deploying, so we want this
+	zipline_start.Zipline_DisableResting()
+
+	entity zipline_end = CreateEntity( "zipline_end" )
+	zipline_end.kv.ZiplineAutoDetachDistance = detachDist
+	zipline_end.SetOrigin( startPos )
+
+	zipline_start.LinkToEnt( zipline_end )
+
+	DispatchSpawn( zipline_start )
+	DispatchSpawn( zipline_end )
+
+	array<entity> ziplineEnts = [ zipline_start, zipline_end ]
+
+	entity ziplineStart = ziplineEnts[0]
+	entity ziplineEnd = ziplineEnts[1]
+	entity mover = CreateScriptMover_NEW( "zipline_script_mover", startPos )
+
+	ziplineStart.Zipline_Disable()
+	ziplineEnd.SetOrigin( startPos )
+	ziplineEnd.SetParent( mover )
+	mover.NonPhysicsMoveTo( endPos, deployDuration, 0.0, deployDuration * 0.4 )
+
+	wait deployDuration + 0.099
+
+	ziplineStart.Zipline_Enable()
+
+	ziplineEnd.ClearParent();
+	mover.Destroy()
+}
 asset function GetNPCTitanSettingFile( entity titan )
 {
 	Assert( titan.IsTitan(), titan + " is not a titan" )
@@ -4281,6 +4463,42 @@ void function KillPlayer( entity player, int damageSource )
 }
 
 
+void function KillPlayersUnderMap_Thread( float kill_depth )
+{
+	if ( !ShouldKillPlayersUnderMap() )
+		return
+
+	while ( true )
+	{
+		array<entity> players = GetPlayerArray_AliveConnected()
+		foreach ( entity player in players )
+		{
+			if ( IsValid(player) )
+			{
+				Assert( IsAlive(player) )
+
+				#if DEV
+					if ( player.IsPlayer() && player.IsNoclipping() )
+						continue
+				#endif //DEV
+
+				float playerZ = player.GetLocalOrigin().z
+
+				if (playerZ < kill_depth)
+				{
+					KillPlayer( player, eDamageSourceId.fall )
+				}
+			}
+		}
+		wait 1.0
+	}
+}
+
+bool function ShouldKillPlayersUnderMap ()
+{
+	return GetCurrentPlaylistVarBool("kill_players_under_map",true)
+}
+
 //////////////////////////////////////////////////////////
 void function TurretChangeTeam( entity turret, int team )
 {
@@ -4493,6 +4711,58 @@ void function UpdateDamageState( entity ent, var damageInfo )
 	//stub
 }
 
+
+array<entity> function GetLinkedEntsByClassName( entity ent, string className )
+{
+	array<entity> linkedEnts = ent.GetLinkEntArray()
+	array<entity> returnEnts
+	foreach ( entity linkedEnt in linkedEnts )
+	{
+		if ( linkedEnt.GetClassName() == className )
+			returnEnts.append( linkedEnt )
+	}
+	return returnEnts
+}
+
+
+array<entity> function GetLinkedEntsByEditorClass( entity ent, string editorClass )
+{
+	array<entity> linkedEnts = ent.GetLinkEntArray()
+	array<entity> returnEnts
+	foreach ( entity linkedEnt in linkedEnts )
+	{
+		if ( GetEditorClass( linkedEnt ) == editorClass )
+			returnEnts.append( linkedEnt )
+	}
+	return returnEnts
+}
+
+
+array<entity> function GetParentLinkedEntsByClassName( entity ent, string className )
+{
+	array<entity> linkedEnts = ent.GetLinkParentArray()
+	array<entity> returnEnts
+	foreach ( entity linkedEnt in linkedEnts )
+	{
+		if ( linkedEnt.GetClassName() == className )
+			returnEnts.append( linkedEnt )
+	}
+	return returnEnts
+}
+
+
+array<entity> function GetParentLinkedEntsByEditorClass( entity ent, string editorClass )
+{
+	array<entity> linkedEnts = ent.GetLinkParentArray()
+	array<entity> returnEnts
+	foreach ( entity linkedEnt in linkedEnts )
+	{
+		if ( GetEditorClass( linkedEnt ) == editorClass )
+			returnEnts.append( linkedEnt )
+	}
+	return returnEnts
+}
+
 void function DisableMantle( entity player )
 {
 	player.DisableMantle()
@@ -4548,42 +4818,6 @@ entity function CreateTraceBlockerVolume( vector fxOrigin, float radius, bool b0
 void function SetOutOfBoundsTimeLimit( float maxtime )
 {
 	//stub
-}
-
-array<entity> function GetEntityChainOfType( entity endNode )
-{
-	Assert( IsValid( endNode ) )
-	array<entity> nodes
-	nodes.append( endNode )
-	// while ( true )
-	// {
-		array<entity> nextNodes = nodes[nodes.len() - 1].GetLinkEntArray()
-		
-		foreach( node in nextNodes )
-		{
-			if ( !IsValid( node ) )
-				break
-			nodes.append( node )
-
-			foreach( node2 in node.GetLinkEntArray() )
-			{
-				if ( !IsValid( node2 ) )
-					break
-
-				if ( node2.GetClassName() == "info_target" )
-					continue
-
-				nodes.append( node2 )
-			}
-		}
-	// }
-	return nodes
-}
-
-entity function GetLastLinkedEntOfType( entity endNode )
-{
-	array<entity> chain = GetEntityChainOfType( endNode )
-	return chain[chain.len() - 1]
 }
 
 // Screen cover transition functions
@@ -4700,6 +4934,46 @@ bool function PlayerHasTitan( entity player )
 		return true
 
 	return false
+}
+
+entity function CreateDeathBox( vector origin, vector angles, string targetName = DEATH_BOX_TARGETNAME, int fadeDistance = 100000 )
+//Simple create deathbox function that just creates the prop_dynamic. Survivial, Training, etc all add functionality on top of this.
+{
+	entity box = CreateEntity( "prop_death_box" )
+	box.SetValueForModelKey( DEATH_BOX )
+	box.kv.renderamt = 255
+	box.kv.rendercolor = "255 255 255"
+	box.kv.solid = SOLID_VPHYSICS // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	box.SetOrigin( origin )
+	box.SetAngles( angles )
+
+	box.EnableRenderAlways()
+	box.AllowMantle()
+	SetTargetName( box, targetName )
+	box.kv.fadedist = fadeDistance
+
+	DispatchSpawn( box )
+	return box
+}
+
+
+entity function CreateDeathBox_NoDispatch( vector origin, vector angles, string targetName = DEATH_BOX_TARGETNAME, int fadeDistance = 100000 )
+//Call this version when we need to set other things before dispatching spawn
+{
+	entity box = CreateEntity( "prop_death_box" )
+	box.SetValueForModelKey( DEATH_BOX )
+	box.kv.renderamt = 255
+	box.kv.rendercolor = "255 255 255"
+	box.kv.solid = SOLID_VPHYSICS // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	box.SetOrigin( origin )
+	box.SetAngles( angles )
+
+	box.EnableRenderAlways()
+	box.AllowMantle()
+	SetTargetName( box, targetName )
+	box.kv.fadedist = fadeDistance
+
+	return box
 }
 
 entity function CreatePropDynamic_NoDispatchSpawn( asset model, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
@@ -4925,3 +5199,41 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_SpawnClientSideDynamicLight", loc.origin, loc.angles, color, brightness, exponent )
 	}
 #endif
+
+float function GetWeaponReloadTime( entity weapon, int currentClipCount )
+{
+	if ( weapon.GetWeaponSettingBool( eWeaponVar.reload_is_segmented ) )
+	{
+		float totalReloadTime
+
+		if ( currentClipCount > 0 )
+			totalReloadTime = weapon.GetWeaponSettingFloat( eWeaponVar.reload_time ) + weapon.GetWeaponSettingFloat( eWeaponVar.reloadsegment_time_end )
+		else
+			totalReloadTime = weapon.GetWeaponSettingFloat( eWeaponVar.reloadempty_time ) + weapon.GetWeaponSettingFloat( eWeaponVar.reloadsegmentempty_time_end )
+
+		totalReloadTime += (weapon.GetWeaponPrimaryClipCountMax() - currentClipCount) *weapon.GetWeaponSettingFloat( eWeaponVar.reloadsegment_time_loop )
+		return totalReloadTime
+	}
+	else
+	{
+		return currentClipCount > 0 ? weapon.GetWeaponSettingFloat( eWeaponVar.reload_time ) : weapon.GetWeaponSettingFloat( eWeaponVar.reloadempty_time )
+	}
+
+	unreachable
+}
+
+void function CreateDoorMoverModel( asset door, pos, angle, physics)
+{
+	//stub
+}
+
+entity function GetLinkedTrigger( entity ent )
+{
+	array<entity> linkedEnts = ent.GetLinkEntArray()
+	foreach ( entity ent0 in linkedEnts )
+	{
+		if ( ent.GetClassName() == "trigger_multiple" )
+			return ent
+	}
+	return null
+}

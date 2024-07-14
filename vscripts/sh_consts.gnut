@@ -124,6 +124,7 @@ global const TEAM_DEATHMATCH				= "tdm"
 global const SURVIVAL						= "survival"
 global const FREELANCE						= "freelance"
 global const CUSTOM_CTF						= "custom_ctf"
+
 //Gamemodes made by @CafeFPS <3
 global const fs_dm							= "fs_dm"
 global const fs_aimtrainer					= "fs_aimtrainer"
@@ -131,6 +132,11 @@ global const fs_prophunt					= "fs_prophunt"
 global const fs_duckhunt					= "fs_duckhunt"
 global const fs_infected					= "fs_infected"
 global const fs_snd							= "fs_snd"
+global const fs_apexkart					= "fs_apexkart"
+
+//Respawn modes
+global const WINTEREXPRESS					= "winterexpress"
+
 //global const flowstate_pkknockback		= "flowstate_pkknockback"
 
 //////////////////////////////
@@ -910,6 +916,7 @@ global const OFFHAND_COUNT			= 6
 
 global const OFFHAND_ORDNANCE		= OFFHAND_RIGHT
 global const OFFHAND_SPECIAL		= OFFHAND_LEFT
+global const int SLING_WEAPON_SLOT = -1 //WEAPON_INVENTORY_SLOT_PRIMARY_4
 
 global const SHIELD_REGEN_TICK_TIME 					= 0.1
 global const TITAN_DOOMED_REGEN_DELAY					= 0.5
@@ -2409,6 +2416,11 @@ global struct BurnDamageStack
 	BurnDamageSettings &burnSettings
 }
 
+global const float MAP_KILL_VOLUME_OFFSET_TROPIC_ISLAND = -2048.0
+global const float MAP_KILL_VOLUME_OFFSET_OLYMPUS = -28320.0
+global const float MAP_KILL_VOLUME_OFFSET_CANYONLANDS = -2048.0
+global const float MAP_KILL_VOLUME_OFFSET_DESERTLANDS = -22290.0
+global const float MAP_KILL_VOLUME_OFFSET_DIVIDED_MOON = -2400.0
 global int PLAYER_STRYDER_CHAR_DATA_ARRAY_VERSION = 0 // be careful changing this
 
 global enum ePlayerStryderCharDataArraySlots

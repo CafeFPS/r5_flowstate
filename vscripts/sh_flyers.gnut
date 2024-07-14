@@ -1,239 +1,1435 @@
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-untyped
-
 global function ShFlyers_Init
-global function IsCagedFlyer
-global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-global const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
-global const asset FX_FLYER_GLOW2 = $"P_flyer_glow"
+
+#if SERVER
+global function Flyers_CreateDeathBoxFlyer
+global function Flyers_CreatePerchedFlyer
+global function Flyers_CreateFlyerWithDeathBox
+      
+global function Flyers_FlyerTakeOff
+global function Flyers_SetFlyersToSpawn
+global function Flyers_GetFlyersToSpawn
+global function Flyers_GetCagedFlyersTable
+global function Flyers_PrintFlyerInfo
+global function Flyer_ClientToServer_PingFlyerDeathbox
+
+#if DEVELOPER
+global function Flyers_TestFlyerSpawns
+global function Flyers_TestLootForDeathBox
+#endif
+#endif
 
 #if CLIENT
-global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
-const asset FX_FLYER_GLOW = $"P_flyer_glow"
+global function ServerToClient_PlayLootRarityFXOnDeathboxDrop
+global function Flyer_ServerToClient_DisplayFlyerDeathboxPrompt
 #endif
+
+global function Flyers_GetAllFlyers
+
+global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_500X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+
+const TIME_BEFORE_FLYER_DROPS_LOOT = 3.0
+const TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS = 10.0
+const TIME_FOR_CAGED_FLYER_TRIGGER_VACATED_STATE_TRANSITIONS = 10.0
+float TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE = 5.0 //Hack: Transition will set the length of how long to stay in this based on anim length
+const TIME_FOR_CAGED_FLYER_STAY_IN_ANGRY_STATE = 10.0
+const DIST_THRESHOLD_FOR_ANGRY_CAGED_FLYER = 275
+
+const bool FLYER_WITH_DEATHBOX_FLYING_IDLE_ALWAYS = false
+const float FLYER_WITH_DEATHBOX_FLYING_IDLE_RADIUS = 1500
+const int FLYER_WITH_DEATHBOX_HEALTH = 250
+const int CAGED_FLYER_HEALTH = 100
+
+
+const float FLYER_LOOT_LEGENDARY_TIER_PROBABILTY = 0.02
+const float FLYER_LOOT_EPIC_TIER_PROBABILITY = 0.38
+const int FLYER_LOOT_CAP_ON_EPIC_OR_HIGHER_ITEM_COUNT = 3
+
+const float FLYER_LOOT_TIER_OVERRIDE = -1.0
+const int FLYER_PERCHED_APPROACH_DISTANCE_THRESHOLD = 1024
+const int FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD = 450
+
+const int FLYER_LOOT_ITEMS_FLOOR = 6
+const int FLYER_LOOT_ITEMS_CEILING = 12
+
+global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
+global const string CAGED_FLYER_SCRIPT_NAME = "cagedFlyer"
+
+
+#if CLIENT
+	const asset FX_FLYER_GLOW = $"P_flyer_glow"
+#endif
+
+
+#if DEVELOPER
+struct TestFlyerSpawnDataStruct
+{
+	vector origin
+	vector angles
+	bool   startsInFlight
+}
+#endif
+
+global function IsFlyer
+global function IsCagedFlyer
+global function IsDeathboxFlyer
+
+enum perchedFlyerState
+{
+	idle,
+	takeOff,
+}
+
+struct DeathBoxFlyerDataStruct
+{
+	bool   isPerched = false
+	float  timeTakeoffStarted = -1.0
+	bool   droppedLoot = false
+	entity deathBox
+	entity scriptMoverParent
+	bool   startsFlying = false
+}
+
+enum cagedFlyerState
+{
+	IDLE,
+	CAUTIOUS_TO_ANGRY,
+	CAUTIOUS_TO_IDLE,
+	ANGRY,
+	INVALID,
+}
+
+struct CagedFlyerDataStruct
+{
+	float  timeLastDamaged = -1.0
+	float  timeTriggerLastVacated = -1.0
+	float  timeLastBecameCautious = -1.0
+	float  timeLastBecameAngry = -1.0
+	entity linkedTrigger
+}
 
 struct
 {
-array< entity > cagedFlyers 
+	array< entity >                          deathBoxFlyerNodes
+	table< entity, DeathBoxFlyerDataStruct > deathBoxFlyerToDataStructTable //Kind of a hack, just want to know put some data on the flyer, but doing this instead of using .s vars etc.
+	table< entity, CagedFlyerDataStruct >    cagedFlyerToDataStructTable //Same, just want some data I can place on the caged Flyers
+	int fliersToSpawn = 0
+
+	#if SERVER
+		table<entity, entity> playerToDownedFlyerDeathbox
+	#endif
+
+	#if DEVELOPER
+		int                               currentTestFlyerSpawnIndex = -1 //Increment before using
+		array< TestFlyerSpawnDataStruct > testflyerSpawnData
+		bool flyerSpawnDataSorted = false
+	#endif
 } file
 
 void function ShFlyers_Init()
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
 {
+	PrecacheModel( FLYER_MODEL_STATIC )
 	PrecacheModel( FLYER_MODEL )
+	PrecacheModel( FLYER_500X_MODEL )
+	PrecacheModel( FLYER_1000X_MODEL )
+
 	PrecacheParticleSystem( DEATHBOX_DROP_FX )
-	PrecacheParticleSystem( FX_FLYER_GLOW2 )
+
+	RegisterSignal( "FlyerStopThink" )
+	RegisterSignal( "FlyerDeath" )
+	RegisterSignal( "StopFlyerIdle" )
+	RegisterSignal( "RecalculateFlyerState" )
+	RegisterSignal( "CagedFlyerSetPainParameter"  )
+	RegisterSignal( "FlyerDroppedDeathbox" )
 
 	#if SERVER
-		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", SVFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf185661", SVCagedFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf185657", SVCagedFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf149993", SVCagedFlyerCreationCallback )
-		AddSpawnCallback_ScriptName( "cagedFlyerpf149990", SVCagedFlyerCreationCallback )
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", OnSurvivalFlyerWithCorpseCreated )
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad_Flyers )
+
+		AddSpawnCallback( "trigger_multiple", OnSurvivalFlyerInCageTriggerSpawned )
+	#endif
+
+	#if CLIENT
+		if ( EvilFlyersEnabled() )
+		{
+			AddCreateCallback( "prop_dynamic", OnEvilFlyerCreated )
+			PrecacheParticleSystem( FX_FLYER_GLOW )
+			//PrecacheParticleSystem( FX_FLYER_FIRE )
+		}
 	#endif
 }
 
 #if SERVER
-void function CagedFlyerAnimation(entity flyer) //idle
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
+void function EntitiesDidLoad_Flyers()
 {
-	float idleLength = flyer.GetSequenceDuration( "fl_perched_idle" )
-	float idleLookLength = flyer.GetSequenceDuration( "fl_perched_idle_look" )
-		while( true )
-		{
-			if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_idle" )
-			wait idleLength
-			if(IsValid(flyer)) {flyer.Anim_Stop()
-			flyer.Anim_Play( "fl_perched_idle_look" )}
-			wait idleLookLength
-			if(IsValid(flyer)) flyer.Anim_Stop()	
-		}
-}
+	bool flyersEnabled = false
 
+	flyersEnabled = true
 
-void function CagedFlyerAudios(entity flyer)
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-	if(IsValid(flyer)){
-	entity entity2 = CreateScriptMover( flyer.GetOrigin() )
-	entity2.SetParent(flyer)
-	entity2.DisableHibernation()
+	if ( GetCurrentPlaylistVarInt( "enableFlyers", 1 ) != 1 || !flyersEnabled )
+	{
+		foreach( flyerNode in file.deathBoxFlyerNodes )
+			flyerNode.Destroy()
 
-	if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_scream" )
-	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
-	wait 0.5 
-	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Vocal_QuickScream" )
-	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Slam" )
-	wait 0.5 
-	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
-	wait 0.8 
-	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_LongScream" )
-	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_JumpLand" )
-	wait 1.2
-	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_HeadShake" )
-	wait 0.5 
-	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_Breath" )
-	wait 0.5 
-	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_BiteBars" )}
-}
+		foreach( cagedFlyer, dataStruct in file.cagedFlyerToDataStructTable )
+			cagedFlyer.Destroy()
 
-void function CreateCagedFlyerTrigger(entity flyer)
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-	entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( 370 )
-	trigger.SetAboveHeight( 50 )
-	trigger.SetBelowHeight( 50 )
-	trigger.SetOrigin( flyer.GetOrigin() )
-	DispatchSpawn( trigger )
-	trigger.SearchForNewTouchingEntity()
-		while ( IsValid(flyer) )
-		{
-			array<entity> touchingEnts = trigger.GetTouchingEntities()
-			foreach( touchingEnt in touchingEnts  )
-			{
-				if( touchingEnt.IsPlayer() )
-				{
-					printt("Flyers DEBUG - Caged flyer trigger is being touched")
-					thread CagedFlyerAudios(flyer)
-					wait 6
-				}
-			}
-			wait 0.01
-		}
-	trigger.Destroy()
-}
-void function SVCagedFlyerCreationCallback( entity flyer )
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-		if(IsValid(flyer)) flyer.Destroy()
-		// flyer.SetOrigin(flyer.GetOrigin() + < 0, 0, 0> )
-		// flyer.kv.fadedist = 14000
-		// flyer.kv.rendercolor = "255 255 255"
-		// flyer.kv.modelscale = 1
-		// flyer.kv.solid = 6
-		// flyer.SetValueForModelKey( FLYER_MODEL.tolower() )
-		// flyer.SetMaxHealth( 100 )
-		// flyer.SetHealth( 100 )
-		// flyer.SetDamageNotifications( true )
-		// flyer.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
-		// AddEntityCallback_OnDamaged( flyer, CagedFlyer_OnDamaged) 
-		// thread CagedFlyerAnimation(flyer)
-		// thread CreateCagedFlyerTrigger (flyer)
-}
-void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	float damage = DamageInfo_GetDamage( damageInfo )
-	attacker.NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
-	float flyerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	if (flyerNextHealth > 0 && IsValid(ent)){
-		ent.SetHealth(flyerNextHealth)
-	} else if (IsValid(ent)){
-	thread PlayDyingFlyerAnim(ent)
-	ent.SetTakeDamageType( DAMAGE_NO )
-	ent.kv.solid = 0
-	ent.SetOwner( attacker )
-	ent.kv.teamnumber = attacker.GetTeam()
+		return
 	}
-}
 
-void function PlayDyingFlyerAnim(entity flyer)
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-	float deathLength = flyer.GetSequenceDuration( "fl_perched_death" )
-	if(IsValid(flyer)){
-		flyer.Anim_Play( "fl_perched_death" )
-		flyer.Signal("OnDeath")
+	//Setup flyers with deathBoxes
+	array<entity> listOfFlyerCandidates = clone file.deathBoxFlyerNodes
+	array<entity> firstPassListOfFlyerCandidates = clone file.deathBoxFlyerNodes
+	file.deathBoxFlyerNodes.clear()
+	int numFlyersToSpawn = GetCurrentPlaylistVarInt( "num_flyer_spawns", Flyers_GetFlyersToSpawn() )
+	const float MIN_FLYER_SPAWN_DISTANCE = 6000
+	for ( int i = 0; i < numFlyersToSpawn; ++i )
+	{
+		int numOfFlyerCandidates = firstPassListOfFlyerCandidates.len()
+
+		if( numOfFlyerCandidates == 0 )  //Defensive Fix for R5DEV-136896; was an assert before but it never got hit in DEVELOPER
+			break
+
+		int randomIndex = RandomInt( numOfFlyerCandidates )
+		bool placeFlyer = true
+		entity flyerCandidate = firstPassListOfFlyerCandidates[ randomIndex ]
+		foreach ( entity placedFlyer in file.deathBoxFlyerNodes )
+		{
+			if ( Distance( placedFlyer.GetOrigin(), flyerCandidate.GetOrigin() ) < MIN_FLYER_SPAWN_DISTANCE )
+			{
+				placeFlyer = false
+				break
+			}
 		}
-	wait deathLength
-	if(IsValid(flyer)){
-		flyer.Anim_Stop()
+
+		if ( placeFlyer )
+		{
+			InitDeathBoxFlyer( flyerCandidate )
+			file.deathBoxFlyerNodes.append( firstPassListOfFlyerCandidates[ randomIndex ] )
+			listOfFlyerCandidates.removebyvalue( flyerCandidate )
+		}
+		firstPassListOfFlyerCandidates.fastremove( randomIndex )
+	}
+
+	// loop through flyer spawns a second time after attempting to space them out across the map as much as possible
+	int numFlyersSpawned = file.deathBoxFlyerNodes.len()
+	for ( int i = numFlyersSpawned; i < numFlyersToSpawn; ++i )
+	{
+		int numOfFlyerCandidates = listOfFlyerCandidates.len()
+
+		if( numOfFlyerCandidates == 0 )  //Defensive Fix for R5DEV-136896; was an assert before but it never got hit in DEVELOPER
+			break
+
+		int randomIndex = RandomInt( numOfFlyerCandidates )
+		InitDeathBoxFlyer( listOfFlyerCandidates[ randomIndex ] )
+		file.deathBoxFlyerNodes.append( listOfFlyerCandidates[ randomIndex ] )
+		listOfFlyerCandidates.fastremove( randomIndex )
+	}
+
+	foreach( flyer in listOfFlyerCandidates )
+	{
 		flyer.Destroy()
-		}
-}
+	}
 
-void function SVFlyerCreationCallback( entity flyer )
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-///////////////////////////////////////////////////////
-{
-	flyer.Destroy() //Removes t-posing flyers on all maps (except caged ones)
+	//Setup caged flyers
+	foreach( cagedFlyer, dataStruct in file.cagedFlyerToDataStructTable )
+	{
+		InitCagedFlyer( cagedFlyer )
+	}
 }
 #endif
 
-bool function IsCagedFlyer( entity ent )
-///////////////////////////////////////////////////////
-//By @CafeFPS (CafeFPS)//
-/////////////////////////////////////////////////////// hack!
+bool function EvilFlyersEnabled()
 {
-	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() )
-		 return false
-	
-	if(IsValid(ent)){
-		switch(ent.GetScriptName()){
-			case "cagedFlyerpf184256":
-				return true
-			case "cagedFlyerpf185661":
-				return true
-			case "cagedFlyerpf185657":
-				return true
-			case "cagedFlyerpf149993":
-				return true
-			case "cagedFlyerpf149990":
-				return true
-			default: 
-				return false
-		}
-	}
+	if ( GetCurrentPlaylistVarBool( "evil_flyers", false ) )
+		return true
+ 
 	return false
 }
 
-#if(CLIENT)
-void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
+#if SERVER
+// ****************************************************************************************************\
+// *
+// *										CREATE FLYER FUNCS
+// *
+// ****************************************************************************************************/
+
+entity function Flyers_CreateDeathBoxFlyer( vector origin, vector angles, entity existingProp = null, bool startsInFlight = false )
+{
+	entity flyer = Flyers_CreatePerchedFlyer( origin, angles, existingProp )
+	DeathBoxFlyerDataStruct dataStruct
+	dataStruct.startsFlying = startsInFlight
+	flyer.SetScriptName( DEATHBOX_FLYER_SCRIPT_NAME  )
+	file.deathBoxFlyerToDataStructTable[ flyer  ] <- dataStruct
+
+	// flyer.EnableEntScopeHighlight()
+
+	AddEntityDestroyedCallback( flyer, OnDeathBoxFlyerDestroyed )
+	thread FlyerPerchedThink( flyer )
+	return flyer
+}
+
+//Function is now specific to creating perched flyer for MU1
+entity function Flyers_CreatePerchedFlyer( vector origin, vector angles, entity existingProp = null, int health = FLYER_WITH_DEATHBOX_HEALTH, int fadeDist = 16000 )
+{
+	entity flyer
+
+	if ( IsValid( existingProp ) ) //Basically just to avoid having to delete the prop_dynamic from levelEd
+		flyer = existingProp
+	else
+		flyer = CreateEntity( "prop_dynamic" )
+
+	flyer.kv.SpawnAsPhysicsMover = false
+	flyer.SetValueForModelKey( FLYER_MODEL )
+	flyer.kv.solid = SOLID_HITBOXES
+	flyer.kv.DisableBoneFollowers = 1
+	flyer.kv.fadedist = fadeDist
+	flyer.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+	flyer.kv.contents = (int(flyer.kv.contents) | CONTENTS_BLOCK_PING )
+	flyer.Code_SetTeam( TEAM_NPC_HOSTILE_TO_ALL )
+	// flyer.ForcePropToBeAlive()
+	flyer.SetTouchTriggers( true )
+	flyer.Highlight_Enable()
+	// if ( !HasForceUseCodeTriggers() )
+		// AddSonarDetectionForPropScript( flyer ) //Need to do this to be added to things script_triggers version of sonar can highlight
+
+	if ( !IsValid( existingProp ) )
+		DispatchSpawn( flyer )
+
+	flyer.SetOrigin( origin )
+	flyer.SetAngles( angles )
+	flyer.SetMaxHealth( GetCurrentPlaylistVarInt( "deathbox_flyer_health", FLYER_WITH_DEATHBOX_HEALTH ) )
+	flyer.SetHealth( GetCurrentPlaylistVarInt( "deathbox_flyer_health", FLYER_WITH_DEATHBOX_HEALTH ) )
+
+	AddEntityCallback_OnPostDamaged( flyer, DeathBoxFlyer_TookDamageThread )
+
+	SetVisibleEntitiesInConeQueriableEnabled( flyer, true )
+	flyer.e.canBurn = true
+	flyer.e.canBeDamagedFromGas = true
+	// flyer.e.canStickArrows = false
+
+	if ( EvilFlyersEnabled() )
+		flyer.SetSkin( 3 )
+
+	return flyer
+}
+
+                           
+entity function Flyers_CreateFlyerWithDeathBox( vector origin, vector angles, bool startsInFlight )
+{
+	entity deathBox = CreateFlyerLootDeathBox( origin, angles )
+	entity flyer = Flyers_CreateDeathBoxFlyer( origin, angles, null, startsInFlight )
+	file.deathBoxFlyerToDataStructTable[ flyer ].deathBox = deathBox
+	deathBox.SetParent( flyer, "ATTACH_DEATH_BOX_01" )
+	return flyer
+}
+      
+
+void function Flyers_FlyerTakeOff( entity flyer )
+{
+	thread FlyerTakeOff_Thread( flyer )
+}
+
+void function Flyers_SetFlyersToSpawn( int num  )
+{
+	file.fliersToSpawn = num
+}
+
+int function Flyers_GetFlyersToSpawn()
+{
+	return GetCurrentPlaylistVarInt( "num_flyer_spawns", file.fliersToSpawn )
+}
+
+table<entity, CagedFlyerDataStruct > function Flyers_GetCagedFlyersTable()
+{
+	return file.cagedFlyerToDataStructTable
+}
+
+void function Flyers_PrintFlyerInfo()
+{
+	int lootLevel
+	foreach( flyerModel in file.deathBoxFlyerNodes )
+	{
+		if ( flyerModel.HasKey( "corpse_loot_level" ) )
+		{
+			lootLevel = int ( flyerModel.GetValueForKey( "corpse_loot_level" ) )
+			printt( "Corpse loot level: " + lootLevel + " at " + flyerModel.GetOrigin() )
+		}
+		else
+		{
+			printt( "No Corpse loot level key found for flyer at: " + flyerModel.GetOrigin() )
+		}
+	}
+}
+
+
+bool function GetFlyerIsPerched( entity flyer )
+{
+	Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+	return file.deathBoxFlyerToDataStructTable[ flyer ].isPerched
+}
+
+void function SetFlyerIsPerched( entity flyer, bool value )
+{
+	Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+	file.deathBoxFlyerToDataStructTable[ flyer ].isPerched = value
+}
+
+void function SetFlyerTakeOffTime( entity flyer, float time )
+{
+	Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+	file.deathBoxFlyerToDataStructTable[ flyer ].timeTakeoffStarted = time
+}
+
+void function SetFlyerDroppedLoot( entity flyer, bool value )
+{
+	Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+	file.deathBoxFlyerToDataStructTable[ flyer ].droppedLoot = value
+}
+
+bool function ShouldFlyerDropLootBox( entity flyer )
+{
+	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
+		return false
+
+	if ( file.deathBoxFlyerToDataStructTable[ flyer ].droppedLoot )
+		return false
+
+	if ( flyer.GetHealth() == 1 )
+		return true
+
+	float timeFlyerTookOff = file.deathBoxFlyerToDataStructTable[ flyer ].timeTakeoffStarted
+
+	if ( timeFlyerTookOff == -1.0 )
+		return false
+
+
+	return  ((Time() - timeFlyerTookOff) >= TIME_BEFORE_FLYER_DROPS_LOOT)
+
+}
+
+void function DeathBoxFlyer_TookDamageThread( entity flyer, var damageInfo )
+{
+	if ( flyer.GetHealth() <= 1 )
+		return
+
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	if ( damageAmount <= 0 )
+		return
+
+	entity attacker    = DamageInfo_GetAttacker( damageInfo )
+
+	if ( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
+	{
+		// EvolvingArmor_PlayerDealtDamage( attacker, flyer, DamageInfo_GetWeapon( damageInfo ), int( damageAmount ), 0, 0, DamageInfo_GetDamageType( damageInfo ) )
+                     
+                                                                                                                                                        
+        
+
+		// Lifesteal_PlayerDealtDamage( attacker, flyer, DamageInfo_GetWeapon( damageInfo ), int( damageAmount ), 0, 0, DamageInfo_GetDamageType( damageInfo ) )
+
+		attacker.NotifyDidDamage( flyer, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), damageAmount, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+	}
+
+	flyer.SetHealth( max( 1, flyer.GetHealth() - damageAmount ) ) // Don't let flyers actually die for now
+
+	if ( damageAmount > flyer.GetHealth() )
+	{
+		damageAmount = float(flyer.GetHealth())
+	}
+	PIN_DamageDone( attacker, flyer, damageAmount )
+
+	//If this is a circling flyer, cleanup the script mover
+	Assert( flyer in file.deathBoxFlyerToDataStructTable )
+	if ( IsValid( file.deathBoxFlyerToDataStructTable[ flyer ].scriptMoverParent ) )
+	{
+		flyer.ClearParent()
+		file.deathBoxFlyerToDataStructTable[ flyer ].scriptMoverParent.Destroy()
+	}
+
+
+	if ( ShouldFlyerDropLootBox( flyer ) )
+	{
+		//Hack: Temp work around, origin doesn't seem to correctly follow the model, so use the ref origin instead
+		int flyerRefIndex     = flyer.LookupAttachment( "ref" )
+		vector flyerRefOrigin = flyer.GetAttachmentOrigin( flyerRefIndex )
+		vector flyerRefAngles = flyer.GetAttachmentAngles( flyerRefIndex )
+
+		//printt( "Flyer Origin: " + flyer.GetOrigin() + ", flyerRef: " + flyerRefOrigin )
+
+		Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+		Assert( IsValid( file.deathBoxFlyerToDataStructTable[ flyer ].deathBox ) )
+
+		entity deathBox = GetDeathBoxFromFlyer( flyer )
+		if( IsValid( deathBox ) )
+		{
+			deathBox.kv.CollisionGroup = TRACE_COLLISION_GROUP_NONE
+			deathBox.ClearParent()
+			deathBox.Solid()
+			deathBox.SetUsable()
+			deathBox.SetUsableByGroup( "pilot" )
+			deathBox.SetUsePrompts( "#DEATHBOX_HINT", "#DEATHBOX_HINT" )
+			deathBox.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+			// deathBox.SetUsableDistanceOverride( GetAbsMaxRemoteDeathboxInteractRange() )
+         
+
+			foreach ( loot in deathBox.GetLinkEntArray() )
+			{
+				loot.SetParent( deathBox, "", false )
+				loot.AddToOtherEntitysRealms( deathBox ) //Fixing optimization hack to stop players from pinging unparented weapons
+			}
+
+			vector deathBoxDropVelocity = <0, 0, 300> + flyer.GetForwardVector() * 150
+
+			thread FakePhysicsThrow( null, deathBox, deathBoxDropVelocity ) //, false )
+
+			// AddFlyerDeathboxToSurvivalList( deathBox )
+
+			foreach( player in GetPlayerArray() )
+			{
+				Remote_CallFunction_Replay( player, "ServerToClient_PlayLootRarityFXOnDeathboxDrop", deathBox )
+			}
+
+			file.deathBoxFlyerToDataStructTable[ flyer ].deathBox = null
+
+			                         
+				SendDeathBoxRUIProfileToClients( deathBox, attacker )
+         
+
+			SetFlyerDroppedLoot( flyer, true )
+
+			if ( IsValid( attacker ) && attacker.IsPlayer() )
+			{
+				attacker.Signal( "FlyerDroppedDeathbox" )
+				file.playerToDownedFlyerDeathbox[attacker] <- deathBox
+				Remote_CallFunction_NonReplay( attacker, "Flyer_ServerToClient_DisplayFlyerDeathboxPrompt" )
+				thread Flyer_DeletePlayerToDownedFlyerData( attacker )
+			}
+		}
+
+		// if ( IsValid( attacker ) && attacker.IsPlayer() )
+			// PIN_PlayerItemDestruction( attacker, ITEM_DESTRUCTION_TYPES.FLYER )
+	}
+
+	// return if flyer is still alive
+	if ( flyer.GetHealth() > 1 )
+		return
+
+	                    
+		// if( UpgradeCore_IsEnabled() )
+			// UpgradeCore_GrantXp_FlyerKilled( flyer, attacker )
+       
+
+	thread PlayBattleChatterLineDelayedToSpeakerAndTeam( attacker, "bc_iKilledFlyer", 0.75 )
+
+	flyer.Anim_Stop()
+	flyer.Signal( "FlyerDeath" )
+	thread PlayAnim( flyer, "fl_fly_death" )
+}
+void function Flyer_DeletePlayerToDownedFlyerData( entity player )
+{
+	player.EndSignal( "FlyerDroppedDeathbox" )
+
+	wait 25.0 // giving extra wiggle room for the timeout and the prompt timer
+	if ( !IsValid( player ) )
+		return
+
+	if ( player in file.playerToDownedFlyerDeathbox )
+		delete file.playerToDownedFlyerDeathbox[player]
+}
+
+void function Flyer_ClientToServer_PingFlyerDeathbox( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if( !( player in file.playerToDownedFlyerDeathbox ) )
+		return
+
+	entity deathbox = file.playerToDownedFlyerDeathbox[player]
+
+	CreateWaypoint_Ping_Location( player, ePingType.DEATH_BOX, deathbox, deathbox.GetOrigin(), -1, false )
+}
+
+void function OnDeathBoxFlyerDestroyed( entity flyer )
+{
+	Assert( flyer in file.deathBoxFlyerToDataStructTable )
+	delete file.deathBoxFlyerToDataStructTable[ flyer  ]
+}
+
+
+// ****************************************************************************************************\
+// *
+// *										FLYER LAND AND PERCH
+// *
+// ****************************************************************************************************/
+
+
+void function FlyerPerchedThink( entity flyer )
+{
+	flyer.EndSignal( "FlyerDeath" )
+	flyer.EndSignal( "OnDestroy" )
+
+
+	SetFlyerIsPerched( flyer, true )
+
+	int prevState
+	int state = -1
+
+	while ( true )
+	{
+		prevState = state
+		state = CalcPerchedFlyerState( flyer )
+
+		switch ( state )
+		{
+			case perchedFlyerState.takeOff:
+				// flyer flies away
+				thread FlyerTakeOff_Thread( flyer )
+				SetFlyerIsPerched( flyer, false )
+				return    // think ends
+
+			case perchedFlyerState.idle:
+				if ( prevState != perchedFlyerState.idle )
+				{
+					SetFlyerIsPerched( flyer, true )
+					Assert ( flyer in file.deathBoxFlyerToDataStructTable )
+
+					if ( FLYER_WITH_DEATHBOX_FLYING_IDLE_ALWAYS || file.deathBoxFlyerToDataStructTable[ flyer ].startsFlying )
+					{
+						thread FlyerFlyIdle( flyer )
+						SetFlyerIsPerched( flyer, false )
+					}
+
+					else
+					{
+						thread FlyerPerchedIdle( flyer )
+					}
+				}
+
+				// wait here when the flyer is idling
+				waitthread PerchedFlyerWait( flyer, 1.0 )
+				WaitEndFrame()    // insures Flyer_TookDamage is run before we loop
+				break
+		}
+	}
+}
+
+void function PerchedFlyerWait( entity flyer, float waitTime )
+{
+	flyer.EndSignal( "OnDamaged" )
+	wait waitTime
+}
+
+int function CalcPerchedFlyerState( entity flyer )
+{
+	array<entity> players = GetPlayerArray()
+	int reactionDistSqr   =  FLYER_PERCHED_APPROACH_DISTANCE_THRESHOLD * FLYER_PERCHED_APPROACH_DISTANCE_THRESHOLD
+	if ( file.deathBoxFlyerToDataStructTable[ flyer ].startsFlying  )
+		reactionDistSqr   = FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD * FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD
+
+	if ( flyer.GetHealth() != flyer.GetMaxHealth() )
+		return perchedFlyerState.takeOff
+
+	foreach ( player in players )
+	{
+		#if DEVELOPER
+			if ( player.IsNoclipping() )
+				continue
+		#endif
+
+		float distSqr = DistanceSqr( flyer.GetOrigin(), player.GetOrigin() )
+
+		if ( distSqr < reactionDistSqr )
+			return perchedFlyerState.takeOff
+	}
+
+	return perchedFlyerState.idle
+}
+
+void function FlyerLand( entity flyer, vector origin, vector angles )
+{
+	flyer.EndSignal( "FlyerDeath" )
+	flyer.EndSignal( "OnDestroy" )
+
+	entity animEnt = CreateScriptRef( origin, angles )
+
+	OnThreadEnd(
+		function() : ( animEnt )
+		{
+			// clean up
+			if ( IsValid( animEnt ) )
+				animEnt.Destroy()
+		}
+	)
+
+	//waitthread PlayAnimTeleport( flyer, "land_flat", animEnt )
+	waitthread PlayAnimTeleport( flyer, "fl_land_flat", animEnt )
+}
+
+void function FlyerFlyIdle( entity flyer )
+{
+	flyer.LagCompensate( true )
+
+	if ( CoinFlip()  )
+		flyer.Anim_PlayWithRefPoint( "fl_flap_cycle_carry_rotate_R1500", flyer.GetOrigin(), flyer.GetAngles(), 1.0 )
+	else
+		flyer.Anim_PlayWithRefPoint( "fl_flap_cycle_carry_rotate_L1500", flyer.GetOrigin(), flyer.GetAngles(), 1.0 )
+
+	int entIndex = flyer.entindex()
+	int startIndexMod = entIndex % 3
+
+	float offsetTime = 0.0
+
+	switch ( startIndexMod )
+	{
+		case 0:
+		{
+			offsetTime = 0.12
+			break;
+		}
+		case 1:
+		{
+			offsetTime = 0.46
+			break;
+		}
+		case 2:
+		{
+			offsetTime = 0.78
+			break;
+		}
+	}
+
+	// we have so few flyers that hardcoding values looks better for offsets than a random uniform value
+	// flyer.OffsetRealTimeCycleTime( offsetTime )
+}
+
+void function FlyerPerchedIdle( entity flyer )
+{
+	flyer.EndSignal( "FlyerDeath" )
+	flyer.EndSignal( "OnDestroy" )
+	flyer.EndSignal( "StopFlyerIdle" )
+
+	OnThreadEnd(
+		function() : ( flyer )
+		{
+			// clean up
+			if ( IsValid( flyer ) )
+				flyer.Anim_Stop()
+		}
+	)
+
+	flyer.Anim_Play( "ACT_IDLE" )
+	flyer.SetCycle( RandomFloat( 1.0 ) )
+	WaitForever()
+}
+
+void function FlyerTakeOff_Thread( entity flyer )
+{
+	flyer.Signal( "StopFlyerIdle" )
+	flyer.EndSignal( "FlyerDeath" )
+	flyer.EndSignal( "OnDestroy" )
+
+	string takeoffAnim = "fl_cliff_eat_deathbox_attacked"
+
+	Assert( flyer in file.deathBoxFlyerToDataStructTable )
+	if ( IsValid( file.deathBoxFlyerToDataStructTable[ flyer ].scriptMoverParent ) )
+	{
+		flyer.ClearParent()
+		file.deathBoxFlyerToDataStructTable[ flyer ].scriptMoverParent.Destroy()
+	}
+
+
+	OnThreadEnd(
+		function() : ( flyer )
+		{
+			// clean up
+			if ( IsValid( flyer ) && flyer.GetHealth() > 1 ) //At health == 1 We should have handled it from the TookDamage functions by playing the death anims
+			{
+				flyer.Destroy()
+			}
+		}
+	)
+
+	SetFlyerTakeOffTime( flyer, Time() )
+	float animStartTime = 0.0
+	float blendTime = 1.0
+	vector offset = <0,0,0>
+	if ( !GetFlyerIsPerched( flyer ) )
+	{
+		animStartTime = 1.17
+		blendTime = 2.0
+		offset = flyer.GetForwardVector() * 50
+	}
+
+
+	float seqDuration  = flyer.GetSequenceDuration( takeoffAnim )
+	float startCycle = ( animStartTime/seqDuration )
+
+
+	flyer.LagCompensate( true )
+	flyer.Anim_PlayWithRefPoint( takeoffAnim, flyer.GetOrigin() + offset, flyer.GetAngles(), blendTime  )
+	flyer.SetCycle( startCycle )
+	WaitForever()
+}
+#endif
+
+
+// ****************************************************************************************************\
+// *
+// *											UTILITY
+// *
+// ****************************************************************************************************/
+
+#if SERVER
+void function OnSurvivalFlyerWithCorpseCreated( entity flyerModel )
+{
+	file.deathBoxFlyerNodes.append( flyerModel )
+
+	#if DEVELOPER
+		TestFlyerSpawnDataStruct dataStruct
+		dataStruct.origin = flyerModel.GetOrigin()
+		dataStruct.angles = flyerModel.GetAngles()
+		dataStruct.startsInFlight = flyerModel.GetValueForKey( "starts_in_flight" ) == "1"
+		file.testflyerSpawnData.append( dataStruct )
+	#endif
+}
+
+void function InitDeathBoxFlyer( entity flyerModelNode )
+{
+	vector flyerModelOrigin = flyerModelNode.GetOrigin()
+	vector flyerModelAngles = flyerModelNode.GetAngles()
+	entity deathBox         = CreateFlyerLootDeathBox( flyerModelOrigin, flyerModelAngles )
+	Flyers_CreateDeathBoxFlyer( flyerModelOrigin, flyerModelAngles, flyerModelNode, flyerModelNode.GetValueForKey( "starts_in_flight" ) == "1" )
+	Assert( flyerModelNode in file.deathBoxFlyerToDataStructTable )
+	file.deathBoxFlyerToDataStructTable[ flyerModelNode ].deathBox = deathBox
+	deathBox.SetParent( flyerModelNode, "ATTACH_DEATH_BOX_01" )
+}
+
+entity function CreateFlyerLootDeathBox( vector origin, vector angles, array<string> lootRefs = [] )
+{
+	//A lot of this is copied from Survival_CreateDeathBox
+	entity deathBox = CreateDeathBox_NoDispatch( origin, angles ) //Non-solid deathbox, for performance reasons.
+
+	deathBox.kv.CollisionGroup = TRACE_COLLISION_GROUP_DEBRIS
+	deathBox.NotSolid()
+	DispatchSpawn( deathBox )
+
+	// more death box initialization happens in DeathBoxFlyer_TookDamageThread when it's dropped
+
+	deathBox.e.blockActive = true
+
+	// if ( lootRefs.len() == 0 )
+		// lootRefs = CreateLootForFlyerDeathBox( deathBox )
+
+	lootRefs.fastremovebyvalue( "blank" )
+	foreach( lootRef in lootRefs )
+	{
+		if ( lootRef != "" )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( lootRef )
+			entity loot   = SpawnGenericLoot( lootRef, deathBox.GetOrigin(), < -1, -1, -1>, data.countPerDrop )
+			AddToDeathBox( loot, deathBox )
+		}
+	}
+
+	deathBox.e.blockActive = false
+
+	// UpdateDeathBoxHighlight( deathBox, true ) //Longer dist highlight initially. Later on when loot gets removed/added it's fine to just use normal dist highlight
+
+	// unparent loot for now; we'll reparent it when the box is dropped (optimization hack)
+	foreach ( loot in deathBox.GetLinkEntArray() )
+	{
+		loot.ClearParent()
+		loot.RemoveFromAllRealms() //Done to stop players from pinging it. Just unsetting usable does not work.
+	}
+
+	return deathBox
+}
+
+                         
+void function SendDeathBoxRUIProfileToClients( entity deathBox, entity attacker )
+{
+	deathBox.SetOwner( attacker  )
+	deathBox.SetNetInt( "ownerEHI", EHIToEncodedEHandle( attacker ) )
+	// SendGenericProfileForDeathBoxRui( deathBox )
+}
+                                   
+#endif //if SERVER
+
+
+#if SERVER
+void function OnSurvivalFlyerInCageTriggerSpawned( entity trigger )
+{
+	if ( trigger.GetTargetName() != "flyerTrigger" ) //How come this targetName doesn't get mangled on the trigger even though it's inside a leveled instance?
+		return
+
+	//printt( "Entity :" + trigger + " is a trigger for a flyer in a cage!" )
+
+	trigger.SetEnterCallback( SurvivalFlyerInCageTrigger_OnEnter )
+	trigger.SetLeaveCallback( SurvivalFlyerInCageTrigger_OnLeave )
+
+	entity cagedFlyer = trigger.GetLinkEnt()
+
+	if ( cagedFlyer != null ) //Null check instead of IsValid because at this point of the trigger being spawned, the flyer prop might not be valid yet, but should exist
+	{
+		CagedFlyerDataStruct dataStruct
+		dataStruct.linkedTrigger = trigger
+		file.cagedFlyerToDataStructTable[ cagedFlyer ] <- dataStruct
+	}
+}
+
+void function SurvivalFlyerInCageTrigger_OnEnter( entity trigger, entity ent )
+{
+	if ( !SurvivalFlyerInCageTrigger_ShouldEntityCount( trigger, ent ) )
+		return
+
+	//printt( "Entity " + ent + " entered trigger " + trigger )
+
+	entity cagedFlyer = trigger.GetLinkEnt()
+	if ( IsValid( cagedFlyer ) )
+	{
+		cagedFlyer.Signal( "RecalculateFlyerState" )
+		Assert ( cagedFlyer in file.cagedFlyerToDataStructTable )
+		file.cagedFlyerToDataStructTable[ cagedFlyer ].timeTriggerLastVacated = -1.0
+	}
+}
+
+void function SurvivalFlyerInCageTrigger_OnLeave( entity trigger, entity ent )
+{
+	if ( !SurvivalFlyerInCageTrigger_ShouldEntityCount( trigger, ent ) )
+		return
+
+	//printt( "Entity " + ent + " left trigger " + trigger )
+
+	if ( trigger.GetTouchingEntities().len() == 0 )
+	{
+		//printt( "No more ents touching trigger " + trigger )
+		entity cagedFlyer = trigger.GetLinkEnt()
+		if ( IsValid( cagedFlyer ) )
+		{
+			cagedFlyer.Signal( "RecalculateFlyerState" )
+			Assert ( cagedFlyer in file.cagedFlyerToDataStructTable )
+			file.cagedFlyerToDataStructTable[ cagedFlyer ].timeTriggerLastVacated = Time()
+		}
+	}
+}
+
+bool function SurvivalFlyerInCageTrigger_ShouldEntityCount( entity trigger, entity ent )
+//This should actually be covered by the triggerFilter settings already, but putting this in here in case there are more conditions to check against other than "is player"
+{
+	return ent.IsPlayer()
+}
+
+void function InitCagedFlyer( entity cagedFlyer, int health = CAGED_FLYER_HEALTH, int fadeDist = 16000 )
+{
+	//cagedFlyer.kv.DisableBoneFollowers = 1
+	cagedFlyer.kv.fadedist = fadeDist
+
+	cagedFlyer.SetMaxHealth( GetCurrentPlaylistVarInt( "caged_flyer_health", health ) )
+	cagedFlyer.SetHealth( GetCurrentPlaylistVarInt( "caged_flyer_health", health ) )
+	cagedFlyer.Code_SetTeam( TEAM_NPC_HOSTILE_TO_ALL )
+	cagedFlyer.e.canBurn = true
+	cagedFlyer.e.canBeDamagedFromGas = true
+
+	cagedFlyer.EnableAttackableByAI( AI_PRIORITY_NO_THREAT, 0, AI_AP_FLAG_NONE )   //HACK: Set life state to alive so things like thermite can hit it
+	cagedFlyer.SetTouchTriggers( true )
+	cagedFlyer.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  ) //Hack: Manually setting this because original bounding boxes protrude outside the box as it takes it from the wings, spread out base pose. This leads to problems like being able to grenade it outside the cage.
+	cagedFlyer.kv.solid = SOLID_HITBOXES //Needs to be after SetBoundingBox() call because that has a side effect of making .kv.solid = SOLID_OBB
+	cagedFlyer.Highlight_Enable()
+
+	// cagedFlyer.EnableEntScopeHighlight()
+
+	// cagedFlyer.e.canStickArrows = false
+
+	// if ( !HasForceUseCodeTriggers() )
+		// AddSonarDetectionForPropScript( cagedFlyer  ) //Need to do this to be added to things script_triggers version of sonar can highlight
+
+	SetVisibleEntitiesInConeQueriableEnabled( cagedFlyer, true )
+
+	AddEntityCallback_OnPostDamaged( cagedFlyer, CagedFlyer_TookDamageThread )
+	AddEntityDestroyedCallback( cagedFlyer, OnCagedFlyerDestroyed )
+
+	cagedFlyer.SetScriptName( CAGED_FLYER_SCRIPT_NAME  )
+
+	if ( EvilFlyersEnabled() )
+		cagedFlyer.SetSkin( 3 )
+
+	thread CagedFlyerThink( cagedFlyer )
+}
+
+void function CagedFlyerThink( entity cagedFlyer )
+//Very similar to FlyerPerchedThink.
+{
+	cagedFlyer.EndSignal( "FlyerDeath" )
+	cagedFlyer.EndSignal( "OnDestroy" )
+
+	int prevState = cagedFlyerState.INVALID
+	int state     = cagedFlyerState.INVALID
+
+	array<string> aggroAnims = [ "flyer_caged_aggro_01", "flyer_caged_aggro_02", "flyer_caged_aggro_03", "flyer_caged_aggro_04" ] //Work around for not .Anim_Play("ActivityName") not sending signal "OnAnimationDone" between animations.
+
+	while ( true )
+	{
+		prevState = state
+		state = CalcCagedFlyerState( cagedFlyer, prevState )
+
+		if ( prevState == state && prevState != cagedFlyerState.ANGRY )
+		{
+			WaitFrame()
+			continue
+		}
+		/*else if( prevState ==  cagedFlyerState.ANGRY && state == cagedFlyerState.CAUTIOUS_TO_IDLE  )
+		{
+			string activeSequence = cagedFlyer.GetCurrentSequenceName()
+			//printt( "Current Sequence Name: " + activeSequence  )
+			float timeLeftInCurrentSequence = ( 1.0 - cagedFlyer.GetCycle() ) * cagedFlyer.GetSequenceDuration( activeSequence )
+			if (  timeLeftInCurrentSequence > 0  )
+				wait( timeLeftInCurrentSequence )
+		}*/
+
+		//printt( "CagedFlyer: " + cagedFlyer + ", prevState: " + prevState + ", state: " + state  )
+
+		Assert( cagedFlyer in file.cagedFlyerToDataStructTable )
+
+		switch ( state )
+		{
+			case cagedFlyerState.CAUTIOUS_TO_ANGRY:
+			{
+				file.cagedFlyerToDataStructTable[ cagedFlyer  ].timeLastBecameCautious = Time()
+				string cautiousToAngryAnim = "ACT_IDLE_COMBAT_AIM"
+				TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE = cagedFlyer.GetSequenceDuration( cautiousToAngryAnim )
+				//printt( "CAUTIOUS_TO_ANGRY, TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE: " +  TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+				cagedFlyer.Anim_Play( cautiousToAngryAnim )
+				WaitFrame()
+				continue
+			}
+
+			case cagedFlyerState.CAUTIOUS_TO_IDLE:
+			{
+				file.cagedFlyerToDataStructTable[ cagedFlyer].timeLastBecameCautious = Time()
+				string cautiousToIdleAnim = "ACT_IDLE_SCAN"
+				TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE = cagedFlyer.GetSequenceDuration( cautiousToIdleAnim )
+				//printt( "CAUTIOUS_TO_IDLE, TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE: " +  TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+				cagedFlyer.Anim_Play( cautiousToIdleAnim )
+				WaitFrame()
+				continue
+			}
+
+			case cagedFlyerState.ANGRY:
+			{
+				if ( prevState != cagedFlyerState.ANGRY )
+				{
+					file.cagedFlyerToDataStructTable[ cagedFlyer  ].timeLastBecameCautious = -1.0
+					file.cagedFlyerToDataStructTable[ cagedFlyer  ].timeLastBecameAngry = Time()
+				}
+
+				cagedFlyer.Anim_Play( aggroAnims[ RandomInt(aggroAnims.len() ) ] )
+				cagedFlyer.WaitSignal( "OnAnimationDone"  )
+				continue
+			}
+
+			case cagedFlyerState.IDLE:
+			{
+				file.cagedFlyerToDataStructTable[ cagedFlyer  ].timeLastBecameCautious = -1.0
+
+				bool startRandomCycle = prevState == cagedFlyerState.INVALID
+				waitthread CagedFlyerIdle( cagedFlyer, startRandomCycle )
+
+				WaitEndFrame()    // insures CagedFlyer_TookDamage is run before we loop
+				continue
+			}
+
+		}
+	}
+}
+
+void function OnCagedFlyerDestroyed( entity cagedFlyer )
+{
+	Assert( cagedFlyer in file.cagedFlyerToDataStructTable )
+	delete file.cagedFlyerToDataStructTable[ cagedFlyer ]
+}
+
+void function CagedFlyer_TookDamageThread( entity flyer, var damageInfo )
+{
+	if ( flyer.GetHealth() <= 1 )
+		return
+
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+	if ( damageAmount <= 0 )
+		return
+
+	entity attacker    = DamageInfo_GetAttacker( damageInfo )
+
+	if ( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
+		attacker.NotifyDidDamage( flyer, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), damageAmount, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+
+	flyer.SetHealth( max( 1, flyer.GetHealth() - damageAmount ) ) //Play death animation on it before letting it die.
+
+	Assert( flyer in file.cagedFlyerToDataStructTable )
+	file.cagedFlyerToDataStructTable[ flyer  ].timeLastDamaged = Time()
+	thread CagedFlyer_SetPainPoseParameter( flyer )
+
+	if ( flyer.GetHealth() > 1 )
+		return
+
+	flyer.Anim_Stop()
+	flyer.Signal( "FlyerDeath" )
+
+	string deathAnimName
+	if ( CoinFlip()  )
+		deathAnimName = "flyer_caged_death"
+	else
+		deathAnimName = "flyer_caged_death_02"
+
+	                    
+		// if( UpgradeCore_IsEnabled() )
+			// UpgradeCore_GrantXp_FlyerKilled( flyer, attacker )
+       
+
+	thread PlayAnim( flyer, deathAnimName )
+
+	thread CleanUpCagedFlyerCorpse( flyer  )
+}
+
+void function CagedFlyer_SetPainPoseParameter( entity cagedFlyer )
+{
+	WaitEndFrame()
+
+	if ( !IsValid( cagedFlyer ) )
+		return
+
+	cagedFlyer.EndSignal( "OnDamaged" )
+	cagedFlyer.EndSignal( "OnDeath" )
+	cagedFlyer.Signal( "CagedFlyerSetPainParameter"  ) //Flyers can be damaged more than once per frame, e.g. from shotgun weapons
+	cagedFlyer.EndSignal( "CagedFlyerSetPainParameter"  )
+
+
+	int painPoseParamIndex = cagedFlyer.LookupPoseParameterIndex( "pain" )
+	cagedFlyer.SetPoseParameterOverTime( painPoseParamIndex, 1.0, 0.4 )
+
+	wait 0.75
+
+	cagedFlyer.SetPoseParameterOverTime( painPoseParamIndex, 0.0, 0.4 )
+}
+
+void function CleanUpCagedFlyerCorpse( entity flyer )
+{
+	flyer.EndSignal( "OnDestroy" )
+
+	wait 5.0
+
+	flyer.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
+}
+
+int function CalcCagedFlyerState( entity flyer, int prevState )
+{
+	Assert( flyer in file.cagedFlyerToDataStructTable )
+	entity trigger             = file.cagedFlyerToDataStructTable[ flyer ].linkedTrigger
+	array<entity> touchingEnts = trigger.GetTouchingEntities()
+
+	//TODO(chin): This is baby's first state machine :/ Come back and rewrite this better when we have more time
+
+	if ( flyer.GetHealth() != flyer.GetMaxHealth() )
+	{
+		float timeCheck         = Time() - file.cagedFlyerToDataStructTable[ flyer ].timeLastDamaged
+		float timeCheckCautious = Time() - file.cagedFlyerToDataStructTable[ flyer ].timeLastBecameCautious
+
+		if ( timeCheck < GetCurrentPlaylistVarFloat( "caged_flyer_stay_in_aggro_time",TIME_FOR_CAGED_FLYER_STAY_IN_ANGRY_STATE ) )
+		{
+			return cagedFlyerState.ANGRY
+		}
+		else
+		{
+			if ( touchingEnts.len() == 0 )
+			{
+				switch ( prevState )
+				{
+					case cagedFlyerState.ANGRY:
+					{
+						return cagedFlyerState.CAUTIOUS_TO_IDLE
+					}
+
+					case cagedFlyerState.CAUTIOUS_TO_ANGRY:
+					{
+						if ( timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )//if ( timeCheck < TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS || timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+							return cagedFlyerState.CAUTIOUS_TO_ANGRY
+						else
+							return cagedFlyerState.CAUTIOUS_TO_IDLE
+					}
+
+					case cagedFlyerState.CAUTIOUS_TO_IDLE:
+					{
+						if ( timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )//if ( timeCheck < TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS || timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+							return cagedFlyerState.CAUTIOUS_TO_IDLE
+						else
+							return cagedFlyerState.IDLE
+					}
+
+					case cagedFlyerState.IDLE:
+					default:
+					{
+						return cagedFlyerState.IDLE
+					}
+				}
+			}
+		}
+	}
+
+
+	if ( touchingEnts.len() != 0 )
+	{
+		float minDist = 9999 //Just a sentinel value
+		foreach( ent in touchingEnts )
+		{
+			float dist = Distance( ent.GetOrigin(), flyer.GetOrigin() )
+			if ( dist < minDist )
+				minDist = dist
+		}
+
+		//printt( "Min Dist for cagedFlyer: " + flyer + " is " + minDist  )
+
+		if ( minDist < DIST_THRESHOLD_FOR_ANGRY_CAGED_FLYER )
+		{
+			return cagedFlyerState.ANGRY
+		}
+		else
+		{
+			switch ( prevState )
+			{
+				case cagedFlyerState.CAUTIOUS_TO_ANGRY:
+				{
+					if ( Time() - file.cagedFlyerToDataStructTable[ flyer ].timeLastBecameCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+						return cagedFlyerState.CAUTIOUS_TO_ANGRY
+					else
+						return cagedFlyerState.ANGRY
+				}
+
+				case cagedFlyerState.IDLE:
+				{
+					return cagedFlyerState.CAUTIOUS_TO_ANGRY
+				}
+
+				case cagedFlyerState.ANGRY: //Once close enough previously, always be angry
+				{
+					return cagedFlyerState.ANGRY
+				}
+
+				case cagedFlyerState.CAUTIOUS_TO_IDLE:
+				{
+					return cagedFlyerState.CAUTIOUS_TO_ANGRY
+				}
+
+				default:
+				{
+					unreachable
+				}
+			}
+		}
+	}
+	else //Nothing is touching the trigger
+	{
+		float timeCheck         = Time() - file.cagedFlyerToDataStructTable[ flyer ].timeTriggerLastVacated
+		float timeCheckCautious = Time() - file.cagedFlyerToDataStructTable[ flyer ].timeLastBecameCautious
+		float timeCheckAngry    = Time() - file.cagedFlyerToDataStructTable[ flyer ].timeLastBecameAngry
+		//printt( "timeCheck :"+ timeCheck + ", timeCheckCautious: " + timeCheckCautious  )
+		switch ( prevState )
+		{
+			case cagedFlyerState.CAUTIOUS_TO_ANGRY:
+			{
+				if ( timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+					return cagedFlyerState.CAUTIOUS_TO_ANGRY
+				else
+					return cagedFlyerState.CAUTIOUS_TO_IDLE
+			}
+
+			case cagedFlyerState.CAUTIOUS_TO_IDLE:
+			{
+				if ( timeCheckCautious < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE )
+					return cagedFlyerState.CAUTIOUS_TO_IDLE
+				else
+					return cagedFlyerState.IDLE
+			}
+
+			case cagedFlyerState.ANGRY:
+			{
+				if ( timeCheck < TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE || timeCheckAngry < GetCurrentPlaylistVarFloat( "caged_flyer_stay_in_aggro_time",TIME_FOR_CAGED_FLYER_STAY_IN_ANGRY_STATE ) )
+					return cagedFlyerState.ANGRY
+				else
+					return cagedFlyerState.CAUTIOUS_TO_IDLE
+			}
+
+			case cagedFlyerState.INVALID:
+			case cagedFlyerState.IDLE:
+			{
+				return cagedFlyerState.IDLE
+			}
+
+			default:
+			{
+				return prevState
+			}
+		}
+	}
+
+	unreachable
+}
+
+void function CagedFlyerIdle( entity flyer, bool startRandomCycle )
+//This is also basically FlyerPerchedIdle
+{
+	flyer.EndSignal( "FlyerDeath" )
+	flyer.EndSignal( "OnDestroy" )
+	flyer.EndSignal( "RecalculateFlyerState" )
+	flyer.EndSignal( "OnDamaged" )
+
+	OnThreadEnd(
+		function() : ( flyer )
+		{
+			// clean up
+			if ( IsValid( flyer ) )
+				flyer.Anim_Stop()
+		}
+	)
+
+	flyer.Anim_Play( "ACT_IDLE_CASUAL" )
+
+	if ( startRandomCycle  )
+		flyer.SetCycle( RandomFloat( 0.3 ) )
+
+	WaitForever()
+}
+
+#if DEVELOPER
+void function Flyers_TestFlyerSpawns( int overrideIndex = -1 )
+{
+	entity player = GetPlayerArray()[0]
+
+	if ( !player.IsNoclipping() )
+	{
+		printt( "Player is still solid! Please go to noclip mode first before testing spawns" )
+		return
+	}
+
+	if ( !file.flyerSpawnDataSorted  )
+	{
+		file.testflyerSpawnData.sort( SortTestFlyerSpawns  )
+		file.flyerSpawnDataSorted = true
+
+	}
+	++file.currentTestFlyerSpawnIndex
+	if ( overrideIndex != -1 )
+	{
+		printt( "Override Index set, testing spawn index: " + overrideIndex )
+		file.currentTestFlyerSpawnIndex = overrideIndex
+	}
+	else
+	{
+		printt( "Trying to test spawn number: " + file.currentTestFlyerSpawnIndex + " out of " + file.testflyerSpawnData.len() + " total")
+	}
+
+	if ( file.currentTestFlyerSpawnIndex >= file.testflyerSpawnData.len() )
+	{
+		printt( "Finished testing all spawns! Restarting from spawn 0" )
+		file.currentTestFlyerSpawnIndex = 0
+	}
+
+	TestFlyerSpawnDataStruct dataStruct = file.testflyerSpawnData[ file.currentTestFlyerSpawnIndex ]
+
+	//Pretty much a copy of InitDeathBoxFlyer
+	entity deathBox = CreateFlyerLootDeathBox( dataStruct.origin, dataStruct.angles )
+	entity flyer    = Flyers_CreateDeathBoxFlyer( dataStruct.origin, dataStruct.angles, null, dataStruct.startsInFlight )
+	Assert( flyer in file.deathBoxFlyerToDataStructTable )
+	file.deathBoxFlyerToDataStructTable[ flyer ].deathBox = deathBox
+	deathBox.SetParent( flyer, "ATTACH_DEATH_BOX_01" )
+
+	player.SetOrigin( dataStruct.origin )
+	player.SetAngles( dataStruct.angles )
+}
+
+int function SortTestFlyerSpawns( TestFlyerSpawnDataStruct a, TestFlyerSpawnDataStruct b )
+{
+	if ( a.origin.x > b.origin.x )
+		return 1
+	else if ( a.origin.x < b.origin.x  )
+		return -1
+	else if ( a.origin.y >  b.origin.y )
+		return 1
+	else if ( a.origin.y <  b.origin.y )
+		return -1
+	else if ( a.origin.z >  b.origin.z )
+		return 1
+	else if ( a.origin.z <  b.origin.z )
+		return -1
+
+	return 0
+}
+
+
+void function Flyers_TestLootForDeathBox()
+{
+	table< string, LootData > lootDataTab = SURVIVAL_Loot_GetLootDataTable()
+
+	for ( int i = 0; i < 1000; ++i )
+	{
+		array<string> lootRefs = []//CreateLootForFlyerDeathBox()
+
+		int epicOrHigherLoot = 0
+
+		foreach( lootRef in lootRefs )
+		{
+			Assert( lootRef in lootDataTab )
+			if ( lootDataTab[ lootRef ].tier >= eLootTier.EPIC )
+				++epicOrHigherLoot
+		}
+
+		if ( epicOrHigherLoot > GetCurrentPlaylistVarInt( "flyer_loot_epic_or_higher_cap", FLYER_LOOT_CAP_ON_EPIC_OR_HIGHER_ITEM_COUNT ) )
+		{
+			printt( "!!!!!!!!!!!!!!!!!!!!!!!!!" )
+			printt( "Limit not respected!" )
+			foreach( lootRef in lootRefs )
+			{
+				printt( lootRef + " tier: " + lootDataTab[ lootRef ].tier )
+			}
+			printt( "!!!!!!!!!!!!!!!!!!!!!!!!!" )
+
+			return
+		}
+	}
+
+	printt( "Lootgen works as expected" )
+}
+
+#endif //ifdev
+#endif
+
+#if CLIENT
+void function ServerToClient_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
 {
 	thread PlayLootRarityFXOnDeathboxDrop_threaded( deathBox  )
 }
 
 void function PlayLootRarityFXOnDeathboxDrop_threaded( entity deathBox  )
 {
+	// This is where the disconnection in R5DEV-346650 happened.
+	bool bDeathBoxIsValid = IsValid( deathBox )
+	Assert( bDeathBoxIsValid, "ERROR: Deathbox Invalid!" )
+
+	if( !bDeathBoxIsValid )
+	{
+		return
+	}
+
 	EndSignal( deathBox, "OnDeath" )
 	EndSignal( deathBox, "OnDestroy" )
 
-	int fxID = GetParticleSystemIndex( DEATHBOX_DROP_FX )
+	int fxID         = GetParticleSystemIndex( DEATHBOX_DROP_FX )
 	vector boxOrigin = deathBox.GetOrigin()
-	int deatboxTier = deathBox.GetNetInt( "lootRarity"  )
-	vector colorVec = GetFXRarityColorForTier( deatboxTier )
+	int deatboxTier  = deathBox.GetNetInt( "lootRarity" )
+	vector colorVec  = GetFXRarityColorForTier( deatboxTier )
 
 	int deathBoxFX = StartParticleEffectOnEntity( deathBox, fxID, FX_PATTACH_POINT_FOLLOW, deathBox.LookupAttachment( "FX_CENTER" ) )
 	EffectSetControlPointVector( deathBoxFX, 1, colorVec )
@@ -241,12 +1437,122 @@ void function PlayLootRarityFXOnDeathboxDrop_threaded( entity deathBox  )
 	OnThreadEnd(
 		function() : ( deathBoxFX )
 		{
-			if ( EffectDoesExist( deathBoxFX  )  )
+			if ( EffectDoesExist( deathBoxFX ) )
 				EffectStop( deathBoxFX, true, true )
 		}
 	)
-
 	wait 1.0
+}
+
+                                               
+void function OnEvilFlyerCreated( entity ent )
+{
+	asset modelAsset = ent.GetModelName().tolower()
+
+	switch( modelAsset )
+	{
+		case FLYER_MODEL.tolower():
+		case FLYER_1000X_MODEL.tolower():
+		case FLYER_500X_MODEL.tolower():
+		case FLYER_MODEL_STATIC.tolower():
+			break
+		default:
+			return
+	}
+
+	///////////////////
+	// Body glows
+	///////////////////
+
+	entity flyer = ent
+	array <string> bodyGlowAttachments
+	bodyGlowAttachments.append( "CHESTFOCUS" )
+	//bodyGlowAttachments.append( "EYE_R" )
+	int fxIndex = GetParticleSystemIndex( FX_FLYER_GLOW )
+	foreach( eyeGlowAttachment in bodyGlowAttachments )
+		StartParticleEffectOnEntity( flyer, fxIndex, FX_PATTACH_POINT_FOLLOW, flyer.LookupAttachment( eyeGlowAttachment ) )
+}
+                                                       
+
+void function Flyer_ServerToClient_DisplayFlyerDeathboxPrompt()
+{
+	// AddOnscreenPromptFunction( "quickchat", InvokePingFlyerDeathbox, 6.0, Localize( "#PING_FLYER_DEATHBOX" ) )
+}
+
+void function InvokePingFlyerDeathbox( entity player )
+{
+	// Remote_ServerCallFunction( "Flyer_ClientToServer_PingFlyerDeathbox" )
+}
+#endif //ifclient
+
+
+//Shared
+bool function IsFlyerThatStillHasDeathBox( entity flyer )
+{
+	if ( !IsValid( flyer ) )
+		return false
+
+	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
+		return false
+
+	return IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox )
+}
+
+
+entity function GetDeathBoxFromFlyer( entity flyer )
+{
+	if ( !IsValid( flyer ) )
+		return null
+
+	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
+		return null
+
+	if ( !IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox ) )
+		return null
+
+	return file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox
 
 }
-#endif
+
+bool function IsFlyer( entity ent )
+{
+	#if SERVER
+		if ( !(ent instanceof CDynamicProp) )
+			return false
+	#elseif CLIENT
+		if ( !(ent instanceof C_DynamicProp) )
+			return false
+	#endif
+
+	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() ) //Strangely enough because of capitalization without the .tolower() it can be false on server and true on client
+		return false
+
+	return true
+
+}
+
+bool function IsDeathboxFlyer( entity ent  )
+{
+	if ( !IsFlyer( ent ) )
+		return false
+
+	return ent.GetScriptName() == DEATHBOX_FLYER_SCRIPT_NAME
+
+}
+
+bool function IsCagedFlyer( entity ent )
+{
+	if ( !IsFlyer( ent ) )
+		return false
+
+	return ent.GetScriptName() == CAGED_FLYER_SCRIPT_NAME
+}
+
+array<entity> function Flyers_GetAllFlyers()
+{
+	array<entity> allFlyers
+	allFlyers.extend( GetEntArrayByScriptName( DEATHBOX_FLYER_SCRIPT_NAME ) )
+	allFlyers.extend( GetEntArrayByScriptName( CAGED_FLYER_SCRIPT_NAME ) )
+
+	return allFlyers
+}

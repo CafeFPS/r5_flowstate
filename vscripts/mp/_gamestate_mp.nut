@@ -1,6 +1,10 @@
 // stub script
 
 global function GameState_GetTimeLimitOverride
+
+global function GetConnectedPlayers
+global function AllTeamsConnected
+
 global function IsRoundBasedGameOver
 global function ShouldRunEvac
 global function GiveTitanToPlayer
@@ -11,6 +15,50 @@ global function GameState_EntitiesDidLoad
 float function GameState_GetTimeLimitOverride()
 {
 	return 100
+}
+
+array<entity> function GetConnectedPlayers()
+{
+	array<entity> players = GetPlayerArray()
+	array<entity> guys
+	foreach ( player in players )
+	{
+		if ( !player.hasConnected )
+			continue
+
+		guys.append( player )
+	}
+
+	return guys
+}
+
+bool function AllTeamsConnected()
+{
+	if ( IsFFAGame() )
+		return true
+
+	table<int, int> teamToPlayerCountTable
+
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.hasConnected )
+			continue
+
+		int playerTeam = player.GetTeam()
+		if ( playerTeam in teamToPlayerCountTable )
+		{
+			teamToPlayerCountTable[ playerTeam ]++
+		}
+		else
+		{
+			teamToPlayerCountTable[ playerTeam ] <- 1
+			if ( teamToPlayerCountTable.len() == MAX_TEAMS )
+				return true
+		}
+	}
+
+	return false
 }
 
 bool function IsRoundBasedGameOver()

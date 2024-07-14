@@ -1,1008 +1,246 @@
-// Made by @CafeFPS
-
-//-todo
-// recreate smooth points for next node from stop node
-// clean up installed stopmover and created smooth points in path chain ?, connect lastnode to next path again and remove the new smooth points
-// add timeout to manual stop, like, after being manually stopped some time it should restart auto after a while
-// create stop enabler entity for each station (current method it's not precise and it's delayed)
-// en las junctions realmente el tren se devuelve algunas unidades siempre, debido a que el link está antes ._.
-
-//-Native functions
-
-// Train_GetStopNode()
-// Train_SetStopNode()
-// Train_IsMovingToTrainNode()
-// Train_GetLastSpeed()
-// Train_GetGoalSpeed()
-// Train_GetGoalTimeToGoalSpeed()
-// Train_GetLastDistance()
-// Train_GetCurrentSpeed()
-// Train_GetLastNode()
-// Train_ClearBreadcrumbs()
-// Train_Follow()
-// RegenerateSmoothPoints()
-// GetTotalSmoothDistance()
-// GetSmoothPositionAtDistance(float)
-
-//-Sounds
-
-// 33998,Vehicles_Train_Braking
-// 33999,Vehicles_Train_EdgeWind
-// 34000,Vehicles_Train_Engine_Stop
-// 34001,vehicles_train_exterior
-// 34002,Vehicles_Train_Exterior_Wind
-// 34003,Vehicles_Train_ExteriorEngine
-// 34004,Vehicles_Train_ExteriorEngine_3D
-// 34005,Vehicles_Train_ExteriorEngine_Back
-// 34006,Vehicles_Train_ExteriorEngine_Front
-// 34007,Vehicles_Train_ExteriorEngine_Front_3D
-// 34008,Vehicles_Train_ExteriorEngine_Front_OG
-// 34009,Vehicles_Train_ExteriorEngine_Front_RoutedStereo
-// 34010,Vehicles_Train_ExteriorEngine_OG
-// 34011,Vehicles_Train_ExteriorEngine_RoutedStereo
-// 34012,Vehicles_Train_ExteriorEngineCopy
-// 34013,Vehicles_Train_Horn
-// 34014,vehicles_train_interior
-// 34015,Vehicles_Train_InteriorRattle_Large
-// 34016,Vehicles_Train_InteriorRattle_Small
-// 34017,vehicles_train_poleby
-// 34018,Vehicles_Train_Start_Accelerate
-// 34019,Vehicles_Train_StationAlert
-// 34020,vehicles_train_tunnel
-
-#if SERVER
-global function DesertlandsTrain_Init
-
-#if DEVELOPER
-global function Dev_StartTrainMovement
-global function Dev_StopTrainSmooth
-global function Dev_TpPlayerZeroToTrain
-global function Dev_DebugStationsLinks
-#endif
-
-#elseif CLIENT
+#if CLIENT
 global function DesertlandsTrainAnnouncer_Init
 global function ServerCallback_SetDesertlandsTrainAtStation
 global function SCB_DLandsTrain_SetCustomSpeakerIdx
 #endif
 
+#if SERVER || CLIENT
 global function IsDesertlandsTrainAtStation
 global function DesertlandsTrain_PreMapInit
+#endif
 
-const string TRAIN_MOVER_NAME = "desertlands_train_mover"
-const int TRAIN_CAR_COUNT = 6
-bool TRAIN_DEBUG = false
 
 #if SERVER
-const int TRAIN_ACCELERATION = 50
-const int TRAIN_INIT_SPEED = 500
-const int TRAIN_MAX_SPEED = 500
-const int TRAIN_CAR_OFFSET = 840
-const asset TRAIN_POI_BEAM = $"P_ar_loot_train_far_blink"
-const int TRAIN_DURATION_TO_DEPART = 40
-const int TRAIN_DISTANCE_TO_BEGIN_STOP = 2500
-const bool TRAIN_STOP_AT_STATIONS = true
-const bool TRAIN_ENABLE_STOP_BUTTON = false
+global function DesertlandsTrain_Precaches
+global function DesertlandsTrain_Init
+global function DesertlandsTrain_SetDriverState
+
+global function TrainAnnouncer_PlaySingle
+global function DesertlandsTrain_SetTrainDialogueAliasEnabled
+
+global function DesertlandsTrain_SetMaxSpeed
+global function DesertlandsTrain_SetAcceleration
+global function DesertlandsTrain_SetWaitDuration
+global function DesertlandsTrain_SetAboutToLeaveBuffer
+global function DesertlandsTrain_SetAdditionalLeaveBuffer
+global function DesertlandsTrain_GetAboutToLeaveBuffer
+global function DesertlandsTrain_GetAdditionalLeaveBuffer
+
+
+global function DesertlandsTrain_AddCallback_TrainArrivedAtStation
+global function DesertlandsTrain_AddCallback_TrainAboutToLeaveStation
+global function DesertlandsTrain_AddCallback_TrainLeavingFromStation
+global function DesertlandsTrain_AddCallback_TrainAboutToArriveAtStation
+
+global function DesertlandsTrain_GetTrainState
+global function DesertlandsTrain_GetTrainOrigin
+global function DesertlandsTrain_GetNextStationNode
+global function DesertlandsTrain_GetCurrentPathNodes
+global function DesertlandsTrain_GetTrain
+global function DesertlandsTrain_GetStationNodes
+
+global function DesertlandsTrain_ForceTrainLeaveStation
+
+global function DesertlandsTrain_ClearAllowLeaveStation
+global function DesertlandsTrain_SetAllowLeaveStation
+global function DesertlandsTrain_GetTrainCarData
+
+global function DesertlandsTrain_IsPlayerOnTrain
+global function DesertlandsTrain_IsTeamOnTrain
+
+#if DEVELOPER
+global function DesertlandsTrain_SetStartStation
+global function DesertlandsTrain_DisableSpotlight
+global function DesertlandsTrain_ShowPath
+#endif // DEVELOPER
+
+#endif // SERVER
+
+#if SERVER || CLIENT
+const string TRAIN_MOVER_NAME = "desertlands_train_mover"
+const int TRAIN_CAR_COUNT = 6
 #endif
+
+#if SERVER
+const string TRAIN_AT_STATION_SERVER_CALLBACK = "ServerCallback_SetDesertlandsTrainAtStation"
+const string DESERTLANDS_TRAIN_LOOT_TABLE = "Desertlands_Train"
+
+const string TRACK_CLASSNAME = "script_mover_train_node"
+const string TRACK_SPLIT_INWARD_NAME = "train_track_node_split_inward"
+const string TRACK_SPLIT_OUTWARD_NAME = "train_track_node_split_outward"
+const string TRACK_SPLIT_ANNOUNCE_NAME = "train_track_node_pre_junction"
+const string TRACK_SPLIT_NEW_START_NAME = "train_track_node_split_new_start"
+const string TRACK_STATION_NAME = "train_track_node_station"
+const string TRACK_BIN_MOVER_NAME = "train_station_bin_mover"
+const string TRACK_BIN_DOORS_MODEL_NAME = "station_loot_bin_doors_model"
+const string TRACK_BIN_TRIGGER_NAME = "station_loot_bin_trigger"
+const string HELPER_SPLIT_NAME = "train_track_helper_junction"
+const string HELPER_STATION_NAME = "train_track_helper_station"
+
+const string SIGNAL_TRAIN_DECELERATING = "OnTrainStopping" // comes from code
+const string SIGNAL_TRAIN_COMPLETELY_STOPPED = "OnTrainStopped" // comes from code
+const string SIGNAL_TRAIN_ANNOUNCING = "TrainAnnouncerPlaying"
+const string SIGNAL_TRAIN_START_FORWARD = "OnTrainMovingForward"
+const string SIGNAL_TRAIN_SPOTLIGHT_BLINKING = "OnTrainSpotlightBlink"
+
+const asset FX_TRAIN_MAIN_SPOTLIGHT = $"P_ar_loot_train_far"
+const asset FX_TRAIN_SPOTLIGHT_BLINK = $"P_ar_loot_train_far_blink"
+
+const string SFX_TRAIN_HORN = "Vehicles_Train_Horn"
+const string SFX_TRAIN_ACCELERATE = "vehicles_train_start_accelerate"
+const string SFX_TRAIN_DECELERATE = "vehicles_train_braking"
+const string SFX_TRAIN_ENGINE_STOP = "vehicles_Train_Engine_Stop"
+const string SFX_TRAIN_EMERGENCY_BRAKE_ACTIVATE = "Survival_Train_EmergencyPanel_Activate"
+const string SFX_TRAIN_EMERGENCY_BRAKE_DEACTIVATE = "Survival_Train_EmergencyPanel_Activate"
+const string SFX_TRAIN_STOP_PANEL_DENY = "Survival_Train_EmergencyPanel_Deny"
+const string SFX_STATION_BIN_RAISE = "LootBin_TrainStation_Raise"
+const string SFX_STATION_BIN_LOWER = "LootBin_TrainStation_Lower"
+
+// keep TRAIN_MAX_SPEED divisible by TRAIN_ACCEL for clean durations usable by audio
+const float TRAIN_MAX_SPEED = 608.0
+const float TRAIN_ACCEL = 16.0
+const float TRAIN_STATION_WAIT_DURATION = 30.0
+const float TRAIN_STATION_ABOUT_TO_LEAVE_BUFFER = 5.0
+const float TRAIN_BUFFER_ABLE_TO_MANUALLY_DECELERATE = 15.0
+const float TIME_BEFORE_FULL_STOP_TO_PLAY_DECEL_SOUND = 15.0
+const float TIME_BEFORE_FULL_STOP_TO_PLAY_STOP_SOUND = 3.0
+
+const float STATION_LOOT_MOVETO_DURATION = 7.0
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//   ######  ######## ########  ##     ##  ######  ########  ######
+//  ##    ##    ##    ##     ## ##     ## ##    ##    ##    ##    ##
+//  ##          ##    ##     ## ##     ## ##          ##    ##
+//   ######     ##    ########  ##     ## ##          ##     ######
+//        ##    ##    ##   ##   ##     ## ##          ##          ##
+//  ##    ##    ##    ##    ##  ##     ## ##    ##    ##    ##    ##
+//   ######     ##    ##     ##  #######   ######     ##     ######
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+global struct TrainCarData
+{
+	entity brush
+	entity mover
+	entity spotlightFX
+	vector offsetSpotlight
+	entity stopPanel
+}
+
+
+struct stationLootBinData
+{
+	entity mover
+	entity brush
+	entity binModel
+	entity doorsModel
+	entity trigger
+	vector moverStartOrigin
+}
+
+
+global enum eTrainDriverGoals
+{
+	RANDOM_STATION,
+	CHASE_CIRCLE,
+
+	_COUNT
+}
+
+
+global enum eTrainStates
+{
+	START_FORWARD,
+	START_FORWARD_CURRENT_PATH,
+	ABLE_TO_MANUALLY_DECELERATE,
+	DECELERATE,
+	STOPPED_AT_UNKNOWN_SPOT,
+	STOPPED_AT_STATION,
+	ABOUT_TO_LEAVE_STATION,
+
+	_COUNT
+}
+#endif // SERVER
 
 struct
 {
 	#if SERVER
-		array<entity> trainStations
-		array<entity> trainStationsAllMovementNodes
-		array<entity> trainCars
-		array<entity> binStations
-		array<entity> trainTrackHelpers
-		entity lastStationCrossed
-		entity buttonEnt
-		entity nextStation
-		entity lastStopMoverEnt
-		bool trainStoppedManually = false
-		entity lastFixedJunct
+		entity              train
+		array<TrainCarData> trainDatas
+
+		bool manualDeceleratingEnabled
+
+		array<entity>                              stationNodes
+		table< entity, array<entity> >             junctionNodeGroups
+		table< entity, array<stationLootBinData> > stationNodeBinGroups
+
+		array<entity> currentPathNodes
+		int           trainDriverState
+		int           trainCurrentState
+		bool          emergencyStopEngaged = false
+
+		#if DEVELOPER
+			entity devStartingStationNode
+			bool   devDisableTrainSpotlight = false
+			bool   devShowTrainPath = false
+		#endif
+
+		float true_trainMaxSpeed = TRAIN_MAX_SPEED
+		float true_trainAccel = TRAIN_ACCEL
+		float true_trainStationWaitDuration = TRAIN_STATION_WAIT_DURATION
+		float true_trainStationAboutToLeaveBuffer = TRAIN_STATION_ABOUT_TO_LEAVE_BUFFER
+		float true_trainStationAdditionalLeaveBuffer = 0.0
+		float true_waitBufferToManuallyAccelerate = TRAIN_BUFFER_ABLE_TO_MANUALLY_DECELERATE
+		float true_timeBeforeFullStopToPlayDecelSound = TIME_BEFORE_FULL_STOP_TO_PLAY_DECEL_SOUND
+		float true_timeBeforeFullStopToPlayStopSound = TIME_BEFORE_FULL_STOP_TO_PLAY_STOP_SOUND
+
+		array< void functionref() > callbacks_trainArrivedAtStation
+		array< void functionref() > callbacks_trainLeavingFromStation
+		array< void functionref() > callbacks_trainAboutToLeaveStation
+		array< void functionref() > callbacks_trainAboutToArriveAtStation
+
+		array< string > disabledAliasesList
 	#endif
-	bool trainStoppedAtStation = false
-	int customQueueIdx
+
+	#if SERVER || CLIENT
+		bool trainStoppedAtStation = false
+		int  true_trainCarCount = TRAIN_CAR_COUNT
+	#endif
+
+		int customQueueIdx
+
 } file
 
-#if SERVER
-void function DesertlandsTrain_Init()
-{
-	PrecacheParticleSystem( TRAIN_POI_BEAM )
-	
-	AddCallback_EntitiesDidLoad( Train_StartTrainMovement )
-	AddCallback_OnClientConnected( Train_OnPlayerConnected )
-}
 
-void function Train_StartTrainMovement()
-{
-	file.trainStations = GetEntArrayByScriptName( "train_track_node_station" )
-	file.buttonEnt = GetEntByScriptName( "train_stop_panel" )
-	file.trainStationsAllMovementNodes = GetEntArrayByClass_Expensive( "script_mover_train_node" )
-	file.binStations = GetEntArrayByScriptName( "train_station_bin_mover" )
-	file.trainTrackHelpers = GetEntArrayByScriptName( "train_track_helper_station" )
-	
-	if( TRAIN_ENABLE_STOP_BUTTON )
-		AddTrainButtonProperties()
-	else
-		file.buttonEnt.Destroy()
-	
-	#if DEVELOPER
-	// Draw HemiSpheres on all nodes
-	foreach( station in file.trainStationsAllMovementNodes ) // it includes stations, fixer ents, cargobot paths, etc
-	{
-		DebugDrawHemiSphere( station.GetOrigin(), station.GetAngles(), 25.0, 20, 210, 255, false, 999.0 )
-	}
-	
-	foreach( entity station in file.trainStations ) //spawn always in skyhook for easier debugging
-	// Force skyhook start for debugging	
-		if( expect string ( station.kv.script_noteworthy ) == "skyhook" )
-			file.lastStationCrossed = station
-	#else
-	file.lastStationCrossed = file.trainStations.getrandom()
-	#endif
-	
-	printt("TRAIN SPAWNING AT: " + file.lastStationCrossed.kv.script_noteworthy ) // + " - Train server script by @CafeFPS. ( WIP )")
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//  #### ##    ## #### ########
+//   ##  ###   ##  ##     ##
+//   ##  ####  ##  ##     ##
+//   ##  ## ## ##  ##     ##
+//   ##  ##  ####  ##     ##
+//   ##  ##   ###  ##     ##
+//  #### ##    ## ####    ##
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
 
-	// Get all cars, don't add trainhead
-	array<entity> cars = []
-	for( int i = 1; i < TRAIN_CAR_COUNT; i++ )
-	{
-		array<entity> movers = GetEntArrayByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, i ) )
-		if(movers.len() == 1)
-			cars.append(movers[0])
-	}
-	file.trainCars = cars
-	
-	// Parent loot bins
-	array<entity> lootBins = GetEntArrayByClass_Expensive( "prop_dynamic" )
-	array<entity> survivalItems = GetEntArrayByClass_Expensive( "prop_survival" )
-
-	foreach(entity car in cars)
-	{
-		foreach(entity bin in lootBins)
-		{
-			if(bin.GetModelName().find("loot_bin_0") <= 0)
-				continue
-
-			float distance = Distance(car.GetOrigin(),bin.GetOrigin())
-			if(distance > 300)
-				continue
-
-			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) && Gamemode() == eGamemodes.SURVIVAL )
-			{
-				ClearLootBinContents( bin )
-				AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Zone_HotZone", 4 ) )
-			}
-
-			entity parentPoint = CreateEntity( "script_mover_lightweight" )
-			parentPoint.kv.solid = 0
-			parentPoint.SetValueForModelKey( bin.GetModelName() )
-			parentPoint.kv.SpawnAsPhysicsMover = 0
-			parentPoint.SetOrigin( bin.GetOrigin() )
-			parentPoint.SetAngles( bin.GetAngles() )
-			DispatchSpawn( parentPoint )
-			parentPoint.SetParent( car )
-			parentPoint.Hide()
-
-			bin.SetParent(parentPoint)
-		}
-		
-		foreach(entity item in survivalItems)	// No survival items on the ground at this time, fix here if doesn't work
-		{
-			float distance = Distance(car.GetOrigin(),item.GetOrigin())
-			if(distance > 320)
-				continue
-
-			item.SetParent(car)
-		}
-	}
-
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	trainhead.Train_ClearBreadcrumbs()
-	
-	// Create the fx
-	entity fx = StartParticleEffectOnEntityWithPos_ReturnEntity( trainhead, GetParticleSystemIndex( TRAIN_POI_BEAM ), FX_PATTACH_CUSTOMORIGIN_FOLLOW_NOROTATE, -1, <0,0,0>, <0,0,0> )
-	fx.SetParent( trainhead )
-	//EffectSetControlPointVector( fx, 1, <1,1,1> )
-	
-	Flowstate_Train_SetupBinsAtStation()
-	thread Flowstate_Train_CheckForJuncts()
-	
-	// Start train movement by moving only the head to next node
-	trainhead.Train_MoveToTrainNodeEx(file.lastStationCrossed, 0, TRAIN_INIT_SPEED, TRAIN_MAX_SPEED, TRAIN_ACCELERATION)
-	trainhead.Hide() // Hide debug ent
-	
-	// Make the cars follow the head
-	for( int i = 0; i < cars.len(); i++ )
-	{
-		cars[i].Hide() // Hide debug ent
-		cars[i].Train_Follow( trainhead, (i+1)*TRAIN_CAR_OFFSET )
-	}
-	
-	file.trainStoppedAtStation = false
-
-	// Main train thread
-	if( TRAIN_STOP_AT_STATIONS )
-		thread Flowstate_Train_TryUpdateNextStation()
-}
-
-void function Train_OnPlayerConnected( entity player )
-{
-	Remote_CallFunction_Replay( player, "ServerCallback_SetDesertlandsTrainAtStation", file.trainStoppedAtStation )
-}
-
-void function Flowstate_Train_SetupBinsAtStation()
-{
-	if( Gamemode() == eGamemodes.fs_infected )
-		return
-	
-	entity funcBrush
-	entity doors
-	entity lootBin
-	entity binHolder
-	
-	foreach( binMover in file.binStations )
-	{
-		foreach( entLinkedToBinMover in binMover.GetLinkEntArray() )
-		{
-			if( entLinkedToBinMover.GetClassName() == "func_brush" )
-			{
-				funcBrush = entLinkedToBinMover
-				continue
-			}
-			
-			switch( entLinkedToBinMover.GetScriptName() )
-			{
-				case "station_loot_bin_doors_model":
-				doors = entLinkedToBinMover
-				binMover.UnlinkFromEnt( entLinkedToBinMover )
-				continue
-				
-				case "station_loot_bin_trigger":
-				binHolder = entLinkedToBinMover
-				continue
-				
-				case "survival_lootbin_spawned":
-				lootBin = entLinkedToBinMover
-				continue
-			}
-		}
-		
-		if( !IsValid( lootBin ) )
-			continue
-
-		// hack, why the original ent won't play the anim?
-		vector originfordoor = doors.GetOrigin()
-		vector anglesfordoor = doors.GetAngles()
-		doors.Destroy()
-		entity door = CreatePropDynamic( $"mdl/props/loot_bin/loot_bin_02_animated.rmdl", originfordoor, anglesfordoor, 6 )
-		binMover.LinkToEnt( door )
-		door.SetScriptName( "station_loot_bin_doors_model" )
-		funcBrush.SetParent( binMover )
-		
-		entity parentPoint = CreateEntity( "script_mover_lightweight" )
-		parentPoint.kv.solid = 0
-		parentPoint.SetValueForModelKey( lootBin.GetModelName() )
-		parentPoint.kv.SpawnAsPhysicsMover = 0
-		parentPoint.SetOrigin( lootBin.GetOrigin() )
-		parentPoint.SetAngles( lootBin.GetAngles() )
-		DispatchSpawn( parentPoint )
-		parentPoint.SetParent( funcBrush )
-		parentPoint.Hide()
-		lootBin.SetParent(parentPoint)
-	}
-}
-
-void function Flowstate_OpenLootBinsAtStation( entity station )
-{
-	foreach( entity binMover in file.binStations )
-	{
-		thread function () : ( station, binMover )
-		{
-			if( Distance( station.GetOrigin(), binMover.GetOrigin() ) < 10000 )
-			{
-				entity door
-				foreach( entLinkedToBinMover in binMover.GetLinkEntArray() )
-				{
-					if( entLinkedToBinMover.GetScriptName() == "station_loot_bin_doors_model" )
-					{
-						door = entLinkedToBinMover
-					}
-				}
-				
-				if( !IsValid( door ) )
-					return
-
-				PlayAnim( door, "loot_bin_02_open" )
-				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * 80, 5, 0, 0 )
-			}
-		}()
-	}
-}
-
-void function Flowstate_CloseLootBinsAtStation( entity station )
-{
-	foreach( entity binMover in file.binStations )
-	{
-		thread function () : ( station, binMover )
-		{
-			if( Distance( station.GetOrigin(), binMover.GetOrigin() ) < 10000 )
-			{
-				entity door
-				entity lootBin
-				
-				foreach( entLinkedToBinMover in binMover.GetLinkEntArray() )
-				{
-					if( entLinkedToBinMover.GetScriptName() == "station_loot_bin_doors_model" )
-					{
-						door = entLinkedToBinMover
-					} else if( entLinkedToBinMover.GetScriptName() == "survival_lootbin_spawned" )
-					{
-						lootBin = entLinkedToBinMover
-					}
-				}
-
-				if( !IsValid( door ) )
-					return
-					
-				binMover.NonPhysicsMoveTo( binMover.GetOrigin() + binMover.GetUpVector() * -80, 5, 0, 0 )
-				
-				wait 5
-
-				if ( LootBin_IsOpen( lootBin ) )
-					thread LootBin_PlayCloseSequence( lootBin )
-				PlayAnim( door, "loot_bin_02_close" )
-			}
-		}()
-	}
-}
-
-void function AddTrainButtonProperties()
-{
-	entity button = file.buttonEnt
-	
-	if ( !IsValid( button ) )
-		return
-
-	button.SetUsable()
-	button.SetOwner( GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 )) )
-	button.SetUsableByGroup( "pilot" )
-	button.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
-	button.SetUsePrompts("Press %use% to Stop The Train.", "Press %use% to Stop The Train.")
-	button.SetUsablePriority( USABLE_PRIORITY_MEDIUM )
-
-	SetCallback_CanUseEntityCallback( button, TrainButton_CanUse )
-	AddCallback_OnUseEntity( button, TrainCheckForStopOrRestart )
-}
-
-bool function TrainButton_CanUse(entity player, entity button)
-{
-	if(	!IsValid(player) || !IsValid(button) ) 
-		return false
-	
-	if( IsTrainMovingToTrainNode() && Train_IsBraking() )
-		return false
-	
-	if( IsTrainMovingToTrainNode() && Train_IsAccelerating() )
-		return false
-	
-	if( file.trainStoppedAtStation )
-		return false
-	
-	return true
-}	
-
-void function TrainCheckForStopOrRestart( entity button, entity player, int useInputFlags )
-{
-	if( file.trainStoppedManually )
-		thread Flowstate_RestartTrainMovementFromStopNode()
-	else
-		thread Flowstate_CreateAndSetStopNodeAlongPath()
-}
-void function DesertlandsTrain_ThreadCheckJuncs(array<entity> cars)
-{
-	entity lastJunction = null;
-	string nextDirection = ["left","right"].getrandom();
-	// ^ at some point it'll have to be global to the scope to be controlled
-
-	// Not a big fan of the constant check, it's messy.
-	// In theory if we're on a _inward, there's another _inward after it, and the first one isn't connected to a junc
-	// We can use this info to find the next one, and run this just in time
-	// If we're going to fork to two tracks, we should find "script_name" "train_track_node_pre_junction", same as first _inward
-	// it helps to know that the next node is on a junction
-	while(true)
-	{
-		wait 0.02
-		foreach(entity car in cars)
-		{
-			entity cur = car.Train_GetLastNode()
-
-			if(expect string(cur.kv.script_name).find("_inward") > 0) // Merging, always has only one next node
-			{
-				entity nextNode = DesertlandsTrain_GetJunctionNext(cur)
-				if(!nextNode) continue // Not a junction then
-
-				car.Train_MoveToTrainNode(nextNode, TRAIN_MAX_SPEED, TRAIN_ACCELERATION)
-			}
-			else if(expect string(cur.kv.script_name).find("_outward") > 0) // Forking, chooses one between left and right
-			{
-				if(lastJunction != cur)
-				{
-					nextDirection = ["left","right"].getrandom()	// not random on live?
-					lastJunction = cur
-				}
-				entity nextNode = DesertlandsTrain_GetJunctionNext(cur, nextDirection)
-				car.Train_MoveToTrainNode(nextNode, TRAIN_MAX_SPEED, TRAIN_ACCELERATION)
-			}
-		}
-	}
-}
-void function Flowstate_Train_CheckForJuncts()
-{
-	entity lastJunction = null
-	string nextDirection = ["left", "right"].getrandom()
-	// ^ at some point it'll have to be global to the scope to be controlled
-
-	// Not a big fan of the constant check, it's messy.
-	// In theory if we're on a _inward, there's another _inward after it, and the first one isn't connected to a junc
-	// We can use this info to find the next one, and run this just in time
-	// If we're going to fork to two tracks, we should find "script_name" "train_track_node_pre_junction", same as first _inward
-	// it helps to know that the next node is on a junction
-
-	// Decide path in advance, so when we stop the train we always have enough space to calculate the stop mover position. Colombia
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))	
-	array<entity> links
-	entity previousMovingNode
-	entity nextMovingNode
-	while(true)
-	{
-		wait 0.02
-		
-		links.clear()
-		nextMovingNode = trainhead.Train_GetLastNode().GetNextTrainNode()
-		links.append( nextMovingNode )
-		while ( true )
-		{
-			entity next = links[links.len() - 1].GetLinkEnt()
-			
-			if ( !IsValid( next ) || next == nextMovingNode )
-				break
-			
-			if( links.len() == 7 ) //get up to 7 next nodes or until it's not valid anymore (a junct)
-				break
-			
-			links.append( next )
-		}
-		
-		foreach( pathEnt in links )
-		{
-			if(expect string(pathEnt.kv.script_name).find("_inward") > 0 && pathEnt != file.lastFixedJunct ) // Merging, always has only one next node
-			{
-				entity nextNode = DesertlandsTrain_GetJunctionNext( pathEnt )
-				if(!nextNode) 
-				{
-					
-					continue // Not a junction then
-				}
-				
-				if( IsValid( pathEnt.GetLinkEnt() ) )
-				{
-					if( TRAIN_DEBUG )	
-						printt(" Link " + pathEnt + " had valid ent linked " )
-					pathEnt.UnlinkFromEnt( pathEnt.GetLinkEnt() )
-				}
-				#if DEVELOPER
-				if( TRAIN_DEBUG )
-					printt("Junction fixed in advance, was _inward" )
-				#endif
-
-				file.lastFixedJunct = pathEnt
-				pathEnt.LinkToEnt( nextNode )				
-				DebugDrawHemiSphere( pathEnt.GetOrigin(), Vector(0,0,0), 100, 10, 10, 10, false, 20 )
-			}
-			else  if(expect string(pathEnt.kv.script_name).find("_outward") > 0 && pathEnt != file.lastFixedJunct ) // Forking, chooses one between left and right
-			{
-				if(lastJunction != pathEnt)
-				{
-					nextDirection = ["left", "right"].getrandom()
-					lastJunction = pathEnt
-				}
-				entity nextNode = DesertlandsTrain_GetJunctionNext(pathEnt, nextDirection)
-				
-				if( IsValid( pathEnt.GetLinkEnt() ) )
-				{
-					pathEnt.UnlinkFromEnt( pathEnt.GetLinkEnt() )
-				}
-				#if DEVELOPER
-				if( TRAIN_DEBUG )
-					printt("Junction fixed in advance, was _outward and we decided to go " + nextDirection )
-				#endif
-				file.lastFixedJunct = pathEnt
-				pathEnt.LinkToEnt( nextNode )
-				DebugDrawHemiSphere( pathEnt.GetOrigin(), Vector(0,0,0), 20, 10, 10, 10, false, 20 )
-			}
-			
-		}
-	}
-}
-
-bool function Train_IsAccelerating()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	
-	if( trainhead.Train_GetCurrentSpeed() != TRAIN_MAX_SPEED && trainhead.Train_GetGoalSpeed() == TRAIN_MAX_SPEED )
-		return true
-	
-	return false
-}
-
-bool function Train_IsBraking()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	
-	if( trainhead.Train_GetCurrentSpeed() != TRAIN_MAX_SPEED && trainhead.Train_GetGoalSpeed() == 0 )
-		return true
-	
-	return false
-}
-
-bool function IsTrainMovingToTrainNode()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	return trainhead.Train_IsMovingToTrainNode()
-}
-
-entity function DesertlandsTrain_GetJunctionNext( entity node, string noteworthy = "")
-{
-	array<entity> junctions = GetEntArrayByScriptName( "train_track_helper_junction" )
-	foreach(entity junc in junctions)
-	{
-		bool isOurJunc = false;
-		array<entity> links = junc.GetLinkEntArray()
-		foreach(entity link in links)
-		{
-			if(link == node)
-			{
-				isOurJunc = true;
-				break
-			}
-		}
-
-		if(!isOurJunc)
-			continue
-
-		foreach(entity link in links)
-		{
-			if(link == node)
-				continue;
-
-			if(link.GetClassName() == "script_mover_train_node")
-			{
-				if(	link.HasKey("script_name") &&
-					(expect string(link.kv.script_name).find("_outward") > 0 ||
-					expect string(link.kv.script_name).find("_inward") > 0)
-				)
-					continue
-
-				if(noteworthy != "")
-				{
-					if(link.HasKey("script_noteworthy") && expect string(link.kv.script_noteworthy) == noteworthy)
-						return link;
-					continue
-				}
-
-				return link
-			}
-		}
-	}
-	return null
-}
-
-void function Flowstate_Train_TryUpdateNextStation()
-{
-	entity nextMovingNode
-	entity previousMovingNode
-	entity trainheadLastNode
-	float lastDistance
-	float nextDistance	
-	float nextDistanceStations
-	float distancetocompareStations
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	float totalSmoothDistance
-	entity nextNode
-	array<entity> links
-
-	while( true )
-	{
-		if( file.trainStoppedManually )
-		{
-			WaitFrame()
-			continue			
-		}
-		
-		nextNode = trainhead.Train_GetLastNode().GetNextTrainNode()
-		
-		// Seed
-		links.clear()
-		
-		links.append( nextNode )
-		while ( true )
-		{
-			if( !IsValid( links[links.len() - 1] ) )
-				continue
-			
-			entity next = links[links.len() - 1].GetLinkEnt()
-			
-			if ( !IsValid( next ) || next == nextNode )
-				break
-			
-			if( links.len() == 50 )
-				break
-			
-			links.append( next )
-		}
-	
-		// Find first "track_node_station" ent along the path
-		bool dontcheckformore = false
-		foreach(entity link in links)
-		{
-			if( dontcheckformore )
-				continue
-			
-			if( link.GetScriptName() == "train_track_node_station" && link != file.lastStationCrossed && link.HasKey("script_noteworthy") && link.HasKey("script_noteworthy") && expect string(link.kv.script_noteworthy) != expect string(file.lastStationCrossed.kv.script_noteworthy) )
-			{
-				file.nextStation = link
-				dontcheckformore = true
-				links.clear()
-				continue
-			}
-			else
-			{
-				// file.nextStation = null
-				// foreach( slink in GetEntityLinkLoop( link ) )
-				// {
-					// if( !links.contains( slink ) && link.GetScriptName() == "train_track_node_station" && link != file.lastStationCrossed && link.HasKey("script_noteworthy") && link.HasKey("script_noteworthy") && expect string(link.kv.script_noteworthy) != expect string(file.lastStationCrossed.kv.script_noteworthy))
-						// links.append( slink )
-				// }
-			}
-		}
-	
-		// if( !dontcheckformore ) 
-			// file.nextStation = null
-		
-		trainheadLastNode = trainhead.Train_GetLastNode()
-		lastDistance = trainhead.Train_GetLastDistance()
-		previousMovingNode = trainheadLastNode.GetPreviousTrainNode()
-		nextMovingNode = trainheadLastNode.GetNextTrainNode()
-		entity nextStation = file.nextStation
-		
-		if( IsValid( trainheadLastNode ) && IsValid( nextMovingNode ) && IsValid( nextStation ) )
-		{
-			nextDistanceStations = Distance( trainhead.GetOrigin(), nextStation.GetOrigin() )
-			nextDistance = trainheadLastNode.GetTotalSmoothDistance() - trainhead.Train_GetLastDistance() // smooth distance to next node from trainhead
-			totalSmoothDistance = trainheadLastNode.GetTotalSmoothDistance()
-			
-			#if DEVELOPER
-			if( TRAIN_DEBUG )
-			{
-				printt( "-------- DEBUG TRAIN HEAD NODES by @CafeFPS--------- " )
-				printt( "LAST NODE: " + trainheadLastNode + " - Distance: " + lastDistance )
-				printt( "NEXT NODE: " + nextMovingNode + " - Distance: " + nextDistance )
-				printt( "PREVIOUS NODE: " + previousMovingNode )
-				printt( "NEXT STATION: " + nextStation.kv.script_noteworthy + " - Distance: " + nextDistanceStations )
-				printt( "LAST STATION: " + file.lastStationCrossed.kv.script_noteworthy )
-				printt( "TOTAL SMOOTH DISTANCE: " + totalSmoothDistance )
-				printt( "---------------------------------------------------- " )
-			}
-			#endif
-		}
-		
-		if( IsValid( trainheadLastNode ) && trainhead.Train_IsMovingToTrainNode() && IsValid( nextStation ) && nextStation != file.lastStationCrossed && nextDistanceStations <= TRAIN_DISTANCE_TO_BEGIN_STOP && trainhead.Train_GetCurrentSpeed() == TRAIN_MAX_SPEED )
-		{
-			trainhead.Train_SetStopNode( nextStation )
-			trainhead.Train_StopSmoothly()
-			EmitSoundOnEntity( trainhead, "Vehicles_Train_Braking" )
-			if( IsValid( file.buttonEnt ) )
-			{
-				file.buttonEnt.SetSkin(1)
-				file.buttonEnt.SetUsePrompts("Train Already Stopping at Station.", "Train Already Stopping at Station.")
-			}
-			
-			waitthread function() : ( nextStation, trainhead, trainheadLastNode)
-			{
-				while( trainhead.Train_IsMovingToTrainNode() )
-				{
-					#if DEVELOPER
-					if( TRAIN_DEBUG )
-						printt( "Train is stopping - current vel: " + trainhead.Train_GetLastSpeed() ) 
-					#endif
-					WaitFrame()
-				}
-				
-				
-				file.trainStoppedAtStation = true
-				
-				if( IsValid( file.buttonEnt ) )
-				{
-					file.buttonEnt.SetSkin(1)
-					file.buttonEnt.SetUsePrompts("Train Stopped At Station.", "Train Stopped At Station.")
-				}
-				
-				foreach( player in GetPlayerArray() )
-					Remote_CallFunction_Replay( player, "ServerCallback_SetDesertlandsTrainAtStation", true )
-
-				wait 2
-				
-				// Open Station bins
-				Flowstate_OpenLootBinsAtStation( nextStation )
-				
-				wait TRAIN_DURATION_TO_DEPART - 2
-				// choo choo
-				
-				file.lastStationCrossed = nextStation
-				trainhead.Train_MoveToTrainNodeEx( nextStation, 0, 0, TRAIN_MAX_SPEED, TRAIN_ACCELERATION) 
-				file.trainStoppedAtStation = false
-				file.nextStation = null
-				
-				Flowstate_CloseLootBinsAtStation( nextStation )
-				
-				if( IsValid( file.buttonEnt ) )
-				{
-					file.buttonEnt.SetSkin(1)
-					file.buttonEnt.SetUsePrompts("Train Is Already Accelerating.", "Train Is Already Accelerating.")
-				}
-				
-				foreach( player in GetPlayerArray() )
-					Remote_CallFunction_Replay( player, "ServerCallback_SetDesertlandsTrainAtStation", false )
-				
-				waitthread function () : ()
-				{
-					while( Train_IsAccelerating() )
-						WaitFrame()
-					
-					if( IsValid( file.buttonEnt ) )
-					{
-						file.buttonEnt.SetSkin(0)
-						file.buttonEnt.SetUsePrompts("Press %use% to Stop The Train.", "Press %use% to Stop The Train.")
-					}
-				}()
-			}()
-		}
-		
-		WaitFrame()
-	}
-}
-
-void function Flowstate_CreateAndSetStopNodeAlongPath()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	
-	entity lastNode = trainhead.Train_GetLastNode()
-	
-	if( file.trainStoppedManually )
-	{
-		if( TRAIN_DEBUG )
-			printt( "TRAIN IS ALREADY STOPPING" )
-		return
-	}
-	
-	if( trainhead.Train_GetCurrentSpeed() != TRAIN_MAX_SPEED )
-	{
-		if( TRAIN_DEBUG )
-			printt( "TRAIN IS NOT AT MAX SPEED" ) 
-		return
-	}
-
-	// Predict train end pos when it finishes the stopping, we need to assign Train_SetStopNode before Train_StopSmoothly
-	// if distance is less than TRAIN_DISTANCE_TO_BEGIN_STOP to the NEXT node and train is at max speed, then use the distance for next node + TRAIN_DISTANCE_TO_BEGIN_STOP to calculate endpoint
-	// endPos depende de la velocidad también, solo será TRAIN_DISTANCE_TO_BEGIN_STOP si el train va a máxima velocidad
-	entity nextMovingNode = lastNode.GetNextTrainNode()
-
-	float nextDistance = lastNode.GetTotalSmoothDistance() - trainhead.Train_GetLastDistance()
-	float distanceAccumulated = 0
-	float distanceAccumulatedToSubtract = 0
-	
-	float lastDistance = trainhead.Train_GetLastDistance()
-	
-	vector endPos
-	bool canUseThisNode = nextDistance > TRAIN_DISTANCE_TO_BEGIN_STOP ? true : false
-	
-	if( !canUseThisNode )
-	{
-		distanceAccumulated = nextDistance //initial distance between trainhead and next node, it should be less than TRAIN_DISTANCE_TO_BEGIN_STOP
-		distanceAccumulatedToSubtract = nextDistance
-		
-		for( int i = 0; i < 1; i++ )	
-		{
-			distanceAccumulated += nextMovingNode.GetTotalSmoothDistance() // does this add enough space to get a point? if not, keep adding
-			
-			#if DEVELOPER
-			if( TRAIN_DEBUG )
-			{					
-				printt( "CAN'T CREATE STOP NODE IN CURRENT LASTNODE PATH, USING NEXT NODES TO CREATE A NEW ONE" )
-				printt( "SMOOTH DISTANCE FOR NEXT NODE : " + nextDistance + " SHOULD BE HIGHER THAN 2500 TO CREATE A NODE WITHOUT USING NEXT NODES TO CALCULATE IT " )
-				printt( "ALL NEXT DISTANCE IS " + nextMovingNode.GetTotalSmoothDistance() + " LET'S ADD IT AND TRY AGAIN " )
-				printt( "IS " + distanceAccumulated + " HIGHER THAN 2500? IF YES, THEN GET THE SMOOTH POSITION FROM THIS NEXTMOVINGNODE" )
-			}
-			#endif 
-			
-			if( distanceAccumulated > 2500 )
-			{
-				endPos = nextMovingNode.GetSmoothPositionAtDistance( TRAIN_DISTANCE_TO_BEGIN_STOP - distanceAccumulatedToSubtract)
-			}
-			else
-			{
-				distanceAccumulatedToSubtract += nextMovingNode.GetTotalSmoothDistance()
-				nextMovingNode = nextMovingNode.GetNextTrainNode()
-				i--
-			}				
-		}
-	} else
-	{
-		endPos = lastNode.GetSmoothPositionAtDistance( trainhead.Train_GetLastDistance() + TRAIN_DISTANCE_TO_BEGIN_STOP )
-	}
-	
-	// Cuánta distancia queda para el siguiente nodo?
-	// Por cada 100  unidades, crear un smooth point?, el primero emparentarlo a lastNode, el último emparentarlo a slink
-	// guardar slink para quitarle los links después, destruir los smooth points creados y volverlo al inkear con lastNode
-	
-	entity stopMover = CreateEntity( "script_mover_train_node" )
-	stopMover.kv.tangent_type = 0
-	stopMover.kv.num_smooth_points = 10
-	stopMover.kv.script_noteworthy = "stopped_manually"
-	stopMover.kv.script_name = "train_track_node_station"
-	stopMover.kv.perfect_circular_rotation = 0
-	DispatchSpawn( stopMover )
-	stopMover.SetOrigin( endPos )
-	
-	#if DEVELOPER
-	// printt( "DEBUG lastNode totalSmoothDistance " + totalSmoothDistance )
-	DebugDrawHemiSphere( stopMover.GetOrigin(), Vector(0,0,0), 50, 15, 15, 255, false, 999.0 )
-	#endif
-	
-	file.lastStopMoverEnt = stopMover
-	
-	trainhead.Train_SetStopNode( stopMover )
-	trainhead.Train_StopSmoothly()
-	EmitSoundOnEntity( trainhead, "Vehicles_Train_Braking" )
-	
-	if( IsValid( file.buttonEnt ) )
-	{
-		file.buttonEnt.SetSkin(1)
-		file.buttonEnt.SetUsePrompts("Train Is Already Stopping.", "Train Is Already Stopping.")
-	}
-	
-	file.trainStoppedManually = true
-
-	while( trainhead.Train_IsMovingToTrainNode() )
-	{
-		#if DEVELOPER
-		if( TRAIN_DEBUG )
-			printt( "Train is stopping - current vel: " + trainhead.Train_GetLastSpeed() )
-		#endif
-		WaitFrame()		
-	}
-	
-	if( IsValid( file.buttonEnt ) )
-	{
-		file.buttonEnt.SetSkin(0)
-		file.buttonEnt.SetUsePrompts("Press %use% to Start Train.", "Press %use% to Start Train.")	
-	}
-	
-	lastNode = trainhead.Train_GetLastNode()
-
-	// Install it in the path chain
-	nextMovingNode = lastNode.GetNextTrainNode()
-	foreach( slink in lastNode.GetLinkEntArray( ) )
-	{
-		#if DEVELOPER
-		if( TRAIN_DEBUG )
-			printt(" DEBUG LINKS TO ATTACH " + slink )
-		#endif
-		stopMover.LinkToEnt ( slink ) //sometimes this is linked to the wrong node in the path ?
-		lastNode.UnlinkFromEnt( slink ) 
-		slink.RegenerateSmoothPoints()
-	}
-	
-	lastNode.LinkToEnt( stopMover )
-	
-	// Create smooth points using smooth distance from last node
-	
-	// Important so train can start in same place
-	stopMover.RegenerateSmoothPoints()
-}
-
-void function Flowstate_RestartTrainMovementFromStopNode()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	
-	if( IsTrainMovingToTrainNode() && trainhead.Train_GetCurrentSpeed() != 0 )
-		return
-	
-	trainhead.Train_MoveToTrainNodeEx( trainhead.Train_GetStopNode(), 0, 0, TRAIN_MAX_SPEED, TRAIN_ACCELERATION) 
-	file.trainStoppedManually = false
-	
-	if( IsValid( file.buttonEnt ) )
-	{
-		file.buttonEnt.SetSkin(1)
-		file.buttonEnt.SetUsePrompts("Train Is Already Accelerating.", "Train Is Already Accelerating.")
-	}
-	
-	waitthread function () : ()
-	{
-		while( Train_IsAccelerating() )
-			WaitFrame()
-		if( IsValid( file.buttonEnt ) )
-		{
-			file.buttonEnt.SetSkin(0)
-			file.buttonEnt.SetUsePrompts("Press %use% to Stop The Train.", "Press %use% to Stop The Train.")
-		}
-	}()
-}
-
-#if DEVELOPER
-void function Dev_StartTrainMovement()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	trainhead.Train_MoveToTrainNodeEx( trainhead.Train_GetStopNode(), 0, 0, TRAIN_MAX_SPEED, TRAIN_ACCELERATION) 
-	file.trainStoppedManually = false
-}
-
-void function Dev_StopTrainSmooth()
-{
-	thread Flowstate_CreateAndSetStopNodeAlongPath( )
-}
-
-void function Dev_DebugStationsLinks()
-{
-	thread function() : ( )
-	{
-		for( int i = 0; i < file.trainStations.len(); i++ )
-		{
-			printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
-			printt( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> EXPLORING LINKS FOR NODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" )
-			printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
-			
-			wait 2
-			entity station = file.trainStations[i]
-			vector cOrigin = station.GetOrigin()
-			
-			GetPlayerArray()[0].SetOrigin( cOrigin )
-			Message( gp()[0], "MAIN STATION NODE", "tpin to links")
-			wait 4
-			
-			array<entity> links = station.GetLinkEntArray()
-			foreach(entity link in links)
-			{
-				printt( link )
-				GetPlayerArray()[0].SetOrigin( link.GetOrigin() )
-				wait 2
-			}
-
-			printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
-			printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
-		}
-	}()
-}
-
-void function Dev_TpPlayerZeroToTrain()
-{
-	entity trainhead = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ))
-	if(!trainhead)
-	{
-		printl("THERE IS NO TRAIN!")
-		return
-	}
-
-	entity p = GetPlayerArray()[0];
-	p.SetOrigin(trainhead.GetOrigin() + <0,0,256>)
-	
-	printt( "player tp to train ent " + trainhead ) 
-}
-
-#endif // if DEVELOPER
-
-#endif // #if SERVER
 
 #if CLIENT
 void function DesertlandsTrainAnnouncer_Init()
@@ -1011,27 +249,45 @@ void function DesertlandsTrainAnnouncer_Init()
 	AddCallback_EntitiesDidLoad( InitTrainClientEnts )
 	AddCallback_FullUpdate( TrainOnFullUpdate )
 }
+#endif
 
+
+#if CLIENT
 void function InitTrainClientEnts()
 {
 	if ( !Desertlands_IsTrainEnabled() )
 		return
-	
+
+
+	// ambient generics on the train modulated by the train mover
 	entity trainMover = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ) )
 	foreach ( entity ambientGeneric in GetEntArrayByScriptName( "Vehicles_Train_SpeedController" ) )
 		ambientGeneric.SetSoundCodeControllerEntity( trainMover )
 }
+#endif
 
-// S2C - set speaker idx
+void function DesertlandsTrain_PreMapInit()
+{
+	AddCallback_OnNetworkRegistration( DesertlandsTrain_OnNetworkRegistration )
+}
+
+void function DesertlandsTrain_OnNetworkRegistration()
+{
+	// Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0, NUM_TOTAL_DIALOGUE_QUEUES )
+}
+
+#if CLIENT
 void function SCB_DLandsTrain_SetCustomSpeakerIdx( int speakerIdx )
 {
 	file.customQueueIdx = speakerIdx
 	InitAnnouncerEnts()
 }
+#endif
 
+#if CLIENT
 void function InitAnnouncerEnts()
 {
-	int numTrainCars = TRAIN_CAR_COUNT
+	int numTrainCars = GetCurrentPlaylistVarInt( "desertlands_script_train_car_count", TRAIN_CAR_COUNT )
 	array<entity> customSpeakers1
 
 	if ( numTrainCars >= 1 )
@@ -1051,20 +307,1149 @@ void function InitAnnouncerEnts()
 		entity announcerTarget4 = GetEntByScriptName( "train_announcer_target_4" )
 		customSpeakers1.append( announcerTarget4 )
 	}
-}
 
+	// if ( customSpeakers1.len() != 0 )
+	// {
+		// RegisterCustomDialogueQueueSpeakerEntities( file.customQueueIdx, customSpeakers1 )
+	// }
+}
+#endif
+
+
+#if CLIENT
 void function TrainOnFullUpdate()
 {
 	if ( !Desertlands_IsTrainEnabled() )
 		return
 }
+#endif
 
+
+#if SERVER
+void function DesertlandsTrain_Precaches()
+{
+	RegisterCSVDialogue( $"datatable/dialogue/train_dialogue.rpak" )
+
+	PrecacheParticleSystem( FX_TRAIN_MAIN_SPOTLIGHT )
+	PrecacheParticleSystem( FX_TRAIN_SPOTLIGHT_BLINK )
+
+	// Train signals
+	RegisterSignal( "OnArriveAtTrainNode" )
+	RegisterSignal( "OnTrainStopping" )
+	RegisterSignal( "OnTrainStopped" )
+
+	RegisterSignal( SIGNAL_TRAIN_START_FORWARD )
+	RegisterSignal( SIGNAL_TRAIN_SPOTLIGHT_BLINKING )
+	RegisterSignal( "ForceLeaveStation" )
+
+	file.customQueueIdx = RequestCustomDialogueQueueIndex()
+	AddCallback_OnClientConnected( OnClientConnected )
+	// AddCallback_OnClientConnectionRestored( OnClientConnected )
+}
+
+void function DesertlandsTrain_Init()
+{
+	if ( !Desertlands_IsTrainEnabled() )
+		return
+
+	// FIXME. cafe
+	// FlagWait( "Survival_LootSpawned" ) // gotta wait for the loot bins to be init'd before moving around the train and settin up the bin data at stations
+	FlagInit( "AllowedToLeaveStation" )
+	DesertlandsTrain_SetAllowLeaveStation()
+
+	file.manualDeceleratingEnabled = GetCurrentPlaylistVarBool( "desertlands_script_train_stoppanel_enabled", true )
+	file.true_trainCarCount = GetCurrentPlaylistVarInt( "desertlands_script_train_car_count", TRAIN_CAR_COUNT )
+
+	SetupTrain()
+	SetupTracks()
+
+	DesertlandsTrain_SetDriverState( eTrainDriverGoals.RANDOM_STATION )
+
+	WORKAROUND_DESERTLANDS_TRAIN = file.train
+
+	printt( "TRAIN INITIALIZED" )
+
+	thread DesertlandsTrain_InitMovement()
+}
+
+void function DesertlandsTrain_InitMovement()
+{
+	                      
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS && PreGame_GetWaitingForPlayersCountdown() > 0 )
+		wait 20
+       
+
+	TrainStartAtRandomPosition()
+	SetTrainState( eTrainStates.START_FORWARD )
+}
+
+void function SetupTrain()
+{
+	const float TRAIN_CAR_OFFSET = 832.0
+
+	float trainCarOffsetTotal = 0.0
+	for ( int idx = 0; idx < file.true_trainCarCount; idx++ )
+	{
+		TrainCarData data
+		data.mover = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, idx ) )
+		data.mover.SetPusher( true )
+		// data.mover.SetPusherMovesNearbyVehicles( true )
+		data.mover.DisallowZiplines()
+
+		// get the train brush
+		foreach ( entity linkEnt in data.mover.GetLinkEntArray() )
+		{
+			if ( linkEnt.GetClassName() == "func_brush" )
+			{
+				data.brush = linkEnt
+				break
+			}
+		}
+
+		// setup all other ents
+		foreach ( entity linkEnt in data.mover.GetLinkEntArray() )
+		{
+			if ( !linkEnt.HasKey( "script_name" ) )
+				continue
+
+			string scriptName = linkEnt.GetScriptName()
+			printt( "TRAIN Linked ENt has script name: " + scriptName )
+
+			if ( scriptName == "train_particle_main_spotlight" )
+			{
+				data.offsetSpotlight = linkEnt.GetOrigin() - data.brush.GetOrigin()
+				data.spotlightFX = StartParticleEffectOnEntityWithPos_ReturnEntity( data.brush, GetParticleSystemIndex( FX_TRAIN_MAIN_SPOTLIGHT ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, data.offsetSpotlight, <0, 0, 0> )
+
+				#if DEVELOPER
+					if ( file.devDisableTrainSpotlight )
+						data.spotlightFX.Destroy()
+				#endif
+
+				linkEnt.Destroy()
+			}
+			else if ( scriptName == "train_stop_panel" )
+			{
+				if ( file.manualDeceleratingEnabled )
+				{
+					linkEnt.AllowMantle()
+					linkEnt.SetForceVisibleInPhaseShift( true )
+					linkEnt.SetUsable()
+					linkEnt.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+					linkEnt.SetUsablePriority( USABLE_PRIORITY_LOW )
+					linkEnt.SetUsePrompts( "#TRAIN_ACCELERATING_HINT", "#TRAIN_ACCELERATING_HINT" )
+					AddCallback_OnUseEntity( linkEnt, CreateTrainStopPanelFunc( linkEnt ) )
+				}
+				else
+				{
+					linkEnt.Hide()
+					linkEnt.NotSolid()
+				}
+
+				data.stopPanel = linkEnt
+			}
+		}
+
+		// create the file variables
+		file.trainDatas.append( data )
+
+		if ( idx == 0 )
+		{
+			file.train = data.mover
+		}
+		else
+		{
+			// offset each car from the first train car
+			trainCarOffsetTotal += TRAIN_CAR_OFFSET
+			data.mover.Train_Follow( file.train, trainCarOffsetTotal )
+			entity previousMover = file.trainDatas[idx - 1].mover
+			Assert( previousMover )
+			Assert( IsValid( previousMover ) )
+			// data.mover.Train_SetSimulateBeforeMeEntity( previousMover )
+		}
+	}
+}
+
+
+void function SetupTracks()
+{
+	// set up junction variables
+	foreach ( entity junctionHelper in GetEntArrayByScriptName( HELPER_SPLIT_NAME ) )
+	{
+		array<entity> inwardJunctionNodes
+		array<entity> outwardJunctionNodes
+		array<entity> destinationNodes
+
+		foreach ( entity linkEnt in junctionHelper.GetLinkEntArray() )
+		{
+			string scriptName = linkEnt.GetScriptName()
+
+			if ( scriptName == TRACK_SPLIT_INWARD_NAME )
+			{
+				inwardJunctionNodes.append( linkEnt )
+			}
+			else if ( scriptName == TRACK_SPLIT_OUTWARD_NAME )
+			{
+				outwardJunctionNodes.append( linkEnt )
+			}
+			else
+			{
+				destinationNodes.append( linkEnt )
+			}
+		}
+
+		Assert( destinationNodes.len() > 0 )
+
+		array<entity> allJunctionNodes = inwardJunctionNodes
+		allJunctionNodes.extend( outwardJunctionNodes )
+		Assert( allJunctionNodes.len() > 0 )
+
+		foreach ( entity node in allJunctionNodes )
+			file.junctionNodeGroups[ node ] <- destinationNodes
+
+		junctionHelper.Destroy()
+	}
+
+	// set up station nodes
+	foreach ( entity stationHelper in GetEntArrayByScriptName( HELPER_STATION_NAME ) )
+	{
+		array<entity> stationNodes
+		array<stationLootBinData> lootBinDatas
+
+		foreach ( entity linkEnt in stationHelper.GetLinkEntArray() )
+		{
+			string scriptName = linkEnt.GetScriptName()
+
+			if ( scriptName == TRACK_STATION_NAME )
+			{
+				stationNodes.append( linkEnt )
+			}
+			else if ( scriptName == TRACK_BIN_MOVER_NAME )
+			{
+				if ( GetCurrentPlaylistVarBool( "ignore_station_loot_bins", false ) )
+					continue
+
+				stationLootBinData data
+				data.mover = linkEnt
+				data.mover.SetPusher( true )
+				// data.mover.SetPusherMovesNearbyVehicles( true )
+				data.mover.EnableNonPhysicsMoveInterpolation( false )
+				data.moverStartOrigin = data.mover.GetOrigin()
+
+				foreach ( entity moverLinkEnt in data.mover.GetLinkEntArray() )
+				{
+					if ( moverLinkEnt.GetScriptName() == TRACK_BIN_DOORS_MODEL_NAME )
+					{
+						data.doorsModel = moverLinkEnt
+					}
+					else if ( moverLinkEnt.GetClassName() == "func_brush" )
+					{
+						data.brush = moverLinkEnt
+						data.brush.SetParent( data.mover )
+					}
+					else if ( moverLinkEnt.GetScriptName() == LOOT_BIN_SCRIPTNAME )
+					{
+						data.binModel = moverLinkEnt
+					}
+					else if ( moverLinkEnt.GetScriptName() == TRACK_BIN_TRIGGER_NAME )
+					{
+						data.trigger = moverLinkEnt
+					}
+				}
+
+				if ( !IsValid( data.binModel ) )
+				{
+					Warning( "A train station loot bin was deleted as part of loot initialization at: " + data.mover.GetOrigin() )
+					if ( IsValid( data.mover ) )
+						data.mover.Destroy()
+
+					if ( IsValid( data.brush ) )
+						data.brush.Destroy()
+				}
+				else
+				{
+					lootBinDatas.append( data )
+
+					// delete any loot spawned during loot init
+					// thread LootBin_ForceClose_Thread( data.binModel, true, true, true )
+				}
+			}
+		}
+
+		foreach ( entity stationNode in stationNodes )
+		{
+			file.stationNodeBinGroups[ stationNode ] <- lootBinDatas
+			file.stationNodes.append( stationNode )
+		}
+
+		stationHelper.Destroy()
+	}
+}
+
+
+void functionref( entity panel, entity player, int useInputFlags ) function CreateTrainStopPanelFunc( entity panel )
+{
+	return void function( entity panel, entity player, int useInputFlags ) : ()
+	{
+		OnTrainStopPanelActivate( panel, player, useInputFlags )
+	}
+}
+
+
+void function OnTrainStopPanelActivate( entity panel, entity player, int useInputFlags )
+{
+	printt( "Attempting to emergency brake. Train current state is: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
+
+	// TODO: defensive fix for R5DEV-109051 with adding Train_IsMovingToTrainNode()
+	if ( file.trainCurrentState == eTrainStates.ABLE_TO_MANUALLY_DECELERATE && file.train.Train_IsMovingToTrainNode() )
+		TrainInitiateEmergencyStop()
+
+	else if ( file.trainCurrentState == eTrainStates.STOPPED_AT_UNKNOWN_SPOT )
+		SetTrainState( eTrainStates.START_FORWARD_CURRENT_PATH )
+
+	else
+		TrainSound_EmergencyBrakeDeny( player )
+}
+
+
+void function TrainInitiateEmergencyStop()
+{
+	file.emergencyStopEngaged = true
+	file.train.Train_StopSmoothly()
+	TrainSound_EmergencyBrakeEngaged()
+	TrainAnnouncer_PlaySingle( "Train_EmergencyBrake", 2.0 )
+	thread ResumeTrainAfterEmergencyStop()
+
+	#if DEVELOPER
+		if ( file.devShowTrainPath )
+			DebugDrawSphere( file.train.GetOrigin(), 64.0, 128, 128, 255, false, 60.0 )
+	#endif
+}
+
+
+void function ResumeTrainAfterEmergencyStop()
+{
+	EndSignal( file.train, "OnDestroy" )
+	EndSignal( file.train, SIGNAL_TRAIN_START_FORWARD )
+
+	const float TRAIN_EMERGENCY_STOP_DURATION = 60.0
+
+	wait TRAIN_EMERGENCY_STOP_DURATION
+
+	SetTrainState( eTrainStates.START_FORWARD_CURRENT_PATH )
+}
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//   ######  ########    ###    ######## ########  ######
+//  ##    ##    ##      ## ##      ##    ##       ##    ##
+//  ##          ##     ##   ##     ##    ##       ##
+//   ######     ##    ##     ##    ##    ######    ######
+//        ##    ##    #########    ##    ##             ##
+//  ##    ##    ##    ##     ##    ##    ##       ##    ##
+//   ######     ##    ##     ##    ##    ########  ######
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+void function SetTrainState( int desiredTrainState )
+{
+	printt( "Train switching state to: %s", GetNameForEnum( eTrainStates, desiredTrainState ) )
+
+	switch ( desiredTrainState )
+	{
+		case eTrainStates.START_FORWARD:
+			thread TrainFollowPathForward( true )
+			break
+
+		case eTrainStates.START_FORWARD_CURRENT_PATH:
+			thread TrainFollowPathForward( false )
+			break
+
+		case eTrainStates.ABLE_TO_MANUALLY_DECELERATE:
+			file.trainDatas[0].stopPanel.SetUsePrompts( "#TRAIN_CAN_STOP_HINT", "#TRAIN_CAN_STOP_HINT" )
+			file.trainDatas[0].stopPanel.SetSkin( 0 )
+			break
+
+		case eTrainStates.DECELERATE:
+			thread TrainBeginDeceleration()
+			break
+
+		case eTrainStates.STOPPED_AT_STATION:
+			thread TrainReachedStation()
+			break
+
+		case eTrainStates.STOPPED_AT_UNKNOWN_SPOT:
+			thread TrainStoppedAtUnknownSpot()
+			break
+
+		case eTrainStates.ABOUT_TO_LEAVE_STATION:
+			thread TrainAboutToLeaveStation()
+			break
+	}
+
+	file.trainCurrentState = desiredTrainState
+}
+
+
+const float TRAIN_NEXT_DESTINATION_ANNOUNCE_DELAY = 4.5
+
+
+void function TrainFollowPathForward( bool shouldGetNewPath )
+{
+	Assert( !file.train.Train_IsMovingToTrainNode() )
+
+	Signal( file.train, SIGNAL_TRAIN_START_FORWARD )
+
+	if ( shouldGetNewPath )
+	{
+		ClearTrainPathConnections()
+		file.currentPathNodes = GetTrainPath()
+	}
+	else
+	{
+		TrainSound_EmergencyBrakeDeactivated()
+	}
+
+	entity endNode = file.currentPathNodes.top()
+
+	file.train.Train_MoveToTrainNodeEx( file.train.Train_GetLastNode(), file.train.Train_GetLastDistance(), 0, file.true_trainMaxSpeed, file.true_trainAccel )
+	file.train.Train_SetStopNode( endNode )
+
+	file.emergencyStopEngaged = false
+	file.trainStoppedAtStation = false
+
+	array<entity> playerArray = GetPlayerArray()
+	foreach ( player in playerArray )
+		Remote_CallFunction_Replay( player, TRAIN_AT_STATION_SERVER_CALLBACK, false )
+
+	foreach ( func in file.callbacks_trainLeavingFromStation )
+		func()
+
+	file.trainDatas[0].stopPanel.SetUsePrompts( "#TRAIN_ACCELERATING_HINT", "#TRAIN_ACCELERATING_HINT" )
+	file.trainDatas[0].stopPanel.SetSkin( 1 )
+
+	thread TrainWait_AbleToManuallyDecelerate()
+	thread TrainWait_Decelerate()
+	thread TrainWait_Stopped()
+	thread TrainWait_AboutToJunction()
+
+	TrainSound_AccelerateStart()
+			TrainAnnouncer_PlaySingle( "Train_DepartNow" )
+
+	                      
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		return
+       
+
+	string destinationNoteworthy = endNode.GetValueForKey( "script_noteworthy" )
+	TrainAnnouncer_PlaySingle( "Train_NextStop", 2.0 )
+	string stationAlias = TrainAnnouncer_GetAliasForStationNoteworthy( endNode.GetValueForKey( "script_noteworthy" ) )
+	if ( stationAlias != "" )
+		TrainAnnouncer_PlaySingle( stationAlias, TRAIN_NEXT_DESTINATION_ANNOUNCE_DELAY )
+}
+
+
+void function TrainWait_AbleToManuallyDecelerate()
+{
+	if ( !file.manualDeceleratingEnabled )
+		return
+
+	EndSignal( file.train, "OnDestroy" )
+	EndSignal( file.train, SIGNAL_TRAIN_DECELERATING )
+
+	//wait TRAIN_MAX_SPEED / TRAIN_ACCEL
+	wait file.true_waitBufferToManuallyAccelerate
+
+	SetTrainState( eTrainStates.ABLE_TO_MANUALLY_DECELERATE )
+}
+
+
+void function TrainBeginDeceleration()
+{
+	foreach ( func in file.callbacks_trainAboutToArriveAtStation )
+		func()
+
+	file.trainDatas[0].stopPanel.SetUsePrompts( "#TRAIN_DECELERATING_HINT", "#TRAIN_DECELERATING_HINT" )
+	file.trainDatas[0].stopPanel.SetSkin( 1 )
+
+	TrainSound_Horn()
+	thread TrainSpotlightBlink()
+	thread TrainWaitPlayDecelerateSound()
+	thread TrainWaitPlayStoppedSound()
+
+	if ( file.emergencyStopEngaged )
+		return
+
+	                      
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		return
+       
+
+	entity endNode = file.currentPathNodes.top()
+	string destinationNoteworthy = endNode.GetValueForKey( "script_noteworthy" )
+	TrainAnnouncer_PlaySingle( "Train_NowArriving", 2.0 )
+
+	string stationAlias = TrainAnnouncer_GetAliasForStationNoteworthy( endNode.GetValueForKey( "script_noteworthy" ) )
+	if ( stationAlias != "" )
+		TrainAnnouncer_PlaySingle( stationAlias, TRAIN_NEXT_DESTINATION_ANNOUNCE_DELAY )
+}
+
+
+void function TrainWaitPlayDecelerateSound()
+{
+	OnThreadEnd(
+		function () : ()
+		{
+			TrainSound_AccelerateStop()
+			TrainSound_DecelerateStart()
+		}
+	)
+
+	float goalVelocity = TRAIN_ACCEL * file.true_timeBeforeFullStopToPlayDecelSound
+
+	WaitUntilTrainReachGoalVelocity( goalVelocity )
+}
+
+
+void function TrainWaitPlayStoppedSound()
+{
+	OnThreadEnd(
+		function () : ()
+		{
+			TrainSound_FullyStopped()
+		}
+	)
+
+	float goalVelocity = TRAIN_ACCEL * file.true_timeBeforeFullStopToPlayStopSound
+
+	WaitUntilTrainReachGoalVelocity( goalVelocity )
+}
+
+
+void function WaitUntilTrainReachGoalVelocity( float goalVelocity )
+{
+	EndSignal( file.train, SIGNAL_TRAIN_COMPLETELY_STOPPED )
+
+	// TODO: defensive fix for R5DEV-109512
+	if ( !file.train.Train_IsMovingToTrainNode() )
+		return
+
+	float durationUntilReachGoalVelocity = fabs( (goalVelocity - file.train.Train_GetCurrentSpeed()) / TRAIN_ACCEL )
+	float durationUntilReachZeroVelocity = fabs( (0.0 - file.train.Train_GetCurrentSpeed()) / TRAIN_ACCEL )
+
+	if ( durationUntilReachGoalVelocity < durationUntilReachZeroVelocity )
+		wait durationUntilReachGoalVelocity
+}
+
+
+void function TrainSpotlightBlink()
+{
+	#if DEVELOPER
+		if ( file.devDisableTrainSpotlight )
+			return
+	#endif
+
+	Signal( file.train, SIGNAL_TRAIN_SPOTLIGHT_BLINKING )
+
+	EndSignal( file.train, "OnDestroy" )
+	EndSignal( file.train, SIGNAL_TRAIN_SPOTLIGHT_BLINKING )
+
+	const TRAIN_SPOTLIGHT_BLINK_DURATION = 12.0
+
+	TrainCarData data = file.trainDatas[0]
+
+	data.spotlightFX.Destroy()
+	data.spotlightFX = StartParticleEffectOnEntityWithPos_ReturnEntity( data.brush, GetParticleSystemIndex( FX_TRAIN_SPOTLIGHT_BLINK ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, data.offsetSpotlight, <0, 0, 0> )
+
+	wait TRAIN_SPOTLIGHT_BLINK_DURATION
+
+	data.spotlightFX.Destroy()
+	data.spotlightFX = StartParticleEffectOnEntityWithPos_ReturnEntity( data.brush, GetParticleSystemIndex( FX_TRAIN_MAIN_SPOTLIGHT ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, data.offsetSpotlight, <0, 0, 0> )
+}
+
+
+void function TrainReachedStation()
+{
+	Assert( !file.train.Train_IsMovingToTrainNode() )
+
+	EndSignal( file.train, "OnDestroy" )
+
+	file.trainStoppedAtStation = true
+
+	array<entity> playerArray = GetPlayerArray()
+	foreach ( player in playerArray )
+		Remote_CallFunction_Replay( player, TRAIN_AT_STATION_SERVER_CALLBACK, true )
+
+	file.trainDatas[0].stopPanel.SetUsePrompts( "#TRAIN_STOPPED_AT_STATION_HINT", "#TRAIN_STOPPED_AT_STATION_HINT" )
+	file.trainDatas[0].stopPanel.SetSkin( 1 )
+
+	//allow train to leave station early
+	EndSignal( file.train, "ForceLeaveStation" )
+
+	foreach ( func in file.callbacks_trainArrivedAtStation )
+		func()
+
+	TrainSound_DecelerateStop()
+	TrainAnnouncer_PlaySingle( "Train_MindTheGap", 1.0 )
+
+	thread StationLootBinsRise()
+
+	OnThreadEnd(
+		function() : ()
+		{
+			if ( IsValid( file.train ) )
+			{
+				thread TrainLeavingStation()
+			}
+		}
+	)
+
+	wait file.true_trainStationWaitDuration - file.true_trainStationAboutToLeaveBuffer
+
+	FlagWait( "AllowedToLeaveStation" )
+}
+
+void function TrainLeavingStation()
+{
+	Assert( !file.train.Train_IsMovingToTrainNode() )
+
+	foreach ( func in file.callbacks_trainAboutToLeaveStation )
+		func()
+
+	Assert( !file.train.Train_IsMovingToTrainNode() )
+
+	SetTrainState( eTrainStates.ABOUT_TO_LEAVE_STATION )
+
+	wait file.true_trainStationAboutToLeaveBuffer
+	wait file.true_trainStationAdditionalLeaveBuffer
+
+	SetTrainState( eTrainStates.START_FORWARD )
+}
+
+
+void function TrainStoppedAtUnknownSpot()
+{
+	file.trainDatas[0].stopPanel.SetUsePrompts( "#TRAIN_CAN_START_HINT", "#TRAIN_CAN_START_HINT" )
+	file.trainDatas[0].stopPanel.SetSkin( 0 )
+
+	TrainSound_DecelerateStop()
+	TrainAnnouncer_PlaySingle( "Train_StoppedAtUnknownSpot", 1.0 )
+}
+
+
+void function TrainAboutToLeaveStation()
+{
+	TrainSound_Horn()
+	thread StationLootBinsLower()
+}
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//  ##     ##    ###    #### ##    ##
+//  ###   ###   ## ##    ##  ###   ##
+//  #### ####  ##   ##   ##  ####  ##
+//  ## ### ## ##     ##  ##  ## ## ##
+//  ##     ## #########  ##  ##  ####
+//  ##     ## ##     ##  ##  ##   ###
+//  ##     ## ##     ## #### ##    ##
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+void function TrainStartAtRandomPosition()
+{
+	entity randomStartNode = file.stationNodes.getrandom()
+
+	#if DEVELOPER
+		if ( IsValid( file.devStartingStationNode ) )
+			randomStartNode = file.devStartingStationNode
+	#endif
+
+	file.train.Train_MoveToTrainNode( randomStartNode, file.true_trainMaxSpeed, file.true_trainAccel )
+	file.train.Train_StopImmediately()
+}
+
+
+void function TrainWait_Decelerate()
+{
+	EndSignal( file.train, "OnDestroy" )
+
+	WaitSignal( file.train, SIGNAL_TRAIN_DECELERATING )
+
+	SetTrainState( eTrainStates.DECELERATE )
+}
+
+
+void function TrainWait_Stopped()
+{
+	EndSignal( file.train, "OnDestroy" )
+
+	WaitSignal( file.train, SIGNAL_TRAIN_COMPLETELY_STOPPED )
+
+	if ( file.stationNodes.contains( file.train.Train_GetLastNode() ) && !file.emergencyStopEngaged )
+		SetTrainState( eTrainStates.STOPPED_AT_STATION )
+
+	else if ( file.emergencyStopEngaged )
+		SetTrainState( eTrainStates.STOPPED_AT_UNKNOWN_SPOT )
+
+	else
+	{
+		entity startNode = file.currentPathNodes[0]
+		entity endNode   = file.currentPathNodes.top()
+		printt( "Train path start node pos: %f, %f, %f", startNode.GetOrigin().x, startNode.GetOrigin().y, startNode.GetOrigin().z )
+		printt( "Train path end node pos: %f, %f, %f", endNode.GetOrigin().x, endNode.GetOrigin().y, endNode.GetOrigin().z )
+		printt( "Train current state: %s", GetNameForEnum( eTrainStates, file.trainCurrentState ) )
+		Assert( false, "Train stopped for unknown reason. It should only stop at stations or because of the emergency brake." )
+	}
+}
+
+
+void function TrainWait_AboutToJunction()
+{
+	EndSignal( file.train, "OnDestroy" )
+	EndSignal( file.train, SIGNAL_TRAIN_COMPLETELY_STOPPED )
+
+	// function assumes nodes are iterated in order of the train path
+	// assumes that there will always be a pair of announcement nodes to post-junction nodes
+
+	array<entity> announceNodes
+	array<entity> postJunctionNodes
+
+	foreach ( entity node in file.currentPathNodes )
+	{
+		string scriptName = node.GetScriptName()
+
+		if ( scriptName == TRACK_SPLIT_ANNOUNCE_NAME )
+		{
+			announceNodes.append( node )
+			continue
+		}
+
+		if ( scriptName == TRACK_SPLIT_NEW_START_NAME )
+		{
+			postJunctionNodes.append( node )
+			continue
+		}
+	}
+
+	Assert( announceNodes.len() == postJunctionNodes.len(), "Couldn't find equal pairs for pre and post junction nodes for the train announcer." )
+
+	for ( int idx = 0; idx < announceNodes.len(); idx++ )
+	{
+		WaitSignal( announceNodes[ idx ], "OnArriveAtTrainNode" )
+
+		string noteworthy = postJunctionNodes[ idx ].GetValueForKey( "script_noteworthy" )
+
+		if ( noteworthy == "right" )
+			TrainAnnouncer_PlaySingle( "Train_TurningRight" )
+	}
+}
+
+
+const vector SFX_TRAIN_STATION_LOOT_BIN_OFFSET = <0, 0, 240>
+const vector LOOT_BIN_MOVETO_OFFSET = <0, 0, 82>
+
+
+void function StationLootBinsRise()
+{
+	entity stationNode = file.currentPathNodes.top()
+
+	//TODO: defensive fix for R5DEV-109074
+	if ( !(stationNode in file.stationNodeBinGroups) )
+		return
+
+	// bin elevators open
+	float animLength
+	foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+	{
+		animLength = data.doorsModel.GetSequenceDuration( "animseq/props/loot_bin/loot_bin_02_open.rseq" )
+		CleanupPermanentsOnStationLootBin( data )
+		thread PlayAnim( data.doorsModel, "animseq/props/loot_bin/loot_bin_02_open.rseq" )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, data.moverStartOrigin + SFX_TRAIN_STATION_LOOT_BIN_OFFSET, SFX_STATION_BIN_RAISE, stationNode )
+
+		// refresh the loot
+		array<string> newRefs = SURVIVAL_GetMultipleWeightedItemsFromGroup( DESERTLANDS_TRAIN_LOOT_TABLE, 3 )
+		// LootBin_PutMultipleLootItemsInside( data.binModel, eLootBinCompartment.REGULAR, newRefs )
+	}
+
+	wait animLength
+
+	// bins rise up
+	foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+		data.mover.NonPhysicsMoveTo( data.moverStartOrigin + LOOT_BIN_MOVETO_OFFSET, STATION_LOOT_MOVETO_DURATION, STATION_LOOT_MOVETO_DURATION * 0.125, STATION_LOOT_MOVETO_DURATION * 0.25 )
+}
+
+
+void function StationLootBinsLower()
+{
+	entity stationNode = file.currentPathNodes.top()
+
+	//TODO: defensive fix for R5DEV-109074
+	if ( !(stationNode in file.stationNodeBinGroups) )
+		return
+
+	wait 2 // buffer between hearing train horn and bins going down
+
+	// move bins down
+	foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+	{
+		data.mover.NonPhysicsMoveTo( data.moverStartOrigin, STATION_LOOT_MOVETO_DURATION, STATION_LOOT_MOVETO_DURATION * 0.125, STATION_LOOT_MOVETO_DURATION * 0.25 )
+		EmitSoundAtPosition( TEAM_UNASSIGNED, data.moverStartOrigin + SFX_TRAIN_STATION_LOOT_BIN_OFFSET, SFX_STATION_BIN_LOWER, stationNode )
+	}
+
+	wait STATION_LOOT_MOVETO_DURATION
+
+	// close bin lids and delete loot
+	// foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+		// thread LootBin_ForceClose_Thread( data.binModel, true, true, true )
+
+	wait 0.5
+
+	// bin elevators close
+	foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+		thread PlayAnim( data.doorsModel, "animseq/props/loot_bin/loot_bin_02_close.rseq" )
+}
+
+void function CleanupPermanentsOnStationLootBin( stationLootBinData data )
+{
+	if ( !IsValid( data.trigger ) )
+		return
+
+	foreach ( entity ent in data.trigger.GetTouchingEntities() )
+	{
+		string targetName = ent.GetTargetName()
+		string scriptName = ent.GetScriptName()
+
+		// if ( targetName == DIRTY_BOMB_TARGETNAME )
+		// {
+			// RemoveCausticDirtyBomb( ent )
+		// }
+		// else 
+		if ( targetName == TROPHY_SYSTEM_NAME || scriptName == TESLA_TRAP_NAME )
+		{
+			ent.Destroy()
+		}
+	}
+}
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//  ########     ###    ######## ##     ##
+//  ##     ##   ## ##      ##    ##     ##
+//  ##     ##  ##   ##     ##    ##     ##
+//  ########  ##     ##    ##    #########
+//  ##        #########    ##    ##     ##
+//  ##        ##     ##    ##    ##     ##
+//  ##        ##     ##    ##    ##     ##
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+void function ClearTrainPathConnections()
+{
+	foreach ( entity junctionNode, array<entity> junctionDestinationNodes in file.junctionNodeGroups )
+	{
+		foreach ( entity destinationNode in junctionDestinationNodes )
+		{
+			if ( junctionNode.IsLinkedToEnt( destinationNode ) )
+			{
+				junctionNode.UnlinkFromEnt( destinationNode )
+			}
+		}
+	}
+}
+
+
+array<entity> function GetTrainPath()
+{
+	array<entity> nodes
+
+	// go from our current node to a random station
+	if ( file.trainDriverState == eTrainDriverGoals.RANDOM_STATION )
+	{
+		entity currentNode = file.train.Train_GetLastNode()
+		nodes.append( currentNode )
+
+		Assert( file.stationNodes.contains( currentNode ), "Initial node for train path must be a train station node. Incorrect node pos: " + currentNode.GetOrigin() )
+
+		while( true )
+		{
+			array<entity> nextNodes = currentNode.GetLinkEntArray()
+			entity nextNode
+
+			if ( nextNodes.len() > 0 )
+			{
+				// normal case, just get the next node in the chain
+				nextNode = nextNodes[0]
+			}
+			else
+			{
+				Assert( currentNode in file.junctionNodeGroups, "Train path connections should only end at junctions. No dead ends allowed." )
+
+				// create the connection between points at a junction node
+				nextNode = file.junctionNodeGroups[ currentNode ].getrandom()
+				currentNode.LinkToEnt( nextNode )
+				currentNode.RegenerateSmoothPoints()
+
+				#if DEVELOPER
+					if ( file.devShowTrainPath )
+					{
+						DebugDrawSphere( currentNode.GetOrigin(), 128.0, 255, 255,   0, false, 180.0 )
+						DebugDrawSphere( nextNode.GetOrigin(), 128.0, 255,   0, 255, false, 180.0 )
+					}
+				#endif
+			}
+
+			Assert( IsValid( nextNode ) )
+
+			nodes.append( nextNode )
+
+			// only a station node should end the path in this state
+			if ( file.stationNodes.contains( nextNode ) )
+				break
+
+			currentNode = nextNode
+		}
+	}
+
+	Assert( nodes.len() > 1, "Train needs at least two nodes to travel between." )
+
+	#if DEVELOPER
+		// if ( file.devShowTrainPath )
+			DrawTrainPath( nodes )
+	#endif
+
+	return nodes
+}
+
+
+void function DrawTrainPath( array<entity> nodes )
+{
+	for ( int idx = 0; idx < nodes.len(); idx++ )
+	{
+		if ( idx + 1 < nodes.len() )
+			DebugDrawLine( nodes[idx].GetOrigin(), nodes[ idx + 1 ].GetOrigin(), 0, 0, 255, true, 5 )
+	}
+}
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//   ######   #######  ##     ## ##    ## ########   ######
+//  ##    ## ##     ## ##     ## ###   ## ##     ## ##    ##
+//  ##       ##     ## ##     ## ####  ## ##     ## ##
+//   ######  ##     ## ##     ## ## ## ## ##     ##  ######
+//        ## ##     ## ##     ## ##  #### ##     ##       ##
+//  ##    ## ##     ## ##     ## ##   ### ##     ## ##    ##
+//   ######   #######   #######  ##    ## ########   ######
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER
+void function TrainSound_Horn()
+{
+	EmitSoundOnEntity( file.train, SFX_TRAIN_HORN )
+}
+
+
+void function TrainSound_AccelerateStart()
+{
+	EmitSoundOnEntity( file.train, SFX_TRAIN_ACCELERATE )
+}
+
+
+void function TrainSound_AccelerateStop()
+{
+	StopSoundOnEntity( file.train, SFX_TRAIN_ACCELERATE )
+}
+
+
+void function TrainSound_DecelerateStart()
+{
+	EmitSoundOnEntity( file.train, SFX_TRAIN_DECELERATE )
+}
+
+
+void function TrainSound_DecelerateStop()
+{
+	StopSoundOnEntity( file.train, SFX_TRAIN_DECELERATE )
+}
+
+
+void function TrainSound_FullyStopped()
+{
+	EmitSoundOnEntity( file.train, SFX_TRAIN_ENGINE_STOP )
+}
+
+
+void function TrainSound_EmergencyBrakeEngaged()
+{
+	EmitSoundOnEntity( file.trainDatas[0].stopPanel, SFX_TRAIN_EMERGENCY_BRAKE_ACTIVATE )
+}
+
+
+void function TrainSound_EmergencyBrakeDeactivated()
+{
+	EmitSoundOnEntity( file.trainDatas[0].stopPanel, SFX_TRAIN_EMERGENCY_BRAKE_DEACTIVATE )
+}
+
+
+void function TrainSound_EmergencyBrakeDeny( entity player )
+{
+	EmitSoundOnEntityOnlyToPlayer( file.trainDatas[0].stopPanel, player, SFX_TRAIN_STOP_PANEL_DENY )
+}
+
+
+string function TrainAnnouncer_GetAliasForStationNoteworthy( string noteworthy )
+{
+	string alias
+
+	switch ( noteworthy )
+	{
+		case "train_yard":
+			alias = "Train_TrainYard"
+			break
+
+		case "capitol_city":
+			alias = "Train_CapitolCity"
+			break
+
+		case "skyhook":
+			alias = "Train_Skyhook"
+			break
+
+		case "refinery":
+			alias = "Train_Refinery"
+			break
+
+		case "thermal_station":
+			alias = "Train_ThermalStation"
+			break
+
+		case "sorting_factory":
+			alias = "Train_SortingFactory"
+			break
+
+		case "holiday_1":
+			alias = ""
+			break
+
+		case "holiday_2":
+			alias = ""
+			break
+
+		case "holiday_3":
+			alias = ""
+			break
+
+		default:
+			Assert( false, "Invalid script_noteworthy for train destination dialogue: " + noteworthy )
+	}
+
+	return alias
+}
+
+
+void function TrainAnnouncer_PlaySingle( string dialogueAlias, float delay = 0.0 )
+	{
+	int dialogueFlags = 0 //eDialogueFlags.USE_CUSTOM_QUEUE | eDialogueFlags.USE_CUSTOM_SPEAKERS
+
+	if ( file.disabledAliasesList.contains( dialogueAlias ) )
+		return
+
+	foreach ( entity player in GetPlayerArray() )
+	{
+		if ( player.p.isSkydiving )
+			continue
+
+		if ( player.GetPlayerNetBool( "playerInPlane" ) )
+			continue
+
+		thread PlayDialogueForPlayer( dialogueAlias, player, null, delay, dialogueFlags, "", null ) //, file.customQueueIdx )
+	}
+}
+
+void function DesertlandsTrain_SetTrainDialogueAliasEnabled( string dialogueAlias, bool enabled )
+{
+	if ( enabled )
+	{
+		if ( file.disabledAliasesList.contains( dialogueAlias ) )
+		{
+			file.disabledAliasesList.removebyvalue( dialogueAlias )
+		}
+	}
+	else
+	{
+		if ( !file.disabledAliasesList.contains( dialogueAlias ) )
+		{
+			file.disabledAliasesList.append( dialogueAlias )
+		}
+	}
+}
+#endif // SERVER
+
+
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+//
+//  ##     ## ######## #### ##       #### ######## ##    ##
+//  ##     ##    ##     ##  ##        ##     ##     ##  ##
+//  ##     ##    ##     ##  ##        ##     ##      ####
+//  ##     ##    ##     ##  ##        ##     ##       ##
+//  ##     ##    ##     ##  ##        ##     ##       ##
+//  ##     ##    ##     ##  ##        ##     ##       ##
+//   #######     ##    #### ######## ####    ##       ##
+//
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+// =================================================================================================================================
+
+
+#if SERVER || CLIENT
 bool function Desertlands_IsTrainEnabled()
 {
 	if ( GetCurrentPlaylistVarBool( "desertlands_script_train_enable", true ) )
 	{
 		bool entitiesExist = true
-		for ( int idx = 0; idx < TRAIN_CAR_COUNT; idx++ )
+		for ( int idx = 0; idx < file.true_trainCarCount; idx++ )
 		{
 			array<entity> movers = GetEntArrayByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, idx ) )
 			if ( movers.len() < 1 )
@@ -1082,24 +1467,240 @@ bool function Desertlands_IsTrainEnabled()
 
 	return false
 }
+#endif // SERVER || CLIENT
 
+
+#if SERVER
+void function DesertlandsTrain_SetDriverState( int state )
+{
+	Assert( state < eTrainDriverGoals._COUNT, "Train driver state is not a valid enum from eTrainDriverGoals." )
+
+	file.trainDriverState = state
+}
+
+
+#if DEVELOPER
+void function DesertlandsTrain_SetStartStation( string stationId, bool directionA )
+{
+	array<entity> allStationNodes
+	array<entity> bothStationNodes
+
+	foreach ( entity stationHelper in GetEntArrayByScriptName( HELPER_STATION_NAME ) )
+	{
+		foreach ( entity linkEnt in stationHelper.GetLinkEntArray() )
+		{
+			if ( linkEnt.GetScriptName() == TRACK_STATION_NAME )
+				allStationNodes.append( linkEnt )
+		}
+	}
+
+	foreach ( entity node in allStationNodes )
+	{
+		if ( !node.HasKey( "script_noteworthy" ) )
+			continue
+
+		if ( node.GetValueForKey( "script_noteworthy" ) == stationId )
+			bothStationNodes.append( node )
+	}
+
+	if ( stationId == "sorting_factory" )
+	{
+		file.devStartingStationNode = bothStationNodes[0]
+		return
+	}
+
+	Assert( bothStationNodes.len() == 2, "Number of station nodes isn't 2 at: " + stationId )
+
+	if ( directionA )
+		file.devStartingStationNode = bothStationNodes[0]
+	else
+		file.devStartingStationNode = bothStationNodes[1]
+}
+
+
+void function DesertlandsTrain_DisableSpotlight()
+{
+	file.devDisableTrainSpotlight = true
+
+	if ( file.trainDatas.len() == 0 )
+		return
+
+	if ( IsValid( file.trainDatas[0].spotlightFX ) )
+	{
+		Signal( file.train, SIGNAL_TRAIN_SPOTLIGHT_BLINKING )
+
+		file.trainDatas[0].spotlightFX.Destroy()
+	}
+}
+
+
+void function DesertlandsTrain_ShowPath()
+{
+	file.devShowTrainPath = true
+}
+#endif // SERVER && DEVELOPER
+
+
+#endif // SERVER
+
+
+#if CLIENT
 void function ServerCallback_SetDesertlandsTrainAtStation( bool isAtStation )
 {
 	file.trainStoppedAtStation = isAtStation
 }
-#endif //if CLIENT
+#endif
 
-void function DesertlandsTrain_PreMapInit()
-{
-	AddCallback_OnNetworkRegistration( DesertlandsTrain_OnNetworkRegistration )
-}
 
-void function DesertlandsTrain_OnNetworkRegistration()
-{
-	Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0 )
-}
-
+#if SERVER || CLIENT
 bool function IsDesertlandsTrainAtStation()
 {
 	return file.trainStoppedAtStation
 }
+#endif // SERVER || CLIENT
+
+#if SERVER
+void function DesertlandsTrain_SetMaxSpeed( float newMaxSpeed )
+{
+	file.true_trainMaxSpeed = newMaxSpeed
+}
+
+void function DesertlandsTrain_SetAcceleration( float newAcceleration )
+{
+	file.true_trainAccel = newAcceleration
+}
+
+void function DesertlandsTrain_SetWaitDuration( float newWaitDuration )
+{
+	file.true_trainStationWaitDuration = newWaitDuration
+}
+
+void function DesertlandsTrain_SetAboutToLeaveBuffer( float newBuffer )
+{
+	file.true_trainStationAboutToLeaveBuffer = newBuffer
+}
+
+float function DesertlandsTrain_GetAboutToLeaveBuffer()
+{
+	return file.true_trainStationAboutToLeaveBuffer
+}
+
+void function DesertlandsTrain_SetAdditionalLeaveBuffer( float newBuffer )
+{
+	file.true_trainStationAdditionalLeaveBuffer = newBuffer
+}
+
+float function DesertlandsTrain_GetAdditionalLeaveBuffer()
+{
+	return file.true_trainStationAdditionalLeaveBuffer
+}
+
+void function DesertlandsTrain_AddCallback_TrainArrivedAtStation( void functionref() callbackFunc )
+{
+	file.callbacks_trainArrivedAtStation.append( callbackFunc )
+}
+
+void function DesertlandsTrain_AddCallback_TrainAboutToLeaveStation( void functionref() callbackFunc )
+{
+	file.callbacks_trainAboutToLeaveStation.append( callbackFunc )
+}
+
+void function DesertlandsTrain_AddCallback_TrainLeavingFromStation( void functionref() callbackFunc )
+{
+	file.callbacks_trainLeavingFromStation.append( callbackFunc )
+}
+
+void function DesertlandsTrain_AddCallback_TrainAboutToArriveAtStation( void functionref() callbackFunc )
+{
+	file.callbacks_trainAboutToArriveAtStation.append( callbackFunc )
+}
+
+int function DesertlandsTrain_GetTrainState()
+{
+	return file.trainCurrentState
+}
+
+vector function DesertlandsTrain_GetTrainOrigin()
+{
+	return file.train.GetOrigin()
+}
+
+entity function DesertlandsTrain_GetNextStationNode()
+{
+	return file.currentPathNodes[ file.currentPathNodes.len() - 1 ]
+}
+
+array<entity> function DesertlandsTrain_GetCurrentPathNodes()
+{
+	return file.currentPathNodes
+}
+
+entity function DesertlandsTrain_GetTrain()
+{
+	return file.train
+}
+
+array<entity> function DesertlandsTrain_GetStationNodes()
+{
+	return file.stationNodes
+}
+
+
+array<TrainCarData> function DesertlandsTrain_GetTrainCarData()
+{
+	return file.trainDatas
+}
+
+bool function DesertlandsTrain_IsPlayerOnTrain( entity player )
+{
+	// entity groundEnt = player.GetGroundEntity()
+	// entity pusher    = GetPusherEnt( groundEnt )
+
+	// if ( !IsValid( pusher ) || !pusher.GetPusher() )
+		// return false
+
+	// foreach ( car in file.trainDatas )
+	// {
+		// if ( pusher == car.mover )
+			// return true
+	// }
+	return false
+}
+
+bool function DesertlandsTrain_IsTeamOnTrain( int team )
+{
+	array<entity> teamMembers = GetPlayerArrayOfTeam_AliveConnected( team )
+	foreach ( player in teamMembers )
+	{
+		if ( DesertlandsTrain_IsPlayerOnTrain( player ) )
+			return true
+	}
+	return false
+}
+
+
+void function DesertlandsTrain_ForceTrainLeaveStation()
+{
+	if ( file.trainCurrentState == eTrainStates.STOPPED_AT_STATION )
+	{
+		Signal( file.train, "ForceLeaveStation" )
+	}
+}
+
+void function DesertlandsTrain_ClearAllowLeaveStation()
+{
+	FlagClear( "AllowedToLeaveStation" )
+}
+
+void function DesertlandsTrain_SetAllowLeaveStation()
+{
+	FlagSet( "AllowedToLeaveStation" )
+}
+#endif
+
+#if SERVER
+void function OnClientConnected( entity player )
+{
+	// Remote_CallFunction_NonReplay( player, "SCB_DLandsTrain_SetCustomSpeakerIdx", file.customQueueIdx )
+}
+#endif

@@ -111,6 +111,8 @@ void function _ChallengesByColombia_Init()
 	AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, Arcstar_OnStick )
 	AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, Arcstar_OnStick )
 	
+	SurvivalFreefall_Init() //Enables freefall/skydive
+	
 	//required assets for different challenges
 	PrecacheParticleSystem($"P_enemy_jump_jet_ON_trails")
 	PrecacheParticleSystem( $"P_skydive_trail_CP" )
