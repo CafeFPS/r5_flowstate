@@ -21,6 +21,9 @@ global function Survival_AddCallback_OnAirdropLaunched
 global function Survival_CleanupPlayerPermanents
 global function Survival_SetCallback_Leviathan_ConsiderLookAtEnt
 global function Survival_Leviathan_ConsiderLookAtEnt
+
+global entity WORKAROUND_DESERTLANDS_TRAIN = null
+
 global function CreateSurvivalDeathBoxForPlayer
 global function UpdateMatchSummaryPersistentVars
 global function EnemyDownedDialogue

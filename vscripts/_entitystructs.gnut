@@ -1023,11 +1023,11 @@ global struct ServerPlayerStruct
 
 	int movementRecorderCharacter = 0
 
-	// array< var > recordingAnims
-	// array< LocPair > recordingAnimsCoordinates
+	array< var > recordingAnims
+	array< LocPair > recordingAnimsCoordinates
 	//v2. Café
-	table< int, array< var > > recordingAnims
-	table< int, array< LocPair > > recordingAnimsCoordinates
+	// table< int, array< var > > recordingAnims
+	// table< int, array< LocPair > > recordingAnimsCoordinates
 	array< int > recordingAnimsChosenCharacters
 
 	bool isRecording = false

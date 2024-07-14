@@ -807,7 +807,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
 	
 	// Client-side helper (not permissive)
-	if( Gamemode() != eGamemodes.WINTEREXPRESS )
+	// if( Gamemode() != eGamemodes.WINTEREXPRESS )
 		RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	
 	//r5r.dev player stats
