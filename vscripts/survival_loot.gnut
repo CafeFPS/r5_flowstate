@@ -2452,7 +2452,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		{
 			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
 			if( weaponLegendaryIndexMap.len() > 0 )
-				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(0,weaponLegendaryIndexMap.len()-1)] )
+				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
 		}
 	}
 
@@ -2934,63 +2934,6 @@ bool function ShouldSpawnThisLoot( string entryRef )
 	
 	return true
 }
-
-// entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngles, int count )
-// {
-	// LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-
-	// vector angles
-	// if ( overrideAngles != < -1, -1, -1> )
-		// angles = overrideAngles
-	// else
-		// angles = <0, RandomFloatRange( 0, 360 ), 0>
-
-	// entity loot = CreateEntity( "prop_survival" )
-	// loot.SetOrigin( origin )
-	// loot.SetAngles( angles )
-
-	// loot.NotSolid()
-	// loot.SetUsable()
-	// loot.SetFadeDistance( 20000 )
-	// loot.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
-	// loot.SetUsablePriority( USABLE_PRIORITY_HIGH )
-	// loot.e.spawnTime = Time()
-	// loot.e.lootRef = ref
-	
-	// loot.SetClipCount( count )
-	// loot.SetSurvivalInt( data.index )
-
-	// if ( data.lootType == eLootType.RESOURCE && count != data.countPerDrop )
-		// count *= data.countPerDrop
-
-	// if ( data.lootType == eLootType.MAINWEAPON )
-		// loot.SetWeaponName( data.baseWeapon )
-
-	// loot.SetModel( data.model )
-	// loot.SetSkin( 0 )
-
-	// loot.kv.renderamt = 255
-	// loot.kv.rendercolor = "255 255 255"
-
-	// if ( data.skinOverride > 0 )
-		// loot.SetSkin( data.skinOverride )
-
-	// if ( count == data.countPerDrop )
-	// {
-		// if ( data.lootType == eLootType.MAINWEAPON )
-			// loot.SetClipCount( GIVE_FULL_AMMO_MARKER )
-
-		// if ( data.lootType == eLootType.ARMOR )
-			// loot.SetSurvivalProperty( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
-	// }
-
-	// DispatchSpawn( loot )
-	// // #if DEVELOPER
-	// // printt( "item spawned at", ref , origin )
-	// // #endif
-	// return loot
-// }
-
 
 entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngles = < -1, -1, -1>, int clipCount = 1, int collisionGroup = TRACE_COLLISION_GROUP_NONE, bool onlySetModsForLockedAttachPoints = false, int stockpileCount = 0 )
 {
