@@ -3112,7 +3112,7 @@ bool function ShouldResetRoundBasedTeamScore()
 {
 	return IsRoundBased() && svGlobal.roundBasedTeamScore_RoundReset
 }
-array<entity> function CreateZipline( vector startPos, vector endPos, bool disableResting = false, float detatchDistanceOverride = -1 )
+array<entity> function CreateZipline( vector startPos, vector endPos, bool disableResting = false, float detatchDistanceOverride = -1, bool skin = false )
 {
 	vector delta     = startPos - endPos
 	vector direction = Normalize( delta )
@@ -3125,10 +3125,10 @@ array<entity> function CreateZipline( vector startPos, vector endPos, bool disab
 		detachDist = string( detatchDistanceOverride )
 
 	entity zipline_start = CreateEntity( "zipline" )
-	if ( ShouldZiplineUseShadowFogMaterial() )
-		zipline_start.kv.Material = "cable/zipline_w_shadows_fog"
+	if ( skin )
+		zipline_start.kv.Material = "cable/cable_selfillum.vmt"
 	else
-		zipline_start.kv.Material = "cable/zipline"
+		zipline_start.kv.Material = "cable/zipline.vmt"
 
 	zipline_start.SetOrigin( startPos )
 	zipline_start.kv.ZiplineAutoDetachDistance = detachDist
