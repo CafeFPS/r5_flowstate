@@ -26,6 +26,8 @@ global function AddCallback_UpdatePlayerWeaponCosmetics
 #if SERVER || CLIENT
 global function WeaponSkin_Apply
 global function WeaponCosmetics_Apply
+global function WeaponCosmetics_ApplyModelAndSkin
+global function FS_ReturnLegendaryModelMapForWeaponFlavor
 #endif
 #if DEVELOPER && CLIENT
 global function DEV_TestWeaponSkinData
@@ -83,6 +85,7 @@ struct FileStruct_LifetimeLevel
 	#if SERVER || CLIENT
 		table<ItemFlavor, table<asset, int> > weaponModelLegendaryIndexMapMap
 		table<ItemFlavor, int>                weaponSkinLegendaryIndexMap
+		table< string, array<int> >         legendaryWeaponSkinsMap_FS
 	#endif
 
 	#if CLIENT
@@ -200,14 +203,28 @@ void function SetupWeaponCharm( ItemFlavor charm )
 	#endif
 }
 
+#if !UI
+array<int> function FS_ReturnLegendaryModelMapForWeaponFlavor( ItemFlavor weaponFlavor )
+{
+	if( ItemFlavor_GetHumanReadableRef( weaponFlavor ) in fileLevel.legendaryWeaponSkinsMap_FS )
+		return fileLevel.legendaryWeaponSkinsMap_FS[ ItemFlavor_GetHumanReadableRef( weaponFlavor ) ]
+	else
+		return []
+		
+	unreachable
+}
+#endif
+
 void function SetupWeaponSkin( ItemFlavor skin )
 {
 	asset worldModel = WeaponSkin_GetWorldModel( skin )
 	asset viewModel  = WeaponSkin_GetViewModel( skin )
 
 	#if SERVER || CLIENT
-		PrecacheModel( worldModel )
-		PrecacheModel( viewModel )
+		if ( worldModel != $"" )
+			PrecacheModel( worldModel )
+		if ( viewModel != $"" )
+			PrecacheModel( viewModel )
 
 		ItemFlavor weaponFlavor = WeaponSkin_GetWeaponFlavor( skin )
 
@@ -219,12 +236,24 @@ void function SetupWeaponSkin( ItemFlavor skin )
 		if ( !(worldModel in weaponLegendaryIndexMap) )
 		{
 			int skinLegendaryIndex = weaponLegendaryIndexMap.len()
+			
+			//Cafe was here
+			#if !UI
+				// printt( skinLegendaryIndex, "to weapon:", ItemFlavor_GetHumanReadableRef( weaponFlavor ), "Added to worldModel", worldModel)
+				if ( !( ItemFlavor_GetHumanReadableRef( weaponFlavor ) in fileLevel.legendaryWeaponSkinsMap_FS ) )
+				{
+					fileLevel.legendaryWeaponSkinsMap_FS[ ItemFlavor_GetHumanReadableRef( weaponFlavor ) ] <- []
+				}
+				fileLevel.legendaryWeaponSkinsMap_FS[ ItemFlavor_GetHumanReadableRef( weaponFlavor ) ].append( ItemFlavor_GetGUID( skin ) )
+			#endif
+
 			weaponLegendaryIndexMap[worldModel] <- skinLegendaryIndex
 
 			SetWeaponLegendaryModel( WeaponItemFlavor_GetClassname( weaponFlavor ), skinLegendaryIndex, viewModel, worldModel )
 		}
 
 		fileLevel.weaponSkinLegendaryIndexMap[skin] <- weaponLegendaryIndexMap[worldModel]
+
 		if ( WeaponSkin_DoesReactToKills( skin ) )
 		{
 			for ( int levelIdx = 0; levelIdx < WeaponSkin_GetReactToKillsLevelCount( skin ); levelIdx++ )
@@ -591,57 +620,8 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 	{
 		ItemFlavor skin = expect ItemFlavor( skinOrNull )
 		Assert( ItemFlavor_GetType( skin ) == eItemType.weapon_skin )
-
-		#if SERVER
-
-
-#endif
-
-		ent.e.__itemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( skin )
-		ent.SetSkin( 0 ) //
-
-		#if SERVER
-
-
-//
-
-//
-
-
-
-//
-
-
-
-//
-
-
-
-
-
-#elseif CLIENT
-			Assert( ent.IsClientOnly(), ent + " isn't client only" )
-			Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
-
-			ent.SetModel( WeaponSkin_GetViewModel( skin ) ) //
-		#endif
-
-		int skinIndex = ent.GetSkinIndexByName( WeaponSkin_GetSkinName( skin ) )
-		int camoIndex = WeaponSkin_GetCamoIndex( skin )
-
-		if ( skinIndex == -1 )
-		{
-			skinIndex = 0
-			camoIndex = 0
-		}
-
-		ent.SetSkin( skinIndex )
-		ent.SetCamo( camoIndex )
-
-		#if SERVER
-
-
-#endif
+		ent.e.skinItemFlavorGUID = ItemFlavor_GetGUID( skin )
+		WeaponCosmetics_ApplyModelAndSkin( ent, skin )
 	}
 
 	if ( charmOrNull != null )
@@ -651,25 +631,25 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 		asset charmModel = WeaponCharm_GetCharmModel( charm )
 		string attachmentName = WeaponCharm_GetAttachmentName( charm )
 
-	//ent.e.charmItemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( charm )
+		ent.e.charmItemFlavorGUID = ItemFlavor_GetGUID( charm )
 
-	#if SERVER
+		#if SERVER
+			if ( ent.GetNetworkedClassName() == "weaponx" )
+			{
+				if ( CHARM_DEBUG )
+					printt( "CHARM_DEBUG: Setting weapon charm " + string(ItemFlavor_GetAsset( charm )) + " for weapon " + ent + "( " + ent.GetModelName() + ") owned by player " + ent.GetWeaponOwner() + "(server)" )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#elseif CLIENT
+				//ent.SetWeaponCharmOrArtifactBladeGUID( ent.e.charmItemFlavorGUID )
+				if ( charmModel != "" )
+					ent.SetWeaponCharm( charmModel, attachmentName )
+				else
+					ent.ClearWeaponCharm()
+			}
+			else if ( ent.GetNetworkedClassName() != "prop_survival" )
+			{
+				Assert( false, "Attempted to apply weapon charm to unexpected entity: " + string(ent.GetNetworkedClassName()) )
+			}
+		#elseif CLIENT
 			Assert( ent.IsClientOnly(), ent + " isn't client only" )
 			Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
 
@@ -697,8 +677,48 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 			} )
 		}
 	#endif
+	}
 }
+void function WeaponCosmetics_ApplyModelAndSkin( entity ent, ItemFlavor skin )
+{
+	ent.SetSkin( 0 ) // Lame that we need this, but this avoids invalid skin errors when the model changes and the currently shown skin index doesn't exist for the new model
+
+	#if SERVER
+		Assert(  ent.GetNetworkedClassName() == "prop_survival" || ent.GetNetworkedClassName() == "weaponx", "Attempted to apply weapon skin to unexpected entity: " + string(ent.GetNetworkedClassName()) )
+
+		asset weaponModel = WeaponSkin_GetWorldModel( skin )
+
+		ent.SetModel( weaponModel ) // in the world, we want to show the worldmodel
+		//ent.SetItemFlavorGUID( ent.e.skinItemFlavorGUID )
+		// ent.SetLegendaryModelIndex *must* be called *after* ent.SetModel(...) as it also makes a SetModel call itself from within Code.
+		if ( ent.GetNetworkedClassName() == "weaponx" )
+			ent.SetLegendaryModelIndex( fileLevel.weaponSkinLegendaryIndexMap[skin] )
+
+	#elseif CLIENT
+		Assert( ent.IsClientOnly(), ent + " isn't client only" )
+		Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+		ent.SetModel( WeaponSkin_GetViewModel( skin ) ) // in the menus, we want to show the viewmodel, because it's the highest LOD
+	#endif
+
+	int skinIndex = ent.GetSkinIndexByName( WeaponSkin_GetSkinName( skin ) )
+	int camoIndex = WeaponSkin_GetCamoIndex( skin )
+
+	if ( skinIndex == -1 )
+	{
+		skinIndex = 0
+		camoIndex = 0
+	}
+
+	if ( camoIndex >= 3 ) //CAMO_SKIN_COUNT 
+	{
+		Assert ( false, "Tried to set camoIndex of " + string(camoIndex) + " but the maximum index is " + string(CAMO_SKIN_COUNT) )
+		camoIndex = 0
+	}
+
+	ent.SetSkin( skinIndex )
+	ent.SetCamo( camoIndex )
 }
+
 #endif //
 
 
@@ -734,37 +754,6 @@ void function DestroyCharmForWeaponEntity( entity weapEnt )
 }
 
 #endif
-
-#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
-
 
 #if DEVELOPER && CLIENT
 void function DEV_TestWeaponSkinData()

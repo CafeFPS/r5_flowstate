@@ -331,7 +331,7 @@ void function SetupDefaultDevCommandsMP()
 
 		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
+		SetupDevCommand( "Spawn Deathbox", "SpawnDeathboxAtCrosshair" )
 		//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
 		//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
 		//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )

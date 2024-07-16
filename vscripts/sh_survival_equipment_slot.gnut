@@ -110,8 +110,8 @@ global struct EquipmentSlot
 	string title = ""
 
 	#if SERVER
-		bool functionref( entity player, string slot, vector origin, vector velocity ) specialCaseDropFunc
-		void functionref( entity player, string ref ) specialCaseEquipFunc
+		entity functionref( entity player, string slot, vector origin, vector velocity ) specialCaseDropFunc
+		void functionref( entity player, string ref, entity deathBox, bool isForRefresh ) specialCaseEquipFunc
 	#endif
 
 	#if SERVER || CLIENT
@@ -823,32 +823,35 @@ string function GetEquippedAttachmentOnWeaponForPlayer( entity player, string eq
 
 
 #if SERVER
-void function Equipment_ApplyHelmetMod( entity player, string helmet )
+void function Equipment_ApplyHelmetMod( entity player, string helmet, entity deathBox, bool isForRefresh )
 {
 	int tier = SURVIVAL_Loot_IsRefValid( helmet ) ? SURVIVAL_Loot_GetLootDataByRef( helmet ).tier : 0
 	player.SetSurvivalHelmetType( tier )
 }
 
-void function Equipment_ApplyArmorMod( entity player, string armor )
+void function Equipment_ApplyArmorMod( entity player, string armor, entity deathBox, bool isForRefresh )
 {
 	int tier = SURVIVAL_Loot_IsRefValid( armor ) ? SURVIVAL_Loot_GetLootDataByRef( armor ).tier : 0
 	player.SetSurvivalArmorType( tier )
 
 }
 
-void function Equipment_ApplyBackpack( entity player, string backpack )
+void function Equipment_ApplyBackpack( entity player, string backpack, entity deathBox, bool isForRefresh )
 {
-	int limit = SURVIVAL_GetInventoryLimit( player )
-	array<ConsumableInventoryItem> playerInventory = player.ConsumableInventory_Get()
-	int backPackCount = playerInventory.len()
+	if ( isForRefresh )
+		return
+
+	int limit                                      = SURVIVAL_GetInventoryLimit( player )
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+	int backPackCount                              = playerInventory.len()
 
 	if ( backPackCount > limit )
 	{
-		for ( int i=backPackCount-1; i>=limit; i-- )
+		for ( int i = backPackCount - 1; i >= limit; i-- )
 		{
 			ConsumableInventoryItem invItem = playerInventory[i]
-			LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-			SURVIVAL_DropBackpackItem( player, data.ref, invItem.count, true )
+			LootData data                   = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+			SURVIVAL_DropBackpackItem( player, data.ref, invItem.count, deathBox )
 		}
 	}
 }

@@ -178,6 +178,8 @@ global struct ServerEntityStruct
 
 	// sticky props
 	float spawnTime = 0.0
+	string spawnSourceOwnerId
+	string spawnSourceIdType
 	bool isStickyCrit = false
 	int stickyRoundsArrayId = -1 //script managed ent array index
 
@@ -344,6 +346,8 @@ global struct ServerEntityStruct
 
 	bool   isInWarpTrigger
 	float  phaseTunnelExitTime
+	int skinItemFlavorGUID  = -1
+	int charmItemFlavorGUID = -1
 	vector lastBouncePosition
 	bool inGracePeriod
 	array<void functionref( entity, entity, vector, vector )> onGrappledCallbacks
@@ -1039,7 +1043,10 @@ global struct ServerPlayerStruct
 	bool InDeathRecap
 	float lastRingDamagedTime
 	int lastAmmoPoolCount
-	
+	entity lastDroppedLootEnt
+	entity myLastDeathbox
+	Point ornull safeSpotForDeathBox = null
+
 	float lastTimeHovercraftSpeedSentToClient
 }
 

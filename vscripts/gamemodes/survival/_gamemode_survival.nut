@@ -8,6 +8,7 @@ global function _GetSquadRank
 global function JetwashFX
 global function Survival_PlayerRespawnedTeammate
 global function UpdateDeathBoxHighlight
+global function UpdateDeathBoxHighlight_Retail
 global function HandleSquadElimination
 // these probably doesn't belong here
 //----------------------------------
@@ -58,6 +59,7 @@ void function GamemodeSurvival_Init()
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
+	AddCallback_OnPlayerKilled( OnPlayerKilled_DropLoot )
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
 	// #if DEVELOPER
@@ -66,6 +68,13 @@ void function GamemodeSurvival_Init()
 	AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
 	AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
 	AddClientCommandCallback("playerRequestsSword", ClientCommand_GiveSword)
+
+	AddClientCommandCallback("forceChampionScreen", ClientCommand_ForceChampionScreen)
+	AddClientCommandCallback("forceGameOverScreen", ClientCommand_ForceGameOverScreen)
+	AddClientCommandCallback("forceRingMovement", ClientCommand_ForceRingMovement )
+	
+	AddClientCommandCallback("destroyEndScreen", ClientCommand_DestroyEndScreen)
+	
 	// #endif
 
 	FillSkyWithClouds()
@@ -105,6 +114,51 @@ bool function ClientCommand_restartServer(entity player, array<string> args)
 		return false
 
 	GameRules_ChangeMap( GetMapName(), GetCurrentPlaylistName() )
+	return true
+}
+
+bool function ClientCommand_ForceRingMovement(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	FlagWait( "DeathCircleActive" )
+	svGlobal.levelEnt.Signal( "DeathField_ShrinkNow" )
+	FlagClear( "DeathFieldPaused" )
+
+	return true
+}
+
+bool function ClientCommand_ForceChampionScreen(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", true, gp()[0].GetTeam() )
+	ToggleHudForPlayer( player )
+
+	return true
+}
+
+bool function ClientCommand_ForceGameOverScreen(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", true, gp()[0].GetTeam() + 1 )
+	ToggleHudForPlayer( player )
+
+	return true
+}
+
+bool function ClientCommand_DestroyEndScreen(entity player, array<string> args)
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement" )
+	ToggleHudForPlayer( player )
+
 	return true
 }
 
@@ -1073,6 +1127,16 @@ void function CreateSurvivalDeathBoxForPlayer( entity victim, entity attacker, v
 		func( deathBox, attacker, damageInfo != null ? DamageInfo_GetDamageSourceIdentifier( damageInfo ) : 0 )
 }
 
+void function OnPlayerKilled_DropLoot( entity player, entity attacker, var damageInfo )
+{
+	// Don't drop player loot upon death for Firing Range.
+	if ( Gamemode() != eGamemodes.SURVIVAL )
+		return
+
+	if ( GetGameState() >= eGameState.Playing )
+		thread SURVIVAL_Death_DropLoot( player, damageInfo )
+}
+
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
@@ -1148,10 +1212,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( victim.p.storedWeapons.len() > 0 )
 		RetrievePilotWeapons( victim )
 	
-	int droppableItems = GetAllDroppableItems( victim ).len()
+	// int droppableItems = GetAllDroppableItems( victim ).len()
 
-	if ( canPlayerBeRespawned || droppableItems > 0 )
-		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
+	// if ( canPlayerBeRespawned || droppableItems > 0 )
+		// CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )// changed to s21 behavior. Café
 
 	thread EnemyKilledDialogue( attacker, victimTeamNum, victim )
 }
@@ -1360,10 +1424,76 @@ void function UpdateDeathBoxHighlight( entity box )
 	}
 
 	box.SetNetInt( "lootRarity", highestTier )
-	Highlight_SetNeutralHighlight( box, SURVIVAL_GetHighlightForTier( highestTier ) )
+	// Highlight_SetNeutralHighlight( box, SURVIVAL_GetHighlightForTier( highestTier ) ) //FIXME. Cafe
 
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_Replay( player, "ServerCallback_RefreshDeathBoxHighlight" )
+}
+
+//FIXME. Cafe
+void function UpdateDeathBoxHighlight_Retail( entity box, bool longerHighlightDist = false )
+{
+	if ( !IsValid( box ) )
+		return
+
+	if ( box.e.blockActive )
+		return
+
+	// if ( box.GetScriptName() == BLACK_MARKET_SCRIPTNAME )
+		// return
+
+	// foreach ( func in file.onDeathboxLootUpdatedCallbacks )
+	// {
+		// func( box )
+	// }
+
+	array<entity> itemsInBox = box.GetLinkEntArray()
+
+	if ( itemsInBox.len() > 0 )
+	{
+		int maxTier = 1
+		foreach ( loot in itemsInBox )
+		{
+			LootData data = SURVIVAL_Loot_GetLootDataByRef( loot.e.lootRef )
+			if ( data.tier > maxTier )
+				maxTier = data.tier
+		}
+
+		box.SetNetInt( "maxLootTier", maxTier )
+	}
+	else
+	{
+		if ( box.GetTeam() == TEAM_UNASSIGNED )
+		{
+			vector o = box.GetOrigin()
+			vector a = box.GetAngles()
+			asset m  = box.GetModelName()
+			entity p = box.GetParent()
+
+			bool inBound = PositionIsInMapBounds( box.GetOrigin() )
+
+			box.Destroy()
+
+			if ( inBound )
+			{
+				entity newBox = CreatePropDynamic( m, o, a )
+				if ( IsValid( p ) )
+				{
+					newBox.SetParent( p )
+				}
+				else
+				{
+					newBox.ClearParent()
+				}
+				EmitSoundAtPosition( TEAM_UNASSIGNED, o, "Object_Dissolve", newBox)
+				newBox.Dissolve( ENTITY_DISSOLVE_CORE, < 0, 0, 0 >, 1000 )
+			}
+
+			return
+		}
+	}
+
+	box.SetNetBool( "highlightFar", longerHighlightDist )
 }
 
 float function Survival_GetMapFloorZ( vector field )

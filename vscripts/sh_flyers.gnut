@@ -484,7 +484,7 @@ void function DeathBoxFlyer_TookDamageThread( entity flyer, var damageInfo )
 
 			vector deathBoxDropVelocity = <0, 0, 300> + flyer.GetForwardVector() * 150
 
-			thread FakePhysicsThrow( null, deathBox, deathBoxDropVelocity ) //, false )
+			thread FakePhysicsThrow_Retail( null, deathBox, deathBoxDropVelocity, false )
 
 			// AddFlyerDeathboxToSurvivalList( deathBox )
 
@@ -822,8 +822,8 @@ entity function CreateFlyerLootDeathBox( vector origin, vector angles, array<str
 
 	deathBox.e.blockActive = true
 
-	// if ( lootRefs.len() == 0 )
-		// lootRefs = CreateLootForFlyerDeathBox( deathBox )
+	if ( lootRefs.len() == 0 )
+		lootRefs = CreateLootForFlyerDeathBox( deathBox )
 
 	lootRefs.fastremovebyvalue( "blank" )
 	foreach( lootRef in lootRefs )
@@ -1375,7 +1375,7 @@ void function Flyers_TestLootForDeathBox()
 
 	for ( int i = 0; i < 1000; ++i )
 	{
-		array<string> lootRefs = []//CreateLootForFlyerDeathBox()
+		array<string> lootRefs = CreateLootForFlyerDeathBox()
 
 		int epicOrHigherLoot = 0
 

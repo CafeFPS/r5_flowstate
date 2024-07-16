@@ -5163,38 +5163,34 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 
 	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
 		return false
-	
-	string refAttachPointOg = GetAttachPointForAttachmentOnWeapon( weaponName, attachment )
-	
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg != "sight" )
+
+	// If attachment is not valid for GetAttachmentData, most likely malicious crafted c2s, skip and return false, we can't attach.
+	if ( !IsValidAttachment( attachment ) )
 		return false
-	
-	AttachmentData aData = GetAttachmentData( attachment )
-	array<string> splitRef = split(weaponName, "_")
-	
-	if( splitRef[splitRef.len() - 1] == "gold" )
-		splitRef.fastremovebyvalue(splitRef[splitRef.len() - 1])
-	
-	string weaponNameBase
-	
-	for( int i = 0; i < splitRef.len(); i++ )
+
+	bool isValidMode = true
+
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && isValidMode )
 	{
-		if( i != 0 )
-			weaponNameBase += "_"+splitRef[i]
-		else
-			weaponNameBase += splitRef[i]
+		if ( SURVIVAL_IsAttachmentPointLocked( weaponName, GetAttachPointForAttachmentOnWeapon( weaponName, attachment ) ) )
+			return false
+
+		weaponName = GetBaseWeaponRef( weaponName )
 	}
 
-	// printt("debug final str " + weaponNameBase )
-	
-	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) && refAttachPointOg == "sight" && aData.compatibleWeapons.contains( weaponNameBase ) )
-		return true
-	
-	// this is now pre-computed when building AttachmentData
-	//if ( !AttachmentPointSupported( aData.attachPoint, weaponName ) )
-	//	return false
+	AttachmentData aData = GetAttachmentData( attachment )
 
-	return ( aData.compatibleWeapons.contains(weaponName ) )
+	return (aData.compatibleWeapons.contains( weaponName ))
+}
+
+string function GetBaseWeaponRef( string weaponRef )
+{
+	if ( SURVIVAL_Loot_IsRefValid( weaponRef ) )
+	{
+		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponRef )
+		return weaponData.baseWeapon != "" ? weaponData.baseWeapon : weaponRef //small safety check, but baseWeapon is typically not blank
+	}
+	return weaponRef
 }
 
 bool function AttachmentPointSupported( string attachmentPoint, string weaponName )

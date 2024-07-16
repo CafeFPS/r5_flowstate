@@ -94,7 +94,7 @@ WeaponData
 
 	"deployfirst_time"								"1.5"
 
-	"ammo_clip_size"   								"24"
+	"ammo_clip_size"   								"20"
 	"ammo_per_shot" 				                "1"
 	"ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.4"
@@ -341,21 +341,21 @@ WeaponData
                    
         energy_mag_l1
 		{
-			"ammo_clip_size"   					"28"
+			"ammo_clip_size"   					"24"
 		}
 
 		energy_mag_l2
 		{
-			"ammo_clip_size"   					"32"
+			"ammo_clip_size"   					"28"
 		}
 
 		energy_mag_l3
 		{
-			"ammo_clip_size"   					"36"
+			"ammo_clip_size"   					"32"
 		}
         energy_mag_l4
         {
-            "ammo_clip_size"   		        	"36"
+            "ammo_clip_size"   		        	"32"
         }
 
         amped_damage_alt

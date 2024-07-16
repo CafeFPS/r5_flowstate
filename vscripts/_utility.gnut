@@ -1580,21 +1580,20 @@ entity function CreatePropScript_NoDispatchSpawn( asset model, vector ornull ori
 	return prop_script
 }
 
-
 //-----------------------------------------------------------
 // CreatePropPhysics( model ) - create a generic prop_physics with default properties
 //------------------------------------------------------------
-entity function CreatePropPhysics( asset model, vector origin, vector angles )
+entity function CreatePropPhysics( asset model, vector origin, vector angles, int spawnFlags = 0 )
 {
 	entity prop_physics = CreateEntity( "prop_physics" )
 	prop_physics.SetValueForModelKey( model )
-	prop_physics.kv.spawnflags = 0
+	prop_physics.kv.spawnflags = spawnFlags
 	prop_physics.kv.fadedist = -1
 	prop_physics.kv.physdamagescale = 0.1
 	prop_physics.kv.inertiaScale = 1.0
 	prop_physics.kv.renderamt = 255
 	prop_physics.kv.rendercolor = "255 255 255"
-	SetTeam( prop_physics, TEAM_BOTH )	// need to have a team other then 0 or it won't take impact damage
+	SetTeam( prop_physics, TEAM_NPC_FRIENDLY_TO_PLAYERS )    // need to have a team other then 0 or it won't take impact damage
 
 	prop_physics.SetOrigin( origin )
 	prop_physics.SetAngles( angles )
@@ -5236,4 +5235,37 @@ entity function GetLinkedTrigger( entity ent )
 			return ent
 	}
 	return null
+}
+
+void function RefreshOrdnanceSlot( entity player, string item )
+{
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+
+	if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == item )
+	{
+		int ammo = SURVIVAL_NumItemsInInventory( player, item )
+
+		if ( ammo >= 0 )
+		{
+			int maxStockpile = heldOrdnance.GetWeaponSettingInt( eWeaponVar.ammo_stockpile_max )
+
+			if ( maxStockpile <= 0 )
+				heldOrdnance.SetWeaponPrimaryClipCount( ammo )
+			else
+			{
+				int maxClip        = heldOrdnance.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+				int clipCount      = minint( ammo, maxClip )
+				int stockpileCount = maxint( 0, ammo - clipCount )
+
+				heldOrdnance.SetWeaponPrimaryClipCount( clipCount )
+				heldOrdnance.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, stockpileCount )
+			}
+		}
+
+		if ( ammo <= 0 )
+		{
+			bool shouldSwitch = heldOrdnance == player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+			SURVIVAL_AutoEquipOrdnanceFromInventory( player, shouldSwitch )
+		}
+	}
 }

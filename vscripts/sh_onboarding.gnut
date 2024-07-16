@@ -1181,5 +1181,15 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 				printt( "Superglide modified for all players" )
 			#endif
 		break
+
+		case 7:
+			#if SERVER
+			player.SetMoveSpeedScale( 0.87 )
+			#endif
+			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
+			#if DEVELOPER
+				printt( "Player movement changed to TF2" )
+			#endif
+		break
 	}
 }

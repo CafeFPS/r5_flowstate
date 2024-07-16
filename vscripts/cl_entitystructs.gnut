@@ -79,7 +79,9 @@ global struct ClientEntityStruct
 	int __itemFlavorNetworkId
 	int charmItemFlavorNetworkId
 
-	//
+	int skinItemFlavorGUID  = -1
+	int charmItemFlavorGUID = -1
+
 	void functionref( entity, entity, var ) Callback_VortexTriggerBulletHit
 	void functionref( entity, entity, entity, entity, vector ) Callback_VortexTriggerProjectileHit
 

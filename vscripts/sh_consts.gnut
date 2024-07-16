@@ -865,12 +865,14 @@ global enum PerfIndexShared
 
 global const HOTDROP_IMPACT_FX_TABLE = "droppod_impact"
 
-global const int PICKUP_FLAG_ALT 					= 0x00001
-global const int PICKUP_FLAG_AUTO 					= 0x00002
-global const int PICKUP_FLAG_FROM_MENU 				= 0x00004
-global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY 	= 0x00008
-global const int PICKUP_FLAG_ATTACH_STOWED_ONLY 	= 0x00010
-global const int PICKUP_FLAG_LONG 					= 0x00020
+global const int PICKUP_FLAG_ALT = (1 << 0)
+global const int PICKUP_FLAG_AUTO = (1 << 1)
+global const int PICKUP_FLAG_FROM_MENU = (1 << 2)
+global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY = (1 << 3)
+global const int PICKUP_FLAG_ATTACH_STOWED_ONLY = (1 << 4)
+global const int PICKUP_FLAG_LONG = (1 << 5)
+global const int PICKUP_FLAG_DONT_SWITCH_WEAPONS = (1 << 6)
+global const int PICKUP_FLAG_DONT_COUNT_TOWARD_BLACK_MARKET_QUOTA = (1 << 8)
 
 // cinematic event flags; server controlled cinematics should set/clear these when active
 //global const CE_FLAG___						= 0x0001
