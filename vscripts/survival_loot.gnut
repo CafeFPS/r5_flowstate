@@ -3768,7 +3768,7 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 		{
 			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
 			if( weaponLegendaryIndexMap.len() > 0 )
-				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap.getrandom() )
+				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
 		}
 		
 		WeaponCosmetics_Apply( weapon, weaponSkinOrNull, null )
