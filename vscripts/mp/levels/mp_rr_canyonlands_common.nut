@@ -120,9 +120,7 @@ void function Canyonlands_MapInit_Common()
 	Flyers_SetFlyersToSpawn( 8 )
 	#endif
 
-	//printt( "Canyonlands_MapInit_Common" )
 	PrecacheModel( LEVIATHAN_MODEL )
-
 	//PrecacheModel( FLYER_SWARM_MODEL )
 
 	file.numHoverTanksIntro = GetCurrentPlaylistVarInt( "hovertanks_count_intro", HOVER_TANKS_DEFAULT_COUNT_INTRO )
@@ -246,12 +244,6 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if( MapName() != eMaps.mp_rr_canyonlands_staging && Gamemode() != eGamemodes.fs_dm && Gamemode() != eGamemodes.fs_aimtrainer )
-	{
-		//InitLootDrones() //flyers
-		//InitLootRollers() //flyers
-		//InitLootDronePaths() //flyers
-	}
 	thread __EntitiesDidLoad()
 }
 
@@ -368,9 +360,6 @@ void function FindHoverTankEndNodes()
 
 void function SpawnHoverTanks()
 {
-	// if( !GetCurrentPlaylistVarBool( "bad_hover_tank_enabled", false ) )
-		// return
-
 	// Spawn hover tanks at level load, even though they don't fly in yet, so they exist when loot is spawned.
 	if ( file.numHoverTanksIntro == 0 && file.numHoverTanksMid == 0 )
 		return
