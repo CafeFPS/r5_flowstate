@@ -2451,7 +2451,7 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		if( weaponFlavor != null )
 		{
 			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
-			if( weaponLegendaryIndexMap.len() > 0 )
+			if( weaponLegendaryIndexMap.len() > 1 )
 				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
 		}
 	}
@@ -3767,7 +3767,7 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 		if( weaponFlavor != null )
 		{
 			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
-			if( weaponLegendaryIndexMap.len() > 0 )
+			if( weaponLegendaryIndexMap.len() > 1 )
 				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
 		}
 		

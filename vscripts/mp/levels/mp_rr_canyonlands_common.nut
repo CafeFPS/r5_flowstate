@@ -720,6 +720,8 @@ const int ZIP_ATTACH_BACK_IDX 		= 2
 
 const int NUM_ZIP_ATTACHMENTS		= 3
 const float ZIPLINE_ATTACH_FOV		= 0.707
+
+
 void function FireHoverTankZiplines( HoverTank hoverTank, entity endNode )
 {
 	bool hasSupplyShip = ( hoverTank in file.TEMP_hoverTankToSupplyShip )
@@ -823,6 +825,9 @@ void function FireHoverTankZiplines( HoverTank hoverTank, entity endNode )
 			zipAttachPairCandidates[ i ].append( ziplineEndOrigin )
 			array<entity> ziplineEnts = CreateHovertankZipline( attachOrigin, ziplineEndOrigin )
 			thread HovertankZiplineLaunchSequence( ziplineEnts, attachOrigin, ziplineEndOrigin )
+			#if DEVELOPER
+			DebugDrawSphere( ziplineEndOrigin, 16, 255, 0, 255, true, 20 )
+			#endif
 			endNodeZiplineTargetOrigins.remove( j )
 		}
 	}
@@ -847,8 +852,35 @@ void function HovertankZiplineLaunchSequence( array<entity> ziplineEnts, vector 
 
 array<entity> function CreateHovertankZipline( vector startPos, vector endPos )
 {
-	return CreateZipline( startPos, endPos )
+	entity zipline_start = CreateEntity( "zipline" )
+	zipline_start.kv.Material = "cable/zipline.vmt"
+	zipline_start.kv.ZiplineAutoDetachDistance = "160"
+	zipline_start.kv._zipline_rest_point_0 = startPos.x + " " + startPos.y + " " + startPos.z
+	zipline_start.kv._zipline_rest_point_1 = endPos.x + " " + endPos.y + " " + endPos.z
+	zipline_start.SetOrigin( startPos )
+
+	entity zipline_end = CreateEntity( "zipline_end" )
+	zipline_end.kv.ZiplineAutoDetachDistance = "160"
+	zipline_end.SetOrigin( endPos )
+	// Comment in if using zipline sequence
+	//zipline_end.SetOrigin( startPos )
+
+	zipline_start.LinkToEnt( zipline_end )
+
+	DispatchSpawn( zipline_start )
+	DispatchSpawn( zipline_end )
+
+	// Comment in if using zipline sequence
+	//zipline_start.Zipline_Disable()
+
+	array<entity> ziplineEnts = [ zipline_start, zipline_end ]
+	return ziplineEnts
 }
+
+// array<entity> function CreateHovertankZipline( vector startPos, vector endPos )
+// {
+	// return CreateZipline( startPos, endPos )
+// }
 
 array<entity> function GetHoverTankStartNodes( array<entity> endNodes )
 {
