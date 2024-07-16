@@ -117,7 +117,7 @@ void function Canyonlands_MapInit_Common()
 	RegisterSignal( "NessyDamaged" )
 	PrecacheModel( NESSY_MODEL )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
-	Flyers_SetFlyersToSpawn( 8 )
+	Flyers_SetFlyersToSpawn( GetCurrentPlaylistVarInt( "flyers_to_spawn", 8 ) )
 	#endif
 
 	PrecacheModel( LEVIATHAN_MODEL )

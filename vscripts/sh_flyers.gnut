@@ -244,7 +244,7 @@ void function EntitiesDidLoad_Flyers()
 
 bool function EvilFlyersEnabled()
 {
-	if ( GetCurrentPlaylistVarBool( "evil_flyers", false ) )
+	if ( GetCurrentPlaylistVarBool( "evil_flyers", false ) || MapName() == eMaps.mp_rr_canyonlands_mu1_night )
 		return true
  
 	return false
