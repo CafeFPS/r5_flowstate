@@ -525,8 +525,8 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_FALLING )
 	//Survival_SetInventoryEnabled( player, false )
-    // thread Survival_Leviathan_ConsiderLookAtEnt(player)
-
+    
+	thread SkydiveAttractLeviathan( player )
 	if ( jumpingFromPlane )
 	{
 		PIN_PlayerJumpedFromPlane( player, squadPlayers.len() - 1 )
@@ -619,6 +619,15 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_SkydiveTrailStart", player )
 	waitthread SkyDiveMovement( player, skydiveData, driverViewVector, launchOffset, planeVelocity, leaderPlayer, jumpingFromPlane, freefallEnabled )
+}
+
+void function SkydiveAttractLeviathan( entity player )
+{
+	player.EndSignal( "OnDeath" )
+	wait RandomFloatRange( 2.0, 4.0 )
+	Leviathan_ConsiderLookAtEnt( player, RandomFloatRange( 10, 20 ), 0.1 )
+	wait 5.0
+	Leviathan_ConsiderLookAtEnt( player, RandomFloatRange( 10, 20 ), 0.1 )
 }
 
 void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vector driverViewVector, vector launchOffset, vector planeVelocity, entity leaderPlayer, bool jumpingFromPlane = true, bool freefallEnabled = true )
@@ -2216,3 +2225,4 @@ void function CleanupFriendlyEnemySkydiveTrailFXForPlayer( entity skyDivingPlaye
 }
 
 #endif // CLIENT
+

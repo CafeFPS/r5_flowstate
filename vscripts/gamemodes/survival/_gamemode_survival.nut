@@ -21,7 +21,7 @@ global function SURVIVAL_DebugLoot
 global function Survival_AddCallback_OnAirdropLaunched
 global function Survival_CleanupPlayerPermanents
 global function Survival_SetCallback_Leviathan_ConsiderLookAtEnt
-global function Survival_Leviathan_ConsiderLookAtEnt
+global function Leviathan_ConsiderLookAtEnt
 
 global entity WORKAROUND_DESERTLANDS_TRAIN = null
 
@@ -307,11 +307,10 @@ void function Survival_SetCallback_Leviathan_ConsiderLookAtEnt( void functionref
 	file.leviathanConsiderLookAtEntCallback = callback
 }
 
-void function Survival_Leviathan_ConsiderLookAtEnt(entity ent)
+void function Leviathan_ConsiderLookAtEnt( entity ent, float duration, float careChance )
 {
-    wait 1 //Wait until the ent has decided their direction
-    if(file.leviathanConsiderLookAtEntCallback != null)
-        file.leviathanConsiderLookAtEntCallback( ent, 10, 0.3 )
+	if ( file.leviathanConsiderLookAtEntCallback != null )
+		thread file.leviathanConsiderLookAtEntCallback( ent, duration, careChance )
 }
 
 void function RespawnPlayerInDropship( entity player )

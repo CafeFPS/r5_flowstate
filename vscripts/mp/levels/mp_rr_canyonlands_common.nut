@@ -592,7 +592,7 @@ void function HoverTankAttractLeviathans( HoverTank hoverTank )
 
 	while ( true )
 	{
-		//Leviathan_ConsiderLookAtEnt( hoverTank.flightMover, RandomFloatRange( 5, 20 ), 0.25 )
+		Leviathan_ConsiderLookAtEnt( hoverTank.flightMover, RandomFloatRange( 5, 20 ), 0.25 )
 		wait RandomFloatRange( 8.0, 20.0 )
 	}
 }

@@ -1054,11 +1054,12 @@ void function Leviathan_StartLooking( entity leviathan, LeviathanDataStruct levi
 	if ( leviathanData.state == LeviathanState.IDLE )
 	{
 		leviathanData.state = LeviathanState.LOOK
-		//leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
+		// leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
+		printt( "Leviathan tried to look but it won't" ) //Respawn never finished its job. Cafe
 
 		// non-look animations have the head pitched down, but the look animation doesn't.
 		// we need to lerp the pitch pose parameter by the inverse of that over the same length of time that the animation lerps.
-		//leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF
+		//leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF 
 	}
 }
 
