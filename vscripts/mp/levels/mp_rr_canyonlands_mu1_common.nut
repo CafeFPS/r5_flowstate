@@ -162,6 +162,9 @@ void function MU1_EntitiesDidLoad()
 
 	if ( RelayRockFixEnabled() )
 		SpawnRelayRockFix()
+
+	thread InitWraithAudioLog()
+	thread PlaceOctaneTownTakeoverLoot()
 }
 
 
