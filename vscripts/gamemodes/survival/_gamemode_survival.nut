@@ -369,6 +369,8 @@ void function Sequence_Playing()
 		return
 	}
 
+	FlagSet( "GamePlaying" )
+
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
 		// vector pos = GetEnt( "info_player_start" ).GetOrigin()
