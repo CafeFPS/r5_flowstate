@@ -352,8 +352,7 @@ void function DesertlandsTrain_Init()
 	if ( !Desertlands_IsTrainEnabled() )
 		return
 
-	// FIXME. cafe
-	// FlagWait( "Survival_LootSpawned" ) // gotta wait for the loot bins to be init'd before moving around the train and settin up the bin data at stations
+	FlagWait( "Survival_LootSpawned" ) // gotta wait for the loot bins to be init'd before moving around the train and settin up the bin data at stations
 	FlagInit( "AllowedToLeaveStation" )
 	DesertlandsTrain_SetAllowLeaveStation()
 
@@ -375,8 +374,8 @@ void function DesertlandsTrain_Init()
 void function DesertlandsTrain_InitMovement()
 {
 	                      
-	// if ( Gamemode() == eGamemodes.WINTEREXPRESS && PreGame_GetWaitingForPlayersCountdown() > 0 )
-		// wait 20
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS && PreGame_GetWaitingForPlayersCountdown() > 0 )
+		wait 20
        
 
 	TrainStartAtRandomPosition()
@@ -746,8 +745,8 @@ void function TrainFollowPathForward( bool shouldGetNewPath )
 			TrainAnnouncer_PlaySingle( "Train_DepartNow" )
 
 	                      
-	// if ( Gamemode() == eGamemodes.WINTEREXPRESS )
-		// return
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		return
        
 
 	string destinationNoteworthy = endNode.GetValueForKey( "script_noteworthy" )
@@ -790,8 +789,8 @@ void function TrainBeginDeceleration()
 		return
 
 	                      
-	// if ( Gamemode() == eGamemodes.WINTEREXPRESS )
-		// return
+	if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		return
        
 
 	entity endNode = file.currentPathNodes.top()

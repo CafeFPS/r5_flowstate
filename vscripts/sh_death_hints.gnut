@@ -348,52 +348,6 @@ array<DeathHintGroup> function GetDeathHintGroupsFromUnusedOffhands( entity play
 	return deathHintGroups
 }
 
-DeathHintGroup ornull function GetDeathHintForSelfDamage( entity target, array<AttackerDamage> attackerDamages, float selfDamageRatio )
-{
-	foreach ( attackerDamage in attackerDamages )
-	{
-		// see if we hurt ourselves significantly
-		if ( attackerDamage.attacker != target )
-			continue
-
-		if ( attackerDamage.totalDamage < target.GetMaxHealth() * selfDamageRatio )
-			continue
-
-		// hurt ourselves substantially
-		// if damagesource is a self_damage, use that
-		// otherwise use generic line
-
-		string highestDamageID
-		float highestDamage
-		foreach ( source, damage in attackerDamage.damageBySource )
-		{
-			if ( damage <= highestDamage )
-				continue
-
-			highestDamage = damage
-			highestDamageID = DamageSourceIDToString( source )
-		}
-
-		DeathHintGroup ornull deathHintDamageID = GetHintGroup_OrNull( eHints.self_damage, highestDamageID )
-		if ( deathHintDamageID != null )
-		{
-			expect DeathHintGroup( deathHintDamageID )
-			return deathHintDamageID
-		}
-
-		DeathHintGroup ornull deathHintGeneric = GetHintGroup_OrNull( eHints.custom, "killed_self_generic" )
-		if ( deathHintGeneric != null )
-		{
-			expect DeathHintGroup( deathHintGeneric )
-			return deathHintGeneric
-		}
-
-		return null
-	}
-
-	return null
-}
-
 array<int> function GetUnusedTitanOffhands( entity player, float useTimeLimit )
 {
 	// haven't used offhands?

@@ -113,6 +113,8 @@ invalid =             -1,
 	FS_DUCKHUNT_ID =       8,
 	FS_INFECTED_ID =       9,
 	FS_SND_ID =            10,
+	FS_APEXKART_ID =       11,
+	WINTEREXPRESS_ID =	   12
 }
 
 const table<string, int> gameModesStringToIdMap = {
@@ -129,6 +131,8 @@ const table<string, int> gameModesStringToIdMap = {
 	[ fs_duckhunt ]       = eGameModes.FS_DUCKHUNT_ID,
 	[ fs_infected ]       = eGameModes.FS_INFECTED_ID,
 	[ fs_snd ]            = eGameModes.FS_SND_ID,
+	[ fs_apexkart ]            = eGameModes.FS_APEXKART_ID,
+	[ WINTEREXPRESS ]            = eGameModes.WINTEREXPRESS_ID
 }
 
 struct
@@ -286,10 +290,6 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
 	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
 	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
-	
-	#if DEVSCRIPTS
-	DevGameModes_Init()
-	#endif
 
 	gameMode = fs_snd
 	GameMode_Create( gameMode )
@@ -307,6 +307,40 @@ void function GameModes_Init()
 	#if !UI
 		GameMode_AddScoreboardColumnData( gameMode, "Defused", PGS_ASSISTS, 2 )
 		GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 2 )
+	#endif
+
+	gameMode = fs_apexkart
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "fs_apexkart" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "Planted", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+	
+	gameMode = WINTEREXPRESS
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "winterexpress" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "Planted", PGS_DEATHS, 2 )
+	//GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+	// #if !UI
+		// GameMode_AddScoreboardColumnData( gameMode, "Defused", PGS_ASSISTS, 2 )
+		// GameMode_AddScoreboardColumnData( gameMode, "Latency", PGS_ASSISTS, 2 )
+	// #endif
+
+	#if DEVSCRIPTS
+	DevGameModes_Init()
 	#endif
 
 	#if SERVER || CLIENT

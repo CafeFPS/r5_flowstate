@@ -3,9 +3,11 @@ global function HealthRegen_Init
 
 //global function PilotHealthRegenThinkSP
 global function PilotShieldHealthUpdate
-global function PilotShieldModifyDamage
 
 const NO_HEALTH_DMG = ( 1 << eDamageSourceId.mp_ability_crypto_drone_emp ) // | ( 1 << eDamageSourceId. )
+const string SOUND_SHIELD_BREAK_3P_VS_1P = "humanshield_break_3p_vs_1p"
+const string SOUND_SHIELD_BREAK_1P_VS_3P = "humanshield_break_1p_vs_3p"
+const string SOUND_SHIELD_BREAK_3P_VS_3P = "humanshield_break_3p_vs_3p"
 
 struct
 {
@@ -127,89 +129,169 @@ void function HealthRegen_OnPlayerClassChangedMP( entity player )
 	thread PilotHealthRegenThinkMP( player )
 }
 
-float function PilotShieldHealthUpdate( entity player, var damageInfo )
+int function PilotShieldHealthUpdate( entity player, var damageInfo )
 {
-	int shieldHealth = 0
-	if(IsValid(player))
-		shieldHealth = player.GetShieldHealth()
+	if ( player.GetShieldHealthMax() <= 0 )
+		return 0
 
-	//float maxHealth = 0.0
-	
-	//if(IsValid(player))
-	//	maxHealth = float(player.GetHealth()) + float(shieldHealth) //not used??
-
-	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	if(!attacker.IsPlayer()) return 0
-	
-	float shieldDamage = 0
-	
-	if ( shieldHealth )
+	if ( DamageInfo_GetForceKill( damageInfo ) )
 	{
-		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
-		shieldDamage = PilotShieldModifyDamage( player, damageInfo )
-	}	
+		player.SetShieldHealth( 0 )
+		return 0
+	}
 
+	if ( player.GetShieldHealth() == 0 )
+		return 0
+		
+	float baseDamage = DamageInfo_GetDamage( damageInfo )
+	if ( baseDamage == 0 )
+		return 0
+
+	return PilotShieldModifyDamage( player, damageInfo )
+}
+
+int function PilotShieldModifyDamage( entity player, var damageInfo )
+{
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD )
+		return 0
+
+	DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+
+	float shieldDamageScale = DamageInfo_GetDamageShieldScale( damageInfo )
+
+	// foreach ( func in file.shieldDamageScaleCallbacks )
+	// {
+		// shieldDamageScale *= func( player, damageInfo )
+	// }
+
+	int startingShieldHealth = player.GetShieldHealth()
+	float baseDamage = DamageInfo_GetDamage( damageInfo )
+
+	int multipliedDamage = int( baseDamage * shieldDamageScale )
+
+	float shieldDamageFrac = 0
+	if ( multipliedDamage > 0 )
+		shieldDamageFrac = startingShieldHealth / float( multipliedDamage )
+
+	int shieldDamage = minint( startingShieldHealth, multipliedDamage )
+	int remainingShieldHealth = startingShieldHealth - shieldDamage
+	float normalDamage = max( baseDamage - shieldDamage, 0 )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+	if ( startingShieldHealth > 0 && remainingShieldHealth <= 0 )
+	{
+		//normalDamage = 0 // Uncomment to clear spill over damage		
+		if ( IsValid( attacker ) && attacker.IsPlayer() && attacker != player )
+			EmitSoundOnEntityOnlyToPlayer( attacker, attacker, SOUND_SHIELD_BREAK_1P_VS_3P )
+
+		array< entity > excludePlayers
+		if ( player.IsPlayer() )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, SOUND_SHIELD_BREAK_3P_VS_1P )
+			excludePlayers.append( player )
+		}
+
+		if ( attacker.IsPlayer() )
+			excludePlayers.append( attacker )
+
+		if ( excludePlayers.len() > 0 )
+		{
+			foreach( sPlayer in excludePlayers )
+			{
+				if( !IsValid( sPlayer ) )
+					continue
+
+				EmitSoundOnEntityExceptToPlayer( player, sPlayer, SOUND_SHIELD_BREAK_3P_VS_3P )
+			}
+		}
+		else
+			EmitSoundOnEntity( player, SOUND_SHIELD_BREAK_3P_VS_3P )
+
+		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
+	}
+
+	
+		printt( "shieldDamageFrac:", shieldDamageFrac )
+		printt( "shieldDamage:", shieldDamage )
+		printt( "remainingShieldHealth:", remainingShieldHealth )
+		printt( "normalDamage:", normalDamage )
+	
+
+	Assert( normalDamage + shieldDamage >= baseDamage )
+
+	DamageInfo_Print( damageInfo, "normal " + normalDamage + " shield " + shieldDamage )
+
+	player.SetShieldHealth( remainingShieldHealth )
+
+	float actualShieldDamage = min( startingShieldHealth, shieldDamage )
+
+	if( IsValid( attacker ) && attacker.IsPlayer() )
+	{
+		attacker.p.playerDamageDealt += float( shieldDamage )
+		attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldDamage )
+	}
+	
 	return shieldDamage
 }
 
-float function PilotShieldModifyDamage( entity player, var damageInfo )
-{
-    entity attacker = DamageInfo_GetAttacker( damageInfo )
+// float function PilotShieldModifyDamage( entity player, var damageInfo )
+// {
+    // entity attacker = DamageInfo_GetAttacker( damageInfo )
 
-    float shieldHealth = 0.0
+    // float shieldHealth = 0.0
 	
-	if( IsValid( player ) )
-		shieldHealth = float( player.GetShieldHealth() )
+	// if( IsValid( player ) )
+		// shieldHealth = float( player.GetShieldHealth() )
 	
-    float damage = DamageInfo_GetDamage( damageInfo )
-    float newShieldHealth = shieldHealth - damage
-    float permanentDamage = 0.0
+    // float damage = DamageInfo_GetDamage( damageInfo )
+    // float newShieldHealth = shieldHealth - damage
+    // float permanentDamage = 0.0
 	
-    if ( newShieldHealth < 0 )
-        permanentDamage = fabs( newShieldHealth )
+    // if ( newShieldHealth < 0 )
+        // permanentDamage = fabs( newShieldHealth )
 	
-	if( IsValid( player ) )
-		player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
+	// if( IsValid( player ) )
+		// player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
 
-    if ( shieldHealth && newShieldHealth <= 0 )
-    {
-		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
+    // if ( shieldHealth && newShieldHealth <= 0 )
+    // {
+		// DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
 
-		if( IsValid( attacker ) && IsValid( player ) )
-		{
-			if( attacker != player && attacker.IsPlayer() )
-				EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+		// if( IsValid( attacker ) && IsValid( player ) )
+		// {
+			// if( attacker != player && attacker.IsPlayer() )
+				// EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
-			if( player.IsPlayer() )
-				EmitSoundOnEntityOnlyToPlayer( player, player, "humanshield_break_3p_vs_1p" )
-		}
-    }
+			// if( player.IsPlayer() )
+				// EmitSoundOnEntityOnlyToPlayer( player, player, "humanshield_break_3p_vs_1p" )
+		// }
+    // }
 
-	if( permanentDamage > 0 )
-    {
-		float damagefull = damage + shieldHealth
-		float maxHealth = 0.0
+	// if( permanentDamage > 0 )
+    // {
+		// float damagefull = damage + shieldHealth
+		// float maxHealth = 0.0
 		
-		if( IsValid( player ) )
-			maxHealth = float(player.GetHealth())
+		// if( IsValid( player ) )
+			// maxHealth = float(player.GetHealth())
 		
-		if( NO_HEALTH_DMG & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
-		{
-			DamageInfo_SetDamage( damageInfo, 0 )
-		}
-		else 
-		{
-			DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
-			DamageInfo_SetDamage( damageInfo, permanentDamage )
-		}
+		// if( NO_HEALTH_DMG & ( 1 << DamageInfo_GetDamageSourceIdentifier( damageInfo ) ) )
+		// {
+			// DamageInfo_SetDamage( damageInfo, 0 )
+		// }
+		// else 
+		// {
+			// DamageInfo_AddCustomDamageType( damageInfo, DF_BYPASS_SHIELD )		
+			// DamageInfo_SetDamage( damageInfo, permanentDamage )
+		// }
 		
-		if( IsValid( attacker ) )
-		{
-			PlayerDamageFeedback( player, damageInfo, shieldHealth )
-			attacker.p.playerDamageDealt += shieldHealth
-			attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldHealth )
-		}
-	}
+		// if( IsValid( attacker ) )
+		// {
+			// PlayerDamageFeedback( player, damageInfo, shieldHealth )
+			// attacker.p.playerDamageDealt += shieldHealth
+			// attacker.SetPlayerNetInt( "damage", attacker.GetPlayerNetInt( "damage" ) + shieldHealth )
+		// }
+	// }
 	
-    return min( shieldHealth, damage )
-} 
+    // return 0 //min( shieldHealth, damage )
+// } 

@@ -53,6 +53,9 @@ global function SURVIVAL_DropLoot_IncrementThrowAngle
 global function ShouldForceUseSafeSpotForDeathBox_AddPlayer
 global function ShouldForceUseSafeSpotForDeathBox_RemovePlayer
 
+global function AddCallback_LootPhysicsParented
+global function RemoveCallback_LootPhysicsParented
+
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 
 global const LOOT_COLLISION_GROUP = 1
@@ -61,6 +64,7 @@ const float LOOT_THROW_WEAPON_MOD_DISMANTLE_DELAY = 0.5
 
 const float LOOT_THROW_BASE_RADIUS = 70.0
 const string SOUND_THROW_ITEM = "weapon_sentryfragdrone_throw_1p"
+const string SURVIVAL_LOOT_MOVER_SCRIPTNAME = "survival_loot_mover"
 
 global enum eSpawnSource
 {
@@ -140,6 +144,9 @@ struct {
 
 	table< string, bool functionref(entity, string, int) > specialCaseRefCountFunctions
 	table< string, void functionref(entity, string, int) > specialCaseRefDecrementFunctions
+
+	table< entity, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootPhysicsParented
+	table< string, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootSpawnParented
 
 	array<entity> playersThatShouldForceUseSafeSpotForDeathBox
 } file
@@ -818,8 +825,6 @@ void function OnGroundLootSpawned( entity ent )
 	if( IsValid( ent ) )
 		ent.Destroy()
 
-	bool isHoverTankLoot = instance == "HoverTank_1" || instance == "HoverTank_2"
-
 	if(zoneRef == "data_knife_vault")
 	{
 		vector zoneOrigin = LootZones_GetParentForOrigin( origin )
@@ -933,28 +938,22 @@ void function OnGroundLootSpawned( entity ent )
 	if ( loot == null )
 		return
 
-	// int angleZ = 0
-
-	// entity loot = SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( 0, 360 ), angleZ>, itemData.countPerDrop )
 	vector angles = AnglesOnSurface( GetGroundPosition( startOrigin, endOrigin ).surfaceNormal, AnglesToForward( loot.GetAngles() ) )
-	loot.SetAngles( angles )
-	
-	// if( isHoverTankLoot )
-	// {
-		// // printt("detected hovertank loot" )
-		// entity parentPoint = CreateEntity( "script_mover_lightweight" )
-		// {
-			// parentPoint.kv.solid = 0
-			// parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
-			// parentPoint.kv.SpawnAsPhysicsMover = 0
-			// parentPoint.SetOrigin( loot.GetOrigin() )
-			// parentPoint.SetAngles( loot.GetAngles() )
-			// DispatchSpawn( parentPoint )
-			// parentPoint.Hide()
-			// loot.SetParent(parentPoint)
-			// //parentPoint.SetParent( GetHoverTankByInstance( instance ) )
-		// }
-	// }
+	loot.SetAngles( <0,0,angles.z> )
+
+	//Check for moving geo
+	TraceResults trace = TraceLineHighDetail( loot.GetOrigin(), loot.GetOrigin() - <0, 0, 88>, loot, LOOT_TRACE, LOOT_COLLISION_GROUP )
+	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+	{
+		string parentTargetName = trace.hitEnt.GetTargetName()
+		if ( parentTargetName in file.Callbacks_OnLootSpawnParented )
+		{
+			foreach ( func in file.Callbacks_OnLootSpawnParented[parentTargetName] )
+				func( trace.hitEnt, loot )
+		}
+
+		loot.SetParent( trace.hitEnt, "", true, 0 )
+	}
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -3009,7 +3008,11 @@ entity function SpawnGenericLoot( string ref, vector origin, vector overrideAngl
 				}
 			}
 		}
-
+		
+		// #if DEVELOPER
+		foreach( i, mod in mods )
+			printt( "adding ", i, mod, "to weapon", ent )
+		// #endif
 		ent.SetWeaponMods( mods )
 		// TEMP HACK
 		//okay then, let's un-hack it? - johodgson
@@ -3695,7 +3698,7 @@ void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, b
 	}
 
 	physicsEnt.e.lastAttacker = drop
-	// AddEntityCallback_OnPhysicsDisabled( physicsEnt, SurvivalLoot_OnPhysicsDisabled )
+	AddEntityCallback_OnPhysicsDisabled( physicsEnt, SurvivalLoot_OnPhysicsDisabled )
 	thread PhysicsEntCleanup( physicsEnt, drop )
 }
 
@@ -3758,6 +3761,20 @@ entity function SpawnWeaponAndAmmo( string weaponName, vector origin )
 	vector newOrigin = origin + <0, 0, 2>
 
 	entity weapon = SpawnGenericLoot( weaponName, newOrigin, < 0, RandomFloatRange( 0, 360 ), 90 >, -1 )
+
+	//Check for moving geo
+	TraceResults trace = TraceLineHighDetail( weapon.GetOrigin(), weapon.GetOrigin() - <0, 0, 88>, weapon, LOOT_TRACE, LOOT_COLLISION_GROUP )
+	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+	{
+		string parentTargetName = trace.hitEnt.GetTargetName()
+		if ( parentTargetName in file.Callbacks_OnLootSpawnParented )
+		{
+			foreach ( func in file.Callbacks_OnLootSpawnParented[parentTargetName] )
+				func( trace.hitEnt, weapon )
+		}
+
+		weapon.SetParent( trace.hitEnt, "", true, 0 )
+	}
 
 	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
 	{
@@ -5203,5 +5220,170 @@ void function SURVIVAL_RefreshWeaponSkinAndModel( entity weapon, entity player )
 				WeaponCosmetics_ApplyModelAndSkin( weapon, skin )
 			}
 		}
+	}
+}
+
+void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
+{
+	{
+		vector mins         = < -13, -13, 0.0 >
+		vector maxs         = < 13, 13, 13.0 >
+		TraceResults result = TraceHull( physicsEnt.GetOrigin(), physicsEnt.GetOrigin() - <0, 0, 16>, mins, maxs, [], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+
+		if ( IsValid( result.hitEnt ) && result.hitEnt.IsPlayer() )
+			return
+	}
+
+	entity ent = physicsEnt.e.lastAttacker
+
+	ent.ClearParent()
+
+	if ( IsValid( ent ) && ent.GetNetworkedClassName() == "prop_survival" )
+	{
+		TraceResults trace = TraceLineHighDetail( physicsEnt.GetOrigin() + <0, 0, 16>, physicsEnt.GetOrigin() - <0, 0, 16>, [physicsEnt, ent], LOOT_TRACE, LOOT_COLLISION_GROUP )
+
+		array<int> nonReorientTypes = [ eLootType.MAINWEAPON, eLootType.ORDNANCE ]
+		int lootType                = 0
+		bool shouldReorient         = false
+		if ( SURVIVAL_Loot_IsRefValid( ent.e.lootRef ) )
+		{
+			lootType = SURVIVAL_Loot_GetLootDataByRef( ent.e.lootRef ).lootType
+			shouldReorient = !nonReorientTypes.contains( lootType )
+		}
+		entity myNewParent = physicsEnt.GetParent() //trace.hitEnt
+		bool shouldParent  = (IsValid( myNewParent )) // && trace.hitEnt.HasPusherAncestor() )
+
+		vector origin = ent.GetOrigin()
+		vector angles = ent.GetAngles()
+
+		vector maxs = ent.GetBoundingMaxs()
+		vector mins = ent.GetBoundingMins()
+
+		if ( shouldReorient )
+		{
+			trace = GetGroundPosition( ent.GetOrigin() + <0, 0, 16>, ent.GetOrigin() - <0, 0, 8>, [ ent, physicsEnt ] )
+
+			origin = trace.endPos
+			vector up     = AnglesToUp( ent.GetAngles() )
+			vector normal = trace.surfaceNormal
+			float dot     = DotProduct( up, normal )
+
+			if ( dot < 0.99 )
+			{
+				float angleDiff = acos( dot )
+				vector cross    = Normalize( CrossProduct( normal, up ) )
+
+				if ( Length( cross ) == 1.0 )
+				{
+					angles = RotateAnglesAboutAxis( angles, cross, RadToDeg( angleDiff ) )
+				}
+			}
+
+			origin += <0, 0, -1 * mins.z>
+		}
+		else
+		{
+			trace = TraceLine( ent.GetOrigin() + <0, 0, 16>, ent.GetOrigin() - <0, 0, 8>, [ ent, physicsEnt ], LOOT_TRACE, LOOT_COLLISION_GROUP )
+			TraceResults trace2 = GetGroundPosition( ent.GetOrigin() + <0, 0, 16>, ent.GetOrigin() - <0, 0, 8>, [ ent, physicsEnt ] )
+			vector diff         = trace2.endPos - trace.endPos
+			origin = ent.GetOrigin() + diff
+		}
+
+		if ( shouldParent )
+		{
+			if ( myNewParent in file.Callbacks_OnLootPhysicsParented )
+			{
+				foreach ( callbackFunc in file.Callbacks_OnLootPhysicsParented[myNewParent] )
+				{
+					callbackFunc( myNewParent, ent )
+				}
+			}
+
+			if ( IsValid( ent ) && IsValid( myNewParent ) )	//seeing rare weird bugs where ent is marked for deletion somehow, so re-checking validity here as a defensive measure
+			{
+				ent.SetAbsOriginSmooth( origin )
+				ent.SetAbsAnglesSmooth( angles )
+
+				if ( IsValid( ent ) )	//Adding a second defensive layer here after moving the ent to account for destroy triggers marking for delete
+				{
+					ent.SetParent( myNewParent, "", true, 0 )
+				}
+			}
+		}
+		else
+		{
+			thread MoveToNewPosition( ent, origin, angles )
+		}
+	}
+	else if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
+	{
+		entity myNewParent = physicsEnt.GetParent() //trace.hitEnt
+
+		while ( IsValid( myNewParent ) )
+		{
+			if ( myNewParent == null || myNewParent.GetTargetName() != DEATH_BOX_TARGETNAME )
+				break
+
+			entity p = myNewParent.GetParent()
+			myNewParent = p
+		}
+
+		bool shouldParent = IsValid( myNewParent ) && (!IsWorldSpawn( myNewParent )) && !myNewParent.IsPlayer() // (IsValid( myNewParent ) && (myNewParent.GetNetworkedClassName() == "script_mover" || myNewParent.GetNetworkedClassName() == "script_mover_lightweight"))
+
+		if ( shouldParent )
+		{
+			ent.SetParent( myNewParent, "", true, 0 )
+		}
+	}
+
+	ent.Solid()
+
+	physicsEnt.Destroy()
+}
+
+void function MoveToNewPosition( entity loot, vector origin, vector angles )
+{
+	loot.EndSignal( "OnDestroy" )
+	loot.EndSignal( "OnPickup" )
+	entity mover = CreateScriptMover_NEW( SURVIVAL_LOOT_MOVER_SCRIPTNAME, loot.GetOrigin(), loot.GetAngles() )
+
+	OnThreadEnd(
+		function() : ( mover )
+		{
+			if ( IsValid( mover ) )
+			{
+				mover.Destroy()
+			}
+		}
+	)
+
+	loot.SetParent( mover )
+	float moveTime = 0.4
+	mover.NonPhysicsMoveTo( origin, moveTime, 0.0, 0.0 )
+	mover.NonPhysicsRotateTo( angles, moveTime, 0.0, 0.0 )
+	wait moveTime
+	WaitEndFrame()
+	loot.ClearParent()
+}
+
+void function AddCallback_LootPhysicsParented( entity ent, void functionref( entity parentEnt, entity childEnt ) callbackFunc )
+{
+	if ( ent in file.Callbacks_OnLootPhysicsParented )
+	{
+		file.Callbacks_OnLootPhysicsParented[ent].append( callbackFunc )
+	}
+	else
+	{
+		array< void functionref( entity parentEnt, entity childEnt ) > callbacks
+		callbacks.append( callbackFunc )
+		file.Callbacks_OnLootPhysicsParented[ent] <- callbacks
+	}
+}
+
+void function RemoveCallback_LootPhysicsParented( entity ent, void functionref( entity parentEnt, entity childEnt ) callbackFunc )
+{
+	if ( ent in file.Callbacks_OnLootPhysicsParented )
+	{
+		file.Callbacks_OnLootPhysicsParented[ent].removebyvalue( callbackFunc )
 	}
 }

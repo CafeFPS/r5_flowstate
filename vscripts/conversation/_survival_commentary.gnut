@@ -1,4 +1,12 @@
 global function SurvivalCommentary_Init
+global function SetCommentaryEnabled
+global function IsCommentaryEventEnabled
+global function PlayCommentaryLineToAllPlayers
+global function PlayCommentaryLineToAllPlayersDelayed
+global function PlayCommentaryLineToPlayerArray
+
+global function SurvivalCommentary_SetEventEnabled
+
 global function SurvivalCommentary_GetKillLeaderEEH
 global function SurvivalCommentary_GetChampionTeam
 global function SurvivalCommentary_GetChampionEEH
@@ -12,9 +20,12 @@ global function SetChampion
 global function GetChampion
 
 global const DELAY_COMMENTARY = 2
+global const int COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS = eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS
 
 struct {
+	bool commentarySystemActive = true
 	entity currentKillLeader = null
+	array<int>                     disabledCommentaryEvents
 } file
 
 void function SurvivalCommentary_Init()
@@ -182,6 +193,14 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 void function AddSurvivalCommentaryEvent( int event, entity attacker = null, entity victim = null )
 {
+
+	// Determine if event is currently enabled
+	if ( !IsCommentaryEventEnabled( event ) )
+	{
+		printf( "Event type: " + event + " is disabled" )
+		return
+	}
+
 	#if DEVELOPER
 	string enumString = GetEnumString( "eSurvivalEventType", event )
 	
@@ -264,6 +283,52 @@ void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
+
+void function PlayCommentaryLine_Internal( string dialogueRef, array<entity> players, string dialogueResponseRef )
+{
+	if ( !file.commentarySystemActive )
+		return
+
+	foreach ( entity player in players )
+	{
+		if ( !IsValid( player ) )
+			continue
+
+		if ( !IsBattleChatterEnabled() )
+		{
+			thread PlayDialogueForPlayer( dialogueRef, player, null, 0, COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS )
+			continue
+		}
+
+		entity responseSpeaker = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
+
+		thread PlayDialogueForPlayer( dialogueRef, player, null, 0, COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS, dialogueResponseRef, responseSpeaker )
+	}
+}
+
+
+void function PlayCommentaryLineToAllPlayers( string dialogueRef, string dialogueResponseRef = "" )
+{
+	array<entity> players = GetPlayerArray()
+
+	thread PlayCommentaryLine_Internal( dialogueRef, players, dialogueResponseRef )
+}
+
+
+void function PlayCommentaryLineToAllPlayersDelayed( string dialogueRef, float delay, string dialogueResponseRef = "" )
+{
+	if ( delay > 0 )
+		wait delay
+
+	PlayCommentaryLineToAllPlayers( dialogueRef, dialogueResponseRef )
+}
+
+
+void function PlayCommentaryLineToPlayerArray( string dialogueRef, array<entity> players, string dialogueResponseRef = "" )
+{
+	thread PlayCommentaryLine_Internal( dialogueRef, players, dialogueResponseRef )
+}
+
 
 void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 {
@@ -365,4 +430,36 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, selectedResponseName, responsePlayer )
 	}
+}
+
+bool function IsCommentaryEventEnabled( int eventType )
+{
+	foreach ( disabledEventType in file.disabledCommentaryEvents )
+	{
+		if ( disabledEventType == eventType )
+			return false
+	}
+
+	return true
+}
+
+
+void function SurvivalCommentary_SetEventEnabled( int eventType, bool value )
+{
+	if ( value == true )
+	{
+		Assert( !IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( true ) on a commentary event that is already enabled" )
+		file.disabledCommentaryEvents.fastremovebyvalue( eventType )
+	}
+	else
+	{
+		Assert( IsCommentaryEventEnabled( eventType ), "Trying to SurvivalCommentary_SetEventEnabled( false ) on a commentary event that is already disabled" )
+		file.disabledCommentaryEvents.append( eventType )
+	}
+}
+
+
+void function SetCommentaryEnabled( bool value )
+{
+	file.commentarySystemActive = value
 }

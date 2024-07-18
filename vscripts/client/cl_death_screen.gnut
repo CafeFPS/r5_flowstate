@@ -46,6 +46,7 @@ global function DisplaySpectatorCardSidePane
 #endif
 
 global function AddCallback_ShouldShowDeathScreen
+global function DeathScreen_SpectatorTargetChanged
 
 global function UpdateRespawnStatus
 global function DeathScreen_UpdateRespawnTime
@@ -1967,7 +1968,7 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 	return $""
 }
 
-void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime )
+void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime, int index, int numSentBlock )
 {
 	if ( file.deathRecapDataUpdated )
 	{
@@ -1975,11 +1976,11 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 		file.deathRecapDamageBlocks.clear()
 	}
 	
-	foreach( damageBlockTest in file.deathRecapDamageBlocks )
-	{
-		if( Time() > damageBlockTest.blockTime + 60 )
-			file.deathRecapDamageBlocks.fastremovebyvalue( damageBlockTest )
-	}
+	// foreach( damageBlockTest in file.deathRecapDamageBlocks )
+	// {
+		// if( Time() > damageBlockTest.blockTime + 60 )
+			// file.deathRecapDamageBlocks.fastremovebyvalue( damageBlockTest )
+	// }
 
 	DeathRecapDamageData damageBlock
 	damageBlock.attackerEHandle = attackerEHandle
@@ -1994,6 +1995,8 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 	damageBlock.blockTime = blockTime
 
 	file.deathRecapDamageBlocks.append( damageBlock )
+	
+	printt( "Got damage block on client from server", numSentBlock, "- DAMAGE", totalDamage, "- ATTACKER", attackerEHandle )
 }
 
 void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, EncodedEHandle killerEHandle )

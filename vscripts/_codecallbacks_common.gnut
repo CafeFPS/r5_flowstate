@@ -95,6 +95,8 @@ global function CodeCallback_OnWeaponAttack
 global function CodeCallback_OnNavMeshHotSwapBegin
 global function CodeCallback_OnNavMeshHotSwapEnd
 
+global function SetDefaultObserverBehavior
+
 const bool PRINT_MOVEMENT = false
 
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
@@ -182,6 +184,7 @@ struct
 	table<string, array< void functionref( entity, var ) > > classDamageFinalCallbacks
 	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
 	array< void functionref( entity ) > playerInventoryChangedCallbacks
+	entity functionref( entity observer, bool reverse )        defaultObserverBehavior
 } file
 
 struct 
@@ -195,85 +198,43 @@ void function CodeCallbacksCommon_Init()
 	settings.flowstate_spectator_team_only = GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false )
 }
 
-entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse)
+entity function CodeCallback_GetBestObserverTarget( entity observer, bool reverse )
 {
-	if( !IsValid( observer ) )
-		return null
-	
-	if ( IsValid( observer.p.respawnPod ) )
+	foreach ( func in svGlobal.onGetBestObserverTargetCallbacks )
 	{
-		if ( observer.GetObserverMode() != OBS_MODE_CHASE )
-			observer.StartObserverMode( OBS_MODE_CHASE )
-		return observer.p.respawnPod
-	}
-
-	#if DEVELOPER
-		printt("CodeCallback_GetBestObserverTarget DEBUG: ", observer, reverse)
-	#endif
-		
-	//Force teammate observer target when spec_next and spec_prev are used
-	if( settings.flowstate_spectator_team_only || Gamemode() == eGamemodes.SURVIVAL )
-	{
-		int team = observer.GetTeam()
-		array<entity> players = GetPlayerArrayOfTeam_Alive( team )
-		entity potentialTarget 
-		entity currentTargetEnt = observer.GetObserverTarget()
-				
-		if( players.contains( observer ) ) //Shouldn't happen, but just in case.
-			players.removebyvalue( observer )
-			
-		#if TRACKER
-			if( players.contains( GetMessageBotEnt() ) )
-				players.fastremovebyvalue( GetMessageBotEnt() ) 
-		#endif 
-
-		if( IsValid( currentTargetEnt ) && currentTargetEnt.GetTeam() != team )
+		entity ent = func( observer, reverse )
+		if ( ent != null )
 		{
-			team = currentTargetEnt.GetTeam()
-			players = GetPlayerArrayOfTeam_Alive( team )
-		}
-		
-		observer.SetPlayerNetInt( "spectatorTargetCount", players.len() )
-		
-		if( players.len() == 0 ) 
-			return null
-		
-		int currentTarget = 0
-		
-		if( IsValid( currentTargetEnt ) )
-		{
-			for( int i = 0; i < players.len(); i++ )
+			if ( IsPrivateMatch() && observer.GetTeam() == TEAM_SPECTATOR )
 			{
-				if( players[i] == currentTargetEnt )
-					currentTarget = i
+				if ( ent.IsPlayer() )
+					printf( "Observer: User %s switched to spectating %s", observer.GetPINNucleusPid(), ent.GetPINNucleusPid() )
 			}
+
+			return ent
 		}
-		
-		if( reverse )
-		{
-			int nextIndex
-			if( currentTarget - 1 < 0 )
-				potentialTarget = players[ players.len() - 1 ]
-			else
-				potentialTarget = players[ currentTarget - 1 ]
-		}
-		else
-		{
-			int nextIndex
-			if( currentTarget + 1 > players.len() - 1 )
-				potentialTarget = players[ 0 ]
-			else
-				potentialTarget = players[ currentTarget + 1 ]
-		}
-		
-		if( IsValid(potentialTarget) && potentialTarget != currentTargetEnt )
-			return potentialTarget
 	}
-	
-	foreach( cb in svGlobal.onGetBestObserverTargetCallbacks )
-		cb( observer, reverse )
-	
+
+	if ( file.defaultObserverBehavior != null )
+	{
+		entity defaultEnt = file.defaultObserverBehavior( observer, reverse )
+
+		if ( IsPrivateMatch() && defaultEnt != null && observer.GetTeam() == TEAM_SPECTATOR )
+		{
+			if ( defaultEnt.IsPlayer() )
+				printf( "Observer: User %s switched to spectating %s", observer.GetPINNucleusPid(), defaultEnt.GetPINNucleusPid() )
+		}
+
+		return defaultEnt
+	}
+
 	return null
+}
+
+
+void function SetDefaultObserverBehavior( entity functionref( entity, bool ) func )
+{
+	file.defaultObserverBehavior = func
 }
 
 void function CodeCallback_DamageEntity( entity ent, var damageInfo )
@@ -1011,6 +972,11 @@ void function CodeCallback_OnInventoryChanged( entity player )
 
 void function CodeCallback_OnEntityChangedTeam( entity ent )
 {
+	if( ent.GetClassName() == "crossbow_bolt" )
+	{
+		RunSpawnCallbacks( ent )
+	}
+
 	string className = ent.GetClassName()
 	if ( !( className in svGlobal.onEntityChangedTeamCallbacks ) )
 		return

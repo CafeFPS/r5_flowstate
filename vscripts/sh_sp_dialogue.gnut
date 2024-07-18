@@ -155,6 +155,7 @@ struct DialogueEntryGroup
 
 struct DialogueData
 {
+	string name
 	string alias
 	int    priority
 	string perspective
@@ -487,6 +488,7 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 #endif // SERVER && DEVELOPER
 
 	DialogueData data
+	data.name = name
 	data.alias = alias
 	data.priority = priority
 	data.perspective = extraPerspective

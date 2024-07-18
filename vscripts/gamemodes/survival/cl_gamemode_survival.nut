@@ -111,6 +111,7 @@ global function CircleAnnouncementsEnable
 global function SetDpadMenuHidden
 global function UpdateImageAndScaleOnFullmapRUI
 global function GetFullMapScale
+global function Survival_SetVictorySoundPackageFunction
 
 global struct NextCircleDisplayCustomData
 {
@@ -130,7 +131,7 @@ global struct NextCircleDisplayCustomData
 	string altIconText
 }
 
-struct VictorySoundPackage
+global struct VictorySoundPackage
 {
 	string youAreChampPlural
 	string youAreChampSingular
@@ -296,6 +297,7 @@ struct
 
 	table<entity, var> playerArrows
 	var fullmaprui
+	VictorySoundPackage functionref() victorySoundPackageCallback
 } file
 
 void function ClGamemodeSurvival_Init()
@@ -750,7 +752,8 @@ const array<int> nonCompassModes = [
 	ePlaylists.fs_scenarios,
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
-	ePlaylists.fs_snd
+	ePlaylists.fs_snd,
+	ePlaylists.fs_apexkart
 ]
 
 void function Cl_Survival_AddClient( entity player )
@@ -4676,10 +4679,17 @@ bool function IsShowingVictorySequence()
 	return file.IsShowingVictorySequence
 }
 
+void function Survival_SetVictorySoundPackageFunction( VictorySoundPackage functionref() func )
+{
+	file.victorySoundPackageCallback = func
+}
 
 VictorySoundPackage function GetVictorySoundPackage()
 {
 	VictorySoundPackage victorySoundPackage
+
+	if ( file.victorySoundPackageCallback != null )
+		return file.victorySoundPackageCallback()
 
 	#if(true)
 		if ( IsFallLTM() )

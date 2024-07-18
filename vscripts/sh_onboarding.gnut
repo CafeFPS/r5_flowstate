@@ -46,6 +46,7 @@ global function SV_CL_Onboarding_Init
 global function TakeLoadoutRelatedWeapons
 global function GiveLoadoutRelatedWeapons
 global function DecideRespawnPlayer
+global function DecideRespawnPlayer_Retail
 
 global function PlayerStartSpectating
 global function PlayerStopSpectating
@@ -53,6 +54,8 @@ global function PlayerStopSpectating
 global function UpdatePlayerCounts
 global function Flowstate_AssignUniqueCharacterForPlayer
 global function Flowstate_SetAssignedCustomModelToPlayer
+
+global function SetCallback_ObserverThreadOverride
 #endif
 
 global function PreGame_GetWaitingForPlayersHasBlackScreen
@@ -81,6 +84,12 @@ global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
 global function SetPlayerSettings
 global function Flowstate_ApplyModifiedMovementToPlayer
+
+struct
+{
+	void functionref(entity player ) ObserverThreadOverrideCallback = null
+} file
+
 
 void function SV_CL_Onboarding_Init()
 {
@@ -161,7 +170,7 @@ void function Sequence_WaitingForPlayers()
 	if( Gamemode() == eGamemodes.fs_aimtrainer )
 		return
 
-	if( Gamemode() != eGamemodes.SURVIVAL )
+	if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
 	{
 		foreach( player in GetPlayerArray() )
 		{
@@ -588,6 +597,101 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	}
 	
 	player.Signal("OnRespawned")
+}
+
+// clean up and move to main when completely debugged. Cafe
+bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserver )
+{
+	Assert( IsValid( player ), player + " is invalid!!" )
+	Assert( !IsAlive( player ), player + " is already alive" )
+
+	if ( !player.hasConnected || player.GetTeam() == TEAM_SPECTATOR )
+	{
+		printf( "%s() - player.hasConnected was false: %s", FUNC_NAME(), string( player ) )
+		return false
+	}
+
+	// if ( IsPVEMode() && (player.p.respawnCount == 0) )
+		// return false
+
+	if ( (GetGameState() <= eGameState.WaitingForPlayers) && !PreGame_GetWaitingForPlayersSpawningEnabled() )
+	{
+		printf( "%s() - No spawning when waiting for players: %s", FUNC_NAME(), string( player ) )
+		return false
+	}
+
+	if ( PlayerShouldObserve( player ) )
+	{
+		printf( "%s() - PlayerShouldObserve() was true: %s", FUNC_NAME(), string( player ) )
+		if ( true ) //GamemodeUtility_IsSpectatorEnabled() ) review. Cafe
+		{
+			if ( IsPlayerEliminated( player ) && (GetGameState() == eGameState.Playing) && IsRoundBased() )
+				SendHudMessage( player, "#GAMEMODE_RESPAWN_NEXT_ROUND", -1, 0.4, 255, 255, 255, 255, 1.0, 6.0, 1.0 )
+
+			#if SERVER
+				if ( file.ObserverThreadOverrideCallback != null )
+					file.ObserverThreadOverrideCallback(player)
+				else
+					thread ObserverThread( player )
+			#endif
+		}
+
+		return false
+	}
+
+	// if ( allowSpawnAsObserver )
+		// player.AllowSpawnAsObserverOnce()
+
+	printf( "%s() - Attempting to spawn: %s", FUNC_NAME(), string( player ) )
+	bool didSpawn = RespawnTitanPilot( player )
+	printf( "%s() - Spawn %s: %s", FUNC_NAME(), (didSpawn ? "success" : "failed"), string( player ) )
+
+	return didSpawn
+}
+
+
+bool function RespawnTitanPilot( entity player )
+{
+	Assert( PlayerCanSpawn( player ), player + " cant spawn now" )
+
+	if ( IsLobby() )
+		return false
+
+	DoRespawnPlayer( player, null )
+
+	if( script_bHighlight )
+	{
+		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
+	}
+	
+	Flowstate_ApplyModifiedMovementToPlayer( player )
+
+	if( player.p.assignedCustomModel != -1 )
+	{
+		Flowstate_SetAssignedCustomModelToPlayer( player, player.p.assignedCustomModel )
+	}
+
+	return true
+}
+
+void function SetCallback_ObserverThreadOverride( void functionref( entity player ) func  )
+{
+	file.ObserverThreadOverrideCallback = func
+}
+
+
+bool function PlayerShouldObserve( entity player )
+{
+	if ( player.GetTeam() == TEAM_SPECTATOR )
+		return true
+	if ( IsPrivateMatchSpectator( player ) )
+		return true
+	// if ( !InitialPlayerSpawnOccurred() )
+		// return true
+	if ( IsPlayerEliminated( player ) )
+		return true
+
+	return false
 }
 
 void function Flowstate_SetAssignedCustomModelToPlayer( entity player, int index )

@@ -19,6 +19,8 @@ global function SetTitanMeterGainScale
 // r5 stuff
 global function SvCodeCallbacksCommon_Init
 global function EvoCurrentShieldToNextTier
+global function CodeCallback_OnPhysicsAutoDisable
+global function AddEntityCallback_OnPhysicsDisabled
 
 struct AccumulatedDamageData
 {
@@ -830,12 +832,12 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.fall )
 		DamageInfo_SetForceKill( damageInfo, true )
 
-	float shieldDamage = 0
+	int shieldDamage = 0
 
 	var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
 
 	if( takenDamage != null)
-		shieldDamage = expect float( takenDamage )
+		shieldDamage = expect int( takenDamage )
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS && DEVELOPER 
 		Warning("shield damage: " + string( shieldDamage ) )
@@ -872,13 +874,13 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	if ( IsAlive( player ) )
 	{
-		float storeTime = MAX_DAMAGE_HISTORY_TIME
-		entity storeEnt = player
-			
-		if ( IsSingleplayer() )
-			storeTime = 30.0
+		float damageHistoryTime = GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME  )
 
-		StoreDamageHistoryAndUpdate( storeEnt, storeTime, DamageInfo_GetDamage( damageInfo ), attackerOrigin, damageType, damageSourceId, attacker, weaponMods )
+		if ( shieldDamage > 0 )
+			StoreDamageHistoryAndUpdate( player, damageHistoryTime, float( shieldDamage ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker )
+		if ( DamageInfo_GetDamage( damageInfo ) != 0 )
+			StoreDamageHistoryAndUpdate( player, damageHistoryTime, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ) & ~DF_SHIELD_DAMAGE, damageSourceId, attacker )
+
 	}
 
 	if ( !(DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) )
@@ -1127,4 +1129,18 @@ int function NPCShieldHealthUpdate( entity npc, damageInfo, bool critHit )
 
 	DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 	return int( ShieldModifyDamage( npc, damageInfo ) )
+}
+
+void function CodeCallback_OnPhysicsAutoDisable( entity ent )
+{
+	foreach ( func in ent.e.onPhysicsDisabledCallbacks )
+		func( ent )
+}
+
+void function AddEntityCallback_OnPhysicsDisabled( entity ent, void functionref( entity ent ) callbackFunc )
+{
+	Assert( !ent.e.onPhysicsDisabledCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+
+	ent.PhysicsSetAutoDisableNotifications( true )
+	ent.e.onPhysicsDisabledCallbacks.append( callbackFunc )
 }

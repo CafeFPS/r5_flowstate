@@ -86,6 +86,9 @@ void function RemoteFunctions_Init_Begin()
 	//Lightning Gun
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
+	Remote_RegisterClientFunction("OpenFRChallengesSettingsWpnSelector" )
+	Remote_RegisterClientFunction("CloseFRChallengesSettingsWpnSelector" )
+			
 	//Custom gamemodes
 	switch ( Gamemode() )
 	{
@@ -507,7 +510,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "ServerCallback_DeathScreenSwitchTab" )
 	Remote_RegisterClientFunction( "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 
-	Remote_RegisterClientFunction( "ServerCallback_SendDeathRecapData", "int", -1, INT_MAX, "int", -1, INT_MAX, "int", -1, INT_MAX, "int", INT_MIN, INT_MAX, "int", -1, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "float", 0.0, 1.0, 32, "float", 0.0, 1.0, 32, "float", 0.0, 86400.0, 32 )
+	Remote_RegisterClientFunction( "ServerCallback_SendDeathRecapData", "int", -1, INT_MAX, "int", -1, INT_MAX, "int", -1, INT_MAX, "int", INT_MIN, INT_MAX, "int", -1, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "float", 0.0, 1.0, 32, "float", 0.0, 1.0, 32, "float", 0.0, 86400.0, 32, "int", -1, INT_MAX, "int", -1, INT_MAX )
 	Remote_RegisterClientFunction( "ServerCallback_DeathRecapDataUpdated", "bool", "int", -1, INT_MAX )
 
 	Remote_RegisterClientFunction( "ServerCallback_AddWinningSquadData", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
@@ -807,7 +810,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "FS_Silence", "bool", "int", INT_MIN, INT_MAX )
 	
 	// Client-side helper (not permissive)
-	// if( Gamemode() != eGamemodes.WINTEREXPRESS )
+	if( Gamemode() != eGamemodes.WINTEREXPRESS )
 		RegisterNetworkedVariable( "IsAdmin", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 	
 	//r5r.dev player stats

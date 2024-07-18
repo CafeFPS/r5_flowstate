@@ -181,6 +181,7 @@ global function SURVIVAL_GetStowedWeaponSlot
 global function IsValidAttachment
 global function GetAttachmentData
 global function SURVIVAL_EquipmentPretendsToBeBlank
+global function GetWeaponAmmoTypeFromWeaponEnt
 
 #if SERVER || CLIENT
 global function IsPlayerCloseEnoughToDeathBoxToLoot
@@ -4653,3 +4654,18 @@ bool function IsLootEntAccessibleViaDeathBox( entity lootEnt, entity deathBox, e
 	return false
 }
 #endif
+
+string function GetWeaponAmmoTypeFromWeaponEnt( entity weapon )
+{
+	string ammoType = ""
+
+	if ( IsValid( weapon ) )
+	{
+		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+		if ( SURVIVAL_Loot_IsRefValid( weaponData.ref ) )
+			ammoType = weaponData.ammoType
+	}
+
+	return ammoType
+}

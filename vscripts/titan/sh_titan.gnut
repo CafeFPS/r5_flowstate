@@ -726,11 +726,11 @@ bool function ShouldCalloutEjection( entity player, vector titanOrigin, entity t
 		return true
 
 	// have they hit each other recently? To catch LTS sniper war ejections
-	if ( WasRecentlyHitByEntity( player, titan, 6.0 ) )
-		return true
+	// if ( WasRecentlyHitByEntity( player, titan, 6.0 ) )
+		// return true
 
-	if ( WasRecentlyHitByEntity( titan, player, 6.0 ) )
-		return true
+	// if ( WasRecentlyHitByEntity( titan, player, 6.0 ) )
+		// return true
 
 	return false
 }

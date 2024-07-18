@@ -116,39 +116,72 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 			return 0.0
 		}
 	}
-	
 
-	//Helmets fix By @CafeFPS (CafeFPS)
 	if( IsValidHeadShot(damageInfo, player) && player.IsPlayer() && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "" ) 
 	{
-		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
-		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
-		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" )
-		
-		switch( data.ref )
-		{
-			case "helmet_pickup_lv4_abilities":
-				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv4+(1-file.helmet_lv4)*headshotMultiplier))
-				break
-			case "helmet_pickup_lv3":
-				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv3+(1-file.helmet_lv3)*headshotMultiplier))
-				break
-			case "helmet_pickup_lv2":
-				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv2+(1-file.helmet_lv2)*headshotMultiplier))
-				break
-			case "helmet_pickup_lv1":				
-				DamageInfo_SetDamage( damageInfo, basedamage*(file.helmet_lv1+(1-file.helmet_lv1)*headshotMultiplier))
-				break
-		}
+		OnPlayerTookHeadshot( player, damageInfo )
 	}
 
-	if ( player.GetShieldHealthMax() > 0 && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+	return PilotShieldHealthUpdate( player, damageInfo )
+}
+
+
+//note that the damage has been scaled by the base crit scale already by the time we reach this callback
+void function OnPlayerTookHeadshot( entity damagedEnt, var damageInfo )
+{
+	if ( !damagedEnt.IsPlayer() || damagedEnt.IsTitan() )
+		return
+
+	if ( (DamageInfo_GetCustomDamageType( damageInfo ) & DF_DOOMED_HEALTH_LOSS) != 0 )
+		return
+
+	if ( !IsValidHeadShot( damageInfo, damagedEnt ) )
+		return
+
+	string equippedHelmet = Inventory_GetPlayerEquipment( damagedEnt, "helmet" )
+	LootData data
+
+	if ( SURVIVAL_Loot_IsRefValid( equippedHelmet ) )
+		data = SURVIVAL_Loot_GetLootDataByRef( equippedHelmet )
+
+	float headshotScalar = -1
+
+	switch ( data.tier )
 	{
-		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )
-		return shieldDamage
+		case 1:
+			DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+			headshotScalar = GetCurrentPlaylistVarFloat( "helmet_lv1", 0.8 )
+			break
+
+		case 2:
+			DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+			headshotScalar = GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 ) //0.50
+			break
+
+		case 3:
+			DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+			headshotScalar = GetCurrentPlaylistVarFloat( "helmet_lv3", 0.35 ) //0.35
+			break
+
+		case 4:
+			DamageInfo_AddCustomDamageType( damageInfo, DF_HEADSHOT )
+			headshotScalar = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.35 ) //0.35
+			break
 	}
 
-	return 0.0
+	if ( headshotScalar > 0 )
+	{
+		float damage    = DamageInfo_GetDamage( damageInfo )
+		//we might want to look at using DamageInfo_GetDamageCriticalHitScale in the future? For now, I'm using what HandleLocationBasedDamage uses
+		float critScale = GetHeadshotDamageMultiplierFromDamageInfo( damageInfo )
+
+		//damage hasn't been rounded yet, so we can divide to get the accurate non-crit damage
+		float nonCritDamage = damage / critScale
+		float critDamage    = damage - nonCritDamage
+		damage = nonCritDamage + headshotScalar * critDamage
+		DamageInfo_SetDamage( damageInfo, damage )
+		DamageInfo_Print( damageInfo, "damage " + damage + " from hs shld scalar " + headshotScalar )
+	}
 }
 
 function AdjustDamageForRodeoPlayers( entity player, var damageInfo, entity attacker )

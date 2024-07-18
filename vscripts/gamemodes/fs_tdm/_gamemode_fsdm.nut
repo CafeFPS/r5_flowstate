@@ -2034,7 +2034,24 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 
 			SetupInfiniteAmmoForWeapon( player, weaponNew )
 			player.DeployWeapon()
-			
+
+			if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
+			{
+				ItemFlavor ornull weaponSkinOrNull = null
+				array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+				int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+				ItemFlavor ornull weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
+				ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weaponclass )
+
+				if( weaponFlavor != null )
+				{
+					array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+					if( weaponLegendaryIndexMap.len() > 1 )
+						weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+				}
+
+				WeaponCosmetics_Apply( weaponNew, weaponSkinOrNull, weaponCharmOrNull )
+			}
 			if( weaponclass == "mp_weapon_lightninggun" && Flowstate_IsFastInstaGib() )
 				weaponNew.AddMod( "noauto" )
 		}

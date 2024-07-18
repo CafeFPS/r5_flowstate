@@ -57,6 +57,7 @@ global enum eMaps
 	mp_rr_desertlands_mu1, //24
 	mp_rr_canyonlands_mu2, //25
 	mp_rr_tropic_island, //26
+	mp_rr_desertlands_holiday, //27
 	
 	
 	_MAP_COUNT //LAST
@@ -102,7 +103,8 @@ global enum ePlaylists
 	fs_firstmovementmappractice, //35
 	fs_gymmovementmappractice, //36
 	survival_training, //37
-	
+	fs_apexkart, //38
+	winterexpress, //39
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -122,6 +124,8 @@ global enum eGamemodes
 	fs_snd, //10
 	flowstate_pkknockback, //11
 	map_editor_deprecated, //12
+	fs_apexkart, //13
+	WINTEREXPRESS, //14
 	
 	
 	_GAMEMODES_COUNT //LAST

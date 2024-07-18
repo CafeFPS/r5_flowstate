@@ -23,11 +23,11 @@ bool function ClientCommand_KillSelf(entity player, array<string> args)
         return false
     }
 
-    if( Time() - GetLastDamageTime( player ) > 5 )
-    {
+    // if( Time() - GetLastDamageTime( player ) > 5 )
+    // {
         ClearRecentDamageHistory( player )
 	    ClearLastAttacker( player )
-    }
+    // }
 
     player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
     return true

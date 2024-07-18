@@ -138,11 +138,34 @@ void function InitLootBinFromMap( entity lootbin )
 	
 	SURVIVAL_AddLootBin( lootbin )
 
+	//Check for moving geo such as train
+	TraceResults trace = TraceLineHighDetail( lootbin.GetOrigin(), lootbin.GetOrigin() - <0, 0, 88>, lootbin, LOOT_TRACE, LOOT_COLLISION_GROUP )
+	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+	{
+		//Cafe was here
+		entity parentPoint = CreateEntity( "script_mover_lightweight" )
+		{
+			parentPoint.kv.solid = 0
+			parentPoint.SetValueForModelKey( $"mdl/dev/editor_ref.rmdl" )
+			parentPoint.kv.SpawnAsPhysicsMover = 0
+			parentPoint.SetOrigin( lootbin.GetOrigin() )
+			parentPoint.SetAngles( lootbin.GetAngles() )
+			DispatchSpawn( parentPoint )
+			parentPoint.Hide()
+			lootbin.SetParent(parentPoint)
+			parentPoint.SetParent( trace.hitEnt, "", true, 0 )
+		}
+		
+		if( IsValid( parentPoint ) && trace.hitEnt.GetScriptName() == "train_brush" )
+			SetTargetName( lootbin, "train_bin" )
+	}
+
 	if ( IsValid( lootbin ) )
 	{
 		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
 		InitLootBin( lootbin )
 	}
+
 }
 #endif
 
@@ -293,7 +316,13 @@ void function InitLootBin( entity lootbin )
 		//lootbin.SetSkin(2)
 		return
 	}
-	array<string> Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
+	array<string> Refs
+
+	if( lootbin.GetTargetName() == "train_bin" )
+	{
+		Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 )
+	} else
+		Refs = SURVIVAL_GetMultipleWeightedItemsFromGroup( LootZones_GetRefForOrigin(lootbin.GetOrigin()), RandomIntRangeInclusive(3,5) )
 
 	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true && Gamemode() != eGamemodes.fs_snd )
 	{

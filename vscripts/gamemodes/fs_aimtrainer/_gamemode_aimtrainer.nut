@@ -3558,16 +3558,39 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	int weaponSkin = -1
 	int weaponModelIndex = -1
-	switch( weaponent.GetWeaponClassName() )
+
+	if( InfiniteAmmoEnabled() )
+		SetupInfiniteAmmoForWeapon( player, weaponent )
+
+	if ( GetCurrentPlaylistVarBool( "flowstate_giveskins_weapons", false ) )
 	{
-		case "mp_weapon_car":
-			weaponSkin = weaponent.GetSkinIndexByName( "charm_preview_black" )
-			break
-		case "mp_weapon_wingman":
-		case "mp_weapon_r97":
-			weaponModelIndex = 2
-			weaponSkin = RandomInt( weaponent.GetSkinCount() )
-			break
+		ItemFlavor ornull weaponSkinOrNull = null
+		array<string> fsCharmsToUse = [ "SAID00701640565", "SAID01451752993", "SAID01334887835", "SAID01993399691", "SAID00095078608", "SAID01439033541", "SAID00510535756", "SAID00985605729" ]
+		int chosenCharm = ConvertItemFlavorGUIDStringToGUID( fsCharmsToUse.getrandom() )
+		ItemFlavor ornull weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
+		ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( weapon )
+
+		if( weaponFlavor != null )
+		{
+			array<int> weaponLegendaryIndexMap = FS_ReturnLegendaryModelMapForWeaponFlavor( expect ItemFlavor( weaponFlavor ) )
+			if( weaponLegendaryIndexMap.len() > 1 )
+				weaponSkinOrNull = GetItemFlavorByGUID( weaponLegendaryIndexMap[RandomIntRangeInclusive(1,weaponLegendaryIndexMap.len()-1)] )
+		}
+
+		WeaponCosmetics_Apply( weaponent, weaponSkinOrNull, weaponCharmOrNull )
+	}else
+	{
+		switch( weaponent.GetWeaponClassName() )
+		{
+			case "mp_weapon_car":
+				weaponSkin = weaponent.GetSkinIndexByName( "charm_preview_black" )
+				break
+			case "mp_weapon_wingman":
+			case "mp_weapon_r97":
+				weaponModelIndex = 2
+				weaponSkin = RandomInt( weaponent.GetSkinCount() )
+				break
+		}
 	}
 	
 	if(slot == "p")

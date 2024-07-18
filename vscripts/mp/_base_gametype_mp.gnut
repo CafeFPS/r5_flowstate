@@ -16,7 +16,6 @@ const float THIRD_PERSON_KILL_REPLAY_PROJECTILES_MINTIME = 0.3
 struct
 {
 	IntroCameraSettings ornull introCamSettings
-	void functionref(entity player ) ObserverThreadOverrideCallback = null
 	// PostMatchSurveySettings surveySettings
 	ExtendedPostDeathLogic extendedDeathLogic
 	array<OnPostDeathLogicEnd> onPostDeathLogicEndFuncs
@@ -25,9 +24,19 @@ struct
 int s_randomViewpointBaseInt = -1
 void function BaseGametype_Init_MPSP()
 {
-    
+    SetDefaultObserverBehavior( GetBestObserverTarget_MP )
 }
 
+entity function GetBestObserverTarget_MP( entity observer, bool reverse )
+{
+	if ( observer.GetTeam() == TEAM_SPECTATOR )
+		return null
+
+	if ( !IsValidPlayer( observer ) )
+		return null
+
+	return PickBestObserverTarget( observer, (reverse ? -1 : 1) )
+}
 
 entity function PickBestObserverTarget( entity player, int cycleDirection = 0 )
 {
@@ -202,6 +211,7 @@ entity function PickBestPlayerOnteamToObserve( array< entity > playerAliveOnTeam
 	Assert( indexToObserve < playerAliveOnTeam.len() )
 	return playerAliveOnTeam[indexToObserve]
 }
+
 CustomIntroCameraSettingsFunc s_cameraSettingsFunc = null
 void function SetCustomIntroCameraSettingsFunction( CustomIntroCameraSettingsFunc func )
 {
@@ -317,3 +327,65 @@ void function SetIntroCameraSettings( IntroCameraSettings viewSettings )
 {
 	file.introCamSettings = viewSettings
 }
+
+#if SERVER
+void function ObserverThread( entity player )
+{
+	#if DEV
+		//printt( "DS: ObserverThread", player )
+	#endif
+
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnRespawned" )
+
+	player.Signal( "ObserverThread" )
+	player.EndSignal( "ObserverThread" )
+
+	if ( Time() - player.p.connectTime <= FIRST_PERSON_SPECTATOR_DELAY )
+		wait FIRST_PERSON_SPECTATOR_DELAY
+
+	player.SetObserverTarget( null )
+	PutPlayerInObserverMode( player, OBS_MODE_IN_EYE )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.StopObserverMode()
+				player.SetObserverTarget( null )
+			}
+		}
+	)
+
+	#if DEV
+		//printt( "DS: ObserverThread - after wait", player, player.IsWatchingSpecReplay() )
+	#endif
+
+	bool allowSpectatingEnemySquad = GetCurrentPlaylistVarBool( "allowSpectatingEnemySquad", true )
+
+	while ( player.IsWatchingSpecReplay() )
+	{
+		if ( allowSpectatingEnemySquad )
+		{
+			entity observerTarget = player.GetObserverTarget()
+			if ( observerTarget != null )
+			{
+				player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( observerTarget.GetTeam() ).len() )
+			}
+			else
+			{
+				player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+			}
+
+			wait 1.0
+		}
+		else //allowSpectatingEnemySquad is false
+		{
+			array<entity> observeablePlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+			player.SetPlayerNetInt( "spectatorTargetCount", observeablePlayers.len() )
+			wait 1.0
+		}
+	}
+}
+#endif

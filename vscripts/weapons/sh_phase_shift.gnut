@@ -43,6 +43,16 @@ const SHIFTER_PRE_END_SOUND_1P = "Pilot_PhaseShift_WarningToEnd_1P"
 const SHIFTER_PRE_END_SOUND_3P = "Pilot_PhaseShift_WarningToEnd_3P"
 global const SHIFTER_END_SOUND_1P = "Pilot_PhaseShift_End_1P"
 global const SHIFTER_END_SOUND_3P = "Pilot_PhaseShift_End_3P"
+const GATE_PRE_SOUND_1P 			= "Olympus_phaseshift_preactivate_1p"
+const GATE_PRE_SOUND_3P 			= "Olympus_phaseshift_preactivate_3p"
+global const GATE_START_SOUND_1P 	= "Olympus_phaseshift_activate_1p"
+global const GATE_START_SOUND_3P 	= "Olympus_phaseshift_activate_3p"
+const GATE_LOOP_SOUND_1P 			= "Olympus_phaseshift_loop_1p"
+const GATE_LOOP_SOUND_3P 			= "Olympus_phaseshift_loop_3p"
+const GATE_PRE_END_SOUND_1P 		= "Olympus_phaseshift_warningtoend_1p"
+const GATE_PRE_END_SOUND_3P 		= "Olympus_phaseshift_warningtoend_3p"
+global const GATE_END_SOUND_1P 		= "Olympus_phaseshift_end_1p"
+global const GATE_END_SOUND_3P 		= "Olympus_phaseshift_end_3p"
 
 const SHIFTER_PRE_SOUND_1P_TITAN = "Pilot_PhaseShift_PreActivate_1P"
 const SHIFTER_PRE_SOUND_3P_TITAN = "Pilot_PhaseShift_PreActivate_3P"
@@ -151,7 +161,7 @@ void function MpAbilityShifter_Init()
 	#if SERVER
 		//AddDamageCallback( "player", BurnCard_PhaseRewind_OnDamage )
 		//AddCallback_OnTitanBecomesPilot( TitanBecomesPilot_TryStartTrackingPositions )
-		AddCallback_OnPilotBecomesTitan( PilotBecomesTitan_EndTrackingPositions )
+		//AddCallback_OnPilotBecomesTitan( PilotBecomesTitan_EndTrackingPositions )
 		//AddCallback_OnPlayerRespawned( OnPlayerRespawn_TryStartTrackingPositions )
 	#endif
 }
@@ -736,6 +746,8 @@ entity function PlayPhaseShiftAppearFX( entity ent, asset effectOverride = $"" )
 	{
 		if ( ent.IsTitan() )
 			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_END_SOUND_3P_TITAN )
+		else if ( StatusEffect_GetSeverity( ent, eStatusEffect.phase_gate_tracking ) )
+			EmitSoundOnEntityExceptToPlayer( ent, ent, GATE_END_SOUND_3P )
 		else
 			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_END_SOUND_3P )
 
@@ -915,6 +927,10 @@ void function ClientPhaseShiftFirstPersonFXThread()
 					if ( ourPlayer.IsTitan() )
 					{
 						EmitSoundOnEntity( ourPlayer, SHIFTER_END_SOUND_1P_TITAN )
+					}
+					else if ( StatusEffect_GetSeverity( ourPlayer, eStatusEffect.phase_gate_tracking ) )
+					{
+						EmitSoundOnEntity( ourPlayer, GATE_END_SOUND_1P )
 					}
 					else
 					{

@@ -157,6 +157,7 @@ global struct BurnCardPhaseRewindStruct
 // This struct is hooked up to entity.e in code
 global struct ServerEntityStruct
 {
+	array<void functionref( entity ent )>                                                                                  onPhysicsDisabledCallbacks
 	entity repairSoul // repair drones
 	array<void functionref( entity, var )> entKilledCallbacks
 	array<entity> fxArray
@@ -186,6 +187,7 @@ global struct ServerEntityStruct
 	table<string,AnimEventData> animEventDataForEntity
 
 	array<DamageHistoryStruct> recentDamageHistory
+	array<DamageHistoryStruct> recentDealtDamageHistory
 
 	float lastTakeDamageTime_thermite // meteor thermite does an extra burst of damage on first contact
 	float lastTakeDamageTime_laser_cannon
@@ -610,6 +612,7 @@ global struct ServerPlayerStruct
 	int numberOfDeaths = 0
 	int numberOfDeathsSinceLastKill = 0
 
+	table<entity, float> playerToTimeThatAssistCreditLastsTable
 	float lastGrappledTime
 
 	bool isReviving = false
@@ -1027,11 +1030,11 @@ global struct ServerPlayerStruct
 
 	int movementRecorderCharacter = 0
 
-	array< var > recordingAnims
-	array< LocPair > recordingAnimsCoordinates
+	// array< var > recordingAnims
+	// array< LocPair > recordingAnimsCoordinates
 	//v2. Café
-	// table< int, array< var > > recordingAnims
-	// table< int, array< LocPair > > recordingAnimsCoordinates
+	table< int, array< var > > recordingAnims
+	table< int, array< LocPair > > recordingAnimsCoordinates
 	array< int > recordingAnimsChosenCharacters
 
 	bool isRecording = false

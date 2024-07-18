@@ -2057,6 +2057,6 @@ void function FS_RegisterAdmin()
 	
 	if( !IsValid( player ) || !player.IsPlayer() )
 		return 
-		
-	RunUIScript( "UICallback_AdminStatus", player.GetPlayerNetBool("IsAdmin") )	
+	
+	RunUIScript( "UICallback_AdminStatus", Gamemode() == eGamemodes.WINTEREXPRESS ? false : player.GetPlayerNetBool("IsAdmin") )	
 }

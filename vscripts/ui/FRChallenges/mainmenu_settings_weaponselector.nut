@@ -18,6 +18,8 @@ struct
 
 void function OpenFRChallengesSettingsWpnSelector()
 {
+	Hud_SetText( Hud_GetChild( file.menu, "Title" ), Gamemode() == eGamemodes.WINTEREXPRESS ? "WINTER EXPRESS" : "FLOWSTATE AIM TRAINER" )
+	Hud_SetText( Hud_GetChild( file.menu, "MadeBy" ), Gamemode() == eGamemodes.WINTEREXPRESS ? "%$rui/flowstate_custom/colombia_flag_papa% Implemented by @CafeFPS" : "v1.31 | %$rui/flowstate_custom/colombia_flag_papa% Made in Colombia by @CafeFPS" )
 	EmitUISound( "UI_InGame_Inventory_Open" )
 	AdvanceMenu( file.menu )
 	TabData tabData = GetTabDataForPanel( file.menu )

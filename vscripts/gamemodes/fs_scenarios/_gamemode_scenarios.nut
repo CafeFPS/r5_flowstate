@@ -214,34 +214,7 @@ void function FS_Scenarios_OnPlayerKilled( entity victim, entity attacker, var d
 
 	if( settings.fs_scenarios_show_death_recap_onkilled )
 	{
-		int attackerEHandle = -1
-		int victimEHandle = -1
-
-		if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
-		{
-			attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-			victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
-			entity previousShotEnemy = victim.p.DeathRecap_PreviousShotEnemyPlayer
-
-			if(victimEHandle != -1 && IsValid( previousShotEnemy ) && previousShotEnemy.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
-			{
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, previousShotEnemy.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
-				ResetDeathRecapBlock(victim)
-			}
-
-			if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
-			{
-				Remote_CallFunction_NonReplay( attacker, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-				Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-				ResetDeathRecapBlock(attacker)		
-			}
-
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)
-		} 
-		else if( !attacker.IsPlayer() )
-		{
-			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, ge( 0 ).GetEncodedEHandle() )
-		}
+		// fix var. Cafe
 	}
 
 	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( victim )
@@ -323,9 +296,9 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution || sourceId == eDamageSourceId.damagedef_despawn )
 		return
 	
-	if( settings.fs_scenarios_show_death_recap_onkilled )
-		Flowstate_HandleDeathRecapData(victim, damageInfo)
-	
+	// if( settings.fs_scenarios_show_death_recap_onkilled )
+		//fix var
+
 	float damage = DamageInfo_GetDamage( damageInfo )
 
 	int currentHealth = victim.GetHealth()

@@ -35,6 +35,7 @@ global struct AnnouncementData
 	string        messageText = "#EMPTY_STRING"
 	string        subText = "#EMPTY_STRING"
 	string        headerText = ""
+	string        additionalText = "" 
 	array<string> leftText = ["", "", "", "", "", ""]
 	array<string> rightText = ["", "", "", "", "", ""]
 	vector        titleColor = <0.5, 0.5, 0.5>
@@ -49,13 +50,17 @@ global struct AnnouncementData
 	asset         leftIcon = $""
 	asset         rightIcon = $""
 	float         displayEndTime = RUI_BADGAMETIME
-	string        soundAlias = "" //SFX_HUD_ANNOUNCE_STANDARD
+	string        soundAlias = SFX_HUD_ANNOUNCE_STANDARD
 	int           announcementStyle = ANNOUNCEMENT_STYLE_DEFAULT
 	int           sortKey = MINIMAP_Z_BASE + 200
 	bool          drawOverScreenFade = false
-	// optional func
-	// cockpitFX
-	// moveDest
+	int           verticalOffset = 0
+	bool          useColorOnAnnouncementText = false
+	bool          useColorOnSubtext = false
+	vector        altStyle3OverrideColor = <-1, -1, -1>
+	
+	
+	
 	LevelUpData & levelUpData
 }
 
@@ -261,7 +266,7 @@ void function AnnouncementMessageQuick( entity player, string messageText, strin
 }
 
 
-void function AnnouncementMessageRight( entity player, string messageText, string subText = "", vector titleColor = <1, 1, 1>, asset icon = $"", float customDuration = 0.0 )
+void function AnnouncementMessageRight( entity player, string messageText, string subText = "", vector titleColor = <1, 1, 1>, asset icon = $"", float customDuration = 0.0, string soundAlias = "", vector altStyle3OverrideColor = <-1, -1, -1> )
 {
 	if ( player != GetLocalClientPlayer() )
 		return
@@ -272,7 +277,8 @@ void function AnnouncementMessageRight( entity player, string messageText, strin
 	else
 		announcement.duration = 3.0
 
-	announcement.soundAlias = ""
+	announcement.soundAlias = soundAlias
+	announcement.altStyle3OverrideColor = altStyle3OverrideColor
 
 	bool displayNow = InitializeAnnouncement_ShouldDisplayNow( announcement, messageText, subText, titleColor )
 	if ( displayNow )
