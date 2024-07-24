@@ -142,6 +142,11 @@ void function InitLootBinFromMap( entity lootbin )
 	TraceResults trace = TraceLineHighDetail( lootbin.GetOrigin(), lootbin.GetOrigin() - <0, 0, 88>, lootbin, LOOT_TRACE, LOOT_COLLISION_GROUP )
 	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
 	{
+		if( Gamemode() == eGamemodes.WINTEREXPRESS ) //removes train lootbins in winter express mode
+		{
+			lootbin.Destroy()
+			return
+		}
 		//Cafe was here
 		entity parentPoint = CreateEntity( "script_mover_lightweight" )
 		{

@@ -375,15 +375,34 @@ void function PassivesAllowed_Init()
 {
 	array<int> allowedPassiveGamemodes = [
 		eGamemodes.SURVIVAL,
+		eGamemodes.WINTEREXPRESS,
 		eGamemodes.fs_dm
 	]
 	
 	array<int> allowedPassivePlaylists = [
 		ePlaylists.fs_1v1,
-		ePlaylists.fs_scenarios
+		ePlaylists.fs_scenarios,
+		ePlaylists.survival_dev,
+		ePlaylists.winterexpress,
+		ePlaylists.fs_survival_solos,
+		ePlaylists.fs_survival_duos,
+		ePlaylists.fs_survival
 	]
-	
-	modeSettings.passivesAllowed = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )	
+
+	bool result = ( allowedPassiveGamemodes.contains( Gamemode() ) && allowedPassivePlaylists.contains( Playlist() ) )
+	#if DEVELOPER && PRINT_GAMEMODE_DEBUGS
+		if( !result )
+		{
+			printt( format( "PRINT_GAMEMODE_DEBUGS: Mode not supported for passives. GamemodeEnum: %d - %s, PlaylistEnum: %d - %s", 
+				Gamemode(), 
+				Gamemode() > -1 ? AllGamemodesArray()[Gamemode()] : "_INVALID", 
+				Playlist(), 
+				Playlist() > - 1 ? AllPlaylistsArray()[Playlist()]  : "_INVALID"
+			))
+		}
+	#endif 
+		
+	modeSettings.passivesAllowed = result
 }
 
 

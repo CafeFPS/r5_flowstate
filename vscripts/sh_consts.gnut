@@ -16,6 +16,7 @@ global const NOTIFY_RATELIMIT_FAILED	= false
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
 global const float FLT_MAX = 3.40282e+38
+global const float FLT_EPSILON = 1.0e-6
 
 global const void IN_SET = null
 global typedef IntSet table<int, void>
@@ -44,6 +45,21 @@ global const string SNIPER_AMMO = "sniper"
 #if UI
 global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
 #endif
+
+global const float DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH = 16
+
+global struct DeployableCollisionParams
+{
+vector	pos
+vector	normal
+entity	hitEnt
+int		hitBox
+bool	isCritical
+int		deployableFlags	// eDeployableFlags.*
+bool 	highDetailTrace
+bool	ignoreHullSize
+float	traceLength = DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH
+}
 
 global enum eEliteTutorialState
 {
@@ -2470,6 +2486,7 @@ Assert( ePlayerStryderCharDataArraySlots.COUNT == 32 )
 // ===============================================================================
 // references to variables that are defined in the game code should be at the end
 // ===============================================================================
+global const int TEAM_TICK = 110
 global const TEAM_BOTH = 4 // used to be (TEAM_NPC == 4)
 global const int PROP_IS_VALID_FOR_TURRET_PLACEMENT = SPF_CUSTOM_SCRIPT_3
 

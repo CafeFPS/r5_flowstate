@@ -14,7 +14,7 @@ global function DesertlandsTrain_PreMapInit
 global function DesertlandsTrain_Precaches
 global function DesertlandsTrain_Init
 global function DesertlandsTrain_SetDriverState
-
+global function DesertlandsTrain_InitMovement
 global function TrainAnnouncer_PlaySingle
 global function DesertlandsTrain_SetTrainDialogueAliasEnabled
 
@@ -57,7 +57,7 @@ global function DesertlandsTrain_ShowPath
 #endif // SERVER
 
 #if SERVER || CLIENT
-const string TRAIN_MOVER_NAME = "desertlands_train_mover"
+global const string TRAIN_MOVER_NAME = "desertlands_train_mover"
 const int TRAIN_CAR_COUNT = 6
 #endif
 
@@ -273,7 +273,7 @@ void function DesertlandsTrain_PreMapInit()
 
 void function DesertlandsTrain_OnNetworkRegistration()
 {
-	// Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0, NUM_TOTAL_DIALOGUE_QUEUES )
+	Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0, NUM_TOTAL_DIALOGUE_QUEUES )
 }
 
 #if CLIENT
@@ -308,10 +308,10 @@ void function InitAnnouncerEnts()
 		customSpeakers1.append( announcerTarget4 )
 	}
 
-	// if ( customSpeakers1.len() != 0 )
-	// {
-		// RegisterCustomDialogueQueueSpeakerEntities( file.customQueueIdx, customSpeakers1 )
-	// }
+	if ( customSpeakers1.len() != 0 )
+	{
+		RegisterCustomDialogueQueueSpeakerEntities( file.customQueueIdx, customSpeakers1 )
+	}
 }
 #endif
 
@@ -368,16 +368,12 @@ void function DesertlandsTrain_Init()
 
 	printt( "TRAIN INITIALIZED" )
 
-	thread DesertlandsTrain_InitMovement()
+	if( Gamemode() != eGamemodes.WINTEREXPRESS )
+		thread DesertlandsTrain_InitMovement()
 }
 
 void function DesertlandsTrain_InitMovement()
 {
-	                      
-	if ( Gamemode() == eGamemodes.WINTEREXPRESS && PreGame_GetWaitingForPlayersCountdown() > 0 )
-		wait 20
-       
-
 	TrainStartAtRandomPosition()
 	SetTrainState( eTrainStates.START_FORWARD )
 }
@@ -788,10 +784,8 @@ void function TrainBeginDeceleration()
 	if ( file.emergencyStopEngaged )
 		return
 
-	                      
 	if ( Gamemode() == eGamemodes.WINTEREXPRESS )
 		return
-       
 
 	entity endNode = file.currentPathNodes.top()
 	string destinationNoteworthy = endNode.GetValueForKey( "script_noteworthy" )
@@ -1700,6 +1694,6 @@ void function DesertlandsTrain_SetAllowLeaveStation()
 #if SERVER
 void function OnClientConnected( entity player )
 {
-	// Remote_CallFunction_NonReplay( player, "SCB_DLandsTrain_SetCustomSpeakerIdx", file.customQueueIdx )
+	Remote_CallFunction_NonReplay( player, "SCB_DLandsTrain_SetCustomSpeakerIdx", file.customQueueIdx )
 }
 #endif

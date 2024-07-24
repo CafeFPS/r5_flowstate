@@ -1,7 +1,7 @@
-global function Desertlands_PreMapInit_Common
 global function Desertlands_MapInit_Common
 global function CodeCallback_PlayerEnterUpdraftTrigger
 global function CodeCallback_PlayerLeaveUpdraftTrigger
+global function CodeCallback_PreMapInit
 
 #if SERVER
 global function Desertlands_MU1_MapInit_Common
@@ -48,7 +48,7 @@ struct
 
 } file
 
-void function Desertlands_PreMapInit_Common()
+void function CodeCallback_PreMapInit()
 {
 	DesertlandsTrain_PreMapInit()
 }

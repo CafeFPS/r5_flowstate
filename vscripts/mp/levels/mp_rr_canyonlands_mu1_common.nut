@@ -98,7 +98,7 @@ struct LeviathanDataStruct
 	LeviathanDamageInfo footDamageInfo
 	array< LeviathanDamageInfo > damageInfos
 
-	//float lookPitchLerpOffset
+	float lookPitchLerpOffset
 
 	int state
 	int roarSide
@@ -389,7 +389,7 @@ void function LeviathansInit()
 
 		LeviathanDataStruct data
 		data.stateAnims[LeviathanState.IDLE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_munching_idle.rseq"
-		data.stateAnims[LeviathanState.LOOK] = data.stateAnims[LeviathanState.IDLE] // $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_head_neutral.rseq"
+		data.stateAnims[LeviathanState.LOOK] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_look_up.rseq"
 		data.stateAnims[LeviathanState.SHAKE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_shake.rseq"
 		data.stateAnims[LeviathanState.ROAR] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone6_roar.rseq"
 
@@ -463,7 +463,7 @@ void function LeviathansInit()
 
 		LeviathanDataStruct data
 		data.stateAnims[LeviathanState.IDLE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_munching_idle.rseq"
-		data.stateAnims[LeviathanState.LOOK] = data.stateAnims[LeviathanState.IDLE] // TODO $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_head_neutral.rseq"
+		data.stateAnims[LeviathanState.LOOK] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_look_up.rseq"
 		data.stateAnims[LeviathanState.SHAKE] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_shake.rseq"
 		data.stateAnims[LeviathanState.ROAR] = $"animseq/creatures/leviathan/leviathan_animated/leviathan_kingscanyon_mu1_zone9_roar.rseq"
 		if ( GetCurrentPlaylistVarBool( "evil_leviathans", false ) )
@@ -1054,12 +1054,12 @@ void function Leviathan_StartLooking( entity leviathan, LeviathanDataStruct levi
 	if ( leviathanData.state == LeviathanState.IDLE )
 	{
 		leviathanData.state = LeviathanState.LOOK
-		// leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
-		printt( "Leviathan tried to look but it won't" ) //Respawn never finished its job. Cafe
+		leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.LOOK] )
+		printt( "Leviathan tried to play look anim" )
 
 		// non-look animations have the head pitched down, but the look animation doesn't.
 		// we need to lerp the pitch pose parameter by the inverse of that over the same length of time that the animation lerps.
-		//leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF 
+		leviathanData.lookPitchLerpOffset += LOOK_PITCH_DIFF 
 	}
 }
 
@@ -1070,9 +1070,9 @@ void function Leviathan_StopLooking( entity leviathan, LeviathanDataStruct levia
 	if ( leviathanData.state == LeviathanState.LOOK )
 	{
 		leviathanData.state = LeviathanState.IDLE
-		//leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.IDLE] )
+		leviathan.Anim_Play( leviathanData.stateAnims[LeviathanState.IDLE] )
 
-		//leviathanData.lookPitchLerpOffset -= LOOK_PITCH_DIFF
+		leviathanData.lookPitchLerpOffset -= LOOK_PITCH_DIFF
 	}
 }
 
@@ -1272,7 +1272,7 @@ void function Leviathan_LookThread( entity leviathan )
 		if ( debug )
 			printt( " cycle " + leviathan.GetCycle() + " ang " + leviathanData.lookang + " angdiff " + angdiff + " desiredvel " + desiredangvel + " vel " + leviathanData.lookvel )
 
-		/*if ( leviathanData.lookPitchLerpOffset )
+		if ( leviathanData.lookPitchLerpOffset )
 		{
 			float maxPitchChange = dt * LOOK_PITCH_DIFF // LOOK_PITCH_DIFF degrees per second because the anim lerp time is 1 second and the angle difference between look and idle is LOOK_PITCH_DIFF
 			float pitchChange
@@ -1288,7 +1288,7 @@ void function Leviathan_LookThread( entity leviathan )
 			lookang.x -= pitchChange
 			lookang.y -= pitchChange // * 0.5
 			leviathanData.lookang = lookang
-		}*/
+		}
 
 		leviathan.SetPoseParameterOverTime( pitchPoseParamIndex, leviathanData.lookang.x, dt * 1.05 )
 		leviathan.SetPoseParameterOverTime( yawPoseParamIndex, leviathanData.lookang.y, dt * 1.05 )

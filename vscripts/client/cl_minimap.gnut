@@ -43,6 +43,8 @@ global function Minimap_EnableDraw_Internal
 global function Minimap_DisableDraw_Internal
 global function UpdateImageAndScaleOnMinimapRUI
 
+global function Minimap_AddIconAtPosition
+
 #if DEVELOPER
 global function DumpMinimapHandles
 #endif
@@ -668,7 +670,7 @@ bool function ShouldCreateRuiForPlayer( entity ent, entity viewPlayer )
 }
 
 
-var function Minimap_CommonAdd( asset ruiAsset, int zOrder )
+var function Minimap_CommonAdd( asset ruiAsset, int zOrder, vector objPos = < 0, 0, 0 >, vector objAng = < 0, 0, 0 > )
 {
 	entity viewPlayer = GetLocalViewPlayer()
 	var rui           = CreateMinimapRui( ruiAsset, MINIMAP_Z_BASE + zOrder )
@@ -680,12 +682,11 @@ var function Minimap_CommonAdd( asset ruiAsset, int zOrder )
 	RuiSetFloat( rui, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetBool( rui, "isNorthFacing", !GetConVarBool( "hud_setting_minimapRotate" ) )
 
-	RuiSetFloat3( rui, "objectPos", <0, 0, 0> )
-	RuiSetFloat3( rui, "objectAngles", <0, 0, 0> )
-
-	//
-	RuiSetVisible( rui, file.minimapEnabled )
+	RuiSetFloat3( rui, "objectPos", objPos )
+	RuiSetFloat3( rui, "objectAngles", objAng )
+	RuiSetVisible( rui, file.minimapEnabled)
 	file.minimapOtherRuis.append( rui )
+
 	return rui
 }
 
@@ -1864,4 +1865,23 @@ void function Minimap_UpdateNorthFacingOnSettingChange()
 {
 	if ( file.minimap_base && file.minimap_you )
 		Minimap_SetNorthFacing( !GetConVarBool( "hud_setting_minimapRotate" ) )
+}
+
+var function Minimap_AddIconAtPosition( vector position, vector angles, asset icon, float scale, vector iconColor )
+{
+	entity viewPlayer = GetLocalViewPlayer()
+	var rui = Minimap_CommonAdd( $"ui/minimap_square_object.rpak", MINIMAP_Z_BASE + 20, position, angles )
+
+	RuiTrackInt( rui, "objectFlags", viewPlayer, RUI_TRACK_MINIMAP_FLAGS )
+	RuiTrackInt( rui, "customState", viewPlayer, RUI_TRACK_MINIMAP_CUSTOM_STATE )
+	RuiSetFloat3( rui, "objectPos", position )
+	
+	RuiSetFloat3( rui, "iconColor", iconColor )
+	RuiSetFloat2( rui, "iconScale", < scale, scale, 0 > )
+	RuiSetBool( rui, "alwaysShowOnMinimap", true )
+	RuiSetBool( rui, "useTeamColor", false )
+	RuiSetImage( rui, "defaultIcon", icon )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+
+	return rui
 }

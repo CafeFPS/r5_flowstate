@@ -98,8 +98,8 @@ const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_WEAPON_PICKUP = 110
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_PULSE = 120 // outline_custom_color_pulse // set parm1.x to pulse rate
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OBEY_Z = 121 // outline_default_custom_obey_z
 const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OCCLUDED_NOSCANLINES = 129
-const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_NOZ_NOSCANLINES = 169 //outline_custom_color_noz_noscanlines
-const HIGHLIGHT_OUTLINE_SONAR = 103 // outline_sonar
+global const HIGHLIGHT_OUTLINE_CUSTOM_COLOR_NOZ_NOSCANLINES = 169 //outline_custom_color_noz_noscanlines
+global const HIGHLIGHT_OUTLINE_SONAR = 103 // outline_sonar
 global const HIGHLIGHT_OUTLINE_INTERACT_BUTTON = 105 // outline_interact_button
 global const HIGHLIGHT_FILL_INTERACT_BUTTON = 103 // inside_interact_button
 global const HIGHLIGHT_OUTLINE_OBJECTIVE = 125 // outline_objective
@@ -130,14 +130,14 @@ global const HIGHLIGHT_FILL_MENU_MODEL_REVEAL = 75 // inside_menu_model_reveal
 global const MAP_SCAN_FADE_DISTANCE = 16000 //Really just an arbitrarily large number
 
 //BloodHound
-const HIGHLIGHT_FILL_BLOODHOUND = 12 //bloodhound_sonar
-const HIGHLIGHT_FILL_BLOODHOUND_CLONE = 13 //
+global const HIGHLIGHT_FILL_BLOODHOUND = 12 //bloodhound_sonar
+global const HIGHLIGHT_FILL_BLOODHOUND_CLONE = 13 //
 global const HIGHLIGHT_COLOR_BLOODHOUND = <1, 0.25, 0>
 
 
 //Caustic
-const HIGHLIGHT_FILL_CAUSTIC_THREAT = 133
-const HIGHLIGHT_FILL_CAUSTIC_CANISTER = 134
+global const HIGHLIGHT_FILL_CAUSTIC_THREAT = 133
+global const HIGHLIGHT_FILL_CAUSTIC_CANISTER = 134
 global const HIGHLIGHT_COLOR_CAUSTIC = <0.79, 1.0, 0.0>
 global const HIGHLIGHT_FILL_CRYPTO = 133//
 

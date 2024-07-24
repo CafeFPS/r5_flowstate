@@ -14,6 +14,7 @@ global function IsCodeDoor
 global function IsDoorOpen
 global function GetAllPropDoors
 global function GetAllPropDoors_BigOnes
+global function IsDoorLocked
 
 #if SERVER
 global function RemoveDoorFromManagedEntArray
@@ -617,6 +618,7 @@ void function OnCodeDoorDestroyed_Client( entity door )
 #endif
 
 #if SERVER
+
 void function DoorActivateAsRandomPlayer( entity door )
 {
 	array<entity> players = GetPlayerArray()
@@ -2112,4 +2114,16 @@ void function CodeCallback_OnDoorInteraction( entity door, entity user, entity o
 		PIN_Interact( user, actionName )
 	}
 	#endif
+}
+
+bool function IsDoorLocked( entity door )
+{
+	if ( IsCodeDoor( door ) )
+		return door.GetDoorIsLocked()
+
+	#if SERVER
+	return door.e.isDisabled
+	#endif
+
+	return false
 }

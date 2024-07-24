@@ -59,6 +59,7 @@ global function GetSkydiveSmokeColorForTeam
 	global function PlayerSkydiveThirdPersonEnable
 	global function SkydiveTest
 	global function PlayerSkydiveFromCurrentPosition
+	global function IsPointInsideSkydiveBoundary
 	global function PlayerSkydiveLandingFromCurrentPosition
 	global function PlayerFallAssistanceDetection
     global function ForcedSkydiveTriggerThink_EnterCallback
@@ -291,6 +292,18 @@ void function AddSkydiveBoundaryVolume( entity ent )
 	file.skydiveBoundaryVolumes.append( ent )
 }
 
+bool function IsPointInsideSkydiveBoundary( vector point )
+{
+	if ( GetCurrentPlaylistVarBool( "ignore_skydive_boundries", false ) == true )
+		return false
+
+	foreach( entity volume in file.skydiveBoundaryVolumes )
+	{
+		if ( volume.ContainsPoint( point ) )
+			return true
+	}
+	return false
+}
 void function ForcedSkydiveTriggerThink( entity trigger )
 {
 	//if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )

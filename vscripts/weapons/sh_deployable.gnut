@@ -1,6 +1,7 @@
 global const DEPLOYABLE_THROW_POWER = 500.0
 
 global function ThrowDeployable
+global function ThrowDeployable_Retail
 global function OnProjectileCollision_weapon_deployable
 global function OnProjectileCollision_weapon_deployable_crypto
 
@@ -59,6 +60,67 @@ entity function ThrowDeployable( entity weapon, WeaponPrimaryAttackParams attack
 	#endif
 
 	return deployable
+}
+
+entity function ThrowDeployable_Retail(
+entity weapon, WeaponPrimaryAttackParams attackParams, float throwPower,
+void functionref( entity, DeployableCollisionParams ) deployFunc,
+void functionref( entity, DeployableCollisionParams ) bounceFunc,
+vector ornull angularVelocity )
+{
+	#if CLIENT
+		if ( !weapon.ShouldPredictProjectiles() )
+			return null
+	#endif
+
+	entity weaponOwner = weapon.GetWeaponOwner()
+
+	vector attackPos = attackParams.pos
+
+	vector angles   = VectorToAngles( attackParams.dir )
+	vector velocity = GetDeployableThrowVelocity( weaponOwner, angles, throwPower )
+	if ( angularVelocity == null )
+		angularVelocity = <600, 300, 0>//<600, RandomFloatRange( -300, 300 ), 0>
+	expect vector( angularVelocity )
+
+	float fuseTime = 0.0    // infinite
+
+	bool isPredicted = PROJECTILE_PREDICTED
+	if ( weaponOwner.IsNPC() )
+		isPredicted = PROJECTILE_NOT_PREDICTED
+
+	WeaponFireGrenadeParams fireGrenadeParams
+	fireGrenadeParams.pos = attackPos
+	fireGrenadeParams.vel = velocity
+	fireGrenadeParams.angVel = angularVelocity
+	fireGrenadeParams.fuseTime = fuseTime
+	fireGrenadeParams.scriptTouchDamageType = damageTypes.explosive
+	fireGrenadeParams.scriptExplosionDamageType = damageTypes.explosive
+	fireGrenadeParams.clientPredicted = isPredicted
+	fireGrenadeParams.lagCompensated = true
+	fireGrenadeParams.useScriptOnDamage = true
+	entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
+
+	if ( projectile )
+	{
+		#if SERVER
+			if ( IsValid( weaponOwner ) )
+			{
+				projectile.RemoveFromAllRealms()
+				projectile.AddToOtherEntitysRealms( weaponOwner )
+			}
+
+			projectile.proj.savedOrigin = projectile.GetOrigin()
+			projectile.proj.savedAngles = <0, angles.y, 0>
+			projectile.proj.savedVel = projectile.GetVelocity()
+			Grenade_Init( projectile, weapon )
+			//thread OnProjectilePlanted( projectile, deployFunc )
+		#endif
+		projectile.proj.deployFunc = deployFunc
+		projectile.proj.bounceFunc = bounceFunc
+	}
+
+	return projectile
 }
 
 vector function GetDeployableThrowStartPos( entity player, vector baseStartPos )

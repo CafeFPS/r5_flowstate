@@ -392,7 +392,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "ServerCallback_UpdateHeroStats" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_SonarPulseFromPosition" )
 	Remote_RegisterClientFunction( "ServerCallback_SonarPulseConeFromPosition", "vector", -32000.0, 32000.0, 32, "float", 0.0, 32000.0, 8, "vector", -1.0, 1.0, 32, "float", -360.0, 360.0, 8, "int", 0, 128, "float", 0.0, 32000.0, 32, "bool", "bool" )
-	Remote_RegisterClientFunction( "ServerCallback_SonarAreaScanTarget", "entity", "entity" )
+	// Remote_RegisterClientFunction( "ServerCallback_SonarAreaScanTarget", "entity", "entity" )
 
 	RegisterNetworkedVariable( "playerAllowedToLeech", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, true )
 
@@ -821,7 +821,7 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "SeasonGamesplayed", SNDC_PLAYER_EXCLUSIVE, SNVT_BIG_INT, 0, 0, INT_MAX )
 	//todo add wins
 	
-	Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
+	// Remote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" ) //meh
 	Remote_RegisterClientFunction( "Gamemode1v1_ForceLegendSelector_Deprecated" )
 	Remote_RegisterUIFunction( "UICallback_ForceCloseDeathScreenMenu" )
 	

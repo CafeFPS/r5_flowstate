@@ -2070,21 +2070,6 @@ void function SetPlayerEliminated( entity player )
 	printt("PLAYER ELIMINATED ADDED TO TABLE. " + player.GetPlayerName() + " - " + player.GetPlatformUID())
 }
 
-void function SetPlayerIntroDropSettings( entity player )
-{
-
-}
-
-void function ClearPlayerIntroDropSettings( entity player )
-{
-
-}
-
-void function ClearPlayerPlaneViewMode( entity player )
-{
-	
-}
-
 void function ClearPlayerEliminated( entity player )
 {
 	if( !IsValid( player ) )

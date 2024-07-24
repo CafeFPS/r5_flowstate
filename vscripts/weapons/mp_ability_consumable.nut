@@ -929,7 +929,8 @@ var function OnWeaponPrimaryAttack_Consumable( entity weapon, WeaponPrimaryAttac
 		if( Gamemode() == eGamemodes.fs_snd && itemName == "snd_bomb" || Gamemode() != eGamemodes.fs_snd )
 		{
 			int dropAmount = 1
-			SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
+			if ( !PlayerHasPassive( player, ePassives.PAS_INFINITE_HEAL ) )
+				SURVIVAL_RemoveFromPlayerInventory( player, itemName, dropAmount )
 
 			LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.inventoryUse,
 				[ LiveAPI_GetPlayerIdentityTable( player ), itemName,  dropAmount ],

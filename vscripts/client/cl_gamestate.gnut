@@ -153,6 +153,12 @@ void function SetCommonScoreRUIVars( var rui )
 		
 		switch( pl )
 		{
+			case ePlaylists.winterexpress:
+			RuiSetString( rui, "gameModeString", "WINTER EXPRESS" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			break
+
 			case ePlaylists.fs_1v1:
 			RuiSetString( rui, "gameModeString", "FS 1v1" )
 			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER CONNECTED" )

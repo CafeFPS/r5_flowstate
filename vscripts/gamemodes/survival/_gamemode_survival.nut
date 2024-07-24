@@ -35,12 +35,66 @@ global function CreateShipPath
 global function Flowstate_CheckForLv4MagazinesAndRefillAmmo
 global function EnemyKilledDialogue
 
+global function SURVIVAL_SetMapCenter
+global function SURVIVAL_GetMapCenter
+global function SURVIVAL_GetPlaneHeight
+global function SURVIVAL_SetPlaneHeight
+
+global function Survival_RunPlaneLogic_Thread
+global function Survival_GenerateSingleRandomPlanePath
+global function Survival_RunSinglePlanePath_Thread
+
+global function SetPlayerIntroDropSettings
+global function ClearPlayerIntroDropSettings
+
+global function EndThreadOn_PlayerChangedClass
+global function SignalThatPlayerChangedClass
+global function ClientCommand_Flowstate_AssignCustomCharacterFromMenu
+
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
+
+//updated. Cafe
+global const float REALBIG_CIRCLE_GRID_RADIUS = 52500
+const float PLANE_HEIGHT_REALBIG = 17000.0
+const float CLAMP_TO_RING_BUFFER = 400
+const float SURVIVAL_PLANE_DROP_RADIUS_MIN = 22000
+
+const bool DEBUG_PLANE_PATH = false
+const bool DEBUG_PLANE_PATH_LIGHTWEIGHT = false
+const bool DEBUG_PLANE_PATH_JUMP = true
+const bool PLANE_PATH_DEBUG = false
+
+global float g_DOOR_OPEN_TIME = 0
+
+global struct PlanePathData
+{
+	vector startPos
+	vector endPos
+	float totalFlyDuration
+	float flyOverMapDuration
+	vector clampedPlaneStart
+	vector clampedPlaneEnd
+	vector centerPos
+	vector angles
+	float jumpDelay
+}
+
+global struct Survival_Plane
+{
+	entity baseEnt
+	entity mover
+	entity centerEnt
+}
 
 struct
 {
     void functionref( entity, float, float ) leviathanConsiderLookAtEntCallback = null
-	array<vector> foundFlightPath
+
+	//updated
+	vector mapCenter = <0, 0, 0>
+	float planeHeight = 0.0
+	Survival_Plane plane
+	bool shouldFreezeControlsOnPrematch = true
 } file
 
 void function GamemodeSurvival_Init()
@@ -54,13 +108,19 @@ void function GamemodeSurvival_Init()
 	Sh_ArenaDeathField_Init()
 	SurvivalShip_Init()
 
+	FlagInit( "PlaneStartMoving" )
+	FlagInit( "PlaneDoorOpen" )
+	FlagInit( "PlaneAtLaunchPoint" )
+	FlagInit( "DeathCircleActive" )
 	FlagInit( "SpawnInDropship", false )
 	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnPlayerKilled( OnPlayerKilled_DropLoot )
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddCallback_EntitiesDidLoad( OnSurvivalMapEntsDidLoad )
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad_Survival )
+	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
+
 	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
 	AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
@@ -86,7 +146,8 @@ void function GamemodeSurvival_Init()
 		}
 	)
 
-	thread SURVIVAL_RunArenaDeathField()
+	if( GetCurrentPlaylistVarBool( "deathfield_starts_in_prematch", false ) )
+		thread SURVIVAL_RunArenaDeathField()
 }
 
 bool function ClientCommand_GiveSword(entity player, array<string> args)
@@ -177,14 +238,424 @@ bool function ClientCommand_deathbox(entity player, array<string> args)
 	return true
 }
 
-void function OnSurvivalMapEntsDidLoad()
+void function EntitiesDidLoad_Survival()
 {
-	CreateShipPath()
+	if ( file.planeHeight == 0 )
+		file.planeHeight = PLANE_HEIGHT_REALBIG
+
+	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) || GetCurrentPlaylistVarBool( "force_plane_to_spawn_without_players", false ) )
+	{
+		thread Survival_RunPlaneLogic_Thread( Survival_GenerateSingleRandomPlanePath, Survival_RunSinglePlanePath_Thread, false )
+	}
 }
 
-void function CreateShipPath()
+void function Survival_RunPlaneLogic_Thread( array< PlanePathData > functionref( bool, int = 0 ) generatePlanePathFunc, void functionref( array< PlanePathData >, int = 0 ) runPlanePathFunc, bool beQuick, int planeInt = 0 )
 {
-	file.foundFlightPath = Survival_GeneratePlaneFlightPath()
+	if ( IsTestMap() )
+		FlagSet( "DeathCircleActive" )
+
+	if ( IsValid( file.plane.baseEnt ) )
+		file.plane.baseEnt.Destroy()
+	if ( IsValid( file.plane.centerEnt ) )
+		file.plane.centerEnt.Destroy()
+	if ( IsValid( file.plane.mover ) )
+		file.plane.mover.Destroy()
+
+	array< PlanePathData > pathData = generatePlanePathFunc( beQuick, planeInt )
+	thread runPlanePathFunc( pathData, planeInt )
+}
+
+
+array< PlanePathData > function Survival_GenerateSingleRandomPlanePath( bool beQuick, int unusedInt = 0 )
+{
+	printt( "Generating path for survival plane" )
+	PlanePathData result
+
+	table<string, bool> e
+	e[ "trace_test" ] <- false
+	const int MAX_PLANE_PATH_TRIES = 50
+	int numTries
+	bool dev_numTriesFailed
+
+	vector startPos
+	vector endPos
+	vector angles
+	vector centerPos
+
+	bool clampToRing = GetCurrentPlaylistVarBool( "dropship_bounds_clamp_to_ring", false )
+
+	entity fakePlane = CreatePropDynamic( SURVIVAL_PLANE_MODEL )
+	while ( !e[ "trace_test" ] )
+	{
+		float mapAngleRotation = GetCurrentPlaylistVarFloat( "survival_plane_angle_deviation", 0.0 )
+
+		// Get the basic angle of approach
+		int baseAngle            = RandomIntRange( 0, 4 ) //RandomIntRangeForPlanePath( 0, 4 ) // 0, 90, 180, 270
+		float tightnessFactor    =  GetCurrentPlaylistVarFloat( "survival_plane_start_angle_tightness", 1.5 )
+		float baseAngleDeviation = pow( RandomFloatRange( 0.0, 1.0 ), tightnessFactor ) //RandomFloatRangeForPlanePath( 0.0, 1.0 )
+		if ( CoinFlip() )
+			baseAngleDeviation = -1 * baseAngleDeviation
+
+		float f_baseAngle = 90.0 * float( baseAngle ) + mapAngleRotation
+		float startAngleMax = GetCurrentPlaylistVarFloat( "survival_plane_start_angle_max", 40.0 )
+		angles = AnglesCompose( < 0.0, f_baseAngle, 0.0 >, < 0.0, baseAngleDeviation * startAngleMax, 0.0 > )
+
+		// Generate the starting position
+		vector fwd         = AnglesToForward( angles )
+
+		// Figure out the "center" position - a position near the center of the map we want to go through
+		float maxDeviation = GetCurrentPlaylistVarFloat( "survival_plane_center_deviation_max", 12500 )
+		float centerTightnessScale = GetCurrentPlaylistVarFloat( "survival_plane_center_tightness", 0.4 )
+		float maxDeviationScale    = (1.0 - fabs( baseAngleDeviation ) * centerTightnessScale )
+		maxDeviationScale = clamp( maxDeviationScale, 0.0, 1.0 )
+		maxDeviation      = maxDeviation * maxDeviationScale
+
+		float moveAmount = RandomFloatRange( 0.0, maxDeviation ) //RandomFloatRangeForPlanePath( 0.0, maxDeviation )
+		vector moveVec = VectorRotate( <moveAmount, 0, 0>, <0, RandomFloatRange( -180, 180 ), 0>)
+		vector startCenter = file.mapCenter
+		float ringRadius = REALBIG_CIRCLE_GRID_RADIUS
+
+		if ( clampToRing )
+		{
+			startCenter = SURVIVAL_GetDeathFieldData().center
+			ringRadius = SURVIVAL_GetDeathFieldData().currentRadius - CLAMP_TO_RING_BUFFER
+		}
+
+		centerPos = startCenter + <moveVec.x, moveVec.y, file.planeHeight>
+		result.centerPos = centerPos
+
+		startPos  = (fwd * -1 * ringRadius) + <centerPos.x, centerPos.y, file.planeHeight>
+
+		// Calculate the ending position, given we want to go from the starting spot
+		vector startToCenterPosNorm = Normalize( centerPos - startPos )
+		vector startToMapCenter = <startCenter.x, startCenter.y, file.planeHeight> - startPos
+		float dot = DotProduct( startToMapCenter, startToCenterPosNorm )
+		endPos = startPos + startToCenterPosNorm * 2.0 * dot
+		angles = VectorToAngles( startToCenterPosNorm )
+		result.angles = angles
+
+		vector maxs          = fakePlane.GetBoundingMaxs()
+		maxs = <maxs.x, maxs.x, maxs.z>
+		int traceMask = TRACE_MASK_SOLID & ~( CONTENTS_PHYSICSCLIP )	// Removing this clip because we were hitting skybox clouds on Olympus
+		TraceResults results = TraceHull( startPos, endPos, -1 * maxs, maxs, fakePlane, traceMask, TRACE_COLLISION_GROUP_NONE )
+		e[ "trace_test" ] = (results.fraction >= 0.99)
+
+		numTries++
+		if ( numTries > MAX_PLANE_PATH_TRIES )
+		{
+			dev_numTriesFailed = true
+			Warning( "%s() - EXCEEDED %d PLANE PATH TRIES! Taking most recent plane path.", FUNC_NAME(), MAX_PLANE_PATH_TRIES )
+			break
+		}
+	}
+
+	fakePlane.Destroy()
+
+	float SKYBOX_BUFFER        = 6000 // Todo: eventually we should just do a trace up and down the plane path and find the skybox instead of assuming it's 6000 units from max bounds
+
+	vector jumpStart = Survival_GetPlaneJumpPointOverMap( startPos, endPos )
+	vector jumpEnd   = Survival_GetPlaneJumpPointOverMap( endPos, startPos )
+
+	// Clamp the jump boundaries to world bounds, like we do with the path below
+	LineSegment jumpBounds = ClampLineSegmentToWorldBounds2D( jumpStart, jumpEnd, SKYBOX_BUFFER )
+	jumpStart = jumpBounds.start
+	jumpEnd = jumpBounds.end
+
+	vector planeVec  = Normalize( jumpEnd - jumpStart )
+
+	result.startPos = jumpStart
+	result.endPos = jumpEnd
+
+	float flyOverMapDist  = Distance( jumpStart, jumpEnd )
+	float flyOverMapSpeed = GetCurrentPlaylistVarFloat( "survival_plane_move_speed", 2000.0 )
+	result.flyOverMapDuration = flyOverMapDist / flyOverMapSpeed
+	float jumpDelay              = (beQuick ? 3.0 : GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 9.0 ))
+	float unitsBeforeJumpAllowed = flyOverMapSpeed * jumpDelay
+	float planeLeaveMapDuration  = jumpDelay * GetCurrentPlaylistVarFloat( "survival_plane_leave_map_duration_multiplier", 3.0 )
+	float unitsToLeaveMap        = flyOverMapSpeed * planeLeaveMapDuration
+
+	vector planeStart = jumpStart + (planeVec * -unitsBeforeJumpAllowed)
+	vector planeEnd   = jumpEnd + (planeVec * unitsToLeaveMap)
+
+	// Clamp the plane start and end path to max world coords
+	if ( PLANE_PATH_DEBUG )
+	{
+		printt( "planeStart:", planeStart )
+		printt( "planeEnd:", planeEnd )
+	}
+	#if DEBUG_PLANE_PATH
+		// DebugDrawLine( planeStart, planeEnd, COLOR_YELLOW, true, 10.0 )
+	#endif
+	LineSegment lineSegment    = ClampLineSegmentToWorldBounds2D( planeStart, planeEnd, SKYBOX_BUFFER )
+	vector clampedPlaneStart   = lineSegment.start
+	vector clampedPlaneEnd     = lineSegment.end
+
+	if ( PLANE_PATH_DEBUG )
+	{
+		printt( "clampedPlaneStart:", clampedPlaneStart )
+		printt( "clampedPlaneEnd:", clampedPlaneEnd )
+	}
+	#if DEBUG_PLANE_PATH || DEBUG_PLANE_PATH_LIGHTWEIGHT
+		// if ( !dev_numTriesFailed )
+			// DebugDrawLine( clampedPlaneStart - <0, 0, 10000>, clampedPlaneEnd - <0, 0, 10000>, COLOR_GREEN, true, 240.0 )
+	#endif
+
+	// We may need to shorten the waittimes due to line clamping making the line shorter before and after the playable space
+	float actualUnitsBeforeJumpAllowed = Distance( clampedPlaneStart, jumpStart )
+	float jumpDelayFrac                = actualUnitsBeforeJumpAllowed / unitsBeforeJumpAllowed
+	jumpDelay *= jumpDelayFrac
+	result.jumpDelay = jumpDelay
+
+	float actualUnitsToLeaveMap = Distance( jumpEnd, clampedPlaneEnd )
+	float leaveMapFrac          = actualUnitsToLeaveMap / unitsToLeaveMap
+	planeLeaveMapDuration *= leaveMapFrac
+
+	result.clampedPlaneStart = clampedPlaneStart
+	result.clampedPlaneEnd = clampedPlaneEnd
+
+	result.totalFlyDuration = result.flyOverMapDuration + jumpDelay + planeLeaveMapDuration
+
+	// file.planeJumpStartPos = result.clampedPlaneStart
+	// file.planeJumpEndPos   = result.clampedPlaneEnd
+
+	if ( PLANE_PATH_DEBUG )
+	{
+		printt( "flyOverMapDuration:", result.flyOverMapDuration )
+		printt( "totalFlyDuration:", result.totalFlyDuration )
+	}
+	#if DEBUG_PLANE_PATH || DEBUG_PLANE_PATH_JUMP
+		if ( PLANE_PATH_DEBUG )
+		{
+			printt( "jumpDelayFrac:", jumpDelayFrac )
+			printt( "leaveMapFrac:", leaveMapFrac )
+		}
+	#endif
+
+	return [ result ]
+}
+
+// #if NAVMESH_ALL_SUPPORTED
+const int FLIGHTPATH_HULL = HULL_TITAN
+// #else
+// const int FLIGHTPATH_HULL = HULL_PROWLER
+// #endif
+
+vector function Survival_GetPlaneJumpPointOverMap( vector pathStart, vector pathEnd )
+{
+	float INCREMENT_DIST    = 2000.0
+	float SIDE_CHECK_DIST   = 4000.0
+	vector pointOnPlanePath = pathStart
+	vector forwardVec       = Normalize( pathEnd - pathStart )
+	vector rightVec         = AnglesToRight( VectorToAngles( forwardVec ) )
+
+	while( true )
+	{
+		for ( int i = 0 ; i < 3 ; i++ )
+		{
+			vector traceStart = pointOnPlanePath
+			if ( i == 1 )
+				traceStart += rightVec * SIDE_CHECK_DIST
+			if ( i == 2 )
+				traceStart -= rightVec * SIDE_CHECK_DIST
+
+			vector mapCenter = SURVIVAL_GetMapCenter()
+			if ( Distance2D( pointOnPlanePath, mapCenter ) < SURVIVAL_PLANE_DROP_RADIUS_MIN )
+			{
+				// DebugDrawCircle( mapCenter, <0, 0, 1>, SURVIVAL_PLANE_DROP_RADIUS_MIN, COLOR_RED, true, 10.0 )
+				// DebugDrawLine( pointOnPlanePath, pointOnPlanePath - <0, 0, 10000>, COLOR_RED, true, 10.0 )
+				return pointOnPlanePath
+			}
+
+			vector traceEnd    = <traceStart.x, traceStart.y, -MAP_EXTENTS>
+			TraceResults trace = TraceLine( traceStart, traceEnd, [], TRACE_MASK_PLAYERSOLID, TRACE_COLLISION_GROUP_NONE )
+			if ( trace.fraction < 1.0 && !trace.hitSky && !trace.startSolid )
+			{
+				vector ornull closestTitanNavMesh = NavMesh_ClampPointForHullWithExtents( trace.endPos, FLIGHTPATH_HULL, <1024, 1024, 1024> )
+
+				#if DEBUG_PLANE_PATH
+					DebugDrawLine( traceStart, trace.endPos, COLOR_BLUE, true, 10.0 )
+					if ( closestTitanNavMesh == null )
+					{
+						DebugDrawSphere( trace.endPos, 256.0, COLOR_RED, true, 10.0 )
+					}
+					else
+					{
+						expect vector(closestTitanNavMesh)
+						// DebugDrawLine( trace.endPos, closestTitanNavMesh, COLOR_GREEN, true, 10.0 )
+						// DebugDrawSphere( closestTitanNavMesh, 256.0, COLOR_GREEN, true, 10.0 )
+					}
+				#endif
+
+				if ( closestTitanNavMesh != null )
+				{
+					expect vector(closestTitanNavMesh)
+					return pointOnPlanePath
+				}
+			}
+		}
+
+		if ( Distance( pointOnPlanePath, pathEnd ) < INCREMENT_DIST )
+			break
+
+		pointOnPlanePath = pointOnPlanePath + (forwardVec * INCREMENT_DIST)
+	}
+
+	return pathStart
+}
+
+void function Survival_RunSinglePlanePath_Thread( array< PlanePathData > paths, int planeIndex = 0 )
+{
+	FlagClear( "PlaneStartMoving" )
+	FlagClear( "PlaneDoorOpen" )
+	FlagClear( "PlaneAtLaunchPoint" )
+
+	PlanePathData path = paths[0] // This function should only run one plane so just use index 0
+
+	printt( "Survival_RunSinglePlanePath_Thread", path.startPos )
+
+	entity pathCenter = CreateEntity( "prop_script" )
+	pathCenter.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	pathCenter.kv.fadedist    = -1
+	pathCenter.kv.renderamt   = 255
+	pathCenter.kv.rendercolor = "255 255 255"
+	pathCenter.kv.solid       = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	pathCenter.SetOrigin( path.centerPos )
+	pathCenter.SetAngles( path.angles )
+	pathCenter.NotSolid()
+	pathCenter.Hide()
+	pathCenter.DisableHibernation()
+	pathCenter.Minimap_SetObjectScale( 1 )
+	pathCenter.Minimap_SetZOrder( MINIMAP_Z_OBJECTIVE )
+	pathCenter.Minimap_SetClampToEdge( true )
+	SetTargetName( pathCenter, "pathCenterEnt" )
+	DispatchSpawn( pathCenter )
+	file.plane.centerEnt       = pathCenter
+
+	Sur_SetPlaneCenterEnt( pathCenter )
+
+	entity mover = CreateEntity( "script_mover" )
+	mover.e.moverPathPrecached   = true // HACK so it doesn't get deleted
+	mover.kv.solid               = 6
+	mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	mover.kv.SpawnAsPhysicsMover = 0
+	mover.SetOrigin( path.clampedPlaneStart )
+	mover.SetAngles( path.angles )
+	mover.NotSolid()
+	DispatchSpawn( mover )
+	file.plane.mover              = mover
+
+	entity plane = CreateEntity( "prop_script" )
+	plane.SetValueForModelKey( SURVIVAL_PLANE_MODEL )
+	plane.kv.fadedist    = -1
+	plane.kv.renderamt   = 255
+	plane.kv.rendercolor = "255 255 255"
+	plane.kv.solid       = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	plane.SetOrigin( path.clampedPlaneStart )
+	plane.SetAngles( path.angles )
+	plane.NotSolid()
+	plane.DisableHibernation()
+	plane.Minimap_SetObjectScale( 1 )
+	plane.Minimap_SetZOrder( MINIMAP_Z_OBJECTIVE )
+	plane.Minimap_SetClampToEdge( false )
+	SetTargetName( plane, SURVIVAL_PLANE_NAME )
+
+	DispatchSpawn( plane )
+	plane.SetParent( mover )
+	plane.Show()
+	file.plane.baseEnt           = plane
+
+	plane.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ()
+		{
+			printt( "plane destroyed" )
+			if ( IsValid( file.plane.baseEnt ) )
+			{
+				KickEveryoneOutOfPlane( file.plane.baseEnt ) // This is defensive, it should never happen because we call the same command when the plane leaves the playable space
+				file.plane.baseEnt.MakeInvisible()
+				file.plane.baseEnt.Minimap_Hide( 0, null )
+			}
+			if ( IsValid( file.plane.centerEnt ) )
+				file.plane.centerEnt.Destroy()
+			if ( IsValid( file.plane.mover ) )
+			{
+				StopSoundOnEntity( file.plane.mover, "Survival_DropSequence_Pegasus_Engine" )
+				file.plane.mover.Hide()
+			}
+		}
+	)
+
+	Sur_SetPlaneEnt( plane )
+
+	//if ( IsTestMap() )
+		// FlagSet( "PlaneStartMoving" )
+
+	file.plane.baseEnt.MakeInvisible()
+	FlagWait( "PlaneStartMoving" )
+	file.plane.baseEnt.MakeVisible()
+
+	// StatsHook_SetPlaneData( path.clampedPlaneStart, path.clampedPlaneEnd, path.totalFlyDuration )
+	SetGlobalNetTime( "PlaneDoorsOpenTime", Time() + path.jumpDelay )
+	SetGlobalNetTime( "PlaneDoorsCloseTime", Time() + path.totalFlyDuration )
+
+	thread OpenAndClosePlaneDoor( plane, path.jumpDelay, path.flyOverMapDuration )
+
+	EmitSoundOnEntity( file.plane.mover, "Survival_DropSequence_Pegasus_Engine" )
+
+	thread PlaneAttractLeviathan( plane, file.plane.centerEnt )
+
+	mover.NonPhysicsMoveTo( path.clampedPlaneEnd, path.totalFlyDuration, 0, 0 )
+	printt( "plane started moving", path.totalFlyDuration )
+	wait path.totalFlyDuration
+
+	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
+		FlagSet( "DeathCircleActive" )
+
+	if ( GetCurrentPlaylistVarBool( "sur_circle_start_paused", false ) )
+	{
+		FlagClear( "DeathFieldPaused" )
+	}
+}
+
+void function PlaneAttractLeviathan( entity plane, entity entDestroyedWhenPlaneIsDone )
+{
+	plane.EndSignal( "OnDestroy" )
+	entDestroyedWhenPlaneIsDone.EndSignal( "OnDestroy" )
+
+	for ( ; ; )
+	{
+		wait RandomFloatRange( 3.0, 8.0 )
+		Leviathan_ConsiderLookAtEnt( plane, RandomFloatRange( 5, 20 ), 0.3 )
+	}
+}
+
+void function OpenAndClosePlaneDoor( entity plane, float openDelay, float openDuration )
+{
+	EndSignal( plane, "OnDestroy" )
+
+	if ( openDelay > 2.5 )
+	{
+		wait openDelay - 2.5
+		EmitSoundOnEntity( plane, "Survival_DropSequence_LaunchDoorOpen" )
+		EmitSoundOnEntity( plane, "Survival_DropSequence_Pegasus_Wind" )
+		wait 2.5
+	}
+	else
+	{
+		wait openDelay
+		EmitSoundOnEntity( plane, "Survival_DropSequence_LaunchDoorOpen" )
+	}
+
+	FlagSet( "PlaneDoorOpen" )
+
+	g_DOOR_OPEN_TIME = Time()
+
+	wait openDuration
+
+	FlagSet( "PlaneAtLaunchPoint" )
+
+	KickEveryoneOutOfPlane( plane )
 }
 // #if DEVELOPER
 bool function ClientCommand_Flowstate_AssignCustomCharacterFromMenu(entity player, array<string> args)
@@ -370,147 +841,39 @@ void function Sequence_Playing()
 
 	FlagSet( "GamePlaying" )
 
-	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
+	if( !GetCurrentPlaylistVarBool( "deathfield_starts_in_prematch", false ) )
+		thread SURVIVAL_RunArenaDeathField()
+
+	// if( Survival_AirdroppedCarePackagesEnabled() )
+		// thread AirdropLogic()
+
+	// Set settings for the drop-in
+	foreach ( entity player in GetPlayerArray() )
 	{
-		// vector pos = GetEnt( "info_player_start" ).GetOrigin()
-		// pos.z += 5
+		DecideRespawnPlayer( player, true ) //why is this needed? Cafe
+		player.StopObserverMode()
+		Survival_ClearPrematchSettings( player )
+		bool shouldSetDropSettings = true
 
-		// int i = 0
-		foreach ( player in GetPlayerArray() )
-		{
-			// // circle
-			// float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-			// player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+		if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+			shouldSetDropSettings = false
 
-			DecideRespawnPlayer( player )
-			// GiveBasicSurvivalItems( player )
-			// i++
-		}
-
-		// Show the squad and player counter
-		UpdatePlayerCounts()
+		if ( shouldSetDropSettings )
+			SetPlayerIntroDropSettings( player )
 	}
-	else
+
+	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
-		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
-		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-		float DROP_TIMEOUT_TIME = 0 // GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
-
-		array<vector> foundFlightPath = file.foundFlightPath
-
-		vector shipStart = foundFlightPath[0]
-		vector shipEnd = foundFlightPath[1]
-		vector shipAngles = foundFlightPath[2]
-		vector shipPathCenter = foundFlightPath[3]
-
-		entity centerEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", shipPathCenter, shipAngles )
-		centerEnt.Minimap_AlwaysShow( 0, null )
-		SetTargetName( centerEnt, "pathCenterEnt" )
-		DispatchSpawn( centerEnt )
-
-		entity dropship = Survival_CreatePlane( shipStart, shipAngles )
-
-		Sur_SetPlaneEnt( dropship )
-
-		entity minimapPlaneEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", dropship.GetOrigin(), dropship.GetAngles() )
-		minimapPlaneEnt.NotSolid()
-		minimapPlaneEnt.SetParent( dropship )
-		minimapPlaneEnt.Minimap_AlwaysShow( 0, null )
-		SetTargetName( minimapPlaneEnt, "planeEnt" )
-		DispatchSpawn( minimapPlaneEnt )
-
-		foreach ( team in GetTeamsForPlayers( GetPlayerArray() ) )
-		{
-			array<entity> teamMembers = GetPlayerArrayOfTeam( team )
-
-			bool foundJumpmaster = false
-			entity ornull jumpMaster = null
-
-			for ( int idx = teamMembers.len() - 1; idx == 0; idx-- )
-			{
-				entity teamMember = teamMembers[idx]
-
-				if ( Survival_IsPlayerEligibleForJumpmaster( teamMember ) )
-				{
-					foundJumpmaster = true
-					jumpMaster = teamMember
-
-					break
-				}
-			}
-
-			if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
-				jumpMaster = teamMembers.getrandom()
-
-			if ( jumpMaster != null )
-			{
-				expect entity( jumpMaster )
-
-				jumpMaster.SetPlayerNetBool( "isJumpmaster", true )
-			}
-		}
-
-		FlagSet( "SpawnInDropship" )
-
-		foreach ( player in GetPlayerArray() )
-			RespawnPlayerInDropship( player )
-
-		// Show the squad and player counter
-		UpdatePlayerCounts()
-
-		// Update the networked duration
-		float timeDoorOpenWait = CharSelect_GetOutroTransitionDuration() + DROP_WAIT_TIME
-		float timeDoorCloseWait = DROP_TOTAL_TIME
-
-		float referenceTime = Time()
-		SetGlobalNetTime( "PlaneDoorsOpenTime", referenceTime + timeDoorOpenWait )
-		SetGlobalNetTime( "PlaneDoorsCloseTime", referenceTime + timeDoorOpenWait + timeDoorCloseWait )
-
-		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME, 0.0, 0.0 )
-
-		wait CharSelect_GetOutroTransitionDuration()
-
-		wait DROP_WAIT_TIME
-
-		FlagSet( "PlaneDrop_Respawn_SetUseCallback" )
-
-		foreach ( player in GetPlayerArray_AliveConnected() )
-			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-		wait DROP_TOTAL_TIME - CharSelect_GetOutroTransitionDuration()
-
-		FlagClear( "PlaneDrop_Respawn_SetUseCallback" )
-
-		FlagClear( "SpawnInDropship" )
-
-		foreach ( player in GetPlayerArray() )
-		{
-			if ( player.GetPlayerNetBool( "playerInPlane" ) )
-				Survival_DropPlayerFromPlane_UseCallback( player )
-		}
-
-		centerEnt.Destroy()
-		minimapPlaneEnt.Destroy()
-		minimapPlaneEnt.ClearParent()
-		try{
-			ClearChildren( dropship, true )
-			dropship.Destroy()}
-		catch( e420 )
-		{
-			printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
-		}
-		
+		waitthread Survival_PutPlayersInPlane()
 	}
-	
-	FlagClear( "SpawnInDropship" )
-	
-	wait 5.0
 
-	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
-	{
-		FlagSet( "DeathCircleActive" )
-		thread CircleRemainingTimeChatter_Think()
-	}
+	FlagSet( "PlaneStartMoving" )
+	UpdatePlayerCounts()
+
+	thread CircleRemainingTimeChatter_Think()
+
+	foreach ( entity player in GetPlayerArray() )
+		ClearPlayerIntroDropSettings( player )
 
 	if( GetCurrentPlaylistVarBool( "lsm_mod11", false ) )
 	{
@@ -536,6 +899,7 @@ void function Sequence_Playing()
 			level.nv.winningTeam = winnerTeam
 
 			SetGameState( eGameState.WinnerDetermined )
+			printt( "ending game", GetNumTeamsRemaining() )
 		}
 		WaitFrame()
 	}
@@ -1551,4 +1915,325 @@ void function LSM_OnPlayerLeaveGround( entity player )
 	player.e.IsFalling = true
 
 	player.e.FallDamageJumpOrg = player.GetOrigin()
+}
+
+void function SURVIVAL_SetMapCenter( vector c )
+{
+	file.mapCenter = c
+}
+
+vector function SURVIVAL_GetMapCenter()
+{
+	return file.mapCenter
+}
+
+void function SURVIVAL_SetPlaneHeight( float height )
+{
+	file.planeHeight = height
+}
+
+float function SURVIVAL_GetPlaneHeight()
+{
+	return file.planeHeight
+}
+
+
+void function SetPlayerIntroDropSettings( entity player )
+{
+	if ( player.p.hasDropSettings )
+		return
+
+	player.p.hasDropSettings = true
+	HolsterAndDisableWeapons( player )
+	player.ResetIdleTimer()
+
+	//if ( !player.p.survivalLandedOnGround && !player.IsInvulnerable() )
+	//	player.SetInvulnerable()
+	player.ClearInvulnerable()
+	// DisableEntityOutOfBounds( player ) //FIXME. Cafe
+
+	// Clear death protection the player had in the staging area. We don't do this when leaving "WaitingForPlayers" state because we don't want players taking damage in PickLoadout state either, which can happen with DOT entities left laying around
+	// if ( player.p.hasStagingAreaDamageProtection )
+	// {
+		// RemoveEntityCallback_OnDamaged( player, StagingAreaPlayerTookDamageCallback )
+		// player.p.hasStagingAreaDamageProtection = false
+	// }
+}
+
+
+void function ClearPlayerIntroDropSettings( entity player )
+{
+	if ( !player.p.hasDropSettings )
+		return
+
+	player.p.hasDropSettings = false
+
+	// Called by whatever script is handling the player deployment into the map. Once that script gets the player to the ground it should call this.
+	player.ClearInvulnerable()
+
+	if ( IsAlive( player ) )
+	{
+		vector playerOrigin = player.GetOrigin()
+		if ( !player.IsZiplining() )
+			PutEntityInSafeSpot( player, null, null, playerOrigin, playerOrigin )
+	}
+
+	// player.p.survivalLandedStartTime = Time()
+
+	// if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+	// {
+		// player.p.wasJumpmaster = true //used for tracking stats at the end of the game
+		// player.p.wasLastJumpmaster = true
+	// }
+	// else
+	// {
+		// player.p.wasLastJumpmaster = false
+	// }
+	// remove jumpmaster star from the unitframe
+	player.SetPlayerNetBool( "isJumpmaster", false )
+	GradeFlagsClear( player, eTargetGrade.JUMPMASTER )
+
+	Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
+	Highlight_ClearEnemyHighlight( player )
+
+	// Undo stuff we did in SetPlayerIntroDropSettings
+	// R5DEV-363382: strange mismatch between these two. Server_IsOffhandWeaponsDisabled seems to not be set in cases where the player disconnects,
+	//   even though the entity is valid and we can still manipulate it. This may explain the behaviour needing investigation (read comment above DisableOffhandWeapons in _utility.gnut)
+	if ( player.Server_IsOffhandWeaponsDisabled() )
+		DeployAndEnableWeapons( player )
+	// EnableEntityOutOfBounds( player )
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerBootsOnGround" )
+
+	// Only modify the player's ultimate and tactical the first time they land on the ground, not again when using balloon towers, etc.
+	if ( !player.p.survivalLandedOnGround )
+	{
+		entity tacticalWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		if ( IsValid( tacticalWeapon ) && GetCurrentPlaylistVarBool( "survival_give_tactical_on_first_land", true ))
+		{
+			// Give player their tactical when they land, or all but 1 of their charges if tac has multiple charges
+			tacticalWeapon.RemoveMod( "survival_ammo_regen_paused" )
+			tacticalWeapon.SetWeaponPrimaryClipCountAbsolute( tacticalWeapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total ) )
+			tacticalWeapon.RegenerateAmmoReset()
+		}
+
+		entity ultimateWeapon = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		if ( IsValid( ultimateWeapon ) && GetCurrentPlaylistVarBool( "survival_reset_ultimate_on_first_land", true ) )
+		{
+			// Restart ultimate cooldown from the beginning when we land on the ground
+			ultimateWeapon.RemoveMod( "survival_ammo_regen_staging" )
+			ultimateWeapon.RemoveMod( "survival_ammo_regen_paused" )
+			ultimateWeapon.SetWeaponPrimaryClipCountAbsolute( 0 )
+			// if ( PlayerHasPassive( player, ePassives.PAS_LOBA_EYE_FOR_QUALITY ) )
+				// ultimateWeapon.SetWeaponPrimaryClipCountAbsolute( int( ultimateWeapon.GetWeaponPrimaryClipCountMax() * 0.5 ) )
+
+			ultimateWeapon.RegenerateAmmoReset()
+		}
+
+		PIN_PlayerLandedOnGround( player )
+		// StatsHook_OnPlayerLandedSkydive( player )
+
+		// foreach ( callbackFunc in file.Callbacks_OnPlayerLandedFromDropshipFreefall )
+			// callbackFunc( player )
+	}
+
+	// Allow player to emote
+	// SetPlayerCanGroundEmote( player, true )
+
+	PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+
+	Survival_SetInventoryEnabled( player, true )
+
+	// file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane = true
+	// file.playerData[ EHIToEncodedEHandle( player ) ].landingOrigin       = player.GetOrigin()
+	// file.playerData[ EHIToEncodedEHandle( player ) ].landingTime         = Time()
+
+	// #if DEVELOPER
+		// DEV_GiveSpawnWeapons( player )
+	// #endif
+
+	thread PlayerFallAssistanceDetection( player )
+
+	player.p.survivalLandedOnGround = true
+}
+
+void function Survival_OnPlayerRespawned( entity player )
+{
+	SurvivalPlayerRespawnedInit( player )
+}
+
+
+void function SurvivalPlayerRespawnedInit( entity player )
+{
+	if( Gamemode() != eGamemodes.SURVIVAL )
+		return //keep this away from flowstate gamemodes for now
+
+	// Warning( "SurvivalPlayerRespawnedInit", player )
+	bool resetPlayerInventoryOnRespawn = true //Survival_ShouldResetInventoryOnRespawn( player )
+
+	UpdatePlayerCounts()
+
+	player.SetAimAssistAllowed( true )
+	player.TurnLowHealthEffectsOff()
+	player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
+
+	// Survival_PlayerCharacterSetup( player, Survival_ValidateAndGetCharacterClass( player ) )
+
+	// SURVIVAL_SetDefaultPlayerSettings( player )
+
+	if ( WeaponDrivenConsumablesEnabled() )
+	{
+		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+		player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+	}
+
+	if ( resetPlayerInventoryOnRespawn && player.p.survivalLandedOnGround ) // Only take ammo on a respawn and not on first drop
+		TakeAmmoFromPlayer( player )
+
+	// Ultimates_OnPlayerRespawned( player )
+
+	// player.GiveOffhandWeapon( HOLO_PROJECTOR_WEAPON_NAME, HOLO_PROJECTOR_INDEX )
+	// player.GiveOffhandWeapon( GENERIC_OFFHAND_WEAPON_NAME, GENERIC_OFFHAND_INDEX )
+
+	player.DisableIdLights()
+	player.DisableAutoReloadNoAmmo()
+
+	// if ( GetGameState() == eGameState.WaitingForPlayers )
+	// {
+		// if( EHIToEncodedEHandle( player ) in file.playerChangeClassData )
+		// {
+			// EncodedEHandle handle = EHIToEncodedEHandle( player )
+			// player.SetOrigin( file.playerChangeClassData[handle].respawnPos )
+			// player.SetAngles( file.playerChangeClassData[handle].respawnAngles )
+			// if ( file.playerChangeClassData[handle].respawnIn3P )
+				// player.SetThirdPersonShoulderModeOn()
+			// else
+				// player.SetThirdPersonShoulderModeOff()
+		// }
+
+		// // thread Survival_SetStagingAreaSettings( player )
+	// }
+	// else
+	if ( GetGameState() < eGameState.Playing )
+	{
+		Survival_SetPrematchSettings( player )
+	}
+	else if ( !player.p.respawnPodLanded )
+	{
+		// respawnPodLanded will be set during a respawn from a respawn beacon, so we don't want to do anything special there. This only runs if it's not a respawn beacon
+		// This shouldn't be allowed, but it's happening, either in DEV through manual connect or slow loading and server wait for player timeout
+
+		SetPlayerIntroDropSettings( player )
+
+		array<entity> teammates = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+
+		// If we have no teammates and the plane exists we put the player in the plane
+		// Or, if we have teammates in the plane we also put them in the plane with their team
+		bool putInPlane                  = teammates.len() == 1 && IsValid( Sur_GetPlaneEnt() ) && !Flag( "PlaneAtLaunchPoint" )
+		entity skydiveFollowPlayer
+		bool skydiveFollowPlayerIsLeader = false
+		entity groundPlayer
+		foreach ( entity teammate in teammates )
+		{
+			if ( teammate == player )
+				continue
+
+			if ( teammate.GetPlayerNetBool( "playerInPlane" ) == true )
+				putInPlane = true
+
+			if ( PlayerMatchState_GetFor( teammate ) == ePlayerMatchState.SKYDIVE_FALLING && !skydiveFollowPlayerIsLeader )
+			{
+				skydiveFollowPlayer = teammate
+				if ( teammate.GetPlayerNetBool( "isJumpmaster" ) )
+				{
+					skydiveFollowPlayerIsLeader = true
+				}
+			}
+
+			if ( PlayerMatchState_GetFor( teammate ) == ePlayerMatchState.NORMAL )
+				groundPlayer = teammate
+		}
+
+		if ( putInPlane )
+		{
+			// Put in plane with teammates, or by themselves if the plane is still flying over
+			Survival_PutPlayerInPlane( player )
+		}
+		else if ( IsValid( skydiveFollowPlayer ) )
+		{
+			// no teammates are still in the plane, follow someone who's skydiving
+			thread PlayerSkyDive( player, <0, 0, 0>, teammates, skydiveFollowPlayer )
+		}
+		else
+		{
+			// if a player is on the ground already, just spawn them near that player
+			ClearPlayerIntroDropSettings( player )
+			if ( IsValid( groundPlayer ) )
+				player.SetOrigin( groundPlayer.GetOrigin() )
+		}
+	}
+
+	thread Survival_ResetPlayerHighlights()
+
+	if ( GetCurrentPlaylistVarBool( "thirdperson_match", false ) )
+		player.SetThirdPersonShoulderModeOn()
+}
+
+void function Survival_SetPrematchSettings( entity player )
+{
+	if ( file.shouldFreezeControlsOnPrematch )
+		player.FreezeControlsOnServer()
+}
+
+
+void function Survival_ClearPrematchSettings( entity player )
+{
+	if ( file.shouldFreezeControlsOnPrematch )
+		player.UnfreezeControlsOnServer()
+}
+
+void function Survival_ResetPlayerHighlights()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		//Remove ALL player highlights
+		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
+
+		//array<entity> teamMemberList = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+		//teamMemberList.sort( SortByEntIndex )
+		//int playerTeamSlot = teamMemberList.find( player ) % 3
+		//switch ( playerTeamSlot ) {
+		//	case 0:
+		//		Highlight_SetFriendlyHighlight( player, "survival_friendly_0" )
+		//		break
+		//	case 1:
+		//		Highlight_SetFriendlyHighlight( player, "survival_friendly_1" )
+		//		break
+		//	case 2:
+		//		Highlight_SetFriendlyHighlight( player, "survival_friendly_2" )
+		//		break
+		//}
+
+		player.e.hasDefaultEnemyHighlight = false
+		Highlight_ClearEnemyHighlight( player )
+
+		Highlight_SetOwnedHighlight( player, "survival" )
+		Highlight_SetNeutralHighlight( player, "survival" )
+
+		// ClientCommand( player, "force_id_lights_off 1" )
+
+		// Highlight_SetEnemyHighlight( player, "" )
+	}
+}
+
+void function EndThreadOn_PlayerChangedClass( entity player )
+{
+	EndSignal( player, "PlayerChangedClass" )
+}
+
+
+void function SignalThatPlayerChangedClass( entity player )
+{
+	player.Signal( "PlayerChangedClass" )
 }

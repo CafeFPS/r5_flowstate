@@ -486,6 +486,10 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
 			GivePassive( player, ePassives.PAS_FORTIFIED )
+	} else if( ItemFlavor_GetHumanReadableRef( character ) == "character_crypto" )
+	{
+		if( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+			GivePassive( player, ePassives.PAS_CRYPTO )
 	}
 }
 
@@ -597,10 +601,13 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	}
 	
 	player.Signal("OnRespawned")
+	
+	// foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
+			// cb( player )
 }
 
 // clean up and move to main when completely debugged. Cafe
-bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserver )
+bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserver = false )
 {
 	Assert( IsValid( player ), player + " is invalid!!" )
 	Assert( !IsAlive( player ), player + " is already alive" )
@@ -658,7 +665,7 @@ bool function RespawnTitanPilot( entity player )
 		return false
 
 	DoRespawnPlayer( player, null )
-
+	
 	if( script_bHighlight )
 	{
 		Highlight_SetFriendlyHighlight( player, "sp_friendly_hero" )
@@ -1067,6 +1074,12 @@ void function UpdatePlayerCounts()
 	
 	switch(currGameMode)
 	{
+		case eGamemodes.WINTEREXPRESS:
+		array<entity> playersAlive = GetPlayerArray_Alive()
+		SetGlobalNetInt( "livingPlayerCount", playersAlive.len() )
+		SetGlobalNetInt( "squadsRemainingCount", playersAlive.len() )		
+		break
+
 		case eGamemodes.fs_infected:
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() )
 		SetGlobalNetInt( "livingShadowPlayerCount", GetPlayerArrayOfTeam_Alive(TEAM_MILITIA).len() )

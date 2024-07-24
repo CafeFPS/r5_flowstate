@@ -38,6 +38,8 @@ global function IsSurvivalMode
 //////////////////////
 const float MAX_MAP_BOUNDS = 61000.0
 
+global const string SURVIVAL_PLANE_NAME = "planeEnt"
+
 global const string SURVIVAL_DEFAULT_TITAN_DEFENSE = "mp_titanability_arm_block"
 
 global const float CHARACTER_SELECT_OPEN_TRANSITION_DURATION    = 3.0

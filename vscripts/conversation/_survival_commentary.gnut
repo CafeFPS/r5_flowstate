@@ -19,6 +19,14 @@ global function GetKillLeader
 global function SetChampion
 global function GetChampion
 
+global function PlayBattleChatterLineToTeamButNotSpeaker
+global function PlayBattleChatterLineDelayedToPlayer
+global function TryPlayWeaponBattleChatterLine
+global function PlayBattleChatterLineDelayedToSpeakerAndTeam
+global function PlayBattleChatterLineToSpeakerAndTeam
+global function PlayBattleChatterLineToSpeakerWithDebounceTime
+global function PlayBattleChatterLineToSpeakerAndTeamWithDebounceTime
+
 global const DELAY_COMMENTARY = 2
 global const int COMMENTARY_ANNOUNCER_DIALOGUE_FLAGS = eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS
 
@@ -26,6 +34,7 @@ struct {
 	bool commentarySystemActive = true
 	entity currentKillLeader = null
 	array<int>                     disabledCommentaryEvents
+	table<entity, table<string, float> > battleChatterDebounceTimes
 } file
 
 void function SurvivalCommentary_Init()
@@ -57,6 +66,136 @@ entity function GetKillLeader()
 int function SurvivalCommentary_GetChampionTeam()
 {
 	return GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) ).GetTeam()
+}
+
+void function PlayBattleChatterLineToSpeakerWithDebounceTime( string conversationType, entity listeningPlayer, entity speakingPlayer, float debounceMin, float debounceMax, entity addressee = null )
+{
+	if ( !ShouldPlayBattleChatter( conversationType, listeningPlayer, speakingPlayer ) )
+		return
+
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	if ( !(speakingPlayer in file.battleChatterDebounceTimes) )
+	{
+		table<string, float> debounceTimes = {}
+		file.battleChatterDebounceTimes[ speakingPlayer ] <- debounceTimes
+	}
+
+	bool shouldPlayLine = true
+
+	if ( conversationType in file.battleChatterDebounceTimes[ speakingPlayer ] && Time() < file.battleChatterDebounceTimes[ speakingPlayer ][ conversationType ] )
+	{
+		shouldPlayLine = false
+	}
+
+	if ( shouldPlayLine )
+	{
+		int dialogueFlags = 0
+		if ( IsValid( addressee ) && ShouldStompConAltForLine( conversationType, speakingPlayer, addressee ) )
+		{
+			dialogueFlags = eDialogueFlags.STOMP_CON_ALT
+		}
+
+		file.battleChatterDebounceTimes[speakingPlayer][conversationType] <- Time() + RandomFloatRange( debounceMin, debounceMax )
+		PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, dialogueFlags )
+	}
+}
+
+void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity speakingPlayer, string chatterLine, float delay )
+{
+	EndSignal( speakingPlayer, "OnDeath" )
+	EndSignal( speakingPlayer, "OnDestroy" )
+
+	wait delay
+
+	PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, chatterLine )
+}
+
+void function TryPlayWeaponBattleChatterLine( entity weaponOwner, entity weapon )
+{
+	string weaponClassName = weapon.GetWeaponClassName()
+	var battleChatterLine = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
+
+	if ( battleChatterLine == null )
+		return
+
+	PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, expect string( battleChatterLine ) )
+}
+
+void function PlayBattleChatterLineToSpeakerAndTeam( entity speakingPlayer, string chatterLine, entity addressee = null )
+{
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	foreach ( player in GetFriendlySquadArrayForPlayer( speakingPlayer ) )
+		PlayBattleChatterLineToPlayer( chatterLine, player, speakingPlayer, addressee )
+}
+
+void function PlayBattleChatterLineToSpeakerAndTeamWithDebounceTime( entity speakingPlayer, string chatterLine, float debounceMin, float debounceMax, entity addressee = null, bool isDebounceForAllTeamSpeakers = false )
+{
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	if ( !(speakingPlayer in file.battleChatterDebounceTimes) )
+	{
+		table<string, float> debounceTimes = {}
+		file.battleChatterDebounceTimes[ speakingPlayer ] <- debounceTimes
+	}
+
+	bool shouldPlayLine = true
+	// Do we block a dialogue line if any member of the squad has triggered it within the debounce time
+	if ( isDebounceForAllTeamSpeakers )
+	{
+		array< entity > teamPlayersArray = GetPlayerArrayOfTeam( speakingPlayer.GetTeam() )
+		foreach ( teamPlayer in teamPlayersArray )
+		{
+			if ( !IsValid( teamPlayer ) )
+				continue
+
+			if ( teamPlayer in file.battleChatterDebounceTimes && chatterLine in file.battleChatterDebounceTimes[ teamPlayer ] && Time() < file.battleChatterDebounceTimes[ teamPlayer ][ chatterLine ] )
+			{
+				shouldPlayLine = false
+				break
+			}
+		}
+	}
+	else if ( chatterLine in file.battleChatterDebounceTimes[ speakingPlayer ] && Time() < file.battleChatterDebounceTimes[ speakingPlayer ][ chatterLine ] ) // Otherwise only block the dialogue if the speaker has triggered it within the debounce time
+	{
+		shouldPlayLine = false
+	}
+
+	// If this line is going to be played by the player, make sure we set debounce time on it and play the line
+	if ( shouldPlayLine )
+	{
+		file.battleChatterDebounceTimes[speakingPlayer][chatterLine] <- Time() + RandomFloatRange( debounceMin, debounceMax )
+		PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, chatterLine, addressee )
+	}
+}
+
+void function PlayBattleChatterLineDelayedToPlayer( entity speakingPlayer, string chatterLine, float delay )
+{
+	EndSignal( speakingPlayer, "OnDeath" )
+	EndSignal( speakingPlayer, "OnDestroy" )
+
+	wait delay
+
+	PlayBattleChatterLineToPlayer( chatterLine, speakingPlayer, speakingPlayer )
+}
+
+void function PlayBattleChatterLineToPlayer( string conversationType, entity listeningPlayer, entity speakingPlayer, entity addressee = null )
+{
+	if ( !ShouldPlayBattleChatter( conversationType, listeningPlayer, speakingPlayer ) )
+		return
+
+	int dialogueFlags = 0
+
+	if ( IsValid( addressee ) && ShouldStompConAltForLine( conversationType, speakingPlayer, addressee ) )
+	{
+		dialogueFlags = eDialogueFlags.STOMP_CON_ALT
+	}
+
+	PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, dialogueFlags )
 }
 
 int function SurvivalCommentary_GetChampionEEH()
@@ -97,6 +236,63 @@ int function GetMinKillsForKillLeader()
 	return minKill
 }
 
+bool function ShouldStompConAltForLine( string conversationType, entity speakingPlayer, entity addressee )
+{
+	string foundConAlt = ""
+	array<string> squadVoices = [ GetPlayerVoice( speakingPlayer ) ]
+	bool duplicateLegendsOnSquad = false
+
+	foreach ( entity squadmate in GetPlayerArrayOfTeam_Alive( speakingPlayer.GetTeam() ) )
+	{
+		if ( squadmate == speakingPlayer )
+			continue
+
+		if ( squadVoices.find( GetPlayerVoice( squadmate ) ) > -1 )
+			duplicateLegendsOnSquad = true
+
+		squadVoices.append( GetPlayerVoice( squadmate ) )
+
+		string potentialConAlt = ""//GetConditionalAltDialogue( conversationType, speakingPlayer, squadmate, true )
+
+		if ( potentialConAlt != "" )
+		{
+			if ( foundConAlt != "" )
+			{
+				#if DEV
+					if ( !duplicateLegendsOnSquad )
+						Assert( false, "More then one condPlayer exists for con alt " + conversationType + " for speaker " + GetPlayerVoice( speakingPlayer ) + " , this is not currently supported." )
+				#endif
+
+				return !duplicateLegendsOnSquad // if there are dupe legends, you should not stomp the con alt. if there are not dupe legends, you should stomp the con alt
+			}
+
+			foundConAlt = potentialConAlt
+		}
+
+	}
+
+	if ( foundConAlt != "" )
+	{
+		if ( addressee.GetTeam() !=  speakingPlayer.GetTeam() )
+			return false
+
+		// if ( DoesConditionalAltRequireAddressee( foundConAlt ) )
+		// {
+			// ItemFlavor condPlayerCharacter = GetConditionalAltCondPlayerCharacterFromAlias( foundConAlt )
+			// ItemFlavor addresseeCharacter = LoadoutSlot_GetItemFlavor( addressee, Loadout_Character() )
+
+			// if ( condPlayerCharacter != addresseeCharacter )
+				// return true
+		// }
+		// else
+		// {
+			// Assert( false, "Dialogue line " + conversationType + " has a con alt " + foundConAlt + " and was passed an addressee but does not require one." )
+			return true
+		// }
+	}
+
+	return false
+}
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )
@@ -462,4 +658,16 @@ void function SurvivalCommentary_SetEventEnabled( int eventType, bool value )
 void function SetCommentaryEnabled( bool value )
 {
 	file.commentarySystemActive = value
+}
+
+void function PlayBattleChatterLineToTeamButNotSpeaker( entity speakingPlayer, string chatterLine )
+{
+	//printt( "PlayBattleChatterLine, speakingPlayer: " +  speakingPlayer + ", chatterLine: " + chatterLine )
+	foreach ( player in GetPlayerArrayOfTeam( speakingPlayer.GetTeam() ) )
+	{
+		if ( player == speakingPlayer )
+			continue
+
+		PlayBattleChatterLineToPlayer( chatterLine, player, speakingPlayer )
+	}
 }

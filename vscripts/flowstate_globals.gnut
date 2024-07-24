@@ -190,7 +190,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 	SH_flowstateSettings.Flowstate_DisableAllMapTriggers				= ( GetCurrentPlaylistVarBool( "flowstate_disable_all_map_triggers", false ) )
 	SH_flowstateSettings.Flowstate_Is_gamemode_1v1_type					= g_is1v1GameType()
-	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", false )
+	SH_flowstateSettings.Flowstate_GivePassive							= GetCurrentPlaylistVarBool( "flowstate_give_character_passive", true )
 	SH_flowstateSettings.FlowState_GiveTactical							= GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	SH_flowstateSettings.FlowState_RestMsg 								= GetCurrentPlaylistVarBool( "rest_msg", false )
 }

@@ -27,6 +27,7 @@ global function DeathBoxGetExtendedUseSettings
 global function CreateDeathBoxRui
 
 global function GetHighlightFillAlphaForLoot
+global function HideLootPrompts
 
 global const string PING_SOUND_DEFAULT = "ui_mapping_item_1p"
 const float LOOT_PING_DISTANCE = 500.0

@@ -137,15 +137,17 @@ global struct StoredWeapon
 
 global struct ScriptTriggerData
 {
-	bool enabled
-	float radius
-	table<entity> entities
+	bool                                    enabled
+	float                                   radius
+	table<entity>                           entities
 	array<void functionref(entity, entity)> enterCallbacks
 	array<void functionref(entity, entity)> leaveCallbacks
-	float top
-	float bottom
-	int flags
-	int managedEntArrayHandle
+	float                                   topDelta
+	float                                   bottomDelta
+	bool                                    infiniteTop
+	bool                                    infiniteBottom
+	int                                     flags
+	int                                     managedEntArrayHandle
 }
 
 global struct BurnCardPhaseRewindStruct
@@ -379,7 +381,9 @@ global struct ServerEntityStruct
 	bool                   canBurn = false
 	bool                   isBurning = false
 	array<BurnDamageStack> burnDamageStacks
-	
+	vector originalLocalAngles
+	bool   scanSoundPlaying
+
 	//Flowstate
 
 	//Trophy Structs
@@ -474,6 +478,12 @@ global struct ServerEntityStruct
 	entity turretlockedent
 	entity turretweapon
 	bool onlyonetime
+
+	array<entity>                          friendlyFxArray
+	array<entity>                          enemyFxArray
+	int lockOnCount
+	int inSonarTriggerCount
+
 }
 
 global struct MeritData
@@ -1051,6 +1061,11 @@ global struct ServerPlayerStruct
 	Point ornull safeSpotForDeathBox = null
 
 	float lastTimeHovercraftSpeedSentToClient
+	int   jumpMasterOrder = 3
+	bool survivalLandedOnGround
+
+	entity        cryptoActiveCamera
+	bool          completedEMP
 }
 
 global struct ChallengeScore
@@ -1278,7 +1293,16 @@ global struct ServerProjectileStruct
 	float savedShotTime
 	string ownerStringDebug
 	vector ownerLocationDebug
-	vector savedSurfaceNormal
+
+	vector                  savedVel
+	// vector                  savedRelativeDelta
+	// entity                  savedMovingGeo
+	// float                   savedShotTime
+	vector                  savedSurfaceNormal
+	void functionref( entity, DeployableCollisionParams ) bounceFunc
+	void functionref( entity, DeployableCollisionParams ) deployFunc
+	// void functionref( entity, ProximityExplodeParams ) explodeFunc
+
 	float lastTeleportTime
 	bool dontbouncethistime = false
 	entity weapon

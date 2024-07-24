@@ -82,18 +82,18 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 			break
 
 		case eDeathScreenPanel.SPECTATE:
-			AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", DeathScreenSpectateNext, DeathScreenCanChangeSpectateTarget )
+				AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", "`1%[X_BUTTON|MOUSE3]%`0 Spectate Next Player", DeathScreenSpectateNext, DeathScreenCanChangeSpectateTarget )
 
-			string gladCardMessageString = "#SPECTATE_HIDE_BANNER"
-			if ( !IsGladCardShowing() )
-				gladCardMessageString = "#SPECTATE_SHOW_BANNER"
+				string gladCardMessageString = "#SPECTATE_HIDE_BANNER"
+				if ( !IsGladCardShowing() )
+					gladCardMessageString = "#SPECTATE_SHOW_BANNER"
 
-			file.gladCardToggleInputData = AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, gladCardMessageString, gladCardMessageString, DeathScreenTryToggleGladCard )
+				file.gladCardToggleInputData = AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, gladCardMessageString, gladCardMessageString, DeathScreenTryToggleGladCard )
 
-			// AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#BUTTON_SKIP", "#BUTTON_SKIP", DeathScreenSkipDeathCam, CanSkipDeathCam )
+				// AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#BUTTON_SKIP", "#BUTTON_SKIP", DeathScreenSkipDeathCam, CanSkipDeathCam )
 
-			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_GLADIATOR_CARD", "#HINT_PING_GLADIATOR_CARD", DeathScreenPingRespawn, DeathScreenRespawnWaitingForPickup )
-			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_RESPAWN_BEACON", "#HINT_PING_RESPAWN_BEACON", DeathScreenPingRespawn, DeathScreenRespawnWaitingForDelivery )
+				AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_GLADIATOR_CARD", "#HINT_PING_GLADIATOR_CARD", DeathScreenPingRespawn, DeathScreenRespawnWaitingForPickup )
+				AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#HINT_PING_RESPAWN_BEACON", "#HINT_PING_RESPAWN_BEACON", DeathScreenPingRespawn, DeathScreenRespawnWaitingForDelivery )
 			break
 
 		case eDeathScreenPanel.SQUAD_SUMMARY:
@@ -141,7 +141,23 @@ void function DeathScreenMenuOnOpen()
 		SetTabDefEnabled( spectateTab, false )
 		Hud_SetVisible( Hud_GetChild( file.menu, "FlowstateTitle" ), true )
 	} 
-	else
+	else if( Gamemode() == eGamemodes.WINTEREXPRESS )
+	{
+		TabData tabData        = GetTabDataForPanel( file.menu )
+		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )
+		TabDef spectateTab     = Tab_GetTabDefByBodyName( tabData, "DeathScreenSpectate" )
+		TabDef squadSummaryTab = Tab_GetTabDefByBodyName( tabData, "DeathScreenSquadSummary" )
+
+		spectateTab.title = "#DEATH_SCREEN_SPECTATE"
+		UpdateMenuTabs()
+
+		SetTabDefEnabled( recapTab, true )
+		SetTabDefEnabled( squadSummaryTab, false )
+		SetTabDefEnabled( spectateTab, true )
+		Hud_SetVisible( Hud_GetChild( file.menu, "FlowstateTitle" ), false )
+		// Hud_SetText( Hud_GetChild( file.menu, "FlowstateTitle" ), "WINTER EXPRESS" )
+	} 
+	else 
 	{
 		TabData tabData        = GetTabDataForPanel( file.menu )
 		TabDef recapTab        = Tab_GetTabDefByBodyName( tabData, "DeathScreenRecap" )

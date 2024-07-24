@@ -84,6 +84,11 @@ global struct ThrottleData
 	int   maxPerInterval = THROTTLE_DEFAULT_MAXPERINTERVAL
 }
 
+global struct PassByReferenceBool
+{
+	bool value
+}
+
 global struct WaitQuotaItem
 {
 	int _count
@@ -2493,6 +2498,16 @@ bool function IsDevGamemode()
     unreachable
 }
 
+void function WaitFrames( int frames )
+{
+	int framesRemaining = frames
+	while ( framesRemaining > 0 )
+	{
+		WaitFrame()
+		framesRemaining--
+	}
+}
+
 string function ArrayToString( array<string> arr ) //~mkos
 {
 	string result = ""
@@ -2509,3 +2524,12 @@ string function ArrayToString( array<string> arr ) //~mkos
 	
 	return result
 }
+
+#if SERVER
+const float SERVER_SCRIPT_FRAME_TIME = 0.1
+void function WaitTime( float time )
+{
+	int framesToWait = int( time / SERVER_SCRIPT_FRAME_TIME + 0.5 )	// Rounding to nearest int
+	WaitFrames( framesToWait )
+}
+#endif

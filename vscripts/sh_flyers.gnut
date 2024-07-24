@@ -293,8 +293,8 @@ entity function Flyers_CreatePerchedFlyer( vector origin, vector angles, entity 
 	// flyer.ForcePropToBeAlive()
 	flyer.SetTouchTriggers( true )
 	flyer.Highlight_Enable()
-	// if ( !HasForceUseCodeTriggers() )
-		// AddSonarDetectionForPropScript( flyer ) //Need to do this to be added to things script_triggers version of sonar can highlight
+	if ( !HasForceUseCodeTriggers() )
+		AddSonarDetectionForPropScript( flyer ) //Need to do this to be added to things script_triggers version of sonar can highlight
 
 	if ( !IsValid( existingProp ) )
 		DispatchSpawn( flyer )

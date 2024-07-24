@@ -3050,6 +3050,22 @@ void function ClearChildren( entity parentEnt, bool b0 ) //Probably should have 
 	}
 }
 
+array<entity> function GetChildren( entity parentEnt ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
+{
+	entity childEnt = parentEnt.FirstMoveChild()
+	entity nextChildEnt
+	array<entity> childrens
+
+	while ( childEnt != null )
+	{
+		nextChildEnt = childEnt.NextMovePeer()
+		childrens.append( childEnt )
+
+		childEnt = nextChildEnt
+	}
+	return childrens
+}
+
 void function ForceTimeLimitDone()
 {
 	level.devForcedWin = true
@@ -4641,50 +4657,6 @@ void function DestroyAfterDelay( entity ent, float delay )
 	ent.Destroy()
 }
 
-// some of these might need a better place. i brought those here for quick stubbing
-void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
-{
-	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
-		return
-
-	string weaponClassName = offhandWeapon.GetWeaponClassName()
-	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
-
-	if ( weaponBattleChatterEventOrNull == null )
-		return // Field does not exist
-
-	expect string( weaponBattleChatterEventOrNull )
-
-	if ( weaponBattleChatterEventOrNull.len() == 0 )
-		return // Empty field value
-
-	PlayBattleChatterLineToSpeakerAndTeam( player, weaponBattleChatterEventOrNull )
-}
-
-void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
-{
-	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
-		return
-
-	if(!IsValid(player)) return
-	
-	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
-		if(IsValid(teamMember))
-			thread PlayDialogueForPlayer( sound, teamMember, player )
-}
-
-void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
-{
-	if( !GetCurrentPlaylistVarBool( "battlechatter_enabled", true ) )
-		return
-
-	if(!IsValid(player)) return
-	
-	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
-		if(IsValid(teamMember))
-			thread PlayDialogueForPlayer( sound, teamMember, player, delay )
-}
-
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
 {
 	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
@@ -4694,15 +4666,6 @@ void function AddToUltimateRealm( entity player, entity offhandWeapon )
 
 	offhandWeapon.RemoveFromAllRealms()
 	offhandWeapon.AddToOtherEntitysRealms( ultimateAbility )
-}
-
-void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string sound )
-{
-	array<entity> teamMembers = GetPlayerArrayOfTeam( player.GetTeam() )
-	teamMembers.fastremovebyvalue( player )
-
-	foreach ( teamMember in teamMembers )
-		thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
 void function UpdateDamageState( entity ent, var damageInfo )

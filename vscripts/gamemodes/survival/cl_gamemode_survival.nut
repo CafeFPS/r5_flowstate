@@ -3416,7 +3416,7 @@ void function WaitingForPlayers_CreateCustomCameras()
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapFrame" ), true)
 	Hud_SetVisible(HudElement( "WaitingForPlayers_MapName" ), true)
 
-	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), GetCurrentPlaylistVarString( "name", "APEX" ) )
+	Hud_SetText( HudElement( "WaitingForPlayers_GamemodeName"), Gamemode() == eGamemodes.WINTEREXPRESS ? "APEX" : GetCurrentPlaylistVarString( "name", "APEX" ) )
 	Hud_SetText( HudElement( "WaitingForPlayers_MapName"), "#" + GetMapName())
 }
 
@@ -3469,6 +3469,7 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 	
 	switch(map)
 	{
+		case "mp_rr_desertlands_holiday":
 		case "mp_rr_desertlands_64k_x_64k":
 		case "mp_rr_desertlands_64k_x_64k_nx":
 		case "mp_rr_desertlands_64k_x_64k_tt":
