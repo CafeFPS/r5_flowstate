@@ -3329,12 +3329,12 @@ void function ServerToClient_CryptoDroneAutoReloadDone( entity weapon )
 	if ( file.cameraRui == null )
 		return
 
-	string weaponName = weapon.GetWeaponSettingString( eWeaponVar.shortprintname )
-	asset weaponIcon  = weapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
-	RuiSetString( file.cameraRui, "weaponReloadedHintText", format( "%s %%$%s%%",
-		Localize( "#CRYPTO_AUTO_RELOAD_DONE", Localize( weaponName ) ),
-		string(weaponIcon) ) )
-	RuiSetGameTime( file.cameraRui, "weaponReloadedHintChangeTime", Time() )
+	// string weaponName = weapon.GetWeaponSettingString( eWeaponVar.shortprintname )
+	// asset weaponIcon  = weapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
+	// RuiSetString( file.cameraRui, "weaponReloadedHintText", format( "%s %%$%s%%",
+		// Localize( "#CRYPTO_AUTO_RELOAD_DONE", Localize( weaponName ) ),
+		// string(weaponIcon) ) )
+	// RuiSetGameTime( file.cameraRui, "weaponReloadedHintChangeTime", Time() )
 }
 #endif
 
