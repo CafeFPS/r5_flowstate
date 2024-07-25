@@ -31,7 +31,6 @@ global function EnemyDownedDialogue
 global function TakingFireDialogue
 global function GetAllDroppableItems
 
-global function CreateShipPath
 global function Flowstate_CheckForLv4MagazinesAndRefillAmmo
 global function EnemyKilledDialogue
 
@@ -50,6 +49,11 @@ global function ClearPlayerIntroDropSettings
 global function EndThreadOn_PlayerChangedClass
 global function SignalThatPlayerChangedClass
 global function ClientCommand_Flowstate_AssignCustomCharacterFromMenu
+global function Survival_SetPlayerHasJumpedOutOfPlane
+
+global function Survival_HasPlayerJumpedOutOfPlane
+global function Survival_GetPlayerTimeOnGround
+global function Survival_GetPlayerData
 
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
@@ -59,6 +63,7 @@ const float PLANE_HEIGHT_REALBIG = 17000.0
 const float CLAMP_TO_RING_BUFFER = 400
 const float SURVIVAL_PLANE_DROP_RADIUS_MIN = 22000
 
+//fix debug draws calls
 const bool DEBUG_PLANE_PATH = false
 const bool DEBUG_PLANE_PATH_LIGHTWEIGHT = false
 const bool DEBUG_PLANE_PATH_JUMP = true
@@ -86,6 +91,23 @@ global struct Survival_Plane
 	entity centerEnt
 }
 
+global struct SurvivalPlayerData
+{
+	int    savedHealth = 100
+	int    savedMaxHealth = 100
+	int    savedArmor = 0
+	bool   hasJumpedOutOfPlane = false
+	int    savedTacticalAmmo = 0
+	bool   linkSoundPlaying = false
+	asset  savedUltimate
+	entity swapOnUseItem
+	int    squadRank
+	bool   xpAwarded = false
+	int    pickedUpLootCount = 0
+	vector landingOrigin = <0, 0, 0>
+	float  landingTime = 0
+}
+
 struct
 {
     void functionref( entity, float, float ) leviathanConsiderLookAtEntCallback = null
@@ -95,6 +117,8 @@ struct
 	float planeHeight = 0.0
 	Survival_Plane plane
 	bool shouldFreezeControlsOnPrematch = true
+	table<EncodedEHandle, SurvivalPlayerData>        playerData
+	table< entity, float >         playerLastDamageSlowTime
 } file
 
 void function GamemodeSurvival_Init()
@@ -1439,6 +1463,9 @@ void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victi
 
 void function OnClientConnected( entity player )
 {
+	Survival_OnClientConnected( player )
+
+	//TODO CLEAN UP
 	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
 	
 	bool isAlone = playerTeam.len() <= 1
@@ -1453,7 +1480,7 @@ void function OnClientConnected( entity player )
 	}
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-	
+
 	if ( IsFiringRangeGameMode() )
 	{
 		SetRandomStagingPositionForPlayer( player )
@@ -1541,6 +1568,39 @@ void function OnClientConnected( entity player )
 		case eGameState.Epilogue:
 			Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 			break
+	}
+}
+
+void function Survival_OnClientConnected( entity player )
+{
+	const float DEFAULT_ZOOM_LEVEL = 4.0
+	player.SetMinimapZoomScale( DEFAULT_ZOOM_LEVEL, 0.0 )
+
+	SurvivalPlayerData data
+	file.playerData[EHIToEncodedEHandle( player )] <- data
+
+	player.SetPlayerCanToggleObserverMode( false )
+
+	AddButtonPressedPlayerInputCallback( player, IN_USE_LONG, OnPlayerPressedUseLong )
+
+	file.playerLastDamageSlowTime[player] <- 0.0
+}
+
+void function OnPlayerPressedUseLong( entity player )
+{
+	thread TEMP_PlayerZiplineTryUse( player, IN_USE_LONG, true )
+}
+
+void function TEMP_PlayerZiplineTryUse( entity player, int heldCommand, bool groundCheck = false )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+
+	while ( player.IsInputCommandHeld( heldCommand ) )
+	{
+		if ( !groundCheck || !player.IsOnGround() )
+			player.Zipline_TryUse()
+		WaitFrame()
 	}
 }
 
@@ -1978,17 +2038,17 @@ void function ClearPlayerIntroDropSettings( entity player )
 			PutEntityInSafeSpot( player, null, null, playerOrigin, playerOrigin )
 	}
 
-	// player.p.survivalLandedStartTime = Time()
+	player.p.survivalLandedStartTime = Time()
 
-	// if ( player.GetPlayerNetBool( "isJumpmaster" ) )
-	// {
-		// player.p.wasJumpmaster = true //used for tracking stats at the end of the game
-		// player.p.wasLastJumpmaster = true
-	// }
-	// else
-	// {
-		// player.p.wasLastJumpmaster = false
-	// }
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+	{
+		player.p.wasJumpmaster = true //used for tracking stats at the end of the game
+		player.p.wasLastJumpmaster = true
+	}
+	else
+	{
+		player.p.wasLastJumpmaster = false
+	}
 	// remove jumpmaster star from the unitframe
 	player.SetPlayerNetBool( "isJumpmaster", false )
 	GradeFlagsClear( player, eTargetGrade.JUMPMASTER )
@@ -2045,9 +2105,9 @@ void function ClearPlayerIntroDropSettings( entity player )
 
 	Survival_SetInventoryEnabled( player, true )
 
-	// file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane = true
-	// file.playerData[ EHIToEncodedEHandle( player ) ].landingOrigin       = player.GetOrigin()
-	// file.playerData[ EHIToEncodedEHandle( player ) ].landingTime         = Time()
+	file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane = true
+	file.playerData[ EHIToEncodedEHandle( player ) ].landingOrigin       = player.GetOrigin()
+	file.playerData[ EHIToEncodedEHandle( player ) ].landingTime         = Time()
 
 	// #if DEVELOPER
 		// DEV_GiveSpawnWeapons( player )
@@ -2058,6 +2118,29 @@ void function ClearPlayerIntroDropSettings( entity player )
 	player.p.survivalLandedOnGround = true
 }
 
+void function Survival_SetPlayerHasJumpedOutOfPlane( entity player )
+{
+	file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane = true
+}
+
+float function Survival_GetPlayerTimeOnGround( entity player )
+{
+	if ( file.playerData[ EHIToEncodedEHandle( player ) ].landingTime <= 0 )
+		return 0
+
+	return Time() - file.playerData[ EHIToEncodedEHandle( player ) ].landingTime
+}
+
+bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
+{
+	return ( EHIToEncodedEHandle( player ) in file.playerData && file.playerData[ EHIToEncodedEHandle( player ) ].hasJumpedOutOfPlane == true )
+}
+
+SurvivalPlayerData function Survival_GetPlayerData( EncodedEHandle playerEncodedEHandle )
+{
+	return file.playerData[ playerEncodedEHandle ]
+}
+
 void function Survival_OnPlayerRespawned( entity player )
 {
 	SurvivalPlayerRespawnedInit( player )
@@ -2066,10 +2149,14 @@ void function Survival_OnPlayerRespawned( entity player )
 
 void function SurvivalPlayerRespawnedInit( entity player )
 {
-	if( Gamemode() != eGamemodes.SURVIVAL )
-		return //keep this away from flowstate gamemodes for now
+	#if DEVELOPER
+	DumpStack()
+	#endif
 
-	// Warning( "SurvivalPlayerRespawnedInit", player )
+	if( Gamemode() != eGamemodes.SURVIVAL )
+		return //keep this away from flowstate gamemodes for now. Cafe
+
+	Warning( "SurvivalPlayerRespawnedInit", player )
 	bool resetPlayerInventoryOnRespawn = true //Survival_ShouldResetInventoryOnRespawn( player )
 
 	UpdatePlayerCounts()

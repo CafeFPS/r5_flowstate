@@ -1,8 +1,8 @@
 global function SurvivalShip_Init
 global function Survival_IsPlayerEligibleForJumpmaster
-global function Survival_HasPlayerJumpedOutOfPlane
+
 global function Survival_CreatePlane
-global function Survival_GeneratePlaneFlightPath
+
 global function Survival_DropPlayerFromPlane_UseCallback
 global function Survival_DropPlayerFromPlane
 global function GetPlayersJumpingWithJumpmaster
@@ -212,6 +212,8 @@ void function ClearPlayerPlaneViewMode( entity player )
 	// Show name above friendly heads
 	// TakePlayerSettingsMods( player, [ "disable_targetinfo" ] )
 
+	GiveLoadoutRelatedWeapons( player ) //Cafe was here
+	
 	Signal( player, "ClearedPlayerPlaneViewMode" )
 }
 
@@ -259,44 +261,43 @@ void function Input_JumpFromPlane( entity player )
 
 void function JumpFromPlane( entity player, bool forcedOut = false )
 {
-	// if ( !Flag( "PlaneDoorOpen" ) )
-		// return
-	// if ( !player.GetPlayerNetBool( "playerInPlane" ) )
-		// return
-	// if ( (!player.GetPlayerNetBool( "isJumpmaster" ) && player.GetPlayerNetBool( "isJumpingWithSquad" )) && !forcedOut )
-		// return
+	if ( !Flag( "PlaneDoorOpen" ) )
+		return
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return
+	if ( (!player.GetPlayerNetBool( "isJumpmaster" ) && player.GetPlayerNetBool( "isJumpingWithSquad" )) && !forcedOut )
+		return
 
-	// Assert( fabs( player.GetOrigin().x ) < 1<<16 && fabs( player.GetOrigin().y ) < 1<<16, "Player is jumping way outside regular bounds." )
+	Assert( fabs( player.GetOrigin().x ) < 1<<16 && fabs( player.GetOrigin().y ) < 1<<16, "Player is jumping way outside regular bounds." )
 
-	// // Fix for some cases where skydive boundary volumes are too close to the playable space, and users are able to jump from the plane while inside the virtual wall. We fixed the volumes in the bsp but this is a fallback
-	// if ( !forcedOut && IsPointInsideSkydiveBoundary( player.GetOrigin() ) )
-		// return
+	// Fix for some cases where skydive boundary volumes are too close to the playable space, and users are able to jump from the plane while inside the virtual wall. We fixed the volumes in the bsp but this is a fallback
+	if ( !forcedOut && IsPointInsideSkydiveBoundary( player.GetOrigin() ) )
+		return
 
-	// // Survival_SetPlayerHasJumpedOutOfPlane( player )
+	Survival_SetPlayerHasJumpedOutOfPlane( player )
 
-	// if ( forcedOut )
-		// printt( "Player", player, "kicked from plane" )
-	// else
-		// printt( "Player", player, "jumping from plane" )
+	if ( forcedOut )
+		printt( "Player", player, "kicked from plane" )
+	else
+		printt( "Player", player, "jumping from plane" )
 
 	vector driverViewVector = AnglesToForward( player.CameraAngles() )
-	// Signal( player, "NoLongerJumpMaster" )
+	Signal( player, "NoLongerJumpMaster" )
 	// // StatsHook_UnlockJumpmasterAchievement( player )
 
-	// if ( forcedOut )
-	// {
-		// entity plane = Sur_GetPlaneEnt()
-		// }
+	if ( forcedOut )
+	{
+		entity plane = Sur_GetPlaneEnt()
 
-		// vector viewAngles = !file.staticJumpPoint ? plane.GetAngles() + <45,180,0> : plane.GetAngles()
-		// driverViewVector = AnglesToForward( viewAngles )
-		// player.SnapEyeAngles( viewAngles )
-		// if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
-		// {
-			// thread PlayerSkyDive( player, driverViewVector, [], player )
-			// return
-		// }
-	// }
+		vector viewAngles = !file.staticJumpPoint ? plane.GetAngles() + <45,180,0> : plane.GetAngles()
+		driverViewVector = AnglesToForward( viewAngles )
+		player.SnapEyeAngles( viewAngles )
+		if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
+		{
+			thread PlayerSkyDive( player, driverViewVector, [], player )
+			return
+		}
+	}
 
 	array<entity> jumpingPlayers = GetPlayersJumpingWithJumpmaster( player )
 
@@ -310,6 +311,8 @@ void function JumpFromPlane( entity player, bool forcedOut = false )
 	{
 		thread PlayerSkyDive( jumpingPlayer, driverViewVector, jumpingPlayers, player )
 	}
+
+	GiveBasicSurvivalItems( player )	
 }
 
 void function SURVIVAL_SetMapDelta( float maxDelta )
@@ -357,58 +360,6 @@ vector function TraceInBoundPoint( vector start, vector forward, float multiplie
     }    
 
 	return result
-}
-// Why does this work?
-array<vector> function Survival_GeneratePlaneFlightPath() //Modified by @CafeFPS
-{
-	const float CENTER_DEVIATION = 2.0
-	const float POINT_FINDER_MULTIPLIER = 200
-
-	// Get a random point from map center within specified deviation
-	vector dropshipCenterPoint = GetRandomCenter( SURVIVAL_GetMapCenter(), 0.0, CENTER_DEVIATION )
-	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight()
-
-	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
-	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
-
-	vector startPos = ClampToWorldspace( dropshipCenterPoint + dropshipMovingForward*45000 ) //TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
-	vector endPos = ClampToWorldspace( dropshipCenterPoint - dropshipMovingForward*45000 ) // TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
-	
-	// #if DEVELOPER
-	// DebugDrawSphere( startPos, 128, 255, 255, 255, true, 999.0 )
-	// DebugDrawSphere( endPos, 128, 255, 0, 255, true, 999.0 )
-	// startPos = TraceInBoundPoint( startPos, AnglesToForward( VectorToAngles( startPos - endPos ) ), 5000 )
-	// #endif
-
-    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
-	float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-	float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
-    
-    float velocity = Distance2D(endPos, startPos)/ (DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME)
-	if ( CoinFlip() )
-	{
-		vector temp = startPos
-		startPos = endPos
-		endPos = temp
-	}
-    dropshipMovingAngle = VectorToAngles( endPos - startPos )
-    dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
-
-    startPos = <startPos.x + (-dropshipMovingForward.x * velocity * DROP_WAIT_TIME), startPos.y + (-dropshipMovingForward.y * velocity * DROP_WAIT_TIME), startPos.z>
-    endPos = <endPos.x + (dropshipMovingForward.x * velocity * DROP_TIMEOUT_TIME), endPos.y + (dropshipMovingForward.y * velocity * DROP_TIMEOUT_TIME), endPos.z>
-
-	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
-	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
-	// printt( "Survival_GeneratePlaneFlightPath: dropshipMovingAngle", dropshipMovingAngle )
-	// printt( "Survival_GeneratePlaneFlightPath: dropship distance", Distance2D(endPos, startPos) )
-
-	// #if DEVELOPER
-	// DebugDrawSphere( startPos, 512, 0, 255, 255, true, 999.0 )
-	// DebugDrawSphere( endPos, 512, 255, 0, 255, true, 999.0 )
-	// DebugDrawLine( startPos, endPos, 255, 0, 0, true, 999.0 )
-	// #endif
-
-	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
 }
 
 void function Survival_DropPlayerFromPlane_UseCallback( entity player )
@@ -522,11 +473,6 @@ void function GiveBasicSurvivalItems( entity player )
 	}
 	// todo: find why it's not playing fx on cockpit
 	// BroadcastItemPickup( player, "armor_pickup_lv1", eLootAction.EQUIP )	
-}
-
-bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
-{
-	return !player.GetPlayerNetBool( "playerInPlane" )
 }
 
 float function SURVIVAL_GetAirburstHeight()

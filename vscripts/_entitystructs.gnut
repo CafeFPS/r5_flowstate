@@ -548,8 +548,6 @@ global struct ServerPlayerStruct
 	int 						controllableProjectiles_scriptManagedID = -1
 
 	float 						lastDroneShieldStunPushTime
-	entity killerToSpectate
-	bool   hasSpectatedKillerOnce
 
 	float						lastRespawnTime
 	float						lastDamageTime
@@ -1062,10 +1060,23 @@ global struct ServerPlayerStruct
 
 	float lastTimeHovercraftSpeedSentToClient
 	int   jumpMasterOrder = 3
-	bool survivalLandedOnGround
 
 	entity        cryptoActiveCamera
 	bool          completedEMP
+
+	float  survivalMatchStartTime
+	float  survivalAliveStartTime
+	float  survivalAliveEndTime
+	float  survivalLandedStartTime
+	bool   survivalLandedOnGround
+	entity killerToSpectate
+	bool   hasSpectatedKillerOnce
+
+	// Player was jumpmaster at any point in the current game.
+	bool wasJumpmaster = false
+	// Player was jumpmaster during the team's last drop. In 3 strikes, the last jumpmaster also leads the team's next
+	// jumps for subsequent respawns.
+	bool wasLastJumpmaster = false
 }
 
 global struct ChallengeScore
