@@ -96,6 +96,7 @@ global function CodeCallback_OnNavMeshHotSwapBegin
 global function CodeCallback_OnNavMeshHotSwapEnd
 
 global function SetDefaultObserverBehavior
+global function CodeCallback_OnPlayerRespawned
 
 const bool PRINT_MOVEMENT = false
 
@@ -135,16 +136,147 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	
 	if( Gamemode() == eGamemodes.fs_snd )
 		_OnPlayerConnectedSND( player )
+	else if( Gamemode() == eGamemodes.SURVIVAL && (Playlist() != ePlaylists.survival_dev && Playlist() != ePlaylists.dev_default && !GetCurrentPlaylistVarBool( "is_practice_map", false ) && Playlist() != ePlaylists.fs_movementrecorder) )
+	{
+		DecideRespawnPlayer_Retail( player )
+	}
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
-		printt( "CodeCallback_OnPlayerRespawned", player )
+	Warning( "CodeCallback_OnPlayerRespawned", player )
 	#endif
+
+	Assert( !IsPlayerEliminated( player ), "An eliminated player respawned." )
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+
+	SetHumanRagdollImpactTable( player )
+
+	player.p.respawnCount++
+	// player.s.respawnTime = Time()
+	ClearRecentDamageHistory( player )
+	// ClearRespawnAvailable( player )
+
+	player.p.killerToSpectate = null
+	player.p.playerToTimeThatAssistCreditLastsTable.clear()
 	
-	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
-		cb( player )
+	player.kv.renderColor = "255 255 255 255"
+	player.kv.renderAmt = 255
+	player.Show()
+
+	player.Signal( "OnRespawned" )
+
+	// Added via AddCallback_OnPlayerRespawned
+	foreach ( callbackFunc in svGlobal.onPlayerRespawnedCallbacks )
+	{
+		callbackFunc( player )
+	}
+
+	// // Added via AddCallback_OnPlayerPostRespawned
+	// foreach ( callbackFunc in svGlobal.onPlayerPostRespawnedCallbacks )
+	// {
+		// callbackFunc( player )
+	// }
+
+	// foreach ( func in player.p.playerSpawnedCallbacks )
+	// {
+		// func( player )
+	// }
+
+	player.e.lastAttacker = null
+	player.e.canBurn = true
+	player.e.canBeDamagedFromGas = true
+
+	thread PlayerLifeThread( player )
+}
+
+void function PlayerLifeThread( entity player )
+{
+	// this thread will run for the span of the player's life plus a little bit extra
+	// (the extra is the time after they die before they're moved to spectator)
+
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnRespawned" )
+	EndSignal( player, "OnPostDeathLogicEnd" )
+	EndSignal( player, "StopPostDeathLogic" )
+
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
+
+	OnThreadEnd( void function() : ( player, characterSlot ) {
+		if ( IsValid( player ) )
+		{
+			RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, characterSlot, BeginPlayerCharacterThread )
+			Signal( player, "HaltPlayerCharacterThread" )
+		}
+	} )
+
+	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, characterSlot, BeginPlayerCharacterThread )
+
+	Assert( LoadoutSlot_IsReady( player, characterSlot ), "Tried to spawn a player but their character selection was somehow empty." )
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( player, characterSlot )
+	BeginPlayerCharacterThread( player, character )
+
+	WaitForever()
+}
+
+
+void function BeginPlayerCharacterThread( entity player, ItemFlavor character )
+{
+	thread PlayerCharacterThread( player, character )
+}
+
+
+void function PlayerCharacterThread( entity player, ItemFlavor character )
+{
+	// this thread will run for the span of the player being a specific character
+	// if the character is null, it means they currently don't have a character
+	Signal( player, "HaltPlayerCharacterThread" )
+	EndSignal( player, "HaltPlayerCharacterThread" )
+
+	LoadoutEntry skinSlot = Loadout_CharacterSkin( character )
+
+	OnThreadEnd( void function() : ( player, character, skinSlot ) {
+		if ( IsValid( player ) )
+		{
+			RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, skinSlot, ApplyPlayerCharacterSkin )
+		}
+
+		//foreach( void functionref( entity, ItemFlavor ) cb in file.onPlayerCharacterShutdownCallbacks )
+		//	cb( player, character )
+	} )
+
+	// apply chosen skin
+	ItemFlavor skin = LoadoutSlot_GetItemFlavor( player, skinSlot )
+	ApplyPlayerCharacterSkin( player, skin )
+	// and keep it up to date
+	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( player, skinSlot, ApplyPlayerCharacterSkin )
+
+	// if we have a character, apply settings
+	// todo(dw): make this get done here
+	//asset setFile = CharacterClass_GetSetFile( character )
+	//array<string> existingMods = player.GetPlayerSettingsMods()
+	//player.SetPlayerSettingsWithMods( setFile, existingMods )
+
+	//foreach( void functionref( entity, ItemFlavor ) cb in file.onPlayerCharacterSetupCallbacks )
+	//	cb( player, character )
+
+	WaitForever()
+}
+
+void function ApplyPlayerCharacterSkin( entity player, ItemFlavor skin )
+{
+	//see Declan as to why this needed to change from CharacterSkin_Apply()
+	// ApplyAppropriateCharacterSkin( player )
+	
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	if ( !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkin( character ) ) )
+		return
+		
+	CharacterSkin_Apply( player, skin )
 }
 
 /*{

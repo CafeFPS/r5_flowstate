@@ -54,6 +54,7 @@ global function Survival_SetPlayerHasJumpedOutOfPlane
 global function Survival_HasPlayerJumpedOutOfPlane
 global function Survival_GetPlayerTimeOnGround
 global function Survival_GetPlayerData
+global function Survival_OnClientConnected
 
 //float SERVER_SHUTDOWN_TIME_AFTER_FINISH = -1 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
@@ -205,10 +206,13 @@ bool function ClientCommand_ForceRingMovement(entity player, array<string> args)
 {
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return false
-
-	FlagWait( "DeathCircleActive" )
-	svGlobal.levelEnt.Signal( "DeathField_ShrinkNow" )
-	FlagClear( "DeathFieldPaused" )
+	
+	thread function () : ( player )
+	{
+		FlagWait( "DeathCircleActive" )
+		svGlobal.levelEnt.Signal( "DeathField_ShrinkNow" )
+		FlagClear( "DeathFieldPaused" )
+	}()
 
 	return true
 }
@@ -808,51 +812,6 @@ void function Leviathan_ConsiderLookAtEnt( entity ent, float duration, float car
 		thread file.leviathanConsiderLookAtEntCallback( ent, duration, careChance )
 }
 
-void function RespawnPlayerInDropship( entity player )
-{
-	const float POS_OFFSET = -525.0 // Offset from dropship's origin
-
-	entity dropship = Sur_GetPlaneEnt()
-
-	vector dropshipPlayerOrigin = dropship.GetOrigin()
-	dropshipPlayerOrigin.z += POS_OFFSET
-
-	DecideRespawnPlayer( player, false )
-
-	player.SetParent( dropship )
-
-	player.SetOrigin( dropshipPlayerOrigin )
-	player.SetAngles( dropship.GetAngles() )
-
-	player.UnfreezeControlsOnServer()
-
-	player.ForceCrouch()
-	player.Hide()
-	player.NotSolid()
-	
-	player.SetPlayerNetBool( "isJumpingWithSquad", true )
-	player.SetPlayerNetBool( "playerInPlane", true )
-
-	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
-
-	if ( Flag( "PlaneDrop_Respawn_SetUseCallback" ) )
-		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	bool isAlone = playerTeam.len() <= 1
-
-	if ( isAlone )
-		player.SetPlayerNetBool( "isJumpmaster", true )
-
-	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-
-	if( GetCurrentPlaylistVarBool( "flowstate_giveskins_characters", false ) )
-	{
-		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
-		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
-	}
-}
-
 void function Sequence_Playing()
 {
 	SetServerVar( "minimapState", IsFiringRangeGameMode() ? eMinimapState.Hidden : eMinimapState.Default )
@@ -871,19 +830,38 @@ void function Sequence_Playing()
 	// if( Survival_AirdroppedCarePackagesEnabled() )
 		// thread AirdropLogic()
 
+	foreach ( entity player in GetPlayerArray() )
+	{
+		player.StopObserverMode()
+		Survival_ClearPrematchSettings( player )
+		
+		if( !IsAlive( player ) )
+			DecideRespawnPlayer_Retail( player )
+	}
+
 	// Set settings for the drop-in
 	foreach ( entity player in GetPlayerArray() )
 	{
-		DecideRespawnPlayer( player, true ) //why is this needed? Cafe
-		player.StopObserverMode()
-		Survival_ClearPrematchSettings( player )
 		bool shouldSetDropSettings = true
 
-		if ( Gamemode() == eGamemodes.WINTEREXPRESS )
+		if ( Gamemode() == eGamemodes.WINTEREXPRESS || Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementrecorder )
 			shouldSetDropSettings = false
 
 		if ( shouldSetDropSettings )
+		{
 			SetPlayerIntroDropSettings( player )
+		}
+	}
+
+	FlagClear( "PlaneStartMoving" )
+	FlagClear( "PlaneDoorOpen" )
+	FlagClear( "PlaneAtLaunchPoint" )
+
+	foreach( entity player in GetPlayerArray() )
+	{
+		player.ClearParent()
+		ClearPlayerPlaneViewMode( player )
+		player.p.survivalLandedOnGround = false
 	}
 
 	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
@@ -895,9 +873,6 @@ void function Sequence_Playing()
 	UpdatePlayerCounts()
 
 	thread CircleRemainingTimeChatter_Think()
-
-	foreach ( entity player in GetPlayerArray() )
-		ClearPlayerIntroDropSettings( player )
 
 	if( GetCurrentPlaylistVarBool( "lsm_mod11", false ) )
 	{
@@ -1465,12 +1440,6 @@ void function OnClientConnected( entity player )
 {
 	Survival_OnClientConnected( player )
 
-	//TODO CLEAN UP
-	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	
-	bool isAlone = playerTeam.len() <= 1
-
-	playerTeam.fastremovebyvalue( player )
 	player.p.squadRank = 0
 
 	if( GetCurrentPlaylistVarBool( "lsm_mod4", false ) )
@@ -1494,77 +1463,9 @@ void function OnClientConnected( entity player )
 		thread PlayerStartsTraining( player )
 		return
 	} 
-	else if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementrecorder )
-	{
-		vector origin
-		if( GetPlayerArray_Alive().len() > 0 )
-			origin = GetPlayerArray_Alive()[0].GetOrigin()
-		
-		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
-		
-		if( !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
-		{
-			Flowstate_AssignUniqueCharacterForPlayer(player, true)
-			player.SetOrigin( origin )
-		}
-		
-		DecideRespawnPlayer( player )
-		GiveBasicSurvivalItems( player )
-		return		
-	}
 
 	switch ( GetGameState() )
 	{
-		// case eGameState.WaitingForPlayers:
-		
-		// break
-		case eGameState.Prematch:
-			if ( IsValid( Sur_GetPlaneEnt() ) )
-				RespawnPlayerInDropship( player )
-				printt( "connected prematch" )
-			break
-		case eGameState.Playing:
-			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
-			{
-				Flowstate_AssignUniqueCharacterForPlayer(player, true)
-			}
-			
-			if ( IsFiringRangeGameMode() )
-			{
-				PlayerMatchState_Set( player, ePlayerMatchState.STAGING_AREA )
-
-				SetRandomStagingPositionForPlayer( player )
-				DecideRespawnPlayer( player )
-			}
-			else if ( Flag( "SpawnInDropship" ) && IsValid( Sur_GetPlaneEnt() ) )
-			{
-				RespawnPlayerInDropship( player )
-				printt( "connected dropship playing" )
-			}
-			else if( GetPlayerArray_Alive().len() > 0 ) //player connected mid game, start spectating
-			{
-				array<entity> players = clone GetPlayerArray_Alive()
-				players.fastremovebyvalue( player )
-
-				if( players.len() == 0 )
-					return
-
-				entity target = players.getrandom()
-
-				if( !ShouldSetObserverTarget( target ) )
-					return
-
-				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
-				Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
-				player.SetPlayerNetInt( "spectatorTargetCount", players.len() )
-				player.SetSpecReplayDelay( 1 )
-				player.StartObserverMode( OBS_MODE_IN_EYE )
-				player.SetObserverTarget( target )
-				player.SetPlayerCanToggleObserverMode( false )
-				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
-			}
-
-			break
 		case eGameState.Epilogue:
 			Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 			break
@@ -2030,6 +1931,7 @@ void function ClearPlayerIntroDropSettings( entity player )
 
 	// Called by whatever script is handling the player deployment into the map. Once that script gets the player to the ground it should call this.
 	player.ClearInvulnerable()
+	player.UnforceStand()
 
 	if ( IsAlive( player ) )
 	{
@@ -2141,6 +2043,150 @@ SurvivalPlayerData function Survival_GetPlayerData( EncodedEHandle playerEncoded
 	return file.playerData[ playerEncodedEHandle ]
 }
 
+//  Mackey suggested we create a passive weapon mod (new!).
+//  To get this to work we needed to move where this gets called, originally in Survival_OnPlayerRespawnedInit
+//  to Survival_PlayerCharacterSetup (so that the passive can get a chance to be removed when we switch characters).
+void function Survival_SetupWeaponMods( entity player )
+{
+	array mods = player.GetExtraWeaponMods()
+	if ( GetCurrentPlaylistVarBool( "survival_viewkick_patterns", false ) )
+		mods.append( "vkp" )
+
+	string extraModsStr     = GetCurrentPlaylistVarString( "player_extra_weapon_mods", "" )
+	array<string> extraMods = GetTrimmedSplitString( extraModsStr, " " )
+	mods.extend( extraMods )
+
+	mods.append( "survival_finite_ordnance" )
+	player.SetExtraWeaponMods( mods ) // gets cleared on death
+}
+
+void function Survival_PlayerCharacterSetup( entity player, ItemFlavor character, bool giveDefaultMelee = true )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	if ( IsLobby() )
+		return
+
+	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+
+	TakeAllPassives( player )
+
+	// clear all mods (b/c we added a passive weapon mod, we have to
+	//  explicitly clear the passive mods if we were to change character types, and we have to
+	//  reapply the mods that are true for all survival games.
+	ClearExtraWeaponMods( player )
+	Survival_SetupWeaponMods( player )
+
+	asset setFile = CharacterClass_GetSetFile( character )
+
+	player.SetPlayerSettingsWithMods( setFile, [] )
+
+	// GiveLoadoutRelatedWeapons( player )
+
+	// camo and skin are set elsewhere
+
+	// Setup shields ( if player isn't bleeding out ):
+	// if( !Bleedout_IsBleedingOut( player ) )
+	// {
+		// string itemRef = EquipmentSlot_GetLootRefForSlot( player, "armor" )
+		// if ( SURVIVAL_Loot_IsRefValid( itemRef ) )
+		// {
+			// LootData data = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+			// player.SetShieldHealthMax( SURVIVAL_GetCharacterShieldHealthMaxForArmor( player, data ) )
+		// }
+		// else
+		// {
+			// player.SetShieldHealthMax( GetPlayerSettingBaseShield( player ) )
+		// }
+		// player.SetShieldHealth( player.GetShieldHealthMax() )
+	// }
+
+	// passives
+	// {
+		// foreach ( ItemFlavor passiveAbility in CharacterClass_GetPassiveAbilities( character ) )
+		// {
+			// GivePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+
+			// // Attach passive specific weapon mods to a player
+
+			// string passiveWeaponMod = CharacterAbility_GetPassiveWeaponMod( passiveAbility )
+			// if ( passiveWeaponMod != "" )
+				// GiveExtraWeaponMod( player, passiveWeaponMod )
+		// }
+
+		// float damageScale = CharacterClass_GetDamageScale( character )
+		// if ( damageScale < 1.0 ) // TODO: it's a bit backwards the the playlist var drives the passive, that that's how it is for now
+			// GivePassive( player, ePassives.PAS_FORTIFIED )
+		// else if ( damageScale > 1.0 )
+			// GivePassive( player, ePassives.PAS_LOWPROFILE )
+	// }
+
+	// // tactical
+	// {
+		// ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
+		// player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tacticalAbility ), OFFHAND_TACTICAL, [] )
+		// entity tacticalWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		// tacticalWeapon.SetWeaponPrimaryClipCount( tacticalWeapon.GetWeaponPrimaryClipCountMax() ) // give tactical straight away
+		// if ( GetCurrentPlaylistVarBool( "survival_give_tactical_on_first_land", true ) )
+		// {
+			// if ( !player.p.survivalLandedOnGround )
+				// tacticalWeapon.AddMod( "survival_ammo_regen_paused" )
+		// }
+
+		// Remote_CallFunction_Replay( player, "ServerCallback_UpdateHudWeaponData", tacticalWeapon )
+	// }
+
+	// // ultimate
+	// {
+		// ItemFlavor ultimateAbility = CharacterClass_GetUltimateAbility( character )
+		// player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimateAbility ), OFFHAND_ULTIMATE, [] )
+
+		// entity ultimateWeapon = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+
+		// float fireDuration = ultimateWeapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
+		// player.p.lastPilotOffhandUseTime[ OFFHAND_INVENTORY ] = Time() - fireDuration // track ultimate usage
+		// player.p.lastPilotClipFrac[ OFFHAND_INVENTORY ]       = 0.0
+
+		// // If we haven't landed and begun the game yet, let the ultimate charge faster (staging)
+		// if ( GetGameState() <= eGameState.WaitingForPlayers )
+		// {
+			// ultimateWeapon.AddMod( "survival_ammo_regen_paused" )
+		// }
+
+		// if ( !player.p.survivalLandedOnGround )
+			// ultimateWeapon.AddMod( "survival_ammo_regen_paused" )
+	// }
+
+	// // Put the player in a safe spot if they aren't parented to anything
+	// // This is needed because they may be switching to a larget character that now is stuck in geo
+	// entity parentEnt = player.GetParent()
+	// if ( !IsValid( parentEnt ) && !player.Anim_IsActive() )
+	// {
+		// array< vector > navmeshPositions = NavMesh_GetClosestPoints( player.GetOrigin(), 32 )
+
+		// foreach ( vector navmeshPosition in navmeshPositions )
+		// {
+			// if ( PlayerCanTeleportHere( player, navmeshPosition ) )
+			// {
+				// PutPlayerInSafeSpot( player, null, null, navmeshPosition, navmeshPosition )
+				// break
+			// }
+		// }
+	// }
+
+	// if( giveDefaultMelee )
+		// SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+
+	// Inventory_RefreshAllPlayerEquipment( player )
+
+	// foreach ( func in file.Callbacks_OnPlayerSetupComplete )
+	// {
+		// func( player )
+	// }
+}
+
 void function Survival_OnPlayerRespawned( entity player )
 {
 	SurvivalPlayerRespawnedInit( player )
@@ -2149,14 +2195,13 @@ void function Survival_OnPlayerRespawned( entity player )
 
 void function SurvivalPlayerRespawnedInit( entity player )
 {
-	#if DEVELOPER
-	DumpStack()
-	#endif
-
-	if( Gamemode() != eGamemodes.SURVIVAL )
+	if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
 		return //keep this away from flowstate gamemodes for now. Cafe
 
-	Warning( "SurvivalPlayerRespawnedInit", player )
+	// #if DEVELOPER
+	// DumpStack()
+	// #endif
+
 	bool resetPlayerInventoryOnRespawn = true //Survival_ShouldResetInventoryOnRespawn( player )
 
 	UpdatePlayerCounts()
@@ -2165,7 +2210,7 @@ void function SurvivalPlayerRespawnedInit( entity player )
 	player.TurnLowHealthEffectsOff()
 	player.AmmoPool_SetCapacity( SURVIVAL_MAX_AMMO_PICKUPS )
 
-	// Survival_PlayerCharacterSetup( player, Survival_ValidateAndGetCharacterClass( player ) )
+	Survival_PlayerCharacterSetup( player, LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) )
 
 	// SURVIVAL_SetDefaultPlayerSettings( player )
 

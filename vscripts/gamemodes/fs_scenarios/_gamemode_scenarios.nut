@@ -396,152 +396,6 @@ array<vector> function FS_Scenarios_GeneratePlaneFlightPathForGroup( scenariosGr
 	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
 }
 
-void function FS_Scenarios_StartDropshipMovement( scenariosGroupStruct group )
-{
-	if( !IsValid( group ) )
-		return
-
-	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
-
-	vector Center = group.calculatedRingCenter
-	int realm = group.slotIndex
-
-	array<vector> foundFlightPath = FS_Scenarios_GeneratePlaneFlightPathForGroup( group )
-
-	vector shipStart = foundFlightPath[0]
-	vector shipEnd = foundFlightPath[1]
-	vector shipAngles = foundFlightPath[2]
-	vector shipPathCenter = foundFlightPath[3]
-
-	// entity centerEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", shipPathCenter, shipAngles )
-	// centerEnt.Minimap_AlwaysShow( 0, null )
-	// SetTargetName( centerEnt, "pathCenterEnt" )
-	// DispatchSpawn( centerEnt )
-
-	// entity minimapPlaneEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", dropship.GetOrigin(), dropship.GetAngles() )
-	// minimapPlaneEnt.NotSolid()
-	// minimapPlaneEnt.SetParent( dropship )
-	// minimapPlaneEnt.Minimap_AlwaysShow( 0, null )
-	// SetTargetName( minimapPlaneEnt, "planeEnt" )
-	// DispatchSpawn( minimapPlaneEnt )
-
-	entity dropship = Survival_CreatePlane( shipStart, shipAngles )
-
-	FS_Scenarios_StoreAliveDropship( dropship )
-
-	dropship.RemoveFromAllRealms()
-	dropship.AddToRealm( realm )
-
-	EndSignal( dropship, "OnDestroy" )
-
-	array<entity> players
-	players.extend( group.team1Players )
-	players.extend( group.team2Players )
-	players.extend( group.team3Players )
-
-	OnThreadEnd(
-		function() : ( players, dropship )
-		{
-			foreach ( player in players )
-			{
-				if ( player.GetPlayerNetBool( "playerInPlane" ) )
-					Survival_DropPlayerFromPlane_UseCallback( player )
-			}
-
-			// centerEnt.Destroy()
-			// minimapPlaneEnt.Destroy()
-			// minimapPlaneEnt.ClearParent()
-			try{
-				ClearChildren( dropship, true )
-				dropship.Destroy()
-			}
-			catch( e420 )
-			{
-				printt("DROPSHIP BUG CATCHED - DEBUG THIS, DID DROPSHIP HAVE BOTS?")
-			}
-		}
-	)
-
-	foreach ( team in GetTeamsForPlayers( players ) )
-	{
-		array<entity> teamMembers = GetPlayerArrayOfTeam( team )
-
-		bool foundJumpmaster = false
-		entity ornull jumpMaster = null
-
-		for ( int idx = teamMembers.len() - 1; idx == 0; idx-- )
-		{
-			entity teamMember = teamMembers[idx]
-
-			if ( Survival_IsPlayerEligibleForJumpmaster( teamMember ) )
-			{
-				foundJumpmaster = true
-				jumpMaster = teamMember
-
-				break
-			}
-		}
-
-		if ( !foundJumpmaster && teamMembers.len() > 0 ) // No eligible jumpmasters? Shouldn't happen, but just in case
-			jumpMaster = teamMembers.getrandom()
-
-		if ( jumpMaster != null )
-		{
-			expect entity( jumpMaster )
-
-			jumpMaster.SetPlayerNetBool( "isJumpmaster", true )
-		}
-	}
-
-	foreach ( player in players )
-		FS_Scenarios_RespawnPlayerInDropship( player, dropship )
-
-	float DROP_TOTAL_TIME = 20 // GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 20.0 )
-
-	dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME, 0.0, 0.0 )
-
-	foreach ( player in players )
-		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-	wait DROP_TOTAL_TIME
-}
-
-void function FS_Scenarios_RespawnPlayerInDropship( entity player, entity dropship )
-{
-	const float POS_OFFSET = -525.0 // Offset from dropship's origin
-
-	vector dropshipPlayerOrigin = dropship.GetOrigin()
-	dropshipPlayerOrigin.z += POS_OFFSET
-
-	DecideRespawnPlayer( player, false )
-
-	player.SetParent( dropship )
-
-	player.SetOrigin( dropshipPlayerOrigin )
-	player.SetAngles( dropship.GetAngles() )
-
-	player.UnfreezeControlsOnServer()
-
-	player.ForceCrouch()
-	player.Hide()
-	player.NotSolid()
-	
-	player.SetPlayerNetBool( "isJumpingWithSquad", true )
-	player.SetPlayerNetBool( "playerInPlane", true )
-
-	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
-
-	AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
-
-	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	bool isAlone = playerTeam.len() <= 1
-
-	if ( isAlone )
-		player.SetPlayerNetBool( "isJumpmaster", true )
-
-	// AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-}
-
 void function FS_Scenarios_SaveBigDoorData( entity door )
 {
 	bigDoorsData bigDoor
@@ -1859,132 +1713,126 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 			}
 
-			if( settings.fs_scenarios_dropshipenabled )
-			{
-				thread FS_Scenarios_StartDropshipMovement( newGroup )
-			} else
-			{
-				thread FS_Scenarios_GiveWeaponsToGroup( players )
+			thread FS_Scenarios_GiveWeaponsToGroup( players )
 
-				thread function () : ( newGroup, players )
-				{
-					EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
+			thread function () : ( newGroup, players )
+			{
+				EndSignal( newGroup.dummyEnt, "FS_Scenarios_GroupFinished" )
 
-					OnThreadEnd
-					(
-						function() : ( newGroup, players  )
+				OnThreadEnd
+				(
+					function() : ( newGroup, players  )
+					{
+						foreach( player in players )
 						{
-							foreach( player in players )
+							if( !IsValid( player ) )
+								continue
+
+							player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
+
+							if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
 							{
-								if( !IsValid( player ) )
-									continue
-
-								player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
-
-								if( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && !newGroup.IsFinished )
-								{
-									entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-									int ammoType = weapon.GetWeaponAmmoPoolType()
-									player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
-									
-									if( weapon.UsesClipsForAmmo() )
-										weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
-									
-									player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
-								}
-
-								player.MovementEnable()
-								player.UnforceStand()
-								DeployAndEnableWeapons( player )
-								player.ClearMeleeDisabled()
-								player.UnlockWeaponChange()
-								player.ClearFirstDeployForAllWeapons()
-								// player.UnfreezeControlsOnServer()
-								ClearInvincible(player)
-								Highlight_ClearEnemyHighlight( player )
-
-								if( !newGroup.IsFinished )
-								{
-									//this is just a test to see how spawn metadata would be used for a game mode
-									string spawnName = newGroup.groupLocStruct.name
-									string ids = newGroup.groupLocStruct.ids
-									LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
-								}
+								entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+								int ammoType = weapon.GetWeaponAmmoPoolType()
+								player.AmmoPool_SetCount( ammoType, player.p.lastAmmoPoolCount )
 								
-								if( settings.fs_scenarios_characterselect_enabled )
-								{
-									player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
-									player.SetPlayerNetBool( "hasLockedInCharacter", true )
-								}
+								if( weapon.UsesClipsForAmmo() )
+									weapon.SetWeaponPrimaryClipCountNoRegenReset( weapon.GetWeaponPrimaryClipCountMax() )
+								
+								player.GetActiveWeapon( eActiveInventorySlot.mainHand ).StartCustomActivity("ACT_VM_DRAWFIRST", 0)
+							}
+
+							player.MovementEnable()
+							player.UnforceStand()
+							DeployAndEnableWeapons( player )
+							player.ClearMeleeDisabled()
+							player.UnlockWeaponChange()
+							player.ClearFirstDeployForAllWeapons()
+							// player.UnfreezeControlsOnServer()
+							ClearInvincible(player)
+							Highlight_ClearEnemyHighlight( player )
+
+							if( !newGroup.IsFinished )
+							{
+								//this is just a test to see how spawn metadata would be used for a game mode
+								string spawnName = newGroup.groupLocStruct.name
+								string ids = newGroup.groupLocStruct.ids
+								LocalMsg( player, "#FS_Scenarios_Tip", "", eMsgUI.EVENT, 5, " \n\n Spawning at:  " + spawnName + " \n All Spawns IDS for fight: " + ids )
+							}
+							
+							if( settings.fs_scenarios_characterselect_enabled )
+							{
+								player.SetPlayerNetInt( "characterSelectLockstepIndex", settings.fs_scenarios_playersPerTeam )
+								player.SetPlayerNetBool( "hasLockedInCharacter", true )
 							}
 						}
-					)
+					}
+				)
 
-					foreach( player in players )
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					player.ForceStand()
+					player.Server_TurnOffhandWeaponsDisabledOn()
+					player.SetMeleeDisabled()
+					player.LockWeaponChange()
+					// player.FreezeControlsOnServer()
+					player.MovementDisable()
+					
+					entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+					
+					if( IsValid( weapon ) )
 					{
-						if( !IsValid( player ) )
-							continue
-
-						player.ForceStand()
-						player.Server_TurnOffhandWeaponsDisabledOn()
-						player.SetMeleeDisabled()
-						player.LockWeaponChange()
-						// player.FreezeControlsOnServer()
-						player.MovementDisable()
+						int ammoType = weapon.GetWeaponAmmoPoolType()
+						player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
+						player.AmmoPool_SetCount( ammoType, 0 )
 						
-						entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+						if( weapon.UsesClipsForAmmo() )
+							weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
 						
-						if( IsValid( weapon ) )
-						{
-							int ammoType = weapon.GetWeaponAmmoPoolType()
-							player.p.lastAmmoPoolCount = player.AmmoPool_GetCount( ammoType )
-							player.AmmoPool_SetCount( ammoType, 0 )
-							
-							if( weapon.UsesClipsForAmmo() )
-								weapon.SetWeaponPrimaryClipCountNoRegenReset( 0 )
-							
-							weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
-							weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
-						}
-						
-						MakeInvincible(player)
+						weapon.SetNextAttackAllowedTime( Time() + settings.fs_scenarios_game_start_time_delay )
+						weapon.OverrideNextAttackTime( Time() + settings.fs_scenarios_game_start_time_delay )
 					}
 					
+					MakeInvincible(player)
+				}
+				
+				if( settings.fs_scenarios_characterselect_enabled )
+				{
+					#if DEVELOPER 
+						printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
+					#endif 
+					
+					waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
+				}
+
+				float startTime = Time() + settings.fs_scenarios_game_start_time_delay
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					Highlight_ClearEnemyHighlight( player )
+					Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+
 					if( settings.fs_scenarios_characterselect_enabled )
-					{
-						#if DEVELOPER 
-							printt( "STARTING CHARACTER SELECT FOR GROUP", newGroup.groupHandle, "IN REALM", newGroup.slotIndex )
-						#endif 
-						
-						waitthread FS_Scenarios_StartCharacterSelectForGroup( newGroup )
-					}
+						player.SetPlayerNetBool( "characterSelectionReady", false )
 
-					float startTime = Time() + settings.fs_scenarios_game_start_time_delay
-					foreach( player in players )
-					{
-						if( !IsValid( player ) )
-							continue
+					RemoveCinematicFlag( player, CE_FLAG_INTRO )
+					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
+				}
 
-						Highlight_ClearEnemyHighlight( player )
-						Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
+				wait settings.fs_scenarios_game_start_time_delay
+				
+				Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
 
-						if( settings.fs_scenarios_characterselect_enabled )
-							player.SetPlayerNetBool( "characterSelectionReady", false )
-
-						RemoveCinematicFlag( player, CE_FLAG_INTRO )
-						player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
-						Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards" )
-					}
-
-					wait settings.fs_scenarios_game_start_time_delay
-					
-					Signal( newGroup.dummyEnt, "FS_Scenarios_GroupIsReady" )
-
-					newGroup.startTime = Time()
-					newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
-					newGroup.isReady = true
-				}()
-			}
+				newGroup.startTime = Time()
+				newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
+				newGroup.isReady = true
+			}()
 		}()
 	}//while(true)
 

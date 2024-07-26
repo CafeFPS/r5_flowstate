@@ -86,12 +86,13 @@ void function RemoteFunctions_Init_Begin()
 	//Lightning Gun
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 
-	Remote_RegisterClientFunction("OpenFRChallengesSettingsWpnSelector" )
-	Remote_RegisterClientFunction("CloseFRChallengesSettingsWpnSelector" )
-			
 	//Custom gamemodes
 	switch ( Gamemode() )
 	{
+		case eGamemodes.WINTEREXPRESS:
+			Remote_RegisterClientFunction("OpenFRChallengesSettingsWpnSelector" )
+			Remote_RegisterClientFunction("CloseFRChallengesSettingsWpnSelector" )	
+		break
 		case eGamemodes.fs_dm:
 			if( Playlist() == ePlaylists.fs_scenarios )
 			{

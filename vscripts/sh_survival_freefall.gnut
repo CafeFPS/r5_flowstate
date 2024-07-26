@@ -425,7 +425,11 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	Signal( player, "PlayerSkyDive" )
 	EndSignal( player, "PlayerSkyDive" )
 	EndSignal( player, "OnDeath" )
-	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	if ( IsValid( svGlobal.levelEnt ) ) // prevents crash with restarting the map during droship phase
+	{
+		EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	}
+	SetPlayerIntroDropSettings( player )
 
 	array<entity> jumpJetFX
 	player.p.isSkydiving = true
@@ -440,8 +444,19 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 		{
 			if ( IsValid( player ) )
 			{
-				player.ClearParent()
-				PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,128>, player.GetOrigin() )
+				player.Anim_Stop()
+
+				if ( IsValid( player.GetParent() ) && IsValid( leaderPlayer ) )
+				{
+					player.ClearParent()
+					PutEntityInSafeSpot( player, null, null, leaderPlayer.GetOrigin(), player.GetOrigin() )
+				}
+				else
+				{
+					player.ClearParent()
+					if ( !player.IsZiplining() )
+						PutEntityInSafeSpot( player, null, null, player.GetOrigin(), player.GetOrigin() )
+				}
 
 				thread DisableSkydiveThirdPerson( player )
 
@@ -493,8 +508,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 				HeatMapStat( player, "Sur_Skydive_Landing", player.GetOrigin() )
 
-				if ( IsAlive( player ) )
-					ClearPlayerIntroDropSettings( player )
+				ClearPlayerIntroDropSettings( player )
 
 				foreach( input in file.freecamInputs )
 				{
@@ -532,7 +546,8 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	player.ClearParent()
 	player.HolsterWeapon()
 
-	ClearPlayerPlaneViewMode( player )
+	if ( player.GetPlayerNetBool( "playerInPlane" ) )
+		ClearPlayerPlaneViewMode( player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_ClearHints" )
 
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
@@ -578,7 +593,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	PlayerSkydiveThirdPersonEnable( player )
 
 	//player.NotSolid()
-	player.ForceStand()
+	//player.ForceStand()
 
 	// Jump Jet FX (Last entire jump duration)
 	vector smokeColor = GetSkydiveSmokeColorForTeam( player.GetTeam() )

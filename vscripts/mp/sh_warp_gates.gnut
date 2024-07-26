@@ -793,6 +793,7 @@ void function MovePlayerThroughWarpGate( entity trigger, entity player )
 		cb( trigger, player )
 
 	//EndPlayerSkyDive( player )
+	Signal( player, "PlayerSkyDive" )
 	PhaseTunnelTravelState travelState
 	travelState.holsterWeapons = true
 	travelState.shiftStyle = 0
@@ -878,16 +879,16 @@ void function MovePlayerThroughWarpGate( entity trigger, entity player )
 					cb( trigger, player )
 			}
 
-			// if ( IsValid( mover ) )
-			// {
-				// // Defensive fix for destroying mover with children attached (Live bug)
-				// foreach ( entity child in mover.GetChildren() )
-				// {
-					// if ( IsValid( child ) )
-						// child.ClearParent()
-				// }
-				// mover.Destroy()
-			// }
+			if ( IsValid( mover ) )
+			{
+				// Defensive fix for destroying mover with children attached (Live bug)
+				foreach ( entity child in GetChildren( mover ) )
+				{
+					if ( IsValid( child ) )
+						child.ClearParent()
+				}
+				mover.Destroy()
+			}
 
 			if ( IsValid( fx ) )
 				fx.Destroy()

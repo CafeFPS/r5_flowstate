@@ -1077,6 +1077,8 @@ global struct ServerPlayerStruct
 	// Player was jumpmaster during the team's last drop. In 3 strikes, the last jumpmaster also leads the team's next
 	// jumps for subsequent respawns.
 	bool wasLastJumpmaster = false
+
+	int    respawnCount = 0
 }
 
 global struct ChallengeScore

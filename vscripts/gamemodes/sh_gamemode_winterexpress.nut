@@ -678,6 +678,8 @@ void function Client_OnWinnerDetermined( )
 #if SERVER
 void function OnClientConnected( entity player )
 {
+	Survival_OnClientConnected( player )
+
 	table< entity, bool> triggerMatrix
 	foreach ( trigger in file.trainTriggers )
 	{
@@ -1792,7 +1794,7 @@ void function OnPlayerMatchStateChanged( entity player, int newValue )
 		// LoadoutSelection_GivePlayerInventoryAndLoadout( player, false, true, false )
 	}
 }
-const array<string> STANDARD_INV_LOOT = [ "health_pickup_combo_small", "health_pickup_combo_large" ]
+const array<string> STANDARD_INV_LOOT = [ "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large" ]
 
 void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool fromRespawning )
 {
@@ -2411,8 +2413,8 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 				if ( isGameStartLerp )
 					lerpAdjustmentTime += 1.5
 
-				thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
-				Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
+				// thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
+				// Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
 				thread ScreenFadeThread( player, lerpAdjustmentTime - 1 )
 				// ResetPlayerInventoryAndLoadoutOnRespawn( player )
 

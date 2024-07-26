@@ -77,6 +77,8 @@ function BaseGametype_Init()
 	RegisterSignal( "Stop_OnEndTouch_EntityBackInBounds" )
 
 	RegisterSignal( "OnRespawnSelect" )
+	RegisterSignal( "StopPostDeathLogic" )
+	RegisterSignal( "HaltPlayerCharacterThread" )
 
 	AddCallback_EntitiesDidLoad( BaseGametypeEntitiesDidLoad )
 
@@ -1468,6 +1470,9 @@ function OnPlayerCloseClassMenu( entity player )
 //  playerconnected Reload
 void function CodeCallback_OnClientReloadConnectionCompleted( entity player )
 {
+	if( player.p.clientScriptInitialized )
+		return
+
 	FinishClientScriptInitialization( player )
 }
 

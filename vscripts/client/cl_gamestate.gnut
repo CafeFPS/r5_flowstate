@@ -143,7 +143,7 @@ void function Hud_SetModeEmblem()
 
 void function SetCommonScoreRUIVars( var rui )
 {	
-	if ( Gamemode() != eGamemodes.SURVIVAL )
+	if ( Gamemode() != eGamemodes.SURVIVAL || Playlist() == ePlaylists.fs_survival_solos )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
@@ -189,7 +189,7 @@ void function SetCommonScoreRUIVars( var rui )
 			break
 			
 			case ePlaylists.fs_survival_solos:
-			RuiSetString( rui, "gameModeString", "APEX SOLO" )
+			RuiSetString( rui, "gameModeString", "APEX SOLOS" )
 			break
 
 			case ePlaylists.fs_haloMod_oddball:	
@@ -271,6 +271,14 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetInt( rui, "livingPlayerCountMin", 10 )
 		RuiSetString( rui, "squadsRemainingTextSingular", "#SURVIVAL_SQUADS_REMAIN" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "#SURVIVAL_SQUADS_REMAIN" )
+		
+		if( Playlist() == ePlaylists.fs_survival )
+		{
+			RuiSetString( rui, "gameModeString", "APEX" )
+		} else if( Playlist() == ePlaylists.fs_survival_duos )
+		{
+			RuiSetString( rui, "gameModeString", "APEX DUOS" )
+		}
 	}
 }
 

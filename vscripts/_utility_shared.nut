@@ -5505,11 +5505,11 @@ entity function GetJumpmasterForTeam( int team )
 	return jumpMaster
 }
 
-int function GetNumPlayersJumpingWithSquad( int team )
+int function GetNumPlayersJumpingWithSquad( int team, bool mustBeAlive = true  )
 {
-	int count = 0
-	array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
-	foreach( entity player in teammates )
+	int count               = 0
+	array<entity> teammates = mustBeAlive ? GetPlayerArrayOfTeam_Alive( team ) : GetPlayerArrayOfTeam( team )
+	foreach ( entity player in teammates )
 	{
 		if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 			continue

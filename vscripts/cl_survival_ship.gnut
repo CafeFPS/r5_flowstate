@@ -23,6 +23,7 @@ void function ClSurvivalShip_Init()
 	AddEventNotificationCallback( eEventNotifications.SURVIVAL_RelinquishedJumpmaster, SURVIVAL_RelinquishedJumpmaster )
 	AddEventNotificationCallback( eEventNotifications.SURVIVAL_NewJumpmaster, SURVIVAL_NewJumpmaster )
 	AddEventNotificationCallback( eEventNotifications.SURVIVAL_RejoinedSquad, SURVIVAL_RejoinedSquad )
+	AddCallback_OnViewPlayerChanged( OnLocalViewPlayerChanged )
 }
 
 bool function IsPlayerInPlane( entity player )
@@ -59,24 +60,48 @@ void function JumpmasterStatusChanged( entity statusChangePlayer, bool oldValue,
 
 void function PlayerPlaneStatusChanged( entity statusChangePlayer, bool oldValue, bool newValue, bool actuallyChanged )
 {
-	if ( !actuallyChanged )
+
+
+
+	{
+		__PlayerPlaneStatusChanged( statusChangePlayer )
+	}
+}
+
+void function OnLocalViewPlayerChanged( entity player )
+{
+	if ( !IsValid( player ) )
 		return
 
-	if ( !IsValid( statusChangePlayer ) )
-		return
+	__PlayerPlaneStatusChanged( player )
+}
 
+void function __PlayerPlaneStatusChanged( entity statusChangePlayer )
+{
 	entity player = GetLocalClientPlayer()
+	bool isLocalPlayer = player == statusChangePlayer
 	var gamestateRui = ClGameState_GetRui()
 	Assert( gamestateRui != null )
-	RuiSetInt( gamestateRui, "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
-	RuiSetInt( GetFullmapGamestateRui(), "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
+
+	{
+		RuiSetInt( gamestateRui, "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
+	}
+	if ( !IsPVEMode() )
+	{
+		{
+			RuiSetInt( GetFullmapGamestateRui(), "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
+		}
+	}
 
 	if ( statusChangePlayer.GetTeam() != player.GetTeam() )
 		return
 
 	bool playerInPlane = player.GetPlayerNetBool( "playerInPlane" )
 
-	if ( statusChangePlayer == player )
+	if( isLocalPlayer )
+	printt( "PLAYER PLANE STATUS CHANGED", playerInPlane )
+
+	if ( isLocalPlayer )
 		Signal( player, "PlayerPlaneStatusChanged" )
 
 	if ( playerInPlane )
@@ -104,9 +129,9 @@ void function PlayerPlaneStatusChanged( entity statusChangePlayer, bool oldValue
 	{
 		// Player not in plane
 		DestroySquadLeaderBox( player )
-		RevertSkydiveStartingConvars()
+		//RevertSkydiveStartingConvars()
 
-		if ( statusChangePlayer == player && file.registeredConCommandCallbacks )
+		if ( isLocalPlayer && file.registeredConCommandCallbacks )
 		{
 			DeregisterConCommandTriggeredCallback( "+duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
 			DeregisterConCommandTriggeredCallback( "+toggle_duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
@@ -222,7 +247,7 @@ void function UpdateDOFForPlayerView()
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "OnDestroy" )
 
-	//player.ClientCommand( "dof_variable_blur 3" )
+	SetConVarFloat( "dof_variable_blur", 3.0 )
 	DoF_SetFarDepth( 10000, 150000 )
 
 	float traceDist = 100000.0
@@ -235,7 +260,7 @@ void function UpdateDOFForPlayerView()
 		float dist = traceDist * results.fraction
 
 		DoF_SetFarDepth( dist + 3000, 900000 )
-		//DoF_SetNearDepth( 0, dist - (dofDist / 2.0) )
+		
 
 		WaitFrame()
 	}

@@ -2723,6 +2723,15 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 
 		//Cafe was here. Retail implementation uses VehicleGetPlayersInViewArray and VehicleGetNpcsInViewArray code functs that we don't have in s3.
 		//I suppose that function check for LOS and by min dot, so let's do that.
+		
+		//test
+		int traceMask                 = TRACE_MASK_SHOT
+		// int visConeFlags              = VIS_CONE_ENTS_TEST_HITBOXES | VIS_CONE_ENTS_CHECK_SOLID_BODY_HIT | VIS_CONE_ENTS_APPOX_CLOSEST_HITBOX | VIS_CONE_RETURN_HIT_VORTEX
+		// array<VisibleEntityInCone> results = FindVisibleEntitiesInCone( camera.GetOrigin(), camera.GetAngles(), GetNeurolinkRange( camera.GetOwner() ), 89, [camera], traceMask, visConeFlags, cameraOwner, camera )
+		// foreach ( result in results )
+		// {
+			// printt( "player in cone for crypto drone" )
+		// }
 
 		nearbyEntities.extend( GetPlayerArrayEx( "any", TEAM_ANY, TEAM_ANY, camera.GetOrigin(), GetNeurolinkRange( camera.GetOwner() ) ) )
 		nearbyEntities.extend( GetNPCArrayEx( "any", TEAM_ANY, TEAM_ANY, camera.GetOrigin(), GetNeurolinkRange( camera.GetOwner() ) ) )
@@ -2734,7 +2743,7 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 			vector traceStart = camera.GetOrigin()
 			vector traceEnd = traceStart + ( Normalize( (nearbyEntities[i].GetWorldSpaceCenter()+<0,0,10>) - camera.GetOrigin() ) * 200 )
 
-			TraceResults traceResult = TraceLineHighDetail( traceStart, traceEnd, [ camera ], TRACE_MASK_PLAYERSOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+			TraceResults traceResult = TraceLineHighDetail( traceStart, traceEnd, [ camera ], traceMask, TRACE_COLLISION_GROUP_NONE )
 			
 			vector vecToEnt = nearbyEntities[i].GetOrigin() - camera.GetOrigin()
 			vecToEnt.Norm()

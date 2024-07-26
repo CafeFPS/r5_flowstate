@@ -54,6 +54,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	RegisterSignal( "NewViewAnimEntity" )
 	RegisterSignal( "OnDisconnected" )
 	RegisterSignal( "OnConnected" )
+	RegisterSignal( "OnPostDeathLogicEnd" )
 
 	function CPlayer::constructor()
 	{
@@ -165,32 +166,17 @@ function CodeCallback_RegisterClass_CPlayer()
 
 	function CPlayer::Disconnected()
 	{
+		if ( IsLobby() )
+			return
+
 		this.Signal( "_disconnectedInternal" )
 		svGlobal.levelEnt.Signal( "OnDisconnected" )
 
-		if ( HasSoul( expect entity( this ) ) )
-		{
-			thread SoulDies( expect entity( this ).GetTitanSoul(), null )
-		}
-
 		entity titan = GetPlayerTitanInMap( expect entity( this ) )
 		if ( IsAlive( titan ) && titan.IsNPC() )
-		{
-			local soul = titan.GetTitanSoul()
-			if ( IsValid( soul ) && soul.followOnly )
-				FreeAutoTitan( titan )
-			else
-				titan.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
-			//				titan.Die()
-		}
+			titan.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 
 		PROTO_CleanupTrackedProjectiles( expect entity( this ) )
-
-		if ( this.globalHint != null )
-		{
-			this.globalHint.Kill_Deprecated_UseDestroyInstead()
-			this.globalHint = null
-		}
 	}
 
 

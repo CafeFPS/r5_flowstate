@@ -211,9 +211,6 @@ void function Sequence_PickLoadout()
 			ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
-			
-			if( Gamemode() == eGamemodes.SURVIVAL && !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
-				Flowstate_AssignUniqueCharacterForPlayer(player, true)
 		}
 
 		thread Sequence_Prematch() 
@@ -311,7 +308,7 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	{
 		int playlistOpinion = GetItemFlavorPlaylistOpinion( ItemFlavor_GetHumanReadableRef( characters[ i ] ) )
 
-		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED || ItemFlavor_GetHumanReadableRef( characters[ i ] ) == "character_crypto" )
+		if( playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED )
 			characters.remove( i )
 	}
 	
@@ -335,12 +332,6 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 			}
 		}
 	}
-	
-	if( IsDevGamemode() )
-	{
-		player.SetPlayerNetBool( "hasLockedInCharacter", false )
-		return
-	}
 
 	ItemFlavor initialCharacter
 	
@@ -353,7 +344,7 @@ void function Flowstate_AssignUniqueCharacterForPlayer(entity player, bool lock)
 	
 	CharacterSelect_AssignCharacter( player, initialCharacter )
 	
-	if( !lock )
+	if( !lock || IsDevGamemode() )
 		player.SetPlayerNetBool( "hasLockedInCharacter", false )
 }
 
@@ -519,6 +510,7 @@ void function RespawnBehavior_Init()
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
 	#if DEVELOPER
+		DumpStack()
 		mAssert( script_bRespawnInitComplete, "RespawnBehavior_Init() --- wasn't ready in DecideRespawnPlayer()" )
 	#endif
 	
@@ -600,15 +592,17 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
 	}
 	
-	player.Signal("OnRespawned")
-	
-	// foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
-			// cb( player )
+	if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
+		player.Signal("OnRespawned")
 }
 
 // clean up and move to main when completely debugged. Cafe
 bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserver = false )
 {
+	#if DEVELOPER
+	DumpStack()
+	#endif
+
 	Assert( IsValid( player ), player + " is invalid!!" )
 	Assert( !IsAlive( player ), player + " is already alive" )
 
@@ -618,8 +612,8 @@ bool function DecideRespawnPlayer_Retail( entity player, bool allowSpawnAsObserv
 		return false
 	}
 
-	// if ( IsPVEMode() && (player.p.respawnCount == 0) )
-		// return false
+	if ( IsPVEMode() && (player.p.respawnCount == 0) )
+		return false
 
 	if ( (GetGameState() <= eGameState.WaitingForPlayers) && !PreGame_GetWaitingForPlayersSpawningEnabled() )
 	{
@@ -981,49 +975,65 @@ void function OnClientConnected( entity player )
 	int teamMemberIndex = playerTeam.len() - 1
 	player.SetTeamMemberIndex( teamMemberIndex )
 
-	switch ( GetGameState() )
+
+	bool replaceOrigin = false
+	if( Playlist() == ePlaylists.survival_dev || Playlist() == ePlaylists.dev_default || GetCurrentPlaylistVarBool( "is_practice_map", false ) || Playlist() == ePlaylists.fs_movementrecorder )
 	{
-		case eGameState.WaitingForPlayers:
-		case eGameState.PickLoadout:
-			if( Gamemode() != eGamemodes.SURVIVAL ) break
+		vector origin
+		if( GetPlayerArray_Alive().len() > 0 && IsValid( GetPlayerArray_Alive()[0] ) )
+		{
+			origin = GetPlayerArray_Alive()[0].GetOrigin()
+			replaceOrigin = true
+		}
+		
+		PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+		
+		if( !GetCurrentPlaylistVarBool( "is_practice_map", false ) )
+		{
+			Flowstate_AssignUniqueCharacterForPlayer(player, true)
+			player.SetOrigin( origin )
+		}
 
-			switch( MapName() )
-			{
-				case eMaps.mp_rr_olympus_mu1:
-					player.SetOrigin( <833.014587, -19103.7949, -4947.88916> )
-					player.SetAngles( <0, -5.91907549, 0> )
-				break
-				case eMaps.mp_rr_canyonlands_64k_x_64k:
-				case eMaps.mp_rr_canyonlands_mu1:
-				case eMaps.mp_rr_canyonlands_mu1_night:				
-					player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
-					player.SetAngles( <0, 65.3776093, 0> )
-				break
-				
-				case eMaps.mp_rr_desertlands_64k_x_64k:
-				case eMaps.mp_rr_desertlands_64k_x_64k_nx:
-				case eMaps.mp_rr_desertlands_64k_x_64k_tt:
-				case eMaps.mp_rr_desertlands_mu1:
-					player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
-					player.SetAngles( <0, -136.298843, 0> )
-				break
-				
-				default:
-					entity startEnt = GetEnt( "info_player_start" )
-					player.SetOrigin( startEnt.GetOrigin() )
-					player.SetAngles( startEnt.GetAngles() )
-				break
-			}
+		player.p.survivalLandedOnGround = true
+		player.p.respawnPodLanded = true
 
-			player.FreezeControlsOnServer()
-
-			if ( PreGame_GetWaitingForPlayersSpawningEnabled()
-				&& GetGameState() == eGameState.WaitingForPlayers )
-				DecideRespawnPlayer( player, false )
-
-			break
+		DecideRespawnPlayer( player, true )
+		GiveBasicSurvivalItems( player )
 	}
-	
+
+	if( !replaceOrigin )
+	{
+		switch( MapName() )
+		{
+			case eMaps.mp_rr_olympus_mu1:
+				player.SetOrigin( <833.014587, -19103.7949, -4947.88916> )
+				player.SetAngles( <0, -5.91907549, 0> )
+			break
+			case eMaps.mp_rr_canyonlands_64k_x_64k:
+			case eMaps.mp_rr_canyonlands_mu1:
+			case eMaps.mp_rr_canyonlands_mu2:
+			case eMaps.mp_rr_canyonlands_mu1_night:				
+				player.SetOrigin( <-3557.94165, 9962.51074, 3600> )
+				player.SetAngles( <0, 65.3776093, 0> )
+			break
+			
+			case eMaps.mp_rr_desertlands_64k_x_64k:
+			case eMaps.mp_rr_desertlands_64k_x_64k_nx:
+			case eMaps.mp_rr_desertlands_64k_x_64k_tt:
+			case eMaps.mp_rr_desertlands_mu1:
+			case eMaps.mp_rr_desertlands_holiday:
+				player.SetOrigin( <4838.49658, 13516.8604, -4025.90625> )
+				player.SetAngles( <0, -136.298843, 0> )
+			break
+			
+			default:
+				entity startEnt = GetEnt( "info_player_start" )
+				player.SetOrigin( startEnt.GetOrigin() )
+				player.SetAngles( startEnt.GetAngles() )
+			break
+		}
+	}
+
 	player.p.isConnected = true
 	player.Signal( "OnConnected" )
 
