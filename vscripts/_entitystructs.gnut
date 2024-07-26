@@ -1079,6 +1079,7 @@ global struct ServerPlayerStruct
 	bool wasLastJumpmaster = false
 
 	int    respawnCount = 0
+	int  holsterAndDisableWeaponCount
 }
 
 global struct ChallengeScore

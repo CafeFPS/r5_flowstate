@@ -2752,7 +2752,7 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 			// if 120, should remove
 			float dotVal = DotProduct( vecToEnt, camera.GetAngles() )
 			// printt( "ent scanned", dotVal )
-			bool shouldremove = !IsValid( traceResult.hitEnt ) || nearbyEntities[i] != traceResult.hitEnt //LOS check
+			bool shouldremove = !IsValid( traceResult.hitEnt ) || nearbyEntities[i] != traceResult.hitEnt || !nearbyEntities[i].DoesShareRealms( cameraOwner ) //LOS check + realms check
 				
 			if( shouldremove )
 				nearbyEntities.remove( i )

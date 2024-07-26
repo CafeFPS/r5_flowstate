@@ -3830,25 +3830,63 @@ int function SortBySpawnTime( entity ent1, entity ent2 )
 
 void function HolsterAndDisableWeapons( entity player )
 {
-	player.HolsterWeapon()
-	DisableOffhandWeapons( player )
+	if ( player.p.holsterAndDisableWeaponCount == 0 )
+	{
+		player.HolsterWeapon()
+		DisableOffhandWeapons( player )
+	}
+	player.p.holsterAndDisableWeaponCount++
 }
 
-void function HolsterViewModelAndDisableWeapons( entity player ) //Note that this skips the first person holster animation, and it appears to 3p observers you still have a gun out
+
+void function HolsterViewModelAndDisableWeapons( entity player, bool show3pTossWeapons = false )
+//Note that this skips the first person holster animation, and it appears to 3p observers you still have a gun out
+//However, toss weapons will be holstered on hand. Usually, we do not want to show toss weapons to 3p observers
 {
-	player.DisableWeaponViewModel()
-	DisableOffhandWeapons( player )
+	if ( player.p.holsterAndDisableWeaponCount == 0 )
+	{
+		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if( IsValid( weapon ) )
+		{
+			if( !weapon.IsTossWeapon() || show3pTossWeapons )
+				player.DisableWeaponViewModel()
+			else
+				player.HolsterWeapon()
+		}
+
+		DisableOffhandWeapons( player )
+	}
+	player.p.holsterAndDisableWeaponCount++
 }
 
 
 void function DeployAndEnableWeapons( entity player )
 {
-	player.DeployWeapon()
-	EnableOffhandWeapons( player )
+	player.p.holsterAndDisableWeaponCount--
+	Assert( player.p.holsterAndDisableWeaponCount >= 0, "< 0 can cause bugs" )
+	if ( player.p.holsterAndDisableWeaponCount == 0 )
+	{
+		player.DeployWeapon()
+		EnableOffhandWeapons( player )
+	}
+}
+
+
+void function DeployAndEnableWeaponsWithSlowDeploy( entity player, float time )
+{
+	player.p.holsterAndDisableWeaponCount--
+	Assert( player.p.holsterAndDisableWeaponCount >= 0, "< 0 can cause bugs" )
+	if ( player.p.holsterAndDisableWeaponCount == 0 )
+	{
+		player.DelayEnableWeaponWithSlowDeploy( time )
+		EnableOffhandWeapons( player )
+	}
 }
 
 void function DeployViewModelAndEnableWeapons( entity player )
 {
+	player.p.holsterAndDisableWeaponCount--
+	Assert( player.p.holsterAndDisableWeaponCount >= 0, "< 0 can cause bugs" )
 	if ( IsAlive( player ) )
 		player.EnableWeaponViewModel()
 	EnableOffhandWeapons( player )
@@ -3857,12 +3895,18 @@ void function DeployViewModelAndEnableWeapons( entity player )
 //Investigate: This might be getting called without enableoffhandweapons being called. If so,  Server_TurnOffhandWeaponsDisabledOn() should be used instead of this stack system.
 void function DisableOffhandWeapons( entity player )
 {
+	Assert( IsValid( player ), "Warning! Called DisableOffhandWeapons() but the player is invalid!" )
+
 	player.Server_TurnOffhandWeaponsDisabledOn()
 	player.p.disableOffhandWeaponsStackCount++
 }
 
+
 void function EnableOffhandWeapons( entity player )
 {
+	string errorMsg = format( "%s(): player data invalid!", FUNC_NAME() )
+	Assert ( IsValid ( player ) || (  !IsValid ( player ) && IsInvalidButMemberVarsStillValid ( player ) ), errorMsg )
+
 	player.p.disableOffhandWeaponsStackCount--
 	if ( player.p.disableOffhandWeaponsStackCount <= 0 )
 		player.Server_TurnOffhandWeaponsDisabledOff()

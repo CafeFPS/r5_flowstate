@@ -413,6 +413,8 @@ void function PlayerSkydiveLandingFromCurrentPosition( entity player )
 	Signal( player, "PlayerSkydiveFromCurrentPosition" )
 	EndSignal( player, "PlayerSkydiveFromCurrentPosition" )
 
+	player.Signal( "PhaseTunnel_EndPlacement" )
+
 	player.p.skydiveDecoysFired = 0 //Resetting Mirage's decoy counter so he can use his hidden passive with skydive towers.
 	player.Zipline_Stop()
 	SetPlayerIntroDropSettings( player )
@@ -673,7 +675,10 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "PlayerSkyDive" )
 	EndSignal( player, "BleedOut_OnStartDying" )
-	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	if ( IsValid( svGlobal.levelEnt ) )
+	{
+		EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	}
 
 	//#####################################
 	// LAUNCH OUT OF PLANE
@@ -822,11 +827,16 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		if ( isFollowing )
 		{
 			// Player can break out of follow mode by giving some stick input, or if follow target isn't skydiving anymore
-			if ( !player.p.skydiveIsFollowing || !IsValid( player.GetParent() ) || !IsValid( leaderPlayer ) || !IsAlive( leaderPlayer ) || followPlayerData.skyDiveEnded )
+			if ( !player.p.skydiveIsFollowing || !IsValid( player.GetParent() ) || !IsValid( leaderPlayer ) || !IsAlive( leaderPlayer ) || !leaderPlayer.Player_IsFreefalling() || !player.Skydive_IsFollowing() )
 			{
 				isFollowing = false
 				unfollowTime = Time()
-				player.ClearParent()
+
+				if ( player.Skydive_IsFollowing() )
+				{
+					player.Skydive_StopFollowing()
+				}
+
 				player.SetPlayerNetEnt( "skydiveFollowPlayer", null )
 				player.SetVelocity( followPlayerData.velocity )
 
@@ -1352,14 +1362,28 @@ void function DisableSkydiveThirdPerson( entity player )
 
 	player.ClearTrackEntitySettings()
 	player.Solid()
-	player.UnforceStand()
 
 	vector velocity = player.GetVelocity()
 
+	if ( player.Player_IsFreefalling() )
+	{
+		player.Player_EndFreefall()
+		player.Anim_Stop()
+	}
 	if ( player in file.skydivePlayerDataLookup )
 		delete file.skydivePlayerDataLookup[ player ]
 
-	player.DelayEnableWeaponWithSlowDeploy( 1.5 )
+	player.ClearFirstDeployForAllWeapons()
+	HolsterAndDisableWeapons( player )
+	
+	// 1.5 second delay so that the third-person -> first-person camera
+	// transition has time to finish
+	wait 1.5
+	
+	if ( !IsValid( player ) )
+		return
+
+	DeployAndEnableWeaponsWithSlowDeploy( player, 0.0 )
 }
 
 bool function ClientCommand_StopFreefallFollowMode( entity player, array<string> args )
@@ -2105,7 +2129,8 @@ void function CodeCallback_PlayerFreefallAnticipateBegin( entity player )
 	#endif
 	
 	#if SERVER
-	// 51 lines
+	player.Anim_DisableUpdatePosition()
+	player.SetPlayerNetBool( "freefallEmoteAvailable", false )
 	#else
 
 	#endif
