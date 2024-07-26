@@ -397,6 +397,8 @@ void function PlayerSkydiveFromCurrentPosition( entity player )
 	
 	Signal( player, "PlayerSkydiveFromCurrentPosition" )
 	EndSignal( player, "PlayerSkydiveFromCurrentPosition" )
+	
+	player.Signal( "PhaseTunnel_EndPlacement" )
 
 	player.p.skydiveDecoysFired = 0 //Resetting Mirage's decoy counter so he can use his hidden passive with skydive towers.
 	player.Zipline_Stop()
@@ -412,7 +414,7 @@ void function PlayerSkydiveLandingFromCurrentPosition( entity player )
 	
 	Signal( player, "PlayerSkydiveFromCurrentPosition" )
 	EndSignal( player, "PlayerSkydiveFromCurrentPosition" )
-
+	
 	player.Signal( "PhaseTunnel_EndPlacement" )
 
 	player.p.skydiveDecoysFired = 0 //Resetting Mirage's decoy counter so he can use his hidden passive with skydive towers.
@@ -827,16 +829,12 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		if ( isFollowing )
 		{
 			// Player can break out of follow mode by giving some stick input, or if follow target isn't skydiving anymore
-			if ( !player.p.skydiveIsFollowing || !IsValid( player.GetParent() ) || !IsValid( leaderPlayer ) || !IsAlive( leaderPlayer ) || !leaderPlayer.Player_IsFreefalling() || !player.Skydive_IsFollowing() )
+			if ( !player.p.skydiveIsFollowing || !IsValid( player.GetParent() ) || !IsValid( leaderPlayer ) || !IsAlive( leaderPlayer ) || followPlayerData.skyDiveEnded )
 			{
 				isFollowing = false
 				unfollowTime = Time()
 
-				if ( player.Skydive_IsFollowing() )
-				{
-					player.Skydive_StopFollowing()
-				}
-
+				player.ClearParent()
 				player.SetPlayerNetEnt( "skydiveFollowPlayer", null )
 				player.SetVelocity( followPlayerData.velocity )
 
@@ -1362,6 +1360,7 @@ void function DisableSkydiveThirdPerson( entity player )
 
 	player.ClearTrackEntitySettings()
 	player.Solid()
+	// player.UnforceStand()
 
 	vector velocity = player.GetVelocity()
 
@@ -1370,6 +1369,7 @@ void function DisableSkydiveThirdPerson( entity player )
 		player.Player_EndFreefall()
 		player.Anim_Stop()
 	}
+
 	if ( player in file.skydivePlayerDataLookup )
 		delete file.skydivePlayerDataLookup[ player ]
 

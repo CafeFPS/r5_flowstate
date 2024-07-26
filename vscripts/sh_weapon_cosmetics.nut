@@ -631,6 +631,12 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 		asset charmModel = WeaponCharm_GetCharmModel( charm )
 		string attachmentName = WeaponCharm_GetAttachmentName( charm )
 
+		if( ent.LookupAttachment( "CHARM" ) == 0 )
+		{
+			ent.e.charmItemFlavorGUID = -1
+			return
+		}
+
 		ent.e.charmItemFlavorGUID = ItemFlavor_GetGUID( charm )
 
 		#if SERVER
