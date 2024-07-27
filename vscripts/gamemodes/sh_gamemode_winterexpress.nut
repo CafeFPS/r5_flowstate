@@ -268,7 +268,7 @@ void function WinterExpress_Init()
 
 		SetCallback_ObserverThreadOverride( WinterExpress_StartObserving )
 		PrecacheParticleSystem( $"P_ar_cylinder_radius_CP_1x1" )
-		SURVIVAL_AddOverrideCircleLocation( < 11887.877930, 19320.305664, -3403.129395 >, 10 ) //, true )
+		SURVIVAL_AddOverrideCircleLocation( < 11887.877930, 19320.305664, -3403.129395 >, 10, true )
 		SetupSpectateCameras()
 
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )

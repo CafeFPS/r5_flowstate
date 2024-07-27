@@ -1424,6 +1424,9 @@ void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victi
 	else
 		dialogue = "bc_iKilledAnEnemy"
 
+	EndSignal( attacker, "OnDeath" )
+	EndSignal( attacker, "OnDestroy" )
+
 	wait delay
 
 	if( attacker.p.killedEnemy == currentKilledEnemy )

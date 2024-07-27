@@ -49,7 +49,10 @@ void function Olympus_MapInit_Common()
 			AddSpawnCallback( "info_target", Rift_Init )
 		}
 
-		thread KillPlayersUnderMap_Thread( MAP_KILL_VOLUME_OFFSET_OLYMPUS ) //-28320            
+		thread KillPlayersUnderMap_Thread( MAP_KILL_VOLUME_OFFSET_OLYMPUS ) //-28320       
+
+		// if ( GetCurrentPlaylistVarInt( "deathfield_end_on_script_locations", 0 ) == 1 )
+			AddCircleOverrideLocations()
 	#endif
 
 	#if SERVER && DEVELOPER
@@ -148,4 +151,31 @@ void function Olympus_SetRiftParams( OlympusRiftParams params )
 	file.riftParams = params
 }            
 
+void function AddCircleOverrideLocations()
+{
+	SURVIVAL_AddOverrideCircleLocation( <-18165, 30989, -6171>, 0, true )    // Docks
+	SURVIVAL_AddOverrideCircleLocation( <-14786, 22705, -6672>, 0, true )    // Docks - Pathfinder
+	SURVIVAL_AddOverrideCircleLocation( <-27500, 23265, -6504>, 0, true )    // Carrier
+	SURVIVAL_AddOverrideCircleLocation( <-34216, 14719, -5528>, 0, true )    // Oasis
+	SURVIVAL_AddOverrideCircleLocation( <-24134, 12428, -5760>, 0, true )    // East of Oasis
+	SURVIVAL_AddOverrideCircleLocation( <-22569, 153, -5568>, 0, true )    // Estates
+	SURVIVAL_AddOverrideCircleLocation( <-34150, -523, -4344>, 0, true )    // Marina-ish
+	SURVIVAL_AddOverrideCircleLocation( <-33188, -16372, -3496>, 0, true )    // Hydroponics
+	SURVIVAL_AddOverrideCircleLocation( <-25588, -10407, -4455>, 0, true )	// NE of Hydroponics
+	SURVIVAL_AddOverrideCircleLocation( <-2946, -24898, -4464>, 0, true )    // Bonsai Plaza
+	SURVIVAL_AddOverrideCircleLocation( <-13309, -20101, -4383>, 0, true )    // Houses NW of Bonsai
+	SURVIVAL_AddOverrideCircleLocation( <563, -14158, -6061>, 0, true )    // Solar Array
+	SURVIVAL_AddOverrideCircleLocation( <22762, -16177, -4998>, 0, true )    // Orbital Cannon
+	SURVIVAL_AddOverrideCircleLocation( <11516, -18020, -5684>, 0, true )		// NW of Cannon
+	SURVIVAL_AddOverrideCircleLocation( <17913, -2511, -5112>, 0, true )    // Grow Towers
+	SURVIVAL_AddOverrideCircleLocation( <16907, 8456, -3624>, 0, true )    // Gardens
+	SURVIVAL_AddOverrideCircleLocation( <9012, 18621, -5865>, 0, true )    // Rift (outer)
+	SURVIVAL_AddOverrideCircleLocation( <650, 8502, -5000>, 0, true )    // Energy Depot
+	SURVIVAL_AddOverrideCircleLocation( <5237, -4233, -4301>, 0, true )    // Near Phase Runner
+	SURVIVAL_AddOverrideCircleLocation( <-3920, -3602, -6122>, 0, true )    // Hammond Labs
+	SURVIVAL_AddOverrideCircleLocation( <-14139, -4043, -5552>, 0, true )    // Between Labs and Estates
+	SURVIVAL_AddOverrideCircleLocation( <-13504, 11612, -6558>, 0, true )    // Turbine
+	SURVIVAL_AddOverrideCircleLocation( <-4818, 27611, -6108>, 0, true )    // Power Grid (outer)
+	SURVIVAL_AddOverrideCircleLocation( <-4969, 18418, -5892>, 0, true )    // Power Grid (inner)
+}
 #endif
