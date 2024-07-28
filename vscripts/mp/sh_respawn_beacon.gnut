@@ -1007,7 +1007,7 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) rename?
 {
 	box.EndSignal( "OnDestroy" )
-	// dna.EndSignal( "OnDestroy" )
+	dna.EndSignal( "OnDestroy" )
 
 	OnThreadEnd(
 		function() : ( box, dna )
@@ -1018,30 +1018,6 @@ void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) 
 				{
 					SetTeam( box, TEAM_UNASSIGNED )
 					UpdateDeathBoxHighlight( box )
-
-					if ( box.GetLinkEntArray().len() == 0 )
-						box.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
-					
-					thread function () : (box)
-					{
-						wait 1
-						
-						if( !IsValid( box ) )
-							return
-					
-						entity boxPhysics = box.GetParent()
-					
-						if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
-						{
-							box.ClearParent()
-							boxPhysics.Destroy()
-						}
-						
-						wait 2.0
-						
-						if ( IsValid( box ) )
-							box.Destroy()
-					}()
 				}
 			}
 		}
@@ -1114,6 +1090,7 @@ void function PingNearestRespawnBeacon( entity player, vector origin )
 void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int pos, vector teleportOrigin )
 {
 	ship.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
 
 	dropshipAnimData animData = file.dropshipAnimDataList[ pos ]
 
@@ -1131,7 +1108,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	jumpAnimSequence.attachment = animData.attachment
 	jumpAnimSequence.hideProxy = animData.hideProxy
 
-	// player.Signal( "StopPostDeathLogic" )
+	player.Signal( "StopPostDeathLogic" )
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
