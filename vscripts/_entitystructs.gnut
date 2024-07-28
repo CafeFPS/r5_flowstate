@@ -483,7 +483,9 @@ global struct ServerEntityStruct
 	array<entity>                          enemyFxArray
 	int lockOnCount
 	int inSonarTriggerCount
-
+	
+	array<void functionref( entity player, int state )> onPlayerGamestateChangedCallbacks
+	int gamemode1v1State = -1
 }
 
 global struct MeritData
@@ -1038,11 +1040,18 @@ global struct ServerPlayerStruct
 
 	int movementRecorderCharacter = 0
 
+	// NOT IMPLEMENTED!!!!!!!!!!!
+	
 	// array< var > recordingAnims
 	// array< LocPair > recordingAnimsCoordinates
 	//v2. Café
-	table< int, array< var > > recordingAnims
+	
+	/* table< int, array< var > > recordingAnims
 	table< int, array< LocPair > > recordingAnimsCoordinates
+	array< int > recordingAnimsChosenCharacters */
+	
+	array< var > recordingAnims
+	array< LocPair > recordingAnimsCoordinates
 	array< int > recordingAnimsChosenCharacters
 
 	bool isRecording = false

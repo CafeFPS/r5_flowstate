@@ -1,9 +1,7 @@
-untyped 																			//mkos
-
 global function NotificationSystem_Init
 global function ClearNotifications
+global function NotificationThread
 
-global function Gamemode1v1_NotifyThread
 global function Gamemode1v1_NotifyPlayer
 global function Gamemode1v1_NotifyPlayerOnce
 
@@ -39,13 +37,13 @@ void function NotificationSystem_Init()
 	#endif 
 }
 
+
 //scipters: add your own wrapper functions 
 
 
 //////////////////////////////////
 //			WRAPPERS			//
 //////////////////////////////////
-
 
 void function ClearNotifications( entity player, int panelID = -1 )
 {
@@ -70,7 +68,6 @@ void function Gamemode1v1_NotifyPlayer( entity player = null, int panelID = -1, 
 	}
 }
 
-
 void function Gamemode1v1_NotifyPlayerOnce( entity player = null, int panelID = -1, string subToken = "", string text = "" )
 {
 	if( NotificationIsActive( player, panelID ) )
@@ -92,11 +89,10 @@ void function Gamemode1v1_NotifyPlayerOnce( entity player = null, int panelID = 
 }
 
 
-
-
 //////////////////////////////////
 //			INTERNAL			//
 //////////////////////////////////
+
 
 void function SetupPlayerNotificationTable( entity player )
 {
@@ -112,11 +108,10 @@ void function CleanupPlayerNotifications( entity player )
 
 array<int> function GetPlayerActiveNotifications( entity player )
 {
-	array<int> none = []
-	
 	if( player.p.handle in file.playerActiveNotifications )
 		return file.playerActiveNotifications[ player.p.handle ]
 		
+	array<int> none = []	
 	return none
 }
 
@@ -146,8 +141,6 @@ void function RemoveNotificationID( entity player, int notificationID )
 		playerNotifications.fastremovebyvalue( notificationID )
 }
 
-
-
 void function __NotifyPlayer( entity player, string token = "", string subToken = "", string title = "", string text = "", int id = -1 )
 {
 	mAssert( id > 0 , "Invalid ID for notification" )
@@ -165,7 +158,7 @@ void function __NotifyPlayer( entity player, string token = "", string subToken 
 	player.Signal( "NotificationChanged", data )
 }
 
-void function Gamemode1v1_NotifyThread( entity player )
+void function NotificationThread( entity player )
 {	
 	if ( !IsValid( player ) )
 		return
@@ -279,7 +272,7 @@ void function DestroyNotification( entity player, int notificationID )
 //////////////////////////////
 #if DEVELOPER 
 
-	function DEV_InitEnumMap()
+	void function DEV_InitEnumMap()
 	{
 		foreach( string name, int id in eNotify )
 		{

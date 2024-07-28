@@ -181,8 +181,9 @@ void function DroneEMP( entity owner )
 	array<entity> targets = CryptoDrone_GetNearbyTargetsForEMPRange( camera )
 	foreach ( entity target in targets )
 	{
-		if ( StatusEffect_GetSeverity( target, eStatusEffect.immune_to_abilities ) > 0 )
-			continue
+		// status effect does not exist
+		// if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
+			// continue
 
 		int targetTeam = target.GetTeam()
 		if ( !GetCurrentPlaylistVarBool( "enable_emp_trap_friendly_fire", true ) )
@@ -363,9 +364,10 @@ void function EMP_Explosion_Common( entity owner, entity source, array<int> chat
 	{
 		if ( target.IsPhaseShifted() )
 			continue
-
-		if ( StatusEffect_GetSeverity( target, eStatusEffect.immune_to_abilities ) > 0 )
-			continue
+		
+		// status effect does not exist
+		// if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
+			// continue
 
 		int targetTeam = target.GetTeam()
 		if ( !GetCurrentPlaylistVarBool( "enable_emp_trap_friendly_fire", true ) )
@@ -377,7 +379,7 @@ void function EMP_Explosion_Common( entity owner, entity source, array<int> chat
 		{
 			// friendly fire is ON; it should only affect players, not traps, and it should
 			// only slow them
-			if ( IsFriendlyTeam( targetTeam, cameraTeam ) && (!target.IsPlayer() ) )
+			if ( IsFriendlyTeam( targetTeam, cameraTeam ) && ( !target.IsPlayer() ) )
 				continue
 		}
 

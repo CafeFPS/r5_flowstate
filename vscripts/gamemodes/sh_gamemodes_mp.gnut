@@ -215,6 +215,7 @@ void function GameModes_Init_SV_CL()
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 
+/* //removed until added fully
 	gameMode = fs_apexkart
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_FS_Carritos_Init)
@@ -229,8 +230,9 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_FS_Carritos_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
+*/
 
-
+/* 	
 	gameMode = WINTEREXPRESS
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, WinterExpress_Init)
@@ -244,5 +246,6 @@ void function GameModes_Init_SV_CL()
 	#elseif CLIENT
 	// GameMode_AddClientInit(gameMode, Cl_GamemodeSND_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
-	#endif
+	#endif 
+*/
 }

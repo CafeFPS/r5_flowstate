@@ -505,6 +505,13 @@ void function CodeCallback_MapSpawn() // original script entry point
 		break
 		
 		case "fs_lgduels_1v1":
+			
+			PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+			PrecacheModel( $"mdl/imc_base/generator_IMC_01.rmdl" )
+			PrecacheModel( $"mdl/containers/underbelly_cargo_container_128_red_02.rmdl" )
+			PrecacheModel( $"mdl/containers/underbelly_cargo_container_128_blue_02.rmdl" )
+			
+		
 		case "fs_1v1":
 		
 		if( !InvalidModesForTrackScoreBoard.contains( GameRules_GetGameMode() ) ) //prevent mapchange crash

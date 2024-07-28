@@ -11,6 +11,7 @@ global function AddSpawnCallback_ScriptName
 global function GetLeveledAISettings
 global function GetSpawnAISettings
 global function GetDefaultAISetting
+global function RunSpawnCallbacks
 
 void function CodeCallback_PreSpawn( entity npc )
 {

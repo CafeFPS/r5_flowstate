@@ -1946,17 +1946,18 @@ void function EquipAttachments_Internal( entity player, entity weapon, string mo
 		int baseMaxAmmo    		= GetWeaponInfoFileKeyField_GlobalInt( baseWeapon, "ammo_clip_size" )
 		int ammoToSpawn 		= previousMagAmmo - baseMaxAmmo
 
-		if ( modToAdd != "" && modToRemove != "" )
-		{
-			if ( LootHelper_GetLootTier( modToAdd ) < LootHelper_GetLootTier( modToRemove ) )
-			{
-				ammoToSpawn = previousMagAmmo  - currentMagAmmo
-			}
-			else
-			{
-				ammoToSpawn = 0
-			}
-		}
+		//doesn't exist. 
+		// if ( modToAdd != "" && modToRemove != "" )
+		// {
+			// if ( LootHelper_GetLootTier( modToAdd ) < LootHelper_GetLootTier( modToRemove ) )
+			// {
+				// ammoToSpawn = previousMagAmmo  - currentMagAmmo
+			// }
+			// else
+			// {
+				// ammoToSpawn = 0
+			// }
+		// }
 
 		if ( ammoToSpawn > 0 )
 		{

@@ -6,6 +6,10 @@ global function CodeCallback_PlayerFreefallAnticipateBegin
 global function CodeCallback_PlayerFreefallAnticipateEnd
 global function GetSkyDiveTrailPackageForPlayerWithOverrides
 
+#if SERVER
+	global function isFreefallEnabled
+#endif
+
 #if(CLIENT)
 global function Freefall_SetDisplaySeaHeightForLevel
 global function Freefall_SetPlaneHeight
@@ -170,6 +174,7 @@ global function GetSkydiveSmokeColorForTeam
 		array<vector> skydiveSmokeColors = [ <178,184,244>, <143,222,95>, <255,134,26>, <255,251,130>, <255,202,254> ]
 		array<entity> skydiveBoundaryVolumes
 		array<string> jumpJetAttachments = [ "vent_left", "vent_right" ]
+		bool freefall_enabled = false
 	} file
 #endif //SERVER
 
@@ -244,6 +249,8 @@ void function SurvivalFreefall_Init()
 		// AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
 		// AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
 		file.skydiveSmokeColors.randomize()
+		file.freefall_enabled = true
+	
 	#endif
 
 	RegisterSignal( "ReleaseDropEmote" )
@@ -258,6 +265,13 @@ void function SurvivalFreefall_Init()
 		AddCreateCallback( "player", Freefall_OnPlayerCreated  )
 	#endif
 }
+
+#if SERVER
+	bool function isFreefallEnabled()
+	{
+		return file.freefall_enabled
+	}
+#endif
 
 vector function GetSkydiveSmokeColorForTeam( int team )
 {

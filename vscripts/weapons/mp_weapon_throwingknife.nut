@@ -4,7 +4,7 @@ global function ThrowingKnife_Init
 global function OnProjectileCollision_weapon_throwingknife
 
 const int KNIFE_DESPAWN_TIME = 5
-const float FLT_EPSILON = 1.0e-6
+//const float FLT_EPSILON = 1.0e-6 //already defined in consts
 
 void function ThrowingKnife_Init()
 {

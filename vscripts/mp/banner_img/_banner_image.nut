@@ -76,7 +76,7 @@ void function BannerImages_Init()
 
 void function BannerImages_RegisterGroup( string name, LocPair groupLoc, float width, float height, float alpha = -1.0, bool isVisible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 2.00, int fadeSpeed = SLOWEST )
 {	
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_RegisterGroup [" + name + "] but group registration is complete." )
+	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_RegisterGroup [" + name + "] but group registration is already complete." )
 
 	BannerGroupData bannerGroup 
 	
@@ -118,13 +118,13 @@ void function BannerImages_RegisterGroup( string name, LocPair groupLoc, float w
 
 void function BannerImages_SetAllGroupsFunc( void functionref() callbackFunc )
 {
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllGroupsFunc [ " + string( callbackFunc ) + " ] but group registration is complete." )
+	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllGroupsFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
 	file.groupsInitCallbackFunc = callbackFunc
 }
 
 void function BannerImages_SetAllImagesFunc( void functionref() callbackFunc )
 {
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllImagesFunc [ " + string( callbackFunc ) + " ] but group registration is complete." )
+	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllImagesFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
 	file.runImageAppendtoGroupsFunc = callbackFunc
 }
 

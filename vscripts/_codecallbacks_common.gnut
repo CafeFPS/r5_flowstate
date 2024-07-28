@@ -194,6 +194,8 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 
 void function PlayerLifeThread( entity player )
 {
+	RegisterSignal( "OnPostDeathLogicEnd" )
+	
 	// this thread will run for the span of the player's life plus a little bit extra
 	// (the extra is the time after they die before they're moved to spectator)
 

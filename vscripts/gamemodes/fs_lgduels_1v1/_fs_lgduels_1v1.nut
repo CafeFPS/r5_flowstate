@@ -42,6 +42,11 @@ void function Flowstate_LgDuels1v1_Init()
 	AddCallback_OnClientConnected( INIT_LGDuels_Player )
 }
 
+void function ZeroDamage( entity player, var damageInfo )
+{
+	DamageInfo_SetDamage( damageInfo, 0 )
+}
+
 void function InitPreSpawnSystemSettings()
 {
 	SpawnSystem_SetCustomPak( "datatable/fs_spawns_lgduels.rpak" )
@@ -50,6 +55,8 @@ void function InitPreSpawnSystemSettings()
 void function INIT_LGDuels_Player( entity player )
 {
 	AddEntityCallback_OnDamaged( player, LGDuel_OnPlayerDamaged )
+	AddEntityCalllback_OnPlayerGamestateChange_1v1( player, Player1v1Gamestate )
+	
 	AddClientCommandCallback( "hitsound", ClientCommand_mkos_LGDuel_hitsound )
 	AddClientCommandCallback( "handicap", ClientCommand_mkos_LGDuel_p_damage )
 	
@@ -58,17 +65,58 @@ void function INIT_LGDuels_Player( entity player )
 	#endif
 	
 	player.p.hitsound = HIT_0
+	
 	CreatePanelText(player, "", "LG Duels by @CafeFPS and..", < 3450.38, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 1.5, 1)
 	CreatePanelText(player, "mkos ", "",		< 3472.44, -9592.87, -9888.37 >, < 354.541, 271.209, 0 >, false, 3, 2)
 }
 
+void function Player1v1Gamestate( entity player, int state )
+{
+	#if DEVELOPER
+		Warning( "state called for: " + string( player ) + " state = " + DEV_GetGamestateRef( state ) )
+	#endif
+	
+	switch( state )
+	{
+		case e1v1State.INVALID:
+		case e1v1State.MATCH_START:	
+			break 
+		
+		case e1v1State.RESTING:
+		
+			AddEntityCallback_OnDamaged( player, ZeroDamage )
+			
+			//player.SetTakeDamageType( DAMAGE_NO )
+			DeployAndEnableWeapons( player )
+			TakeAllWeapons( player )
+			
+			Gamemode1v1_GiveWeapon( player, "mp_weapon_lightninggun", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+			Gamemode1v1_GiveWeapon( player, "mp_weapon_lightninggun", WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			Survival_SetInventoryEnabled( player, true )
+			SetPlayerInventory( player, [] )
+	
+			EnableOffhandWeapons( player )
+			DeployAndEnableWeapons( player )
+			break
+		
+		case e1v1State.WAITING:
+		case e1v1State.MATCHING:
+		case e1v1State.RECAP:
+		
+			RemoveEntityCallback_OnDamaged( player, ZeroDamage )				
+			break
+	}	
+}
+
 void function LgDuelLoadSettings( entity player, string data )
 {
-	if( data == "NA" || data == "" ){ return }
+	if( data == "NA" || data == "" )
+		return
 	
 	array<string> values = split( data, "|" )
 	
-	if( values.len() < 8 ){ return }
+	if( values.len() < 8 )
+		return
 	
 	foreach( str in values )
 	{
