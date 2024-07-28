@@ -1,4 +1,4 @@
-global function NotificationSystem_Init
+global function NotificationSystem_Init                                //mkos
 global function ClearNotifications
 global function NotificationThread
 
