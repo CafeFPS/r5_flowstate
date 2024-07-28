@@ -340,13 +340,17 @@ bool function bIs1v1Mode()
 	if ( !flowstateSettings.flowstate_1v1mode && !is3v3Mode() )
 		return false
 
-	if( GetCurrentPlaylistMapsCount() == 0 )
-		return false
+	return true
+	
+	// Commenting this for now as it's returning false for scenarios
 
-	if( GetPlaylistMaps( GetCurrentPlaylistName() ).contains( GetMapName() ) )
-		return true
+	// if( GetCurrentPlaylistMapsCount() == 0 )
+		// return false
 
-	return false
+	// if( GetPlaylistMaps( GetCurrentPlaylistName() ).contains( GetMapName() ) )
+		// return true
+
+	// return false
 }
 
 void function _CustomTDM_Init()
@@ -359,7 +363,6 @@ void function _CustomTDM_Init()
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
 	
 	flowstateSettings.IS_1V1_MODE_ENABLED = bIs1v1Mode()
-	
 	if( flowstateSettings.enable_global_chat )
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else
