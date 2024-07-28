@@ -194,7 +194,7 @@ DeathFieldStageData function GetDeathFieldStage( int index )
     if(file.deathFieldStages.len() == 0)
         InitDeathFieldDataAndStageData()
         
-    if(file.deathFieldStages.len() > index)
+    if( file.deathFieldStages.len() > index && index > -1 )
         return file.deathFieldStages[ index ]
 
     #if DEVELOPER
