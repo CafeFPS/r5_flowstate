@@ -3313,6 +3313,11 @@ void function Gamemode1v1_Init( int eMap )
 	
 	FlagWait( "EntitiesDidLoad" )
 	
+	if( Playlist() == ePlaylists.fs_vamp_1v1 )
+	{
+		SpawnSystem_SetCustomPlaylist( "fs_1v1" )
+	}
+
 	eMap = SpawnSystem_FindBaseMapForPak( eMap )
 	array<SpawnData> allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
 	

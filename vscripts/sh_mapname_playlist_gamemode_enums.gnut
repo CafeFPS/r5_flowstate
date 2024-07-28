@@ -105,6 +105,7 @@ global enum ePlaylists
 	survival_training, //37
 	fs_apexkart, //38
 	winterexpress, //39
+	fs_vamp_1v1, //40
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -150,6 +151,7 @@ const array<int> playlist1v1Types = [
 	
 	ePlaylists.fs_1v1,
 	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_vamp_1v1
 ]
 
 const array<int> gamemode1v1Types = [
@@ -412,6 +414,7 @@ void function TrackerSupportedMode_Init()
 		ePlaylists.fs_1v1,
 		ePlaylists.fs_dm,
 		ePlaylists.fs_tdm,
+		ePlaylists.fs_vamp_1v1,
 		ePlaylists.fs_lgduels_1v1,
 		ePlaylists.fs_scenarios,
 		ePlaylists.fs_survival,

@@ -1020,6 +1020,12 @@ void function _OnPlayerConnected(entity player)
 		thread Flowstate_InitAFKThreadForPlayer(player)
 	}
 
+	if( Playlist() == ePlaylists.fs_vamp_1v1 )
+	{
+		AddEntityCallback_OnDamaged( player, Vamp_OnPlayerDamaged )
+		AddCallback_OnWeaponAttack( Vamp_OnWeaponAttack )
+	}
+
 	if( Flowstate_IsFastInstaGib() )
 	{
 		AddEntityCallback_OnDamaged( player, FS_Instagib_OnPlayerDamaged )
@@ -6492,4 +6498,36 @@ bool function ValidateWeaponTgiveSettings( entity player, string weaponRef )
 	}
 	
 	return true
+}
+
+void function Vamp_OnPlayerDamaged(entity victim, var damageInfo)
+{
+	if ( !IsValid(victim) || !victim.IsPlayer() || !IsAlive( victim ) ) 
+		return
+
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
+	
+	if( !IsValid( attacker ) || !attacker.IsPlayer() || !IsAlive( attacker ) )
+		return
+
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	float attshield = float( attacker.GetShieldHealth() )
+	float atthealth = float( attacker.GetHealth() )
+	
+	if ( atthealth < attacker.GetMaxHealth() )
+	{
+		attacker.SetHealth( min( atthealth + damage, float( attacker.GetMaxHealth() ) ) )
+	} else if ( attshield < attacker.GetShieldHealthMax() )
+	{
+		attacker.SetShieldHealth( min( attshield + damage, float( attacker.GetShieldHealthMax() ) ) )
+	}
+}
+
+void function Vamp_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if( !IsValid( player ) )
+		return
+	player.RefillAllAmmo()
 }
