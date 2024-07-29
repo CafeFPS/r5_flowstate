@@ -269,10 +269,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
-
-	PrecacheModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
-
 	PrecacheWeapon( $"mp_weapon_gloves_primary" )
 	PrecacheWeapon( $"melee_gloves" )
 	PrecacheWeapon( $"mp_weapon_flamethrower" )
