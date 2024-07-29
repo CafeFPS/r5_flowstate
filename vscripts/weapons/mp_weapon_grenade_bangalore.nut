@@ -226,6 +226,21 @@ void function Bangalore_DetonateSmokeGrenade( entity smokeGrenade, entity owner,
 
 	wait FUSE_TIME
 
+	if( GetCurrentPlaylistVarBool( "lsm_mod12", false ) )
+	{
+		entity dummyCloudSource = CreateScriptMover( smokeGrenade.GetOrigin() )
+		dummyCloudSource.SetOwner( owner )
+		if(owner)
+		{
+			dummyCloudSource.RemoveFromAllRealms()
+			dummyCloudSource.AddToOtherEntitysRealms( owner )
+		}
+
+
+		CreateGasCloudLarge( dummyCloudSource, WEAPON_GAS_GRENADE_DURATION, WEAPON_GAS_GRENADE_OFFSET )
+		return
+	}
+
 	vector origin = smokeGrenade.GetOrigin()
 
 	float dist2D = DistanceSqr( owner.GetOrigin(), origin )

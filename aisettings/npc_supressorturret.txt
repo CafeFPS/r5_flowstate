@@ -1,0 +1,120 @@
+npc_supressorturret
+{
+	AIClass							dummie
+	TraverseAnimType				spectre
+	useSequenceBounds				1
+	aiEnemy_usePriorityDist			5000
+	aiEnemy_immediateThreatDist		500
+	AimAngularSpeed					10
+	ArmorType						normal
+	BaseClass						"npc_dummie"
+	BodyType						human
+	footstep_type					"human"
+	mechanical						1
+	BehaviorSelector				"behavior_turret_sentry"
+	LocationScoringCriteria			"CommonShootWithLos"
+
+	allowCower						0
+	allowUseCover					0
+
+	traverseCostFactor				2.0
+	minGoalRadius					500
+	maxGoalRadius					500
+	
+	DefaultModelName				"mdl/humans/class/medium/combat_dummie_medium.rmdl"
+
+	DefaultWeapon					"mp_weapon_volt_smg"
+	WeaponCapacity					"FromLoadout"
+
+    //Precision
+    aimingPrecisionMin              1
+    aimingPrecisionMax              1
+    aimingPrecisionIncreaseRate     1
+    aimingPrecisionDecreaseRate     1
+
+	enemyAimAtMeWidth				180
+
+	faceEnemyStrictToleranceAngle	0
+	faceEnemyWhileMovingDist		0
+
+	FOV_Alert_Far_Horz		120
+	FOV_Alert_Far_Vert		120
+	FOV_Alert_Near_Horz		120
+	FOV_Alert_Near_Vert		120
+	FOV_Combat_Far_Horz		120
+	FOV_Combat_Far_Vert		120
+	FOV_Combat_Near_Horz	120
+	FOV_Combat_Near_Vert	120
+	FOV_Idle_Far_Horz		120
+	FOV_Idle_Far_Vert		120
+	FOV_Idle_Near_Horz		120
+	FOV_Idle_Near_Vert		120
+
+	NoticeForgetPostTime	0
+	NoticeForgetPreTime		0
+
+	NoticeDistNear_Alert	300
+	NoticeDistNear_Combat	300
+	NoticeDistNear_Idle		300
+	NoticeDistFar_Alert		500
+	NoticeDistFar_Combat	500
+	NoticeDistFar_Idle		500
+	NoticeTimeNear_Alert	0.0
+	NoticeTimeNear_Combat	0.0
+	NoticeTimeNear_Idle		0.0
+	NoticeTimeFar_Alert		0.0
+	NoticeTimeFar_Combat	0.0
+	NoticeTimeFar_Idle		0.0
+	NoticeTimePeripheral_Alert	0
+	NoticeTimePeripheral_Combat 0
+	NoticeTimePeripheral_Idle	0
+
+	FOV_Near_Dist			300		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist			500	// use far values after this distance, interpolate horizontal in between, use far for vertical
+	FOV_Vert_Offset			0		// looking down instead of up... better for pilots on high ground feeling
+
+	HullType						"HULL_HUMAN"
+	leechAnimSet					spectre
+	leechMaxDist					0
+	magneticRange					0
+	MaxArrivalDist					0
+
+	aimassist_adspull_centerAttachmentName		"HEADSHOT"
+	aimassist_adspull_centerRadius				11.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			11.0
+
+	MeleeDamageMax					25
+	MeleeDamageMin					25
+
+	Health							0
+
+	PainOnHeavyDamageThreshold		9999 // 32
+	PainOnRepeatDamageThreshold		9999 // 70
+
+	MinForceWalkDist				0
+	MinStartMoveDist				0
+	MoveYawSpeed					0
+
+	DrawEnemyHealthBar				0
+	DrawTargetHealthBar				0
+
+	resetBurstOnStopShootOverlay	0
+	restrictAimGunToValidSequences	1
+
+	showFriendlyIcon				0
+	showTitle						0
+
+	ui_targetinfo					"ui/targetinfo_npc_simple"
+
+	smartAmmoLockAttachmentName0	"HEADSHOT"
+	waitBetweenWeaponBurst			0
+	suppressLSP_duration			1.5
+	reactChanceDefault				0
+
+//////////////////////
+	chancetohit_spread_ontarget		15.0
+	disableMeleeExecution		0	
+//////////////////////
+
+}
