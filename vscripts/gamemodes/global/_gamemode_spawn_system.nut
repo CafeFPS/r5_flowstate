@@ -358,7 +358,7 @@ array<SpawnData> function SpawnSystem_ReturnAllSpawnLocations( int eMap, table<s
 	}
 	else 
 	{
-		mAssert( false, "No spawn options were configured" )
+		mAssert( false, "Spawn options were incorrectly configured" )
 	}
 	
 	return FetchReturnAllLocations( eMap, spawnSet, customRpak, file.customPlaylist )

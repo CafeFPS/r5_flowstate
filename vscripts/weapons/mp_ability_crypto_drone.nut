@@ -1303,7 +1303,7 @@ bool function ShouldCryptoDroneBeCrushed( entity pusher, entity pushed )
 
 void function Crypto_FlyingCameraThink( entity owner )
 {
-	EndSignal( owner, "OnDestroy", "OnDeath" )
+	EndSignal( owner, "OnDestroy", "OnDeath", "CleanUpPlayerAbilities" )
 	EndThreadOn_PlayerChangedClass( owner )
 	Set3pDroneVisibility( owner, false )
 
@@ -1603,9 +1603,11 @@ void function Crypto_TryAddExitViewCommand( entity player )
 
 void function SwapToCameraView_Thread( entity owner, entity activeCamera )
 {
-	EndSignal( owner, "OnDestroy", "OnDeath", "StartPhaseShift", "PlayerSkydiveFromCurrentPosition", "BleedOut_OnStartDying" )
+	EndSignal( owner, "OnDestroy", "OnDeath", "StartPhaseShift", "BleedOut_OnStartDying" )
 	EndSignal( activeCamera, "OnDestroy", "OnDeath" )
 
+	if( isFreefallEnabled() )
+		EndSignal( owner, "PlayerSkydiveFromCurrentPosition" )
 	                     
 		// if ( owner.IsDrivingVehicle() )
 			// return
