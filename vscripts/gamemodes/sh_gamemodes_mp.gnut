@@ -231,8 +231,7 @@ void function GameModes_Init_SV_CL()
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 */
-
-/* 	
+	
 	gameMode = WINTEREXPRESS
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, WinterExpress_Init)
@@ -246,6 +245,5 @@ void function GameModes_Init_SV_CL()
 	#elseif CLIENT
 	// GameMode_AddClientInit(gameMode, Cl_GamemodeSND_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
-	#endif 
-*/
+	#endif
 }
