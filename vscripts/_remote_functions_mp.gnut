@@ -830,9 +830,13 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "__BuildWorldImgAssetString" ) //optional, else called by int ref
 	Remote_RegisterClientFunction( "ServerCallback_CreateWorldImg", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "int", -1, INT_MAX, "int", -1, 99, "float", -1.0, 1.0, 32, "bool", "float", -1.0, 32000.0, 32 )
 	Remote_RegisterClientFunction( "ServerCallback_DestroyWorldImg", "int", 0, INT_MAX )
-	Remote_RegisterClientFunction( "ServerCallback_SetWorldImgVisibility", "int", 0, INT_MAX, "bool", "bool", "bool", "int", -5, 3 )
 
-	//TODO Debug this function causing crashes in other gamemodes. (Idk why) Cafe
+	// Maybe enable them only in the gamemodes that are planned to be used ( 1v1? )
+	// Don't reenable until you confirm that the gamemodes work or find a solution for this. Cafe
+	// Commenting this one fixes prophunt loading
+	// Remote_RegisterClientFunction( "ServerCallback_SetWorldImgVisibility", "int", 0, INT_MAX, "bool", "bool", "bool", "int", -5, 3 )
+
+	//TODO Debug this function causing crashes in other gamemodes. (Idk why) Cafe. Commenting this one fixes scenarios and other gamemodes loading
 	//Remote_RegisterClientFunction( "ServerCallback_ModifyWorldImg", "int", 0, INT_MAX, "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 99999.0, 32, "float", -1.0, 1.0, 32, "int", -1, INT_MAX )
 
 	if ( IsLobby())

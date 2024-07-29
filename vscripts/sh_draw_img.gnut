@@ -171,7 +171,7 @@ void function WorldDrawImg_Init()
 			return
 		}
 		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible, fade, direction, speed )
+		// Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible, fade, direction, speed )
 	}
 	
 	void function WorldDrawImg_Timed( entity player, string imgAssetRef, vector origin, vector angles, float width, float height, int remoteAssetRefID, float alpha, float duration )
