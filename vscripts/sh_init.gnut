@@ -184,7 +184,7 @@ void function SV_CL_Init()
 	//ShFlyersDeathboxes_Init()
 	//}	
 
-
+	MpWeaponGuidedMissile_Init()
 	CharacterSelectNewMenu_Init()
 
 	//ShHoverBike_Init()
@@ -204,11 +204,19 @@ void function SV_CL_Init()
 	//R5R Sword
 	MpWeaponTitanSword_Init()
 	MpWeaponPortalGun_Init()
-	
+
+	WeaponMastiff_Init()
 	WorldDrawImg_Init()
 
+	MpWeaponFlameThrower_Init()
+	MpWeaponSentinel_Init()
+	ProtoBatteryCharger_Init()
+	
+	Sh_Squads_Init()
+	
     // Zipline Utility
     #if SERVER
+		TurretPlasma_Init() //turret dev ability by cafefps
         ZiplineUtility_Init()
     #endif
 
@@ -293,6 +301,7 @@ void function Server_Init()
 #if NPC_TITAN_PILOT_PROTOTYPE
 	AiPilots_Init()
 #endif
+
 	// AiPilot_Init()
 	// AiDrone_Init()
 	// AiSpectre_Init()
@@ -367,6 +376,7 @@ void function Server_Init()
 	ChatUtility_Init()
 
 	LiveAPI_Init()
+	LootHelper_Init()
 
     // ReMap Live
     if ( IsDevGamemode() )

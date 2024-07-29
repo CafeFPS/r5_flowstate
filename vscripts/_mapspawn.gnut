@@ -265,10 +265,23 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
+	PrecacheModel( $"mdl/robots/marvin/marvin.rmdl" )
 
 	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
 
+	PrecacheModel( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
+	PrecacheModel( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+
+	PrecacheWeapon( $"mp_weapon_gloves_primary" )
+	PrecacheWeapon( $"melee_gloves" )
+	PrecacheWeapon( $"mp_weapon_flamethrower" )
+	PrecacheWeapon( $"mp_weapon_smart_pistol" )
+	PrecacheWeapon( $"mp_weapon_wingman_n" )
+	PrecacheWeapon( $"mp_weapon_epg" )
+	PrecacheWeapon( $"sp_weapon_arc_tool" )
+
+	PrecacheWeapon( $"mp_titanweapon_flightcore_rockets" )
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_melee_halo" )
 	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )
@@ -398,6 +411,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/flowstate_custom/evac_tower_weight.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/w_pete_mri.rmdl" )
 	PrecacheModel( $"mdl/flowstate_custom/ptpov_pete_mri.rmdl" )
+	PrecacheModel( $"mdl/domestic/nessy_doll.rmdl" )
 
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_w.rmdl" )
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/catalyst/catalyst_base_v.rmdl" )
@@ -428,10 +442,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/canyonlands/fabric_canopy_02.rmdl" )
 	PrecacheModel( $"mdl/pipes/pipe_modular_painted_yellow_32_04.rmdl" )
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x32_01.rmdl" )
-	
+
+	PrecacheWeapon( $"mp_weapon_turret" )
 	PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"melee_titan_sword" )
 	PrecacheWeapon( $"mp_weapon_titan_sword" )
+	PrecacheWeapon( $"npc_weapon_turret_volt" )
 
 	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
 	{

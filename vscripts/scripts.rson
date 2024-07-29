@@ -271,11 +271,16 @@ Scripts:
 	weapons/mp_ability_cloak.nut
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
+
+	weapons/mp_weapon_flamethrower.nut
+	weapons/sp_weapon_arc_tool.nut
+	weapons/mp_titanweapon_flightcore_rockets.nut
 	weapons/mp_weapon_smart_pistol.nut
 	weapons/mp_weapon_softball.nut
 	weapons/mp_weapon_sheila.nut
 	weapons/mp_weapon_mdlspawner.nut
 	weapons/mp_weapon_satchel.nut
+	weapons/mp_weapon_turret.nut
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
@@ -562,6 +567,7 @@ Scripts:
 	
 	mp/sh_desertlands_train.nut
 	sh_scoreboard.gnut
+	_squads_utility.gnut
 ]
 
 When: "SERVER || UI"
@@ -1010,6 +1016,7 @@ Scripts:
 	mp/sh_movement_recorder.nut
 	sh_hover_vehicle.gnut
 	gamemodes/fs_scenarios/sh_gamemode_scenarios.nut
+	//gamemodes/fs_carritos/sh_gamemode_carritos.nut
 ]
 
 When: "SERVER"
@@ -1028,6 +1035,7 @@ Scripts:
 	gamemodes/fs_snd/_gamemode_snd.nut
 	gamemodes/fs_surf/_gamemode_surf.nut
 	gamemodes/fs_surf/_gamemode_surf2.nut
+	//gamemodes/fs_carritos/_gamemode_carritos.nut
 	
 	gamemodes/fs_aimtrainer/_gamemode_aimtrainer.nut
 	lobby/lobbyvm/_lobbyvm.nut
@@ -1080,6 +1088,7 @@ Scripts:
 	gamemodes/fs_snd/cl_gamemode_snd.nut
 	lobby/lobbyvm/cl_lobbyvm.nut
 	custom_maps/cl_custom_falling_forever.nut
+	//gamemodes/fs_carritos/cl_gamemode_carritos.nut
 ]
 
 
@@ -1088,6 +1097,7 @@ When: "SERVER"
 Scripts:
 [
 	freelance/_freelance.gnut
+	_loot_helper.gnut
 ]
 
 
@@ -1106,4 +1116,10 @@ Scripts:
 	sh_localized_strings.nut
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
+]
+
+When: "SERVER || CLIENT || UI"
+Scripts:
+[
+	gamemodes/sh_gamemode_winterexpress.nut
 ]
