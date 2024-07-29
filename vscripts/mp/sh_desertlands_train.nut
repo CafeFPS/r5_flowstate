@@ -551,6 +551,20 @@ void function SetupTracks()
 					}
 				}
 
+				if( IsValid( data.binModel ) )
+				{
+					entity parentPoint = CreateEntity( "script_mover_lightweight" )
+					parentPoint.kv.solid = 0
+					parentPoint.SetValueForModelKey( data.binModel.GetModelName() )
+					parentPoint.kv.SpawnAsPhysicsMover = 0
+					parentPoint.SetOrigin( data.binModel.GetOrigin() )
+					parentPoint.SetAngles( data.binModel.GetAngles() )
+					DispatchSpawn( parentPoint )
+					parentPoint.SetParent( data.brush )
+					parentPoint.Hide()
+					data.binModel.SetParent(parentPoint)
+				}
+
 				if ( !IsValid( data.binModel ) )
 				{
 					Warning( "A train station loot bin was deleted as part of loot initialization at: " + data.mover.GetOrigin() )
@@ -1111,8 +1125,9 @@ void function StationLootBinsLower()
 	wait STATION_LOOT_MOVETO_DURATION
 
 	// close bin lids and delete loot
-	// foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
-		// thread LootBin_ForceClose_Thread( data.binModel, true, true, true )
+	foreach ( stationLootBinData data in file.stationNodeBinGroups[ stationNode ] )
+		if( LootBin_IsOpen( data.binModel ) )
+			thread LootBin_PlayCloseSequence( data.binModel )
 
 	wait 0.5
 
@@ -1131,12 +1146,10 @@ void function CleanupPermanentsOnStationLootBin( stationLootBinData data )
 		string targetName = ent.GetTargetName()
 		string scriptName = ent.GetScriptName()
 
-		// if ( targetName == DIRTY_BOMB_TARGETNAME )
-		// {
-			// RemoveCausticDirtyBomb( ent )
-		// }
-		// else 
-		if ( targetName == TROPHY_SYSTEM_NAME || scriptName == TESLA_TRAP_NAME )
+		if ( targetName == DIRTY_BOMB_TARGETNAME )
+		{
+			RemoveCausticDirtyBomb( ent, null )
+		} else if ( targetName == TROPHY_SYSTEM_NAME || scriptName == TESLA_TRAP_NAME )
 		{
 			ent.Destroy()
 		}
