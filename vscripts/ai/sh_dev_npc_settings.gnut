@@ -114,10 +114,16 @@ void function SetupWeapons()
 
 	// Dev
 	//SetupDevCommand( "Dev: Dev Tool", "give mp_weapon_mdlspawner" )
-	//SetupDevCommand( "Dev: Smart Pistol (disabled)", "give mp_weapon_smart_pistol" )
 	SetupDevCommand( "Dev: Dev Cubemap ", "give weapon_cubemap" )
 	SetupDevCommand( "Dev: Throwing Knife", "give mp_weapon_throwingknife" )
+	SetupDevCommand( "Dev: Flight Core", "give mp_titanweapon_flightcore_rockets")
 	SetupDevCommand( "Dev: Titan Sword", "playerRequestsSword")
+	SetupDevCommand( "Dev: Sheila", "give mp_weapon_fs_sheila" )
+	SetupDevCommand( "Dev: Satchel", "give mp_weapon_satchel")
+	SetupDevCommand( "Dev: Turret", "give mp_weapon_turret")
+	SetupDevCommand( "Dev: Smart Pistol", "give mp_weapon_smart_pistol" )
+	SetupDevCommand( "Dev: Wingman Elite", "give mp_weapon_wingman_n" )
+	SetupDevCommand( "Dev: Arc Tool", "give sp_weapon_arc_tool" )
 	#endif
 }
 

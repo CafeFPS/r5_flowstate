@@ -768,32 +768,43 @@ void function Trophy_CreateTriggerArea( entity pylon ) {
 	trigger.SetParent( pylon )
 	trigger.SetOrigin( origin )
 
-	// Creates a trigger for projectiles
+	int attachmentID        = pylon.LookupAttachment( "handle" )
+	vector attachmentOrigin = pylon.GetAttachmentOrigin( attachmentID )
+
+	//------------------------------
+	// Vortex to detect bullets, projectiles, and mortars entering our defensive perimiter.
+	//------------------------------
 	entity vortexSphere = CreateEntity( "vortex_sphere" )
-	int spawnFlags = SF_ABSORB_CYLINDER | SF_BLOCK_OWNER_WEAPON //SF_ABSORB_BULLETS | SF_BLOCK_NPC_WEAPON_LOF |
-	vortexSphere.kv.height = TROPHY_INTERCEPT_PROJECTILE_RANGE
-	vortexSphere.kv.spawnflags = spawnFlags
-	vortexSphere.kv.enabled = 1
+
+	vortexSphere.kv.spawnflags = SF_BLOCK_OWNER_WEAPON
+	vortexSphere.kv.enabled = 0
 	vortexSphere.kv.radius = TROPHY_INTERCEPT_PROJECTILE_RANGE
-	vortexSphere.kv.bullet_fov = 180
-	vortexSphere.kv.physics_pull_strength = 25
-	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.height = TROPHY_INTERCEPT_PROJECTILE_RANGE
+	vortexSphere.kv.bullet_fov = 360
+	vortexSphere.kv.physics_pull_strength = 0//25
+	vortexSphere.kv.physics_side_dampening = 0//6
 	vortexSphere.kv.physics_fov = 360
-	vortexSphere.kv.physics_max_mass = 2
-	vortexSphere.kv.physics_max_size = 6
+	vortexSphere.kv.physics_max_mass = 0//2
+	vortexSphere.kv.physics_max_size = 0//6
+
+	vortexSphere.SetAngles( <0, 0, 0> ) // viewvec?
+	vortexSphere.SetOrigin( attachmentOrigin )
+	vortexSphere.SetMaxHealth( 100 )
+	vortexSphere.SetHealth( 100 )
+
+	DispatchSpawn( vortexSphere )
+
+	vortexSphere.SetParent( pylon )
 	
 	vortexSphere.RemoveFromAllRealms()
 	vortexSphere.AddToOtherEntitysRealms( pylon )	
-	
-	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Pylon_OnProjectilesTriggerTouch ) //normal bullets + grenades
-	SetTargetName( vortexSphere, VORTEX_TRIGGER_AREA )
-	
-	DispatchSpawn( vortexSphere )
 
-	vortexSphere.SetOwner( pylon )
-	vortexSphere.SetOrigin( origin )
-	vortexSphere.SetParent( pylon )
-	vortexSphere.SetAbsAngles( <0,0,0> ) //Setting local angles on a parented object is not supported
+	SetTargetName( vortexSphere, VORTEX_TRIGGER_AREA )
+	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Pylon_OnProjectilesTriggerTouch )
+
+	vortexSphere.Fire( "Enable" )
+	vortexSphere.SetInvulnerable()
+
 	vortexSphere.LinkToEnt( trigger )
 
 	OnThreadEnd(
@@ -812,6 +823,7 @@ void function Trophy_CreateTriggerArea( entity pylon ) {
 
 void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vortexTrigger, entity attacker, entity projectile, vector aPosition )
 {
+	printt( "PROJECTILE HIT VORTEX TRIGGER", projectile )
 	if( !IsValid(vortexTrigger) )
 		return
 
@@ -820,8 +832,15 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 	
 	entity pylonowner = vortexTrigger.GetOwner()
 	entity pylon = vortexTrigger.GetParent()
+
 	entity playersTrigger = vortexTrigger.GetLinkEnt()
-	
+
+	if ( !IsValid( pylon ) )
+		return
+
+	if ( !projectile.DoesShareRealms( pylon ) )
+		return
+
 	if( !IsValid( playersTrigger ) )
 		return
 
@@ -876,12 +895,17 @@ void function HandleProjectileDestruction( entity player, entity pylon, entity p
 		projectile.Destroy()	
 		return
 	}
+	
+	if( projectile.GetScriptName() == "modded1" && GetCurrentPlaylistVarBool( "ketchup_mod2", false ) )
+		return
 
 	switch ( pclassname )
 	{
 		case "mp_weapon_grenade_gas":
 		case "mp_weapon_grenade_defensive_bombardment":
 		case "mp_weapon_grenade_creeping_bombardment":
+			if( GetCurrentPlaylistVarBool( "ketchup_mod2", false ) )
+				return
 			//Reset ult to no charge if used
 			if( IsValid( player ) )
 				player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )

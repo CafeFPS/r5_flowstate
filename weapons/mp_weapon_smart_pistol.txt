@@ -3,15 +3,17 @@
 WeaponData
 {
 	// General
-	"printname"   									"SMART PISTOL"
-	"shortprintname"								"SMART PISTOL"
-	"description" 									"SMART PISTOL"
-	"longdesc"										"SMART PISTOL"
+	"printname"   									"#WPN_SMART_PISTOL"
+	"shortprintname"								"#WPN_SMART_PISTOL_SHORT"
+	"description" 									"#WPN_SMART_PISTOL_DESC"
+	"longdesc"										"#WPN_SMART_PISTOL_LONGDESC"
 
 	"fast_swap_to"									"1"
 
-	"menu_icon"										"rui/weapon_icons/r5/weapon_p2020"
-	"hud_icon"										"rui/weapon_icons/r5/weapon_p2020"
+	"menu_icon"										"rui/weapon_icons/r5/weapon_smart_pistol"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_smart_pistol"
+	
+	"ammo_pool_type"								"special"
 
 	"weaponClass" 									"human"
 	"weaponSubClass"								"autolock"
@@ -83,7 +85,7 @@ WeaponData
 	// Ammo
 	"ammo_min_to_fire"								"1"
 
-   "titanarmor_critical_hit_required"              "1"
+	"titanarmor_critical_hit_required"              "1"
 	"critical_hit"									"1"
 
 	"is_smart_pistol"								"1"
@@ -374,6 +376,8 @@ WeaponData
 	"smart_ammo_npc_targets_must_be_tracked"		"0"
 	"smart_ammo_tracker_status_effects"				"1"
 	"smart_ammo_tracked_targets_check_visibility"	"1"
+	
+	"viewmodel_ads_centerpoint_attachment"      	"sight_on"
 
 	//Bodygroups:
 	"bodygroup1_name"	"suppressor_cyl_sm"
@@ -383,45 +387,43 @@ WeaponData
 	"bodygroup6_name"	"proscreen"
 	"bodygroup6_set"	"0"
 
-    "clip_bodygroup"						"p2011sp_magazine"
-    "clip_bodygroup_index_shown"			"0"
-    "clip_bodygroup_index_hidden"			"1"
-    "clip_bodygroup_show_for_milestone_0"	"1"
-    "clip_bodygroup_show_for_milestone_1"	"0"
-    "clip_bodygroup_show_for_milestone_2"	"1"
-    "clip_bodygroup_show_for_milestone_3"	"1"
+	"clip_bodygroup"						"p2011sp_magazine"
+	"clip_bodygroup_index_shown"			"0"
+	"clip_bodygroup_index_hidden"			"1"
+	"clip_bodygroup_show_for_milestone_0"	"1"
+	"clip_bodygroup_show_for_milestone_1"	"0"
+	"clip_bodygroup_show_for_milestone_2"	"1"
+	"clip_bodygroup_show_for_milestone_3"	"1"
 
 	Mods
 	{
-		iron_sights
+		survival_finite_ammo
 		{
+			"ammo_default_total"							"0"
+			"ammo_stockpile_max"							"24"
+			"ammo_no_remove_from_stockpile"					"0"
+			"uses_ammo_pool"								"1"
+			"low_ammo_fraction" 							"0.3"
 		}
-		extended_ammo
-		{
-			"ammo_stockpile_max"							"240"
-			"ammo_clip_size"   								"16"
-			"ammo_default_total"							"240"
-		}
+		
 		silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460
 		{
-			"silenced"										"1"
-			"bodygroup2_set"								"1"
-			"damage_near_value"   							"20"
-			"damage_far_value"								"12"
-			//"rumble"  									"4"
-			"tracer_effect"   								"P_wpn_tracer_pistol"
-			"minimap_reveal_distance"						"1"
-			"smart_ammo_targeting_time_min"					"0.45"
-			"smart_ammo_targeting_time_max"					"0.8"
-			"smart_ammo_targeting_time_min_npc"				"0.1"
-			"smart_ammo_targeting_time_max_npc"				"0.25"
-			"smart_ammo_new_target_delay"					"0.22"
+			"silenced"							"1"
+			"fire_sound_2_player_1p"						"Weapon_p2011_FireSuppressed_1P"
+			"fire_sound_2_player_3p"						"Weapon_p2011_FireSuppressed_3P"
+			"fire_sound_2_npc"							"Weapon_p2011_FireSuppressed_3P"
+			"damage_near_value"   				"--2"
+			"damage_far_value"					"--2"
+			"damage_very_far_value"				"--2"
+			"bodygroup27_set"					"1"
 
-			"fx_muzzle_flash_view"							"wpn_muzzleflash_pistol_sup_FP"
-			"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol_sup"
-			"fx_muzzle_flash_attach"						"muzzle_flash_suppressor_sq"
-			"fire_sound_1_player_1p"						"Weapon_SmartPistol_FireSuppressed_1P"
-			"fire_sound_1_player_3p"						"Weapon_SmartPistol_FireSuppressed_3P"
+			//"rumble"  						"4"
+			"tracer_effect"   					"P_wpn_tracer_pistol"
+			"minimap_reveal_distance"			"1"
+
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
+			"fx_muzzle_flash_attach"			"muzzle_flash_suppressor_sq"
 		}
 		enhanced_targeting
 		{
@@ -432,25 +434,48 @@ WeaponData
 			"smart_ammo_targeting_time_max_npc"		"0.15"
 			"smart_ammo_new_target_delay"			"0.0"
 		}
-		hcog
+		optic_cq_hcog_classic
 		{
+			"bodygroup3_set"	"1"
 		}
-		threat_scope
-		{
-			"threat_scope_enabled"			"1"
-			"threat_scope_zoomfrac_start"	"0.0"
-			"threat_scope_zoomfrac_end"		"0.0"
-			"threat_scope_bounds_width"		"0.49"
-			"threat_scope_bounds_height"	"0.31"
-		}
-		pro_screen
-		{
-			"ui8_enable"		"1"
-			"bodygroup6_set"	"1"
-		}
-		tactical_cdr_on_kill
-		{
 
+		optic_cq_hcog_bruiser
+		{
+			"bodygroup3_set"	"1"
+		}
+
+		optic_cq_holosight
+		{
+			"bodygroup3_set"	    "1"
+		}
+
+		optic_cq_holosight_variable
+		{
+			"bodygroup3_set"	"1"
+		}
+
+		optic_cq_threat
+		{
+			"bodygroup3_set"	"1"
+
+			"viewmodel_offset_ads"                  "0 15 0"
+
+			"dof_zoom_nearDepthStart"               "0.75"
+			"dof_zoom_nearDepthEnd"                 "10.0"
+		}
+		energy_mag_l1
+		{
+			"ammo_clip_size"   							"15"
+		}
+
+		energy_mag_l2
+		{
+			"ammo_clip_size"   							"18"
+		}
+
+		energy_mag_l3
+		{
+			"ammo_clip_size"   							"21"
 		}
 		pas_fast_reload
 		{
@@ -537,24 +562,27 @@ WeaponData
 	"ui1_enable"		"1"
 	UiData1
 	{
-		"ui"								"ui/p2011_green_sights"
-		"mesh"							"models/weapons/attachments/p2011_rui_upper"
+		"ui"							"ui/diamond_reticle_rear"
+		"mesh"							"models/weapons/attachments/diamond_reticle_rear"
 		Args
 		{
 			vis							player_zoomfrac
-		}
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			clipCount					weapon_ammoClipCount
+        }
 	}
 
 	"ui2_enable"		"1"
 	UiData2
 	{
-		"ui"								"ui/p2011_ammo_counter"
-		"mesh"							"models/weapons/attachments/p2011_rui_lower"
+		"ui"							"ui/mk6_ammo_counter"
+		"mesh"							"models/weapons/attachments/mk6_rui_lower"
 		Args
 		{
 			vis							player_zoomfrac
 			ammo						weapon_ammo
-			clipSize						weapon_clipSize
+			clipSize					weapon_clipSize
 			clipCount					weapon_ammoClipCount
 		}
 	}
@@ -562,11 +590,11 @@ WeaponData
 	"ui8_enable"		"0"
 	UiData8
 	{
-		"ui"									"ui/pro_screen_panel"
+		"ui"							"ui/pro_screen_panel"
 		"mesh"							"models/weapons/attachments/pro_screen_rui_upper"
 		Args
 		{
-			proValue							proscreen_int0
+			proValue					proscreen_int0
 			proOwnedByPlayer			proscreen_owner_is_player
 		}
 	}
@@ -590,7 +618,7 @@ WeaponData
 
 		Crosshair_1
 		{
-			"ui"						"ui/crosshair_tactical"
+			"ui"						"ui/crosshair_smart_pistol"
 			"base_spread"				"0.0"
 			Args
 			{

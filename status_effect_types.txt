@@ -3,6 +3,8 @@
 //enum eStatusEffect
 //{
 /////////////////////////////
+	crypto_beacon_scan
+	immune_to_abilities
 	phase_gate_tracking
 	turretlockon_detected
 	titan_sword_fuel

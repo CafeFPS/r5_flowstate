@@ -27,6 +27,12 @@ global enum eDaysOfWeek
 
 global const string WHITESPACE_CHARACTERS = "\r\n\t "
 
+#if SERVER
+global typedef FXHandle entity
+#elseif CLIENT
+global typedef FXHandle int
+#endif
+
 global struct TimeParts
 {
 	int year
@@ -2531,5 +2537,36 @@ void function WaitTime( float time )
 {
 	int framesToWait = int( time / SERVER_SCRIPT_FRAME_TIME + 0.5 )	// Rounding to nearest int
 	WaitFrames( framesToWait )
+}
+#endif
+
+#if SERVER || CLIENT
+FXHandle function CleanupFXHandle( FXHandle fxHandle, bool doRemoveAllParticlesNow = true, bool doPlayEndCap = false )
+{
+	#if SERVER
+		if ( IsValid( fxHandle ) )
+		{
+			string stopType
+			if ( doRemoveAllParticlesNow )
+			{
+				Assert( !doPlayEndCap )
+				stopType = "destroyImmediately"
+			}
+			else if ( doPlayEndCap )
+				stopType = "playEndcap"
+			else
+				stopType = "normal"
+			fxHandle.SetStopType( stopType )
+
+			fxHandle.Destroy()
+		}
+
+		return null
+	#elseif CLIENT
+		if ( EffectDoesExist( fxHandle ) )
+			EffectStop( fxHandle, doRemoveAllParticlesNow, doPlayEndCap )
+
+		return -1
+	#endif
 }
 #endif
