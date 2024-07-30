@@ -248,7 +248,8 @@ void function FS_Scenarios_OnGroupCharacterSelectReady( entity player, bool old,
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
 		Flowstate_ForceRemoveAllObituaries()
 		FS_SetHideEndTimeUI( true )
-		Obituary_Print_Localized( "Made by CafeFPS with the help from mkos, Darth Elmo and Balvarine.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( "mkos - code improvements, spawns system", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		OpenCharacterSelectNewMenu()
 	}
 	else
@@ -1594,8 +1595,8 @@ void function DM_HintCatalog(int index, int eHandle)
 			break
 			
 			case ePlaylists.fs_scenarios:
-			Obituary_Print_Localized( "with the help from mkos, Darth Elmo and Balvarine. <3", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
-			Obituary_Print_Localized( "FS Scenarios v0.9 Beta - Made in Colombia by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "mkos - code improvements, spawns system", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+			Obituary_Print_Localized( "FS Scenarios - Made by @CafeFPS %$rui/flowstate_custom/colombia_flag_papa%", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 			break
 			
 			case ePlaylists.fs_1v1:

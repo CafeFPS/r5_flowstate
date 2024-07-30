@@ -2718,49 +2718,37 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 			else
 				sightBeam.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
 		}
-        
-		float viewMinDot = NEUROLINK_VIEW_MINDOT_BUFFED
-    
+
 		array<entity> nearbyEntities = []
 
 		//Cafe was here. Retail implementation uses VehicleGetPlayersInViewArray and VehicleGetNpcsInViewArray code functs that we don't have in s3.
 		//I suppose that function check for LOS and by min dot, so let's do that.
-		
-		//test
-		int traceMask                 = TRACE_MASK_SHOT
-		// int visConeFlags              = VIS_CONE_ENTS_TEST_HITBOXES | VIS_CONE_ENTS_CHECK_SOLID_BODY_HIT | VIS_CONE_ENTS_APPOX_CLOSEST_HITBOX | VIS_CONE_RETURN_HIT_VORTEX
-		// array<VisibleEntityInCone> results = FindVisibleEntitiesInCone( camera.GetOrigin(), camera.GetAngles(), GetNeurolinkRange( camera.GetOwner() ), 89, [camera], traceMask, visConeFlags, cameraOwner, camera )
-		// foreach ( result in results )
-		// {
-			// printt( "player in cone for crypto drone" )
-		// }
+		float minDot = deg_cos( NEUROLINK_VIEW_MINDOT_BUFFED )
 
 		nearbyEntities.extend( GetPlayerArrayEx( "any", TEAM_ANY, TEAM_ANY, camera.GetOrigin(), GetNeurolinkRange( camera.GetOwner() ) ) )
 		nearbyEntities.extend( GetNPCArrayEx( "any", TEAM_ANY, TEAM_ANY, camera.GetOrigin(), GetNeurolinkRange( camera.GetOwner() ) ) )
 		nearbyEntities.fastremovebyvalue( cameraOwner )
 
-		//todo implement viewMinDot. Cafe
 		for ( int i = nearbyEntities.len() - 1; i >= 0; i-- )
 		{
-			vector traceStart = camera.GetOrigin()
-			vector traceEnd = traceStart + ( Normalize( (nearbyEntities[i].GetWorldSpaceCenter()+<0,0,10>) - camera.GetOrigin() ) * 200 )
+			vector origin = camera.GetOrigin()
+			vector fwd    = AnglesToForward( camera.GetAngles() )
 
-			TraceResults traceResult = TraceLineHighDetail( traceStart, traceEnd, [ camera ], traceMask, TRACE_COLLISION_GROUP_NONE )
-			
-			vector vecToEnt = nearbyEntities[i].GetOrigin() - camera.GetOrigin()
-			vecToEnt.Norm()
+			vector entCenter = nearbyEntities[i].GetCenter()
+			vector v1        = Normalize( entCenter - origin )
+			float dot        = DotProduct2D( fwd, v1 )
 
-			// float dotVal = vecToEnt.Dot( camera.GetAngles() )
-			// if 120, should remove
-			float dotVal = DotProduct( vecToEnt, camera.GetAngles() )
-			// printt( "ent scanned", dotVal )
-			bool shouldremove = !IsValid( traceResult.hitEnt ) || nearbyEntities[i] != traceResult.hitEnt || !nearbyEntities[i].DoesShareRealms( cameraOwner ) //LOS check + realms check
-				
+			// printt( "checking los for target by cafe", nearbyEntities[i], dot, minDot )
+
+			TraceResults results = TraceLine( origin, entCenter, [ camera ], TRACE_MASK_VISIBLE, TRACE_COLLISION_GROUP_NONE )
+
+			bool shouldremove = results.fraction < 0.99 || dot < minDot || !nearbyEntities[i].DoesShareRealms( cameraOwner )
+
 			if( shouldremove )
 				nearbyEntities.remove( i )
 		}
 
-		nearbyEntities.extend( GetScannableObjectsArray( camera, viewMinDot, true ) )
+		// nearbyEntities.extend( GetScannableObjectsArray( camera, viewMinDot, true ) )
 
 		if ( camera.e.scanSoundPlaying && nearbyEntities.len() == 0 )
 		{
@@ -2951,7 +2939,7 @@ array<entity> function CryptoDrone_GetNearbyTargetsForEMPRange( entity camera )
 array<entity> function GetScannableObjectsArray( entity camera, float minDot, bool enemyOnly = false )
 {
 	vector cameraOrigin            = camera.GetOrigin()
-	array<entity> scannableObjects = [] //GetVehicleSpottableEnts( cameraOrigin, GetNeurolinkRange( camera.GetOwner() ), camera, true, minDot )
+	array<entity> scannableObjects = [] //GetVehicleSpottableEnts( cameraOrigin, GetNeurolinkRange( camera.GetOwner() ), camera, true, minDot ) //fixme Cafe
 
 	// foreach ( entity object in scannableObjects )
 	// {
