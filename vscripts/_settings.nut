@@ -619,6 +619,7 @@ void function Settings_Init()
 		MAX_TEAM_PLAYERS = GetCurrentPlaylistVarInt( "max_team_size", 1 )
 		printl( "MAX_TEAM_PLAYERS: " + MAX_TEAM_PLAYERS )
 
+		MAX_TEAMS = GetCurrentPlaylistVarInt( "max_teams", 4 )
 		// // if server attempts to start a playlist with a gamemode that is not registered
 		// // or if client attempts to join a server running a gamemode that is not registered
 		// if ( !GameMode_IsDefined( GAMETYPE ) )

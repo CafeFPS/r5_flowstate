@@ -1151,8 +1151,6 @@ void function OnPlayerKilled_GameState( entity victim, entity attacker, var atta
 
 	}
 
-
-
 	file.deadPlayers.append( victim )
 
 	// Make sure loadout info is updated before it is displayed
@@ -3561,6 +3559,8 @@ void function ServerCallback_CL_GameStartAnnouncement()
 
 void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, int newScore )
 {
+	printt( "ServerCallback_CL_RoundEnded - Team:", winningTeam, "now has", newScore )
+
 	string winningSquad      = ""
 	vector announcementColor = <1, 1, 1>
 
@@ -3638,6 +3638,7 @@ void function CL_ScoreUpdate( int team, int score )
 
 	// RuiSetInt( file.scoreElements[uiTeam], "score", score )
 	// RuiSetInt( file.scoreElementsFullmap[uiTeam], "score", score )
+
 }
 
 int function WinterExpress_GetTeamScore( int uiTeam )
