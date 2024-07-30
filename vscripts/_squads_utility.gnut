@@ -58,25 +58,31 @@ const string[ MAX_NUMBER_SQUADS] SQUAD_NAMES_LONG = [
 ]
 
                       
-const int  WINTER_EXPRESS_MAX_NUMBER_SQUADS = 3
+const int  WINTER_EXPRESS_MAX_NUMBER_SQUADS = 5
 
 const asset[ WINTER_EXPRESS_MAX_NUMBER_SQUADS ] WINTER_EXPRESS_SQUAD_ICONS = [
-	$"rui/gamemodes/winter_express/winter_express_squad_icon0",
-	$"rui/gamemodes/winter_express/winter_express_squad_icon1",
-	$"rui/gamemodes/winter_express/winter_express_squad_icon2"
+	$"",
+	$"",
+	$"",
+	$"",
+	$""
 ]
 
 
 const string[ WINTER_EXPRESS_MAX_NUMBER_SQUADS ] WINTER_EXPRESS_SQUAD_NAMES = [
 	"#WINTER_EXPRESS_TEAM_NAME_0",
 	"#WINTER_EXPRESS_TEAM_NAME_1",
-	"#WINTER_EXPRESS_TEAM_NAME_2"
+	"#WINTER_EXPRESS_TEAM_NAME_2",
+	"#TEAM_NAME_2",
+	"#TEAM_NAME_3"
 ]
 
 const string[ WINTER_EXPRESS_MAX_NUMBER_SQUADS] WINTER_EXPRESS_SQUAD_NAMES_LONG = [
 	"#WINTER_EXPRESS_TEAM_NAME_LONG_0",
 	"#WINTER_EXPRESS_TEAM_NAME_LONG_1",
-	"#WINTER_EXPRESS_TEAM_NAME_LONG_2"
+	"#WINTER_EXPRESS_TEAM_NAME_LONG_2",
+	"#TEAM_NAME_LONG_2",
+	"#TEAM_NAME_LONG_3"
 ]
       
 
@@ -228,7 +234,7 @@ vector function Squads_GetSquadColor_Server( int squadIndex, bool forceWinterExp
 asset function Squads_GetSquadIcon( int squadIndex, bool forceWinterExpress = false )
 {
 	if( Gamemode() == eGamemodes.WINTEREXPRESS || forceWinterExpress )
-		return WINTER_EXPRESS_SQUAD_ICONS[ squadIndex ]
+		return WINTER_EXPRESS_SQUAD_ICONS[ int( clamp( squadIndex, 0, WINTER_EXPRESS_SQUAD_ICONS.len() - 1 ) ) ]
 
 	return SQUAD_ICONS[ int( clamp( squadIndex, 0, SQUAD_ICONS.len() - 1 ) ) ]
 }
@@ -238,7 +244,7 @@ asset function Squads_GetSquadIcon( int squadIndex, bool forceWinterExpress = fa
 string function Squads_GetSquadName( int squadIndex, bool forceWinterExpress = false )
 {
 	if( Gamemode() == eGamemodes.WINTEREXPRESS || forceWinterExpress )
-		return WINTER_EXPRESS_SQUAD_NAMES[ squadIndex ]
+		return WINTER_EXPRESS_SQUAD_NAMES[ int( clamp( squadIndex, 0, WINTER_EXPRESS_SQUAD_NAMES.len() - 1 ) ) ]
 
 	return SQUAD_NAMES[ int( clamp( squadIndex, 0, SQUAD_NAMES.len() - 1 ) ) ]
 }
@@ -251,7 +257,7 @@ int function Squads_GetMax()
 string function Squads_GetSquadNameLong( int squadIndex, bool forceWinterExpress = false )
 {
 	if( Gamemode() == eGamemodes.WINTEREXPRESS || forceWinterExpress )
-		return WINTER_EXPRESS_SQUAD_NAMES_LONG[ squadIndex ]
+		return WINTER_EXPRESS_SQUAD_NAMES_LONG[ int( clamp( squadIndex, 0, WINTER_EXPRESS_SQUAD_NAMES_LONG.len() - 1 ) ) ]
 
 	return SQUAD_NAMES_LONG[ int( clamp( squadIndex, 0, SQUAD_NAMES_LONG.len() - 1 ) ) ]
 }
