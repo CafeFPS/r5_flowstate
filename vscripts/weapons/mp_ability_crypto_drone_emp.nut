@@ -181,9 +181,8 @@ void function DroneEMP( entity owner )
 	array<entity> targets = CryptoDrone_GetNearbyTargetsForEMPRange( camera )
 	foreach ( entity target in targets )
 	{
-		// status effect does not exist
-		// if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
-			// continue
+		if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
+			continue
 
 		int targetTeam = target.GetTeam()
 		if ( !GetCurrentPlaylistVarBool( "enable_emp_trap_friendly_fire", true ) )
@@ -364,10 +363,9 @@ void function EMP_Explosion_Common( entity owner, entity source, array<int> chat
 	{
 		if ( target.IsPhaseShifted() )
 			continue
-		
-		// status effect does not exist
-		// if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
-			// continue
+
+		if ( StatusEffect_GetSeverity( target, expect int( eStatusEffect.immune_to_abilities ) ) > 0 )
+			continue
 
 		int targetTeam = target.GetTeam()
 		if ( !GetCurrentPlaylistVarBool( "enable_emp_trap_friendly_fire", true ) )
