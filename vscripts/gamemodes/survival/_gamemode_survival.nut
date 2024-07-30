@@ -271,7 +271,7 @@ void function EntitiesDidLoad_Survival()
 	if ( file.planeHeight == 0 )
 		file.planeHeight = PLANE_HEIGHT_REALBIG
 
-	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) || GetCurrentPlaylistVarBool( "force_plane_to_spawn_without_players", false ) )
+	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", false ) || GetCurrentPlaylistVarBool( "force_plane_to_spawn_without_players", false ) )
 	{
 		thread Survival_RunPlaneLogic_Thread( Survival_GenerateSingleRandomPlanePath, Survival_RunSinglePlanePath_Thread, false )
 	}

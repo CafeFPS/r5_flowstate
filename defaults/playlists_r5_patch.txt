@@ -13,6 +13,11 @@ playlists
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Custom General Settings (Flowstate Custom)
 				///////////////////////////////////////////////////////////////////////////////////
+				force_plane_to_spawn_without_players 0
+				flyers_to_spawn 				100
+				evil_flyers						0
+				flowstate_enable_editor_hud						0
+
 				survival_plane_jump_duration	60.0
 				survival_plane_jump_delay		5.0
 				register_damage_to_ai 							1
@@ -88,7 +93,7 @@ playlists
 
 				enable_report                                  2
 				enable_three_weapons                           0
-				charselect_intro_countdown_duration            5 //5
+				charselect_intro_countdown_duration            5
 				wait_for_players_forever                       0
 
 
@@ -369,6 +374,10 @@ playlists
 		}
 
 		//By @CafeFPS
+		winterexpress
+		{
+			inherit defaults
+		}
 		fs_dm
 		{
 			inherit defaults
@@ -605,6 +614,84 @@ playlists
 			} } }
 		}
 
+
+		winterexpress
+		{
+			inherit fs_survival
+			vars
+			{
+				visible                                        1
+
+				name                               "Winter Express"
+				description                        "Winter Express"
+				abbreviation                       "Winter Express"
+				lobbytitle                         "Winter Express"
+				visible                                        1
+
+				// Skip intros:
+				waiting_for_players_spawning_enabled           1
+				waiting_for_players_countdown_seconds          0
+				waiting_for_players_timeout_seconds            1
+				character_select_time_max                      0.0
+				character_select_time_min                      0.0
+				survival_enable_gladiator_intros               0
+				
+				waiting_for_players_spawning_enabled           1
+				waiting_for_players_countdown_seconds          0
+				waiting_for_players_timeout_seconds            1
+				character_select_time_max                      0.0
+				character_select_time_min                      0.0
+				survival_enable_gladiator_intros               0
+				jump_from_plane_enabled                        0
+				sur_circle_start_paused                        0
+				match_ending_enabled                           0
+
+				ground_loot_enable								0
+
+				max_teams                                      3
+				max_players                                    9
+				min_players                                    9
+
+				//flowstate
+				flowstate_giveskins_weapons 					1 // if you host with these you will be banned
+				flowstate_giveskins_characters 					1 // if you host with these you will be banned
+				
+				flowstate_weapon_selector_enabled 			1 //Weapon selector on hovertanks
+				flowstate_disable_all_map_triggers			0
+				survival_infinite_ammo            			1
+				flowstate_spectator_team_only				1
+				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
+				flowstate_give_random_custom_models_toall	0
+				flowstateAdminTgive 					0 //tgive is for the admin ONLY
+				
+				//winter express exclusive
+				infinite_heal_items							1
+				desertlands_script_train_enable				1
+				desertlands_script_train_car_count 			3
+				desertlands_script_train_stoppanel_enabled  0
+				ignore_station_loot_bins 					1
+				
+				winter_express_score_limit 					3
+				winter_express_round_limit 					30
+				winter_express_round_time 					180
+				winter_express_store_ultimate_charge 		0 //not implemented atm
+				winter_express_cap_unlock_delay 			7
+				winter_express_respawn_skydive_height 		10000
+				winter_express_overtime_limit 				15
+				winter_express_cap_time 					10
+				
+				winter_express_hovertank_spawn 				1
+				winter_express_skydive_spawn 				0
+				
+				winter_express_wave_respawn 				0
+				winter_express_wave_respawn_interval 		10
+				
+				winter_express_round_based_respawn 1
+			}
+			gamemodes { winterexpress { maps {
+				mp_rr_desertlands_holiday 1
+			} } }
+		}
 		custom_ctf
 		{
 			inherit defaults
@@ -710,16 +797,7 @@ playlists
 			}
 			gamemodes { custom_ctf { maps {
 				mp_rr_canyonlands_64k_x_64k                    1
-				mp_rr_canyonlands_mu1                          1
 				mp_rr_desertlands_64k_x_64k                    1
-				mp_rr_desertlands_64k_x_64k_nx                 1
-				mp_rr_canyonlands_mu1_night                    1
-				mp_rr_canyonlands_staging                      1
-				mp_rr_aqueduct                                 1
-				mp_rr_aqueduct_night                           1
-				mp_rr_ashs_redemption                          1
-				mp_rr_arena_composite                          1
-				mp_flowstate					1
 			} } }
 		}
 		
@@ -1123,7 +1201,7 @@ playlists
 				flowstate_Enable_Shipment_By_AyeZee				1
 				flowstate_Enable_Killhouse_By_AyeZee			1
 				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							1 //if disabled, it will try to load Rust first
+				flowstate_Enable_Encore							0 //if disabled, it will try to load Rust first
 				flowstate_Enable_Killyard_By_DEAFPS				1
 				flowstate_Enable_Dustment_By_DEAFPS				1
 				flowstate_Enable_Shoothouse_By_DEAFPS			1
@@ -1146,7 +1224,7 @@ playlists
 
 				//visuals
 				flowstateForceCharacter 				1	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				flowstateForceAdminCharacter			0
 				flowstateChosenAdminCharacter			0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
@@ -1296,7 +1374,7 @@ playlists
 
 				//visuals
 				flowstateForceCharacter 				1	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				flowstateForceAdminCharacter			0
 				flowstateChosenAdminCharacter			0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
@@ -1316,13 +1394,13 @@ playlists
 			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
 				mp_rr_canyonlands_mu1                         	1
+				mp_rr_canyonlands_mu2                         	1
 				mp_rr_desertlands_64k_x_64k                    	1
 				mp_rr_desertlands_64k_x_64k_nx                 	1
 				mp_rr_desertlands_64k_x_64k_tt                 	1
 				mp_rr_arena_skygarden                          	1
 				mp_rr_party_crasher                      		1
 				mp_rr_canyonlands_mu1_night                    	1
-				mp_rr_canyonlands_staging                      	1
 				mp_rr_ashs_redemption                          	1
 				mp_rr_aqueduct									1
 				mp_rr_arena_composite							1
@@ -1379,7 +1457,7 @@ playlists
 				replay_new_ui 						1
 
 				flowstateForceCharacter 				1	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				
 				flowstate_1v1mode						1
@@ -1525,7 +1603,7 @@ playlists
 				replay_new_ui 						1
 
 				flowstateForceCharacter 				1	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				
 				flowstate_1v1mode						1
@@ -1635,6 +1713,114 @@ playlists
 			} } }
 		}
 
+		fs_vamp_1v1
+		{
+			inherit defaults
+			vars
+			{
+				image                              worlds_edge
+				video                              worlds_edge
+				panel_image                        panel_worlds_edge
+				visible                            1
+				battlechatter_enabled              1
+				name                               "1v1 Vamp"
+				description                        "1v1 Vamp"
+				abbreviation                       "1v1 Vamp"
+				lobbytitle                         "1v1 Vamp"
+				
+   				//Flowstate By CaféDeColombiaFPS.
+				
+				Admins								"admin"
+
+				max_team_size						1
+				max_players                        120
+				min_players                        0
+				
+				default_shield_hp                  125
+				survival_shields                   1
+				skydive_ziplines_enabled           1
+				ground_loot_enable 				   0
+				lootbin_loot_enable                0
+				
+				survival_jumpkit_enabled           0
+				survival_wallrun_enabled           0
+				
+				survival_infinite_ammo             1
+				survival_custom_deploy             1
+				character_select_time_min          0
+				character_select_time_max          0
+				charselect_picking_delay_after_all 0
+				survival_enable_squad_intro        0
+				survival_enable_gladiator_intros   0
+				jump_from_plane_enabled            0
+				replay_enabled                     1  
+				replay_delay                       5
+				enable_small_pheonix			   0
+				match_ending_enabled               0
+				sur_circle_start_paused            1
+
+				replay_new_ui 						1
+
+				flowstateForceCharacter 				1	//It enables the following settings
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
+				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				
+				flowstate_1v1mode						1
+				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
+				flowstateRoundtime 						800
+				
+				flowstateAutoChangeLevelEnable			1
+				flowstateRoundsBeforeChangeLevel		2
+				
+				flowstateAdminTgive 					0 //admin is for tgive only, 1 will enable dev menu weapons for players
+				flowstate1v1MatchLoadout					0
+				afk_to_rest_bool						0
+				
+				// mkos systems
+
+				logging_enabled 						1 //enables logging system
+				logging_encryption						1 //encrypts data for transfer (reccomended)
+				logging_shipstats 						1 // connects to tracker server to keep player stats up to date (only verified servers count towards leaderboard)
+				default_ibmm_wait						5 //0 for instant queue any input
+				ibmm_wait_limit							15 //maximum wait time allowed to match input
+				lg_duel_mode_60p						0  //enables beta lg mode
+							
+				rest_msg								1 // displays block message during rest with helpful commands information
+				afk_to_rest_bool						1 // makes player rest when afk instead of kick
+				enable_ping_kick						0 // 0 disables ping kick for this mode
+				enable_afk_thread 						1 //0 disables afk thread for this mode
+				superglide_counter_msg					1 // Shows players' superglide counts
+				custom_superglide_msg					"Kewl beans" //shows custom msg under counter.
+				patch_for_dropoff						1 // enables extra locations for dropoff allowing for 32 max players
+				patch_waiting_area						1
+				
+				use_global_stats						0 //uses global player stats for matchmaking
+					
+				// DISCORD WEBHOOKS:
+				// For Discord webhooks help:  https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+					
+				stats_discord_webhook_player_count		0	   // 1 Sends player join and disconnect data to a discord channel
+				DISCORD_PLAYERS_WEBHOOK					""         //player count discord webhook link ( see help above
+				stats_discord_webhook_matches_enabled	0    // 1 sends match recap data to a discord webhook channel
+				DISCORD_MATCHES_WEBHOOK					""         //matches discord webhook link
+				
+				flowstate_disable_all_map_triggers									1
+				flowstate_seconds_to_wait_without_players_before_restarting			3600 // 3600 : 1 hour
+				flowstate_give_random_custom_models_toall			0
+				
+				//required to get 1v1 spawns
+				spawnpaks_playlist_override 1
+				custom_playlist_spawnpak "fs_1v1"
+			}
+			gamemodes { fs_dm { maps {
+				mp_rr_canyonlands_64k_x_64k                    	1
+				mp_rr_aqueduct									1
+				mp_rr_arena_composite							1
+				mp_rr_arena_phase_runner						1
+				mp_rr_olympus_mu1								1
+			} } }
+		}
+		
 		fs_1v1_headshots_only
 		{
 			inherit defaults
@@ -1684,7 +1870,7 @@ playlists
 				replay_new_ui 						1
 
 				flowstateForceCharacter 				1	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				
 				flowstate_1v1mode						1
@@ -1826,8 +2012,8 @@ playlists
 
 				replay_new_ui 						1
 
-				flowstateForceCharacter 				0	//It enables the following settings
-				// 11 blisk, 12 fade, 13 amogus
+				flowstateForceCharacter 				1	//It enables the following settings
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
 				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
 				
 				flowstate_1v1mode						1
@@ -2035,12 +2221,10 @@ playlists
 				flowstateExtrashieldsEnabled 			0
 				flowstateExtrashieldsSpawntime 			240
 				flowstateExtrashieldValue 				150 //extrashield actual value
-				flowstate_modified_movement				4 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement				0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 
 			}
 			gamemodes { fs_dm { maps {
-				mp_rr_canyonlands_64k_x_64k                    	1
-				mp_rr_desertlands_64k_x_64k                    	1
 				mp_flowstate	1
 			} } }
 		}
@@ -2170,7 +2354,7 @@ playlists
 				flowstateExtrashieldValue 				150 //extrashield actual value
 
 				teammate_huds_enabled                          0    //Enables teammate huds
-				flowstate_modified_movement						4 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 			}
 			gamemodes { fs_dm { maps {
 				mp_flowstate	1
@@ -2197,8 +2381,7 @@ playlists
 				max_team_size									8
 				max_players                                    8
 				min_players                                    8
-				
-				is_hiswattson_ltm	1
+
 				// General Settings:
 				survival_shields                               1
 				skydive_ziplines_enabled                       0
@@ -2240,7 +2423,7 @@ playlists
 				////CTF Score And Round time:
 				max_score                                      3    //Set max amount of flag captures
 				round_time                                     30   //Sets time limit for rounds in minutes
-				flowstate_modified_movement						4 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
+				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 			}
 			gamemodes { custom_ctf { maps {
 				mp_flowstate					1
@@ -2352,6 +2535,7 @@ playlists
 			inherit defaults
 			vars
 			{
+				deathbox_ondeath_enabled 						1 //( 0 will throw loot around player ) // survival only
 				visible                                        1
 				battlechatter_enabled                          1
 				name                                           "TRIOS"
@@ -2428,12 +2612,12 @@ playlists
 				// debug
 				
 				// Skip intros:
-				waiting_for_players_spawning_enabled           0
-				waiting_for_players_countdown_seconds          5
-				waiting_for_players_timeout_seconds            0
-				character_select_time_max                      0.0
-				character_select_time_min                      0.0
-				survival_enable_gladiator_intros               0
+				// waiting_for_players_spawning_enabled           0
+				// waiting_for_players_countdown_seconds          5
+				// waiting_for_players_timeout_seconds            0
+				// character_select_time_max                      0.0
+				// character_select_time_min                      0.0
+				// survival_enable_gladiator_intros               0
 
 				survival_server_restart_after_end				1
 				flowstate_enable_bullet_slow					1
@@ -3045,18 +3229,6 @@ playlists
 				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
 				flowstate_enable_bullet_slow					1
 
-				//LSM mods do not ship
-				lsm_mod1 0 //bad loot / lootbins
-				lsm_mod2 0 //looting while downed
-				lsm_mod3 0 //infinite skydiving
-				lsm_mod4 0 //fall damage
-				lsm_mod5 0 //59 bang ults
-				lsm_mod6 0 //caustic trap mitosis
-				lsm_mod7 0 //spiderman pathy
-				lsm_mod8 0 //final ring closing in player 0 pos
-				lsm_mod9 0 // all loot is mozambique
-				lsm_mod10 1
-				
 				flowstate_give_character_passive		1
 				
 			}
@@ -3136,6 +3308,7 @@ playlists
 			"Language" "english"
 			"Tokens"
 			{
+				"MP_RR_DESERTLANDS_HOLIDAY"			"World's Edge"
 				"MP_RR_CONSTRUCT"					"Creative - Construct"
 				"MP_RR_OLYMPUS_MU1"					  "Olympus MU1"
 				"MP_FLOWSTATE"						  "Creative"
@@ -3170,7 +3343,7 @@ playlists
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
 				"BETA_BUILD_WATERMARK" 				  ""
-				"FS_PLAYLIST_MOTD"						"wow this motd is so amazingly beautiful"
+				"FS_PLAYLIST_MOTD"					  "Flowstate x R5Reloaded"
 			}
 		}
 	}
