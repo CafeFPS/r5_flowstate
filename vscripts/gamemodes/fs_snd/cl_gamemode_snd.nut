@@ -1078,7 +1078,7 @@ void function ServerCallback_BuySuccessful(int weaponID, int weaponSlot, int upg
 		GetLocalClientPlayer().ClientCommand( "Sur_SwapToNextOrdnance" )
 }
 
-void function ServerCallback_BuyRejected()
+void function ServerCallback_BuyRejected() //this can be performed by the server without remote func
 {
 	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
 		return

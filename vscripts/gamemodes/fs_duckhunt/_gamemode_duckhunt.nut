@@ -115,7 +115,9 @@ void function _OnPlayerConnected(entity player)
 	DecideRespawnPlayer(player, true)
 	AssignCharacter(player, RandomInt(9))
 
-	Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+	
 	player.p.askedForHunter = false
 	player.SetPlayerGameStat( PGS_DEATHS, 0)
 	player.p.lastFloorCheckPoint = false
@@ -170,7 +172,8 @@ void function _OnPlayerConnected(entity player)
 			break
 	}
 	TakeAllPassives(player)
-	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 	UpdatePlayerCounts()
 }
 
@@ -500,7 +503,8 @@ void function StartSpectatingDuckhunt( entity player, entity attacker, bool From
 		player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
 		player.StartObserverMode( OBS_MODE_IN_EYE )
 		player.SetObserverTarget( specTarget )
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Activate" )
 		player.p.isSpectating = true
 	}
 }
@@ -539,7 +543,8 @@ void function _HandleTeamForAllPlayers()
 			imc++
 		}
 
-		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+		//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+		Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 	}
 }
 
@@ -555,7 +560,8 @@ void function _HandleRespawn(entity player)
 			player.SetSpecReplayDelay( 0 )
 			player.SetObserverTarget( null )
 			player.StopObserverMode()
-			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
 		}
 	}catch(e420){}
 
@@ -572,7 +578,9 @@ void function _HandleRespawn(entity player)
 	player.SetMoveSpeedScale(1)
 	TakeAllWeapons(player)
 
-	Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+	
 	if(GetGameState() == eGameState.Playing)
 		Remote_CallFunction_NonReplay( player, "DUCKHUNT_CustomHint", 1, DUCKHUNT_MAX_LIFES_FOR_DUCKS - player.GetPlayerGameStat( PGS_DEATHS ))
 
@@ -682,7 +690,8 @@ void function DUCKHUNT_GameLoop()
 		if(!IsValid(player)) continue
 
 		ScreenCoverTransition_Player(player, Time() + 1)
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 	}
 	wait 0.5
 
@@ -748,7 +757,9 @@ void function DUCKHUNT_GameLoop()
 		if(!IsValid(player)) continue
 
 		ScreenCoverTransition_Player(player, Time() + 1)
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	}
 
 	wait 0.5
@@ -848,7 +859,8 @@ void function DUCKHUNT_GameLoop()
 		MakeInvincible( player )
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == FS_DUCKHUNT.winnerTeam, FS_DUCKHUNT.winnerTeam )
 	}
 
@@ -872,7 +884,8 @@ void function DUCKHUNT_GameLoop()
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 
-		Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+		Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 	}
 
 	wait 0.8

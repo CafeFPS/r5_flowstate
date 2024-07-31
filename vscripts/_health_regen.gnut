@@ -219,7 +219,9 @@ int function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	Assert( normalDamage + shieldDamage >= baseDamage )
 
-	DamageInfo_Print( damageInfo, "normal " + normalDamage + " shield " + shieldDamage )
+	#if DEVELOPER
+		DamageInfo_Print( damageInfo, "normal " + normalDamage + " shield " + shieldDamage )
+	#endif
 
 	player.SetShieldHealth( remainingShieldHealth )
 

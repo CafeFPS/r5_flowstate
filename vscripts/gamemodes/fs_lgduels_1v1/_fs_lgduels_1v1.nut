@@ -83,6 +83,8 @@ void function Player1v1Gamestate( entity player, int state )
 			break 
 		
 		case e1v1State.RESTING:
+		case e1v1State.WAITING:
+		case e1v1State.RECAP:
 		
 			AddEntityCallback_OnDamaged( player, ZeroDamage )
 			
@@ -99,10 +101,7 @@ void function Player1v1Gamestate( entity player, int state )
 			DeployAndEnableWeapons( player )
 			break
 		
-		case e1v1State.WAITING:
-		case e1v1State.MATCHING:
-		case e1v1State.RECAP:
-		
+		case e1v1State.MATCHING:		
 			RemoveEntityCallback_OnDamaged( player, ZeroDamage )				
 			break
 	}	

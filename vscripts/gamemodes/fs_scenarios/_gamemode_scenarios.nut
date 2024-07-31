@@ -1175,7 +1175,8 @@ void function FS_Scenarios_RespawnIn3v3Mode( entity player )
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
         player.MakeVisible()
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
@@ -1331,7 +1332,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 						if( settings.fs_scenarios_show_death_recap_onkilled )
 						{
 							player.p.InDeathRecap = true
-							Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+							Remote_CallFunction_ByRef( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
+							//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowFlowstateDeathRecapNoSpectate" )
 						} else
 							player.p.InDeathRecap = false
 
@@ -1620,7 +1622,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					if( !IsValid( player ) )
 						return
 
-					Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+					Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 					Flowstate_AssignUniqueCharacterForPlayer( player, true )
 				}
 
@@ -1710,7 +1713,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 					j++
 				}
 				oldSpawnSlot = spawnSlot
-				Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+				Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 			}
 
 			thread FS_Scenarios_GiveWeaponsToGroup( players )
@@ -2036,7 +2040,8 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 		ArrayRemoveInvalid( players )
 		foreach( entity player in players )
 		{
-			Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+			Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
+			//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 		}
 	}
 	
@@ -2180,7 +2185,8 @@ void function FS_Scenarios_ForceAllRoundsToFinish()
 				player.SetSpecReplayDelay( 0 )
 				player.SetObserverTarget( null )
 				player.StopObserverMode()
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 				player.MakeVisible()
 				player.ClearInvulnerable()
 				player.SetTakeDamageType( DAMAGE_YES )

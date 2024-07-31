@@ -223,7 +223,8 @@ void function _OnPlayerConnectedSND(entity player)
 	
 	ValidateDataTable( player, "datatable/flowstate_snd_buy_menu_data.rpak" )
 	
-	Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+	Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 	
 	player.SetPlayerGameStat( PGS_DEATHS, 0)
 
@@ -260,7 +261,7 @@ void function _OnPlayerConnectedSND(entity player)
 			// player.SetAngles(FS_SND.lobbyAngles)
 			
 			//Set required shit
-				
+			
 			Remote_CallFunction_Replay(player, "SND_UpdateUIScoreOnPlayerConnected", FS_SND.currentRound, SND_GetIMCWins(), SND_GetMilitiaWins() )
 			
 			break
@@ -274,7 +275,9 @@ void function _OnPlayerConnectedSND(entity player)
 	Remote_CallFunction_Replay( player, "Sh_SetAttackingLocations", FS_SND.currentLocation)
 	// Remote_CallFunction_Replay( player, "SetCustomLightning", FS_SND.currentLocation)
 	Remote_CallFunction_Replay( player, "Sh_SetAttackerTeam", Sh_GetAttackerTeam(), FS_SND.currentRound)
-	Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+	
+	//Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+	Remote_CallFunction_ByRef( player, "RefreshImageAndScaleOnMinimapAndFullmap" )
 	
 	UpdatePlayerCounts()
 }
@@ -419,7 +422,8 @@ void function _OnPlayerKilledSND(entity victim, entity attacker, var damageInfo)
 				{
 					if(!IsValid(player)) continue
 					
-					Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+					//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+					Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 				}
 			}()
 		break
@@ -470,7 +474,8 @@ void function StartSpectatingSND( entity player )
 		printt("[+] reverse spectate debug " +  reverse)
 
 		Remote_CallFunction_NonReplay(player, "ServerCallback_UpdateSpectatorTargetCount", clientTeam.len(), reverse)
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Activate" )
 		player.p.isSpectating = true
 		
 		// thread CheckForObservedTarget( specTarget, player )
@@ -518,7 +523,8 @@ void function _HandleRespawn(entity player)
 			player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 			player.SetSpecReplayDelay( 0 )
 			player.StopObserverMode()
-			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 			Remote_CallFunction_NonReplay(player, "ServerCallback_UpdateSpectatorTargetCount", 0)
 		}
 	}catch(e420){}
@@ -526,7 +532,8 @@ void function _HandleRespawn(entity player)
 	if(!IsAlive(player)) 
 	{
 		DecideRespawnPlayer(player, true)
-		Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+		//Remote_CallFunction_NonReplay(player, "RefreshImageAndScaleOnMinimapAndFullmap")
+		Remote_CallFunction_ByRef( player, "RefreshImageAndScaleOnMinimapAndFullmap" )
 	}
 
 	player.UnforceStand()
@@ -699,7 +706,8 @@ void function SND_Lobby()
 			Remote_CallFunction_NonReplay(player, "ServerCallback_ResetMoney")
 
 			Signal(player, "EndLobbyDistanceThread")
-			Remote_CallFunction_NonReplay( player, "ClearMatchPoints" )
+			Remote_CallFunction_ByRef( player, "ClearMatchPoints" )
+			//Remote_CallFunction_NonReplay( player, "ClearMatchPoints" )
 		}
 
 		Sh_SetAttackingLocations(FS_SND.currentLocation)
@@ -881,7 +889,9 @@ void function SND_GameLoop()
 		}
 		
 		Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")		
-		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")		
+		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")	
+		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+		
 		array<string> loot = [ "health_pickup_combo_small", "health_pickup_combo_large", "health_pickup_health_small", "health_pickup_health_large" ] //, "health_pickup_combo_full"]
 			foreach(item in loot)
 				SURVIVAL_AddToPlayerInventory(player, item)
@@ -905,7 +915,9 @@ void function SND_GameLoop()
 			
 			//Remote_CallFunction_NonReplay(player, "SetCustomLightning", -1)
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
+			
 			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, FS_SND.winnerTeam, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
 		}
@@ -994,7 +1006,8 @@ void function SND_GameLoop()
 		if(!IsValid(player)) continue
 
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
-		Remote_CallFunction_NonReplay(player, "FlowstateSND_CustomBuyMenu_Stop")
+		//Remote_CallFunction_NonReplay(player, "FlowstateSND_CustomBuyMenu_Stop")
+		Remote_CallFunction_ByRef( player, "FlowstateSND_CustomBuyMenu_Stop" )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleBombUIVisibility", true)
 		
 		//update client money with actual server money
@@ -1391,7 +1404,8 @@ void function SND_GameLoop()
 					player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 					player.SetSpecReplayDelay( 0 )
 					player.StopObserverMode()
-					Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+					Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+					//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 					Remote_CallFunction_NonReplay(player, "ServerCallback_UpdateSpectatorTargetCount", 0)
 				}
 			}catch(e420){}
@@ -1423,7 +1437,8 @@ void function SND_GameLoop()
 			AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 			AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 			Remote_CallFunction_NonReplay(player, "SND_ToggleScoreboardVisibility", false)
-			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == TEAM_IMC, TEAM_IMC )
 		}
 		
@@ -1456,7 +1471,8 @@ void function SND_GameLoop()
 					player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 					player.SetSpecReplayDelay( 0 )
 					player.StopObserverMode()
-					Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+					Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+					//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 					Remote_CallFunction_NonReplay(player, "ServerCallback_UpdateSpectatorTargetCount", 0)
 				}
 			}catch(e420){}
@@ -1488,7 +1504,8 @@ void function SND_GameLoop()
 			AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 			AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 			Remote_CallFunction_NonReplay(player, "SND_ToggleScoreboardVisibility", false)
-			Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+			Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == TEAM_MILITIA, TEAM_MILITIA )
 		}
 		
@@ -1530,7 +1547,8 @@ void function SND_GameLoop()
 			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 			RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 			
-			Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+			Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 			Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleBombUIVisibility", false)
 			Remote_CallFunction_NonReplay(player, "SND_ToggleScoreboardVisibility", false)
 			ScreenFadeToBlack( player, 2, 3 )
@@ -1552,7 +1570,8 @@ void function SND_GameLoop()
 			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 			RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
 			
-			Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement")
+			Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 			Remote_CallFunction_NonReplay(player, "SND_ToggleScoreboardVisibility", false)
 			ScreenCoverTransition_Player(player, Time() + 1)
 		}
@@ -1619,8 +1638,11 @@ void function GeneralMatchPointsHandling()
 		// {
 			// if(!IsValid(player)) continue
 			
-			// Remote_CallFunction_NonReplay( player, "AddRoundPointTied" )
-			// Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			//// Remote_CallFunction_NonReplay( player, "AddRoundPointTied" )
+			// Remote_CallFunction_ByRef( player, "AddRoundPointTied" )
+			
+			//// Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			// Remote_CallFunction_ByRef( player, "SND_UpdateUIScore" )
 		// }
 		// return
 	// }
@@ -1634,8 +1656,10 @@ void function GeneralMatchPointsHandling()
 		{
 			if(!IsValid(player)) continue
 			
-			Remote_CallFunction_NonReplay( player, "AddRoundPointToWinner_IMC" )
-			Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			//Remote_CallFunction_NonReplay( player, "AddRoundPointToWinner_IMC" )
+			Remote_CallFunction_ByRef( player, "AddRoundPointToWinner_IMC" )
+			//Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			Remote_CallFunction_ByRef( player, "SND_UpdateUIScore" )
 		}
 		
 		if(FS_SND.IMC_ConsecutiveLoses > 0)
@@ -1697,8 +1721,10 @@ void function GeneralMatchPointsHandling()
 		{
 			if(!IsValid(player)) continue
 			
-			Remote_CallFunction_NonReplay( player, "AddRoundPointToWinner_Militia" )
-			Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			//Remote_CallFunction_NonReplay( player, "AddRoundPointToWinner_Militia" )
+			Remote_CallFunction_ByRef( player, "AddRoundPointToWinner_Militia" )
+			//Remote_CallFunction_NonReplay( player, "SND_UpdateUIScore" )
+			Remote_CallFunction_ByRef( player, "SND_UpdateUIScore" )
 		}
 		
 		if(FS_SND.MILITIA_ConsecutiveLoses > 0)
@@ -2315,7 +2341,8 @@ void function GiveTeamToSNDPlayer()
 	{
 		if(!IsValid(player)) continue
 		
-		Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+		//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+		Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 	}
 }
 
@@ -2461,15 +2488,10 @@ bool function ClientCommand_BuySNDAbility(entity player, array<string> args)
     int weaponprice
     int weaponid = GetWeaponIDFromRef(weapon)
 	
-	if( weaponid == -1 || weapon == "") 
+	if( !FS_SND.buyAllowed || weaponid == -1 || weapon == "" ) 
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
-		return false
-	}
-	
-    if (!FS_SND.buyAllowed)
-	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
 		return false
 	}
 	
@@ -2507,13 +2529,15 @@ bool function ClientCommand_BuySNDGrenade(entity player, array<string> args)
 	
 	if( weaponid == -1 || weapon == "")
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 		return false
 	}
 	
     if (!FS_SND.buyAllowed || player.p.grenadesBought >= SND_GRENADES_LIMIT )
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
         return false
 	}
 
@@ -2521,7 +2545,8 @@ bool function ClientCommand_BuySNDGrenade(entity player, array<string> args)
 	
 	if (player.p.availableMoney < weaponprice)
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 		return false
 	}
 
@@ -2572,13 +2597,15 @@ bool function ClientCommand_BuySNDWeapon(entity player, array<string> args)
 
     if (player.p.weapon1ref != "" && player.p.weapon2ref != "")
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
         return false
 	}
 
     if (player.p.weapon1ref == weapon || player.p.weapon2ref == weapon)
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
         return false
 	}
 	
@@ -2623,7 +2650,8 @@ bool function ClientCommand_BuySNDWeapon(entity player, array<string> args)
 		
 		if (player.p.availableMoney < weaponprice)
 		{
-			Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+			Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 			return false
 		}
 		
@@ -2654,7 +2682,8 @@ bool function ClientCommand_BuySNDWeapon(entity player, array<string> args)
 		return true
     }
 
-	Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+	//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+	Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
     return false
 }
 
@@ -2837,7 +2866,8 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
     //Mastiff and lstar dont have attachments
     if (weapon == "mp_weapon_mastiff" || weapon == "mp_weapon_lstar" || weapon == "mp_weapon_sniper")
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 		return
 	}
     
@@ -2883,7 +2913,8 @@ void function UpgradeSNDWeapon(entity player, string weapon, int slot, bool down
 				player.p.weapon2lvl--
 			}
 
-			Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+			Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 			return
 		}
 

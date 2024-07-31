@@ -11,6 +11,9 @@ global function OnWeaponTossReleaseAnimEvent_weapon_grenade_bangalore
 
 global const string BANGALORE_SMOKESCREEN_SCRIPTNAME = "bangalore_smokescreen"
 
+const float WEAPON_GAS_GRENADE_DURATION = 15.0
+const vector WEAPON_GAS_GRENADE_OFFSET = <0,0,16>
+
 const asset FX_SMOKESCREEN_BANGALORE = $"P_smokescreen_FD"
 const asset FX_SMOKEGRENADE_TRAIL = $"P_SmokeScreen_FD_trail"
 const asset BANGALORE_SMOKE_MODEL = $"mdl/weapons/grenades/w_bangalore_canister_gas_projectile.rmdl"

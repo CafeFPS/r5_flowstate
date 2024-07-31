@@ -577,7 +577,8 @@ void function SURVIVAL_RunArenaDeathField()
 
 		foreach ( player in GetPlayerArray_Alive() )
 		{
-			Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceCircleClosing" )
+			Remote_CallFunction_ByRef( player, "ServerCallback_AnnounceCircleClosing" )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_AnnounceCircleClosing" )
 		}
 
 		wait MARGIN_WAIT_TIME

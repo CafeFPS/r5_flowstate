@@ -1516,7 +1516,9 @@ void function Boost(entity vehicle, entity player)
 	if(!IsValid(vehicle)) return
 	vehicle.e.canBoost = false
 	vehicle.e.isBoosting = true
-	Remote_CallFunction_NonReplay( player, "TridentBoost_Visuals" )
+	Remote_CallFunction_ByRef( player, "TridentBoost_Visuals" )
+	
+	//Remote_CallFunction_NonReplay( player, "TridentBoost_Visuals" )
 	wait 1.5
 	if(!IsValid(vehicle)) return
 	vehicle.e.isBoosting = false

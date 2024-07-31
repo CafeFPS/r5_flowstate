@@ -339,8 +339,8 @@ struct {
 						try 
 						{
 							
-							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0) );
-							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0) );
+							data += format("\n Console Aim Assist: %.1f ", GetCurrentPlaylistVarFloat("aimassist_magnet", 0.0 ) );
+							data += format("\n PC Aim Assist: %.1f", GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0 ) );
 									
 							if( (inputmsg.len() + data.len()) > 599 )
 							{	
@@ -1509,7 +1509,8 @@ struct {
 					printt("Drawing...")
 					foreach( s_player in GetPlayerArray() )
 					{
-						Remote_CallFunction_NonReplay( s_player, "Minimap_EnableDraw_Internal")
+						Remote_CallFunction_ByRef( s_player, "Minimap_EnableDraw_Internal" )
+						//Remote_CallFunction_NonReplay( s_player, "Minimap_EnableDraw_Internal")
 					}
 					
 				#endif 
@@ -1523,7 +1524,8 @@ struct {
 					printt("Drawing...")
 					foreach( s_player in GetPlayerArray() )
 					{
-						Remote_CallFunction_NonReplay( s_player, "Minimap_DisableDraw_Internal")
+						Remote_CallFunction_ByRef( s_player, "Minimap_DisableDraw_Internal" )
+						//Remote_CallFunction_NonReplay( s_player, "Minimap_DisableDraw_Internal")
 					}
 					
 				#endif 
@@ -2140,16 +2142,16 @@ string function ReturnKey( string str )
 
 string function ReturnValue( string str )
 {	
-	try {
-	
+	try 
+	{
 		array<string> split = split(str , ":")
 		
-		if(split.len() < 2)
+		if( split.len() < 2 )
 		{
 			return "";
 		}
 		
-		if (split[1] == "NA")
+		if ( split[1] == "NA" )
 		{	
 			#if DEVELOPER
 				sqprint( "Default value was returned for key: " + str )

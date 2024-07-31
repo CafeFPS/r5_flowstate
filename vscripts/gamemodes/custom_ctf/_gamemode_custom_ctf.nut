@@ -614,9 +614,12 @@ void function StartRound()
 			return
 		
 		if( MapName() == eMaps.mp_flowstate )
-			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 		else
-			Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+			//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+			
 
 		player.MakeVisible()
 		player.UnforceStand()
@@ -1848,7 +1851,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{
 				if( !Flowstate_IsHaloMode() )
 				{
-					Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
+					//Remote_CallFunction_NonReplay(victim, "ServerCallback_CTF_HideCustomUI")
+					Remote_CallFunction_ByRef( victim, "ServerCallback_CTF_HideCustomUI" )
 
 					wait 4 // so we dont go straight to respawn menu
 
@@ -1901,7 +1905,8 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	if( player.IsObserver() )
 	{
 		player.StopObserverMode()
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 	}
 
 	if( !IsAlive( player ) || forceGive )

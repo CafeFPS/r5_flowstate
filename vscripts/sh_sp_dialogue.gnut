@@ -312,7 +312,7 @@ void function Dialog_RegisterNetworking()
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnEnvironmentSpeakers, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, INT_MAX, "entity", "int", -1, NUM_TOTAL_DIALOGUE_QUEUES )
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnEnvironmentSpeakersNoResponse, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, INT_MAX, "int", -1, NUM_TOTAL_DIALOGUE_QUEUES )
 	Remote_RegisterClientFunction( FUNCNAME_PlayDialogueOnCustomSpeakers, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", -1, NUM_CUSTOM_QUEUES )
-	Remote_RegisterClientFunction( FUNCNAME_AbortCurrentDialogue )
+	//Remote_RegisterClientFunction( FUNCNAME_AbortCurrentDialogue ) //moved to byRef ~mkos
 }
 
 
@@ -674,12 +674,14 @@ void function StopDialogue()
 {
 	array<entity> players = GetPlayerArray_Alive()
 	foreach ( player in players )
-		Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
+		Remote_CallFunction_ByRef( player, "SCB_AbortCurrentDialogue" )
+		//Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
 }
 
 void function StopDialogueForPlayer( entity player )
 {
-	Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
+	//Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
+	Remote_CallFunction_ByRef( player, "SCB_AbortCurrentDialogue" )
 }
 
 void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity player, entity speaker, int responseID = -1, entity responseSpeaker = null, int customQueueIdx = -1 )

@@ -1958,7 +1958,7 @@ bool function IsSurvivalTraining()
 
 bool function IsFiringRangeGameMode()
 {
-	return GetCurrentPlaylistVarBool( "survival_firingrange", false )
+	return ( GetCurrentPlaylistVarBool( "survival_firingrange", false ) ) // && Playlist() != ePlaylists.survival_firingrange ) //????
 }
 
 bool function FiringRangeHasFriendlyFire()

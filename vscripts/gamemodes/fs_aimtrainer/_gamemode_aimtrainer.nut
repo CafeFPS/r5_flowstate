@@ -186,7 +186,8 @@ void function StartFRChallenges(entity player)
 	while( !IsValid( player ) )
 		WaitFrame()
 
-	Remote_CallFunction_NonReplay(player, "ServerCallback_SetDefaultMenuSettings")
+	//Remote_CallFunction_NonReplay(player, "ServerCallback_SetDefaultMenuSettings" )
+	Remote_CallFunction_ByRef( player, "ServerCallback_SetDefaultMenuSettings" )
 
 	Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
 	Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", 0)

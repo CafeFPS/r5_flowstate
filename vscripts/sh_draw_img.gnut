@@ -157,7 +157,7 @@ void function WorldDrawImg_Init()
 	
 	void function WorldDrawImg_Modify( entity player, int id, vector org = ZERO_VECTOR, vector ang = ZERO_VECTOR, float width = -1.0, float height = -1.0, float alpha = -1.0, int newImgRefID = -1 )
 	{
-		// Remote_CallFunction_NonReplay( player, "ServerCallback_ModifyWorldImg", id, org, ang, width, height, alpha, newImgRefID )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_ModifyWorldImg", id, org, ang, width, height, alpha, newImgRefID )
 	}
 	
 	void function WorldDrawImg_SetVisible( entity player, int id, bool visible, bool fade, bool direction, int speed = 0 )
@@ -171,7 +171,7 @@ void function WorldDrawImg_Init()
 			return
 		}
 		
-		// Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible, fade, direction, speed )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SetWorldImgVisibility", id, visible, fade, direction, speed )
 	}
 	
 	void function WorldDrawImg_Timed( entity player, string imgAssetRef, vector origin, vector angles, float width, float height, int remoteAssetRefID, float alpha, float duration )
@@ -593,7 +593,7 @@ void function WorldDrawImg_Init()
 		{
 			alphaFade = topoInfo.alpha
 			
-			while( alphaFade < 1 )
+			while( alphaFade < 0.99 )
 			{
 				alphaFade = alphaFade + WORLD_DRAW_BASE_SPEED
 				RuiSetFloat( rui, "basicImageAlpha", alphaFade )

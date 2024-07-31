@@ -244,7 +244,8 @@ bool function ClientCommand_DestroyEndScreen(entity player, array<string> args)
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return false
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement" )
+	//Remote_CallFunction_NonReplay( player, "ServerCallback_DestroyEndAnnouncement" )
+	Remote_CallFunction_ByRef( player, "ServerCallback_DestroyEndAnnouncement" )
 	ToggleHudForPlayer( player )
 
 	return true
@@ -271,10 +272,9 @@ void function EntitiesDidLoad_Survival()
 	if ( file.planeHeight == 0 )
 		file.planeHeight = PLANE_HEIGHT_REALBIG
 
-	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", false ) || GetCurrentPlaylistVarBool( "force_plane_to_spawn_without_players", false ) )
-	{
+	//defaulting to false crashes survival game modes expecting a plane
+	if( GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) || GetCurrentPlaylistVarBool( "force_plane_to_spawn_without_players", false ) )
 		thread Survival_RunPlaneLogic_Thread( Survival_GenerateSingleRandomPlanePath, Survival_RunSinglePlanePath_Thread, false )
-	}
 }
 
 void function Survival_RunPlaneLogic_Thread( array< PlanePathData > functionref( bool, int = 0 ) generatePlanePathFunc, void functionref( array< PlanePathData >, int = 0 ) runPlanePathFunc, bool beQuick, int planeInt = 0 )
@@ -974,7 +974,8 @@ void function Sequence_WinnerDetermined()
 	foreach ( player in GetPlayerArray() )
 	{
 		MakeInvincible( player )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
 
 		if( Bleedout_IsBleedingOut( player ) )
@@ -1572,7 +1573,8 @@ void function UpdateDeathBoxHighlight( entity box )
 	// Highlight_SetNeutralHighlight( box, SURVIVAL_GetHighlightForTier( highestTier ) ) //FIXME. Cafe
 
 	foreach ( player in GetPlayerArray() )
-		Remote_CallFunction_Replay( player, "ServerCallback_RefreshDeathBoxHighlight" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_RefreshDeathBoxHighlight" )
+		//Remote_CallFunction_Replay( player, "ServerCallback_RefreshDeathBoxHighlight" )
 }
 
 //FIXME. Cafe
@@ -1968,7 +1970,8 @@ void function ClearPlayerIntroDropSettings( entity player )
 		DeployAndEnableWeapons( player )
 	// EnableEntityOutOfBounds( player )
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerBootsOnGround" )
+	//Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerBootsOnGround" )
+	Remote_CallFunction_ByRef( player, "ServerCallback_PlayerBootsOnGround" )
 
 	// Only modify the player's ultimate and tactical the first time they land on the ground, not again when using balloon towers, etc.
 	if ( !player.p.survivalLandedOnGround )

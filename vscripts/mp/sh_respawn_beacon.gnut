@@ -1049,7 +1049,10 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 
 		owner.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
 		owner.SetPlayerNetTime( "respawnStatusEndTime", 0 )
-		Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
+		
+		//Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
+		Remote_CallFunction_ByRef( playerUser, "ServerCallback_RespawnDNAHint" )
+		
 		SetTeam( box, TEAM_UNASSIGNED )
 
 		PingNearestRespawnBeacon( owner, playerUser.GetOrigin() )

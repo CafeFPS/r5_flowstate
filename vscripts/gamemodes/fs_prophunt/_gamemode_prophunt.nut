@@ -238,7 +238,8 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetObserverTarget( specTarget )
 				player.SetSpecReplayDelay( 2 )
 				player.StartObserverMode( OBS_MODE_IN_EYE )
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+				Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Activate" )
 				}catch(e420){}
 			} else
 			{
@@ -280,7 +281,8 @@ void function SetSpectatorAnotherTry(entity player)
 			player.SetObserverTarget( specTarget )
 			player.SetSpecReplayDelay( 2 )
 			player.StartObserverMode( OBS_MODE_IN_EYE )
-			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Activate" )
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
 		} else {
 			Message(player, "FS PROPHUNT", "You will spawn next round")
 		}
@@ -299,7 +301,8 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 		victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT)
 		victim.StartObserverMode( OBS_MODE_IN_EYE )
 		victim.p.isSpectating = true
-		Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+		Remote_CallFunction_ByRef( victim, "ServerCallback_KillReplayHud_Activate" )
+		//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 		victim.p.PROPHUNT_isSpectatorDiedMidRound = true
 		return
 	}
@@ -330,14 +333,16 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 						victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT)
 						victim.StartObserverMode( OBS_MODE_IN_EYE )
 						victim.p.isSpectating = true
-						Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+						Remote_CallFunction_ByRef( victim, "ServerCallback_KillReplayHud_Activate" )
+						//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 					} else if (GetPlayerArray_Alive().len() > 0)
 					{
 						victim.SetObserverTarget( playersON[0] )
 						victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT)
 						victim.StartObserverMode( OBS_MODE_IN_EYE )
 						victim.p.isSpectating = true
-						Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+						Remote_CallFunction_ByRef( victim, "ServerCallback_KillReplayHud_Activate" )
+						//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 					}
 				}catch(e420){}
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
@@ -356,7 +361,9 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 				RemoveButtonPressedPlayerInputCallback( victim, IN_MELEE, ClientCommand_CreatePropDecoy )
 				RemoveButtonPressedPlayerInputCallback( victim, IN_OFFHAND4, ClientCommand_EmitFlashBangToNearbyPlayers )
 				RemoveButtonPressedPlayerInputCallback( victim, IN_RELOAD, ClientCommand_MatchSlope )
-				Remote_CallFunction_NonReplay(victim, "Minimap_DisableDraw_Internal")
+				//Remote_CallFunction_NonReplay(victim, "Minimap_DisableDraw_Internal")
+				Remote_CallFunction_ByRef( victim, "Minimap_DisableDraw_Internal" )
+				
 				Remote_CallFunction_NonReplay(victim, "PROPHUNT_RemoveControlsUI")
 			}
 
@@ -852,7 +859,9 @@ void function PROPHUNT_GameLoop()
 			// player.GiveOffhandWeapon( "mp_ability_emote_projector", OFFHAND_EQUIPMENT )
 			DeployAndEnableWeapons(player)
 			
-			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+			
 			Remote_CallFunction_NonReplay(player, "PROPHUNT_StartMiscTimer", true)
 			player.SetMoveSpeedScale(1.25)
 		} else if(player.GetTeam() == TEAM_IMC)
@@ -930,7 +939,8 @@ void function PROPHUNT_GameLoop()
 		Survival_SetInventoryEnabled( player, false )
 		Highlight_SetFriendlyHighlight( player, "prophunt_teammate" )
 		Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
-		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 		player.SetMoveSpeedScale(1)
 	}
 
@@ -1067,7 +1077,8 @@ void function PROPHUNT_GameLoop()
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 		//AddCinematicFlag( player, CE_FLAG_EXECUTION )
 		
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 		Highlight_ClearEnemyHighlight( player )
 		Highlight_ClearFriendlyHighlight( player )
 		Remote_CallFunction_NonReplay(player, "PROPHUNT_RemoveControlsUI")
@@ -1088,7 +1099,8 @@ void function PROPHUNT_GameLoop()
 				player.SetSpecReplayDelay( 0 )
 				player.SetObserverTarget( null )
 				player.StopObserverMode()
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 			}
 		}catch(e420){}
 	}
@@ -1165,7 +1177,8 @@ void function PROPHUNT_GameLoop()
 			if( !IsValid( player ) )
 				continue
 			
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
 		}
@@ -1187,7 +1200,9 @@ void function PROPHUNT_GameLoop()
 			if( !IsValid( player ) )
 				continue
 			
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
+			
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_UpdateVotingMaps", FS_PROPHUNT.mapIds[0], FS_PROPHUNT.mapIds[1], FS_PROPHUNT.mapIds[2], FS_PROPHUNT.mapIds[3])
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.VoteScreen, endtimeVotingTime, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 		}
@@ -1481,7 +1496,8 @@ void function HandlePlayerTeam(entity player)
 	    player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
         player.StopObserverMode()
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 		TakeAllWeapons(player)
 		player.SetThirdPersonShoulderModeOn()
 		player.MakeVisible()
@@ -1505,7 +1521,8 @@ void function HandlePlayerTeam(entity player)
 	    player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
         player.StopObserverMode()
-		Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 
 		if(player.p.teamasked != -1)
 		{

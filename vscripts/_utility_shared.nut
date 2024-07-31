@@ -3713,12 +3713,14 @@ void function SetTeam( entity ent, int team )
 				foreach ( player in GetPlayerArrayOfTeam( oldTeam ) )
 				{
 					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
+						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 				}
 				foreach ( player in GetPlayerArrayOfTeam( team ) )
 				{
 					if( IsValid( player ) && player.p.isConnected )
-						Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+						Remote_CallFunction_ByRef( player, "UpdateRUITest" )
+						//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 				}
 			}
 		}

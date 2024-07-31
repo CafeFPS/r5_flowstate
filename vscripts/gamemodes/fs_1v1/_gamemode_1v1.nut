@@ -961,7 +961,8 @@ void function endSpectate(entity player)
 	player.SetSpecReplayDelay( 0 )
 	player.SetObserverTarget( null )
 	player.StopObserverMode()
-    Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+    //Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+	Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
     player.MakeVisible()
     player.ClearInvulnerable()
 	player.SetTakeDamageType( DAMAGE_YES )
@@ -2281,7 +2282,8 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args 
 			player.SetSpecReplayDelay( 0 )
 			player.SetObserverTarget( null )
 			player.StopObserverMode()
-			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+			Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
 			player.MakeVisible()
 			player.ClearInvulnerable()
 			player.SetTakeDamageType( DAMAGE_YES )
@@ -2572,7 +2574,9 @@ void function soloModePlayerToWaitingList( entity player )
 				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
 		}
 
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+		
 		ClearRecentDamageHistory( player )
 		ClearLastAttacker( player )
 		TakeAllPassives( player )
@@ -2798,7 +2802,7 @@ void function soloModePlayerToRestingList(entity player)
 }
 
 void function soloModefixDelayStart( entity player )
-{	
+{
 	Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCH_START  )
 	
 	string tracker = "";
@@ -2993,7 +2997,8 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        //Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+		Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
         player.MakeVisible()
 		player.ClearInvulnerable()
 		player.SetTakeDamageType( DAMAGE_YES )
@@ -3002,8 +3007,7 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //Â§çÊ
 	Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
 
    	if( isPlayerInRestingList(player) )
-	{	
-		
+	{
 		// Warning("resting respawn")
 		try
 		{
@@ -3204,7 +3208,13 @@ void function BannerImages_1v1Init()
 			(
 				"main_banner",
 				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
-			)			
+			)	
+
+			BannerImages_GroupAppendImage //test - REMOVE BEFORE SHIPPING
+			(
+				"main_banner",
+				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_rdiffs" )
+			)	
 		}
 	)
 	
@@ -4577,8 +4587,9 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 			SURVIVAL_AddToPlayerInventory(player, item, 2)
 
 		PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
-		Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
-
+		//Remote_CallFunction_NonReplay( player, "Minimap_EnableDraw_Internal" )
+		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+	
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
@@ -4655,7 +4666,8 @@ void function ForceAllRoundsToFinish_solomode()
 				player.SetSpecReplayDelay( 0 )
 				player.SetObserverTarget( null )
 				player.StopObserverMode()
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+				Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
 				player.MakeVisible()
 				player.ClearInvulnerable()
 				player.SetTakeDamageType( DAMAGE_YES )

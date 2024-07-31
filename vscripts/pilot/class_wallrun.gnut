@@ -108,12 +108,12 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		if( IsValidHeadShot( damageInfo, player ) )
 		{
 			DamageInfo_SetDamage( damageInfo, 42069.0)
-			return 0.0
+			return 0
 		}
 		else
 		{
 			DamageInfo_SetDamage( damageInfo, 0.0)
-			return 0.0
+			return 0
 		}
 	}
 

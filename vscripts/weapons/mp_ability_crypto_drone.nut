@@ -32,6 +32,7 @@ global function RemoveCallback_OnRecallDrone
 
 global function ServerToClient_CryptoDroneAutoReloadDone
 global function CryptoDrone_GetPlayerDrone
+global function ServerCallback_ShouldExitDrone
 #endif
 
 #if SERVER
@@ -207,6 +208,7 @@ void function MpAbilityCryptoDrone_Init()
 		RegisterSignal( "ExitCameraView" )
 		RegisterSignal( "FinishDroneRecall" )
 		AddDamageCallback( "player", OnPlayerTookDamage )
+		AddClientCommandCallbackNew( "ShouldExitDrone", ClientCommand_ShouldExitDrone )
 		file.neurolinkRegisteredPropScriptsArrayID = CreateScriptManagedEntArray()
 		file.empDamageArrayID = CreateScriptManagedEntArray()
 		file.empDestroyArrayID = CreateScriptManagedEntArray()
@@ -628,6 +630,19 @@ void function AttemptDroneRecall( entity player )
 
 	player.ClientCommand( "AttemptDroneRecall" )
 }
+
+void function ServerCallback_ShouldExitDrone()
+{
+	entity player = GetLocalClientPlayer()
+	
+	if( IsValid( player ) )
+	{
+		if( PlayerSetting_DamageClosesMenu() )
+		{
+			player.ClientCommand("ShouldExitDrone")
+		}
+	}
+}
 #endif // CLIENT
 
 #if SERVER
@@ -658,6 +673,14 @@ bool function ClientCommand_AttemptDroneRecall(entity player, array < string > a
 	return true
 }
 
+void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
+{
+	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGameState.Playing )
+		return
+		
+	player.Signal( "ExitCameraView" )
+}
+
 void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 {
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
@@ -680,7 +703,7 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 			weapon.SetNextAttackAllowedTime( Time() + CRYPTO_DRONE_DAMAGED_REENTER_DEBOUNCE ) // Small debounce to prevent accidentally re-entering
 	}
 
-	damagedEnt.Signal( "ExitCameraView" )
+	Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
 }
 #endif // SERVER
 
@@ -895,7 +918,7 @@ void function Drone_AttemptUse( entity player )
 			}
 			success = true
 		}
-		//fixme. Cafe
+		//fixme. Cafe -- more info? ~mkos
 
 		// else if ( trace.hitEnt.GetTargetName() == PASSIVE_REINFORCE_REBUILT_DOOR_SCRIPT_NAME && IsReinforced( trace.hitEnt ) && IsFriendlyTeam( camera.GetTeam(), trace.hitEnt.GetTeam() ) )
 		// {

@@ -525,6 +525,15 @@ void function _CustomTDM_Init()
 			AddCallback_FlowstateSpawnsPostInit( Init_DropoffPatchSpawns )
 		}
 		
+		if( Playlist() == ePlaylists.fs_1v1_headshots_only )
+			AddCallback_FlowstateSpawnsSettings
+			( 
+				void function()
+				{
+					SpawnSystem_SetCustomPlaylist( "fs_1v1" )
+				}
+			)
+		
 		thread Gamemode1v1_Init( MapName() )
 	}
 }
@@ -1002,7 +1011,8 @@ void function _OnPlayerConnected(entity player)
 					
 					if( MapName() == eMaps.mp_flowstate )
 					{
-						Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+						//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+						Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 					}
 					
 				}
@@ -1259,7 +1269,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			victim.SetObserverTarget( attacker )
 	    			victim.SetSpecReplayDelay( 2 + DEATHCAM_TIME_SHORT )
 	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
-	    			Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+	    			//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+					Remote_CallFunction_ByRef( victim, "ServerCallback_KillReplayHud_Activate" )
 					thread CheckForObservedTarget(victim)
 	    		}
 
@@ -1489,13 +1500,16 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        Remote_CallFunction_ByRef( player, "ServerCallback_KillReplayHud_Deactivate" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
 	if( MapName() == eMaps.mp_flowstate )
-		Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 	else
-		Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 
 	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 	{
@@ -3056,7 +3070,8 @@ void function SimpleChampionUI()
 				DeployAndEnableWeapons( player )
 				player.UnfreezeControlsOnServer()
 				// Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
-				Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+				//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+				Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
 				MakeInvincible( player )
 
 				player.SetPlayerNetBool( "pingEnabled", false )
@@ -3148,9 +3163,11 @@ void function SimpleChampionUI()
 						return
 					
 					if( MapName() == eMaps.mp_flowstate )
-						Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+						Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+						//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 					else //if( GetMapName() != "mp_flowstate" )
-						Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
+						Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
+						//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 
 					player.MovementEnable()
 					player.UnlockWeaponChange()
@@ -3280,6 +3297,8 @@ void function SimpleChampionUI()
 	foreach( player in GetPlayerArray() )
 	{
 		thread Flowstate_GrantSpawnImmunity(player, 2.5)
+		
+		//the following was removed prior to ByRef remote funcs
 		
 		// if( !is1v1EnabledAndAllowed() )
 		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
@@ -3584,7 +3603,9 @@ void function SimpleChampionUI()
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 			
 			ClientCommand( player, "-zoom" )
-			Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+			
 			player.SetThirdPersonShoulderModeOn()
 			player.HolsterWeapon()
 			player.Server_TurnOffhandWeaponsDisabledOn()
@@ -3774,7 +3795,8 @@ void function SimpleChampionUI()
 			}
 
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
-			Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
+			Remote_CallFunction_ByRef( player, "ServerCallback_FSDM_CoolCamera" )
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_SetScreen", eFSDMScreen.ScoreboardUI, TeamWon, eFSDMScreen.NotUsed, eFSDMScreen.NotUsed)
 			EmitSoundOnEntityOnlyToPlayer(player, player, "UI_Menu_RoundSummary_Results")
 		}		
@@ -5760,7 +5782,8 @@ void function ClearHackerOrBecomePro(entity player)
 		Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
 	}()
 	
-	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	Remote_CallFunction_ByRef( player, "UpdateRUITest" )
 }
 
 void function CheckForHoldInput_Thread( entity player ) //, entity weapon )
@@ -5897,7 +5920,8 @@ bool function ClientCommand_setspecplayer( entity player, array<string> args )
     SetTeam( player, TEAM_SPECTATOR )
     
 	UpdatePlayerCounts()
-	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	//Remote_CallFunction_NonReplay( player, "UpdateRUITest")
+	Remote_CallFunction_ByRef( player, "UpdateRUITest" )
     return true
 }
 

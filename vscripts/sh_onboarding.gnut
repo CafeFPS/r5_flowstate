@@ -830,8 +830,10 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 		else
 			player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 
-		//Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)		
-		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)	//disabled 	
+		
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_ShowDeathScreen" )
 	}
 		
 	// wait 3 //Time to send death recap updated signal
@@ -1134,8 +1136,9 @@ void function UpdatePlayerCounts()
 		break
 		
 		case eGamemodes.fs_snd:
-		foreach(player in GetPlayerArray())
-			Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
+		foreach( player in GetPlayerArray() )
+			Remote_CallFunction_ByRef( player, "SND_ForceUpdatePlayerCount" )
+			//Remote_CallFunction_NonReplay( player, "SND_ForceUpdatePlayerCount")
 		break
 		
 		default:

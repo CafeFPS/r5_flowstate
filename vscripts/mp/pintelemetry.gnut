@@ -1563,7 +1563,7 @@ void function Init_NewGame()
 	(
 		format
 		( 
-			"|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n",
+			"|#Tracker version:%.1f\n|| New match; round %d;  started at: %d\n|#AA_VALUE " + string( GetCurrentPlaylistVarFloat("aimassist_magnet_pc", -1.0 ) ),
 			TRACKER_VERSION,
 			GetCurrentRound(), 
 			GetUnixTimestamp() 
@@ -2191,18 +2191,32 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		if( victimName == null )
 		{
 			victimName = "worldspawn"
-			string msg = "Victimname was null during endfight"
+			string msg = "Victimname was null during endfight id " + string( id )
 			
 			sqerror( msg )
 			LogError( msg )
 		}
 		
 		string victimUID = victimIsPlayer ? victim.p.UID : string( victim.GetEncodedEHandle() )
+		
 		string attackerUID
 		string attackerName
 		
 		int victim_handle = victimIsPlayer ? victim.p.handle : victim.GetEncodedEHandle()
 		int attacker_handle = attacker.IsPlayer() ? attacker.p.handle : DamageInfo_GetDamageSourceIdentifier( damageInfo )
+		
+		if( attacker_handle == eDamageSourceId.bleedout )
+		{
+			Warning("fetching last attacker for " + string( victim ) )
+			entity potentialAttacker = GetLastBleedoutAttackerFromDamageHistory( victim )
+			Warning("last attacker = " + string( potentialAttacker ) )
+			
+			if( IsValid( potentialAttacker ) )
+			{
+				attacker = potentialAttacker
+				attacker_handle = attacker.GetEncodedEHandle()
+			}
+		}
 		
 		if( attacker.IsNPC() )
 		{
@@ -2609,6 +2623,8 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		//////////////////////////// 			LOG THE data			/////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////
 
+			//todo: universal current round time var ( not based on Time() )
+			
             float timeRemaining = 0;
             if ( file.gamemode_type_1v1 ) 
 			{
@@ -2690,9 +2706,11 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			}
 			else 
 			{
-				//todo
-				attName = DamageInfo_GetDamageSourceIdentifier( damageInfo ).tostring()
-				a_OID = attName;
+				int attackerID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+				a_OID = attackerID.tostring()
+				
+				if( !exclude( attackerID ) )
+					attName = DamageSourceIDToString( attackerID )			
 			}
 			
 			if ( REPORT_STATS )
@@ -3035,7 +3053,8 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
     int weaponSource = DamageInfo_GetDamageSourceIdentifier( damageInfo )
     
 	// exclude this damage type
-    if ( weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution ){ return }
+    if ( weaponSource == eDamageSourceId.bleedout || weaponSource == eDamageSourceId.human_execution )
+		return
 
     //float damageAmount = scalar > 0 ? DamageInfo_GetDamage(damageInfo) * scalar : DamageInfo_GetDamage(damageInfo) ;
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
@@ -3261,8 +3280,8 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 	void function PlayerEA_Verify( entity player, array<string> args ) 
 	{
 	
-		if ( !IsValid(player) ) // || !player.p.isConnected)
-				return;
+		if ( !IsValid( player ) ) // || !player.p.isConnected)
+				return
 		
 			if ( file.gamemode_type_1v1 ) 
 			{
@@ -3726,6 +3745,25 @@ string function Tracker_FetchPlayerData( string UID, string setting )
 	return notfound
 }
 
+const table<int,string> hardcodedWorldspawnRefs =
+{
+	[ eDamageSourceId.deathField ] 			= "_DEATHFIELD",
+	[ eDamageSourceId.bleedout ] 			= "_BLEEDOUT",
+	[ eDamageSourceId.damagedef_suicide ] 	= "_SUICIDE"
+}
+
+string function _GetHardcodedWorldspawnRef( int ref )
+{
+	return hardcodedWorldspawnRefs[ ref ]
+}
+
+bool function UIDisWorldSpawn( int uid )
+{
+	if( uid in hardcodedWorldspawnRefs )
+		return true 
+		
+	return false
+}
 
 // This function is responsible for sending sync data to r5r.dev.
 // If your data is not output with this, your data will not be synced. 
@@ -3734,7 +3772,7 @@ string function Tracker_FetchPlayerData( string UID, string setting )
 // IF they were saved using Tracker_SavePlayerData()
 
 // For stats added via Tracker_RegisterStat() with also having defined
-// RegisterStatOutboundData() for the stat (param 3), your stat will output 
+// RegisterStatOutboundData() for the stat ( param 3 of Tracker_RegisterStat() ), your stat will output 
 // based on the defined functions return data at the time of this function call
 string function Tracker_PrintAllPlayerMetrics( bool trigger = false ) 
 {	
@@ -3745,11 +3783,22 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
             json += ", ";
         }
 		
-		string UID = metrics.playerID	
+		string UID = metrics.playerID
+		bool isWorldspawn = false
+
+		if( UIDisWorldSpawn( int( UID ) ) )
+		{
+			UID = _GetHardcodedWorldspawnRef( int( UID ) )
+			isWorldspawn = true
+		}
 		
 		//start building
         json += "{";	
-        json += format( "\"player\": \"%s\", ", UID )	
+        json += format( "\"player\": \"%s\", ", UID ) //assign UID with hardcoded worldspawn ref for backend
+
+		if( isWorldspawn )
+			UID = metrics.playerID //reassign to slot value
+		
 		json += format( "\"jumps\": %d, ", metrics.JumpTimestamps.len() ) //predefined
 		
 		// stats are shipped when registered with 
@@ -3759,18 +3808,27 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 		//settings 
 		json += "\"settings\": {";
 	
-		bool first = true	
-		if( UID in file.PlayerData )
+		if( file.requestedSettingsList.len() == 0 )
 		{
-			foreach ( setting,value in file.PlayerData[UID] )
+			json += "\"NOT_LOADED\": \"NA\""
+		}
+		else
+		{
+			bool first = true	
+			if( UID in file.PlayerData )
 			{
-				if (!first) 
+				foreach ( setting,value in file.PlayerData[UID] )
 				{
-					json += ", ";
+					if (!first) 
+					{
+						json += ", ";
+					}
+					
+					if( first )
+						first = false
+						
+					json += format( "\"%s\": \"%s\"", setting, value )
 				}
-				
-				first = false
-				json += format( "\"%s\": \"%s\"", setting, value )
 			}
 		}
 		
@@ -4020,7 +4078,8 @@ bool function GetDefaultStartInRestSetting()
 
 void function UpdateIBMMWaitTime( entity player, string data )
 {	
-	if( empty( data )){ return }
+	if( empty( data ) )
+		data = string( GetDefaultIBMM() )
 	
 	float wait_time = 0.0
 	
@@ -4099,7 +4158,7 @@ void function UpdateInputBannerSetting( entity player, string data )
 	if ( empty( data ) ) 
 	{ 
 		player.p.enable_input_banner = GetDefaultEnableInputBannerSetting()
-		return 
+		return
 	}
 	
 	if( data == "0" )
@@ -4307,6 +4366,7 @@ void function OnJumped( entity player )
 	RecordPlayerJump( player )
 }
 
+//todo: string,bool table as list grows for lookups
 const array< string > disabledForTracking = 
 [
 	"mp_ability_consumable.nut",
@@ -4480,65 +4540,56 @@ void function FinishGameStatsRound()
 {
 	if( process_end_round_complete == true )
 	{
-	
 		process_end_round_complete = false;
-	
-		//string message = format("round ended at %d, shipping match stats ", GetUnixTimestamp() )
-		//sqprint(message)
 
-						//R5R.DEV
-						if ( file.LogOn && isLogging__internal() )
-						{
+		if ( file.LogOn && isLogging__internal() )
+		{
+			if(!file.bSafeLog){ stopLogging__internal(false); return; }
+			
+			#if LOG_ERRORS
+				DEV_PrintAllTrackerErrors()
+			#endif
+			
+			LogEvent__internal
+			(
+				format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), Tracker_PrintAllPlayerMetrics(true) ),
+				file.LogE
+			)
+
+			if( !Logging_ShipStats() )
+			{
+				sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
+			}
+				
+			if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
+			{
+				sqprint("No stats to ship...\n")
+				stopLogging__internal(false)
+			} 
+			else
+			{
+				stopLogging__internal( Logging_ShipStats() ) //IMPORTANT
+				
+				//update live global stats for match making (verified only)
+				string metrics = Tracker_PrintAllPlayerMetrics( true )
+				UpdateLiveStats( metrics )
+				
+				//send to discord:
+				string recap = Tracker_WinnerByKillsAndDamage()
+				thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
+				
+				if( Logging_ShipStats() )
+				{
+					foreach( player in GetPlayerArray() )
+					{
+						if( !IsValid( player ) ) 
+							continue
 						
-								if(!file.bSafeLog){ stopLogging__internal(false); return; }
-								
-								#if LOG_ERRORS
-									DEV_PrintAllTrackerErrors()
-								#endif
-								
-								//mkos: log winner placement - && denotes placement entry for parser
-								LogEvent__internal
-								(
-									format( "\n|| Game ended at %d\n\n %s", GetUnixTimestamp(), Tracker_PrintAllPlayerMetrics(true) ),
-									file.LogE
-								)
-
-										if(!Logging_ShipStats())
-										{
-											sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
-										}
-											
-										if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
-										{
-											sqprint("No stats to ship...\n")
-											stopLogging__internal(false)
-										} 
-										else 
-										{
-											stopLogging__internal( Logging_ShipStats() ) //IMPORTANT
-											
-											//update live global stats for match making (verified only)
-											string metrics = Tracker_PrintAllPlayerMetrics( true )
-											UpdateLiveStats( metrics )
-											
-											//send to discord:
-											string recap = Tracker_WinnerByKillsAndDamage()
-											thread EndOfMatch( recap, file.DISCORD_MATCHES_WEBHOOK )
-											
-											if( Logging_ShipStats() )
-											{
-												foreach( player in GetPlayerArray() )
-												{
-													if( !IsValid( player ) ) 
-														continue
-														
-													Message( player, "Stats Shipped", "\n\n\n\n Match metrics sent to tracker @ www.r5r.dev \n\n\n\n" , 4 )
-												}
-											}
-										}
-
-						}
-						//END.DEV
+						LocalMsg( player, "#FS_STATS_SHIPPED", "#FS_STATS_SHIPPED_MSG", eMsgUI.DEFAULT, 4 )
+					}
+				}
+			}
+		}
 		
 		UpdateRoundStats_GlobalsCarryOver()
 		DestroyStats()

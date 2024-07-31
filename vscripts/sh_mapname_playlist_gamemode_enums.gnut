@@ -20,6 +20,7 @@ global function g_is1v1GameType
 global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
+global function Flowstate_MapHasTrain
 
 
 ////////////////////////////////////////////////////////////////////////////////////mkos//
@@ -106,6 +107,7 @@ global enum ePlaylists
 	fs_apexkart, //38
 	winterexpress, //39
 	fs_vamp_1v1, //40
+	fs_1v1_headshots_only, //41
 	
 	_PLAYLISTS_COUNT //LAST
 }
@@ -126,8 +128,7 @@ global enum eGamemodes
 	flowstate_pkknockback, //11
 	map_editor_deprecated, //12
 	fs_apexkart, //13
-	WINTEREXPRESS, //14
-	
+	WINTEREXPRESS, //14	
 	
 	_GAMEMODES_COUNT //LAST
 }
@@ -357,6 +358,7 @@ void function AllModeConditionals_Init()
 	TrackerSupportedMode_Init()
 	PassivesAllowed_Init()
 	PlayerRespawnModes_Init()
+	MapHasTrain_Init()
 }
 
 
@@ -366,9 +368,10 @@ void function AllModeConditionals_Init()
 
 struct  
 {
-	bool passivesAllowed = false
-	bool trackerSupportedMode = false
-	bool playerDoesRespawn = false
+	bool passivesAllowed		= false
+	bool trackerSupportedMode	= false
+	bool playerDoesRespawn		= false
+	bool mapHasTrain			= false
 	
 } modeSettings
 
@@ -460,6 +463,19 @@ void function PlayerRespawnModes_Init()
 	modeSettings.playerDoesRespawn = ( IsFiringRangeGameMode() || playerRespawnModes.contains( Playlist() ) )
 }
 
+void function MapHasTrain_Init()
+{
+	array<int> trainEnabledMaps = 
+	[
+		eMaps.mp_rr_desertlands_64k_x_64k,
+		eMaps.mp_rr_desertlands_64k_x_64k_nx,
+		eMaps.mp_rr_desertlands_64k_x_64k_tt,
+		eMaps.mp_rr_desertlands_holiday
+	];
+	
+	modeSettings.mapHasTrain = trainEnabledMaps.contains( MapName() )
+}
+
 //////////////////////////////////////////
 //	 gamemode conditional functions		//
 //////////////////////////////////////////
@@ -484,4 +500,9 @@ bool function Flowstate_IsTrackerSupportedMode()
 bool function Flowstate_PlayerDoesRespawn()
 {
 	return modeSettings.playerDoesRespawn
+}
+
+bool function Flowstate_MapHasTrain()
+{
+	return modeSettings.mapHasTrain
 }
