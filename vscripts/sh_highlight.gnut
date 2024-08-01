@@ -13,6 +13,8 @@ global function ClearSurvivalPropHighlight
 global function Highlight_SetFriendlyHighlight
 global function Highlight_SetEnemyHighlight
 global function Highlight_SetOwnedHighlight
+global function Highlight_SetSpecialHighlight
+
 global function Highlight_SetDeathRecapHighlight
 global function Highlight_SetCausticThreatHighlight
 global function Highlight_SetFlyerDeathboxHighlight
@@ -699,9 +701,15 @@ void function Highlight_Init()
 	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS )
 	HighlightContext_SetADSFade( highlight, false )
 
-	//
-	//
-	//
+	highlight = RegisterHighlight( "smoke_highlight_blockscan" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CUSTOM_COLOR_OCCLUDED_NOSCANLINES )
+	HighlightContext_SetParam( highlight, 0, <.55, .55, .55> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetParam( highlight, 1, <0.0, 0, 0> )
+	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetAfterPostProcess( highlight, true )
+	HighlightContext_SetFarFadeDistance( highlight, CAUSTIC_GAS_THREAT_DIST )
 
 	Highlight_EndRegisteringHighlights()
 
@@ -1012,6 +1020,11 @@ void function Highlight_SetOwnedHighlight( entity ent, string assetName )
 	__SetEntityContextHighlight( ent, HIGHLIGHT_CONTEXT_OWNED, highlight )
 }
 
+void function Highlight_SetSpecialHighlight( entity ent, string assetName )
+{
+	HighlightContext highlight = GetHighlight( assetName )
+	__SetEntityContextHighlight( ent, HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT, highlight )
+}
 
 void function Highlight_SetSonarHighlight( entity ent, string assetName )
 {
@@ -1219,6 +1232,9 @@ void function ClientCodeCallback_HighlightServerContextChanged( entity ent )
 
 bool function ClHighlight_HasHighlightContext( entity ent )
 {
+	if( !IsValid( ent ) )
+		return false
+
 	for ( int contextId = 0; contextId < HIGHLIGHT_MAX_CONTEXTS; contextId++ )
 	{
 		if ( ent.Highlight_GetInsideFunction( contextId ) > 0 )
@@ -1281,7 +1297,7 @@ void function OnSettingsUpdated()
 
 void function ManageHighlightEntity( entity ent )
 {
-	if ( !ClHighlight_HasHighlightContext( ent ) )
+	if ( !IsValid( ent ) || !ClHighlight_HasHighlightContext( ent ) )
 		return
 
 	// kill replay...
@@ -1844,6 +1860,12 @@ int function GetHighlightContextForEnt( entity viewPlayer, entity ent )
 {
 	int viewTeam = viewPlayer.GetTeam()
 	int entTeam  = ent.GetTeam()
+
+	if ( BangSmoke_IsPlayerHighlighted( viewPlayer, ent ) )
+	{
+		// printt( "player is highlighted in smoke! Cafe", viewPlayer, ent )
+		return HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT
+	}
 
 	if ( ent.GetBossPlayer() == viewPlayer )
 	{

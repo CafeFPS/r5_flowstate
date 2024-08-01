@@ -6,19 +6,21 @@ global function OnProjectileIgnite_weapon_grenade_bangalore
 global function OnWeaponTossReleaseAnimEvent_weapon_grenade_bangalore
 
 #if CLIENT
-	global function OnClientAnimEvent_weapon_grenade_bangalore
+global function OnClientAnimEvent_weapon_grenade_bangalore
 #endif
 
-global const string BANGALORE_SMOKESCREEN_SCRIPTNAME = "bangalore_smokescreen"
+global function BangSmoke_IsPlayerHighlighted //Shared version by Cafe
 
 const float WEAPON_GAS_GRENADE_DURATION = 15.0
 const vector WEAPON_GAS_GRENADE_OFFSET = <0,0,16>
+global const string BANGALORE_SMOKESCREEN_SCRIPTNAME = "bangalore_smokescreen"
 
 const asset FX_SMOKESCREEN_BANGALORE = $"P_smokescreen_FD"
 const asset FX_SMOKEGRENADE_TRAIL = $"P_SmokeScreen_FD_trail"
 const asset BANGALORE_SMOKE_MODEL = $"mdl/weapons/grenades/w_bangalore_canister_gas_projectile.rmdl"
 
-const float BANGALORE_SMOKE_DURATION = 15.0
+const float BANGALORE_SMOKE_MAX_SAFE_SPAWN_PELLET_DISTANCE = 32.0
+const float BANGALORE_SMOKE_DURATION = 8.6
 const float BANGALORE_SMOKE_MIN_EXPLODE_DIST_SQR = 512 * 512
 const float BANGALORE_SMOKE_DISPERSAL_TIME = 3.0
 const float BANGALORE_TACTICAL_AGAIN_TIME = 4.0
@@ -29,11 +31,18 @@ const asset SMOKE_SCREEN_FX = $"P_screen_smoke_bangalore_FP"
 const asset FX_MUZZLE_FLASH_FP = $"P_wpn_mflash_bang_rocket_FP"
 const asset FX_MUZZLE_FLASH_3P = $"P_wpn_mflash_bang_rocket"
 
+const string BANGALORE_SMOKE_FX_TABLE = "exp_creeping_barrage"
 struct
 {
 	#if CLIENT
 		int colorCorrectionGas
 	#endif //CLIENT
+	
+	// Y aquí es cuando esto se vuelve shared lol
+	table< entity, table<entity, bool> > highlightedPlayersInSmoke
+	float highlightFalloffDistance = 10 * METERS_TO_INCHES
+	float highlightDistance = 20 * METERS_TO_INCHES
+
 	int smokeGasScreenFxId
 } file
 
@@ -44,16 +53,17 @@ void function MpWeaponGrenadeBangalore_Init()
 	PrecacheParticleSystem( FX_SMOKEGRENADE_TRAIL )
 	PrecacheParticleSystem( FX_MUZZLE_FLASH_FP )
 	PrecacheParticleSystem( FX_MUZZLE_FLASH_3P )
+	PrecacheImpactEffectTable( BANGALORE_SMOKE_FX_TABLE )
 
 	file.smokeGasScreenFxId = PrecacheParticleSystem( SMOKE_SCREEN_FX )
+
+	RegisterSignal( "stop_smokescreen_screen_fx" )
 
 	#if SERVER
 		AddDamageCallbackSourceID( eDamageSourceId.damagedef_bangalore_smoke_explosion, Bangalore_DamagedTarget )
 	#endif //SERVER
 
 	#if CLIENT
-		RegisterSignal( "stop_smokescreen_screen_fx" )
-
 		StatusEffect_RegisterEnabledCallback( eStatusEffect.smokescreen, BangaloreSmokescreenEffectEnabled )
 		StatusEffect_RegisterDisabledCallback( eStatusEffect.smokescreen, BangaloreSmokescreenEffectDisabled )
 
@@ -116,18 +126,21 @@ void function OnProjectileCollision_weapon_grenade_bangalore( entity projectile,
 
 void function OnProjectileIgnite_weapon_grenade_bangalore( entity projectile )
 {
-#if SERVER
-	const THROW_ANGLE = 65
+	#if SERVER
+		const THROW_ANGLE = 65
 
-	entity owner = projectile.GetOwner()
-	if ( !IsValid( owner ) )
-		return
+		entity owner = projectile.GetOwner()
+		if ( !IsValid( owner ) )
+			return
 
-	if ( !projectile.proj.isPlanted )
-	{
-		projectile.SetVelocity( <0,0,0> )
-		projectile.StopPhysics()
-	}
+		if ( projectile.IsMarkedForDeletion() )
+			return
+
+		if ( !projectile.proj.isPlanted )
+		{
+			projectile.SetVelocity( <0, 0, 0> )
+			projectile.StopPhysics()
+		}
 
 	entity inflictorHelper = CreateDamageInflictorHelper( 1.0 )
 	inflictorHelper.RemoveFromAllRealms()
@@ -167,7 +180,7 @@ void function OnProjectileIgnite_weapon_grenade_bangalore( entity projectile )
 		vector throwVector = AnglesToForward( throwAngles )
 		//DebugDrawArrow( origin, origin + throwVector * 128, 16, int( colorArray[index].x ), int( colorArray[index].y ), int( colorArray[index].z ), true, 5.0 )
 
-		entity smokeGrenade = Bangalore_CreateSmokeGrenade( origin + normal * 8 )
+		entity smokeGrenade = Bangalore_CreateSmokeGrenade( origin, normal )
 		smokeGrenade.RemoveFromAllRealms()
 		smokeGrenade.AddToOtherEntitysRealms( projectile )
 
@@ -187,7 +200,7 @@ void function OnProjectileIgnite_weapon_grenade_bangalore( entity projectile )
 
 
 #if SERVER
-entity function Bangalore_CreateSmokeGrenade( vector origin )
+entity function Bangalore_CreateSmokeGrenade( vector origin, vector normal )
 {
 	entity prop_physics = CreateEntity( "prop_physics" )
 	prop_physics.SetValueForModelKey( BANGALORE_SMOKE_MODEL )
@@ -200,8 +213,14 @@ entity function Bangalore_CreateSmokeGrenade( vector origin )
 	prop_physics.kv.minhealthdmg = 9999
 	prop_physics.kv.nodamageforces = 1
 	prop_physics.kv.inertiaScale = 1.0
+	prop_physics.SetIgnorePredictedTriggerTypes( TT_JUMP_PAD ) //| TT_GRAVITY_LIFT | TT_BLACKHOLE  )
 
-	prop_physics.SetOrigin( origin )
+	vector maxSafeSpot = origin + normal * BANGALORE_SMOKE_MAX_SAFE_SPAWN_PELLET_DISTANCE
+	TraceResults result = TraceLineHighDetail( origin, maxSafeSpot, null, TRACE_MASK_GRENADE, TRACE_COLLISION_GROUP_PROJECTILE )
+	vector safeSpot = result.endPos
+	//DebugDrawLine( safeSpot, origin, COLOR_BLUE, false, 25.0 )
+
+	PutEntityInSafeSpot( prop_physics, null, null, safeSpot, origin )
 	DispatchSpawn( prop_physics )
 	prop_physics.SetModel( BANGALORE_SMOKE_MODEL )
 
@@ -358,13 +377,11 @@ void function BangaloreSmokeGrenadeTriggerTouchingThread( entity trigger, entity
 	EndSignal( ent, "OnDestroy" )
 	EndSignal( ent, "OnDeath" )
 
-	if ( !ent.IsPlayer() )
+	if ( !ent.IsPlayer() && !ent.IsPlayerDecoy() )
 		return
 
 	if ( !ent.DoesShareRealms( trigger ) )
 		return
-
-	const TICK_RATE = 0.1
 
 	OnThreadEnd(
 		function() : ( ent )
@@ -372,12 +389,20 @@ void function BangaloreSmokeGrenadeTriggerTouchingThread( entity trigger, entity
 			float severity = StatusEffect_GetSeverity( ent, eStatusEffect.smokescreen )
 			StatusEffect_StopAllOfType( ent, eStatusEffect.smokescreen )
 			StatusEffect_AddTimed( ent, eStatusEffect.smokescreen, severity, 1.0, 1.0 )
+			ent.Signal( "stop_smokescreen_screen_fx" )
 		}
 	)
 
 	float radius = trigger.GetRadius()
 	float radiusSqr = radius * radius
 	int lastStatusEffectId = -1
+
+	//Cafe was here. Server side implementation for bangs highlight
+	if ( BangSmokeHighlightsEnabled() )
+	{
+		thread SmokeHighlight_Thread( ent )
+	}	//SERVER
+
 	while( trigger.IsTouching( ent ) )
 	{
 		float distance = DistanceSqr( trigger.GetOrigin(), ent.GetOrigin() )
@@ -387,11 +412,165 @@ void function BangaloreSmokeGrenadeTriggerTouchingThread( entity trigger, entity
 			StatusEffect_Stop( ent, lastStatusEffectId )
 		lastStatusEffectId = StatusEffect_AddEndless( ent, eStatusEffect.smokescreen, severity )
 
-		wait TICK_RATE
+		WaitFrame()
 	}
 }
 
 #endif //SERVER
+
+bool function BangSmokeHighlightsEnabled()
+{
+	return GetCurrentPlaylistVarBool( "bangalore_smoke_highlight", true )
+}
+
+void function SmokeHighlight_Thread( entity player )
+{
+	EndSignal( player, "OnDestroy", "OnDeath", "stop_smokescreen_screen_fx" )
+
+	table< entity, bool > highlightedPlayers
+	file.highlightedPlayersInSmoke[player] <- highlightedPlayers
+
+	OnThreadEnd(
+		function() : ( player, highlightedPlayers )
+		{
+			if( player in file.highlightedPlayersInSmoke )
+				delete file.highlightedPlayersInSmoke[player]
+
+			#if CLIENT
+			foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
+			{
+				ManageHighlightEntity( otherPlayer )
+			}
+			#endif
+		}
+	)
+
+	const float effectMin = 0.6
+	const float effectMax = 0.2
+	int contextId = HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT // :nerd:
+
+	while(true)
+	{
+		array< entity > playersToHighlight
+		array< entity > playersToNotHighlight
+
+		float effectStrength = StatusEffect_GetSeverity( player, eStatusEffect.smokescreen )
+		float alphaFromStatusEffect = GraphCapped( effectStrength, effectMin, effectMax, 1.0, 0.0 )
+
+		#if SERVER
+		player.Highlight_SetCurrentContext( contextId )
+		#endif
+	
+		BangSmoke_GetPlayersToHighlight( player, playersToHighlight, playersToNotHighlight )
+
+		foreach( entity otherPlayer in playersToHighlight )
+		{
+			if ( !( otherPlayer in highlightedPlayers ) )
+			{
+				highlightedPlayers[ otherPlayer ] <- false
+			}
+
+			if ( highlightedPlayers[otherPlayer] )
+			{
+				continue
+			}
+
+			highlightedPlayers[otherPlayer] = true
+
+			// printt( "smoke highlight should start", otherPlayer, "for player", player )// Cafe
+			#if SERVER
+			Highlight_SetSpecialHighlight( otherPlayer, "smoke_highlight_blockscan" )
+			#endif
+
+			#if CLIENT
+			ManageHighlightEntity( otherPlayer )
+			#endif
+		}
+
+		foreach( entity otherPlayer in playersToNotHighlight )
+		{
+			if ( otherPlayer in highlightedPlayers )
+			{
+				if ( !highlightedPlayers[otherPlayer] )
+					continue
+
+				highlightedPlayers[otherPlayer] = false
+
+				#if SERVER
+				// printt( "highlight should remove" )
+				otherPlayer.Highlight_SetFunctions( contextId, 0, true, 0, 2, 0, false ) //remove special highlight. Cafe
+				#endif
+
+				#if CLIENT
+				ManageHighlightEntity( otherPlayer )
+				#endif
+			}
+		}
+
+		WaitFrame()
+	}
+
+}
+
+
+void function BangSmoke_GetPlayersToHighlight( entity player, array<entity> outPlayersToHighlight, array<entity> outPlayersToNotHighlight )
+{
+	int playerTeam = player.GetTeam()
+
+	vector visibilityCheckPoint = player.EyePosition()
+	float maxSqrDist = file.highlightDistance * file.highlightDistance
+
+	array<entity> allTargets = GetPlayerArray_Alive()
+	allTargets.extend( GetEntArrayByScriptName( DECOY_SCRIPTNAME ) )
+	allTargets.extend( GetEntArrayByScriptName( CONTROLLED_DECOY_SCRIPTNAME ) )
+
+	TraceResults results
+	foreach ( entity otherPlayer in allTargets )
+	{
+		if ( otherPlayer == player )
+			continue
+
+		if( !otherPlayer.DoesShareRealms( player ) ) // missing check. Cafe
+			continue
+		
+		if ( !IsEnemyTeam( playerTeam, otherPlayer.GetTeam() ) )
+			continue
+
+		if ( StatusEffect_GetSeverity( otherPlayer, eStatusEffect.smokescreen ) >= 0.2 )
+		{
+			vector otherPlayerEyePos = otherPlayer.EyePosition()
+
+			if ( DistanceSqr( visibilityCheckPoint, otherPlayerEyePos ) < maxSqrDist )
+			{
+				results = TraceLine( visibilityCheckPoint, otherPlayerEyePos, [player, otherPlayer], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+				if ( results.fraction == 1.0 )
+				{
+					outPlayersToHighlight.append( otherPlayer )
+					continue
+				}
+			}
+		}
+
+		outPlayersToNotHighlight.append( otherPlayer )
+	}
+}
+
+bool function BangSmoke_IsPlayerHighlighted( entity player, entity otherPlayer )
+{
+	if ( !BangSmokeHighlightsEnabled() )
+		return false
+
+	if ( !(player in file.highlightedPlayersInSmoke) )
+		return false
+
+	if ( !(otherPlayer in file.highlightedPlayersInSmoke[player]) )
+		return false
+
+	if ( !file.highlightedPlayersInSmoke[player][otherPlayer] )
+		return false
+
+	return true
+}
 
 #if CLIENT
 void function OnClientAnimEvent_weapon_grenade_bangalore( entity weapon, string name )
@@ -412,6 +591,8 @@ void function BangaloreSmokescreenEffectDisabled( entity ent, int statusEffect, 
 
 	ent.Signal( "GasCloud_StopColorCorrection" )
 	ent.Signal( "stop_smokescreen_screen_fx" )
+
+	Chroma_EndSmokescreenEffect()
 }
 
 void function BangaloreSmokescreenEffectEnabled( entity ent, int statusEffect, bool actuallyChanged )
@@ -424,10 +605,18 @@ void function BangaloreSmokescreenEffectEnabled( entity ent, int statusEffect, b
 
 	thread UpdatePlayerScreenColorCorrection( viewPlayer, statusEffect, file.colorCorrectionGas )
 
+	//Cafe was here. This is chad part of my implementation
+	if ( BangSmokeHighlightsEnabled() )
+	{
+		thread SmokeHighlight_Thread( ent )
+	}	//CLIENT
+
 	if ( !viewPlayer.IsTitan() )
 	{
 		int fxHandle = StartParticleEffectOnEntityWithPos( viewPlayer, file.smokeGasScreenFxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, viewPlayer.EyePosition(), <0,0,0> )
 		EffectSetIsWithCockpit( fxHandle, true )
+
+		Chroma_StartSmokescreenEffect()
 
 		thread BangaloreSmokescreenEffectThread( viewPlayer, fxHandle, statusEffect )
 	}
@@ -460,5 +649,4 @@ void function BangaloreSmokescreenEffectThread( entity ent, int fxHandle, int st
 		WaitFrame()
 	}
 }
-
 #endif // CLIENT
