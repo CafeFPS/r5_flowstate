@@ -6,6 +6,11 @@ global function ShPassiveAdrenaline_Init
 const asset SMOKE_SCREEN_FX = $"P_adrenaline_screen_CP"
 const string ADRENALINE_SOUND_START 	= "Bangalore_DoubleTime_Activate"
 #endif
+const float PASSIVE_ADRENALINE_VORTEX_TRIGGER_RADIUS = 198.0
+const float PASSIVE_ADRENALINE_EFFECT_DURATION = 2.0
+                    
+const float PASSIVE_ADRENALINE_UPGRADE_PING_DEBOUNCE = 3.0
+const float PASSIVE_ADRENALINE_EFFECT_DURATION_INCREASE = 0.75
 
 struct
 {
@@ -60,31 +65,37 @@ void function Flowstate_GrantAdrenaline( entity player )
 		return
 
 	entity vortexSphere = CreateEntity( "vortex_sphere" )
-	int spawnFlags = SF_ABSORB_CYLINDER | SF_BLOCK_OWNER_WEAPON //SF_ABSORB_BULLETS | SF_BLOCK_NPC_WEAPON_LOF |
-	vortexSphere.kv.height = ADRENALINE_RADIUS * 2
-	vortexSphere.kv.spawnflags = spawnFlags
+
+	//vortexSphere.kv.spawnflags = SF_BLOCK_OWNER_WEAPON
 	vortexSphere.kv.enabled = 1
-	vortexSphere.kv.radius = ADRENALINE_RADIUS
-	vortexSphere.kv.bullet_fov = 180
-	vortexSphere.kv.physics_pull_strength = 25
-	vortexSphere.kv.physics_side_dampening = 6
+	vortexSphere.kv.radius = PASSIVE_ADRENALINE_VORTEX_TRIGGER_RADIUS
+	vortexSphere.kv.height = PASSIVE_ADRENALINE_VORTEX_TRIGGER_RADIUS
+	vortexSphere.kv.bullet_fov = 360
+	vortexSphere.kv.physics_pull_strength = 0//25
+	vortexSphere.kv.physics_side_dampening = 0//6
 	vortexSphere.kv.physics_fov = 360
-	vortexSphere.kv.physics_max_mass = 2
-	vortexSphere.kv.physics_max_size = 6
+	vortexSphere.kv.physics_max_mass = 0//2
+	vortexSphere.kv.physics_max_size = 0//6
+
+	vortexSphere.SetAngles( <0,0,0> ) // viewvec?
+	vortexSphere.SetOrigin( player.GetWorldSpaceCenter() )
+	vortexSphere.SetParent( player, "", true )
+	vortexSphere.SetMaxHealth( 100 )
+	vortexSphere.SetHealth( 100 )
+
+	DispatchSpawn( vortexSphere )
 	
 	player.p.vortexTriggerDoubleTime = vortexSphere
-	
-	//vortex trigger (pog)
-	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Adrenaline_OnProjectilesTriggerTouch ) //normal bullets + grenades
-	SetCallback_VortexSphereTriggerOnBulletHit( vortexSphere, Adrenaline_OnBulletTriggerTouch ) // hitscans etc
-	SetTargetName( vortexSphere, VORTEX_TRIGGER_AREA )
-	
-	DispatchSpawn( vortexSphere )
 
 	vortexSphere.SetOwner( player )
-	vortexSphere.SetOrigin( player.GetOrigin() )
-	vortexSphere.SetParent( player )
-	vortexSphere.SetAbsAngles( <0,0,0> ) //Setting local angles on a parented object is not supported
+	
+	//vortex trigger (pog)
+	SetTargetName( vortexSphere, VORTEX_TRIGGER_AREA )
+	SetCallback_VortexSphereTriggerOnProjectileHit( vortexSphere, Adrenaline_OnProjectilesTriggerTouch ) //normal bullets + grenades
+	SetCallback_VortexSphereTriggerOnBulletHit( vortexSphere, Adrenaline_OnBulletTriggerTouch ) // hitscans etc
+
+	//vortexSphere.Fire( "Enable" )
+	vortexSphere.SetInvulnerable() // make particle wall invulnerable to weapon damage. It will still drain over time
 
 	Adrenaline_UpdateTriggerRealmForPlayer( player )
 }

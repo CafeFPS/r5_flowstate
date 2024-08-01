@@ -12,6 +12,8 @@ global function FindFuncID_ByRef
 	global function Remote_CallFunction_ByRef_internal
 #endif 
 
+const bool MODEL_VIEWER_ENABLED = false
+
 struct 
 {
 	table<string, void functionref()> functionrefs	//the actual func ref

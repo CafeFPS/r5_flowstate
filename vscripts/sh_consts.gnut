@@ -1,4 +1,8 @@
 //custom
+global const float METERS_TO_INCHES = 39.3701
+global const float INCHES_TO_METERS = 0.0254
+global const float KILOMETERS_TO_INCHES = 39370.1
+
 global string SDK_VERSION = "v2.4"
 global string FLOWSTATE_VERSION = "v4.5"
 global const FLOWSTATE_HWLTM_SHIELD_AMOUNT = 25
