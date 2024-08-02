@@ -264,8 +264,8 @@ struct
 		"#FS_JOIN_QUEUE",
 		"#FS_CHALLENGE_WAITING_FOR",
 		"#FS_WAITING_PANEL",
-		"#FS"
-		"#FS_STATS_SHIPPED_MSG",
+		"#FS_STATS_SHIPPED",
+		"#FS_STATS_SHIPPED_MSG"
 	]
 	
 } file
@@ -363,7 +363,7 @@ bool function ClientLocalizedTokenExists( int tokenRef )
 {
 	return ( tokenRef in file.FS_LocalizedStrings )
 }
-// /SHARED
+// end SHARED
 
 #if SERVER
 

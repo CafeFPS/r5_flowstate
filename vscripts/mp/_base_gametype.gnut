@@ -567,7 +567,7 @@ function HandleLocationBasedDamage( entity ent, var damageInfo )
 	}
 }
 
-function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 )
+function PlayerDamageFeedback( entity ent, damageInfo, float shieldDmg = 0 )
 {
 	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
 		return
@@ -581,16 +581,12 @@ function PlayerDamageFeedback( entity ent, damageInfo, float permanentDmg = 0.0 
 	if ( IsMaxRangeShot( damageInfo ) )
 		customDamageType = customDamageType | DF_MAX_RANGE
 	
-	float damage
+	float damage = DamageInfo_GetDamage( damageInfo )
 	
-	if( permanentDmg > 0.0 )
-	{
-		damage = permanentDmg
-	}
-	else 
-	{
-		damage = DamageInfo_GetDamage( damageInfo )
-	}
+	if( shieldDmg > 0 )
+		damage = shieldDmg
+		
+	//Warning("notifying damage of: " + string( damage ) )
 	
 	attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 }

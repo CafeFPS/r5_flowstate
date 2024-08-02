@@ -13,7 +13,6 @@ global const SCRIPT_GAME_VERSION__RELEASE = false
 //r5r.dev
 global const bool TRACKER 				= false
 global const bool HAS_TRACKER_DLL 		= false
-global const vector NULL_VEC 			= <0,0,0>
 global const MULTIPLAYER_DEBUG_PRINTS 	= false
 global const NOTIFY_RATELIMIT_FAILED	= false
 
@@ -206,6 +205,8 @@ global const MID_SPEC_PLAYER_CUTOFF  		= 8 // treat the server as high-end when 
 global const MID_SPEC_MAX_AI_COUNT   		= 9 // max number of AI per side when playing on less then high-end machines (durango)
 
 global const vector ZERO_VECTOR 			= <0,0,0>
+
+global const bool MODEL_VIEWER_ENABLED = false
 
 // If modified, keep these functions updated:
 // 		SetPersistentPilotLoadout()

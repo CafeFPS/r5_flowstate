@@ -403,6 +403,7 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 	// Added via AddEntityCallback_OnDamaged
 	foreach ( callbackFunc in ent.e.entDamageCallbacks )
 		callbackFunc( ent, damageInfo )
+		
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    after AddEntityCallback_OnDamaged() callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
@@ -449,7 +450,8 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 
 	UpdateLastDamageTime( ent )
 
-	AddFlinch( ent, damageInfo )
+	//flinch was removed s22 apex legends
+	//AddFlinch( ent, damageInfo )
 
 	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 }

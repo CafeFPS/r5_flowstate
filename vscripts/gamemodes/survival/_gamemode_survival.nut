@@ -1149,13 +1149,16 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
         {
             attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
+		
+		//no need to cancel damage as this function is now post damaged callback
+		
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
 		// There might be a better way to do this, but this works well enough
-		DamageInfo_SetDamage( damageInfo, 1 )
+		//DamageInfo_SetDamage( damageInfo, 1 )
 
 		// Delete any shield health remaining
-		victim.SetShieldHealth( 0 )
+		//victim.SetShieldHealth( 0 ) //This is redundant as bleedout logic handles this ~mkos
 	}
 }
 
@@ -1452,7 +1455,7 @@ void function OnClientConnected( entity player )
 		AddPlayerMovementEventCallback( player, ePlayerMovementEvents.LEAVE_GROUND, LSM_OnPlayerLeaveGround )
 	}
 
-	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
+	AddEntityCallback_OnPostDamaged( player, OnPlayerDamaged ) //changed to post damage ~mkos
 
 	if ( IsFiringRangeGameMode() )
 	{

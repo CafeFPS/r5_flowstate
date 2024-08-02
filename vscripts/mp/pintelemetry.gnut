@@ -1148,7 +1148,7 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 		
 		if( key in file.PlayerSettingsMap )
 		{
-			Tracker_SavePlayerData( player.p.UID , key, ReturnValue( Sync_Data[i] ) )
+			Tracker_SavePlayerData( player.p.UID, key, ReturnValue( Sync_Data[i] ) )
 			
 			foreach( callBackFunc in file.PlayerSettingsMap[key] )
 			{
@@ -1217,6 +1217,10 @@ void function PIN_Init()
 	
 	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
 	
+	if( !bRunTracker )
+		file.LogOn = false
+	
+	RegisterSignal( "ReloadCheckComplete" )
 	RegisterSignal( "BatchFetchComplete" )
 	RegisterSignal( "SyncDataFullyLoaded" )
 	RegisterSignal( "PlayerStatsReady" )
@@ -1239,8 +1243,7 @@ void function PIN_Init()
 	{
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
-	}
-	
+	}	
 	
 	if( GetCurrentPlaylistVarBool("disable_lag_comp",false) )
 	{
@@ -1372,7 +1375,8 @@ void function PlayerConnectedCallback( entity player )
 	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
-	if( !file.LogOn || !Flowstate_IsTrackerSupportedMode() ){ file.LogOn = false; return }
+	if( !file.LogOn )
+		return
 	/////////////////////////////////////////////////////////////////////////////////////////
 	
 	//init player map
@@ -2029,7 +2033,7 @@ void function EventMessageSystem()
 }
 
 void function __LoadServerBot()
-{	
+{
 	wait 3 //time this event based
 	
 	#if DEVELOPER
@@ -2489,7 +2493,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		// attackers summary - may change weapon(s) in the future to use cafe's logic for weps
 		
 		
-		//This for loop is fine, it should never really exceed 2-5 attackers on the same victim. Even if it's server limit, it's relatively close to O(1)	
+		//This for loop is fine, it should never really exceed 2-5 attackers on the same victim.
 		for ( int i = 0; i < player_handles.len(); ++i ) 
 		{		
 			attackerShots = 0
@@ -3223,9 +3227,7 @@ DamageEvent function Tracker_GetCurrentEventForAttackerOnVictim( int attackerHan
 	DamageEvent event = Tracker_GetRecentDamageEvent( eventID( attackerHandle, victimHandle ) )
 	
 	if( !event.isValid )
-	{
 		event.lastHitTimestamp = 0.0
-	}
 	
 	return event
 }
@@ -3279,7 +3281,6 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 	
 	void function PlayerEA_Verify( entity player, array<string> args ) 
 	{
-	
 		if ( !IsValid( player ) ) // || !player.p.isConnected)
 				return
 		
@@ -3802,7 +3803,7 @@ string function Tracker_PrintAllPlayerMetrics( bool trigger = false )
 		json += format( "\"jumps\": %d, ", metrics.JumpTimestamps.len() ) //predefined
 		
 		// stats are shipped when registered with 
-		// RegisterStatOutboundData()  <- [ called with Tracker_RegisterStat() ]
+		// RegisterStatOutboundData()  <- [ this is called with Tracker_RegisterStat() when a third parameter is provided for callbackfunc ]
 		json += GenerateOutBoundJsonData( UID )
 		
 		//settings 
@@ -5173,6 +5174,8 @@ void function PIN_Training( entity player, string status, string trainingStatus 
 		SetServerReloadReadyState( ReloadState.READY )
 		wait 1.2
 		SetServerReloadReadyState( ReloadState.BUSY )
+		
+		Signal( svGlobal.levelEnt, "ReloadCheckComplete" )
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -5261,6 +5264,7 @@ void function PIN_Init()
 	if( IsLobby() )
 		return
 	
+	RegisterSignal( "ReloadCheckComplete" )
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
 	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	SetServerReloadReadyState( ReloadState.BUSY )

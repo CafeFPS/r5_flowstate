@@ -282,7 +282,7 @@ void function FS_Scenarios_OnPlayerConnected( entity player )
 
 	ValidateDataTable( player, "datatable/flowstate_scenarios_score_system.rpak" )
 
-	AddEntityCallback_OnDamaged( player, FS_Scenarios_OnPlayerDamaged )
+	AddEntityCallback_OnPostDamaged( player, FS_Scenarios_OnPlayerDamaged ) //changed to post damage ~mkos
 }
 
 void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
@@ -323,7 +323,7 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 	}
 	
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) && settings.fs_scenarios_bleedout_enabled )
-	{	
+	{
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
@@ -341,18 +341,22 @@ void function FS_Scenarios_OnPlayerDamaged( entity victim, var damageInfo )
 		// Supposed to be bleeding
 		Bleedout_StartPlayerBleedout( victim, attacker )
 
+		// not sure if this is needed anymore ~mkos
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))
         {
             attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
+		
+		// no need to cancel damage since this function is now a post damaged callback ~mkos
+		
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
 		// There might be a better way to do this, but this works well enough
-		DamageInfo_SetDamage( damageInfo, 1 )
+		//DamageInfo_SetDamage( damageInfo, 1 )
 
 		// Delete any shield health remaining
-		victim.SetShieldHealth( 0 )
+		//victim.SetShieldHealth( 0 ) //this is redundant, bleedout logic handles this. ~mkos
 	}
 }
 
@@ -2238,7 +2242,7 @@ var function TrackerStats_ScenariosDeaths( string uid )
 {
 	return Tracker_StatsMetricsByUID(uid).deaths
 }
-#endif 
+#endif
 
 #if DEVELOPER
 	void function Cafe_KillAllPlayers()

@@ -5852,13 +5852,15 @@ void function DEV_PrintClientCommands( table< string, void functionref( entity, 
 		#endif
 		
 		if ( vargc <= 0 )
-		return
+			return
 
 		local msg = vargv[0]
+		
 		for ( int i = 1; i < vargc; i++ )
 			msg = (msg + " " + vargv[i])
-			CenterPrintAll( msg )	
-	}	
+			
+		CenterPrintAll( msg )
+	}
 #endif
 
 vector function GetSmoothedPoint( vector v0, vector v1, vector v2, vector v3, float mu, float tension, float bias = 0.0 ) // TODO:JL seems like this should be globalized

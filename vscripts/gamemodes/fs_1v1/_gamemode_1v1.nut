@@ -4329,8 +4329,8 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				ibmmLockTypeToken = "#FS_CouldNotLock";
 			}
 			
-			if ( newGroup.player1.p.IBMM_grace_period == 0 && newGroup.GROUP_INPUT_LOCKED == false ) //todo: verify if player2 should be checked for grace as well
-			{ 
+			if ( newGroup.player1.p.IBMM_grace_period <= 0 && newGroup.player2.p.IBMM_grace_period <= 0 && newGroup.GROUP_INPUT_LOCKED == false ) //todo: verify if player2 should be checked for grace as well
+			{
 				ibmmLockTypeToken = "#FS_AnyInput";
 			}
 			

@@ -345,7 +345,7 @@ void function DeathScreen_BleedoutEnded( entity player )
 
 void function DeathScreen_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
 {
-	mAssert( player == GetLocalClientPlayer(), "player != GetLocalClientPlayer()" )
+	//mAssert( player == GetLocalClientPlayer(), "player != GetLocalClientPlayer()" )
 
 	RunUIScript( "UI_SetShouldShowSkip", false )
 

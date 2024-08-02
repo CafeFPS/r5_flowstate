@@ -41,6 +41,9 @@ struct
 	bool register_dummie_kill_as_actual_kill
 	bool flowstate_evo_shields
 	bool firingrange_aimtrainerbycolombia
+	
+	float maxDamageHistoryTime
+	
 } file
 
 // r5 stuff
@@ -51,6 +54,7 @@ void function SvCodeCallbacksCommon_Init()
 	file.register_dummie_kill_as_actual_kill = GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )
 	file.flowstate_evo_shields = GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
 	file.firingrange_aimtrainerbycolombia = GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )
+	file.maxDamageHistoryTime = GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME )
 }
 
 void function CodeCallback_Init()
@@ -344,7 +348,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	float savedDamage = DamageInfo_GetDamage( damageInfo )
 
 	if ( entIsPlayer )
-	{
+	{		
 		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId )
 
 		if ( attackerIsPlayer )
@@ -519,8 +523,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	//EarnMeterDamageConversion( damageInfo, attacker, ent, savedDamage ) //function is commented
 
-	if ( entIsPlayer )
-		PilotDamageFlinch( ent, damageInfo )
+	//flinch was removed s22 apex legends
+	// if ( entIsPlayer )
+		// PilotDamageFlinch( ent, damageInfo )
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    final damage done:", DamageInfo_GetDamage( damageInfo ) )
@@ -735,8 +740,8 @@ function TitanDamageFlinch( entity ent, damageInfo )
 	if ( TitanStagger( ent, damageInfo ) )
 		return
 
-	if ( DamageInfo_GetDamage( damageInfo ) >= TITAN_ADDITIVE_FLINCH_DAMAGE_THRESHOLD )
-		AddFlinch( ent, damageInfo )
+	// if ( DamageInfo_GetDamage( damageInfo ) >= TITAN_ADDITIVE_FLINCH_DAMAGE_THRESHOLD )
+		// AddFlinch( ent, damageInfo )
 }
 
 function PilotDamageFlinch( entity ent, damageInfo )
@@ -836,7 +841,7 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
 
-	if( takenDamage != null)
+	if( takenDamage != null )
 		shieldDamage = expect int( takenDamage )
 	
 	#if VERBOSE_DAMAGE_PRINTOUTS && DEVELOPER 
@@ -874,7 +879,7 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	if ( IsAlive( player ) )
 	{
-		float damageHistoryTime = GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME  )
+		float damageHistoryTime = file.maxDamageHistoryTime
 
 		if ( shieldDamage > 0 )
 			StoreDamageHistoryAndUpdate( player, damageHistoryTime, float( shieldDamage ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker )

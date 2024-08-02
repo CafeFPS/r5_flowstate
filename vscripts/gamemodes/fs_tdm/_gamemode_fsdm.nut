@@ -3746,8 +3746,10 @@ void function SimpleChampionUI()
 		}
 
 		SetGameState( eGameState.Postmatch )
-		PIN_Callback_CheckReload()
-		wait 1.2
+		
+		PIN_Callback_CheckReload()	
+		WaitSignal( svGlobal.levelEnt, "ReloadCheckComplete" ) //possibly use flag
+		
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
 	}
 

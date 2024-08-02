@@ -18,6 +18,7 @@ const string HIT_14 = "UI_Survival_Intro_PreLegendSelect_Countdown"
 const string HIT_15 = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P"
 const string HIT_16 = "jackhammer_pickup"
 
+const float VAMP_STEAL_AMOUNT = 3.0
 
 void function Flowstate_LgDuels1v1_Init()
 {
@@ -153,13 +154,13 @@ void function LGDuel_OnPlayerDamaged( entity victim, var damageInfo )
 	entity attacker = InflictorOwner( DamageInfo_GetAttacker(damageInfo) )
 	//int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
-	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) )
+	if ( IsValid(attacker) && attacker.IsPlayer() && IsAlive( attacker ) )
 	{
 		float atthealth = float( attacker.GetHealth() )
 		
 		if ( atthealth < attacker.GetMaxHealth() )
 		{
-			attacker.SetHealth( min( atthealth + 3.0, float( attacker.GetMaxHealth() ) ) )
+			attacker.SetHealth( min( atthealth + VAMP_STEAL_AMOUNT, float( attacker.GetMaxHealth() ) ) )
 		}
 		
 		attacker.p.totalLGHits++

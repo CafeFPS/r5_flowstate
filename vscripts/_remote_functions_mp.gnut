@@ -8,11 +8,9 @@ global function GetNV_FreefallIsFromPlane
 global function FindFuncName_ByID
 global function FindFuncID_ByRef
 
-#if CLIENT 
+#if CLIENT
 	global function Remote_CallFunction_ByRef_internal
 #endif 
-
-const bool MODEL_VIEWER_ENABLED = false
 
 struct 
 {

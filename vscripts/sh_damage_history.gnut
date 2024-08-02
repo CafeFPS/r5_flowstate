@@ -499,7 +499,6 @@ array<DamageHistoryStruct> function GetDamageEventsFromAttacker( entity player, 
 void function DeathScreen_OnPlayerStartBleedout( entity player, entity attacker, var damageInfo )
 {
 	//printt( "DR: DeathScreen_OnPlayerStartBleedout", player )
-
 	thread SendDeathRecapDataToPlayer( player )
 }
 
@@ -559,7 +558,8 @@ void function DeathScreen_OnPlayerDeath( entity player, var damageInfo )
 		StoreDamageHistoryAndUpdate( player, GetCurrentPlaylistVarFloat( "max_damage_history_time", MAX_DAMAGE_HISTORY_TIME ), damage, damageOrigin, scriptDamageType, damageSourceId, attacker )
 
 	//printt( "DR: DeathScreen_OnPlayerDeath", player, sameDamageEvent )
-	thread SendDeathRecapDataToPlayer( player )
+	//thread SendDeathRecapDataToPlayer( player ) 	//don't send this here, it is managed via 
+													//Bleedout_AddCallback_OnPlayerStartBleedout ~mkos
 }
 
 
@@ -675,6 +675,7 @@ float function GetDeathTimeFromDamageHistroy( entity player )
 	{
 		if ( player.e.recentDamageHistory[ i ].wasBleedingOut )
 			continue
+			
 		return player.e.recentDamageHistory[ i ].time
 	}
 
