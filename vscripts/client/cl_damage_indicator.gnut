@@ -49,6 +49,14 @@ struct {
 
 	int damageIndicatorCount = 0
 	array<entity> liveGrenadeIndicators
+	
+	array<int> nonIndicatorModes = 
+	[
+		ePlaylists.fs_lgduels_1v1,
+		ePlaylists.fs_vamp_1v1
+	]
+	
+	bool bIndicatorsDisabled = false
 } file
 
 void function ClDamageIndicator_Init()
@@ -64,6 +72,9 @@ void function ClDamageIndicator_Init()
 	
 	if ( !IsLobby() )
 		AddCallback_EntitiesDidLoad( InitDamageArrows )
+		
+	if( !file.nonIndicatorModes.contains( Playlist() ) )
+		file.bIndicatorsDisabled = true
 }
 
 string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
@@ -301,6 +312,7 @@ void function DamageIndicators( vector origin, entity attacker, int damageSource
 	const int DAMAGE_INDICATOR_STYLE_2D_ONLY = 0
 	const int DAMAGE_INDICATOR_STYLE_BOTH = 1
 	const int DAMAGE_INDICATOR_STYLE_3D_ONLY = 2
+	
 	int styleSetting = (localViewPlayer.IsTitan() ? DAMAGE_INDICATOR_STYLE_2D_ONLY : GetConVarInt( "damage_indicator_style_pilot" ))
 	bool show2DIndicator = (styleSetting == DAMAGE_INDICATOR_STYLE_2D_ONLY || styleSetting == DAMAGE_INDICATOR_STYLE_BOTH)
 	bool show3DIndicator = (styleSetting == DAMAGE_INDICATOR_STYLE_3D_ONLY || styleSetting == DAMAGE_INDICATOR_STYLE_BOTH)
@@ -314,10 +326,9 @@ void function DamageIndicators( vector origin, entity attacker, int damageSource
 
 bool function ShouldShowDamageArrows( int damageSourceId )
 {
-	//if( GetCurrentPlaylistName() == "fs_lgduels_1v1" )
-	if( Playlist() == ePlaylists.fs_lgduels_1v1 )
-			return false
-
+	if( file.bIndicatorsDisabled )
+		return false
+		
 	switch ( damageSourceId )
 	{
 		case eDamageSourceId.outOfBounds:

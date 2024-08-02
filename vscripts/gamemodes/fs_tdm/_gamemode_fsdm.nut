@@ -5182,7 +5182,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		string subToken = ""
 		string sWepName = ""
 	
-		if( !isCustomWeaponAllowed() )
+		if( !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
 			subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
 	
 		if( ClientCommand_SaveCurrentWeapons( player, ["1"] ) )
@@ -5307,7 +5307,7 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	else if ( !single_save )
 	{
 		string subToken = "";
-		if( !isCustomWeaponAllowed() )
+		if( !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
 		{
 			subToken = "#FS_CUSTOM_WEAPON_CHAL_ONLY"
 		}
@@ -6495,7 +6495,7 @@ bool function ValidateWeaponTgiveSettings( entity player, string weaponRef )
 	
 	if( is1v1EnabledAndAllowed() && !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
 	{
-		LocalMsg( player, "#FS_CustomWepChalOnly", "", uiType )
+		LocalMsg( player, "#FS_CustomWepChalOnly", "#FS_CUSTOM_WEAPON_CHAL_ONLY", uiType )
 		return false
 	}
 

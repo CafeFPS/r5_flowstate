@@ -239,7 +239,7 @@ int function PilotShieldModifyDamage( entity player, var damageInfo )
 		DamageInfo_Print( damageInfo, "normal " + normalDamage + " shield " + shieldDamage )
 	#endif
 
-	player.SetShieldHealth( abs( remainingShieldHealth ) )
+	player.SetShieldHealth( max( remainingShieldHealth, 0 ) )
 
 	// Regular notification and damage calculation is handled by main codecallback for damage.
 	// We only need to add and notify shield damage since we hijacked breakthrough damage into shield bypass and set damageinfo 
