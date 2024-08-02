@@ -73,7 +73,7 @@ void function ClDamageIndicator_Init()
 	if ( !IsLobby() )
 		AddCallback_EntitiesDidLoad( InitDamageArrows )
 		
-	if( !file.nonIndicatorModes.contains( Playlist() ) )
+	if( file.nonIndicatorModes.contains( Playlist() ) )
 		file.bIndicatorsDisabled = true
 }
 
