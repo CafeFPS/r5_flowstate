@@ -64,6 +64,7 @@ void function InitADSControlsPanelConsole( var panel )
 void function OnADSControlsPanel_Show( var panel )
 {
 	ScrollPanel_SetActive( panel, true )
+	ScrollPanel_Refresh( panel )
 }
 
 

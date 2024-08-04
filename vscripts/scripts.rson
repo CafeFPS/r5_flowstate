@@ -790,6 +790,7 @@ Scripts:
 	ui/menu_controls_advanced_look.nut
 	ui/menu_controls_ads_pc.nut
 	ui/menu_controls_ads_console.nut
+	ui/menu_controls_ads_advanced_console.nut
 	ui/panel_controls_pc.nut
 	ui/panel_controls_gamepad.nut
 	ui/panel_video.nut

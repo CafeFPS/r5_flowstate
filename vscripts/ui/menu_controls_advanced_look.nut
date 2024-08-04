@@ -49,7 +49,9 @@ void function InitAdvancedLookControlsPanel( var panel )
 	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomDeadzoneOut" ), "#GAMEPADCUSTOM_DEADZONE_OUT", "#GAMEPADCUSTOM_DEADZONE_OUT_DESC" ) )
 	file.graphEnablingItems.append( SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomCurve" ), "#GAMEPADCUSTOM_CURVE", "#GAMEPADCUSTOM_CURVE_DESC" ) )
 
-	SetupButton( Hud_GetChild( contentPanel, "SwchGamepadCustomAssist" ), "#GAMEPADCUSTOM_ASSIST",	"#GAMEPADCUSTOM_ASSIST_DESC" )
+	var perScopeButton = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_PER_OPTIC_SETTINGS", "#MENU_PER_OPTIC_SETTINGS_DESC", $"" )
+	AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
+	file.enableItems.append( perScopeButton )
 
 	//
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC" )
@@ -68,6 +70,8 @@ void function InitAdvancedLookControlsPanel( var panel )
 
 	file.graphs.append( Hud_GetChild( panel, "DeadzonesGraph" ) )
 	file.graphs.append( Hud_GetChild( panel, "CurveGraph" ) )
+
+	SetupButton( Hud_GetChild( contentPanel, "SwchGamepadCustomAssist" ), "#GAMEPADCUSTOM_ASSIST",	"#GAMEPADCUSTOM_ASSIST_DESC" )
 
 	ScrollPanel_InitPanel( panel )
 	ScrollPanel_InitScrollBar( panel, Hud_GetChild( panel, "ScrollBar" ) )
@@ -267,6 +271,7 @@ void function RestoreLookControlsDefaults()
 	SetConVarToDefault( "gamepad_custom_ads_turn_pitch" )
 	SetConVarToDefault( "gamepad_custom_ads_turn_delay" )
 	SetConVarToDefault( "gamepad_custom_ads_turn_time" )
+	RestoreADSAdvancedDefaultsGamePad()
 
 	SavePlayerSettings()
 }
