@@ -683,6 +683,9 @@ void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
 
 void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 {
+	if( !IsValid( damagedEnt ) )
+		return
+
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( damageSourceId == eDamageSourceId.deathField )
 		return
@@ -703,7 +706,8 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 			weapon.SetNextAttackAllowedTime( Time() + CRYPTO_DRONE_DAMAGED_REENTER_DEBOUNCE ) // Small debounce to prevent accidentally re-entering
 	}
 
-	Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
+	if( PlayerHasPassive( damagedEnt, ePassives.PAS_CRYPTO ) )
+		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
 }
 #endif // SERVER
 
