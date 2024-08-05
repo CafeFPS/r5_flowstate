@@ -230,8 +230,6 @@
 		classname				"AdvancedVideoButtonClass"
 		
 		ConVar					"fps_max"
-        xpos					0
-        ypos					0
 
 		navUp					SwchReflex
         navDown					SldAdaptiveRes
