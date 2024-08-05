@@ -94,7 +94,7 @@ global enum eLootZoneClass
 global struct ThrowLootParams
 {
 	vector   dropOrg
-	vector   fwd
+	vector   fwd = <-1,-1,-1>
 	string   ref
 	int      count = 1
 	entity   player = null
@@ -2119,8 +2119,16 @@ entity function SURVIVAL_ThrowLootFromPointEx( ThrowLootParams params )
 	}
 	else
 	{
-		float speed = RandomFloatRange( params.throwVelocityRange[0], params.throwVelocityRange[1] )
-		vector vel  = (params.fwd * speed) + <0, 0, 100>
+		vector vel
+		if( params.fwd == <-1,-1,-1> )
+		{
+			float speed = RandomFloatRange( params.throwVelocityRange[0], params.throwVelocityRange[1] )
+			vel  = (params.fwd * speed) + <0, 0, 100>
+		} else
+		{
+			vel = params.fwd
+		}
+		printt( "will throw with vel", vel )
 		FakePhysicsThrow_Retail( player, ent, vel, true )
 	}
 
@@ -2199,8 +2207,8 @@ bool function DismantleModsOnWeapon_Internal( entity pickup, int extraAmmoToSpaw
 		entity pickupOwner = GetPlayerOwnerForEntity( pickup )
 		foreach ( mod in installedMods )
 		{
-			vector vel = RandomVec( 50 ) //150 retail value. Cafe
-			vel = Normalize( <vel.x, vel.y, 200> )
+			vector vel = RandomVec( 100 )
+			vel = <vel.x, vel.y, 100>
 
 			threwMod = true
 
@@ -2233,8 +2241,8 @@ bool function DismantleModsOnWeapon_Internal( entity pickup, int extraAmmoToSpaw
 			if ( IsWeaponKeyFieldDefined( pickup.e.lootRef, "ammo_pool_type" ) )
 			{
 				string ammoType = GetWeaponAmmoType( pickup.e.lootRef )
-				vector vel      = RandomVec( 50 )
-				vel = Normalize( <vel.x, vel.y, 200> )
+				vector vel      = RandomVec( 100 )
+				vel = <vel.x, vel.y, 100>
 				SURVIVAL_ThrowLootFromPoint( pickup.GetOrigin() + <0, 0, 8>, vel, ammoType, ammoToSpawn, pickupOwner, deathBox )
 			}
 		}
