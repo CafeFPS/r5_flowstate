@@ -678,50 +678,28 @@ bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args 
 
 		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
 			return true
+
+		if ( lootEnt.GetParent() != deathBox )
+			return true
+	}
+
+	if ( !IsValid( deathBox ) )
+	{
+		if ( Distance( player.GetOrigin(), lootEnt.GetOrigin() )  > DEATH_BOX_MAX_DIST ) //|| SURVIVAL_Loot_IsLootRestricted ( lootEnt ) )
+			return true
 	}
 
 	if ( GetCurrentPlaylistVarBool( "death_box_dist_check", true  )  )
 	{
-		if ( IsValid( deathBox) )
+		if ( IsValid( deathBox ) )
 		{
 			if ( !IsPlayerCloseEnoughToDeathBoxToLoot( player, deathBox ) )
-				return false
+				return true
 		}
 	}
 
 	if ( SURVIVAL_DropBackpackItem( player, itemToThrowData.ref, itemToThrow.count, deathBox ) )
 		Survival_PickupItem( lootEnt, player, 0, deathBox )
-
-	if ( deathBox != null )
-	{
-		if ( deathBox.GetLinkEntArray().len() == 0 )
-		{
-			deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
-
-			thread function() : ( deathBox )
-			{
-				wait 1.0
-				
-				if( !IsValid( deathBox ) )
-					return
-			
-				entity boxPhysics = deathBox.GetParent()
-			
-				if( IsValid( boxPhysics ) && boxPhysics.GetClassName() == "prop_physics" )
-				{
-					deathBox.ClearParent()
-					boxPhysics.Destroy()
-				}
-
-				wait 2.0
-				
-				if ( IsValid( deathBox ) )
-					deathBox.Destroy()
-			}()
-		}
-		else
-			UpdateDeathBoxHighlight( deathBox )
-	}
 
 	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
@@ -1065,6 +1043,9 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 	if ( !IsValid( player ) )
 		return true
 
+	if ( !PositionIsInMapBounds( player.GetOrigin() ) )
+		return true
+
 	if ( args.len() < 1 )
 		return true
 
@@ -1076,32 +1057,20 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 	if ( !EquipmentSlot_IsValidEquipmentSlot( slotRef ) )
 		return true
 
+	LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, slotRef )
+	if ( SURVIVAL_EquipmentPretendsToBeBlank( data.ref ) )
+		return true
+
+	entity droppedItem = null
+
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( slotRef )
 
-	if ( es.weaponSlot != -1 )
-	{
-		vector origin = GetThrowOrigin( player )
-		vector fwd    = AnglesToForward( player.EyeAngles() )
+	vector fwd    = RotateVector( player.GetViewVector(), <-10.0, GetThrowYawOffsetFromPlayer( player ), 0> )
+	vector vel    = fwd * 100
+	vector origin = GetThrowOrigin( player )
 
-		int currentSlot = SURVIVAL_GetActiveWeaponSlot( player )
-
-		if ( !SURVIVAL_DropMainWeapon( player, slotRef, origin, fwd ) )
-			return true
-
-		if ( currentSlot == es.weaponSlot )
-		{
-			string otherWeaponEsString = EquipmentSlot_GetOtherWeaponSlot( slotRef )
-			EquipmentSlot otherWeaponEs = Survival_GetEquipmentSlotDataByRef( otherWeaponEsString )
-			LootData otherWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, otherWeaponEsString )
-
-			player.SetActiveWeaponBySlot(
-				eActiveInventorySlot.mainHand,
-				otherWeaponData.ref != ""
-					? otherWeaponEs.weaponSlot // Other weapon exists, switch to it
-					: WEAPON_INVENTORY_SLOT_PRIMARY_2 // No other weapon, switch to melee instead
-			)
-		}
-	}
+	if ( es.specialCaseDropFunc != null )
+		droppedItem = es.specialCaseDropFunc( player, slotRef, origin, vel )
 	else
 	{
 		LootData itemData = EquipmentSlot_GetEquippedLootDataForSlot( player, slotRef )
@@ -1112,13 +1081,9 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		entity item = SpawnGenericLoot( itemData.ref, GetThrowOrigin( player ) )
 		SetItemSpawnSource( item, eSpawnSource.PLAYER_DROP, player )
 
-		entity dropWeapon
-
 		BroadcastItemDrop_Retail( player, itemData.ref, item )
 
-		LootData data = SURVIVAL_Loot_GetLootDataByRef( itemData.ref )
-		vector fwd    = RotateVector( player.GetViewVector(), <-10.0, GetThrowYawOffsetFromPlayer( player ), 0> )
-		vector vel    = fwd * 100
+		data = SURVIVAL_Loot_GetLootDataByRef( itemData.ref )
 
 		FakePhysicsThrow_Retail( player, item, vel, true )
 		TrackingVision_CreatePOI( es.trackingVisionDropPOI, item, item.GetOrigin(), player.GetTeam(), player )
@@ -1139,9 +1104,15 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		{
 			item.e.lootToAttachToBackpack = Flowstate_GetLootToRemoveFromBackpackLimit( player )
 		}
+		droppedItem = item
 	}
 
-	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	if ( droppedItem != null )
+	{
+		EmitSoundOnEntityOnlyToPlayer( player, player, SOUND_THROW_ITEM )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
+		Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	}
 
 	return true
 }
@@ -2228,8 +2199,8 @@ bool function DismantleModsOnWeapon_Internal( entity pickup, int extraAmmoToSpaw
 		entity pickupOwner = GetPlayerOwnerForEntity( pickup )
 		foreach ( mod in installedMods )
 		{
-			vector vel = RandomVec( 100 ) //150 retail value. Cafe
-			vel = Normalize( <vel.x, vel.y, 250> )
+			vector vel = RandomVec( 50 ) //150 retail value. Cafe
+			vel = Normalize( <vel.x, vel.y, 200> )
 
 			threwMod = true
 
@@ -2262,8 +2233,8 @@ bool function DismantleModsOnWeapon_Internal( entity pickup, int extraAmmoToSpaw
 			if ( IsWeaponKeyFieldDefined( pickup.e.lootRef, "ammo_pool_type" ) )
 			{
 				string ammoType = GetWeaponAmmoType( pickup.e.lootRef )
-				vector vel      = RandomVec( 150 )
-				vel = Normalize( <vel.x, vel.y, 250> )
+				vector vel      = RandomVec( 50 )
+				vel = Normalize( <vel.x, vel.y, 200> )
 				SURVIVAL_ThrowLootFromPoint( pickup.GetOrigin() + <0, 0, 8>, vel, ammoType, ammoToSpawn, pickupOwner, deathBox )
 			}
 		}
@@ -2920,7 +2891,16 @@ bool function WeaponsSpawnWithAmmo()
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.EyePosition() + player.GetForwardVector() * 25
+	vector fwd = AnglesToForward( player.EyeAngles() )
+	vector origin = player.EyePosition()
+	vector hullSize = < 25, 25, 25 >
+	TraceResults results = TraceHull( origin, origin + fwd*48, -hullSize, hullSize, [player], LOOT_TRACE, LOOT_COLLISION_GROUP )
+	
+	// the size of the hull is big enough that it could already be starting within a wall, even at the player's eye position
+	if ( results.startSolid )
+		return origin + fwd * 25
+	
+	return 0.2 * origin + 0.8 * results.endPos // move the origin a little closer to the player, so the loot has some space
 }
 
 bool function ShouldSpawnThisLoot( string entryRef ) 
@@ -3673,6 +3653,7 @@ void function Flowstate_CheckBombPhysics( entity drop, entity physics )
 
 void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, bool ignoreCombatCharacters )
 {
+	// DumpStack()
 	if ( !IsValid( drop ) )
 		return
 
@@ -3682,6 +3663,8 @@ void function FakePhysicsThrow_Retail( entity player, entity drop, vector vel, b
 	// physicsEnt.SetIgnoreCombatCharacters( ignoreCombatCharacters )
 	physicsEnt.SetBlocksRadiusDamage( false )
 	drop.SetParent( physicsEnt )
+
+	// PutEntityInSafeSpot( physicsEnt, null, null, physicsEnt.GetOrigin(), physicsEnt.GetOrigin() )
 
 	// set the owner so the physics object doesn't collide with the thrower
 	physicsEnt.Hide()
@@ -3739,7 +3722,6 @@ void function PhysicsEntCleanup( entity physicsEnt, entity drop )
 			}
 			if ( IsValid( drop ) )
 			{
-				// TODO: fix special case
 				if ( drop.GetTargetName() == DEATH_BOX_TARGETNAME )
 				{
 					drop.Solid()

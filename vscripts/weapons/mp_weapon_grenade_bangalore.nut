@@ -436,6 +436,10 @@ void function SmokeHighlight_Thread( entity player )
 			if( player in file.highlightedPlayersInSmoke )
 				delete file.highlightedPlayersInSmoke[player]
 
+			#if SERVER
+			player.Highlight_SetCurrentContext( -1 )
+			#endif
+
 			#if CLIENT
 			foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
 			{

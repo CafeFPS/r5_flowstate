@@ -257,6 +257,8 @@ void function RemoteFunctions_Init_Begin()
 
 	//Lightning Gun
 	RegisterNetworkedVariable( "isPlayerShootingFlowstateLightningGun", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
+	
+	// Remote_RegisterClientFunction("ServerCallback_RefreshWeaponHighlights", "int", INT_MIN, INT_MAX )
 
 	//Custom gamemodes
 	switch ( Gamemode() )
