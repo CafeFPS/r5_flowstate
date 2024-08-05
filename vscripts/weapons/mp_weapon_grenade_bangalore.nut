@@ -553,6 +553,7 @@ void function BangSmoke_GetPlayersToHighlight( entity player, array<entity> outP
 					// continue
 				// }
 				outPlayersToHighlight.append( otherPlayer )
+				continue
 			}
 		}
 
