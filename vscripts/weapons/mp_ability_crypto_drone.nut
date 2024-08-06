@@ -946,12 +946,11 @@ void function Drone_AttemptUse( entity player )
 			if ( DropPod_OnUse( isAirdrop, player, USE_INPUT_DEFAULT ) )
 				success = true
 		}
-		// else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
-		// {
-			// DeathBoxOnUse( trace.hitEnt, player, 0 )
-			// success = true
-		// }
-              
+		else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
+		{
+			OnDeathBoxUse( trace.hitEnt, player, 0 )
+			success = true
+		}
 		// else if ( IsVaultPanel( trace.hitEnt ) )
 		// {
 			// UniqueVaultData vaultData = GetUniqueVaultData( trace.hitEnt )
@@ -2489,13 +2488,13 @@ void function TempUpdateRuiDistance( entity player )
 				{
 					targetString = "#CAMERA_INTERACT_AIRDROP"
 				}
-				// else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
-				// {
-					// if ( trace.hitEnt.GetCustomOwnerName() != "" )
-						// targetString = Localize( "#CAMERA_INTERACT_DEATHBOX", trace.hitEnt.GetCustomOwnerName() )
-					// else
-						// targetString = Localize( "#CAMERA_INTERACT_DEATHBOX", trace.hitEnt.GetOwner().GetPlayerName() )
-				// }
+				else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
+				{
+					if ( trace.hitEnt.GetCustomOwnerName() != "" )
+						targetString = Localize( "#CAMERA_INTERACT_DEATHBOX", trace.hitEnt.GetCustomOwnerName() )
+					else
+						targetString = Localize( "#CAMERA_INTERACT_DEATHBOX", trace.hitEnt.GetOwner().GetPlayerName() )
+				}
 				else if ( IsRespawnBeacon( trace.hitEnt ) && CountTeammatesWaitingToBeRespawned( player.GetTeam() ) > 0 && trace.hitEnt.e.isBusy == false )
 				{
 					targetString = "#CAMERA_INTERACT_RESPAWN"
