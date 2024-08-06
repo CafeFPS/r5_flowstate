@@ -1005,12 +1005,11 @@ void function Drone_AttemptUseLong( entity player )
 	{
 		bool isRecalling = StatusEffect_GetSeverity( player, eStatusEffect.crypto_camera_is_recalling ) > 0
 
-		// fixme. Cafe
-		// if ( IsRespawnBeacon( trace.hitEnt ) && CountTeammatesWaitingToBeRespawned( player.GetTeam() ) > 0 && trace.hitEnt.e.isBusy == false )
-		// {
-			// ExtendedUseSettings settings // doesn't seem to do anything
-			// thread RespawnBeacon_GetSuccessFunc( trace.hitEnt )( trace.hitEnt, player, settings )
-		// }
+		if ( IsRespawnBeacon( trace.hitEnt ) && CountTeammatesWaitingToBeRespawned( player.GetTeam() ) > 0 && trace.hitEnt.e.isBusy == false )
+		{
+			ExtendedUseSettings settings
+			thread RespawnUserTeam( trace.hitEnt, player, settings )
+		}
 	}
 }
 
@@ -2497,10 +2496,10 @@ void function TempUpdateRuiDistance( entity player )
 					// else
 						// targetString = Localize( "#CAMERA_INTERACT_DEATHBOX", trace.hitEnt.GetOwner().GetPlayerName() )
 				// }
-				// else if ( IsRespawnBeacon( trace.hitEnt ) && CountTeammatesWaitingToBeRespawned( player.GetTeam() ) > 0 && trace.hitEnt.e.isBusy == false )
-				// {
-					// targetString = "#CAMERA_INTERACT_RESPAWN"
-				// }
+				else if ( IsRespawnBeacon( trace.hitEnt ) && CountTeammatesWaitingToBeRespawned( player.GetTeam() ) > 0 && trace.hitEnt.e.isBusy == false )
+				{
+					targetString = "#CAMERA_INTERACT_RESPAWN"
+				}
 				// // else if ( IsBunkerLoreScreen( trace.hitEnt ) && !IsBunkerLoreScreenHacked( trace.hitEnt, player ) )
 				// // {
 					// // targetString = "#CAMERA_HOLD_INTERACT_LORE_MESSAGE"
