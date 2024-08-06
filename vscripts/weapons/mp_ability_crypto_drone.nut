@@ -941,11 +941,11 @@ void function Drone_AttemptUse( entity player )
 			if ( LootBin_OnUse( isLootBin, player, USE_INPUT_DEFAULT ) )
 				success = true
 		}
-		// else if ( IsValid( isAirdrop ) )
-		// {
-			// if ( RemoteOpenAirdrop( isAirdrop, player ) )
-				// success = true
-		// }
+		else if ( IsValid( isAirdrop ) )
+		{
+			if ( DropPod_OnUse( isAirdrop, player, USE_INPUT_DEFAULT ) )
+				success = true
+		}
 		// else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
 		// {
 			// DeathBoxOnUse( trace.hitEnt, player, 0 )
@@ -2486,10 +2486,10 @@ void function TempUpdateRuiDistance( entity player )
 				{
 					targetString = "#CAMERA_INTERACT_LOOT_BIN"
 				}
-				// else if ( IsValid( isAirdrop ) && !GradeFlagsHas( isAirdrop, eGradeFlags.IS_BUSY ) && !isAirdrop.e.isBusy )
-				// {
-					// targetString = "#CAMERA_INTERACT_AIRDROP"
-				// }
+				else if ( IsValid( isAirdrop ) && !GradeFlagsHas( isAirdrop, eGradeFlags.IS_BUSY ) && !isAirdrop.e.isBusy )
+				{
+					targetString = "#CAMERA_INTERACT_AIRDROP"
+				}
 				// else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
 				// {
 					// if ( trace.hitEnt.GetCustomOwnerName() != "" )

@@ -7,6 +7,7 @@ global function LaunchAnimDropPod
 global function GetDropPodAnimDuration
 global function CreateDropPodSmokeTrail
 
+global function DropPod_OnUse
 //const droppod_fireteam_collision = $"models/vehicle/droppod_fireteam/droppod_fireteam_collision.mdl"
 global const DROPPOD_MODEL = $"mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl"
 global const DP_COLL_MODEL = $"mdl/vehicle/droppod_loot/droppod_loot_animated.rmdl"
@@ -383,6 +384,22 @@ void function DropPodBeamWaitForUse(entity dropPod, vector origin, vector angles
     WaitForever()
     
 }
+
+bool function DropPod_OnUse( entity dropPod, entity player, int useInputFlags )
+{
+	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+		return false
+
+	if ( dropPod.Anim_IsActive() || DropPod_IsOpen( dropPod ) )
+		return false
+
+	dropPod.Signal("OnUse")
+	dropPod.SetUsePrompts("","")
+	thread HandleDropPodUse( dropPod, player )
+
+	return true
+}
+
 
 void function OnDropPodUse( entity dropPod, entity player, int useInputFlags )
 {
@@ -788,6 +805,7 @@ entity function CreateDropPod( vector ornull origin = null, vector ornull angles
 		SetTargetName(prop_dynamic, CARE_PACKAGE_TARGETNAME)
 	}
 
+	prop_dynamic.SetScriptName( CARE_PACKAGE_SCRIPTNAME )
 	prop_dynamic.kv.contents = int( prop_dynamic.kv.contents ) & ~CONTENTS_TITANCLIP
 	prop_dynamic.kv.fadedist = -1
 	prop_dynamic.kv.renderamt = 255
