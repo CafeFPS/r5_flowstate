@@ -913,8 +913,12 @@ void function Drone_AttemptUse( entity player )
 		entity isAirdrop = GetAirdropForHitEnt( trace.hitEnt )
 		entity parentEnt = trace.hitEnt.GetParent()
 		bool success     = false
-		if ( IsDoor( trace.hitEnt ) && DroneCanOpenDoor( camera, trace.hitEnt ) )
+
+		if ( IsDoor( trace.hitEnt ) && DroneCanOpenDoor( camera, trace.hitEnt ) || IsValid( parentEnt ) && IsDoor( parentEnt ) && DroneCanOpenDoor( camera, parentEnt ) )//Why is this needed? Cafe
 		{
+			if( IsValid( parentEnt ) && IsDoor( parentEnt ) ) //Why is this needed? Cafe
+				trace.hitEnt = parentEnt
+
 			if( IsCodeDoor( trace.hitEnt )  )
 			{
 				if ( trace.hitEnt.IsDoorOpen() )
@@ -975,7 +979,7 @@ void function Drone_AttemptUse( entity player )
 				// success = true
 			// }
 		// }
-                    
+        //not compatible with s3 one (path passive) survey beacon system needs update. Cafe (for later)
 		// else if ( SurveyBeacon_IsSurveyBeacon( trace.hitEnt ) || ( IsValid( parentEnt ) && SurveyBeacon_IsSurveyBeacon( parentEnt ) ) )
 		// {
 			// entity surveyBeacon = SurveyBeacon_IsSurveyBeacon( trace.hitEnt ) ? trace.hitEnt : parentEnt
@@ -3386,8 +3390,8 @@ float function GetNeurolinkRange( entity player )
 
 bool function DroneCanOpenDoor( entity drone, entity door )
 {
-	// if ( IsVaultDoor( door ) )
-		// return false
+	if ( HACK_IsVaultDoor( door ) )
+		return false
 
 	// if( IsReinforced( door ) && !IsFriendlyTeam( drone.GetTeam(), door.GetTeam() ) )
 		// return false
