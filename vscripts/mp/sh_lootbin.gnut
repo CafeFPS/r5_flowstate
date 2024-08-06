@@ -599,8 +599,6 @@ void function HandleLootbinUse( entity lootbin, entity player )
 		thread LootBin_PlayOpenSequence( lootbin, player )
 	if ( IsValid( player ) )
 		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, lootbin, lootbin.GetWorldSpaceCenter(), player.GetTeam(), player )
-
-	return
 }
 
 int opened = 0
