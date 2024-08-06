@@ -23,6 +23,7 @@ global function RefreshLootBin
 global function ClearLootBinContents
 global function LootBin_PlayCloseSequence
 global function FS_Scenarios_InitLootBin
+global function LootBin_OnUse
 #elseif CLIENT
 global function ServerCallback_RefreshLootbinHighlight
 #endif
@@ -569,6 +570,20 @@ void function OnLootBinUse( entity lootbin, entity player, int useInputFlags )
 
 	thread HandleLootbinUse( lootbin, player )
 }
+
+bool function LootBin_OnUse( entity lootbin, entity player, int useInputFlags )
+{
+	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+		return false
+
+	if ( lootbin.Anim_IsActive() || LootBin_IsOpen( lootbin ) )
+		return false
+
+	thread HandleLootbinUse( lootbin, player )
+	
+	return true
+}
+
 void function HandleLootbinUse( entity lootbin, entity player )
 {
 	lootbin.EndSignal( "OnDestroy" )
@@ -584,6 +599,8 @@ void function HandleLootbinUse( entity lootbin, entity player )
 		thread LootBin_PlayOpenSequence( lootbin, player )
 	if ( IsValid( player ) )
 		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, lootbin, lootbin.GetWorldSpaceCenter(), player.GetTeam(), player )
+
+	return
 }
 
 int opened = 0

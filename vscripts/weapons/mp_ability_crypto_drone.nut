@@ -928,7 +928,7 @@ void function Drone_AttemptUse( entity player )
 			}
 			success = true
 		}
-		//fixme. Cafe -- more info? ~mkos
+		//fixme. Cafe -- more info? ~mkos -- Just read it? Cafe
 
 		// else if ( trace.hitEnt.GetTargetName() == PASSIVE_REINFORCE_REBUILT_DOOR_SCRIPT_NAME && IsReinforced( trace.hitEnt ) && IsFriendlyTeam( camera.GetTeam(), trace.hitEnt.GetTeam() ) )
 		// {
@@ -936,11 +936,11 @@ void function Drone_AttemptUse( entity player )
 			// success = true
 		// }
 		// else 
-		// if ( IsValid( isLootBin ) )
-		// {
-			// if ( LootBin_OnUse( isLootBin, player, USE_INPUT_DEFAULT ) )
-				// success = true
-		// }
+		if ( IsValid( isLootBin ) )
+		{
+			if ( LootBin_OnUse( isLootBin, player, USE_INPUT_DEFAULT ) )
+				success = true
+		}
 		// else if ( IsValid( isAirdrop ) )
 		// {
 			// if ( RemoteOpenAirdrop( isAirdrop, player ) )
@@ -2482,10 +2482,10 @@ void function TempUpdateRuiDistance( entity player )
 						// targetString = vaultData.hintVaultKeyUse
 				// }
                     
-				// else if ( IsValid( isLootBin ) && !LootBin_IsBusy( isLootBin ) && !LootBin_IsFullyOpenedForPlayer( isLootBin, player ) )
-				// {
-					// targetString = "#CAMERA_INTERACT_LOOT_BIN"
-				// }
+				else if ( IsValid( isLootBin ) && !LootBin_IsBusy( isLootBin ) && !GradeFlagsHas( isLootBin, eGradeFlags.IS_OPEN ) )
+				{
+					targetString = "#CAMERA_INTERACT_LOOT_BIN"
+				}
 				// else if ( IsValid( isAirdrop ) && !GradeFlagsHas( isAirdrop, eGradeFlags.IS_BUSY ) && !isAirdrop.e.isBusy )
 				// {
 					// targetString = "#CAMERA_INTERACT_AIRDROP"
