@@ -948,9 +948,10 @@ void function Drone_AttemptUse( entity player )
 		}
 		else if ( trace.hitEnt.GetTargetName() == DEATH_BOX_TARGETNAME && ShouldPickupDNAFromDeathBox( trace.hitEnt, player ) )
 		{
-			OnDeathBoxUse( trace.hitEnt, player, 0 )
+			DeathBoxOnUse( trace.hitEnt, player, 0 )
 			success = true
 		}
+              
 		// else if ( IsVaultPanel( trace.hitEnt ) )
 		// {
 			// UniqueVaultData vaultData = GetUniqueVaultData( trace.hitEnt )

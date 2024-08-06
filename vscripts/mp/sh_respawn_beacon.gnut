@@ -16,6 +16,7 @@ global function OnMobileRespawnChamberSpawned
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
 global function RespawnUserTeam
+global function DeathBoxOnUse
 #endif
 
 
