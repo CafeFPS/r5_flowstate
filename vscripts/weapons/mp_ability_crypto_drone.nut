@@ -622,6 +622,9 @@ void function AttemptDroneRecall( entity player )
 	if ( player != GetLocalViewPlayer() || player != GetLocalClientPlayer() )
 		return
 
+	if( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+		return
+
 	if ( IsControllerModeActive() )
 	{
 		if ( TryPingBlockingFunction( player, "quickchat" ) )
@@ -634,7 +637,10 @@ void function AttemptDroneRecall( entity player )
 void function ServerCallback_ShouldExitDrone()
 {
 	entity player = GetLocalClientPlayer()
-	
+
+	if( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+		return
+		
 	if( IsValid( player ) )
 	{
 		if( PlayerSetting_DamageClosesMenu() )
@@ -648,7 +654,7 @@ void function ServerCallback_ShouldExitDrone()
 #if SERVER
 bool function ClientCommand_AttemptDroneRecall(entity player, array < string > args)
 {
-	if( !IsValid( player ) || !player.IsPlayer() )
+	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || !player.IsPlayer() )
 		return false
 
 	if ( !IsAlive( player ) )

@@ -1,3 +1,5 @@
+global function CodeCallback_OnPlayerAmmoPoolCountChanged
+
 global function SV_Survival_Loot_Init
 global function GetRandomLootArray
 global function LootTypeHasAnyChanceToSpawn
@@ -334,25 +336,6 @@ void function OnWeaponReload( entity player )
 
 	if ( RandomFloat( 1.0 ) >= 0.95 ) // 5% chance to say the reloading voice line
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
-
-	if ( !InfiniteAmmoEnabled() )
-	{
-		int ammoType = weapon.GetWeaponAmmoPoolType()
-		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-
-		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-		int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-
-		int requiredAmmo = maxAmmo - currentAmmo
-
-		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-		int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
-
-		//printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
-
-		SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
-	}
 }
 
 string function GetNextOrdnance( entity player, string currentOrdnance = "" )
@@ -2590,16 +2573,23 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 
 bool function AmmoPickUp_Count( entity player, string ref, int count )
 {
+	if( InfiniteAmmoEnabled() )
+		return true
+
 	return player.AmmoPool_GetCount( eAmmoPoolType[ ref ] ) >= count
 }
 
 
 void function AmmoPickUp_Decrement( entity player, string ref, int count )
 {
+	if( InfiniteAmmoEnabled() )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, ref, count )
+		return
+	}
+
 	int ammoType = eAmmoPoolType[ ref ]
 	player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) - count )
-
-	SURVIVAL_RemoveFromPlayerInventory( player, ref, count )
 }
 
 void function AddValidModsFromExistingWeapon( entity player, entity weapon, string weaponName, array<string> mods )
@@ -4083,6 +4073,34 @@ bool function FlowstateCheckItemDropableFor__fs_snd( string ref, entity player )
 	
 	return true
 } 
+
+void function CodeCallback_OnPlayerAmmoPoolCountChanged( entity player, int type, int oldCount )
+{
+	string ref = AmmoType_GetRefFromIndex( type )
+	int count  = player.AmmoPool_GetCount( type )
+
+	// #if DEVELOPER
+	// printt( ref )
+	// printt( count )
+	// printt( oldCount )
+	// #endif
+
+	if ( !SURVIVAL_Loot_IsRefValid( ref ) || InfiniteAmmoEnabled() )
+		return
+
+	if ( oldCount > count )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, ref, oldCount - count )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
+		// StatsHook_PlayerUsedResource( player, null, ref )
+		// LiveAPI_SendAmmoChangedEvent( player, type, count, oldCount )
+	}
+	else if ( count > oldCount )
+	{
+		SURVIVAL_AddToPlayerInventory( player, ref, count - oldCount )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventory" )
+	}
+}
 
 bool function SURVIVAL_DropBackpackItem( entity player, string item, int dropCount = 1, entity deathBox = null, bool spawnLootEnt = true, bool removeFromBackpack = true, bool onlyAllowOnLivingPlayers = true )
 {

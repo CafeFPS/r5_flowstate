@@ -96,7 +96,7 @@ entity function CreateCodeCylinderTrigger( vector origin, vector angles, float r
 	entity cylinder = CreateEntity( "trigger_cylinder"  )
 	cylinder.SetOrigin( origin )
 	cylinder.SetAngles( angles )
-	cylinder.SetCylinderRadius( radius )
+	cylinder.SetRadius( radius )
 	cylinder.SetAboveHeight( aboveHeight )
 	cylinder.SetBelowHeight( belowHeight )
 

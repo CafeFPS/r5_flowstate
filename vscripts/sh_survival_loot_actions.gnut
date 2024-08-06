@@ -344,11 +344,9 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags, ent
 	int numToPickup = pickupCount
 
 	bool isAutoPickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
-	                                      
 		//data.inventorySlotCount is hard set in data. For most ammo pools it tops out at 60. Which is why were were hitting this once we fixed the isAutoPickup flag issues.
 		if ( isAutoPickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
 			return false
-       
 
 	if ( desiredCount != null )
 		numToPickup = minint( numToPickup, expect int(desiredCount) )
@@ -376,7 +374,8 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags, ent
 
 		PlayPickupSound( player, data.ref, pickupFlags )
 		
-		SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
+		if( GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) )
+			SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
 
 		//Create tracking event for players with tracking passive.
 		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
