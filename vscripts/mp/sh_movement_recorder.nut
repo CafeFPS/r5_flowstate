@@ -3,6 +3,7 @@
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
+	global function MovementRecorder_SetPlaybackRate
 #endif
 
 #if CLIENT
@@ -21,38 +22,49 @@ struct RecordingAnimation
 
 const int MAX_SLOT = 5
 const int MAX_NPC_BUDGET = 120
+const int DUMMY_MAX_HEALTH = 100
 
 struct
 {
-	#if SERVER
-	//movido a la estructura de server player
-	#endif
-
 	#if CLIENT
-	array<var> inputHintLines
+		array<var> inputHintLines
 	#endif
 	
-	int playbackLimit = -1	
-	table<int, table<int, array<entity> > > playerDummyMaps //[ehandle][slot] = dummy
-	table<int, table<int,int> > playerPlaybackAmounts = {} //[ehandle][slot] = amount
+	#if SERVER
+		int playbackLimit = -1	
+		table<int, table<int, array<entity> > > playerDummyMaps //[ehandle][slot] = dummy
+		table<int, table<int,int> > playerPlaybackAmounts = {} //[ehandle][slot] = amount
+		//table<int, table<int,float> > playerPlaybackDurations = {} //[ehandle][slot] = duration
+		
+		float helmet_lv4 = 0.65
+		float adminSetPlaybackRate = 1.0
+		bool bDummyDeathNotifications = true
+		
+		table<int, array<entity> > _dummyMaps__Template = {
+			[ 0 ] = [ null ],
+			[ 1 ] = [ null ],
+			[ 2 ] = [ null ],
+			[ 3 ] = [ null ],
+			[ 4 ] = [ null ]
+		}
+		
+		table <int, int> _playbackAmounts__Template = {
+			[ 0 ] = 0,
+			[ 1 ] = 0,
+			[ 2 ] = 0,
+			[ 3 ] = 0,
+			[ 4 ] = 0
+		}
+		
+		// table <int, float> _playbackDuration__Template = {
+			// [ 0 ] = 1.0,
+			// [ 1 ] = 1.0,
+			// [ 2 ] = 1.0,
+			// [ 3 ] = 1.0,
+			// [ 4 ] = 1.0
+		// }
 	
-	table<int, array<entity> > _dummyMaps__Template = {
-		[ 0 ] = [ null ],
-		[ 1 ] = [ null ],
-		[ 2 ] = [ null ],
-		[ 3 ] = [ null ],
-		[ 4 ] = [ null ]
-	}
-	
-	table <int, int> _playbackAmounts__Template = {
-		[ 0 ] = 0,
-		[ 1 ] = 0,
-		[ 2 ] = 0,
-		[ 3 ] = 0,
-		[ 4 ] = 0
-	}
-	
-	float helmet_lv4 = 0.65
+	#endif
 	
 } file
 
@@ -64,8 +76,10 @@ void function Sh_FS_MovementRecorder_Init()
 	#endif
 	
 	#if SERVER
+		//Todo: Dynmaically create all templates from one source
 		disableoverwrite( file._playbackAmounts__Template ) //prevent modifying template ~mkos
 		disableoverwrite( file._dummyMaps__Template )
+		//disableoverwrite( file._playbackDuration__Template )
 		
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		
@@ -87,8 +101,9 @@ void function Sh_FS_MovementRecorder_Init()
 			RegisterSignal( "EndDummyThread_Slot_" + k.tostring() )
 		}
 		
-		file.playbackLimit = GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
-		file.helmet_lv4 = GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+		file.playbackLimit 				= GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
+		file.helmet_lv4 				= GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
+		file.bDummyDeathNotifications 	= GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )
 		
 		if( !FlowState_AdminTgive() )
 			INIT_WeaponsMenu()
@@ -138,6 +153,11 @@ void function MovementRecorder_SetupWeapons( entity player, array<string> args )
 			SetupInfiniteAmmoForWeapon( player, secondary )
 	}
 }
+
+void function MovementRecorder_SetPlaybackRate( float value )
+{
+	file.adminSetPlaybackRate = value
+}
 #endif
 
 string function slotname( int slot )
@@ -175,6 +195,11 @@ void function FS_MovementRecorder_SetBindings( entity player )
 	player.ClientCommand( "bind_US_standard F12 recorder_toggleContinueLoop" )
 
 	FS_MovementRecorder_CreateInputHintsRUI( false )
+}
+
+void function FS_MovementRecorder_ResetAllBindings( entity player )
+{
+	//todo
 }
 
 void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
@@ -402,10 +427,12 @@ void function FS_MovementRecorder_PlayerInit( entity player )
 	int playerHandle = player.p.handle
 	
 	table<int, array<entity> > init_playerDummyMap 	= clone file._dummyMaps__Template
-	table<int,int> init_playerPlaybackAmounts 		= clone file._playbackAmounts__Template
+	table<int,int> init_playerPlaybackAmounts 		= clone file._playbackAmounts__Template	
+	//table<int,float> init_playerPlaybackDurations	= clone file._playbackDuration__Template
 	
 	file.playerPlaybackAmounts[ playerHandle ] <- init_playerPlaybackAmounts
 	file.playerDummyMaps[ playerHandle ] <- init_playerDummyMap
+	//file.playerPlaybackDurations[ playerHandle ] <- init_playerPlaybackDurations
 	
 	//PrintMovementRecorderTable( file.playerPlaybackAmounts )
 }
@@ -638,6 +665,8 @@ void function StartRecordingAnimation( entity player )
 	}
 	
 	asset playermodel = player.GetModelName() //?
+	
+	//MovementRecorder_SetStartRecordingTime( player, Time() )
 	player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
 	player.p.isRecording = true
 	
@@ -653,9 +682,19 @@ void function StartRecordingAnimation( entity player )
 		}
 	)
 	
-	// Recording animations disappear after 2:30, hard-set limit of 3000 frames.
+	// Recording animations disappear after 2:30, hard-set limit of 3000 frames. ~mkos
 	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
+
+// void function MovementRecorder_SetStartRecordingTime( entity player, float time )
+// {
+	// player.p.recordingStartTime = time
+// }
+
+// float function MovementRecorder_GetStartRecordingTime( entity player )
+// {
+	// return player.p.recordingStartTime
+// }
 
 int function FS_MovementRecorder_GetEmptySlotForPlayer( entity player )
 {
@@ -689,8 +728,12 @@ void function StopRecordingAnimation( entity player )
 	player.p.recordingAnims[ slot ] = player.StopRecordingAnimation()
 	player.p.recordingAnimsCoordinates[ slot ] = animData
 	player.p.recordingAnimsChosenCharacters[ slot ] = player.p.movementRecorderCharacter
-
-	Assert( file.recordingAnims.len() == file.recordingAnimsCoordinates.len() )
+	
+	// float endTime = Time()
+	// float startTime = MovementRecorder_GetStartRecordingTime( player )
+	// float slotDuration = endTime - startTime
+	
+	// MovementRecorder_SetSlotDuration( player, slot, slotDuration )
 
 	player.p.isRecording = false
 	player.Signal( "FinishedRecording" )
@@ -736,7 +779,7 @@ bool function bDoesAnyAnimationExist( entity player )
 	foreach( slot, dummyArray in file._dummyMaps__Template )
 	{
 		if ( player.p.recordingAnims[ slot ] != null )
-			return true	
+			return true
 	}
 	
 	return false
@@ -904,11 +947,14 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 			EndSignal( player, "EndDummyThread", "EndDummyThread_Slot_" + slot.tostring() )
 			EndSignal( svGlobal.levelEnt, "EndDummyThread" )
 
-			OnThreadEnd( function() : ( player, dummy, slot )
-			{
-				if( IsValid( dummy ) )
-					RemoveDummyForPlayer( player, dummy, slot )			
-			})
+			OnThreadEnd
+			( 
+				void function() : ( player, dummy, slot )
+				{
+					if( IsValid( dummy ) )
+						RemoveDummyForPlayer( player, dummy, slot )			
+				}
+			)
 		
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
@@ -918,13 +964,12 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 		dummy.Hide()
 
 		DispatchSpawn( dummy )
-		dummy.SetTitle( r5rDevs.getrandom() )
-		SetDummyProperties(dummy, 2)
+		SetDummyProperties( dummy, 2 )
 		
 		WaitFrame()
 		
 		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
-		// dummy.SetRecordedAnimationPlaybackRate( 1.0 )
+		dummy.SetRecordedAnimationPlaybackRate( file.adminSetPlaybackRate )
 		dummy.Show()
 
 		file.playerDummyMaps[ playerHandle ][ slot ].append(dummy)
@@ -943,7 +988,20 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 				RemoveDummyForPlayer( player, dummy, slot )			
 			})
 			
-			wait GetRecordedAnimationDuration( anim ) //this can be long
+			#if DEVELOPER 
+				printt( "GetRecordedAnimationDuration( anim ):", GetRecordedAnimationDuration( anim ) )
+				//printt( "MovementRecorder_GetSlotDuration( player, slot )", MovementRecorder_GetSlotDuration( player, slot ) )
+				printt( "file.adminSetPlaybackRate:", file.adminSetPlaybackRate )
+				
+				printt( "result with native duration", GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate ) )
+				//printt( "result with scriptduration:", MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate ) )
+			#endif
+			
+			//TODO: Playback rate does not use simple math based on the recording length & playback rate, 
+			//need to determine how long the playback will take based on the anim and rate 
+			//so that the correct wait can be applied. ~mkos
+			wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate ) //this can be long
+			//wait MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate )
 		}()
 
 		if( IsValid( player ) && !player.p.continueLoop || bIsPlayingRandomSlot )
@@ -955,13 +1013,14 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 
 void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
 {	
-	if( !IsValid( dummy ) ) 
+	if( !IsValid( dummy ) )
 		return
 			
 	if( IsValid( player ) && file.playerDummyMaps[ player.p.handle ][ slot ].contains( dummy ) )
 		file.playerDummyMaps[ player.p.handle ][ slot ].removebyvalue( dummy )
-	
-	dummy.Destroy()
+
+	if( dummy.IsEntAlive() ) //only destroy if dummy was still alive, else let damagecode handle ~mkos
+		dummy.Destroy()
 	
 	file.playerPlaybackAmounts[ player.p.handle ][ slot ]--;
 }
@@ -989,7 +1048,7 @@ void function DestroyDummyForSlot( entity player, int slot, int playerHandle = -
 			{
 				continue
 			}
-					
+			
 			slotDummy.Destroy()
 			
 			#if DEVELOPER
@@ -1044,14 +1103,18 @@ int function ReturnShieldAmountForDesiredLevel( int shield )
 
 void function SetDummyProperties( entity dummy, int shield )
 {
+	dummy.SetTitle( r5rDevs.getrandom() )
 	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel( shield ) )
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel( shield ) )
-	dummy.SetMaxHealth( 100 )
-	dummy.SetHealth( 100 )
+	dummy.SetMaxHealth( DUMMY_MAX_HEALTH )
+	dummy.SetHealth( DUMMY_MAX_HEALTH )
 	dummy.SetDamageNotifications( true )
 	dummy.SetTakeDamageType( DAMAGE_YES )
 	dummy.SetCanBeMeleed( true )
 	AddEntityCallback_OnDamaged( dummy, RecordingAnimationDummy_OnDamaged )
+	
+	if( file.bDummyDeathNotifications )
+		dummy.SetDeathNotifications( true )
 
 	dummy.SetForceVisibleInPhaseShift( true )
 }
@@ -1185,6 +1248,30 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 	return true
 }
 
+// void function MovementRecorder_SetSlotDuration( entity player, int slot, float duration )
+// {
+	// if( !IsValid( player ) )
+		// return 
+		
+	// int playerHandle = player.p.handle 
+	
+	// if( playerHandle in file.playerPlaybackDurations )
+		// file.playerPlaybackDurations[ playerHandle ][ slot ] = duration
+// }
+
+// float function MovementRecorder_GetSlotDuration( entity player, int slot )
+// {
+	// int playerHandle = player.p.handle 
+	
+	// if( playerHandle in file.playerPlaybackDurations )
+	// {
+		// if( slot in file.playerPlaybackDurations[ playerHandle ] )
+			// return file.playerPlaybackDurations[ playerHandle ][ slot ]
+	// }
+	
+	// return 0.0
+// }
+
 //////////////////////
 //		  DEV		//
 //////////////////////
@@ -1217,7 +1304,6 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 		printt("\n\n")
 	}
 
-
 	void function PrintNestedTableTyped( int indent, int depth, int maxDepth, table< int, int > tbl )
 	{
 		if ( depth >= maxDepth )
@@ -1232,7 +1318,7 @@ bool function HasSlotAllocation( entity player, int slot, bool hidehud = false )
 			printt( TableIndent( indent + 2 ) + k + " = " + v )
 		}
 		printt( TableIndent( indent ) + "}" )
-	}
+	}	
 #endif //DEVELOPER
 
 

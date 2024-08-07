@@ -1632,6 +1632,20 @@ struct {
 				#endif
 				break
 				
+			case "movement_recorder_playback_rate":
+			
+				if( IsNumeric( param ) )
+				{
+					MovementRecorder_SetPlaybackRate( float( param ) )
+					Message( player, "Playback rate set to: " + param )
+				}
+				else 
+				{
+					Message( player, "Invalid playback rate specified" )
+				}
+				
+				break
+				
 			default:	
 						Message( player, "Usage", "cc #command #param1 #param2 #..." )
 						return true;

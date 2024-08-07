@@ -1,7 +1,7 @@
 // flowstate spawn system														//mkos
 
 global function Flowstate_SpawnSystem_Init
-global function Flowstate_SpawnSystem_InitGamemodeOptions
+global function Flowstate_SpawnSystem_InitGamemodeOptions //gamemode must call
 
 global function SpawnSystem_ReturnAllSpawnLocations
 global LocPair &g_waitingRoomPanelLocation
@@ -117,7 +117,7 @@ global function SpawnSystem_CreateLocPairObject
 			bool bValidatorRunning = false
 			int iValidatorTracker = 1
 			bool bAutoDelInvalid = false
-			int maxIndentNeeded = 93 //auto generated in init. 
+			int maxIndentNeeded = 93 //auto generated on script init. 
 			entity dummyEnt
 			bool autoSimulateRing = false
 			bool bAutoSave = false
@@ -161,7 +161,7 @@ global function SpawnSystem_CreateLocPairObject
 					[" script DEV_RotateInfoPanels( string direction = \"clockwise\" )"] = "Rotate info panels in the event ids are not clearly visible. Reloads panels.",
 					[" script DEV_ReloadInfo()"] = "Manually reload all info panels.",
 					[" script DEV_HighlightAll()"] = "Shows/Removes beams of light on all spawns in the PosArray",
-					[" script DEV_Highlight( int index, bool persistent = false )"] = "Highlight a single spawn by spawn index. Called automatically on spawn add. If persistent is not provided beam destroys ater " + HIGHLIGHT_SPAWN_DELAY + " seconds. Set with DEV_KeepHighlight()",
+					[" script DEV_Highlight( int index, bool persistent = false )"] = "Highlight a single spawn by spawn index. Called automatically on spawn add. If persistent is not provided beam destroys after " + HIGHLIGHT_SPAWN_DELAY + " seconds. Set with DEV_KeepHighlight()",
 					[" script DEV_GetSpawn( int index )"] = "Returns lockpair object for given spawn. Indexed into with .origin and .angles such as script printt( DEV_GetSpawn(0).origin )",
 					[" script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize.",
 					["..........."] = "",
@@ -227,6 +227,8 @@ void function AddCallback_FlowstateSpawnsSettings( void functionref() callbackFu
 
 void function Flowstate_SpawnSystem_InitGamemodeOptions()
 {
+	mAssert( !settings.bOptionsAreSet, "Flowstate_SpawnSystem_InitGamemodeOptions() was called more than once." )
+	
 	bool use_sets 				= GetCurrentPlaylistVarBool( "spawnpaks_use_sets", false )
 	bool use_random 			= GetCurrentPlaylistVarBool( "spawnpaks_use_random", false )
 	bool prefer 				= GetCurrentPlaylistVarBool( "spawnpaks_prefer", false )
@@ -238,7 +240,7 @@ void function Flowstate_SpawnSystem_InitGamemodeOptions()
 	settings.spawnOptions[ "use_sets" ] 			<- use_sets
 	settings.spawnOptions[ "use_random" ] 			<- use_random
 	settings.spawnOptions[ "prefer" ] 				<- prefer
-	settings.spawnOptions[ "use_custom_rpak" ] 		<- SpawnSystem_SetCustomPak( customRpak )
+	settings.spawnOptions[ "use_custom_rpak" ] 		<- SpawnSystem_SetCustomPak( customRpak ) //returns 0 on failed rpak
 	settings.spawnOptions[ "use_custom_playlist" ] 	<- use_custom_playlist
 	
 	if( use_custom_playlist && !empty( customSpawnPlaylist ) )
@@ -975,23 +977,25 @@ bool function __bCheckReload()
 
 void function __ReloadWaitMsg()
 {
-	printt( " PANELS ARE STILL RELOADING \n\n please wait and try again... " )
-	printm( " PANELS ARE STILL RELOADING \n\n please wait and try again... " )
+	string reloadMsg = " PANELS ARE STILL RELOADING \n\n please wait and try again... "
+	
+	printt( reloadMsg )
+	printm( reloadMsg )
 	
 	foreach( player in GetPlayerArray() )
-	{
-		LocalEventMsg( player, "", " PANELS ARE STILL RELOADING \n\n please wait and try again... " )
-	}
+		LocalEventMsg( player, "", reloadMsg )
 }
 
 void function __ReloadingMsg()
 {
-	printt( " RELOADING PANELS " )
-	printm( " RELOADING PANELS " )
+	string reloading = " RELOADING PANELS "
+	
+	printt( reloading )
+	printm( reloading )
 	
 	foreach( player in GetPlayerArray() )
 	{
-		LocalEventMsg( player, "", " RELOADING PANELS " )
+		LocalEventMsg( player, "", reloading )
 	}
 }
 
@@ -2022,8 +2026,6 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 		
 		if( expect bool( spawnResults.validspawn ) == false && expect int( spawnResults.spawnIndex ) == index )
 		{
-			string consoleMsg = "Issue with spawn [ " + index + " ].\n Spawn was positioned badly and should be removed or modified."
-			
 			if( remove )
 			{
 				string delmsg = format("Spawn [ %d ] was positioned badly and removed.", index )
@@ -2037,6 +2039,8 @@ void function __SpawnValidate_internal( int index = -1, bool remove = false, ent
 			}
 			else
 			{
+				string consoleMsg = "Issue with spawn [ " + index + " ].\n Spawn was positioned badly and should be removed or modified."
+				
 				DEV_MessageAll( "WARNING", consoleMsg )
 				printt( consoleMsg )
 				printm( consoleMsg )

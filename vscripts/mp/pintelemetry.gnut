@@ -1216,10 +1216,7 @@ void function PIN_Init()
 		return
 	
 	bool bRunTracker = Flowstate_IsTrackerSupportedMode()
-	
-	if( !bRunTracker )
-		file.LogOn = false
-	
+
 	RegisterSignal( "ReloadCheckComplete" )
 	RegisterSignal( "BatchFetchComplete" )
 	RegisterSignal( "SyncDataFullyLoaded" )
@@ -1232,6 +1229,9 @@ void function PIN_Init()
 	
 	SetServerReloadReadyState( ReloadState.BUSY )
 	
+	if( !bRunTracker )
+		file.LogOn = false
+	
 	if( file.bChatbotEnabled && file.bBotAllowed )
 	{
 		INIT_IntervalMessages()
@@ -1239,7 +1239,7 @@ void function PIN_Init()
 		AddCallback_GameStateEnter( eGameState.Playing, __executeEventStart_messages )
 	}
 	
-	if( file.LogOn && bRunTracker )
+	if( file.LogOn )
 	{
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
@@ -1258,7 +1258,7 @@ void function PIN_Init()
 			AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
 		}
 		
-		if ( file.LogOn && bRunTracker )
+		if ( file.LogOn )
 		{
 			string message = format("R5R.DEV metrics initialized at:  %d ", GetUnixTimestamp())
 			printt(message)
@@ -4616,6 +4616,7 @@ void function PIN_AddPlayer( entity player )
 {	
 	if( !IsValid( player ) ) return 
 	
+	//HACK! Todo: Remove 
 	if( file.bChatbotEnabled && player.GetPlayerName() == "["+ file.sBotName +"]")
 	{
 		file.entityBotEnt = player 
@@ -4641,10 +4642,8 @@ void function PIN_AddPlayer( entity player )
 	string UID = player.GetPlatformUID()
 	InitializePlayerMetricsStructForPlayer( player )
 	
-	if( !file.global_stats )
-	{
+	if( !file.global_stats || !bLog() )
 		player.p.stats_done_loading = true
-	}
 	
 	if( GetPlayerLeftFlag( player ) )
 	{	
@@ -4685,10 +4684,9 @@ void function PIN_AddPlayer( entity player )
 	if( file.LogOn && isLogging__internal() && IsValid( player ) )
 	{	
 		string p_ea_name = player.GetPlayerName();
-		Message(player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10)	
-
+		Message( player, " ", "\n\n\n\n\n\n\n\n\n\n Match stats tracking and \n Input Based Match Making by: \n https://r5r.dev (mkos) \n\n\n\n\n\n\n\n\n " , 10 )
 		
-			try 
+			try
 			{
 				float timeRemaining;
 
@@ -4726,7 +4724,7 @@ void function PIN_AddPlayer( entity player )
 					   ),
 					file.LogE
 					);
-				} 
+				}
 
 			} 
 			catch (error) 
@@ -4842,8 +4840,8 @@ void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
 
 void function Tracker_EndFight( entity victim, entity attacker, var damageInfo )
 {
-	if( !Flowstate_IsTrackerSupportedMode() )
-		return 
+	if( !Flowstate_IsTrackerSupportedMode() || !file.LogOn || !isLogging__internal() )
+		return
 		
 	thread __EndFight( victim, attacker, damageInfo, Time() )
 }

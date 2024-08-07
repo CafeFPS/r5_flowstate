@@ -787,7 +787,7 @@ global struct ServerPlayerStruct
 	bool challengenotify 		= false //need to make a notify system
 	entity entLastChallenger
 	float last_input_time
-	float IBMM_grace_period 	= -1 // <=0  is disabled
+	float IBMM_grace_period 	= -1 // <= 0 is disabled
 	float messagetime			= 0
 	int movevalue 				= 0
 	int p_damage 				= 3 //for lgduel default dmg/heal ; BAD var name
@@ -807,6 +807,7 @@ global struct ServerPlayerStruct
 	bool waitingFor1v1			= false
 	bool bIsChatbot 			= false
 	bool ClientCommandsEnabled 	= true
+	//float recordingStartTime	= 0.0
 	
 	//framework for confirm ( this is bad and experimental )
 	bool bInRetry 				= false

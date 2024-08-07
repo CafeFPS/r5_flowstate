@@ -170,13 +170,14 @@ struct
 	                    
 		table<entity, SpeedBoostStatusEffectIndexes> playerStatusEffects
 		table<entity, bool> 						hasDroneExitSpeedBoost
-       
+		int crypto_drone_upgraded_health
 	#endif
 
 	float neurolinkRange
 	float droneMaxZ = 100000
 	int   droneHealth
 	bool  ForceExitDroneView = false
+	bool crypto_tactical_auto_reload_weapons
 
 	array<void functionref()> onEnterDroneViewCallbacks
 	array<void functionref()> onLeaveDroneViewCallbacks
@@ -207,7 +208,7 @@ void function MpAbilityCryptoDrone_Init()
 	#if SERVER
 		RegisterSignal( "ExitCameraView" )
 		RegisterSignal( "FinishDroneRecall" )
-		AddDamageCallback( "player", OnPlayerTookDamage )
+		//AddDamageCallback( "player", OnPlayerTookDamage ) //added when entering drone view ~mkos
 		AddClientCommandCallbackNew( "ShouldExitDrone", ClientCommand_ShouldExitDrone )
 		file.neurolinkRegisteredPropScriptsArrayID = CreateScriptManagedEntArray()
 		file.empDamageArrayID = CreateScriptManagedEntArray()
@@ -259,6 +260,12 @@ void function MpAbilityCryptoDrone_Init()
 
 	RegisterSignal( "RemoveStowedDrone" )
 	#endif
+	
+	#if SERVER 
+	file.crypto_drone_upgraded_health = GetCurrentPlaylistVarInt( "crypto_drone_upgraded_health", 100 )
+	#endif
+	
+	file.crypto_tactical_auto_reload_weapons = GetCurrentPlaylistVarBool( "crypto_tactical_auto_reload_weapons", true )
 }
 
 #if SERVER
@@ -684,7 +691,7 @@ void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
 	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGameState.Playing )
 		return
 		
-	player.Signal( "ExitCameraView" )
+	Drone_ExitView( player )
 }
 
 void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
@@ -713,7 +720,7 @@ void function OnPlayerTookDamage( entity damagedEnt, var damageInfo )
 	}
 
 	if( PlayerHasPassive( damagedEnt, ePassives.PAS_CRYPTO ) )
-		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening
+		Remote_CallFunction_NonReplay( damagedEnt, "ServerCallback_ShouldExitDrone" ) //possibly get a clientsided ondamaged shared callback happening ~mkos
 }
 #endif // SERVER
 
@@ -897,6 +904,10 @@ void function CryptoDrone_WeaponInputThink( entity player, entity weapon )
 void function Drone_ExitView( entity player )
 {
 	player.Signal( "ExitCameraView" )
+	RemoveEntityCallback_OnDamaged( player, OnPlayerTookDamage )
+	#if DEVELOPER 
+		//printt( "Crypto RemoveEntityCallback_OnDamaged:", player )
+	#endif 
 }
 
 //Prototyping the hacking / drone gameplay. The current plan is to clean this up and have the vehicle use the normal use system.
@@ -1026,7 +1037,11 @@ void function Drone_TryEMP( entity player )
 	if ( IsValid( ult ) )
 	{
 		int maxClipCount = ult.GetWeaponPrimaryClipCountMax()
-		printt( "\t| Drone TRY emp. Clip count good?", ult.GetWeaponPrimaryClipCount() == maxClipCount, "net bool is false?", player.GetPlayerNetBool( "isDoingEMPSequence" ) )
+		
+		#if DEVELOPER
+			printt( "\t| Drone TRY emp. Clip count good?", ult.GetWeaponPrimaryClipCount() == maxClipCount, "net bool is false?", player.GetPlayerNetBool( "isDoingEMPSequence" ) )	
+		#endif
+		
 		if ( ult.GetWeaponPrimaryClipCount() == maxClipCount && !player.GetPlayerNetBool( "isDoingEMPSequence" ) )
 		{
 			PlayerUsedOffhand( player, ult, true ) //Unfortunately only called on the server if you're in the camera
@@ -1164,9 +1179,9 @@ bool function Crypto_TryDestroyDroneProjectile( entity cameraVehicle, bool useFa
       
 
                     
-int function CryptoDrone_GetUpgradedHealth()
+int function CryptoDrone_GetUpgradedHealth() //not called yet ~mkos
 {
-	return GetCurrentPlaylistVarInt( "crypto_drone_upgraded_health", 100 )
+	return file.crypto_drone_upgraded_health
 }
       
 
@@ -1775,6 +1790,11 @@ void function SwapToCameraView_Thread( entity owner, entity activeCamera )
 	entity currentlyReloadingWeapon = null
 	float reloadEndTime = -1.0
 
+	AddEntityCallback_OnDamaged( owner, OnPlayerTookDamage ) //adding damage callback here.. ~mkos
+	#if DEVELOPER 
+		//printt( "Crypto AddEntityCallback_OnDamaged:", owner )
+	#endif 
+
 	while( true )
 	{
                                  
@@ -2240,6 +2260,8 @@ void function Camera_OnBeginView_Think( entity player, int statusEffect, bool ac
 		cb()
 
 	entity activeCamera
+	
+	float preventInfiniteLoop = Time()
 	while ( !IsValid( activeCamera ) )
 	{
 		array<entity> cameras = GetEntArrayByScriptName( CRYPTO_DRONE_SCRIPTNAME )
@@ -2252,6 +2274,12 @@ void function Camera_OnBeginView_Think( entity player, int statusEffect, bool ac
 			}
 		}
 		WaitFrame()
+		
+		if ( Time() - preventInfiniteLoop > 3 ) //for if all entities get destroyed at a bad time (for say at the execution of this loop) ~mkos
+		{
+			Warning("infinite loop prevented in " + FUNC_NAME() + "()  -- file: " + FILE_NAME() )
+			return
+		}
 	}
 
 	Signal( activeCamera, "CameraViewStart" )
@@ -2822,7 +2850,11 @@ void function NeurolinkThink( entity camera, bool attachFx = true )
 
 			//otherwise, start the scan on this newly-found nearby entity
 			SonarStart( nearbyEnt, nearbyEnt.GetOrigin(), file.cameraSonarTeamID[cameraOwner], cameraOwner )
-			printt("should start sonar" )
+			
+			#if DEVELOPER
+				printt("should start sonar" )
+			#endif
+			
 			if ( nearbyEnt.IsPlayer() || nearbyEnt.IsNPC() )
 			{
 				// StatsHook_DroneEnemiesScanned( nearbyEnt, cameraOwner )
@@ -3380,7 +3412,7 @@ bool function IsPlayerInCryptoDroneCameraView( entity player )
 
 bool function AutoReloadWhileInCryptoDroneCameraView()
 {
-	return GetCurrentPlaylistVarBool( "crypto_tactical_auto_reload_weapons", true )
+	return file.crypto_tactical_auto_reload_weapons
 }
 
 float function GetNeurolinkRange( entity player )
