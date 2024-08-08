@@ -1090,6 +1090,7 @@ global struct ServerPlayerStruct
 
 	int    respawnCount = 0
 	int  holsterAndDisableWeaponCount
+	int assignedMasterChief = -1
 }
 
 global struct ChallengeScore

@@ -1,5 +1,4 @@
-//todo.Cafe
-//check for 120 viewmindot in nearbyEntities
+// Ported by @CafeFPS
 
 global function MpAbilityCryptoDrone_Init
 

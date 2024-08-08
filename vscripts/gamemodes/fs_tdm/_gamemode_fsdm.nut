@@ -1323,9 +1323,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			    //KillStreakAnnouncer(attacker, false)
 	    			}
 
-					// if( flowstateSettings.is_halo_gamemode && !attacker.p.playerHasEnergySword )
-						// attacker.p.consecutiveKills++
-					
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
 					
@@ -1345,58 +1342,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	
 					if( flowstateSettings.is_halo_gamemode )
 						HisWattsons_HaloModFFA_KillStreakAnnounce( attacker )
-
-					// if( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 3 && !attacker.p.playerHasEnergySword )
-					// {
-						// entity activeWeapon = attacker.GetActiveWeapon( eActiveInventorySlot.mainHand )
-						// if( IsValid( activeWeapon ) )
-						// {
-							// entity weapon0 = attacker.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-
-							// array<string> Weapons = [
-								// "mp_weapon_haloshotgun",
-								// "mp_weapon_halomagnum"
-							// ]
-
-							// if( IsValid( weapon0 ) )
-								// attacker.p.weaponThatEnergySwordReplaced = weapon0.GetWeaponClassName()
-							// else
-								// attacker.p.weaponThatEnergySwordReplaced = Weapons.getrandom()
-
-							// if ( IsValid( weapon0 ) )
-								// attacker.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-							
-							// entity newWeapon1 = attacker.GiveWeapon( "mp_weapon_energysword", WEAPON_INVENTORY_SLOT_PRIMARY_0, [], false )
-							
-							// attacker.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-							// attacker.p.playerHasEnergySword = true
-
-							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-						// }
-					// } else if( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 3 && attacker.p.playerHasEnergySword )
-					// {
-							// entity newWeapon1
-							// try{
-							// attacker.TakeWeapon( "mp_weapon_energysword" )
-							// newWeapon1 = attacker.GiveWeapon( attacker.p.weaponThatEnergySwordReplaced, WEAPON_INVENTORY_SLOT_ANY, [], false )
-							// }catch(e420)
-							// {
-								// printt( "debug me mp_weapon_energysword" )
-							// }
-							// int slot
-							// if( IsValid( newWeapon1 ) )
-								// slot = GetSlotForWeapon( attacker, newWeapon1 )
-							// attacker.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
-							// attacker.p.playerHasEnergySword = false
-							// attacker.p.consecutiveKills = 0
-
-							// Remote_CallFunction_NonReplay( attacker, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-					// } else if ( flowstateSettings.is_halo_gamemode && attacker.p.consecutiveKills == 2 && !attacker.p.playerHasEnergySword )
-					// {
-						// Remote_CallFunction_NonReplay( attacker, "DM_HintCatalog", 1, 0)
-					// }
-					
-				
 				}
             }
 	    	thread victimHandleFunc()
@@ -1511,7 +1456,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 
-	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode )
 	{
 		CharSelect(player)
 		player.SetPlayerNetBool( "hasLockedInCharacter", true )
@@ -1519,7 +1464,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if( !IsAlive(player) )
     {
-		if( flowstateSettings.RandomCharacterOnSpawn && !flowstateSettings.ForceCharacter )//&& !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+		if( flowstateSettings.RandomCharacterOnSpawn && !flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 		{
 			GivePlayerRandomCharacter(player)
 			player.SetPlayerNetBool( "hasLockedInCharacter", true)
@@ -1602,7 +1547,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 			}()
 		}
-		
+
 		try{
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
@@ -1762,7 +1707,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		//maki script
 		thread LoadCustomSkill(player)	
 		//maki script
-	}
+	} else
+		HaloMod_HandlePlayerModel( player )
 
 	{
 		player.ClearFirstDeployForAllWeapons()
@@ -1793,6 +1739,11 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if( Flowstate_IsFastInstaGib() )
 		FS_Instagib_PlayerSpawn( player )
+		
+	#if DEVELOPER
+	printt( "End of _HandleRespawn function" )//Cafe debugging halo mod stuff
+	
+	#endif
 }
 
 void function SetPlayerCustomModel( entity player, int index )
@@ -2750,7 +2701,7 @@ void function KillStreakAnnouncer(entity player, bool died) {
     }
 }
 
-//By @CafeFPS (CafeFPS)//
+
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
 	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
@@ -2763,7 +2714,7 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	}
 }
 
-//By @CafeFPS (CafeFPS)//
+
 void function GiveGungameWeapon(entity player) 
 {
 	// int WeaponIndex = player.GetPlayerNetInt( "kills" )
@@ -2839,7 +2790,7 @@ void function GiveGungameWeapon(entity player)
 // ██    ██ ██   ██ ██  ██  ██ ██          ██      ██    ██ ██    ██ ██
 //  ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
 
-//By @CafeFPS (CafeFPS)//
+
 void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
@@ -2853,6 +2804,9 @@ void function RunTDM()
 			if(IsValid(door))
 				door.Destroy()
 	}
+
+	if( file.locationSettings.len() > 0 && !FlowState_LockPOI() )
+		file.locationSettings.randomize()
 
     while(true)
 	{
@@ -3105,9 +3059,9 @@ void function SimpleChampionUI()
 				player.Server_TurnOffhandWeaponsDisabledOn()
 				Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", false)
 				ClearInvincible(player)
+
 				thread function () : ( player )
 				{
-					
 					if( IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ) )
 						player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
@@ -3250,6 +3204,7 @@ void function SimpleChampionUI()
 		}
 		player.p.playerDamageDealt = 0.0
 		player.SetPlayerNetInt( "damage", 0 )
+		player.p.assignedMasterChief = -1
 		if ( FlowState_ResetKillsEachRound() || is1v1EnabledAndAllowed() )
 		{
 			player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
@@ -4083,7 +4038,7 @@ void function ResetMapVotes()
 //       ██ ██   ██ ██ ██   ████  ██████  ██
 // Purpose: Create The RingBoundary
 entity function CreateRingBoundary(LocationSettings location)
-//By @CafeFPS (CafeFPS)//
+
 {
     array<LocPair> spawns = location.spawns
 
@@ -4179,7 +4134,7 @@ entity function CreateRingBoundary(LocationSettings location)
 }
 
 void function AudioThread(entity circle, entity player, float radius)
-//By @CafeFPS (CafeFPS)//
+
 {
 	EndSignal(player, "OnDestroy")
 	entity audio
@@ -4212,7 +4167,7 @@ void function AudioThread(entity circle, entity player, float radius)
 }
 
 void function RingDamage( entity circle, float currentRadius)
-//By @CafeFPS (CafeFPS)//
+
 {
 	WaitFrame()
 	const float DAMAGE_CHECK_STEP_TIME = 1.5
@@ -4272,24 +4227,12 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 // ██      ██    ██      ██ ██  ██  ██ ██         ██    ██ ██           ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
-void function CharSelect( entity player)
-//By @CafeFPS (CafeFPS)//
+void function HaloMod_HandlePlayerModel( entity player )
 {
-	//Give master chief skin and assign a color
-	if( flowstateSettings.is_halo_gamemode )
+	int assignedColor
+	
+	if( player.p.assignedMasterChief == -1 )
 	{
-		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
-
-		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-		player.SetPlayerSettingsWithMods( characterSetFile, [] )
-
-		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-		TakeAllPassives(player)
-		
-		int assignedColor
-		
 		if( file.haloModAvailableColors.len() > 0 )
 			assignedColor = file.haloModAvailableColors.getrandom()
 		else
@@ -4301,62 +4244,66 @@ void function CharSelect( entity player)
 		printt( "new master chief assigned, color:", assignedColor, player )
 
 		file.haloModAvailableColors.fastremovebyvalue( assignedColor )
+
+		player.p.assignedMasterChief = assignedColor
+	} else
+		assignedColor = player.p.assignedMasterChief
+
+	switch( assignedColor )
+	{
+		case 0:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_yellow.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_yellow.rmdl" )
+		break
 		
-		switch( assignedColor )
-		{
-			case 0:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_yellow.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_yellow.rmdl" )
-			break
-			
-			case 1:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_white.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
-			break
-			
-			case 2:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_red.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_red.rmdl" )
-			break
-			
-			case 3:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
-			break
-			
-			case 4:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
-			break
-			
-			case 5:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_orange.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_orange.rmdl" )
-			break
-			
-			case 6:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_blue.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_blue.rmdl" )
-			break
+		case 1:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_white.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_white.rmdl" )
+		break
+		
+		case 2:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_red.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_red.rmdl" )
+		break
+		
+		case 3:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_purple.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_purple.rmdl" )
+		break
+		
+		case 4:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_pink.rmdl" )
+		break
+		
+		case 5:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_orange.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_orange.rmdl" )
+		break
+		
+		case 6:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_blue.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief_blue.rmdl" )
+		break
 
-			case 7:
-			player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
-			player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
-			break
-		}
-
-		player.TakeOffhandWeapon(OFFHAND_MELEE)
-		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		return
+		case 7:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_master_chief.rmdl" )
+		break
 	}
+}
 
+void function CharSelect( entity player)
+
+{
+	DumpStack()
 	//Char select.
 	file.characters = clone GetAllCharacters()
 	if(FlowState_ForceAdminCharacter() && IsAdmin(player))
 	{
 		ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
 		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-	} else
+	} else if( !flowstateSettings.is_halo_gamemode )
 	{
 		int chosen = FlowState_ChosenCharacter()
 		
@@ -4380,9 +4327,20 @@ void function CharSelect( entity player)
 	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	
-	// player.SetBodyModelOverride( $"mdl/Humans/pilots/w_petergriffing.rmdl" )
-	// player.SetArmsModelOverride( $"mdl/Humans/pilots/ptpov_petergriffing.rmdl" )
+
+	//Give master chief skin and assign a color
+	if( flowstateSettings.is_halo_gamemode )
+	{
+		CharacterSelect_AssignCharacter( ToEHI( player ), GetAllCharacters()[5] )
+
+		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+		player.SetPlayerSettingsWithMods( characterSetFile, [] )
+
+		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		TakeAllPassives(player)
+	}
 }
 
 void function AssignCharacter( entity player, int index )
@@ -4403,7 +4361,7 @@ void function AssignCharacter( entity player, int index )
 // ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
-//By @CafeFPS (CafeFPS)//
+
 {
 	if( !IsValid( player )) return
 	if( !player.IsPlayer() ) return //mkos ( crash fix )
@@ -4514,7 +4472,7 @@ int function GetBestPlayerScore()
     return bestScore
 }
 
-//By @CafeFPS (CafeFPS)//
+
 string function GetBestPlayerName()
 {
 	entity player = GetBestPlayer()
@@ -4680,7 +4638,7 @@ array<PlayerInfo> spectators = []
 }
 
 string function LatencyBoard()
-//By @CafeFPS (CafeFPS)//
+
 {
 array<PlayerInfo> playersInfo = []
         foreach(player in GetPlayerArray())
