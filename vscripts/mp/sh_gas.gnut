@@ -130,7 +130,7 @@ void function GasGear_OnPassiveChanged( entity player, int passive, bool didHave
 		file.gasProtectTriggers[ player ][ 0 ].Destroy() // only need to destroy one since DestroyOnDeath will handle the rest
 	}
 
-	if ( !nowHas || !GetCurrentPlaylistVarBool( "caustic_teammate_protection", true ) )
+	if ( !nowHas || !GetCurrentPlaylistVarBool( "caustic_teammate_protection", false ) )
 		return
 
 	entity trigger = CreateEntity( "trigger_cylinder" )
