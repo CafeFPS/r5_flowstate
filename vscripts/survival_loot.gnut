@@ -58,7 +58,11 @@ global function ShouldForceUseSafeSpotForDeathBox_RemovePlayer
 global function AddCallback_LootPhysicsParented
 global function RemoveCallback_LootPhysicsParented
 
-const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
+//added 8/8/2024 ~mkos
+global function AddCallback_OnPlayerWeaponAttachmentChanged
+global function RemoveCallback_OnPlayerWeaponAttachmentChanged 
+
+const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this //wtf lmao ~mkos
 
 global const LOOT_COLLISION_GROUP = 1
 global const int LOOT_TRACE = TRACE_MASK_PLAYERSOLID | TRACE_MASK_OPAQUE
@@ -151,6 +155,9 @@ struct {
 	table< string, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootSpawnParented
 
 	array<entity> playersThatShouldForceUseSafeSpotForDeathBox
+	
+	array<void functionref( entity, entity, string, string )> Callbacks_OnPlayerWeaponAttachmentChanged
+	
 } file
 
 struct 
@@ -241,7 +248,7 @@ void function SurvivalLoot_Settings_Init()
 	settings.lsm_mod1				= GetCurrentPlaylistVarBool( "lsm_mod1", false ) 
 	settings.lsm_mod9				= GetCurrentPlaylistVarBool( "lsm_mod9", false )
 	settings.flowstate_evo_shields	= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
-	settings.survival_infinite_ammo= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
+	settings.survival_infinite_ammo	= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
 }
 
 void function LoadLootZonesForMap()
@@ -1433,33 +1440,35 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 	entity weapon0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	string weapon0ClassName = IsValid( weapon0 ) ? GetWeaponClassName( weapon0 ) : ""
 	int weapon0Ammo =  ( IsValid( weapon0 ) && weapon0.UsesClipsForAmmo() ) ? weapon0.GetWeaponPrimaryClipCount() : 0
+	bool bWeapon0Valid = IsValid( weapon0 )
 	array<string> ornull weapon0Mods = IsValid( weapon0 ) ? weapon0.GetMods() : null
 
 	entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	string weapon1ClassName =  IsValid( weapon1 ) ? GetWeaponClassName( weapon1 ) : ""
 	int weapon1Ammo =  ( IsValid( weapon1 ) && weapon1.UsesClipsForAmmo() ) ? weapon1.GetWeaponPrimaryClipCount() : 0
+	bool bWeapon1Valid = IsValid( weapon1 )
 	array<string> ornull weapon1Mods = IsValid( weapon1 ) ? weapon1.GetMods() : null
 
 	ItemFlavor ornull weaponSkin0 = null
-	if ( weapon0.e.skinItemFlavorGUID != -1 )
+	if ( bWeapon0Valid && weapon0.e.skinItemFlavorGUID != -1 )
 	{
 		weaponSkin0 = GetItemFlavorByGUID( weapon0.e.skinItemFlavorGUID )
 	}
 
 	ItemFlavor ornull  weaponCharm0 = null
-	if ( weapon0.e.charmItemFlavorGUID != -1 )
+	if ( bWeapon0Valid && weapon0.e.charmItemFlavorGUID != -1 )
 	{
 		weaponCharm0 = GetItemFlavorByGUID( weapon0.e.charmItemFlavorGUID )
 	}
 
 	ItemFlavor ornull weaponSkin1 = null
-	if ( weapon1.e.skinItemFlavorGUID != -1 )
+	if ( bWeapon1Valid && weapon1.e.skinItemFlavorGUID != -1 )
 	{
 		weaponSkin1 = GetItemFlavorByGUID( weapon1.e.skinItemFlavorGUID )
 	}
 
 	ItemFlavor ornull  weaponCharm1 = null
-	if ( weapon1.e.charmItemFlavorGUID != -1 )
+	if ( bWeapon1Valid && weapon1.e.charmItemFlavorGUID != -1 )
 	{
 		weaponCharm1 = GetItemFlavorByGUID( weapon1.e.charmItemFlavorGUID )
 	}
@@ -1960,9 +1969,25 @@ void function EquipAttachments_Internal( entity player, entity weapon, string mo
 
 	if ( !( player in file.hasEquippedAttachmentEver ) )
 		file.hasEquippedAttachmentEver[ player ] <- true
+	
+	foreach ( callbackFunc in file.Callbacks_OnPlayerWeaponAttachmentChanged )
+		callbackFunc( player, weapon, modToAdd, modToRemove )
+}
 
-	// foreach ( callbackFunc in file.Callbacks_OnPlayerWeaponAttachmentChanged )
-		// thread callbackFunc( player, weapon, modToAdd, modToRemove )
+void function AddCallback_OnPlayerWeaponAttachmentChanged( void functionref( entity, entity, string, string ) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerWeaponAttachmentChanged.contains( callbackFunc ), "Tried to add callbackFunc " + string( callbackFunc ) "() but it already exists in file.Callbacks_OnPlayerWeaponAttachmentChanged" )
+	
+	if( file.Callbacks_OnPlayerWeaponAttachmentChanged.contains( callbackFunc ) )
+		return 
+		
+	file.Callbacks_OnPlayerWeaponAttachmentChanged.append( callbackFunc )
+}
+
+void function RemoveCallback_OnPlayerWeaponAttachmentChanged( void functionref( entity, entity, string, string ) callbackFunc )
+{
+	if( file.Callbacks_OnPlayerWeaponAttachmentChanged.contains( callbackFunc ) )
+		file.Callbacks_OnPlayerWeaponAttachmentChanged.fastremovebyvalue( callbackFunc ) //hopfully order doesn't matter ~mkos
 }
 
 void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )

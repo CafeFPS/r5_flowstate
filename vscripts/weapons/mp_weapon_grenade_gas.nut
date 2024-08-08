@@ -45,7 +45,7 @@ void function OnProjectileCollision_weapon_grenade_gas( entity projectile, vecto
 	entity player = projectile.GetOwner()
 	if ( hitEnt == player )
 		return
-
+		
 	if ( projectile.GrenadeHasIgnited() )
 		return
 

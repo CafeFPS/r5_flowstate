@@ -592,14 +592,15 @@ void function OpenMOTD()
 		return
 		
 	string motd = ""
+	string motdLocalized = Localize("#FS_PLAYLIST_MOTD")
 	
 	if ( file.motdText != "" )
 	{ 
 		motd = file.motdText
 	} 
-	else if( Localize("#FS_PLAYLIST_MOTD") != "" )
+	else if( motdLocalized != "" && motdLocalized != "#FS_PLAYLIST_MOTD" )
 	{
-		motd = Localize("#FS_PLAYLIST_MOTD")
+		motd = motdLocalized
 	}
 	
 	OpenServerMOTD( motd )

@@ -62,6 +62,7 @@ global function CodeCallback_OnInventoryChanged
 global function CodeCallback_OnEntityChangedTeam
 
 global function AddEntityCallback_OnDamaged
+global function EntityCallback_Exists
 global function RemoveEntityCallback_OnDamaged
 global function AddEntityCallback_OnPostDamaged
 global function RemoveEntityCallback_OnPostDamaged
@@ -967,10 +968,20 @@ void function RemoveTitanCallback_OnHealthSegmentLost( entity ent, void function
 
 void function AddEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
 {
-	Assert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+	#if DEVELOPER
+		mAssert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
+	#endif
 
 	ent.SetDamageNotifications( true )
 	ent.e.entDamageCallbacks.append( callbackFunc )
+}
+
+bool function EntityCallback_Exists( entity ent, void functionref( entity, var ) callbackFunc )
+{
+	if ( ent.e.entDamageCallbacks.contains( callbackFunc ) )
+		return true
+		
+	return false
 }
 
 void function RemoveEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )

@@ -1,5 +1,6 @@
 // Made by @CafeFPS
 // mkos - multiplayer compatibility overhaul, code improvements
+// Todo: QOL Update-- Allow each slot to have a set playback rate per player, with a ui slider/input field to modify per-slot. 0 for inf or frozen. ~mkos
 
 #if SERVER
 	global function ClientCommand_DestroyDummys
@@ -21,7 +22,7 @@ struct RecordingAnimation
 }
 
 const int MAX_SLOT = 5
-const int MAX_NPC_BUDGET = 120
+const int MAX_NPC_BUDGET = 120 //dirty cap
 const int DUMMY_MAX_HEALTH = 100
 
 struct
@@ -39,6 +40,8 @@ struct
 		float helmet_lv4 = 0.65
 		float adminSetPlaybackRate = 1.0
 		bool bDummyDeathNotifications = true
+		bool bAutoRefilAmmoOnHit
+		float randomPlaybackDelay = 0.2
 		
 		table<int, array<entity> > _dummyMaps__Template = {
 			[ 0 ] = [ null ],
@@ -104,6 +107,8 @@ void function Sh_FS_MovementRecorder_Init()
 		file.playbackLimit 				= GetCurrentPlaylistVarInt( "flowstate_limit_playback_per_slot_amount", -1 )
 		file.helmet_lv4 				= GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )
 		file.bDummyDeathNotifications 	= GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )
+		file.bAutoRefilAmmoOnHit		= GetCurrentPlaylistVarBool( "auto_refill_ammo_on_hit", false )
+		file.randomPlaybackDelay		= GetCurrentPlaylistVarFloat( "delay_between_random_playback", 0.2 )
 		
 		if( !FlowState_AdminTgive() )
 			INIT_WeaponsMenu()
@@ -821,7 +826,6 @@ void function PlayRandomAnimation( entity player )
 		if( !( playerHandle in file.playerDummyMaps ) )
 			return 
 			
-			
 		array<int> randomSlots = []
 	
 		for( int i = 0; i < file._dummyMaps__Template.len(); i++ )
@@ -837,7 +841,7 @@ void function PlayRandomAnimation( entity player )
 			
 			return
 		}
-			
+		
 		slot = randomSlots.getrandom()
 		var anim = player.p.recordingAnims[slot]
 		
@@ -849,12 +853,15 @@ void function PlayRandomAnimation( entity player )
 			
 		PlayAnimInSlot( player, slot, false, false, true )
 		
-		wait GetRecordedAnimationDuration( anim ) + 0.1
+		//No need to wait, PlayAnimInSlot() will wait this thread as well. 
+		//MovementRecorder_WaitForAnimToFinish( anim ) 
+		
+		wait 0.1
 		
 		if( !IsValid( player ) || !player.p.continueLoop )
 			return
 			
-		wait 0.2
+		wait file.randomPlaybackDelay
 	}
 }
 
@@ -988,19 +995,8 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 				RemoveDummyForPlayer( player, dummy, slot )			
 			})
 			
-			#if DEVELOPER 
-				printt( "GetRecordedAnimationDuration( anim ):", GetRecordedAnimationDuration( anim ) )
-				//printt( "MovementRecorder_GetSlotDuration( player, slot )", MovementRecorder_GetSlotDuration( player, slot ) )
-				printt( "file.adminSetPlaybackRate:", file.adminSetPlaybackRate )
-				
-				printt( "result with native duration", GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate ) )
-				//printt( "result with scriptduration:", MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate ) )
-			#endif
-			
-			//TODO: Playback rate does not use simple math based on the recording length & playback rate, 
-			//need to determine how long the playback will take based on the anim and rate 
-			//so that the correct wait can be applied. ~mkos
-			wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate ) //this can be long
+			MovementRecorder_WaitForAnimToFinish( anim ) //this can be long
+			 
 			//wait MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate )
 		}()
 
@@ -1009,6 +1005,12 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 			break
 		}
 	}
+}
+
+void function MovementRecorder_WaitForAnimToFinish( var anim )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate )
 }
 
 void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
@@ -1139,8 +1141,8 @@ void function RecordingAnimationDummy_OnDamaged( entity dummy, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, headshot)
 	}
 
-	// if(!attacker.IsPlayer() ) return
-	// attacker.RefillAllAmmo()
+	if( file.bAutoRefilAmmoOnHit && attacker.IsPlayer() )
+		attacker.RefillAllAmmo()
 }
 
 

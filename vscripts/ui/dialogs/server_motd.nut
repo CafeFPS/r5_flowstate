@@ -19,7 +19,9 @@ struct
 
 void function Init_Server_MOTD( var newMenuArg )
 {
-	printt("INIT Init_Server_MOTD")
+	#if DEVELOPER
+		printt("INIT Init_Server_MOTD")
+	#endif
 	
 	var menu = GetMenu( "SERVER_MOTD" )
 	file.menu = menu

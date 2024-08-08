@@ -524,22 +524,22 @@ string function GetPlayerNameFromHandle( int handle )
 table <string,string> function GetAllStringSettings()
 {
 	return file.Global_R5RDEV_StringSettings
-} 
+}
 
 table <string,float> function GetAllFloatSettings()
 {
 	return file.Global_R5RDEV_FloatSettings
-} 
+}
 
 table <string,int> function GetAllIntSettings()
 {
 	return file.Global_R5RDEV_IntSettings
-} 
+}
 
 table <string,bool> function GetAllBoolSettings()
 {
 	return file.Global_R5RDEV_BoolSettings
-} 
+}
 
 string function Tracker_GetStringSetting( string setting, string none = "" )
 {
@@ -839,7 +839,7 @@ void function ShowPlayerLocalMOTD( entity player )
 
 
 void function Pin_Query_Init()
-{	
+{
 	if( file.restricted_server )
 	{
 		AddCallback_QueryString( "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring(), DummyFunction_ProofOfConcept )
@@ -868,11 +868,11 @@ void function INIT_BATCH_FETCH()
 	array<string> oids
 	string oid_list = "";
 	
-	wait 7 //allow players to load
+	wait 7 //allow players to load //Todo: Get pending connecting clients and finish when == 0
 	//sqprint("Calling init batch")
 	
 	foreach ( player in GetPlayerArray() )
-	{	
+	{
 	
 		bool next_player = false;
 
@@ -1355,7 +1355,7 @@ void function Tracker_SettingsInit()
 
 	file.bUseOnlineMOTD 					= GetCurrentPlaylistVarBool( "use_online_motd", false )
 	file.bMotdEnabled						= GetCurrentPlaylistVarBool( "enable_motd", false )
-	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "" )
+	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "An R5Reloaded Server" )
 }
 
 //initplayer
@@ -4624,10 +4624,11 @@ void function PIN_AddPlayer( entity player )
 		if( IsValid( file.entityBotEnt ) )
 		{
 			player.p.bIsChatbot = true
+			player.p.InDeathRecap = true
 			mkos_Force_Rest( file.entityBotEnt )
 			file.entityBotEnt.p.start_in_rest_setting = true;
 			file.entityBotEnt.SetDamageNotifications( false )
-			file.entityBotEnt.SetDeathNotifications( false )
+			file.entityBotEnt.SetDeathNotifications( false )		
 			thread BotInvis( player )
 			thread MessageIntervalThread()
 		}
@@ -4741,6 +4742,8 @@ void function BotInvis( entity bot )
 	bot.MakeInvisible()
 	wait 2
 	bot.MakeInvisible()
+	bot.NotSolid()
+	SetTeam( bot, 119 )
 }
 
 void function PIN_PlayerLeft( entity player, string reason )
@@ -5281,14 +5284,14 @@ void function PIN_Init()
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
 	
-	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "No message" )
+	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "An R5Reloaded Server" )
 	AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
 }
 
 void function ShowPlayerLocalMOTD( entity player )
 {	
 	thread
-	( 
+	(
 		void function() : ( player )
 		{
 			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )

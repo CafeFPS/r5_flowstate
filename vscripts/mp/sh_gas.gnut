@@ -73,9 +73,9 @@ struct
 	#endif //CLIENT
 
 	#if SERVER
-	table<entity, array<entity> > gasProtectTriggers
-	int gasEmitterEntArrayID
-	bool caustic_teammate_forgiveness
+		table<entity, array<entity> > gasProtectTriggers
+		int gasEmitterEntArrayID
+		bool caustic_teammate_forgiveness
 	#endif
 
 } file
@@ -89,36 +89,36 @@ void function ShGas_Init()
 	PrecacheParticleSystem( GAS_PROTECTION_RING_FX )
 
 	#if SERVER
-	file.gasEmitterEntArrayID = CreateScriptManagedEntArray()
+		file.gasEmitterEntArrayID = CreateScriptManagedEntArray()
 
-	AddDamageCallbackSourceID( eDamageSourceId.damagedef_grenade_gas, GasCloud_RampDamageBasedOnExposureTime )
-	AddDamageCallbackSourceID( eDamageSourceId.damagedef_gas_exposure, GasCloud_HandleGasExposure )
-	AddSpawnCallback( "player", OnEntSpawned )
-	AddSpawnCallback( "npc_soldier", OnEntSpawned )
-	AddSpawnCallback( "npc_spectre", OnEntSpawned )
-	AddSpawnCallback( "npc_stalker", OnEntSpawned )
-	AddSpawnCallback( "npc_prowler", OnEntSpawned )
-	AddSpawnCallback( "npc_drone", OnEntSpawned )
-	AddSpawnCallback( "npc_super_spectre", OnEntSpawned )
-	AddSpawnCallback( "npc_frag_drone", OnEntSpawned )
-	AddSpawnCallback( "npc_dummie", OnEntSpawned )
+		AddDamageCallbackSourceID( eDamageSourceId.damagedef_grenade_gas, GasCloud_RampDamageBasedOnExposureTime )
+		AddDamageCallbackSourceID( eDamageSourceId.damagedef_gas_exposure, GasCloud_HandleGasExposure )
+		AddSpawnCallback( "player", OnEntSpawned )
+		AddSpawnCallback( "npc_soldier", OnEntSpawned )
+		AddSpawnCallback( "npc_spectre", OnEntSpawned )
+		AddSpawnCallback( "npc_stalker", OnEntSpawned )
+		AddSpawnCallback( "npc_prowler", OnEntSpawned )
+		AddSpawnCallback( "npc_drone", OnEntSpawned )
+		AddSpawnCallback( "npc_super_spectre", OnEntSpawned )
+		AddSpawnCallback( "npc_frag_drone", OnEntSpawned )
+		AddSpawnCallback( "npc_dummie", OnEntSpawned )
 
-	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, GasGear_OnPassiveChanged )
-	file.caustic_teammate_forgiveness = GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true )
+		AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, GasGear_OnPassiveChanged )
+		file.caustic_teammate_forgiveness = GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", false )
 	#endif
 
 	#if CLIENT
-	RegisterSignal( "StopPassiveGasProtectionOnHUD" )
+		RegisterSignal( "StopPassiveGasProtectionOnHUD" )
 
-	file.lastDOFLerpTime = Time()
-	RegisterSignal( "GasCloud_StopColorCorrection" )
-	RegisterSignal( "GasCloud_StopDOF" )
-	RegisterSignal( "GasCloud_StopScreenEffect" )
-	file.colorCorrectionGas = ColorCorrection_Register( "materials/correction/gas_cloud.raw_hdr" )
-	StatusEffect_RegisterEnabledCallback( eStatusEffect.gas_cloud, GasCloud_StartVisualEffect )
-	StatusEffect_RegisterDisabledCallback( eStatusEffect.gas_cloud, GasCloud_StopVisualEffect )
-	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, ShowPassiveGasProtectionOnHUD )
-	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_PROTECTION, ShowPassiveGasProtectionOnHUD )
+		file.lastDOFLerpTime = Time()
+		RegisterSignal( "GasCloud_StopColorCorrection" )
+		RegisterSignal( "GasCloud_StopDOF" )
+		RegisterSignal( "GasCloud_StopScreenEffect" )
+		file.colorCorrectionGas = ColorCorrection_Register( "materials/correction/gas_cloud.raw_hdr" )
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.gas_cloud, GasCloud_StartVisualEffect )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.gas_cloud, GasCloud_StopVisualEffect )
+		AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, ShowPassiveGasProtectionOnHUD )
+		AddCallback_OnPassiveChanged( ePassives.PAS_GAS_PROTECTION, ShowPassiveGasProtectionOnHUD )
 	#endif //CLIENT
 }
 
@@ -130,7 +130,7 @@ void function GasGear_OnPassiveChanged( entity player, int passive, bool didHave
 		file.gasProtectTriggers[ player ][ 0 ].Destroy() // only need to destroy one since DestroyOnDeath will handle the rest
 	}
 
-	if ( !nowHas || !GetCurrentPlaylistVarBool( "caustic_teammate_protection", false ) )
+	if ( !nowHas || !GetCurrentPlaylistVarBool( "caustic_teammate_protection", true ) )
 		return
 
 	entity trigger = CreateEntity( "trigger_cylinder" )
@@ -244,8 +244,8 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 		return
 
 	//Gas does not affect titans
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 	if ( !target.IsPlayer() && !target.IsNPC() && target.GetScriptName() != TESLA_TRAP_NAME )
 		return
@@ -254,6 +254,7 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 	if ( target.e.gasLastExpoTime == Time() )
 		return
 
+	int emitterTeam = -1
 	//If the target was not previously touching gas. Note the time at which they entered the gas.
 	bool newGasExposure = false
 	if ( target.e.gasEnterTime == -1 )
@@ -266,8 +267,12 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 			entity inflictor = DamageInfo_GetInflictor( damageInfo )
 			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
 			{
+				emitterTeam = inflictor.GetTeam()
+				
 				if ( StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection ) == 0 )
+				{	
 					StatusEffect_AddTimed( target, eStatusEffect.gas_slow_protection, 1.0, 2.0, 1.0 )
+				}
 			}
 		}
 	}
@@ -278,7 +283,7 @@ void function GasCloud_HandleGasExposure( entity target, var damageInfo )
 	//If the target was not already exposed to gas, start gas exposure update.
 	if ( newGasExposure )
 	{
-		thread GasExposureUpdate( target )
+		thread GasExposureUpdate( target, emitterTeam )
 	}
 }
 
@@ -300,8 +305,8 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 		return
 
 	//Gas does not affect titans
-	if ( target.IsTitan() )
-		return
+	// if ( target.IsTitan() )
+		// return
 
 
 	//If gas exposure has already been handled for this target don't handle it again this frame.
@@ -336,7 +341,7 @@ void function GasCloud_HandleGasExposure_Copy( entity target, var damageInfo )
 	}
 }
 
-void function GasExposureUpdate( entity target )
+void function GasExposureUpdate( entity target, int emitterTeam = -1 )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
 	target.EndSignal( "OnDestroy" )
@@ -344,8 +349,21 @@ void function GasExposureUpdate( entity target )
 
 	table<int, int> statusEffectHandles
 	statusEffectHandles[eStatusEffect.gas_cloud] <- -1
-	statusEffectHandles[eStatusEffect.move_slow] <- -1
-	statusEffectHandles[eStatusEffect.turn_slow] <- -1
+	
+	int targetTeam = target.GetTeam()
+	bool bIsFriendlyTeam = false
+	
+	if( emitterTeam == -1 || !IsFriendlyTeam( targetTeam, emitterTeam ) )
+	{
+		//only setup slots if not on caustic's team ~mkos
+		statusEffectHandles[eStatusEffect.move_slow] <- -1
+		statusEffectHandles[eStatusEffect.turn_slow] <- -1
+	}
+	else 
+	{
+		bIsFriendlyTeam = true
+		statusEffectHandles[ eStatusEffect.gas_slow_protection ] <- -1
+	}
 
 	//Play breathing sounds if player
 	if ( target.IsPlayer() )
@@ -366,7 +384,7 @@ void function GasExposureUpdate( entity target )
 	}
 
 	OnThreadEnd(
-	function() : ( target, statusEffectHandles )
+	function() : ( target, statusEffectHandles, bIsFriendlyTeam )
 	{
 		if ( IsValid( target ) )
 		{
@@ -379,12 +397,20 @@ void function GasExposureUpdate( entity target )
 			
 			if( target.IsPlayer() )
 			{
-				if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
-					StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
-				if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
-					StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
-				//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
-				//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
+				if( !bIsFriendlyTeam ) //these wont exist for friendlies ~mkos
+				{
+					if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
+						StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
+					if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
+						StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
+					//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
+					//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
+				}
+				else 
+				{
+					if ( statusEffectHandles[ eStatusEffect.gas_slow_protection ] != -1 )
+						StatusEffect_Stop( target, statusEffectHandles[ eStatusEffect.gas_slow_protection ] )
+				}
 			}
 		}
 	} )
@@ -417,7 +443,7 @@ void function GasExposureUpdate( entity target )
 			{
 				//Increase Gas Exposure FX
 				float effectScalar = GraphCapped( tInGas, 0.0, GAS_CLOUD_EFFECT_BUILD_TIME, 0.0, 1.0 )
-				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar, bIsFriendlyTeam )
 			}
 			else
 			{
@@ -429,7 +455,7 @@ void function GasExposureUpdate( entity target )
 					wearOffTime = PlayerHasGasProtection( target ) ? wearOffTimeGasGear_Yes : wearOffTimeGasGear_No
 
 				float effectScalar = GraphCapped( tSinceExpo, wearOffTime, 0.0, 0.0, 1.0 )
-				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+				GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar, bIsFriendlyTeam )
 
 				if ( effectScalar == 0.0 )
 					return
@@ -439,23 +465,38 @@ void function GasExposureUpdate( entity target )
 	}
 }
 
-void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEffectHandles, float effectScalar )
+void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEffectHandles, float effectScalar, bool bIsFriendly = false )
 {
-	if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
-	{
-		StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
-		statusEffectHandles[eStatusEffect.gas_cloud] = -1
-	}
-	if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
-	{
-		StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
-		statusEffectHandles[eStatusEffect.move_slow] = -1
-	}
+	//commenting this because it's terrible, more modular approach below ~mkos
+	//also, it would be better to simply extend the current effect rather than reapplying it for certain effects
+
+	// if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
+	// {
+		// StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
+		// statusEffectHandles[eStatusEffect.gas_cloud] = -1
+	// }
+	// if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
+	// {
+		// StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
+		// statusEffectHandles[eStatusEffect.move_slow] = -1
+	// }
+	
+	//this was already commented:
+	
 	//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
 	//{
 	//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
 	//	statusEffectHandles[eStatusEffect.turn_slow] = -1
 	//}
+	
+	foreach( int eEffect, int handle in statusEffectHandles )
+	{
+		if( statusEffectHandles[ eEffect ] != -1 )
+		{
+			StatusEffect_Stop( target, statusEffectHandles[ eEffect ] )
+			statusEffectHandles[ eEffect ] = -1
+		}
+	}
 
 	if ( effectScalar > 0.0 )
 	{
@@ -469,13 +510,15 @@ void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEf
 			{
 				if ( !PlayerHasGasProtection( target ) )
 				{
-					statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
+					if( !bIsFriendly )
+						statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
 					//statusEffectHandles[eStatusEffect.turn_slow] = StatusEffect_AddEndless( target, eStatusEffect.turn_slow, GAS_CLOUD_TURN_SLOW_EFFECT_WEIGHT * effectScalar )
 				}
 			}
 			else
 			{
-				statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
+				if( !bIsFriendly )
+					statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
 				//statusEffectHandles[eStatusEffect.turn_slow] = StatusEffect_AddEndless( target, eStatusEffect.turn_slow, GAS_CLOUD_TURN_SLOW_EFFECT_WEIGHT * effectScalar )
 			}
 		}
@@ -900,18 +943,16 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 			vector dif = ( trace.endPos - center) * trace.fraction
 			radiusOrigin = center + dif
 
-			if ( GAS_CLOUD_DEBUG_DRAW )
-			{
+			#if GAS_CLOUD_DEBUG_DRAW
 				// printt( "DEBUG GAS TRACE \n hitEnt: " + trace.hitEnt + "\n endPos " + trace.endPos + "\n fraction " + trace.fraction )
 				DebugDrawLine( center, trace.endPos, 0, 0, 255, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
 				DebugDrawHemiSphere( radiusOrigin, Vector(0,0,0), 25.0, 20, 210, 255, false, GAS_CLOUD_EXPOSURE_TICK_RATE )
-			}
+			#endif
 
-			if ( GAS_CLOUD_DEBUG_DRAW )
-			{
+			#if GAS_CLOUD_DEBUG_DRAW
 				DebugDrawCircle( radiusOrigin + FX_GAS_SMOKE_OFFSET, <0,0,0>, offset, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE ) //gas emitter
 				//DebugDrawCircle( offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0>, offset * 0.45, 255, 255, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE ) //trace blocker volume?
-			}
+			#endif
 				
 			if ( !fxDestroyed )
 			{
@@ -1093,8 +1134,9 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 		if ( Time() > endTime && onetime || !IsValid( smokescreen.smokeSource ) && onetime )
 		{
 			#if DEVELOPER
-			printt( "2s linger started" )
+				printt( "2s linger started" )
 			#endif
+			
 			endTime = Time() + DIRTY_BOMB_CLOUD_LINGER_TIME
 			onetime = false
 		}

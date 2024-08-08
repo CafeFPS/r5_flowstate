@@ -86,8 +86,11 @@ void function Player1v1Gamestate( entity player, int state )
 		case e1v1State.RESTING:
 		case e1v1State.WAITING:
 		case e1v1State.RECAP:
-		
-			AddEntityCallback_OnDamaged( player, ZeroDamage )
+
+			if( !EntityCallback_Exists( player, ZeroDamage ) )
+				AddEntityCallback_OnDamaged( player, ZeroDamage )
+			else 
+				return
 			
 			//player.SetTakeDamageType( DAMAGE_NO )
 			DeployAndEnableWeapons( player )

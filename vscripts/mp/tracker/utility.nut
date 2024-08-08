@@ -1830,7 +1830,6 @@ void function RunUpdateMsg()
 		SendServerMessage(update_title)
 		
 		wait 3.6
-		
 	}
 }
 

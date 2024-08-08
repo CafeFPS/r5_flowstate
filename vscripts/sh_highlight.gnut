@@ -665,7 +665,7 @@ void function Highlight_Init()
 	HighlightContext_SetADSFade( highlight, false )
 	HighlightContext_SetFarFadeDistance( highlight, 7000.0 )
 	HighlightContext_SetNearFadeDistance( highlight, 256.0 )
-		
+	
 	highlight = RegisterHighlight( "crypto_camera_friendly" )
 	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_CRYPTO_DRONE ) //
 	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_CRYPTO_DRONE ) //

@@ -527,6 +527,9 @@ void function SetHostInvetoryAttachments()
 	}
 	
 	settings.hostSetAttachments = attachments
+	
+	if( settings.bAllowWeaponsMenu )
+		AddCallback_OnPlayerWeaponAttachmentChanged( OnWeaponAttachmentChanged )
 }
 
 void function INIT_PlaylistSettings()
@@ -3479,6 +3482,17 @@ void function Gamemode1v1_Init( int eMap )
 	
 	AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest )
 	file.bRestEnabled = true
+}
+
+void function OnWeaponAttachmentChanged( entity player, entity weapon, string modToAdd, string modToRemove )
+{
+	//This callbackfunc is only registered when tgive is enabled by host. ~mkos
+	
+	//make sure chal only flag isn't configured.
+	if( !isCustomWeaponAllowed() && !isPlayerInChallenge( player ) )
+		return 
+		
+	ClientCommand_SaveCurrentWeapons( player, [] )
 }
 
 bool function g_bRestEnabled()
