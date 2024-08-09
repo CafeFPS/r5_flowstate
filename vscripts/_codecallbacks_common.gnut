@@ -146,7 +146,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
-	Warning( "CodeCallback_OnPlayerRespawned", player )
+		Warning( "CodeCallback_OnPlayerRespawned: " + string( player ) )
 	#endif
 
 	Assert( !IsPlayerEliminated( player ), "An eliminated player respawned." )
@@ -195,7 +195,8 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 
 void function PlayerLifeThread( entity player )
 {
-	RegisterSignal( "OnPostDeathLogicEnd" )
+	//don't register signals in repeat game logic ~mkos
+	//RegisterSignal( "OnPostDeathLogicEnd" )
 	
 	// this thread will run for the span of the player's life plus a little bit extra
 	// (the extra is the time after they die before they're moved to spectator)
@@ -330,6 +331,7 @@ struct
 
 void function CodeCallbacksCommon_Init()
 {
+	RegisterSignal( "OnPostDeathLogicEnd" )
 	settings.flowstate_spectator_team_only = GetCurrentPlaylistVarBool( "flowstate_spectator_team_only", false )
 }
 
@@ -451,8 +453,8 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 
 	UpdateLastDamageTime( ent )
 
-	//flinch was removed s22 apex legends
-	//AddFlinch( ent, damageInfo )
+	//this is not viewpunch
+	AddFlinch( ent, damageInfo )
 
 	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 }

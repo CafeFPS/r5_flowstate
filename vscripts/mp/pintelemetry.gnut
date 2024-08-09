@@ -292,7 +292,7 @@ struct PlayerMetrics
 //tables
 global table PlayerSupergliding
 global table < string, bool > PlayerDidJump
-table<string, int> PlayerIdMap //for constant time operation lookups
+table<string, int> PlayerIdMap
 
 //script arrays
 global array<DamageEvent> allDamageEvents
@@ -369,7 +369,7 @@ struct
 	string superglide_msg
 	string superglidetitle
 	
-	// ServerMessages
+	// Server MOTD
 	bool bMotdEnabled = false
 	bool bUseOnlineMOTD = false
 	string localFlowstate_MOTD = "" //configure in playlist.
@@ -599,14 +599,22 @@ void function __QueryString_Callbacks( string setting, string value )
 			callbackFunc( value )
 }
 
+void function NULL_QUERY( string retData ){}
+typedef QueryFunc void functionref( string )
+
 //usage=   AddCallback_QueryString("category:query", resultHandleFunction ) // see r5r.dev/info for details about available categories.
-bool function AddCallback_QueryString( string query, void functionref( string retData ) callbackFunc )
+bool function AddCallback_QueryString( string query, QueryFunc ornull callbackFuncOrNull = null )
 {	
 	if( query.find(":") == -1 || split( query, ":" ).len() < 2 )
 	{
 		sqerror( "Tried to add query without criteria. Query = " + query )
 		return false
 	}
+	
+	QueryFunc callbackFunc = NULL_QUERY
+	
+	if( callbackFuncOrNull != null )
+		callbackFunc = expect QueryFunc ( callbackFuncOrNull )
 	
 	if( file.bQueryComplete )
 	{
@@ -837,9 +845,10 @@ void function ShowPlayerLocalMOTD( entity player )
 	)()
 }
 
-
 void function Pin_Query_Init()
 {
+	AddCallback_QueryString( "verified:SERVER" )
+
 	if( file.restricted_server )
 	{
 		AddCallback_QueryString( "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring(), DummyFunction_ProofOfConcept )
@@ -1241,6 +1250,7 @@ void function PIN_Init()
 	
 	if( file.LogOn )
 	{
+		AddCallback_OnTdmStateEnter_InProgress( SetStartLog )
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
 	}	
@@ -1315,6 +1325,17 @@ void function PIN_Init()
 	{
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
+}
+
+void function SetStartLog()
+{
+	//possible bLog() check 
+	
+	#if DEVELOPER
+		sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
+	#endif
+	
+	FlagSet( "START_LOG" )
 }
 
 void function Tracker_SettingsInit()
@@ -4531,10 +4552,8 @@ void function PIN_RoundEnd( int roundnum )
 
 void function UpdateLiveStats( string metrics )
 {
-	if( metrics != "" )
-	{
+	if( Tracker_GetBoolSetting( "verified" ) && !empty( metrics ) )
 		SQ_UpdateLiveStats__internal( metrics )
-	}
 }
 
 void function FinishGameStatsRound()
@@ -4617,7 +4636,7 @@ void function PIN_AddPlayer( entity player )
 	if( !IsValid( player ) ) return 
 	
 	//HACK! Todo: Remove 
-	if( file.bChatbotEnabled && player.GetPlayerName() == "["+ file.sBotName +"]")
+	if( file.bChatbotEnabled && player.GetPlayerName() == "["+ file.sBotName +"]" )
 	{
 		file.entityBotEnt = player 
 		
@@ -4628,8 +4647,7 @@ void function PIN_AddPlayer( entity player )
 			mkos_Force_Rest( file.entityBotEnt )
 			file.entityBotEnt.p.start_in_rest_setting = true;
 			file.entityBotEnt.SetDamageNotifications( false )
-			file.entityBotEnt.SetDeathNotifications( false )		
-			thread BotInvis( player )
+			file.entityBotEnt.SetDeathNotifications( false )
 			thread MessageIntervalThread()
 		}
 		else 
@@ -4735,14 +4753,11 @@ void function PIN_AddPlayer( entity player )
 
 void function BotInvis( entity bot )
 {	
-	if( !IsValid( bot ) ){ return }
-	maki_tp_player( bot, getBotSpawn() )
-	wait 7
-	maki_tp_player( bot, getBotSpawn() )
-	bot.MakeInvisible()
-	wait 2
-	bot.MakeInvisible()
+	if( !IsValid( bot ) )
+		return
+	
 	bot.NotSolid()
+	bot.Hide()
 	SetTeam( bot, 119 )
 }
 
@@ -4806,6 +4821,9 @@ void function PIN_PlayerLeft( entity player, string reason )
 
 void function PIN_PlayerSpawned( entity player )
 {
+	if( IsBotEnt( player ) ) //todo: remove after native solution
+		BotInvis( player )
+	
 	/*
 	string pname = player.GetPlayerName( )
 	string message = format("%s spawned ", pname )

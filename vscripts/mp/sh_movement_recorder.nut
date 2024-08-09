@@ -1,5 +1,5 @@
-// Made by @CafeFPS
-// mkos - multiplayer compatibility overhaul, code improvements
+// Made by @CafeFPS ( original idea and code template )
+// mkos - multiplayer compatibility overhaul, code refactor, features
 // Todo: QOL Update-- Allow each slot to have a set playback rate per player, with a ui slider/input field to modify per-slot. 0 for inf or frozen. ~mkos
 
 #if SERVER
@@ -29,6 +29,7 @@ struct
 {
 	#if CLIENT
 		array<var> inputHintLines
+		table<string,string> playerOriginalBindings
 	#endif
 	
 	#if SERVER
@@ -165,6 +166,7 @@ void function MovementRecorder_SetPlaybackRate( float value )
 }
 #endif
 
+//shared
 string function slotname( int slot )
 {
 	switch( slot )
@@ -181,30 +183,63 @@ string function slotname( int slot )
 }
 
 #if CLIENT
+
+// Todo: Create BindSystem_ framework for any game mode to use during development for client scripts, 
+// saves current bindings, adds a disconnect callback to restore binds, proper checking.. etc 
+// will need to handle gamepad as well as various bind types (held) etc. 
+// save for next release, for now, this recorder specific logic. ~mkos
+
+const table<string,string> RECORDER_BINDINGS = 
+{
+	["F2"] = "toggleMovementRecorder",
+	["F3"] = "\"PlayAnimInSlot 0\"",
+	["F4"] = "\"PlayAnimInSlot 1\"",
+	["F5"] = "\"PlayAnimInSlot 2\"",
+	["F6"] = "\"PlayAnimInSlot 3\"",
+	["F7"] = "\"PlayAnimInSlot 4\"",
+	["F8"] = "PlayAllAnims",
+	["F11"] = "recorder_switchCharacter",
+	["F12"] = "recorder_toggleContinueLoop"
+}
+
 void function FS_MovementRecorder_SetBindings( entity player )
 {
-	// no puedo bindear argumentos? Xd
-	//mkos~ :D
-	player.ClientCommand( "bind_US_standard F2 toggleMovementRecorder" )
-	player.ClientCommand( "bind_US_standard F3 \"PlayAnimInSlot 0\"" )
-	player.ClientCommand( "bind_US_standard F4 \"PlayAnimInSlot 1\"" )
-	player.ClientCommand( "bind_US_standard F5 \"PlayAnimInSlot 2\"" )
-	player.ClientCommand( "bind_US_standard F6 \"PlayAnimInSlot 3\"" )
-	player.ClientCommand( "bind_US_standard F7 \"PlayAnimInSlot 4\"" )
-	player.ClientCommand( "bind_US_standard F8 PlayAllAnims" )
+	MovementRecorder_SaveCurrentBindings()
+	AddCallback_OnPlayerDisconnected( FS_MovementRecorder_ResetAllBindings )
 	
-	player.ClientCommand( "unbind_US_standard F11" )
-	player.ClientCommand( "unbind_US_standard F12" )
-
-	player.ClientCommand( "bind_US_standard F11 recorder_switchCharacter" )
-	player.ClientCommand( "bind_US_standard F12 recorder_toggleContinueLoop" )
+	foreach( key, command in RECORDER_BINDINGS )
+		player.ClientCommand( "bind_US_standard " + key + " " + command )
 
 	FS_MovementRecorder_CreateInputHintsRUI( false )
 }
 
+void function MovementRecorder_SaveCurrentBindings()
+{
+	foreach( keyName, _ in RECORDER_BINDINGS )
+	{
+		int keyCode 	= KeyNameToKeyCode( keyName ) 
+		string command 	= GetKeyTappedBinding( keyCode )
+		
+		file.playerOriginalBindings[ keyName ] <- command
+	}
+}
+
+string function MovementRecorder_GetSavedBindCommand( string keyName )
+{
+	if( keyName in file.playerOriginalBindings )
+		return file.playerOriginalBindings[ keyName ]
+		
+	return ""
+}
+
 void function FS_MovementRecorder_ResetAllBindings( entity player )
 {
-	//todo
+	foreach( keyName, _ in RECORDER_BINDINGS )
+	{
+		string commandToRestore = MovementRecorder_GetSavedBindCommand( keyName )
+		player.ClientCommand( "bind_US_standard " + keyName + " " + commandToRestore )
+		//printt( "Running: " + "bind_US_standard " + keyName + " " + commandToRestore )
+	}
 }
 
 void function FS_MovementRecorder_CreateInputHintsRUI( bool state )
@@ -853,7 +888,7 @@ void function PlayRandomAnimation( entity player )
 			
 		PlayAnimInSlot( player, slot, false, false, true )
 		
-		//No need to wait, PlayAnimInSlot() will wait this thread as well. 
+		//No need to wait, PlayAnimInSlot() will wait this thread as well. ~mkos
 		//MovementRecorder_WaitForAnimToFinish( anim ) 
 		
 		wait 0.1
@@ -1009,7 +1044,8 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 
 void function MovementRecorder_WaitForAnimToFinish( var anim )
 {
-	Assert( IsNewThread(), "Must be threaded off" )
+	Assert( IsThreadTop(), "not thread top" )
+	//Todo: Implement wait based on playback rate setting for this player, for this slot. (currently global setting) ~mkos
 	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate )
 }
 

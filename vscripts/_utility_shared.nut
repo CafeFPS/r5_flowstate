@@ -493,13 +493,13 @@ table function StringToColors( string colorString, string delimiter = " " )
 	return Table
 }
 
-function ColorStringToArray( string colorString )
+array<int> function ColorStringToArray( string colorString )
 {
 	array<string> tokens = split( colorString, " " )
 
 	Assert( tokens.len() >= 3 && tokens.len() <= 4 )
 
-	array colorArray
+	array<int> colorArray
 	foreach ( token in tokens )
 		colorArray.append( int( token ) )
 

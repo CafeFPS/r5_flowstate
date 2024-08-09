@@ -9,7 +9,9 @@ global function PIN_GetDamageCause
 global function DamageSourceIDToStringTable
 global function RegisterCustomWeaponDamageDef
 
-global function DEV_PrintRegisteredWeapons
+#if DEVELOPER
+	global function DEV_PrintDamageSourceIDs
+#endif
 
 struct
 {
@@ -62,6 +64,7 @@ global enum eDamageSourceId
 	damagedef_tank_bombardment_detcord_explosion
 	damagedef_defensive_bombardment
 	damagedef_loot_drone_explosion
+	//// end of must match order ////
 
 	//Custom
 	damagedef_DocDrone
@@ -400,7 +403,7 @@ global enum eModSourceId
 //Attachments intentionally left off. This prevents them from displaying in kill cards.
 // modNameStrings should be defined when the mods are created, not in a separate table -Mackey
 global const modNameStrings = {
-	[ eDamageSourceId.damagedef_DocDrone ] 					= "DRONE",
+	[ eDamageSourceId.damagedef_DocDrone ] 					= "DRONE", /* ....? */
 	[ eModSourceId.accelerator ]						= "#MOD_ACCELERATOR_NAME",
 	[ eModSourceId.afterburners ]						= "#MOD_AFTERBURNERS_NAME",
 	[ eModSourceId.arc_triple_threat ] 					= "#MOD_ARC_TRIPLE_THREAT_NAME",
@@ -786,14 +789,16 @@ string function PIN_GetDamageCause( var damageInfo )
 	return ""
 }
 
-void function DEV_PrintRegisteredWeapons()
-{
-	string data = "\n\n ------ REGISTERED WEAPON TABLE ------";
-	
-	foreach( int idx, ref in file.damageSourceIDToString )
+#if DEVELOPER
+	void function DEV_PrintDamageSourceIDs()
 	{
-		data += format( "[%d] = \"%s\", \n", idx, ref )
+		string data = "\n\n ------ DAMAGE SOURCE IDS ------ \n\n";
+		
+		foreach( int idx, ref in file.damageSourceIDToString )
+		{
+			data += format( "[%d] = \"%s\", \n", idx, ref )
+		}
+		
+		printt( data )
 	}
-	
-	printt( data )
-}
+#endif

@@ -1800,7 +1800,7 @@ array<int> function GetRecapPlayerEHIArray( EncodedEHandle playerEHandle )
 
 void function UpdateSelectedRecapBlock( int blockIndex )
 {
-	//Todo(dw): Debug long damage blocks
+	//Todo(dw): Debug long damage blocks //done?
 	//mAssert( file.damageBlockElementArray.len() > blockIndex, "file.damageBlockElementArray.len IS LESS THAN blockIndex" )
 	
 	if( blockIndex > file.damageBlockElementArray.len() - 1 )

@@ -84,7 +84,7 @@ function BaseGametype_Init()
 
 	BaseGametype_Init_MPSP()
 
-	AddCallback_OnTitanBecomesPilot( OnTitanBecomesPilot_OutOfBoundsCheck )
+	//AddCallback_OnTitanBecomesPilot( OnTitanBecomesPilot_OutOfBoundsCheck ) //disabled for r5r
 	AddDeathCallback( "player", PlayerOrNPCKilled )
 }
 
@@ -1092,7 +1092,7 @@ function DoRespawnPlayer( entity player, entity spawnPoint )
 		return
 
 	player.p.lastSpawnPoint = spawnPoint
-	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread
+	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread // Also sends OnRespawnPlayer first ~mkos
 }
 
 function SetupPilotSpawnOnRematch( entity player )
@@ -2285,4 +2285,21 @@ void function OnOOBTriggerEnter( entity trigger, entity ent )
 void function OnOOBTriggerLeave( entity trigger, entity ent )
 {
 	EntityLeaveOutOfBoundsTrig( trigger, ent, null, 0 )
+}
+
+//ranges may need tweaked during playtests ~mkos
+void function RingDamagePunch( entity ent, var damageInfo )
+{
+	if( !ent.IsPlayer() )
+		return
+		
+	vector origin = GetPlayerCrosshairOrigin( ent )
+	
+	float multiplier = DamageInfo_GetViewPunchMultiplier( damageInfo )
+	
+	float softAmount = RandomFloatRange( 0.5, 1.0 ) * multiplier
+	float hardAmount = RandomFloatRange( 1.0, 1.5 ) * multiplier
+	float randomBoost = RandomFloatRange( 0.5, 1.5 )
+	
+	ent.ViewPunch( origin, softAmount, hardAmount, randomBoost )
 }

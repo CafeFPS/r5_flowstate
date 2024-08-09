@@ -10,7 +10,7 @@ global function SetupEditor
 
 void function SetupChangeSurvivalCharacterClass()
 {
-// TODO: FIX [Undefined variable "SetupDevFunc"]
+// TODO: FIX [Undefined variable "SetupDevFunc"] //done?
 	#if UI
 		array<ItemFlavor> characters = clone GetAllCharacters()
 		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {

@@ -181,6 +181,7 @@ void function Init_FS_Scenarios()
 	AddCallback_OnPlayerKilled( FS_Scenarios_OnPlayerKilled )
 	AddCallback_OnClientConnected( FS_Scenarios_OnPlayerConnected )
 	AddCallback_OnClientDisconnected( FS_Scenarios_OnPlayerDisconnected )
+	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
 
 	AddCallback_FlowstateSpawnsPostInit( CustomSpawns )
 

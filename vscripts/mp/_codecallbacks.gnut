@@ -316,7 +316,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		printt( "    after AddEntityCallback_OnDamaged callbacks:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	// use AddDamageCallbackSourceID( "classname", function ) to register functions
+	// use AddDamageCallbackSourceID( eDamageSourceId.xyz, function ) to register functions
 	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( damageSourceId in shGlobal.damageSourceIdCallbacks )
 	{
@@ -740,8 +740,8 @@ function TitanDamageFlinch( entity ent, damageInfo )
 	if ( TitanStagger( ent, damageInfo ) )
 		return
 
-	// if ( DamageInfo_GetDamage( damageInfo ) >= TITAN_ADDITIVE_FLINCH_DAMAGE_THRESHOLD )
-		// AddFlinch( ent, damageInfo )
+	if ( DamageInfo_GetDamage( damageInfo ) >= TITAN_ADDITIVE_FLINCH_DAMAGE_THRESHOLD )
+		AddFlinch( ent, damageInfo )
 }
 
 function PilotDamageFlinch( entity ent, damageInfo )

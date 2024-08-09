@@ -223,12 +223,15 @@ bool function PlaylistShouldBeHiddenForScheduleBlocks( string plName )
 
 	return false
 }
-/* // TODO: SERVER SCRIPT COMPILE ERROR: Attempted to return type "var" from function with return type "array< int >" (return type of "ColorStringToArray" is "var")
+
+// TODO: SERVER SCRIPT COMPILE ERROR: Attempted to return type "var" from function with return type "array< int >" (return type of "ColorStringToArray" is "var")
+
+// mkos: There are two ColorStringToArray functions, a copy in ui, and one in utility. The one in utility was untyped, defaulting to var.
 array<int> function GetEmblemColor( string playlistName )
 {
 	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
 	return ColorStringToArray( colorString )
-}*/
+}
 
 array<string> function GetVisiblePlaylistNames()
 {
@@ -381,11 +384,11 @@ asset function GetModeEmblemImage( string playlistName )
 	return emblemImage
 }
 #if UI
-array<int> function GetEmblemColor( string playlistName )
+/* array<int> function GetEmblemColor( string playlistName )
 {
 	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
 	return ColorStringToArray( colorString )
-}
+} */
 #endif
 
 #if CLIENT || UI && DEVELOPER

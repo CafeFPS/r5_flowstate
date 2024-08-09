@@ -94,7 +94,7 @@ struct
 void function SV_CL_Onboarding_Init()
 {
 #if SERVER
-	SetAutoReloadState( false ) //let native know
+	SetAutoReloadState( false ) //let native know ~mkos
 	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
 	FlagInit( "MinPlayersReached", false )
 
@@ -111,7 +111,7 @@ void function SV_CL_Onboarding_Init()
 	if ( OnboardingEnabled() )
 		thread Sequence_WaitingForPlayers()
 		
-	AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload
+	AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
 
 	
 #endif
@@ -464,15 +464,17 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tactical ), OFFHAND_TACTICAL, [] )
 	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimate ), OFFHAND_ULTIMATE, [] )
 
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	if( !is1v1EnabledAndAllowed() ) // Todo: unweave gamemode logic ()
+	{
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
 
 	if( !Flowstate_GivePassive() || !Flowstate_PassivesAllowedForMode() )
 		return
 
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
 
-	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	if( ItemFlavor_GetHumanReadableRef( character ) == "character_caustic" || ItemFlavor_GetHumanReadableRef( character ) == "character_gibraltar" )
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
@@ -510,15 +512,18 @@ void function RespawnBehavior_Init()
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
 	#if DEVELOPER
+		//Warning("DecideRespawnPlayer: " + string( player ) )
 		DumpStack()
 		mAssert( script_bRespawnInitComplete, "RespawnBehavior_Init() --- wasn't ready in DecideRespawnPlayer()" )
 	#endif
 	
-	if ( !IsValid( player ) ) return;
+	if ( !IsValid( player ) ) 
+		return
 	
 	if ( IsAlive( player ) )
 	 	TakeLoadoutRelatedWeapons( player )
 		
+	//This calls the definitive native code to respawn player, which will first fire "OnRespawnPlayer", and then fire signal "OnSpawned" in CodeCallback_OnPlayerRespawned ~mkos
 	DoRespawnPlayer( player, null )
 
 	player.p.lastRespawnTime = Time()
@@ -548,7 +553,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	UpdatePlayerCounts()
 	
-	if( Gamemode() == eGamemodes.map_editor_deprecated )
+	if( Gamemode() == eGamemodes.map_editor_deprecated ) //todo move to mode specific callback
 		thread (void function() : ( player )
 		{
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
@@ -592,8 +597,10 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
 	}
 	
-	if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
-		player.Signal("OnRespawned")
+	//commented, already signaled in code callback after DoRespawnPlayer fires ~mkos
+	
+	// if( Gamemode() != eGamemodes.SURVIVAL && Gamemode() != eGamemodes.WINTEREXPRESS )
+		// player.Signal("OnRespawned")		
 }
 
 // clean up and move to main when completely debugged. Cafe

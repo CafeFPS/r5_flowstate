@@ -72,6 +72,9 @@ global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function RotateMap
 
+//Beginning of refactor( supposed to be for next, next release.. )
+global function AddCallback_OnTdmStateEnter_InProgress
+
 
 global function Message_New //deprecated, use LocalEventMsg() ~mkos
 global function ServerMsgToBox //not used
@@ -84,6 +87,7 @@ global function ClientCommand_GiveWeapon
 
 global function ValidateWeaponTgiveSettings
 
+//todo: grab from damagedef names
 const table<string, string> WeaponNameMap = {
     ["mp_weapon_r97"] = "R99",
     ["mp_weapon_vinson"] = "Flatline",
@@ -189,6 +193,9 @@ struct {
 	bool isLoadingCustomMap = false
 	vector ogSkyboxOrigin
 	int winnerTeam
+	
+	array< void functionref() > tdmStateInProgressCallbacks
+	
 } file
 
 struct
@@ -434,11 +441,20 @@ void function _CustomTDM_Init()
 	if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
 		AddSpawnCallback( "prop_survival", DissolveItem )
 
-    AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
-        if (FlowState_SURF())
-            thread _OnPlayerDiedSURF(victim, attacker, damageInfo)
-        else thread _OnPlayerDied(victim, attacker, damageInfo)
-    })
+    AddCallback_OnPlayerKilled
+	(
+		void function( entity victim, entity attacker, var damageInfo ) 
+		{
+			if ( FlowState_SURF() )
+			{
+				thread _OnPlayerDiedSURF( victim, attacker, damageInfo )
+			}
+			else if ( !is1v1EnabledAndAllowed() )
+			{
+				thread _OnPlayerDied( victim, attacker, damageInfo )
+			}
+		}
+	)
 
 	if ( FlowState_SURF() )
 	{
@@ -507,59 +523,11 @@ void function _CustomTDM_Init()
 	{
 		FsOddballInit()
 	}
-
-	float f_wait = flowstateSettings.default_ibmm_wait
 	
-	if ( f_wait > 0.0 && f_wait < 3.0 )
-	{
-		//this shouldn't be defined out, it lets the host know they have an invalid setting
-		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
-	}
-	
-	if( is1v1EnabledAndAllowed() )
-	{	
-		//custom spawn extension using the implemented abstracted callback :) ~mkos 
-		if( MapName() == eMaps.mp_rr_arena_composite && flowstateSettings.patch_for_dropoff )
-		{
-			DropoffPatch_Init()
-			AddCallback_FlowstateSpawnsPostInit( Init_DropoffPatchSpawns )
-		}
-		
-		if( Playlist() == ePlaylists.fs_1v1_headshots_only )
-			AddCallback_FlowstateSpawnsSettings
-			( 
-				void function()
-				{
-					SpawnSystem_SetCustomPlaylist( "fs_1v1" )
-				}
-			)
-		
+	if( is1v1EnabledAndAllowed() ) //just call Gamemode1v1_Init, and move logic into gamemode1v1_init
+	{		
 		thread Gamemode1v1_Init( MapName() )
 	}
-}
-
-LocPairData function Init_DropoffPatchSpawns()
-{
-	array<LocPair> dropoff_patch = [
-		
-			//removed skyroom
-			//NewLocPair( <-1378.05, 559.458, 1026.54 >, < 359.695, 307.314, 0 >),//13
-			//NewLocPair( <-1469.03, -117.677, 1026.54 >, < 1.34318, 60.0746, 0 >),
-			
-			NewLocPair( < -2824.9, 2868.1, -111.969 >, < 0.354577, 31.8209, 0 >), //13
-			NewLocPair( < -2541.81, 3919.45, -111.969 >, < 358.65, 315.899, 0 >),
-		
-			NewLocPair( < -2958.52, 183.899, 190.063 >, < 0.905181, 353.701, 0 >),//14
-			NewLocPair( < -1693.05, -663.034, 190.063 >, < 0.514909, 140.627, 0 >),
-			
-			NewLocPair( <2544.54, 3934.15, -111.969 >, < 3.3168, 218.85, 0>), //15
-			NewLocPair( <3196.49, 3010.24, -111.969 >, < 1.33276, 134.094, 0>),
-			
-			NewLocPair( < 2551.65, 515.938, 193.337 >, < 0.894581, 215.161, 0>), //16
-			NewLocPair( <1637.37, -808.877, 193.67 >, < 0.0671947, 36.8544, 0>)	
-		];
-				
-	return SpawnSystem_CreateLocPairObject( dropoff_patch )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -702,36 +670,41 @@ array<entity> function GetServerPropsInDmFile()
 	return file.playerSpawnedProps
 }
 
-int function GetTDMState(){
+int function GetTDMState()
+{
 	return file.tdmState
 }
 
-void function SetTdmStateToNextRound(){
+const array<int> ignoreFSDM_GameState =
+[
+	eGamemodes.fs_prophunt
+]
+
+void function SetTdmStateToNextRound()
+{
 	file.tdmState = eTDMState.NEXT_ROUND_NOW
 
-	if( Gamemode() != eGamemodes.fs_prophunt )
+	if( !ignoreFSDM_GameState.contains( Gamemode() )  )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
 void function SetTdmStateToInProgress()
 {
-	if( bLog() )
-	{
-		#if DEVELOPER && HAS_TRACKER_DLL
-			sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
-		#endif
-		FlagSet("START_LOG")
-	}
-	
-	if( Flowstate_IsFS1v1() )
-	{
-		resetChallenges()
-	}
-	
 	file.tdmState = eTDMState.IN_PROGRESS
 	
-	if( Gamemode() != eGamemodes.fs_prophunt )
+	if( !ignoreFSDM_GameState.contains( Gamemode() )  )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
+		
+	foreach( callbackFunc in file.tdmStateInProgressCallbacks )
+		callbackFunc()
+}
+
+void function AddCallback_OnTdmStateEnter_InProgress( void functionref() callbackFunc )
+{
+	if( file.tdmStateInProgressCallbacks.contains( callbackFunc ) )
+		mAssert( false, "Tried to add callbackFunc: " + string( callbackFunc ) + "() but already exists in tdmStateInProgressCallbacks" )
+
+	file.tdmStateInProgressCallbacks.append( callbackFunc )
 }
 
 void function Flowstate_ServerSaveChat()
@@ -1174,45 +1147,13 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	if( flowstateSettings.BattleLogEnable && victim != attacker)
 		Flowstate_AppendBattleLogEvent(attacker, victim)
-	
-	if( is1v1EnabledAndAllowed() )
-	{
-		//maki script 
-		//solo mode	
-		victim.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
-
-		if(isPlayerInWaitingList(victim))
-		{
-			LocPair waitingRoomLocation = getWaitingRoomLocation()
-			if (!IsValid(waitingRoomLocation)) return
-			
-			if( !IsAlive( victim ) )
-				DecideRespawnPlayer(victim, false)
-			ClearInvincible(victim)
-			maki_tp_player(victim, waitingRoomLocation)
-			
-			if(IsValid(attacker) && IsValid(victim))
-				victim.p.lastKiller = attacker
-			return//player who is wating for his opponent
-		}
-
-		if(IsValid(attacker) && IsValid(victim))
-			victim.p.lastKiller = attacker
-		
-		if( !is3v3Mode() )
-			HandleGroupIsFinished( victim, damageInfo )
-
-		ClearInvincible(victim)
-
-		return
-
-	}
 
 	switch(GetGameState())
     {
         case eGameState.Playing:
             // Víctim
-            void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+            void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) 
+			{
 				
 				Remote_CallFunction_NonReplay( victim, "ForceScoreboardLoseFocus" )
 
@@ -1352,9 +1293,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    break
 
 	}
-	UpdatePlayerCounts()
-
 	
+	UpdatePlayerCounts()
 }
 
 void function PlayerKillStreakAnnounce( entity attacker, string doubleKill, string tripleKill )
@@ -1586,7 +1526,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			GiveRandomPrimaryWeaponHalo(player)
 			GiveRandomSecondaryWeaponHalo(player)
 		} catch (e420) {}
-	} else 	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
+	} 
+	else if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
     {
 		try{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -1599,7 +1540,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
             player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
             player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 		} catch (e420) {}
-    } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
+    }
+	else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
 	{
 		try{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -3350,10 +3292,11 @@ void function SimpleChampionUI()
 		
 		if(file.currentRound>1 && is1v1EnabledAndAllowed() )//only work after round 1 and 1v1 gamemode
 		{
-			foreach (eachPlayer in GetPlayerArray() )
+			foreach ( eachPlayer in GetPlayerArray() )
 			{
 				ResetPlayerStats( eachPlayer )
-				if(!isPlayerInRestingList(eachPlayer)) // shouldn't be isPlayerInRestingList(eachPlayer) ?
+				
+				if( !isPlayerInRestingList( eachPlayer ) ) //don't remove players who are in rest, only progress. 
 				{
 					soloModePlayerToWaitingList(eachPlayer)
 				}
@@ -3615,32 +3558,33 @@ void function SimpleChampionUI()
 	if( !VOTING_PHASE_ENABLE )
 	{
 		WaitFrame()
-	} else{
-			thread function() : ()
+	} 
+	else
+	{
+		thread function() : ()
+		{
+			if(file.locationSettings.len() < NUMBER_OF_MAP_SLOTS_FSDM) 
 			{
-				if(file.locationSettings.len() < NUMBER_OF_MAP_SLOTS_FSDM) 
-				{
-					VOTING_PHASE_ENABLE = false
-					return
-				}
+				VOTING_PHASE_ENABLE = false
+				return
+			}
 
-				for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
+			for( int i = 0; i < NUMBER_OF_MAP_SLOTS_FSDM; ++i )
+			{
+				while( true )
 				{
-					while( true )
+					// Get a random location id from the available locations
+					int randomId = RandomIntRange(0, file.locationSettings.len())
+
+					// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
+					if( !FS_DM.mapIds.contains( randomId ) )
 					{
-						// Get a random location id from the available locations
-						int randomId = RandomIntRange(0, file.locationSettings.len())
-
-						// If the map already isnt picked for voting then append it to the array, otherwise keep looping till it finds one that isnt picked yet
-						if( !FS_DM.mapIds.contains( randomId ) )
-						{
-							FS_DM.mapIds.append( randomId )
-							break
-						}
+						FS_DM.mapIds.append( randomId )
+						break
 					}
 				}
-			}()
-			
+			}
+		}()		
 	}
 	
 		
@@ -3676,26 +3620,19 @@ void function SimpleChampionUI()
 		//cycle map /mkos
 		string to_map = GetMapName()
 
-		if ( Flowstate_IsLGDuels() ) 
+		if ( flowstateSettings.rotate_map )
 		{
-			to_map = "mp_rr_canyonlands_staging";
-		} 
-		else 
-		{
-			if ( flowstateSettings.rotate_map )
-			{
-				array<string> maplist = split( flowstateSettings.maplist, "," )
-				int countmaps = maplist.len()
-				int i;
+			array<string> maplist = split( flowstateSettings.maplist, "," )
+			int countmaps = maplist.len()
+			int i;
 
-				for ( i = 0; i < countmaps; i++ ) 
+			for ( i = 0; i < countmaps; i++ ) 
+			{
+				if ( GetMapName() == maplist[i] ) 
 				{
-					if ( GetMapName() == maplist[i] ) 
-					{
-						int index = (i + 1) % countmaps	
-						to_map = maplist[index]
-						break
-					}
+					int index = (i + 1) % countmaps	
+					to_map = maplist[index]
+					break
 				}
 			}
 		}
@@ -3715,6 +3652,8 @@ void function SimpleChampionUI()
 	
 	if(IsValid(GetBestPlayer()))
 		TeamWon = GetBestPlayer().GetTeam()
+		
+	//Todo: server persistence set winning uid as champion
 	
 	if( IsValid( file.ringBoundary ) )
 		file.ringBoundary.Destroy()
@@ -3727,7 +3666,7 @@ void function SimpleChampionUI()
 		FS_Scenarios_ForceAllRoundsToFinish()
 	}
 	else if( is1v1EnabledAndAllowed() )
-		ForceAllRoundsToFinish_solomode()
+		waitthread ForceAllRoundsToFinish_solomode()
 	
 	if( SCOREBOARD_ENABLE )
 	{
@@ -3941,8 +3880,7 @@ void function SimpleChampionUI()
 		// player.UnfreezeControlsOnServer()
 	// }
 
-	file.currentRound++	
-	
+	file.currentRound++		
 	SetGameState( eGameState.Playing )
 }
 
@@ -4294,7 +4232,6 @@ void function HaloMod_HandlePlayerModel( entity player )
 }
 
 void function CharSelect( entity player)
-
 {
 	DumpStack()
 	//Char select.
@@ -4325,8 +4262,12 @@ void function CharSelect( entity player)
 	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	
+	if( !is1v1EnabledAndAllowed() )
+	{
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
 
 	//Give master chief skin and assign a color
 	if( flowstateSettings.is_halo_gamemode )
@@ -4361,7 +4302,6 @@ void function AssignCharacter( entity player, int index )
 // ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
-
 {
 	if( !IsValid( player )) return
 	if( !player.IsPlayer() ) return //mkos ( crash fix )
@@ -5666,9 +5606,9 @@ void function GivePlayerRandomCharacter(entity player)
 	CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
 	TakeAllWeapons(player)
     GiveRandomPrimaryWeaponMetagame(player)
-	GiveRandomSecondaryWeaponMetagame(player)	
+	GiveRandomSecondaryWeaponMetagame(player)
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
     GiveRandomTac(player)
     GiveRandomUlt(player)
 }

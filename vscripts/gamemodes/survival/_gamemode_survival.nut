@@ -145,6 +145,7 @@ void function GamemodeSurvival_Init()
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad_Survival )
 	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
+	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
 
 	// #if DEVELOPER
 	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
@@ -1462,7 +1463,7 @@ void function OnClientConnected( entity player )
 		SetRandomStagingPositionForPlayer( player )
 		DecideRespawnPlayer( player )
 		GiveBasicSurvivalItems( player )
-		return	
+		return
 	} 
 	else if ( IsSurvivalTraining() )
 	{
