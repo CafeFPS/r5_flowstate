@@ -302,6 +302,8 @@ bool function IsNewLootEnabled( string ref )
 		case "armor_pickup_lv5_evolving":
 		case "mp_weapon_throwingknife":
 		case "mp_weapon_raygun":
+		if( Gamemode() == eGamemodes.fs_infected && ref == "mp_weapon_raygun" )
+			return true
 		case "mp_titanweapon_flightcore_rockets":
 		// case "laser_sight_l1":
 		// case "laser_sight_l2": 

@@ -71,6 +71,7 @@ struct {
 	bool log_damage_to_obituary
 	int player_setting_damage_closes_deathbox_menu = -1
 
+	table<entity, entity> healthBars
 } file
 
 struct BloodDecalParams
@@ -117,7 +118,11 @@ void function ClPlayer_Init()
 	level.grenadeIndicatorEnabled <- true
 	level.clientsLastKiller <- null
 
-	AddCreateCallback( "player", SetupPlayerAnimEvents )
+	if( GetCurrentPlaylistVarBool( "flowstate_enable_health_bars", false ) ) //By Cafe
+	{
+		AddCreateCallback( "player", FS_HealthBars_StartForPlayer )
+		AddDestroyCallback( "player", FS_HealthBars_OnPlayerDestroyed )
+	}
 
 	AddCreateCallback( "first_person_proxy", SetupFirstPersonProxyEvents )
 	AddCreateCallback( "predicted_first_person_proxy", SetupFirstPersonProxyEvents )
@@ -140,6 +145,224 @@ void function ClPlayer_Init()
 	AddCallback_OnSettingsUpdated( OnSettingsUpdated )
 	
 	OnSettingsUpdated()
+}
+
+void function FS_HealthBars_StartForPlayer( entity player )
+{
+	if( player == GetLocalClientPlayer() )
+		return
+
+	if( !( player in file.healthBars ) )
+	{
+		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
+	}
+
+	Flowstate_CreateCustomHealthBarForPlayer( player )
+}
+
+// cool health bars. Made by Cafe
+void function Flowstate_CreateCustomHealthBarForPlayer( entity player ) 
+{
+	entity vgui
+	
+	if( player in file.healthBars )
+	{
+		vgui = file.healthBars[player]
+	} else
+	{
+		vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
+		file.healthBars[player] <- vgui
+	}
+	
+	if( !IsValid( vgui ) )
+		return
+
+	vgui.SetParent( player )
+	thread Flowstate_CustomHealthBar_Think( player, vgui )
+	thread Flowstate_CustomHealthBar_UpdateBarAngles( player, vgui )
+}
+
+void function Flowstate_CustomHealthBar_UpdateBarAngles( entity player, entity vgui )
+{
+	EndSignal( player, "OnDestroy" )
+
+	while( true )
+	{
+		WaitFrame()
+
+		if( !IsValid( player ) )
+			break
+		
+		if( !IsValid( vgui ) )
+		{
+			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
+			vgui.SetParent( player )
+			
+			if( player in file.healthBars )
+				file.healthBars[player] = vgui
+			else
+				file.healthBars[player] <- vgui
+		}
+
+		//make it face view player
+		vector closestPoint = GetClosestPointOnLine( GetLocalViewPlayer().CameraPosition(), GetLocalViewPlayer().CameraPosition() + (AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 100.0), vgui.GetOrigin() )		
+		vector angles = VectorToAngles( vgui.GetOrigin() - closestPoint )
+		vgui.SetAngles( Vector( -90, angles.y, 0 ) )
+		vgui.SetOrigin( player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20 )
+	}
+}
+
+void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
+{
+	EndSignal( player, "OnDestroy", "OnDisconnected" )
+
+	//test
+	// {
+		// vector origin = player.GetOrigin()
+		// vector angles =  VectorToAngles( player.GetOrigin() - GetLocalClientPlayer().GetOrigin() )
+		// float width = 40
+		// float height = 40
+		
+		// origin += (AnglesToUp( angles )*-1) * (height*0.5)
+		// origin.z += 110
+		
+		// var topo = CreateRUITopology_Worldspace( origin, Vector(0,angles.y,0), width, height )
+		
+		// // var rui2 = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
+		// var rui = RuiCreate( $"ui/targetinfo_pilot.rpak", topo, RUI_DRAW_WORLD, 32767 )
+		
+		// RuiSetGameTime( rui, "crosshairTargetStartTime", Time() )
+		// RuiSetGameTime( rui, "lastVisibleTime", Time() )
+		// RuiSetGameTime( rui, "damageComboLatestUpdateTime", Time() )
+		// RuiSetGameTime( rui, "lastCrosshairTargetTime", Time() )
+
+		// RuiSetInt( rui, "maxHealth", 100 ) //player.GetMaxHealth() )
+		// RuiSetFloat( rui, "healthFrac", 1.0 ) //GetHealthFrac( player ) )
+		// RuiSetFloat( rui, "shieldFrac", 1.0 ) //GetShieldHealthFrac( player ) )
+		// RuiSetFloat3( rui, "worldPos", origin )
+		// RuiSetInt( rui, "teamMemberIndex", player.GetTeamMemberIndex() )
+		// RuiSetInt( rui, "squadID", GetLocalViewPlayer().GetSquadID() )
+		// // RuiTrackInt( rui, "squadID", ent, RUI_TRACK_SQUADID )
+
+		// // "targetTitle" "title"
+		// // "targetBossName" "boss"
+		// // "squadID" -1
+		// // "teamMemberIndex" -1
+		// // "maxHealth" 1
+		// // "healthLossHistory4" "0 0 0"
+		// // "worldPosEyeDist" 0
+		// // "healthFrac" 0
+		// // "targetGrade" 0
+		// // "lastVisibleTime" -1e+30
+		// // "crosshairTargetStartTime" -1e+30
+		// // "shieldFrac" 0
+		// // "damageComboStartHealthFrac" 0
+		// // "worldPos" "0 0 0"
+		// // "tiFlags" 0
+		// // "healthLossHistory2" "0 0 0"
+		// // "healthLossHistory3" "0 0 0"
+		// // "healthLossHistory0" "0 0 0"
+		// // "healthLossHistory1" "0 0 0"
+		// // "targetClanName" "clan"
+		// // "damageComboLatestUpdateTime" -1e+30
+		// // "targetIcon" $""
+		// // "lastCrosshairTargetTime" -1e+30
+		// // "targetName" "name"
+		// // "lastFiredTime" -1e+30
+	// }
+	// Debido a que lo de arriba no funciona, o no sé cómo hacerlo funcionar ( skill issue ), prefiero mejorar mi barra de vida de LGduels al agregarle escudos
+
+	local foreground = HudElement( "HealthBar_Foreground", vgui.GetPanel() )
+	local background = HudElement( "HealthBar_Background", vgui.GetPanel() )
+
+	array< var > shields
+	for( int i = 0; i<5; i++ )
+		shields.append( HudElement( "ShieldsHealthBar_Foreground" + i, vgui.GetPanel() ) )
+
+	Hud_SetPos( foreground, 0, 0)
+	Hud_SetPos( background, 0, 0)
+	
+	foreach( shieldElement in shields )
+	{
+		Hud_SetPos( shieldElement, 100, 0)
+		shieldElement.Hide()
+	}
+
+	int baseHeight = 280
+	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "armor" )
+
+	while( true )
+	{
+		player.WaitSignal( "HealthChanged", "ShieldChanged", "SettingsChanged" )
+
+		if( !IsValid( player ) )
+			break
+		
+		if( !IsValid( vgui ) )
+		{
+			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
+			vgui.SetParent( player )
+			file.healthBars[player] = vgui
+		}
+
+		//Condiciones para ocultarla
+		if( !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() || GetGameState() != eGameState.Playing || ( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_1v1 ) && !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		{
+			foreground.Hide()
+			background.Hide()
+
+			foreach( shieldElement in shields )
+				shieldElement.Hide()
+
+			continue
+		}
+
+		shieldTier = EquipmentSlot_GetEquipmentTier( player, "armor" ) - 1
+
+		local shieldUIElementToUse
+		bool shouldShowArmor = shieldTier >= 0 && shieldTier < 5
+		
+		//Básicamente mostrar el elemento al escudo correspondiente y ocultar el resto
+		if( shouldShowArmor )
+		{
+			shieldUIElementToUse = HudElement( "ShieldsHealthBar_Foreground" + shieldTier, vgui.GetPanel() )
+			shieldUIElementToUse.Show()
+		} else
+		{
+			foreach( shieldElement in shields )
+			{
+				shieldElement.Hide()
+			}
+		}
+
+		foreground.Show()
+		background.Show()
+
+		int health = player.GetHealth()
+		float Width = float( health * baseHeight ) / player.GetMaxHealth()
+		foreground.SetHeight( Width )
+
+		int shieldhealth = player.GetShieldHealth()
+		float shieldWidth = float( shieldhealth * baseHeight ) / player.GetShieldHealthMax()
+
+		// printt( "DEBUG UPDATING HEALTH BAR", shieldWidth, health, shieldhealth, shieldTier )
+
+		foreach( shieldElement in shields )
+			shieldElement.SetHeight( shieldWidth )
+	}
+}
+
+void function FS_HealthBars_OnPlayerDestroyed( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if( player in file.healthBars )
+	{
+		if( IsValid( file.healthBars[player] ) )
+			file.healthBars[ player ].Destroy()
+		delete file.healthBars[player]
+	}
 }
 
 // void function CPlayerADSPressed( entity player )
@@ -1298,7 +1521,9 @@ void function ClientCodeCallback_OnHealthChanged( entity ent, int oldHealth, int
 	}
 
 	ent.Signal( "HealthChanged", { oldHealth = oldHealth, newHealth = newHealth } )
-	Chroma_HealthChanged()
+	
+	if( ent == GetLocalClientPlayer() )
+		Chroma_HealthChanged()
 }
 
 
@@ -1931,6 +2156,7 @@ void function ServerCallback_GiveMatchLossProtection()
 
 void function EnableDoDeathCallback( entity ent )
 {
+	ent.EnableHealthChangedCallback() // Fix for health bars health changed signal. Cafe
 	ent.DoDeathCallback( true )
 }
 

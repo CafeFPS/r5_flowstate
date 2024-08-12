@@ -61,7 +61,6 @@ struct{
 		table<entity, int> beamsFxs = {}
 		table<entity, entity> handmover
 		table<entity, entity> beammover
-		table<entity, entity> healthBars
 		table<string, BeamSettings > allBeamSettings = {} // string: local/enemy
 	#endif
 }file
@@ -397,18 +396,8 @@ void function FS_LG_OnPlayerCreated( entity player )
 		file.beamsFxs[player] <- -1
 	}
 
-	if( !( player in file.healthBars ) )
-	{
-		file.healthBars[player] <- CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, <0, 0, 0>, <0, 0, 0>, 3, 45 )
-	}
-
 	thread FS_LG_HandleLaserForPlayer( player )
-	
-	if( Playlist() != ePlaylists.fs_lgduels_1v1 )
-		return
 
-	Flowstate_CreateCustomHealthBarForPlayer( player )
-	
 	CheckBeamSettingsExist()
 }
 
@@ -459,82 +448,10 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 	}
 }
 
-// cool health bars, im insane
-void function Flowstate_CreateCustomHealthBarForPlayer( entity player ) 
-{
-	entity vgui
-	
-	if( player in file.healthBars )
-	{
-		vgui = file.healthBars[player]
-	} else
-	{
-		vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-		file.healthBars[player] <- vgui
-	}
-	
-	if( !IsValid( vgui ) )
-		return
-
-	vgui.SetParent( player )
-	thread Flowstate_CustomHealthBar_FaceVguiToPlayer( player, vgui )
-}
-
-void function Flowstate_CustomHealthBar_FaceVguiToPlayer( entity player, entity vgui )
-{
-	//todo desharcodear 80, quizá tomar el headfocus
-	local foreground = HudElement( "HealthBar_Foreground", vgui.GetPanel() )
-	local background = HudElement( "HealthBar_Background", vgui.GetPanel() )
-	int baseHeight = 280
-	
-	while( true )
-	{
-		WaitFrame() //possibly revisit poll time ? ~mkos
-		//wait 0.005
-
-		if( !IsValid( player ) )
-			break
-		
-		if( !IsValid( vgui ) )
-		{
-			vgui = CreateClientsideVGuiScreen( "flowstate_health_bar", VGUI_SCREEN_PASS_WORLD, player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20, <0, 0, 0>, 3, 45 )
-			vgui.SetParent( player )
-			file.healthBars[player] = vgui
-		}
-
-		if( !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) || !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() )
-		{
-			foreground.Hide()
-			background.Hide()
-			continue
-		}
-
-		foreground.Show()
-		background.Show()
-
-		int health = player.GetHealth()
-		float Width = float( health * baseHeight ) / player.GetMaxHealth()
-		foreground.SetHeight( Width )
-
-		//make it face view player
-		vector closestPoint = GetClosestPointOnLine( GetLocalViewPlayer().CameraPosition(), GetLocalViewPlayer().CameraPosition() + (AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 100.0), vgui.GetOrigin() )		
-		vector angles = VectorToAngles( vgui.GetOrigin() - closestPoint )
-		vgui.SetAngles( Vector( -90, angles.y, 0 ) )
-		vgui.SetOrigin( player.GetOrigin() + AnglesToUp( player.GetAngles() ) * 80 + AnglesToRight( GetLocalViewPlayer().CameraAngles() ) * 20 )
-	}
-}
-
 void function FS_LG_OnPlayerDestroyed( entity player )
 {
 	if ( !IsValid( player ) )
 		return
-
-	if( player in file.healthBars )
-	{
-		if( IsValid( file.healthBars[player] ) )
-			file.healthBars[ player ].Destroy()
-		delete file.healthBars[player]
-	}
 
 	if( player in file.beammover )
 	{
@@ -557,7 +474,6 @@ void function FS_LG_OnPlayerDestroyed( entity player )
 		delete file.beamsFxs[player]
 	}
 }
-
 //Settings
 void function LGDuels_SetPresetRed( bool isLocalChosen )
 {

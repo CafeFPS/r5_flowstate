@@ -267,17 +267,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
 	PrecacheModel( $"mdl/robots/marvin/marvin.rmdl" )
 
-	//PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_exp.rmdl" )
 	//Weapons
-	PrecacheWeapon( $"mp_weapon_gloves_primary" )
-	PrecacheWeapon( $"melee_gloves" )
-	PrecacheWeapon( $"mp_weapon_flamethrower" )
-	PrecacheWeapon( $"mp_weapon_smart_pistol" )
-	PrecacheWeapon( $"mp_weapon_wingman_n" )
-	PrecacheWeapon( $"mp_weapon_epg" )
-	PrecacheWeapon( $"sp_weapon_arc_tool" )
+	// PrecacheWeapon( $"mp_weapon_smart_pistol" )
 
 	PrecacheWeapon( $"mp_titanweapon_flightcore_rockets" )
+
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_melee_halo" )
 	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )

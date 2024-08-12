@@ -4062,4 +4062,70 @@ Resource/UI/flowstate_customhudvgui.res
         pin_corner_to_sibling	RIGHT
         pin_to_sibling_corner	RIGHT
     }
+
+	//sentinel charge custom hud
+
+	Sentinel_ChargeElementBorder
+	{
+		ControlName				RuiPanel
+		wide					220
+		tall					40
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					30
+		zpos 35
+		pin_to_sibling          SafeArea
+		pin_corner_to_sibling   BOTTOM_RIGHT
+		pin_to_sibling_corner   BOTTOM_RIGHT
+	}
+
+	Sentinel_ChargeElementBg
+	{
+		ControlName				RuiPanel
+		wide					220
+		tall					40
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					30
+		zpos 0
+		pin_to_sibling          SafeArea
+		pin_corner_to_sibling   BOTTOM_RIGHT
+		pin_to_sibling_corner   BOTTOM_RIGHT
+	}
+
+	Sentinel_ChargeElementBar
+	{
+		ControlName				RuiPanel
+		wide					220
+		tall					40
+		visible					0
+		rui                     "ui/basic_image.rpak"
+		ypos 					0
+		xpos 					0
+		zpos 15
+		pin_to_sibling          Sentinel_ChargeElementBg
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+
+	Sentinel_ChargeElementText
+	{
+		"ControlName"				"Label"
+		"xpos"						"0"
+		"ypos"						"2"
+		"zpos"						"20"
+		"auto_wide_tocontents"		"1"
+		"tall"						"25"
+		"visible"					"0"
+		"fontHeight"				"23"
+		"labelText"					"@CafeFPS"
+		"font"						"DefaultBold_62_DropShadow"
+		"allcaps"					"1"
+		"fgcolor_override"			"255 255 255 255"
+		pin_to_sibling         Sentinel_ChargeElementBg
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
 }

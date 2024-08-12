@@ -2449,7 +2449,9 @@ entity function SURVIVAL_GiveMainWeapon( entity player, entity pickup, array<str
 		}
 	}
 
-	weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
+	if ( GetCurrentPlaylistVarBool( "flowstate_givecharms_weapons", false ) )
+		weaponCharmOrNull = GetItemFlavorByGUID( chosenCharm )
+
 	WeaponCosmetics_Apply( newWeapon, weaponSkinOrNull, weaponCharmOrNull )
 
 	if ( WeaponHasCosmetics( newWeapon ) && ( pickup.e.firstOwner != null ) && ( pickup.e.firstOwner != player ) && CodeCallback_CanStartCustomWeaponActivity( player, ACT_VM_WEAPON_INSPECT ) )

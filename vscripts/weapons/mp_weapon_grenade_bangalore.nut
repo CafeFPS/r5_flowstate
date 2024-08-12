@@ -546,13 +546,12 @@ void function BangSmoke_GetPlayersToHighlight( entity player, array<entity> outP
 
 			if ( DistanceSqr( visibilityCheckPoint, otherPlayerEyePos ) < maxSqrDist )
 			{
-				// results = TraceLine( visibilityCheckPoint, otherPlayerEyePos, [player, otherPlayer], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
-				// if ( results.fraction == 1.0 )
-				// {
-					// outPlayersToHighlight.append( otherPlayer )
-					// continue
-				// }
-				outPlayersToHighlight.append( otherPlayer )
+				results = TraceLine( visibilityCheckPoint, otherPlayerEyePos, allTargets, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+				if ( results.fraction == 1.0 )
+				{
+					outPlayersToHighlight.append( otherPlayer )
+					continue
+				}
 				continue
 			}
 		}

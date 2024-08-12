@@ -13,11 +13,15 @@ playlists
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Custom General Settings (Flowstate Custom)
 				///////////////////////////////////////////////////////////////////////////////////
-				force_plane_to_spawn_without_players 0
-				flyers_to_spawn 				100
-				evil_flyers						0
+				sentinel_enable_charging						1
+				flowstate_giveskins_weapons						1
+				flowstate_givecharms_weapons 					1
+				force_plane_to_spawn_without_players 			0
+				flyers_to_spawn 								100 //retail value: 8
+				evil_flyers										0
 				flowstate_enable_editor_hud						0
-
+				flowstate_enable_health_bars 					1
+				
 				survival_plane_jump_duration	60.0
 				survival_plane_jump_delay		5.0
 				register_damage_to_ai 							1
@@ -33,6 +37,12 @@ playlists
 				
 				sv_autoReloadRate 9000 //time in seconds to auto refresh server
 				
+				///////////////////////////////////////////////////////////////////////////////////
+				//////////			Modded weapons - JANU's framework 		 			 //////////
+				/////////////////////////////////////////////////////////////////////////////////// 
+				//custom_grenade_list "mp_weapon_decoy_grenade"
+				//custom_weapon_list "mp_weapon_flamethrower mp_weapon_epg sp_weapon_arc_tool mp_weapon_wingman_n" //mp_weapon_smart_pistol mp_weapon_heatwave mp_weapon_guidedmissile"
+
 				//////////////////////////////////////////////////////////////
 				// THE FOLLOWING SETTINGS REQUIRES TRACKER DLL (add-on mod)	//
 				//////////////////////////////////////////////////////////////
@@ -61,14 +71,6 @@ playlists
 				admins_list "R5mkos-1007946891142"		
 				stats_discord_webhook_player_count		0 // Sends player join and disconnect data to a discord channel
 				stats_discord_webhook_matches_enabled	0
-				
-				///////////////////////////////////////////////////////////////////////////////////
-				//////////			Modded weapons - JANU's framework 		 			 //////////
-				/////////////////////////////////////////////////////////////////////////////////// 
-
-				//custom_grenade_list "mp_weapon_impulse_grenade mp_weapon_sticky_grenade"
-				//custom_weapon_list "mp_weapon_fs_sheila"
-				//custom_weapon_list		"mp_weapon_portalgun_first"
 
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Code Required Vars
@@ -1549,8 +1551,9 @@ playlists
 				spawnpaks_preferred_pak			0 	//integer, pak number 
 			}
 			gamemodes { fs_dm { maps {
-				mp_rr_canyonlands_64k_x_64k                    	1
-				mp_rr_olympus_mu1								1
+				mp_rr_desertlands_64k_x_64k 1
+				// mp_rr_canyonlands_64k_x_64k                    	1
+				// mp_rr_olympus_mu1								1
 			} } }
 		}
 
@@ -2158,10 +2161,10 @@ playlists
 				respawn_kit_ultimate 				"mp_weapon_bubble_bunker_master_chief"
 				
 				//random weapons and abilities settings
-				flowstateRandomGuns 				0 	//round, big weapons list
-				flowstateRandomGunsMetagame			0 	//Metagame small weapon list primary:(r99,r301,flatline) secondary:(wingman,pk,eva,mastiff) every round
-				flowstateRandomTactical 			0 	//grapple,phase walk,stim,bubble, bang smokes, hound q, tf2 cloak
-				flowstateRandomUltimate				0 	//caustic ult,jumppad,wraith ult,3dash,hound ult, gibby ult
+				// flowstateRandomGuns 				0 	//round, big weapons list
+				// flowstateRandomGunsMetagame			0 	//Metagame small weapon list primary:(r99,r301,flatline) secondary:(wingman,pk,eva,mastiff) every round
+				// flowstateRandomTactical 			0 	//grapple,phase walk,stim,bubble, bang smokes, hound q, tf2 cloak
+				// flowstateRandomUltimate				0 	//caustic ult,jumppad,wraith ult,3dash,hound ult, gibby ult
 				
 				flowstateRandomHaloGuns				1
 
@@ -2198,29 +2201,17 @@ playlists
 				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
 				flowstateDoorsEnabled					0 //Doors enabled or disabled in all buildings.
 				flowstateDoorsRegen						0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
-				flowstate_afk_kick_enable				0
-		
+				enable_afk_thread 						1 //0 disables afk thread for this mode
+
 				//visuals
-				is_hiswattson_ltm						1
 				flowstate_evo_shields					0
 				battlechatter_enabled					0
-				flowstateRandomCharacterOnSpawn			0
 
-				flowstateForceCharacter 				1	//It enables the following settings
-				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
-				flowstateForceAdminCharacter			0
-				flowstateChosenAdminCharacter			0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
-				flowstateDummyOverride 					0	// explains itself, it's bugged with some abilities (grapple ie)
-					
 				//game continuity 
 				flowstateAutoreloadPrimary 				0
 				flowstateAutoreloadSecondary 			0
 				flowstateKillshotEnabled 				1	//enables the killshot sound when killing
-				
-				//extrashields
-				flowstateExtrashieldsEnabled 			0
-				flowstateExtrashieldsSpawntime 			240
-				flowstateExtrashieldValue 				150 //extrashield actual value
+
 				flowstate_modified_movement				0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf
 
 			}
@@ -2329,11 +2320,10 @@ playlists
 				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
 				flowstateDoorsEnabled					0 //Doors enabled or disabled in all buildings.
 				flowstateDoorsRegen						0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
-				flowstate_afk_kick_enable				0
-		
+				enable_afk_thread 						1 //0 disables afk thread for this mode
+
 				//visuals
 				is_hiswattson_ltm						1
-				flowstate_evo_shields					0
 				battlechatter_enabled					0
 				flowstateRandomCharacterOnSpawn			0
 
@@ -2712,8 +2702,6 @@ playlists
 				
 				//ltms
 				flowstate_evo_shields							1 //enables mortal evoshields ltm
-				is_hiswattson_ltm								1 //Add hiswattson ltm logo, removes beta watermark
-				flowstate_give_hiswattson_charm					1
 
 				//waiting_for_players_timeout_seconds			40
 				// debug				
@@ -3113,72 +3101,72 @@ playlists
 			} } }
 		}
 
-		survival_training
-		{
-			inherit fs_survival
-			vars
-			{
-				visible                                        1
-				ui_slot                                        firing_range
-				image                                          firing_range
-				name                                           "Firing Range"
-				description                                    #PL_FIRINGRANGE_DESC
-				video                                          _temp
+		// survival_training
+		// {
+			// inherit fs_survival
+			// vars
+			// {
+				// visible                                        1
+				// ui_slot                                        firing_range
+				// image                                          firing_range
+				// name                                           "Firing Range"
+				// description                                    #PL_FIRINGRANGE_DESC
+				// video                                          _temp
 
-				waiting_for_players_spawning_enabled           1
-				jump_from_plane_enabled                        0
-				wait_for_players_forever                       1
-				scorebar_hide_squads_remaining                 1
-				scorebar_hide_waiting_for_players              1
-				airdrop_enabled                                0
-				num_static_loot_ticks_to_spawn                 0
-				loot_preprocessing_should_be_skipped           1
-				survival_staging_area_enabled                  1
-				make_room_for_new_players                      1
+				// waiting_for_players_spawning_enabled           1
+				// jump_from_plane_enabled                        0
+				// wait_for_players_forever                       1
+				// scorebar_hide_squads_remaining                 1
+				// scorebar_hide_waiting_for_players              1
+				// airdrop_enabled                                0
+				// num_static_loot_ticks_to_spawn                 0
+				// loot_preprocessing_should_be_skipped           1
+				// survival_staging_area_enabled                  1
+				// make_room_for_new_players                      1
 
-				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
-				visible                                        1
+				// // match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
+				// visible                                        1
 
-				// Skip intros:
-				waiting_for_players_spawning_enabled           1
-				waiting_for_players_countdown_seconds          0
-				waiting_for_players_timeout_seconds            1
-				character_select_time_max                      0.0
-				character_select_time_min                      0.0
-				survival_enable_gladiator_intros               0
-				jump_from_plane_enabled                        0
+				// // Skip intros:
+				// waiting_for_players_spawning_enabled           1
+				// waiting_for_players_countdown_seconds          0
+				// waiting_for_players_timeout_seconds            1
+				// character_select_time_max                      0.0
+				// character_select_time_min                      0.0
+				// survival_enable_gladiator_intros               0
+				// jump_from_plane_enabled                        0
 
-				// No circle:
-				sur_circle_start_paused                        1
+				// // No circle:
+				// sur_circle_start_paused                        1
 
-				// Can change loadouts:
-				dev_loadout_changeable_at_any_time             1
-				sur_dev_unrestricted_character_changes         1
-				character_reselect_enabled                     1
-				charselect_enabled                             1
+				// // Can change loadouts:
+				// dev_loadout_changeable_at_any_time             1
+				// sur_dev_unrestricted_character_changes         1
+				// character_reselect_enabled                     1
+				// charselect_enabled                             1
 
-				// Bots:
-				sur_bots_spawn_with_random_weapons             1
+				// // Bots:
+				// sur_bots_spawn_with_random_weapons             1
 				
-				//General Gamemode Settings
-				match_ending_enabled                           0
-				max_team_size									3
-				max_players                                    3
-				min_players                                    1
+				// //General Gamemode Settings
+				// match_ending_enabled                           0
+				// max_team_size									3
+				// max_players                                    3
+				// min_players                                    1
 				
-				// Firing Range:
-				survival_firingrange                           1
-				staging_ultimates_enabled                      1
-				survival_staging_area_enabled                  0
-				//survival_infinite_ammo                       1
+				// // Firing Range:
+				// survival_firingrange                           1
+				// staging_ultimates_enabled                      1
+				// survival_staging_area_enabled                  0
+				// //survival_infinite_ammo                       1
 
-				flowstate_enable_bullet_slow					1
-				survival_training 1
-			}
-			gamemodes { survival { maps {
-				mp_rr_canyonlands_staging                   1
-			} } }
-		}
+				// flowstate_enable_bullet_slow					1
+				// survival_training 1
+			// }
+			// gamemodes { survival { maps {
+				// mp_rr_canyonlands_staging                   1
+			// } } }
+		// }
 		
 		survival_dev
 		{
@@ -3216,15 +3204,13 @@ playlists
 
 				//Some features added by CafeFPS
 
-				flowstate_give_hiswattson_charm					0
-				is_hiswattson_ltm								0 //Add hiswattson ltm logo, removes beta watermark
 				flowstate_armed_and_dangerous_ltm				0
 				flowstate_disable_all_map_triggers				0
 
 				enable_global_chat								1
 				flowstate_enable_punch_boosting					0
 				flowstate_giveskins_weapons 					0 // if you host with these you will be banned
-				flowstate_giveskins_characters 					1 // if you host with these you will be banned
+				flowstate_giveskins_characters 					0 // if you host with these you will be banned
 				r5reloaded_AnimatedCharacterSelect				0
 				flowstate_modified_movement						0 // 0 Apex - 1 TF2 - 2 CSGO - 3 HL1 - 4 Halo - 5 Surf - 6 SuperglideMod
 				flowstate_enable_bullet_slow					1

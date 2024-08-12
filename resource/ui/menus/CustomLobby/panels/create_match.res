@@ -463,62 +463,6 @@
 			pin_to_sibling_corner CENTER
 		}
 
-		MapPanel
-		{
-			ControlName RuiPanel
-			"classname"				"CreateServerUI"
-			wide 480
-			tall 50
-			xpos 0
-			ypos 5
-
-			rui "ui/control_options_description.rpak"
-
-			visible 1
-			zpos 0
-
-			pin_to_sibling			ServerDescPanel
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
-		}
-
-		BtnMap
-		{
-			ControlName RuiButton
-			InheritProperties RuiSmallButton
-			wide 480
-			tall 50
-			xpos 0
-			ypos 0
-			zpos 6
-			classname			"createserverbuttons"
-			"scriptID"					"0"
-
-
-			pin_to_sibling MapPanel
-			pin_corner_to_sibling CENTER
-			pin_to_sibling_corner CENTER
-		}
-
-		BtnMapText
-		{
-			ControlName				Label
-			"classname"				"CreateServerUI"
-			labelText				"#FS_SELECT_MAP"
-			"font"					"DefaultBold_41"
-			"allcaps"				"1"
-			auto_wide_tocontents	1
-			zpos 					3
-			fontHeight				25
-			xpos					0
-			ypos					0
-			"fgcolor_override"		"255 255 255 255"
-
-			pin_to_sibling MapPanel
-			pin_corner_to_sibling CENTER
-			pin_to_sibling_corner CENTER
-		}
-
 		PlaylistPanel
 		{
 			ControlName RuiPanel
@@ -533,7 +477,7 @@
 			visible 1
 			zpos 0
 
-			pin_to_sibling			MapPanel
+			pin_to_sibling			ServerDescPanel
 			pin_corner_to_sibling	TOP
 			pin_to_sibling_corner	BOTTOM
 		}
@@ -575,7 +519,7 @@
 			pin_to_sibling_corner CENTER
 		}
 
-		VisPanel
+		MapPanel
 		{
 			ControlName RuiPanel
 			"classname"				"CreateServerUI"
@@ -590,6 +534,62 @@
 			zpos 0
 
 			pin_to_sibling			PlaylistPanel
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		BtnMap
+		{
+			ControlName RuiButton
+			InheritProperties RuiSmallButton
+			wide 480
+			tall 50
+			xpos 0
+			ypos 0
+			zpos 6
+			classname			"createserverbuttons"
+			"scriptID"					"0"
+
+
+			pin_to_sibling MapPanel
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		BtnMapText
+		{
+			ControlName				Label
+			"classname"				"CreateServerUI"
+			labelText				"#FS_SELECT_MAP"
+			"font"					"DefaultBold_41"
+			"allcaps"				"1"
+			auto_wide_tocontents	1
+			zpos 					3
+			fontHeight				25
+			xpos					0
+			ypos					0
+			"fgcolor_override"		"255 255 255 255"
+
+			pin_to_sibling MapPanel
+			pin_corner_to_sibling CENTER
+			pin_to_sibling_corner CENTER
+		}
+
+		VisPanel
+		{
+			ControlName RuiPanel
+			"classname"				"CreateServerUI"
+			wide 480
+			tall 50
+			xpos 0
+			ypos 5
+
+			rui "ui/control_options_description.rpak"
+
+			visible 1
+			zpos 0
+
+			pin_to_sibling			MapPanel
 			pin_corner_to_sibling	TOP
 			pin_to_sibling_corner	BOTTOM
 		}

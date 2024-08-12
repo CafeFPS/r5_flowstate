@@ -271,7 +271,7 @@ void function SetMysteryBoxUsable( entity mysteryBox )
 	mysteryBox.SetUsableByGroup( "pilot" )
 	mysteryBox.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
 	mysteryBox.SetUsablePriority( USABLE_PRIORITY_MEDIUM )
-	mysteryBox.SetSkin(2)
+	// mysteryBox.SetSkin(2)
 	#endif // SERVER
 
 	SetCallback_CanUseEntityCallback( mysteryBox, MysteryBox_CanUse )
@@ -651,7 +651,7 @@ entity function CreateMysteryBox( vector origin, vector angles )
 	mysteryBox.SetAngles( angles )
 	mysteryBox.kv.solid = SOLID_VPHYSICS
 	SetTargetName( mysteryBox, UniqueMysteryBoxString( "MysteryBox" ) )
-	mysteryBox.SetSkin(2)
+	// mysteryBox.SetSkin(2)
 	DispatchSpawn( mysteryBox )
 
 	return mysteryBox

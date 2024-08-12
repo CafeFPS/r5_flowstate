@@ -50,7 +50,8 @@ void function Sh_GamemodeInfection_Init()
 	ShPrecacheShadowSquadAssets()
 
 	SurvivalFreefall_Init() //Enables freefall/skydive
-	
+	ShZombieMysteryBox_Init()
+
     switch( MapName() )
     {
 		case eMaps.mp_rr_canyonlands_mu1:
