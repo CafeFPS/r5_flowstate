@@ -32,14 +32,14 @@
 	"weapon_type_flags"							"WPT_PRIMARY"
 
 	// Script - Callbacks
-	// "OnWeaponActivate"                       "OnWeaponActivate_weapon_sentinel"
-	// "OnWeaponDeactivate"                     "OnWeaponDeactivate_weapon_sentinel"
-	// "OnWeaponPrimaryAttack"                    "OnWeaponPrimaryAttack_weapon_sentinel"
-	// "OnClientAnimEvent"						   "OnClientAnimEvent_weapon_basic_bolt"
-	// "OnWeaponCustomActivityStart"            "OnWeaponCustomActivityStart_weapon_sentinel"
-	// "OnWeaponCustomActivityEnd"              "OnWeaponCustomActivityEnd_weapon_sentinel"
-	// "OnWeaponStartZoomIn"                    "OnWeaponStartZoomIn_weapon_sentinel"
-	// "OnWeaponStartZoomOut"                   "OnWeaponStartZoomOut_weapon_sentinel"
+	"OnWeaponActivate"                       "OnWeaponActivate_weapon_sentinel"
+	"OnWeaponDeactivate"                     "OnWeaponDeactivate_weapon_sentinel"
+	"OnWeaponPrimaryAttack"                    "OnWeaponPrimaryAttack_weapon_sentinel"
+	"OnClientAnimEvent"						   "OnClientAnimEvent_weapon_basic_bolt"
+	"OnWeaponCustomActivityStart"            "OnWeaponCustomActivityStart_weapon_sentinel"
+	"OnWeaponCustomActivityEnd"              "OnWeaponCustomActivityEnd_weapon_sentinel"
+	"OnWeaponStartZoomIn"                    "OnWeaponStartZoomIn_weapon_sentinel"
+	"OnWeaponStartZoomOut"                   "OnWeaponStartZoomOut_weapon_sentinel"
 
     // Energize mechanics
     "energized_duration"                       "120.0"
