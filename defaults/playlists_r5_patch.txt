@@ -14,9 +14,9 @@ playlists
 				//// Custom General Settings (Flowstate Custom)
 				///////////////////////////////////////////////////////////////////////////////////
 				sentinel_enable_charging						1
-				flowstate_giveskins_weapons						1
-				flowstate_givecharms_weapons 					1
-				force_plane_to_spawn_without_players 			0
+				flowstate_giveskins_weapons						0
+				flowstate_givecharms_weapons 					0 // if you host with these you will be banned
+				force_plane_to_spawn_without_players 			0 // if you host with these you will be banned
 				flyers_to_spawn 								100 //retail value: 8
 				evil_flyers										0
 				flowstate_enable_editor_hud						0
