@@ -17,6 +17,9 @@ void function SetRegisterCoreStats( bool b )
 void function Tracker_Init()
 {
 	file.bStatsIs1v1Type = g_is1v1GameType()
+	
+	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
+	SetRegisterCoreStats( bRegisterCoreStats )
 }
 
 //////////////////////////////////////////////////
@@ -61,9 +64,6 @@ void function Script_RegisterAllStats()
 	//								
 	//								There also exists api rate-limiting. 
 	
-	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
-	SetRegisterCoreStats( bRegisterCoreStats )
-	
 	Tracker_RegisterStat( "settings" )
 
 	if( file.RegisterCoreStats )
@@ -74,6 +74,7 @@ void function Script_RegisterAllStats()
 		Tracker_RegisterStat( "total_time_played" )
 		Tracker_RegisterStat( "total_matches" )
 		Tracker_RegisterStat( "score" )
+		Tracker_RegisterStat( "previous_champion", null, Tracker_ReturnChampion )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
@@ -119,6 +120,11 @@ void function Callback_CoreStatInit( entity player )
 	int player_season_score = GetPlayerStatInt( uid, "score" )	
 	player.p.season_score = player_season_score
 	player.SetPlayerNetInt( "SeasonScore", player_season_score )
+}
+
+var function Tracker_ReturnChampion( string uid )
+{
+	return Tracker_StatsMetricsByUID( uid ).previous_champion
 }
 
 //////////////////////////////////////////////////////////

@@ -601,7 +601,10 @@ void function FS_TrackPlayersPositionInScoreboard()
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if( !IsCommandsEnabled( player ) ) return 
+	if( !IsCommandsEnabled( player ) ) 
+		return
+		
+	//TODO: Track down Why VModEnable is being called from code?
 	if( args[0] == "VModEnable" || args[0] == "vban" ) return
 	
 	#if DEVELOPER
@@ -615,7 +618,6 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 
 	string commandString = args.remove( 0 )
 	bool bFound = false
-	//TODO: Track down Why VModEnable is being called from code?
 
 	if( commandString in svGlobal.clientCommandCallbacksNew )
 	{

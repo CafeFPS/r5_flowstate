@@ -237,8 +237,11 @@ void function FS_MovementRecorder_ResetAllBindings( entity player )
 	foreach( keyName, _ in RECORDER_BINDINGS )
 	{
 		string commandToRestore = MovementRecorder_GetSavedBindCommand( keyName )
-		player.ClientCommand( "bind_US_standard " + keyName + " " + commandToRestore )
-		//printt( "Running: " + "bind_US_standard " + keyName + " " + commandToRestore )
+		
+		if( commandToRestore == "" )
+			player.ClientCommand( "unbind " + keyName )
+		else
+			player.ClientCommand( "bind_US_standard " + keyName + " " + commandToRestore )
 	}
 }
 

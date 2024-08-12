@@ -24,6 +24,7 @@ global function StringReplaceLimited
 	global function FS_BuildLocalizedMultiVarString
 	global function FS_CreateTextInfoPanelWithID_Localized
 	global function FS_BuildLocalizedVariable_InfoPanel
+	global function FS_CheckForConsistency_Client
 #endif
 
 #if DEVELOPER 
@@ -63,6 +64,7 @@ global enum eMsgUI
 struct 
 {
 	table<int, string> FS_LocalizedStrings = {}
+	int iConsistencyCheck = -1
 	
 #if SERVER
 	table<string, int> FS_LocalizedStringMap = {}
@@ -74,6 +76,7 @@ struct
 	string fs_variableString_InfoPanel = ""
 	string fs_variableSubString_InfoPanel = ""
 	table<int, string> variableVars = {}
+	bool bConsistencyCheckComplete = false
 #endif
 
 	//these must match the same order on client.
@@ -284,22 +287,25 @@ const array<int> longUiTypes =
 
 
 void function INIT_Flowstate_Localization_Strings()
-{
+{	
 	#if DEVELOPER
 		printt("Initializing all localization tokens")
 	#endif
 	
 	int iTokensCount = file.allTokens.len()
+	file.iConsistencyCheck = iTokensCount
+	
+	Localization_ConsistencyCheck()
 	
 	if( iTokensCount <= 0 )
 		return
 	
 	for ( int i = 0; i <= iTokensCount - 1; i++ )
 	{
-		file.FS_LocalizedStrings[i] <- file.allTokens[i]
+		file.FS_LocalizedStrings[ i ] <- file.allTokens[ i ]
 		
 		#if SERVER
-			file.FS_LocalizedStringMap[file.allTokens[i]] <- i
+			file.FS_LocalizedStringMap[ file.allTokens[ i ] ] <- i
 		#endif
 	}
 	
@@ -363,6 +369,31 @@ bool function ClientLocalizedTokenExists( int tokenRef )
 {
 	return ( tokenRef in file.FS_LocalizedStrings )
 }
+
+void function Localization_ConsistencyCheck()
+{
+	#if SERVER
+		AddClientCommandCallback( "localizationIntegrityCheck", ClientCommand_CheckLocalizationConsistency )
+		AddCallback_OnClientConnected
+		( 
+			void function( entity player )
+			{
+				if( IsValid( player ) )
+					Remote_CallFunction_NonReplay( player, "FS_CheckForConsistency_Client" )
+			}
+		)
+	#endif
+	
+	#if CLIENT
+		AddCallback_OnPlayerDisconnected
+		(
+			void function( entity player )
+			{
+				file.bConsistencyCheckComplete = false
+			}
+		)
+	#endif
+}
 // end SHARED
 
 #if SERVER
@@ -410,6 +441,28 @@ string function trim( string str )
 //########################################################
 
 #if SERVER
+
+bool function ClientCommand_CheckLocalizationConsistency( entity player, array<string> args )
+{
+	if( args.len() < 1 )
+		return true
+		
+	string param = args[ 0 ]
+	
+	if( !IsNumeric( param ) )
+		return true
+		
+	int clientCount = int( param )
+	
+	if ( clientCount != file.iConsistencyCheck )
+	{
+		string info = format( "Your Flowstate localization files do not match the server localization registry. Please update your scripts. Server count: %d, Local count: %d", file.iConsistencyCheck, clientCount )
+		KickPlayerById( player.GetPlatformUID(), info )
+	}
+	
+	return true
+}
+
 void function LocalMsg( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = false )
 {
 	#if DEVELOPER && ASSERT_LOCALIZATION
@@ -689,6 +742,19 @@ void function CreatePanelText_Localized( entity player, string ref, string subRe
 //########################################################
 
 #if CLIENT
+void function FS_CheckForConsistency_Client()
+{
+	if( !file.bConsistencyCheckComplete )
+	{
+		entity player = GetLocalClientPlayer()
+		
+		if( IsValid( player ) )
+		{
+			player.ClientCommand( "localizationIntegrityCheck " + string( file.iConsistencyCheck ) )
+			file.bConsistencyCheckComplete = true
+		}
+	}
+}
 
 void function FS_BuildLocalizedTokenWithVariableString( int Type, ... )
 {

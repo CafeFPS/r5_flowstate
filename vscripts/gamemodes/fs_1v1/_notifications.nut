@@ -143,7 +143,9 @@ void function RemoveNotificationID( entity player, int notificationID )
 
 void function __NotifyPlayer( entity player, string token = "", string subToken = "", string title = "", string text = "", int id = -1 )
 {
-	mAssert( id > 0 , "Invalid ID for notification" )
+	#if DEVELOPER
+		mAssert( id > 0 , "Invalid ID for notification" )
+	#endif
 	
 	table data = 
 	{ 
@@ -257,7 +259,7 @@ void function __UpdateNotificationText( entity player, string token, string subT
 	
 	#if DEVELOPER 
 		Warning( format( "Thread for id %d ended. eNum: %s, player: %s", panelID, DEV_GetEnumNameForNotification( panelID ), string( player ) ) )
-	#endif 
+	#endif
 }
 
 void function DestroyNotification( entity player, int notificationID )

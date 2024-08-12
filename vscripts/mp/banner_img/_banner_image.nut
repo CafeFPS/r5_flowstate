@@ -16,8 +16,10 @@ const int NORMAL 	= 0
 const int FAST 		= 1
 const int FASTER	= 2
 
+const DEBUG_BANNER_IMAGE = false
+
 //script local global
-bool g_bBannerImages_Loaded = false
+bool _bBannerImages_Loaded = false
 
 struct BannerImageData
 {
@@ -71,12 +73,12 @@ void function BannerImages_Init()
 		__RunThreads()
 	}
 	
-	g_bBannerImages_Loaded = true
+	_bBannerImages_Loaded = true
 }
 
 void function BannerImages_RegisterGroup( string name, LocPair groupLoc, float width, float height, float alpha = -1.0, bool isVisible = true, int cycleTime = 10, bool useRandom = false, float intermediateTime = 2.00, int fadeSpeed = SLOWEST )
 {	
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_RegisterGroup [" + name + "] but group registration is already complete." )
+	mAssert( !_bBannerImages_Loaded, "Tried to register BannerImages_RegisterGroup [" + name + "] but group registration is already complete." )
 
 	BannerGroupData bannerGroup 
 	
@@ -92,7 +94,7 @@ void function BannerImages_RegisterGroup( string name, LocPair groupLoc, float w
 	bannerGroup.useRandom	= useRandom
 	bannerGroup.fadeSpeed	= fadeSpeed
 	
-	#if DEVELOPER
+	#if DEVELOPER && DEBUG_BANNER_IMAGE
 		printt
 		(
 			bannerGroup.groupName,
@@ -118,13 +120,13 @@ void function BannerImages_RegisterGroup( string name, LocPair groupLoc, float w
 
 void function BannerImages_SetAllGroupsFunc( void functionref() callbackFunc )
 {
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllGroupsFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
+	mAssert( !_bBannerImages_Loaded, "Tried to register BannerImages_SetAllGroupsFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
 	file.groupsInitCallbackFunc = callbackFunc
 }
 
 void function BannerImages_SetAllImagesFunc( void functionref() callbackFunc )
 {
-	mAssert( !g_bBannerImages_Loaded, "Tried to register BannerImages_SetAllImagesFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
+	mAssert( !_bBannerImages_Loaded, "Tried to register BannerImages_SetAllImagesFunc [ " + string( callbackFunc ) + "() ] but group registration is already complete." )
 	file.runImageAppendtoGroupsFunc = callbackFunc
 }
 
@@ -144,7 +146,7 @@ void function BannerImages_GroupAppendImage( string groupName, int imgIdRef, str
 	
 	if( !group.isValid ) 
 	{
-		#if DEVELOPER 
+		#if DEVELOPER && DEBUG_BANNER_IMAGE
 			Warning( "Group " + groupName + " was invalid." )
 		#endif
 		
@@ -235,7 +237,7 @@ void function __RunThreads()
 {
 	foreach( string name, BannerGroupData data in file.groupDataMap )
 	{
-		#if DEVELOPER 
+		#if DEVELOPER && DEBUG_BANNER_IMAGE
 			Warning( "Spawning banner group: " + name )
 		#endif 
 		
@@ -257,14 +259,14 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	
 	if( banners.len() == 0 )
 	{
-		#if DEVELOPER 
+		#if DEVELOPER && DEBUG_BANNER_IMAGE
 			Warning( "(0) banners were found, returning." )
 		#endif 
 		return
 	}
 	else 
 	{
-		#if DEVELOPER 
+		#if DEVELOPER && DEBUG_BANNER_IMAGE
 			Warning( "Found: " + banners.len() + " banners." )
 		#endif 
 	}
@@ -274,7 +276,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 	BannerImageData baseBanner = banners[0]
 	int refID
 	
-	#if DEVELOPER 
+	#if DEVELOPER && DEBUG_BANNER_IMAGE
 		printt( "Spawning banner:", baseBanner.imageName )
 	#endif
 	
@@ -291,7 +293,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		groupData.isVisible	
 	)
 	
-	#if DEVELOPER 
+	#if DEVELOPER && DEBUG_BANNER_IMAGE
 		printt
 		( 
 			refID, "\n",
@@ -391,7 +393,7 @@ void function __Singlethread( entity player, BannerGroupData groupData )
 		)
 	}
 	
-	#if DEVELOPER 
+	#if DEVELOPER && DEBUG_BANNER_IMAGE
 		Warning( "BannerGroupData: " + groupData.groupName + " was set to invalid for player " + string( player ) + " and shutdown." )
 	#endif 
 }

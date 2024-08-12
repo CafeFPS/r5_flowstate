@@ -477,8 +477,8 @@ void function DamageTypes_Init()
 		file.damageSourceIDToString[ number ] <- name
 		
 		#if SERVER 
-			GetTrackerWeaponIdentifierTable()[name] <- number
-		#endif 
+			TrackerWepTable()[ name ] <- number
+		#endif
 	}
 
 	PrecacheWeapon( $"mp_weapon_rspn101" ) // used by npc_soldier ><

@@ -6,8 +6,9 @@ untyped																					//~mkos
 //////////////////////////////
 
 global function Stats__AddPlayerStatsTable
-global function GenerateOutBoundJsonData
-global function RegisterStatOutboundData
+global function Stats__GenerateOutBoundJsonData
+global function Stats__RegisterStatOutboundData
+global function Stats__SetStatKeys
 
 global function GetPlayerStatInt
 global function GetPlayerStatString
@@ -31,6 +32,10 @@ struct
 
 } file
 
+void function Stats__SetStatKeys( array<string> keys )
+{
+	file.statKeys = keys
+}
 
 array<string> function Stats__AddPlayerStatsTable( string player_oid ) 
 {
@@ -43,14 +48,12 @@ array<string> function Stats__AddPlayerStatsTable( string player_oid )
 
         foreach ( key, value in rawStatsTable )
         {
-            statsTable[ expect string(key) ] <- value;
+            statsTable[ expect string( key ) ] <- value;
 			statKeys.append( expect string( key ) )
         }
 		
-		file.allStatsTables[player_oid] <- statsTable
+		file.allStatsTables[ player_oid ] <- statsTable
 	}
-	
-	file.statKeys = statKeys
 	
 	return statKeys
 }
@@ -59,7 +62,7 @@ int function GetPlayerStatInt( string player_oid, string statname )
 {
 	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
-		return expect int( file.allStatsTables[player_oid][statname] )
+		return expect int( file.allStatsTables[ player_oid ][ statname ] )
 	}
 	
 	return 0
@@ -104,7 +107,10 @@ void function SetPlayerStatInt( string player_oid, string statname, int value )
 
 void function SetPlayerStatString( string player_oid, string statname, string value ) 
 {
-	mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value )
+	#if DEVELOPER
+		//This will be thrown out in the backend if exceeded.
+		mAssert( value.len() <= 30, "Invalid string length for the value of statname \"" + statname + "\" value: \"" + value )
+	#endif
 	
 	if ( player_oid in file.allStatsTables && statname in file.allStatsTables[ player_oid ] ) 
 	{
@@ -128,9 +134,7 @@ void function SetPlayerStatFloat( string player_oid, string statname, float valu
 	}
 }
 
-
-
-const array<string> ignoreStats = 
+const array<string> IGNORE_STATS = 
 [
 	"player",
 	"jumps",
@@ -146,16 +150,14 @@ array<string> function GenerateOutBoundDataList()
 	
 	foreach( key in file.statKeys )
 	{
-		if( !ignoreStats.contains( key ) )
-		{
+		if( !IGNORE_STATS.contains( key ) )
 			generatedOutboundList.append( key )
-		}
 	}
 	
 	return generatedOutboundList
 }
 
-string function GenerateOutBoundJsonData( string UID )
+string function Stats__GenerateOutBoundJsonData( string UID )
 {
 	string json = "";
 	array<string> validOutBoundStats = GenerateOutBoundDataList()
@@ -163,26 +165,25 @@ string function GenerateOutBoundJsonData( string UID )
 	foreach( statKey in validOutBoundStats )
 	{
 		if( statKey in file.registeredStatOutboundValues )
-		{
-			
-			string vType = typeof( file.registeredStatOutboundValues[statKey]( UID ) )
+		{		
+			string vType = typeof( file.registeredStatOutboundValues[ statKey ]( UID ) )
 			
 			switch( vType )
 			{
 				case "string":
-					json += "\"" + statKey + "\": \"" + expect string( file.registeredStatOutboundValues[statKey]( UID ) ) + "\", ";
+					json += "\"" + statKey + "\": \"" + expect string( file.registeredStatOutboundValues[ statKey ]( UID ) ) + "\", ";
 					break 
 				
 				case "int":
-					json += "\"" + statKey + "\": " + expect int( file.registeredStatOutboundValues[statKey]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect int( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
 					break
 					
 				case "float":
-					json += "\"" + statKey + "\": " + expect float( file.registeredStatOutboundValues[statKey]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect float( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
 					break
 				
 				case "bool":
-					json += "\"" + statKey + "\": " + expect bool( file.registeredStatOutboundValues[statKey]( UID ) ).tostring() + ", ";
+					json += "\"" + statKey + "\": " + expect bool( file.registeredStatOutboundValues[ statKey ]( UID ) ).tostring() + ", ";
 			}
 		}
 	}
@@ -190,7 +191,7 @@ string function GenerateOutBoundJsonData( string UID )
 	return json
 }
 
-void function RegisterStatOutboundData( string statname, var functionref( string UID ) func )
+void function Stats__RegisterStatOutboundData( string statname, var functionref( string UID ) func )
 {
 	if( ( statname in file.registeredStatOutboundValues ) )
 	{
@@ -198,7 +199,7 @@ void function RegisterStatOutboundData( string statname, var functionref( string
 		return
 	}
 	
-	file.registeredStatOutboundValues[statname] <- func
+	file.registeredStatOutboundValues[ statname ] <- func
 }
 
 void function NULL_STATS_INBOUND( entity player ){}

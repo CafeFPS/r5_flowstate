@@ -88,33 +88,42 @@ global function Flowstate_ApplyModifiedMovementToPlayer
 struct
 {
 	void functionref(entity player ) ObserverThreadOverrideCallback = null
+	int flowstate_modified_movement
+	
+	#if SERVER
+		bool use_r2_deathcam
+	#endif
 } file
 
 
 void function SV_CL_Onboarding_Init()
 {
-#if SERVER
-	SetAutoReloadState( false ) //let native know ~mkos
-	RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
-	FlagInit( "MinPlayersReached", false )
-
-	RespawnBehavior_Init()
-	AddCallback_OnPlayerKilled( OnPlayerKilled )
-	AddCallback_OnClientConnected( OnClientConnected )
-
-	AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
-	foreach ( character in GetAllCharacters() )
-		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
-
-	SetGameState( eGameState.WaitingForPlayers )
-
-	if ( OnboardingEnabled() )
-		thread Sequence_WaitingForPlayers()
-		
-	AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
-
+	OnboardingPlaylistSettings_Init()
 	
-#endif
+	#if SERVER
+		SetAutoReloadState( false ) //let native know ~mkos
+		RegisterSignal( "Flowstate_RestartLv4MagazinesThread" )
+		FlagInit( "MinPlayersReached", false )
+		
+		RespawnBehavior_Init()
+		AddCallback_OnPlayerKilled( OnPlayerKilled )
+		AddCallback_OnClientConnected( OnClientConnected )
+		
+		#if TRACKER
+			AddCallback_OnBatchStatsLoaded( FS_SetChampionOnPersistenceLoad )
+		#endif
+
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
+		foreach ( character in GetAllCharacters() )
+			AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
+
+		SetGameState( eGameState.WaitingForPlayers )
+
+		if ( OnboardingEnabled() )
+			thread Sequence_WaitingForPlayers()
+			
+		AddCallback_GameStateEnter( eGameState.Postmatch, void function() : (){ SetAutoReloadState( true ) } ) //check for native reload ~mkos
+	#endif
 }
 
 #if SERVER
@@ -180,25 +189,32 @@ void function Sequence_WaitingForPlayers()
 			if( Gamemode() != eGamemodes.CUSTOM_CTF )
 			{
 				ScreenCoverTransition_Player(player, Time() + 2)
-			} else
+			} 
+			else
 			{
 				ScreenFade( player, 0, 0, 0, 255, 1, 0, FFADE_OUT | FFADE_STAYOUT )
 			}
 		}
 	}
+	
+	#if TRACKER
+		if( !Tracker_IsBatchStatsLoaded() && Flowstate_IsTrackerSupportedMode() )
+			WaitSignalOrTimeout( svGlobal.levelEnt, Tracker_GetMaxWaitForBatchLoad(), "BatchFetchComplete" )
+	
+		WaitFrame()
+	#endif
 
-	// Set champion randomly from among all players
-	// TODO: tracker modification to get last winner for server if player still exists
-	// If not, use next closest , etc
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) && GetPlayerArray().len() > 0 )
 	{
-		entity champion = GetPlayerArray().getrandom()
-		SetChampion( champion )
+		#if !TRACKER 
+			entity champion = GetPlayerArray().getrandom()
+			SetChampion( champion )
+		#endif
 	}
 
 	if ( !introCountdownEnabled )
 		PlayPickLoadoutMusic( false )
-
+	
 	thread Sequence_PickLoadout()
 }
 
@@ -479,7 +495,8 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_FORTIFIED) )
 			GivePassive( player, ePassives.PAS_FORTIFIED )
-	} else if( ItemFlavor_GetHumanReadableRef( character ) == "character_crypto" )
+	} 
+	else if( ItemFlavor_GetHumanReadableRef( character ) == "character_crypto" )
 	{
 		if( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
 			GivePassive( player, ePassives.PAS_CRYPTO )
@@ -923,14 +940,15 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		victim.SetPlayerNetInt( "deaths", victim.GetPlayerNetInt( "deaths" ) + 1 )
 	
 	victim.FreezeControlsOnServer()
-
+	
 	victim.SetPredictionEnabled( false )
 	
-	if( Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() ) 
+	if( Gamemode() == eGamemodes.fs_snd || Flowstate_IsHaloMode() ) //todo: init single bool conditional
 		return
 	
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
-	if( GetCurrentPlaylistVarBool( "use_r2_deathcam", false ) && ShouldSetObserverTarget( attacker ) )
+	
+	if( file.use_r2_deathcam && ShouldSetObserverTarget( attacker ) )
 		victim.SetObserverTarget( attacker )
 	else
 		victim.SetObserverTarget( null )
@@ -1108,14 +1126,7 @@ void function UpdatePlayerCounts()
 		case eGamemodes.fs_dm:
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )		
-	
-		// if( nonPassiveModes.contains( Playlist() ) )
-		// {
-			// connectedPlayers = GetPlayerArray()
-			// SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-			// SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
-		// }
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )
 		break
 
 		case eGamemodes.CUSTOM_CTF:
@@ -1244,23 +1255,36 @@ void function SetPlayerSettings( entity player, table settings )
 	}
 }
 
+void function OnboardingPlaylistSettings_Init()
+{
+	#if CLIENT 
+		SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
+	#endif 
+	
+	#if SERVER
+		SetConVarInt( "sv_quota_stringCmdsPerSecond", 200 )
+		file.flowstate_modified_movement = GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 )
+		file.use_r2_deathcam = GetCurrentPlaylistVarBool( "use_r2_deathcam", false )
+	#endif
+}
+
 void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool resetOnly = false )
 {
-	if( GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) == 0 )
+	if( file.flowstate_modified_movement == 0 )
 		return
-	SetConVarInt( "sv_quota_stringCmdsPerSecond", 200 )
-	SetConVarInt( "cl_quota_stringCmdsPerSecond", 200 )
 
 	if( resetOnly )
 		return
 
-	switch( GetCurrentPlaylistVarInt( "flowstate_modified_movement", 0 ) )
+	switch( file.flowstate_modified_movement )
 	{
 		case 1:
 			#if SERVER
-			player.SetMoveSpeedScale( 0.87 )
+				player.SetMoveSpeedScale( 0.87 )
 			#endif
+			
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to TF2" )
 			#endif
@@ -1268,13 +1292,14 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 		
 		case 2:
 			#if SERVER
-			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-			player.SetMoveSpeedScale(1.38854974986041364747)
-			player.DisableMantle()
-			player.SetGroundFrictionScale(1.03125)
+				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+				player.SetMoveSpeedScale(1.38854974986041364747)
+				player.DisableMantle()
+				player.SetGroundFrictionScale(1.03125)
 			#endif
 
 			SetPlayerSettings( player, CSGO_MOVEMENT )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to CSGO" )
 			#endif
@@ -1282,11 +1307,13 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 		case 3:
 			#if SERVER
-			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-			player.SetMoveSpeedScale(1.77840093365762835808)
-			player.DisableMantle()
+				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+				player.SetMoveSpeedScale(1.77840093365762835808)
+				player.DisableMantle()
 			#endif
+			
 			SetPlayerSettings( player, HL1_MOVEMENT )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to HL1" )
 			#endif
@@ -1294,11 +1321,13 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 		case 4:
 			#if SERVER
-			StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
-			player.SetMoveSpeedScale( 1.1 )
-			player.DisableMantle()
+				StatusEffect_AddEndless(player, eStatusEffect.move_slow, 0.1)
+				player.SetMoveSpeedScale( 1.1 )
+				player.DisableMantle()
 			#endif
+			
 			SetPlayerSettings( player, HALO_MOVEMENT )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to Halo" )
 			#endif
@@ -1306,6 +1335,7 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 		case 5:
 			SetPlayerSettings( player, SURF_SETTINGS )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to Surf" )
 			#endif
@@ -1321,9 +1351,11 @@ void function Flowstate_ApplyModifiedMovementToPlayer( entity player, bool reset
 
 		case 7:
 			#if SERVER
-			player.SetMoveSpeedScale( 0.87 )
+				player.SetMoveSpeedScale( 0.87 )
 			#endif
+			
 			SetPlayerSettings( player, TRUE_TF2_SETTINGS_LOW_GRAV )
+			
 			#if DEVELOPER
 				printt( "Player movement changed to TF2" )
 			#endif

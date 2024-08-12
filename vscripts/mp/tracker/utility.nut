@@ -35,7 +35,6 @@ global function IsTrackerAdmin
 global function PlayTime
 global function truncate
 global function DEV_PrintTrackerWeapons
-global function GetTrackerWeaponIdentifierTable
 global function ValidateIBMMWaitTime
 global function VerifyAdmin
 global function IsSafeString
@@ -46,9 +45,8 @@ global function TP
 	global function PrintMatchIDtoAll
 #endif
 
-//const
-//global const int SQ_MAX_INT_32 = 2147483647;
-//global const int SQ_MIN_INT_32 = -2147483647;
+//Todo: Clean up/refactor
+//entire file needs audited for code refactor ~mkos
 
 //tables 
 table<string, string> player_admins
@@ -1366,11 +1364,8 @@ struct {
 				
 				
 			case "startbr":
-					
-					SetConVarBool( "sv_cheats", true )
-					FlagSet("MinPlayersReached")
-					SetConVarBool( "sv_cheats", false )
-					
+			
+					FlagSet( "MinPlayersReached" )	
 					return true
 					
 			case "pos":
@@ -1873,21 +1868,25 @@ bool function EnableVoice()
 //trims leading and trialing whitespace from a string
 string function trim( string str ) 
 {
-    int start = 0;
-    int end = str.len() - 1;
-    string whitespace = " \t\n\r";
+	return strip( str )
+	
+	/*
+		int start = 0;
+		int end = str.len() - 1;
+		string whitespace = " \t\n\r";
 
-    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
-	{
-        start++;
-    }
+		while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+		{
+			start++;
+		}
 
-    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
-	{
-        end--;
-    }
+		while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+		{
+			end--;
+		}
 
-    return str.slice(start, end + 1);
+		return str.slice(start, end + 1);
+	*/
 }
 
 
@@ -2223,7 +2222,7 @@ void function CheckAdmin_OnConnect( entity player )
 // WARNING, use ONLY VerifyAdmin() for permissive uses, not this.
 bool function IsTrackerAdmin( string CheckPlayer )
 {
-	foreach ( Player, OID in player_admins) 
+	foreach ( Player, OID in player_admins ) 
 	{
 		if ( Player == CheckPlayer || OID == CheckPlayer) 
 		{
@@ -2251,8 +2250,7 @@ bool function IsValidOID( string str )
 		oid = player.GetPlatformUID()
 		
 		if ( oid == str )
-			return true
-	
+			return true	
 	}
 	
 	return false
@@ -2260,31 +2258,34 @@ bool function IsValidOID( string str )
 
 entity function GetPlayerEntityByUID( string str )
 {
-	entity r_player;
-	string oid;
+	entity candidate
 	
 	if ( !IsNum( str ) )
-		return r_player
-		
+		return candidate
+	
 	foreach ( player in GetPlayerArray() )
 	{
 		if ( !IsValid( player ) )
-		{
 			continue
-		}
-		
-		oid = player.GetPlatformUID()
-		
-		if ( oid == str )
-		{
-			return player;
-		}
+
+		if ( player.GetPlatformUID() == str )
+			return player	
 	}
 	
-	return r_player;
+	return candidate
 }
 
-entity function GetPlayer( string str ) 
+entity function GetPlayer( string str )
+{
+	entity candidate = GetPlayerEntityByUID( str )
+	
+	if( IsValid( candidate ) )
+		return candidate
+		
+	return GetPlayerEntityByName( str )	
+}
+
+entity function GetPlayer_Expensive( string str ) 
 {
 	entity player;
 	
@@ -2315,7 +2316,6 @@ string function GetMap( string str )
 
 string function GetMode( string str ) 
 {
-
 	foreach ( mode in list_gamemodes ) 
 	{
 		if ( mode[0] == str || mode[1] == str ) 
@@ -2422,8 +2422,8 @@ bool function VerifyAdmin( string PlayerName, string PlayerUID )
 {
 	if ( PlayerName in player_admins ) 
 	{
-		if ( player_admins[PlayerName] != PlayerUID ) 
-			return false		
+		if ( player_admins[ PlayerName ] != PlayerUID ) 
+			return false	
 	}
 	else 
 	{
@@ -2459,11 +2459,6 @@ int function WeaponToIdentifier( string weaponName )
 bool function IsWeaponValid( string weaponref )
 {
 	return ( weaponref in WeaponIdentifiers )
-}
-
-table<string,int> function GetTrackerWeaponIdentifierTable()
-{
-	return WeaponIdentifiers
 }
 
 void function DEV_PrintTrackerWeapons()

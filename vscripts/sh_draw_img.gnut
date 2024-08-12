@@ -25,7 +25,7 @@ global function WorldDrawImg_RegisterRemoteAsset
 #endif
 
 global const float WORLD_DRAW_BASE_SPEED		= 0.01
-const ASSERT_WORLD_DRAW = true
+const DEBUG_WORLD_DRAW = false
 
 #if CLIENT 
 
@@ -89,8 +89,8 @@ void function WorldDrawImg_Init()
 	
 	WorldDrawImg_RegisterAllAssets()
 	
-	#if ASSERT_WORLD_DRAW
-		Warning( "ASSERT_WORLD_DRAW enabled" )
+	#if DEVELOPER && DEBUG_WORLD_DRAW
+		Warning( "DEBUG_WORLD_DRAW enabled" )
 	#endif 
 	
 	foreach( int idx, asset img in registeredRemoteAssets )
@@ -112,7 +112,7 @@ void function WorldDrawImg_Init()
 		if( ref in assetRefToIntMap )
 			return assetRefToIntMap[ ref ]
 		
-		#if ASSERT_WORLD_DRAW
+		#if DEBUG_WORLD_DRAW
 			mAssert( false, "Img ref " + ref + " doesn't exist" )
 		#endif 
 		
@@ -164,7 +164,7 @@ void function WorldDrawImg_Init()
 	{
 		if( speed < -4 || speed > 2 )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Cannot set speed greater than 3 or less than -2" )
 			#endif 
 			
@@ -266,7 +266,7 @@ void function WorldDrawImg_Init()
 			}
 			catch( e )
 			{
-				#if DEVELOPER && ASSERT_WORLD_DRAW
+				#if DEVELOPER && DEBUG_WORLD_DRAW
 					Warning( "Warning: " + e )
 				#endif
 			}
@@ -289,7 +289,7 @@ void function WorldDrawImg_Init()
 				}
 				catch( e )
 				{
-					#if DEVELOPER && ASSERT_WORLD_DRAW
+					#if DEVELOPER && DEBUG_WORLD_DRAW
 						Warning( "Warning: " + e )
 					#endif
 				}
@@ -320,7 +320,7 @@ void function WorldDrawImg_Init()
 		
 		if( assetRef != "" && !RuiImageExists( assetRef ) )
 		{
-			#if DEVELOPER && ASSERT_WORLD_DRAW
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Warning: Asset img \"" + assetRef + "\" does not exist for " + FUNC_NAME() + "()" )
 			#endif
 			
@@ -329,7 +329,7 @@ void function WorldDrawImg_Init()
 		
 		if( !bHasRef && assetRef == "" )
 		{
-			#if DEVELOPER
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning("No ref and custom asset specification is empty")
 			#endif
 			return
@@ -367,7 +367,7 @@ void function WorldDrawImg_Init()
 		}
 		else 
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Asset was null" )
 			#endif
 		}
@@ -384,7 +384,7 @@ void function WorldDrawImg_Init()
 		
 		if( !IsValid( topo ) )
 		{	
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Topology was invalid in " + FUNC_NAME() + "()" )
 			#endif 
 			
@@ -393,7 +393,7 @@ void function WorldDrawImg_Init()
 		
 		if( !IsValid( rui ) )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Rui was invalid in " + FUNC_NAME() + "()" )
 			#endif 
 			
@@ -419,7 +419,7 @@ void function WorldDrawImg_Init()
 		
 		if( !IsTopoDataValid( topoInfo ) )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
 			#endif 
 			
@@ -456,7 +456,7 @@ void function WorldDrawImg_Init()
 		RuiTopology_UpdatePos( topo, org, right, down )
 		
 		
-		#if DEVELOPER
+		#if DEVELOPER && DEBUG_WORLD_DRAW
 			printt
 			(
 				"\n\n ---- Updated topology/rui ---- \nID:", id, 
@@ -549,7 +549,7 @@ void function WorldDrawImg_Init()
 		
 		if( !IsValid( rui ) )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Rui asset was invalid in " + FUNC_NAME() + "()" )
 			#endif 
 			
@@ -568,7 +568,7 @@ void function WorldDrawImg_Init()
 		
 		if( !IsTopoDataValid( topoInfo ) )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( "Topology Info invalid in " + FUNC_NAME() + "()" )
 			#endif 
 			
@@ -645,13 +645,13 @@ void function WorldDrawImg_Init()
 
 	asset ornull function __FetchWorldImgAssetFromRef( int ref )
 	{
-		#if DEVELOPER 
+		#if DEVELOPER && DEBUG_WORLD_DRAW
 			Warning( "Requested asset for ref id: " + ref )
 		#endif 
 		
 		if( ref in assetIntToAssetMap )
 		{
-			#if DEVELOPER 
+			#if DEVELOPER && DEBUG_WORLD_DRAW
 				Warning( string( assetIntToAssetMap[ ref ] ) )
 			#endif
 			

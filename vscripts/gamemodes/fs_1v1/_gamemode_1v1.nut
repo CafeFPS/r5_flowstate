@@ -467,16 +467,12 @@ bool function setSbmmSetting( string setting, float value )
 bool function isPlayerInProgress( entity player )
 {
 	if ( !IsValid( player ) )
-	{
 		return false
-	}
 	
 	if ( player.p.handle in file.playerToGroupMap )
 	{
-		if( IsValid(file.playerToGroupMap[player.p.handle]))
-		{
+		if( IsValid( file.playerToGroupMap[ player.p.handle ] ) )
 			return true
-		}
 	}
 	
 	return false 
@@ -485,9 +481,7 @@ bool function isPlayerInProgress( entity player )
 void function EquipHostSetInvetoryAttachments( entity player )
 {
 	foreach ( optic in settings.hostSetAttachments )
-	{
 		SURVIVAL_AddToPlayerInventory( player, optic )
-	}
 }
 
 void function SetHostInvetoryAttachments()
@@ -3223,7 +3217,7 @@ void function INIT_PregameCallbacks()
 	if ( f_wait > 0.0 && f_wait < 3.0 )
 	{
 		//this shouldn't be defined out, it lets the host know they have an invalid setting
-		sqerror(format("Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ));
+		sqerror( format( "Default IBMM wait time was set as '%.2f' ; must be either 0 or >= 3. Resetting to 3.", f_wait ) )
 	}
 
 	//custom spawn extension using the implemented abstracted callback :) ~mkos 
@@ -3258,7 +3252,7 @@ void function Gamemode1v1_Init( int eMap )
 		DEV_1v1Init()
 	#endif 
 	
-	INIT_PlaylistSettings()
+	INIT_PlaylistSettings() // Always first
 	INIT_PregameCallbacks()
 	INIT_1v1_sbmm()
 	
@@ -4017,21 +4011,22 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			#if DEVELOPER
 				sqprint(format("arrayloop: Removing group: %d", group.groupHandle ))
 			#endif 
-			while(mGroupMutexLock) 
+			while( mGroupMutexLock ) 
 			{	
 				#if DEVELOPER
 					sqprint("Waiting for lock to release arrayloop") //no mutex print has ever happened in tests but its still possible
 				#endif
 				WaitFrame() 
 			}
-			if(IsValid(group))
+			
+			if( IsValid( group ) )
 			{
-				removeGroup(group)
+				removeGroup( group )
 			}
 			else 
 			{
 				#if DEVELOPER
-				sqerror("Invalid group cannot be removed by reference alone")
+					sqerror("Invalid group cannot be removed by reference alone")
 				#endif
 			}
 		}
@@ -4039,7 +4034,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		//遍历休息队列
 		foreach ( restingPlayerHandle,restingStruct in file.soloPlayersResting )
 		{
-			if(!restingPlayerHandle)
+			if( !restingPlayerHandle )
 			{	
 				sqerror("Null handle")
 					continue
@@ -4047,11 +4042,12 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			
 			entity restingPlayerEntity = GetEntityFromEncodedEHandle(restingPlayerHandle)
 			
-			if(!IsValid(restingPlayerEntity)) continue
+			if( !IsValid( restingPlayerEntity ) ) 
+				continue
 
-			if(!IsAlive(restingPlayerEntity)  )
+			if( !IsAlive( restingPlayerEntity ) )
 			{	
-				thread respawnInSoloMode(restingPlayerEntity)
+				thread respawnInSoloMode( restingPlayerEntity )
 			}
 			
 			//TakeAllWeapons( restingPlayer )
@@ -4067,7 +4063,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				continue
 			
 			//#if !DEVELOPER 
-				if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin) > file.waitingRoomRadius )
+				if( Distance2D( player.GetOrigin(), waitingRoomLocation.origin ) > file.waitingRoomRadius )
 				{
 					maki_tp_player( player, waitingRoomLocation ) //waiting player should be in waiting room,not battle area
 					HolsterAndDisableWeapons( player )
@@ -4125,9 +4121,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 			foreach ( player in GetPlayerArray() )
 			{
 				if ( !IsValid( player ) )
-				{
 					continue
-				}
 				
 				ClearNotifications( player, eNotify.WAITING )
 				SetShowWaitingMsg( player, true )
@@ -4146,10 +4140,8 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		//check challenges first
 		foreach ( playerHandle, eachPlayerStruct in file.soloPlayersWaiting ) //找player1
 		{	
-			if(!IsValid(eachPlayerStruct))
-			{
-				continue
-			}					
+			if( !IsValid( eachPlayerStruct ) )
+				continue			
 			
 			entity playerSelf = eachPlayerStruct.player
 			bool player_IBMM_timeout = eachPlayerStruct.IBMM_Timeout_Reached		
@@ -4396,21 +4388,22 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		foreach( player1_eHandle, player2 in file.acceptedChallenges ) 
 		{
 			entity player1 = GetEntityFromEncodedEHandle( player1_eHandle )
+			bool bPlayer1Valid = IsValid( player1 ) 
+			bool bPlayer2Valid = IsValid( player2 ) 
 			
-			if ( !IsValid( player1 ) || !IsValid( player2 ) ) 
-			{
-				
-				if( IsValid( player1 ) )
+			if ( !bPlayer1Valid || !bPlayer2Valid ) 
+			{		
+				if( IsValid( bPlayer1Valid ) )
 				{
 					player1.p.waitingFor1v1 = false
 				}
 				
-				if( IsValid( player2 ) )
+				if( IsValid( bPlayer2Valid ) )
 				{
 					player2.p.waitingFor1v1 = false
 				}
 				
-				deletions.append(player1_eHandle)
+				deletions.append( player1_eHandle )
 			}
 		}
 		
@@ -4567,8 +4560,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			{	
 				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-			}
-				
+			}	
 		}
 		
 		if( bInChallenge )

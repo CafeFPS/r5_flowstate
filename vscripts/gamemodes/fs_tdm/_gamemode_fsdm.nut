@@ -71,6 +71,7 @@ global function DissolveItem
 global function ReturnChatArray //not really used yet
 global function GetCurrentRound 
 global function RotateMap
+global function FS_SetChampionOnPersistenceLoad
 
 //Beginning of refactor( supposed to be for next, next release.. )
 global function AddCallback_OnTdmStateEnter_InProgress
@@ -2756,6 +2757,7 @@ void function RunTDM()
 		SimpleChampionUI()
 		WaitFrame()
 	}
+	
     WaitForever()
 }
 
@@ -2856,7 +2858,8 @@ void function SimpleChampionUI()
 	}
 	
 	file.isLoadingCustomMap = true
-	switch(file.selectedLocation.name)
+	
+	switch( file.selectedLocation.name )
 	{
 		case "Skill trainer By CafeFPS":
 		thread SkillTrainerLoad()
@@ -2989,7 +2992,9 @@ void function SimpleChampionUI()
 	{
 		foreach( entity player in GetPlayerArray() )
 		{
-			if( !IsValid(player) ) continue
+			if( !IsValid( player ) ) 
+				continue
+			
 			try 
 			{
 				RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
@@ -3092,7 +3097,8 @@ void function SimpleChampionUI()
 	if( file.selectedLocation.name == "Lockout" )
 	{
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
-	} else if( file.selectedLocation.name == "Narrows" )
+	} 
+	else if( file.selectedLocation.name == "Narrows" )
 	{
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
 	} 
@@ -3107,28 +3113,43 @@ void function SimpleChampionUI()
 	// } else
 		subtext = "Starting in " + Flowstate_StartTimeDelay + " seconds."
 
-	foreach( player in GetPlayerArray() )
-	{
-		// Message( player, file.selectedLocation.name, "", 5, "" )
-		file.previousChampion = GetBestPlayer()
-		file.previousChallenger = PlayerWithMostDamage()
-		GameRules_SetTeamScore( player.GetTeam(), 0 )
-	}
+	////////////////////////////////
+	///// 		SET CHAMPION 	////
+	////////////////////////////////
 
-	if( GetBestPlayer() != null )
-		SetChampion( GetBestPlayer() )
+	entity bestPlayer = GetBestPlayer()
+	bool bClearChampion
+	
+	if( bestPlayer != null ) //onboarding handles persistence based winner
+	{
+		SetChampion( bestPlayer ) //round based
+		file.previousChampion = bestPlayer
+		file.previousChallenger = PlayerWithMostDamage()
+		bClearChampion = true
+	}
+	
+	////////////////////////////////
+	//////// 	CLEAR DATA 	////////
+	////////////////////////////////
 
 	SurvivalCommentary_ResetAllData()
 
 	//printt("Flowstate DEBUG - Clearing last round stats.")
 	foreach( player in GetPlayerArray() )
 	{
-		if( !IsValid(player) ) continue
+		if( !IsValid( player ) ) 
+			continue
+			
+		if( bClearChampion )
+			SetPlayerStatBool( player.GetPlatformUID(), "previous_champion", false )
+
+		GameRules_SetTeamScore( player.GetTeam(), 0 )
 
 		if( Flowstate_IsDmOddball() || Flowstate_IsHalomodeOddball() )
 		{
 			Oddball_RestorePlayerStats( player )
 		}
+		
 		if( flowstateSettings.enable_oddball_gamemode )
 		{
 
@@ -3179,8 +3200,11 @@ void function SimpleChampionUI()
 		{
 			player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
 			UpgradeShields(player, true)
-		}		
+		}	
+
+		thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	}
+	
 	ResetAllPlayerStats()
 	ResetMapVotes()
 	file.winnerTeam = -1
@@ -3191,19 +3215,9 @@ void function SimpleChampionUI()
 	
 	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
-	foreach( player in GetPlayerArray() )
-	{
-		thread Flowstate_GrantSpawnImmunity(player, 2.5)
-		
-		//the following was removed prior to ByRef remote funcs
-		
-		// if( !is1v1EnabledAndAllowed() )
-		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
-	}
-
 	if( flowstateSettings.hackersVsPros )
 	{
-		ResetAllPlayerStats()
+		// ResetAllPlayerStats() //was already performed? ~mkos
 		int i
 		int maxHackers = 3
 		
@@ -3241,11 +3255,19 @@ void function SimpleChampionUI()
 			// i++
 		}
 	}
-	// #if !DEVELOPER
+	
+	
+	////////////////////////////////
+	//// 		START DELAY 	////
+	////////////////////////////////
+	
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 		wait Flowstate_StartTimeDelay
-	// #endif
-	//SetGameState( eGameState.Playing )
+	
+	////////////////////////////////
+	//////// 	SET STATE 	////////
+	////////////////////////////////
+	
 	SetTdmStateToInProgress()
 	
 	foreach( player in GetPlayerArray() )
@@ -3264,6 +3286,10 @@ void function SimpleChampionUI()
 	}
 
 	float endTime = Time() + FlowState_RoundTime()
+
+	////////////////////////////////
+	//////// 	TIMER BEGIN 	////
+	////////////////////////////////
 
 	if( flowstateSettings.EndlessFFAorTDM )
 	{
@@ -3290,7 +3316,7 @@ void function SimpleChampionUI()
 		// else
 			// PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
 		
-		if(file.currentRound>1 && is1v1EnabledAndAllowed() )//only work after round 1 and 1v1 gamemode
+		if( file.currentRound > 1 && is1v1EnabledAndAllowed() )//only work after round 1 and 1v1 gamemode
 		{
 			foreach ( eachPlayer in GetPlayerArray() )
 			{
@@ -3310,6 +3336,11 @@ void function SimpleChampionUI()
 				{}
 			}
 		}
+		
+		
+		////////////////////////////////
+		//// 	CORE TIMER LOOP 	////
+		////////////////////////////////
 		
 		while( Time() <= endTime )
 		{
@@ -3364,7 +3395,7 @@ void function SimpleChampionUI()
 				}
 			}
 
-			if(Time() == endTime - 60)
+			if( Time() == endTime - 60 )
 			{
 				// foreach( player in GetPlayerArray() )
 					// if( IsValid(player) )
@@ -3373,7 +3404,7 @@ void function SimpleChampionUI()
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
 
-			if(Time() == endTime - 30)
+			if( Time() == endTime - 30 )
 			{
 				// foreach( player in GetPlayerArray() )
 					// if( IsValid(player) )
@@ -3382,7 +3413,7 @@ void function SimpleChampionUI()
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
 
-			if(Time() == endTime - 10)
+			if( Time() == endTime - 10 )
 			{
 				// foreach( player in GetPlayerArray() )
 					// if( IsValid(player) )
@@ -3393,9 +3424,7 @@ void function SimpleChampionUI()
 
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 			{
-
 				PIN_RoundEnd( file.currentRound ) // r5r.dev
-
 				break
 			}
 
@@ -3409,10 +3438,7 @@ void function SimpleChampionUI()
 		{
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 			{
-				
-				PIN_RoundEnd( file.currentRound ) //R5R.DEV
-				
-				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+				PIN_RoundEnd( file.currentRound ) //R5R.DEV		
 				break
 			}
 
@@ -3420,6 +3446,10 @@ void function SimpleChampionUI()
 			wait 1
 		}
 	}
+	
+	////////////////////////////////
+	//////// 	TIMER END 	////////
+	////////////////////////////////
 
 	if( flowstateSettings.enable_oddball_gamemode && file.winnerTeam == -1 )
 	{
@@ -3483,52 +3513,78 @@ void function SimpleChampionUI()
 	
 	wait 1
 
-	foreach(player in GetPlayerArray())
+	foreach( player in GetPlayerArray() )
+	{
+		if ( !IsValid( player ) ) 
+			continue
+
+		if( !IsAlive(player) && !player.p.isSpectating )
 		{
-			if ( !IsValid( player ) ) continue
-
-			if(!IsAlive(player) && !player.p.isSpectating)
-			{
-				_HandleRespawn(player)
-				ClearInvincible(player)
-			}
-
-			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
-			{
-				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
-				PlayerRestoreHPFIESTA(player, 100)
-			} else
-				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-			
-			ClientCommand( player, "-zoom" )
-			//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
-			Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
-			
-			player.SetThirdPersonShoulderModeOn()
-			player.HolsterWeapon()
-			player.Server_TurnOffhandWeaponsDisabledOn()
-			
-			if( flowstateSettings.enable_oddball_gamemode  )
-			{
-				AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-
-				if( file.winnerTeam >= -1 )
-				{
-					Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 0 )
-				} else if( file.winnerTeam < -1 )
-				{
-					Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 1 )
-				}
-				
-				SetBallEntity( null )
-			}
+			_HandleRespawn(player)
+			ClearInvincible(player)
 		}
 
+		if( FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak() )
+		{
+			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+			PlayerRestoreHPFIESTA(player, 100)
+		} 
+		else
+			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+		
+		ClientCommand( player, "-zoom" )
+		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
+		Remote_CallFunction_ByRef( player, "Minimap_DisableDraw_Internal" )
+		
+		player.SetThirdPersonShoulderModeOn()
+		player.HolsterWeapon()
+		player.Server_TurnOffhandWeaponsDisabledOn()
+		
+		if( flowstateSettings.enable_oddball_gamemode  )
+		{
+			AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
 
-	PIN_RoundEnd( file.currentRound )
+			if( file.winnerTeam >= -1 )
+			{
+				Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 0 )
+			} 
+			else if( file.winnerTeam < -1 )
+			{
+				Remote_CallFunction_NonReplay( player, "FSDM_CustomWinnerScreen_Start", file.winnerTeam, 1 )
+			}
+			
+			SetBallEntity( null )
+		}
+	}
 	
-	wait (2);
+	////////////////////////////////
+	////	 	CHAMPION	 	////
+	////////////////////////////////
+	
+	//set the champion even if reloading the map ~mkos
+	int TeamWon = 69
+	
+	if( GetPlayerArray().len() == 1 && IsValid( gp()[0] ) )
+		TeamWon = gp()[0].GetTeam() //DEBUG VALUE
+	
+	entity champion = GetBestPlayer()
+	
+	if( IsValid( champion ) )
+	{
+		TeamWon = champion.GetTeam()
+		
+		#if TRACKER
+			Tracker_SetPlayerAsChampion( champion )
+		#endif
+	}
+
+	PIN_RoundEnd( file.currentRound ) //must be after champion determined.
+	wait (2)
 	// end ship
+	
+	////////////////////////////////
+	//////// 	SCORE BOARD 	////
+	////////////////////////////////
 
 	if( SCOREBOARD_ENABLE )
 		thread SendScoreboardToClient()
@@ -3554,6 +3610,10 @@ void function SimpleChampionUI()
 		// player.SetThirdPersonShoulderModeOff()	
 		// player.FreezeControlsOnServer()
 	// }
+
+	////////////////////////////////
+	//// 		VOTING 			////
+	////////////////////////////////
 
 	if( !VOTING_PHASE_ENABLE )
 	{
@@ -3587,16 +3647,17 @@ void function SimpleChampionUI()
 		}()		
 	}
 	
+	////////////////////////////////
+	//////// 	ROUND OVER 	////////
+	////////////////////////////////
 		
 	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
 	{
 		foreach( player in GetPlayerArray() )
 		{
-			if (player.p.isSpectating)
-			{
+			if ( player.p.isSpectating )
 				endSpectate( player )
-			}
-		}	
+		}
 		
 		string matchEndingTitle = flowstateSettings.custom_match_ending_title
 		string matchEndingMessage = flowstateSettings.custom_match_ending_message
@@ -3607,15 +3668,23 @@ void function SimpleChampionUI()
 				Message( player, matchEndingTitle, matchEndingMessage, 6.0 )
 
 			wait 6
-
-			if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
-				MovementGymSaveTimesToFile()
 		}
 		
+		if( FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym() )
+				MovementGymSaveTimesToFile()
+		
+		
+		////////////////////////////////
+		////		SIGNAL STATS	////
+		////////////////////////////////
+		
 		if( bLog() )
-		{
-			FlagEnd("START_LOG")
-		}
+			FlagEnd( "START_LOG" ) //Shut down stats for this round.
+		
+		
+		////////////////////////////////
+		//////// 	NEXT MAP 	////////
+		////////////////////////////////
 		
 		//cycle map /mkos
 		string to_map = GetMapName()
@@ -3643,17 +3712,12 @@ void function SimpleChampionUI()
 		WaitSignal( svGlobal.levelEnt, "ReloadCheckComplete" ) //possibly use flag
 		
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
-	}
-
-	int TeamWon = 69
+	} //flowstate rounds
 	
-	if(GetPlayerArray().len() == 1 && IsValid(gp()[0]))
-		TeamWon = gp()[0].GetTeam() //DEBUG VALUE
 	
-	if(IsValid(GetBestPlayer()))
-		TeamWon = GetBestPlayer().GetTeam()
-		
-	//Todo: server persistence set winning uid as champion
+	////////////////////////////////
+	//////// 	NEXT ROUND 	////////
+	////////////////////////////////
 	
 	if( IsValid( file.ringBoundary ) )
 		file.ringBoundary.Destroy()
@@ -3668,6 +3732,10 @@ void function SimpleChampionUI()
 	else if( is1v1EnabledAndAllowed() )
 		waitthread ForceAllRoundsToFinish_solomode()
 	
+	
+	////////////////////////////////
+	//////// 	SCOREBOARD 	////////
+	////////////////////////////////
 	if( SCOREBOARD_ENABLE )
 	{
 		FS_DM.scoreboardShowing = true
@@ -3678,17 +3746,14 @@ void function SimpleChampionUI()
 				continue
 			
 			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			
 			if( flowstateSettings.is_halo_gamemode )
-			{
 				Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
-			}
 
 			entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 			
 			if( IsValid( weapon ) && weapon.w.isInAdsCustom )
-			{
 				weapon.w.isInAdsCustom = false
-			}
 
 			Remote_CallFunction_Replay(player, "ServerCallback_FSDM_OpenVotingPhase", true)
 			//Remote_CallFunction_NonReplay(player, "ServerCallback_FSDM_CoolCamera")
@@ -3699,7 +3764,7 @@ void function SimpleChampionUI()
 
 		wait 6
 		
-		if(!VOTING_PHASE_ENABLE)
+		if( !VOTING_PHASE_ENABLE )
 		{
 			// Close the votemenu for each player
 			foreach( player in GetPlayerArray() )
@@ -3730,8 +3795,18 @@ void function SimpleChampionUI()
 		FS_DM.scoreboardShowing = false
 	}
 	
+	
+	////////////////////////////////////////////
+	// 		SET STATE FOR INTERNAL CHECKS 	  //
+	////////////////////////////////////////////
+	
 	SetGameState( eGameState.Postmatch )
 	PIN_Callback_CheckReload()
+
+	
+	////////////////////////////////
+	//////// 	VOTING 		////////
+	////////////////////////////////
 
 	if( VOTING_PHASE_ENABLE )
 	{
@@ -3879,6 +3954,11 @@ void function SimpleChampionUI()
 		// player.SetThirdPersonShoulderModeOff()
 		// player.UnfreezeControlsOnServer()
 	// }
+	
+	
+	////////////////////////////////
+	/////	 NEXT ROUND NOW 	////
+	////////////////////////////////
 
 	file.currentRound++		
 	SetGameState( eGameState.Playing )
@@ -6454,4 +6534,38 @@ void function Vamp_OnWeaponAttack( entity player, entity weapon, string weaponNa
 	if( !IsValid( player ) )
 		return
 	player.RefillAllAmmo()
+}
+
+void function FS_SetChampionOnPersistenceLoad()
+{
+	thread
+	(		
+		void function() : ()
+		{
+			wait 3
+			array<entity> championCandidates
+			
+			foreach( player in GetPlayerArray() )
+			{
+				string uid = player.GetPlatformUID()
+				
+				//printt( player, GetPlayerStatBool( uid, "previous_champion" ) )
+				
+				if( GetPlayerStatBool( uid, "previous_champion" ) )
+					championCandidates.append( player )
+					
+				SetPlayerStatBool( uid, "previous_champion", false ) // set everyone to false
+			}
+		
+			if( championCandidates.len() >= 1 )
+			{							
+				entity champion = championCandidates.getrandom()
+				SetChampion( champion ) //not the best determinate ( needs a struct of winning data ) 
+				//Warning( "Champion set as: " + string( champion ) )
+				
+				file.previousChampion = champion
+				file.previousChallenger = null
+			}
+		}
+	)()
 }
