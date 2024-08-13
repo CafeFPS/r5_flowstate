@@ -436,9 +436,13 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 			continue
 		}
 
-		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) || GetGameState() != eGameState.Playing )
+		if( EffectDoesExist( file.beamsFxs[ player ] ) )
 		{
-			EffectStop( file.beamsFxs[ player ], false, false )
+			if( !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || 
+			!player.DoesShareRealms( GetLocalViewPlayer() ) || 
+			!IsAlive( player ) || 
+			GetGameState() != eGameState.Playing )
+				EffectStop( file.beamsFxs[ player ], false, false )
 		}
 		
 		wasPlayerShooting = player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" )
