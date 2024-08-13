@@ -436,14 +436,13 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 			continue
 		}
 
-		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) )
+		if( EffectDoesExist( file.beamsFxs[ player ] ) && !player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" ) && wasPlayerShooting || !player.DoesShareRealms( GetLocalViewPlayer() ) || !IsAlive( player ) || GetGameState() != eGameState.Playing )
 		{
 			EffectStop( file.beamsFxs[ player ], false, false )
 		}
 		
 		wasPlayerShooting = player.GetPlayerNetBool( "isPlayerShootingFlowstateLightningGun" )
-		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.0001, 0, 0 )
-		
+		mover.NonPhysicsMoveTo( EyeTraceVec( player ), 0.01, 0, 0 ) //min wait value is 0.01 so it does not affect other movers? Cafe	
 		WaitFrame()
 	}
 }
