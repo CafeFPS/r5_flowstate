@@ -3484,7 +3484,7 @@ void function Gamemode1v1_Init( int eMap )
 		void function( entity player )
 		{
 			#if TRACKER 
-				!IsBotEnt( player )
+				if( !IsBotEnt( player ) )
 					return
 			#endif 
 			// init for IBMM
