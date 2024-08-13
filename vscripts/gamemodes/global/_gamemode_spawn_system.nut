@@ -3333,5 +3333,4 @@ array<LocPair> function customDevSpawnsList()
 	
 	return spawns
 }
-
 #endif //DEVELOPER

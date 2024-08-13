@@ -287,3 +287,11 @@ bool function Flowstate_GivePassive()							{ return SH_flowstateSettings.Flowst
 bool function Equipment_GetRespawnKitEnabled()                  { return SH_flowstateSettings.Equipment_GetRespawnKitEnabled }
 bool function FlowState_GiveTactical()							{ return SH_flowstateSettings.FlowState_GiveTactical }
 bool function FlowState_RestMsg()								{ return SH_flowstateSettings.FlowState_RestMsg }
+
+void function DEV_RegisterNetworking_SpawnSystem()
+{
+	#if DEVELOPER
+		RegisterNetworkedVariable( "FS_Scenarios_currentDeathfieldRadius", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+		RegisterNetworkedVariable( "FS_Scenarios_currentDistanceFromCenter", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME )
+	#endif
+}
