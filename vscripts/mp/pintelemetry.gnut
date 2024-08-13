@@ -826,6 +826,11 @@ void function INIT_Global_R5RDEV_VarTable()
 ////////////////////////////////////////////
 ////////	Custom Query Callbacks	////////
 
+void function SendMotdToPlayer( entity player, string motd )
+{
+	MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, motd, "", "", true )
+}
+
 void function DummyFunction_ProofOfConcept( string retData )
 {
 	#if DEVELOPER
@@ -846,20 +851,24 @@ void function ShowPlayerOnlineMOTD( string retData )
 
 void function ShowOnlineMOTD( entity player )
 {
-	thread( void function() : ( player )
+	thread
+	( 
+		void function() : ( player )
 		{
-			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 			
 				if( IsValid( player ) )
 				{	
 					//run ui script for motd
-					MessageLong( player, "", "", eMsgUI.VAR_MOTD , 10, LineBreak( file.onlineMOTD, 80 ) )	
+					SendMotdToPlayer( player, file.onlineMOTD )
 						wait 5
 						
 					if( IsValid( player ) )
 						LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
 				}
-		})()
+		}
+	)()
 }
 
 void function ShowPlayerLocalMOTD( entity player )
@@ -868,12 +877,13 @@ void function ShowPlayerLocalMOTD( entity player )
 	(
 		void function() : ( player )
 		{
-			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 			
 			if( IsValid( player ) )
 			{
 				//run ui script for motd
-				MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
+				SendMotdToPlayer( player, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
 					wait 5
 					
 				LocalMsg( player, "#FS_WELCOME", "", eMsgUI.QUICK, 10, player.p.name )//Extra welcome message
@@ -888,7 +898,7 @@ void function Pin_Query_Init()
 
 	if( file.restricted_server )
 	{
-		AddCallback_QueryString( "restricted_rank:"+GetCurrentPlaylistVarInt("restricted_rank",0).tostring(), DummyFunction_ProofOfConcept )
+		AddCallback_QueryString( "restricted_rank:" + GetCurrentPlaylistVarInt( "restricted_rank", 0 ).tostring(), DummyFunction_ProofOfConcept )
 	}
 	
 	if( file.bMotdEnabled )
@@ -897,7 +907,7 @@ void function Pin_Query_Init()
 		{
 			AddCallback_QueryString( "MOTD:SERVER", ShowPlayerOnlineMOTD )
 		}
-		else 
+		else if( !empty( file.localFlowstate_MOTD ) )
 		{
 			AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
 		}
@@ -943,9 +953,8 @@ void function INIT_BATCH_FETCH()
 			//sqprint("waiting for connection")
         }
 
-        if ( next_player ) {
+        if ( next_player )
             continue
-        }
 	
 		oids.append( player.GetPlatformUID() )	
 		
@@ -1052,7 +1061,7 @@ string function BuildRequestedSettingsString()
 	}
 	
 	#if DEVELOPER
-		printt("\n\n ---- Settings query ---- \n",settingsQuery,"\n\n")
+		printt( "\n\n ---- Settings query ---- \n", settingsQuery, "\n\n" )
 	#endif 
 	
 	return settingsQuery 
@@ -1125,9 +1134,9 @@ void function __SetPlayerSyncData( entity player )
 	if( statKeys.len() > 0 || PersistenceData.len() > 0 )
 	{		
 		#if DEVELOPER 
-			printt("\n\nIncoming StatsKeys:")
+			printt( "\n\nIncoming StatsKeys:" )
 			printarray( statKeys )
-			printt("\n\nIncoming Persistence Settings:")
+			printt( "\n\nIncoming Persistence Settings:" )
 			printarray( PersistenceData )
 		#endif 
 	
@@ -1136,7 +1145,7 @@ void function __SetPlayerSyncData( entity player )
 		if( SYNC_Data_length < REQUIRED_SYNC_DATA_FIELDS ) 
 		{
 			#if DEVELOPER 
-				sqerror("Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
+				sqerror( "Stats Failed for: " + OID + " ; returned " + SYNC_Data_length.tostring() + " fields;  required fields = " + REQUIRED_SYNC_DATA_FIELDS.tostring() )
 			#endif 
 			
 			__Tracker_SignalPlayerStatsReady( player )
@@ -1154,6 +1163,10 @@ void function __SetPlayerSyncData( entity player )
 			}
 		}		
 		
+		// The reason for this is because for a player who just rejoined, 
+		// we don't want to overwrite their server persistence settings 
+		// with the ones we just shipped in, as they will be older 
+		// than the data we have in the servers local memory.
 		if( !GetIgnoreSyncFlag( player ) )
 		{		
 			UpdatePlayerData( player, PersistenceData )
@@ -1223,7 +1236,7 @@ void function UpdatePlayerData( entity player, array<string> Sync_Data )
 			foreach( callBackFunc in file.PlayerSettingsMap[ key ] )
 				callBackFunc( player, ReturnValue( Sync_Data[i] ) )
 		}
-		else 
+		else
 		{
 			#if DEVELOPER
 				sqerror( format("Setting %s does not exist in PlayerSettingsMap", key ) )
@@ -1254,7 +1267,7 @@ void function __CONTROLLED_LogInit()
 {
 	if( file.scriptLogthreadRunning )
 	{
-		sqerror("Thread is already running")
+		sqerror( "Thread is already running" )
 		return
 	}
 	
@@ -1272,14 +1285,14 @@ void function __CONTROLLED_LogInit()
 	
 	while(true)
 	{
-		FlagWait("START_LOG")	
+		FlagWait( "START_LOG" )	
 		__START_LOGGING()	
-		FlagClear("START_LOG")	
+		FlagClear( "START_LOG" )	
 	}
 }
 
 void function PIN_Init()
-{	
+{
 	#if !SERVER
 		return
 	#endif 
@@ -1313,10 +1326,11 @@ void function PIN_Init()
 	
 	if( file.LogOn )
 	{
+		SetServerVar( "tracker_enabled", true )
 		AddCallback_OnTdmStateEnter_InProgress( SetStartLog )
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
-	}	
+	}
 	
 	if( GetCurrentPlaylistVarBool( "disable_lag_comp", false ) )
 		SetConVarInt( "sv_unlag", 0 )
@@ -1396,7 +1410,7 @@ void function SetStartLog()
 
 void function Tracker_SettingsInit()
 {
-	settings.host_autoReloadRate = GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
+	settings.host_autoReloadRate 		= GetCurrentPlaylistVarFloat( "sv_autoReloadRate", 0 )
 	
 	file.LogOn 							= GetCurrentPlaylistVarBool("logging_enabled", false)
 	file.LogE 							= GetCurrentPlaylistVarBool("logging_encryption", false)
@@ -1430,7 +1444,7 @@ void function Tracker_SettingsInit()
 
 	file.bUseOnlineMOTD 					= GetCurrentPlaylistVarBool( "use_online_motd", false )
 	file.bMotdEnabled						= GetCurrentPlaylistVarBool( "enable_motd", false )
-	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "An R5Reloaded Server" )
+	file.localFlowstate_MOTD				= GetCurrentPlaylistVarString( "custom_MOTD", "" )
 
 	file.maxWaitForBatchLoad				= GetCurrentPlaylistVarFloat( "tracker_max_wait", 7.0 )
 }
@@ -1519,13 +1533,13 @@ void function __START_LOGGING()
 	if ( file.PIN_GameState_Start ) 
 	{
 		#if DEVELOPER 
-			sqprint("file.PIN_GameState_Start was true, returning")
+			sqprint( "file.PIN_GameState_Start was true, returning" )
 		#endif
 		return 
 	}
 	
 	#if DEVELOPER 
-		sqprint("Dispatching Init_NewGame() thread")
+		sqprint( "Dispatching Init_NewGame() thread" )
 	#endif
 	
 	thread Init_NewGame()
@@ -1979,27 +1993,19 @@ void function INIT_IntervalMessages()
 void function __executeEventStart_messages()
 {	
 	if( file.Messages_EventStart.len() == 0 )
-	{
 		return 
-	}
 	
 	foreach ( message in file.Messages_EventStart )
-	{
 		SendServerMessage( message )
-	}
 }
 
 void function __executeEventEnd_messages()
 {
 	if( file.Messages_EventEnd.len() == 0 )
-	{
-		return 
-	}
+		return
 	
 	foreach ( message in file.Messages_EventEnd )
-	{
 		SendServerMessage( message )
-	}
 }
 
 void function InitPlayerWelcomeMessage()
@@ -2032,9 +2038,7 @@ void function MessageIntervalThread()
 	bool bLoopServerMessages = true 
 	
 	if( file.arrayLoopMessages.len() <= 0 )
-	{
 		bLoopServerMessages = false
-	}
 	
 	OnThreadEnd
 	( 
@@ -2064,9 +2068,7 @@ void function MessageIntervalThread()
 		
 		//train (loopmessages)
 		if( bLoopServerMessages )
-		{
 			loopMsgCount = SendLoopMessage( threadCycleCount, loopMsgCount )
-		}
 	}
 	
 	file.bIntervalThreadRunning = false
@@ -2103,7 +2105,7 @@ void function __LoadServerBot()
 	wait 3 //time this event based
 	
 	#if DEVELOPER
-		printt(":(pin):: loaded server bot")
+		//printt(":(pin):: loaded server bot")
 	#endif
 	
 	array<int> result = SQ_CreateServerBot__internal( file.sBotName )
@@ -2954,9 +2956,7 @@ int function GetBulletsPerShot( int weaponSource )
 float function GetDamagePerBullet( int weaponSource ) 
 {
 	if( weaponSource in DamagePerBullet )
-	{
 		return DamagePerBullet[ weaponSource ]
-	}
 	
 	return 1
 }
@@ -2964,9 +2964,7 @@ float function GetDamagePerBullet( int weaponSource )
 bool function IsSpecialWeapon( int weaponSource )
 {
 	if ( weaponSource in SpecialWeaponsBulletsPerShot )
-	{
 		return true
-	}
 	
 	return false 
 }
@@ -3090,9 +3088,7 @@ DamageEvent function Tracker_GetRecentDamageEvent( int eventID )
 	DamageEvent event;
 	
 	if( eventID in allDamageEventsMap )
-	{
 		return allDamageEventsMap[ eventID ]
-	}
 	
 	return event
 }
@@ -3157,8 +3153,8 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 	if( IsValid( attacker ) && !attacker.IsPlayer() && !attacker.IsNPC() )
 	{
 		#if DEVELOPER && DEBUGDMG
-			printt("Attacker not player")
-		#endif 
+			printt( "Attacker not player" )
+		#endif
 		
 		attacker = InflictorOwner( DamageInfo_GetInflictor( damageInfo ) )		
 		
@@ -3297,12 +3293,7 @@ void function RemoveCallback_TrackerStatsHook( void functionref( entity victim, 
 
 DamageEvent function Tracker_GetCurrentEventForAttackerOnVictim( int attackerHandle, int victimHandle )
 {
-	DamageEvent event = Tracker_GetRecentDamageEvent( eventID( attackerHandle, victimHandle ) )
-	
-	if( !event.isValid )
-		event.lastHitTimestamp = 0.0
-	
-	return event
+	return Tracker_GetRecentDamageEvent( eventID( attackerHandle, victimHandle ) )
 }
 
 DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int playerHandle, bool attacker = true )
@@ -4693,7 +4684,20 @@ void function PIN_AddPlayer( entity player )
 		
 		if( IsValid( file.entityBotEnt ) )
 		{
-			player.p.bIsChatbot = true
+			AddEntityCallback_OnPlayerRespawned( file.entityBotEnt, CheckForMessageBot )
+			
+			AddCallback_OnPlayerChangedTeam
+			(
+				void function( entity ent, int old, int new )
+				{
+					if( IsBotEnt( ent ) )
+					{
+						if( new != 119 )
+							SetTeam( ent, 119 )
+					}
+				}
+			)
+			
 			player.p.InDeathRecap = true
 			mkos_Force_Rest( file.entityBotEnt )
 			file.entityBotEnt.p.start_in_rest_setting = true;
@@ -4703,7 +4707,7 @@ void function PIN_AddPlayer( entity player )
 		}
 		else 
 		{
-			sqerror("ServerBot Entity Error")
+			sqerror( "ServerBot Entity Error" )
 		}
 		
 		return
@@ -4870,11 +4874,13 @@ void function PIN_PlayerLeft( entity player, string reason )
 	}
 }
 
+void function CheckForMessageBot( entity player ) //todo: remove after native solution
+{
+	BotInvis( player )
+}
+
 void function PIN_PlayerSpawned( entity player )
 {
-	if( IsBotEnt( player ) ) //todo: remove after native solution
-		BotInvis( player )
-	
 	/*
 	string pname = player.GetPlayerName( )
 	string message = format("%s spawned ", pname )
@@ -5353,8 +5359,15 @@ void function PIN_Init()
 		AddClientCommandCallbackNew( "say", ClientCommand_ParseSay )
 	}
 	
-	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "An R5Reloaded Server" )
-	AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+	file.localFlowstate_MOTD = GetCurrentPlaylistVarString( "custom_MOTD", "" )
+	
+	if( !empty( file.localFlowstate_MOTD ) )
+		AddCallback_OnClientConnected( ShowPlayerLocalMOTD )
+}
+
+void function SendMotdToPlayer( entity player, string motd )
+{
+	MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, motd, "", "", true )
 }
 
 void function ShowPlayerLocalMOTD( entity player )
@@ -5363,12 +5376,13 @@ void function ShowPlayerLocalMOTD( entity player )
 	(
 		void function() : ( player )
 		{
-			waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 20, "OnConnected", "OnDestroy", "OnDisconnected" )
 			
 				if( IsValid( player ) )
 				{
 					//run ui script for motd
-					MessageLong( player, "", "", eMsgUI.VAR_MOTD, 10, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
+					SendMotdToPlayer( player, file.localFlowstate_MOTD ) //LineBreak( file.localFlowstate_MOTD, 80 )
 						wait 5
 						
 					if( IsValid( player ) )

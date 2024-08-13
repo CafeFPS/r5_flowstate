@@ -418,21 +418,24 @@ void function Localization_ConsistencyCheck()
 #if CLIENT
 string function trim( string str ) 
 {
-    int start = 0;
-    int end = str.len() - 1;
-    string whitespace = " \t\n\r";
+	return strip( str )
+/*
+	int start = 0;
+	int end = str.len() - 1;
+	string whitespace = " \t\n\r";
 
-    while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
+	while ( start <= end && whitespace.find( str.slice( start, start + 1 )) != -1 ) 
 	{
-        start++;
-    }
+		start++;
+	}
 
-    while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
+	while (end >= start && whitespace.find( str.slice( end, end + 1 )) != -1 ) 
 	{
-        end--;
-    }
+		end--;
+	}
 
-    return str.slice(start, end + 1);
+	return str.slice(start, end + 1);
+*/
 }
 #endif
 
@@ -498,7 +501,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		if( varStringLen + varSubstring.len() > 1199 )
 		{
 			#if DEVELOPER
-				sqerror("Variable strings were too long.")
+				sqerror( "Variable strings were too long." )
 			#endif
 			return 	
 		}
@@ -506,7 +509,7 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 		if( varStringLen > 599 && !uiTypeValidLong )
 		{
 			#if DEVELOPER
-				sqerror("Title for LocalMsg variable string was too long for uiType.")
+				sqerror( "Title for LocalMsg variable string was too long for uiType." )
 			#endif
 			return 			
 		}
@@ -578,11 +581,14 @@ void function LocalMsg( entity player, string ref, string subref = "", int uiTyp
 
 void function MessageLong( entity player, string ref, string subref = "", int uiType = 0, float duration = 5.0, string varString = "", string varSubstring = "", string sound = "", bool long = true )
 {
-	thread( void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
-	{
-		wait 0.5 //HACKFIX: avoid code rock
-		LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
-	})()
+	thread
+	(
+		void function() : ( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+		{
+			wait 0.5 //HACKFIX: avoid code rock			
+			LocalMsg( player, ref, subref, uiType, duration, varString, varSubstring, sound, long )
+		}
+	)()
 }
 
 void function LocalVarMsg( entity player, string ref, int uiType = 2, float duration = 5, ... )
@@ -617,8 +623,7 @@ void function LocalVarMsg( entity player, string ref, int uiType = 2, float dura
 		}
 	}
 	
-	Remote_CallFunction_NonReplay( player, "FS_ShowLocalizedMultiVarMessage", tokenID, uiType, duration )
-	
+	Remote_CallFunction_NonReplay( player, "FS_ShowLocalizedMultiVarMessage", tokenID, uiType, duration )	
 }
 
 bool function ValidateType( ... )

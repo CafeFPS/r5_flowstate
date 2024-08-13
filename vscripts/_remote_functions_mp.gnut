@@ -1055,6 +1055,8 @@ void function RemoteFunctions_Init_Begin()
 	// Functions with many parameters fills up the buffer.
 	// Both of these efficiency methods will reduce slot usage and buffer consumption
 	
+	RegisterServerVar( "tracker_enabled", false )
+	
 	if ( IsLobby())
 	{
 		//Register networked variables for the lobby

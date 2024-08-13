@@ -224,6 +224,7 @@ vector Gamemode1v1_NotificationPanel_Angles
 float REST_GRACE = 5.0
 
 const int MAX_CHALLENGERS = 12
+const float MODE1V1_ITEM_DISSOLVE_TIME = 4.0
 
 //TODO: unite this in a singular modular framework
 const array<string> LEGEND_INDEX_ARRAY = [
@@ -376,10 +377,13 @@ void function RemoveEntityCalllback_OnPlayerGamestateChange_1v1( entity player, 
 
 void function Gamemode1v1_SetPlayerGamestate( entity player, int state = 0 )
 {
-	player.e.gamemode1v1State = state
-	
-	foreach( callbackFunc in player.e.onPlayerGamestateChangedCallbacks )
-		callbackFunc( player, state )
+	if( player.e.gamemode1v1State != state )
+	{
+		player.e.gamemode1v1State = state
+
+		foreach( callbackFunc in player.e.onPlayerGamestateChangedCallbacks )
+			callbackFunc( player, state )
+	}
 }
 
 int function GetPlayer1v1Gamestate( entity player )
@@ -558,10 +562,8 @@ bool function Fetch_IBMM_Timeout_For_Player( entity player )
     if ( !IsValid( player ) ) 
 		return false
 
-    if (  player.p.handle in file.soloPlayersWaiting ) 
-	{
-        return file.soloPlayersWaiting[player.p.handle].IBMM_Timeout_Reached;
-    }
+    if ( player.p.handle in file.soloPlayersWaiting ) 
+        return file.soloPlayersWaiting[ player.p.handle ].IBMM_Timeout_Reached
 	
     return false
 }
@@ -573,9 +575,7 @@ void function ResetIBMM( entity player )
 		return
 
     if ( player.p.handle in file.soloPlayersWaiting ) 
-	{
-        file.soloPlayersWaiting[player.p.handle].IBMM_Timeout_Reached = false;
-    }
+        file.soloPlayersWaiting[player.p.handle].IBMM_Timeout_Reached = false
 }
 
 void function SetShowWaitingMsg( entity player, bool value ) 
@@ -584,7 +584,7 @@ void function SetShowWaitingMsg( entity player, bool value )
 		return
 
     if ( player.p.handle in file.soloPlayersWaiting ) 
-        file.soloPlayersWaiting[player.p.handle].showWaitingMsg = value;
+        file.soloPlayersWaiting[ player.p.handle ].showWaitingMsg = value
 }
 
 //used for display 
@@ -620,8 +620,7 @@ void function INIT_1v1_sbmm()
 	
 	//convert strings from playlist into array and add to script -- mkos
 	if ( Playlist_1v1_Primary_Array() != "" )
-	{	
-		
+	{		
 		string concatenate = Concatenate( Playlist_1v1_Primary_Array(), Playlist_1v1_Primary_Array_continue() )
 	
 		try 
@@ -711,9 +710,7 @@ void function INIT_1v1_sbmm()
 bool function IsLockable( entity player1, entity player2 )
 {
 	if ( player1.p.lock1v1_setting == false || player2.p.lock1v1_setting == false )
-	{
 		return false
-	}
 	
 	return true
 }
@@ -725,7 +722,7 @@ string function LockSetting( entity player ) //not used?
 
 bool function Lock1v1Enabled() //not used?
 {
-	return GetCurrentPlaylistVarBool("enable_lock1v1", true)
+	return GetCurrentPlaylistVarBool( "enable_lock1v1", true )
 }
 
 int function getTimeOutPlayerAmount() 
@@ -788,7 +785,7 @@ int function getAvailableRealmSlotIndex()
 {
 	for( int slot = 1; slot < realmSlots.len(); slot++ )
 	{
-		if( !realmSlots[slot] )
+		if( !realmSlots[ slot ] )
 		{
 			SetIsUsedBoolForRealmSlot( slot, true )
 			return slot
@@ -855,13 +852,13 @@ void function addGroup( soloGroupStruct newGroup )
 		{
 			bool success = true
 			
-			if( IsValid(newGroup.player1 && IsValid(newGroup.player2) ))
+			if( IsValid( newGroup.player1 && IsValid( newGroup.player2 ) ) )
 			{
-				file.playerToGroupMap[newGroup.player1.p.handle] <- newGroup;
+				file.playerToGroupMap[ newGroup.player1.p.handle ] <- newGroup
 				#if DEVELOPER
 					sqprint(format("player 1 added to group: %s", newGroup.player1.p.name ))
 				#endif
-				file.playerToGroupMap[newGroup.player2.p.handle] <- newGroup;
+				file.playerToGroupMap[ newGroup.player2.p.handle ] <- newGroup
 				#if DEVELOPER
 					sqprint(format("player 2 added to group: %s", newGroup.player2.p.name ))
 				#endif
@@ -874,10 +871,8 @@ void function addGroup( soloGroupStruct newGroup )
 				success = false
 			}
 			
-			if(success)
-			{
-				file.groupsInProgress[groupHandle] <- newGroup
-			}
+			if( success )
+				file.groupsInProgress[ groupHandle ] <- newGroup
 		}
 		else 
 		{	
@@ -897,7 +892,7 @@ void function removeGroupByHandle( int handle )
 		#if DEVELOPER
 			sqprint(format("Removing group by handle: %d", handle))
 		#endif
-		delete file.groupsInProgress[handle]
+		delete file.groupsInProgress[ handle ]
 	}
 	else
 	{
@@ -912,9 +907,10 @@ void function removeGroupByHandle( int handle )
 	}
 }
 
-void function removeGroup(soloGroupStruct groupToRemove) 
+void function removeGroup( soloGroupStruct groupToRemove ) 
 {
 	mGroupMutexLock = true  
+	
 	if( !IsValid( groupToRemove ) )
 	{
 		sqerror("Logic flow error:  groupToRemove is invalid")
@@ -927,7 +923,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 		#if DEVELOPER
 			sqprint(format("deleting player 1 handle: %d from group map",groupToRemove.player1.p.handle))
 		#endif
-		delete file.playerToGroupMap[groupToRemove.player1.p.handle]
+		delete file.playerToGroupMap[ groupToRemove.player1.p.handle ]
 	}
 		
 	if ( IsValid( groupToRemove.player2 ) && groupToRemove.player2.p.handle in file.playerToGroupMap )
@@ -935,7 +931,7 @@ void function removeGroup(soloGroupStruct groupToRemove)
 		#if DEVELOPER
 			sqprint(format("deleting player 2 handle: %d from group map",groupToRemove.player2.p.handle))
 		#endif
-		delete file.playerToGroupMap[groupToRemove.player2.p.handle];
+		delete file.playerToGroupMap[ groupToRemove.player2.p.handle ]
 	}
 	
 	if( groupToRemove.groupHandle in file.groupsInProgress )
@@ -977,7 +973,7 @@ void function endSpectate(entity player)
 
 bool function isPlayerInSoloMode(entity player) 
 {
-	if(!IsValid (player) )
+	if( !IsValid( player ) )
 	{	
 		#if DEVELOPER
 			sqprint("isPlayerInSoloMode entity was invalid")
@@ -985,12 +981,12 @@ bool function isPlayerInSoloMode(entity player)
 		return false 
 	}
 	
-    return ( player.p.handle in file.playerToGroupMap );
+    return ( player.p.handle in file.playerToGroupMap )
 }
 
-bool function isPlayerInWaitingList(entity player)
+bool function isPlayerInWaitingList( entity player )
 {
-	if(!IsValid (player) )
+	if( !IsValid( player ) )
 	{	
 		#if DEVELOPER
 			sqprint("isPlayerInWaitingList entity was invalid")
@@ -1028,9 +1024,7 @@ bool function isPlayerInRestingList( entity player )
 void function deleteSoloPlayerResting( entity player )
 {
 	if ( player.p.handle in file.soloPlayersResting )
-	{
-		delete file.soloPlayersResting[player.p.handle]
-	}
+		delete file.soloPlayersResting[ player.p.handle ]
 }
 
 void function addSoloPlayerResting( entity player )
@@ -1045,20 +1039,18 @@ void function addSoloPlayerResting( entity player )
 	
 	if( player.p.handle in file.soloPlayersResting )
 	{
-		file.soloPlayersResting[player.p.handle] = true
+		file.soloPlayersResting[ player.p.handle ] = true
 	} 
 	else 
 	{
-		file.soloPlayersResting[player.p.handle] <- true
+		file.soloPlayersResting[ player.p.handle ] <- true
 	}
 }
 
 void function deleteWaitingPlayer( int handle )
 {	
 	if ( handle in file.soloPlayersWaiting )
-	{
-		delete file.soloPlayersWaiting[handle]
-	}
+		delete file.soloPlayersWaiting[ handle ]
 }
 
 void function AddPlayerToWaitingList( soloPlayerStruct playerStruct ) 
@@ -1071,9 +1063,9 @@ void function AddPlayerToWaitingList( soloPlayerStruct playerStruct )
 	{
 		if( IsValid( playerStruct.player ) )
 		{
-			file.soloPlayersWaiting[playerStruct.player.p.handle] <- playerStruct
+			file.soloPlayersWaiting[ playerStruct.player.p.handle ] <- playerStruct
 		}
-		else 
+		else
 		{
 			sqerror( "[AddPlayerToWaitingList] player to add was invalid" )
 		}
@@ -3197,13 +3189,13 @@ void function BannerImages_1v1Init()
 			(
 				"main_banner",
 				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_banner02" )
-			)	
+			)
 
 			BannerImages_GroupAppendImage //test - REMOVE BEFORE SHIPPING
 			(
 				"main_banner",
 				WorldDrawImg_AssetRefToID( "rui/world/flowstate1v1_rdiffs" )
-			)	
+			)
 		}
 	)
 	
@@ -3269,6 +3261,8 @@ void function Gamemode1v1_Init( int eMap )
 
 	if( settings.is3v3Mode )
 		Init_FS_Scenarios()
+	else
+		AddSpawnCallback( "prop_survival", Gamemode1v1_DissolveDropable )
 	
 	REST_GRACE = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
 	
@@ -3418,7 +3412,10 @@ void function Gamemode1v1_Init( int eMap )
 		forbiddenZoneInit(GetMapName())
 		thread FS_Scenarios_Main_Thread( getWaitingRoomLocation() )
 		return
-	}	
+	}
+	
+	// default spawn behavior
+	AddCallback_OnPlayerRespawned( Gamemode1v1_OnSpawned )
 	
 	//challenges cleanup
 	AddCallback_OnClientDisconnected( PlayerDisconnected_CheckChallenge )
@@ -3486,15 +3483,16 @@ void function Gamemode1v1_Init( int eMap )
 	( 
 		void function( entity player )
 		{
+			#if TRACKER 
+				!IsBotEnt( player )
+					return
+			#endif 
 			// init for IBMM
-			if ( !player.p.bIsChatbot )
-			{
-				Init_IBMM( player )
-				
-				#if !TRACKER
-					INIT_playerChallengesStruct( player ) //normally init after persistence loads
-				#endif
-			}
+			Init_IBMM( player )
+			
+			#if !TRACKER
+				INIT_playerChallengesStruct( player ) //normally init after persistence loads
+			#endif
 		}
 	)
 	
@@ -5579,14 +5577,29 @@ void function Gamemode1v1_MatchStart()
 	resetChallenges()
 }
 
-void function Gamemode1v1_SetupNextRound()
+void function Gamemode1v1_OnSpawned( entity player )
 {
-	SpamWarning( 10, "RUNNING CHECKER" )
-	foreach( player in GetPlayerArray() )
-	{
-		if( !IsValid( player ) ) 
-			continue
-		
-		thread soloModefixDelayStart( player, true )
-	}
+	LocPair waitingRoomLocation = getWaitingRoomLocation()
+	
+	player.SetShieldHealthMax( Equipment_GetDefaultShieldHP() )
+	Survival_SetInventoryEnabled( player, false )
+	
+	maki_tp_player( player, waitingRoomLocation )
+	player.UnfreezeControlsOnServer()
+	
+	return
+}
+
+void function Gamemode1v1_DissolveDropable( entity prop )
+{
+	thread
+	(
+		void function() : ( prop )
+		{
+			wait MODE1V1_ITEM_DISSOLVE_TIME
+			
+			if( IsValid( prop ) )
+				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
+		}
+	)()
 }

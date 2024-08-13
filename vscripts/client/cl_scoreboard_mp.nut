@@ -83,7 +83,16 @@ struct {
 	void functionref(entity,var) scoreboardUpdateCallback
 	array <void functionref()> scoreboardCallbacks_OnShowing
 	array <void functionref()> scoreboardCallbacks_OnHiding
+	
+	bool bResetScoreboardIgnore
+	int max_teams
 } file
+
+const array<int> IGNORE_SCORE_BOARD_RESET = 
+[
+	eGamemodes.SURVIVAL,
+	eGamemodes.fs_aimtrainer
+]
 
 void function ClScoreboardMp_Init()
 {
@@ -97,6 +106,8 @@ void function ClScoreboardMp_Init()
 	RegisterSignal( "ShutDownScoreboardRefresh" )
 	
 	AddClientCallback_OnResolutionChanged( ReInitScoreboard )
+	file.bResetScoreboardIgnore = IGNORE_SCORE_BOARD_RESET.contains( Gamemode() )
+	file.max_teams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAM_SLOTS )
 }
 
 void function ReInitScoreboard( )
@@ -357,13 +368,14 @@ void function ShowScoreboardMP()
 	clGlobal.levelEnt.Signal( "ShutDownScoreboardRefresh" )
 	clGlobal.levelEnt.EndSignal( "ShutDownScoreboardRefresh" )
 	
-	if( Gamemode() == eGamemodes.SURVIVAL || Gamemode() == eGamemodes.fs_aimtrainer ) return
+	if( file.bResetScoreboardIgnore ) 
+		return
 
 	#if DEVELOPER
 		printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	#endif
 	
-	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
+	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing )
 		callbackFunc()
 
 	entity localPlayer = GetLocalClientPlayer()
@@ -394,7 +406,7 @@ void function ShowScoreboardMP()
 	float resMultX = screenSize.width / 1920.0
 	float resMultY = screenSize.height / 1080.0
 
-	int numTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAM_SLOTS )
+	int numTeams = file.max_teams
 	Assert( numTeams >= 1 )
 	int numPlayersOnATeam = GetNumPlayersToDisplayAsATeam()
 	int totalTeamLogoOffset

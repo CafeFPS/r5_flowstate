@@ -170,6 +170,7 @@ struct
 	bool lsm_mod9
 	bool flowstate_evo_shields
 	bool survival_infinite_ammo
+	bool survival_drop_equipment
 	
 } settings 
 
@@ -241,14 +242,15 @@ void function SV_Survival_Loot_Init()
 
 void function SurvivalLoot_Settings_Init()
 {
-	settings.ground_loot_enable 	= GetCurrentPlaylistVarBool( "ground_loot_enable", true )
-	settings.hot_zone_enable 		= GetCurrentPlaylistVarBool( "hot_zone_enable", true )
-	settings.survival_pickup_item	= GetCurrentPlaylistVarBool( "survival_pickup_item", true )
-	settings.survival_swap_item		= GetCurrentPlaylistVarBool( "survival_swap_item", true )
-	settings.lsm_mod1				= GetCurrentPlaylistVarBool( "lsm_mod1", false ) 
-	settings.lsm_mod9				= GetCurrentPlaylistVarBool( "lsm_mod9", false )
-	settings.flowstate_evo_shields	= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
-	settings.survival_infinite_ammo	= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
+	settings.ground_loot_enable 		= GetCurrentPlaylistVarBool( "ground_loot_enable", true )
+	settings.hot_zone_enable 			= GetCurrentPlaylistVarBool( "hot_zone_enable", true )
+	settings.survival_pickup_item		= GetCurrentPlaylistVarBool( "survival_pickup_item", true )
+	settings.survival_swap_item			= GetCurrentPlaylistVarBool( "survival_swap_item", true )
+	settings.lsm_mod1					= GetCurrentPlaylistVarBool( "lsm_mod1", false ) 
+	settings.lsm_mod9					= GetCurrentPlaylistVarBool( "lsm_mod9", false )
+	settings.flowstate_evo_shields		= GetCurrentPlaylistVarBool( "flowstate_evo_shields", false )
+	settings.survival_infinite_ammo		= GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
+	settings.survival_drop_equipment	= GetCurrentPlaylistVarBool( "survival_drop_equipment", true )
 }
 
 void function LoadLootZonesForMap()
@@ -1027,7 +1029,7 @@ string function GetRandomLootItem( int mapZone = -1 )
 
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
 {
-	if ( !GetCurrentPlaylistVarBool( "survival_drop_equipment", true ) )
+	if ( !settings.survival_drop_equipment )
 		return true	
 
 	if ( !IsValid( player ) )
@@ -1082,7 +1084,11 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		{
 			item.SetSurvivalProperty( player.GetShieldHealth() )
 			item.e.extraSurvivalProperty = player.GetShieldHealthMax()
-			printt( "shield settings:", player.GetShieldHealth(), item.e.extraSurvivalProperty )
+			
+			#if DEVELOPER
+				printt( "shield settings:", player.GetShieldHealth(), item.e.extraSurvivalProperty )
+			#endif
+			
 			if( itemData.ref == "armor_pickup_lv7" )
 				foreach ( sPlayer in GetPlayerArray() )
 					Remote_CallFunction_NonReplay( sPlayer, "Flowstate_UpdateRainbowShieldExtraProperty", item.GetEncodedEHandle(), item.e.extraSurvivalProperty )
@@ -5281,9 +5287,9 @@ void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
 	}
 
 	entity ent = physicsEnt.e.lastAttacker
-
+	
 	ent.ClearParent()
-
+	
 	if ( IsValid( ent ) && ent.GetNetworkedClassName() == "prop_survival" )
 	{
 		TraceResults trace = TraceLineHighDetail( physicsEnt.GetOrigin() + <0, 0, 16>, physicsEnt.GetOrigin() - <0, 0, 16>, [physicsEnt, ent], LOOT_TRACE, LOOT_COLLISION_GROUP )
@@ -5297,7 +5303,7 @@ void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
 			shouldReorient = !nonReorientTypes.contains( lootType )
 		}
 		entity myNewParent = physicsEnt.GetParent() //trace.hitEnt
-		bool shouldParent  = (IsValid( myNewParent )) // && trace.hitEnt.HasPusherAncestor() )
+		bool shouldParent  = ( IsValid( myNewParent ) ) // && trace.hitEnt.HasPusherAncestor() )
 
 		vector origin = ent.GetOrigin()
 		vector angles = ent.GetAngles()
@@ -5340,9 +5346,7 @@ void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
 			if ( myNewParent in file.Callbacks_OnLootPhysicsParented )
 			{
 				foreach ( callbackFunc in file.Callbacks_OnLootPhysicsParented[myNewParent] )
-				{
 					callbackFunc( myNewParent, ent )
-				}
 			}
 
 			if ( IsValid( ent ) && IsValid( myNewParent ) )	//seeing rare weird bugs where ent is marked for deletion somehow, so re-checking validity here as a defensive measure
@@ -5393,22 +5397,22 @@ void function MoveToNewPosition( entity loot, vector origin, vector angles )
 	loot.EndSignal( "OnPickup" )
 	entity mover = CreateScriptMover_NEW( SURVIVAL_LOOT_MOVER_SCRIPTNAME, loot.GetOrigin(), loot.GetAngles() )
 
-	OnThreadEnd(
-		function() : ( mover )
+	OnThreadEnd
+	(
+		void function() : ( mover )
 		{
 			if ( IsValid( mover ) )
-			{
 				mover.Destroy()
-			}
 		}
 	)
-
+	
 	loot.SetParent( mover )
 	float moveTime = 0.4
 	mover.NonPhysicsMoveTo( origin, moveTime, 0.0, 0.0 )
 	mover.NonPhysicsRotateTo( angles, moveTime, 0.0, 0.0 )
 	wait moveTime
 	WaitEndFrame()
+	
 	loot.ClearParent()
 }
 

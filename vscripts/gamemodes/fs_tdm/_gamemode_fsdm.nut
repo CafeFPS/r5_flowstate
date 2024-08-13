@@ -361,6 +361,8 @@ bool function bIs1v1Mode()
 	// return false
 }
 
+
+//Todo: Only enable core logic, then run callbacks registered with AddCallback_FlowstateGamemodeInit()
 void function _CustomTDM_Init()
 {
 	InitializePlaylistSettings() //must be executed first
@@ -439,9 +441,12 @@ void function _CustomTDM_Init()
         UpdatePlayerCounts()		
     })
 	
-	if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
-		AddSpawnCallback( "prop_survival", DissolveItem )
+	//Todo: Dissolve items by adding callback in mode init. ~mkos
+	// if( !Flowstate_IsDmOddball() && !Flowstate_IsHalomodeOddball() )
+		// AddSpawnCallback( "prop_survival", DissolveItem )
 
+
+	//Todo: Add callback per mode.
     AddCallback_OnPlayerKilled
 	(
 		void function( entity victim, entity attacker, var damageInfo ) 
@@ -676,7 +681,7 @@ int function GetTDMState()
 	return file.tdmState
 }
 
-const array<int> ignoreFSDM_GameState =
+const array<int> IGNORE_FSDM_GAMESTATE =
 [
 	eGamemodes.fs_prophunt
 ]
@@ -685,7 +690,7 @@ void function SetTdmStateToNextRound()
 {
 	file.tdmState = eTDMState.NEXT_ROUND_NOW
 
-	if( !ignoreFSDM_GameState.contains( Gamemode() )  )
+	if( !IGNORE_FSDM_GAMESTATE.contains( Gamemode() )  )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 }
 
@@ -693,7 +698,7 @@ void function SetTdmStateToInProgress()
 {
 	file.tdmState = eTDMState.IN_PROGRESS
 	
-	if( !ignoreFSDM_GameState.contains( Gamemode() )  )
+	if( !IGNORE_FSDM_GAMESTATE.contains( Gamemode() )  )
 		SetGlobalNetInt( "FSDM_GameState", file.tdmState )
 		
 	foreach( callbackFunc in file.tdmStateInProgressCallbacks )
@@ -831,25 +836,30 @@ void function HaloMod_Cyberdyne_CreateFanPusher(vector origin, vector angles2)
 	fx2.SetParent(rotator)
 }
 
-void function DissolveItem(entity prop)
+void function DissolveItem( entity prop )
 {
-	thread (void function( entity prop) {
-	    if( !IsValid(prop) )
-	    	return
-
-		if( !flowstateSettings.is_halo_gamemode )
+	thread
+	(
+		void function( entity prop )
 		{
-			wait 4
-		} else
-			WaitFrame()
+			if( !IsValid( prop ) )
+				return
 
-		if( !IsValid(prop) )
-			return
+			if( !flowstateSettings.is_halo_gamemode )
+			{
+				wait 4
+			} else
+				WaitFrame()
 
-	    entity par = prop.GetParent()
-	    if(par && par.GetClassName() == "prop_physics" && IsValid(prop))
-	    	prop.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)
-	}) ( prop )
+			if( !IsValid( prop ) )
+				return
+
+			entity par = prop.GetParent()
+
+			if( IsValid( par ) && par.GetClassName() == "prop_physics" )
+				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
+		}
+	)( prop )
 }
 
 void function _OnPlayerConnected(entity player)
@@ -1374,9 +1384,11 @@ void function CheckForObservedTarget(entity player)
 	}
 }
 
-void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
+//Todo: Unweave mode specific logic, set each mode to it's own handlerespawn func ~mkos
+void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 {
-    if ( !IsValid( player ) || !player.IsPlayer() ) return
+    if ( !IsValid( player ) || !player.IsPlayer() ) 
+		return
 
 	if( player.p.isSpectating )
 		return
@@ -1399,21 +1411,21 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode )
 	{
-		CharSelect(player)
+		CharSelect( player )
 		player.SetPlayerNetBool( "hasLockedInCharacter", true )
 	}
 
-	if( !IsAlive(player) )
+	if( !IsAlive( player ) )
     {
 		if( flowstateSettings.RandomCharacterOnSpawn && !flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 		{
-			GivePlayerRandomCharacter(player)
+			GivePlayerRandomCharacter( player )
 			player.SetPlayerNetBool( "hasLockedInCharacter", true)
 		}
 
-        if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
+        if( Equipment_GetRespawnKitEnabled() && !FlowState_Gungame() )
         {
-			DecideRespawnPlayer(player, true)
+			DecideRespawnPlayer( player, true )
             player.TakeOffhandWeapon(OFFHAND_TACTICAL)
             player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
             array<StoredWeapon> weapons = [
@@ -1438,39 +1450,29 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		}
         else
         {
-            if(!player.p.storedWeapons.len())
-				DecideRespawnPlayer(player, true)
+            if( !player.p.storedWeapons.len() )
+				DecideRespawnPlayer( player, true )
             else
             {
-				DecideRespawnPlayer(player, false)
-                GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
-            }		
+				DecideRespawnPlayer( player, false )
+                GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
+            }	
         }
     }
 
-	if( IsValid( player ) && IsAlive(player))
+	if( IsValid( player ) && IsAlive( player ) )
 	{
 		if( !isDroppodSpawn && !is1v1EnabledAndAllowed() )
 		    TpPlayerToSpawnPoint(player)
 		
-		if( is1v1EnabledAndAllowed() )
-		{
-			LocPair waitingRoomLocation = getWaitingRoomLocation()
-			if (!IsValid(waitingRoomLocation)) return
-			
-			Survival_SetInventoryEnabled( player, false )
-			maki_tp_player(player, waitingRoomLocation)
-			player.UnfreezeControlsOnServer()
-			return
-		}
-
 		player.UnfreezeControlsOnServer()
 
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
 		{
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
-		} else
+		} 
+		else
 		{
 			player.SetShieldHealth( 0 )
 			player.SetShieldHealthMax( 0 )
@@ -1482,7 +1484,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 				
 				if( !IsValid( player ) || !IsAlive( player ) )
 					return
-
+				
 				player.SetShieldHealthMax( Equipment_GetDefaultShieldHP() )
 
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
@@ -1492,6 +1494,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		try{
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
+			
 			// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 			// player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
@@ -1556,6 +1559,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		} catch (e420) {}
 	}
 
+	//wtf is this expression
 	if( IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
 	{
 		if(FlowState_RandomTactical())
@@ -1684,8 +1688,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		FS_Instagib_PlayerSpawn( player )
 		
 	#if DEVELOPER
-	printt( "End of _HandleRespawn function" )//Cafe debugging halo mod stuff
-	
+		printt( "End of _HandleRespawn function" )//Cafe debugging halo mod stuff
 	#endif
 }
 

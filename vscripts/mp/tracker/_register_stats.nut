@@ -79,10 +79,17 @@ void function Script_RegisterAllStats()
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
 	
-	if( Playlist() == ePlaylists.fs_scenarios )//for demo
+	if( Playlist() == ePlaylists.fs_scenarios )
 	{
-		Tracker_RegisterStat( "scenarios_kills", Tracker_ScenariosKillsIn, TrackerStats_ScenariosKills )
+		Tracker_RegisterStat( "scenarios_kills", null, TrackerStats_ScenariosKills )
 		Tracker_RegisterStat( "scenarios_deaths", null, TrackerStats_ScenariosDeaths )
+		Tracker_RegisterStat( "scenarios_score", null, TrackerStats_ScenariosScore )
+		Tracker_RegisterStat( "scenarios_downs", null, TrackerStats_ScenariosDowns )
+		Tracker_RegisterStat( "scenarios_team_wipe", null, TrackerStats_ScenariosTeamWipe )
+		Tracker_RegisterStat( "scenarios_team_wins", null, TrackerStats_ScenariosTeamWins )
+		Tracker_RegisterStat( "scenarios_solo_wins", null, TrackerStats_ScenariosSoloWins )
+
+		AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
 	}
 }
 
@@ -90,9 +97,9 @@ void function Script_RegisterAllStats()
 // STAT FUNCTIONS //
 ////////////////////
 
-void function Tracker_ScenariosKillsIn( entity player )
+void function Callback_HandleScenariosStats( entity player )
 {
-	printt( player, "Wow, this player has " + player.GetPlayerStatInt("scenarios_kills") )
+	//do something, set netints etc
 }
 
 void function Callback_CoreStatInit( entity player )

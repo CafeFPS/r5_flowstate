@@ -56,6 +56,9 @@ global function AddCallback_GameStatePostEnter
 global function AddCallback_OnThreatEventActivation
 global function AddCallback_OnThreatEventStateChange
 
+global function AddEntityCallback_OnPlayerRespawned
+global function RemoveEntityCallback_OnPlayerRespawned
+
 // Register functions are called when an entity spawns.
 global function RegisterForDamageDeathCallbacks
 global function CodeCallback_OnInventoryChanged
@@ -143,6 +146,18 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	}
 }
 
+void function AddEntityCallback_OnPlayerRespawned( entity player, void functionref( entity ) callbackFunc )
+{
+	mAssert( !player.p.playerSpawnedCallbacks.contains( callbackFunc ) )
+	player.p.playerSpawnedCallbacks.append( callbackFunc )
+}
+
+void function RemoveEntityCallback_OnPlayerRespawned( entity player, void functionref( entity ) callbackFunc )
+{
+	mAssert( player.p.playerSpawnedCallbacks.contains( callbackFunc ) )
+	player.p.playerSpawnedCallbacks.removebyvalue( callbackFunc )
+}
+
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
 	#if DEVELOPER
@@ -181,10 +196,8 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 		// callbackFunc( player )
 	// }
 
-	// foreach ( func in player.p.playerSpawnedCallbacks )
-	// {
-		// func( player )
-	// }
+	foreach ( func in player.p.playerSpawnedCallbacks )
+		func( player )
 
 	player.e.lastAttacker = null
 	player.e.canBurn = true

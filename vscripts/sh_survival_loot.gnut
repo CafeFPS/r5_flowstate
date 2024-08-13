@@ -462,6 +462,11 @@ struct
 	}
 	array<string>                                                altModsToRemoveOnDrop = [ "altfire" ]
 	table<string, bool functionref( string, entity ) > conditionalLootChecks
+	
+	//playlist setting conditionals
+	int survival_shields
+	bool drop_optic_for_kitted_weapons
+
 } file
 
 
@@ -474,9 +479,15 @@ int function GetCommsActionEnumForName( string name )
 
 const bool DOES_ALT_USE_SWAP_WEAPON = true
 
+void function Sh_SurvivalLoot_PlaylistSettings_Init()
+{
+	file.survival_shields = GetCurrentPlaylistVarInt( "survival_shields", 1 )
+	file.drop_optic_for_kitted_weapons = GetCurrentPlaylistVarBool( "drop_optic_for_kitted_weapons", true )
+}
+
 void function SURVIVAL_Loot_InitShared()
 {
-
+	Sh_SurvivalLoot_PlaylistSettings_Init()
 	PrecacheModel( DEATH_BOX )
 	PrecacheModel( DEATH_BOX_FLAT_PLANE )
 	PrecacheModel( $"mdl/props/health_injector/health_injector.rmdl" )
@@ -504,7 +515,9 @@ void function SURVIVAL_Loot_InitShared()
 
 #if SERVER
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+	
+	if( Gamemode() == eGamemodes.SURVIVAL )
+		AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 #endif // SERVER
 
 #if SERVER
@@ -889,10 +902,10 @@ bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, Attachment
 #if SERVER
 void function OnClientConnected( entity player )
 {
-	file.playerInventoryData[player] <- {}
+	file.playerInventoryData[ player ] <- {}
 	foreach ( slot,slotData in EquipmentSlot_GetAllEquipmentSlots() )
 	{
-		file.playerInventoryData[player][ slot ] <- ""
+		file.playerInventoryData[ player ][ slot ] <- ""
 	}
 
 	// ValidateDataTable( player, "datatable/flowstate_all_new.rpak" )
@@ -903,7 +916,7 @@ void function OnClientConnected( entity player )
 
 void function OnPlayerRespawned( entity player )
 {
-	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+	if ( file.survival_shields )
 		player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0 ) )
 }
 #endif // SERVER
@@ -927,7 +940,7 @@ array<entity> function SURVIVAL_Loot_GetAllLoot()
 
 bool function ShouldDropOpticForKittedWeapon()
 {
-	return GetCurrentPlaylistVarBool( "drop_optic_for_kitted_weapons", true )
+	return file.drop_optic_for_kitted_weapons
 }
 
 string function GetWeaponClassNameWithLockedSet( entity weapon )
@@ -3598,7 +3611,7 @@ void function Inventory_SetPlayerEquipment_Internal( entity player, string itemR
 
 	if ( equipmentSlot == "armor" )
 	{
-		if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+		if ( file.survival_shields )
 			player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0 ) )
 		else
 			player.SetShieldHealthMax( 0 )
@@ -3615,7 +3628,7 @@ void function Inventory_SetPlayerEquipment_Internal( entity player, string itemR
 			GivePassive( player, data.passive )
 		}
 
-		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
+		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && file.survival_shields )
 		{
 			if( extraPropertyValue != -1 )
 				player.SetShieldHealthMax( extraPropertyValue )

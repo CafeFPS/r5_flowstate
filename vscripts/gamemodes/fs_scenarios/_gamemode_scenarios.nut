@@ -22,11 +22,6 @@ global function FS_Scenarios_SaveLootbinData
 global function FS_Scenarios_SaveBigDoorData
 global function FS_Scenarios_HandleGroupIsFinished
 
-#if TRACKER //demo only
-global function TrackerStats_ScenariosKills
-global function TrackerStats_ScenariosDeaths
-#endif
-
 #if DEVELOPER
 global function Cafe_KillAllPlayers
 global function Cafe_EndAllRounds
@@ -1072,13 +1067,13 @@ bool function FS_Scenarios_GroupToInProgressList( scenariosGroupStruct newGroup,
 			}
 			
 			if( settings.fs_scenarios_teamAmount > 2 )
-				foreach( player in newGroup.team3Players )
-				{
-					if( !IsValid( player ) )
-						continue
+			foreach( player in newGroup.team3Players )
+			{
+				if( !IsValid( player ) )
+					continue
 
-					SetTeam( player, newGroup.team3Index )
-				}
+				SetTeam( player, newGroup.team3Index )
+			}
 		}
 		else 
 		{	
@@ -1541,8 +1536,8 @@ void function FS_Scenarios_Main_Thread(LocPair waitingRoomLocation)
 		soloLocStruct groupLocStruct = newGroup.groupLocStruct
 		newGroup.calculatedRingCenter = OriginToGround_Inverse( groupLocStruct.Center )//to ensure center is above ground. Colombia
 
-		printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
 		#if DEVELOPER
+			printt( "Calculated center for ring: ", newGroup.calculatedRingCenter )
 			DebugDrawSphere( newGroup.calculatedRingCenter, 30, 255,0,0, true, 300 )
 		#endif
 
@@ -2229,21 +2224,6 @@ vector function OriginToGround_Inverse( vector origin )
 
 	return traceResult.endPos
 }
-
-//////////////////// STATS /////////////////
-#if TRACKER 
-
-//(for demo)
-var function TrackerStats_ScenariosKills( string uid )
-{
-	return Tracker_StatsMetricsByUID(uid).kills
-}
-
-var function TrackerStats_ScenariosDeaths( string uid )
-{
-	return Tracker_StatsMetricsByUID(uid).deaths
-}
-#endif
 
 #if DEVELOPER
 	void function Cafe_KillAllPlayers()

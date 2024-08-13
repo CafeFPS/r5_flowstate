@@ -1,4 +1,5 @@
-// mp server motd
+// mp server motd															//mkos
+																			//used a template
 
 global function Init_Server_MOTD
 global function OpenServerMOTD

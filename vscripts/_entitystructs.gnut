@@ -805,9 +805,11 @@ global struct ServerPlayerStruct
 	float ratelimit 			= 0.2
 	bool rest_request 			= false
 	bool waitingFor1v1			= false
-	bool bIsChatbot 			= false
 	bool ClientCommandsEnabled 	= true
 	//float recordingStartTime	= 0.0
+	
+	//for adding specific spawn behavior on a player basis.
+	array<void functionref(entity)> playerSpawnedCallbacks
 	
 	//framework for confirm ( this is bad and experimental )
 	bool bInRetry 				= false
