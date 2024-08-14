@@ -108,6 +108,7 @@ void function ClPlayer_Init()
 	RegisterSignal( "ShieldChanged" )
 	RegisterSignal( "TargetChanged" )
 	RegisterSignal( "OnDisconnected" )
+	RegisterSignal( "ChangedTeam" )
 	//RegisterSignal( "PlayerADSPressed" )
 
 	FlagInit( "DamageDistancePrint" )
@@ -293,7 +294,7 @@ void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 
 	while( true )
 	{
-		player.WaitSignal( "HealthChanged", "ShieldChanged", "SettingsChanged" )
+		player.WaitSignal( "HealthChanged", "ShieldChanged", "SettingsChanged", "ChangedTeam" )
 
 		if( !IsValid( player ) )
 			break
@@ -306,7 +307,13 @@ void function Flowstate_CustomHealthBar_Think( entity player, entity vgui )
 		}
 
 		//Condiciones para ocultarla
-		if( !IsAlive( player ) || !player.DoesShareRealms( GetLocalViewPlayer() ) || player == GetLocalViewPlayer() || GetGameState() != eGameState.Playing || ( Playlist() == ePlaylists.fs_lgduels_1v1 || Playlist() == ePlaylists.fs_1v1 ) && !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) )
+		if( !IsAlive( player ) ||
+			!player.DoesShareRealms( GetLocalViewPlayer() ) ||
+			player == GetLocalViewPlayer() ||
+			GetGameState() != eGameState.Playing ||
+			( Playlist() == ePlaylists.fs_lgduels_1v1 ||
+			Playlist() == ePlaylists.fs_1v1 ) && !player.GetPlayerNetEnt( "FSDM_1v1_Enemy" ) ||
+			player.GetTeam() == GetLocalClientPlayer().GetTeam() )
 		{
 			foreground.Hide()
 			background.Hide()
