@@ -3,7 +3,6 @@
 // mp_rr_desertlands_holiday map by zee_x64
 
 // todo: make own ui for team points
-// figure out why hovertank camera movers stopped working same as in halo ctf mod ( wtf )
 // fix custom waypoint for train
 
 global function WinterExpress_Init
@@ -1085,7 +1084,7 @@ void function Thread_OnGameStatePlaying()
 		{
 			EndSignal( player, "OnDestroy" )
 			
-			wait 1
+			wait 10
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_CL_GameStartAnnouncement" )
 			EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_trainRulesHint_3p" )
@@ -1102,7 +1101,7 @@ void function Thread_OnGameStatePlaying()
 			if( GetGameState() != eGameState.Playing )
 				return
 
-			RespawnAllDeadPlayers()
+			RespawnAllDeadPlayers( true )
 		}()
 	}
 	//transmit first train transmit time to clients
@@ -1132,6 +1131,13 @@ void function OnWinnerDetermined()
 
 	StopSoundOnEntity( file.trainRef, "WXpress_Train_Capture_Status" )
 	StopSoundOnEntity( file.trainRef, "WXpress_Train_Capture_Status_Enemy" )
+
+	//Cafe was here
+	thread function () : ()
+	{
+		wait 5
+		GameRules_ChangeMap( "mp_rr_desertlands_holiday", "winterexpress" )
+	}()
 }
 
 void function OnPlayerKilled_GameState( entity victim, entity attacker, var attackerDamageInfo )
@@ -1874,19 +1880,19 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 	//give weapons on landing only? Cafe
 	if( GetCurrentPlaylistVarBool( "flowstate_weapon_selector_enabled", true ) && fromRespawning && file.playersOnHovertank.contains( player ) )
 	{
-		wait 4.0
+		// wait 4.0
 
-		if ( !IsValid( player ) )
-			return
+		// if ( !IsValid( player ) )
+			// return
 
 		// Open Flowstate weapon selector
 		// if ( isPlayerOnHoverTankAtStart )
 			// wait 11.0
 
-		if ( IsValid( player ) )
-		{
-			Remote_CallFunction_NonReplay( player, "OpenFRChallengesSettingsWpnSelector" )
-		}
+		// if ( IsValid( player ) )
+		// {
+			// Remote_CallFunction_NonReplay( player, "OpenFRChallengesSettingsWpnSelector" )
+		// }
 	} else
 	{
 		GiveRandomPrimaryWeaponMetagame( player )
@@ -2198,13 +2204,13 @@ void function SetPlayerRespawnOnTeam( entity player )
 // }
 
 
-void function RespawnAllDeadPlayers()
+void function RespawnAllDeadPlayers( bool startingGame = false )
 {
 	array<entity> players = GetPlayerArray()
 	foreach ( player in players )
 	{
 		if ( IsValid( player ) && !IsAlive( player ) )
-			RespawnPlayer( player )
+			RespawnPlayer( player, startingGame )
 	}
 
 	file.deadPlayers.clear()
@@ -2244,7 +2250,7 @@ void function RespawnTeamAfterDelay( int team, float delay )
 	RespawnTeam( team )
 }
 
-void function RespawnPlayer( entity player )
+void function RespawnPlayer( entity player, bool startingGame = false )
 {
 	if ( GetGameState() != eGameState.Playing )
 		return
@@ -2268,7 +2274,7 @@ void function RespawnPlayer( entity player )
 
 	// RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	// RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )	
-	thread WinterExpress_OnPlayerRespawnedThread( player )
+	thread WinterExpress_OnPlayerRespawnedThread( player, startingGame )
 }
 
 
@@ -2278,7 +2284,7 @@ void function WinterExpress_OnPlayerRespawned( entity player )
 }
 
 
-void function WinterExpress_OnPlayerRespawnedThread( entity player )
+void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startingGame = false )
 {
 	// DumpStack()
 	if ( !player.p.respawnPodLanded )
@@ -2330,7 +2336,7 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player )
 			}
 			else
 			{
-				WinterExpress_RespawnHoverTank( player )
+				WinterExpress_RespawnHoverTank( player, startingGame )
 			}
 		}
 		else if ( GetCurrentPlaylistVarBool( "winter_express_skydive_spawn", false ) )
@@ -2346,7 +2352,7 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player )
 	// if ( file.shouldStoreUltimateCharge )
 		// RestoreChargesForPlayer( player )
 
-	Flowstate_GivePlayerLoadoutOnGameStart_Copy( player, true )
+	Flowstate_GivePlayerLoadoutOnGameStart_Copy( player, startingGame )
 }
 
 int function GetLastValidTeamToScore()
@@ -2413,8 +2419,8 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 				if ( isGameStartLerp )
 					lerpAdjustmentTime += 1.5
 
-				// thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
-				// Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
+				thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
+				Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
 				thread ScreenFadeThread( player, lerpAdjustmentTime - 1 )
 				// ResetPlayerInventoryAndLoadoutOnRespawn( player )
 
@@ -2516,6 +2522,7 @@ bool function WinterExpress_RespawnOnTeam( entity player )
 
 void function WinterExpress_RespawnHoverTank( entity player, bool isGameStartLerp = false, int teamIndexOverride = -1, int playerIndexOverride = -1 )
 {
+	DumpStack()
 	if ( !IsValid( player ) )
 		return
 
@@ -2538,10 +2545,8 @@ void function WinterExpress_RespawnHoverTank( entity player, bool isGameStartLer
 	if ( isGameStartLerp )
 		lerpAdjustmentTime += 1.5
 
-	// thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player )
-	
-	//Why this mover stoppde working aaaa Cafe
-	// Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpFromStationToHoverTank", player, DesertlandsTrain_GetNextStationNode(), GetClosestHovertankEnt_ToPlayer( player ), file.trainRef, isGameStartLerp )
+	thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpFromStationToHoverTank", player, DesertlandsTrain_GetNextStationNode(), GetClosestHovertankEnt_ToPlayer( player ), file.trainRef, isGameStartLerp )
 
 	// ResetPlayerInventoryAndLoadoutOnRespawn( player )
 }
@@ -4171,6 +4176,9 @@ void function SetupPlayerThread( entity player )
 	if ( GetCurrentPlaylistVarBool( "infinite_heal_items", false ) )
 		GivePassive( player, ePassives.PAS_INFINITE_HEAL )
 
+	if( IsRoundBasedRespawn() ) //Cafe was here
+		return
+
 	if ( player.GetTeam() == file.lastValidTeamToScore )
 		WinterExpress_RespawnOnTrain( player, true )
 	else
@@ -4596,7 +4604,7 @@ void function CameraLerpHovertankThread( entity player, vector stationPos, vecto
 		float currDistance = Distance( cameraMover.GetOrigin(), player.GetOrigin() )
 		float percToLerp = ( maxDistance - ( currDistance * 0.8 ) ) / maxDistance
 
-		vector endLocation = LerpVector( cameraMover.GetOrigin(), player.EyePosition(), percToLerp )
+		vector endLocation = ClampToWorldspace( LerpVector( cameraMover.GetOrigin(), player.EyePosition(), percToLerp ) )
 		vector endAngles = ClampAngles( LerpVector( cameraMover.GetAngles(), player.EyeAngles(), percToLerp ) )
 
 		cameraMover.NonPhysicsMoveTo( endLocation, 0.15, 0.0, 0.0 )
