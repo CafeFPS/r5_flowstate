@@ -3097,14 +3097,20 @@ void function SimpleChampionUI()
 		}
 	}
 	
-	if( file.selectedLocation.name == "Lockout" )
+	switch( file.selectedLocation.name )
 	{
+		case "Lockout":
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( Vector(42000, -10000, -19900) - <0,0,2800>, 5000 ) )
-	} 
-	else if( file.selectedLocation.name == "Narrows" )
-	{
+		break
+		
+		case "Narrows":
 		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42099.9922, -9965.91016, -21099.1738>, 7000 ) )
-	} 
+		break
+		
+		case "Beaver Creek":
+		file.playerSpawnedProps.append( AddDeathTriggerWithParams( <42014.6719, -10264.7627, -26246>, 7000 ) )
+		break
+	}
 
 	string subtext = ""
 	// if( !flowstateSettings.is_halo_gamemode )
@@ -4110,6 +4116,9 @@ entity function CreateRingBoundary(LocationSettings location)
 
     if ( file.selectedLocation.name == "The Pit" || file.selectedLocation.name == "Lockout"  || file.selectedLocation.name == "Narrows" )
         ringRadius = 99999
+	
+	if( file.selectedLocation.name == "Beaver Creek" )
+		ringRadius += 5000
 
     if( is1v1EnabledAndAllowed() ) //we dont need rings in 1v1 mode
     	ringRadius = 99999
@@ -6304,6 +6313,7 @@ void function SpawnBeavercreek()
 	DispatchSpawn( seccion2 )
 	
 	LoadBeavercreek1( startingpos )
+	LoadBeavercreek2( startingpos )
 	
 	thread function () : ( startingpos )
 	{
@@ -6329,31 +6339,12 @@ void function SpawnBeavercreek()
 		SetConVarFloat( "mat_sun_scale", 1 )
 		SetConVarString( "mat_sun_color", "1.0 1.0 1.0 1.0" )
 		SetConVarFloat( "mat_bloom_max_lighting_value", 0.2 )
-	
-		// //cannons
-		// file.playerSpawnedProps.append( FSCannon_Create( <40676.5586, -10610.1416, -20472.6426>, 48, <1.0, 0.0, 1.0>) )
-		// file.playerSpawnedProps.append( FSCannon_Create( <43311.0898, -10610.4277, -20470.5313>, 48, <-1.0, 0.0, 1.0>) )
-	
-		// //Wind column effect, two so we complete a cylinder-like shape
-		// file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <40676.5586, -10610.1416, -20435>, Vector( -30, 0, 0 ) ) )
-		// file.playerSpawnedProps.append( StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), <43311.0898, -10610.4277, -20435>, Vector( -30, -180, 0 ) ) )
 
-		// //Add weapon racks.
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43266.2695, -9999.79004, -20494.6563>, <0, 180, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40727.457, -9998.79199, -20494.6563>, <0, 0, 0>, "mp_weapon_halosniperrifle", 0.5 ) )
-		// file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <40859.6367, -10779.4385, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43127.5742, -10779.4648, -20586.4375>, <0, 90, 0>, "mp_weapon_haloneedler", 0.5 ) )
-		
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43896.0391, -10764.7637, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40098.2461, -10769.7568, -20494.6563>, <0, 90, 0>, "mp_weapon_halosmg", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0664, -9757.24805, -20464.0566>, <0, 180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40013.0586, -10243.4219, -20464.0566>, <0, -180, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
-		// file.playerSpawnedProps.append(MapEditor_CreateRespawnableWeaponRack( <43987.5313, -10241.0508, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43986.7383, -9755.34863, -20464.0566>, <0, 0, 0>, "mp_weapon_halobattlerifle", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <43902.8867, -9319.55664, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <40100.6602, -9312.33887, -20431.0566>, <0, -90, 0>, "mp_weapon_halodmr", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <42050.5703, -9994.34082, -20213.0469>, <0, 0, 0>, "mp_weapon_haloshotgun", 0.5 ) )
-		// file.playerSpawnedProps.append( MapEditor_CreateRespawnableWeaponRack( <41947.1797, -9995.0625, -20212.5527>, <0, -180, 0>, "mp_weapon_haloshotgun", 0.5 ) )
+		//TODO ADD WEAPON RACKS
+		//TODO ADD TELEPORTERS
+
+		//Add some OOB triggers.
+		file.playerSpawnedProps.append( AddOutOfBoundsTriggerWithParams( <41779.8359, -10134.5674, -25237.0918>, 5000 ) )
 		
 		//Adjust sun flare for rotated skybox.
 		foreach( player in GetPlayerArray() )
