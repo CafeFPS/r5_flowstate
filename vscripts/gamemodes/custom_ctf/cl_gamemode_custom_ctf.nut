@@ -1586,7 +1586,7 @@ void function FSIntro_ForceEnd()
 		//did this finish for all players before destroying from server? set this as finished from client
 		wait 0.75
 		FSIntro_Destroy()	
-		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.5, 0, FFADE_IN | FFADE_PURGE )
+		ScreenFade(GetLocalClientPlayer(), 0, 0, 0, 255, 0.75, 0, FFADE_IN | FFADE_PURGE )
 		#if DEVELOPER
 			printt(  "intro end lasted: ", ( Time() - stime ).tostring() )
 		#endif

@@ -355,27 +355,27 @@ void function VotingPhase()
 
 	//Open Vote for Team Menu ( Halo Mod Only )
 	
-	// if( Flowstate_IsHaloMode() && !debugging )
-	// {
-		// file.VoteTeamEnabled = true
-		// // SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
-		// SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
+	if( Flowstate_IsHaloMode() && !debugging )
+	{
+		file.VoteTeamEnabled = true
+		// SetGlobalNetTime( "FSVoteTeam_StartTime", Time() )
+		SetGlobalNetTime( "FSVoteTeam_EndTime", Time() + FS_HALOMOD_VOTETEAM_TIME )
 
-		// foreach( player in GetPlayerArray() )
-		// {
-			// Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
-			// Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
-			// SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
-			// Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
-		// }
+		foreach( player in GetPlayerArray() )
+		{
+			Remote_CallFunction_NonReplay( player, "ForceScoreboardLoseFocus" )
+			Remote_CallFunction_NonReplay( player, "FS_ForceDestroyCustomAdsOverlay" )
+			SetTeam( player, 4 ) //reset team to an unused one, make sure to set max_teams to 3 in playlist so we can use the team number 4
+			Remote_CallFunction_NonReplay(player, "ServerCallback_FS_OpenVoteTeamMenu", true )
+		}
 		
-		// // WaitForever()
-		// while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
-			// WaitFrame()
+		// WaitForever()
+		while( Time() < GetGlobalNetTime( "FSVoteTeam_EndTime" ) )
+			WaitFrame()
 
-		// file.VoteTeamEnabled = false
-		// SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
-	// } else
+		file.VoteTeamEnabled = false
+		SetGlobalNetTime( "FSVoteTeam_EndTime", -1 )
+	} else
 	{
 		foreach( player in GetPlayerArray() )
 		{
@@ -582,21 +582,21 @@ void function StartRound()
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT | CE_FLAG_HIDE_PERMANENT_HUD )
 	}
 	
-	// if( !debugging && Flowstate_IsHaloMode() )
-	// {
-		// SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-		// SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+	if( !debugging && Flowstate_IsHaloMode() )
+	{
+		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
+		SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
 
-		// while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
-			// WaitFrame()
+		while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
+			WaitFrame()
 
-		// foreach(player in GetPlayerArray())
-		// {
-			// Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
-		// }
-	// }
+		foreach(player in GetPlayerArray())
+		{
+			Remote_CallFunction_NonReplay(player, "FSIntro_ForceEnd")
+		}
+	}
 	
-	// wait 1
+	wait 1.5
 	// set
 	SetGameState(eGameState.Playing)
 	SetGlobalNetTime( "flowstate_DMStartTime", Time() + 3 )
