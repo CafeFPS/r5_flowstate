@@ -520,7 +520,7 @@ void function SetupTracks()
 			}
 			else if ( scriptName == TRACK_BIN_MOVER_NAME )
 			{
-				if ( GetCurrentPlaylistVarBool( "ignore_station_loot_bins", false ) )
+				if ( GetCurrentPlaylistVarBool( "ignore_station_loot_bins", false ) || GetMapName() == "mp_rr_desertlands_holiday" )
 					continue
 
 				stationLootBinData data
@@ -551,7 +551,7 @@ void function SetupTracks()
 					}
 				}
 
-				if( IsValid( data.binModel ) )
+				if( IsValid( data.binModel ) && IsValid( data.brush ) )
 				{
 					entity parentPoint = CreateEntity( "script_mover_lightweight" )
 					parentPoint.kv.solid = 0

@@ -150,6 +150,8 @@ global function AddCallback_OnPlayerRemoveWeaponMod
 global function CodeCallback_OnPlayerAddedWeaponMod
 global function CodeCallback_OnPlayerRemovedWeaponMod
 
+global function IsABaseGrenade
+
 global const bool PROJECTILE_PREDICTED = true
 global const bool PROJECTILE_NOT_PREDICTED = false
 
@@ -4972,4 +4974,13 @@ void function PlayDelayedShellEject( entity weapon, float time, int count = 1, b
 			return
 		weapon.PlayWeaponEffect( vmShell, worldShell, shellAttach, persistent )
 	}
+}
+
+bool function IsABaseGrenade( entity ent )
+{
+	#if CLIENT
+	return (ent instanceof C_BaseGrenade)
+	#else
+	return (ent instanceof CBaseGrenade)
+	#endif
 }

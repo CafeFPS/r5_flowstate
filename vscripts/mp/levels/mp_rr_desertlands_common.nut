@@ -22,8 +22,7 @@ const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
 const float JUMP_PAD_VIEW_PUNCH_SOFT_TITAN = 120.0
 const float JUMP_PAD_VIEW_PUNCH_HARD_TITAN = 20.0
 const float JUMP_PAD_VIEW_PUNCH_RAND_TITAN = 20.0
-const TEAM_JUMPJET_DBL = $"P_team_jump_jet_ON_trails"
-const ENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_ON_trails"
+
 const asset JUMP_PAD_MODEL = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl"
 
 const float JUMP_PAD_ANGLE_LIMIT = 0.70
