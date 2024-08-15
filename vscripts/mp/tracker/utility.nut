@@ -107,7 +107,8 @@ struct {
 	//client command: show
 		bool function ClientCommand_mkos_return_data(entity player, array<string> args)
 		{
-			if (!CheckRate( player )) return false
+			if ( !CheckRate( player ) ) 
+				return false
 			
 			player.p.messagetime = Time()
 			

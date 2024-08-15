@@ -660,7 +660,7 @@ void function ServerCallback_ShouldExitDrone()
 #if SERVER
 bool function ClientCommand_AttemptDroneRecall(entity player, array < string > args)
 {
-	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || !player.IsPlayer() )
+	if( !IsValid( player ) || !player.IsPlayer() )
 		return false
 
 	if ( !IsAlive( player ) )
@@ -687,7 +687,7 @@ bool function ClientCommand_AttemptDroneRecall(entity player, array < string > a
 
 void function ClientCommand_ShouldExitDrone( entity player, array<string> args )
 {
-	if( !IsValid( player ) || !CheckRate( player, false, 0.05 ) || GetGameState() != eGameState.Playing )
+	if( !IsValid( player ) || GetGameState() != eGameState.Playing )
 		return
 		
 	Drone_ExitView( player )

@@ -155,28 +155,25 @@ void function DEV_PrintAllChatEffects()
 	sqprint( print_effects )
 }
 
-
+//this was cool, but also redundant and can easily be avoided.
 bool function SetRelayChallenge( entity player, array<string> args )
 {
-	if ( !CheckRate( player ) )
+	if( IsValid( player ) )
 	{
-		if( IsValid( player ) )
+		if( player.p.bInRetry ){ return true }
+		thread( void function() : ( player, args )
 		{
-			if( player.p.bInRetry ){ return true }
-			thread( void function() : ( player, args )
-			{
-				player.p.bInRetry = true
-				EndSignal( player, "OnDestroy" )
-				wait 0.5
-				player.p.bInRetry = false
-				SetRelayChallenge( player, args )
-				return
-			}())
-		}
-		else 
-		{
-			return false
-		}
+			player.p.bInRetry = true
+			EndSignal( player, "OnDestroy" )
+			wait 0.5
+			player.p.bInRetry = false
+			SetRelayChallenge( player, args )
+			return
+		}())
+	}
+	else 
+	{
+		return false
 	}
 	
 	if( args.len() < 1 ){ return true }

@@ -5445,11 +5445,9 @@ void function LoadCustomWeapon(entity player)
 //Reset TDM Saved Weapons
 bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 {
-	if ( !CheckRate( player ) ) return false
-
 	if ( player.GetPlayerName() in weaponlist )
 	{
-		delete weaponlist[player.GetPlayerName()]
+		delete weaponlist[ player.GetPlayerName() ]
 	}
 	
 	SavePlayerData( player, "saved_weapons", "NA" )
@@ -5462,7 +5460,8 @@ bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
-	if (!CheckRate( player )) return false
+	if (!CheckRate( player )) 
+		return false
 	
 	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
 		return false
@@ -5604,8 +5603,6 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 }
 bool function ClientCommand_BecomePro(entity p, array<string> args)
 {
-	if (!CheckRate( p )) return false
-
 	SetTeam(p, TEAM_MILITIA)
 	ClearHackerOrBecomePro(p)
 	

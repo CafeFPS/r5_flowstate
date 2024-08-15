@@ -128,9 +128,6 @@ bool function ClientCommand_TryCharge( entity player, array<string> args )
 	if ( !IsValid( player ) )
 		return false
 
-	if( !CheckRate( player ) )
-		return false
-
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
 	if ( !IsValid( weapon ) )
