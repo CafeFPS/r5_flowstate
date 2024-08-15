@@ -1018,6 +1018,7 @@ Scripts:
 	sh_hover_vehicle.gnut
 	gamemodes/fs_scenarios/sh_gamemode_scenarios.nut
 	//gamemodes/fs_carritos/sh_gamemode_carritos.nut
+	mp/sh_skydive_launchers.gnut
 ]
 
 When: "SERVER"
