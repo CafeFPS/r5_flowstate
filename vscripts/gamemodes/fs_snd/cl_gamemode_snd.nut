@@ -764,7 +764,22 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedText", GetPriceForCurrentSlotAndMenu() + "\n\n" + GetWeaponNameForCurrentSlotAndMenu() )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "labelText", MainMenu_Names[file.activeMenu] )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%[B_BUTTON|E]% RETURN" )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", "%[A_BUTTON|MOUSE1]%  BUY/UPGRADE\n%[X_BUTTON|MOUSE2]% SELL/DOWNGRADE" )
+		
+		bool weaponIsOwned = file.weapon1ID == GetWeaponElementsForActiveMenu()[int(file.focusedSlot)].weaponID || file.weapon2ID == GetWeaponElementsForActiveMenu()[int(file.focusedSlot)].weaponID
+	
+		string builtStringForThisRef = "%[A_BUTTON|MOUSE1]% "
+		string builtStringForThisRef2 = ""
+
+		if( weaponIsOwned ) 
+		{
+			builtStringForThisRef += "UPGRADE"
+			builtStringForThisRef2 = "\n%[X_BUTTON|MOUSE2]% SELL"
+		} else
+		{
+			builtStringForThisRef += "BUY"
+		}
+
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", builtStringForThisRef + builtStringForThisRef2 )
 	}
 	
 	if( GetWeaponPriceFromSlot( int(file.focusedSlot) ) <= file.availableMoney )
@@ -942,10 +957,18 @@ bool function BuyMenu_HandleKeyInput( int key ) //todo cleanup
 			ReturnToMainMenuOrSellWeaponByFocusedSlot()
 			
 			break
-			
-		case BUTTON_B:
-		//case KEY_ESCAPE:
+
+		case BUTTON_SHOULDER_LEFT: //thx Ida. Cafe
 		case KEY_F:
+			FlowstateSND_RequestSellFromRef( 0 )
+			break
+		
+		case BUTTON_SHOULDER_RIGHT:
+		case KEY_G:
+			FlowstateSND_RequestSellFromRef( 1 )
+			break
+
+		case BUTTON_B:		
 		case KEY_E:
 		
 			if(file.activeMenu != BuyMenuMenus.MAIN)
@@ -1063,6 +1086,16 @@ void function FlowstateSND_RequestSellFocusedWeapon()
 	entity player = GetLocalClientPlayer()
 
     player.ClientCommand("SellSNDWeapon " + GetWeaponRefFromSlot( int(file.focusedSlot) ))
+}
+
+void function FlowstateSND_RequestSellFromRef( int slot = -1 )
+{
+	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
+		return
+	entity player = GetLocalClientPlayer()
+
+	string cc = slot == 0 ? GetWeaponRefFromID( file.weapon1ID ) : GetWeaponRefFromID( file.weapon2ID )
+    player.ClientCommand("SellSNDWeapon " + cc )
 }
 
 void function ServerCallback_BuySuccessful(int weaponID, int weaponSlot, int upgradeLevel, int priceToDiscount)
@@ -1463,7 +1496,7 @@ void function FillWeaponBoxTest(int slot)
 			break
 		}
 		
-		Hud_SetText( HudElement( "MainWeapon" + slot + "_Name" ), wData.pickupString )
+		Hud_SetText( HudElement( "MainWeapon" + slot + "_Name" ), slot == 0 ? wData.pickupString + "%[L_SHOULDER|F]% SELL" : wData.pickupString + "%[R_SHOULDER|G]% SELL")
 	}
 
 	array<string> mods
@@ -1688,6 +1721,17 @@ string function GetWeaponRefFromSlot(int slot)
 			return GetAllBuyMenuElements()[i].weaponref
 		
 		count++
+	}
+	
+	return ""
+}
+
+string function GetWeaponRefFromID(int id)
+{
+	for(int i = 0; i < GetAllBuyMenuElements().len(); i++)
+	{
+		if( GetAllBuyMenuElements()[i].weaponID == id )
+			return GetAllBuyMenuElements()[i].weaponref
 	}
 	
 	return ""
