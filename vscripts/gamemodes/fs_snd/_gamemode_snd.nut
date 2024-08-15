@@ -2499,7 +2499,8 @@ bool function ClientCommand_BuySNDAbility(entity player, array<string> args)
 	
 	if (player.p.availableMoney < weaponprice)
 	{
-		Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
 		return false
 	}
 	player.p.availableMoney -= weaponprice
@@ -2615,8 +2616,8 @@ bool function ClientCommand_BuySNDWeapon(entity player, array<string> args)
 		
 		if (player.p.availableMoney < weaponprice)
 		{
-			//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
-			Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
+		//Remote_CallFunction_NonReplay(player, "ServerCallback_BuyRejected")
+		Remote_CallFunction_ByRef( player, "ServerCallback_BuyRejected" )
 			return false
 		}
 
