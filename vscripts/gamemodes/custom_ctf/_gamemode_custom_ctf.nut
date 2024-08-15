@@ -14,7 +14,7 @@ global function ResetMILITIAFlag
 global function FS_StartIntroScreen
 
 bool debugging = false
-const float FS_HALOMOD_VOTETEAM_TIME = 5
+const float FS_HALOMOD_VOTETEAM_TIME = 10
 
 enum eCTFState
 {
@@ -432,8 +432,6 @@ void function VotingPhase()
 		int teamMemberIndex = playerTeam.len() - 1
 		player.SetTeamMemberIndex( teamMemberIndex )
 	}
-	if( Flowstate_IsHaloMode()  )
-		wait 0.5
 }
 
 // purpose: handle the start of a new round for players and props
@@ -585,7 +583,7 @@ void function StartRound()
 	if( !debugging && Flowstate_IsHaloMode() )
 	{
 		SetGlobalNetTime( "FSIntro_StartTime", Time() + 3 )
-		SetGlobalNetTime( "FSIntro_EndTime", Time() + 10 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 3 )
+		SetGlobalNetTime( "FSIntro_EndTime", Time() + 7 + max( GetPlayerArrayOfTeam(TEAM_IMC).len(), GetPlayerArrayOfTeam(TEAM_MILITIA).len() ) * 2 )
 
 		while( Time() < GetGlobalNetTime( "FSIntro_EndTime" ) )
 			WaitFrame()
@@ -721,6 +719,11 @@ void function StartRound()
 			else if ( GameRules_GetTeamScore( TEAM_MILITIA ) > GameRules_GetTeamScore( TEAM_IMC ) )
 				TeamWon = TEAM_MILITIA
 
+			if( Flowstate_IsHaloMode() )
+			{
+				CTF.mappicked = ( CTF.mappicked + 1 ) % file.locationSettings.len()
+			}
+			
 			file.winnerTeam = TeamWon
 
 			if( TeamWon == 69 )
