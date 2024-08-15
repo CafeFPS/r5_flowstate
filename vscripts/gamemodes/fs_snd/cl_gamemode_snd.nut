@@ -700,23 +700,20 @@ bool function BuyMenuCleanup_HandleViewInput( float x, float y )
 	return false
 }
 
-const float CONTROLLER_SPEED = 1.5
-
 bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial menu, heavily modified. Colombia
 {
-	printt( x, y )
 	if(Hud_GetRui( HudElement( "WheelTest" ) ) == null) 
 		return false
 	
 	if ( IsControllerModeActive() ) //I'm insane. Cafe
 	{
 		if( fabs( x ) > 0.25 )
-			x = signum( x ) + CONTROLLER_SPEED * signum( x )
+			x = signum( x ) + x * 3
 		else
 			x = 0
 
 		if( fabs( y ) > 0.25 )
-			y = signum( y ) + CONTROLLER_SPEED * signum( y )
+			y = signum( y ) + y * 3
 		else
 			y = 0
 	}
