@@ -700,9 +700,26 @@ bool function BuyMenuCleanup_HandleViewInput( float x, float y )
 	return false
 }
 
+const float CONTROLLER_SPEED = 1.5
+
 bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial menu, heavily modified. Colombia
 {
-	if(Hud_GetRui( HudElement( "WheelTest" ) ) == null) return false
+	printt( x, y )
+	if(Hud_GetRui( HudElement( "WheelTest" ) ) == null) 
+		return false
+	
+	if ( IsControllerModeActive() ) //I'm insane. Cafe
+	{
+		if( fabs( x ) > 0.25 )
+			x = signum( x ) + CONTROLLER_SPEED * signum( x )
+		else
+			x = 0
+
+		if( fabs( y ) > 0.25 )
+			y = signum( y ) + CONTROLLER_SPEED * signum( y )
+		else
+			y = 0
+	}
 	
 	UISize screenSize = GetScreenSize()
 	float resMultX = screenSize.width / 1920.0
@@ -736,14 +753,7 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 
 		file.lastFocusTime = Time()
 	}
-	else if ( IsControllerModeActive() )
-	{
-		if ( Time() > file.lastFocusTime + 1.5 )
-		{
-			RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedSlot", int(file.focusedSlot) )
-		}
-	}
-	
+
 	if( file.currentx > 30*resMultY ) // añadir un valor negativo por si el jugador tiene una pantalla muy grande, actualmente detecta el input del mouse de la mitad de la pantalla hacia la izquierda
 	{
 		file.focusedSlot = -1 //disables choice if mouse is outside of wheel location (solo a la derecha)
@@ -756,8 +766,8 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 	{
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedText", GetPriceForCurrentSlotAndMenu() + "\n\n" + GetWeaponNameForCurrentSlotAndMenu() )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "labelText", MainMenu_Names[file.activeMenu] )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%use% RETURN" )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", "%attack% BUY/UPGRADE\n%zoom% SELL/DOWNGRADE" )
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%[B_BUTTON|E]% RETURN" )
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", "%[A_BUTTON|MOUSE1]%  BUY/UPGRADE\n%[X_BUTTON|MOUSE2]% SELL/DOWNGRADE" )
 	}
 	
 	if( GetWeaponPriceFromSlot( int(file.focusedSlot) ) <= file.availableMoney )
@@ -769,7 +779,7 @@ bool function HandleMouseCursorOnClient_HACK( float x, float y ) //from radial m
 		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "selectedSlot", -1 )
 		RuiSetInt( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedSlot", int(file.focusedSlot) )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "focusedText", GetPriceForCurrentSlotAndMenu() + "\n\n CAN'T BUY" )
-		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText", "%use% RETURN" )
+		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "backText",  "%[B_BUTTON|E]% RETURN" )
 		RuiSetString( Hud_GetRui( HudElement( "WheelTest" ) ), "promptText", " " )
 	}
 	
@@ -1304,7 +1314,7 @@ void function CreateBuyMenuRUI( )
 	
     string labelText        = "BUY MENU"
     string backText         = "SELECT A CATEGORY"
-    string promptText       = "%attack% ENTER MENU"
+    string promptText       = "%[A_BUTTON|MOUSE1]% ENTER MENU"
     string nextPageText = ""
     bool showNextPageText = true
     bool shouldShowLine     = false
@@ -1614,8 +1624,8 @@ void function FillRuiElementsWithDatatableData(int chosenMenu)
 	
 	file.slotCount = float(count)
     RuiSetInt( rui, "optionCount", count )
-	RuiSetString( rui, "backText", "%use% RETURN" )
-	RuiSetString( rui, "promptText", "%attack% BUY WEAPON" )
+	RuiSetString( rui, "backText", "%[B_BUTTON|E]% RETURN")
+	RuiSetString( rui, "promptText", "%[A_BUTTON|MOUSE1]% BUY WEAPON" )
 }
 
 void function SetTierForSlotFromWeaponIDAndLVL(int weaponID, int weaponlvl, bool wasAbsoluteSell = false)
