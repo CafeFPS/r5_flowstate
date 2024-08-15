@@ -52,7 +52,7 @@ platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu
             {
                 //basicImageColor     "0 0 0"
                 basicImageAlpha     .98
-				basicImage			rui/menu/common/dialog_gradient
+				basicImage			"rui/menu/common/dialog_gradient"
             }
 
 			pin_to_sibling			DarkenBackground
@@ -78,10 +78,7 @@ platform/scripts/resource/ui/menus/FlowstateScenarios/fs_scenarios.menu
 			pin_to_sibling_corner	TOP
 		}
 		
-		Standings
-		
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         FooterButtons
         {

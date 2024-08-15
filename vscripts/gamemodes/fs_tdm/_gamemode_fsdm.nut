@@ -5378,7 +5378,7 @@ string function modChecker( string weaponMods )
 	return returnweapon
 }
 
-//Auto-load TDM Saved Weapons at Respawn
+//Auto-load TDM Saved Weapons on Respawn
 void function LoadCustomWeapon(entity player)
 {
 	if ( !IsValid( player )) return
@@ -5443,8 +5443,11 @@ void function LoadCustomWeapon(entity player)
 
 
 //Reset TDM Saved Weapons
-bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
+bool function ClientCommand_ResetSavedWeapons( entity player, array<string> args )
 {
+	if( !IsValid( player ) )
+		return false 
+		
 	if ( player.GetPlayerName() in weaponlist )
 	{
 		delete weaponlist[ player.GetPlayerName() ]
@@ -5460,10 +5463,10 @@ bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
-	if (!CheckRate( player )) 
+	if ( !CheckRate( player ) ) 
 		return false
 	
-	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
+	if( !IsAdmin( player) || args.len() == 0 ) //checkrate already checks for validity
 		return false
 	
 	if (args[0] == "now")
@@ -5485,7 +5488,10 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
 }
 bool function ClientCommand_adminnoclip( entity player, array<string> args )
 {
-	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) 
+	if( !IsValid(player) )
+		return false 
+		
+	if( !IsAdmin(player) ) 
 		return false
 
 	if ( player.IsNoclipping() )
@@ -6514,7 +6520,8 @@ void function Vamp_OnPlayerDamaged(entity victim, var damageInfo)
 	if ( atthealth < attacker.GetMaxHealth() )
 	{
 		attacker.SetHealth( min( atthealth + damage, float( attacker.GetMaxHealth() ) ) )
-	} else if ( attshield < attacker.GetShieldHealthMax() )
+	} 
+	else if ( attshield < attacker.GetShieldHealthMax() )
 	{
 		attacker.SetShieldHealth( min( attshield + damage, float( attacker.GetShieldHealthMax() ) ) )
 	}
@@ -6522,8 +6529,9 @@ void function Vamp_OnPlayerDamaged(entity victim, var damageInfo)
 
 void function Vamp_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
 {
-	if( !IsValid( player ) )
-		return
+	// if( !IsValid( player ) )  //Is this necessary to perform a valid check per bullet.. ?
+		// return
+		
 	player.RefillAllAmmo()
 }
 
@@ -6548,10 +6556,10 @@ void function FS_SetChampionOnPersistenceLoad()
 				SetPlayerStatBool( uid, "previous_champion", false ) // set everyone to false
 			}
 		
-			if( championCandidates.len() >= 1 )
+			if( championCandidates.len() )
 			{							
-				entity champion = championCandidates.getrandom()
-				SetChampion( champion ) //not the best determinate ( needs a struct of winning data ) 
+				entity champion = championCandidates.getrandom() //not the best determinate ( needs a struct of winning data ) 
+				SetChampion( champion ) 
 				//Warning( "Champion set as: " + string( champion ) )
 				
 				file.previousChampion = champion
